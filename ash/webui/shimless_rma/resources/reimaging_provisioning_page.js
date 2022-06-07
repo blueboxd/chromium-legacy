@@ -14,10 +14,11 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ProvisioningObserverInterface, ProvisioningObserverReceiver, ProvisioningStatus, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {disableNextButton, enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
 
 /** @type {!Object<!ProvisioningStatus, string>} */
 const provisioningStatusTextKeys = {
-  [ProvisioningStatus.kInProgress]: 'provisioningPageProgressText',
+  [ProvisioningStatus.kInProgress]: 'provisioningPageInProgressText',
   [ProvisioningStatus.kComplete]: 'provisioningPageCompleteText',
   [ProvisioningStatus.kFailedBlocking]: 'provisioningPageFailedBlockingText',
   [ProvisioningStatus.kFailedNonBlocking]:
@@ -26,10 +27,8 @@ const provisioningStatusTextKeys = {
 
 /**
  * @fileoverview
- * 'reimaging-provisioning-page' enter updated device information if needed.
- *
- * Currently device information is serial number, region and sku. All values are
- * OEM specific.
+ * 'reimaging-provisioning-page' provisions the device then auto-transitions to
+ * the next page once complete.
  */
 
 /**
@@ -64,15 +63,9 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
       },
 
       /** @protected */
-      progress_: {
-        type: Number,
-        value: 0.0,
-      },
-
-      /** @protected */
       statusString_: {
         type: String,
-        computed: 'getStatusString_(status_, progress_)',
+        computed: 'getStatusString_(status_)',
       },
 
       /** @protected {boolean} */
@@ -113,13 +106,7 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
       return '';
     }
 
-    if (this.status_ === ProvisioningStatus.kInProgress) {
-      return this.i18n(
-          provisioningStatusTextKeys[this.status_],
-          Math.round(this.progress_ * 100));
-    } else {
-      return this.i18n(provisioningStatusTextKeys[this.status_]);
-    }
+    return this.i18n(provisioningStatusTextKeys[this.status_]);
   }
 
   /**
@@ -131,27 +118,19 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
    */
   onProvisioningUpdated(status, progress) {
     this.status_ = status;
-    this.progress_ = progress;
-    const disabled = this.status_ != ProvisioningStatus.kComplete &&
-        this.status_ != ProvisioningStatus.kFailedNonBlocking;
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: disabled},
-        ));
+
+    // Transition to next state when provisioning is complete.
+    if (this.status_ === ProvisioningStatus.kComplete) {
+      this.shouldShowSpinner_ = false;
+      executeThenTransitionState(
+          this, () => this.shimlessRmaService_.provisioningComplete());
+      return;
+    }
+
     this.shouldShowSpinner_ = this.status_ === ProvisioningStatus.kInProgress;
     this.shouldShowRetryButton_ =
         this.status_ === ProvisioningStatus.kFailedBlocking ||
         this.status_ === ProvisioningStatus.kFailedNonBlocking;
-  }
-
-  /** @return {!Promise<!StateResult>} */
-  onNextButtonClick() {
-    if (this.status_ == ProvisioningStatus.kComplete ||
-        this.status_ == ProvisioningStatus.kFailedNonBlocking) {
-      return this.shimlessRmaService_.provisioningComplete();
-    } else {
-      return Promise.reject(new Error('Provisioning is not complete.'));
-    }
   }
 
   /** @private */
@@ -162,16 +141,8 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
       return;
     }
 
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.shimlessRmaService_.retryProvisioning();
-          })
-        },
-        ));
+    executeThenTransitionState(
+        this, () => this.shimlessRmaService_.retryProvisioning());
   }
 }
 

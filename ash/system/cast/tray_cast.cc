@@ -61,8 +61,6 @@ const gfx::VectorIcon& SinkIconTypeToIcon(SinkIconType icon_type) {
 
 }  // namespace
 
-namespace tray {
-
 CastDetailedView::CastDetailedView(DetailedViewDelegate* delegate)
     : TrayDetailedView(delegate) {
   CreateItems();
@@ -115,19 +113,21 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   view_to_sink_map_.clear();
   scroll_content()->RemoveAllChildViews();
 
+  // Per product requirement, access code receiver should be shown before other
+  // receivers.
+  if (CastConfigController::Get()->AccessCodeCastingEnabled()) {
+    add_access_code_device_ = AddScrollListItem(
+        vector_icons::kKeyboardIcon,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_CAST_ACCESS_CODE_CAST_CONNECT));
+  }
+
   // Add a view for each receiver.
   for (auto& it : sinks_and_routes_) {
     const CastSink& sink = it.second.sink;
     views::View* container = AddScrollListItem(
         SinkIconTypeToIcon(sink.sink_icon_type), base::UTF8ToUTF16(sink.name));
     view_to_sink_map_[container] = sink.id;
-  }
-
-  if (CastConfigController::Get()->AccessCodeCastingEnabled()) {
-    add_access_code_device_ = AddScrollListItem(
-        vector_icons::kQrCodeIcon,
-        l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_CAST_ACCESS_CODE_CAST_CONNECT));
   }
 
   scroll_content()->SizeToPreferredSize();
@@ -148,5 +148,4 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
   }
 }
 
-}  // namespace tray
 }  // namespace ash

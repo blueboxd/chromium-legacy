@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
@@ -28,6 +30,8 @@ namespace apps {
 // crosapi and App Service.
 //
 // See components/services/app_service/README.md.
+//
+// TODO(crbug.com/1253250): Remove dependency on apps::mojom::Subscriber.
 class SubscriberCrosapi : public KeyedService,
                           public apps::mojom::Subscriber,
                           public crosapi::mojom::AppServiceProxy {
@@ -40,10 +44,12 @@ class SubscriberCrosapi : public KeyedService,
   void RegisterAppServiceProxyFromCrosapi(
       mojo::PendingReceiver<crosapi::mojom::AppServiceProxy> receiver);
 
+  void OnApps(const std::vector<apps::AppPtr>& deltas);
+
  protected:
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas,
-              apps::mojom::AppType app_type,
+              apps::mojom::AppType mojom_app_type,
               bool should_notify_initialized) override;
   void OnCapabilityAccesses(
       std::vector<apps::mojom::CapabilityAccessPtr> deltas) override;
@@ -66,6 +72,8 @@ class SubscriberCrosapi : public KeyedService,
                 apps::LoadIconCallback callback) override;
   void AddPreferredApp(const std::string& app_id,
                        crosapi::mojom::IntentPtr intent) override;
+  void ShowAppManagementPage(const std::string& app_id) override;
+  void SetSupportedLinksPreference(const std::string& app_id) override;
 
   void OnSubscriberDisconnected();
 
@@ -73,7 +81,8 @@ class SubscriberCrosapi : public KeyedService,
   mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
   mojo::Remote<crosapi::mojom::AppServiceSubscriber> subscriber_;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
+  raw_ptr<apps::AppServiceProxy> proxy_ = nullptr;
 };
 
 }  // namespace apps

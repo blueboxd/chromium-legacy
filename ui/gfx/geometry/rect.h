@@ -20,6 +20,8 @@
 #include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/outsets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -31,9 +33,6 @@ typedef struct CGRect CGRect;
 #endif
 
 namespace gfx {
-
-class Insets;
-class Outsets;
 
 class GEOMETRY_EXPORT Rect {
  public:
@@ -144,25 +143,14 @@ class GEOMETRY_EXPORT Rect {
   }
 
   // Shrink the rectangle by |inset| on all sides.
-  void Inset(int inset) { Inset(inset, inset); }
-  // Shrink the rectangle by a horizontal and vertical distance on all sides.
-  void Inset(int horizontal, int vertical) {
-    Inset(horizontal, vertical, horizontal, vertical);
-  }
-
-  // Shrink the rectangle by the given insets.
+  void Inset(int inset) { Inset(Insets(inset)); }
+  // Shrink the rectangle by the given |insets|.
   void Inset(const Insets& insets);
 
-  // Shrink the rectangle by the specified amount on each side.
-  void Inset(int left, int top, int right, int bottom);
-
-  // Expand the rectangle by the specified amount on each side.
+  // Expand the rectangle by |outset| on all sides.
   void Outset(int outset) { Inset(-outset); }
-  void Outset(int horizontal, int vertical) { Inset(-horizontal, -vertical); }
-  void Outset(int left, int top, int right, int bottom) {
-    Inset(-left, -top, -right, -bottom);
-  }
-  void Outset(const Outsets& outsets);
+  // Expand the rectangle by the given |outsets|.
+  void Outset(const Outsets& outsets) { Inset(outsets.ToInsets()); }
 
   // Move the rectangle by a horizontal and vertical distance.
   void Offset(int horizontal, int vertical) {

@@ -89,6 +89,7 @@
 <translation id="1409879593029778104">ระบบป้องกันการดาวน์โหลด <ph name="FILE_NAME" /> เพราะมีไฟล์นี้อยู่แล้ว</translation>
 <translation id="1414981605391750300">กำลังติดต่อ Google อาจใช้เวลาประมาณ 1 นาที…</translation>
 <translation id="1416550906796893042">เวอร์ชันของแอปพลิเคชัน</translation>
+<translation id="1428770807407000502">ปิดการซิงค์ใช่ไหม</translation>
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1436784010935106834">ลบออกแล้ว</translation>
 <translation id="1448440926884431741">จัดระเบียบผลิตภัณฑ์ที่ติดตามในบุ๊กมาร์ก</translation>
@@ -184,7 +185,6 @@
 <translation id="200114059308480249">รวมข้อความที่อยู่โดยรอบในการค้นหาบน Google ไหม</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ไฟล์}other{# ไฟล์}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> จะเปิดใน Chrome การดำเนินการต่อหมายความว่า คุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการของ Google<ph name="END_LINK1" /> และ<ph name="BEGIN_LINK2" />ข้อกำหนดในการให้บริการเพิ่มเติมของ Google Chrome และ Chrome OS<ph name="END_LINK2" /> <ph name="BEGIN_LINK3" />นโยบายความเป็นส่วนตัว<ph name="END_LINK3" />จะมีผลด้วย</translation>
-<translation id="2019145049163614359">นำความสนใจออกไหม</translation>
 <translation id="2020309681647789787">อุปกรณ์ทั้งหมดที่ซิงค์ไว้จะมีประวัติการเข้าชมของคุณอยู่ ดังนั้นคุณสามารถทำสิ่งที่ดำเนินการอยู่ต่อได้</translation>
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
@@ -213,6 +213,7 @@
 <translation id="2141396931810938595">อิงตามการใช้งานของคุณ</translation>
 <translation id="214888715418183969">เลือกสิ่งที่คุณต้องการแชร์กับ Chrome เราจะใช้เมตริกที่คุณแชร์เพื่อช่วยปรับปรุงฟีเจอร์ ประสิทธิภาพ และความเสถียรของ Chrome</translation>
 <translation id="2149973817440762519">แก้ไขบุ๊กมาร์ก</translation>
+<translation id="2155214902713132423">วิธีการยืนยันนี้ไม่พร้อมใช้งานสำหรับอุปกรณ์ โปรดเลือกตัวเลือกที่ต่างออกไปในอุปกรณ์อื่น</translation>
 <translation id="2157851137955077194">หากต้องการแชร์รายการจากโทรศัพท์ไปยังอุปกรณ์อื่น ให้เปิดการซิงค์ในการตั้งค่า Chrome ในอุปกรณ์ทั้ง 2 เครื่อง</translation>
 <translation id="2158408438301413340">Chrome ตรวจสอบรหัสผ่านได้ไม่ครบทั้งหมด</translation>
 <translation id="2169830938017475061">ตอนนี้</translation>
@@ -733,7 +734,6 @@
 <translation id="5091199029769593641">เร็วๆ นี้คุณจะเห็นเรื่องราวจาก <ph name="SITE_NAME" /> เมื่อเปิดแท็บใหม่ ระบบจะบันทึกเว็บไซต์ที่คุณติดตามไว้ในบัญชี Google โดยคุณจัดการเว็บไซต์เหล่านี้ได้ในการตั้งค่า Discover</translation>
 <translation id="5091249083535528968">ข้อมูลการใช้งานเพิ่มเติม</translation>
 <translation id="509429900233858213">มีข้อผิดพลาดเกิดขึ้น</translation>
-<translation id="5098190077610408701">เพิ่มความสนใจไหม</translation>
 <translation id="5102401324271069229">หากเว็บไซต์พยายามขโมยรหัสผ่าน หรือคุณดาวน์โหลดไฟล์ที่เป็นอันตราย Chrome อาจส่ง URL รวมถึงเนื้อหาบางส่วนในหน้าไปยัง Google Safe Browsing</translation>
 <translation id="510275257476243843">เหลือ 1 ชั่วโมง</translation>
 <translation id="5115811374190515607">ไปยัง<ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +879,7 @@
 <translation id="5906513782029855931">หากทราบ URL ของเว็บไซต์ Google Assistant จะช่วยทำงานที่ต้องการให้เสร็จสิ้นได้ คุณปิด Assistant ได้ในการตั้งค่า Chrome</translation>
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
+<translation id="5938820472109305350">เพิ่ม<ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">กำลังใช้ Google ในการค้นหา</translation>
 <translation id="5945035219773565305">คำแนะนำปัจจุบัน: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">กำลังดูหน้าเว็บที่เผยแพร่</translation>
@@ -898,7 +899,6 @@
 <translation id="6033245666633565791">การใช้ <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> ช่วยให้ Chrome พัฒนาเทคโนโลยีใหม่ๆ เพื่อปกป้องคุณจากการติดตามข้ามเว็บไซต์ในขณะที่ยังคงรักษาความเปิดกว้างของเว็บไว้
 
 การทดลองใช้ Privacy Sandbox ยังคงอยู่ระหว่างการพัฒนาอย่างสุดความสามารถ และพร้อมให้ใช้งานแล้วในบางภูมิภาค ตอนนี้เว็บไซต์ต่างๆ อาจลองใช้ Privacy Sandbox ไปพร้อมกับการใช้เทคโนโลยีเว็บปัจจุบัน เช่น คุกกี้ของบุคคลที่สาม</translation>
-<translation id="6036057147555329831">ICU เพิ่มเติม</translation>
 <translation id="6039379616847168523">ข้ามไปยังแท็บถัดไป</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="604124094241169006">อัตโนมัติ</translation>
@@ -1023,6 +1023,7 @@
 <translation id="663674369910034433">ดูการตั้งค่าเพิ่มเติมเกี่ยวกับความเป็นส่วนตัว ความปลอดภัย และการรวบรวมข้อมูลได้ที่<ph name="BEGIN_LINK1" />การซิงค์<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />บริการต่างๆ ของ Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Chrome จะส่งข้อมูลการใช้งานและข้อขัดข้องไปยัง Google เพื่อช่วยปรับปรุงแอป <ph name="BEGIN_UMA_LINK" />จัดการ<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">บล็อกตลอดเวลา</translation>
+<translation id="6641780377503683465">นำ<ph name="INTEREST" />ออก</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6645629752388991326">ควบคุมว่าอุปกรณ์ใดบ้างที่สามารถลงชื่อเข้าใช้โดยให้อุปกรณ์เครื่องนี้เป็นคีย์ความปลอดภัย</translation>
 <translation id="6648459603387803038">ผู้ดูแลระบบจะเปลี่ยนการตั้งค่าเบราว์เซอร์จากระยะไกลได้ กิจกรรมในอุปกรณ์นี้อาจมีการจัดการภายนอก Chrome ได้ด้วย</translation>

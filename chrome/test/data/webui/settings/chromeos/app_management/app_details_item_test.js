@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
+import {AppManagementStore, updateSelectedAppId} from 'chrome://os-settings/chromeos/os_settings.js';
+import {flushTasks} from 'chrome://test/test_util.js';
 
-// #import {AppManagementStore, FakePageHandler, updateSelectedAppId, addApp} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {setupFakeHandler, replaceStore, replaceBody, isHidden} from './test_util.m.js';
-// #import {flushTasks} from 'chrome://test/test_util.js';
-// clang-format on
+import {replaceBody, replaceStore, setupFakeHandler} from './test_util.js';
 
 suite('<app-management-app-details-item>', () => {
   let appDetailsItem;
@@ -21,7 +18,7 @@ suite('<app-management-app-details-item>', () => {
     appDetailsItem = document.createElement('app-management-app-details-item');
 
     replaceBody(appDetailsItem);
-    test_util.flushTasks();
+    flushTasks();
   });
 
   test('PWA type', async function() {
@@ -33,22 +30,22 @@ suite('<app-management-app-details-item>', () => {
     // Add PWA app, and make it the currently selected app.
     const app = await fakeHandler.addApp('app', options);
 
-    app_management.AppManagementStore.getInstance().dispatch(
-        app_management.actions.updateSelectedAppId(app.id));
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
 
     await fakeHandler.flushPipesForTesting();
 
-    assertTrue(
-        !!app_management.AppManagementStore.getInstance().data.apps[app.id]);
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
 
     appDetailsItem.app = app;
 
     replaceBody(appDetailsItem);
     fakeHandler.flushPipesForTesting();
-    test_util.flushTasks();
+    flushTasks();
 
+    assertTrue(!!appDetailsItem.shadowRoot.querySelector('#type-and-source'));
     expectEquals(
-        appDetailsItem.shadowRoot.querySelector('#type').innerText.trim(),
+        appDetailsItem.shadowRoot.querySelector('#type-and-source')
+            .textContent.trim(),
         'Web App');
   });
 
@@ -61,22 +58,22 @@ suite('<app-management-app-details-item>', () => {
     // Add Android app, and make it the currently selected app.
     const app = await fakeHandler.addApp('app', options);
 
-    app_management.AppManagementStore.getInstance().dispatch(
-        app_management.actions.updateSelectedAppId(app.id));
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
 
     await fakeHandler.flushPipesForTesting();
 
-    assertTrue(
-        !!app_management.AppManagementStore.getInstance().data.apps[app.id]);
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
 
     appDetailsItem.app = app;
 
     replaceBody(appDetailsItem);
     fakeHandler.flushPipesForTesting();
-    test_util.flushTasks();
+    flushTasks();
 
+    assertTrue(!!appDetailsItem.shadowRoot.querySelector('#type-and-source'));
     expectEquals(
-        appDetailsItem.shadowRoot.querySelector('#type').innerText.trim(),
+        appDetailsItem.shadowRoot.querySelector('#type-and-source')
+            .textContent.trim(),
         'Android App');
   });
 
@@ -89,22 +86,22 @@ suite('<app-management-app-details-item>', () => {
     // Add Chrome app, and make it the currently selected app.
     const app = await fakeHandler.addApp('app', options);
 
-    app_management.AppManagementStore.getInstance().dispatch(
-        app_management.actions.updateSelectedAppId(app.id));
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
 
     await fakeHandler.flushPipesForTesting();
 
-    assertTrue(
-        !!app_management.AppManagementStore.getInstance().data.apps[app.id]);
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
 
     appDetailsItem.app = app;
 
     replaceBody(appDetailsItem);
     fakeHandler.flushPipesForTesting();
-    test_util.flushTasks();
+    flushTasks();
 
+    assertTrue(!!appDetailsItem.shadowRoot.querySelector('#type-and-source'));
     expectEquals(
-        appDetailsItem.shadowRoot.querySelector('#type').innerText.trim(),
+        appDetailsItem.shadowRoot.querySelector('#type-and-source')
+            .textContent.trim(),
         'Chrome App');
   });
 
@@ -117,23 +114,23 @@ suite('<app-management-app-details-item>', () => {
     // Add Chrome app, and make it the currently selected app.
     const app = await fakeHandler.addApp('app', options);
 
-    app_management.AppManagementStore.getInstance().dispatch(
-        app_management.actions.updateSelectedAppId(app.id));
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
 
     await fakeHandler.flushPipesForTesting();
 
-    assertTrue(
-        !!app_management.AppManagementStore.getInstance().data.apps[app.id]);
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
 
     appDetailsItem.app = app;
 
     replaceBody(appDetailsItem);
     fakeHandler.flushPipesForTesting();
-    test_util.flushTasks();
+    flushTasks();
 
+    assertTrue(!!appDetailsItem.shadowRoot.querySelector('#type-and-source'));
     expectEquals(
-        appDetailsItem.shadowRoot.querySelector('#type').innerText.trim(),
-        'Chrome App installed from Chrome Web Store');
+        appDetailsItem.shadowRoot.querySelector('#type-and-source')
+            .textContent.trim(),
+        'Chrome App installed from <a href="#">Chrome Web Store</a>');
   });
 
   test('Android App from play store', async function() {
@@ -145,23 +142,23 @@ suite('<app-management-app-details-item>', () => {
     // Add Chrome app, and make it the currently selected app.
     const app = await fakeHandler.addApp('app', options);
 
-    app_management.AppManagementStore.getInstance().dispatch(
-        app_management.actions.updateSelectedAppId(app.id));
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
 
     await fakeHandler.flushPipesForTesting();
 
-    assertTrue(
-        !!app_management.AppManagementStore.getInstance().data.apps[app.id]);
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
 
     appDetailsItem.app = app;
 
     replaceBody(appDetailsItem);
     fakeHandler.flushPipesForTesting();
-    test_util.flushTasks();
+    flushTasks();
 
+    assertTrue(!!appDetailsItem.shadowRoot.querySelector('#type-and-source'));
     expectEquals(
-        appDetailsItem.shadowRoot.querySelector('#type').innerText.trim(),
-        'Android App installed from Google Play Store');
+        appDetailsItem.shadowRoot.querySelector('#type-and-source')
+            .textContent.trim(),
+        'Android App installed from <a href="#">Google Play Store</a>');
   });
 
   test('System type', async function() {
@@ -172,22 +169,22 @@ suite('<app-management-app-details-item>', () => {
     // Add System app, and make it the currently selected app.
     const app = await fakeHandler.addApp('app', options);
 
-    app_management.AppManagementStore.getInstance().dispatch(
-        app_management.actions.updateSelectedAppId(app.id));
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
 
     await fakeHandler.flushPipesForTesting();
 
-    assertTrue(
-        !!app_management.AppManagementStore.getInstance().data.apps[app.id]);
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
 
     appDetailsItem.app = app;
 
     replaceBody(appDetailsItem);
     fakeHandler.flushPipesForTesting();
-    test_util.flushTasks();
+    flushTasks();
 
+    assertTrue(!!appDetailsItem.shadowRoot.querySelector('#type-and-source'));
     expectEquals(
-        appDetailsItem.shadowRoot.querySelector('#type').innerText.trim(),
+        appDetailsItem.shadowRoot.querySelector('#type-and-source')
+            .textContent.trim(),
         'System App');
   });
 
@@ -199,22 +196,74 @@ suite('<app-management-app-details-item>', () => {
     // Add System app, and make it the currently selected app.
     const app = await fakeHandler.addApp('app', options);
 
-    app_management.AppManagementStore.getInstance().dispatch(
-        app_management.actions.updateSelectedAppId(app.id));
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
 
     await fakeHandler.flushPipesForTesting();
 
-    assertTrue(
-        !!app_management.AppManagementStore.getInstance().data.apps[app.id]);
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
 
     appDetailsItem.app = app;
 
     replaceBody(appDetailsItem);
     fakeHandler.flushPipesForTesting();
-    test_util.flushTasks();
+    flushTasks();
+
+    assertTrue(!!appDetailsItem.shadowRoot.querySelector('#type-and-source'));
+    expectEquals(
+        appDetailsItem.shadowRoot.querySelector('#type-and-source')
+            .textContent.trim(),
+        'Chrome OS System App');
+  });
+
+  test('Chrome app version', async function() {
+    const options = {
+      type: apps.mojom.AppType.kChromeApp,
+      version: '17.2',
+    };
+
+    // Add Chrome app, and make it the currently selected app.
+    const app = await fakeHandler.addApp('app', options);
+
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
+
+    await fakeHandler.flushPipesForTesting();
+
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
+
+    appDetailsItem.app = app;
+
+    replaceBody(appDetailsItem);
+    fakeHandler.flushPipesForTesting();
+    flushTasks();
 
     expectEquals(
-        appDetailsItem.shadowRoot.querySelector('#type').innerText.trim(),
-        'Chrome OS System App');
+        appDetailsItem.shadowRoot.querySelector('#version').textContent.trim(),
+        'Version: 17.2');
+  });
+
+  test('Android app version', async function() {
+    const options = {
+      type: apps.mojom.AppType.kArc,
+      version: '13.1.52',
+    };
+
+    // Add Android app, and make it the currently selected app.
+    const app = await fakeHandler.addApp('app', options);
+
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
+
+    await fakeHandler.flushPipesForTesting();
+
+    assertTrue(!!AppManagementStore.getInstance().data.apps[app.id]);
+
+    appDetailsItem.app = app;
+
+    replaceBody(appDetailsItem);
+    fakeHandler.flushPipesForTesting();
+    flushTasks();
+
+    expectEquals(
+        appDetailsItem.shadowRoot.querySelector('#version').innerText.trim(),
+        'Version: 13.1.52');
   });
 });

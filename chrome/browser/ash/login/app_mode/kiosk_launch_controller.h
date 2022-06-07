@@ -7,6 +7,7 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/kiosk_profile_loader.h"
@@ -161,7 +162,8 @@ class KioskLaunchController
   void OnForceInstalledExtensionsReady() override;
   void OnForceInstalledExtensionFailed(
       const extensions::ExtensionId& extension_id,
-      extensions::InstallStageTracker::FailureReason reason) override;
+      extensions::InstallStageTracker::FailureReason reason,
+      bool is_from_store) override;
 
   void OnOwnerSigninSuccess();
 
@@ -231,6 +233,9 @@ class KioskLaunchController
 
   // Tracks the moment when extensions start to be installed.
   absl::optional<base::Time> extension_start_time_;
+
+  // Tracks the moment when Kiosk launcher is started.
+  base::Time launcher_start_time_;
 
   // Observe the installation status of extensions in Ash. This object is
   // only used when Lacros is disabled.

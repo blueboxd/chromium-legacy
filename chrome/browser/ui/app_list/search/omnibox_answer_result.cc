@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_answer_result.h"
 
+#include <string>
+#include <utility>
+
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/style/color_provider.h"
@@ -24,6 +27,7 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "extensions/common/image_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -54,6 +58,24 @@ ChromeSearchResult::IconInfo CreateAnswerIconInfo(
                       dimension / 2, gfx::kGoogleBlue600,
                       gfx::CreateVectorIcon(vector_icon, SK_ColorWHITE));
   return ChromeSearchResult::IconInfo(icon, dimension);
+}
+
+// Tries to extract the temperature and temperature units from
+// SuggestionAnswer::TextFields. For example, a text field containing "26°C" is
+// converted into the pair ("26", "°C"), and a text field containing "-5°F" is
+// converted into the pair ("-5", "°F").
+absl::optional<std::pair<std::u16string, std::u16string>> GetTemperature(
+    const SuggestionAnswer::TextFields& text_fields) {
+  if (text_fields.size() != 1)
+    return absl::nullopt;
+
+  const std::u16string& text = text_fields[0].text();
+  size_t digits_end = text.find_last_of(u"0123456789");
+  if (digits_end == std::u16string::npos)
+    return absl::nullopt;
+
+  size_t unit_start = digits_end + 1;
+  return std::make_pair(text.substr(0, unit_start), text.substr(unit_start));
 }
 
 TextItem TextFieldToTextItem(const SuggestionAnswer::TextField& text_field) {
@@ -120,20 +142,6 @@ std::vector<TextItem> MatchFieldsToTextVector(
   text_item.SetTextTags(tags);
 
   return {text_item};
-}
-
-std::vector<TextItem> AddBoldTags(std::vector<TextItem> text_vector) {
-  std::vector<TextItem> bolded_vector;
-  for (const auto& old_text : text_vector) {
-    auto new_text = old_text;
-    if (old_text.GetType() == TextType::kString) {
-      auto tags = old_text.GetTextTags();
-      tags.push_back(Tag(Tag::MATCH, 0, old_text.GetText().length()));
-      new_text.SetTextTags(tags);
-    }
-    bolded_vector.push_back(new_text);
-  }
-  return bolded_vector;
 }
 
 std::u16string ComputeAccessibleName(
@@ -217,17 +225,25 @@ void OmniboxAnswerResult::UpdateTitleAndDetails() {
     std::vector<TextItem> contents_vector =
         MatchFieldsToTextVector(match_.contents, match_.contents_class);
     if (match_.description.empty()) {
-      SetTitleTextVector(contents_vector);
-      SetDetailsTextVector({CreateStringTextItem(query_)});
-    } else {
-      SetTitleTextVector(MatchFieldsToTextVector(match_.description,
-                                                 match_.description_class));
+      SetTitleTextVector({CreateStringTextItem(query_)});
       SetDetailsTextVector(contents_vector);
+    } else {
+      SetTitleTextVector(contents_vector);
+      SetDetailsTextVector(MatchFieldsToTextVector(match_.description,
+                                                   match_.description_class));
     }
   } else if (IsWeatherResult()) {
     const auto& second_line = match_.answer->second_line();
+    auto temperature = GetTemperature(second_line.text_fields());
+    if (temperature) {
+      SetBigTitleTextVector({CreateStringTextItem(temperature->first)});
+      SetBigTitleSuperscriptTextVector(
+          {CreateStringTextItem(temperature->second)});
+    } else {
+      // If the temperature can't be parsed, don't display this result.
+      scoring().filter = true;
+    }
 
-    SetBigTitleTextVector(ImageLineToTextVector(second_line));
     // TODO(crbug.com/1250154): Put additional weather text into the title
     // field instead of match contents, once the information becomes available
     // from the Suggest server.
@@ -246,17 +262,13 @@ void OmniboxAnswerResult::UpdateTitleAndDetails() {
     auto second_vector = ImageLineToTextVector(second_line);
     AppendAdditionalText(second_line, second_vector);
 
-    if (IsDictionaryResult()) {
-      SetTitleTextVector(first_vector);
-      SetDetailsTextVector(second_vector);
-    } else {
-      SetTitleTextVector(second_vector);
-      SetDetailsTextVector(first_vector);
-    }
-  }
+    SetTitleTextVector(first_vector);
+    SetDetailsTextVector(second_vector);
 
-  // Bold the title field.
-  SetTitleTextVector(AddBoldTags(title_text_vector()));
+    // Dictionary answer details can be split over multiple lines.
+    if (IsDictionaryResult())
+      SetMultilineDetails(true);
+  }
 
   std::u16string accessible_name = ComputeAccessibleName(
       {big_title_text_vector(), title_text_vector(), details_text_vector()});

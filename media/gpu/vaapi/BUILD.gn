@@ -26,7 +26,10 @@ generate_stubs("libva_stubs") {
   sigs += [ "va_drm.sigs" ]
 
   output_name = "va_stubs"
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//media/gpu:buildflags",
+  ]
 }
 
 source_set("vaapi") {
@@ -55,7 +58,6 @@ source_set("vaapi") {
     "vaapi_picture.h",
     "vaapi_picture_factory.cc",
     "vaapi_picture_factory.h",
-    "vaapi_status.h",
     "vaapi_video_decode_accelerator.cc",
     "vaapi_video_decode_accelerator.h",
     "vaapi_video_decoder.cc",
@@ -91,6 +93,7 @@ source_set("vaapi") {
 
   deps = [
     ":common",
+    ":vaapi_status",
     "//base",
     "//build:chromeos_buildflags",
     "//gpu/config",
@@ -146,7 +149,10 @@ source_set("vaapi") {
   }
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//media/gpu:buffer_validation",
+      "//ui/ozone",
+    ]
     sources += [
       "vaapi_picture_native_pixmap_ozone.cc",
       "vaapi_picture_native_pixmap_ozone.h",
@@ -159,6 +165,19 @@ source_set("vaapi") {
       "vaapi_picture_native_pixmap_egl.h",
     ]
   }
+}
+
+# The vaapi status functionality is in its own source set so that it can be
+# depended on without pulling the //media/gpu/vaapi:vaapi target.
+source_set("vaapi_status") {
+  sources = [ "vaapi_status.h" ]
+
+  visibility = [
+    ":vaapi",
+    "//media/mojo/mojom/stable:*",
+  ]
+
+  deps = [ "//media" ]
 }
 
 source_set("common") {

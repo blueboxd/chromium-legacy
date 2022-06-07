@@ -32,6 +32,7 @@
 #include "base/auto_reset.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
@@ -2371,6 +2372,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // See LayoutBlock.h for some extra explanations on containing blocks.
   LayoutBlock* ContainingBlock(AncestorSkipInfo* = nullptr) const;
 
+  bool IsAnonymousNGMulticolInlineWrapper() const;
+
   // Returns |container|'s containing block.
   static LayoutBlock* FindNonAnonymousContainingBlock(
       LayoutObject* container,
@@ -3738,15 +3741,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     bitfields_.SetBackgroundIsKnownToBeObscured(b);
   }
 
-  bool IsAnonymousNGMulticolInlineWrapper() const {
-    NOT_DESTROYED();
-    return bitfields_.IsAnonymousNGMulticolInlineWrapper();
-  }
-  void SetIsAnonymousNGMulticolInlineWrapper() {
-    NOT_DESTROYED();
-    bitfields_.SetIsAnonymousNGMulticolInlineWrapper(true);
-  }
-
   // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
   // containing LayoutBlock of it.
   LayoutBlock* ContainingBlockForAbsolutePosition(
@@ -3969,14 +3963,13 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           being_destroyed_(false),
           is_layout_ng_object_for_list_marker_image_(false),
           is_table_column_constraints_dirty_(false),
-          is_grid_placement_dirty_(false),
+          is_grid_placement_dirty_(true),
           transform_affects_vector_effect_(false),
           is_layout_ng_object_for_canvas_formatted_text(false),
           should_skip_next_layout_shift_tracking_(true),
           should_assume_paint_offset_translation_for_layout_shift_tracking_(
               false),
           might_traverse_physical_fragments_(false),
-          is_anonymous_ng_multicol_inline_wrapper_(false),
           whitespace_children_may_change_(false),
           needs_devtools_info_(false),
           positioned_state_(kIsStaticallyPositioned),
@@ -4316,11 +4309,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // this object. False if we definitely need to walk the LayoutObject tree.
     ADD_BOOLEAN_BITFIELD(might_traverse_physical_fragments_,
                          MightTraversePhysicalFragments);
-
-    // True if this is an anonymous inline wrapper created for NG, and the
-    // wrapper is a direct child of a multicol.
-    ADD_BOOLEAN_BITFIELD(is_anonymous_ng_multicol_inline_wrapper_,
-                         IsAnonymousNGMulticolInlineWrapper);
 
     // True if children that may affect whitespace have been removed. If true
     // during style recalc, mark ancestors for layout tree rebuild to cause a

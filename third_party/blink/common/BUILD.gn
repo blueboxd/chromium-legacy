@@ -182,6 +182,7 @@ source_set("common") {
     "notifications/notification_mojom_traits.cc",
     "notifications/notification_resources.cc",
     "notifications/platform_notification_data.cc",
+    "origin_trials/manual_completion_origin_trial_features.cc",
     "origin_trials/navigation_origin_trial_features.cc",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token_result.cc",
@@ -221,6 +222,7 @@ source_set("common") {
     "web_package/web_package_request_matcher.cc",
     "web_preferences/web_preferences.cc",
     "web_preferences/web_preferences_mojom_traits.cc",
+    "widget/constants.cc",
     "widget/device_emulation_params_mojom_traits.cc",
     "widget/visual_properties.cc",
     "widget/visual_properties_mojom_traits.cc",
@@ -300,11 +302,14 @@ test("blink_common_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv2 = false
-    additional_manifest_fragments = [
-      # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
-      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-    ]
+    # TODO(https://crbug.com/1185811): Investigate removing the requirement for
+    # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+
+    # TODO(crbug.com/1313103): Remove and apply use_cfv1=false once the roller
+    # is updated to launch the test via the .cm manifest.
+    additional_manifest_fragments =
+        [ "//build/config/fuchsia/test/jit_capabilities.test-cmx" ]
   }
 
   data_deps = [ ":common_unittests_data" ]

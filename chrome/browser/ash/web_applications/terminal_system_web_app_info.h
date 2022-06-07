@@ -24,13 +24,14 @@ class TerminalSystemAppDelegate : public web_app::SystemWebAppDelegate {
   bool ShouldReuseExistingWindow() const override;
   bool ShouldShowNewWindowMenuOption() const override;
   bool ShouldHaveTabStrip() const override;
-  bool HasTitlebarTerminalSelectNewTabButton() const override;
   gfx::Rect GetDefaultBounds(Browser* browser) const override;
   bool HasCustomTabMenuModel() const override;
   std::unique_ptr<ui::SimpleMenuModel> GetTabMenuModel(
       ui::SimpleMenuModel::Delegate* delegate) const override;
   bool ShouldShowTabContextMenuShortcut(Profile* profile,
                                         int command_id) const override;
+  // TODO(crbug.com/1308961): Migrate to use PWA pinned home tab when ready.
+  bool ShouldPinTab(GURL url) const override;
 };
 
 // Returns a WebAppInstallInfo used to install the app.

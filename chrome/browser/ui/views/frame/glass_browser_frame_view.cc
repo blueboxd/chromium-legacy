@@ -45,7 +45,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/views/window/client_view.h"
 
@@ -335,7 +334,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       // show the resize cursor when resizing is possible. The cost of which
       // is also maybe showing it over the portion of the DIP that isn't the
       // outermost pixel.
-      buttons.Inset(0, kCaptionButtonTopInset, 0, 0);
+      buttons.Inset(gfx::Insets::TLBR(kCaptionButtonTopInset, 0, 0, 0));
       if (buttons.Contains(point))
         return HTNOWHERE;
     }
@@ -346,8 +345,8 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // pixels at the end of the top and bottom edges trigger diagonal resizing.
   constexpr int kResizeCornerWidth = 16;
   int window_component = GetHTComponentForFrame(
-      point, gfx::Insets(top_border_thickness, 0, 0, 0), top_border_thickness,
-      kResizeCornerWidth - FrameBorderThickness(),
+      point, gfx::Insets::TLBR(top_border_thickness, 0, 0, 0),
+      top_border_thickness, kResizeCornerWidth - FrameBorderThickness(),
       frame()->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
@@ -770,7 +769,7 @@ void GlassBrowserFrameView::LayoutClientView() {
   if (browser_view()->IsWindowControlsOverlayEnabled()) {
     top_inset = frame()->IsFullscreen() ? 0 : WindowTopY();
   }
-  client_view_bounds_.Inset(0, top_inset, 0, 0);
+  client_view_bounds_.Inset(gfx::Insets::TLBR(top_inset, 0, 0, 0));
 }
 
 void GlassBrowserFrameView::StartThrobber() {
@@ -795,8 +794,8 @@ void GlassBrowserFrameView::StopThrobber() {
     HICON small_icon = nullptr;
     HICON big_icon = nullptr;
 
-    gfx::ImageSkia icon = views::GetImageSkiaFromImageModel(
-        browser_view()->GetWindowIcon(), GetColorProvider());
+    gfx::ImageSkia icon =
+        browser_view()->GetWindowIcon().Rasterize(GetColorProvider());
 
     if (!icon.isNull()) {
       // Keep previous icons alive as long as they are referenced by the HWND.

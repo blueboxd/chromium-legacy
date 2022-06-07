@@ -36,10 +36,7 @@
 #include "third_party/blink/renderer/platform/text/tab_size.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 
 // To avoid conflicts with the DrawText macro from the Windows SDK...
 #undef DrawText
@@ -89,9 +86,6 @@ class PLATFORM_EXPORT Font {
     kUseFallbackIfFontNotReady
   };
 
-  // TODO(layout-dev): Once zoom-for-dsf launches on Mac the device_scale_factor
-  // parameter can be removed from all of these methods.
-  // https://crbug.com/716231
   void DrawText(cc::PaintCanvas*,
                 const TextRunPaintInfo&,
                 const gfx::PointF&,
@@ -280,5 +274,15 @@ inline float Font::TabWidth(const SimpleFontData* font_data,
 }
 
 }  // namespace blink
+
+namespace WTF {
+
+template <>
+struct CrossThreadCopier<blink::Font>
+    : public CrossThreadCopierPassThrough<blink::Font> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_H_

@@ -10,6 +10,8 @@
 #include "components/segmentation_platform/internal/database/mock_ukm_database.h"
 #include "components/segmentation_platform/internal/signals/ukm_config.h"
 #include "components/segmentation_platform/internal/signals/url_signal_handler.h"
+#include "components/segmentation_platform/internal/ukm_data_manager_impl.h"
+#include "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +71,8 @@ class UkmObserverTest : public testing::Test {
         std::make_unique<UrlSignalHandler>(ukm_database_.get());
     ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
     ukm_observer_ = std::make_unique<UkmObserver>(
-        ukm_recorder_.get(), ukm_database_.get(), url_signal_handler_.get());
+        ukm_recorder_.get(), ukm_database_.get(), url_signal_handler_.get(),
+        &ukm_data_manager_);
   }
 
   void TearDown() override {
@@ -82,7 +85,7 @@ class UkmObserverTest : public testing::Test {
   void ExpectUkmEventFromRecorder(ukm::mojom::UkmEntryPtr entry) {
     uint64_t event_hash = entry->event_hash;
     base::RunLoop wait_for_record;
-    EXPECT_CALL(ukm_database(), UkmEntryAdded(_))
+    EXPECT_CALL(ukm_database(), StoreUkmEntry(_))
         .WillOnce(
             [&wait_for_record, &event_hash](ukm::mojom::UkmEntryPtr ukm_entry) {
               EXPECT_EQ(ukm_entry->event_hash, event_hash);
@@ -103,6 +106,7 @@ class UkmObserverTest : public testing::Test {
   std::unique_ptr<UrlSignalHandler> url_signal_handler_;
   std::unique_ptr<ukm::TestUkmRecorder> ukm_recorder_;
   std::unique_ptr<UkmObserver> ukm_observer_;
+  UkmDataManagerImpl ukm_data_manager_;
 };
 
 TEST_F(UkmObserverTest, EmptyConfig) {
@@ -110,7 +114,7 @@ TEST_F(UkmObserverTest, EmptyConfig) {
 
   // Empty config should not add anything to database.
   observer.StartObserving(UkmConfig());
-  EXPECT_CALL(ukm_database(), UkmEntryAdded(_)).Times(0);
+  EXPECT_CALL(ukm_database(), StoreUkmEntry(_)).Times(0);
 
   observer.OnEntryAdded(GetSamplePageLoadEntry());
   observer.OnEntryAdded(GetSamplePaintPreviewEntry());
@@ -133,7 +137,7 @@ TEST_F(UkmObserverTest, FilterEventsAndMetrics) {
                     TestMetric(PageLoad::kIsNewBookmarkNameHash)});
   observer.StartObserving(config1);
 
-  EXPECT_CALL(ukm_database(), UkmEntryAdded(_))
+  EXPECT_CALL(ukm_database(), StoreUkmEntry(_))
       .WillOnce(Invoke([](ukm::mojom::UkmEntryPtr entry) {
         EXPECT_EQ(entry->event_hash, PageLoad::kEntryNameHash);
         EXPECT_THAT(entry->metrics,
@@ -160,7 +164,7 @@ TEST_F(UkmObserverTest, FilterEventsAndMetrics) {
   // In addition to already added metrics.
   observer.StartObserving(config2);
 
-  EXPECT_CALL(ukm_database(), UkmEntryAdded(_))
+  EXPECT_CALL(ukm_database(), StoreUkmEntry(_))
       .WillOnce(Invoke([](ukm::mojom::UkmEntryPtr entry) {
         EXPECT_EQ(entry->event_hash, PaintPreviewCapture::kEntryNameHash);
         EXPECT_THAT(entry->metrics,
@@ -169,7 +173,7 @@ TEST_F(UkmObserverTest, FilterEventsAndMetrics) {
       }));
   observer.OnEntryAdded(GetSamplePaintPreviewEntry());
 
-  EXPECT_CALL(ukm_database(), UkmEntryAdded(_))
+  EXPECT_CALL(ukm_database(), StoreUkmEntry(_))
       .WillOnce(Invoke([](ukm::mojom::UkmEntryPtr entry) {
         EXPECT_EQ(entry->event_hash, PageLoad::kEntryNameHash);
         EXPECT_THAT(entry->metrics,
@@ -191,8 +195,8 @@ TEST_F(UkmObserverTest, PauseObservation) {
                    TestMetric(PageLoad::kIsNewBookmarkNameHash)});
   observer.StartObserving(config);
 
-  EXPECT_CALL(ukm_database(), UkmEntryAdded(_)).Times(0);
-  EXPECT_CALL(ukm_database(), UkmSourceUrlUpdated(_, _, _)).Times(0);
+  EXPECT_CALL(ukm_database(), StoreUkmEntry(_)).Times(0);
+  EXPECT_CALL(ukm_database(), UpdateUrlForUkmSource(_, _, _)).Times(0);
 
   observer.PauseOrResumeObservation(true);
 
@@ -217,7 +221,7 @@ TEST_F(UkmObserverTest, ObservationFromRecorder) {
   const GURL kUrl1("https://www.url1.com");
   base::RunLoop wait_for_source;
   EXPECT_CALL(ukm_database(),
-              UkmSourceUrlUpdated(kSourceId, kUrl1, /*is_validated=*/false))
+              UpdateUrlForUkmSource(kSourceId, kUrl1, /*is_validated=*/false))
       .WillOnce([&wait_for_source](ukm::SourceId, const GURL&, bool) {
         wait_for_source.QuitClosure().Run();
       });

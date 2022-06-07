@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_GAIA_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_GAIA_SCREEN_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/components/security_token_pin/constants.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "chrome/browser/ash/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/browser/ash/login/gaia_reauth_token_fetcher.h"
 #include "chrome/browser/ash/login/login_client_cert_usage_observer.h"
@@ -33,7 +35,6 @@ class GaiaScreen;
 }
 
 namespace base {
-class DictionaryValue;
 class ElapsedTimer;
 }  // namespace base
 
@@ -125,7 +126,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   };
 
   GaiaScreenHandler(
-      JSCallsContainer* js_calls_container,
       CoreOobeView* core_oobe_view,
       const scoped_refptr<NetworkStateInformer>& network_state_informer);
 
@@ -164,7 +164,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
       std::unique_ptr<SamlChallengeKeyHandler> handler_for_test);
 
  private:
-  // TODO (xiaoyinh): remove this dependency.
+  // TODO(xiaoyinh): remove this dependency.
   friend class SigninScreenHandler;
 
   void LoadGaia(const login::GaiaContext& context);
@@ -195,8 +195,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
-  void Initialize() override;
+  void GetAdditionalParameters(base::Value::Dict* dict) override;
+  void InitializeDeprecated() override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
@@ -213,9 +213,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const std::string& email,
       const std::string& password,
       bool using_saml,
-      const ::login::StringList& services,
-      const base::DictionaryValue* password_attributes,
-      const base::DictionaryValue* sync_trusted_vault_keys);
+      const base::Value::List& services_list,
+      const base::Value::Dict& password_attributes,
+      const base::Value::Dict& sync_trusted_vault_keys);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,
                            const std::string& password,
@@ -237,7 +237,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleIdentifierEntered(const std::string& account_identifier);
 
   void HandleAuthExtensionLoaded();
-  void HandleShowAddUser(const base::ListValue* args);
   void HandleGetIsSamlUserPasswordless(const std::string& callback_id,
                                        const std::string& typed_email,
                                        const std::string& gaia_id);
@@ -251,15 +250,13 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Called to deliver the result of the security token PIN request. Called with
   // an empty string when the request is canceled.
   void HandleSecurityTokenPinEntered(const std::string& user_input);
-  void HandleOnFatalError(int error_code, const base::DictionaryValue* params);
+  void HandleOnFatalError(int error_code, const base::Value::Dict& params);
 
   // Called when the user is removed.
   void HandleUserRemoved(const std::string& email);
 
   // Called when password is entered for authentication during login.
   void HandlePasswordEntered();
-
-  void OnShowAddUser();
 
   // Really handles the complete login message.
   void DoCompleteLogin(const std::string& gaia_id,
@@ -289,11 +286,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // extension reloading, if it has already been loaded.
   void LoadAuthExtension(bool force);
 
-  // TODO (antrim@): GaiaScreenHandler should implement
+  // TODO(antrim): GaiaScreenHandler should implement
   // NetworkStateInformer::Observer.
   void UpdateState(NetworkError::ErrorReason reason);
 
-  // TODO (antrim@): remove this dependency.
+  // TODO(antrim): remove this dependency.
   void set_signin_screen_handler(SigninScreenHandler* handler) {
     signin_screen_handler_ = handler;
   }
@@ -385,7 +382,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // Non-owning ptr to SigninScreenHandler instance. Should not be used
   // in dtor.
-  // TODO (antrim@): GaiaScreenHandler shouldn't communicate with
+  // TODO(antrim): GaiaScreenHandler shouldn't communicate with
   // signin_screen_handler directly.
   SigninScreenHandler* signin_screen_handler_ = nullptr;
 

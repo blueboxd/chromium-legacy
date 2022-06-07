@@ -32,6 +32,7 @@
 #include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/feed/web_feed_tab_helper.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "chrome/browser/file_system_access/file_system_access_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -49,6 +50,8 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/page_content_annotations_service_factory.h"
+#include "chrome/browser/page_info/about_this_site_service_factory.h"
+#include "chrome/browser/page_info/about_this_site_tab_helper.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
@@ -94,6 +97,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
+#include "chrome/browser/user_notes/user_notes_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
@@ -110,6 +114,8 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/public/download_navigation_observer.h"
+#include "components/feed/buildflags.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/history/content/browser/web_contents_top_sites_observer.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/infobars/content/content_infobar_manager.h"
@@ -119,6 +125,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_web_contents_observer.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/page_info/core/features.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -131,6 +138,7 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/ukm/content/source_url_recorder.h"
+#include "components/user_notes/user_notes_features.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
@@ -162,6 +170,8 @@
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "components/accuracy_tips/accuracy_web_contents_observer.h"
+#include "components/commerce/content/hint/commerce_hint_tab_helper.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
@@ -186,6 +196,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/hats/hats_helper.h"
 #include "chrome/browser/ui/shared_highlighting/shared_highlighting_promo.h"
+#include "components/autofill_assistant/browser/features.h"
+#include "components/autofill_assistant/browser/tab_helper.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -281,7 +293,15 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   // --- Section 1: Common tab helpers ---
-
+  if (base::FeatureList::IsEnabled(page_info::kAboutThisSiteBanner)) {
+    auto* optimization_guide_decider =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+    auto* about_this_site_service =
+        AboutThisSiteServiceFactory::GetForProfile(profile);
+    if (optimization_guide_decider && about_this_site_service)
+      AboutThisSiteTabHelper::CreateForWebContents(
+          web_contents, optimization_guide_decider, about_this_site_service);
+  }
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
   autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents,
@@ -481,6 +501,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching)) {
     ZeroSuggestPrefetchTabHelper::CreateForWebContents(web_contents);
   }
+  if (commerce::isContextualConsentEnabled()) {
+    commerce_hint::CommerceHintTabHelper::CreateForWebContents(web_contents);
+  }
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -519,11 +542,18 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
           accuracy_tips::features::kAccuracyTipsSurveyFeature)) {
     HatsHelper::CreateForWebContents(web_contents);
   }
+  SharedHighlightingPromo::CreateForWebContents(web_contents);
+  if (user_notes::IsUserNotesEnabled() && !profile->IsOffTheRecord()) {
+    user_notes::UserNotesTabHelper::CreateForWebContents(web_contents);
+  }
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS)
-  SharedHighlightingPromo::CreateForWebContents(web_contents);
+  if (base::FeatureList::IsEnabled(
+          autofill_assistant::features::kAutofillAssistantDesktop)) {
+    autofill_assistant::CreateForWebContents(web_contents);
+  }
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -583,6 +613,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (IsSideSearchEnabled(profile))
     SideSearchTabContentsHelper::CreateForWebContents(web_contents);
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+
+#if BUILDFLAG(ENABLE_FEED_V2)
+  if (base::FeatureList::IsEnabled(feed::kWebUiFeed))
+    feed::WebFeedTabHelper::CreateForWebContents(web_contents);
+#endif  // BUILDFLAG(ENABLE_FEED_V2)
 
   // --- Section 4: The warning ---
 

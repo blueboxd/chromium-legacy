@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/ash/shelf/standalone_browser_extension_app_shelf_item_controller.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 
 ChromeShelfItemFactory::ChromeShelfItemFactory() = default;
@@ -40,15 +41,19 @@ bool ChromeShelfItemFactory::CreateShelfItemForAppId(
   Profile* profile = GetPrimaryProfile();
   auto* proxy =
       apps::AppServiceProxyFactory::GetInstance()->GetForProfile(profile);
-  apps::mojom::AppType app_type = proxy->AppRegistryCache().GetAppType(app_id);
+  auto app_type = proxy->AppRegistryCache().GetAppType(app_id);
 
+  // Note: In addition to other kinds of web apps, standalone browser hosted
+  // apps are also handled by browser app shelf item controller.
   if (BrowserAppShelfControllerShouldHandleApp(app_id, profile)) {
     *delegate =
         std::make_unique<BrowserAppShelfItemController>(shelf_id, profile);
     return true;
   }
 
-  if (app_type == apps::mojom::AppType::kStandaloneBrowserChromeApp) {
+  // Standalone browser platform apps are handled by standalone browser
+  // extension app shelf item controller.
+  if (app_type == apps::AppType::kStandaloneBrowserChromeApp) {
     *delegate =
         std::make_unique<StandaloneBrowserExtensionAppShelfItemController>(
             shelf_id);

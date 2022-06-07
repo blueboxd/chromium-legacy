@@ -743,8 +743,6 @@ HRESULT CGaiaCredentialProvider::Advise(ICredentialProviderEvents* pcpe,
 }
 
 HRESULT CGaiaCredentialProvider::UnAdvise() {
-  LOGFN(VERBOSE);
-
   // Kill the updater thread (if any).
   token_handle_updater_.reset();
 

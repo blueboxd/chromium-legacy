@@ -42,7 +42,7 @@ class HWDataCollectionScreenHandler : public HWDataCollectionView,
  public:
   using TView = HWDataCollectionView;
 
-  explicit HWDataCollectionScreenHandler(JSCallsContainer* js_calls_container);
+  HWDataCollectionScreenHandler();
 
   HWDataCollectionScreenHandler(const HWDataCollectionScreenHandler&) = delete;
   HWDataCollectionScreenHandler& operator=(
@@ -60,7 +60,7 @@ class HWDataCollectionScreenHandler : public HWDataCollectionView,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
  private:
   ash::HWDataCollectionScreen* screen_ = nullptr;

@@ -36,6 +36,11 @@ class InspectorIssue;
 }
 }  // namespace protocol
 
+enum class DeprecationIssueType {
+  kDeprecationExample,
+  kUntranslated,
+};
+
 enum class RendererCorsIssueCode {
   kDisallowedByMode,
   kCorsDisabledScheme,
@@ -45,14 +50,10 @@ enum class RendererCorsIssueCode {
 enum class AttributionReportingIssueType {
   kPermissionPolicyDisabled,
   kInvalidAttributionSourceEventId,
-  kInvalidAttributionData,
   kAttributionSourceUntrustworthyOrigin,
   kAttributionUntrustworthyOrigin,
   kInvalidAttributionSourceExpiry,
   kInvalidAttributionSourcePriority,
-  kInvalidEventSourceTriggerData,
-  kInvalidTriggerPriority,
-  kInvalidTriggerDedupKey,
 };
 
 enum class SharedArrayBufferIssueType {
@@ -137,11 +138,13 @@ class CORE_EXPORT AuditsIssue {
       SharedArrayBufferIssueType issue_type);
 
   // Reports a Deprecation issue to DevTools.
-  // `type` is a string instead of an enum, so that adding a new deprecation
-  // issue requires changing only a single file (deprecation.cc).
+  // `execution_context` is used to extract the affected frame and source.
+  // `type` is the enum used to differentiate messages.
+  // `legacy_message` and `legacy_type` are for untranslated deprecations.
   static void ReportDeprecationIssue(ExecutionContext* execution_context,
-                                     const String& message,
-                                     const String& type);
+                                     const DeprecationIssueType& type,
+                                     const String& legacy_message,
+                                     const String& legacy_type);
 
   static void ReportClientHintIssue(LocalDOMWindow* local_dom_window,
                                     ClientHintIssueReason reason);

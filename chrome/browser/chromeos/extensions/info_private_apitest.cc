@@ -4,6 +4,7 @@
 
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
@@ -14,7 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/tpm/stub_install_attributes.h"
+#include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
@@ -217,6 +218,20 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSeen) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, TestGetIsMeetDevice) {
+  const char* custom_arg =
+#if BUILDFLAG(PLATFORM_CFM)
+      "Is Meet Device - True";
+#else
+      "Is Meet Device - False";
+#endif
+
+  ASSERT_TRUE(RunExtensionTest(
+      "chromeos_info_private/extended",
+      {.custom_arg = custom_arg, .launch_as_platform_app = true}))
+      << message_;
+}
+
 class ChromeOSInfoPrivateInternalStylusTest : public ChromeOSInfoPrivateTest {
  public:
   ChromeOSInfoPrivateInternalStylusTest() = default;
@@ -292,9 +307,8 @@ class ChromeOSManagedDeviceInfoPrivateTest : public ChromeOSInfoPrivateTest {
   ~ChromeOSManagedDeviceInfoPrivateTest() override = default;
 
  private:
-  chromeos::ScopedStubInstallAttributes test_install_attributes_{
-      chromeos::StubInstallAttributes::CreateCloudManaged("fake-domain",
-                                                          "fake-id")};
+  ash::ScopedStubInstallAttributes test_install_attributes_{
+      ash::StubInstallAttributes::CreateCloudManaged("fake-domain", "fake-id")};
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeOSManagedDeviceInfoPrivateTest, Managed) {

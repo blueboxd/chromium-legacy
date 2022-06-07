@@ -373,9 +373,7 @@ TEST_F(ShellSurfaceTest, RestoreFromFullscreen) {
 
 TEST_F(ShellSurfaceTest, RestoreExitsFullscreen) {
   std::unique_ptr<ShellSurface> shell_surface =
-      test::ShellSurfaceBuilder({256, 256})
-          .SetMaximumSize(gfx::Size(10, 10))
-          .BuildShellSurface();
+      test::ShellSurfaceBuilder({256, 256}).BuildShellSurface();
 
   // Act: Set window property kRestoreOrMaximizeExitsFullscreen
   // then restore after fullscreen
@@ -435,10 +433,7 @@ TEST_F(ShellSurfaceTest, SetFullscreen) {
 
 TEST_F(ShellSurfaceTest, PreWidgetUnfullscreen) {
   std::unique_ptr<ShellSurface> shell_surface =
-      test::ShellSurfaceBuilder({256, 256})
-          .SetNoCommit()
-          .SetMaximumSize(gfx::Size(10, 10))
-          .BuildShellSurface();
+      test::ShellSurfaceBuilder({256, 256}).SetNoCommit().BuildShellSurface();
   shell_surface->Maximize();
   shell_surface->SetFullscreen(false);
   EXPECT_EQ(shell_surface->GetWidget(), nullptr);
@@ -2266,6 +2261,30 @@ TEST_F(ShellSurfaceTest, InitialCenteredBoundsWithConfigure) {
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   expected.ClampToCenteredSize(size);
   EXPECT_EQ(expected, shell_surface->GetWidget()->GetWindowBoundsInScreen());
+}
+
+// Surfaces without non-client view should not crash.
+TEST_F(ShellSurfaceTest, NoNonClientViewWithConfigure) {
+  // Popup windows don't have a non-client view.
+  auto shell_surface =
+      test::ShellSurfaceBuilder({20, 20}).SetAsPopup().BuildShellSurface();
+  ShellSurfaceCallbacks callbacks;
+
+  // Having a configure callback leads to a call to GetClientBoundsInScreen().
+  shell_surface->set_configure_callback(base::BindRepeating(
+      &ShellSurfaceCallbacks::OnConfigure, base::Unretained(&callbacks)));
+
+  shell_surface->SetWindowBounds(gfx::Rect(10, 10, 300, 300));
+  EXPECT_TRUE(callbacks.configure_state);
+  EXPECT_EQ(callbacks.configure_state->bounds, gfx::Rect(10, 10, 300, 300));
+}
+
+TEST_F(ShellSurfaceTest, WindowIsResizableWithEmptySizeConstraints) {
+  auto shell_surface = test::ShellSurfaceBuilder({20, 20})
+                           .SetMinimumSize(gfx::Size(0, 0))
+                           .SetMaximumSize(gfx::Size(0, 0))
+                           .BuildShellSurface();
+  EXPECT_TRUE(shell_surface->GetWidget()->widget_delegate()->CanResize());
 }
 
 }  // namespace exo

@@ -8,6 +8,7 @@
 #include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "ash/components/timezone/timezone_request.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -98,7 +99,6 @@
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/test/chromeos_test_utils.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -608,7 +608,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectBindUnbind(mock_enable_adb_sideloading_screen_view_.get());
     mock_enable_adb_sideloading_screen_ = MockScreenExpectLifecycle(
         std::make_unique<MockEnableAdbSideloadingScreen>(
-            mock_enable_adb_sideloading_screen_view_.get(),
+            mock_enable_adb_sideloading_screen_view_->AsWeakPtr(),
             base::BindRepeating(
                 &WizardController::OnEnableAdbSideloadingScreenExit,
                 base::Unretained(wizard_controller))));
@@ -2260,14 +2260,8 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
 };
 
 // TODO(crbug.com/1286218): Flakes on CrOS.
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_ProxyAuthDialogOnSigninScreen \
-  DISABLED_ProxyAuthDialogOnSigninScreen
-#else
-#define MAYBE_ProxyAuthDialogOnSigninScreen ProxyAuthDialogOnSigninScreen
-#endif
 IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
-                       MAYBE_ProxyAuthDialogOnSigninScreen) {
+                       DISABLED_ProxyAuthDialogOnSigninScreen) {
   content::WindowedNotificationObserver auth_needed_waiter(
       chrome::NOTIFICATION_AUTH_NEEDED,
       content::NotificationService::AllSources());
@@ -2458,13 +2452,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableAdbSideloadingTest,
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
   SkipToScreen(EnableAdbSideloadingScreenView::kScreenId,
                mock_enable_adb_sideloading_screen_);
-  CheckCurrentScreen(EnableAdbSideloadingScreenView::kScreenId);
-
-  test::OobeJS().ClickOnPath(
-      {"adb-sideloading", "enable-adb-sideloading-cancel-button"});
-
-  base::RunLoop().RunUntilIdle();
-
   CheckCurrentScreen(EnableAdbSideloadingScreenView::kScreenId);
   EXPECT_CALL(*mock_enable_adb_sideloading_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, ShowImpl()).Times(1);
@@ -3125,6 +3112,7 @@ class WizardControllerOnboardingResumeTest : public WizardControllerTest {
 
 IN_PROC_BROWSER_TEST_F(WizardControllerOnboardingResumeTest,
                        PRE_ControlFlowResumeInterruptedOnboarding) {
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
   OobeScreenWaiter(UserCreationView::kScreenId).Wait();
   LoginManagerMixin::TestUserInfo test_user(user_);
   login_mixin_.LoginWithDefaultContext(test_user);
@@ -3136,6 +3124,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOnboardingResumeTest,
 
 IN_PROC_BROWSER_TEST_F(WizardControllerOnboardingResumeTest,
                        ControlFlowResumeInterruptedOnboarding) {
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
   login_mixin_.LoginAsNewRegularUser();
   OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
 }
@@ -3296,6 +3285,58 @@ IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
   const std::string* guid = network.FindStringKey("GUID");
   ASSERT_TRUE(guid);
   EXPECT_EQ(*guid, "wpa-psk-network-guid");
+}
+
+class WizardControllerThemeSelectionDefaultSettingsTest
+    : public WizardControllerTest {
+ public:
+ protected:
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
+  FakeGaiaMixin gaia_mixin_{&mixin_host_};
+  LoginManagerMixin login_mixin_{&mixin_host_, LoginManagerMixin::UserList(),
+                                 &gaia_mixin_};
+  AccountId user_{
+      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId)};
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerThemeSelectionDefaultSettingsTest,
+                       SkipThemeSelection) {
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
+  login_mixin_.LoginAsNewRegularUser();
+  WizardController::default_controller()->AdvanceToScreen(
+      GestureNavigationScreenView::kScreenId);
+  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
+}
+
+class WizardControllerThemeSelectionEnabledTest
+    : public WizardControllerThemeSelectionDefaultSettingsTest {
+ public:
+  WizardControllerThemeSelectionEnabledTest() {
+    feature_list_.InitAndEnableFeature(features::kEnableOobeThemeSelection);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerThemeSelectionEnabledTest,
+                       TransitionToMarketingOptIn) {
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
+  login_mixin_.LoginAsNewRegularUser();
+  WizardController::default_controller()->AdvanceToScreen(
+      ThemeSelectionScreenView::kScreenId);
+  test::OobeJS().ClickOnPath({"theme-selection", "nextButton"});
+  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerThemeSelectionEnabledTest,
+                       TransitionToThemeSelection) {
+  login_mixin_.LoginAsNewRegularUser();
+  WizardController::default_controller()->AdvanceToScreen(
+      GestureNavigationScreenView::kScreenId);
+  OobeScreenWaiter(ThemeSelectionScreenView::kScreenId).Wait();
 }
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571

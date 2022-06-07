@@ -97,7 +97,6 @@ class AppLaunchSplashScreenHandler
   using TView = AppLaunchSplashScreenView;
 
   AppLaunchSplashScreenHandler(
-      JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen);
 
@@ -110,7 +109,7 @@ class AppLaunchSplashScreenHandler
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;

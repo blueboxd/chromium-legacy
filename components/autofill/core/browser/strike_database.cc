@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
@@ -96,9 +95,9 @@ void StrikeDatabase::SetStrikeData(const std::string& key, int num_strikes) {
 std::vector<std::string> StrikeDatabase::GetAllStrikeKeysForProject(
     const std::string& project_prefix) {
   std::vector<std::string> project_keys;
-  for (std::pair<std::string, StrikeData> entry : strike_map_cache_) {
-    if (entry.first.find(project_prefix) == 0) {
-      project_keys.push_back(entry.first);
+  for (const auto& [key, data] : strike_map_cache_) {
+    if (key.find(project_prefix) == 0) {
+      project_keys.push_back(key);
     }
   }
   return project_keys;

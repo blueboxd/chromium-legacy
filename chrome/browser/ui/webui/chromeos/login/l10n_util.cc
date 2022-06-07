@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -22,7 +23,6 @@
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
@@ -51,18 +51,16 @@ namespace {
 constexpr char16_t kMostRelevantLanguagesDivider16[] =
     u"MOST_RELEVANT_LANGUAGES_DIVIDER";
 
-std::unique_ptr<base::DictionaryValue> CreateInputMethodsEntry(
+base::Value CreateInputMethodsEntry(
     const input_method::InputMethodDescriptor& method,
     const std::string selected,
     input_method::InputMethodUtil* util) {
   const std::string& ime_id = method.id();
-  std::unique_ptr<base::DictionaryValue> input_method(
-      new base::DictionaryValue);
-  input_method->SetStringKey("value", ime_id);
-  input_method->SetStringKey("title",
-                             util->GetInputMethodLongNameStripped(method));
-  input_method->SetBoolKey("selected", ime_id == selected);
-  return input_method;
+  base::Value::Dict input_method;
+  input_method.Set("value", ime_id);
+  input_method.Set("title", util->GetInputMethodLongNameStripped(method));
+  input_method.Set("selected", ime_id == selected);
+  return base::Value(std::move(input_method));
 }
 
 // Returns true if element was inserted.
@@ -73,14 +71,13 @@ bool InsertString(const std::string& str, std::set<std::string>* to) {
 }
 
 void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
-  std::unique_ptr<base::DictionaryValue> optgroup(new base::DictionaryValue);
-  optgroup->SetStringKey(
-      "optionGroupName",
-      l10n_util::GetStringUTF16(IDS_OOBE_OTHER_KEYBOARD_LAYOUTS));
-  input_methods_list->Append(std::move(optgroup));
+  base::Value::Dict optgroup;
+  optgroup.Set("optionGroupName",
+               l10n_util::GetStringUTF16(IDS_OOBE_OTHER_KEYBOARD_LAYOUTS));
+  input_methods_list->Append(base::Value(std::move(optgroup)));
 }
 
-std::unique_ptr<base::DictionaryValue> CreateLanguageEntry(
+base::Value CreateLanguageEntry(
     const std::string& language_code,
     const std::u16string& language_display_name,
     const std::u16string& language_native_display_name) {
@@ -91,14 +88,14 @@ std::unique_ptr<base::DictionaryValue> CreateLanguageEntry(
 
   const bool has_rtl_chars =
       base::i18n::StringContainsStrongRTLChars(display_name);
-  const std::string directionality = has_rtl_chars ? "rtl" : "ltr";
+  const char* directionality = has_rtl_chars ? "rtl" : "ltr";
 
-  auto dictionary = std::make_unique<base::DictionaryValue>();
-  dictionary->SetStringKey("code", language_code);
-  dictionary->SetStringKey("displayName", language_display_name);
-  dictionary->SetStringKey("textDirection", directionality);
-  dictionary->SetStringKey("nativeDisplayName", language_native_display_name);
-  return dictionary;
+  base::Value::Dict dictionary;
+  dictionary.Set("code", language_code);
+  dictionary.Set("displayName", language_display_name);
+  dictionary.Set("textDirection", directionality);
+  dictionary.Set("nativeDisplayName", language_native_display_name);
+  return base::Value(std::move(dictionary));
 }
 
 // Gets the list of languages with `descriptors` based on `base_language_codes`.
@@ -269,9 +266,9 @@ std::unique_ptr<base::ListValue> GetLanguageList(
     std::u16string display_name(out_display_names[i]);
     if (insert_divider && display_name == divider16) {
       // Insert divider.
-      auto dictionary = std::make_unique<base::DictionaryValue>();
-      dictionary->SetStringKey("code", kMostRelevantLanguagesDivider);
-      language_list->Append(std::move(dictionary));
+      base::Value::Dict dictionary;
+      dictionary.Set("code", kMostRelevantLanguagesDivider);
+      language_list->Append(base::Value(std::move(dictionary)));
       continue;
     }
 
@@ -398,20 +395,21 @@ void AdjustUILanguageList(const std::string& selected,
     if (!language_info.is_dict())
       NOTREACHED();
 
-    std::string value = language_info.FindStringKey("code")
-                            ? *language_info.FindStringKey("code")
+    std::string value = language_info.GetDict().FindString("code")
+                            ? *language_info.GetDict().FindString("code")
                             : "";
-    std::string display_name = language_info.FindStringKey("displayName")
-                                   ? *language_info.FindStringKey("displayName")
-                                   : "";
+    std::string display_name =
+        language_info.GetDict().FindString("displayName")
+            ? *language_info.GetDict().FindString("displayName")
+            : "";
     std::string native_name =
-        language_info.FindStringKey("nativeDisplayName")
-            ? *language_info.FindStringKey("nativeDisplayName")
+        language_info.GetDict().FindString("nativeDisplayName")
+            ? *language_info.GetDict().FindString("nativeDisplayName")
             : "";
 
     // If it's an option group divider, add field name.
     if (value == kMostRelevantLanguagesDivider) {
-      language_info.SetStringKey(
+      language_info.GetDict().Set(
           "optionGroupName",
           l10n_util::GetStringUTF16(IDS_OOBE_OTHER_LANGUAGES));
     }
@@ -420,10 +418,10 @@ void AdjustUILanguageList(const std::string& selected,
                                         native_name.c_str());
     }
 
-    language_info.SetStringKey("value", value);
-    language_info.SetStringKey("title", display_name);
+    language_info.GetDict().Set("value", value);
+    language_info.GetDict().Set("title", display_name);
     if (value == selected)
-      language_info.SetBoolKey("selected", true);
+      language_info.GetDict().Set("selected", true);
   }
 }
 
@@ -486,7 +484,7 @@ std::string FindMostRelevantLocale(
     for (const auto& entry : available_locales.GetListDeprecated()) {
       const std::string* available_locale = nullptr;
       if (entry.is_dict())
-        available_locale = entry.FindStringKey("value");
+        available_locale = entry.GetDict().FindString("value");
 
       if (!available_locale) {
         NOTREACHED();

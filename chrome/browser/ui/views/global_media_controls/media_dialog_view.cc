@@ -310,8 +310,10 @@ void MediaDialogView::Init() {
       live_caption_container->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal,
-              gfx::Insets(kLiveCaptionHorizontalMarginDip,
-                          kLiveCaptionVerticalMarginDip),
+              // TODO(crbug.com/1305767): The order of the parameters to
+              // gfx::Insets::VH() seems wrong.
+              gfx::Insets::VH(kLiveCaptionHorizontalMarginDip,
+                              kLiveCaptionVerticalMarginDip),
               kLiveCaptionBetweenChildSpacing));
 
   auto live_caption_image = std::make_unique<views::ImageView>();
@@ -385,9 +387,6 @@ void MediaDialogView::OnSodaError(speech::LanguageCode language_code) {
                                            profile_->GetPrefs()) &&
       language_code != speech::LanguageCode::kNone) {
     return;
-  }
-  if (!base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
-    ToggleLiveCaption(false);
   }
 
   live_caption_title_->SetText(l10n_util::GetStringUTF16(

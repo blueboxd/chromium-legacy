@@ -10,11 +10,12 @@
   <title>Super Size Tiger View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#4285f4">
-  <link href="https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,500" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,500" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="main.css">
   <link rel="stylesheet" href="options.css">
   <link rel="icon" href="favicon.ico" sizes="16x16 32x32 256x256" type="image/x-icon">
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css">
   <script defer src="auth-consts.js"></script>
   <script defer src="auth.js"></script>
   <script defer src="start-worker.js"></script>
@@ -22,8 +23,7 @@
   <script defer src="state.js"></script>
   <script defer src="infocard-ui.js"></script>
   <script defer src="tree-ui.js"></script>
-  <!-- Async so that it does not slow down loads that do not require it. -->
-  <script defer async src="https://apis.google.com/js/api.js"
+  <script defer src="https://apis.google.com/js/api.js"
       onload="this.onload=function(){};onAuthScriptLoaded()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">
   </script>
@@ -33,6 +33,7 @@
           .catch(() => console.warn('ServiceWorker not loaded.'));
     }
   </script>
+  <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html.min.js"></script>
 </head>
 
 <body>
@@ -280,6 +281,10 @@
         <input type="radio" id="uncompressedflag" name="flag_filter" value="uncompressed">
         <label class="radio-label" for="uncompressedflag">Uncompressed .pak files</label>
       </div>
+      <div class="radio-wrapper">
+        <input type="radio" id="disassemblyflag" name="flag_filter" value="disassembly">
+        <label class="radio-label" for="disassemblyflag">Disassembly</label>
+      </div>
     </fieldset>
   </form>
   <div class="symbols">
@@ -407,6 +412,10 @@
       </header>
       <ul id="symboltree" class="tree" role="tree" aria-labelledby="headline"></ul>
     </main>
+    <!-- Empty .sizediff Message-->
+    <div id="no-symbols-msg" style="display:none">
+      This diff contains no symbols (no sizes changed).
+    </div>
     <!-- Metadata Node -->
     <div id="metadata-view" class="metadata" title="Metadata from .size/.sizediff file">
       <a class="node" tabindex="0" role="presentation">
@@ -622,15 +631,22 @@
   </div>
   <!-- Modal Sign in Dialog -->
   <div id="signin-modal" class="modal" style="display:none">
-    <div class="modal-content">
-      <p>You are trying to access a private size file. Please sign in with your @google.com account.</p>
+    <div class="modal-content" style="width:600px">
+      <div style="margin-bottom: 40px">You are trying to access a private size file. Please sign in with your @google.com
+        account.
+      </div>
       <button type="button" class="signin text-button filled-button">Sign Me In</button>
     </div>
   </div>
-  <!-- Modal Empty .sizediff Dialog -->
-  <div id="error-modal" class="modal" style="display:none">
+  <!-- Modal To Display Disassembly-->
+  <div id="disassembly-modal" class="modal" style="display:none">
     <div class="modal-content">
-      <p>This diff contains no symbols (no sizes changed).</p>
+      <div id='disassembly-code'>Sample</div>
+      <div style="margin-top: 10px">
+        <a title="Download unified diff" id="disassembly-download" download="disassembly.txt">Download</a>
+        <button style="margin-left: 10px" id="disassembly-close" type="button"
+          class="text-button filled-button">Close</button>
+      </div>
     </div>
   </div>
 </body>

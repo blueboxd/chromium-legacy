@@ -17,7 +17,7 @@ namespace device {
 /******** PowerSaveBlocker::Delegate ********/
 
 // Lacros-chrome PowerSaveBlocker uses ash-chrome ProwerSaveBlocker via either
-// crosapi (the default) or Wayland (if the idle inhibitor feature is enabled).
+// Wayland (the default) or crosapi (if the idle inhibitor feature is disabled).
 // RAII style is maintained by keeping a crosapi::mojom::PowerWakeLock Mojo
 // connection, whose disconnection triggers resource release in ash-chrome.
 // TODO(b/193670013): Cleanup logic after Wayland idle inhibitor replaces
@@ -39,10 +39,14 @@ class PowerSaveBlocker::Delegate
 
   void ApplyBlock() {
     DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
+    DCHECK(!screen_saver_suspender_);
 
-    auto* const screen = display::Screen::GetScreen();
-    if (screen && screen->SetScreenSaverSuspended(true))
-      return;
+    if (auto* const screen = display::Screen::GetScreen()) {
+      screen_saver_suspender_ = screen->SuspendScreenSaver();
+      if (screen->IsScreenSaverActive()) {
+        return;
+      }
+    }
 
     auto* lacros_service = chromeos::LacrosService::Get();
     if (lacros_service->IsAvailable<crosapi::mojom::Power>()) {
@@ -54,9 +58,7 @@ class PowerSaveBlocker::Delegate
   void RemoveBlock() {
     DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
-    auto* const screen = display::Screen::GetScreen();
-    if (screen && screen->SetScreenSaverSuspended(false))
-      return;
+    screen_saver_suspender_.reset();
 
     // Disconnect to make ash-chrome release its PowerSaveBlocker.
     receiver_.reset();
@@ -75,6 +77,8 @@ class PowerSaveBlocker::Delegate
   mojom::WakeLockReason reason_;
   std::string description_;
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  std::unique_ptr<display::Screen::ScreenSaverSuspender>
+      screen_saver_suspender_;
 };
 
 /******** PowerSaveBlocker ********/

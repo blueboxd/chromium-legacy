@@ -110,6 +110,7 @@ enum class CSPDisposition : int32_t;
 
 namespace blink {
 
+class AnchorElementInteractionTracker;
 class AnimationClock;
 class AXContext;
 class AXObjectCache;
@@ -154,6 +155,7 @@ template <typename EventType>
 class EventWithHitTestResults;
 class ExceptionState;
 class FontMatchingMetrics;
+class FocusedElementChangeObserver;
 class FormController;
 class FrameCallback;
 class FrameScheduler;
@@ -166,7 +168,6 @@ class HTMLFrameOwnerElement;
 class HTMLHeadElement;
 class HTMLLinkElement;
 class HTMLMetaElement;
-class HTMLPopupElement;
 class HasMatchedCacheScope;
 class HitTestRequest;
 class HttpRefreshScheduler;
@@ -189,6 +190,7 @@ class NodeIterator;
 class NthIndexCache;
 class Page;
 class PendingAnimations;
+class PendingLinkPreload;
 class ProcessingInstruction;
 class PropertyRegistry;
 class QualifiedName;
@@ -287,6 +289,8 @@ struct UnloadEventTiming {
 // Used to gather the unload event timing of an unloading document, to be used
 // in a new document (if it's same-origin).
 struct UnloadEventTimingInfo {
+  explicit UnloadEventTimingInfo(
+      scoped_refptr<SecurityOrigin> new_document_origin);
   // The origin of the new document that replaces the older document.
   const scoped_refptr<SecurityOrigin> new_document_origin;
   // The unload timing of the old document. This is only set from
@@ -344,6 +348,11 @@ class CORE_EXPORT Document : public ContainerNode,
   MediaQueryMatcher& GetMediaQueryMatcher();
 
   void MediaQueryAffectingValueChanged(MediaValueChange change);
+
+  // SetMediaFeatureEvaluated and WasMediaFeatureEvaluated are used to prevent
+  // UKM sampling of CSS media features more than once per document.
+  void SetMediaFeatureEvaluated(int feature);
+  bool WasMediaFeatureEvaluated(int feature);
 
   using TreeScope::getElementById;
 
@@ -433,10 +442,9 @@ class CORE_EXPORT Document : public ContainerNode,
   Element* CreateRawElement(const QualifiedName&,
                             const CreateElementFlags = CreateElementFlags());
 
-  Element* ElementFromPoint(double x, double y) const;
-  HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;
   Range* caretRangeFromPoint(int x, int y);
   Element* scrollingElement();
+
   // When calling from C++ code, use this method. scrollingElement() is
   // just for the web IDL implementation.
   //
@@ -949,6 +957,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool SetFocusedElement(Element*, const FocusParams&);
   void ClearFocusedElement();
   Element* FocusedElement() const { return focused_element_.Get(); }
+  void ClearFocusedElementIfNeeded();
   UserActionElementSet& UserActionElements() { return user_action_elements_; }
   const UserActionElementSet& UserActionElements() const {
     return user_action_elements_;
@@ -971,6 +980,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void SetActiveElement(Element*);
   Element* GetActiveElement() const { return active_element_.Get(); }
+
+  void AddFocusedElementChangeObserver(FocusedElementChangeObserver*);
+  void RemoveFocusedElementChangeObserver(FocusedElementChangeObserver*);
 
   Element* HoverElement() const { return hover_element_.Get(); }
 
@@ -1476,17 +1488,17 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HTMLDialogElement* ActiveModalDialog() const;
 
-  HeapVector<Member<HTMLPopupElement>>& PopupElementStack() {
+  HeapVector<Member<Element>>& PopupElementStack() {
     return popup_element_stack_;
   }
   bool PopupShowing() const;
-  void HideTopmostPopupElement() const;
+  void HideTopmostPopupElement();
   // This hides all visible popups up to, but not including,
   // |endpoint|. If |endpoint| is nullptr, all popups are hidden.
-  void HideAllPopupsUntil(const HTMLPopupElement* endpoint);
+  void HideAllPopupsUntil(const Element* endpoint);
   // This hides the provided popup, if it is showing. This will also
   // hide all popups above |popup| in the popup stack.
-  void HidePopupIfShowing(const HTMLPopupElement* popup);
+  void HidePopupIfShowing(const Element* popup);
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1676,6 +1688,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Return true if any accessibility contexts have been enabled.
   bool IsAccessibilityEnabled() const { return !ax_contexts_.IsEmpty(); }
 
+  void DispatchHandleLoadStart();
+  void DispatchHandleLoadOrLayoutComplete();
+
   bool HaveRenderBlockingStylesheetsLoaded() const;
   bool HaveRenderBlockingResourcesLoaded() const;
 
@@ -1775,9 +1790,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool RenderingHasBegun() const { return rendering_has_begun_; }
 
-  void IncrementAsyncScriptCount() { async_script_count_++; }
-  void RecordAsyncScriptCount();
-
   enum class DeclarativeShadowRootAllowState : uint8_t {
     kNotSet,
     kAllow,
@@ -1826,6 +1838,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // For more details and explanation, see
   // https://github.com/flackr/reduce-motion/blob/main/explainer.md
   bool ShouldForceReduceMotion() const;
+
+  void AddPendingLinkHeaderPreload(const PendingLinkPreload&);
+
+  // Has no effect if the preload is not initiated by link header.
+  void RemovePendingLinkHeaderPreloadIfNeeded(const PendingLinkPreload&);
 
   void WriteIntoTrace(perfetto::TracedValue ctx) const;
 
@@ -1971,7 +1988,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void DidAssociateFormControlsTimerFired(TimerBase*);
 
-  void ClearFocusedElementSoon();
   void ClearFocusedElementTimerFired(TimerBase*);
 
   bool HaveScriptBlockingStylesheetsLoaded() const;
@@ -2006,6 +2022,8 @@ class CORE_EXPORT Document : public ContainerNode,
     is_freezing_in_progress_ = is_freezing_in_progress;
   }
 
+  void HidePopup(Element* popup);
+
   void NotifyFocusedElementChanged(Element* old_focused_element,
                                    Element* new_focused_element,
                                    mojom::blink::FocusType focus_type);
@@ -2016,6 +2034,10 @@ class CORE_EXPORT Document : public ContainerNode,
   void HasTrustTokensAnswererConnectionError();
 
   void RunPostPrerenderingActivationSteps();
+
+  // Bitfield used for tracking UKM sampling of media features such that each
+  // media feature is sampled only once per document.
+  uint64_t evaluated_media_features_ = 0;
 
   DocumentLifecycle lifecycle_;
 
@@ -2118,6 +2140,10 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<Element> document_element_;
   UserActionElementSet user_action_elements_;
   Member<RootScrollerController> root_scroller_controller_;
+  Member<AnchorElementInteractionTracker> anchor_element_interaction_tracker_;
+
+  HeapHashSet<Member<FocusedElementChangeObserver>>
+      focused_element_change_observers_;
 
   double overscroll_accumulated_delta_x_ = 0;
   double overscroll_accumulated_delta_y_ = 0;
@@ -2254,9 +2280,13 @@ class CORE_EXPORT Document : public ContainerNode,
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
-  // The stack of currently-displayed popup elements. Elements in the stack
-  // go from earliest (bottom-most) to latest (top-most).
-  HeapVector<Member<HTMLPopupElement>> popup_element_stack_;
+  // The stack of currently-displayed Popup elements. This includes both <popup>
+  // elements (which are deprecated) and elements containing the `popup`
+  // attribute. Elements in the stack go from earliest (bottom-most) to latest
+  // (top-most).
+  // TODO(crbug.com/1307772): Update this comment once HTMLPopupElement is
+  // removed.
+  HeapVector<Member<Element>> popup_element_stack_;
 
   int load_event_delay_count_;
 
@@ -2447,6 +2477,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Whether any resource loads that block printing are happening.
   bool loading_for_print_ = false;
+
+  // Document owns pending preloads, prefetches and modulepreloads initiated by
+  // link header so that they won't be incidentally GC-ed and cancelled.
+  HeapHashSet<Member<const PendingLinkPreload>> pending_link_header_preloads_;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

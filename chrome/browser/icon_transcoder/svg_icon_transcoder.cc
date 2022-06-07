@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
@@ -23,8 +22,8 @@ std::string ReadSvgOnFileThread(base::FilePath svg_path) {
   std::string svg_data;
   if (base::PathExists(svg_path)) {
     base::ReadFileToString(svg_path, &svg_data);
+    LOG_IF(ERROR, svg_data.empty()) << "Empty svg data at path " << svg_path;
   }
-  LOG_IF(ERROR, svg_data.empty()) << "No svg data at path " << svg_path;
   return svg_data;
 }
 

@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -232,6 +233,8 @@ content::WebUIDataSource* CreateExtensionsSource(Profile* profile,
     {"loadErrorErrorLabel", IDS_EXTENSIONS_LOAD_ERROR_ERROR_LABEL},
     {"loadErrorRetry", IDS_EXTENSIONS_LOAD_ERROR_RETRY},
     {"loadingActivities", IDS_EXTENSIONS_LOADING_ACTIVITIES},
+    {"matchingRestrictedSitesWarning",
+     IDS_EXTENSIONS_MATCHING_RESTRICTED_SITES_WARNING},
     {"missingOrUninstalledExtension", IDS_MISSING_OR_UNINSTALLED_EXTENSION},
     {"noActivities", IDS_EXTENSIONS_NO_ACTIVITIES},
     {"noErrorsToShow", IDS_EXTENSIONS_ERROR_NO_ERRORS_CODE_MESSAGE},
@@ -420,9 +423,9 @@ void ExtensionsUI::RegisterProfilePrefs(
 // Normally volatile data does not belong in loadTimeData, but in this case
 // prevents flickering on a very prominent surface (top of the landing page).
 void ExtensionsUI::OnDevModeChanged() {
-  auto update = std::make_unique<base::DictionaryValue>();
-  update->SetBoolKey(kInDevModeKey, *in_dev_mode_);
-  update->SetStringKey(kLoadTimeClassesKey, GetLoadTimeClasses(*in_dev_mode_));
+  base::Value::Dict update;
+  update.Set(kInDevModeKey, *in_dev_mode_);
+  update.Set(kLoadTimeClassesKey, GetLoadTimeClasses(*in_dev_mode_));
   content::WebUIDataSource::Update(Profile::FromWebUI(web_ui()),
                                    chrome::kChromeUIExtensionsHost,
                                    std::move(update));

@@ -16,6 +16,8 @@
 #include "ash/lock_screen_action/lock_screen_action_background_state.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/metrics/login_metrics_recorder.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -196,8 +198,8 @@ gfx::Insets GetButtonInsets() {
   const int height_inset =
       (ShelfConfig::Get()->shelf_size() - ShelfConfig::Get()->control_size()) /
       2;
-  return gfx::Insets(height_inset, ShelfConfig::Get()->button_spacing(),
-                     height_inset, 0);
+  return gfx::Insets::TLBR(height_inset, ShelfConfig::Get()->button_spacing(),
+                           height_inset, 0);
 }
 
 SkPath GetButtonHighlightPath(const views::View* view) {
@@ -263,7 +265,7 @@ class LoginShelfButton : public views::LabelButton {
 
   // views::LabelButton:
   gfx::Insets GetInsets() const override {
-    return gfx::Insets(0, kButtonMarginLeftDp, 0, kButtonMarginRightDp);
+    return gfx::Insets::TLBR(0, kButtonMarginLeftDp, 0, kButtonMarginRightDp);
   }
 
   const char* GetClassName() const override {
@@ -394,8 +396,8 @@ class KioskAppsButton : public views::MenuButton,
 
   // views::MenuButton:
   gfx::Insets GetInsets() const override {
-    return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
-                       kButtonMarginBottomDp, kButtonMarginRightDp);
+    return gfx::Insets::TLBR(kButtonMarginTopDp, kButtonMarginLeftDp,
+                             kButtonMarginBottomDp, kButtonMarginRightDp);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {

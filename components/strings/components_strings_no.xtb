@@ -13,7 +13,6 @@
 <translation id="1024111578869940408">Noen ganger etterligner angripere nettsteder ved å gjøre endringer i nettadressen som er vanskelige å se.</translation>
 <translation id="1028781062521375153">Se detaljer</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ber om å lagre store datamengder permanent på enheten din</translation>
-<translation id="1032854598605920125">Rotér med klokken</translation>
 <translation id="1033329911862281889">Inkognito gjør deg ikke usynlig på nettet:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Nettsteder og tjenestene de bruker, kan se når du besøker dem<ph name="END_LIST_ITEM" />
@@ -174,7 +173,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="1386623374109090026">Annoteringer</translation>
 <translation id="1391289752476847787">Aksjer og obligasjoner</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> sendte ingen data.</translation>
-<translation id="1403196654932095242"><ph name="HISTORY_CLUSTERS_SEARCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å fortsette undersøkelsene og se relevant aktivitet i Chrome-loggen</translation>
 <translation id="1405567553485452995">Lysegrønn</translation>
 <translation id="1407135791313364759">Åpne alle</translation>
 <translation id="1408787208417187241">Tre stifter topp</translation>
@@ -254,7 +252,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="1567040042588613346">Denne regelen fungerer som den skal, men den samme verdien er angitt et annet sted og overstyres av denne regelen.</translation>
 <translation id="1569487616857761740">Oppgi utløpsdato</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583294866416602487">Plex</translation>
 <translation id="1583429793053364125">Noe gikk galt da denne nettsiden skulle åpnes.</translation>
 <translation id="1586541204584340881">hvilke utvidelser du har installert</translation>
 <translation id="1588438908519853928">Normal</translation>
@@ -291,6 +288,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="1662550410081243962">Lagre og fyll ut betalingsmåter</translation>
 <translation id="1663943134801823270">Kortene og adressene er fra Chrome. Du kan administrere dem i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Fra nå av oversettes sider på <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Kortsiden først</translation>
 <translation id="168693727862418163">Denne regelverdien kunne ikke valideres mot oppsettet og blir derfor ignorert.</translation>
 <translation id="168841957122794586">Tjenersertifikatet inneholder en svak kryptografisk nøkkel.</translation>
@@ -349,6 +347,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="1807246157184219062">Lys</translation>
 <translation id="1807528111851433570">Startark</translation>
 <translation id="1812527064848182527">liggende</translation>
+<translation id="1813414402673211292">Slett nettleserdata</translation>
 <translation id="182139138257690338">automatiske nedlastinger</translation>
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
 <translation id="1822540298136254167">Nettsteder du besøker, og hvor mye tid du bruker på dem</translation>
@@ -537,7 +536,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="236340516568226369">Meny med av/på-alternativer for størrelsesendring</translation>
 <translation id="2367567093518048410">Nivå</translation>
-<translation id="2372464001869762664">Når du har bekreftet verifiseringskoden, deles kortopplysningene fra Google-kontoen din med dette nettstedet. Du finner verifiseringskoden i Plex-kontoopplysningene.</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2383455408879745299">Gi tilgjengelighetsverktøyene dine personlig preg i Chrome-innstillingene</translation>
 <translation id="2384307209577226199">Bedriftsstandard</translation>
@@ -580,6 +578,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2505268675989099013">Beskytt kontoen</translation>
 <translation id="2509167091171468975">Mat- og dagligvareforretninger</translation>
 <translation id="2512101340618156538">Ikke tillatt (standard)</translation>
+<translation id="2512413427717747692">Knappen «Angi Chrome som standardnettleser» – trykk på Enter for å angi Chrome som systemets standardnettleser i iOS-innstillingene</translation>
 <translation id="2515629240566999685">Sjekk signalet i området ditt</translation>
 <translation id="2521385132275182522">Stift nede til høyre</translation>
 <translation id="2521736961081452453">Opprett skjema</translation>
@@ -595,6 +594,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2542106216580219892">Surfing</translation>
 <translation id="2544546346215446551">Administratoren din har startet enheten på nytt</translation>
 <translation id="2544644783021658368">Enkeltdokument</translation>
+<translation id="254524874071906077">Angi Chrome som standardnettleser</translation>
 <translation id="2546283357679194313">Informasjonskapsler og data fra nettsteder</translation>
 <translation id="2547466893236767989">Design og utvikling av nettsteder</translation>
 <translation id="254947805923345898">Regelverdien er ikke gyldig.</translation>
@@ -675,7 +675,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Kjør Tilkoblingsdiagnostikk<ph name="END_LINK" /></translation>
 <translation id="2730600605555029057">Klassisk musikk</translation>
-<translation id="2737403869486738563">Fortsett undersøkelsene dine for å se relevant aktivitet i Chrome-loggen</translation>
 <translation id="2738330467931008676">Velg henteadresse</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742511345840685325">Bordtennis</translation>
@@ -691,7 +690,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2792012897584536778">Enhetsadministratorene har satt opp sikkerhetssertifikater som kan gjøre det mulig for dem å se innholdet på nettsteder du besøker.</translation>
 <translation id="2799020568854403057">Nettstedet du er på vei til, inneholder skadelige apper</translation>
 <translation id="2799223571221894425">Start på nytt</translation>
-<translation id="2799846101868535739">«Fortsett undersøkelsene dine»-knappen – trykk på Enter for å fortsette undersøkelsene dine og se relevant aktivitet i Chrome-loggen.</translation>
 <translation id="2803306138276472711">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelig programvare<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder som vanligvis er sikre, kan noen ganger være infisert av skadelig programvare.</translation>
 <translation id="2807052079800581569">Y-posisjon for bilde</translation>
 <translation id="2820957248982571256">Skanner …</translation>
@@ -771,7 +769,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="3029752078111257850">Nyheter fra hele verden</translation>
 <translation id="3037605927509011580">Æsj!</translation>
 <translation id="3041612393474885105">Sertifikatinformasjon</translation>
-<translation id="3044034790304486808">Fortsett undersøkelsene</translation>
 <translation id="305162504811187366">loggen for Chrome Eksternt skrivebord, inkludert tidsstempler, verter og klientøkt-ID-er</translation>
 <translation id="3060227939791841287">C9 (konvolutt)</translation>
 <translation id="3061707000357573562">Feilrettingstjeneste</translation>
@@ -882,6 +879,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="3366477098757335611">Vis kort</translation>
 <translation id="3369192424181595722">Klokkefeil</translation>
 <translation id="3369459162151165748">Bildeler og -tilbehør</translation>
+<translation id="3371064404604898522">Angi Chrome som standardnettleser</translation>
 <translation id="3371076217486966826"><ph name="URL" /> vil
       • lage et 3D-kart av omgivelsene dine og spore kameraposisjonen
       • bruke kameraet ditt</translation>
@@ -1057,7 +1055,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="3816482573645936981">Verdi (overstyrt)</translation>
 <translation id="382518646247711829">Hvis du bruker en proxy-tjener...</translation>
 <translation id="3827112369919217609">Absolutt</translation>
-<translation id="3827475930221174051">Basert på aktivitet relatert til «<ph name="SEARCH_TERM" />»</translation>
 <translation id="3827666161959873541">Familiefilmer</translation>
 <translation id="3828924085048779000">Tom passordfrase er ikke tillatt.</translation>
 <translation id="3831065134033923230">Sjekk de lagrede passordene dine</translation>
@@ -1355,6 +1352,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="467662567472608290">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren inneholder feil. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ber om å svare på tilgjengelighetshendelser</translation>
 <translation id="467809019005607715">Google Presentasjoner</translation>
+<translation id="4682496302933121474">Vil du oversette siden?</translation>
 <translation id="468314109939257734">Se det virtuelle kortnummeret ditt</translation>
 <translation id="4691835149146451662">Architecture-A (konvolutt)</translation>
 <translation id="4692623383562244444">Søkemotorer</translation>
@@ -1801,10 +1799,12 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="5922853866070715753">Nesten ferdig</translation>
 <translation id="5928444777041341328">Hjem og hage</translation>
 <translation id="5932224571077948991">Nettstedet viser forstyrrende eller villedende annonser</translation>
+<translation id="5937560539988385583">Siden er oversatt</translation>
 <translation id="5938153366081463283">Legg til et virtuelt kort</translation>
 <translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Åpner <ph name="SITE_NAME" /> …</translation>
 <translation id="5951495562196540101">Kan ikke registrere med en forbrukerkonto (medfølgende lisens er tilgjengelig).</translation>
+<translation id="5953516610448771166">Direkteteksting er ikke tilgjengelig for dette mediet. For å få teksting, blokker <ph name="CONTENT_SETTINGS" /> for dette nettstedet.</translation>
 <translation id="5955063559762970069">Hoteller og overnattingssteder</translation>
 <translation id="5963413905009737549">Del</translation>
 <translation id="5967592137238574583">Endre kontaktinformasjonen</translation>
@@ -1898,6 +1898,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="6232271601416750929">Ren skjønnhet</translation>
 <translation id="6233160458685643793">Flirende</translation>
 <translation id="6234122620015464377">Beskjær etter hvert dokument</translation>
+<translation id="6236290670123303279">Administrer innstillinger</translation>
 <translation id="6240447795304464094">Google Pay-logo</translation>
 <translation id="6241121617266208201">Skjul forslag</translation>
 <translation id="624499991300733384">Utskriftskomposisjonstjeneste</translation>
@@ -1929,6 +1930,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="6319249456820053699">Kameraer og videokameraer</translation>
 <translation id="6321917430147971392">Kontrollér DNS-innstillingene dine</translation>
 <translation id="6322182122604171028">Kunne ikke bruke Windows Hello</translation>
+<translation id="6326947323444967009">Angi Chrome som systemets standardnettleser i iOS-innstillingene</translation>
 <translation id="6328639280570009161">Prøv å slå av nettverksforutsigelse</translation>
 <translation id="6328784461820205019">«Tilkoblingen din er ikke privat», «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;», «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;», «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;», «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» eller «SSL-sertifikatfeil»</translation>
 <translation id="6328786501058569169">Dette nettstedet er villedende</translation>
@@ -2532,7 +2534,9 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="7995512525968007366">Ikke spesifisert</translation>
 <translation id="7998269595945679889">Knappen «Åpne en inkognitofane» – trykk på Enter for å åpne en ny inkognitofane for privat surfing</translation>
 <translation id="800218591365569300">Prøv å lukke andre faner eller programmer for å frigjøre minne.</translation>
+<translation id="8003046808285812021">«<ph name="SEARCH_TERMS" />»</translation>
 <translation id="8004582292198964060">Nettleser</translation>
+<translation id="8009225694047762179">Administrer passord</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Dette kortet og den tilknyttede faktureringsadressen lagres. Du kan bruke det når du er logget på <ph name="USER_EMAIL" />.}other{Disse kortene og de tilknyttede faktureringsadressene lagres. Du kan bruke dem når du er logget på <ph name="USER_EMAIL" />.}}</translation>
 <translation id="8025119109950072390">Angripere på dette nettstedet prøver kanskje å lure deg til å gjøre farlige ting som å installere programvare eller avsløre personopplysningene dine (for eksempel passord, telefonnumre eller kredittkortinformasjon).</translation>
 <translation id="8026334261755873520">Slett nettleserdata</translation>
@@ -2631,6 +2635,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="8277900682056760511">Arket for betalingsbehandling er åpnet</translation>
 <translation id="8280630997017109758">Skuff 11</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
+<translation id="8281886186245836920">Hopp over</translation>
 <translation id="8282947398454257691">få kjennskap til den unike enhetsidentifikatoren</translation>
 <translation id="8284769179630993263">Administrer Safe Browsing med mer i Chrome-innstillingene</translation>
 <translation id="8286036467436129157">Logg på</translation>
@@ -2763,7 +2768,7 @@ Mer informasjon:
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, søkeforslag</translation>
 <translation id="8719528812645237045">Flere hull topp</translation>
 <translation id="8723535127346307411">Skriv inn bekreftelseskoden</translation>
-<translation id="8725066075913043281">Prøv på nytt</translation>
+<translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8726549941689275341">Sidestørrelse:</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8731544501227493793">Knappen «Administrer passord» – trykk på Enter for å se og administrere passord i Chrome-innstillingene</translation>
@@ -2890,6 +2895,7 @@ Mer informasjon:
 <translation id="908796725011587895">Studentsport</translation>
 <translation id="9089260154716455634">Regler for bruk utenom arbeidstiden:</translation>
 <translation id="9095388113577226029">Flere språk</translation>
+<translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å angi Chrome som systemets standardnettleser i iOS-innstillingene</translation>
 <translation id="9096679202588811390">TV-programmer og -serier</translation>
 <translation id="9101630580131696064">Skuff 1</translation>
 <translation id="9103537084693478942">Videoprogramvare</translation>

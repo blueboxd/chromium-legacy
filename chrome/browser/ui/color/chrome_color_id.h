@@ -12,6 +12,9 @@
 // clang-format off
 #define COMMON_CHROME_COLOR_IDS \
   /* App menu colors. */ \
+  /* The kColorAppMenuHighlightSeverityLow color id is used in */ \
+  /* color_provider_css_colors_test.ts. If changing the variable name, the */ \
+  /* variable name in the test needs to be changed as well. */ \
   E(kColorAppMenuHighlightSeverityLow, \
     ThemeProperties::COLOR_APP_MENU_HIGHLIGHT_SEVERITY_LOW, \
     kChromeColorsStart) \
@@ -33,15 +36,28 @@
   E(kColorBookmarkBarForeground, ThemeProperties::COLOR_BOOKMARK_TEXT) \
   E(kColorBookmarkBarSeparator, ThemeProperties::COLOR_BOOKMARK_SEPARATOR) \
   E(kColorBookmarkButtonIcon, ThemeProperties::COLOR_BOOKMARK_BUTTON_ICON) \
+  E_CPONLY(kColorBookmarkDragImageBackground) \
+  E_CPONLY(kColorBookmarkDragImageCountBackground) \
+  E_CPONLY(kColorBookmarkDragImageCountForeground) \
+  E_CPONLY(kColorBookmarkDragImageForeground) \
+  E_CPONLY(kColorBookmarkDragImageIconBackground) \
   E(kColorBookmarkFavicon, ThemeProperties::COLOR_BOOKMARK_FAVICON) \
   E_CPONLY(kColorBookmarkFolderIcon) \
   /* Window caption colors. */ \
   E(kColorCaptionButtonBackground, \
     ThemeProperties::COLOR_CONTROL_BUTTON_BACKGROUND) \
+  /* Captured tab colors. */ \
+  E_CPONLY(kColorCapturedTabContentsBorder) \
   /* Desktop media tab list colors. */ \
   E_CPONLY(kColorDesktopMediaTabListBorder) \
   E_CPONLY(kColorDesktopMediaTabListPreviewBackground) \
   /* Download shelf colors. */ \
+  E_CPONLY(kColorDownloadItemForeground) \
+  E_CPONLY(kColorDownloadItemForegroundDangerous) \
+  E_CPONLY(kColorDownloadItemForegroundDisabled) \
+  E_CPONLY(kColorDownloadItemForegroundSafe) \
+  E_CPONLY(kColorDownloadItemProgressRingBackground) \
+  E_CPONLY(kColorDownloadItemProgressRingForeground) \
   E(kColorDownloadShelfBackground, ThemeProperties::COLOR_DOWNLOAD_SHELF) \
   E(kColorDownloadShelfButtonBackground, \
     ThemeProperties::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND) \
@@ -51,9 +67,21 @@
     ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR) \
   E(kColorDownloadShelfForeground, \
     ThemeProperties::COLOR_DOWNLOAD_SHELF_FOREGROUND) \
+  E_CPONLY(kColorDownloadStartedAnimationForeground) \
   E_CPONLY(kColorDownloadToolbarButtonActive) \
   E_CPONLY(kColorDownloadToolbarButtonInactive) \
   E_CPONLY(kColorDownloadToolbarButtonRingBackground) \
+  /* Extension colors. */ \
+  E_CPONLY(kColorExtensionDialogBackground) \
+  E_CPONLY(kColorExtensionIconBadgeBackgroundDefault) \
+  E_CPONLY(kColorExtensionIconBadgeForegroundDefault) \
+  E_CPONLY(kColorExtensionIconDecorationAmbientShadow) \
+  E_CPONLY(kColorExtensionIconDecorationBackground) \
+  E_CPONLY(kColorExtensionIconDecorationKeyShadow) \
+  E_CPONLY(kColorExtensionMenuIcon) \
+  E_CPONLY(kColorExtensionMenuIconDisabled) \
+  E_CPONLY(kColorExtensionMenuPinButtonIcon) \
+  E_CPONLY(kColorExtensionMenuPinButtonIconDisabled) \
   /* Eyedropper colors. */ \
   E_CPONLY(kColorEyedropperBoundary) \
   E_CPONLY(kColorEyedropperCentralPixelInnerRing) \
@@ -72,16 +100,21 @@
     ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_DEFAULT_BUTTON_FOREGROUND) \
   E(kColorFeaturePromoBubbleForeground, \
     ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_FOREGROUND) \
+  /* Find bar colors. */ \
+  E_CPONLY(kColorFindBarBackground) \
+  E_CPONLY(kColorFindBarForeground) \
+  E_CPONLY(kColorFindBarMatchCount) \
+  E_CPONLY(kColorFindBarSeparator) \
   /* Flying Indicator colors. */ \
   E(kColorFlyingIndicatorBackground, \
     ThemeProperties::COLOR_FLYING_INDICATOR_BACKGROUND) \
   E(kColorFlyingIndicatorForeground, \
     ThemeProperties::COLOR_FLYING_INDICATOR_FOREGROUND) \
+  /* Default accessibility focus highlight. */ \
+  E_CPONLY(kColorFocusHighlightDefault) \
   /* Frame caption colors. */ \
   E(kColorFrameCaptionActive, ThemeProperties::COLOR_FRAME_CAPTION_ACTIVE) \
   E(kColorFrameCaptionInactive, ThemeProperties::COLOR_FRAME_CAPTION_INACTIVE) \
-  /* Google branding colors. */ \
-  E_CPONLY(kColorGooglePayLogo) \
   /* InfoBar colors. */ \
   E(kColorInfoBarBackground, ThemeProperties::COLOR_INFOBAR) \
   E(kColorInfoBarContentAreaSeparator, \
@@ -91,6 +124,10 @@
   E(kColorLocationBarBorder, ThemeProperties::COLOR_LOCATION_BAR_BORDER) \
   E(kColorLocationBarBorderOpaque, \
     ThemeProperties::COLOR_LOCATION_BAR_BORDER_OPAQUE) \
+  /* Media router colors. */ \
+  E_CPONLY(kColorMediaRouterIconActive) \
+  E_CPONLY(kColorMediaRouterIconError) \
+  E_CPONLY(kColorMediaRouterIconWarning) \
   /* New Tab Page colors. */ \
   E(kColorNewTabPageBackground, ThemeProperties::COLOR_NTP_BACKGROUND) \
   E(kColorNewTabPageHeader, ThemeProperties::COLOR_NTP_HEADER) \
@@ -165,17 +202,43 @@
   E(kColorOmniboxText, ThemeProperties::COLOR_OMNIBOX_TEXT) \
   E(kColorOmniboxTextDimmed, ThemeProperties::COLOR_OMNIBOX_TEXT_DIMMED) \
   /* Payments colors. */ \
-  E_CPONLY(kColorPaymentRequestRowBackgroundHighlighted) \
+  E_CPONLY(kColorPaymentsFeedbackTipBackground) \
+  E_CPONLY(kColorPaymentsFeedbackTipBorder) \
+  E_CPONLY(kColorPaymentsFeedbackTipForeground) \
+  E_CPONLY(kColorPaymentsFeedbackTipIcon) \
+  E_CPONLY(kColorPaymentsGooglePayLogo) \
+  E_CPONLY(kColorPaymentsPromoCodeBackground) \
+  E_CPONLY(kColorPaymentsPromoCodeForeground) \
+  E_CPONLY(kColorPaymentsPromoCodeForegroundHovered) \
+  E_CPONLY(kColorPaymentsPromoCodeForegroundPressed) \
+  E_CPONLY(kColorPaymentsPromoCodeInkDrop) \
+  E_CPONLY(kColorPaymentsRequestRowBackgroundHighlighted) \
   /* Picture-in-Picture window colors. */ \
   E_CPONLY(kColorPipWindowBackToTabButtonBackground) \
   E_CPONLY(kColorPipWindowBackground) \
+  E_CPONLY(kColorPipWindowControlsBackground) \
   E_CPONLY(kColorPipWindowForeground) \
   E_CPONLY(kColorPipWindowHangUpButtonForeground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBackground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBorder) \
+  /* PWA colors. */ \
+  E_CPONLY(kColorPwaBackground) \
+  E_CPONLY(kColorPwaMenuButtonIcon) \
+  E_CPONLY(kColorPwaSecurityChipForeground) \
+  E_CPONLY(kColorPwaSecurityChipForegroundDangerous) \
+  E_CPONLY(kColorPwaSecurityChipForegroundPolicyCert) \
+  E_CPONLY(kColorPwaSecurityChipForegroundSecure) \
+  E_CPONLY(kColorPwaTabBarBottomSeparator) \
+  E_CPONLY(kColorPwaTabBarTopSeparator) \
+  E_CPONLY(kColorPwaTheme) \
+  E_CPONLY(kColorPwaToolbarBackground) \
+  E_CPONLY(kColorPwaToolbarForeground) \
   /* QR code colors. */ \
   E_CPONLY(kColorQrCodeBackground) \
   E_CPONLY(kColorQrCodeBorder) \
+  /* Quick Answers colors. */ \
+  E_CPONLY(kColorQuickAnswersReportQueryButtonBackground) \
+  E_CPONLY(kColorQuickAnswersReportQueryButtonForeground) \
   /* Read Later button colors. */ \
   E(kColorReadLaterButtonHighlight, \
     ThemeProperties::COLOR_READ_LATER_BUTTON_HIGHLIGHT) \
@@ -193,6 +256,19 @@
   E_CPONLY(kColorStatusBubbleForegroundFrameActive) \
   E_CPONLY(kColorStatusBubbleForegroundFrameInactive) \
   E(kColorStatusBubbleShadow, ThemeProperties::COLOR_STATUS_BUBBLE_SHADOW) \
+  /* Tab alert colors. */ \
+  E_CPONLY(kColorTabAlertAudioPlayingActiveFrameActive) \
+  E_CPONLY(kColorTabAlertAudioPlayingActiveFrameInactive) \
+  E_CPONLY(kColorTabAlertAudioPlayingInactiveFrameActive) \
+  E_CPONLY(kColorTabAlertAudioPlayingInactiveFrameInactive) \
+  E_CPONLY(kColorTabAlertMediaRecordingActiveFrameActive) \
+  E_CPONLY(kColorTabAlertMediaRecordingActiveFrameInactive) \
+  E_CPONLY(kColorTabAlertMediaRecordingInactiveFrameActive) \
+  E_CPONLY(kColorTabAlertMediaRecordingInactiveFrameInactive) \
+  E_CPONLY(kColorTabAlertPipPlayingActiveFrameActive) \
+  E_CPONLY(kColorTabAlertPipPlayingActiveFrameInactive) \
+  E_CPONLY(kColorTabAlertPipPlayingInactiveFrameActive) \
+  E_CPONLY(kColorTabAlertPipPlayingInactiveFrameInactive) \
   /* Tab colors. */ \
   E(kColorTabBackgroundActiveFrameActive, \
     ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE) \
@@ -302,6 +378,9 @@
     ThemeProperties::COLOR_TAB_STROKE_FRAME_ACTIVE) \
   E(kColorTabStrokeFrameInactive, \
     ThemeProperties::COLOR_TAB_STROKE_FRAME_INACTIVE) \
+  E_CPONLY(kColorTabstripLoadingProgressBackground) \
+  E_CPONLY(kColorTabstripLoadingProgressForeground) \
+  E_CPONLY(kColorTabstripScrollContainerShadow) \
   /* Thumbnail tab colors. */ \
   E_CPONLY(kColorThumbnailTabBackground) \
   E_CPONLY(kColorThumbnailTabForeground) \
@@ -309,8 +388,10 @@
   E(kColorToolbar, ThemeProperties::COLOR_TOOLBAR) \
   E(kColorToolbarButtonBackground, \
     ThemeProperties::COLOR_TOOLBAR_BUTTON_BACKGROUND) \
+  E_CPONLY(kColorToolbarButtonBackgroundHighlightedDefault) \
   E(kColorToolbarButtonBorder, ThemeProperties::COLOR_TOOLBAR_BUTTON_BORDER) \
   E(kColorToolbarButtonIcon, ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON) \
+  E_CPONLY(kColorToolbarButtonIconDefault) \
   E(kColorToolbarButtonIconHovered, \
     ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_HOVERED) \
   E(kColorToolbarButtonIconInactive, \
@@ -325,23 +406,37 @@
   E(kColorToolbarInkDrop, ThemeProperties::COLOR_TOOLBAR_INK_DROP) \
   E(kColorToolbarSeparator, \
     ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR) \
+  E_CPONLY(kColorToolbarSeparatorDefault) \
   E(kColorToolbarText, ThemeProperties::COLOR_TOOLBAR_TEXT) \
+  E_CPONLY(kColorToolbarTextDefault) \
   E(kColorToolbarTopSeparatorFrameActive, \
     ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE) \
   E(kColorToolbarTopSeparatorFrameInactive, \
     ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE) \
-  /* Window control button background colors */ \
+  /* WebAuthn colors. */ \
+  E_CPONLY(kColorWebAuthnPinTextfieldBottomBorder) \
+  E_CPONLY(kColorWebAuthnProgressRingBackground) \
+  E_CPONLY(kColorWebAuthnProgressRingForeground) \
+  /* Web contents colors. */ \
+  E_CPONLY(kColorWebContentsBackground) \
+  E_CPONLY(kColorWebContentsBackgroundLetterboxing) \
+  /* Window control button background colors. */ \
   E(kColorWindowControlButtonBackgroundActive, \
     ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE) \
   E(kColorWindowControlButtonBackgroundInactive, \
     ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE)
 
 #if BUILDFLAG(IS_CHROMEOS)
-#define CHROME_NATIVE_COLOR_IDS \
+#define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \
+    /* Borealis colors. */ \
+    E_CPONLY(kColorBorealisSplashScreenBackground) \
+    E_CPONLY(kColorBorealisSplashScreenForeground) \
     /* Caption colors. */ \
-    E_CPONLY(kColorCaptionForeground)
+    E_CPONLY(kColorCaptionForeground) \
+    /* Sharesheet colors. */ \
+    E_CPONLY(kColorSharesheetTargetButtonIconShadow)
 #elif BUILDFLAG(IS_WIN)
-#define CHROME_NATIVE_COLOR_IDS \
+#define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \
     /* The colors of the 1px border around the window on Windows 10. */ \
     E(kColorAccentBorderActive, ThemeProperties::COLOR_ACCENT_BORDER_ACTIVE) \
     E(kColorAccentBorderInactive, \
@@ -352,12 +447,21 @@
     E_CPONLY(kColorCaptionCloseButtonBackgroundHovered) \
     E_CPONLY(kColorCaptionCloseButtonForegroundHovered) \
     E_CPONLY(kColorCaptionForegroundActive) \
-    E_CPONLY(kColorCaptionForegroundInactive)
+    E_CPONLY(kColorCaptionForegroundInactive) \
+    /* Try Chrome dialog colors. */ \
+    E_CPONLY(kColorTryChromeBackground) \
+    E_CPONLY(kColorTryChromeBorder) \
+    E_CPONLY(kColorTryChromeButtonBackgroundAccept) \
+    E_CPONLY(kColorTryChromeButtonBackgroundNoThanks) \
+    E_CPONLY(kColorTryChromeButtonForeground) \
+    E_CPONLY(kColorTryChromeForeground) \
+    E_CPONLY(kColorTryChromeHeaderForeground)
 #else
-#define CHROME_NATIVE_COLOR_IDS
+#define CHROME_PLATFORM_SPECIFIC_COLOR_IDS
 #endif  // BUILDFLAG(IS_WIN)
 
-#define CHROME_COLOR_IDS COMMON_CHROME_COLOR_IDS CHROME_NATIVE_COLOR_IDS
+#define CHROME_COLOR_IDS \
+    COMMON_CHROME_COLOR_IDS CHROME_PLATFORM_SPECIFIC_COLOR_IDS
 
 #include "ui/color/color_id_macros.inc"
 

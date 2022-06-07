@@ -16,6 +16,7 @@
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_worklet_input.h"
 #include "cc/paint/skia_paint_image_generator.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
@@ -155,6 +156,10 @@ SkImageInfo PaintImage::GetSkImageInfo() const {
     return texture_backing_->GetSkImageInfo();
   } else if (cached_sk_image_) {
     return cached_sk_image_->imageInfo();
+  } else if (paint_worklet_input_) {
+    auto size = paint_worklet_input_->GetSize();
+    return SkImageInfo::MakeUnknown(static_cast<int>(size.width()),
+                                    static_cast<int>(size.height()));
   } else {
     return SkImageInfo::MakeUnknown();
   }
@@ -283,14 +288,6 @@ PaintImage::ContentId PaintImage::GetContentIdForFrame(
   return content_id_;
 }
 
-SkColorType PaintImage::GetColorType() const {
-  return GetSkImageInfo().colorType();
-}
-
-SkAlphaType PaintImage::GetAlphaType() const {
-  return GetSkImageInfo().alphaType();
-}
-
 bool PaintImage::IsTextureBacked() const {
   if (texture_backing_)
     return true;
@@ -302,18 +299,6 @@ bool PaintImage::IsTextureBacked() const {
 void PaintImage::FlushPendingSkiaOps() {
   if (texture_backing_)
     texture_backing_->FlushPendingSkiaOps();
-}
-
-int PaintImage::width() const {
-  return paint_worklet_input_
-             ? static_cast<int>(paint_worklet_input_->GetSize().width())
-             : GetSkImageInfo().width();
-}
-
-int PaintImage::height() const {
-  return paint_worklet_input_
-             ? static_cast<int>(paint_worklet_input_->GetSize().height())
-             : GetSkImageInfo().height();
 }
 
 gfx::ContentColorUsage PaintImage::GetContentColorUsage(bool* is_hlg) const {

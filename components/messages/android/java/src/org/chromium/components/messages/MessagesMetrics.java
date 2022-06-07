@@ -135,6 +135,10 @@ public class MessagesMetrics {
                 return "ArCoreUpgrade";
             case MessageIdentifier.INSTANT_APPS:
                 return "InstantApps";
+            case MessageIdentifier.ABOUT_THIS_SITE:
+                return "AboutThisSite";
+            case MessageIdentifier.TRANSLATE:
+                return "Translate";
             default:
                 return "Unknown";
         }

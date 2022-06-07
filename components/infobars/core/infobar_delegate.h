@@ -9,6 +9,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -137,7 +138,7 @@ class InfoBarDelegate {
     ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID = 66,
     INSTANT_APPS_INFOBAR_DELEGATE_ANDROID = 67,
     // Removed: DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE = 68,
-    SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID = 69,
+    // Removed: SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID = 69,
     GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID = 70,
     OFFLINE_PAGE_INFOBAR_DELEGATE_ANDROID = 71,
     SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE_ANDROID = 72,
@@ -228,7 +229,7 @@ class InfoBarDelegate {
   // Most subclasses should not override this; override GetIconId() instead
   // unless the infobar needs to show an image from somewhere other than the
   // resource bundle as its icon.
-  virtual gfx::Image GetIcon() const;
+  virtual ui::ImageModel GetIcon() const;
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
   // an empty string.

@@ -11,11 +11,12 @@ QuickAnswersTestBase::~QuickAnswersTestBase() = default;
 void QuickAnswersTestBase::SetUp() {
   testing::Test::SetUp();
 
-  if (!QuickAnswersState::Get())
-    quick_answers_state_ = std::make_unique<QuickAnswersState>();
+  DCHECK(!QuickAnswersState::Get());
+
+  fake_quick_answers_state_ = std::make_unique<FakeQuickAnswersState>();
 }
 
 void QuickAnswersTestBase::TearDown() {
-  quick_answers_state_.reset();
+  fake_quick_answers_state_.reset();
   testing::Test::TearDown();
 }

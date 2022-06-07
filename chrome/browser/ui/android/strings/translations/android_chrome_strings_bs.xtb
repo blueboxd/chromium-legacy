@@ -184,7 +184,6 @@ Kada izbrišete historiju pregledanja, cijelu ili samo za određene web lokacije
 <translation id="200114059308480249">Obuhvatiti okružujući tekst u pretraživanjima na Googleu?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fajl}one{# fajl}few{# fajla}other{# fajlova}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> će se otvoriti u Chromeu. Ako nastavite, pristajete na <ph name="BEGIN_LINK1" />Googleove Uslove korištenja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />dodatne Uslove korištenja usluge za Google Chrome i Chrome OS<ph name="END_LINK2" />. Također se primjenjuju <ph name="BEGIN_LINK3" />Pravila privatnosti<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Ukloniti interesovanje?</translation>
 <translation id="2020309681647789787">Na svim vašim sinhroniziranim uređajima ćete imati historiju, pa možete nastaviti s onim što ste radili</translation>
 <translation id="2021896219286479412">Kontr. web lok. na cijelom ekr.</translation>
 <translation id="2038563949887743358">Uključivanje zahtjeva za verziju web lokacije za računar</translation>
@@ -213,6 +212,7 @@ Dodirnite bilo koju riječ da je pretražite. Za fino podešavanje pretraživanj
 <translation id="2141396931810938595">Zasnovano na vašem korištenju</translation>
 <translation id="214888715418183969">Odaberite šta vam odgovara da dijelite s Chromeom. Pokazatelji koje dijelite će se koristiti da se poboljšaju funkcije, rad i stabilnost Chromea.</translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
+<translation id="2155214902713132423">Ovaj način potvrđivanja nije dostupan za ovaj uređaj. Odaberite drugu opciju na drugom uređaju.</translation>
 <translation id="2157851137955077194">Da dijelite sadržaj s telefona na drugi uređaj, u postavkama Chromea na oba uređaja uključite sinhronizaciju.</translation>
 <translation id="2158408438301413340">Chrome nije mogao provjeriti sve lozinke</translation>
 <translation id="2169830938017475061">Sada</translation>
@@ -554,7 +554,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="4062305924942672200">Pravne informacije</translation>
 <translation id="4084682180776658562">Oznaka</translation>
 <translation id="4084712963632273211">Od izvora <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />dostavlja Google<ph name="END_DEEMPHASIZED" /></translation>
-<translation id="4095146165863963773">Izbrisati podatke aplikacije?</translation>
+<translation id="4095146165863963773">Izbrisati podatke aplikacija?</translation>
 <translation id="4096227151372679484">Tok za pohranu oznaka je otvoren na pola visine</translation>
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
 <translation id="410351446219883937">Automatska reprodukcija</translation>
@@ -733,7 +733,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5091199029769593641">Uskoro ćete vidjeti priče s web lokacije <ph name="SITE_NAME" /> kada otvorite novu karticu. Web lokacije koje pratite se pohranjuju na vaš Google račun. Njima možete upravljati u postavkama Discovera.</translation>
 <translation id="5091249083535528968">Prošireni podaci o korištenju</translation>
 <translation id="509429900233858213">Došlo je do greške.</translation>
-<translation id="5098190077610408701">Dodati interesovanje?</translation>
 <translation id="5102401324271069229">Ako web lokacija pokuša ukrasti vašu lozinku ili kada preuzimate štetan fajl, Chrome može slati URL-ove, uključujući dijelove sadržaja stranice, u Sigurno pregledanje</translation>
 <translation id="510275257476243843">Još 1 sat</translation>
 <translation id="5115811374190515607">u: <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5906513782029855931">Dopustite Google Asistentu pristup URL-ovima web lokacija da vam pomogne s izvršavanjem zadataka. Možete isključiti Asistenta u postavkama Chromea.</translation>
 <translation id="5916664084637901428">Uključeno</translation>
 <translation id="5919204609460789179">Ažurirajte proizvod <ph name="PRODUCT_NAME" /> da započnete sinhronizaciju</translation>
+<translation id="5938820472109305350">Dodavanje: <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Korištenje Googlea za pretraživanje</translation>
 <translation id="5945035219773565305">Trenutna preporuka: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Prikazivanje aktivne stranice</translation>
@@ -898,7 +898,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6033245666633565791">Pomoću <ph name="BEGIN_LINK" />Okruženja zaštićene privatnosti<ph name="END_LINK" />, Chrome razvija nove tehnologije da vas zaštiti od praćenja između web lokacija, a pri tome će očuvati otvoreni web.
 
 Probni periodi Okruženja zaštićene privatnosti i dalje su u fazi aktivnog razvoja i dostupni su u odabranim područjima. Za sada web lokacije mogu isprobati Zaštićeno okruženje za privatnost dok pri tome nastavljaju koristiti web tehnologije kao što su kolačići trećih strana.</translation>
-<translation id="6036057147555329831">Dodatni ICU</translation>
 <translation id="6039379616847168523">Pređite na sljedeću karticu</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="604124094241169006">Automatski</translation>
@@ -1023,6 +1022,7 @@ Tokeni povjerenja poboljšavaju privatnosti na webu i ne mogu se koristi za utvr
 <translation id="663674369910034433">Više postavki koje se odnose na privatnost, sigurnost i prikupljanje podataka možete pronaći u odjeljcima <ph name="BEGIN_LINK1" />Sinhronizacija<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Googleove usluge<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Radi poboljšanja aplikacije Chrome šalje Googleu podatke o korištenju i padovima. <ph name="BEGIN_UMA_LINK" />Upravljajte<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokiraj sve vrijeme</translation>
+<translation id="6641780377503683465">Uklanjanje: <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Obriši</translation>
 <translation id="6645629752388991326">Kontrolirajte koji uređaji se mogu prijaviti koristeći ovaj uređaj kao sigurnosni ključ.</translation>
 <translation id="6648459603387803038">Vaš administrator može promijeniti postavke preglednika daljinskim putem. Aktivnostima na ovom uređaju se može upravljati i van Chromea.</translation>

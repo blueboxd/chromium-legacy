@@ -12,6 +12,7 @@
 #include "base/callback_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/prefetch/search_prefetch/base_search_prefetch_request.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -21,11 +22,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-class AutocompleteController;
 struct OmniboxLog;
 class PrefRegistrySimple;
 class Profile;
 class SearchPrefetchURLLoader;
+class AutocompleteResult;
 
 namespace network {
 struct ResourceRequest;
@@ -96,8 +97,8 @@ class SearchPrefetchService : public KeyedService,
   // Monitors changes to DSE. If a change occurs, clears prefetches.
   void OnTemplateURLServiceChanged() override;
 
-  // Called when |controller| has updated information.
-  void OnResultChanged(AutocompleteController* controller);
+  // Called when `AutocompleteController` receives updates on `result`.
+  void OnResultChanged(const AutocompleteResult& result);
 
   // Returns whether the prefetch started or not.
   bool MaybePrefetchURL(const GURL& url);
@@ -120,6 +121,18 @@ class SearchPrefetchService : public KeyedService,
   // network fetch.
   std::unique_ptr<SearchPrefetchURLLoader> TakePrefetchResponseFromDiskCache(
       const GURL& navigation_url);
+
+  // Allows search prerender to use the BackForwardSearchPrefetchURLLoader.
+  // Called on prerender activation. Search prerender emplaces a new mapping
+  // relationship:
+  // key  : The URL displayed on the location bar, The prerendered
+  // page changes the `prerendering_url` by updating some parameters, so it
+  // differs from `prerendering_url`.
+  // value: The URL sent by a prerendering URL request.
+  // TODO(https://crbug.com/1295170): This is a workaround. Remove this method
+  // after the unification work is done.
+  void AddCacheEntryForPrerender(const GURL& updated_prerendered_url,
+                                 const GURL& prerendering_url);
 
   // Reports the status of a prefetch for a given search term.
   absl::optional<SearchPrefetchStatus> GetSearchPrefetchStatusForTesting(

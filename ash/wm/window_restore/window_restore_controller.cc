@@ -27,7 +27,7 @@
 #include "base/containers/contains.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
-#include "components/app_restore/full_restore_info.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -144,8 +144,8 @@ WindowRestoreController::WindowRestoreController() {
   g_instance = this;
 
   tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
-  full_restore_info_observation_.Observe(
-      full_restore::FullRestoreInfo::GetInstance());
+  app_restore_info_observation_.Observe(
+      app_restore::AppRestoreInfo::GetInstance());
 }
 
 WindowRestoreController::~WindowRestoreController() {
@@ -448,10 +448,11 @@ void WindowRestoreController::StackWindow(aura::Window* window) {
   if (!activation_index)
     return;
 
+  Shell::Get()->mru_window_tracker()->OnWindowAlteredByWindowRestore(window);
+
   // Stack the window.
   auto siblings = window->parent()->children();
-  auto insertion_point =
-      WindowRestoreController::GetWindowToInsertBefore(window, siblings);
+  auto insertion_point = GetWindowToInsertBefore(window, siblings);
   if (insertion_point != siblings.end())
     window->parent()->StackChildBelow(window, *insertion_point);
 }
@@ -484,7 +485,7 @@ void WindowRestoreController::SaveWindowImpl(
   }
 
   // Do not save window data if the setting is turned off by active user.
-  if (!full_restore::FullRestoreInfo::GetInstance()->CanPerformRestore(
+  if (!app_restore::AppRestoreInfo::GetInstance()->CanPerformRestore(
           Shell::Get()->session_controller()->GetActiveAccountId())) {
     return;
   }

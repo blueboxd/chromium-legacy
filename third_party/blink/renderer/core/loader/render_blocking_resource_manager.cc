@@ -4,48 +4,19 @@
 
 #include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 
-#include "build/build_config.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/resource/font_resource.h"
+#include "third_party/blink/renderer/core/loader/pending_link_preload.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 
 namespace blink {
 
 namespace {
 
 // 50ms is the overall best performing value in our experiments.
-const base::TimeDelta kMaxRenderingDelay = base::Milliseconds(50);
-
-class FontPreloadFinishObserver final : public ResourceFinishObserver {
- public:
-  FontPreloadFinishObserver(FontResource& font_resource, Document& document)
-      : font_resource_(font_resource), document_(document) {}
-
-  ~FontPreloadFinishObserver() final = default;
-
-  void Trace(blink::Visitor* visitor) const final {
-    visitor->Trace(font_resource_);
-    visitor->Trace(document_);
-    ResourceFinishObserver::Trace(visitor);
-  }
-
- private:
-  void NotifyFinished() final {
-    DCHECK(document_->GetRenderBlockingResourceManager());
-    document_->GetRenderBlockingResourceManager()->FontPreloadingFinished(
-        font_resource_, this);
-  }
-
-  String DebugName() const final { return "FontPreloadFinishObserver"; }
-
-  Member<FontResource> font_resource_;
-  Member<Document> document_;
-};
+const base::TimeDelta kMaxRenderingDelayForFontPreloads =
+    base::Milliseconds(50);
 
 class ImperativeFontLoadFinishedCallback final
     : public GarbageCollected<ImperativeFontLoadFinishedCallback>,
@@ -64,13 +35,13 @@ class ImperativeFontLoadFinishedCallback final
   void NotifyLoaded(FontFace*) final {
     DCHECK(document_->GetRenderBlockingResourceManager());
     document_->GetRenderBlockingResourceManager()
-        ->ImperativeFontLoadingFinished();
+        ->RemoveImperativeFontLoading();
   }
 
   void NotifyError(FontFace*) final {
     DCHECK(document_->GetRenderBlockingResourceManager());
     document_->GetRenderBlockingResourceManager()
-        ->ImperativeFontLoadingFinished();
+        ->RemoveImperativeFontLoading();
   }
 
   Member<Document> document_;
@@ -84,30 +55,23 @@ RenderBlockingResourceManager::RenderBlockingResourceManager(Document& document)
           document.GetTaskRunner(TaskType::kInternalFrameLifecycleControl),
           this,
           &RenderBlockingResourceManager::FontPreloadingTimerFired),
-      font_preload_timeout_(kMaxRenderingDelay) {}
+      font_preload_timeout_(kMaxRenderingDelayForFontPreloads) {}
 
-void RenderBlockingResourceManager::FontPreloadingStarted(
-    FontResource* font_resource) {
-  // The font is either already in the memory cache, or has errored out. In
-  // either case, we don't any further processing.
-  if (font_resource->IsLoaded())
+void RenderBlockingResourceManager::AddPendingPreload(
+    const PendingLinkPreload& link,
+    PreloadType type) {
+  if (type == PreloadType::kShortBlockingFont && font_preload_timer_has_fired_)
     return;
 
-  if (font_preload_timer_has_fired_ || document_->body())
+  if (document_->body())
     return;
 
-  FontPreloadFinishObserver* observer =
-      MakeGarbageCollected<FontPreloadFinishObserver>(*font_resource,
-                                                      *document_);
-  font_resource->AddFinishObserver(
-      observer, document_->GetTaskRunner(TaskType::kInternalLoading).get());
-  font_preload_finish_observers_.insert(observer);
-
-  if (!font_preload_timer_.IsActive())
-    font_preload_timer_.StartOneShot(font_preload_timeout_, FROM_HERE);
+  pending_preloads_.insert(&link, type);
+  if (type == PreloadType::kShortBlockingFont)
+    EnsureStartFontPreloadTimer();
 }
 
-void RenderBlockingResourceManager::ImperativeFontLoadingStarted(
+void RenderBlockingResourceManager::AddImperativeFontLoading(
     FontFace* font_face) {
   if (font_face->LoadStatus() != FontFace::kLoading)
     return;
@@ -119,22 +83,19 @@ void RenderBlockingResourceManager::ImperativeFontLoadingStarted(
       MakeGarbageCollected<ImperativeFontLoadFinishedCallback>(*document_);
   font_face->AddCallback(callback);
   ++imperative_font_loading_count_;
-
-  if (!font_preload_timer_.IsActive())
-    font_preload_timer_.StartOneShot(font_preload_timeout_, FROM_HERE);
+  EnsureStartFontPreloadTimer();
 }
 
-void RenderBlockingResourceManager::FontPreloadingFinished(
-    FontResource* font_resource,
-    ResourceFinishObserver* observer) {
-  if (font_preload_timer_has_fired_)
+void RenderBlockingResourceManager::RemovePendingPreload(
+    const PendingLinkPreload& link) {
+  auto iter = pending_preloads_.find(&link);
+  if (iter == pending_preloads_.end())
     return;
-  DCHECK(font_preload_finish_observers_.Contains(observer));
-  font_preload_finish_observers_.erase(observer);
+  pending_preloads_.erase(iter);
   document_->RenderBlockingResourceUnblocked();
 }
 
-void RenderBlockingResourceManager::ImperativeFontLoadingFinished() {
+void RenderBlockingResourceManager::RemoveImperativeFontLoading() {
   if (font_preload_timer_has_fired_)
     return;
   DCHECK(imperative_font_loading_count_);
@@ -142,9 +103,19 @@ void RenderBlockingResourceManager::ImperativeFontLoadingFinished() {
   document_->RenderBlockingResourceUnblocked();
 }
 
+void RenderBlockingResourceManager::EnsureStartFontPreloadTimer() {
+  if (!font_preload_timer_.IsActive())
+    font_preload_timer_.StartOneShot(font_preload_timeout_, FROM_HERE);
+}
+
 void RenderBlockingResourceManager::FontPreloadingTimerFired(TimerBase*) {
   font_preload_timer_has_fired_ = true;
-  font_preload_finish_observers_.clear();
+  VectorOf<const PendingLinkPreload> short_blocking_font_preloads;
+  for (auto preload_and_type : pending_preloads_) {
+    if (preload_and_type.value == PreloadType::kShortBlockingFont)
+      short_blocking_font_preloads.push_back(preload_and_type.key);
+  }
+  pending_preloads_.RemoveAll(short_blocking_font_preloads);
   imperative_font_loading_count_ = 0;
   document_->RenderBlockingResourceUnblocked();
 }
@@ -161,6 +132,10 @@ void RenderBlockingResourceManager::SetFontPreloadTimeoutForTest(
 void RenderBlockingResourceManager::DisableFontPreloadTimeoutForTest() {
   if (font_preload_timer_.IsActive())
     font_preload_timer_.Stop();
+}
+
+bool RenderBlockingResourceManager::FontPreloadTimerIsActiveForTest() const {
+  return font_preload_timer_.IsActive();
 }
 
 bool RenderBlockingResourceManager::AddPendingStylesheet(
@@ -202,7 +177,7 @@ void RenderBlockingResourceManager::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(pending_stylesheet_owner_nodes_);
   visitor->Trace(pending_scripts_);
-  visitor->Trace(font_preload_finish_observers_);
+  visitor->Trace(pending_preloads_);
   visitor->Trace(font_preload_timer_);
 }
 

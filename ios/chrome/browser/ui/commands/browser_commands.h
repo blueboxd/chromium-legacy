@@ -11,6 +11,8 @@
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
+#import "ios/chrome/browser/ui/commands/lens_commands.h"
+#import "ios/chrome/browser/ui/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
@@ -19,7 +21,6 @@
 
 class GURL;
 @class ReadingListAddCommand;
-@class SearchImageWithLensCommand;
 
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
@@ -29,11 +30,13 @@ class GURL;
                            ActivityServiceCommands,
                            BrowserCoordinatorCommands,
                            InfobarCommands,
+                           NewTabPageCommands,
                            PageInfoCommands,
                            PopupMenuCommands,
                            QRScannerCommands,
                            SnackbarCommands,
-                           DefaultPromoCommands>
+                           DefaultPromoCommands,
+                           LensCommands>
 
 // Closes the current tab.
 // TODO(crbug.com/1272498): Refactor this command away; call sites should close
@@ -80,9 +83,6 @@ class GURL;
 // Animates the NTP fakebox to the focused position and focuses the real
 // omnibox.
 - (void)focusFakebox;
-
-// Search for an image with Lens, using |command| parameters.
-- (void)searchImageWithLens:(SearchImageWithLensCommand*)command;
 
 @end
 

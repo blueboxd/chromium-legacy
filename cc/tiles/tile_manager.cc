@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
@@ -561,10 +562,6 @@ bool TileManager::PrepareTiles(
     return false;
   }
 
-  const bool did_memory_policy_become_more_restrictive =
-      IsTileMemoryLimitPolicyMoreRestictive(state.memory_limit_policy,
-                                            global_state_.memory_limit_policy);
-
   signals_ = Signals();
   global_state_ = state;
 
@@ -583,9 +580,6 @@ bool TileManager::PrepareTiles(
 
   if (!ShouldRasterOccludedTiles())
     FreeResourcesForOccludedTiles();
-
-  if (did_memory_policy_become_more_restrictive)
-    FreeResourcesForTilesThatViolateMemoryPolicy();
 
   PrioritizedWorkToSchedule prioritized_work = AssignGpuMemoryToTiles();
 
@@ -931,19 +925,6 @@ void TileManager::FreeResourcesForOccludedTiles() {
   for (; !iterator->AtEnd(); iterator->Next()) {
     if (iterator->IsCurrentTileOccluded())
       FreeResourcesForTile(iterator->GetCurrent());
-  }
-}
-
-void TileManager::FreeResourcesForTilesThatViolateMemoryPolicy() {
-  std::unique_ptr<TilesWithResourceIterator> iterator =
-      client_->CreateTilesWithResourceIterator();
-  for (; !iterator->AtEnd(); iterator->Next()) {
-    const PrioritizedTile* prioritized_tile =
-        iterator->GetCurrentAsPrioritizedTile();
-    DCHECK(prioritized_tile);
-    Tile* tile = prioritized_tile->tile();
-    if (TilePriorityViolatesMemoryPolicy(prioritized_tile->priority()))
-      FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(tile);
   }
 }
 

@@ -62,6 +62,10 @@ void RecordNearbySharePayloadTextAttachmentTypeMetric(
     bool is_incoming,
     location::nearby::connections::mojom::PayloadStatus status);
 
+void RecordNearbySharePayloadWifiCredentialsAttachmentTypeMetric(
+    bool is_incoming,
+    location::nearby::connections::mojom::PayloadStatus status);
+
 void RecordNearbySharePayloadFinalStatusMetric(
     location::nearby::connections::mojom::PayloadStatus status,
     absl::optional<location::nearby::connections::mojom::Medium> medium);
@@ -71,8 +75,10 @@ void RecordNearbySharePayloadMediumMetric(
     nearby_share::mojom::ShareTargetType type,
     uint64_t num_bytes_transferred);
 
-void RecordNearbySharePayloadNumAttachmentsMetric(size_t num_text_attachments,
-                                                  size_t num_file_attachments);
+void RecordNearbySharePayloadNumAttachmentsMetric(
+    size_t num_text_attachments,
+    size_t num_file_attachments,
+    size_t num_wifi_credentials_attachments);
 
 void RecordNearbySharePayloadSizeMetric(
     bool is_incoming,
@@ -120,5 +126,7 @@ void RecordNearbyShareSetupNotificationFlowEvent(
     NearbyShareBackgroundScanningSetupNotificationFlowEvent event);
 
 void RecordNearbyShareSetupNotificationTimeToAction(base::TimeDelta time);
+
+void RecordNearbyShareWifiConfigurationResultMetric(bool success);
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARE_METRICS_LOGGER_H_

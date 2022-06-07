@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
-<translation id="1096883626080133124">Jetzt mit dem neuen ultraschnellen Google Chrome ganz einfach und sicherer noch mehr erledigen</translation>
 <translation id="1143896152279775643">Dein Passwort wird im Passwortmanager von Google für <ph name="EMAIL" /> gespeichert.</translation>
 <translation id="1282031177488366470">Helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
 <translation id="1479202195792305274">Chrome kann deine Passwörter prüfen, wenn du dich mit deinem Google-Konto anmeldest.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Chrome überall nutzen</translation>
 <translation id="3522659714780527202">Aktiviere die Synchronisierung, um deine Tabs überall dort aufzurufen, wo du Chrome verwendest</translation>
 <translation id="3533694711092285624">Keine gespeicherten Passwörter. Chrome kann deine Passwörter prüfen, wenn du sie speicherst.</translation>
-<translation id="3634910711516114487">Wenn du Chrome optimal nutzen möchtest, melde dich mit deinem Google-Konto in Chrome an</translation>
 <translation id="3655656110921623717">Das bedeutet, dass Chrome immer die mobile Website anfordert.</translation>
 <translation id="3706101708757577809">Du kannst jetzt Chrome jederzeit nutzen, wenn du in Nachrichten, Dokumenten und anderen Apps auf Links tippst.</translation>
 <translation id="3720541637541300822">Inkognitotabs sperren, wenn Chrome geschlossen wird</translation>
@@ -83,19 +81,13 @@
 <translation id="6709398533399187136">Dein Passwort wurde durch eine Datenpanne preisgegeben. Der Passwortmanager von Google empfiehlt, dieses Passwort jetzt zu ändern.</translation>
 <translation id="6822673484890854830">Chrome konnte nicht alle Passwörter prüfen. Versuche es später noch einmal.</translation>
 <translation id="6964931465519938134">Du kannst jetzt Chrome jederzeit nutzen, wenn du in Nachrichten, Dokumenten und anderen Apps auf Links tippst.</translation>
-<translation id="7046845777663074840">Wenn aktiviert:
-<ph name="BEGIN_INDENT" />  • Trage dazu bei, Chrome für Nutzer zu optimieren, die es genauso verwenden wie du.<ph name="END_INDENT" />
-
-Wichtige Hinweise:
-<ph name="BEGIN_INDENT" />  • Daten zu deiner Chrome-Nutzung werden an Google gesendet, können aber nicht mit dir in Verbindung gebracht werden.
-  • Falls Chrome abstürzt, können die Details zum Absturz einige personenbezogene Daten enthalten.
-  • Falls du die Synchronisierung aktivierst, können die Messwerte auch Informationen zu den von dir besuchten URLs enthalten.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Chrome personalisieren</translation>
 <translation id="7124339256045485976">Chrome auf dem neuesten Stand halten</translation>
 <translation id="7161390184744336561">Google Chrome ist veraltet</translation>
 <translation id="7165736900384873061">Google Chrome QR-Scanner nutzen</translation>
 <translation id="7172660552945675509">Tipp: <ph name="BEGIN_LINK" />Ziehe Chrome in dein Dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome verwendet Face ID, um den autorisierten Zugriff auf deine Passwörter zu gewährleisten.</translation>
+<translation id="7187993566681480880">Schützt dich in Chrome und erhöht möglicherweise die Sicherheit in anderen Google-Apps, wenn du angemeldet bist.</translation>
 <translation id="72119412072970160">Du kannst die im Passwortmanager von Google gespeicherten Passwörter in anderen Apps auf deinem iPad verwenden.</translation>
 <translation id="7261678641327190792">Chrome kann deine Passwörter nicht prüfen</translation>
 <translation id="7272930098487145294">Um Bilder zu speichern, gib Chrome unter „Einstellungen“ die Berechtigung zum Hinzufügen von Fotos</translation>
@@ -108,6 +100,7 @@ Wichtige Hinweise:
 <translation id="766361182512894255">Dein Passwort wurde durch eine Datenpanne preisgegeben. Chrome empfiehlt, das Passwort jetzt zu ändern.</translation>
 <translation id="7693590760643069321">Du kannst jetzt Chrome jederzeit nutzen, wenn du in Nachrichten, Dokumenten und anderen Apps auf Links tippst.</translation>
 <translation id="7698568245838009292">Chrome möchte auf deine Kamera zugreifen</translation>
+<translation id="7780154209050837198">Wenn du Chrome optimal nutzen möchtest, meldest du dich mit deinem Google-Konto in Chrome an.</translation>
 <translation id="7855730255114109580">Google Chrome ist auf dem neuesten Stand.</translation>
 <translation id="8022947259858476807">Chrome standardmäßig verwenden, um Links zu öffnen, über Widgets zu suchen und Passwörter in anderen Apps automatisch auszufüllen</translation>
 <translation id="8160472928944011082">Update nicht möglich</translation>

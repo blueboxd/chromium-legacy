@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
-<translation id="1096883626080133124">Google Chrome on nüüd lihtsam, turvalisem ja kiirem kui kunagi varem ning aitab teil veelgi rohkem toiminguid teha</translation>
 <translation id="1143896152279775643">Teie parool salvestatakse konto <ph name="EMAIL" /> Google'i paroolihaldurisse.</translation>
 <translation id="1282031177488366470">Aidake täiustada Chrome'i funktsioone ja toimivust</translation>
 <translation id="1479202195792305274">Chrome saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Chrome'i kasutamine kõikjal</translation>
 <translation id="3522659714780527202">Selleks et näha vahelehti kõikjalt, kus Chrome'i kasutate, lülitage sisse sünkroonimine</translation>
 <translation id="3533694711092285624">Salvestatud paroole ei ole. Chrome saab teie paroole kontrollida, kui olete need salvestanud.</translation>
-<translation id="3634910711516114487">Chrome'i kasutamiseks parimal moel logige Chrome'i sisse oma Google'i kontoga</translation>
 <translation id="3655656110921623717">See tähendab, et Chrome taotleb iga kord mobiilisaiti.</translation>
 <translation id="3706101708757577809">Nüüd saate kasutada Chrome'i iga kord, kui puudutate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
 <translation id="3720541637541300822">Chrome'i sulgemisel inkognito vahelehtede lukustamine</translation>
@@ -83,19 +81,13 @@
 <translation id="6709398533399187136">Teie parool oli andmetega seotud rikkumise käigus avalikustatud. Google'i paroolihaldur soovitab teil kohe seda parooli muuta.</translation>
 <translation id="6822673484890854830">Chrome'il ei õnnestunud kõiki paroole kontrollida. Proovige hiljem uuesti.</translation>
 <translation id="6964931465519938134">Nüüd saate kasutada Chrome'i iga kord, kui puudutate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
-<translation id="7046845777663074840">Kui see on sisse lülitatud
-<ph name="BEGIN_INDENT" />  • Aitate täiustada Chrome'i inimeste jaoks, kes kasutavad seda nagu teie.<ph name="END_INDENT" />
-
-Olulised aspektid
-<ph name="BEGIN_INDENT" />  • Google'ile saadetakse teavet teie Chrome'i kasutuse kohta, kuid see teave pole teiega seotud.
-  • Kui Chrome jookseb kokku, võivad krahhi üksikasjad isiklikku teavet sisaldada.
-  • Kui lülitate sünkroonimise sisse, võivad mõõdikud sisaldada ka teavet teie külastatavate URL-ide kohta.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Isikupärastage Chrome'i</translation>
 <translation id="7124339256045485976">Hoidke Chrome ajakohasena</translation>
 <translation id="7161390184744336561">Google Chrome on aegunud</translation>
 <translation id="7165736900384873061">Google Chrome'i QR-skanneri kasutamise alustamine</translation>
 <translation id="7172660552945675509">Nõuanne: <ph name="BEGIN_LINK" />lisage Chrome dokki<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome kasutab paroolide volitatud juurdepääsu kontrollimiseks Face ID-d.</translation>
+<translation id="7187993566681480880">Kaitseb teid Chrome'is ja seda võidakse kasutada teie turvalisuse suurendamiseks muudes Google'i rakendustes, kui olete sisse logitud.</translation>
 <translation id="72119412072970160">Saate Google'i paroolihaldurisse salvestatud paroole oma iPadi muudes rakendustes kasutada.</translation>
 <translation id="7261678641327190792">Chrome'ile ei õnnestu teie paroole kontrollida</translation>
 <translation id="7272930098487145294">Piltide salvestamiseks puudutage valikut Seaded, et lubada Chrome'il fotode lisamine</translation>
@@ -108,6 +100,7 @@ Olulised aspektid
 <translation id="766361182512894255">Teie parool oli andmetega seotud rikkumise käigus avalikustatud. Chrome soovitab teil kohe parooli muuta.</translation>
 <translation id="7693590760643069321">Nüüd saate kasutada Chrome'i iga kord, kui puudutate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
 <translation id="7698568245838009292">Chrome soovib juurdepääsu kaamerale</translation>
+<translation id="7780154209050837198">Chrome'i kasutamiseks parimal moel logige Chrome'i sisse oma Google'i kontoga.</translation>
 <translation id="7855730255114109580">Google Chrome on ajakohane</translation>
 <translation id="8022947259858476807">Kasutage linkide avamiseks, vidinatest otsimiseks ja muudes rakendustes paroolide automaatselt täitmiseks vaikimisi Chrome'i</translation>
 <translation id="8160472928944011082">Chrome'i ei saa värskendada</translation>

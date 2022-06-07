@@ -32,7 +32,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/values_equivalent.h"
 #include "base/types/pass_key.h"
+#include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/color_scheme_flags.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_bitset.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -2664,6 +2666,9 @@ class ComputedStyle : public ComputedStyleBase,
       AccessBackgroundLayers().FillUnsetProperties();
     }
   }
+  bool IsBackgroundColorCurrentColor() const {
+    return BackgroundColor().IsCurrentColor();
+  }
   bool HasBackgroundRelatedColorReferencingCurrentColor() const {
     if (BackgroundColor().IsCurrentColor() ||
         InternalVisitedBackgroundColor().IsCurrentColor() ||
@@ -2731,6 +2736,15 @@ class ComputedStyle : public ComputedStyleBase,
                              : mojom::blink::ColorScheme::kLight;
   }
 
+  // Helper method to adjust used values for color-scheme on the current
+  // computed color-scheme passed in as flags. The computed value should already
+  // have been set by the Apply* methods on the ColorScheme class, or as the
+  // initial value.
+  void SetUsedColorScheme(
+      ColorSchemeFlags flags,
+      mojom::blink::PreferredColorScheme preferred_color_scheme,
+      bool force_dark);
+
   StyleColor InitialColorForColorScheme() const {
     // TODO(crbug.com/1046753, crbug.com/929098): The initial value of the color
     // property should be canvastext, but since we do not yet ship color-scheme
@@ -2774,6 +2788,13 @@ class ComputedStyle : public ComputedStyleBase,
            static_cast<unsigned>(ViewportUnitFlag::kDynamic);
   }
   bool HasViewportUnits() const { return ViewportUnitFlags(); }
+
+  void SetHasExplicitOverflowXVisible() {
+    SetHasExplicitOverflowXVisibleInternal(true);
+  }
+  void SetHasExplicitOverflowYVisible() {
+    SetHasExplicitOverflowYVisibleInternal(true);
+  }
 
  private:
   EClear Clear() const { return ClearInternal(); }

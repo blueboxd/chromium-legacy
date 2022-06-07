@@ -20,6 +20,7 @@
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -681,7 +682,7 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateAppIcon) {
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   gfx::ImageSkia default_icon = gfx::CreateVectorIcon(
-      message_center::kProductIcon, kAppIconSize, gfx::kChromeIconGrey);
+      message_center::kProductIcon, kAppIconSize, gfx::kGoogleGrey700);
 
   // Verify that the icon is initialized to the default.
   EXPECT_TRUE(icon_view()->GetImage().BackedBySameObjectAs(default_icon));

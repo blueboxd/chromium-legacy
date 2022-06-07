@@ -7,6 +7,7 @@
 
 #include "components/viz/common/shared_element_resource_id.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
+class PaintLayer;
 class PseudoElement;
 
 // This class manages the integration between DocumentTransition and the style
@@ -39,6 +41,7 @@ class DocumentTransitionStyleTracker
 
   void AddSharedElement(Element*, const AtomicString&);
   void RemoveSharedElement(Element*);
+  void AddSharedElementsFromCSS();
 
   // Indicate that capture was requested. This verifies that the combination of
   // set elements and tags is valid. Returns true if capture phase started, and
@@ -77,9 +80,9 @@ class DocumentTransitionStyleTracker
       PseudoId pseudo_id,
       const AtomicString& document_transition_tag);
 
-  // Dispatched after the layout lifecycle stage after each rendering lifecycle
-  // update when a transition is in progress.
-  void RunPostLayoutSteps();
+  // Dispatched after the pre-paint lifecycle stage after each rendering
+  // lifecycle update when a transition is in progress.
+  void RunPostPrePaintSteps();
 
   // Provides a UA stylesheet applied to ::transition* pseudo elements.
   const String& UAStyleSheet();
@@ -125,6 +128,8 @@ class DocumentTransitionStyleTracker
   struct ElementData : public GarbageCollected<ElementData> {
     void Trace(Visitor* visitor) const;
 
+    LayoutSize GetIntrinsicSize(bool use_cached_data);
+
     // The element in the current DOM whose state is being tracked and mirrored
     // into the corresponding container pseudo element.
     Member<Element> target_element;
@@ -133,10 +138,12 @@ class DocumentTransitionStyleTracker
     // |target_element|. This information is mirrored into the UA stylesheet.
     LayoutSize border_box_size;
     TransformationMatrix viewport_matrix;
+    float device_pixel_ratio = 1.f;
 
     // Computed info cached before the DOM switches to the new state.
     LayoutSize cached_border_box_size;
     TransformationMatrix cached_viewport_matrix;
+    float cached_device_pixel_ratio = 1.f;
 
     // Valid if there is an element in the old DOM generating a snapshot.
     viz::SharedElementResourceId old_snapshot_id;
@@ -158,6 +165,8 @@ class DocumentTransitionStyleTracker
 
   void AddConsoleError(String message, Vector<DOMNodeId> related_nodes = {});
   bool FlattenAndVerifyElements(VectorOf<Element>&, VectorOf<AtomicString>&);
+
+  void AddSharedElementsFromCSSRecursive(PaintLayer*);
 
   Member<Document> document_;
   State state_ = State::kIdle;

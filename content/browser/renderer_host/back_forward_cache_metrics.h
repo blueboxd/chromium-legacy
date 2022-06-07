@@ -102,7 +102,7 @@ class BackForwardCacheMetrics
     kForegroundCacheLimit = 46,
     kBrowsingInstanceNotSwapped = 47,
     kBackForwardCacheDisabledForDelegate = 48,
-    kOptInUnloadHeaderNotPresent = 49,
+    // 49: kOptInUnloadHeaderNotPresent was removed as the experiments ended.
     kUnloadHandlerExistsInMainFrame = 50,
     kUnloadHandlerExistsInSubFrame = 51,
     kServiceWorkerUnregistration = 52,
@@ -112,7 +112,8 @@ class BackForwardCacheMetrics
     kNoResponseHead = 56,
     // 57: kActivationNavigationsDisallowedForBug1234857 was fixed.
     kErrorDocument = 58,
-    kMaxValue = kErrorDocument,
+    kFencedFramesEmbedder = 59,
+    kMaxValue = kFencedFramesEmbedder,
   };
 
   using NotRestoredReasons =
@@ -236,6 +237,18 @@ class BackForwardCacheMetrics
   // Should be called only from the UI thread.
   CONTENT_EXPORT static void OverrideTimeForTesting(base::TickClock* clock);
 
+  class TestObserver {
+   public:
+    virtual ~TestObserver() = default;
+    // Report the tree result of NotRestoredReason to the observer.
+    virtual void NotifyNotRestoredReasons(
+        std::unique_ptr<BackForwardCacheCanStoreTreeResult> tree_result) = 0;
+  };
+
+  void SetObserverForTesting(TestObserver* observer) {
+    test_observer_ = observer;
+  }
+
  private:
   friend class base::RefCounted<BackForwardCacheMetrics>;
 
@@ -306,6 +319,8 @@ class BackForwardCacheMetrics
   bool previous_navigation_is_served_from_bfcache_ = false;
 
   absl::optional<base::TimeTicks> renderer_killed_timestamp_;
+
+  TestObserver* test_observer_ = nullptr;
 
   // The reason why the last attempted navigation in the frame used or didn't
   // use a new BrowsingInstance.

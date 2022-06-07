@@ -268,7 +268,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         String storagePermission = Manifest.permission.READ_EXTERNAL_STORAGE;
         boolean shouldUsePhotoPicker = shouldUsePhotoPicker();
         if (shouldUsePhotoPicker) {
-            if (BuildInfo.isAtLeastT()) {
+            if (BuildInfo.targetsAtLeastT()) {
                 if (!window.hasPermission(PermissionConstants.READ_MEDIA_IMAGES)
                         && shouldShowImageTypes()) {
                     missingPermissions.add(PermissionConstants.READ_MEDIA_IMAGES);

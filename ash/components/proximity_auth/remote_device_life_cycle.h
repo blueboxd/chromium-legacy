@@ -7,7 +7,7 @@
 
 #include <ostream>
 
-#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/remote_device_ref.h"
 
 namespace ash {
 namespace secure_channel {
@@ -62,7 +62,7 @@ class RemoteDeviceLifeCycle {
   virtual void Start() = 0;
 
   // Returns the RemoteDeviceRef instance that this life cycle manages.
-  virtual chromeos::multidevice::RemoteDeviceRef GetRemoteDevice() const = 0;
+  virtual ash::multidevice::RemoteDeviceRef GetRemoteDevice() const = 0;
 
   // Returns the active channel to the remote device, or null if the device is
   // not yet connected.

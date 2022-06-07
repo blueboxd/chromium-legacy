@@ -100,13 +100,6 @@ bool FormContainsFieldWithName(const FormData& form,
   return false;
 }
 
-// Returns whether reparsing server predictions following a form change is
-// enabled.
-bool IsReparsingServerPredictionsEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kReparseServerPredictionsFollowingFormChange);
-}
-
 bool IsUsernameFirstFlowFeatureEnabled() {
   return base::FeatureList::IsEnabled(features::kUsernameFirstFlow);
 }
@@ -256,7 +249,7 @@ base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
   return base::make_span(form_fetcher_->GetInteractionsStats());
 }
 
-base::span<const InsecureCredential>
+const std::vector<const PasswordForm*>&
 PasswordFormManager::GetInsecureCredentials() const {
   return form_fetcher_->GetInsecureCredentials();
 }
@@ -333,6 +326,7 @@ void PasswordFormManager::OnUpdateUsernameFromPrompt(
   parsed_submitted_form_->username_value = new_username;
   parsed_submitted_form_->username_element.clear();
 
+  password_save_manager_->UsernameUpdatedInBubble();
   metrics_recorder_->set_username_updated_in_bubble(true);
 
   if (!new_username.empty()) {
@@ -512,6 +506,10 @@ bool PasswordFormManager::HasLikelyChangePasswordFormSubmitted() const {
 
 bool PasswordFormManager::IsPasswordUpdate() const {
   return password_save_manager_->IsPasswordUpdate();
+}
+
+bool PasswordFormManager::IsSamePassword() const {
+  return password_save_manager_->IsSamePassword();
 }
 
 base::WeakPtr<PasswordManagerDriver> PasswordFormManager::GetDriver() const {
@@ -878,8 +876,7 @@ void PasswordFormManager::FillForm(
   bool new_predictions_available = false;
   if (differences_bitmask) {
     UpdateFormManagerWithFormChanges(observed_form_data, predictions);
-    new_predictions_available =
-        parser_.predictions() && IsReparsingServerPredictionsEnabled();
+    new_predictions_available = parser_.predictions().has_value();
   }
   // Fill the form if relevant form predictions were found or if the
   // manager is not waiting for new server predictions.
@@ -1103,8 +1100,6 @@ void PasswordFormManager::UpdateFormManagerWithFormChanges(
     const FormData& observed_form_data,
     const std::map<FormSignature, FormPredictions>& predictions) {
   *mutable_observed_form() = observed_form_data;
-  if (!IsReparsingServerPredictionsEnabled())
-    return;
 
   // If the observed form has changed, it might be autofilled again.
   autofills_left_ = kMaxTimesAutofill;

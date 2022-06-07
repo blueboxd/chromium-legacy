@@ -92,6 +92,7 @@
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+#include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_web_view.h"
@@ -183,6 +184,7 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/user_notes/user_notes_features.h"
 #include "components/version_info/channel.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
@@ -254,7 +256,8 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#include "chrome/browser/ui/views/frame/browser_view_commands_mac.h"
+#include "components/remote_cocoa/app_shim/application_bridge.h"
+#include "components/remote_cocoa/browser/application_host.h"
 #endif
 
 #if defined(USE_AURA)
@@ -889,7 +892,6 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   contents_container_ = AddChildView(std::move(contents_container));
   set_contents_view(contents_container_);
 
-  if (base::FeatureList::IsEnabled(features::kSidePanel)) {
     right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     right_aligned_side_panel_separator_ =
         AddChildView(std::make_unique<ContentsSeparator>());
@@ -898,6 +900,10 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(
           this, global_side_panel_registry_.get());
     }
+
+  if (user_notes::IsUserNotesEnabled()) {
+    user_note_ui_coordinator_ =
+        std::make_unique<UserNoteUICoordinator>(browser_.get());
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -1068,7 +1074,7 @@ gfx::Rect BrowserView::GetFindBarBoundingBox() const {
       return bounding_box;
   }
 
-  contents_bounds.Inset(0, 0, gfx::scrollbar_size(), 0);
+  contents_bounds.Inset(gfx::Insets::TLBR(0, 0, 0, gfx::scrollbar_size()));
   return contents_container_->GetMirroredRect(contents_bounds);
 }
 
@@ -1855,6 +1861,8 @@ void BrowserView::SetFocusToLocationBar(bool is_user_initiated) {
   if (!IsActive())
     return;
 #endif
+  if (!IsLocationBarVisible())
+    return;
 
   LocationBarView* location_bar = GetLocationBarView();
   location_bar->FocusLocation(is_user_initiated);
@@ -2191,8 +2199,7 @@ void BrowserView::MaybeShowReadingListInSidePanelIPH() {
   if (!feature_promo_controller_)
     return;
 
-  if (!base::FeatureList::IsEnabled(features::kSidePanel) ||
-      !(browser_->window()->IsActive() ||
+  if (!(browser_->window()->IsActive() ||
         BrowserFeaturePromoController::
             active_window_check_blocked_for_testing()))
     return;
@@ -2259,6 +2266,11 @@ bool BrowserView::IsToolbarVisible() const {
 
 bool BrowserView::IsToolbarShowing() const {
   return IsToolbarVisible();
+}
+
+bool BrowserView::IsLocationBarVisible() const {
+  return browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR) &&
+         GetLocationBarView()->GetVisible();
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
@@ -2483,6 +2495,12 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
   return download_shelf_;
 }
 
+DownloadBubbleUIController* BrowserView::GetDownloadBubbleUIController() {
+  return (toolbar() && toolbar()->download_button())
+             ? toolbar()->download_button()->bubble_controller()
+             : nullptr;
+}
+
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
     int download_count,
     Browser::DownloadCloseType dialog_type,
@@ -2598,6 +2616,22 @@ bool BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
       event, GetFocusManager());
 }
 
+#if BUILDFLAG(IS_MAC)
+namespace {
+remote_cocoa::mojom::CutCopyPasteCommand CommandFromBrowserCommand(
+    int command_id) {
+  if (command_id == IDC_CUT)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kCut;
+  else if (command_id == IDC_COPY)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kCopy;
+  else if (command_id == IDC_PASTE)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kPaste;
+  NOTREACHED();
+  return remote_cocoa::mojom::CutCopyPasteCommand::kPaste;
+}
+}  // namespace
+#endif
+
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always
 // enabled in the page menu regardless of whether the command will do
 // anything. When someone selects the menu item, we just act as if they hit
@@ -2607,7 +2641,16 @@ bool BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // manager to do that.
 void BrowserView::CutCopyPaste(int command_id) {
 #if BUILDFLAG(IS_MAC)
-  ForwardCutCopyPasteToNSApp(command_id);
+  auto command = CommandFromBrowserCommand(command_id);
+  auto* application_host =
+      GetWidget() ? remote_cocoa::ApplicationHost::GetForNativeView(
+                        GetWidget()->GetNativeView())
+                  : nullptr;
+  if (application_host) {
+    application_host->GetApplication()->ForwardCutCopyPaste(command);
+  } else {
+    remote_cocoa::ApplicationBridge::ForwardCutCopyPasteToNSApp(command);
+  }
 #else
   // If a WebContents is focused, call its member method.
   //
@@ -3960,9 +4003,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
         // occluding the active window receiving key events on Mac and Linux,
         // and also prevents an inactive fullscreen window and its exit bubble
         // from being occluded by the active window on Windows and Chrome OS.
-        // Initial content fullscreen requests require user activation (so the
-        // window should already be active), but swapping the screen used for
-        // fullscreen does not require user activation on the fullscreen window.
+        // Content fullscreen requests require user activation (so the window
+        // should already be active), but it is safer to ensure activation here.
         Activate();
       }
 

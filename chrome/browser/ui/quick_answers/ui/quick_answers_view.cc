@@ -6,11 +6,14 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_pre_target_handler.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/browser/speech/tts_controller_impl.h"
+#include "content/public/browser/tts_utterance.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -42,6 +45,7 @@
 
 namespace {
 
+using quick_answers::PhoneticsInfo;
 using quick_answers::QuickAnswer;
 using quick_answers::QuickAnswerResultText;
 using quick_answers::QuickAnswerText;
@@ -55,13 +59,13 @@ using views::View;
 // Spacing between this view and the anchor view.
 constexpr int kMarginDip = 10;
 
-constexpr gfx::Insets kMainViewInsets(4, 0);
-constexpr gfx::Insets kContentViewInsets(8, 0, 8, 16);
+constexpr auto kMainViewInsets = gfx::Insets::VH(4, 0);
+constexpr auto kContentViewInsets = gfx::Insets::TLBR(8, 0, 8, 16);
 constexpr int kMaxRows = 3;
 
 // Google icon.
 constexpr int kGoogleIconSizeDip = 16;
-constexpr gfx::Insets kGoogleIconInsets(10, 10, 0, 10);
+constexpr auto kGoogleIconInsets = gfx::Insets::TLBR(10, 10, 0, 10);
 
 // Info icon.
 constexpr int kDogfoodIconSizeDip = 20;
@@ -80,7 +84,8 @@ constexpr int kSettingsButtonSizeDip = 14;
 constexpr int kSettingsButtonBorderDip = 3;
 
 // Phonetics audio button.
-constexpr gfx::Insets kPhoneticsAudioButtonMarginInsets(0, 4, 0, 4);
+constexpr auto kPhoneticsAudioButtonMarginInsets =
+    gfx::Insets::TLBR(0, 4, 0, 4);
 constexpr int kPhoneticsAudioButtonSizeDip = 14;
 constexpr int kPhoneticsAudioButtonBorderDip = 3;
 
@@ -132,9 +137,8 @@ View* AddHorizontalUiElements(
   auto* layout =
       labels_container->SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetDefault(views::kMarginsKey, gfx::Insets(/*top=*/0, /*left=*/0,
-                                                  /*bottom=*/0,
-                                                  /*right=*/kLabelSpacingDip));
+      .SetDefault(views::kMarginsKey,
+                  gfx::Insets::TLBR(0, 0, 0, kLabelSpacingDip));
 
   for (const auto& element : elements) {
     switch (element->type) {
@@ -216,13 +220,15 @@ class ReportQueryView : public views::Button {
 
   explicit ReportQueryView(PressedCallback callback)
       : Button(std::move(callback)) {
+    SetBackground(views::CreateThemedSolidBackground(
+        this, kColorQuickAnswersReportQueryButtonBackground));
+
     auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kHorizontal)
         .SetMainAxisAlignment(views::LayoutAlignment::kStart);
 
     dogfood_icon_ = AddChildView(std::make_unique<views::ImageView>());
-    dogfood_icon_->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(kDogfoodIconBorderDip)));
+    dogfood_icon_->SetBorder(views::CreateEmptyBorder(kDogfoodIconBorderDip));
 
     description_label_ = AddChildView(std::make_unique<Label>(
         l10n_util::GetStringUTF16(
@@ -245,8 +251,8 @@ class ReportQueryView : public views::Button {
                                  views::MaximumFlexSizeRule::kUnbounded)
             .WithAlignment(views::LayoutAlignment::kEnd));
     report_label_->SetProperty(
-        views::kMarginsKey, gfx::Insets(/*top=*/0, /*left=*/0, /*bottom=*/0,
-                                        /*right=*/kReportQueryButtonMarginDip));
+        views::kMarginsKey,
+        gfx::Insets::TLBR(0, 0, 0, kReportQueryButtonMarginDip));
   }
 
   // Disallow copy and assign.
@@ -259,17 +265,9 @@ class ReportQueryView : public views::Button {
   void OnThemeChanged() override {
     views::Button::OnThemeChanged();
 
-    const bool should_use_dark_colors = GetNativeTheme()->ShouldUseDarkColors();
-
-    // Hard code color for dark mode since we use special specs for this
-    // temporary view. Will remove the usage after we remove this view.
-    const auto background_color =
-        should_use_dark_colors ? SkColorSetA(gfx::kGoogleBlue300, 0x4C /*30%*/)
-                               : gfx::kGoogleBlue050;
-    const auto foreground_color =
-        should_use_dark_colors ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
-
-    SetBackground(views::CreateSolidBackground(background_color));
+    const auto* const color_provider = GetColorProvider();
+    const SkColor foreground_color =
+        color_provider->GetColor(kColorQuickAnswersReportQueryButtonForeground);
     dogfood_icon_->SetImage(gfx::CreateVectorIcon(
         vector_icons::kDogfoodIcon, kDogfoodIconSizeDip, foreground_color));
     description_label_->SetEnabledColor(foreground_color);
@@ -393,7 +391,7 @@ void QuickAnswersView::ShowRetryView() {
     return;
 
   ResetContentView();
-  main_view_->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
+  main_view_->SetBackground(nullptr);
 
   // Add title.
   content_view_->AddChildView(
@@ -479,8 +477,7 @@ void QuickAnswersView::AddContentView() {
   layout->SetOrientation(views::LayoutOrientation::kVertical)
       .SetInteriorMargin(kContentViewInsets)
       .SetDefault(views::kMarginsKey,
-                  gfx::Insets(/*top=*/0, /*left=*/0, /*bottom=*/kLineSpacingDip,
-                              /*right=*/0));
+                  gfx::Insets::TLBR(0, 0, kLineSpacingDip, 0));
   content_view_->AddChildView(
       std::make_unique<QuickAnswersTextLabel>(QuickAnswerText(title_)));
   std::string loading =
@@ -502,11 +499,12 @@ void QuickAnswersView::AddSettingsButton() {
   settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_QUICK_ANSWERS_SETTINGS_BUTTON_TOOLTIP_TEXT));
   settings_button_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kSettingsButtonBorderDip)));
+      views::CreateEmptyBorder(kSettingsButtonBorderDip));
 }
 
-void QuickAnswersView::AddPhoneticsAudioButton(const GURL& phonetics_audio,
-                                               View* container) {
+void QuickAnswersView::AddPhoneticsAudioButton(
+    const PhoneticsInfo& phonetics_info,
+    View* container) {
   auto* phonetics_audio_view =
       container->AddChildView(std::make_unique<views::View>());
 
@@ -523,7 +521,7 @@ void QuickAnswersView::AddPhoneticsAudioButton(const GURL& phonetics_audio,
   phonetics_audio_button_ =
       phonetics_audio_view->AddChildView(std::make_unique<views::ImageButton>(
           base::BindRepeating(&QuickAnswersView::OnPhoneticsAudioButtonPressed,
-                              base::Unretained(this), phonetics_audio)));
+                              base::Unretained(this), phonetics_info)));
   phonetics_audio_button_->SetImage(
       views::Button::ButtonState::STATE_NORMAL,
       gfx::CreateVectorIcon(
@@ -532,7 +530,7 @@ void QuickAnswersView::AddPhoneticsAudioButton(const GURL& phonetics_audio,
   phonetics_audio_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_QUICK_ANSWERS_PHONETICS_BUTTON_TOOLTIP_TEXT));
   phonetics_audio_button_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kPhoneticsAudioButtonBorderDip)));
+      views::CreateEmptyBorder(kPhoneticsAudioButtonBorderDip));
 }
 
 void QuickAnswersView::AddGoogleIcon() {
@@ -597,9 +595,9 @@ void QuickAnswersView::UpdateQuickAnswerResult(
 
   // Add phonetics audio button for definition results.
   if (quick_answer.result_type == ResultType::kDefinitionResult &&
-      !quick_answer.phonetics_audio.is_empty()) {
-    AddPhoneticsAudioButton(quick_answer.phonetics_audio, title_view);
-  }
+      (!quick_answer.phonetics_info.phonetics_audio.is_empty() ||
+       quick_answer.phonetics_info.tts_audio_enabled))
+    AddPhoneticsAudioButton(quick_answer.phonetics_info, title_view);
 
   // Add first row answer.
   View* first_answer_view = nullptr;
@@ -671,6 +669,24 @@ std::vector<views::View*> QuickAnswersView::GetFocusableViews() {
 }
 
 void QuickAnswersView::OnPhoneticsAudioButtonPressed(
-    const GURL& phonetics_audio) {
-  phonetics_audio_web_view_->LoadInitialURL(phonetics_audio);
+    const PhoneticsInfo& phonetics_info) {
+  // Use the phonetics audio URL if provided.
+  if (!phonetics_info.phonetics_audio.is_empty()) {
+    phonetics_audio_web_view_->LoadInitialURL(phonetics_info.phonetics_audio);
+    return;
+  }
+
+  // Otherwise, generate and use tts audio.
+  auto* tts_controller = content::TtsControllerImpl::GetInstance();
+  std::unique_ptr<content::TtsUtterance> tts_utterance =
+      content::TtsUtterance::Create(
+          phonetics_audio_web_view_->GetBrowserContext());
+
+  tts_controller->SetStopSpeakingWhenHidden(false);
+
+  tts_utterance->SetShouldClearQueue(false);
+  tts_utterance->SetText(phonetics_info.query_text);
+  tts_utterance->SetLang(phonetics_info.locale);
+
+  tts_controller->SpeakOrEnqueue(std::move(tts_utterance));
 }

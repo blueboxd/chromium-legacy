@@ -50,8 +50,9 @@ const ArcTosState = {
  * @polymer
  */
 class ArcTermsOfService extends ArcTermsOfserviceBase {
-  
-  static get is() { return 'arc-tos-element'; }
+  static get is() {
+    return 'arc-tos-element';
+  }
 
   /* #html_template_placeholder */
 
@@ -186,24 +187,24 @@ class ArcTermsOfService extends ArcTermsOfserviceBase {
      * Flag indicating if screen was shown.
      * @private {boolean}
      */
-     this.is_shown_ = false;
+    this.is_shown_ = false;
 
     /**
      * Last focused element when overlay is shown. Used to resume focus when
      * overlay is dismissed.
      * @private {Object|null}
      */
-     this.lastFocusedElement_ = null;
+    this.lastFocusedElement_ = null;
 
-     this.countryCode_ = null;
-     this.language_ = null;
-     this.pageReady_ = false;
+    this.countryCode_ = null;
+    this.language_ = null;
+    this.pageReady_ = false;
 
     /**
      * The hostname of the url where the terms of service will be fetched.
      * Overwritten by tests to load terms of service from local test server.
      */
-     this.termsOfServiceHostName_ = 'https://play.google.com';
+    this.termsOfServiceHostName_ = 'https://play.google.com';
 
     this.termsError = false;
     this.usingOfflineTerms_ = false;
@@ -212,14 +213,16 @@ class ArcTermsOfService extends ArcTermsOfserviceBase {
   }
 
   get EXTERNAL_API() {
-    return ['setMetricsMode',
-            'setBackupAndRestoreMode',
-            'setLocationServicesMode',
-            'loadPlayStoreToS',
-            'setArcManaged',
-            'setupForDemoMode',
-            'clearDemoMode',
-            'setTosForTesting'];
+    return [
+      'setMetricsMode',
+      'setBackupAndRestoreMode',
+      'setLocationServicesMode',
+      'loadPlayStoreToS',
+      'setArcManaged',
+      'setupForDemoMode',
+      'clearDemoMode',
+      'setTosForTesting',
+    ];
   }
 
   defaultUIStep() {
@@ -370,7 +373,11 @@ class ArcTermsOfService extends ArcTermsOfserviceBase {
           this.$.arcTosOverlayWebview, TERMS_URL,
           WebViewHelper.ContentType.PDF);
     } else {
-      this.$.arcTosOverlayWebview.src = targetUrl;
+      let overlayWebview = this.$.arcTosOverlayWebview;
+      if (this.isDemoModeSetup_()) {
+        this.setClearAnchorScriptForWebview_(overlayWebview);
+      }
+      overlayWebview.src = targetUrl;
     }
 
     this.lastFocusedElement_ = this.shadowRoot.activeElement;
@@ -482,6 +489,9 @@ class ArcTermsOfService extends ArcTermsOfserviceBase {
         }
       });
     } else {
+      if (this.isDemoModeSetup_()) {
+        this.setClearAnchorScriptForWebview_(termsView);
+      }
       this.reloadPlayStoreToS();
     }
   }
@@ -815,6 +825,20 @@ class ArcTermsOfService extends ArcTermsOfserviceBase {
   getDialogTitle_(locale, isChild) {
     return isChild ? this.i18n('arcTermsOfServiceScreenHeadingForChild') :
                      this.i18n('arcTermsOfServiceScreenHeading');
+  }
+
+  /**
+   * Set up a script for webview to clear anchor of the page after loading.
+   */
+  setClearAnchorScriptForWebview_(webview) {
+    webview.addContentScripts([{
+      name: 'clearAnchors',
+      matches: ['<all_urls>'],
+      js: CLEAR_ANCHORS_CONTENT_SCRIPT,
+    }]);
+    webview.addEventListener('contentload', () => {
+      webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT);
+    });
   }
 }
 

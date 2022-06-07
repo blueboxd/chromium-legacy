@@ -7,13 +7,13 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/multidevice_setup/host_backend_delegate.h"
 #include "ash/services/multidevice_setup/host_verifier.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -93,11 +93,10 @@ class HostVerifierImpl : public HostVerifier,
   void StartRetryTimer(const base::Time& time_to_fire);
   void AttemptHostVerification();
   void OnFindEligibleDevicesResult(
-      chromeos::device_sync::mojom::NetworkRequestResult result,
+      device_sync::mojom::NetworkRequestResult result,
       multidevice::RemoteDeviceRefList eligible_devices,
       multidevice::RemoteDeviceRefList ineligible_devices);
-  void OnNotifyDevicesFinished(
-      chromeos::device_sync::mojom::NetworkRequestResult result);
+  void OnNotifyDevicesFinished(device_sync::mojom::NetworkRequestResult result);
   void OnSyncTimerFired();
 
   HostBackendDelegate* host_backend_delegate_;

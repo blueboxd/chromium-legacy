@@ -367,6 +367,7 @@
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> ကို မိတ္ထူပွားနေပါသည်</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> အတွက် ခြွင်းချက်ကို ဖယ်ရှားရန်</translation>
 <translation id="4261901459838235729">Google မိတ်ဆက်ပြွ</translation>
+<translation id="4277536868133419688"><ph name="FILTER_NAME" /> ဖီလ်တာ ဖွင့်ပြီးပြီ။</translation>
 <translation id="4290535918735525311">Linux နှင့် မျှဝေထားသည့် ဖိုင်တွဲ ၁ ခု</translation>
 <translation id="4299729908419173967">ဘရာဇီးလ်</translation>
 <translation id="4302605047395093221">ဤစက်သုံးသူတိုင်းသည် ယခုမိုဘိုင်းကွန်ရက်နှင့် ချိတ်ဆက်ရန် ပင်နံပါတ်ထည့်ရပါမည်</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">နောက်ထပ်...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> ကို ရွေးချယ်မှုသို့ ထည့်ထားသည်။</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> အတွက် ရလဒ်များ ပြထားသည်</translation>
+<translation id="4599600860674643278">ဖီလ်တာ ပြင်ဆင်သတ်မှတ်ပြီးပြီ။</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> ကို <ph name="FOLDER_NAME" /> သို့ မိတ္တူကူးနေသည်</translation>
 <translation id="4631887759990505102">အနုပညာရှင်</translation>
 <translation id="4642769377300286600">မိုဘိုင်းပရိုဖိုင် ထည့်သွင်းနေသည်၊ ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက် <ph name="NETWORK_INDEX" />၊ <ph name="NETWORK_NAME" />၊ <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -529,6 +531,7 @@
 <translation id="5469868506864199649">အီတလီ</translation>
 <translation id="5473333559083690127">ပင်နံပါတ်အသစ်ကို ထပ်ထည့်ပါ</translation>
 <translation id="5489067830765222292">လတ်ဗီးယား</translation>
+<translation id="5489965683297092283"><ph name="FILTER_NAME" /> ဖီလ်တာ ပိတ်ပြီးပြီ။</translation>
 <translation id="5494920125229734069">အားလုံး ရွေးရန်</translation>
 <translation id="5500122897333236901">အိုက်စ်လန်</translation>
 <translation id="5508696409934741614">အစက်များ</translation>
@@ -595,6 +598,7 @@
 <translation id="6082256976217156453">LZMA ဖြင့် ချုံ့ထားသည့် မှတ်တမ်း</translation>
 <translation id="6096979789310008754">ရှာဖွေမှုစာသားကို ရှင်းလင်းထားသည်၊ ဖိုင်နှင့် ဖိုင်တွဲများအားလုံးကို ပြထားသည်</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> ကို <ph name="FOLDER_NAME" /> သို့ ရွှေ့နေသည်</translation>
+<translation id="61118516107968648">CSV စာသား</translation>
 <translation id="6129953537138746214">နေရာခြား</translation>
 <translation id="6133173853026656527">ရွှေ့နေ <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">ယူအက်စ်ကီးဘုတ်ဖြင့် ဂျပန်</translation>
@@ -845,6 +849,7 @@
 <translation id="8208580316430297579">ပုံ</translation>
 <translation id="8223479393428528563">အင်တာနက်ပေါ်တွင်မရှိသည့်အခါ အသုံးပြုရန်အတွက် ဤဖိုင်များအား သိမ်းရန်  အွန်လိုင်းပေါ်ပြန်လာပြီး ဖိုင်များအား ညာဘက်ကလစ်ခေါက်ပြီး <ph name="OFFLINE_CHECKBOX_NAME" /> ရွေးချယ်စရာအား ရွေးချယ်ပါ။</translation>
 <translation id="8249296373107784235">မလုပ်တော့ပါ</translation>
+<translation id="8250920743982581267">စာရွက်စာတမ်းများ</translation>
 <translation id="8261506727792406068">ဖျက်ရန်</translation>
 <translation id="8261561378965667560">တရုတ်လက်ကွက် အခင်းအကျင်း</translation>
 <translation id="8269755669432358899">ဖိုင်တုံ့ပြန်မှု အကန့်များ လျှော့ပြရန်</translation>

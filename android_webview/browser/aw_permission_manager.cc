@@ -341,7 +341,7 @@ void AwPermissionManager::RequestPermissions(
       case PermissionType::STORAGE_ACCESS_GRANT:
       case PermissionType::CAMERA_PAN_TILT_ZOOM:
       case PermissionType::WINDOW_PLACEMENT:
-      case PermissionType::FONT_ACCESS:
+      case PermissionType::LOCAL_FONTS:
       case PermissionType::DISPLAY_CAPTURE:
         NOTIMPLEMENTED() << "RequestPermissions is not implemented for "
                          << static_cast<int>(permissions[i]);
@@ -467,9 +467,26 @@ PermissionStatus AwPermissionManager::GetPermissionStatusForFrame(
           render_frame_host));
 }
 
+PermissionStatus AwPermissionManager::GetPermissionStatusForCurrentDocument(
+    PermissionType permission,
+    content::RenderFrameHost* render_frame_host) {
+  return GetPermissionStatus(
+      permission, render_frame_host->GetLastCommittedOrigin().GetURL(),
+      permissions::PermissionUtil::GetLastCommittedOriginAsURL(
+          render_frame_host));
+}
+
+PermissionStatus AwPermissionManager::GetPermissionStatusForWorker(
+    PermissionType permission,
+    content::RenderProcessHost* render_process_host,
+    const GURL& worker_origin) {
+  return GetPermissionStatus(permission, worker_origin, worker_origin);
+}
+
 AwPermissionManager::SubscriptionId
 AwPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
+    content::RenderProcessHost* render_process_host,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(PermissionStatus)> callback) {
@@ -546,7 +563,7 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
       case PermissionType::STORAGE_ACCESS_GRANT:
       case PermissionType::CAMERA_PAN_TILT_ZOOM:
       case PermissionType::WINDOW_PLACEMENT:
-      case PermissionType::FONT_ACCESS:
+      case PermissionType::LOCAL_FONTS:
       case PermissionType::DISPLAY_CAPTURE:
         NOTIMPLEMENTED() << "CancelPermission not implemented for "
                          << static_cast<int>(permission);

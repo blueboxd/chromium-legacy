@@ -9,17 +9,17 @@
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../../common/styles.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import {afterNextRender, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getCountText, isSelectionEvent} from '../../common/utils.js';
 import {AmbientModeAlbum, TopicSource} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isRecentHighlightsAlbum} from '../utils.js';
+import {getTemplate} from './album_list_element.html.js';
 
 export interface AlbumList {
-  $: {grid: IronListElement;};
+  $: {grid: IronListElement};
 }
 
 export type AlbumSelectedChangedEvent = CustomEvent<{album: AmbientModeAlbum}>;
@@ -36,7 +36,7 @@ export class AlbumList extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -60,7 +60,6 @@ export class AlbumList extends WithPersonalizationStore {
 
   /** Invoked on selection of an album. */
   private onAlbumSelected_(e: Event&{model: {album: AmbientModeAlbum}}) {
-    assert(e.model.album);
     if (isSelectionEvent(e)) {
       e.model.album.checked = !e.model.album.checked;
       this.dispatchEvent(new CustomEvent(
@@ -72,8 +71,11 @@ export class AlbumList extends WithPersonalizationStore {
   private isAlbumSelected_(
       changedAlbum: AmbientModeAlbum|null,
       albums: AmbientModeAlbum[]|null): boolean {
-    const album = albums!.find(album => album.id === changedAlbum?.id);
-    return album?.checked || false;
+    if (!changedAlbum) {
+      return false;
+    }
+    const album = albums!.find(album => album.id === changedAlbum.id);
+    return !!album && album.checked;
   }
 
   /** Returns the secondary text to display for the specified |album|. */

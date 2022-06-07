@@ -504,6 +504,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAnonymousBlockChildrenChanged) {
+  RunEventTest(FILE_PATH_LITERAL("anonymous-block-children-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsChildrenChangedOnlyOnAncestor) {
   RunEventTest(FILE_PATH_LITERAL("children-changed-only-on-ancestor.html"));
 }
@@ -796,13 +801,23 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 // TODO(crbug/1232295): Flaky on Linux and Win.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+// TODO(crbug.com/1230894): locks up with popup open, only on Mac
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #define MAYBE_AccessibilityEventsMenuListExpand \
   DISABLED_AccessibilityEventsMenuListExpand
 #else
 #define MAYBE_AccessibilityEventsMenuListExpand \
   AccessibilityEventsMenuListExpand
 #endif
+
+// TODO(crbug.com/1230894): locks up with popup open, only on Mac
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_AccessibilityEventsMenuListNext \
+  DISABLED_AccessibilityEventsMenuListNext
+#else
+#define MAYBE_AccessibilityEventsMenuListNext AccessibilityEventsMenuListNext
+#endif
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        MAYBE_AccessibilityEventsMenuListExpand) {
   RunEventTest(FILE_PATH_LITERAL("menulist-expand.html"));
@@ -814,7 +829,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsMenuListNext) {
+                       MAYBE_AccessibilityEventsMenuListNext) {
   RunEventTest(FILE_PATH_LITERAL("menulist-next.html"));
 }
 
@@ -847,6 +862,29 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsDocumentTitleChange) {
   RunEventTest(FILE_PATH_LITERAL("document-title-change.html"));
+}
+
+class NavigationApiDumpAccessibilityEventsTest
+    : public DumpAccessibilityEventsTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    NavigationApiDumpAccessibilityEventsTest,
+    ::testing::ValuesIn(DumpAccessibilityTestHelper::EventTestPasses()),
+    DumpAccessibilityEventsTestPassToString());
+
+// This test suite is empty on some OSes.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    NavigationApiDumpAccessibilityEventsTest);
+
+IN_PROC_BROWSER_TEST_P(NavigationApiDumpAccessibilityEventsTest,
+                       AccessibilityEventsNavigationApi) {
+  RunEventTest(FILE_PATH_LITERAL("navigation-api.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,

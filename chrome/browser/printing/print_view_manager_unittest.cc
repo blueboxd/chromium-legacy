@@ -147,7 +147,7 @@ void TestPrinterQuery::SetSettings(base::Value new_settings,
   DCHECK(printer_language_type_);
 #endif
   std::unique_ptr<PrintSettings> settings =
-      PrintSettingsFromJobSettings(new_settings);
+      PrintSettingsFromJobSettings(new_settings.GetDict());
   mojom::ResultCode result = mojom::ResultCode::kSuccess;
   if (!settings) {
     settings = std::make_unique<PrintSettings>();
@@ -162,13 +162,14 @@ void TestPrinterQuery::SetSettings(base::Value new_settings,
                 settings->requested_media().size_microns.height() /
                     device_microns_per_device_unit);
   gfx::Rect paper_rect(0, 0, paper_size.width(), paper_size.height());
-  paper_rect.Inset(offsets_->x(), offsets_->y());
+  paper_rect.Inset(gfx::Insets::VH(offsets_->y(), offsets_->x()));
   settings->SetPrinterPrintableArea(paper_size, paper_rect, true);
 #if BUILDFLAG(IS_WIN)
   settings->set_printer_language_type(*printer_language_type_);
 #endif
 
-  GetSettingsDone(std::move(callback), std::move(settings), result);
+  GetSettingsDone(std::move(callback), /*maybe_is_modifiable=*/absl::nullopt,
+                  std::move(settings), result);
 }
 
 #if BUILDFLAG(IS_WIN)

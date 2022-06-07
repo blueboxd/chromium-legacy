@@ -56,7 +56,6 @@
 #include "components/security_state/core/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/base/features.h"
@@ -88,7 +87,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
     &autofill::features::kAutofillRefreshStyleAndroid,
-    &autofill::features::kAutofillEnableGoogleIssuedCard,
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
     &autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
     &autofill::features::kAutofillEnableSupportForMoreStructureInNames,
@@ -133,7 +131,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kWebNfc,
     &features::kIncognitoNtpRevamp,
     &feature_engagement::kEnableAutomaticSnooze,
-    &feature_engagement::kIPHHomepagePromoCardFeature,
     &feature_engagement::kIPHNewTabPageHomeButtonFeature,
     &feature_engagement::kIPHSnooze,
     &feature_engagement::kIPHTabSwitcherButtonFeature,
@@ -153,6 +150,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feed::kInterestFeedV2Hearts,
     &feed::kReliabilityLogging,
     &feed::kWebFeed,
+    &feed::kWebFeedAwareness,
     &feed::kWebFeedOnboarding,
     &feed::kWebFeedSort,
     &feed::kXsurfaceMetricsReporting,
@@ -161,7 +159,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAdaptiveButtonInTopToolbarCustomizationV2,
     &kAddToHomescreenIPH,
     &kAllowNewIncognitoTabIntents,
-    &kAndroidLayoutChangeTabReparenting,
     &kAndroidSearchEngineChoiceNotification,
     &kAssistantConsentModal,
     &kAssistantConsentSimplifiedText,
@@ -174,6 +171,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAppToWebAttribution,
     &kBackgroundThreadPool,
     &kBookmarkBottomSheet,
+    &kBulkTabRestore,
     &kCastDeviceFilter,
     &kCloseAllTabsModalDialog,
     &kCloseTabSuggestions,
@@ -228,8 +226,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDuetTabStripIntegrationAndroid,
     &kDynamicColorAndroid,
     &kDynamicColorButtonsAndroid,
-    &kEnableDangerousDownloadDialog,
-    &kEnableDuplicateDownloadDialog,
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFixedUmaSessionResumeOrder,
@@ -237,7 +233,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kGoogleLensSdkIntent,
     &kGridTabSwitcherForTablets,
     &kHandleMediaIntents,
-    &kHomepagePromoCard,
     &kImmersiveUiMode,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
@@ -245,15 +240,14 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kInstantStart,
     &kKitKatSupported,
     &kLensCameraAssistedSearch,
+    &kLensOnQuickActionSearchWidget,
     &kLocationBarModelOptimizations,
     &kNewWindowAppMenu,
     &kNotificationPermissionVariant,
-    &kOfflineIndicatorV2,
     &kPageAnnotationsService,
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kProbabilisticCryptidRenderer,
-    &kQuickActionSearchWidgetAndroid,
     &kReachedCodeProfiler,
     &kImproveReaderModePrompt,
     &kReaderModeInCCT,
@@ -308,8 +302,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kVoiceButtonInTopToolbar,
     &kVrBrowsingFeedback,
     &kWebOtpCrossDeviceSimpleString,
+    &content_creation::kWebNotesDynamicTemplates,
     &content_creation::kWebNotesStylizeEnabled,
     &kWebApkInstallCompleteNotification,
+    &kWebApkInstallService,
     &kWebApkTrampolineOnInitialIntent,
     &features::kDnsOverHttps,
     &notifications::features::kUseChimeAndroidSdk,
@@ -342,6 +338,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kUpdatedConnectionSecurityIndicators,
     &optimization_guide::features::kPushNotifications,
     &page_info::kPageInfoAboutThisSite,
+    &page_info::kAboutThisSiteBanner,
     &page_info::kPageInfoDiscoverability,
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kLeakDetectionUnauthenticated,
@@ -351,30 +348,23 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kTouchToFillPasswordSubmission,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
-    &password_manager::features::kUnifiedPasswordManagerMigration,
-    &password_manager::features::kUnifiedPasswordManagerShadowAndroid,
-    &password_manager::features::
-        kUnifiedPasswordManagerShadowWriteOperationsAndroid,
     &performance_hints::features::kContextMenuPerformanceInfo,
     &policy::features::kChromeManagementPageAndroid,
     &privacy_sandbox::kPrivacySandboxSettings3,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
-    &query_tiles::features::kQueryTilesInOmnibox,
-    &query_tiles::features::kQueryTilesLocalOrdering,
     &query_tiles::features::kQueryTilesSegmentation,
     &reading_list::switches::kReadLater,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kPersistShareHubOnAppSwitch,
     &share::kUpcomingSharingFeatures,
-    &signin::kMobileIdentityConsistencyPromos,
     &switches::kAllowSyncOffForChildAccounts,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
+    &syncer::kEnableSyncImmediatelyInFRE,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
     &syncer::kSyncAndroidPromosWithSingleButton,
-    &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
@@ -404,9 +394,6 @@ const base::Feature kAdaptiveButtonInTopToolbarCustomizationV2{
 
 const base::Feature kAddToHomescreenIPH{"AddToHomescreenIPH",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAndroidLayoutChangeTabReparenting{
-    "AndroidLayoutChangeTabReparenting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAllowNewIncognitoTabIntents{
     "AllowNewIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -450,6 +437,9 @@ const base::Feature kBackgroundThreadPool{"BackgroundThreadPool",
 const base::Feature kBookmarkBottomSheet{"BookmarkBottomSheet",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kBulkTabRestore{"BulkTabRestore",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kConditionalTabStripAndroid{
     "ConditionalTabStripAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -458,7 +448,7 @@ const base::Feature kCastDeviceFilter{"CastDeviceFilter",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCloseAllTabsModalDialog{"CloseAllTabsModalDialog",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCloseTabSuggestions{"CloseTabSuggestions",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -561,6 +551,9 @@ const base::Feature kGoogleLensSdkIntent{"GoogleLensSdkIntent",
 const base::Feature kLensCameraAssistedSearch{"LensCameraAssistedSearch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kLensOnQuickActionSearchWidget{
+    "LensOnQuickActionSearchWidget", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kContextualSearchDebug{"ContextualSearchDebug",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -628,15 +621,6 @@ const base::Feature kDynamicColorAndroid{"DynamicColorAndroid",
 const base::Feature kDynamicColorButtonsAndroid{
     "DynamicColorButtonsAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableDangerousDownloadDialog{
-    "EnableDangerousDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableDuplicateDownloadDialog{
-    "EnableDuplicateDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableMixedContentDownloadDialog{
-    "EnableMixedContentDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kExperimentsForAgsa{"ExperimentsForAgsa",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -648,9 +632,6 @@ const base::Feature kGridTabSwitcherForTablets{
 
 const base::Feature kHandleMediaIntents{"HandleMediaIntents",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kHomepagePromoCard{"HomepagePromoCard",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -694,9 +675,6 @@ const base::Feature kNotificationPermissionVariant{
 const base::Feature kInstanceSwitcher{"InstanceSwitcher",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kOfflineIndicatorV2{"OfflineIndicatorV2",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kPageAnnotationsService{"PageAnnotationsService",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -708,9 +686,6 @@ const base::Feature kBookmarksRefresh{"BookmarksRefresh",
 
 const base::Feature kProbabilisticCryptidRenderer{
     "ProbabilisticCryptidRenderer", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kQuickActionSearchWidgetAndroid{
-    "QuickActionSearchWidgetAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -868,6 +843,10 @@ const base::Feature kWebOtpCrossDeviceSimpleString{
 
 const base::Feature kWebApkInstallCompleteNotification{
     "WebApkInstallCompleteNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the Chrome Android WebAPK-install service.
+const base::Feature kWebApkInstallService{"WebApkInstallService",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebApkTrampolineOnInitialIntent{
     "WebApkTrampolineOnInitialIntent", base::FEATURE_ENABLED_BY_DEFAULT};

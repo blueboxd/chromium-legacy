@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "ash/services/device_sync/proto/cryptauth_enrollment.pb.h"
 #include "ash/services/device_sync/proto/cryptauth_proto_to_query_parameters_util.h"
@@ -13,14 +14,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -764,4 +764,4 @@ std::unique_ptr<CryptAuthClient> CryptAuthClientFactoryImpl::CreateInstance() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

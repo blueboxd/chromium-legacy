@@ -20,7 +20,6 @@
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "components/dbus/menu/menu.h"
@@ -155,6 +154,7 @@ bool ShouldWriteIconToFile() {
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
     case base::nix::DESKTOP_ENVIRONMENT_KDE5:
+    case base::nix::DESKTOP_ENVIRONMENT_UKUI:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
       return false;

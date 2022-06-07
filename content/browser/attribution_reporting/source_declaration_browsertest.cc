@@ -53,7 +53,6 @@ class AttributionSourceDisabledBrowserTest : public ContentBrowserTest {
     embedded_test_server()->ServeFilesFromSourceDirectory(
         "content/test/data/attribution_reporting");
     embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-    content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
 
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
@@ -63,7 +62,6 @@ class AttributionSourceDisabledBrowserTest : public ContentBrowserTest {
     https_server_->ServeFilesFromSourceDirectory(
         "content/test/data/attribution_reporting");
     https_server_->ServeFilesFromSourceDirectory("content/test/data");
-    SetupCrossSiteRedirector(https_server_.get());
     ASSERT_TRUE(https_server_->Start());
   }
 
@@ -642,11 +640,15 @@ IN_PROC_BROWSER_TEST_F(AttributionSourceDeclarationBrowserTest,
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
 
+  GURL register_url = https_server()->GetURL(
+      "a.test", "/attribution_reporting/register_source_headers.html");
+
   // Navigate the page using window.open and set an impression, but do not give
   // a user gesture.
-  EXPECT_TRUE(ExecJs(web_contents(), R"(
-    window.open("https://a.com", "_top",
-    "attributionsourceeventid=1,attributiondestination=https://a.com");)",
+  EXPECT_TRUE(ExecJs(web_contents(),
+                     JsReplace(R"(
+    window.open("https://a.com", "_top", "attributionsrc="+$1);)",
+                               register_url),
                      EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   EXPECT_TRUE(source_observer.WaitForNavigationWithNoImpression());

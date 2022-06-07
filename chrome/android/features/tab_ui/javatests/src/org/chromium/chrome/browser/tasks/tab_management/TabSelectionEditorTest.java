@@ -8,13 +8,13 @@ import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS;
 import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
@@ -78,7 +78,10 @@ public class TabSelectionEditorTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_TAB_SWITCHER)
+                    .setRevision(2)
+                    .build();
 
     private TabSelectionEditorTestingRobot mRobot = new TabSelectionEditorTestingRobot();
 

@@ -25,9 +25,8 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId KioskAutolaunchScreenView::kScreenId;
 
-KioskAutolaunchScreenHandler::KioskAutolaunchScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
+KioskAutolaunchScreenHandler::KioskAutolaunchScreenHandler()
+    : BaseScreenHandler(kScreenId) {
   KioskAppManager::Get()->AddObserver(this);
 }
 
@@ -39,19 +38,19 @@ KioskAutolaunchScreenHandler::~KioskAutolaunchScreenHandler() {
 }
 
 void KioskAutolaunchScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
   UpdateKioskApp();
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void KioskAutolaunchScreenHandler::SetDelegate(
     KioskAutolaunchScreen* delegate) {
   delegate_ = delegate;
-  if (page_is_ready())
-    Initialize();
+  if (IsJavascriptAllowed())
+    InitializeDeprecated();
 }
 
 void KioskAutolaunchScreenHandler::UpdateKioskApp() {
@@ -75,7 +74,7 @@ void KioskAutolaunchScreenHandler::UpdateKioskApp() {
     icon_url = webui::GetBitmapDataUrl(*app.icon.bitmap());
 
   app_info.SetStringKey("appIconUrl", icon_url);
-  CallJS("login.AutolaunchScreen.updateApp", app_info);
+  CallJS("login.AutolaunchScreen.updateApp", std::move(app_info));
 }
 
 void KioskAutolaunchScreenHandler::DeclareLocalizedValues(
@@ -87,8 +86,8 @@ void KioskAutolaunchScreenHandler::DeclareLocalizedValues(
   builder->Add("autolaunchCancelButton", IDS_CANCEL);
 }
 
-void KioskAutolaunchScreenHandler::Initialize() {
-  if (!page_is_ready() || !delegate_)
+void KioskAutolaunchScreenHandler::InitializeDeprecated() {
+  if (!IsJavascriptAllowed() || !delegate_)
     return;
 
   if (show_on_init_) {

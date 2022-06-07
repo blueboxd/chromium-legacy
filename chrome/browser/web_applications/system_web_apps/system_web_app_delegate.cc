@@ -127,12 +127,6 @@ bool SystemWebAppDelegate::ShouldShowTabContextMenuShortcut(
   return true;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-bool SystemWebAppDelegate::HasTitlebarTerminalSelectNewTabButton() const {
-  return false;
-}
-#endif
-
 bool SystemWebAppDelegate::IsUrlInSystemAppScope(const GURL& url) const {
   return false;
 }
@@ -146,5 +140,11 @@ bool SystemWebAppDelegate::ShouldAnimateThemeChanges() const {
   return false;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool SystemWebAppDelegate::ShouldPinTab(GURL url) const {
+  return false;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace web_app

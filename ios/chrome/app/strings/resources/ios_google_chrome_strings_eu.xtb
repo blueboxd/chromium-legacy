@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
-<translation id="1096883626080133124">Egin gauza gehiago Chrome-rekin: sinplea, segurua eta inoiz baino bizkorragoa da</translation>
 <translation id="1143896152279775643"><ph name="EMAIL" /> kontuko pasahitza Google-ren Pasahitz-kudeatzailea atalean gordeko da.</translation>
 <translation id="1282031177488366470">Lagundu Chrome-ren eginbideak eta funtzionamendua hobetzen</translation>
 <translation id="1479202195792305274">Saioa Google-ko kontu batekin hasten baduzu, Chrome-k pasahitzak egiazta ditzake.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Erabili Chrome edonon</translation>
 <translation id="3522659714780527202">Chrome erabiltzen duzun gailu guztietan zure fitxak eskura izateko, aktibatu sinkronizazioa</translation>
 <translation id="3533694711092285624">Ez dago pasahitzik gordeta. Chrome-k pasahitzak egiazta ditzake gorde ondoren.</translation>
-<translation id="3634910711516114487">Chrome-ri etekinik handiena ateratzeko, hasi saioa Chrome-n Google-ko kontuarekin</translation>
 <translation id="3655656110921623717">Ondorioz, Chrome-k beti eskatuko du mugikorretarako webgunea.</translation>
 <translation id="3706101708757577809">Orain, Chrome erabili ahalko duzu mezuetan, dokumentuetan eta aplikazioetan estekak sakatzen dituzunean.</translation>
 <translation id="3720541637541300822">Blokeatu ezkutuko moduko fitxak Chrome ixten duzunean</translation>
@@ -83,19 +81,13 @@
 <translation id="6709398533399187136">Pasahitza arriskuan jarri da, datuen isilpekotasuna urratu delako. Google-ren Pasahitz-kudeatzailea eginbideak hura orain aldatzea gomendatzen du.</translation>
 <translation id="6822673484890854830">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro geroago.</translation>
 <translation id="6964931465519938134">Orain, mezuetan, dokumentuetan eta aplikazioetan estekak sakatzen dituzunean, Chrome erabili ahalko duzu.</translation>
-<translation id="7046845777663074840">Aktibatuta dagoenean:
-<ph name="BEGIN_INDENT" />  • Chrome zuk bezala erabiltzen dutenentzat hobetzen laguntzen duzu.<ph name="END_INDENT" />
-
-Kontuan hartu beharrekoak:
-<ph name="BEGIN_INDENT" />  • Chrome-ren erabilerari buruzko informazioa bidaliko zaio Google-ri, baina ez du izango loturarik zurekin.
-  • Chrome-k huts egiten badu, baliteke hutsegiteari buruzko xehetasunek informazio pertsonala edukitzea.
-  • Sinkronizazioa aktibatuz gero, baliteke neurketek bisitatzen dituzun URLei buruzko informazioa edukitzea.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Pertsonalizatu Chrome</translation>
 <translation id="7124339256045485976">Mantendu Chrome eguneratuta</translation>
 <translation id="7161390184744336561">Google Chrome zaharkituta dago</translation>
 <translation id="7165736900384873061">Hasi Google Chrome QR eskanerra erabiltzen</translation>
 <translation id="7172660552945675509">Aholkua: <ph name="BEGIN_LINK" />ainguratu Chrome dock-ean<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome-k aurpegi bidezko identifikazioa erabiltzen du pasahitzak baimena dutenek bakarrik atzitzen dituztela ziurtatzeko.</translation>
+<translation id="7187993566681480880">Babestuta mantentzen zaitu Chrome-n, eta segurtasuna hobetzeko erabil daiteke Google-ren beste aplikazio batzuetan saioa hasita daukazunean.</translation>
 <translation id="72119412072970160">iPad-eko beste aplikazio batzuk erabiltzen ari zinela Google-ren Pasahitz-kudeatzailea atalean gorde zenituen pasahitzak erabil ditzakezu.</translation>
 <translation id="7261678641327190792">Chrome-k ezin ditu egiaztatu pasahitzak</translation>
 <translation id="7272930098487145294">Irudiak gordetzeko, sakatu Ezarpenak eta eman argazkiak gehitzeko baimena Chrome-ri</translation>
@@ -108,6 +100,7 @@ Kontuan hartu beharrekoak:
 <translation id="766361182512894255">Pasahitza arriskuan jarri da, datuen isilpekotasuna urratu delako. Pasahitza berehala aldatzea gomendatzen du Chrome-k.</translation>
 <translation id="7693590760643069321">Orain, Chrome erabili ahalko duzu mezuetan, dokumentuetan eta aplikazioetan estekak sakatzen dituzunean.</translation>
 <translation id="7698568245838009292">Chrome-k kamera atzitu nahi du</translation>
+<translation id="7780154209050837198">Chrome-ri etekinik handiena ateratzeko, hasi saioa Chrome-n Google-ko kontuarekin.</translation>
 <translation id="7855730255114109580">Eguneratuta dago Google Chrome</translation>
 <translation id="8022947259858476807">Erabili Chrome modu lehenetsian estekak irekitzeko, widgetetatik bilaketak egiteko eta beste aplikazio batzuetako pasahitzak automatikoki betetzeko</translation>
 <translation id="8160472928944011082">Ezin da eguneratu Chrome</translation>

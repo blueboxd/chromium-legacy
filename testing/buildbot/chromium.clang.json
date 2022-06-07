@@ -6177,7 +6177,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 15
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -9021,9 +9021,6 @@
         "test_id_prefix": "ninja://components:components_browsertests/"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -10547,9 +10544,6 @@
         "test_id_prefix": "ninja://components:components_browsertests/"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -40537,7 +40531,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 15.2",
+        "name": "absl_hardening_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40569,8 +40563,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
       },
       {
         "args": [
@@ -40589,7 +40582,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s 15.2",
+        "name": "base_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40621,8 +40614,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -40641,7 +40633,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 15.2",
+        "name": "boringssl_crypto_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40673,8 +40665,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
       },
       {
         "args": [
@@ -40693,7 +40684,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 15.2",
+        "name": "boringssl_ssl_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40725,8 +40716,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
       },
       {
         "args": [
@@ -40745,7 +40735,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s 15.2",
+        "name": "components_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40777,8 +40767,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -40797,7 +40786,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 15.2",
+        "name": "crypto_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40829,8 +40818,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://crypto:crypto_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://crypto:crypto_unittests/"
       },
       {
         "args": [
@@ -40849,7 +40837,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s 15.2",
+        "name": "gfx_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40881,8 +40869,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -40901,7 +40888,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 15.2",
+        "name": "google_apis_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40933,8 +40920,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
         "args": [
@@ -40953,7 +40939,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s 15.2",
+        "name": "ios_chrome_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -40985,8 +40971,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -41005,7 +40990,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 15.2",
+        "name": "ios_net_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41037,8 +41022,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/net:ios_net_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/net:ios_net_unittests/"
       },
       {
         "args": [
@@ -41057,7 +41041,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s 15.2",
+        "name": "ios_web_inttests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41089,8 +41073,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -41109,7 +41092,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s 15.2",
+        "name": "ios_web_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41141,8 +41124,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -41161,7 +41143,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s 15.2",
+        "name": "ios_web_view_inttests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41193,8 +41175,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -41213,7 +41194,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 15.2",
+        "name": "net_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41245,8 +41226,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://net:net_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://net:net_unittests/"
       },
       {
         "args": [
@@ -41265,7 +41245,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s 15.2",
+        "name": "skia_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41297,8 +41277,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -41317,7 +41296,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 15.2",
+        "name": "sql_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41349,8 +41328,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://sql:sql_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
         "args": [
@@ -41369,7 +41347,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s 15.2",
+        "name": "ui_base_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41401,8 +41379,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -41421,7 +41398,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 15.2",
+        "name": "url_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41453,8 +41430,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://url:url_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://url:url_unittests/"
       }
     ]
   },
@@ -41493,7 +41469,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6S 12.3.1",
+        "name": "absl_hardening_tests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41523,8 +41499,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
       },
       {
         "args": [
@@ -41540,7 +41515,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6S 12.3.1",
+        "name": "base_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41570,8 +41545,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -41587,7 +41561,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6S 12.3.1",
+        "name": "boringssl_crypto_tests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41617,8 +41591,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
       },
       {
         "args": [
@@ -41634,7 +41607,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6S 12.3.1",
+        "name": "boringssl_ssl_tests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41664,8 +41637,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
       },
       {
         "args": [
@@ -41681,7 +41653,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6S 12.3.1",
+        "name": "components_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41711,8 +41683,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -41728,7 +41699,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6S 12.3.1",
+        "name": "crypto_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41758,8 +41729,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://crypto:crypto_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://crypto:crypto_unittests/"
       },
       {
         "args": [
@@ -41775,7 +41745,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6S 12.3.1",
+        "name": "gfx_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41805,8 +41775,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -41822,7 +41791,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6S 12.3.1",
+        "name": "google_apis_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41852,8 +41821,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
         "args": [
@@ -41869,7 +41837,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6S 12.3.1",
+        "name": "ios_chrome_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41899,8 +41867,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -41916,7 +41883,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6S 12.3.1",
+        "name": "ios_net_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41946,8 +41913,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/net:ios_net_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://ios/net:ios_net_unittests/"
       },
       {
         "args": [
@@ -41963,7 +41929,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6S 12.3.1",
+        "name": "ios_web_inttests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41993,8 +41959,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -42010,7 +41975,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6S 12.3.1",
+        "name": "ios_web_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42040,8 +42005,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -42057,7 +42021,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6S 12.3.1",
+        "name": "ios_web_view_inttests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42087,8 +42051,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -42104,7 +42067,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6S 12.3.1",
+        "name": "net_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42134,8 +42097,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://net:net_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://net:net_unittests/"
       },
       {
         "args": [
@@ -42151,7 +42113,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6S 12.3.1",
+        "name": "skia_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42181,8 +42143,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -42198,7 +42159,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6S 12.3.1",
+        "name": "sql_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42228,8 +42189,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://sql:sql_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
         "args": [
@@ -42245,7 +42205,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6S 12.3.1",
+        "name": "ui_base_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42275,8 +42235,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -42292,7 +42251,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6S 12.3.1",
+        "name": "url_unittests iPhone 6S 12.3.1",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42322,8 +42281,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://url:url_unittests/",
-        "variant_id": "iPhone 6S 12.3.1"
+        "test_id_prefix": "ninja://url:url_unittests/"
       }
     ]
   },

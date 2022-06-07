@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/login/screens/enable_adb_sideloading_screen.h"
 
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
@@ -39,11 +40,11 @@ void LogEvent(AdbSideloadingPromptEvent action) {
 }  // namespace
 
 EnableAdbSideloadingScreen::EnableAdbSideloadingScreen(
-    EnableAdbSideloadingScreenView* view,
+    base::WeakPtr<EnableAdbSideloadingScreenView> view,
     const base::RepeatingClosure& exit_callback)
     : BaseScreen(EnableAdbSideloadingScreenView::kScreenId,
                  OobeScreenPriority::SCREEN_DEVICE_DEVELOPER_MODIFICATION),
-      view_(view),
+      view_(std::move(view)),
       exit_callback_(exit_callback) {
   if (view_)
     view_->Bind(this);
@@ -59,7 +60,8 @@ void EnableAdbSideloadingScreen::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableAdbSideloadingRequested, false);
 }
 
-void EnableAdbSideloadingScreen::OnUserAction(const std::string& action_id) {
+void EnableAdbSideloadingScreen::OnUserActionDeprecated(
+    const std::string& action_id) {
   if (action_id == kUserActionCancelPressed) {
     OnCancel();
   } else if (action_id == kUserActionEnablePressed) {
@@ -67,7 +69,7 @@ void EnableAdbSideloadingScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionLearnMorePressed) {
     OnLearnMore();
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 
@@ -165,12 +167,6 @@ void EnableAdbSideloadingScreen::OnLearnMore() {
         LoginDisplayHost::default_host()->GetNativeWindow());
   }
   help_app_->ShowHelpTopic(topic);
-}
-
-void EnableAdbSideloadingScreen::OnViewDestroyed(
-    EnableAdbSideloadingScreenView* view) {
-  if (view_ == view)
-    view_ = nullptr;
 }
 
 }  // namespace ash

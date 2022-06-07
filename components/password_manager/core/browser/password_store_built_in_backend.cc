@@ -59,11 +59,15 @@ void PasswordStoreBuiltInBackend::GetAllLoginsAsync(
     LoginsOrErrorReply callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(helper_);
+  PasswordStoreBackendMetricsRecorder metrics_recorder =
+      PasswordStoreBackendMetricsRecorder(
+          ClassInfix("PasswordStoreBuiltInBackend"),
+          MetricInfix("GetAllLoginsAsync"));
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(
-          &LoginDatabaseAsyncHelper::GetAllLogins,
-          base::Unretained(helper_.get())),  // Safe until `Shutdown()`.
+      base::BindOnce(&LoginDatabaseAsyncHelper::GetAllLogins,
+                     base::Unretained(helper_.get()),
+                     std::move(metrics_recorder)),  // Safe until `Shutdown()`.
       std::move(callback));
 }
 
@@ -71,11 +75,15 @@ void PasswordStoreBuiltInBackend::GetAutofillableLoginsAsync(
     LoginsOrErrorReply callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(helper_);
+  PasswordStoreBackendMetricsRecorder metrics_recorder =
+      PasswordStoreBackendMetricsRecorder(
+          ClassInfix("PasswordStoreBuiltInBackend"),
+          MetricInfix("GetAutofillableLoginsAsync"));
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(
-          &LoginDatabaseAsyncHelper::GetAutofillableLogins,
-          base::Unretained(helper_.get())),  // Safe until `Shutdown()`.
+      base::BindOnce(&LoginDatabaseAsyncHelper::GetAutofillableLogins,
+                     base::Unretained(helper_.get()),
+                     std::move(metrics_recorder)),  // Safe until `Shutdown()`.
       std::move(callback));
 }
 
@@ -104,10 +112,15 @@ void PasswordStoreBuiltInBackend::AddLoginAsync(
     PasswordStoreChangeListReply callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(helper_);
+  PasswordStoreBackendMetricsRecorder metrics_recorder =
+      PasswordStoreBackendMetricsRecorder(
+          ClassInfix("PasswordStoreBuiltInBackend"),
+          MetricInfix("AddLoginAsync"));
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&LoginDatabaseAsyncHelper::AddLogin,
-                     base::Unretained(helper_.get()), form),
+                     base::Unretained(helper_.get()), form,
+                     std::move(metrics_recorder)),
       std::move(callback));
 }
 
@@ -116,10 +129,15 @@ void PasswordStoreBuiltInBackend::UpdateLoginAsync(
     PasswordStoreChangeListReply callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(helper_);
+  PasswordStoreBackendMetricsRecorder metrics_recorder =
+      PasswordStoreBackendMetricsRecorder(
+          ClassInfix("PasswordStoreBuiltInBackend"),
+          MetricInfix("UpdateLoginAsync"));
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&LoginDatabaseAsyncHelper::UpdateLogin,
-                     base::Unretained(helper_.get()), form),
+                     base::Unretained(helper_.get()), form,
+                     std::move(metrics_recorder)),
       std::move(callback));
 }
 
@@ -128,12 +146,16 @@ void PasswordStoreBuiltInBackend::RemoveLoginAsync(
     PasswordStoreChangeListReply callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(helper_);
+  PasswordStoreBackendMetricsRecorder metrics_recorder =
+      PasswordStoreBackendMetricsRecorder(
+          ClassInfix("PasswordStoreBuiltInBackend"),
+          MetricInfix("RemoveLoginAsync"));
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
           &LoginDatabaseAsyncHelper::RemoveLogin,
           base::Unretained(helper_.get()),  // Safe until `Shutdown()`.
-          form),
+          form, std::move(metrics_recorder)),
       std::move(callback));
 }
 
@@ -143,12 +165,16 @@ void PasswordStoreBuiltInBackend::RemoveLoginsCreatedBetweenAsync(
     PasswordStoreChangeListReply callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(helper_);
+  PasswordStoreBackendMetricsRecorder metrics_recorder =
+      PasswordStoreBackendMetricsRecorder(
+          ClassInfix("PasswordStoreBuiltInBackend"),
+          MetricInfix("RemoveLoginsCreatedBetweenAsync"));
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
           &LoginDatabaseAsyncHelper::RemoveLoginsCreatedBetween,
           base::Unretained(helper_.get()),  // Safe until `Shutdown()`.
-          delete_begin, delete_end),
+          delete_begin, delete_end, std::move(metrics_recorder)),
       std::move(callback));
 }
 
@@ -160,12 +186,17 @@ void PasswordStoreBuiltInBackend::RemoveLoginsByURLAndTimeAsync(
     PasswordStoreChangeListReply callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(helper_);
+  PasswordStoreBackendMetricsRecorder metrics_recorder =
+      PasswordStoreBackendMetricsRecorder(
+          ClassInfix("PasswordStoreBuiltInBackend"),
+          MetricInfix("RemoveLoginsByURLAndTimeAsync"));
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
           &LoginDatabaseAsyncHelper::RemoveLoginsByURLAndTime,
           base::Unretained(helper_.get()),  // Safe until `Shutdown()`.
-          url_filter, delete_begin, delete_end, std::move(sync_completion)),
+          url_filter, delete_begin, delete_end, std::move(sync_completion),
+          std::move(metrics_recorder)),
       std::move(callback));
 }
 
@@ -213,9 +244,7 @@ void PasswordStoreBuiltInBackend::ClearAllLocalPasswords() {
 }
 
 void PasswordStoreBuiltInBackend::OnSyncServiceInitialized(
-    syncer::SyncService* sync_service) {
-  NOTIMPLEMENTED();
-}
+    syncer::SyncService* sync_service) {}
 
 void PasswordStoreBuiltInBackend::AddSiteStats(const InteractionsStats& stats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

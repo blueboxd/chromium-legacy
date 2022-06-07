@@ -367,6 +367,7 @@
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> चा बॅकअप घेत आहे</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> साठी एक्सेप्शन काढा</translation>
 <translation id="4261901459838235729">Google प्रेझेंटेशन</translation>
+<translation id="4277536868133419688"><ph name="FILTER_NAME" /> फिल्टर सुरू आहे.</translation>
 <translation id="4290535918735525311">Linux सह एक फोल्डर शेअर केला</translation>
 <translation id="4299729908419173967">ब्राझिलियन</translation>
 <translation id="4302605047395093221">या मोबाइल नेटवर्कशी कनेक्ट करण्यासाठी, हे डिव्हाइस वापरणाऱ्या कोणालाही पासवर्ड एंटर करण्याची आवश्यकता असेल</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">अधिक...</translation>
 <translation id="4579744207439506346">निवडीमध्ये <ph name="ENTRY_NAME" /> जोडली/ले.</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> साठी परिणाम दाखवत आहे.</translation>
+<translation id="4599600860674643278">फिल्टर रीसेट केला.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> वर कॉपी करत आहे</translation>
 <translation id="4631887759990505102">कलाकार</translation>
 <translation id="4642769377300286600">मोबाइल प्रोफाइल इंस्टॉल करत आहे, <ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -530,6 +532,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="5469868506864199649">इटालियन</translation>
 <translation id="5473333559083690127">नवीन पिन पुन्हा प्रविष्‍ट करा</translation>
 <translation id="5489067830765222292">ला‍टवियन</translation>
+<translation id="5489965683297092283"><ph name="FILTER_NAME" /> फिल्टर बंद आहे.</translation>
 <translation id="5494920125229734069">सर्व निवडा</translation>
 <translation id="5500122897333236901">आइसलँडिक</translation>
 <translation id="5508696409934741614">बिंदू</translation>
@@ -596,6 +599,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="6082256976217156453">LZMA काँप्रेस केलेले संग्रहण</translation>
 <translation id="6096979789310008754">शोध मजकूर साफ केला, सर्व फाइल आणि फोल्डर दाखवत आहे.</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> वर हलवत आहे</translation>
+<translation id="61118516107968648">CSV मजकूर</translation>
 <translation id="6129953537138746214">जागा</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> हलवित आहे...</translation>
 <translation id="613750717151263950">यूएस कीबोर्डसह जपानी</translation>
@@ -718,7 +722,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="7135561821015524160">कन्नड फोनेटिक</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165320105431587207">नेटवर्क कॉंफिगर करण्यात अयशस्वी</translation>
-<translation id="7170041865419449892">रेंजच्या बाहेर</translation>
+<translation id="7170041865419449892">परिक्षेत्राबाहेर</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">या फॉरमॅटमध्ये फाइल सेव्ह करा</translation>
@@ -846,6 +850,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="8208580316430297579">कलाकृती</translation>
 <translation id="8223479393428528563">ऑफलाइन वापराकरिता या फाइल सेव्ह करण्यासाठी, परत ऑनलाइन व्‍हा, फाइलंवर राइट-क्लिक करा आणि <ph name="OFFLINE_CHECKBOX_NAME" /> पर्याय निवडा.</translation>
 <translation id="8249296373107784235">रद्द करा</translation>
+<translation id="8250920743982581267">दस्तऐवज</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8261561378965667560">चीनी ॲरे</translation>
 <translation id="8269755669432358899">फाइल फीडबॅक पॅनल कोलॅप्स करा</translation>

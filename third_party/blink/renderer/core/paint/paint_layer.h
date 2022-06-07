@@ -268,15 +268,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.
   const LayoutSize& Size() const { return size_; }
-  // TODO(crbug.com/962299): This method snaps to pixels incorrectly because
-  // Location() is not the correct paint offset. It's also incorrect in flipped
-  // blocks writing mode.
-  gfx::Size PixelSnappedSize() const {
-    LayoutPoint location = layout_object_->IsBox()
-                               ? To<LayoutBox>(layout_object_.Get())->Location()
-                               : LayoutPoint();
-    return ToPixelSnappedSize(Size(), location);
-  }
 
 #if DCHECK_IS_ON()
   bool NeedsPositionUpdate() const { return needs_position_update_; }
@@ -496,10 +487,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // Returns true if the layer is sticky position and may stick to its
   // ancestor overflow layer.
   bool SticksToScroller() const;
-
-  // Returns true if the layer is fixed position and will not move with
-  // scrolling.
-  bool FixedToViewport() const;
 
   // FIXME: This should probably return a ScrollableArea but a lot of internal
   // methods are mistakenly exposed.
@@ -792,7 +779,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   void UpdatePaginationRecursive(bool needs_pagination_update = false);
   void ClearPaginationRecursive();
 
-  void SetSelfNeedsRepaint();
   void MarkCompositingContainerChainForNeedsRepaint();
 
   PaintLayerRareData& EnsureRareData() {
@@ -807,14 +793,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     needs_paint_phase_float_ |= layer.needs_paint_phase_float_;
   }
 
-  void ExpandRectForSelfPaintingDescendants(const PaintLayer& composited_layer,
-                                            PhysicalRect& result) const;
-
-  // The return value is in the space of |stackingParent|, if non-null, or
-  // |this| otherwise.
-  PhysicalRect BoundingBoxForCompositingInternal(
-      const PaintLayer& composited_layer,
-      const PaintLayer* stacking_parent) const;
+  void ExpandRectForSelfPaintingDescendants(PhysicalRect& result) const;
 
   // This is private because PaintLayerStackingNode is only for PaintLayer and
   // PaintLayerPaintOrderIterator.

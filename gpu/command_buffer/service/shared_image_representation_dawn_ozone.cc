@@ -51,14 +51,26 @@ WGPUTexture SharedImageRepresentationDawnOzone::BeginAccess(
   if (texture_) {
     return nullptr;
   }
+
+  // For multi-planar formats, Mesa is yet to support to allocate and bind
+  // vkmemory for each plane respectively.
+  // https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/src/intel/vulkan/anv_formats.c#L765
+  // For now we assume all plane handles are same, and we don't use the
+  // VK_IMAGE_CREATE_DISJOINT_BIT when creating the vkimage for the pixmap.
+  DCHECK(pixmap_->SupportsZeroCopyWebGPUImport() ||
+         pixmap_->GetNumberOfPlanes() == 1)
+      << "Disjoint Multi-plane importing is not supported.";
+
   if (!ozone_backing()->VaSync()) {
     return nullptr;
   }
-  DCHECK(pixmap_->GetNumberOfPlanes() == 1)
-      << "Multi-plane formats are not supported.";
 
   std::vector<gfx::GpuFenceHandle> fences;
-  ozone_backing()->BeginAccess(&fences);
+  bool need_end_fence;
+  ozone_backing()->BeginAccess(
+      /*readonly=*/false, SharedImageBackingOzone::AccessStream::kWebGPU,
+      &fences, need_end_fence);
+  DCHECK(need_end_fence);
 
   gfx::Size pixmap_size = pixmap_->GetBufferSize();
   WGPUTextureDescriptor texture_descriptor = {};
@@ -90,14 +102,13 @@ WGPUTexture SharedImageRepresentationDawnOzone::BeginAccess(
   // closed twice (once by ScopedFD and once by the Vulkan implementation).
   int fd = dup(pixmap_->GetDmaBufFd(0));
   descriptor.memoryFD = fd;
+  // stride is not required for multi-planar formats.
   descriptor.stride = pixmap_->GetDmaBufPitch(0);
   descriptor.drmModifier = pixmap_->GetBufferFormatModifier();
   descriptor.waitFDs = {};
 
-  if (ozone_backing()->NeedsSynchronization()) {
-    for (auto& fence : fences) {
-      descriptor.waitFDs.push_back(fence.owned_fd.release());
-    }
+  for (auto& fence : fences) {
+    descriptor.waitFDs.push_back(fence.owned_fd.release());
   }
 
   texture_ = dawn::native::vulkan::WrapVulkanImage(device_, &descriptor);
@@ -127,7 +138,9 @@ void SharedImageRepresentationDawnOzone::EndAccess() {
     DCHECK(export_info.semaphoreHandles.size() == 1);
     gfx::GpuFenceHandle fence;
     fence.owned_fd = base::ScopedFD(export_info.semaphoreHandles[0]);
-    ozone_backing()->EndAccess(false /* readonly */, std::move(fence));
+    ozone_backing()->EndAccess(/*readonly=*/false,
+                               SharedImageBackingOzone::AccessStream::kWebGPU,
+                               std::move(fence));
   }
   dawn_procs_->data.textureDestroy(texture_);
   dawn_procs_->data.textureRelease(texture_);

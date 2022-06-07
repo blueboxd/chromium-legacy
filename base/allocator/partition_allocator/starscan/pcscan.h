@@ -20,7 +20,7 @@
 // We currently disable it to improve the runtime.
 #define PA_STARSCAN_EAGER_DOUBLE_FREE_DETECTION_ENABLED 0
 
-namespace base {
+namespace partition_alloc {
 
 class StatsReporter;
 
@@ -141,7 +141,7 @@ class BASE_EXPORT PCScan final {
   inline static PCScanScheduler& scheduler();
 
   // Registers reporting class.
-  static void RegisterStatsReporter(StatsReporter* reporter);
+  static void RegisterStatsReporter(partition_alloc::StatsReporter* reporter);
 
  private:
   class PCScanThread;
@@ -278,6 +278,12 @@ inline PCScanScheduler& PCScan::scheduler() {
 }
 
 }  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc
 
+// TODO(crbug.com/1288247): Remove this when migration is complete.
+namespace base::internal {
+
+using ::partition_alloc::internal::PCScan;
+
+}  // namespace base::internal
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_STARSCAN_PCSCAN_H_

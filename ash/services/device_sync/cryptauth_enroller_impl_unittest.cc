@@ -6,17 +6,18 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/fake_secure_message_delegate.h"
+#include "ash/components/multidevice/secure_message_delegate.h"
 #include "ash/services/device_sync/mock_cryptauth_client.h"
 #include "ash/services/device_sync/network_request_error.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 using ::testing::Return;
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -366,4 +367,4 @@ TEST_F(DeviceSyncCryptAuthEnrollerTest, IncompleteDeviceInfo) {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

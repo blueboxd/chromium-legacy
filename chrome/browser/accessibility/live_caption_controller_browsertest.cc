@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/ranges/ranges.h"
@@ -37,6 +38,7 @@
 namespace captions {
 
 namespace {
+
 // Chrome OS requires an additional feature flag to enable Live Caption.
 std::vector<base::Feature> RequiredFeatureFlags() {
   std::vector<base::Feature> features = {media::kLiveCaption};
@@ -45,6 +47,15 @@ std::vector<base::Feature> RequiredFeatureFlags() {
 #endif
   return features;
 }
+
+speech::LanguageCode en_us() {
+  return speech::LanguageCode::kEnUs;
+}
+
+speech::LanguageCode fr_fr() {
+  return speech::LanguageCode::kFrFr;
+}
+
 }  // namespace
 
 // Blocks until a new profile is created.
@@ -136,7 +147,9 @@ class LiveCaptionControllerTest : public InProcessBrowserTest {
   void OnError() { OnErrorOnProfile(browser()->profile()); }
 
   void OnErrorOnProfile(Profile* profile) {
-    GetControllerForProfile(profile)->OnError(GetCaptionBubbleContextBrowser());
+    GetControllerForProfile(profile)->OnError(GetCaptionBubbleContextBrowser(),
+                                              CaptionBubbleErrorType::GENERIC,
+                                              base::RepeatingClosure());
   }
 
   void OnAudioStreamEnd() { OnAudioStreamEndOnProfile(browser()->profile()); }
@@ -186,8 +199,6 @@ class LiveCaptionControllerTest : public InProcessBrowserTest {
         GetBubbleControllerForProfile(profile)->GetBubbleLabelTextForTesting());
 #endif
   }
-
-  speech::LanguageCode en_us() { return speech::LanguageCode::kEnUs; }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -274,6 +285,38 @@ IN_PROC_BROWSER_TEST_F(LiveCaptionControllerTest, OnSodaInstalled) {
   speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting(en_us());
   speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
   EXPECT_TRUE(HasBubbleController());
+}
+
+IN_PROC_BROWSER_TEST_F(LiveCaptionControllerTest, OnSodaError) {
+  // Live Caption is disabled when there is an error in the SODA download for
+  // the language belonging to Live Caption.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled,
+                                               true);
+  EXPECT_TRUE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
+  speech::SodaInstaller::GetInstance()->NotifySodaErrorForTesting(en_us());
+  EXPECT_FALSE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
+
+  // Live Caption is disabled when there is an error in the SODA binary
+  // download.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled,
+                                               true);
+  EXPECT_TRUE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
+  speech::SodaInstaller::GetInstance()->NotifySodaErrorForTesting();
+  EXPECT_FALSE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
+
+  // Live Caption is not disabled when there is an error in the SODA download
+  // for a language not belonging to Live Caption.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled,
+                                               true);
+  EXPECT_TRUE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
+  speech::SodaInstaller::GetInstance()->NotifySodaErrorForTesting(fr_fr());
+  EXPECT_TRUE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(LiveCaptionControllerTest, DispatchTranscription) {

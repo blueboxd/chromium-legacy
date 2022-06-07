@@ -90,6 +90,13 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnStart(
 }
 
 PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  return STOP_OBSERVING;
+}
+
+PageLoadMetricsObserver::ObservePolicy
 PageLoadMetricsObserver::OnPrerenderStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
@@ -102,8 +109,7 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnRedirect(
 }
 
 PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    content::NavigationHandle* navigation_handle) {
   return CONTINUE_OBSERVING;
 }
 

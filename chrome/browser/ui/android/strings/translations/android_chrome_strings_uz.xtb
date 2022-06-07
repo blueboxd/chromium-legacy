@@ -89,6 +89,7 @@ Barcha yoki ayrim saytlar uchun — ochilgan sahifalar tarixi oʻchirilganida �
 <translation id="1409879593029778104">“<ph name="FILE_NAME" />” fayli yuklab olinmadi, chunki bunday fayl allaqachon mavjud.</translation>
 <translation id="1414981605391750300">Google bilan aloqa o‘rnatilmoqda. Iltimos, kuting…</translation>
 <translation id="1416550906796893042">Ilova versiyasi</translation>
+<translation id="1428770807407000502">Sinxronizatsiya qilinsinmi?</translation>
 <translation id="1430915738399379752">Chop etish</translation>
 <translation id="1436784010935106834">Olib tashlangan</translation>
 <translation id="1448440926884431741">Kuzatiladigan mahsulotlarni bukmarklarda tartiblang</translation>
@@ -184,7 +185,6 @@ Barcha yoki ayrim saytlar uchun — ochilgan sahifalar tarixi oʻchirilganida �
 <translation id="200114059308480249">Google qidiruvlariga qamrovli matn kiritilsinmi?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ta fayl}other{# ta fayl}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> ilovasi Chrome ichida ochiladi. Davom etish bilan siz <ph name="BEGIN_LINK1" />Google xizmat shartlari<ph name="END_LINK1" /> bilan <ph name="BEGIN_LINK2" />Google Chrome va Chrome OS qoʻshimcha xizmat shartlariga<ph name="END_LINK2" /> rozilik bildirgan hisoblanasiz. <ph name="BEGIN_LINK3" />Maxfiylik siyosati<ph name="END_LINK3" /> ham tatbiq etiladi.</translation>
-<translation id="2019145049163614359">Qiziqish olib tashlansinmi?</translation>
 <translation id="2020309681647789787">Brauzer tarixingiz barcha qurilmalaringizda sinxronlanadi va ishni qolgan joyingizdan davom ettira olasiz</translation>
 <translation id="2021896219286479412">To‘liq ekranli rejim sozlamalari</translation>
 <translation id="2038563949887743358">Saytning to‘liq versiyasini ko‘rish</translation>
@@ -213,6 +213,7 @@ Qidiruvni boshlash uchun istalgan soʻz ustiga bosing. Soʻrovni aniqlashtirish 
 <translation id="2141396931810938595">Sarfingiz asosida</translation>
 <translation id="214888715418183969">Chromega qaysi maʼlumotlarni ulashish mumkinligini tanlang. Siz taqdim qiladigan statistik maʼlumotlar Chrome funksiyalari, unumdorligi va barqarorligini yaxshilashga yordam beradi.</translation>
 <translation id="2149973817440762519">Xatcho‘p tahriri</translation>
+<translation id="2155214902713132423">Bu qurilmada mazkur tekshiruv usuli ishlamaydi. Boshqa qurilma orqali variant tanlang.</translation>
 <translation id="2157851137955077194">Telefoningizdan biror narsani boshqa qurilmaga ulashish uchun har ikki qurilmadagi Chrome brauzerida sinxronizatsiyani yoqing</translation>
 <translation id="2158408438301413340">Chrome barcha parollarni tekshira olmadi.</translation>
 <translation id="2169830938017475061">Hozir</translation>
@@ -733,7 +734,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5091199029769593641">Tez orada yangi varaq ochilganda <ph name="SITE_NAME" /> hikoyalari chiqadi. Kuzatuvdagi saytlar Google hisobingizda saqlanadi. Ularni Discover sozlamalari orqali boshqarish mumkin.</translation>
 <translation id="5091249083535528968">Kengaytirilgan foydalanish statistikasi</translation>
 <translation id="509429900233858213">Xatolik yuz berdi.</translation>
-<translation id="5098190077610408701">Qiziqish kiritilsinmi?</translation>
 <translation id="5102401324271069229">Agar sayt parolingizni oʻgirlashga urinsa yoki zararli fayl yuklab olsangiz, Chrome ham URL manzillar kabi sahifa elementlarini Saytlarni xavfsiz kezish tizimiga yuborishi mumkin</translation>
 <translation id="510275257476243843">1 soat qoldi</translation>
 <translation id="5115811374190515607">Qayerga: <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +879,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5906513782029855931">Google Assistent saytlarning URL manzillarini bilsa, vazifalarni osonroq bajaradi. Chrome sozlamalari ichidan Assistentni faolsizlantirishingiz mumkin.</translation>
 <translation id="5916664084637901428">Yoniq</translation>
 <translation id="5919204609460789179">Sinxronizatsiyani boshlash uchun <ph name="PRODUCT_NAME" /> yangilanishi kerak</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> kiritish</translation>
 <translation id="5942872142862698679">Asosiy qidiruv tizimi – Google</translation>
 <translation id="5945035219773565305">Joriy tavsiya:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Hozirgi sahifani koʻryapsiz</translation>
@@ -898,7 +899,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="6033245666633565791"><ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> yordamida Chrome ochiq internetni rivojlantirishni qoʻllab-quvvatlovchi va foydalanuvchilarni kuzatuv mexanizmlaridan himoya qiladigan texnologiyalarni ishlab chiqadi.
 
 Privacy Sandbox hali ishlab chiqish jarayonida va faqatgina ayrim mamlakatlarda mavjud. Hozircha uchinchi tomon cookie fayllari kabi veb texnologiyalardan voz kechmaslik sharti bilan, saytlar Privacy Sandbox funksiyalaridan foydalanishi mumkin.</translation>
-<translation id="6036057147555329831">Extra ICU</translation>
 <translation id="6039379616847168523">Keyingi varaqqa o‘tish</translation>
 <translation id="6040143037577758943">Yopish</translation>
 <translation id="604124094241169006">Avtomatik</translation>
@@ -1023,6 +1023,7 @@ Ishonch tokenlari Internetdagi maxfiylikni oshiradi va shaxsiy maʼlumotlaringiz
 <translation id="663674369910034433">Maxfiylik, xavfsizlik va axborotlar jamlanishi haqida batafsil axborot olish uchun <ph name="BEGIN_LINK1" />Sinxronlash<ph name="END_LINK1" /> va <ph name="BEGIN_LINK2" />Google xizmatlari<ph name="END_LINK2" /> bilan tanishing</translation>
 <translation id="6637100877383020115">Ilovani yaxshilash maqsadida Chrome foydalanish statistikasi va ishdan chiqishlar axborotini Googlega yuboradi. <ph name="BEGIN_UMA_LINK" />Obunani boshqarish<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Doim bloklash</translation>
+<translation id="6641780377503683465">Olib tashlash: <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Tozalash</translation>
 <translation id="6645629752388991326">Qaysi qurilmalar bu qurilmadan elektron kalit sifatida foydalanishi mumkinligini boshqaring</translation>
 <translation id="6648459603387803038">Adminitratoringiz brauzerni masofadan sozlashi mumkin. Bu qurilmadagi amallar Chrome tashqarisidan boshqarilishi mumkin.</translation>

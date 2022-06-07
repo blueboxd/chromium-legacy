@@ -9,12 +9,10 @@
 #include "base/containers/span.h"
 #include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/source_string.h"
+#include "media/formats/hls/variable_dictionary.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace media {
-namespace hls {
-
-namespace types {
+namespace media::hls::types {
 
 // Data-types used in HLS, as described by the spec
 using DecimalInteger = uint64_t;
@@ -31,6 +29,20 @@ using SignedDecimalFloatingPoint = double;
 
 ParseStatus::Or<SignedDecimalFloatingPoint> MEDIA_EXPORT
 ParseSignedDecimalFloatingPoint(SourceString source_str);
+
+// Parses a string surrounded by double-quotes ("), returning the inner string.
+// These appear in the context of attribute-lists, and are subject to variable
+// substitution. `sub_buffer` must outlive the returned string.
+ParseStatus::Or<base::StringPiece> MEDIA_EXPORT
+ParseQuotedString(SourceString source_str,
+                  const VariableDictionary& variable_dict,
+                  VariableDictionary::SubstitutionBuffer& sub_buffer);
+
+// Parses a string surrounded by double-quotes ("), returning the interior
+// string. These appear in the context of attribute-lists, however certain tags
+// disallow variable substitution so this function exists to serve those.
+ParseStatus::Or<SourceString> MEDIA_EXPORT
+ParseQuotedStringWithoutSubstitution(SourceString source_str);
 
 // Provides an iterator-style interface over attribute-lists.
 // Since the number of attributes expected in an attribute-list for a tag varies
@@ -100,16 +112,21 @@ struct MEDIA_EXPORT AttributeMap {
 };
 
 // Represents a string that is guaranteed to be a non-empty, and consisting only
-// of characters in the set {[a-z], [A-Z], [0-9], _, -}.
-struct VariableName {
-  base::StringPiece name;
+// of characters in the set {[a-z], [A-Z], [0-9], _, -}. Variable names are
+// case-sensitive.
+class VariableName {
+ public:
+  static MEDIA_EXPORT ParseStatus::Or<VariableName> Parse(
+      SourceString source_str);
+
+  base::StringPiece GetName() const { return name_; }
+
+ private:
+  explicit VariableName(base::StringPiece name) : name_(name) {}
+
+  base::StringPiece name_;
 };
 
-ParseStatus::Or<VariableName> MEDIA_EXPORT
-ParseVariableName(SourceString source_str);
-
-}  // namespace types
-}  // namespace hls
-}  // namespace media
+}  // namespace media::hls::types
 
 #endif  // MEDIA_FORMATS_HLS_TYPES_H_

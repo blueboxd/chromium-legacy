@@ -26,7 +26,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "chromeos/dbus/authpolicy/authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -43,8 +43,6 @@
 namespace ash {
 
 namespace {
-
-using ::chromeos::AuthPolicyClient;
 
 constexpr base::TimeDelta kGetUserStatusCallsInterval = base::Hours(1);
 constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";

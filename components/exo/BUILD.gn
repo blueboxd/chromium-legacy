@@ -11,6 +11,8 @@ import("//components/exo/buildflags.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 
+assert(use_ozone)
+
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [ "ENABLE_COLOR_MANAGER=$enable_color_manager" ]
@@ -28,6 +30,8 @@ static_library("exo") {
     "buffer.h",
     "capabilities.cc",
     "capabilities.h",
+    "common_utils.cc",
+    "common_utils.h",
     "data_device.cc",
     "data_device.h",
     "data_device_delegate.h",
@@ -152,6 +156,7 @@ static_library("exo") {
       "//components/fullscreen_control",
       "//components/strings",
       "//ui/base",
+      "//ui/base:hit_test",
       "//ui/events/ozone/layout",
     ]
     sources += [
@@ -159,6 +164,8 @@ static_library("exo") {
       "client_controlled_accelerators.h",
       "client_controlled_shell_surface.cc",
       "client_controlled_shell_surface.h",
+      "custom_window_state_delegate.cc",
+      "custom_window_state_delegate.h",
       "extended_drag_offer.cc",
       "extended_drag_offer.h",
       "extended_drag_source.cc",
@@ -183,6 +190,9 @@ static_library("exo") {
       "shell_surface.h",
       "shell_surface_base.cc",
       "shell_surface_base.h",
+      "shell_surface_observer.h",
+      "shell_surface_presentation_time_recorder.cc",
+      "shell_surface_presentation_time_recorder.h",
       "text_input.cc",
       "text_input.h",
       "toast_surface.cc",
@@ -298,10 +308,6 @@ source_set("unit_tests") {
 
   sources = [ "mime_utils_unittest.cc" ]
 
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
-
   if (is_chromeos_ash) {
     sources += [
       "../../ui/events/ozone/gamepad/gamepad_event.cc",
@@ -322,6 +328,7 @@ source_set("unit_tests") {
       "pointer_unittest.cc",
       "seat_unittest.cc",
       "shared_memory_unittest.cc",
+      "shell_surface_presentation_time_recorder_unittest.cc",
       "shell_surface_unittest.cc",
       "shell_surface_util_unittest.cc",
       "sub_surface_unittest.cc",

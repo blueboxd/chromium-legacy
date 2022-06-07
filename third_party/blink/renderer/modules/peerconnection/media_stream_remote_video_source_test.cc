@@ -14,6 +14,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -102,12 +103,13 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
             CrossThreadUnretained(&waitable_event))));
     waitable_event.Wait();
 
-    remote_source_ =
-        new MediaStreamRemoteVideoSourceUnderTest(std::move(track_observer));
+    auto remote_source =
+        std::make_unique<MediaStreamRemoteVideoSourceUnderTest>(
+            std::move(track_observer));
+    remote_source_ = remote_source.get();
     source_ = MakeGarbageCollected<MediaStreamSource>(
         "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
-        true /* remote */);
-    source_->SetPlatformSource(base::WrapUnique(remote_source_));
+        true /* remote */, std::move(remote_source));
   }
 
   void TearDown() override {

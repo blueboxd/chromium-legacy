@@ -25,26 +25,23 @@ const char kJsApiShowNetworkDetails[] = "showNetworkDetails";
 
 namespace chromeos {
 
-NetworkDropdownHandler::NetworkDropdownHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseWebUIHandler(js_calls_container) {}
-
+NetworkDropdownHandler::NetworkDropdownHandler() = default;
 NetworkDropdownHandler::~NetworkDropdownHandler() = default;
 
 void NetworkDropdownHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {}
 
-void NetworkDropdownHandler::Initialize() {}
+void NetworkDropdownHandler::InitializeDeprecated() {}
 
 void NetworkDropdownHandler::RegisterMessages() {
   AddCallback(kJsApiLaunchInternetDetailDialog,
               &NetworkDropdownHandler::HandleLaunchInternetDetailDialog);
   AddCallback(kJsApiLaunchAddWiFiNetworkDialog,
               &NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog);
-  AddRawCallback(kJsApiShowNetworkDetails,
-                 &NetworkDropdownHandler::HandleShowNetworkDetails);
-  AddRawCallback(kJsApiShowNetworkConfig,
-                 &NetworkDropdownHandler::HandleShowNetworkConfig);
+  AddCallback(kJsApiShowNetworkDetails,
+              &NetworkDropdownHandler::HandleShowNetworkDetails);
+  AddCallback(kJsApiShowNetworkConfig,
+              &NetworkDropdownHandler::HandleShowNetworkConfig);
 }
 
 void NetworkDropdownHandler::HandleLaunchInternetDetailDialog() {
@@ -66,11 +63,8 @@ void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
       LoginDisplayHost::default_host()->GetNativeWindow());
 }
 
-void NetworkDropdownHandler::HandleShowNetworkDetails(
-    const base::ListValue* args) {
-  DCHECK_GE(args->GetListDeprecated().size(), 2U);
-  std::string type = args->GetListDeprecated()[0].GetString();
-  std::string guid = args->GetListDeprecated()[1].GetString();
+void NetworkDropdownHandler::HandleShowNetworkDetails(const std::string& type,
+                                                      const std::string& guid) {
   if (type == ::onc::network_type::kCellular) {
     // Make sure Cellular is enabled.
     NetworkStateHandler* handler =
@@ -85,10 +79,7 @@ void NetworkDropdownHandler::HandleShowNetworkDetails(
       guid, LoginDisplayHost::default_host()->GetNativeWindow());
 }
 
-void NetworkDropdownHandler::HandleShowNetworkConfig(
-    const base::ListValue* args) {
-  DCHECK(!args->GetListDeprecated().empty());
-  std::string guid = args->GetListDeprecated()[0].GetString();
+void NetworkDropdownHandler::HandleShowNetworkConfig(const std::string& guid) {
   chromeos::InternetConfigDialog::ShowDialogForNetworkId(
       guid, LoginDisplayHost::default_host()->GetNativeWindow());
 }

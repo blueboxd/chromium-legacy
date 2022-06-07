@@ -367,9 +367,10 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
     }
 
     @Override
-    public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
+    public void enterFullscreenModeForTab(boolean prefersNavigationBar, boolean prefersStatusBar) {
         if (mFullscreenManager != null) {
-            mFullscreenManager.onEnterFullscreen(mTab, new FullscreenOptions(prefersNavigationBar));
+            mFullscreenManager.onEnterFullscreen(
+                    mTab, new FullscreenOptions(prefersNavigationBar, prefersStatusBar));
         }
     }
 
@@ -449,7 +450,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
                         .with(ModalDialogProperties.CONTROLLER, dialogController)
                         .with(ModalDialogProperties.TITLE, resources,
                                 R.string.http_post_warning_title)
-                        .with(ModalDialogProperties.MESSAGE,
+                        .with(ModalDialogProperties.MESSAGE_PARAGRAPH_1,
                                 resources.getString(R.string.http_post_warning))
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
                                 R.string.http_post_warning_resend)

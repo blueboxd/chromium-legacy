@@ -1,4 +1,4 @@
-<style>
+<style include="cros-button-style">
   #container {
     display: grid;
     grid-template-areas:
@@ -23,38 +23,43 @@
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   }
 
-  iron-icon {
-    --iron-icon-height: 20px;
-    --iron-icon-width: 20px;
-  }
-
   #ambientSubpageLink {
-    border: 0;
-    border-radius: 0;
-    height: 48px;
+    --cr-icon-button-size: 48px;
     /* Make the arrow align with the thumbnail image */
     margin-inline-end: -18px;
-    min-width: 0;
-    padding: 0;
-    width: 48px;
   }
 
   #ambientLabel > p {
     color: var(--cros-text-color-primary);
     font: var(--personalization-app-label-font);
+    margin: 14px 0;
   }
 
-  cr-icon-button {
-    --cr-icon-button-fill-color: var(--cros-button-label-color-primary);
-    --cr-icon-button-icon-size: 16px;
-    --cr-icon-button-size: 24px;
-    background-color: var(--cros-button-background-color-primary);
+  #userSubpageLink {
+    background-color: var(--cros-icon-color-prominent);
+    border-radius: 50%;
+    box-shadow: var(--cros-elevation-1-shadow);
+    cursor: pointer;
+    display: inline-block;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    vertical-align: middle;
+    width: 24px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #userSubpageLink iron-icon {
+    padding-inline-start: 4px;
+    padding-block-start: 3px;
   }
 </style>
 <div id="container">
   <user-preview clickable="[[clickable_]]">
-    <cr-icon-button id="userSubpageLink" iron-icon="personalization:pencil"
-        on-click="onClickUserSubpageLink_"></cr-icon-button>
+    <div id="userSubpageLink"
+        on-click="onClickUserSubpageLink_" on-keypress="onClickUserSubpageLink_">
+     <iron-icon icon="personalization:pencil"></iron-icon>
+   </div>
   </user-preview>
   <div id="middle">
     <wallpaper-preview>
@@ -62,13 +67,17 @@
         <personalization-theme></personalization-theme>
       </template>
     </wallpaper-preview>
-    <ambient-preview main-page>
-      <div id="ambientLabel">
-        <p>$i18n{screensaverLabel}</p>
-        <cr-button id="ambientSubpageLink" on-click="onClickAmbientSubpageLink_">
-          <iron-icon icon="cr:chevron-right" aria-hidden="true"></iron-icon>
-        </cr-button>
-      </div>
-    </ambient-preview>
+    <template is="dom-if" if="[[isAmbientModeAllowed_()]]">
+      <ambient-preview clickable="[[clickable_]]" main-page>
+        <div id="ambientLabel">
+          <p>$i18n{screensaverLabel}</p>
+          <cr-icon-button id="ambientSubpageLink"
+                iron-icon="cr:chevron-right"
+                on-click="onClickAmbientSubpageLink_"
+                aria-label="$i18n{ariaLabelChangeScreensaver}">
+          </cr-icon-button>
+        </div>
+      </ambient-preview>
+    </template>
   </div>
 </div>

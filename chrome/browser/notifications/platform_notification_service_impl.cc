@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -457,7 +456,8 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       notification_data.title, notification_data.body,
-      gfx::Image::CreateFrom1xBitmap(notification_resources.notification_icon),
+      ui::ImageModel::FromImage(gfx::Image::CreateFrom1xBitmap(
+          notification_resources.notification_icon)),
       base::UTF8ToUTF16(origin.host()), origin, notifier_id, optional_fields,
       nullptr /* delegate */);
 

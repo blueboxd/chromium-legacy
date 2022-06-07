@@ -63,6 +63,9 @@ views.
 Corresponds to the `VULKAN` flag. Required for enabling GPU-accelerated
 rendering of the web content.
 
+CFv2 tests should use
+`//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml`.
+
 #### web_engine_required_capabilities.test-cmx
 Contains services that need to be present when creating a `fuchsia.web.Context`.
 Note that the `fuchsia.scheduler.ProfileProvider` service is only used in tests

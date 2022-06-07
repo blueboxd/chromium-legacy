@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -24,6 +23,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
@@ -32,6 +32,7 @@
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 using base::Bucket;
@@ -635,8 +636,12 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsBrowserTest, DedicatedWorker) {
-  ukm::TestAutoSetUkmRecorder recorder;
+  // This test should only run if the feature is disabled.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBackForwardCacheDedicatedWorker))
+    return;
 
+  ukm::TestAutoSetUkmRecorder recorder;
   const GURL url(embedded_test_server()->GetURL(
       "/back_forward_cache/page_with_dedicated_worker.html"));
 
@@ -985,6 +990,58 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsPrerenderingBrowserTest,
               testing::ElementsAre(FeatureUsage{id5, 0, 0, 0}));
 }
 
+class BackForwardCacheMetricsFencedFrameBrowserTest
+    : public BackForwardCacheMetricsBrowserTest {
+ public:
+  BackForwardCacheMetricsFencedFrameBrowserTest() = default;
+  ~BackForwardCacheMetricsFencedFrameBrowserTest() override = default;
+
+  test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_test_helper_;
+  }
+
+ private:
+  test::FencedFrameTestHelper fenced_frame_test_helper_;
+};
+
+// Tests that fenced frame navigation doesn't have BackForwardCacheMetrics.
+IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsFencedFrameBrowserTest,
+                       FenceFrameNavigation) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  const GURL fenced_frame_url1(
+      embedded_test_server()->GetURL("/fenced_frames/title1.html"));
+  const GURL url2(embedded_test_server()->GetURL("/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  auto* fenced_frame = fenced_frame_test_helper().CreateFencedFrame(
+      web_contents()->GetMainFrame(), fenced_frame_url1);
+  NavigationEntryImpl* fenced_frame_entry = FrameTreeNode::From(fenced_frame)
+                                                ->frame_tree()
+                                                ->controller()
+                                                .GetLastCommittedEntry();
+  EXPECT_EQ(fenced_frame_entry->back_forward_cache_metrics(), nullptr);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  // Navigate back to `url1`.
+  ASSERT_TRUE(HistoryGoBack(shell()->web_contents()));
+
+  // The navigations observed should be:
+  // 1) url1
+  // 2) fenced_frame_url1
+  // 3) url2
+  // 4) url1 (back navigation)
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(4));
+  ukm::SourceId id4 = ToSourceId(navigation_ids_[3]);
+
+  // We should only record metrics for the last navigation.
+  EXPECT_THAT(GetFeatureUsageMetrics(&recorder),
+              testing::ElementsAre(FeatureUsage{id4, 0, 0, 0}));
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          BackForwardCacheMetricsBrowserTest,
                          testing::ValuesIn({BackForwardCacheStatus::kDisabled,
@@ -992,6 +1049,12 @@ INSTANTIATE_TEST_SUITE_P(All,
                          BackForwardCacheMetricsBrowserTest::DescribeParams);
 INSTANTIATE_TEST_SUITE_P(All,
                          BackForwardCacheMetricsPrerenderingBrowserTest,
+                         testing::ValuesIn({BackForwardCacheStatus::kDisabled,
+                                            BackForwardCacheStatus::kEnabled}),
+                         BackForwardCacheMetricsBrowserTest::DescribeParams);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         BackForwardCacheMetricsFencedFrameBrowserTest,
                          testing::ValuesIn({BackForwardCacheStatus::kDisabled,
                                             BackForwardCacheStatus::kEnabled}),
                          BackForwardCacheMetricsBrowserTest::DescribeParams);

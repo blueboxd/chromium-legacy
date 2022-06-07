@@ -84,7 +84,7 @@ std::unique_ptr<ServiceRequestSender> CreateBase64TriggerScriptRequestSender(
 // Creates a service request sender that communicates with a remote endpoint.
 std::unique_ptr<ServiceRequestSender> CreateRpcTriggerScriptRequestSender(
     content::BrowserContext* browser_context,
-    StarterPlatformDelegate* delegate) {
+    base::WeakPtr<StarterPlatformDelegate> delegate) {
   return std::make_unique<ServiceRequestSenderImpl>(
       browser_context,
       /* access_token_fetcher = */ nullptr,
@@ -175,11 +175,12 @@ GetImplicitTriggeringDebugParametersFromCommandLine() {
 }  // namespace
 
 Starter::Starter(content::WebContents* web_contents,
-                 StarterPlatformDelegate* platform_delegate,
+                 base::WeakPtr<StarterPlatformDelegate> platform_delegate,
                  ukm::UkmRecorder* ukm_recorder,
                  base::WeakPtr<RuntimeManager> runtime_manager,
                  const base::TickClock* tick_clock)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<Starter>(*web_contents),
       current_ukm_source_id_(
           ukm::GetSourceIdForWebContentsDocument(web_contents)),
       cached_failed_trigger_script_fetches_(
@@ -191,9 +192,7 @@ Starter::Starter(content::WebContents* web_contents,
       ukm_recorder_(ukm_recorder),
       runtime_manager_(runtime_manager),
       starter_heuristic_(GetOrCreateStarterHeuristic()),
-      tick_clock_(tick_clock) {
-  CheckSettings();
-}
+      tick_clock_(tick_clock) {}
 
 Starter::~Starter() = default;
 
@@ -361,13 +360,21 @@ void Starter::RegisterSyntheticFieldTrials(
 }
 
 void Starter::OnTabInteractabilityChanged(bool is_interactable) {
-  CheckSettings();
+  Init();
   if (trigger_script_coordinator_) {
     trigger_script_coordinator_->OnTabInteractabilityChanged(is_interactable);
   }
 }
 
-void Starter::CheckSettings() {
+void Starter::Init() {
+  if (!platform_delegate_) {
+    return;
+  }
+  if (!platform_delegate_->IsAttached()) {
+    CancelPendingStartup(Metrics::TriggerScriptFinishedState::CANCELED);
+    return;
+  }
+
   bool prev_is_custom_tab = is_custom_tab_;
   is_custom_tab_ = platform_delegate_->GetIsCustomTab();
   bool switched_from_cct_to_tab = prev_is_custom_tab && !is_custom_tab_;
@@ -384,6 +391,8 @@ void Starter::CheckSettings() {
   // which leads to pollution of our metrics.
   fetch_trigger_scripts_on_navigation_ =
       proactive_help_setting_enabled && msbb_setting_enabled &&
+      (!platform_delegate_->GetIsWebLayer() ||
+       platform_delegate_->GetIsLoggedIn()) &&
       ((is_custom_tab_ && platform_delegate_->GetIsTabCreatedByGSA() &&
         base::FeatureList::IsEnabled(
             features::kAutofillAssistantInCCTTriggering)) ||
@@ -437,18 +446,25 @@ void Starter::RecordDependenciesInvalidated() const {
 
 void Starter::OnDependenciesInvalidated() {
   RecordDependenciesInvalidated();
-  CheckSettings();
+  Init();
 }
 
 void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
   DCHECK(trigger_context);
   DCHECK(!trigger_context->GetDirectAction());
 
+  if (!platform_delegate_) {
+    return;
+  }
+
   // Register synthetic trial as soon as possible.
   RegisterSyntheticFieldTrials(*trigger_context);
 
   CancelPendingStartup(Metrics::TriggerScriptFinishedState::CANCELED);
   pending_trigger_context_ = std::move(trigger_context);
+  if (!platform_delegate_->IsAttached()) {
+    OnStartDone(/* start_regular_script = */ false);
+  }
 
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAutofillAssistantForceOnboarding) == "true") {
@@ -808,5 +824,11 @@ void Starter::OnStartDone(bool start_regular_script,
 void Starter::DeleteTriggerScriptCoordinator() {
   trigger_script_coordinator_.reset();
 }
+
+base::WeakPtr<Starter> Starter::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(Starter);
 
 }  // namespace autofill_assistant

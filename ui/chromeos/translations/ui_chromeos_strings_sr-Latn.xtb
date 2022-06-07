@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Prave se rezervne kopije (<ph name="FILE_COUNT" />)</translation>
 <translation id="4218274196133425560">Ukloni izuzetak za <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Google prezentacija</translation>
+<translation id="4277536868133419688">Filter <ph name="FILTER_NAME" /> je uključen.</translation>
 <translation id="4290535918735525311">1 direktorijum se deli sa Linux-om</translation>
 <translation id="4299729908419173967">portugalski (Brazil)</translation>
 <translation id="4302605047395093221">Svako ko koristi ovaj uređaj mora da unese PIN da bi se povezao na ovu mobilnu mrežu</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">Još...</translation>
 <translation id="4579744207439506346">Stavka <ph name="ENTRY_NAME" /> je dodata u izbor.</translation>
 <translation id="4594543368593301662">Prikazuju se rezultati za: <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">Filter je resetovan.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> se kopira u direktorijum <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Izvođač</translation>
 <translation id="4642769377300286600">Instalira se profil za mobilne uređaje, mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -530,6 +532,7 @@
 <translation id="5469868506864199649">italijanski</translation>
 <translation id="5473333559083690127">Ponovo unesite novi PIN</translation>
 <translation id="5489067830765222292">letonski</translation>
+<translation id="5489965683297092283">Filter <ph name="FILTER_NAME" /> je isključen.</translation>
 <translation id="5494920125229734069">Izbor svih stavki</translation>
 <translation id="5500122897333236901">islandski</translation>
 <translation id="5508696409934741614">Tačke</translation>
@@ -596,6 +599,7 @@
 <translation id="6082256976217156453">LZMA komprimovana arhiva</translation>
 <translation id="6096979789310008754">Tekst pretrage je obrisan, prikazuju se sve datoteke i direktorijumi.</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> se premešta u direktorijum <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">CSV tekst</translation>
 <translation id="6129953537138746214">Razmak</translation>
 <translation id="6133173853026656527">Premeštanje datoteke <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">japanski sa američkom tastaturom</translation>
@@ -846,6 +850,7 @@
 <translation id="8208580316430297579">Ilustracije</translation>
 <translation id="8223479393428528563">Da biste sačuvali ove datoteke za oflajn korišćenje, povežite se ponovo na internet, kliknite desnim tasterom na datoteke i izaberite opciju <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Otkaži</translation>
+<translation id="8250920743982581267">Dokumenti</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8261561378965667560">niz za kineski</translation>
 <translation id="8269755669432358899">Skupi okna za povratne informacije o datotekama</translation>

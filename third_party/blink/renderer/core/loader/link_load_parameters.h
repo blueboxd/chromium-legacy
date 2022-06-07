@@ -30,7 +30,8 @@ struct CORE_EXPORT LinkLoadParameters {
                      network::mojom::ReferrerPolicy,
                      const KURL& href,
                      const String& image_srcset,
-                     const String& image_sizes);
+                     const String& image_sizes,
+                     const String& blocking);
   LinkLoadParameters(const LinkHeader&, const KURL& base_url);
 
   LinkRelAttribute rel;
@@ -45,6 +46,7 @@ struct CORE_EXPORT LinkLoadParameters {
   KURL href;
   String image_srcset;
   String image_sizes;
+  String blocking;
   absl::optional<base::UnguessableToken> recursive_prefetch_token;
 };
 

@@ -16,6 +16,7 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
@@ -184,7 +185,7 @@ class HttpCacheDataCounterTest : public testing::Test {
   void InitNetworkContext() {
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
     context_params->http_cache_enabled = true;
-    context_params->http_cache_path = cache_dir_.GetPath();
+    context_params->http_cache_directory = cache_dir_.GetPath();
 
     network_context_ = std::make_unique<NetworkContext>(
         network_service_.get(),

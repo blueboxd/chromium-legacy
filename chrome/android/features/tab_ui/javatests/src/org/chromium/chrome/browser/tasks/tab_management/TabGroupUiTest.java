@@ -97,7 +97,9 @@ public class TabGroupUiTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_TAB_GROUPS)
+                    .build();
 
     @Before
     public void setUp() {
@@ -249,7 +251,7 @@ public class TabGroupUiTest {
                     "event_used/" +
                     "name%3Aiph_tabgroups_strip;comparator%3A==0;window%3A365;storage%3A365/" +
                     "session_rate/<1"})
-    @DisabledTest(message = "https://crbug.com/1135926")
+    @DisabledTest(message = "https://crbug.com/1145060")
     public void testIphSuppressedByBottomSheet() throws Exception {
         // clang-format on
 

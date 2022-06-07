@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Izrada sigurnosnih kopija (<ph name="FILE_COUNT" />)</translation>
 <translation id="4218274196133425560">Uklanjanje izuzetka za <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Google prezentacija</translation>
+<translation id="4277536868133419688">Filter <ph name="FILTER_NAME" /> je uključen.</translation>
 <translation id="4290535918735525311">1 folder se dijeli s Linuxom</translation>
 <translation id="4299729908419173967">brazilski</translation>
 <translation id="4302605047395093221">Sve osobe koje koriste ovaj uređaj će morati unijeti PIN da se povežu s ovom mobilnom mrežom</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">Više...</translation>
 <translation id="4579744207439506346">Unos <ph name="ENTRY_NAME" /> je dodan u odabir.</translation>
 <translation id="4594543368593301662">Prikazuju se rezultati za <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">Filter je poništen</translation>
 <translation id="4603392156942865207">Kopiranje fajla <ph name="FILE_NAME" /> u folder <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Izvođač</translation>
 <translation id="4642769377300286600">Instaliranje profila mobilnog uređaja, mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -530,6 +532,7 @@
 <translation id="5469868506864199649">italijanski</translation>
 <translation id="5473333559083690127">Ponovo unesite novi PIN</translation>
 <translation id="5489067830765222292">latvijski</translation>
+<translation id="5489965683297092283">Filter <ph name="FILTER_NAME" /> je isključen.</translation>
 <translation id="5494920125229734069">Odaberi sve</translation>
 <translation id="5500122897333236901">Islandska</translation>
 <translation id="5508696409934741614">Točke</translation>
@@ -596,6 +599,7 @@
 <translation id="6082256976217156453">LZMA kompresirana arhiva</translation>
 <translation id="6096979789310008754">Pretraži obrisani tekst uz prikaz svih fajlova i foldera.</translation>
 <translation id="610101264611565198">Premještanje fajla <ph name="FILE_NAME" /> u folder <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">CSV tekst</translation>
 <translation id="6129953537138746214">Razmaknica</translation>
 <translation id="6133173853026656527">Premještanje fajla <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">japanski sa SAD tastaturom</translation>
@@ -846,6 +850,7 @@
 <translation id="8208580316430297579">Umjetnička djela</translation>
 <translation id="8223479393428528563">Da sačuvate ove fajlove za korištenje van mreže, vratite se na mrežu, desnim klikom odaberite fajlove i odaberite opciju <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Prekini</translation>
+<translation id="8250920743982581267">Dokumenti</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8261561378965667560">kineski niz</translation>
 <translation id="8269755669432358899">Sužavanje ploča za povratne informacije o fajlovima</translation>

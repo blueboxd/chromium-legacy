@@ -35,6 +35,7 @@
 <translation id="1173894706177603556">Pangalanang muli</translation>
 <translation id="1177863135347784049">Custom</translation>
 <translation id="1181037720776840403">Alisin</translation>
+<translation id="1193729455103054076">Gumamit ng malakas na password?</translation>
 <translation id="1197267115302279827">Ilipat ang mga bookmark</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1202892408424955784">Mga sinusubaybayang produkto</translation>
@@ -89,6 +90,7 @@ Kapag na-delete mo ang iyong history ng pag-browse — lahat o para sa isang par
 <translation id="1409879593029778104">Pinigilan ang pag-download sa <ph name="FILE_NAME" /> dahil may ganitong file na sa kasalukuyan.</translation>
 <translation id="1414981605391750300">Nakikipag-ugnayan sa Google. Maaari itong umabot nang isang minuto…</translation>
 <translation id="1416550906796893042">Bersyon ng application</translation>
+<translation id="1428770807407000502">I-off ang pag-sync?</translation>
 <translation id="1430915738399379752">I-print</translation>
 <translation id="1436784010935106834">Inalis</translation>
 <translation id="1448440926884431741">Ayusin ang mga sinusubaybayan mong produkto sa Mga Bookmark</translation>
@@ -184,7 +186,6 @@ Kapag na-delete mo ang iyong history ng pag-browse — lahat o para sa isang par
 <translation id="200114059308480249">Isama ang katabing text sa mga paghahanap sa Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# File}one{# File}other{# na File}}</translation>
 <translation id="2015836039326522978">Bubukas ang <ph name="APP_NAME" /> sa Chrome. Sa pamamagitan ng pagpapatuloy, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo ng Google<ph name="END_LINK1" />, at sa <ph name="BEGIN_LINK2" />Mga Karagdagang Tuntunin ng Serbisyo ng Google Chrome at Chrome OS<ph name="END_LINK2" />. Nalalapat din ang <ph name="BEGIN_LINK3" />Patakaran sa Privacy<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Alisin ang interes?</translation>
 <translation id="2020309681647789787">Makikita mo ang iyong history sa lahat ng naka-sync mong device, para maipagpatuloy mo ang iyong ginagawa</translation>
 <translation id="2021896219286479412">Control ng full screen sa site</translation>
 <translation id="2038563949887743358">I-on ang Hilingin ang site sa desktop</translation>
@@ -213,6 +214,7 @@ Mag-tap ng anumang salita para maghanap. Para pinuhin ang iyong paghahanap, pind
 <translation id="2141396931810938595">Batay sa iyong paggamit</translation>
 <translation id="214888715418183969">Piliin kung ano ang kumportable kang ibahagi sa Chrome. Gagamitin ang mga sukatang ibabahagi mo para makatulong sa pagpapahusay ng mga feature, performance, at stability ng Chrome.</translation>
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
+<translation id="2155214902713132423">Hindi available para sa device na ito ang paraan ng pag-verify na ito. Pumili ng ibang opsyon sa iyong iba pang device.</translation>
 <translation id="2157851137955077194">Para magbahagi ng isang bagay sa isa pang device mula sa iyong telepono, i-on ang pag-sync sa mga setting ng Chrome sa dalawang device</translation>
 <translation id="2158408438301413340">Hindi masuri ng Chrome ang lahat ng password</translation>
 <translation id="2169830938017475061">Ngayon</translation>
@@ -733,7 +735,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5091199029769593641">Hindi magtatagal at makakakita ka ng mga kuwento mula sa <ph name="SITE_NAME" /> kapag nagbukas ka ng bagong tab. Mase-save sa iyong Google account ang mga site na sinusubaybayan mo. Puwede mong pamahalaan ang mga ito sa mga setting ng Discover.</translation>
 <translation id="5091249083535528968">Pinalawak na data ng paggamit</translation>
 <translation id="509429900233858213">May naganap na error.</translation>
-<translation id="5098190077610408701">Magdagdag ng interes?</translation>
 <translation id="5102401324271069229">Kung susubukan ng site na nakawin ang iyong password, o kapag nag-download ka ng mapaminsalang file, posibleng magpadala ang Chrome sa Ligtas na Pag-browse ng mga URL, pati ng ilang content ng page</translation>
 <translation id="510275257476243843">1 oras na lang ang natitira</translation>
 <translation id="5115811374190515607">sa <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +880,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5906513782029855931">Kapag alam ang mga URL ng mga site, matutulungan ka ng Google Assistant na tumapos ng mga gawain. Puwede mong i-off ang Assistant sa mga setting ng Chrome.</translation>
 <translation id="5916664084637901428">Naka-on</translation>
 <translation id="5919204609460789179">I-update ang <ph name="PRODUCT_NAME" /> upang simulan ang pag-sync</translation>
+<translation id="5938820472109305350">Idagdag ang <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Ginagamit ang Google para sa paghahanap</translation>
 <translation id="5945035219773565305">Kasalukuyang rekomendasyon:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Tinitingnan ang live na page</translation>
@@ -898,7 +900,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="6033245666633565791">Sa pamamagitan ng <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, nagde-develop ang Chrome ng mga bagong teknolohiya para protektahan ka laban sa cross-site na pagsubaybay habang pinapanatili ang bukas na web.
 
 Kasalukuyan pa ring dine-develop ang mga trial ng Privacy Sandbox at available ang mga ito sa mga piling rehiyon. Sa ngayon, puwedeng subukan ng mga site ang Privacy Sandbox habang patuloy na gumagamit ng mga kasalukuyang teknolohiya sa web gaya ng third-party na cookies.</translation>
-<translation id="6036057147555329831">Karagdagang ICU</translation>
 <translation id="6039379616847168523">Pumunta sa susunod na tab</translation>
 <translation id="6040143037577758943">Isara</translation>
 <translation id="604124094241169006">Awtomatiko</translation>
@@ -1023,6 +1024,7 @@ Pinapahusay ng mga trust token ang privacy sa web at hindi magagamit ang mga ito
 <translation id="663674369910034433">Para sa higit pang setting na nauugnay sa privacy, seguridad, at pagkolekta ng data, tingnan ang <ph name="BEGIN_LINK1" />Pag-sync<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Mga serbisyo ng Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Para makatulong na mapaganda ang app, nagpapadala ang Chrome ng data ng paggamit at pag-crash sa Google. <ph name="BEGIN_UMA_LINK" />Pamahalaan<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">I-block sa lahat ng pagkakataon</translation>
+<translation id="6641780377503683465">Alisin ang <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="6645629752388991326">Kontrolin kung aling mga device ang puwedeng mag-sign in sa pamamagitan ng paggamit sa device na ito bilang security key.</translation>
 <translation id="6648459603387803038">Puwedeng baguhin ng iyong administrator ang setup ng browser mo sa remote na paraan. Puwede ring pamahalaan sa labas ng Chrome ang aktibidad sa device na ito.</translation>

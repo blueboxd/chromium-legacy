@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/renderer/modules/mediastream/transferred_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/mediastream/webaudio_media_stream_audio_sink.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
@@ -272,12 +273,7 @@ MediaStreamTrack* MediaStreamTrack::Create(ExecutionContext* context,
 MediaStreamTrack* MediaStreamTrack::Create(
     ExecutionContext* context,
     const base::UnguessableToken& token) {
-  MediaStreamSource* source = MakeGarbageCollected<MediaStreamSource>(
-      "dummy", MediaStreamSource::StreamType::kTypeVideo, "dummy",
-      false /* remote */);
-  MediaStreamComponent* component =
-      MakeGarbageCollected<MediaStreamComponent>(source);
-  return MakeGarbageCollected<MediaStreamTrack>(context, component);
+  return MakeGarbageCollected<TransferredMediaStreamTrack>(context);
 }
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
@@ -380,25 +376,6 @@ void MediaStreamTrack::setEnabled(bool enabled) {
     return;
 
   DidSetMediaStreamTrackEnabled(component_.Get());
-
-  MediaStreamAudioSource* media_stream_audio_source =
-      MediaStreamAudioSource::From(component_->Source());
-  ProcessedLocalAudioSource* processed_local_audio_source =
-      ProcessedLocalAudioSource::From(media_stream_audio_source);
-  if (media_stream_audio_source && processed_local_audio_source) {
-    if (!enabled) {
-      // One track was disabled. Check if all tracks are disabled and inform the
-      // APM about the state. The APM can enter a low-complexity mode if it
-      // knows that all tracks are muted and that saves CPU cycles.
-      const bool all_tracks_disabled =
-          media_stream_audio_source->AllTracksAreDisabled();
-      processed_local_audio_source->SetOutputWillBeMuted(all_tracks_disabled);
-    } else {
-      // At least one track is enabled. Tell the APM to go back to its normal
-      // mode.
-      processed_local_audio_source->SetOutputWillBeMuted(false);
-    }
-  }
 }
 
 bool MediaStreamTrack::muted() const {

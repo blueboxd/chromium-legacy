@@ -47,8 +47,9 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
             ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
 
     // Scripts run, but have no actions.
-    ON_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-        .WillByDefault(RunOnceCallback<5>(net::HTTP_OK, ""));
+    ON_CALL(mock_service_, GetActions)
+        .WillByDefault(RunOnceCallback<5>(
+            net::HTTP_OK, "", ServiceRequestSender::ResponseInfo{}));
   }
 
  protected:
@@ -284,11 +285,12 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
   InitScriptProto(actions_response.mutable_update_script_list()->add_scripts(),
                   "update path 2", "exists", "direct_action_name");
 
-  EXPECT_CALL(mock_service_,
-              OnGetActions(StrEq("runnable name"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetActions(StrEq("runnable name"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
@@ -324,11 +326,12 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   InitScriptProto(actions_response.mutable_update_script_list()->add_scripts(),
                   "update path 2", "exists", "direct_action_name");
 
-  EXPECT_CALL(mock_service_,
-              OnGetActions(StrEq("runnable name"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetActions(StrEq("runnable name"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillOnce(RunOnceCallback<6>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
@@ -363,17 +366,20 @@ TEST_F(ScriptTrackerTest, UpdateInterruptList) {
   InitScriptProto(interrupt_proto, "interrupt", "exists");
   interrupt_proto->mutable_presentation()->set_interrupt(true);
 
-  EXPECT_CALL(mock_service_, OnGetActions("main", _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillRepeatedly(RunOnceCallback<5>(net::HTTP_OK, ""));
+  EXPECT_CALL(mock_service_, GetActions("main", _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  EXPECT_CALL(mock_service_, GetNextActions)
+      .WillRepeatedly(RunOnceCallback<6>(net::HTTP_OK, "",
+                                         ServiceRequestSender::ResponseInfo{}));
 
   ActionsResponseProto actions_interrupt;
   actions_response.set_script_payload("from interrupt");
   actions_response.add_actions()->mutable_tell()->set_message("interrupt");
 
-  EXPECT_CALL(mock_service_, OnGetActions("interrupt", _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_interrupt)));
+  EXPECT_CALL(mock_service_, GetActions("interrupt", _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_interrupt),
+                                   ServiceRequestSender::ResponseInfo{}));
 
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,

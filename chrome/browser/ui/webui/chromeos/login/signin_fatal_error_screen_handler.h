@@ -34,7 +34,7 @@ class SignInFatalErrorScreenHandler : public SignInFatalErrorView,
  public:
   using TView = SignInFatalErrorView;
 
-  explicit SignInFatalErrorScreenHandler(JSCallsContainer* js_calls_container);
+  SignInFatalErrorScreenHandler();
   SignInFatalErrorScreenHandler(const SignInFatalErrorScreenHandler&) = delete;
   SignInFatalErrorScreenHandler& operator=(
       const SignInFatalErrorScreenHandler&) = delete;
@@ -49,7 +49,7 @@ class SignInFatalErrorScreenHandler : public SignInFatalErrorView,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   SignInFatalErrorScreen* screen_ = nullptr;
 };

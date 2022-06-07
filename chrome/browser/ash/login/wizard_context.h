@@ -24,6 +24,15 @@ class WizardContext {
   WizardContext(const WizardContext&) = delete;
   WizardContext& operator=(const WizardContext&) = delete;
 
+  // Should be tweaked by the tests only in case we need this early in the init
+  // process. Otherwise tweak context from `GetWizardContextForTesting`.
+  static bool g_is_branded_build;
+
+  enum class EnrollmentPreference {
+    kKiosk,
+    kEnterprise,
+  };
+
   // Configuration for automating OOBE screen actions, e.g. during device
   // version rollback.
   // Set by WizardController.
@@ -73,7 +82,16 @@ class WizardContext {
   bool tpm_dbus_error = false;
 
   // True if this is a branded build (i.e. Google Chrome).
-  bool is_branded_build;
+  bool is_branded_build = g_is_branded_build;
+
+  // Force that OOBE Login display isn't destroyed right after login due to all
+  // screens being skipped.
+  bool defer_oobe_flow_finished_for_tests = false;
+
+  // Indicates which type of licenses should be used for primary button on
+  // enrollment screen.
+  EnrollmentPreference enrollment_preference_ =
+      WizardContext::EnrollmentPreference::kEnterprise;
 
   // Authorization data that is required by PinSetup screen to add PIN as
   // another possible auth factor. Can be empty (if PIN is not supported).
@@ -86,6 +104,16 @@ class WizardContext {
   // TermsOfServiceScreen should be shown on login this will be set to
   // OobeScreen::SCREEN_UNKNOWN.
   OobeScreenId screen_after_managed_tos;
+
+  // If this is a first login after update from CloudReady to a new version.
+  // During such an update show users license agreement and data collection
+  // consent.
+  bool is_cloud_ready_update_flow = false;
+
+  // Determining ownership can take some time. Instead of finding out if the
+  // current user is an owner of the device we reuse this value. It is set
+  // during ConsolidatedConsentScreen.
+  absl::optional<bool> is_owner_flow;
 };
 
 }  // namespace ash

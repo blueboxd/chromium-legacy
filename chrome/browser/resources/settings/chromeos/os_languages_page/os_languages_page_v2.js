@@ -25,7 +25,7 @@ import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
-import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import '//resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import '//resources/cr_elements/cr_link_row/cr_link_row.js';
 import './change_device_language_dialog.js';
@@ -35,12 +35,12 @@ import '//resources/cr_components/localized_link/localized_link.js';
 import '../../controls/settings_toggle_button.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 import {loadTimeData} from '../../i18n_setup.js';
 import {Router, Route} from '../../router.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 import '../../settings_shared_css.js';
-import {recordSettingChange, recordSearch, setUserActionRecorderForTesting, recordPageFocus, recordPageBlur, recordClick, recordNavigation} from '../metrics_recorder.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
 import {LanguageHelper, LanguagesModel, LanguageState} from './languages_types.js';
 
 Polymer({
@@ -367,7 +367,7 @@ Polymer({
         });
 
     const menu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
-    menu.showAt(/** @type {!Element} */ (e.target));
+    menu.showAt(/** @type {!HTMLElement} */ (e.target));
   },
 
   /**

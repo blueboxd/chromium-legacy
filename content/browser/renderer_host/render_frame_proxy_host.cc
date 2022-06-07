@@ -115,6 +115,9 @@ RenderFrameProxyHost::RenderFrameProxyHost(
       render_frame_proxy_created_(false),
       render_view_host_(std::move(render_view_host)),
       post_message_counter_(blink::PostMessagePartition::kCrossProcess) {
+  TRACE_EVENT_BEGIN("navigation", "RenderFrameProxyHost",
+                    perfetto::Track::FromPointer(this),
+                    "render_frame_proxy_host_when_created", *this);
   GetAgentSchedulingGroup().AddRoute(routing_id_, this);
   CHECK(
       g_routing_id_frame_proxy_map.Get()
@@ -174,6 +177,7 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
   g_routing_id_frame_proxy_map.Get().erase(
       RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_));
   g_token_frame_proxy_map.Get().erase(frame_token_);
+  TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
 }
 
 void RenderFrameProxyHost::SetChildRWHView(
@@ -573,9 +577,12 @@ void RenderFrameProxyHost::RouteMessageEvent(
       // actual non-empty value for |translated_source_token|. Otherwise (if the
       // proxy wasn't created), use an empty |translated_source_token| (see
       // https://crbug.com/485520 for discussion on why this is ok).
+      // The proxy may be in a different BrowsingContextState in the case of
+      // postMessages exchanged across inner and outer delegates.
       RenderFrameProxyHost* source_proxy_in_target_site_instance_group =
           source_rfh->browsing_context_state()->GetRenderFrameProxyHost(
-              target_site_instance->group());
+              target_site_instance->group(),
+              BrowsingContextState::ProxyAccessMode::kAllowOuterDelegate);
       if (source_proxy_in_target_site_instance_group) {
         translated_source_token =
             source_proxy_in_target_site_instance_group->GetFrameToken();
@@ -714,7 +721,7 @@ void RenderFrameProxyHost::UpdateViewportIntersection(
 void RenderFrameProxyHost::DidChangeOpener(
     const absl::optional<blink::LocalFrameToken>& opener_frame_token) {
   frame_tree_node_->render_manager()->DidChangeOpener(opener_frame_token,
-                                                      GetSiteInstance());
+                                                      site_instance_group());
 }
 
 void RenderFrameProxyHost::AdvanceFocus(
@@ -793,8 +800,7 @@ void RenderFrameProxyHost::TearDownMojoConnection() {
 }
 
 void RenderFrameProxyHost::WriteIntoTrace(
-    perfetto::TracedProto<perfetto::protos::pbzero::RenderFrameProxyHost>
-        proto) {
+    perfetto::TracedProto<TraceProto> proto) const {
   proto->set_routing_id(GetRoutingID());
   proto->set_process_id(GetProcess()->GetID());
   proto->set_is_render_frame_proxy_live(is_render_frame_proxy_live());

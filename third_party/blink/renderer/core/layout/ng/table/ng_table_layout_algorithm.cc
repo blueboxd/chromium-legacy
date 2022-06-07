@@ -278,11 +278,12 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
     const NGTableTypes::Rows& rows,
     const NGTableTypes::CellBlockConstraints& cell_block_constraints,
     const LogicalSize& border_spacing) {
+  bool is_table_block_size_specified = !style.LogicalHeight().IsAuto();
   scoped_refptr<NGTableConstraintSpaceData> data =
       base::MakeRefCounted<NGTableConstraintSpaceData>();
   data->table_writing_direction = style.GetWritingDirection();
   data->table_border_spacing = border_spacing;
-  data->is_table_block_size_specified = !style.LogicalHeight().IsAuto();
+  data->is_table_block_size_specified = is_table_block_size_specified;
   data->has_collapsed_borders =
       style.BorderCollapse() == EBorderCollapse::kCollapse;
   data->column_locations = column_locations;
@@ -292,10 +293,8 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
     data->sections.emplace_back(section.start_row, section.row_count);
   data->rows.ReserveCapacity(rows.size());
   for (const auto& row : rows) {
-    data->rows.emplace_back(
-        row.baseline, row.block_size, row.start_cell_index, row.cell_count,
-        row.has_baseline_aligned_percentage_block_size_descendants,
-        row.is_collapsed);
+    data->rows.emplace_back(row.block_size, row.start_cell_index,
+                            row.cell_count, row.baseline, row.is_collapsed);
   }
   data->cells.ReserveCapacity(cell_block_constraints.size());
   // Traversing from section is necessary to limit cell's rowspan to the
@@ -306,33 +305,22 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
       const auto& row = rows[row_index];
       for (wtf_size_t cell_index = row.start_cell_index;
            cell_index < row.start_cell_index + row.cell_count; ++cell_index) {
-        wtf_size_t max_rowspan =
-            section.start_row + section.row_count - row_index;
-        wtf_size_t rowspan =
-            std::min(cell_block_constraints[cell_index].rowspan, max_rowspan);
+        const auto& cell_block_constraint = cell_block_constraints[cell_index];
+        const auto [cell_block_size, is_initial_block_size_indefinite] =
+            NGTableAlgorithmUtils::ComputeCellBlockSize(
+                cell_block_constraint, rows, row_index, border_spacing,
+                is_table_block_size_specified);
 
-        // Determine the cell's block-size.
-        LayoutUnit cell_block_size;
-        for (wtf_size_t i = 0; i < rowspan; ++i) {
-          if (rows[row_index + i].is_collapsed)
-            continue;
-          cell_block_size += rows[row_index + i].block_size;
-          if (i != 0)
-            cell_block_size += border_spacing.block_size;
-        }
-
-        // Confusingly a rowspanned cell originating from a collapsed-row will
-        // have no block-size.
-        LayoutUnit rowspan_block_size = rowspan > 1 && !row.is_collapsed
-                                            ? cell_block_size
-                                            : kIndefiniteSize;
+        LayoutUnit rowspan_block_size =
+            cell_block_constraint.effective_rowspan > 1 ? cell_block_size
+                                                        : kIndefiniteSize;
 
         data->cells.emplace_back(
-            cell_block_constraints[cell_index].borders, rowspan_block_size,
-            cell_block_constraints[cell_index].column_index,
-            /* has_grown */ cell_block_size >
-                cell_block_constraints[cell_index].min_block_size,
-            cell_block_constraints[cell_index].is_constrained);
+            cell_block_constraint.borders, rowspan_block_size,
+            cell_block_constraint.column_index,
+            is_initial_block_size_indefinite,
+            cell_block_constraint
+                .has_descendant_that_depends_on_percentage_block_size);
       }
     }
   }
@@ -570,8 +558,8 @@ const NGLayoutResult* NGTableLayoutAlgorithm::Layout() {
   LayoutUnit minimal_table_grid_block_size;
   ComputeRows(table_inline_size_before_collapse - border_padding.InlineSum(),
               grouped_children, column_locations, *table_borders,
-              border_spacing, border_padding, captions_block_size,
-              is_fixed_layout, &rows, &cell_block_constraints, &sections,
+              border_spacing, border_padding, captions_block_size, &rows,
+              &cell_block_constraints, &sections,
               &minimal_table_grid_block_size);
 
   if (has_collapsed_columns) {
@@ -661,7 +649,6 @@ void NGTableLayoutAlgorithm::ComputeRows(
     const LogicalSize& border_spacing,
     const NGBoxStrut& table_border_padding,
     const LayoutUnit captions_block_size,
-    bool is_fixed,
     NGTableTypes::Rows* rows,
     NGTableTypes::CellBlockConstraints* cell_block_constraints,
     NGTableTypes::Sections* sections,
@@ -717,18 +704,20 @@ void NGTableLayoutAlgorithm::ComputeRows(
     }
   }
 
-  // Collapsed rows get 0 block-size, and shrink the minimum table size.
-  for (NGTableTypes::Row& row : *rows) {
-    if (row.is_collapsed) {
-      if (*minimal_table_grid_block_size != LayoutUnit()) {
-        *minimal_table_grid_block_size -= row.block_size;
-        if (rows->size() > 1)
-          *minimal_table_grid_block_size -= border_spacing.block_size;
-      }
-      row.block_size = LayoutUnit();
+  for (auto& row : *rows) {
+    if (!row.is_collapsed)
+      continue;
+
+    // Collapsed rows get zero block-size, and shrink the minimum table size.
+    // TODO(ikilpatrick): As written |minimal_table_grid_block_size| can go
+    // negative. Investigate.
+    if (*minimal_table_grid_block_size != LayoutUnit()) {
+      *minimal_table_grid_block_size -= row.block_size;
+      if (rows->size() > 1)
+        *minimal_table_grid_block_size -= border_spacing.block_size;
     }
+    row.block_size = LayoutUnit();
   }
-  minimal_table_grid_block_size->ClampNegativeToZero();
 }
 
 // Method also sets LogicalWidth/Height on columns.
@@ -1074,7 +1063,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
                                    grid_converter.ToPhysical(table_grid_rect),
                                    border_spacing, column_block_size);
 
-  if (Node().GetDOMNode() &&
+  if (RuntimeEnabledFeatures::MathMLCoreEnabled() && Node().GetDOMNode() &&
       Node().GetDOMNode()->HasTagName(mathml_names::kMtableTag))
     table_baseline = MathTableBaseline(Style(), child_block_offset);
   if (table_baseline)

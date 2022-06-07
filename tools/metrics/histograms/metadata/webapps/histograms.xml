@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="AppBanners.BeforeInstallEvent"
-    enum="AppBannersBeforeInstallEvent" expires_after="2022-07-31">
+    enum="AppBannersBeforeInstallEvent" expires_after="2022-10-04">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <owner>desktop-pwas-team@google.com</owner>
@@ -38,7 +38,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.DismissEvent" enum="AppBannersDismissEvent"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -50,7 +50,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.DisplayEvent" enum="AppBannersDisplayEvent"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -61,8 +61,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="AppBanners.InstallableStatusCode"
-    enum="AppBannersInstallableStatusCode" expires_after="2022-09-11">
+<histogram name="AppBanners.InstallableStatusCode" enum="InstallableStatusCode"
+    expires_after="2022-09-11">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <summary>
@@ -100,7 +100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.UserResponse" enum="AppBannersUserResponse"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <summary>
@@ -386,7 +386,6 @@ chromium-metrics-reviews@google.com.
 <histogram name="WebApp.Icon.HttpStatusCodeClassOnUpdate"
     enum="HttpStatusCodeClass" expires_after="2024-01-01">
   <owner>alancutter@chromium.org</owner>
-  <owner>raymes@chromium.org</owner>
   <owner>loyso@chromium.org</owner>
   <summary>
     The HTTP status code class returned for each icon loaded when updating a
@@ -418,7 +417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.Install.InstallEvent" enum="WebappInstallSource"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>dominickn@chromium.org</owner>
   <owner>loyso@chromium.org</owner>
   <owner>calamity@chromium.org</owner>
@@ -462,7 +461,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.InstallResult" enum="WebAppInstallResultCode"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
 <!-- Name completed by histogram_suffixes name="WebAppType" -->
 
   <owner>calamity@chromium.org</owner>
@@ -512,7 +511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.AppDuplicationFixApplied" units="apps"
-    expires_after="2022-07-27">
+    expires_after="2022-09-25">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -692,6 +691,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Webapp.SystemApps.BackgroundTaskStartDelay" units="ms"
     expires_after="2022-04-24">
+  <obsolete>
+    Deprecated in 2022-04. Collected histogram shows the feature is working as
+    intended. Histogram is no longer needed.
+  </obsolete>
   <owner>dominicschulz@google.com</owner>
   <owner>qjw@chromium.org</owner>
   <summary>
@@ -713,7 +716,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.SystemApps.FreshInstallDuration" units="ms"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>calamity@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <summary>
@@ -780,11 +783,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.Update.ManifestUpdateResult"
-    enum="WebAppManifestUpdateResult" expires_after="2022-04-24">
+    enum="WebAppManifestUpdateResult" expires_after="2023-04-24">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@chromium.org</owner>
-  <owner>loyso@chromium.org</owner>
-  <owner>raymes@chromium.org</owner>
   <summary>
     Records the result of web app manifest update checks during page
     navigations. Note that &quot;No app in scope&quot; results are ignored due
@@ -855,7 +856,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.WebAppUrlLoaderPrepareForLoadResult"
-    enum="WebAppUrlLoaderResult" expires_after="2022-07-24">
+    enum="WebAppUrlLoaderResult" expires_after="2022-09-25">
   <owner>qjw@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>

@@ -130,7 +130,7 @@ class ArcAppsPublisherTest : public testing::Test {
     apps::AppServiceProxyFactory::GetForProfile(profile())
         ->AppRegistryCache()
         .ForApp(app_id, [&target](const apps::AppUpdate& update) {
-          target = update.GetIntentFilters();
+          target = update.IntentFilters();
         });
 
     EXPECT_EQ(source.size(), target.size());
@@ -153,7 +153,7 @@ class ArcAppsPublisherTest : public testing::Test {
 
   apps::PreferredAppsListHandle& preferred_apps() {
     return apps::AppServiceProxyFactory::GetForProfile(profile())
-        ->PreferredApps();
+        ->PreferredAppsList();
   }
 
  private:

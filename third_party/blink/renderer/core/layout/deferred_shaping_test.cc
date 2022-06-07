@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -168,6 +171,76 @@ TEST_F(DeferredShapingTest, ListMarkerCrash) {
   // Pass if no crash.
 }
 
+TEST_F(DeferredShapingTest, FragmentItemCache) {
+  SetBodyInnerHTML(R"HTML(
+<div style="height:1800px"></div>
+<p id="target" style="font-family:Times; width:100px">
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+</p>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("target"));
+  EXPECT_TRUE(IsLocked("target"));
+  auto* target_box = GetLayoutBoxByElementId("target");
+  const LayoutUnit deferred_item_width =
+      (*target_box->PhysicalFragments().begin())
+          .Items()
+          ->Items()[0]
+          .Size()
+          .width;
+
+  ScrollAndWaitForIntersectionCheck(1800);
+  EXPECT_FALSE(IsDefer("target"));
+  EXPECT_FALSE(IsLocked("target"));
+  EXPECT_NE(deferred_item_width, (*target_box->PhysicalFragments().begin())
+                                     .Items()
+                                     ->Items()[0]
+                                     .Size()
+                                     .width);
+}
+
+TEST_F(DeferredShapingTest, FragmentItemCacheWithMinMax) {
+  SetBodyInnerHTML(R"HTML(
+<div style="height:1800px"></div>
+<div style="display:flex">
+<div style="max-width: 100px; align-self:center; flex:1 1 auto">
+<p id="target-p" style="font-family:Times;max-width: 100px;">
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+MMM MMMMM MMMMM MMM MMMMM MMMM MMM MMMM MMM.
+</p></div></div>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("target-p"));
+  EXPECT_TRUE(IsLocked("target-p"));
+  auto* target_box = GetLayoutBoxByElementId("target-p");
+  const LayoutUnit deferred_item_width =
+      (*target_box->PhysicalFragments().begin())
+          .Items()
+          ->Items()[0]
+          .Size()
+          .width;
+
+  ScrollAndWaitForIntersectionCheck(1800);
+  EXPECT_FALSE(IsDefer("target-p"));
+  EXPECT_FALSE(IsLocked("target-p"));
+  EXPECT_NE(deferred_item_width, (*target_box->PhysicalFragments().begin())
+                                     .Items()
+                                     ->Items()[0]
+                                     .Size()
+                                     .width);
+}
+
 TEST_F(DeferredShapingTest, UpdateTextInDeferred) {
   SetBodyInnerHTML(R"HTML(
 <div style="height:1800px"></div>
@@ -195,6 +268,142 @@ TEST_F(DeferredShapingTest, UpdateTextInDeferred) {
   EXPECT_TRUE(IsLocked("target"));
 }
 
+TEST_F(DeferredShapingTest, UnlockNestedDeferred) {
+  // 'M' is used here because it is typically wider than ' '.
+  SetBodyInnerHTML(
+      uR"HTML(<div  style="font-family:Times; font-size:50px;">
+<p>IFC<ruby>b<rt id="ref2">MMMMMMM MMMMMMM MMMMMMM</rt></ruby></p>
+<div style="height:1800px"></div>
+<p id="target">IFC<ruby>b<rt id="target2">MMMMMMM MMMMMMM MMMMMMM</rt></ruby>
+</p></div>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("target"));
+  EXPECT_TRUE(IsLocked("target"));
+  EXPECT_TRUE(IsDefer("target2"));
+  EXPECT_TRUE(IsLocked("target2"));
+
+  ScrollAndWaitForIntersectionCheck(1800);
+  // Nested deferred IFCs are unlocked together.
+  EXPECT_FALSE(IsDefer("target"));
+  EXPECT_FALSE(IsLocked("target"));
+  EXPECT_FALSE(IsDefer("target2"));
+  EXPECT_FALSE(IsLocked("target2"));
+  EXPECT_EQ(GetElementById("ref2")->clientWidth(),
+            GetElementById("target2")->clientWidth());
+}
+
+TEST_F(DeferredShapingTest, UnlockOnSwitchingToFlex) {
+  SetBodyInnerHTML(R"HTML(<div style="height:1800px"></div>
+<p id="target">IFC</p>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("target"));
+  EXPECT_TRUE(IsLocked("target"));
+
+  GetElementById("target")->setAttribute("style", "display:flex");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(IsDefer("target"));
+  EXPECT_FALSE(IsLocked("target"));
+}
+
+TEST_F(DeferredShapingTest, UnlockOnSwitchingToAnotherBlockFlow) {
+  SetBodyInnerHTML(R"HTML(<div style="height:1800px"></div>
+<p id="target">IFC</p>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("target"));
+  EXPECT_TRUE(IsLocked("target"));
+
+  GetElementById("target")->setAttribute("style", "display:inline-block");
+  UpdateAllLifecyclePhasesForTest();
+  // Switching from 'block' to 'inline-block' unlocks the element
+  // then locks the element again.
+  EXPECT_TRUE(IsDefer("target"));
+  EXPECT_TRUE(IsLocked("target"));
+}
+
+TEST_F(DeferredShapingTest, UnlockOnDetach) {
+  SetBodyInnerHTML(R"HTML(<div style="height:1800px"></div>
+<div id="container"><p id="target">IFC</p></div>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("target"));
+  EXPECT_TRUE(IsLocked("target"));
+
+  GetElementById("container")->setAttribute("style", "display:none");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(IsDefer("target"));
+  EXPECT_FALSE(IsLocked("target"));
+}
+
+TEST_F(DeferredShapingTest, UnlockOnSwithcingToBfc) {
+  SetBodyInnerHTML(R"HTML(<div style="height:1800px"></div>
+<p id="target">IFC</p>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("target"));
+  EXPECT_TRUE(IsLocked("target"));
+
+  GetElementById("target")->appendChild(
+      GetDocument().CreateRawElement(html_names::kDivTag));
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(IsDefer("target"));
+  EXPECT_FALSE(IsLocked("target"));
+}
+
+TEST_F(DeferredShapingTest, ScrollIntoView) {
+  SetBodyInnerHTML(R"HTML(<div style="height:1800px"></div>
+<div><p id="prior">IFC</p></div>
+<div style="height:3600px"></div>
+<p id="ancestor">IFC<span style="display:inline-block" id="target"></sapn></p>
+)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("prior"));
+  EXPECT_TRUE(IsLocked("prior"));
+  EXPECT_TRUE(IsDefer("ancestor"));
+  EXPECT_TRUE(IsLocked("ancestor"));
+
+  GetElementById("target")->scrollIntoView();
+  EXPECT_FALSE(IsDefer("prior"));
+  EXPECT_FALSE(IsLocked("prior"));
+  EXPECT_FALSE(IsDefer("ancestor"));
+  EXPECT_FALSE(IsLocked("ancestor"));
+}
+
+TEST_F(DeferredShapingTest, ElementGeometry) {
+  SetBodyInnerHTML(R"HTML(<div style="height:1800px"></div>
+<p id="ancestor">IFC
+<span style="display:inline-block" id="previous">MMMM MMMM MMMM</sapn>
+<span id="target">inline</span>
+</p>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("previous"));
+  EXPECT_TRUE(IsLocked("previous"));
+  EXPECT_TRUE(IsDefer("ancestor"));
+  EXPECT_TRUE(IsLocked("ancestor"));
+
+  GetElementById("target")->getBoundingClientRect();
+  EXPECT_FALSE(IsDefer("previous"));
+  EXPECT_FALSE(IsLocked("previous"));
+  EXPECT_FALSE(IsDefer("ancestor"));
+  EXPECT_FALSE(IsLocked("ancestor"));
+}
+
+TEST_F(DeferredShapingTest, ElementGeometryContainingDeferred) {
+  SetBodyInnerHTML(R"HTML(<div style="display:inline-block" id="reference">
+<div style="display:inline-block">MMMM MMMM MMMM</div></div>
+<div style="height:1800px"></div>
+<div style="display:inline-block" id="target">
+<div style="display:inline-block" id="target-child">MMMM MMMM MMMM</div></div>
+)HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsDefer("target-child"));
+  EXPECT_TRUE(IsLocked("target-child"));
+
+  DOMRect& reference = *GetElementById("reference")->getBoundingClientRect();
+  DOMRect& target = *GetElementById("target")->getBoundingClientRect();
+  EXPECT_EQ(reference.width(), target.width());
+  EXPECT_EQ(reference.height(), target.height());
+  EXPECT_FALSE(IsDefer("target-child"));
+  EXPECT_FALSE(IsLocked("target-child"));
+}
+
 TEST_F(DeferredShapingTest, NonLayoutNGBlockFlow) {
   SetBodyInnerHTML(R"HTML(
 <div style="height:1800px"></div>
@@ -204,6 +413,19 @@ TEST_F(DeferredShapingTest, NonLayoutNGBlockFlow) {
   // should support IsShapingDeferred().
   EXPECT_TRUE(IsDefer("target"));
   EXPECT_TRUE(IsLocked("target"));
+}
+
+TEST_F(DeferredShapingTest, ShapeResultCrash) {
+  StringBuilder builder;
+  builder.ReserveCapacity(1000);
+  builder.Append(R"HTML(
+<div style="height:1800px"></div><p>)HTML");
+  for (unsigned i = 0; i < HarfBuzzRunGlyphData::kMaxCharacterIndex + 10; ++i)
+    builder.Append('M');
+  builder.Append("</p>");
+  SetBodyInnerHTML(builder.ToString());
+  UpdateAllLifecyclePhasesForTest();
+  // Pass if no crashes.
 }
 
 }  // namespace blink

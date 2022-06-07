@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -17,7 +18,6 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 
 #if BUILDFLAG(IS_ANDROID)

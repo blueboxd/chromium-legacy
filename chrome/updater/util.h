@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -97,10 +98,9 @@ absl::optional<base::FilePath> GetExecutableFolderPathForVersion(
 // "updater.exe" on Win.
 base::FilePath GetExecutableRelativePath();
 
-// Returns the parsed values from --tag command line argument. The function
-// implementation uses lazy initialization and caching to avoid reparsing
-// the tag. The function returns {} if there was no tag at all. An error is
-// set if the tag fails to parse.
+// Return the parsed values from --tag command line argument. The functions
+// return {} if there was no tag at all. An error is set if the tag fails to
+// parse.
 struct TagParsingResult {
   TagParsingResult();
   TagParsingResult(absl::optional<tagging::TagArgs> tag_args,
@@ -111,6 +111,8 @@ struct TagParsingResult {
   absl::optional<tagging::TagArgs> tag_args;
   tagging::ErrorCode error = tagging::ErrorCode::kSuccess;
 };
+TagParsingResult GetTagArgsForCommandLine(
+    const base::CommandLine& command_line);
 TagParsingResult GetTagArgs();
 
 // Returns the arguments corresponding to `app_id` from the command line tag.
@@ -194,6 +196,12 @@ std::string GetSwitchValueInLegacyFormat(const std::wstring& command_line,
                                          const std::wstring& switch_name);
 
 #endif  // BUILDFLAG(IS_WIN)
+
+// Writes the provided string prefixed with the UTF8 byte order mark to a
+// temporary file. The temporary file is created in the specified `directory`.
+absl::optional<base::FilePath> WriteInstallerDataToTempFile(
+    const base::FilePath& directory,
+    const std::string& installer_data);
 
 }  // namespace updater
 

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -29,7 +30,7 @@
 
 namespace web_app {
 
-using WebAppSources = std::bitset<Source::kMaxValue + 1>;
+using WebAppSources = std::bitset<WebAppManagement::kMaxValue + 1>;
 class WebApp {
  public:
   explicit WebApp(const AppId& app_id);
@@ -45,10 +46,13 @@ class WebApp {
 
   const AppId& app_id() const { return app_id_; }
 
-  // UTF8 encoded application name.
-  const std::string& name() const { return name_; }
-  // UTF8 encoded long application description (a full application name).
-  const std::string& description() const { return description_; }
+  // UTF8 encoded application name. This name is not translated, use
+  // WebAppRegistrar.GetAppShortName to get the translated name.
+  const std::string& untranslated_name() const { return name_; }
+  // UTF8 encoded long application description (a full application name). This
+  // description is not translated, use WebAppRegistrar.GetAppDescription to get
+  // the translated description.
+  const std::string& untranslated_description() const { return description_; }
 
   const GURL& start_url() const { return start_url_; }
 
@@ -258,10 +262,10 @@ class WebApp {
 
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
-  void AddSource(Source::Type source);
-  void RemoveSource(Source::Type source);
+  void AddSource(WebAppManagement::Type source);
+  void RemoveSource(WebAppManagement::Type source);
   bool HasAnySources() const;
-  bool HasOnlySource(Source::Type source) const;
+  bool HasOnlySource(WebAppManagement::Type source) const;
   WebAppSources GetSources() const;
 
   bool IsSynced() const;
@@ -274,7 +278,7 @@ class WebApp {
   bool WasInstalledByUser() const;
   // Returns the highest priority source. AppService assumes that every app has
   // just one install source.
-  Source::Type GetHighestPrioritySource() const;
+  WebAppManagement::Type GetHighestPrioritySource() const;
 
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);

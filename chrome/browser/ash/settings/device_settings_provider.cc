@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/ash/tpm_firmware_update.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/schema.h"
@@ -846,8 +846,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     // If the policy is missing, default to reporting enabled on enterprise-
     // enrolled devices, c.f. crbug/456186.
     new_values_cache->SetBoolean(
-        kStatsReportingPref,
-        chromeos::InstallAttributes::Get()->IsEnterpriseManaged());
+        kStatsReportingPref, InstallAttributes::Get()->IsEnterpriseManaged());
   }
 
   if (!policy.has_release_channel() ||
@@ -1172,7 +1171,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   // Default value of the policy in case it's missing.
   bool show_low_disk_space_notification = true;
   // Disable the notification by default for enrolled devices.
-  if (chromeos::InstallAttributes::Get()->IsEnterpriseManaged())
+  if (InstallAttributes::Get()->IsEnterpriseManaged())
     show_low_disk_space_notification = false;
   if (policy.has_device_show_low_disk_space_notification()) {
     const em::DeviceShowLowDiskSpaceNotificationProto& container(
@@ -1425,7 +1424,7 @@ void DeviceSettingsProvider::OwnershipStatusChanged() {
           device_settings_service_->GetOwnerSettingsService());
       HWDataUsageController::Get()->OnOwnershipTaken(
           device_settings_service_->GetOwnerSettingsService());
-    } else if (chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
+    } else if (InstallAttributes::Get()->IsEnterpriseManaged()) {
       StatsReportingController::Get()->ClearPendingValue();
       HWDataUsageController::Get()->ClearPendingValue();
     }
@@ -1516,8 +1515,7 @@ void DeviceSettingsProvider::UpdateValuesCache(
 bool DeviceSettingsProvider::MitigateMissingPolicy() {
   // First check if the device has been owned already and if not exit
   // immediately.
-  if (chromeos::InstallAttributes::Get()->GetMode() !=
-      policy::DEVICE_MODE_CONSUMER)
+  if (InstallAttributes::Get()->GetMode() != policy::DEVICE_MODE_CONSUMER)
     return false;
 
   // If we are here the policy file were corrupted or missing. This can happen

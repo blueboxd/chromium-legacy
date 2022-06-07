@@ -10,6 +10,7 @@ UNDEFINED_INTERVAL_DELAY = -1;
 SwitchAccessAutoScanManagerTest = class extends SwitchAccessE2ETest {
   /** @override */
   async setUpDeferred() {
+    await super.setUpDeferred();
     await importModule(
         'BackButtonNode', '/switch_access/nodes/back_button_node.js');
     await importModule(
@@ -54,7 +55,7 @@ SwitchAccessAutoScanManagerTest = class extends SwitchAccessE2ETest {
 };
 
 TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
-  this.runWithLoadedTree('', () => {
+  this.runWithLoadedDesktop(() => {
     assertFalse(
         AutoScanManager.instance.isRunning_(),
         'Auto scan manager is running prematurely');

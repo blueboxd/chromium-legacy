@@ -184,7 +184,6 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="200114059308480249">Barne hartu nahi al duzu inguruko testua Google-ko bilaketetan?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fitxategi}other{# fitxategi}}</translation>
 <translation id="2015836039326522978">Chrome-n irekiko da <ph name="APP_NAME" />. Aurrera egiten baduzu, onartu egingo dituzu <ph name="BEGIN_LINK1" />Google-ren Zerbitzu-baldintzak<ph name="END_LINK1" /> eta <ph name="BEGIN_LINK2" />Google Chrome-ren eta Chrome OS-ren Zerbitzu-baldintza gehigarriak<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Pribatutasun-gidalerroak<ph name="END_LINK3" /> ere aplikatuko dira.</translation>
-<translation id="2019145049163614359">Kendu interesa</translation>
 <translation id="2020309681647789787">Sinkronizatutako gailu guztietan ikusi ahalko duzu historia, egiten ari zinenari berrekiteko</translation>
 <translation id="2021896219286479412">Webgunearen pantaila osoko aukerak</translation>
 <translation id="2038563949887743358">Aktibatu ordenagailuetarako webgunea eskatzeko aukera</translation>
@@ -213,6 +212,7 @@ Sakatu bilatu nahi duzun hitza. Bilaketa mugatzeko, eduki testua sakatuta eta ha
 <translation id="2141396931810938595">Zure erabileran oinarrituta</translation>
 <translation id="214888715418183969">Aukeratu zer partekatu nahi duzun Chrome-rekin. Chrome-ren eginbideak, funtzionamendua eta egonkortasuna hobetzen laguntzeko erabiliko dira partekatzen dituzun neurketak.</translation>
 <translation id="2149973817440762519">Editatu laster-marka</translation>
+<translation id="2155214902713132423">Ezin da erabili egiaztapen-metodoa gailu honetan. Hautatu beste aukera bat beste gailuan.</translation>
 <translation id="2157851137955077194">Telefonoko zerbait beste gailu batekin partekatzeko, joan Chrome-ren ezarpenetara eta aktibatu sinkronizazioa bi gailuetan</translation>
 <translation id="2158408438301413340">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak</translation>
 <translation id="2169830938017475061">Orain</translation>
@@ -530,7 +530,7 @@ Eduki sakatuta bilatu nahi duzun hitza. Bilaketa mugatzeko, hautatu hitz gehiago
 <translation id="3928666092801078803">Bateratu nire datuak</translation>
 <translation id="3932390316856284148">Pantailaren behealdean ainguratutako orria, saioa hasteko balio duena, altuera osoan irekita dago.</translation>
 <translation id="3934366560681368531">"</translation>
-<translation id="393697183122708255">Ez dago ahozko bilaketarik gaituta</translation>
+<translation id="393697183122708255">Ez dago ahots bidezko bilaketarik gaituta</translation>
 <translation id="395377504920307820">Erabili konturik gabe</translation>
 <translation id="3958287878205277013">Gailuan gordetako ezkutuko moduko arakatze-historia ezabatzeko, itxi ezkutuko moduko fitxa guztiak.</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Gailua konektatu egiten denean kargatuko du Chrome-k orria}other{Gailua konektatu egiten denean kargatuko ditu Chrome-k orriak}}</translation>
@@ -733,7 +733,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5091199029769593641">Laster, <ph name="SITE_NAME" /> webguneko istorioak ikusiko dituzu fitxa berri bat irekitzean. Jarraitzaile zaituzten webguneak Google-ko kontuan gordetzen dira. Discover-en ezarpenetan kudea ditzakezu webgune horiek.</translation>
 <translation id="5091249083535528968">Erabilera-datu hedatuak</translation>
 <translation id="509429900233858213">Errore bat gertatu da.</translation>
-<translation id="5098190077610408701">Gehitu interes bat</translation>
 <translation id="5102401324271069229">Webguneren bat pasahitza lapurtzen saiatzen bada edo fitxategi kaltegarriren bat deskargatzen baduzu, baliteke Chrome-k URLak bidaltzea (orriko edukiaren zati batzuk barne) Arakatze segurua eginbidera.</translation>
 <translation id="510275257476243843">Ordubete gelditzen da</translation>
 <translation id="5115811374190515607">hona: <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5906513782029855931">Webguneen URLak jakinda, Google-ren Laguntzaileak zereginak osatzen lagun diezazuke. Laguntzailea desaktibatzeko, joan Chrome-ren ezarpenetara.</translation>
 <translation id="5916664084637901428">Aktibatuta</translation>
 <translation id="5919204609460789179">Sinkronizatzen hasteko, eguneratu <ph name="PRODUCT_NAME" /></translation>
+<translation id="5938820472109305350">Gehitu <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Google erabiliko da bilatzaile gisa</translation>
 <translation id="5945035219773565305">Oraingo gomendioa: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Zuzeneko orria ikusten</translation>
@@ -898,7 +898,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6033245666633565791"><ph name="BEGIN_LINK" />Privacy Sandbox-arekin<ph name="END_LINK" />, Chrome teknologia berriak garatzen ari da sare irekia mantendu bitartean zu webguneen arteko jarraipenetik babesteko.
 
 Privacy Sandbox-eko probaldiak garapen-prozesuan daude oraindik eta lurralde jakin batzuetan baino ezin dira egin. Oraingoz, une honetako web-teknologiak (hirugarrenen cookieak, kasu) erabiltzen jarraitzen duten bitartean probatu ahal izango dute webguneek Privacy Sandbox-a.</translation>
-<translation id="6036057147555329831">ICU osagai gehigarriak</translation>
 <translation id="6039379616847168523">Saltatu hurrengo fitxara</translation>
 <translation id="6040143037577758943">Itxi</translation>
 <translation id="604124094241169006">Automatikoa</translation>
@@ -1023,6 +1022,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="663674369910034433">Pribatutasunarekin, segurtasunarekin eta datu-bilketarekin lotutako ezarpen gehiago ikusteko, joan <ph name="BEGIN_LINK1" />Sinkronizazioa<ph name="END_LINK1" /> eta <ph name="BEGIN_LINK2" />Google-ren zerbitzuak<ph name="END_LINK2" /> ataletara.</translation>
 <translation id="6637100877383020115">Aplikazioa hobetzeko, erabilerarekin eta hutsegiteekin erlazionatutako datuak bidaltzen dizkio Chrome-k Google-ri. <ph name="BEGIN_UMA_LINK" />Kudeatu<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokeatu beti</translation>
+<translation id="6641780377503683465">Kendu <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Garbitu</translation>
 <translation id="6645629752388991326">Kontrolatu zein beste gailuk has dezakeen saioa gailu hau segurtasun giltza gisa erabilita.</translation>
 <translation id="6648459603387803038">Administratzaileak urrunetik alda dezake arakatzailearen konfigurazioa. Baliteke gailu honetako jarduerak Chrome-tik kanpo ere kudeatzea.</translation>

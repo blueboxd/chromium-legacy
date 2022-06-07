@@ -11,20 +11,20 @@
 import './styles.js';
 
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {kMaximumGooglePhotosPreviews, kMaximumLocalImagePreviews} from '../../common/constants.js';
 import {isNonEmptyArray, isNullOrArray, isNullOrNumber} from '../../common/utils.js';
 import {CollectionsGrid} from '../../untrusted/collections_grid.js';
 import {IFrameApi} from '../iframe_api.js';
-import {GooglePhotosPhoto, WallpaperCollection, WallpaperImage, WallpaperProviderInterface} from '../personalization_app.mojom-webui.js';
+import {GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage, WallpaperProviderInterface} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
+import {getTemplate} from './wallpaper_collections_element.html.js';
 import {initializeBackdropData} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 
 export interface WallpaperCollections {
-  $: {collectionsGrid: CollectionsGrid;}
+  $: {collectionsGrid: CollectionsGrid};
 }
 
 export class WallpaperCollections extends WithPersonalizationStore {
@@ -33,7 +33,7 @@ export class WallpaperCollections extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -68,6 +68,14 @@ export class WallpaperCollections extends WithPersonalizationStore {
        * Whether the count of Google Photos photos is currently loading.
        */
       googlePhotosCountLoading_: Boolean,
+
+      /**
+       * Whether the user is allowed to access Google Photos.
+       */
+      googlePhotosEnabled_: {
+        type: Number,
+        observer: 'onGooglePhotosEnabledChanged_',
+      },
 
       /**
        * Contains a mapping of collection id to an array of images.
@@ -113,6 +121,7 @@ export class WallpaperCollections extends WithPersonalizationStore {
   private googlePhotosLoading_: boolean;
   private googlePhotosCount_: number|null;
   private googlePhotosCountLoading_: boolean;
+  private googlePhotosEnabled_: GooglePhotosEnablementState;
   private images_: Record<string, WallpaperImage[]>;
   private imagesLoading_: Record<string, boolean>;
   private localImages_: FilePath[];
@@ -156,6 +165,8 @@ export class WallpaperCollections extends WithPersonalizationStore {
     this.watch(
         'googlePhotosCountLoading_',
         state => state.wallpaper.loading.googlePhotos.count);
+    this.watch(
+        'googlePhotosEnabled_', state => state.wallpaper.googlePhotos.enabled);
     this.watch('images_', state => state.wallpaper.backdrop.images);
     this.watch('imagesLoading_', state => state.wallpaper.loading.images);
     this.watch('localImages_', state => state.wallpaper.local.images);
@@ -249,8 +260,9 @@ export class WallpaperCollections extends WithPersonalizationStore {
     }
     IFrameApi.getInstance().sendGooglePhotosPhotos(
         this.$.collectionsGrid,
-        googlePhotos?.slice(0, kMaximumGooglePhotosPreviews)
-                ?.map(googlePhoto => googlePhoto.url) ??
+        Array.isArray(googlePhotos) ?
+            googlePhotos.slice(0, kMaximumGooglePhotosPreviews)
+                .map(googlePhoto => googlePhoto.url) :
             null);
   }
 
@@ -262,6 +274,15 @@ export class WallpaperCollections extends WithPersonalizationStore {
     }
     IFrameApi.getInstance().sendGooglePhotosCount(
         this.$.collectionsGrid, googlePhotosCount);
+  }
+
+  /**
+   * Invoked on changes to whether the user is allowed to access Google Photos.
+   */
+  private onGooglePhotosEnabledChanged_(
+      googlePhotosEnabled: WallpaperCollections['googlePhotosEnabled_']) {
+    IFrameApi.getInstance().sendGooglePhotosEnabled(
+        this.$.collectionsGrid, googlePhotosEnabled);
   }
 
   /**

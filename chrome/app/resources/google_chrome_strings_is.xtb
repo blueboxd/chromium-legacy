@@ -177,6 +177,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="4600710005438004015">Ekki var hægt að uppfæra Chrome í nýjustu útgáfu og þú ferð því á mis við nýja eiginleika og öryggislagfæringar.</translation>
 <translation id="4627412468266359539">Valkvætt: Hjálpaðu til við að bæta eiginleika og afköst ChromeOs Flex með því að senda greiningar- og notkunargögn sjálfkrafa til Google.</translation>
 <translation id="4633000520311261472">Til að auka öryggi Chrome höfum við gert óvirkar einhverjar viðbætur sem ekki eru í <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og kann að hafa verið bætt við án þinnar vitundar.</translation>
+<translation id="469553575393225953">Viðbætur, forrit og þemu frá óþekktum uppruna geta skaðað tækið þitt. Chrome mælir með að sækja slíkar skrár aðeins í Vefverslun Chrome</translation>
 <translation id="4728575227883772061">Uppsetning mistókst vegna ótilgreindrar villu. Ef Google Chrome er í gangi eins og er skaltu loka því og reyna aftur.</translation>
 <translation id="4747730611090640388">Chrome getur áætlað áhugasvið þín.  Seinna getur vefsvæði sem þú opnar beðið Chrome um að sýna áhugasvið þín til að hægt sé að sérsníða auglýsingarnar sem þú sérð.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-inn)</translation>
@@ -220,6 +221,7 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="5736850870166430177">Ef vefsvæði reynir að stela aðgangsorðinu þínu, eða ef þú sækir skaðlega skrá, gæti Chrome einnig sent vefslóðir í örugga vefskoðun, þar á meðal hluta af innihaldi síðna</translation>
 <translation id="573759479754913123">Um Chrome OS</translation>
 <translation id="5756509061973259733">Chrome prófíll með þessum reikningi er þegar til í þessu tæki</translation>
+<translation id="5763280521700030406">Chrome setti þessa skrá á bannlista því að hún er of stór fyrir öryggisathugun. Reyndu aftur með skrám sem eru allt að 50 MB</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Ekki var hægt að ræsa Chrome. Reyndu aftur.</translation>
 <translation id="5867197326698922595">Google Chrome er að reyna að breyta aðgangsorðum.</translation>
@@ -235,6 +237,7 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - tilraunaútgáfa Google Chrome</translation>
 <translation id="6235018212288296708">Regla á innleið til að láta Google Chrome leyfa mDNS-umferð.</translation>
+<translation id="6247557882553405851">Aðgangsorðastjórnun Google</translation>
 <translation id="6291089322031436445">Chrome Dev forrit</translation>
 <translation id="6291549208091401781">Google Chrome hefur þegar verið sett upp fyrir alla notendur í tölvunni.</translation>
 <translation id="6368958679917195344">Chrome OS á tilvist sína að þakka öðrum <ph name="BEGIN_LINK_CROS_OSS" />opnum hugbúnaði<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -243,6 +246,7 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="6506909944137591434">Chrome verður að fá leyfi fyrir myndavél til að búa til þrívíddarkort af umhverfi þínu</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS kerfi</translation>
+<translation id="659498884637196217">Í Aðgangsorðastjórnun Google í þessu tæki</translation>
 <translation id="6632473616050862500">ChromeOS Flex á tilvist sína að þakka öðrum <ph name="BEGIN_LINK_CROS_OSS" />opnum hugbúnaði<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Aðgangur að internetinu</translation>
 <translation id="6679975945624592337">Leyfa Google Chrome að keyra í bakgrunni</translation>
@@ -282,6 +286,7 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á þessum reikningi. Þú getur haft umsjón með Google reikningunum þínum í <ph name="SETTINGS_LINK_BEGIN" />stillingum<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Þú varst skráð(ur) inn á Chrome sem <ph name="USER_EMAIL_ADDRESS" />. Notaðu sama reikning til að skrá þig inn aftur.</translation>
 <translation id="7408085963519505752">Skilmálar Chrome OS</translation>
+<translation id="7410958280246779049">Chrome setti þessa skrá á bannlista því hún er hættuleg</translation>
 <translation id="7419046106786626209">Chrome OS gat ekki samstillt gögnin þín vegna þess að samstilling er ekki í boði fyrir lénið þitt.</translation>
 <translation id="7481213027396403996">Njóttu hámarksöryggis Chrome</translation>
 <translation id="7486227612705979895">Chrome mun fá aðgang að svæðinu þínu á Drive til þess að bjóða upp á tillögur í veffangastikunni</translation>
@@ -296,7 +301,6 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="7655455401911432608">Vafraferillinn þinn, skrá yfir vefsvæði sem þú hefur opnað með Chrome í þessu tæki.</translation>
 <translation id="7665553140559834626">Endurræstu til að uppfæra &amp;Chrome OS</translation>
 <translation id="7747138024166251722">Uppsetningarforritið gat ekki búið til tímabundna möppu. Athugaðu laust diskpláss og heimildir fyrir uppsetningu hugbúnaðar.</translation>
-<translation id="7748512868279796735">Eftirfarandi reikningar eru tiltækir fyrir þennan Chrome prófíl</translation>
 <translation id="7761834446675418963">Smelltu á nafnið þitt til að opna Chrome og byrja að vafra.</translation>
 <translation id="7777080907402804672">Ef gagnlega lýsingu vantar við mynd reynir Chrome að útvega þér lýsingu. Til að búa til lýsingar eru myndir sendar til Google. Þú getur slökkt á þessu hvenær sem er í stillingunum.</translation>
 <translation id="7781002470561365167">Ný útgáfa af Google Chrome er í boði.</translation>
@@ -312,10 +316,12 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="7951272445806340501">Endurræsa þarf ChromeOS Flex til að nota uppfærsluna.</translation>
 <translation id="7962410387636238736">Þessi tölva tekur ekki lengur við uppfærslum á Google Chrome vegna þess að stýrikerfin Windows XP og Windows Vista eru ekki lengur studd</translation>
 <translation id="79947657522496226">Chrome OS á tilvist sína að þakka öðrum <ph name="BEGIN_LINK_CROS_OSS" />opnum hugbúnaði<ph name="END_LINK_CROS_OSS" /> og það sama á við um <ph name="BEGIN_LINK_LINUX_OSS" />Linux-forritunarumhverfið <ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="8005666035647241369">Í Aðgangsorðastjórnun Google í þessu tæki</translation>
 <translation id="8008534537613507642">Setja Chrome aftur upp</translation>
 <translation id="8013993649590906847">Ef gagnlega lýsingu vantar við mynd reynir Chrome að útvega þér lýsingu. Til að búa til lýsingar eru myndir sendar til Google.</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">Um &amp;Google Chrome</translation>
+<translation id="822971176939352383">Eftirfarandi reikningar eru ekki skráðir inn á Chrome prófíla. Ef þú vilt nota reikning á öðrum prófíl skaltu byrja á að fjarlægja viðkomandi prófíl.</translation>
 <translation id="8255190535488645436">Google Chrome er að nota myndavélina þína og hljóðnema.</translation>
 <translation id="8286862437124483331">Google Chrome er að reyna að sýna aðgangsorð. Sláðu inn Windows-aðgangsorðið þitt til að heimila þetta.</translation>
 <translation id="828798499196665338">Foreldrar þínir hafa slökkt á „Heimildum fyrir vefsvæði, forrit og viðbætur" fyrir Chrome. Ekki er leyfilegt að kveikja á þessu <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
@@ -327,8 +333,10 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="8394720698884623075">Ber vefslóðir saman við lista yfir óörugg vefsvæði sem er vistaður í Chrome</translation>
 <translation id="840084489713044809">Google Chrome vill flytja út aðgangsorðin þín.</translation>
 <translation id="8416347857511542594">Nánar um sérsniðnar auglýsingar í Chrome</translation>
+<translation id="8421734018304082652">Chrome setti þessa skrá á bannlista vegna þess að hún er dulkóðuð. Biddu eiganda hennar að afkóða hana</translation>
 <translation id="8433638294851456451">Til að senda númer héðan í Android símann þinn skaltu skrá þig inn á Chrome í báðum tækjunum.</translation>
 <translation id="8498858610309223613">Sérstök öryggisuppfærsla fyrir Google Chrome var tekin í notkun. Endurræstu núna og við opnum flipana þína aftur.</translation>
+<translation id="8504220326736535258">Chrome setti þessa skrá á bannlista því að hún inniheldur spilliforrit</translation>
 <translation id="8516431725144212809">Mat Chrome á áhugasviðum þínum</translation>
 <translation id="8521348052903287641">Innleiðarregla til að láta Google Chrome Dev leyfa mDNS-umferð.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

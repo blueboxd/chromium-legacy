@@ -32,13 +32,13 @@ async function webGpuInit(canvasWidth, canvasHeight) {
 const wgslShaders = {
   vertex: `
 struct VertexOutput {
-  [[builtin(position)]] Position : vec4<f32>;
-  [[location(0)]] fragUV : vec2<f32>;
+  @builtin(position) Position : vec4<f32>;
+  @location(0) fragUV : vec2<f32>;
 };
 
-[[stage(vertex)]] fn main(
-  [[location(0)]] position : vec2<f32>,
-  [[location(1)]] uv : vec2<f32>
+@stage(vertex) fn main(
+  @location(0) position : vec2<f32>,
+  @location(1) uv : vec2<f32>
 ) -> VertexOutput {
   var output : VertexOutput;
   output.Position = vec4<f32>(position, 0.0, 1.0);
@@ -48,49 +48,49 @@ struct VertexOutput {
 `,
 
   fragment_external_texture: `
-[[binding(0), group(0)]] var mySampler: sampler;
-[[binding(1), group(0)]] var myTexture: texture_external;
+@group(0) @binding(0) var mySampler: sampler;
+@group(0) @binding(1) var myTexture: texture_external;
 
-[[stage(fragment)]]
-fn main([[location(0)]] fragUV : vec2<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@location(0) fragUV : vec2<f32>) -> @location(0) vec4<f32> {
   return textureSampleLevel(myTexture, mySampler, fragUV);
 }
 `,
 
   fragment: `
-[[binding(0), group(0)]] var mySampler: sampler;
-[[binding(1), group(0)]] var myTexture: texture_2d<f32>;
+@group(0) @binding(0) var mySampler: sampler;
+@group(0) @binding(1) var myTexture: texture_2d<f32>;
 
-[[stage(fragment)]]
-fn main([[location(0)]] fragUV : vec2<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@location(0) fragUV : vec2<f32>) -> @location(0) vec4<f32> {
   return textureSample(myTexture, mySampler, fragUV);
 }
 `,
 
   vertex_icons: `
-[[stage(vertex)]]
-fn main([[location(0)]] position : vec2<f32>)
-    -> [[builtin(position)]] vec4<f32> {
+@stage(vertex)
+fn main(@location(0) position : vec2<f32>)
+    -> @builtin(position) vec4<f32> {
   return vec4<f32>(position, 0.0, 1.0);
 }
 `,
 
   fragment_output_blue: `
-[[stage(fragment)]]
-fn main() -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(0.11328125, 0.4296875, 0.84375, 1.0);
 }
 `,
   fragment_output_light_blue: `
-[[stage(fragment)]]
-fn main() -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(0.3515625, 0.50390625, 0.75390625, 1.0);
 }
 `,
 
   fragment_output_white: `
-[[stage(fragment)]]
-fn main() -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(1.0, 1.0, 1.0, 1.0);
 }
 `,
@@ -569,7 +569,11 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
         passEncoder.endPass();
         device.queue.submit([commandEncoder.finish()]);
 
-        window.requestAnimationFrame(oneFrame);
+        // TODO(crbug.com/1289482): Workaround for backpressure mechanism
+        // not working properly.
+        device.queue.onSubmittedWorkDone().then(() => {
+          window.requestAnimationFrame(oneFrame);
+        });
       });
   };
 
@@ -634,7 +638,11 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
           functionDuration, 'ms,  longer than 33.3 ms (1sec/30fps)');
     }
 
-    window.requestAnimationFrame(oneFrameWithImportTextureApi);
+    // TODO(crbug.com/1289482): Workaround for backpressure mechanism
+    // not working properly.
+    device.queue.onSubmittedWorkDone().then(() => {
+      window.requestAnimationFrame(oneFrameWithImportTextureApi);
+    });
   };
 
   if (useImportTextureApi) {

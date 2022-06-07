@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCOUNT_CAPABILITIES_H_
 #define COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCOUNT_CAPABILITIES_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "build/build_config.h"
 #include "components/signin/public/identity_manager/tribool.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -48,6 +48,13 @@ class AccountCapabilities {
   // Chrome can run privacy sandbox trials for accounts with this capability.
   signin::Tribool can_run_chrome_privacy_sandbox_trials() const;
 
+  // Chrome can stop parental supervision if the user chooses to do so with
+  // this capability.
+  signin::Tribool can_stop_parental_supervision() const;
+
+  // Chrome applies parental controls to accounts with this capability.
+  signin::Tribool is_subject_to_parental_controls() const;
+
   // Whether none of the capabilities has `signin::Tribool::kUnknown`.
   bool AreAllCapabilitiesKnown() const;
 
@@ -72,7 +79,7 @@ class AccountCapabilities {
   // Returns the list of account capability service names supported in Chrome.
   static const std::vector<std::string>& GetSupportedAccountCapabilityNames();
 
-  std::map<std::string, bool> capabilities_map_;
+  base::flat_map<std::string, bool> capabilities_map_;
 };
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCOUNT_CAPABILITIES_H_

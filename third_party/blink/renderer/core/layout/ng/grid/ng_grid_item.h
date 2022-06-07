@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_ITEM_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_track_collection.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -94,6 +95,15 @@ struct CORE_EXPORT GridItemData {
     return resolved_position.SpanSize(track_direction);
   }
 
+  bool HasSubgriddedAxis(const GridTrackSizingDirection track_direction) const {
+    if (node.IsGrid()) {
+      return (track_direction == kForColumns)
+                 ? node.Style().GridTemplateColumns().IsSubgriddedAxis()
+                 : node.Style().GridTemplateRows().IsSubgriddedAxis();
+    }
+    return false;
+  }
+
   bool IsGridContainingBlock() const { return node.IsContainingBlockNGGrid(); }
   bool IsOutOfFlow() const { return node.IsOutOfFlowPositioned(); }
 
@@ -144,6 +154,7 @@ struct CORE_EXPORT GridItemData {
   bool is_block_axis_overflow_safe : 1;
   bool is_inline_axis_overflow_safe : 1;
   bool is_sizing_dependent_on_block_size : 1;
+  bool is_subgridded_to_parent_grid : 1;
 
   AxisEdge inline_axis_alignment;
   AxisEdge block_axis_alignment;
@@ -154,8 +165,8 @@ struct CORE_EXPORT GridItemData {
   NGAutoBehavior inline_auto_behavior;
   NGAutoBehavior block_auto_behavior;
 
-  BaselineType row_baseline_type;
   BaselineType column_baseline_type;
+  BaselineType row_baseline_type;
 
   TrackSpanProperties column_span_properties;
   TrackSpanProperties row_span_properties;
@@ -216,7 +227,7 @@ struct CORE_EXPORT GridItems {
   }
   Iterator end() { return Iterator(&item_data, reordered_item_indices.end()); }
 
-  void Append(const GridItemData& new_item_data) {
+  void Append(GridItemData&& new_item_data) {
     reordered_item_indices.push_back(item_data.size());
     item_data.emplace_back(new_item_data);
   }
@@ -224,6 +235,8 @@ struct CORE_EXPORT GridItems {
     reordered_item_indices.ReserveCapacity(capacity);
     item_data.ReserveCapacity(capacity);
   }
+
+  void RemoveSubgriddedItems();
 
   wtf_size_t Size() const { return item_data.size(); }
   bool IsEmpty() const { return item_data.IsEmpty(); }

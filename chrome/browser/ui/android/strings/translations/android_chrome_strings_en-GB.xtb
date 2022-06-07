@@ -35,6 +35,7 @@
 <translation id="1173894706177603556">Rename</translation>
 <translation id="1177863135347784049">Customised</translation>
 <translation id="1181037720776840403">Remove</translation>
+<translation id="1193729455103054076">Use strong password?</translation>
 <translation id="1197267115302279827">Move bookmarks</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1202892408424955784">Tracked products</translation>
@@ -89,6 +90,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> download prevented because file already exists.</translation>
 <translation id="1414981605391750300">Contacting Google. This may take a minute…</translation>
 <translation id="1416550906796893042">Application version</translation>
+<translation id="1428770807407000502">Turn off sync?</translation>
 <translation id="1430915738399379752">Print</translation>
 <translation id="1436784010935106834">Removed</translation>
 <translation id="1448440926884431741">Organise your tracked products in Bookmarks</translation>
@@ -184,7 +186,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="200114059308480249">Include surrounding text in Google searches?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# File}other{# Files}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to the <ph name="BEGIN_LINK1" />Google Terms of Service<ph name="END_LINK1" />, and the <ph name="BEGIN_LINK2" />Google Chrome and Chrome OS additional Terms of Service<ph name="END_LINK2" />. The <ph name="BEGIN_LINK3" />Privacy Policy<ph name="END_LINK3" /> also applies.</translation>
-<translation id="2019145049163614359">Remove interest?</translation>
 <translation id="2020309681647789787">You’ll have your history on all your synced devices, so you can continue what you were doing</translation>
 <translation id="2021896219286479412">Full screen site controls</translation>
 <translation id="2038563949887743358">Turn on Request desktop site</translation>
@@ -213,6 +214,7 @@ Tap any word to search. To refine your search, touch and hold to select more or 
 <translation id="2141396931810938595">Based on your usage</translation>
 <translation id="214888715418183969">Choose what you’re comfortable sharing with Chrome. The metrics that you share will be used to help improve Chrome’s features, performance and stability.</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
+<translation id="2155214902713132423">This verification method isn’t available for this device. Pick a different option on your other device.</translation>
 <translation id="2157851137955077194">To share something from your phone to another device, turn on sync in Chrome settings on both devices</translation>
 <translation id="2158408438301413340">Chrome couldn’t check all passwords</translation>
 <translation id="2169830938017475061">Now</translation>
@@ -733,7 +735,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5091199029769593641">Soon, you’ll see stories from <ph name="SITE_NAME" /> when you open a new tab. The sites that you follow are saved in your Google Account. You can manage them in Discover settings.</translation>
 <translation id="5091249083535528968">Extended usage data</translation>
 <translation id="509429900233858213">An error occurred.</translation>
-<translation id="5098190077610408701">Add interest?</translation>
 <translation id="5102401324271069229">If a site tries to steal your password, or when you download a harmful file, Chrome may also send URLs, including bits of page content, to Safe Browsing</translation>
 <translation id="510275257476243843">1 hour left</translation>
 <translation id="5115811374190515607">to <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +880,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5906513782029855931">Knowing the URLs of sites allows Google Assistant to help you complete tasks. You can turn off Assistant in Chrome settings.</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> to start sync</translation>
+<translation id="5938820472109305350">Add <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Using Google for search</translation>
 <translation id="5945035219773565305">Current recommendation:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Viewing live page</translation>
@@ -898,7 +900,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6033245666633565791">With <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome is developing new technologies to safeguard you from cross-site tracking while preserving the open web.
 
 Privacy Sandbox trials are still in active development and are available in selected regions. For now, sites may try out Privacy Sandbox while continuing to use current web technologies like third-party cookies.</translation>
-<translation id="6036057147555329831">Extra ICU</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="604124094241169006">Automatic</translation>
@@ -1023,6 +1024,7 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="663674369910034433">For more settings that relate to privacy, security and data collection, see <ph name="BEGIN_LINK1" />Sync<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Google services<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">To help improve the app, Chrome sends usage and crash data to Google. <ph name="BEGIN_UMA_LINK" />Manage<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Block all the time</translation>
+<translation id="6641780377503683465">Remove <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6645629752388991326">Control which devices can sign in by using this device as a security key.</translation>
 <translation id="6648459603387803038">Your administrator can change your browser setup remotely. Activity on this device may also be managed outside of Chrome.</translation>

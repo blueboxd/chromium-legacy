@@ -98,6 +98,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     item.followedWebChannel = followedWebChannel;
     [model addItem:item toSectionWithIdentifier:DefaultSectionIdentifier];
   }
+  [self showOrHideEmptyTableViewBackground];
 }
 
 #pragma mark - UITableViewDelegate
@@ -136,19 +137,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)requestUnfollowWebChannelAtIndexPath:(NSIndexPath*)indexPath {
-  // TODO(crbug.com/1296745): Start favicon spinner.
-
   [self.feedMetricsRecorder recordManagementTappedUnfollow];
+
   self.indexPathOfLastUnfollowAttempt = indexPath;
 
   FollowedWebChannelItem* followedWebChannelItem =
       base::mac::ObjCCastStrict<FollowedWebChannelItem>(
           [self.tableViewModel itemAtIndexPath:indexPath]);
+  FollowedWebChannelCell* followedWebChannelCell =
+      base::mac::ObjCCastStrict<FollowedWebChannelCell>(
+          [self.tableView cellForRowAtIndexPath:indexPath]);
+  [followedWebChannelCell startAnimatingActivityIndicator];
 
   __weak FollowManagementViewController* weakSelf = self;
   followedWebChannelItem.followedWebChannel.unfollowRequestBlock(
       ^(BOOL success) {
-        // TODO(crbug.com/1296745): Stop favicon spinner.
+        [followedWebChannelCell stopAnimatingActivityIndicator];
         if (success) {
           // TODO(crbug.com/1296745): Show success snackbar
           // with undo button.
@@ -173,10 +177,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // TODO(crbug.com/1296745): Start spinner over UNDO text in snackbar.
   FollowedWebChannelItem* unfollowedItem = self.lastUnfollowedWebChannelItem;
+  __weak FollowManagementViewController* weakSelf = self;
   unfollowedItem.followedWebChannel.refollowRequestBlock(^(BOOL success) {
     // TODO(crbug.com/1296745): Stop spinner over UNDO text in snackbar.
     if (success) {
-      // TODO(crbug.com/1296745): Re-insert row.
+      [weakSelf reinsertLastUnfollowedItem];
     } else {
       // TODO(crbug.com/1296745): Show undo failure snackbar.
     }
@@ -184,6 +189,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 #pragma mark - Helpers
+
+- (void)showOrHideEmptyTableViewBackground {
+  TableViewModel* model = self.tableViewModel;
+  NSInteger section =
+      [model sectionForSectionIdentifier:DefaultSectionIdentifier];
+  NSInteger itemCount = [model numberOfItemsInSection:section];
+  if (itemCount == 0) {
+    [self addEmptyTableViewWithImage:nil
+                               title:l10n_util::GetNSString(
+                                         IDS_IOS_FOLLOW_MANAGEMENT_EMPTY_TITLE)
+                            subtitle:l10n_util::GetNSString(
+                                         IDS_IOS_FOLLOW_MANAGEMENT_EMPTY_TEXT)];
+  } else {
+    [self removeEmptyTableView];
+  }
+}
 
 // Deletes item at |indexPath| from both model and UI.
 - (void)deleteItemAtIndexPath:(NSIndexPath*)indexPath {
@@ -197,6 +218,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
                         atIndex:index];
   [self.tableView deleteRowsAtIndexPaths:@[ indexPath ]
                         withRowAnimation:UITableViewRowAnimationAutomatic];
+  [self showOrHideEmptyTableViewBackground];
+}
+
+// Reinserts last unfollowed item into both model and UI.
+- (void)reinsertLastUnfollowedItem {
+  TableViewModel* model = self.tableViewModel;
+  NSIndexPath* indexPath = self.indexPathOfLastUnfollowAttempt;
+
+  NSInteger sectionID =
+      [model sectionIdentifierForSectionIndex:indexPath.section];
+  NSUInteger index = [model indexInItemTypeForIndexPath:indexPath];
+
+  [model insertItem:self.lastUnfollowedWebChannelItem
+      inSectionWithIdentifier:sectionID
+                      atIndex:index];
+  [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
+                        withRowAnimation:UITableViewRowAnimationAutomatic];
+  self.lastUnfollowedWebChannelItem = nil;
+  self.indexPathOfLastUnfollowAttempt = nil;
+  [self showOrHideEmptyTableViewBackground];
 }
 
 @end

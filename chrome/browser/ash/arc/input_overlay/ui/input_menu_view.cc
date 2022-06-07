@@ -8,8 +8,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/pill_button.h"
 #include "base/bind.h"
-// TODO(djacobo): Callbacks seem like an overkill provided how tightly
-// integrated these classes are, but may be worthy to write it that way.
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -58,13 +56,13 @@ constexpr int kBodyFontSize = 13;
 // static
 std::unique_ptr<InputMenuView> InputMenuView::BuildMenuView(
     DisplayOverlayController* display_overlay_controller,
-    views::View* anchor_view) {
+    views::View* entry_view) {
   // Ensure there is only one menu at any time.
   if (display_overlay_controller->HasMenuView())
     display_overlay_controller->RemoveInputMenuView();
 
   auto menu_view_ptr =
-      std::make_unique<InputMenuView>(display_overlay_controller, anchor_view);
+      std::make_unique<InputMenuView>(display_overlay_controller, entry_view);
   menu_view_ptr->Init();
 
   return menu_view_ptr;
@@ -100,12 +98,10 @@ void InputMenuView::Init() {
       ->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
       .SetCollapseMargins(true)
-      .SetDefault(views::kMarginsKey,
-                  gfx::Insets(
-                      /*vertical=*/0,
-                      /*horizontal=*/
-                      ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
 
   SkColor color = color_provider->GetContentLayerColor(
       ash::AshColorProvider::ContentLayerType::kTextColorPrimary);
@@ -116,8 +112,8 @@ void InputMenuView::Init() {
       gfx::FontList({kGoogleSansFont}, gfx::Font::FontStyle::NORMAL,
                     kTitleFontSize, gfx::Font::Weight::MEDIUM),
       /*line_height=*/kHeaderMinHeight);
-  menu_title->SetBorder(views::CreateEmptyBorder(/*top=*/0, /*left=*/20,
-                                                 /*bottom=*/0, /*right=*/8));
+  menu_title->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(0, 20, 0, 8)));
   header_view->AddChildView(std::move(menu_title));
 
   game_control_toggle_ = header_view->AddChildView(
@@ -152,12 +148,10 @@ void InputMenuView::Init() {
       ->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
       .SetCollapseMargins(false)
-      .SetDefault(views::kMarginsKey,
-                  gfx::Insets(
-                      /*vertical=*/0,
-                      /*horizontal=*/
-                      ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
 
   auto* key_mapping_label = ash::login_views_utils::CreateBubbleLabel(
       l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_KEY_MAPPING),
@@ -166,8 +160,8 @@ void InputMenuView::Init() {
       gfx::FontList({kGoogleSansFont}, gfx::Font::FontStyle::NORMAL,
                     kBodyFontSize, gfx::Font::Weight::NORMAL),
       /*line_height=*/kRowMinHeight);
-  key_mapping_label->SetBorder(views::CreateEmptyBorder(
-      /*top=*/0, /*left=*/20, /*bottom=*/0, /*right=*/20));
+  key_mapping_label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(0, 20, 0, 20)));
   customize_view->AddChildView(std::move(key_mapping_label));
 
   customize_button_ =
@@ -186,12 +180,10 @@ void InputMenuView::Init() {
       ->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
       .SetCollapseMargins(false)
-      .SetDefault(views::kMarginsKey,
-                  gfx::Insets(
-                      /*vertical=*/0,
-                      /*horizontal=*/
-                      ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
 
   hint_view->AddChildView(ash::login_views_utils::CreateBubbleLabel(
       l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_SHOW_HINT_OVERLAY),
@@ -200,8 +192,8 @@ void InputMenuView::Init() {
       gfx::FontList({kGoogleSansFont}, gfx::Font::FontStyle::NORMAL,
                     kBodyFontSize, gfx::Font::Weight::NORMAL),
       /*line_height=*/kRowMinHeight));
-  hint_view->SetBorder(views::CreateEmptyBorder(/*top=*/0, /*left=*/20,
-                                                /*bottom=*/0, /*right=*/20));
+  hint_view->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(0, 20, 0, 20)));
   show_hint_toggle_ = hint_view->AddChildView(
       std::make_unique<views::ToggleButton>(base::BindRepeating(
           &InputMenuView::OnToggleShowHintPressed, base::Unretained(this))));
@@ -218,12 +210,10 @@ void InputMenuView::Init() {
       ->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
       .SetCollapseMargins(false)
-      .SetDefault(views::kMarginsKey,
-                  gfx::Insets(
-                      /*vertical=*/0,
-                      /*horizontal=*/
-                      ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
 
   feedback_label->AddChildView(ash::login_views_utils::CreateBubbleLabel(
       l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_SEND_FEEDBACK),
@@ -232,8 +222,8 @@ void InputMenuView::Init() {
       gfx::FontList({kGoogleSansFont}, gfx::Font::FontStyle::NORMAL,
                     kBodyFontSize, gfx::Font::Weight::NORMAL),
       /*line_height=*/kRowMinHeight));
-  feedback_label->SetBorder(views::CreateEmptyBorder(
-      /*top=*/0, /*left=*/20, /*bottom=*/0, /*right=*/20));
+  feedback_label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(0, 20, 0, 20)));
   AddChildView(std::move(feedback_label));
 
   SetPosition(gfx::Point(entry_view_->x() - width() + entry_view_->width(),
@@ -267,10 +257,10 @@ void InputMenuView::OnToggleShowHintPressed() {
 
 void InputMenuView::OnButtonCustomizedPressed() {
   DCHECK(display_overlay_controller_);
-  if (display_overlay_controller_) {
-    display_overlay_controller_->SetDisplayMode(DisplayMode::kEdit);
-  }
-  // TODO(djacobo|cuicuiruan): Show the save/cancel dialog.
+  if (!display_overlay_controller_)
+    return;
+  // Change display mode, load edit UI per action and overall edit buttons.
+  display_overlay_controller_->SetDisplayMode(DisplayMode::kEdit);
 }
 
 }  // namespace input_overlay

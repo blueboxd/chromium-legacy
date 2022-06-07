@@ -16,43 +16,33 @@
 
 namespace chromeos {
 
-constexpr StaticOobeScreenId EnableAdbSideloadingScreenView::kScreenId;
+EnableAdbSideloadingScreenHandler::EnableAdbSideloadingScreenHandler()
+    : BaseScreenHandler(kScreenId) {}
 
-EnableAdbSideloadingScreenHandler::EnableAdbSideloadingScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.EnableAdbSideloadingScreen.userActed");
-}
-
-EnableAdbSideloadingScreenHandler::~EnableAdbSideloadingScreenHandler() {
-  if (screen_)
-    screen_->OnViewDestroyed(this);
-}
+EnableAdbSideloadingScreenHandler::~EnableAdbSideloadingScreenHandler() =
+    default;
 
 void EnableAdbSideloadingScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void EnableAdbSideloadingScreenHandler::Hide() {}
 
 void EnableAdbSideloadingScreenHandler::Bind(
     EnableAdbSideloadingScreen* screen) {
-  screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void EnableAdbSideloadingScreenHandler::Unbind() {
-  screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void EnableAdbSideloadingScreenHandler::SetScreenState(UIState value) {
-  CallJS("login.EnableAdbSideloadingScreen.setScreenState",
-         static_cast<int>(value));
+  CallExternalAPI("setScreenState", static_cast<int>(value));
 }
 
 void EnableAdbSideloadingScreenHandler::DeclareLocalizedValues(
@@ -75,8 +65,8 @@ void EnableAdbSideloadingScreenHandler::DeclareLocalizedValues(
                IDS_ENABLE_ARC_ADB_SIDELOADING_OK_BUTTON);
 }
 
-void EnableAdbSideloadingScreenHandler::Initialize() {
-  if (!page_is_ready())
+void EnableAdbSideloadingScreenHandler::InitializeDeprecated() {
+  if (!IsJavascriptAllowed())
     return;
 
   if (show_on_init_) {

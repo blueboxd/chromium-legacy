@@ -13,6 +13,7 @@
 <translation id="151962892725702025">由于您的网域停用了同步功能，Chromium操作系统无法同步您的数据。</translation>
 <translation id="1524282610922162960">共享 Chromium 标签页</translation>
 <translation id="1553461853655228091">Chromium 需要获得相应权限，才能使用您的摄像头为您的周边环境创建 3D 地图</translation>
+<translation id="1602421994560205104">Chromium 屏蔽了此文件，因为它太大，无法进行安全检查。请使用不超过 50 MB 的文件重试</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{您的管理员要求您重新启动 Chromium 以应用一项更新}=1{您的管理员要求您重新启动 Chromium 以应用一项更新。您的无痕式窗口不会重新打开。}other{您的管理员要求您重新启动 Chromium 以应用一项更新。您的 # 个无痕式窗口不会重新打开。}}</translation>
 <translation id="1625909126243026060">检查 Chromium 中重要的隐私控制设置和安全控件</translation>
 <translation id="1632539827495546968">如果只想使用此帐号一次，您可在 Chromium 浏览器中使用<ph name="GUEST_LINK_BEGIN" />访客模式<ph name="GUEST_LINK_END" />。如果想添加他人的帐号，请向您的 <ph name="DEVICE_TYPE" /> <ph name="LINK_BEGIN" />添加新用户<ph name="LINK_END" />。
@@ -118,6 +119,7 @@
 <translation id="4264410486868823224">根据 <ph name="MANAGER" /> 的要求，您必须先阅读并接受以下《服务条款》才能使用此设备。这些条款不会扩展、修改或限制 Chromium 操作系统条款。</translation>
 <translation id="4271805377592243930">获取有关 Chromium 的帮助</translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
+<translation id="4304713468139749426">密码管理器</translation>
 <translation id="4407044323746248786">仍要退出 Chromium？</translation>
 <translation id="4415566066719264597">让 Chromium 在后台运行</translation>
 <translation id="4423735387467980091">自定义及控制 Chromium</translation>
@@ -195,6 +197,7 @@
 <translation id="6290827346642914212">请为您的 Chromium 个人资料命名</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> 可能存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="6309712487085796862">Chromium 正在使用您的摄像头。</translation>
+<translation id="632355235628111698">此文件存在危险，因此 Chromium 已将其屏蔽</translation>
 <translation id="6333502561965082103">Chromium 正在执行另一项操作，请稍后重试。</translation>
 <translation id="6334986366598267305">现在，无论是通过Google帐号还是在共用的计算机上，您都可以更轻松地使用Chromium。</translation>
 <translation id="6373523479360886564">确定要卸载 Chromium 吗？</translation>
@@ -219,6 +222,7 @@
 <translation id="673636774878526923">如需在您的所有设备上访问自己的 Chromium 信息，请登录您的帐号，然后开启同步功能。</translation>
 <translation id="6774082503108938489">您的家长已为 Chromium 停用“网站、应用和扩展程序的权限”。因此，您无法启用该<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
 <translation id="6847869444787758381">Chromium 会让您知道您的密码是否曾被泄露</translation>
+<translation id="6852530923436401894">Chromium 屏蔽了此文件，因为它包含恶意软件</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（已复制到 Chromium）</translation>
 <translation id="6873893289264747459">Chromium 发现“<ph name="EXTENSION_NAME" />”包含恶意软件</translation>
@@ -237,6 +241,7 @@
 <translation id="7218568399872925918">您访问的网站会记住您的信息，直到您关闭 Chromium</translation>
 <translation id="7223968959479464213">任务管理器 - Chromium</translation>
 <translation id="7246575524853130370">Chromium 推测出的您的兴趣</translation>
+<translation id="7265671031637041256">Chromium 屏蔽了此文件，因为它已加密。请让文件所有者解密</translation>
 <translation id="7309928523159922338">借助 Ad measurement，您访问的网站可向 Chromium 请求信息，以便对网站上的广告进行效果衡量。Ad measurement 会在网站间传输尽可能少的信息，从而限制跨网站跟踪。</translation>
 <translation id="731795002583552498">正在更新 Chromium</translation>
 <translation id="7318036098707714271">您的偏好设置文件已损坏或无效。
@@ -273,11 +278,12 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7857220146454061152">若要接收后续的 Chromium 更新，您需使用 OS X 10.11 或更高版本。该计算机目前使用的是 OS X 10.10。</translation>
 <translation id="7867198900892795913">Chromium 无法更新至最新版本，因此您未能获得最新的功能和安全修复程序。</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />您可以如何管理自己的数据<ph name="END_BOLD" />：为了保护您的隐私，如果您的兴趣保留时间超过 4 周，系统便会自动将其删除。随着您继续浏览，某项兴趣可能会再次出现在列表中。您也可以移除不希望纳入 Chromium 考虑范围的兴趣。</translation>
-<translation id="788352880609666695">这份 Chromium 个人资料可以使用下列帐号</translation>
 <translation id="7898472181347242998">若想确认您设备上的操作系统是否是最新版本，请前往 <ph name="LINK_BEGIN" />Chromium 操作系统设置<ph name="LINK_END" /></translation>
 <translation id="7937630085815544518">您之前登录 Chromium 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
 <translation id="7975919845073681630">这是 Chromium 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
+<translation id="7997934263947464652">来源不明的扩展程序、应用和主题可能会危害您的设备。Chromium 建议只从 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />安装这些内容</translation>
 <translation id="8013436988911883588">一旦 Chromium 获得了使用权限，网站便能请求您向其授予使用权限。</translation>
+<translation id="8045118833343856403">以下帐号未登录任何 Chromium 个人资料。如果您要使用某个帐号登录另一份个人资料，请先移除这份个人资料。</translation>
 <translation id="8105840573057009683">Chromium 需要为此网站授予位置信息权限</translation>
 <translation id="81770708095080097">此文件存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="8248265253516264921">如果图片缺少有用的说明，则 Chromium 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。您可以随时在“设置”中关闭此功能。</translation>

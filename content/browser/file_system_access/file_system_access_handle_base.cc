@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/file_system_access/file_system_access_directory_handle_impl.h"
 #include "content/browser/file_system_access/file_system_access_error.h"
@@ -438,11 +437,18 @@ void FileSystemAccessHandleBase::DoRemove(
                                    std::move(wrapped_callback), url, recurse);
 }
 
+// Calculates the parent URL fom current context, propagating any
+// storage bucket overrides from the child.
 storage::FileSystemURL FileSystemAccessHandleBase::GetParentURL() {
   const storage::FileSystemURL child = url();
-  return file_system_context()->CreateCrackedFileSystemURL(
-      child.storage_key(), child.mount_type(),
-      storage::VirtualPath::DirName(child.virtual_path()));
+  storage::FileSystemURL parent =
+      file_system_context()->CreateCrackedFileSystemURL(
+          child.storage_key(), child.mount_type(),
+          storage::VirtualPath::DirName(child.virtual_path()));
+  if (child.bucket()) {
+    parent.SetBucket(child.bucket().value());
+  }
+  return parent;
 }
 
 }  // namespace content

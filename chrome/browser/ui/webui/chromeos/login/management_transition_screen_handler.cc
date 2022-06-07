@@ -37,9 +37,8 @@ const char kManagementTransitionStepError[] = "error";
 
 constexpr StaticOobeScreenId ManagementTransitionScreenView::kScreenId;
 
-ManagementTransitionScreenHandler::ManagementTransitionScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {}
+ManagementTransitionScreenHandler::ManagementTransitionScreenHandler()
+    : BaseScreenHandler(kScreenId) {}
 
 ManagementTransitionScreenHandler::~ManagementTransitionScreenHandler() {
   if (screen_)
@@ -73,20 +72,20 @@ void ManagementTransitionScreenHandler::RegisterMessages() {
 
 void ManagementTransitionScreenHandler::Bind(
     ManagementTransitionScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
   screen_ = screen;
-  if (page_is_ready())
-    Initialize();
+  if (IsJavascriptAllowed())
+    InitializeDeprecated();
 }
 
 void ManagementTransitionScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
   timer_.Stop();
 }
 
 void ManagementTransitionScreenHandler::Show() {
-  if (!page_is_ready() || !screen_) {
+  if (!IsJavascriptAllowed() || !screen_) {
     show_on_init_ = true;
     return;
   }
@@ -116,13 +115,12 @@ void ManagementTransitionScreenHandler::Show() {
   ash::LoginScreen::Get()->SetAllowLoginAsGuest(false);
   ash::LoginScreen::Get()->SetIsFirstSigninStep(false);
 
-  base::DictionaryValue data;
-  data.SetIntKey("arcTransition",
-                 static_cast<int>(arc::GetManagementTransition(profile)));
-  data.SetStringKey(
-      "managementEntity",
-      chrome::GetAccountManagerIdentity(profile).value_or(std::string()));
-  ShowScreenWithData(kScreenId, &data);
+  base::Value::Dict data;
+  data.Set("arcTransition",
+           static_cast<int>(arc::GetManagementTransition(profile)));
+  data.Set("managementEntity",
+           chrome::GetAccountManagerIdentity(profile).value_or(std::string()));
+  ShowInWebUI(std::move(data));
 }
 
 void ManagementTransitionScreenHandler::Hide() {}
@@ -131,7 +129,7 @@ base::OneShotTimer* ManagementTransitionScreenHandler::GetTimerForTesting() {
   return &timer_;
 }
 
-void ManagementTransitionScreenHandler::Initialize() {
+void ManagementTransitionScreenHandler::InitializeDeprecated() {
   if (!screen_ || !show_on_init_)
     return;
 

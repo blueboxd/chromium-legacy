@@ -151,7 +151,7 @@ RecentAppsView::RecentAppsView(Delegate* delegate,
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
   // TODO(https://crbug.com/1298211): This needs a designated string resource.
   GetViewAccessibility().OverrideName(
-      l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_RECENT_APPS_TITLE));
+      l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_RECENT_APPS_A11Y_NAME));
   SetVisible(false);
 }
 
@@ -174,6 +174,8 @@ void RecentAppsView::OnAppListItemWillBeDeleted(AppListItem* item) {
   }
 
   SetVisible(item_views_.size() >= kMinRecommendedApps);
+  NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                           /*send_native_event=*/true);
 }
 
 void RecentAppsView::UpdateAppListConfig(const AppListConfig* app_list_config) {
@@ -230,6 +232,9 @@ void RecentAppsView::ShowResults(SearchModel* search_model,
     item_views_.push_back(item_view);
     item_view->InitializeIconLoader();
   }
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                           /*send_native_event=*/true);
 }
 
 int RecentAppsView::GetItemViewCount() const {

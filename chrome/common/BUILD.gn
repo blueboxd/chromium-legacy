@@ -124,7 +124,6 @@ static_library("common") {
     "media/media_resource_provider.cc",
     "media/media_resource_provider.h",
     "media_galleries/metadata_types.h",
-    "multi_process_lock.h",
     "pdf_util.cc",
     "pdf_util.h",
     "pref_names_util.cc",
@@ -183,6 +182,8 @@ static_library("common") {
     "//components/favicon_base",
     "//components/flags_ui:switches",
     "//components/gcm_driver/common",
+    "//components/history_clusters/core:history_clusters_buildflags",
+    "//components/history_clusters/history_clusters_internals/webui",
     "//components/metrics",
     "//components/metrics:net",
     "//components/nacl/common:buildflags",
@@ -194,6 +195,7 @@ static_library("common") {
     "//components/offline_pages/buildflags",
     "//components/offline_pages/core:switches",
     "//components/omnibox/common",
+    "//components/optimization_guide/optimization_guide_internals/webui",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/password_manager/core/common",
     "//components/policy:generated",
@@ -345,7 +347,6 @@ static_library("common") {
       "mac/launchd.mm",
       "mac/service_management.h",
       "mac/service_management.mm",
-      "multi_process_lock_mac.cc",
     ]
     public_deps += [ ":app_mode_app_support" ]
   }
@@ -395,7 +396,6 @@ static_library("common") {
       "conflicts/module_watcher_win.h",
       "conflicts/remote_module_watcher_win.cc",
       "conflicts/remote_module_watcher_win.h",
-      "multi_process_lock_win.cc",
       "protobuf_init.cc",
       "protobuf_init.h",
     ]
@@ -461,7 +461,6 @@ static_library("common") {
     sources += [
       "auto_start_linux.cc",
       "auto_start_linux.h",
-      "multi_process_lock_linux.cc",
     ]
     deps += [ "//sandbox/linux:sandbox_services" ]
   }

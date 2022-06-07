@@ -10,11 +10,13 @@ namespace policy {
 namespace policy_prefs {
 
 #if BUILDFLAG(IS_WIN)
-// Boolean pref that stores if the OS is actively managed by
-// Azure Active Directory. This will be used to cache the management status so
-// that it is loaded faster at sartup.
+// Integer pref that stores Azure Active Directory management authority.
 const char kAzureActiveDirectoryManagement[] =
     "management.platform.azure_active_directory";
+
+// Integer pref that stores the Windows enterprise MDM management authority.
+const char kEnterpriseMDMManagementWindows[] =
+    "management.platform.enterprise_mdm_win";
 #elif BUILDFLAG(IS_MAC)
 // Integer pref that stores the Mac enterprise MDM management authority.
 const char kEnterpriseMDMManagementMac[] =
@@ -74,11 +76,6 @@ const char kNativeWindowOcclusionEnabled[] =
 const char kIntensiveWakeUpThrottlingEnabled[] =
     "policy.intensive_wake_up_throttling_enabled";
 
-// Boolean that controls whether a window spawned from an anchor targeting
-// _blank receives an opener. TODO(crbug.com/898942): Remove this in Chrome 95.
-const char kTargetBlankImpliesNoOpener[] =
-    "policy.target_blank_implies_noopener";
-
 // Boolean policy preference for force enabling or disabling the
 // SetTimeoutWithoutClamp web feature.
 const char kSetTimeoutWithout1MsClampEnabled[] =
@@ -100,6 +97,14 @@ const char kIsolatedAppsDeveloperModeAllowed[] =
 
 // Boolean policy to force WebSQL to be enabled.
 const char kWebSQLAccess[] = "policy.web_sql_access";
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+// Last time that a check for cloud policy management was done. This time is
+// recorded on Android and iOS so that retries aren't attempted on every
+// startup. Instead the cloud policy registration is retried at least 1 or 3
+// days later.
+const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
+#endif
 
 }  // namespace policy_prefs
 }  // namespace policy

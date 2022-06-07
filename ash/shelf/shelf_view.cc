@@ -38,6 +38,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/utility/haptics_util.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -56,7 +57,7 @@
 #include "base/timer/timer.h"
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -68,6 +69,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/scoped_display_for_new_windows.h"
+#include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -242,7 +244,7 @@ bool IsRemoteApp(const std::string& app_id) {
       Shell::Get()->session_controller()->GetActiveAccountId();
   apps::AppRegistryCache* cache =
       apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id);
-  return cache && cache->GetAppType(app_id) == apps::mojom::AppType::kRemote;
+  return cache && cache->GetAppType(app_id) == apps::AppType::kRemote;
 }
 
 bool IsStandaloneBrowser(const std::string& app_id) {
@@ -251,7 +253,7 @@ bool IsStandaloneBrowser(const std::string& app_id) {
   apps::AppRegistryCache* cache =
       apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id);
   return cache &&
-         cache->GetAppType(app_id) == apps::mojom::AppType::kStandaloneBrowser;
+         cache->GetAppType(app_id) == apps::AppType::kStandaloneBrowser;
 }
 
 // Records the user metric action for whenever a shelf item is pinned or
@@ -1005,8 +1007,8 @@ void ShelfView::CalculateIdealBounds() {
   const int button_size = GetButtonSize();
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (view_model_->view_at(i)->GetVisible()) {
-      view_model_->set_ideal_bounds(i,
-                                    gfx::Rect(x, y, button_size, button_size));
+      gfx::Rect ideal_view_bounds(x, y, button_size, button_size);
+      view_model_->set_ideal_bounds(i, ideal_view_bounds);
       if (view_model_->view_at(i) == drag_view_ &&
           current_ghost_view_index_ != i && !dragged_off_shelf_) {
         if (current_ghost_view_)
@@ -1015,9 +1017,14 @@ void ShelfView::CalculateIdealBounds() {
         last_ghost_view_ = current_ghost_view_;
 
         auto current_ghost_view = std::make_unique<GhostImageView>(GridIndex());
-        gfx::Rect ghost_view_bounds(x, y, button_size, button_size);
+        gfx::Size icon_size = drag_view_
+                                  ->GetIdealIconBounds(ideal_view_bounds.size(),
+                                                       /*icon_scale=*/1.0f)
+                                  .size();
+        gfx::Rect ghost_view_bounds = ideal_view_bounds;
+        ghost_view_bounds.ClampToCenteredSize(icon_size);
         current_ghost_view->Init(ghost_view_bounds,
-                                 ShelfConfig::Get()->button_spacing());
+                                 ghost_view_bounds.width() / 2);
 
         current_ghost_view_ = AddChildView(std::move(current_ghost_view));
         current_ghost_view_->FadeIn();
@@ -1516,6 +1523,12 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
         root_window, drag_view_->GetImage(), screen_location, gfx::Vector2d(),
         /*scale_factor=*/1.0f,
         /*use_blurred_background=*/false);
+
+    if (pointer == MOUSE) {
+      haptics_util::PlayHapticTouchpadEffect(
+          ui::HapticTouchpadEffect::kTick,
+          ui::HapticTouchpadEffectStrength::kMedium);
+    }
   }
 }
 

@@ -2002,11 +2002,19 @@ TEST_P(PaintArtifactCompositorTest, CompositedMaskOneChild) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *masked)
-      .RectDrawing(gfx::Rect(100, 100, 200, 200), Color::kGray);
+      .RectDrawing(gfx::Rect(100, 100, 200, 200), Color::kGray)
+      .RectKnownToBeOpaque(gfx::Rect(100, 100, 200, 200))
+      .HasText()
+      .TextKnownToBeOnOpaqueBackground();
   artifact.Chunk(t0(), c0(), *masking)
       .RectDrawing(gfx::Rect(150, 150, 100, 100), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(2u, LayerCount());
+
+  // Composited mask doesn't affect opaqueness of the masked layer.
+  const cc::Layer* masked_layer = LayerAt(0);
+  EXPECT_TRUE(masked_layer->contents_opaque());
+  EXPECT_TRUE(masked_layer->contents_opaque_for_text());
 
   const cc::Layer* masking_layer = LayerAt(1);
   const cc::EffectNode* masking_group =
@@ -2022,6 +2030,34 @@ TEST_P(PaintArtifactCompositorTest, CompositedMaskOneChild) {
                   .effect_tree()
                   .parent(masking_group)
                   ->HasRenderSurface());
+}
+
+TEST_P(PaintArtifactCompositorTest, NonCompositedMaskClearsOpaqueness) {
+  auto masked = CreateOpacityEffect(
+      e0(), 1.0, CompositingReason::kOpacityWithCompositedDescendants);
+  EffectPaintPropertyNode::State masking_state;
+  masking_state.local_transform_space = &t0();
+  masking_state.output_clip = &c0();
+  masking_state.blend_mode = SkBlendMode::kDstIn;
+  auto masking =
+      EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c0(), *masked)
+      .RectDrawing(gfx::Rect(100, 100, 200, 200), Color::kGray)
+      .RectKnownToBeOpaque(gfx::Rect(100, 100, 200, 200))
+      .HasText()
+      .TextKnownToBeOnOpaqueBackground();
+  artifact.Chunk(t0(), c0(), *masking)
+      .RectDrawing(gfx::Rect(150, 150, 100, 100), Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(1u, LayerCount());
+
+  // Non-composited mask clears opaqueness status of the masked layer.
+  const cc::Layer* layer = LayerAt(0);
+  EXPECT_EQ(gfx::Size(200, 200), layer->bounds());
+  EXPECT_FALSE(layer->contents_opaque());
+  EXPECT_FALSE(layer->contents_opaque_for_text());
 }
 
 TEST_P(PaintArtifactCompositorTest, CompositedMaskTwoChildren) {
@@ -4240,26 +4276,6 @@ TEST_P(PaintArtifactCompositorTest,
   // render surface, so |opacity| doesn't need a render surface.
   int opacity_id = effect_tree.Node(layer0_effect_id)->parent_id;
   EXPECT_OPACITY(opacity_id, 1.f, kNoRenderSurface);
-}
-
-TEST_P(PaintArtifactCompositorTest,
-       ActiveAnimationCompositingReasonWithoutActiveAnimationFlag) {
-  // TODO(crbug.com/900241): This test tests no render surface should be created
-  // for an effect node with kActiveFilterAnimation compositing reason without
-  // active animation flag. This simulates the extra effect node created for
-  // filter animation, which should not create render surface.
-  // Remove this test when we fix the bug.
-  EffectPaintPropertyNode::State state;
-  state.local_transform_space = &t0();
-  state.direct_compositing_reasons = CompositingReason::kActiveFilterAnimation;
-  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
-
-  Update(TestPaintArtifact()
-             .Chunk(t0(), c0(), *e1)
-             .RectDrawing(gfx::Rect(150, 150, 100, 100), Color::kWhite)
-             .Build());
-  ASSERT_EQ(1u, LayerCount());
-  EXPECT_OPACITY(LayerAt(0)->effect_tree_index(), 1.f, kNoRenderSurface);
 }
 
 TEST_P(PaintArtifactCompositorTest, FilterCreatesRenderSurface) {

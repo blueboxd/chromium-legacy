@@ -10,9 +10,9 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/deferred_sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits_extension.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_io_thread.h"
@@ -181,6 +181,9 @@ QueueType BaseBrowserTaskExecutor::GetQueueType(
         // Defer to traits.priority() below.
         break;
 
+      case BrowserTaskType::kServiceWorkerStorageControlResponse:
+        return QueueType::kServiceWorkerStorageControlResponse;
+
       case BrowserTaskType::kDefault:
         // Defer to traits.priority() below.
         break;
@@ -342,9 +345,9 @@ void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
 }
 
 // static
-void BrowserTaskExecutor::EnableAllQueues() {
-  Get()->browser_ui_thread_handle_->EnableAllQueues();
-  Get()->browser_io_thread_handle_->EnableAllQueues();
+void BrowserTaskExecutor::OnStartupComplete() {
+  Get()->browser_ui_thread_handle_->OnStartupComplete();
+  Get()->browser_io_thread_handle_->OnStartupComplete();
 }
 
 // static

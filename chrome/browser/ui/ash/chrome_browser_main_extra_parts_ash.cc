@@ -14,7 +14,6 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/scoped_observation.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier_factory.h"
 #include "chrome/browser/ash/night_light/night_light_client.h"
@@ -327,8 +326,8 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   chrome_shelf_controller_initializer_.reset();
   desks_templates_client_.reset();
 
-  projector_client_.reset();
   projector_app_client_.reset();
+  projector_client_.reset();
 
   wallpaper_controller_client_.reset();
   vpn_list_forwarder_.reset();

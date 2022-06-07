@@ -1218,6 +1218,9 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
     case api::file_manager_private::RECENT_FILE_TYPE_VIDEO:
       file_type = chromeos::RecentModel::FileType::kVideo;
       break;
+    case api::file_manager_private::RECENT_FILE_TYPE_DOCUMENT:
+      file_type = chromeos::RecentModel::FileType::kDocument;
+      break;
     default:
       NOTREACHED();
       return RespondNow(Error("Unknown recent file type is specified."));
@@ -1334,7 +1337,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateOpenWindowFunction::Run() {
           /*target_name=*/{}, &file_type_info,
           /*file_type_index=*/0,
           /*search_query=*/{},
-          /*show_android_picker_apps=*/false);
+          /*show_android_picker_apps=*/false,
+          /*volume_filter=*/{});
 
   web_app::SystemAppLaunchParams launch_params;
   launch_params.url = files_swa_url;

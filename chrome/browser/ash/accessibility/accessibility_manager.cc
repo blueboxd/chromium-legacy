@@ -62,9 +62,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_member.h"
@@ -144,7 +144,7 @@ BrailleController* GetBrailleController() {
 // stop followed by start ensures we both stop a started job, and also start
 // brltty.
 void RestartBrltty(const std::string& address) {
-  chromeos::UpstartClient* client = chromeos::UpstartClient::Get();
+  UpstartClient* client = UpstartClient::Get();
   client->StopJob(kBrlttyUpstartJobName, {}, base::DoNothing());
 
   std::vector<std::string> args;
@@ -1609,8 +1609,8 @@ void AccessibilityManager::PostLoadChromeVox() {
     // Otherwise, start brltty without an address. This covers cases when
     // ChromeVox is toggled off then back on all while a usb braille display is
     // connected.
-    chromeos::UpstartClient::Get()->StartJob(kBrlttyUpstartJobName, {},
-                                             base::DoNothing());
+    UpstartClient::Get()->StartJob(kBrlttyUpstartJobName, {},
+                                   base::DoNothing());
   }
 
   PlayEarcon(Sound::kSpokenFeedbackEnabled, PlaySoundOption::kAlways);
@@ -1650,8 +1650,7 @@ void AccessibilityManager::PostLoadChromeVox() {
 void AccessibilityManager::PostUnloadChromeVox() {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
   // Stop brltty.
-  chromeos::UpstartClient::Get()->StopJob(kBrlttyUpstartJobName, {},
-                                          base::DoNothing());
+  UpstartClient::Get()->StopJob(kBrlttyUpstartJobName, {}, base::DoNothing());
 
   PlayEarcon(Sound::kSpokenFeedbackDisabled, PlaySoundOption::kAlways);
 

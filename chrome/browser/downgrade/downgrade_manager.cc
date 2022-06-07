@@ -20,7 +20,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -246,7 +245,7 @@ void DowngradeManager::DeleteMovedUserDataSoon(
     const base::FilePath& user_data_dir) {
   DCHECK(!user_data_dir.empty());
   // IWYU note: base/location.h and base/task/task_traits.h are guaranteed to be
-  // available via base/task/post_task.h.
+  // available via base/task/thread_pool.h.
   content::BrowserThread::PostBestEffortTask(
       FROM_HERE,
       base::ThreadPool::CreateTaskRunner(

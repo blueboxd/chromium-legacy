@@ -25,11 +25,11 @@
 #include "components/signin/public/base/signin_switches.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/tpm/install_attributes.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
@@ -180,7 +180,7 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       // |IsAccountManagerAvailable| after fixing https://crbug.com/1008349 and
       // https://crbug.com/993317.
       if (ash::IsAccountManagerAvailable(profile) &&
-          chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
+          ash::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
         return std::make_unique<
             signin::ActiveDirectoryAccountReconcilorDelegate>();
       }

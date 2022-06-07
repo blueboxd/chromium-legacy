@@ -11,8 +11,7 @@
 #include "media/base/media_export.h"
 #include "media/formats/hls/parse_status.h"
 
-namespace media {
-namespace hls {
+namespace media::hls {
 
 struct SourceLineIterator;
 
@@ -48,11 +47,13 @@ struct MEDIA_EXPORT SourceString {
 
   bool Empty() const { return str_.empty(); }
 
+  size_t Size() const { return str_.size(); }
+
   SourceString Substr(size_t pos = 0,
                       size_t count = base::StringPiece::npos) const;
 
   // Consumes this string up to the given count, which may be longer than this
-  // string.
+  // string. Returns the substring that was consumed.
   SourceString Consume(size_t count = base::StringPiece::npos);
 
  private:
@@ -88,7 +89,6 @@ struct MEDIA_EXPORT SourceLineIterator {
   base::StringPiece source_;
 };
 
-}  // namespace hls
-}  // namespace media
+}  // namespace media::hls
 
 #endif  // MEDIA_FORMATS_HLS_SOURCE_STRING_H_

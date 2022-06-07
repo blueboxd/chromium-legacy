@@ -25,6 +25,7 @@ class AudioProcessorControls;
 
 namespace blink {
 
+class AudioServiceAudioProcessorProxy;
 class LocalFrame;
 class MediaStreamAudioProcessor;
 class PeerConnectionDependencyFactory;
@@ -75,16 +76,10 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
   absl::optional<blink::AudioProcessingProperties>
   GetAudioProcessingProperties() const final;
 
-  // The following accessors are valid after the source is started (when the
-  // first track is connected).
+  // Valid after the source is started (when the first track is connected). Will
+  // return nullptr if WebRTC stats are no available for the current
+  // configuration.
   scoped_refptr<webrtc::AudioProcessorInterface> GetAudioProcessor() const;
-
-  bool HasWebRtcAudioProcessing() const;
-
-  // Instructs the Audio Processing Module (APM) to reduce its complexity when
-  // |muted| is true. This mode is triggered when all audio tracks are disabled.
-  // The default APM complexity mode is restored when |muted| is set to false.
-  void SetOutputWillBeMuted(bool muted);
 
   const scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level>&
   audio_level() const {
@@ -92,6 +87,10 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
   }
 
   void SetOutputDeviceForAec(const std::string& output_device_id);
+
+  // Returns true if ProcessedLocalAudioSource produces audio at the processing
+  // sample rate, false if it outputs audio at the device sample rate.
+  static bool OutputAudioAtProcessingSampleRate();
 
  protected:
   // MediaStreamAudioSource implementation.
@@ -141,9 +140,14 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
   // Callback that's called when the audio source has been initialized.
   ConstraintsOnceCallback started_callback_;
 
+  // At most one of |audio_processor_| and |audio_processor_proxy_| can be set.
+
   // Audio processor doing software processing like FIFO, AGC, AEC and NS. Its
   // output data is in a unit of up to 10 ms data chunk.
   scoped_refptr<MediaStreamAudioProcessor> media_stream_audio_processor_;
+
+  // Proxy for the audio processor when it's run in the Audio Service process,
+  scoped_refptr<AudioServiceAudioProcessorProxy> audio_processor_proxy_;
 
   // The device created by the AudioDeviceFactory in EnsureSourceIsStarted().
   scoped_refptr<media::AudioCapturerSource> source_;

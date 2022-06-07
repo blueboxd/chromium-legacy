@@ -25,14 +25,18 @@
 #include "chrome/browser/ui/app_list/search/files/file_search_provider.h"
 #include "chrome/browser/ui/app_list/search/files/zero_state_drive_provider.h"
 #include "chrome/browser/ui/app_list/search/files/zero_state_file_provider.h"
+#include "chrome/browser/ui/app_list/search/games/game_provider.h"
 #include "chrome/browser/ui/app_list/search/help_app_provider.h"
 #include "chrome/browser/ui/app_list/search/keyboard_shortcut_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
+#include "chrome/browser/ui/app_list/search/omnibox_lacros_provider.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/os_settings_provider.h"
+#include "chrome/browser/ui/app_list/search/personalization_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_controller_impl.h"
 #include "chrome/browser/ui/app_list/search/search_controller_impl_new.h"
+#include "chrome/browser/ui/app_list/search/search_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -105,8 +109,14 @@ std::unique_ptr<SearchController> CreateSearchController(
                          profile, list_controller,
                          base::DefaultClock::GetInstance(), model_updater));
 
-  controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
-                                                profile, list_controller));
+  if (app_list_features::IsLauncherLacrosIntegrationEnabled()) {
+    controller->AddProvider(
+        omnibox_group_id,
+        std::make_unique<OmniboxLacrosProvider>(profile, list_controller));
+  } else {
+    controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
+                                                  profile, list_controller));
+  }
 
   size_t assistant_group_id = controller->AddGroup(kMaxAssistantTextResults);
   controller->AddProvider(assistant_group_id,
@@ -170,6 +180,21 @@ std::unique_ptr<SearchController> CreateSearchController(
   size_t help_app_group_id = controller->AddGroup(kGenericMaxResults);
   controller->AddProvider(help_app_group_id,
                           std::make_unique<HelpAppProvider>(profile));
+
+  if (search_features::IsLauncherGameSearchEnabled()) {
+    size_t games_group_id = controller->AddGroup(kGenericMaxResults);
+    controller->AddProvider(games_group_id, std::make_unique<GameProvider>(
+                                                profile, list_controller));
+  }
+
+  if (ash::features::IsPersonalizationHubEnabled() &&
+      !profile->IsGuestSession()) {
+    size_t personalization_app_group_id =
+        controller->AddGroup(kGenericMaxResults);
+
+    controller->AddProvider(personalization_app_group_id,
+                            std::make_unique<PersonalizationProvider>(profile));
+  }
 
   return controller;
 }

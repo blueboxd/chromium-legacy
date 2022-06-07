@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/proximity_auth/messenger.h"
 #include "ash/components/proximity_auth/metrics.h"
 #include "ash/components/proximity_auth/proximity_auth_client.h"
@@ -18,8 +20,6 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 namespace proximity_auth {
@@ -576,7 +576,7 @@ void UnlockManagerImpl::SendSignInChallenge() {
 
 void UnlockManagerImpl::OnGetConnectionMetadata(
     ash::secure_channel::mojom::ConnectionMetadataPtr connection_metadata_ptr) {
-  chromeos::multidevice::RemoteDeviceRef remote_device =
+  ash::multidevice::RemoteDeviceRef remote_device =
       life_cycle_->GetRemoteDevice();
   proximity_auth_client_->GetChallengeForUserAndDevice(
       remote_device.user_email(), remote_device.public_key(),

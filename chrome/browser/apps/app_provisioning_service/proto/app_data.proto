@@ -1,0 +1,45 @@
+// Copyright 2022 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package apps.proto;
+
+// An identical copy of this proto is maintained in the server code base.
+// http://google3/chrome/chromeos/apps_foundation/app_data.proto
+// This proto is add only. Any changes made here must also be made in the
+// file above.
+message App {
+  optional string app_id_for_platform = 1;
+  optional string app_name = 2;
+  optional LocalisedName display_name = 3;
+  repeated Store available_stores = 5;
+  optional string publisher_name = 6;
+}
+
+message LocaleAvailability {
+  repeated string available_country_codes = 1;
+  repeated LocalisedName available_localised_names = 2;
+}
+
+message LocalisedName {
+  optional string language_code = 1;
+  optional string name_in_language = 2;
+}
+
+message Store {
+  optional string store_code = 1;
+  optional string store_label = 2;
+}
+
+message AppWithLocale {
+  optional App app = 1;
+  optional LocaleAvailability locale_availability = 2;
+}
+
+message AppWithLocaleList {
+  repeated AppWithLocale app_with_locale = 1;
+}

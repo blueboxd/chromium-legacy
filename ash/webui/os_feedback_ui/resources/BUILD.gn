@@ -17,10 +17,12 @@ preprocessed_mojo_manifest = "preprocessed_mojo_manifest.json"
 
 polymer_element_files = [
   "confirmation_page.js",
+  "feedback_flow.js",
   "help_content.js",
   "help_resources_icons.js",
   "os_feedback_shared_css.js",
   "search_page.js",
+  "share_data_page.js",
 ]
 
 generate_grd("build_grd") {
@@ -30,6 +32,7 @@ generate_grd("build_grd") {
     "app_icon_256.png",
     "fake_data.js",
     "fake_help_content_provider.js",
+    "fake_feedback_service_provider.js",
     "feedback_types.js",
     "index.html",
     "mojo_interface_provider.js",
@@ -53,11 +56,13 @@ js_type_check("closure_compile_module") {
   deps = [
     ":confirmation_page",
     ":fake_data",
+    ":fake_feedback_service_provider",
     ":fake_help_content_provider",
     ":feedback_types",
     ":help_content",
     ":mojo_interface_provider",
     ":search_page",
+    ":share_data_page",
   ]
 }
 
@@ -86,10 +91,26 @@ js_library("fake_help_content_provider") {
   ]
 }
 
+js_library("fake_feedback_service_provider") {
+  deps = [
+    ":feedback_types",
+    "//ash/webui/common/resources:fake_method_resolver",
+    "//ui/webui/resources/js:cr.m",
+  ]
+}
+
 js_library("feedback_types") {
   deps = [
     "//ash/webui/common/resources:mojo_utils",
     "//ash/webui/os_feedback_ui/mojom:mojom_js_library_for_compile",
+  ]
+}
+
+js_library("feedback_flow") {
+  deps = [
+    ":feedback_types",
+    ":mojo_interface_provider",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -102,6 +123,7 @@ js_library("help_resources_icons") {
 js_library("mojo_interface_provider") {
   deps = [
     ":fake_data",
+    ":fake_feedback_service_provider",
     ":fake_help_content_provider",
     ":feedback_types",
     "//ui/webui/resources/js:cr.m",
@@ -110,8 +132,17 @@ js_library("mojo_interface_provider") {
 
 js_library("search_page") {
   deps = [
+    ":feedback_flow",
     ":help_content",
     ":mojo_interface_provider",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("share_data_page") {
+  deps = [
+    ":feedback_flow",
+    ":feedback_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }

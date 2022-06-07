@@ -19,23 +19,23 @@ BOOL IsPasswordCreationUserEnabled() {
       boolValue];
 }
 
-BOOL IsCredentialProviderExtensionPromoEnabled() {
-  NSDictionary* allFeatures = [app_group::GetGroupUserDefaults()
-      objectForKey:app_group::kChromeExtensionFieldTrialPreference];
-  NSDictionary* featureData = allFeatures[@"CredentialProviderExtensionPromo"];
-  if (!featureData || kCredentialProviderExtensionPromoFeatureVersion !=
-                          [featureData[kFieldTrialVersionKey] intValue]) {
-    return NO;
-  }
-  return [featureData[kFieldTrialValueKey] boolValue];
-}
-
 BOOL IsPasswordManagerBrandingUpdateEnable() {
   NSDictionary* allFeatures = [app_group::GetGroupUserDefaults()
       objectForKey:app_group::kChromeExtensionFieldTrialPreference];
   NSDictionary* featureData =
       allFeatures[@"IOSEnablePasswordManagerBrandingUpdate"];
   if (!featureData || kPasswordManagerBrandingUpdateFeatureVersion !=
+                          [featureData[kFieldTrialVersionKey] intValue]) {
+    return NO;
+  }
+  return [featureData[kFieldTrialValueKey] boolValue];
+}
+
+BOOL IsFaviconEnabled() {
+  NSDictionary* allFeatures = [app_group::GetGroupUserDefaults()
+      objectForKey:app_group::kChromeExtensionFieldTrialPreference];
+  NSDictionary* featureData = allFeatures[@"EnableFaviconForPasswords"];
+  if (!featureData || kCredentialProviderExtensionFaviconsFeatureVersion !=
                           [featureData[kFieldTrialVersionKey] intValue]) {
     return NO;
   }

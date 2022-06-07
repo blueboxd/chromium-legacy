@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
+#include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
@@ -575,10 +576,7 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       style.SetIsFlexOrGridItem();
   }
 
-  if (style.Display() == EDisplay::kBlock && !style.IsFloating())
-    return;
-
-  if (style.Display() == EDisplay::kContents)
+  if (style.Display() == EDisplay::kBlock)
     return;
 
   // FIXME: Don't support this mutation for pseudo styles like first-letter or
@@ -601,36 +599,6 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
     style.SetWritingMode(layout_parent_style.GetWritingMode());
     style.SetTextOrientation(layout_parent_style.GetTextOrientation());
     style.UpdateFontOrientation();
-  }
-
-  // FIXME: Since we don't support block-flow on flexible boxes yet, disallow
-  // setting of block-flow to anything other than TopToBottomWritingMode.
-  // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-  if (style.GetWritingMode() != WritingMode::kHorizontalTb &&
-      style.IsDeprecatedWebkitBox()) {
-    style.SetWritingMode(WritingMode::kHorizontalTb);
-    style.UpdateFontOrientation();
-  }
-
-  // Disable editing custom layout elements, until EditingNG is ready.
-  if (!RuntimeEnabledFeatures::EditingNGEnabled() &&
-      (style.Display() == EDisplay::kLayoutCustom ||
-       style.Display() == EDisplay::kInlineLayoutCustom))
-    style.SetUserModify(EUserModify::kReadOnly);
-
-  if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
-    // We want to count vertical percentage paddings/margins on flex items
-    // because our current behavior is different from the spec and we want to
-    // gather compatibility data.
-    if (style.PaddingBefore().IsPercentOrCalc() ||
-        style.PaddingAfter().IsPercentOrCalc()) {
-      UseCounter::Count(document,
-                        WebFeature::kFlexboxPercentagePaddingVertical);
-    }
-    if (style.MarginBefore().IsPercentOrCalc() ||
-        style.MarginAfter().IsPercentOrCalc()) {
-      UseCounter::Count(document, WebFeature::kFlexboxPercentageMarginVertical);
-    }
   }
 }
 
@@ -783,6 +751,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   }
 
   auto* svg_element = DynamicTo<SVGElement>(element);
+
+  bool is_mathml_element = RuntimeEnabledFeatures::MathMLCoreEnabled() &&
+                           IsA<MathMLElement>(element);
+
   if (style.Display() != EDisplay::kNone) {
     if (svg_element)
       AdjustStyleForSvgElement(*svg_element, style);
@@ -819,8 +791,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
     // math display values on non-MathML elements compute to flow display
     // values.
-    if ((!element || !element->IsMathMLElement()) &&
+    if ((!element || !is_mathml_element) &&
         style.IsDisplayMathBox(style.Display())) {
+      DCHECK(RuntimeEnabledFeatures::MathMLCoreEnabled());
       style.SetDisplay(style.Display() == EDisplay::kBlockMath
                            ? EDisplay::kBlock
                            : EDisplay::kInline);
@@ -943,7 +916,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
     style.SetCssDominantBaseline(baseline);
 
-  } else if (element && element->IsMathMLElement()) {
+  } else if (is_mathml_element) {
     if (style.Display() == EDisplay::kContents) {
       // https://drafts.csswg.org/css-display/#unbox-mathml
       style.SetDisplay(EDisplay::kNone);

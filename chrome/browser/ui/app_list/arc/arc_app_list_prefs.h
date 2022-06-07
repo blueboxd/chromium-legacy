@@ -93,6 +93,7 @@ class ArcAppListPrefs : public KeyedService,
             const std::string& activity,
             const std::string& intent_uri,
             const std::string& icon_resource_id,
+            const absl::optional<std::string>& version_name,
             const base::Time& last_launch_time,
             const base::Time& install_time,
             bool sticky,
@@ -113,6 +114,7 @@ class ArcAppListPrefs : public KeyedService,
     std::string activity;
     std::string intent_uri;
     std::string icon_resource_id;
+    absl::optional<std::string> version_name;
     base::Time last_launch_time;
     base::Time install_time;
     // Whether app could not be uninstalled.
@@ -421,6 +423,9 @@ class ArcAppListPrefs : public KeyedService,
   void SetDefaultAppsReadyCallback(base::OnceClosure callback);
   void SimulateDefaultAppAvailabilityTimeoutForTesting();
 
+  void SetRemoveAllCallbackForTesting(base::OnceClosure callback);
+  bool is_remove_all_in_progress() { return is_remove_all_in_progress_; }
+
   // Returns true if:
   // 1. specified package is new in the system
   // 2. is not installed.
@@ -514,6 +519,7 @@ class ArcAppListPrefs : public KeyedService,
                          const std::string& activity,
                          const std::string& intent_uri,
                          const std::string& icon_resource_id,
+                         const absl::optional<std::string>& version_name,
                          const bool sticky,
                          const bool notifications_enabled,
                          const bool app_ready,
@@ -609,6 +615,9 @@ class ArcAppListPrefs : public KeyedService,
   // Callback called once default apps are ready.
   void OnDefaultAppsReady();
 
+  // Records UMA metrics on app counts on ARC start.
+  void RecordAppIdsUma();
+
   Profile* const profile_;
 
   // Owned by the BrowserContext.
@@ -674,6 +683,9 @@ class ArcAppListPrefs : public KeyedService,
   // Stored runtime and for the current active session only.
   // Not to be confused with `last_launch_time_`.
   std::map<const std::string, base::Time> launch_request_times_;
+
+  bool is_remove_all_in_progress_ = false;
+  base::OnceClosure remove_all_callback_for_testing_;
 
   base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_{this};
 };

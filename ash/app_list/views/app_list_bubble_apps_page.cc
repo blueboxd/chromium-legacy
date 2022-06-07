@@ -15,10 +15,13 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/views/app_list_nudge_controller.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
+#include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/app_list/views/app_list_view_util.h"
 #include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
+#include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/bubble/bubble_utils.h"
 #include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
@@ -41,6 +44,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
@@ -58,7 +62,7 @@ namespace {
 constexpr int kContinueColumnCount = 2;
 
 // Insets for the vertical scroll bar.
-constexpr gfx::Insets kVerticalScrollInsets(1, 0, 1, 1);
+constexpr auto kVerticalScrollInsets = gfx::Insets::TLBR(1, 0, 1, 1);
 
 // The padding between different sections within the apps page. Also used for
 // interior apps page container margin.
@@ -70,10 +74,10 @@ constexpr int kHorizontalInteriorMargin = 16;
 
 // Insets for the continue section. These insets are required to make the
 // suggestion icons visually align with the icons in the apps grid.
-constexpr gfx::Insets kContinueSectionInsets(0, 4);
+constexpr auto kContinueSectionInsets = gfx::Insets::VH(0, 4);
 
 // Insets for the separator between the continue section and apps.
-constexpr gfx::Insets kSeparatorInsets(0, 16);
+constexpr auto kSeparatorInsets = gfx::Insets::VH(0, 16);
 
 // A slide animation's tween type.
 constexpr gfx::Tween::Type kSlideAnimationTweenType =
@@ -102,8 +106,13 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
     ApplicationDragAndDropHost* drag_and_drop_host,
     AppListConfig* app_list_config,
     AppListA11yAnnouncer* a11y_announcer,
-    AppListFolderController* folder_controller)
-    : app_list_nudge_controller_(std::make_unique<AppListNudgeController>()) {
+    SearchResultPageDialogController* dialog_controller,
+    AppListFolderController* folder_controller,
+    SearchBoxView* search_box)
+    : view_delegate_(view_delegate),
+      search_box_(search_box),
+      app_list_nudge_controller_(std::make_unique<AppListNudgeController>()),
+      dialog_controller_(dialog_controller) {
   DCHECK(view_delegate);
   DCHECK(drag_and_drop_host);
   DCHECK(a11y_announcer);
@@ -138,14 +147,16 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   auto scroll_contents = std::make_unique<views::View>();
   auto* layout = scroll_contents->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical,
-      gfx::Insets(kVerticalPaddingBetweenSections, kHorizontalInteriorMargin),
+      gfx::Insets::VH(kVerticalPaddingBetweenSections,
+                      kHorizontalInteriorMargin),
       kVerticalPaddingBetweenSections));
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
 
   // Continue section row.
   continue_section_ =
       scroll_contents->AddChildView(std::make_unique<ContinueSectionView>(
-          view_delegate, kContinueColumnCount, /*tablet_mode=*/false));
+          view_delegate, dialog_controller_, kContinueColumnCount,
+          /*tablet_mode=*/false));
   continue_section_->SetBorder(
       views::CreateEmptyBorder(kContinueSectionInsets));
   continue_section_->SetNudgeController(app_list_nudge_controller_.get());
@@ -174,7 +185,7 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   if (features::IsLauncherAppSortEnabled()) {
     toast_container_ = scroll_contents->AddChildView(
         std::make_unique<AppListToastContainerView>(
-            app_list_nudge_controller_.get(), a11y_announcer,
+            app_list_nudge_controller_.get(), a11y_announcer, /*delegate=*/this,
             /*tablet_mode=*/false));
   }
 
@@ -399,32 +410,42 @@ void AppListBubbleAppsPage::DisableFocusForShowingActiveFolder(bool disabled) {
 void AppListBubbleAppsPage::UpdateForNewSortingOrder(
     const absl::optional<AppListSortOrder>& new_order,
     bool animate,
-    base::OnceClosure update_position_closure) {
+    base::OnceClosure update_position_closure,
+    base::OnceClosure animation_done_closure) {
   DCHECK(features::IsLauncherAppSortEnabled());
   DCHECK_EQ(animate, !update_position_closure.is_null());
+  DCHECK(!animation_done_closure || animate);
 
-  // A11y announcements must happen before animations, otherwise "Search your
-  // apps..." is spoken first because focus moves immediately to the search box.
-  if (new_order)
+  // A11y announcements must happen before animations, otherwise the undo
+  // guidance is spoken first because focus moves immediately to the undo button
+  // on the toast. Note that when `new_order` is null, `animate` was set to true
+  // only if the sort was reverted.
+  if (new_order) {
     toast_container_->AnnounceSortOrder(*new_order);
+  } else if (animate) {
+    toast_container_->AnnounceUndoSort();
+  }
 
   if (!animate) {
     // Reordering is not required so update the undo toast and return early.
     app_list_nudge_controller_->OnTemporarySortOrderChanged(new_order);
     toast_container_->OnTemporarySortOrderChanged(new_order);
+    HandleFocusAfterSort();
     return;
   }
 
   // Abort the old reorder animation if any before closure update to avoid data
-  // races on the the closure.
+  // races on closures.
   scrollable_apps_grid_view_->MaybeAbortReorderAnimation();
   DCHECK(!update_position_closure_);
   update_position_closure_ = std::move(update_position_closure);
+  DCHECK(!reorder_animation_done_closure_);
+  reorder_animation_done_closure_ = std::move(animation_done_closure);
 
   views::AnimationBuilder animation_builder =
       scrollable_apps_grid_view_->FadeOutVisibleItemsForReorder(
           base::BindRepeating(
-              &AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded,
+              &AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEnded,
               weak_factory_.GetWeakPtr(), new_order));
 
   // Configure the toast fade out animation if the toast is going to be hidden.
@@ -516,48 +537,37 @@ void AppListBubbleAppsPage::MoveFocusUpFromRecents() {
 }
 
 void AppListBubbleAppsPage::MoveFocusDownFromRecents(int column) {
-  // When showing the sort undo toast, default to the default behavior that
-  // moves focus to the toast.
-  if (toast_container_ && toast_container_->is_toast_visible() &&
-      toast_container_->current_toast() ==
-          AppListToastContainerView::ToastType::kReorderUndo) {
-    views::View* last_recent =
-        recent_apps_->GetItemViewAt(recent_apps_->GetItemViewCount() - 1);
-    views::View* next_view = GetFocusManager()->GetNextFocusableView(
-        last_recent, GetWidget(), /*reverse=*/false, /*dont_loop=*/false);
-    DCHECK(next_view);
-    next_view->RequestFocus();
+  // Check if the `toast_container_` can handle the focus.
+  if (toast_container_ && toast_container_->HandleFocus(column))
     return;
-  }
 
-  int top_level_item_count =
-      scrollable_apps_grid_view_->view_model()->view_size();
-  if (top_level_item_count <= 0)
-    return;
-  // Attempt to focus the item at `column` in the first row, or the last item if
-  // there aren't enough items. This could happen if the user's apps are in a
-  // small number of folders.
-  int index = std::min(column, top_level_item_count - 1);
-  AppListItemView* item = scrollable_apps_grid_view_->GetItemViewAt(index);
-  DCHECK(item);
-  item->RequestFocus();
+  HandleMovingFocusToAppsGrid(column);
+}
+
+void AppListBubbleAppsPage::MoveFocusUpFromToast(int column) {
+  HandleMovingFocusToRecents(column);
+}
+
+void AppListBubbleAppsPage::MoveFocusDownFromToast(int column) {
+  HandleMovingFocusToAppsGrid(column);
 }
 
 bool AppListBubbleAppsPage::MoveFocusUpFromAppsGrid(int column) {
   DVLOG(1) << __FUNCTION__;
-  // When showing the sort undo toast, default to the default behavior that
-  // moves focus to the toast.
-  if (toast_container_ && toast_container_->is_toast_visible() &&
-      toast_container_->current_toast() ==
-          AppListToastContainerView::ToastType::kReorderUndo) {
-    return false;
-  }
+  // Check if the `toast_container_` can handle the focus.
+  if (toast_container_ && toast_container_->HandleFocus(column))
+    return true;
 
+  return HandleMovingFocusToRecents(column);
+}
+
+bool AppListBubbleAppsPage::HandleMovingFocusToRecents(int column) {
   const int recent_app_count = recent_apps_->GetItemViewCount();
   // If there aren't any recent apps, don't change focus here. Fall back to the
   // app grid's default behavior.
   if (!recent_apps_->GetVisible() || recent_app_count <= 0)
     return false;
+
   // Attempt to focus the item at `column`, or the last item if there aren't
   // enough items.
   int index = std::min(column, recent_app_count - 1);
@@ -565,6 +575,21 @@ bool AppListBubbleAppsPage::MoveFocusUpFromAppsGrid(int column) {
   DCHECK(item);
   item->RequestFocus();
   return true;
+}
+
+void AppListBubbleAppsPage::HandleMovingFocusToAppsGrid(int column) {
+  int top_level_item_count =
+      scrollable_apps_grid_view_->view_model()->view_size();
+  if (top_level_item_count <= 0)
+    return;
+
+  // Attempt to focus the item at `column` in the first row, or the last item if
+  // there aren't enough items. This could happen if the user's apps are in a
+  // small number of folders.
+  int index = std::min(column, top_level_item_count - 1);
+  AppListItemView* item = scrollable_apps_grid_view_->GetItemViewAt(index);
+  DCHECK(item);
+  item->RequestFocus();
 }
 
 ui::Layer* AppListBubbleAppsPage::GetPageAnimationLayerForTest() {
@@ -594,7 +619,23 @@ void AppListBubbleAppsPage::OnAppsGridViewAnimationEnded() {
   gradient_helper_->UpdateGradientZone();
 }
 
-void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded(
+void AppListBubbleAppsPage::HandleFocusAfterSort() {
+  // As the sort update on AppListBubbleAppsPage can be called in both clamshell
+  // mode and tablet mode, return early if it's currently in tablet mode because
+  // the AppListBubbleAppsPage isn't visible.
+  if (view_delegate_->IsInTabletMode())
+    return;
+
+  // If the sort is done and the toast is visible, request the focus on the
+  // undo button on the toast. Otherwise request the focus on the search box.
+  if (toast_container_->is_toast_visible()) {
+    toast_container_->toast_view()->toast_button()->RequestFocus();
+  } else {
+    search_box_->search_box()->RequestFocus();
+  }
+}
+
+void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEnded(
     const absl::optional<AppListSortOrder>& new_order,
     bool aborted) {
   // Update item positions after the fade out animation but before the fade in
@@ -617,6 +658,7 @@ void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded(
   const bool old_toast_visible = toast_container_->is_toast_visible();
 
   toast_container_->OnTemporarySortOrderChanged(new_order);
+  HandleFocusAfterSort();
   const bool target_toast_visible = toast_container_->is_toast_visible();
 
   // If there is a layer created for fading out `toast_container_`, destroy
@@ -685,6 +727,9 @@ void AppListBubbleAppsPage::OnAppsGridViewFadeInAnimationEnded(bool aborted) {
 
 void AppListBubbleAppsPage::OnReorderAnimationEnded() {
   update_position_closure_.Reset();
+
+  if (reorder_animation_done_closure_)
+    std::move(reorder_animation_done_closure_).Run();
 }
 
 void AppListBubbleAppsPage::SlideViewIntoPosition(views::View* view,

@@ -9,8 +9,14 @@
 #include <memory>
 
 #include "ash/components/login/auth/user_context.h"
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device.h"
+#include "ash/components/multidevice/remote_device_cache.h"
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
+#include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/smartlock_state.h"
 #include "base/base64url.h"
@@ -31,19 +37,11 @@
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device.h"
-#include "chromeos/components/multidevice/remote_device_cache.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/tpm/tpm_token_loader.h"
 
 namespace ash {
-namespace {
 
-// TODO(https://crbug.com/1164001): remove after moving to ash::
-using ::chromeos::TPMTokenLoader;
+namespace {
 
 // The maximum allowed backoff interval when waiting for cryptohome to start.
 uint32_t kMaxCryptohomeBackoffIntervalMs = 10000u;
@@ -157,8 +155,7 @@ std::vector<multidevice::BeaconSeed> DeserializeBeaconSeeds(
       continue;
     }
 
-    beacon_seeds.push_back(
-        chromeos::multidevice::FromCryptAuthSeed(beacon_seed));
+    beacon_seeds.push_back(multidevice::FromCryptAuthSeed(beacon_seed));
   }
 
   PA_LOG(VERBOSE) << "Deserialized " << beacon_seeds.size() << " BeaconSeeds.";
@@ -320,7 +317,6 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
   remote_device_cache_.reset();
   challenge_wrapper_.reset();
   pref_manager_.reset();
-  StopFeatureUsageMetrics();
 
   weak_ptr_factory_.InvalidateWeakPtrs();
   user_data_.clear();
@@ -331,10 +327,6 @@ bool EasyUnlockServiceSignin::IsAllowedInternal() const {
          !LoginState::Get()->IsUserLoggedIn() &&
          (pref_manager_ && pref_manager_->IsEasyUnlockAllowed() &&
           pref_manager_->IsChromeOSLoginAllowed());
-}
-
-bool EasyUnlockServiceSignin::IsEligible() const {
-  return pref_manager_ && pref_manager_->IsSmartLockEligible();
 }
 
 bool EasyUnlockServiceSignin::IsEnabled() const {
@@ -414,7 +406,6 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   SetProximityAuthDevices(account_id_, multidevice::RemoteDeviceRefList(),
                           absl::nullopt /* local_device */);
   ResetSmartLockState();
-  StartFeatureUsageMetrics();
 
   // Changing the "Active User" above changes the return values of IsAllowed()
   // and IsEnabled() below.

@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_document_transition_set_element_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -171,6 +172,7 @@ ScriptPromise DocumentTransition::start(ScriptState* script_state,
   // callbacks from previous requests.
   last_prepare_sequence_id_ = next_sequence_id_++;
 
+  style_tracker_->AddSharedElementsFromCSS();
   bool capture_succeeded = style_tracker_->Capture();
   if (!capture_succeeded) {
     exception_state.ThrowDOMException(
@@ -311,6 +313,7 @@ void DocumentTransition::NotifyPostCaptureCallbackResolved(bool success) {
     return;
   }
 
+  style_tracker_->AddSharedElementsFromCSS();
   bool start_succeeded = style_tracker_->Start();
   if (!start_succeeded) {
     CancelPendingTransition(kAbortedFromInvalidConfigAtStart);
@@ -345,14 +348,17 @@ bool DocumentTransition::IsTransitionParticipant(
 PaintPropertyChangeType DocumentTransition::UpdateEffect(
     const LayoutObject& object,
     const EffectPaintPropertyNodeOrAlias& current_effect,
+    const ClipPaintPropertyNodeOrAlias* current_clip,
     const TransformPaintPropertyNodeOrAlias* current_transform) {
   DCHECK(IsTransitionParticipant(object));
   DCHECK(current_transform);
+  DCHECK(current_clip);
 
   EffectPaintPropertyNode::State state;
   state.direct_compositing_reasons =
       CompositingReason::kDocumentTransitionSharedElement;
   state.local_transform_space = current_transform;
+  state.output_clip = current_clip;
   state.document_transition_shared_element_id =
       DocumentTransitionSharedElementId(document_tag_);
   state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
@@ -392,18 +398,18 @@ void DocumentTransition::VerifySharedElements() {
     style_tracker_->VerifySharedElements();
 }
 
-void DocumentTransition::RunPostLayoutSteps() {
+void DocumentTransition::RunPostPrePaintSteps() {
   DCHECK(document_->Lifecycle().GetState() >=
-         DocumentLifecycle::LifecycleState::kLayoutClean);
+         DocumentLifecycle::LifecycleState::kPrePaintClean);
 
   if (style_tracker_) {
-    style_tracker_->RunPostLayoutSteps();
+    style_tracker_->RunPostPrePaintSteps();
     // If we don't have active animations, schedule a frame to end the
     // transition. Note that if we don't have start_promise_resolver_ we don't
     // need to finish the animation, since it should already be done. See the
     // DCHECK below.
     //
-    // TODO(vmpstr): Note that RunPostLayoutSteps can happen multiple times
+    // TODO(vmpstr): Note that RunPostPrePaintSteps can happen multiple times
     // during a lifecycle update. These checks don't have to happen here, and
     // could perhaps be moved to DidFinishLifecycleUpdate.
     //
@@ -521,7 +527,8 @@ void DocumentTransition::ResetScriptState(const char* abort_message) {
 
   if (start_promise_resolver_) {
     if (abort_message) {
-      start_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+      start_promise_resolver_->Reject(V8ThrowDOMException::CreateOrDie(
+          start_promise_resolver_->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kAbortError, abort_message));
     } else {
       start_promise_resolver_->Detach();

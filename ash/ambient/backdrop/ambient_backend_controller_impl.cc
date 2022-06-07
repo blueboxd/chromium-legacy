@@ -18,7 +18,6 @@
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/barrier_closure.h"
@@ -41,8 +40,6 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -279,14 +276,6 @@ bool IsArtSettingVisible(const ArtSetting& art_setting) {
   return false;
 }
 
-gfx::Size GetDisplaySizeInPixel() {
-  auto* ambient_container = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(), kShellWindowId_AmbientModeContainer);
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestView(ambient_container)
-      .GetSizeInPixel();
-}
-
 }  // namespace
 
 // Helper class for handling Backdrop service requests.
@@ -339,12 +328,11 @@ class BackdropURLLoader {
       response_code = simple_loader_->ResponseInfo()->headers->response_code();
     }
 
-    DVLOG(2) << "Downloading Backdrop proto failed with error code: "
-             << response_code << " with network error"
-             << simple_loader_->NetError();
+    LOG(ERROR) << "Downloading Backdrop proto failed with error code: "
+               << response_code << " with network error"
+               << simple_loader_->NetError();
     simple_loader_.reset();
     std::move(callback).Run(std::make_unique<std::string>());
-    return;
   }
 
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
@@ -360,10 +348,12 @@ AmbientBackendControllerImpl::~AmbientBackendControllerImpl() = default;
 
 void AmbientBackendControllerImpl::FetchScreenUpdateInfo(
     int num_topics,
+    const gfx::Size& screen_size,
     OnScreenUpdateInfoFetchedCallback callback) {
   Shell::Get()->ambient_controller()->RequestAccessToken(base::BindOnce(
       &AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal,
-      weak_factory_.GetWeakPtr(), num_topics, std::move(callback)));
+      weak_factory_.GetWeakPtr(), num_topics, screen_size,
+      std::move(callback)));
 }
 
 void AmbientBackendControllerImpl::GetSettings(GetSettingsCallback callback) {
@@ -453,11 +443,12 @@ AmbientBackendControllerImpl::GetBackupPhotoUrls() const {
 
 void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(
     int num_topics,
+    const gfx::Size& screen_size,
     OnScreenUpdateInfoFetchedCallback callback,
     const std::string& gaia_id,
     const std::string& access_token) {
   if (gaia_id.empty() || access_token.empty()) {
-    DVLOG(2) << "Failed to fetch access token";
+    LOG(ERROR) << "Failed to fetch access token for ScreenUpdate";
     // Returns an empty instance to indicate the failure.
     std::move(callback).Run(ash::ScreenUpdate());
     return;
@@ -466,24 +457,16 @@ void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(
   std::string client_id = GetClientId();
   BackdropClientConfig::Request request =
       backdrop_client_config_.CreateFetchScreenUpdateRequest(
-          num_topics, gaia_id, access_token, client_id,
-          /*use_new_url=*/features::IsAmbientModeNewUrlEnabled());
+          num_topics, gaia_id, access_token, client_id);
   auto resource_request = CreateResourceRequest(request);
 
-  // For portrait photos, the server returns image of half requested width.
-  // When the device is in portrait mode, where only shows one portrait photo,
-  // it will cause unnecessary scaling. To reduce this effect, always requesting
-  // the landscape display size.
-  gfx::Size display_size_px = GetDisplaySizeInPixel();
-  const int width = std::max(display_size_px.width(), display_size_px.height());
-  const int height =
-      std::min(display_size_px.width(), display_size_px.height());
+  DCHECK(!screen_size.IsEmpty());
   resource_request->url =
       net::AppendQueryParameter(resource_request->url, "device-screen-width",
-                                base::NumberToString(width));
+                                base::NumberToString(screen_size.width()));
   resource_request->url =
       net::AppendQueryParameter(resource_request->url, "device-screen-height",
-                                base::NumberToString(height));
+                                base::NumberToString(screen_size.height()));
 
   auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();
   auto* loader_ptr = backdrop_url_loader.get();
@@ -618,7 +601,7 @@ void AmbientBackendControllerImpl::FetchPersonalAlbumsInternal(
   BackdropClientConfig::Request request =
       backdrop_client_config_.CreateFetchPersonalAlbumsRequest(
           banner_width, banner_height, num_albums, resume_token, gaia_id,
-          access_token, features::IsAmbientModeNewUrlEnabled());
+          access_token);
   std::unique_ptr<network::ResourceRequest> resource_request =
       CreateResourceRequest(request);
   auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();

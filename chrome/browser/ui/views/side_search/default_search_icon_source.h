@@ -10,6 +10,7 @@
 #include "base/scoped_observation.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
+#include "url/gurl.h"
 
 class Browser;
 

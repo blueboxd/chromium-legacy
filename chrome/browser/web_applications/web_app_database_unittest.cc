@@ -252,7 +252,7 @@ TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   const WebApp* app = registrar().GetAppById(app_id);
   EXPECT_EQ(app_id, app->app_id());
   EXPECT_EQ(start_url, app->start_url());
-  EXPECT_EQ(name, app->name());
+  EXPECT_EQ(name, app->untranslated_name());
   EXPECT_EQ(user_display_mode, app->user_display_mode());
   EXPECT_EQ(is_locally_installed, app->is_locally_installed());
   EXPECT_TRUE(app->IsSynced());
@@ -289,15 +289,16 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
     app->SetWebAppChromeOsData(absl::make_optional<WebAppChromeOsData>());
 
   EXPECT_FALSE(app->HasAnySources());
-  for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
-    app->AddSource(static_cast<Source::Type>(i));
+  for (int i = WebAppManagement::kMinValue; i <= WebAppManagement::kMaxValue;
+       ++i) {
+    app->AddSource(static_cast<WebAppManagement::Type>(i));
     EXPECT_TRUE(app->HasAnySources());
   }
 
   // Let optional fields be empty:
   EXPECT_EQ(app->display_mode(), DisplayMode::kUndefined);
   EXPECT_TRUE(app->display_mode_override().empty());
-  EXPECT_TRUE(app->description().empty());
+  EXPECT_TRUE(app->untranslated_description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_FALSE(app->dark_mode_theme_color().has_value());
@@ -341,7 +342,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   // Required fields were serialized:
   EXPECT_EQ(app_id, app_copy->app_id());
   EXPECT_EQ(start_url, app_copy->start_url());
-  EXPECT_EQ(name, app_copy->name());
+  EXPECT_EQ(name, app_copy->untranslated_name());
   EXPECT_EQ(user_display_mode, app_copy->user_display_mode());
   EXPECT_FALSE(app_copy->is_locally_installed());
 
@@ -356,16 +357,17 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
     EXPECT_FALSE(chromeos_data.has_value());
   }
 
-  for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
+  for (int i = WebAppManagement::kMinValue; i <= WebAppManagement::kMaxValue;
+       ++i) {
     EXPECT_TRUE(app_copy->HasAnySources());
-    app_copy->RemoveSource(static_cast<Source::Type>(i));
+    app_copy->RemoveSource(static_cast<WebAppManagement::Type>(i));
   }
   EXPECT_FALSE(app_copy->HasAnySources());
 
   // No optional fields.
   EXPECT_EQ(app_copy->display_mode(), DisplayMode::kUndefined);
   EXPECT_TRUE(app_copy->display_mode_override().empty());
-  EXPECT_TRUE(app_copy->description().empty());
+  EXPECT_TRUE(app_copy->untranslated_description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
   EXPECT_FALSE(app_copy->dark_mode_theme_color().has_value());
@@ -445,6 +447,65 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
               app_copy->manifest_icons()[i - 1].square_size_px);
   }
   EXPECT_FALSE(app_copy->is_generated_icon());
+}
+
+TEST_F(WebAppDatabaseTest, MigrateOldLaunchHandlerSyntax) {
+  std::unique_ptr<WebApp> base_app =
+      test::CreateRandomWebApp(GURL("https://example.com"), /*seed=*/0);
+  std::unique_ptr<WebAppProto> base_proto =
+      WebAppDatabase::CreateWebAppProto(*base_app);
+
+  // "launch_handler": {
+  //   "route_to": "existing-client",
+  //   "navigate_existing_client": "always"
+  // }
+  // ->
+  // "launch_handler": {
+  //   "route_to": "existing-client-navigate"
+  // }
+  WebAppProto old_navigate_proto(*base_proto);
+  old_navigate_proto.mutable_launch_handler()->set_route_to(
+      LaunchHandlerProto_RouteTo_DEPRECATED_EXISTING_CLIENT);
+  old_navigate_proto.mutable_launch_handler()->set_navigate_existing_client(
+      LaunchHandlerProto_NavigateExistingClient_ALWAYS);
+
+  std::unique_ptr<WebApp> new_navigate_app =
+      WebAppDatabase::CreateWebApp(old_navigate_proto);
+  EXPECT_EQ(new_navigate_app->launch_handler(),
+            (LaunchHandler{LaunchHandler::RouteTo::kExistingClientNavigate}));
+
+  std::unique_ptr<WebAppProto> new_navigate_proto =
+      WebAppDatabase::CreateWebAppProto(*new_navigate_app);
+  EXPECT_EQ(new_navigate_proto->launch_handler().route_to(),
+            LaunchHandlerProto_RouteTo_EXISTING_CLIENT_NAVIGATE);
+  EXPECT_EQ(new_navigate_proto->launch_handler().navigate_existing_client(),
+            LaunchHandlerProto_NavigateExistingClient_UNSPECIFIED_NAVIGATE);
+
+  // "launch_handler": {
+  //   "route_to": "existing-client",
+  //   "navigate_existing_client": "never"
+  // }
+  // ->
+  // "launch_handler": {
+  //   "route_to": "existing-client-retain"
+  // }
+  WebAppProto old_retain_proto(*base_proto);
+  old_retain_proto.mutable_launch_handler()->set_route_to(
+      LaunchHandlerProto_RouteTo_DEPRECATED_EXISTING_CLIENT);
+  old_retain_proto.mutable_launch_handler()->set_navigate_existing_client(
+      LaunchHandlerProto_NavigateExistingClient_NEVER);
+
+  std::unique_ptr<WebApp> new_retain_app =
+      WebAppDatabase::CreateWebApp(old_retain_proto);
+  EXPECT_EQ(new_retain_app->launch_handler(),
+            (LaunchHandler{LaunchHandler::RouteTo::kExistingClientRetain}));
+
+  std::unique_ptr<WebAppProto> new_retain_proto =
+      WebAppDatabase::CreateWebAppProto(*new_retain_app);
+  EXPECT_EQ(new_retain_proto->launch_handler().route_to(),
+            LaunchHandlerProto_RouteTo_EXISTING_CLIENT_RETAIN);
+  EXPECT_EQ(new_retain_proto->launch_handler().navigate_existing_client(),
+            LaunchHandlerProto_NavigateExistingClient_UNSPECIFIED_NAVIGATE);
 }
 
 }  // namespace web_app

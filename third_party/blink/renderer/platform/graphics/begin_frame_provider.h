@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/notreached.h"
 #include "components/power_scheduler/power_mode_voter.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -20,10 +21,7 @@
 
 namespace blink {
 
-struct PLATFORM_EXPORT BeginFrameProviderParams final {
-  viz::FrameSinkId parent_frame_sink_id;
-  viz::FrameSinkId frame_sink_id;
-};
+struct BeginFrameProviderParams;
 
 class PLATFORM_EXPORT BeginFrameProviderClient : public GarbageCollectedMixin {
  public:
@@ -36,10 +34,10 @@ class PLATFORM_EXPORT BeginFrameProvider
       public viz::mojom::blink::CompositorFrameSinkClient,
       public mojom::blink::EmbeddedFrameSinkClient {
  public:
-  explicit BeginFrameProvider(
+  BeginFrameProvider(
       const BeginFrameProviderParams& begin_frame_provider_params,
-      BeginFrameProviderClient*,
-      ContextLifecycleNotifier*);
+      BeginFrameProviderClient* client,
+      ContextLifecycleNotifier* context);
 
   void CreateCompositorFrameSinkIfNeeded();
 

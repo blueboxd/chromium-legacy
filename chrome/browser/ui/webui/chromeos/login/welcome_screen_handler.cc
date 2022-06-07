@@ -54,11 +54,9 @@ constexpr StaticOobeScreenId WelcomeView::kScreenId;
 
 // WelcomeScreenHandler, public: -----------------------------------------------
 
-WelcomeScreenHandler::WelcomeScreenHandler(JSCallsContainer* js_calls_container,
-                                           CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      core_oobe_view_(core_oobe_view) {
-  set_user_acted_method_path("login.WelcomeScreen.userActed");
+WelcomeScreenHandler::WelcomeScreenHandler(CoreOobeView* core_oobe_view)
+    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
+  set_user_acted_method_path_deprecated("login.WelcomeScreen.userActed");
   DCHECK(core_oobe_view_);
 
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
@@ -76,7 +74,7 @@ WelcomeScreenHandler::~WelcomeScreenHandler() {
 // WelcomeScreenHandler, WelcomeScreenView implementation: ---------------------
 
 void WelcomeScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
@@ -89,29 +87,28 @@ void WelcomeScreenHandler::Show() {
     return;
   }
 
-  base::DictionaryValue welcome_screen_params;
-  welcome_screen_params.SetBoolKey(
-      "isDeveloperMode", base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             chromeos::switches::kSystemDevMode));
-  ShowScreenWithData(kScreenId, &welcome_screen_params);
+  base::Value::Dict welcome_screen_params;
+  welcome_screen_params.Set("isDeveloperMode",
+                            base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                chromeos::switches::kSystemDevMode));
+  ShowInWebUI(std::move(welcome_screen_params));
 }
 
 void WelcomeScreenHandler::Hide() {}
 
 void WelcomeScreenHandler::Bind(WelcomeScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void WelcomeScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void WelcomeScreenHandler::ReloadLocalizedContent() {
-  base::DictionaryValue localized_strings;
-  GetOobeUI()->GetLocalizedStrings(&localized_strings);
-  core_oobe_view_->ReloadContent(localized_strings);
+  base::Value::Dict localized_strings = GetOobeUI()->GetLocalizedStrings();
+  core_oobe_view_->ReloadContent(std::move(localized_strings));
 }
 
 void WelcomeScreenHandler::SetInputMethodId(
@@ -251,8 +248,7 @@ void WelcomeScreenHandler::DeclareJSCallbacks() {
               &WelcomeScreenHandler::HandleRecordChromeVoxHintSpokenSuccess);
 }
 
-void WelcomeScreenHandler::GetAdditionalParameters(
-    base::DictionaryValue* dict) {
+void WelcomeScreenHandler::GetAdditionalParameters(base::Value::Dict* dict) {
   // GetAdditionalParameters() is called when OOBE language is updated.
   // This happens in two different cases:
   //
@@ -292,16 +288,15 @@ void WelcomeScreenHandler::GetAdditionalParameters(
   if (language_list.GetListDeprecated().empty())
     language_list = std::move(*GetMinimalUILanguageList());
 
-  dict->SetKey("languageList", std::move(language_list));
-  dict->SetKey(
-      "inputMethodsList",
-      GetAndActivateLoginKeyboardLayouts(
-          application_locale, selected_input_method, input_method_manager));
-  dict->SetKey("timezoneList", GetTimezoneList());
-  dict->SetKey("demoModeCountryList", DemoSession::GetCountryList());
+  dict->Set("languageList", std::move(language_list));
+  dict->Set("inputMethodsList", GetAndActivateLoginKeyboardLayouts(
+                                    application_locale, selected_input_method,
+                                    input_method_manager));
+  dict->Set("timezoneList", GetTimezoneList());
+  dict->Set("demoModeCountryList", DemoSession::GetCountryList());
 }
 
-void WelcomeScreenHandler::Initialize() {
+void WelcomeScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
@@ -317,7 +312,7 @@ void WelcomeScreenHandler::Initialize() {
 
 void WelcomeScreenHandler::HandleSetLocaleId(const std::string& locale_id) {
   if (screen_)
-    screen_->SetApplicationLocale(locale_id);
+    screen_->SetApplicationLocale(locale_id, /*is_from_ui*/ true);
 }
 
 void WelcomeScreenHandler::HandleSetInputMethodId(
@@ -381,7 +376,7 @@ void WelcomeScreenHandler::UpdateA11yState() {
                        AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
   if (screen_ && AccessibilityManager::Get()->IsSpokenFeedbackEnabled())
     CancelChromeVoxHintIdleDetection();
-  CallJS("login.WelcomeScreen.refreshA11yInfo", a11y_info);
+  CallJS("login.WelcomeScreen.refreshA11yInfo", std::move(a11y_info));
 }
 
 // static

@@ -2,19 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/gpu/args.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("stable_video_decoder") {
+  generate_java = true
+
   sources = [
     "stable_video_decoder.mojom",
     "stable_video_decoder_types.mojom",
   ]
 
+  enabled_features = []
+  if (is_linux || is_chromeos_ash) {
+    enabled_features += [ "is_linux_or_chromeos_ash" ]
+  }
+
   public_deps = [
     ":native_pixmap_handle",
-    "//media/mojo/mojom",
+    "//media/mojo/mojom:encryption_pattern",
     "//mojo/public/mojom/base",
+    "//sandbox/policy/mojom",
     "//ui/gfx/geometry/mojom",
+    "//ui/gfx/mojom",
   ]
 
   cpp_typemaps = [
@@ -43,6 +53,11 @@ mojom("stable_video_decoder") {
         {
           mojom = "media.stable.mojom.ColorVolumeMetadata"
           cpp = "::gfx::ColorVolumeMetadata"
+        },
+        {
+          mojom = "media.stable.mojom.DecoderBuffer"
+          cpp = "::scoped_refptr<::media::DecoderBuffer>"
+          nullable_is_same_type = true
         },
         {
           mojom = "media.stable.mojom.DecryptConfig"
@@ -123,32 +138,49 @@ mojom("stable_video_decoder") {
       ]
       traits_headers = [ "stable_video_decoder_types_mojom_traits.h" ]
       traits_sources = [ "stable_video_decoder_types_mojom_traits.cc" ]
-      traits_public_deps = [ "//media/gpu" ]
+      traits_deps = [
+        "//gpu/ipc/common",
+        "//media/gpu:buffer_validation",
+      ]
+
+      if (use_vaapi) {
+        traits_deps += [ "//media/gpu/vaapi:vaapi_status" ]
+      }
+
+      if (use_v4l2_codec) {
+        traits_deps += [ "//media/gpu/v4l2:v4l2_status" ]
+      }
     },
   ]
-
-  cpp_proxy_target = "//media/mojo/services"
-  export_class_attribute = "MEDIA_MOJO_EXPORT"
-  export_define = "IS_MEDIA_MOJO_IMPL"
-  export_header = "media/mojo/services/media_mojo_export.h"
 }
 
 mojom("native_pixmap_handle") {
+  generate_java = true
+
   sources = [ "native_pixmap_handle.mojom" ]
 
-  public_deps = [ "//ui/gfx/mojom:native_handle_types" ]
-
-  cpp_typemaps = [
-    {
-      types = [
-        {
-          mojom = "media.stable.mojom.NativePixmapHandle"
-          cpp = "::gfx::NativePixmapHandle"
-          move_only = true
-        },
-      ]
-      traits_headers = [ "native_pixmap_handle_mojom_traits.h" ]
-      traits_sources = [ "native_pixmap_handle_mojom_traits.cc" ]
-    },
-  ]
+  if (is_linux || is_chromeos) {
+    cpp_typemaps = [
+      {
+        types = [
+          {
+            mojom = "media.stable.mojom.NativePixmapHandle"
+            cpp = "::gfx::NativePixmapHandle"
+            move_only = true
+          },
+          {
+            mojom = "media.stable.mojom.NativePixmapPlane"
+            cpp = "::gfx::NativePixmapPlane"
+            move_only = true
+          },
+        ]
+        traits_headers = [
+          "native_pixmap_handle_mojom_traits.h",
+          "//ui/gfx/native_pixmap_handle.h",
+        ]
+        traits_sources = [ "native_pixmap_handle_mojom_traits.cc" ]
+        traits_public_deps = [ "//ui/gfx:memory_buffer" ]
+      },
+    ]
+  }
 }

@@ -188,7 +188,7 @@ class DeprecationInfo final {
   static const DeprecationInfo WithDetails(const String& id,
                                            const Milestone milestone,
                                            const String& details) {
-    return DeprecationInfo(id, details);
+    return DeprecationInfo(DeprecationIssueType::kUntranslated, id, details);
   }
 
   // Use this to inform developers of any `details` for the deprecation with
@@ -200,7 +200,7 @@ class DeprecationInfo final {
       const String& details,
       const String& chrome_status_id) {
     return DeprecationInfo(
-        id,
+        DeprecationIssueType::kUntranslated, id,
         String::Format(
             "%s See https://www.chromestatus.com/feature/%s for more details.",
             details.Ascii().c_str(), chrome_status_id.Ascii().c_str()));
@@ -213,7 +213,7 @@ class DeprecationInfo final {
       const String& feature,
       const String& replacement) {
     return DeprecationInfo(
-        id,
+        DeprecationIssueType::kUntranslated, id,
         String::Format("%s is deprecated. Please use %s instead.",
                        feature.Ascii().c_str(), replacement.Ascii().c_str()));
   }
@@ -226,7 +226,7 @@ class DeprecationInfo final {
       const String& feature,
       const String& chrome_status_id) {
     return DeprecationInfo(
-        id,
+        DeprecationIssueType::kUntranslated, id,
         String::Format(
             "%s is deprecated and will be removed in %s. See "
             "https://www.chromestatus.com/feature/%s for more details.",
@@ -243,7 +243,7 @@ class DeprecationInfo final {
       const String& replacement,
       const String& chrome_status_id) {
     return DeprecationInfo(
-        id,
+        DeprecationIssueType::kUntranslated, id,
         String::Format(
             "%s is deprecated and will be removed in %s. Please use %s "
             "instead. See https://www.chromestatus.com/feature/%s for more "
@@ -252,14 +252,26 @@ class DeprecationInfo final {
             replacement.Ascii().c_str(), chrome_status_id.Ascii().c_str()));
   }
 
+  static const DeprecationInfo WithTranslation(
+      const DeprecationIssueType& type) {
+    return DeprecationInfo(type, String(), String());
+  }
+
+  const DeprecationIssueType type_;
   const String id_;
   const String message_;
 
  private:
-  DeprecationInfo(const String& id, const String& message)
-      : id_(id), message_(message) {}
+  DeprecationInfo(const DeprecationIssueType& type,
+                  const String& id,
+                  const String& message)
+      : type_(type), id_(id), message_(message) {}
 };
 
+// TODO(crbug/1264960): Consider migrating this switch statement to
+// third_party/blink/renderer/core/inspector/inspector_audits_issue.h to stop
+// passing around protocol::Audits::DeprecationIssueType once all deprecations
+// are translated.
 const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
   switch (feature) {
     // Quota
@@ -557,26 +569,12 @@ const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
           "RTCPeerConnectionSdpSemanticsPlanB", kM93,
           "Plan B SDP semantics, which is used when constructing an "
           "RTCPeerConnection with {sdpSemantics:\"plan-b\"}, is a legacy "
-          "version of the Session Description Protocol that has severe "
-          "compatibility issues on modern browsers. The standardized SDP "
-          "format, \"unified-plan\", has been used by default since M72 "
-          "(January, 2019). Dropping support for Plan B is targeted for M93, "
-          "but it's possible to register for a Deprecation Trial in order to "
-          "extend the Plan B deprecation deadline for a limited amount of "
-          "time.",
+          "non-standard version of the Session Description Protocol that has "
+          "been permanently deleted from the Web Platform. It is still "
+          "available when building with IS_FUCHSIA, but we intend to delete it "
+          "as soon as possible. Stop depending on it. See "
+          "https://crbug.com/1302249 for status.",
           "5823036655665152");
-
-    case WebFeature::kRTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial:
-      return DeprecationInfo::WithDetails(
-          "RTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial", kM96,
-          "Plan B SDP semantics, which is used when constructing an "
-          "RTCPeerConnection with {sdpSemantics:\"plan-b\"}, is a legacy "
-          "version of the Session Description Protocol that has severe "
-          "compatibility issues on modern browsers. The standardized SDP "
-          "format, \"unified-plan\", has been used by default since M72 "
-          "(January, 2019). Dropping support for Plan B is targeted for M93, "
-          "but this page may extend the deadline until the End Date of the "
-          "'RTCPeerConnection Plan B SDP Semantics' deprecation trial.");
 
     case WebFeature::kAddressSpacePublicNonSecureContextEmbeddedPrivate:
     case WebFeature::kAddressSpacePublicNonSecureContextEmbeddedLocal:
@@ -701,6 +699,10 @@ const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
           "WebFeature::kEventPath", kM109, "'Event.path'",
           "'Event.composedPath()'", "5726124632965120");
 
+    case WebFeature::kDeprecationExample:
+      return DeprecationInfo::WithTranslation(
+          DeprecationIssueType::kDeprecationExample);
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return DeprecationInfo::WithDetails("NotDeprecated", kUnknown, String());
@@ -780,8 +782,8 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
   const DeprecationInfo info = GetDeprecationInfo(feature);
 
   // Send the deprecation message as a DevTools issue.
-  DCHECK(!info.message_.IsEmpty());
-  AuditsIssue::ReportDeprecationIssue(context, info.message_, info.id_);
+  AuditsIssue::ReportDeprecationIssue(context, info.type_, info.message_,
+                                      info.id_);
 
   Report* report = CreateReportInternal(context->Url(), info);
 

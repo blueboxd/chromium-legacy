@@ -135,7 +135,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ComputersCount" units="Computers"
-    expires_after="2022-05-01">
+    expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -147,7 +147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Create" enum="FileDialogType"
-    expires_after="2022-04-03">
+    expires_after="2023-04-15">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -199,7 +199,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DownloadDestination.IsGoogleDrive.Started"
-    enum="BooleanEnabled" expires_after="2022-04-03">
+    enum="BooleanEnabled" expires_after="2023-04-15">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -220,7 +220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectorySizeMiB" units="MiB"
-    expires_after="2022-04-17">
+    expires_after="2023-04-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -252,7 +252,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DriveDuplicateFinder.LongSearchByHash" units="ms"
-    expires_after="2022-05-01">
+    expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -296,7 +296,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Count" units="Shortcuts"
-    expires_after="2022-05-01">
+    expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -363,7 +363,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ImportController.DeviceYanked" enum="Boolean"
-    expires_after="M102">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -373,7 +373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ImportController.ImportCancelled"
-    enum="BooleanCanceled" expires_after="M102">
+    enum="BooleanCanceled" expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -432,7 +432,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntryExpandedOrCollapsed.TopLevel"
-    enum="FileManagerRootType" expires_after="2022-04-10">
+    enum="FileManagerRootType" expires_after="2023-04-15">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -443,7 +443,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntrySelected.NonTopLevel"
-    enum="FileManagerRootType" expires_after="M108">
+    enum="FileManagerRootType" expires_after="2023-04-15">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -454,7 +454,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntrySelected.TopLevel"
-    enum="FileManagerRootType" expires_after="2022-04-10">
+    enum="FileManagerRootType" expires_after="2023-04-15">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -465,7 +465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.Cancelled" enum="BooleanCanceled"
-    expires_after="2022-04-24">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -485,7 +485,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.ErrorCount" units="count"
-    expires_after="2022-04-24">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -494,7 +494,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.ImportCount" units="count"
-    expires_after="2022-04-24">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -504,7 +504,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.ImportMB" units="MBytes"
-    expires_after="2022-04-24">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -514,7 +514,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.Started" enum="BooleanAttempted"
-    expires_after="2022-04-10">
+    expires_after="M108">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -580,7 +580,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OpenFiles.RootType" enum="FileManagerRootType"
-    expires_after="2022-04-03">
+    expires_after="2023-04-15">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -590,7 +590,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.QuickView.DialogType" enum="FileDialogType"
-    expires_after="2022-04-10">
+    expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -599,28 +599,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.QuickView.FileType" enum="ViewFileType"
-    expires_after="2022-04-10">
+    expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>File types that were tried to be opened with quick view.</summary>
 </histogram>
 
 <histogram name="FileBrowser.QuickView.FileTypeOnLaunch" enum="ViewFileType"
-    expires_after="2022-05-01">
+    expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>File types that were selected when quick view is launched.</summary>
 </histogram>
 
 <histogram name="FileBrowser.QuickView.VolumeType" enum="FileManagerVolumeType"
-    expires_after="2022-04-10">
+    expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>The volume type where quick view is opened.</summary>
 </histogram>
 
 <histogram name="FileBrowser.QuickView.WayToOpen"
-    enum="FileManagerQuickViewWayToOpen" expires_after="M108">
+    enum="FileManagerQuickViewWayToOpen" expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>How quick view was opened.</summary>
@@ -686,7 +686,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.SWA.Create" enum="FileDialogType"
-    expires_after="2022-04-17">
+    expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -696,7 +696,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.SWA.PrefsMigrationStatus"
-    enum="FileManagerPrefsMigrationStatus" expires_after="2022-04-17">
+    enum="FileManagerPrefsMigrationStatus" expires_after="M113">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -760,7 +760,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingRootType" enum="FileManagerRootType"
-    expires_after="2022-04-03">
+    expires_after="2023-04-10">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -824,7 +824,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType"
-    expires_after="2022-04-03">
+    expires_after="2023-04-15">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

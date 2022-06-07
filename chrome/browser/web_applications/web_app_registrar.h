@@ -164,7 +164,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   absl::optional<std::string> GetAppManifestId(const AppId& app_id) const;
   const std::string* GetAppLaunchQueryParams(const AppId& app_id) const;
   const apps::ShareTarget* GetAppShareTarget(const AppId& app_id) const;
-  blink::mojom::CaptureLinks GetAppCaptureLinks(const AppId& app_id) const;
   blink::mojom::HandleLinks GetAppHandleLinks(const AppId& app_id) const;
   const apps::FileHandlers* GetAppFileHandlers(const AppId& app_id) const;
   const apps::ProtocolHandlers* GetAppProtocolHandlers(
@@ -417,6 +416,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
   bool registry_profile_being_deleted_ = false;
 
  private:
+  bool IsIsolated(const AppId& app_id) const;
+
   const raw_ptr<Profile> profile_;
   raw_ptr<WebAppPolicyManager> policy_manager_ = nullptr;
   raw_ptr<WebAppTranslationManager> translation_manager_ = nullptr;

@@ -36,6 +36,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -297,15 +298,23 @@ void TextAutosizer::Record(LayoutText* text) {
     MarkSuperclusterForConsistencyCheck(parent);
 }
 
-void TextAutosizer::Destroy(LayoutBlock* block) {
+void TextAutosizer::Destroy(LayoutObject* layout_object) {
   if (!page_info_.setting_enabled_ && !fingerprint_mapper_.HasFingerprints())
     return;
 
 #if DCHECK_IS_ON()
-  DCHECK(!blocks_that_have_begun_layout_.Contains(block));
+  if (layout_object->IsLayoutBlock()) {
+    DCHECK(!blocks_that_have_begun_layout_.Contains(
+        To<LayoutBlock>(layout_object)));
+  }
 #endif
 
-  if (fingerprint_mapper_.Remove(block) && first_block_to_begin_layout_) {
+  bool result = fingerprint_mapper_.Remove(layout_object);
+
+  if (layout_object->IsLayoutBlock())
+    return;
+
+  if (result && first_block_to_begin_layout_) {
     // LayoutBlock with a fingerprint was destroyed during layout.
     // Clear the cluster stack and the supercluster map to avoid stale pointers.
     // Speculative fix for http://crbug.com/369485.

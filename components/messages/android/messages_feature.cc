@@ -27,12 +27,12 @@ const base::Feature kMessagesForAndroidNotificationBlocked{
     "MessagesForAndroidNotificationBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidPasswords{
-    "MessagesForAndroidPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidPasswords", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<int>
     kMessagesForAndroidPasswords_MessageDismissDurationMs{
         &kMessagesForAndroidPasswords,
-        "save_password_message_dismiss_duration_ms", 0};
+        "save_password_message_dismiss_duration_ms", 20000};
 
 const base::Feature kMessagesForAndroidPermissionUpdate{
     "MessagesForAndroidPermissionUpdate", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -60,11 +60,14 @@ constexpr base::FeatureParam<bool> kMessagesForAndroidSaveCard_UseGPayIcon{
 constexpr base::FeatureParam<bool> kMessagesForAndroidSaveCard_UseDialogV2{
     &kMessagesForAndroidSaveCard, "save_card_dialog_v2_enabled", false};
 
+const base::Feature kMessagesForAndroidStackingAnimation{
+    "MessagesForAndroidStackingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kMessagesForAndroidSyncError{
     "MessagesForAndroidSyncError", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidUpdatePassword{
-    "MessagesForAndroidUpdatePassword", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidUpdatePassword", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<bool>
     kMessagesForAndroidUpdatePassword_UseFollowupButtonText{

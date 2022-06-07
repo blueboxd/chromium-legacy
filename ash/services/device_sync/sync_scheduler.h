@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -99,6 +99,6 @@ class SyncScheduler {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_SYNC_SCHEDULER_H_

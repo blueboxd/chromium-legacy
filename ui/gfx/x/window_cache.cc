@@ -11,6 +11,8 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -21,6 +23,25 @@
 #include "ui/gfx/x/xproto.h"
 
 namespace x11 {
+
+const base::TimeDelta kDestroyTimerInterval = base::Seconds(3);
+
+Window GetWindowAtPoint(const gfx::Point& point_px,
+                        const base::flat_set<Window>* ignore) {
+  auto* connection = Connection::Get();
+  Window root = connection->default_root();
+
+  if (!WindowCache::instance()) {
+    auto instance =
+        std::make_unique<WindowCache>(connection, connection->default_root());
+    auto* cache = instance.get();
+    cache->BeginDestroyTimer(std::move(instance));
+  }
+
+  auto* instance = WindowCache::instance();
+  instance->WaitUntilReady();
+  return instance->GetWindowAtPoint(point_px, root, ignore);
+}
 
 ScopedShapeEventSelector::ScopedShapeEventSelector(Connection* connection,
                                                    Window window)
@@ -66,6 +87,35 @@ WindowCache::~WindowCache() {
   instance_ = nullptr;
 }
 
+void WindowCache::WaitUntilReady() {
+  auto& events = connection_->events();
+  size_t event = 0;
+  while (!pending_requests_.empty()) {
+    connection_->Flush();
+    for (size_t pending = pending_requests_.size(); pending;) {
+      if (event < events.size() &&
+          pending_requests_.front().AfterEvent(events[event])) {
+        OnEvent(events[event++]);
+      } else {
+        pending_requests_.front().DispatchNow();
+        --pending;
+      }
+    }
+  }
+  if (event)
+    last_processed_event_ = events[event - 1].sequence();
+}
+
+void WindowCache::BeginDestroyTimer(std::unique_ptr<WindowCache> self) {
+  DCHECK_EQ(this, self.get());
+  delete_when_destroy_timer_fires_ = false;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&WindowCache::OnDestroyTimerExpired,
+                     base::Unretained(this), std::move(self)),
+      kDestroyTimerInterval);
+}
+
 void WindowCache::SyncForTest() {
   do {
     // Perform a blocking sync to prevent spinning while waiting for replies.
@@ -74,7 +124,12 @@ void WindowCache::SyncForTest() {
   } while (!pending_requests_.empty());
 }
 
-Window WindowCache::GetWindowAtPoint(gfx::Point point_px, Window window) {
+Window WindowCache::GetWindowAtPoint(gfx::Point point_px,
+                                     Window window,
+                                     const base::flat_set<Window>* ignore) {
+  delete_when_destroy_timer_fires_ = true;
+  if (ignore && ignore->contains(window))
+    return Window::None;
   auto* info = GetInfo(window);
   if (!info || !info->mapped)
     return Window::None;
@@ -100,7 +155,7 @@ Window WindowCache::GetWindowAtPoint(gfx::Point point_px, Window window) {
   if (info->has_wm_name)
     return window;
   for (Window child : base::Reversed(info->children)) {
-    Window ret = GetWindowAtPoint(point_px, child);
+    Window ret = GetWindowAtPoint(point_px, child, ignore);
     if (ret != Window::None)
       return ret;
   }
@@ -108,6 +163,13 @@ Window WindowCache::GetWindowAtPoint(gfx::Point point_px, Window window) {
 }
 
 void WindowCache::OnEvent(const Event& event) {
+  // Ignore events that we've already processed.
+  if (last_processed_event_ &&
+      CompareSequenceIds(event.sequence(), *last_processed_event_) <= 0) {
+    return;
+  }
+  last_processed_event_ = absl::nullopt;
+
   // Ignore events sent by clients since the server will send everything
   // we need and client events may have different semantics (eg.
   // ConfigureNotifyEvents are parent-relative if sent by the server but
@@ -203,8 +265,8 @@ void WindowCache::AddWindow(Window window, Window parent) {
     return;
   WindowInfo& info = windows_[window];
   info.parent = parent;
-  // Events must be selected before getting the initial window info to prevent
-  // race conditions.
+  // Events must be selected before getting the initial window info to
+  // prevent race conditions.
   info.events = std::make_unique<XScopedEventSelector>(
       window, EventMask::SubstructureNotify | EventMask::PropertyChange);
 
@@ -300,9 +362,9 @@ void WindowCache::OnGetPropertyResponse(Window window,
       if (response->format == CHAR_BIT * sizeof(int32_t) &&
           response->value_len == 4) {
         const int32_t* frame_extents = response->value->front_as<int32_t>();
-        info->gtk_frame_extents_px = gfx::Insets(
-            frame_extents[2] /* top */, frame_extents[0] /* left */,
-            frame_extents[3] /* bottom */, frame_extents[1] /* right */);
+        info->gtk_frame_extents_px =
+            gfx::Insets::TLBR(frame_extents[2], frame_extents[0],
+                              frame_extents[3], frame_extents[1]);
       } else {
         info->gtk_frame_extents_px = gfx::Insets();
       }
@@ -327,6 +389,13 @@ void WindowCache::OnGetRectanglesResponse(
         break;
     }
   }
+}
+
+void WindowCache::OnDestroyTimerExpired(std::unique_ptr<WindowCache> self) {
+  if (!delete_when_destroy_timer_fires_)
+    return;  // destroy `this`
+
+  BeginDestroyTimer(std::move(self));
 }
 
 }  // namespace x11

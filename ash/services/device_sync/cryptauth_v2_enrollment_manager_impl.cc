@@ -4,6 +4,7 @@
 
 #include "ash/services/device_sync/cryptauth_v2_enrollment_manager_impl.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/services/device_sync/cryptauth_enrollment_constants.h"
 #include "ash/services/device_sync/cryptauth_key_registry.h"
 #include "ash/services/device_sync/cryptauth_task_metrics_logger.h"
@@ -18,11 +19,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/values.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -443,4 +443,4 @@ void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

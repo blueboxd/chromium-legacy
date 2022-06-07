@@ -36,6 +36,7 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -117,13 +118,6 @@ class WebAppInstallTaskTest : public WebAppTest {
         policy_manager_.get(),
         &fake_registry_controller_->translation_manager());
 
-    auto data_retriever = std::make_unique<FakeDataRetriever>();
-    data_retriever_ = data_retriever.get();
-
-    install_task_ = std::make_unique<WebAppInstallTask>(
-        profile(), &install_manager(), install_finalizer_.get(),
-        std::move(data_retriever), &registrar());
-
     url_loader_ = std::make_unique<TestWebAppUrlLoader>();
     controller().Init();
     install_finalizer_->Start();
@@ -191,20 +185,22 @@ class WebAppInstallTaskTest : public WebAppTest {
                           /*user_display_mode=*/DisplayMode::kStandalone);
   }
 
-  void ResetInstallTask() {
+  void InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource install_surface) {
     auto data_retriever = std::make_unique<FakeDataRetriever>();
     data_retriever_ = static_cast<FakeDataRetriever*>(data_retriever.get());
 
     install_task_ = std::make_unique<WebAppInstallTask>(
         profile(), &install_manager(), install_finalizer_.get(),
-        std::move(data_retriever), &registrar());
+        std::move(data_retriever), &registrar(), install_surface);
   }
 
   void SetInstallFinalizerForTesting() {
     auto fake_install_finalizer = std::make_unique<FakeInstallFinalizer>();
     fake_install_finalizer_ = fake_install_finalizer.get();
     install_finalizer_ = std::move(fake_install_finalizer);
-    install_task_->SetInstallFinalizerForTesting(fake_install_finalizer_);
+    if (install_task_)
+      install_task_->SetInstallFinalizerForTesting(fake_install_finalizer_);
   }
 
   void CreateDefaultDataToRetrieve(const GURL& url, const GURL& scope) {
@@ -268,10 +264,11 @@ class WebAppInstallTaskTest : public WebAppTest {
   InstallResult InstallWebAppFromManifestWithFallbackAndGetResults() {
     InstallResult result;
     base::RunLoop run_loop;
-    const bool force_shortcut_app = false;
+    if (!install_task_)
+      InitializeInstallTaskAndRetriever(
+          webapps::WebappInstallSource::MENU_BROWSER_TAB);
     install_task_->InstallWebAppFromManifestWithFallback(
-        web_contents(), force_shortcut_app,
-        webapps::WebappInstallSource::MENU_BROWSER_TAB,
+        web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
         base::BindOnce(test::TestAcceptDialogCallback),
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        webapps::InstallResultCode code) {
@@ -286,8 +283,10 @@ class WebAppInstallTaskTest : public WebAppTest {
   InstallResult LoadAndInstallWebAppFromManifestWithFallback(const GURL& url) {
     InstallResult result;
     base::RunLoop run_loop;
+    if (!install_task_)
+      InitializeInstallTaskAndRetriever(webapps::WebappInstallSource::SYNC);
     install_task_->LoadAndInstallWebAppFromManifestWithFallback(
-        url, web_contents(), &url_loader(), webapps::WebappInstallSource::SYNC,
+        url, web_contents(), &url_loader(),
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        webapps::InstallResultCode code) {
           result.app_id = installed_app_id;
@@ -298,15 +297,18 @@ class WebAppInstallTaskTest : public WebAppTest {
     return result;
   }
 
-  std::unique_ptr<WebAppInstallInfo> LoadAndRetrieveWebAppInstallInfoWithIcons(
-      const GURL& url) {
-    std::unique_ptr<WebAppInstallInfo> result;
+  WebAppInstallTask::WebAppInstallInfoOrErrorCode
+  LoadAndRetrieveWebAppInstallInfoWithIcons(const GURL& url) {
+    WebAppInstallTask::WebAppInstallInfoOrErrorCode result;
     base::RunLoop run_loop;
+    if (!install_task_)
+      InitializeInstallTaskAndRetriever(
+          webapps::WebappInstallSource::MENU_BROWSER_TAB);
     install_task_->LoadAndRetrieveWebAppInstallInfoWithIcons(
         url, &url_loader(),
         base::BindLambdaForTesting(
-            [&](std::unique_ptr<WebAppInstallInfo> web_app_info) {
-              result = std::move(web_app_info);
+            [&](WebAppInstallTask::WebAppInstallInfoOrErrorCode info_or_error) {
+              result = std::move(info_or_error);
               run_loop.Quit();
             }));
     run_loop.Run();
@@ -322,8 +324,11 @@ class WebAppInstallTaskTest : public WebAppTest {
   AppId InstallWebAppWithParams(const WebAppInstallParams& params) {
     AppId app_id;
     base::RunLoop run_loop;
+    if (!install_task_)
+      InitializeInstallTaskAndRetriever(
+          webapps::WebappInstallSource::EXTERNAL_DEFAULT);
     install_task_->InstallWebAppWithParams(
-        web_contents(), params, webapps::WebappInstallSource::EXTERNAL_DEFAULT,
+        web_contents(), params,
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        webapps::InstallResultCode code) {
           ASSERT_EQ(webapps::InstallResultCode::kSuccessNewInstall, code);
@@ -334,8 +339,9 @@ class WebAppInstallTaskTest : public WebAppTest {
     return app_id;
   }
 
-  void PrepareTestAppInstall() {
+  void PrepareTestAppInstall(webapps::WebappInstallSource install_surface) {
     const GURL url{"https://example.com/path"};
+    InitializeInstallTaskAndRetriever(install_surface);
     CreateDefaultDataToRetrieve(url);
     CreateRendererAppInfo(url, "Name", "Description");
 
@@ -436,6 +442,8 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
 
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateRendererAppInfo(url, "Renderer Name", description, /*scope*/ GURL{},
                         theme_color,
                         /*user_display_mode=*/DisplayMode::kStandalone);
@@ -450,11 +458,9 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -471,8 +477,8 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_NE(nullptr, web_app);
 
   EXPECT_EQ(app_id, web_app->app_id());
-  EXPECT_EQ(manifest_name, web_app->name());
-  EXPECT_EQ(description, web_app->description());
+  EXPECT_EQ(manifest_name, web_app->untranslated_name());
+  EXPECT_EQ(description, web_app->untranslated_description());
   EXPECT_EQ(url, web_app->start_url());
   EXPECT_EQ(scope, web_app->scope());
   EXPECT_EQ(theme_color, web_app->theme_color());
@@ -485,14 +491,17 @@ TEST_F(WebAppInstallTaskTest, ForceReinstall) {
 
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, "Renderer Name", "Renderer Description");
 
   const AppId installed_web_app = InstallWebAppFromManifestWithFallback();
   EXPECT_EQ(app_id, installed_web_app);
-  ResetInstallTask();
 
   // Force reinstall:
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateRendererAppInfo(url, "Renderer Name2", "Renderer Description2");
   {
     auto manifest = blink::mojom::Manifest::New();
@@ -505,19 +514,17 @@ TEST_F(WebAppInstallTaskTest, ForceReinstall) {
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting([&](const AppId& force_installed_app_id,
                                      webapps::InstallResultCode code) {
         EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, code);
         EXPECT_EQ(app_id, force_installed_app_id);
         const WebApp* web_app = registrar().GetAppById(app_id);
-        EXPECT_EQ(web_app->name(), "Manifest Name2");
-        EXPECT_EQ(web_app->description(), "Renderer Description2");
+        EXPECT_EQ(web_app->untranslated_name(), "Manifest Name2");
+        EXPECT_EQ(web_app->untranslated_description(), "Renderer Description2");
         callback_called = true;
         run_loop.Quit();
       }));
@@ -531,11 +538,11 @@ TEST_F(WebAppInstallTaskTest, GetWebAppInstallInfoFailed) {
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -552,16 +559,16 @@ TEST_F(WebAppInstallTaskTest, GetWebAppInstallInfoFailed) {
 
 TEST_F(WebAppInstallTaskTest, WebContentsDestroyed) {
   const GURL url = GURL("https://example.com/path");
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, "Name", "Description");
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -582,16 +589,16 @@ TEST_F(WebAppInstallTaskTest, WebContentsDestroyed) {
 
 TEST_F(WebAppInstallTaskTest, InstallTaskDestroyed) {
   const GURL url = GURL("https://example.com/path");
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, "Name", "Description");
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -611,6 +618,8 @@ TEST_F(WebAppInstallTaskTest, InstallTaskDestroyed) {
 
 TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const std::string renderer_description = "RendererDescription";
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateRendererAppInfo(GURL("https://renderer.com/path"), "RendererName",
                         renderer_description,
                         GURL("https://renderer.com/scope"), 0x00,
@@ -640,11 +649,9 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -662,9 +669,9 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
 
   // Manifest data overrides Renderer data, except |description|.
   EXPECT_EQ(app_id, web_app->app_id());
-  EXPECT_EQ(manifest_name, web_app->name());
+  EXPECT_EQ(manifest_name, web_app->untranslated_name());
   EXPECT_EQ(manifest_start_url, web_app->start_url());
-  EXPECT_EQ(renderer_description, web_app->description());
+  EXPECT_EQ(renderer_description, web_app->untranslated_description());
   EXPECT_EQ(manifest_scope, web_app->scope());
   EXPECT_EQ(expected_theme_color, web_app->theme_color());
   EXPECT_EQ(display_mode, web_app->display_mode());
@@ -672,6 +679,8 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
 
 TEST_F(WebAppInstallTaskTest, GetIcons) {
   const GURL url = GURL("https://example.com/path");
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, "Name", "Description");
 
@@ -717,6 +726,8 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
 
 TEST_F(WebAppInstallTaskTest, GetIcons_PrimaryPageChanged) {
   const GURL url = GURL("https://example.com/path");
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, "Name", "Description");
 
@@ -759,6 +770,8 @@ TEST_F(WebAppInstallTaskTest, GetIcons_PrimaryPageChanged) {
 
 TEST_F(WebAppInstallTaskTest, GetIcons_IconNotFound) {
   const GURL url = GURL("https://example.com/path");
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, "Name", "Description");
 
@@ -821,6 +834,8 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
                                   static_cast<int>(IconPurpose::kMinValue) + 1,
       "All purposes covered");
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   // Prepare all the data to be fetched or downloaded.
   {
     auto manifest = blink::mojom::Manifest::New();
@@ -905,6 +920,8 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
 
 TEST_F(WebAppInstallTaskTest, WriteDataToDiskFailed) {
   const GURL start_url = GURL("https://example.com/path");
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(start_url);
   CreateRendererAppInfo(start_url, "Name", "Description");
 
@@ -925,11 +942,9 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDiskFailed) {
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -955,16 +970,16 @@ TEST_F(WebAppInstallTaskTest, UserInstallDeclined) {
   const GURL url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url);
   CreateRendererAppInfo(url, "Name", "Description");
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestDeclineDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -982,7 +997,7 @@ TEST_F(WebAppInstallTaskTest, UserInstallDeclined) {
 }
 
 TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
-  PrepareTestAppInstall();
+  PrepareTestAppInstall(webapps::WebappInstallSource::MENU_BROWSER_TAB);
 
   InstallWebAppFromManifestWithFallback();
 
@@ -990,7 +1005,7 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
 }
 
 TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
-  PrepareTestAppInstall();
+  PrepareTestAppInstall(webapps::WebappInstallSource::MENU_BROWSER_TAB);
   fake_install_finalizer().SetNextFinalizeInstallResult(
       AppId(), webapps::InstallResultCode::kInstallURLLoadTimeOut);
 
@@ -1006,17 +1021,17 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
   const GURL url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   auto manifest = blink::mojom::Manifest::New();
   manifest->start_url = url;
   manifest->short_name = u"Server Name";
-
   data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
 
   base::RunLoop run_loop;
 
   install_task_->InstallWebAppFromManifest(
       web_contents(), /*bypass_service_worker_check=*/false,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -1029,6 +1044,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
 }
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   SetInstallFinalizerForTesting();
 
   const GURL url = GURL("https://example.com/path");
@@ -1041,9 +1058,10 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
 
   base::RunLoop run_loop;
 
+  install_task_->SetFlowForTesting(
+      WebAppInstallManager::WebAppInstallFlow::kInstallSite);
   install_task_->InstallWebAppFromInfo(
       std::move(web_app_info), /*overwrite_existing_manifest_fields=*/false,
-      ForInstallableSite::kYes, webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
             EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, code);
@@ -1061,6 +1079,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
 }
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
+  InitializeInstallTaskAndRetriever(webapps::WebappInstallSource::ARC);
   SetInstallFinalizerForTesting();
 
   auto web_app_info = std::make_unique<WebAppInstallInfo>();
@@ -1074,9 +1093,10 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
 
   base::RunLoop run_loop;
 
+  install_task_->SetFlowForTesting(
+      WebAppInstallManager::WebAppInstallFlow::kInstallSite);
   install_task_->InstallWebAppFromInfo(
       std::move(web_app_info), /*overwrite_existing_manifest_fields=*/false,
-      ForInstallableSite::kYes, webapps::WebappInstallSource::ARC,
       base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                      webapps::InstallResultCode code) {
         std::unique_ptr<WebAppInstallInfo> final_web_app_info =
@@ -1102,16 +1122,15 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
 }
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   SetInstallFinalizerForTesting();
-
   const GURL url{"https://example.com/path"};
   CreateDefaultDataToRetrieve(url);
 
   base::RunLoop run_loop;
-
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), /*force_shortcut_app=*/true,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kCreateShortcut,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                      webapps::InstallResultCode code) {
@@ -1145,6 +1164,8 @@ TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
   const GURL scope("https://example.com/scope");
   const absl::optional<SkColor> theme_color = 0xAABBCCDD;
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color,
                         /*user_display_mode=*/DisplayMode::kStandalone);
   {
@@ -1163,8 +1184,7 @@ TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
 
   base::RunLoop run_loop;
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), /*force_shortcut_app=*/false,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -1191,12 +1211,12 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
 
   auto install_task = std::make_unique<WebAppInstallTask>(
       guest_profile, &install_manager(), install_finalizer_.get(),
-      std::move(data_retriever), &registrar());
+      std::move(data_retriever), &registrar(),
+      webapps::WebappInstallSource::EXTERNAL_DEFAULT);
 
   base::RunLoop run_loop;
   install_task->InstallWebAppWithParams(
       web_contents(), MakeParams(),
-      webapps::WebappInstallSource::EXTERNAL_DEFAULT,
       base::BindLambdaForTesting(
           [&](const AppId& app_id, webapps::InstallResultCode code) {
             EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, code);
@@ -1207,6 +1227,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::EXTERNAL_DEFAULT);
     CreateDataToRetrieve(GURL("https://example.com/"),
                          /*user_display_mode=*/DisplayMode::kBrowser);
 
@@ -1215,8 +1237,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
     EXPECT_EQ(DisplayMode::kBrowser,
               registrar().GetAppById(app_id)->user_display_mode());
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::EXTERNAL_DEFAULT);
     CreateDataToRetrieve(GURL("https://example.org/"),
                          /*user_display_mode=*/DisplayMode::kStandalone);
 
@@ -1225,8 +1248,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
     EXPECT_EQ(DisplayMode::kStandalone,
               registrar().GetAppById(app_id)->user_display_mode());
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::EXTERNAL_DEFAULT);
     CreateDataToRetrieve(GURL("https://example.au/"),
                          /*user_display_mode=*/DisplayMode::kStandalone);
 
@@ -1235,8 +1259,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
     EXPECT_EQ(DisplayMode::kBrowser,
               registrar().GetAppById(app_id)->user_display_mode());
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::EXTERNAL_DEFAULT);
     CreateDataToRetrieve(GURL("https://example.app/"),
                          /*user_display_mode=*/DisplayMode::kBrowser);
 
@@ -1254,6 +1279,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_ExpectAppId) {
   const AppId app_id2 = GenerateAppId(/*manifest_id=*/absl::nullopt, url2);
   ASSERT_NE(app_id1, app_id2);
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url1);
     install_task().ExpectAppId(app_id1);
     InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
@@ -1261,8 +1288,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_ExpectAppId) {
     EXPECT_EQ(app_id1, result.app_id);
     EXPECT_TRUE(registrar().GetAppById(app_id1));
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url2);
     install_task().ExpectAppId(app_id1);
     InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
@@ -1277,6 +1305,8 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
   const GURL url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(
         url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
@@ -1286,8 +1316,9 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
     EXPECT_TRUE(result.app_id.empty());
     EXPECT_FALSE(registrar().GetAppById(app_id));
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(
         url, WebAppUrlLoader::Result::kFailedPageTookTooLong);
@@ -1297,8 +1328,9 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
     EXPECT_TRUE(result.app_id.empty());
     EXPECT_FALSE(registrar().GetAppById(app_id));
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -1307,8 +1339,9 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
     EXPECT_EQ(app_id, result.app_id);
     EXPECT_TRUE(registrar().GetAppById(app_id));
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -1326,38 +1359,46 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebAppInstallInfoWithIcons) {
   const std::string description = "Description";
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(
         url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
 
-    std::unique_ptr<WebAppInstallInfo> result =
+    WebAppInstallTask::WebAppInstallInfoOrErrorCode result =
         LoadAndRetrieveWebAppInstallInfoWithIcons(url);
-    EXPECT_FALSE(result);
+    ASSERT_TRUE(absl::holds_alternative<webapps::InstallResultCode>(result));
+    EXPECT_EQ(absl::get<webapps::InstallResultCode>(result),
+              webapps::InstallResultCode::kInstallURLRedirected);
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url);
     url_loader().SetNextLoadUrlResult(
         url, WebAppUrlLoader::Result::kFailedPageTookTooLong);
 
-    std::unique_ptr<WebAppInstallInfo> result =
+    WebAppInstallTask::WebAppInstallInfoOrErrorCode result =
         LoadAndRetrieveWebAppInstallInfoWithIcons(url);
-    EXPECT_FALSE(result);
+    ASSERT_TRUE(absl::holds_alternative<webapps::InstallResultCode>(result));
+    EXPECT_EQ(absl::get<webapps::InstallResultCode>(result),
+              webapps::InstallResultCode::kInstallURLLoadTimeOut);
   }
-  ResetInstallTask();
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(start_url);
     CreateRendererAppInfo(url, name, description);
     url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
-    std::unique_ptr<WebAppInstallInfo> result =
+    WebAppInstallTask::WebAppInstallInfoOrErrorCode result =
         LoadAndRetrieveWebAppInstallInfoWithIcons(url);
-    EXPECT_TRUE(result);
-    EXPECT_EQ(result->start_url, start_url);
-    EXPECT_TRUE(result->manifest_icons.empty());
-    EXPECT_FALSE(result->icon_bitmaps.any.empty());
+    ASSERT_TRUE(absl::holds_alternative<WebAppInstallInfo>(result));
+    const auto& info = absl::get<WebAppInstallInfo>(result);
+    EXPECT_EQ(info.start_url, start_url);
+    EXPECT_TRUE(info.manifest_icons.empty());
+    EXPECT_FALSE(info.icon_bitmaps.any.empty());
   }
-  ResetInstallTask();
   {
     // Verify the callback is always called.
     base::RunLoop run_loop;
@@ -1367,14 +1408,13 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebAppInstallInfoWithIcons) {
 
     auto task = std::make_unique<WebAppInstallTask>(
         profile(), &install_manager(), install_finalizer_.get(),
-        std::move(data_retriever), &registrar());
+        std::move(data_retriever), &registrar(),
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
 
-    std::unique_ptr<WebAppInstallInfo> info;
     task->LoadAndRetrieveWebAppInstallInfoWithIcons(
         url, &url_loader(),
         base::BindLambdaForTesting(
-            [&](std::unique_ptr<WebAppInstallInfo> app_info) {
-              info = std::move(app_info);
+            [&](WebAppInstallTask::WebAppInstallInfoOrErrorCode info_or_error) {
               run_loop.Quit();
             }));
     task.reset();
@@ -1397,6 +1437,8 @@ TEST_F(WebAppInstallTaskTest, StorageIsolationFlagSaved) {
   UpdateWebAppInfoFromManifest(*manifest, manifest_start_url,
                                web_app_info.get());
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
   data_retriever_->SetRendererWebAppInstallInfo(std::move(web_app_info));
 
@@ -1404,8 +1446,7 @@ TEST_F(WebAppInstallTaskTest, StorageIsolationFlagSaved) {
   bool callback_called = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), /*force_shortcut_app=*/false,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -1435,30 +1476,32 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
 
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
 
+  InitializeInstallTaskAndRetriever(
+      webapps::WebappInstallSource::MENU_BROWSER_TAB);
   CreateDefaultDataToRetrieve(url, scope);
   CreateRendererAppInfo(url, name, description, /*scope=*/GURL{}, theme_color,
                         /*user_display_mode=*/DisplayMode::kStandalone);
 
-  const char kWebAppSettingWithDefaultConfiguration[] = R"({
-    "https://example.com/scope/path": {
+  const char kWebAppSettingWithDefaultConfiguration[] = R"([
+    {
+      "manifest_id": "https://example.com/scope/path",
       "run_on_os_login": "run_windowed"
     },
-    "*": {
+    {
+      "manifest_id": "*",
       "run_on_os_login": "blocked"
     }
-  })";
+  ])";
 
-  test::SetWebAppSettingsDictPref(profile(),
+  test::SetWebAppSettingsListPref(profile(),
                                   kWebAppSettingWithDefaultConfiguration);
   controller().policy_manager().RefreshPolicySettingsForTesting();
 
   base::RunLoop run_loop;
   bool callback_called = false;
-  const bool force_shortcut_app = false;
 
   install_task_->InstallWebAppFromManifestWithFallback(
-      web_contents(), force_shortcut_app,
-      webapps::WebappInstallSource::MENU_BROWSER_TAB,
+      web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
       base::BindOnce(test::TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, webapps::InstallResultCode code) {
@@ -1475,7 +1518,7 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   EXPECT_NE(nullptr, web_app);
 
   EXPECT_EQ(app_id, web_app->app_id());
-  EXPECT_EQ(description, web_app->description());
+  EXPECT_EQ(description, web_app->untranslated_description());
   EXPECT_EQ(url, web_app->start_url());
   EXPECT_EQ(scope, web_app->scope());
   EXPECT_EQ(theme_color, web_app->theme_color());
@@ -1503,6 +1546,8 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
       const GURL& shortcut_url,
       SquareSizePx icon_size,
       const GURL& icon_src) {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     {
       auto manifest = blink::mojom::Manifest::New();
       manifest->start_url = start_url;
@@ -1533,7 +1578,6 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     InstallResult result;
     install_task_->InstallWebAppFromManifest(
         web_contents(), /*bypass_service_worker_check=*/false,
-        webapps::WebappInstallSource::MENU_BROWSER_TAB,
         base::BindOnce(test::TestAcceptDialogCallback),
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        webapps::InstallResultCode code) {
@@ -1682,13 +1726,14 @@ TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
 
   // Install the app without a shortcuts menu.
   {
+    InitializeInstallTaskAndRetriever(
+        webapps::WebappInstallSource::MENU_BROWSER_TAB);
     CreateDefaultDataToRetrieve(url);
     install_task().ExpectAppId(app_id);
     InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
     EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, result.code);
     EXPECT_EQ(app_id, result.app_id);
   }
-  ResetInstallTask();
 
   // Update the installed app, adding a Shortcuts Menu in the process.
   {
@@ -1715,7 +1760,6 @@ TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
     EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, result.code);
     EXPECT_EQ(app_id, result.app_id);
   }
-  ResetInstallTask();
 
   // Update the installed app, Shortcuts Menu has changed.
   {
@@ -1741,7 +1785,6 @@ TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
     EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, result.code);
     EXPECT_EQ(app_id, result.app_id);
   }
-  ResetInstallTask();
 
   // Update the installed app. Only theme color changed, so Shortcuts Menu
   // should stay the same.
@@ -1786,8 +1829,10 @@ class WebAppInstallTaskTestWithFileHandlers : public WebAppInstallTaskTest {
     file_handlers->push_back(std::move(file_handler));
   }
 
-  InstallResult InstallWebAppFromManifest(blink::mojom::ManifestPtr manifest,
-                                          webapps::WebappInstallSource source) {
+  InstallResult InstallWebAppFromManifest(
+      blink::mojom::ManifestPtr manifest,
+      webapps::WebappInstallSource surface) {
+    InitializeInstallTaskAndRetriever(surface);
     data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
 
     base::RunLoop run_loop;
@@ -1795,7 +1840,7 @@ class WebAppInstallTaskTestWithFileHandlers : public WebAppInstallTaskTest {
     InstallResult result;
 
     install_task_->InstallWebAppFromManifest(
-        web_contents(), /*bypass_service_worker_check=*/false, source,
+        web_contents(), /*bypass_service_worker_check=*/false,
         base::BindOnce(test::TestAcceptDialogCallback),
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        webapps::InstallResultCode code) {
@@ -1853,8 +1898,6 @@ TEST_F(WebAppInstallTaskTestWithFileHandlers,
   EXPECT_EQ(app_id, install_result.app_id);
   EXPECT_EQ(1u, fake_os_integration_manager().num_create_file_handlers_calls());
 
-  ResetInstallTask();
-
   // Update the app, adding a file handler.
   auto app_info = CreateWebAppInstallInfo(url);
   std::vector<blink::mojom::ManifestFileHandlerPtr> file_handlers;
@@ -1875,6 +1918,7 @@ TEST_F(WebAppInstallTaskTestWithFileHandlers,
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
 
   // Install the app.
+
   InstallResult install_result = InstallWebAppFromManifest(
       CreateManifest(url), webapps::WebappInstallSource::EXTERNAL_DEFAULT);
   EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
@@ -1886,8 +1930,6 @@ TEST_F(WebAppInstallTaskTestWithFileHandlers,
 #else
   EXPECT_EQ(0u, fake_os_integration_manager().num_create_file_handlers_calls());
 #endif  // BUILDFLAG(IS_CHROMEOS)
-
-  ResetInstallTask();
 
   // Update the app, adding a file handler.
   auto app_info = CreateWebAppInstallInfo(url);

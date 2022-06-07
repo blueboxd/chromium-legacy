@@ -7,6 +7,7 @@
 #include "base/strings/string_piece.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -109,13 +110,14 @@ class PreinstalledWebAppDuplicationFixerBrowserTest
     return provider_->registrar()
         .GetAppById(web_app_id())
         ->GetSources()
-        .test(Source::kSync);
+        .test(WebAppManagement::kSync);
   }
 
   void UninstallWebApp() { test::UninstallWebApp(profile(), web_app_id()); }
 
   void RunAppDuplicationFix() {
-    WebAppAdjustments::Get(profile())
+    WebAppAdjustmentsFactory::GetInstance()
+        ->Get(profile())
         ->preinstalled_web_app_duplication_fixer()
         ->ScanForDuplicationForTesting();
   }

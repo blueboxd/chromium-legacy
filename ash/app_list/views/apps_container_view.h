@@ -16,6 +16,7 @@
 #include "ash/app_list/views/app_list_page.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/recent_apps_view.h"
+#include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "base/callback_helpers.h"
@@ -33,6 +34,7 @@ class ContentsView;
 class ContinueSectionView;
 class FolderBackgroundView;
 class PageSwitcher;
+class SearchResultPageAnchoredDialog;
 class SuggestionChipContainerView;
 class GradientLayerDelegate;
 
@@ -177,7 +179,8 @@ class ASH_EXPORT AppsContainerView
   void UpdateForNewSortingOrder(
       const absl::optional<AppListSortOrder>& new_order,
       bool animate,
-      base::OnceClosure update_position_closure);
+      base::OnceClosure update_position_closure,
+      base::OnceClosure animation_done_closure);
 
   // Called when the app list temporary sort order changes. If `new_order` is
   // null, the temporary sort order is cleared.
@@ -230,6 +233,10 @@ class ASH_EXPORT AppsContainerView
 
   // Gets the height of the `separator_` including its vertical margin.
   int GetSeparatorHeight();
+
+  SearchResultPageAnchoredDialog* dialog_for_test() {
+    return dialog_controller_->dialog();
+  }
 
  private:
   enum ShowState {
@@ -310,7 +317,7 @@ class ASH_EXPORT AppsContainerView
 
   // Called when the animation to fade out app list items is completed.
   // `aborted` indicates whether the fade out animation is aborted.
-  void OnAppsGridViewFadeOutAnimationEneded(
+  void OnAppsGridViewFadeOutAnimationEnded(
       const absl::optional<AppListSortOrder>& new_order,
       bool aborted);
 
@@ -324,6 +331,9 @@ class ASH_EXPORT AppsContainerView
   // (2) At the end of the fade in animation.
   void OnReorderAnimationEnded();
 
+  // Called after sort to handle focus.
+  void HandleFocusAfterSort();
+
   // While true, the gradient mask will not be removed as a mask layer until
   // cardified state ends.
   bool keep_gradient_mask_for_cardified_state_ = false;
@@ -335,6 +345,9 @@ class ASH_EXPORT AppsContainerView
   std::unique_ptr<AppListConfig> app_list_config_;
 
   std::unique_ptr<AppListNudgeController> app_list_nudge_controller_;
+
+  // Controller for showing a modal dialog in the continue section.
+  std::unique_ptr<SearchResultPageDialogController> dialog_controller_;
 
   // The number of active requests to disable blur.
   size_t suggestion_chips_blur_disabler_count_ = 0;
@@ -379,6 +392,9 @@ class ASH_EXPORT AppsContainerView
   // A closure to update item positions. It should run at the end of the fade
   // out animation when items are reordered.
   base::OnceClosure update_position_closure_;
+
+  // A closure that runs at the end of the reorder animation.
+  base::OnceClosure reorder_animation_done_closure_;
 
   base::WeakPtrFactory<AppsContainerView> weak_ptr_factory_{this};
 };

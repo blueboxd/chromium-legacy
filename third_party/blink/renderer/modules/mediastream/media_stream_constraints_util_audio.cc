@@ -16,6 +16,7 @@
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "media/webrtc/constants.h"
 #include "media/webrtc/webrtc_features.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
@@ -685,18 +686,17 @@ Vector<int> GetApmSupportedChannels(
   Vector<int> result;
   // APM always supports mono output;
   result.push_back(1);
-  if (base::FeatureList::IsEnabled(
-          features::kWebRtcEnableCaptureMultiChannelApm)) {
-    const int channels = device_params.channels();
-    if (channels > 1)
-      result.push_back(channels);
-  }
+  const int channels = device_params.channels();
+  if (channels > 1)
+    result.push_back(channels);
   return result;
 }
 
 // This container represents the supported audio settings for a given type of
 // audio source. In practice, there are three types of sources: processed using
-// APM, processed without APM, and unprocessed.
+// APM, processed without APM, and unprocessed. Processing using APM has two
+// flavors: one for the systems where audio processing is done in the renderer,
+// another for the systems where audio processing is done in the audio service.
 class ProcessingBasedContainer {
  public:
   // Creates an instance of ProcessingBasedContainer for the WebRTC processed
@@ -709,6 +709,13 @@ class ProcessingBasedContainer {
       bool is_device_capture,
       const media::AudioParameters& device_parameters,
       bool is_reconfiguration_allowed) {
+    int sample_rate_hz = media::kAudioProcessingSampleRateHz;
+    if (!ProcessedLocalAudioSource::OutputAudioAtProcessingSampleRate()) {
+      // If audio processing runs in the audio service without any mitigations
+      // for unnecessary resmapling, ProcessedLocalAudioSource will output audio
+      // at the device sample rate.
+      sample_rate_hz = device_parameters.sample_rate();
+    }
     return ProcessingBasedContainer(
         ProcessingType::kApmProcessed,
         {EchoCancellationType::kEchoCancellationAec3,
@@ -721,8 +728,7 @@ class ProcessingBasedContainer {
         BoolSet(), /* goog_highpass_filter_set */
         IntRangeSet::FromValue(GetSampleSize()),    /* sample_size_range */
         GetApmSupportedChannels(device_parameters), /* channels_set */
-        IntRangeSet::FromValue(
-            media::kAudioProcessingSampleRateHz), /* sample_rate_range */
+        IntRangeSet::FromValue(sample_rate_hz),     /* sample_rate_range */
         source_info, is_device_capture, device_parameters,
         is_reconfiguration_allowed);
   }

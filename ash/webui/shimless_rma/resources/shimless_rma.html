@@ -6,7 +6,7 @@
     flex-direction: column;
     height: 100%;
     padding-inline-end: 40px;
-    padding-inline-start: 40px;
+    padding-inline-start: var(--page-left-margin);
     width: 100%;
   }
 
@@ -69,7 +69,7 @@
     z-index: 1;
   }
 
-  :host([all-buttons-disabled_]) #busyStateOverlay {
+  :host([show-busy-state-overlay_]) #busyStateOverlay {
     display: block;
   }
 </style>

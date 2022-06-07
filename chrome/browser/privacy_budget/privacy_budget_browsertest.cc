@@ -102,7 +102,7 @@ class PrivacyBudgetBrowserTestBase : public SyncTest {
 
   bool EnableUkmRecording() {
     // 1. Enable sync.
-    Profile* profile = ProfileManager::GetActiveUserProfile();
+    Profile* profile = ProfileManager::GetLastUsedProfileIfLoaded();
     sync_test_harness_ = metrics::test::InitializeProfileForSync(
         profile, GetFakeServer()->AsWeakPtr());
     EXPECT_TRUE(sync_test_harness_->SetupSync());
@@ -508,19 +508,19 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetFieldtrialConfigTest,
   const auto* settings = blink::IdentifiabilityStudySettings::Get();
   EXPECT_TRUE(settings->IsActive());
   // Allowed by default.
-  EXPECT_TRUE(settings->IsTypeAllowed(
+  EXPECT_TRUE(settings->ShouldSampleType(
       blink::IdentifiableSurface::Type::kCanvasReadback));
 
   // Blocked surfaces. See fieldtrial_testing_config.json#IdentifiabilityStudy.
-  EXPECT_FALSE(settings->IsSurfaceAllowed(kBlockedSurface));
+  EXPECT_FALSE(settings->ShouldSampleSurface(kBlockedSurface));
 
   // Some random surface that shouldn't be blocked.
-  EXPECT_TRUE(settings->IsSurfaceAllowed(kAllowedInactiveSurface));
+  EXPECT_TRUE(settings->ShouldSampleSurface(kAllowedInactiveSurface));
 
   // Blocked types
-  EXPECT_FALSE(settings->IsTypeAllowed(
+  EXPECT_FALSE(settings->ShouldSampleType(
       blink::IdentifiableSurface::Type::kLocalFontLookupByFallbackCharacter));
-  EXPECT_FALSE(settings->IsTypeAllowed(
+  EXPECT_FALSE(settings->ShouldSampleType(
       blink::IdentifiableSurface::Type::kMediaCapabilities_DecodingInfo));
 }
 

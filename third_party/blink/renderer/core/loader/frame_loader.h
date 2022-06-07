@@ -188,25 +188,17 @@ class CORE_EXPORT FrameLoader final {
   // This will attempt to detach the current document. It will dispatch unload
   // events and abort XHR requests. Returns true if the frame is ready to
   // receive the next document commit, or false otherwise.
-  // `unload_timing_info` will be updated with the timing details if non-null.
-  // This parameter should be non-null when unloading a document that will be
-  // replaced by a new Document (e.g. committing a new cross-document
-  // navigation).
-  bool DetachDocument(UnloadEventTimingInfo* unload_timing_info);
+  bool DetachDocument();
 
   bool ShouldClose(bool is_reload = false);
 
-  // Dispatches the Unload event for the current document. If this is due to the
-  // commit of a navigation, both |committing_origin| and the
-  // Optional<Document::UnloadEventTiming>* should be non null.
-  // |committing_origin| is the origin of the document that is being committed.
-  // If it is allowed to access the unload timings of the current document, the
-  // Document::UnloadEventTiming will be created and populated.
-  // `unload_timing_info` will be updated with the timing details if non-null.
-  // This parameter should be non-null when unloading a document that will be
-  // replaced by a new Document (e.g. committing a new cross-document
-  // navigation).
-  void DispatchUnloadEvent(UnloadEventTimingInfo* unload_timing_info);
+  // Dispatches the Unload event for the current document and fills in this
+  // document's info in OldDocumentInfoForCommit if
+  // `will_commit_new_document_in_this_frame` is true (which will only be
+  // the case when the current document in this frame is being unloaded for
+  // committing a new document).
+  void DispatchUnloadEventAndFillOldDocumentInfoIfNeeded(
+      bool will_commit_new_document_in_this_frame);
 
   bool AllowPlugins();
 
@@ -220,7 +212,8 @@ class CORE_EXPORT FrameLoader final {
 
   // Like ClearClientNavigation, but also notifies the client to actually cancel
   // the navigation.
-  void CancelClientNavigation();
+  void CancelClientNavigation(
+      CancelNavigationReason reason = CancelNavigationReason::kOther);
 
   void Trace(Visitor*) const;
 
@@ -265,6 +258,25 @@ class CORE_EXPORT FrameLoader final {
 
   mojo::PendingRemote<blink::mojom::CodeCacheHost> CreateWorkerCodeCacheHost();
 
+  // Contains information related to the previous document in the frame, to be
+  // given to the next document that is going to commit in this FrameLoader.
+  // Note that the "previous document" might not necessarily use the same
+  // FrameLoader as this one, e.g. in case of local RenderFrame swap.
+  struct OldDocumentInfoForCommit : GarbageCollected<OldDocumentInfoForCommit> {
+    explicit OldDocumentInfoForCommit(
+        scoped_refptr<SecurityOrigin> new_document_origin);
+    void Trace(Visitor* visitor) const;
+    // The unload timing info of the previous document in the frame. The new
+    // document can access this information if it is a same-origin, to be
+    // exposed through the Navigation Timing API.
+    UnloadEventTimingInfo unload_timing_info;
+    // The HistoryItem of the previous document in the frame. Some of the state
+    // from the old document's HistoryItem will be copied to the new document
+    // e.g. history.state will be copied on same-URL navigations. See also
+    // https://github.com/whatwg/html/issues/6213.
+    Member<HistoryItem> history_item;
+  };
+
  private:
   bool AllowRequestForThisFrame(const FrameLoadRequest&);
 
@@ -295,7 +307,6 @@ class CORE_EXPORT FrameLoader final {
 
   // Commits the given |document_loader|.
   void CommitDocumentLoader(DocumentLoader* document_loader,
-                            const absl::optional<UnloadEventTiming>&,
                             HistoryItem* previous_history_item,
                             CommitReason);
 
@@ -357,6 +368,33 @@ class CORE_EXPORT FrameLoader final {
   // The origins for which a legacy TLS version warning has been printed. The
   // size of this set is capped, after which no more warnings are printed.
   HashSet<String> tls_version_warning_origins_;
+
+  // Owns the OldDocumentInfoForCommit and exposes it through `info_`
+  // so that both the unloading old document and the committing new document
+  // can access and modify the value, without explicitly passing it between
+  // them on unload/commit time.
+  class ScopedOldDocumentInfoForCommitCapturer {
+    STACK_ALLOCATED();
+
+   public:
+    explicit ScopedOldDocumentInfoForCommitCapturer(
+        OldDocumentInfoForCommit* info)
+        : info_(info), previous_capturer_(current_capturer_) {
+      current_capturer_ = this;
+    }
+
+    ~ScopedOldDocumentInfoForCommitCapturer();
+
+    // The last OldDocumentInfoForCommit set for `info_` that is still in scope.
+    static OldDocumentInfoForCommit* CurrentInfo() {
+      return current_capturer_ ? current_capturer_->info_ : nullptr;
+    }
+
+   private:
+    OldDocumentInfoForCommit* info_;
+    ScopedOldDocumentInfoForCommitCapturer* previous_capturer_;
+    static ScopedOldDocumentInfoForCommitCapturer* current_capturer_;
+  };
 };
 
 }  // namespace blink

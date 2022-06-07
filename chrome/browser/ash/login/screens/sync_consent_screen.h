@@ -10,6 +10,7 @@
 
 #include "base/auto_reset.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -101,11 +102,11 @@ class SyncConsentScreen : public BaseScreen,
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
 
-  // Reacts to user action on non-split-settings sync.
-  void OnNonSplitSettingsContinue(const bool opted_in,
-                                  const bool review_sync,
-                                  const std::vector<int>& consent_description,
-                                  const int consent_confirmation);
+  // Reacts to user action on sync.
+  void OnContinue(const bool opted_in,
+                  const bool review_sync,
+                  const std::vector<int>& consent_description,
+                  const int consent_confirmation);
 
   // Enables sync if required when skipping the dialog.
   void MaybeEnableSyncForSkip();

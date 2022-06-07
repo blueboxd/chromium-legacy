@@ -23,6 +23,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
@@ -396,7 +397,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   window_tree_host_manager->SetPrimaryDisplayId(dummy_id);
   EXPECT_NE(dummy_id, display::Screen::GetScreen()->GetPrimaryDisplay().id());
 
-  window_tree_host_manager->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
+  window_tree_host_manager->SetOverscanInsets(
+      id1, gfx::Insets::TLBR(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(id1, display::Display::ROTATE_90,
                                         display::Display::RotationSource::USER);
 
@@ -793,8 +795,8 @@ TEST_F(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
   display_manager()->UpdateZoomFactor(id1, 1.f / scale);
   window_tree_host_manager->SetPrimaryDisplayId(id2);
   int64_t new_primary = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  window_tree_host_manager->SetOverscanInsets(new_primary,
-                                              gfx::Insets(10, 11, 12, 13));
+  window_tree_host_manager->SetOverscanInsets(
+      new_primary, gfx::Insets::TLBR(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(new_primary,
                                         display::Display::ROTATE_90,
                                         display::Display::RotationSource::USER);
@@ -866,8 +868,8 @@ TEST_P(DisplayPrefsPublicAccountTest, StoreDisplayPrefsForPublicAccount) {
   window_tree_host_manager->SetPrimaryDisplayId(id2);
   const int64_t new_primary =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  window_tree_host_manager->SetOverscanInsets(new_primary,
-                                              gfx::Insets(10, 11, 12, 13));
+  window_tree_host_manager->SetOverscanInsets(
+      new_primary, gfx::Insets::TLBR(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(new_primary,
                                         display::Display::ROTATE_90,
                                         display::Display::RotationSource::USER);

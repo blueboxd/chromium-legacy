@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -28,7 +28,7 @@ class FakeDeviceSyncObserver : public mojom::DeviceSyncObserver {
   size_t num_enrollment_events() { return num_enrollment_events_; }
   size_t num_sync_events() { return num_sync_events_; }
 
-  // mojom::DeviceSyncObserver:
+  // device_sync::mojom::DeviceSyncObserver:
   void OnEnrollmentFinished() override;
   void OnNewDevicesSynced() override;
 
@@ -41,6 +41,6 @@ class FakeDeviceSyncObserver : public mojom::DeviceSyncObserver {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_FAKE_DEVICE_SYNC_OBSERVER_H_

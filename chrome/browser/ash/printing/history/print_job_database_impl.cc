@@ -9,11 +9,9 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/time/time.h"
 #include "chrome/browser/ash/printing/history/print_job_info.pb.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 

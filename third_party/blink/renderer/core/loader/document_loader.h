@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
@@ -401,6 +402,15 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void DidCommitNavigation();
   void RecordUseCountersForCommit();
   void RecordConsoleMessagesForCommit();
+
+  // Use to record UMA metrics on the matches between the Content-Language
+  // response header value and the Accept-Language request header values.
+  void RecordAcceptLanguageAndContentLanguageMetric();
+
+  // Use to record UMA metrics on the matches between the parent frame's
+  // Content-Language request header value and child frame's Content-Language
+  // request header values.
+  void RecordParentAndChildContentLanguageMetric();
 
   void CreateParserPostCommit();
 

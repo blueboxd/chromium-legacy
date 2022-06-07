@@ -15,11 +15,11 @@
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/system_logs/command_line_log_source.h"
+#include "chrome/browser/ash/system_logs/connected_input_devices_log_source.h"
 #include "chrome/browser/ash/system_logs/crosapi_system_log_source.h"
 #include "chrome/browser/ash/system_logs/dbus_log_source.h"
 #include "chrome/browser/ash/system_logs/debug_daemon_log_source.h"
@@ -61,13 +61,13 @@ SystemLogsFetcher* BuildChromeSystemLogsFetcher(bool scrub_data) {
   fetcher->AddSource(std::make_unique<DeviceEventLogSource>());
   fetcher->AddSource(std::make_unique<IwlwifiDumpChecker>());
   fetcher->AddSource(std::make_unique<TouchLogSource>());
+  fetcher->AddSource(std::make_unique<ConnectedInputDevicesLogSource>());
 
   // Data sources that directly scrub itentifiable information.
   fetcher->AddSource(std::make_unique<DebugDaemonLogSource>(scrub_data));
   fetcher->AddSource(std::make_unique<NetworkHealthSource>(scrub_data));
 #if BUILDFLAG(IS_CHROMEOS_WITH_HW_DETAILS)
-  if (base::FeatureList::IsEnabled(ash::features::kRevenLogSource))
-    fetcher->AddSource(std::make_unique<RevenLogSource>());
+  fetcher->AddSource(std::make_unique<RevenLogSource>());
 #endif
 
   fetcher->AddSource(std::make_unique<ShillLogSource>(scrub_data));

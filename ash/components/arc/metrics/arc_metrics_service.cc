@@ -10,6 +10,7 @@
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/metrics/arc_metrics_anr.h"
 #include "ash/components/arc/metrics/stability_metrics_manager.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/public/cpp/app_types_util.h"
@@ -20,11 +21,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/exo/wm_helper.h"
 #include "components/metrics/psi_memory_parser.h"
-#include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
@@ -53,49 +54,19 @@ constexpr char kBootProgressArcUpgraded[] = "boot_progress_arc_upgraded";
 // Interval for collecting UMA "Arc.App.LowMemoryKills.*Count10Minutes" metrics.
 constexpr base::TimeDelta kRequestKillCountPeriod = base::Minutes(10);
 
-// App types to report.
-constexpr char kAppTypeArcAppLauncher[] = "ArcAppLauncher";
-constexpr char kAppTypeArcOther[] = "ArcOther";
-constexpr char kAppTypeFirstParty[] = "FirstParty";
-constexpr char kAppTypeGmsCore[] = "GmsCore";
-constexpr char kAppTypePlayStore[] = "PlayStore";
-constexpr char kAppTypeSystemServer[] = "SystemServer";
-constexpr char kAppTypeSystem[] = "SystemApp";
-constexpr char kAppTypeOther[] = "Other";
-
 // Memory pressure histograms.
 const char kPSIMemoryPressureSomeARC[] = "ChromeOS.CWP.PSIMemPressure.ArcSome";
 const char kPSIMemoryPressureFullARC[] = "ChromeOS.CWP.PSIMemPressure.ArcFull";
+
+// Provisioning pre-sign-in time delta histogram.
+constexpr char kProvisioningPreSignInTimeDelta[] =
+    "Arc.Provisioning.PreSignIn.TimeDelta";
 
 // Logs UMA enum values to facilitate finding feedback reports in Xamine.
 template <typename T>
 void LogStabilityUmaEnum(const std::string& name, T sample) {
   base::UmaHistogramEnumeration(name, sample);
   VLOG(1) << name << ": " << static_cast<std::underlying_type_t<T>>(sample);
-}
-
-std::string AnrSourceToTableName(mojom::AnrSource value) {
-  switch (value) {
-    case mojom::AnrSource::OTHER:
-      return kAppTypeOther;
-    case mojom::AnrSource::SYSTEM_SERVER:
-      return kAppTypeSystemServer;
-    case mojom::AnrSource::SYSTEM_APP:
-      return kAppTypeSystem;
-    case mojom::AnrSource::GMS_CORE:
-      return kAppTypeGmsCore;
-    case mojom::AnrSource::PLAY_STORE:
-      return kAppTypePlayStore;
-    case mojom::AnrSource::FIRST_PARTY:
-      return kAppTypeFirstParty;
-    case mojom::AnrSource::ARC_OTHER:
-      return kAppTypeArcOther;
-    case mojom::AnrSource::ARC_APP_LAUNCHER:
-      return kAppTypeArcAppLauncher;
-    default:
-      LOG(ERROR) << "Unrecognized source ANR " << value;
-      return kAppTypeOther;
-  }
 }
 
 std::string BootTypeToString(mojom::BootType boot_type) {
@@ -182,6 +153,7 @@ ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
     exo::WMHelper::GetInstance()->AddActivationObserver(this);
   ui::GamepadProviderOzone::GetInstance()->AddGamepadObserver(this);
 
+  DCHECK(StabilityMetricsManager::Get());
   StabilityMetricsManager::Get()->SetArcNativeBridgeType(
       NativeBridgeType::UNKNOWN);
 
@@ -208,6 +180,7 @@ ArcMetricsService::~ArcMetricsService() {
 }
 
 void ArcMetricsService::Shutdown() {
+  metrics_anr_.reset();
   for (auto& obs : app_kill_observers_)
     obs.OnArcMetricsServiceDestroyed();
   app_kill_observers_.Clear();
@@ -457,7 +430,7 @@ void ArcMetricsService::ReportDnsQueryResult(mojom::ArcDnsQuery query,
   std::string metric_name =
       base::StrCat({"Arc.Net.DnsQuery.", DnsQueryToString(query)});
   if (!success)
-      VLOG(4) << metric_name << ": " << success;
+    VLOG(4) << metric_name << ": " << success;
   base::UmaHistogramBoolean(metric_name, success);
 }
 
@@ -557,9 +530,13 @@ void ArcMetricsService::ReportClipboardDragDropEvent(
 
 void ArcMetricsService::ReportAnr(mojom::AnrPtr anr) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::UmaHistogramEnumeration("Arc.Anr.Overall", anr->type);
-  LogStabilityUmaEnum("Arc.Anr." + AnrSourceToTableName(anr->source),
-                      anr->type);
+
+  if (!metrics_anr_) {
+    LOG(ERROR) << "ANR is reported when no ANR metric service is connected";
+    return;
+  }
+
+  metrics_anr_->Report(std::move(anr));
 }
 
 void ArcMetricsService::ReportLowLatencyStylusLibApiUsage(
@@ -591,6 +568,7 @@ void ArcMetricsService::ReportEntireFixupMetrics(base::TimeDelta duration,
                                  number_of_failures, kUmaFixupAppsCountMin,
                                  kUmaFixupAppsCountMax, kUmaNumBuckets);
 }
+
 void ArcMetricsService::ReportPerAppFixupMetrics(
     base::TimeDelta duration,
     uint32_t number_of_directories) {
@@ -601,6 +579,7 @@ void ArcMetricsService::ReportPerAppFixupMetrics(
                                  kUmaFixupDirectoriesCountMin,
                                  kUmaFixupDirectoriesCountMax, kUmaNumBuckets);
 }
+
 void ArcMetricsService::ReportMainAccountHashMigrationMetrics(
     mojom::MainAccountHashMigrationStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -642,6 +621,34 @@ void ArcMetricsService::ReportMemoryPressure(
       metrics::kMemPressureExclusiveMax, metrics::kMemPressureHistogramBuckets);
 }
 
+void ArcMetricsService::ReportProvisioningStartTime(
+    const base::TimeTicks& start_time,
+    const std::string& account_type_suffix) {
+  arc_provisioning_start_time_.emplace(start_time);
+  arc_provisioning_account_type_suffix_.emplace(account_type_suffix);
+}
+
+void ArcMetricsService::ReportProvisioningPreSignIn() {
+  if (arc_provisioning_start_time_.has_value() &&
+      arc_provisioning_account_type_suffix_.has_value()) {
+    base::UmaHistogramCustomTimes(
+        kProvisioningPreSignInTimeDelta +
+            arc_provisioning_account_type_suffix_.value(),
+        base::TimeTicks::Now() - arc_provisioning_start_time_.value(),
+        base::Seconds(1), base::Minutes(5), 50);
+    arc_provisioning_start_time_.reset();
+    arc_provisioning_account_type_suffix_.reset();
+  } else {
+    LOG(ERROR) << "PreSignIn reported without prior starting time";
+  }
+}
+
+void ArcMetricsService::ReportWaylandLateTimingDuration(
+    base::TimeDelta duration) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramLongTimes("Arc.Wayland.LateTiming.Duration", duration);
+}
+
 void ArcMetricsService::OnWindowActivated(
     wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -679,6 +686,16 @@ void ArcMetricsService::OnTaskDestroyed(int32_t task_id) {
   }
   task_ids_.erase(it);
   guest_os_engagement_metrics_.SetBackgroundActive(!task_ids_.empty());
+}
+
+void ArcMetricsService::OnArcStarted() {
+  DCHECK(prefs_);
+
+  metrics_anr_ = std::make_unique<ArcMetricsAnr>(prefs_);
+}
+
+void ArcMetricsService::OnArcSessionStopped() {
+  metrics_anr_.reset();
 }
 
 void ArcMetricsService::AddAppKillObserver(AppKillObserver* obs) {

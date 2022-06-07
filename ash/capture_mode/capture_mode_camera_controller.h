@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/capture_mode/capture_mode_types.h"
+#include "ash/public/cpp/system_tray_observer.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -21,6 +22,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 #include "ui/views/widget/unique_widget_ptr.h"
+
+namespace gfx {
+class Rect;
+}  // namespace gfx
 
 namespace ash {
 
@@ -107,7 +112,8 @@ using CameraInfoList = std::vector<CameraInfo>;
 // of all currently connected cameras to the device. It also tracks all the
 // capture mode selfie camera settings.
 class ASH_EXPORT CaptureModeCameraController
-    : public base::SystemMonitor::DevicesChangedObserver {
+    : public base::SystemMonitor::DevicesChangedObserver,
+      public SystemTrayObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -136,14 +142,28 @@ class ASH_EXPORT CaptureModeCameraController
   views::Widget* camera_preview_widget() const {
     return camera_preview_widget_.get();
   }
+  CameraPreviewView* camera_preview_view() const {
+    return camera_preview_view_;
+  }
   bool should_show_preview() const { return should_show_preview_; }
   CameraPreviewSnapPosition camera_preview_snap_position() const {
     return camera_preview_snap_position_;
   }
   bool is_drag_in_progress() const { return is_drag_in_progress_; }
+  bool is_camera_preview_collapsed() const {
+    return is_camera_preview_collapsed_;
+  }
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Selects the first camera in the `available_cameras_` list (if any), and
+  // only if no other camera is already selected.
+  void MaybeSelectFirstCamera();
+
+  // Returns true if camera support is disabled by admins via
+  // the `SystemFeaturesDisableList` policy, false otherwise.
+  bool IsCameraDisabledByPolicy() const;
 
   // Returns the display name of `selected_camera_`. Returns an empty string if
   // the selected camera is not set.
@@ -167,16 +187,25 @@ class ASH_EXPORT CaptureModeCameraController
   void SetCameraPreviewSnapPosition(CameraPreviewSnapPosition value);
 
   // Updates the bounds of `camera_preview_widget_` to current
-  // GetPreviewWidgetBounds() when necessary.
-  void MaybeUpdatePreviewWidgetBounds();
+  // GetPreviewWidgetBounds() when necessary. If `animate` is set to true, the
+  // widget will animate to the new target bounds.
+  void MaybeUpdatePreviewWidgetBounds(bool animate = false);
 
   // Handles drag events forwarded from `camera_preview_view_`.
   void StartDraggingPreview(const gfx::PointF& screen_location);
   void ContinueDraggingPreview(const gfx::PointF& screen_location);
   void EndDraggingPreview(const gfx::PointF& screen_location, bool is_touch);
 
+  // Updates the bounds of the preview widget and the value of
+  // `is_camera_preview_collapsed_` when the resize button is pressed.
+  void ToggleCameraPreviewSize();
+
   // base::SystemMonitor::DevicesChangedObserver:
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override;
+
+  // SystemTrayObserver:
+  void OnSystemTrayBubbleShown() override;
+  void OnFocusLeavingSystemTray(bool reverse) override {}
 
   void SetOnCameraListReceivedForTesting(base::OnceClosure callback) {
     on_camera_list_received_for_test_ = std::move(callback);
@@ -187,6 +216,8 @@ class ASH_EXPORT CaptureModeCameraController
   }
 
  private:
+  friend class CaptureModeTestApi;
+
   // Called to connect to the video capture services's video source provider for
   // the first time, or when the connection to it is lost. It also queries the
   // list of currently available cameras by calling the below
@@ -215,18 +246,34 @@ class ASH_EXPORT CaptureModeCameraController
   // allowed grace period, and therefore it will be cleared.
   void OnSelectedCameraDisconnected();
 
-  // Gets the bounds of the preview widget in parent's coordinate system. Its
-  // bounds depend on the surface being recorded and current preview snap
-  // position.
-  gfx::Rect GetPreviewWidgetBounds() const;
+  // Returns the bounds of the preview widget which doesn't intersect with
+  // system tray. Always try `camera_preview_snap_position_` first. If camera
+  // preview at all snap positions intersects with system tray, returns the
+  // bounds of `camera_preview_snap_position_`.
+  gfx::Rect CalculatePreviewWidgetTargetBounds();
+
+  // Call by `CalculatePreviewWidgetTargetBounds` above. Returns the bounds of
+  // the preview widget that matches the coordinate system of the confine
+  // bounds.
+  gfx::Rect GetPreviewWidgetBoundsForSnapPosition(
+      CameraPreviewSnapPosition snap_position) const;
 
   // Called by `EndDraggingPreview`, updating `camera_preview_snap_position_`
   // according to the current position of the `camera_preview_view_`.
-  void UpdateSnapPostionOnDragEnded();
+  void UpdateSnapPositionOnDragEnded();
 
   // Returns the current bounds of camemra preview widget that match the
   // coordinate system of the confine bounds.
   gfx::Rect GetCurrentBoundsMatchingConfineBoundsCoordinates();
+
+  // Does post works for camera preview after RefreshCameraPreview(). It
+  // triggers a11y alert based on `was_preview_visible_before` and the current
+  // visibility of `camera_preview_widget_`. `was_preview_visible_before` is the
+  // visibility of the camera preview when RefreshCameraPreview() was called.
+  // It also triggers floating windows bounds update to avoid overlap between
+  // camera preview and floating windows, such as PIP windows and some a11y
+  // panels.
+  void RunPostRefreshCameraPreview(bool was_preview_visible_before);
 
   // Owned by CaptureModeController and guaranteed to be not null and to outlive
   // `this`.
@@ -286,6 +333,11 @@ class ASH_EXPORT CaptureModeCameraController
 
   // True when the dragging for `camera_preview_view_` is in progress.
   bool is_drag_in_progress_ = false;
+
+  // True if the camera preview is collapsed. Its value will be updated when
+  // the resize button is clicked. The size of the preview widget and the icon
+  // of the resize button will be updated based on it.
+  bool is_camera_preview_collapsed_ = false;
 
   base::WeakPtrFactory<CaptureModeCameraController> weak_ptr_factory_{this};
 };

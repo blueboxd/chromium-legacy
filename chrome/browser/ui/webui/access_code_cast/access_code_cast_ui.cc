@@ -6,6 +6,7 @@
 
 #include "base/containers/span.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,13 +35,11 @@
 
 using media_router::AccessCodeCastHandler;
 
-// Creates default params for showing AccessCodeCastDialog in ChromeOS
+// Creates default params for showing AccessCodeCastDialog
 views::Widget::InitParams CreateParams() {
   views::Widget::InitParams params;
   params.remove_standard_frame = true;
   params.corner_radius = 12;
-  // Dialog frame view has its own shadow.
-  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.type = views::Widget::InitParams::Type::TYPE_BUBBLE;
   // Make sure the dialog border is rendered correctly
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
@@ -74,6 +73,11 @@ AccessCodeCastDialog::AccessCodeCastDialog(
   set_can_resize(false);
 }
 
+AccessCodeCastDialog::~AccessCodeCastDialog() {
+  if (dialog_widget_)
+    dialog_widget_->RemoveObserver(this);
+}
+
 void AccessCodeCastDialog::Show(
     const media_router::CastModeSet& cast_mode_set,
     content::WebContents* web_contents,
@@ -98,6 +102,16 @@ void AccessCodeCastDialog::ShowForDesktopMirroring() {
   Show({media_router::MediaCastMode::DESKTOP_MIRROR}, nullptr, nullptr);
 }
 
+// views::WidgetObserver:
+void AccessCodeCastDialog::OnWidgetActivationChanged(views::Widget* widget,
+                                                     bool active) {
+  DCHECK(dialog_widget_)
+      << "dialog_widget_ must be set exactly once during dialog setup";
+  if (dialog_widget_ && !active) {
+    dialog_widget_->Close();
+  }
+}
+
 void AccessCodeCastDialog::Show(
     gfx::NativeView parent,
     content::BrowserContext* context,
@@ -112,9 +126,10 @@ void AccessCodeCastDialog::Show(
       parent, context, dialog,
       absl::make_optional<views::Widget::InitParams>(
           std::move(extra_params)));
+  views::Widget* dialog_widget = views::Widget::GetWidgetForNativeWindow(
+    dialog_window);
+  dialog->ObserveWidget(dialog_widget);
   if (web_contents) {
-    auto* dialog_widget = views::Widget::GetWidgetForNativeWindow(
-        dialog_window);
     constrained_window::UpdateWidgetModalDialogPosition(dialog_widget,
       CreateChromeConstrainedWindowViewsClient()->GetModalDialogHost(
         web_contents->GetTopLevelNativeWindow()));
@@ -198,7 +213,11 @@ bool AccessCodeCastDialog::CheckMediaAccessPermission(
   return true;
 }
 
-AccessCodeCastDialog::~AccessCodeCastDialog() = default;
+void AccessCodeCastDialog::ObserveWidget(views::Widget* widget) {
+  DCHECK(widget) << "Observed dialog widget must not be null";
+  dialog_widget_ = widget;
+  dialog_widget_->AddObserver(this);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  AccessCodeCast UI controller:

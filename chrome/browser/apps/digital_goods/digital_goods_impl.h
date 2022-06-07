@@ -11,7 +11,7 @@
 #include "ash/components/arc/pay/arc_digital_goods_bridge.h"
 #include "content/public/browser/document_user_data.h"
 #include "content/public/browser/render_widget_host.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/digital_goods/digital_goods.mojom.h"
 
 namespace apps {
@@ -29,10 +29,10 @@ class DigitalGoodsImpl : public content::DocumentUserData<DigitalGoodsImpl>,
   // payments::mojom::DigitalGoods overrides.
   void GetDetails(const std::vector<std::string>& item_ids,
                   GetDetailsCallback callback) override;
-  void Acknowledge(const std::string& purchase_token,
-                   bool make_available_again,
-                   AcknowledgeCallback callback) override;
   void ListPurchases(ListPurchasesCallback callback) override;
+  void ListPurchaseHistory(ListPurchaseHistoryCallback callback) override;
+  void Consume(const std::string& purchase_token,
+               ConsumeCallback callback) override;
 
  private:
   explicit DigitalGoodsImpl(content::RenderFrameHost* render_frame_host);
@@ -41,7 +41,7 @@ class DigitalGoodsImpl : public content::DocumentUserData<DigitalGoodsImpl>,
 
   arc::ArcDigitalGoodsBridge* GetArcDigitalGoodsBridge();
 
-  mojo::Receiver<payments::mojom::DigitalGoods> receiver_;
+  mojo::ReceiverSet<payments::mojom::DigitalGoods> receiver_set_;
 };
 
 }  // namespace apps

@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/passwords/credential_manager_dialog_controller.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
@@ -58,7 +58,7 @@ AccountChooserDialogView::AccountChooserDialogView(
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   }
   SetArrow(views::BubbleBorder::NONE);
-  set_margins(gfx::Insets(margins().top(), 0, margins().bottom(), 0));
+  set_margins(gfx::Insets::TLBR(margins().top(), 0, margins().bottom(), 0));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ACCOUNT_CHOOSER);
 }
 
@@ -127,8 +127,8 @@ void AccountChooserDialogView::InitWindow() {
         layout_provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION);
     const int vertical_padding = layout_provider->GetDistanceMetric(
         views::DISTANCE_RELATED_CONTROL_VERTICAL);
-    credential_view->SetBorder(views::CreateEmptyBorder(
-        vertical_padding, insets.left(), vertical_padding, insets.right()));
+    credential_view->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+        vertical_padding, insets.left(), vertical_padding, insets.right())));
     item_height = std::max(item_height, credential_view->GetPreferredHeight());
   }
   constexpr float kMaxVisibleItems = 3.5;

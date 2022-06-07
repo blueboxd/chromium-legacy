@@ -13,7 +13,6 @@
 <translation id="1024111578869940408">Às vezes, os invasores imitam sites, fazendo modificações quase imperceptíveis no endereço da Web.</translation>
 <translation id="1028781062521375153">Ver detalhes</translation>
 <translation id="1030706264415084469"><ph name="URL" /> quer armazenar permanentemente um grande volume de dados no seu dispositivo</translation>
-<translation id="1032854598605920125">Girar no sentido horário</translation>
 <translation id="1033329911862281889">Com a navegação anônima, você não fica invisível on-line:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Os sites e os serviços que eles usam podem ver acessos<ph name="END_LIST_ITEM" />
@@ -174,7 +173,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1386623374109090026">Anotações</translation>
 <translation id="1391289752476847787">Ações e títulos</translation>
 <translation id="139305205187523129">Nenhum dado foi enviado por <ph name="HOST_NAME" /></translation>
-<translation id="1403196654932095242"><ph name="HISTORY_CLUSTERS_SEARCH_FOCUSED_FRIENDLY_MATCH_TEXT" />. Pressione Tab e depois Enter para retomar a pesquisa e ver as atividades relevantes no histórico do Chrome</translation>
 <translation id="1405567553485452995">Verde-claro</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1408787208417187241">Três grampos na parte superior</translation>
@@ -254,7 +252,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1567040042588613346">A política está funcionando da maneira esperada, mas o mesmo valor foi definido em outro lugar e foi substituído por esta política.</translation>
 <translation id="1569487616857761740">Informar data de validade</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583294866416602487">Plex</translation>
 <translation id="1583429793053364125">Algo deu errado ao exibir esta página da Web.</translation>
 <translation id="1586541204584340881">quais extensões você instalou;</translation>
 <translation id="1588438908519853928">Normal</translation>
@@ -291,6 +288,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1662550410081243962">Salvar e preencher as formas de pagamento</translation>
 <translation id="1663943134801823270">As informações dos cartões e os endereços foram acessadas pelo Chrome. É possível gerenciar essas opções em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Páginas em <ph name="SOURCE_LANGUAGE" /> serão traduzidas para <ph name="TARGET_LANGUAGE" /> de agora em diante.</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Borda menor primeiro</translation>
 <translation id="168693727862418163">Houve uma falha na validação do valor da política em relação ao esquema, e ele será ignorado.</translation>
 <translation id="168841957122794586">O certificado do servidor contém uma chave de criptografia fraca.</translation>
@@ -304,7 +302,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1711528724596764268">Aprendizado de máquina e inteligência artificial</translation>
 <translation id="1712552549805331520"><ph name="URL" /> quer armazenar dados no computador local</translation>
 <translation id="1713628304598226412">Bandeja 2</translation>
-<translation id="1715874602234207">S</translation>
+<translation id="1715874602234207">F</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1717494416764505390">Caixa de e-mails 3</translation>
 <translation id="1718029547804390981">O documento é grande demais para receber anotações</translation>
@@ -345,6 +343,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1807528111851433570">Página inicial</translation>
 <translation id="1812527064848182527">paisagem</translation>
+<translation id="1813414402673211292">Limpar dados de navegação</translation>
 <translation id="182139138257690338">downloads automáticos</translation>
 <translation id="1821930232296380041">Solicitação ou parâmetros de solicitação inválidos</translation>
 <translation id="1822540298136254167">Os sites que você visita e o tempo gasto neles</translation>
@@ -533,7 +532,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="236340516568226369">Menu de redimensionamento</translation>
 <translation id="2367567093518048410">Nível</translation>
-<translation id="2372464001869762664">Depois da confirmação, os detalhes do cartão da sua Conta do Google serão compartilhados com este site. Veja o CVC nos detalhes da sua Conta do Plex.</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2383455408879745299">Personalizar ferramentas de acessibilidade nas configurações do Chrome</translation>
 <translation id="2384307209577226199">Padrão da empresa</translation>
@@ -576,6 +574,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2505268675989099013">Proteger conta</translation>
 <translation id="2509167091171468975">Varejistas de alimentos e supermercado</translation>
 <translation id="2512101340618156538">Sem permissão (padrão)</translation>
+<translation id="2512413427717747692">Botão Definir o Chrome como navegador padrão: pressione Enter para definir o Chrome como o navegador padrão do sistema nas configurações do iOS</translation>
 <translation id="2515629240566999685">Verificar o sinal na sua área</translation>
 <translation id="2521385132275182522">Grampo na parte inferior direita</translation>
 <translation id="2521736961081452453">Criar formulário</translation>
@@ -591,6 +590,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2542106216580219892">Surfe</translation>
 <translation id="2544546346215446551">Seu administrador reiniciou o dispositivo</translation>
 <translation id="2544644783021658368">Documento avulso</translation>
+<translation id="254524874071906077">Definir o Chrome como navegador padrão</translation>
 <translation id="2546283357679194313">Cookies e dados do site</translation>
 <translation id="2547466893236767989">Web design e desenvolvimento</translation>
 <translation id="254947805923345898">O valor da política não é válido.</translation>
@@ -671,7 +671,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2728127805433021124">O certificado do servidor é assinado com um algoritmo de assinatura fraco.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Executar o Diagnóstico de Conectividade<ph name="END_LINK" /></translation>
 <translation id="2730600605555029057">Música clássica</translation>
-<translation id="2737403869486738563">Retome sua pesquisa para ver as atividades relevantes no seu histórico do Chrome</translation>
 <translation id="2738330467931008676">Escolher endereço de retirada</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2742511345840685325">Tênis de mesa</translation>
@@ -687,7 +686,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2792012897584536778">Os administradores deste dispositivo configuraram certificados de segurança que podem permitir que eles vejam o conteúdo dos sites que você visita.</translation>
 <translation id="2799020568854403057">O site a seguir contém apps prejudiciais</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
-<translation id="2799846101868535739">Botão "Retomar pesquisa". Pressione Enter para retomar a pesquisa e ver as atividades relacionadas no histórico do Chrome</translation>
 <translation id="2803306138276472711">A Navegação segura do Google recentemente <ph name="BEGIN_LINK" />detectou malware<ph name="END_LINK" /> em <ph name="SITE" />. Websites que geralmente são seguros, algumas vezes, são infetados com malware.</translation>
 <translation id="2807052079800581569">Posição da imagem Y</translation>
 <translation id="2820957248982571256">Verificando...</translation>
@@ -767,7 +765,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3029752078111257850">Notícias mundiais</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3041612393474885105">Informações do certificado</translation>
-<translation id="3044034790304486808">Retomar sua pesquisa</translation>
 <translation id="305162504811187366">o histórico da Área de trabalho remota do Google Chrome, incluindo carimbos de data/hora, hosts e IDs de sessões de clientes.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Aplicar patch ao serviço</translation>
@@ -878,6 +875,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3366477098757335611">Ver cartões</translation>
 <translation id="3369192424181595722">Erro do relógio</translation>
 <translation id="3369459162151165748">Peças e acessórios de veículos</translation>
+<translation id="3371064404604898522">Definir o Chrome como navegador padrão</translation>
 <translation id="3371076217486966826"><ph name="URL" /> quer:
       • criar um mapa 3D do ambiente a sua volta e acompanhar a posição da câmera;
       • usar a câmera.</translation>
@@ -970,7 +968,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="361438452008624280">Entrada "<ph name="LANGUAGE_ID" />": idioma desconhecido ou não compatível.</translation>
 <translation id="3614934205542186002"><ph name="RUN_CHROME_SAFETY_CHECK_FOCUSED_FRIENDLY_MATCH_TEXT" />. Pressione Tab e depois Enter para executar a confirmação de segurança nas configurações do Chrome</translation>
 <translation id="3615877443314183785">Informe uma data de validade válida</translation>
-<translation id="36224234498066874">Remover dados de navegação...</translation>
+<translation id="36224234498066874">Limpar dados de navegação...</translation>
 <translation id="362276910939193118">Mostrar histórico completo</translation>
 <translation id="3630155396527302611">Se ele já estiver listado como um programa que tem permissão para acessar a rede, tente
       removê-lo da lista e adicioná-lo novamente.</translation>
@@ -1053,7 +1051,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3816482573645936981">Valor (substituído)</translation>
 <translation id="382518646247711829">Se você usa um servidor proxy...</translation>
 <translation id="3827112369919217609">Absoluto</translation>
-<translation id="3827475930221174051">Com base em atividades relacionadas a "<ph name="SEARCH_TERM" />"</translation>
 <translation id="3827666161959873541">Filmes para a família</translation>
 <translation id="3828924085048779000">Uma senha vazia não é permitida.</translation>
 <translation id="3831065134033923230">Verificar as senhas salvas</translation>
@@ -1346,6 +1343,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="467662567472608290">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança contém erros. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> quer responder a eventos de acessibilidade</translation>
 <translation id="467809019005607715">Apresentações Google</translation>
+<translation id="4682496302933121474">Traduzir página?</translation>
 <translation id="468314109939257734">Ver o número do seu cartão virtual</translation>
 <translation id="4691835149146451662">Arch A (Envelope)</translation>
 <translation id="4692623383562244444">Mecanismos de pesquisa</translation>
@@ -1625,7 +1623,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="540969355065856584">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele não é válido no momento. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="5412236728747081950">Este site acessa seus interesses no Chrome para mostrar anúncios mais relevantes</translation>
 <translation id="541416427766103491">Empilhador 4</translation>
-<translation id="5421136146218899937">Remover dados de navegação...</translation>
+<translation id="5421136146218899937">Limpar dados de navegação...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> quer enviar notificações a você</translation>
 <translation id="5428105026674456456">Espanhol</translation>
 <translation id="5430298929874300616">Remover favorito</translation>
@@ -1661,7 +1659,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5528532273234423708">Automação residencial</translation>
 <translation id="55293785478302737">Costurar borda</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
-<translation id="5535133333442455806">Botão "Remover dados de navegação". Pressione "Enter" para limpar o histórico de navegação, os cookies, o cache e muito mais nas configurações do Chrome</translation>
+<translation id="5535133333442455806">Botão "Limpar dados de navegação". Pressione "Enter" para limpar o histórico de navegação, os cookies, o cache e muito mais nas configurações do Chrome</translation>
 <translation id="5536214594743852365">Mostrar a seção "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
@@ -1792,10 +1790,12 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5922853866070715753">Quase pronto</translation>
 <translation id="5928444777041341328">Casa e jardim</translation>
 <translation id="5932224571077948991">No site, há exibição de anúncios invasivos ou enganosos</translation>
+<translation id="5937560539988385583">Página traduzida</translation>
 <translation id="5938153366081463283">Adicionar cartão virtual</translation>
 <translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Abrindo <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Não é possível fazer a inscrição com a conta pessoal (pacote de licença disponível).</translation>
+<translation id="5953516610448771166">O recurso Legenda instantânea não está disponível para esse tipo de mídia. Se quiser ver legendas, bloqueie a configuração <ph name="CONTENT_SETTINGS" /> para este site.</translation>
 <translation id="5955063559762970069">Hotéis e acomodações</translation>
 <translation id="5963413905009737549">Seção</translation>
 <translation id="5967592137238574583">Edite as Informações de Contato</translation>
@@ -1889,6 +1889,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6232271601416750929">Beleza consciente</translation>
 <translation id="6233160458685643793">Sorrindo</translation>
 <translation id="6234122620015464377">Cortar a cada página impressa</translation>
+<translation id="6236290670123303279">Gerenciar configurações</translation>
 <translation id="6240447795304464094">Logotipo do Google Pay</translation>
 <translation id="6241121617266208201">Ocultar sugestões</translation>
 <translation id="624499991300733384">Serviço de criação de impressão</translation>
@@ -1920,6 +1921,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6319249456820053699">Câmeras e filmadoras</translation>
 <translation id="6321917430147971392">Verifique suas configurações do DNS</translation>
 <translation id="6322182122604171028">Não foi possível usar o Windows Hello</translation>
+<translation id="6326947323444967009">Defina o Chrome como o navegador padrão do sistema nas configurações do iOS</translation>
 <translation id="6328639280570009161">Tente desativar a previsão de rede</translation>
 <translation id="6328784461820205019">"Sua conexão não é particular" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ou "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ou "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ou "Erro de certificado SSL"</translation>
 <translation id="6328786501058569169">Este site é enganoso</translation>
@@ -2524,10 +2526,12 @@ Mais detalhes:
 <translation id="7995512525968007366">Não especificado</translation>
 <translation id="7998269595945679889">Botão "Abrir guia anônima": pressione "Enter" para abrir uma nova guia anônima e navegar com privacidade</translation>
 <translation id="800218591365569300">Tente fechar outras guias ou programas para liberar memória.</translation>
+<translation id="8003046808285812021">"<ph name="SEARCH_TERMS" />"</translation>
 <translation id="8004582292198964060">Navegador</translation>
+<translation id="8009225694047762179">Gerenciar senha</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Este cartão e o endereço de faturamento dele serão salvos. Você poderá usá-lo quando a conta <ph name="USER_EMAIL" /> estiver conectada.}one{Este cartão e o endereço de faturamento dele serão salvos. Você poderá usá-lo quando a conta <ph name="USER_EMAIL" /> estiver conectada.}other{Estes cartões e os endereços de faturamento deles serão salvos. Você poderá usá-los quando a conta <ph name="USER_EMAIL" /> estiver conectada.}}</translation>
 <translation id="8025119109950072390">Invasores nesse site podem induzir você a fazer algo perigoso, como instalar um software ou revelar suas informações pessoais (por exemplo, senhas, números de telefone ou cartões de crédito).</translation>
-<translation id="8026334261755873520">Remover dados de navegação</translation>
+<translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8027077570865220386">Bandeja 15</translation>
 <translation id="8028698320761417183"><ph name="CREATE_GOOGLE_FORM_FOCUSED_FRIENDLY_MATCH_TEXT" />. Pressione Tab e depois Enter para criar rapidamente um novo arquivo no Formulários Google</translation>
 <translation id="8028960012888758725">Cortar ao término da impressão</translation>
@@ -2623,6 +2627,7 @@ Mais detalhes:
 <translation id="8277900682056760511">A página do gerenciador de pagamento está aberta</translation>
 <translation id="8280630997017109758">Bandeja 11</translation>
 <translation id="8281084378435768645">Large photo</translation>
+<translation id="8281886186245836920">Pular</translation>
 <translation id="8282947398454257691">Saber seu identificador de dispositivo exclusivo</translation>
 <translation id="8284769179630993263">Gerencie o Navegação segura e muito mais nas configurações do Chrome</translation>
 <translation id="8286036467436129157">Fazer login</translation>
@@ -2883,6 +2888,7 @@ Mais detalhes:
 <translation id="908796725011587895">Esportes universitários</translation>
 <translation id="9089260154716455634">Política de horas de inatividade:</translation>
 <translation id="9095388113577226029">Mais idiomas…</translation>
+<translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />. Pressione Tab e depois Enter para definir o Chrome como o navegador padrão do sistema nas configurações do iOS</translation>
 <translation id="9096679202588811390">Programas de TV</translation>
 <translation id="9101630580131696064">Bandeja 1</translation>
 <translation id="9103537084693478942">Software de vídeo</translation>

@@ -160,14 +160,10 @@ static CompositingReasons DirectReasonsForSVGChildPaintProperties(
   return reasons;
 }
 
-static bool RequiresCompositingForAffectedByOuterViewportBoundsDelta(
+static CompositingReasons CompositingReasonsForViewportScrollEffect(
     const LayoutObject& layout_object) {
   if (!layout_object.IsBox())
-    return false;
-
-  if (layout_object.StyleRef().GetPosition() != EPosition::kFixed ||
-      !layout_object.StyleRef().IsFixedToBottom())
-    return false;
+    return CompositingReason::kNone;
 
   // Objects inside an iframe that's the root scroller should get the same
   // "pushed by top controls" behavior as for the main frame.
@@ -176,10 +172,22 @@ static bool RequiresCompositingForAffectedByOuterViewportBoundsDelta(
   if (!layout_object.GetFrame()->IsMainFrame() &&
       layout_object.GetFrame()->GetDocument() !=
           controller.GlobalRootScroller())
-    return false;
+    return CompositingReason::kNone;
 
-  // It's affected by viewport only if the container is the LayoutView.
-  return IsA<LayoutView>(layout_object.Container());
+  if (!To<LayoutBox>(layout_object).IsFixedToView())
+    return CompositingReason::kNone;
+
+  CompositingReasons reasons = CompositingReason::kNone;
+  // This ensures that the scroll_translation_for_fixed will be initialized in
+  // FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation which in
+  // turn ensures that a TransformNode is created (for fixed elements) in cc.
+  if (RuntimeEnabledFeatures::FixedElementsDontOverscrollEnabled())
+    reasons |= CompositingReason::kFixedToViewport;
+  
+  if (layout_object.StyleRef().IsFixedToBottom())
+    reasons |= CompositingReason::kAffectedByOuterViewportBoundsDelta;
+
+  return reasons;
 }
 
 CompositingReasons
@@ -224,8 +232,7 @@ CompositingReasonFinder::DirectReasonsForPaintPropertiesExceptScrolling(
 
   reasons |= CompositingReasonsForScrollDependentPosition(*layer);
 
-  if (RequiresCompositingForAffectedByOuterViewportBoundsDelta(object))
-    reasons |= CompositingReason::kAffectedByOuterViewportBoundsDelta;
+  reasons |= CompositingReasonsForViewportScrollEffect(object);
 
   if (style.HasBackdropFilter())
     reasons |= CompositingReason::kBackdropFilter;
@@ -369,13 +376,15 @@ CompositingReasonFinder::CompositingReasonsForScrollDependentPosition(
   // Don't promote fixed position elements that are descendants of a non-view
   // container, e.g. transformed elements.  They will stay fixed wrt the
   // container rather than the enclosing frame.
-  if (layer.FixedToViewport()) {
-    // We check for |HasOverflow| instead of |ScrollsOverflow| to ensure fixed
-    // position elements are composited under overflow: hidden, which can still
-    // have smooth scroll animations.
-    LocalFrameView* frame_view = layer.GetLayoutObject().GetFrameView();
-    if (frame_view->LayoutViewport()->HasOverflow())
-      reasons |= CompositingReason::kFixedPosition;
+  if (const auto* box = layer.GetLayoutBox()) {
+    if (box->IsFixedToView()) {
+      // We check for |HasOverflow| instead of |ScrollsOverflow| to ensure fixed
+      // position elements are composited under overflow: hidden, which can
+      // still have smooth scroll animations.
+      LocalFrameView* frame_view = layer.GetLayoutObject().GetFrameView();
+      if (frame_view->LayoutViewport()->HasOverflow())
+        reasons |= CompositingReason::kFixedPosition;
+    }
   }
 
   // Don't promote sticky position elements that cannot move with scrolls.

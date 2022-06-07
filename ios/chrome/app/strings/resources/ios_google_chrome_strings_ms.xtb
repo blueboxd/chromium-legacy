@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
-<translation id="1096883626080133124">Selesaikan lebih banyak tugas dengan Google Chrome yang mudah, selamat dan lebih pantas berbanding dahulu</translation>
 <translation id="1143896152279775643">Kata laluan anda akan disimpan pada Pengurus Kata Laluan Google untuk <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Bantu Tingkatkan Ciri dan Prestasi Chrome</translation>
 <translation id="1479202195792305274">Chrome boleh menyemak kata laluan anda apabila anda log masuk menggunakan Akaun Google anda.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Gunakan Chrome Everywhere</translation>
 <translation id="3522659714780527202">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chrome, hidupkan penyegerakan</translation>
 <translation id="3533694711092285624">Tiada kata laluan yang disimpan. Chrome boleh menyemak kata laluan anda yang disimpan.</translation>
-<translation id="3634910711516114487">Untuk memanfaatkan Chrome sepenuhnya, log masuk ke Chrome dengan Akaun Google anda</translation>
 <translation id="3655656110921623717">Ini bermakna Chrome akan meminta laman mudah alih setiap masa.</translation>
 <translation id="3706101708757577809">Kini, anda boleh menggunakan Chrome pada bila-bila masa anda mengetik pautan dalam mesej, dokumen dan apl lain.</translation>
 <translation id="3720541637541300822">Kunci Tab Inkognito Apabila Anda Menutup Chrome</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Kata laluan anda terdedah dalam suatu pelanggaran data. Pengurus Kata Laluan Google mengesyorkan agar anda menukarnya sekarang.</translation>
 <translation id="6822673484890854830">Chrome tidak dapat menyemak semua kata laluan. Cuba lagi nanti.</translation>
 <translation id="6964931465519938134">Kini, anda boleh menggunakan Chrome pada bila-bila masa anda mengetik pautan dalam mesej, dokumen dan apl lain.</translation>
-<translation id="7046845777663074840">Apabila dihidupkan:
-<ph name="BEGIN_INDENT" />  • Bantu jadikan Chrome lebih baik untuk orang yang menggunakannya seperti anda.<ph name="END_INDENT" />
-
-Perkara yang perlu dipertimbangkan:
-<ph name="BEGIN_INDENT" />  • Maklumat tentang penggunaan Chrome anda dihantar kepada Google, tetapi maklumat ini tidak mengikat anda.
-
-  • Jika Chrome ranap, butiran tentang keranapan mungkin termasuk beberapa maklumat peribadi.
-
-  • Jika anda menghidupkan penyegerakan, metrik juga mungkin merangkumi maklumat tentang URL yang anda lawati.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Peribadikan Chrome Anda</translation>
 <translation id="7124339256045485976">Pastikan Chrome terkini</translation>
 <translation id="7161390184744336561">Google Chrome sudah lapuk</translation>
 <translation id="7165736900384873061">Mula menggunakan pengimbas QR Google Chrome</translation>
 <translation id="7172660552945675509">Petua: <ph name="BEGIN_LINK" />Alihkan Chrome ke dok anda<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome menggunakan ID Wajah untuk memastikan akses yang dibenarkan kepada kata laluan anda.</translation>
+<translation id="7187993566681480880">Memastikan anda selamat pada Chrome dan mungkin digunakan untuk meningkatkan keselamatan anda dalam apl Google yang lain apabila anda log masuk.</translation>
 <translation id="72119412072970160">Anda boleh menggunakan kata laluan yang anda simpan pada Pengurus Kata Laluan Google dalam apl lain pada iPad anda.</translation>
 <translation id="7261678641327190792">Chrome tidak dapat menyemak kata laluan anda</translation>
 <translation id="7272930098487145294">Untuk menyimpan imej, ketik Tetapan untuk membolehkan Chrome membuat penambahan pada foto anda.</translation>
@@ -110,6 +100,7 @@ Perkara yang perlu dipertimbangkan:
 <translation id="766361182512894255">Kata laluan anda terdedah dalam suatu pelanggaran data. Chrome mengesyorkan supaya kata laluan ditukar sekarang.</translation>
 <translation id="7693590760643069321">Kini anda boleh menggunakan Chrome pada bila-bila masa anda mengetik pautan dalam mesej, dokumen dan apl lain.</translation>
 <translation id="7698568245838009292">Chrome Ingin Mengakses Kamera Anda</translation>
+<translation id="7780154209050837198">Untuk memanfaatkan Chrome sepenuhnya, log masuk ke Chrome dengan Google Account anda.</translation>
 <translation id="7855730255114109580">Google Chrome adalah yang terkini</translation>
 <translation id="8022947259858476807">Gunakan Chrome secara lalai untuk membuka pautan, mencari daripada widget dan melengkapkan kata laluan secara automatik dalam apl lain</translation>
 <translation id="8160472928944011082">Chrome tidak dapat mengemas kini</translation>

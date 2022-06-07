@@ -38,34 +38,27 @@ class NGTableConstraintSpaceData
 
   // Data needed by row layout algorithm.
   struct Row {
-    Row(LayoutUnit baseline,
-        LayoutUnit block_size,
+    Row(LayoutUnit block_size,
         wtf_size_t start_cell_index,
         wtf_size_t cell_count,
-        bool has_baseline_aligned_percentage_block_size_descendants,
+        absl::optional<LayoutUnit> baseline,
         bool is_collapsed)
-        : baseline(baseline),
-          block_size(block_size),
+        : block_size(block_size),
           start_cell_index(start_cell_index),
           cell_count(cell_count),
-          has_baseline_aligned_percentage_block_size_descendants(
-              has_baseline_aligned_percentage_block_size_descendants),
+          baseline(baseline),
           is_collapsed(is_collapsed) {}
 
     bool MaySkipLayout(const Row& other) const {
       // We don't compare |start_cell_index| as this is allowed to change.
-      return baseline == other.baseline && block_size == other.block_size &&
-             cell_count == other.cell_count &&
-             has_baseline_aligned_percentage_block_size_descendants ==
-                 other.has_baseline_aligned_percentage_block_size_descendants &&
-             is_collapsed == other.is_collapsed;
+      return block_size == other.block_size && cell_count == other.cell_count &&
+             baseline == other.baseline && is_collapsed == other.is_collapsed;
     }
 
-    const LayoutUnit baseline;
     const LayoutUnit block_size;
     const wtf_size_t start_cell_index;
     const wtf_size_t cell_count;
-    const bool has_baseline_aligned_percentage_block_size_descendants;
+    const absl::optional<LayoutUnit> baseline;
     const bool is_collapsed;
   };
 
@@ -74,20 +67,23 @@ class NGTableConstraintSpaceData
     Cell(NGBoxStrut borders,
          LayoutUnit rowspan_block_size,
          wtf_size_t start_column,
-         bool has_grown,
-         bool is_constrained)
+         bool is_initial_block_size_indefinite,
+         bool has_descendant_that_depends_on_percentage_block_size)
         : borders(borders),
           rowspan_block_size(rowspan_block_size),
           start_column(start_column),
-          has_grown(has_grown),
-          is_constrained(is_constrained) {}
+          is_initial_block_size_indefinite(is_initial_block_size_indefinite),
+          has_descendant_that_depends_on_percentage_block_size(
+              has_descendant_that_depends_on_percentage_block_size) {}
 
     bool operator==(const Cell& other) const {
       return borders == other.borders &&
              rowspan_block_size == other.rowspan_block_size &&
              start_column == other.start_column &&
-             has_grown == other.has_grown &&
-             is_constrained == other.is_constrained;
+             is_initial_block_size_indefinite ==
+                 other.is_initial_block_size_indefinite &&
+             has_descendant_that_depends_on_percentage_block_size ==
+                 other.has_descendant_that_depends_on_percentage_block_size;
     }
     bool operator!=(const Cell& other) const { return !(*this == other); }
 
@@ -96,8 +92,8 @@ class NGTableConstraintSpaceData
     // Size of the cell. Need this for cells that span multiple rows.
     const LayoutUnit rowspan_block_size;
     const wtf_size_t start_column;
-    const bool has_grown;
-    const bool is_constrained;
+    const bool is_initial_block_size_indefinite;
+    const bool has_descendant_that_depends_on_percentage_block_size;
   };
 
   bool IsTableSpecificDataEqual(const NGTableConstraintSpaceData& other) const {

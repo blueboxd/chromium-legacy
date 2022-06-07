@@ -13,14 +13,15 @@
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_presentation_handler.h"
 #include "ios/chrome/browser/ui/permissions/permission_info.h"
 #import "ios/chrome/browser/ui/permissions/permission_metrics_util.h"
+#import "ios/chrome/browser/ui/permissions/permissions_constants.h"
 #import "ios/chrome/browser/ui/permissions/permissions_delegate.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_switch_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/permissions/permissions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -237,10 +238,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     // Remove the switch item if the permission is not accessible.
     if (state == web::PermissionStateNotAccessible) {
-      [self removeFromModelItemAtIndexPaths:@[ index ]];
+      [self.tableViewModel removeItemWithType:itemType
+                    fromSectionWithIdentifier:SectionIdentifierContent];
+      [self.presentationHandler resizeInfobarModal];
       [self.tableView deleteRowsAtIndexPaths:@[ index ]
                             withRowAnimation:UITableViewRowAnimationAutomatic];
-      [self.presentationHandler resizeInfobarModal];
     } else {
       TableViewSwitchItem* currentItem =
           base::mac::ObjCCastStrict<TableViewSwitchItem>(
@@ -268,6 +270,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewSwitchItem alloc] initWithType:itemType];
   switchItem.text = label;
   switchItem.on = state == web::PermissionStateAllowed;
+  switchItem.accessibilityIdentifier =
+      itemType == ItemTypePermissionsCamera
+          ? kInfobarModalCameraSwitchAccessibilityIdentifier
+          : kInfobarModalMicrophoneSwitchAccessibilityIdentifier;
 
   // If ItemTypePermissionsMicrophone is already added, insert the
   // ItemTypePermissionsCamera before the ItemTypePermissionsMicrophone.
@@ -285,10 +291,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   if (tableViewLoaded) {
+    [self.presentationHandler resizeInfobarModal];
     NSIndexPath* index = [self.tableViewModel indexPathForItemType:itemType];
     [self.tableView insertRowsAtIndexPaths:@[ index ]
                           withRowAnimation:UITableViewRowAnimationAutomatic];
-    [self.presentationHandler resizeInfobarModal];
   }
 }
 

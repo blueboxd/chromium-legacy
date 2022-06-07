@@ -55,6 +55,28 @@ class MockFastPairRepository : public FastPairRepository {
               GetImagesForDevice,
               (const std::string& device_id),
               (override));
+  MOCK_METHOD(void,
+              CheckOptInStatus,
+              (CheckOptInStatusCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              UpdateOptInStatus,
+              (nearby::fastpair::OptInStatus opt_in_status,
+               UpdateOptInStatusCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              DeleteAssociatedDeviceByAccountKey,
+              (const std::vector<uint8_t>& account_key,
+               DeleteAssociatedDeviceByAccountKeyCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              GetSavedDevices,
+              (GetSavedDevicesCallback callback),
+              (override));
+  MOCK_METHOD(bool,
+              IsAccountKeyPairedLocally,
+              (const std::vector<uint8_t>& account_key),
+              (override));
 };
 
 }  // namespace quick_pair

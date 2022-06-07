@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -123,7 +124,10 @@ void RenderViewImpl::Initialize(
   webview_ = WebView::Create(
       this, params->hidden, params->is_prerendering,
       params->type == mojom::ViewWidgetType::kPortal ? true : false,
-      params->type == mojom::ViewWidgetType::kFencedFrame ? true : false,
+      params->type == mojom::ViewWidgetType::kFencedFrame
+          ? params->fenced_frame_mode
+          : static_cast<absl::optional<blink::mojom::FencedFrameMode>>(
+                absl::nullopt),
       /*compositing_enabled=*/true, params->never_composited,
       opener_frame ? opener_frame->View() : nullptr,
       std::move(params->blink_page_broadcast),
@@ -320,6 +324,15 @@ WebView* RenderViewImpl::CreateView(
   if (status == mojom::CreateNewWindowStatus::kBlocked)
     return nullptr;
 
+  // Consume the transient user activation in the current renderer.
+  consumed_user_gesture = creator->ConsumeTransientUserActivation(
+      blink::UserActivationUpdateSource::kBrowser);
+
+  // If we should ignore the new window (e.g. because of `noopener`), return
+  // now that user activation was consumed.
+  if (status == mojom::CreateNewWindowStatus::kIgnore)
+    return nullptr;
+
   // For Android WebView, we support a pop-up like behavior for window.open()
   // even if the embedding app doesn't support multiple windows. In this case,
   // window.open() will return "window" and navigate it to whatever URL was
@@ -331,15 +344,6 @@ WebView* RenderViewImpl::CreateView(
   // be checked directly in the browser side.
   if (status == mojom::CreateNewWindowStatus::kReuse)
     return GetWebView();
-
-  // Consume the transient user activation in the current renderer.
-  consumed_user_gesture = creator->ConsumeTransientUserActivation(
-      blink::UserActivationUpdateSource::kBrowser);
-
-  // If we should ignore the new window (e.g. because of `noopener`), return
-  // now that user activation was consumed.
-  if (status == mojom::CreateNewWindowStatus::kIgnore)
-    return nullptr;
 
   DCHECK(reply);
   DCHECK_NE(MSG_ROUTING_NONE, reply->route_id);

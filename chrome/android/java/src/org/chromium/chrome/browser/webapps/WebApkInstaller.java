@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.intents.WebappIntentUtils;
 import org.chromium.chrome.browser.browserservices.metrics.WebApkUmaRecorder;
+import org.chromium.components.webapps.WebApkInstallResult;
 
 /**
  * Java counterpart to webapk_installer.h
@@ -71,7 +72,7 @@ public class WebApkInstaller {
         }
 
         if (mInstallDelegate == null) {
-            notify(WebApkInstallResult.FAILURE);
+            notify(WebApkInstallResult.NO_INSTALLER);
             WebApkUmaRecorder.recordGooglePlayInstallResult(
                     WebApkUmaRecorder.GooglePlayInstallResult.FAILED_NO_DELEGATE);
             return;
@@ -124,7 +125,7 @@ public class WebApkInstaller {
     private void updateAsync(
             String packageName, int version, String title, String token) {
         if (mInstallDelegate == null) {
-            notify(WebApkInstallResult.FAILURE);
+            notify(WebApkInstallResult.NO_INSTALLER);
             return;
         }
 

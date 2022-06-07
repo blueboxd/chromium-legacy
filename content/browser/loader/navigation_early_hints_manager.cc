@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/storage_partition.h"
@@ -87,6 +88,11 @@ constexpr char kEarlyHintsPreloadForNavigationOriginTrialName[] =
 bool IsDisabledEarlyHintsPreloadForcibly() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kEarlyHintsPreloadForNavigation, "force_disable", false);
+}
+
+bool IsEnabledEarlyHintsPreconnect() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kEarlyHintsPreloadForNavigation, "enable_preconnect", true);
 }
 
 network::mojom::CSPDirectiveName LinkAsAttributeToCSPDirective(
@@ -424,6 +430,16 @@ NavigationEarlyHintsManager::~NavigationEarlyHintsManager() = default;
 void NavigationEarlyHintsManager::HandleEarlyHints(
     network::mojom::EarlyHintsPtr early_hints,
     const network::ResourceRequest& request_for_navigation) {
+  // Ignore the second and subsequent responses to avoid situations where
+  // policies such as CSP are inconsistent among the first and following
+  // responses.
+  // TODO(https://crbug.com/1305896): Refer to a relevant specification once the
+  // spec discussion is settled.
+  if (was_first_early_hints_received_)
+    return;
+
+  was_first_early_hints_received_ = true;
+
   net::ReferrerPolicy referrer_policy =
       Referrer::ReferrerPolicyForUrlRequest(early_hints->referrer_policy);
   bool enabled_by_origin_trial = IsPreloadForNavigationEnabledByOriginTrial(
@@ -514,6 +530,9 @@ void NavigationEarlyHintsManager::MaybePreconnect(
     const network::mojom::LinkHeaderPtr& link,
     bool enabled_by_origin_trial) {
   was_resource_hints_received_ = true;
+
+  if (!IsEnabledEarlyHintsPreconnect())
+    return;
 
   if (!ShouldHandleResourceHints(link, enabled_by_origin_trial))
     return;

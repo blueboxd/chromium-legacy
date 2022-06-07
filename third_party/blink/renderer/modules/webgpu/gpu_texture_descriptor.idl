@@ -11,6 +11,7 @@ dictionary GPUTextureDescriptor : GPUObjectDescriptorBase {
     GPUTextureDimension dimension = "2d";
     required GPUTextureFormat format;
     required GPUTextureUsageFlags usage;
+    sequence<GPUTextureFormat> viewFormats = [];
 };
 
 enum GPUTextureDimension {
@@ -69,6 +70,7 @@ enum GPUTextureFormat {
     "depth24plus-stencil8",
     "depth24unorm-stencil8",
     "depth16unorm",
+    "stencil8",
     /* Block Compression (BC) formats */
     "bc1-rgba-unorm",
     "bc1-rgba-unorm-srgb",

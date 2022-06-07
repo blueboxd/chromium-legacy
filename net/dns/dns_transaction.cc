@@ -51,7 +51,6 @@
 #include "net/dns/dns_response_result_extractor.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
-#include "net/dns/dns_socket_allocator.h"
 #include "net/dns/dns_udp_tracker.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
@@ -68,6 +67,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
+#include "net/socket/client_socket_factory.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/third_party/uri_template/uri_template.h"
@@ -199,11 +199,13 @@ class DnsUDPAttempt : public DnsAttempt {
  public:
   DnsUDPAttempt(size_t server_index,
                 std::unique_ptr<DatagramClientSocket> socket,
+                const IPEndPoint& server,
                 std::unique_ptr<DnsQuery> query,
                 DnsUdpTracker* udp_tracker)
       : DnsAttempt(server_index),
         next_state_(STATE_NONE),
         socket_(std::move(socket)),
+        server_(server),
         query_(std::move(query)),
         udp_tracker_(udp_tracker) {}
 
@@ -217,6 +219,13 @@ class DnsUDPAttempt : public DnsAttempt {
     callback_ = std::move(callback);
     start_time_ = base::TimeTicks::Now();
     next_state_ = STATE_SEND_QUERY;
+
+    int rv = socket_->Connect(server_);
+    if (rv != OK) {
+      DVLOG(1) << "Failed to connect socket: " << rv;
+      udp_tracker_->RecordConnectionError(rv);
+      return ERR_CONNECTION_REFUSED;
+    }
 
     IPEndPoint local_address;
     if (socket_->GetLocalAddress(&local_address) == OK)
@@ -347,6 +356,7 @@ class DnsUDPAttempt : public DnsAttempt {
   base::TimeTicks start_time_;
 
   std::unique_ptr<DatagramClientSocket> socket_;
+  IPEndPoint server_;
   std::unique_ptr<DnsQuery> query_;
 
   // Should be owned by the DnsSession, to which the transaction should own a
@@ -1099,7 +1109,6 @@ class DnsTransactionImpl : public DnsTransaction,
   DnsTransactionImpl(DnsSession* session,
                      std::string hostname,
                      uint16_t qtype,
-                     DnsTransactionFactory::CallbackType callback,
                      const NetLogWithSource& net_log,
                      const OptRecordRdata* opt_rdata,
                      bool secure,
@@ -1112,7 +1121,6 @@ class DnsTransactionImpl : public DnsTransaction,
         opt_rdata_(opt_rdata),
         secure_(secure),
         secure_dns_mode_(secure_dns_mode),
-        callback_(std::move(callback)),
         fast_timeout_(fast_timeout),
         net_log_(net_log),
         qnames_initial_size_(0),
@@ -1122,7 +1130,6 @@ class DnsTransactionImpl : public DnsTransaction,
         request_priority_(DEFAULT_PRIORITY) {
     DCHECK(session_.get());
     DCHECK(!hostname_.empty());
-    DCHECK(!callback_.is_null());
     DCHECK(!IsIPLiteral(hostname_));
   }
 
@@ -1147,9 +1154,13 @@ class DnsTransactionImpl : public DnsTransaction,
     return qtype_;
   }
 
-  void Start() override {
-    DCHECK(!callback_.is_null());
+  void Start(ResponseCallback callback) override {
+    DCHECK(!callback.is_null());
+    DCHECK(callback_.is_null());
     DCHECK(attempts_.empty());
+
+    callback_ = std::move(callback);
+
     net_log_.BeginEvent(NetLogEventType::DNS_TRANSACTION,
                         [&] { return NetLogStartParams(hostname_, qtype_); });
     time_from_start_ = std::make_unique<base::ElapsedTimer>();
@@ -1266,7 +1277,7 @@ class DnsTransactionImpl : public DnsTransaction,
           session_->config().doh_config.servers()[server_index]);
     }
 
-    std::move(callback_).Run(this, result.rv, response, doh_provider_id);
+    std::move(callback_).Run(result.rv, response, doh_provider_id);
   }
 
   void RecordAttemptUma(DnsAttemptType attempt_type) {
@@ -1327,28 +1338,24 @@ class DnsTransactionImpl : public DnsTransaction,
                                std::unique_ptr<DnsQuery> query) {
     DCHECK(!secure_);
     DCHECK(!session_->udp_tracker()->low_entropy());
+
+    const DnsConfig& config = session_->config();
+    DCHECK_LT(server_index, config.nameservers.size());
     size_t attempt_number = attempts_.size();
 
-    int connection_error = OK;
     std::unique_ptr<DatagramClientSocket> socket =
-        session_->socket_allocator()->CreateConnectedUdpSocket(
-            server_index, &connection_error);
+        resolve_context_->url_request_context()
+            ->GetNetworkSessionContext()
+            ->client_socket_factory->CreateDatagramClientSocket(
+                DatagramSocket::RANDOM_BIND, net_log_.net_log(),
+                net_log_.source());
 
-    bool got_socket = !!socket.get();
-    DCHECK_EQ(got_socket, connection_error == OK);
-
-    DnsUDPAttempt* attempt =
-        new DnsUDPAttempt(server_index, std::move(socket), std::move(query),
-                          session_->udp_tracker());
-
-    attempts_.push_back(base::WrapUnique(attempt));
+    attempts_.push_back(std::make_unique<DnsUDPAttempt>(
+        server_index, std::move(socket), config.nameservers[server_index],
+        std::move(query), session_->udp_tracker()));
     ++attempts_count_;
 
-    if (!got_socket) {
-      session_->udp_tracker()->RecordConnectionError(connection_error);
-      return AttemptResult(ERR_CONNECTION_REFUSED, nullptr);
-    }
-
+    DnsAttempt* attempt = attempts_.back().get();
     net_log_.AddEventReferencingSource(NetLogEventType::DNS_TRANSACTION_ATTEMPT,
                                        attempt->GetSocketNetLog().source());
 
@@ -1415,19 +1422,27 @@ class DnsTransactionImpl : public DnsTransaction,
   AttemptResult MakeTcpAttempt(size_t server_index,
                                std::unique_ptr<DnsQuery> query) {
     DCHECK(!secure_);
+    const DnsConfig& config = session_->config();
+    DCHECK_LT(server_index, config.nameservers.size());
 
-    std::unique_ptr<StreamSocket> socket(
-        session_->socket_allocator()->CreateTcpSocket(server_index,
-                                                      net_log_.source()));
+    // TODO(https://crbug.com/1123197): Pass a non-null NetworkQualityEstimator.
+    NetworkQualityEstimator* network_quality_estimator = nullptr;
+
+    std::unique_ptr<StreamSocket> socket =
+        resolve_context_->url_request_context()
+            ->GetNetworkSessionContext()
+            ->client_socket_factory->CreateTransportClientSocket(
+                AddressList(config.nameservers[server_index]), nullptr,
+                network_quality_estimator, net_log_.net_log(),
+                net_log_.source());
 
     unsigned attempt_number = attempts_.size();
 
-    DnsTCPAttempt* attempt =
-        new DnsTCPAttempt(server_index, std::move(socket), std::move(query));
-
-    attempts_.push_back(base::WrapUnique(attempt));
+    attempts_.push_back(std::make_unique<DnsTCPAttempt>(
+        server_index, std::move(socket), std::move(query)));
     ++attempts_count_;
 
+    DnsAttempt* attempt = attempts_.back().get();
     net_log_.AddEventReferencingSource(
         NetLogEventType::DNS_TRANSACTION_TCP_ATTEMPT,
         attempt->GetSocketNetLog().source());
@@ -1663,7 +1678,7 @@ class DnsTransactionImpl : public DnsTransaction,
   const bool secure_;
   const SecureDnsMode secure_dns_mode_;
   // Cleared in DoCallback.
-  DnsTransactionFactory::CallbackType callback_;
+  ResponseCallback callback_;
 
   // When true, transaction should time out immediately on expiration of the
   // last attempt fallback period rather than waiting the overall transaction
@@ -1709,16 +1724,14 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
   std::unique_ptr<DnsTransaction> CreateTransaction(
       std::string hostname,
       uint16_t qtype,
-      CallbackType callback,
       const NetLogWithSource& net_log,
       bool secure,
       SecureDnsMode secure_dns_mode,
       ResolveContext* resolve_context,
       bool fast_timeout) override {
     return std::make_unique<DnsTransactionImpl>(
-        session_.get(), std::move(hostname), qtype, std::move(callback),
-        net_log, opt_rdata_.get(), secure, secure_dns_mode, resolve_context,
-        fast_timeout);
+        session_.get(), std::move(hostname), qtype, net_log, opt_rdata_.get(),
+        secure, secure_dns_mode, resolve_context, fast_timeout);
   }
 
   std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(

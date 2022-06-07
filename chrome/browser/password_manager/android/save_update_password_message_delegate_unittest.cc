@@ -13,7 +13,9 @@
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/messages/android/mock_message_dispatcher_bridge.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
@@ -323,8 +325,6 @@ TEST_P(SaveUpdatePasswordMessageDelegateTest,
 
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON),
             GetMessageWrapper()->GetPrimaryButtonText());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLOCKLIST_BUTTON),
-            GetMessageWrapper()->GetSecondaryButtonMenuText());
 
   if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
@@ -335,7 +335,9 @@ TEST_P(SaveUpdatePasswordMessageDelegateTest,
     EXPECT_EQ(ResourceMapper::MapToJavaDrawableId(
                   IDR_ANDROID_PASSWORD_MANAGER_LOGO_24DP),
               GetMessageWrapper()->GetIconResourceId());
-
+    EXPECT_EQ(
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MESSAGE_NEVER_SAVE_MENU_ITEM),
+        GetMessageWrapper()->GetSecondaryButtonMenuText());
   } else {
     EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD),
               GetMessageWrapper()->GetTitle());
@@ -348,6 +350,8 @@ TEST_P(SaveUpdatePasswordMessageDelegateTest,
     EXPECT_EQ(
         ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_INFOBAR_SAVE_PASSWORD),
         GetMessageWrapper()->GetIconResourceId());
+    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLOCKLIST_BUTTON),
+              GetMessageWrapper()->GetSecondaryButtonMenuText());
   }
 
   EXPECT_EQ(ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_MESSAGE_SETTINGS),

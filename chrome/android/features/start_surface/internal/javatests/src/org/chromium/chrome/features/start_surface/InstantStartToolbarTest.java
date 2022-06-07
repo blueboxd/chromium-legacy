@@ -74,7 +74,10 @@ public class InstantStartToolbarTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(1)
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_START)
+                    .build();
 
     @After
     public void tearDown() {
@@ -127,7 +130,7 @@ public class InstantStartToolbarTest {
     @SmallTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS})
-    @DisabledTest(message = "https://crbug.com/1263928")
+    @DisabledTest(message = "https://crbug.com/1314462")
     public void renderSingleAsHomepage_NoTab_scrollToolbarToTop() throws IOException {
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();

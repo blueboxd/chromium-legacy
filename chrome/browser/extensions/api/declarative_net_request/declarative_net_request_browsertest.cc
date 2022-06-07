@@ -26,7 +26,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -5428,17 +5427,19 @@ class DeclarativeNetRequestSubresourceWebBundlesBrowserTest
     bool success = false;
     std::string script = base::StringPrintf(R"(
           (() => {
-            const link = document.createElement('link');
-            link.rel = 'webbundle';
-            link.addEventListener('load', () => {
+            const script = document.createElement('script');
+            script.type = 'webbundle';
+            script.addEventListener('load', () => {
               window.domAutomationController.send(true);
             });
-            link.addEventListener('error', () => {
+            script.addEventListener('error', () => {
               window.domAutomationController.send(false);
             });
-            link.href = '%s';
-            link.resources = '%s';
-            document.body.appendChild(link);
+            script.textContent = JSON.stringify({
+              source: '%s',
+              resources: ['%s'],
+            });
+            document.body.appendChild(script);
           })();
         )",
                                             href.c_str(), resources.c_str());
@@ -5492,75 +5493,6 @@ class DeclarativeNetRequestSubresourceWebBundlesBrowserTest
         }));
   }
 
-  void RunUuidUrlTest(const std::string& pass_js_url,
-                      const std::string& cancel_js_url) {
-    TestRule rule = CreateGenericRule();
-    std::vector<TestRule> rules;
-    rule.id = kMinValidID;
-    rule.condition->url_filter = cancel_js_url + "|";
-    rule.condition->resource_types = {"script"};
-    rule.priority = 1;
-    rules.push_back(rule);
-    ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
-
-    static constexpr char kHtmlTemplate[] = R"(
-        <title>Loaded</title>
-        <body>
-        <script>
-        (() => {
-          const wbn_url =
-              new URL('./web_bundle.wbn', location.href).toString();
-          const pass_js_url = '%s';
-          const cancel_js_url = '%s';
-          const link = document.createElement('link');
-          link.rel = 'webbundle';
-          link.href = wbn_url;
-          link.resources = pass_js_url + ' ' + cancel_js_url;
-          document.body.appendChild(link);
-        })();
-        </script>
-        </body>
-      )";
-    const std::string page_html = base::StringPrintf(
-        kHtmlTemplate, pass_js_url.c_str(), cancel_js_url.c_str());
-
-    std::string web_bundle;
-    RegisterWebBundleRequestHandler("/web_bundle.wbn", &web_bundle);
-    RegisterRequestHandler("/test.html", "text/html", page_html);
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    // Create a web bundle.
-    // Currently the web bundle format requires a valid GURL for the fallback
-    // URL of a web bundle. So we use |pass_js_url_str| for the fallback URL.
-    // TODO(crbug.com/966753): Stop using |pass_js_url_str| when
-    // https://github.com/WICG/webpackage/issues/590 is resolved.
-    web_package::WebBundleBuilder builder(pass_js_url, "");
-    auto pass_js_location = builder.AddResponse(
-        {{":status", "200"}, {"content-type", "application/javascript"}},
-        "document.title = 'script loaded';");
-    auto cancel_js_location = builder.AddResponse(
-        {{":status", "200"}, {"content-type", "application/javascript"}}, "");
-    builder.AddIndexEntry(pass_js_url, "", {pass_js_location});
-    builder.AddIndexEntry(cancel_js_url, "", {cancel_js_location});
-    std::vector<uint8_t> bundle = builder.CreateBundle();
-    web_bundle = std::string(bundle.begin(), bundle.end());
-
-    GURL page_url = embedded_test_server()->GetURL("/test.html");
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
-    EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
-
-    std::u16string expected_title = u"script loaded";
-    content::TitleWatcher title_watcher(web_contents, expected_title);
-    EXPECT_TRUE(TryLoadScript(pass_js_url));
-    // Check that the pass_js_url script in the web bundle is correctly loaded
-    // even when the extension with blocking handler intercepted the request.
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-
-    EXPECT_FALSE(TryLoadScript(cancel_js_url));
-  }
-
  private:
   base::test::ScopedFeatureList feature_list_;
 };
@@ -5588,11 +5520,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
           const pass_js_url = new URL('./pass.js', location.href).toString();
           const cancel_js_url =
               new URL('./cancel.js', location.href).toString();
-          const link = document.createElement('link');
-          link.rel = 'webbundle';
-          link.href = wbn_url;
-          link.resources = pass_js_url + ' ' + cancel_js_url;
-          document.body.appendChild(link);
+          const script = document.createElement('script');
+          script.type = 'webbundle';
+          script.textContent = JSON.stringify({
+            source: wbn_url,
+            resources: [pass_js_url, cancel_js_url]
+          });
+          document.body.appendChild(script);
         })();
         </script>
         </body>
@@ -5608,18 +5542,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
       embedded_test_server()->GetURL("/pass.js").spec();
   std::string cancel_js_url_str =
       embedded_test_server()->GetURL("/cancel.js").spec();
-  // Currently the web bundle format requires a valid GURL for the fallback URL
-  // of a web bundle. So we use |pass_js_url_str| for the fallback URL.
-  // TODO(crbug.com/966753): Stop using |pass_js_url_str| when
-  // https://github.com/WICG/webpackage/issues/590 is resolved.
-  web_package::WebBundleBuilder builder(pass_js_url_str, "");
-  auto pass_js_location = builder.AddResponse(
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(
+      pass_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'script loaded';");
-  auto cancel_js_location = builder.AddResponse(
+  builder.AddExchange(
+      cancel_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}}, "");
-  builder.AddIndexEntry(pass_js_url_str, "", {pass_js_location});
-  builder.AddIndexEntry(cancel_js_url_str, "", {cancel_js_location});
   std::vector<uint8_t> bundle = builder.CreateBundle();
   web_bundle = std::string(bundle.begin(), bundle.end());
 
@@ -5643,16 +5573,72 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
 // inside the web bundle whose URL is uuid-in-package:.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
                        RequestCanceledUuidInPackageUrl) {
-  RunUuidUrlTest("uuid-in-package:fc80c15b-69e9-4a45-ab41-9c90d2b55976",
-                 "uuid-in-package:15d749ad-7d9f-49d9-94f7-83a866e7fef8");
-}
+  const char pass_js_url[] =
+      "uuid-in-package:fc80c15b-69e9-4a45-ab41-9c90d2b55976";
+  const char cancel_js_url[] =
+      "uuid-in-package:15d749ad-7d9f-49d9-94f7-83a866e7fef8";
+  TestRule rule = CreateGenericRule();
+  std::vector<TestRule> rules;
+  rule.id = kMinValidID;
+  rule.condition->url_filter = std::string(cancel_js_url) + "|";
+  rule.condition->resource_types = {"script"};
+  rule.priority = 1;
+  rules.push_back(rule);
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
 
-// Ensure DeclarativeNetRequest API can block the requests for the subresources
-// inside the web bundle which URL is urn uuid.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
-                       RequestCanceledUrnUUIDUrl) {
-  RunUuidUrlTest("urn:uuid:fc80c15b-69e9-4a45-ab41-9c90d2b55976",
-                 "urn:uuid:15d749ad-7d9f-49d9-94f7-83a866e7fef8");
+  static constexpr char kHtmlTemplate[] = R"(
+        <title>Loaded</title>
+        <body>
+        <script>
+        (() => {
+          const wbn_url =
+              new URL('./web_bundle.wbn', location.href).toString();
+          const pass_js_url = '%s';
+          const cancel_js_url = '%s';
+          const script = document.createElement('script');
+          script.type = 'webbundle';
+          script.textContent = JSON.stringify({
+            source: wbn_url,
+            resources: [pass_js_url, cancel_js_url]
+          });
+          document.body.appendChild(script);
+        })();
+        </script>
+        </body>
+      )";
+  const std::string page_html =
+      base::StringPrintf(kHtmlTemplate, pass_js_url, cancel_js_url);
+
+  std::string web_bundle;
+  RegisterWebBundleRequestHandler("/web_bundle.wbn", &web_bundle);
+  RegisterRequestHandler("/test.html", "text/html", page_html);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(
+      pass_js_url,
+      {{":status", "200"}, {"content-type", "application/javascript"}},
+      "document.title = 'script loaded';");
+  builder.AddExchange(
+      cancel_js_url,
+      {{":status", "200"}, {"content-type", "application/javascript"}}, "");
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  web_bundle = std::string(bundle.begin(), bundle.end());
+
+  GURL page_url = embedded_test_server()->GetURL("/test.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
+  EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
+
+  std::u16string expected_title = u"script loaded";
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  EXPECT_TRUE(TryLoadScript(pass_js_url));
+  // Check that the pass_js_url script in the web bundle is correctly loaded
+  // even when the extension with blocking handler intercepted the request.
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  EXPECT_FALSE(TryLoadScript(cancel_js_url));
 }
 
 // Ensure DeclarativeNetRequest API can redirect the requests for the
@@ -5673,13 +5659,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
               new URL('./redirect_to_unlisted.js', location.href).toString();
           const redirect_to_server =
               new URL('./redirect_to_server.js', location.href).toString();
-          const link = document.createElement('link');
-          link.rel = 'webbundle';
-          link.href = wbn_url;
-          link.resources = redirect_js_url + ' ' + redirected_js_url + ' ' +
-                           redirect_to_unlisted_js_url + ' ' +
-                           redirect_to_server;
-          document.body.appendChild(link);
+
+          const script = document.createElement('script');
+          script.type = 'webbundle';
+          script.textContent = JSON.stringify({
+            source: wbn_url,
+            resources: [redirect_js_url, redirected_js_url,
+                        redirect_to_unlisted_js_url, redirect_to_server]
+          });
+          document.body.appendChild(script);
         })();
         </script>
         </body>
@@ -5703,34 +5691,28 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
       embedded_test_server()->GetURL("/redirected_to_unlisted.js").spec();
   std::string redirect_to_server_js_url_str =
       embedded_test_server()->GetURL("/redirect_to_server.js").spec();
-  // Currently the web bundle format requires a valid GURL for the fallback URL
-  // of a web bundle. So we use |redirect_js_url_str| for the fallback URL.
-  // TODO(crbug.com/966753): Stop using |redirect_js_url_str| when
-  // https://github.com/WICG/webpackage/issues/590 is resolved.
-  web_package::WebBundleBuilder builder(redirect_js_url_str, "");
-  auto redirect_js_location = builder.AddResponse(
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(
+      redirect_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect';");
-  auto redirected_js_location = builder.AddResponse(
+  builder.AddExchange(
+      redirected_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirected';");
-  auto redirect_to_unlisted_location = builder.AddResponse(
+  builder.AddExchange(
+      redirect_to_unlisted_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect_to_unlisted';");
-  auto redirected_to_unlisted_js_location = builder.AddResponse(
+  builder.AddExchange(
+      redirected_to_unlisted_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirected_to_unlisted';");
-  auto redirect_to_server_js_location = builder.AddResponse(
+  builder.AddExchange(
+      redirect_to_server_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect_to_server';");
-  builder.AddIndexEntry(redirect_js_url_str, "", {redirect_js_location});
-  builder.AddIndexEntry(redirected_js_url_str, "", {redirected_js_location});
-  builder.AddIndexEntry(redirect_to_unlisted_js_url_str, "",
-                        {redirect_to_unlisted_location});
-  builder.AddIndexEntry(redirected_to_unlisted_js_url_str, "",
-                        {redirected_to_unlisted_js_location});
-  builder.AddIndexEntry(redirect_to_server_js_url_str, "",
-                        {redirect_to_server_js_location});
+
   std::vector<uint8_t> bundle = builder.CreateBundle();
   web_bundle = std::string(bundle.begin(), bundle.end());
 
@@ -5797,7 +5779,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
 
   // Create a web bundle.
   std::string js_url_str = embedded_test_server()->GetURL("/script.js").spec();
-  web_package::WebBundleBuilder builder(js_url_str, "");
+  web_package::WebBundleBuilder builder;
   builder.AddExchange(
       js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},

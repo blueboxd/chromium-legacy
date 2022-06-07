@@ -37,6 +37,7 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/utility/haptics_util.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
@@ -54,6 +55,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -365,12 +367,20 @@ AppsGridView::AppsGridView(AppListA11yAnnouncer* a11y_announcer,
   bounds_animator_->SetAnimationDuration(base::Milliseconds(300));
   if (features::IsProductivityLauncherEnabled()) {
     GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
-    GetViewAccessibility().OverrideName(
-        l10n_util::GetStringUTF16(IDS_ALL_APPS_INDICATOR));
+
+    // Override the a11y name of top level apps grid.
+    if (!folder_delegate) {
+      GetViewAccessibility().OverrideName(
+          l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_APPS_GRID_A11Y_NAME));
+    }
   }
 
-  context_menu_ = std::make_unique<AppsGridContextMenu>();
-  set_context_menu_controller(context_menu_.get());
+  if (!IsTabletMode()) {
+    // `context_menu_` is only set in clamshell mode. The sort options in tablet
+    // mode are handled in RootWindowController with ShelfContextMenuModel.
+    context_menu_ = std::make_unique<AppsGridContextMenu>();
+    set_context_menu_controller(context_menu_.get());
+  }
 }
 
 AppsGridView::~AppsGridView() {
@@ -582,8 +592,15 @@ void AppsGridView::TryStartDragAndDropHostDrag(Pointer pointer) {
 
   drag_pointer_ = pointer;
 
-  if (!dragging_for_reparent_item_)
+  if (!dragging_for_reparent_item_) {
     StartDragAndDropHostDrag();
+
+    if (pointer == MOUSE) {
+      haptics_util::PlayHapticTouchpadEffect(
+          ui::HapticTouchpadEffect::kTick,
+          ui::HapticTouchpadEffectStrength::kMedium);
+    }
+  }
 
   if (drag_start_callback_)
     std::move(drag_start_callback_).Run();
@@ -1169,13 +1186,86 @@ void AppsGridView::Update() {
     RecordPageMetrics();
 }
 
+base::TimeDelta AppsGridView::GetPulsingBlockAnimationDelayForIndex(
+    int block_index) {
+  // The column in which the last AppListItemViews is located.
+  // |view_model_| only contains synced AppListItemViews and not
+  // PulsingBlockViews.
+  const int last_non_block_view_column = view_model_.view_size() % cols_;
+  // The index of the pulsing block view related to the |view_model_|.
+  const int block_index_in_view_model = view_model_.view_size() + block_index;
+  const base::TimeDelta staging_step_delay = base::Milliseconds(100);
+
+  // Depending of the row and column for the pulsing block, we stage the pulsing
+  // animation so it sweeps at a 45 degree angle from the upper left to the
+  // lower right.
+  return staging_step_delay *
+             ((last_non_block_view_column + block_index) / cols_) +
+         staging_step_delay * (block_index_in_view_model % cols_);
+}
+
+void AppsGridView::OnSwapAnimationDone(views::View* placeholder,
+                                       AppListItemView* app_view) {
+  delete placeholder;
+
+  if (view_model_.GetIndexOfView(app_view) != -1 && !ItemViewsRequireLayers())
+    app_view->DestroyLayer();
+
+  UpdatePulsingBlockViews();
+}
+
+AppListItemView* AppsGridView::MaybeSwapPlaceholderAsset(size_t index) {
+  int model_index = GetTargetModelIndexFromItemIndex(index);
+  AppListItemView* view = items_container_->AddChildViewAt(
+      CreateViewForItemAtIndex(index), model_index);
+  view_model_.Add(view, model_index);
+
+  const bool placeholder_in_view_index =
+      model_index == (view_model_.view_size() - 1);
+  const bool is_syncing =
+      model_ && model_->status() == AppListModelStatus::kStatusSyncing;
+  const bool should_animate_placeholder_swap =
+      ash::features::IsLauncherPulsingBlocksRefreshEnabled() &&
+      pulsing_blocks_model_.view_size() > 0 && is_syncing &&
+      placeholder_in_view_index;
+
+  if (should_animate_placeholder_swap) {
+    PulsingBlockView* placeholder =
+        items_container_->AddChildView(std::make_unique<PulsingBlockView>(
+            app_list_config_->grid_icon_size(), base::TimeDelta()));
+    placeholder->SetBoundsRect(view->bounds());
+    placeholder->SetPaintToLayer();
+    view->EnsureLayer();
+    view->layer()->SetOpacity(0);
+    views::AnimationBuilder()
+        .SetPreemptionStrategy(
+            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+        .OnEnded(base::BindOnce(&AppsGridView::OnSwapAnimationDone,
+                                weak_factory_.GetWeakPtr(), placeholder, view))
+        .OnAborted(base::BindOnce(&AppsGridView::OnSwapAnimationDone,
+                                  weak_factory_.GetWeakPtr(), placeholder,
+                                  view))
+        .Once()
+        .SetDuration(base::Milliseconds(200))
+        .SetOpacity(placeholder->layer(), 0.0f, gfx::Tween::LINEAR)
+        .SetOpacity(view->layer(), 1.0f, gfx::Tween::LINEAR);
+  } else {
+    UpdatePulsingBlockViews();
+  }
+  return view;
+}
+
 void AppsGridView::UpdatePulsingBlockViews() {
-  const int existing_items = item_list_ ? item_list_->item_count() : 0;
+  int existing_items = item_list_ ? item_list_->item_count() : 0;
   const int tablet_page_size =
       SharedAppListConfig::instance().GetMaxNumOfItemsPerPage();
   // For scrolling app list, the "page size" is very large, so cap the number of
   // pulsing blocks to the size of the tablet mode page (~20 items).
-  const int tiles_per_page = std::min(TilesPerPage(0), tablet_page_size);
+  const int tiles_per_page = std::min(TilesPerPage(1), tablet_page_size);
+  if (view_structure_.mode() != PagedViewStructure::Mode::kSinglePage) {
+    if (existing_items > TilesPerPage(0))
+      existing_items -= TilesPerPage(0);
+  }
   const int available_slots =
       tiles_per_page - (existing_items % tiles_per_page);
   const int desired =
@@ -1186,16 +1276,14 @@ void AppsGridView::UpdatePulsingBlockViews() {
   if (pulsing_blocks_model_.view_size() == desired)
     return;
 
-  while (pulsing_blocks_model_.view_size() > desired) {
-    PulsingBlockView* view = pulsing_blocks_model_.view_at(0);
-    pulsing_blocks_model_.Remove(0);
-    delete view;
-  }
+  pulsing_blocks_model_.Clear();
 
   while (pulsing_blocks_model_.view_size() < desired) {
+    base::TimeDelta time = GetPulsingBlockAnimationDelayForIndex(
+        pulsing_blocks_model_.view_size());
     auto view = std::make_unique<PulsingBlockView>(
-        GetTotalTileSize(GetTotalPages() - 1), true);
-    pulsing_blocks_model_.Add(view.get(), 0);
+        app_list_config_->grid_icon_size(), time);
+    pulsing_blocks_model_.Add(view.get(), pulsing_blocks_model_.view_size());
     items_container_->AddChildView(std::move(view));
   }
 }
@@ -2473,7 +2561,7 @@ void AppsGridView::DeleteItemViewAtIndex(int index) {
 
 bool AppsGridView::IsPointWithinDragBuffer(const gfx::Point& point) const {
   gfx::Rect rect(GetLocalBounds());
-  rect.Inset(-kDragBufferPx, -kDragBufferPx, -kDragBufferPx, -kDragBufferPx);
+  rect.Inset(-kDragBufferPx);
   return rect.Contains(point);
 }
 
@@ -2496,10 +2584,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
   MaybeAbortReorderAnimation();
 
   if (!item->is_page_break()) {
-    int model_index = GetTargetModelIndexFromItemIndex(index);
-    AppListItemView* view = items_container_->AddChildViewAt(
-        CreateViewForItemAtIndex(index), model_index);
-    view_model_.Add(view, model_index);
+    AppListItemView* view = MaybeSwapPlaceholderAsset(index);
 
     if (item == drag_item_) {
       drag_view_ = view;
@@ -2521,6 +2606,9 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
 
   // Schedule a layout, since the grid items may need their bounds updated.
   ScheduleLayout(initial_grid_size);
+
+  items_container_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                             /*send_native_event=*/true);
 }
 
 void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
@@ -2547,6 +2635,9 @@ void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
 
   // Schedule a layout, since the grid items may need their bounds updated.
   ScheduleLayout(initial_grid_size);
+
+  items_container_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                             /*send_native_event=*/true);
 }
 
 void AppsGridView::OnListItemMoved(size_t from_index,

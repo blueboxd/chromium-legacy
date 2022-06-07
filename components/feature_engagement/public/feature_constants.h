@@ -112,7 +112,6 @@ extern const base::Feature kIPHFeedCardMenuFeature;
 extern const base::Feature kIPHGenericAlwaysTriggerHelpUiFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
-extern const base::Feature kIPHHomepagePromoCardFeature;
 extern const base::Feature kIPHIdentityDiscFeature;
 extern const base::Feature kIPHInstanceSwitcherFeature;
 extern const base::Feature kIPHKeyboardAccessoryAddressFillingFeature;
@@ -172,6 +171,7 @@ extern const base::Feature kIPHReadingListMessagesFeature;
 extern const base::Feature kIPHBadgedTranslateManualTriggerFeature;
 extern const base::Feature kIPHDiscoverFeedHeaderFeature;
 extern const base::Feature kIPHDefaultSiteViewFeature;
+extern const base::Feature kIPHPasswordSuggestionsFeature;
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \

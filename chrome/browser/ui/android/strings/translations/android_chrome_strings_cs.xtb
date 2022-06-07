@@ -89,6 +89,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="1409879593029778104">Stažení souboru <ph name="FILE_NAME" /> bylo zabráněno, protože soubor již existuje.</translation>
 <translation id="1414981605391750300">Kontaktování Googlu. Může to chvíli trvat…</translation>
 <translation id="1416550906796893042">Verze aplikace</translation>
+<translation id="1428770807407000502">Vypnout synchronizaci?</translation>
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1436784010935106834">Odebráno</translation>
 <translation id="1448440926884431741">Sledované produkty můžete třídit v záložkách</translation>
@@ -184,7 +185,6 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="200114059308480249">Zahrnovat při vyhledávání na Googlu okolní text?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# soubor}few{# soubory}many{# souboru}other{# souborů}}</translation>
 <translation id="2015836039326522978">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami společnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatečnými smluvními podmínkami prohlížeče Chrome a systému Chrome OS<ph name="END_LINK2" />. Platí také <ph name="BEGIN_LINK3" />zásady ochrany soukromí<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Odstranit zájem?</translation>
 <translation id="2020309681647789787">Ve všech synchronizovaných zařízeních budete mít historii, takže budete moci pokračovat v tom, co jste dělali</translation>
 <translation id="2021896219286479412">Ovládání webu na celé obrazovce</translation>
 <translation id="2038563949887743358">Zapnout funkci Verze webu pro PC</translation>
@@ -213,6 +213,7 @@ Vyhledávání spustíte klepnutím na libovolné slovo. Chcete-li vyhledáván�
 <translation id="2141396931810938595">Podle vašeho používání</translation>
 <translation id="214888715418183969">Vyberte, co chcete sdílet s Chromem. Sdílené metriky budou použity k vylepšení funkcí, výkonu a stability Chromu.</translation>
 <translation id="2149973817440762519">Upravit záložku</translation>
+<translation id="2155214902713132423">Metoda ověření pro toto zařízení není k dispozici. Ve druhém zařízení vyberte jinou možnost.</translation>
 <translation id="2157851137955077194">Chcete-li něco z telefonu sdílet do jiného zařízení, zapněte v nastavení Chromu na obou zařízeních synchronizaci</translation>
 <translation id="2158408438301413340">Chromu se nepodařilo zkontrolovat všechna hesla</translation>
 <translation id="2169830938017475061">Teď</translation>
@@ -733,7 +734,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5091199029769593641">Brzy se vám po otevření nové karty začnou zobrazovat články z webu <ph name="SITE_NAME" />. Weby, které sledujete, se ukládají do vašeho účtu Google. Můžete je spravovat v nastavení funkce Objevit.</translation>
 <translation id="5091249083535528968">Rozšířené údaje o využití</translation>
 <translation id="509429900233858213">Došlo k chybě.</translation>
-<translation id="5098190077610408701">Přidat zájem?</translation>
 <translation id="5102401324271069229">Pokud se web pokusí odcizit vám heslo nebo když stáhnete škodlivý soubor, může Chrome Bezpečnému prohlížení odeslat adresy URL, včetně částí obsahu stránky</translation>
 <translation id="510275257476243843">Zbývá: 1 h</translation>
 <translation id="5115811374190515607">do: <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +879,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5906513782029855931">Když bude Asistent Google znát adresy URL webů, bude vám moci pomáhat s plněním úkolů. Asistenta můžete vypnout v nastavení Chromu.</translation>
 <translation id="5916664084637901428">Zapnuto</translation>
 <translation id="5919204609460789179">Chcete-li zahájit synchronizaci, aktualizujte aplikaci <ph name="PRODUCT_NAME" /></translation>
+<translation id="5938820472109305350">Přidat zájem <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">K vyhledávání se používá Google</translation>
 <translation id="5945035219773565305">Aktuální doporučení: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Zobrazení aktivní stránky</translation>
@@ -898,7 +899,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="6033245666633565791">V rámci sady <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> vyvíjí tým Chrome nové technologie, které uživatele chrání před sledováním mezi weby a přitom zachovávají otevřenost webu.
 
 Zkušební technologie Privacy Sandbox jsou stále aktivně vyvíjeny a jsou dostupné jen ve vybraných oblastech. Prozatím mohou weby technologie Privacy Sandbox zkoušet a přitom nadále používat aktuální technologie, jako jsou soubory cookie třetích stran.</translation>
-<translation id="6036057147555329831">Extra ICU</translation>
 <translation id="6039379616847168523">Přejít na další kartu</translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="604124094241169006">Automaticky</translation>
@@ -1023,6 +1023,7 @@ Tokeny důvěry zvyšují ochranu soukromí na webu a nelze pomocí nich zjisti
 <translation id="663674369910034433">Další nastavení související s ochranou soukromí, zabezpečením a shromažďováním dat najdete v částech <ph name="BEGIN_LINK1" />Synchronizace<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />Služby Google<ph name="END_LINK2" />.</translation>
 <translation id="6637100877383020115">Za účelem vylepšování aplikace odesílá Chrome do Googlu údaje o využití a selháních. <ph name="BEGIN_UMA_LINK" />Spravovat<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokovat vždy</translation>
+<translation id="6641780377503683465">Odstranit zájem <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="6645629752388991326">Určete, která zařízení se mohou přihlásit s použitím tohoto zařízení jako bezpečnostního klíče.</translation>
 <translation id="6648459603387803038">Administrátor může nastavení prohlížeče vzdáleně změnit. Aktivita na tomto zařízení může být spravována také mimo Chrome.</translation>

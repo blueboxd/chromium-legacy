@@ -46,18 +46,10 @@ class ProtobufModelScorer : public Scorer {
 
   double ComputeScore(const FeatureMap& features) const override;
 
-  void GetMatchingVisualTargets(
-      const SkBitmap& bitmap,
-      std::unique_ptr<ClientPhishingRequest> request,
-      base::OnceCallback<void(std::unique_ptr<ClientPhishingRequest>)> callback)
-      const override;
-
-// TODO(crbug/1278502): This is disabled as a temporary measure due to crashes.
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !BUILDFLAG(IS_CHROMEOS) && \
-    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   void ApplyVisualTfLiteModel(
       const SkBitmap& bitmap,
-      base::OnceCallback<void(std::vector<double>)> callback) override;
+      base::OnceCallback<void(std::vector<double>)> callback) const override;
 #endif
 
   int model_version() const override;

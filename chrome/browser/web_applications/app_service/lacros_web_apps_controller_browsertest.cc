@@ -519,6 +519,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, LaunchWithFiles) {
   launch_params->launch_source = apps::mojom::LaunchSource::kFromTest;
   launch_params->intent = crosapi::mojom::Intent::New();
   launch_params->intent->action = apps_util::kIntentActionView;
+  launch_params->intent->activity_name = launch_url.spec();
 
   auto intent_file = crosapi::mojom::IntentFile::New();
   intent_file->file_path = base::FilePath("/path/not/actually/used/file.txt");
@@ -726,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, Notification) {
   const std::string notification_id = "notification-id";
   auto notification = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      std::u16string(), std::u16string(), gfx::Image(),
+      std::u16string(), std::u16string(), ui::ImageModel(),
       base::UTF8ToUTF16(origin.host()), origin,
       message_center::NotifierId(origin),
       message_center::RichNotificationData(), nullptr);
@@ -998,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest,
   // OsIntegrationManager::ScopedSuppressForTesting
   provider()
       .os_integration_manager()
-      .file_handler_manager_for_testing()
+      .file_handler_manager()
       .EnableAndRegisterOsFileHandlers(app_id);
 
   MockAppPublisher mock_app_publisher;

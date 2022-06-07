@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ash/crostini/crostini_low_disk_notification.h"
 #include "chrome/browser/ash/crostini/crostini_simple_types.h"
@@ -825,9 +826,6 @@ class CrostiniManager : public KeyedService,
   void MaybeUpdateCrostiniAfterChecks();
 
   void FinishRestart(CrostiniRestarter* restarter, CrostiniResult result);
-
-  // Callback for CrostiniManager::AbortRestartCrostini
-  void OnAbortRestartCrostini(RestartId restart_id, base::OnceClosure callback);
 
   // Callback for CrostiniManager::RemoveCrostini.
   void OnRemoveCrostini(CrostiniResult result);

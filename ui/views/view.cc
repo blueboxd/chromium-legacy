@@ -18,6 +18,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -1166,8 +1167,7 @@ void View::Paint(const PaintInfo& parent_paint_info) {
           SkFloatToScalar(paint_info.paint_recording_scale_x()),
           SkFloatToScalar(paint_info.paint_recording_scale_y()));
 
-      clip_path_in_parent.transform(
-          SkMatrix(to_parent_recording_space.matrix()));
+      clip_path_in_parent.transform(to_parent_recording_space.matrix().asM33());
       clip_recorder.ClipPathWithAntiAliasing(clip_path_in_parent);
     }
   }
@@ -1825,10 +1825,6 @@ int View::OnDragUpdated(const ui::DropTargetEvent& event) {
 
 void View::OnDragExited() {}
 
-ui::mojom::DragOperation View::OnPerformDrop(const ui::DropTargetEvent& event) {
-  return ui::mojom::DragOperation::kNone;
-}
-
 void View::OnDragDone() {}
 
 View::DropCallback View::GetDropCallback(const ui::DropTargetEvent& event) {
@@ -2158,6 +2154,12 @@ void View::OnLayerTransformed(const gfx::Transform& old_transform,
 
   for (ViewObserver& observer : observers_)
     observer.OnViewLayerTransformed(this);
+}
+
+void View::OnLayerClipRectChanged(const gfx::Rect& old_rect,
+                                  ui::PropertyChangeReason reason) {
+  for (ViewObserver& observer : observers_)
+    observer.OnViewLayerClipRectChanged(this);
 }
 
 void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -2537,14 +2539,15 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
   gfx::RectF outline_rect(ScaleToEnclosedRect(GetLocalBounds(), scale));
   gfx::RectF content_outline_rect(
       ScaleToEnclosedRect(GetContentsBounds(), scale));
+  const auto* color_provider = GetColorProvider();
   if (content_outline_rect != outline_rect) {
-    content_outline_rect.Inset(0.5f, 0.5f);
-    const SkColor content_color = SkColorSetARGB(0x30, 0, 0, 0xff);
-    canvas->DrawRect(content_outline_rect, content_color);
+    content_outline_rect.Inset(0.5f);
+    canvas->DrawRect(content_outline_rect,
+                     color_provider->GetColor(ui::kColorDebugContentOutline));
   }
-  outline_rect.Inset(0.5f, 0.5f);
-  const SkColor color = SkColorSetARGB(0x30, 0xff, 0, 0);
-  canvas->DrawRect(outline_rect, color);
+  outline_rect.Inset(0.5f);
+  canvas->DrawRect(outline_rect,
+                   color_provider->GetColor(ui::kColorDebugBoundsOutline));
 }
 
 // Tree operations -------------------------------------------------------------

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Chrome OS-specific strings (included from generated_resources.grd).
-     Everything in this file is wrapped in <if expr="chromeos">. -->
+     Everything in this file is wrapped in <if expr="chromeos_ash">. -->
 <grit-part>
   <message name="IDS_EMPTY_STRING" desc="Empty string, exist only to make code generic. No translation required.">
   </message>
@@ -846,6 +846,9 @@
   <message name="IDS_BLUETOOTH_PAIRING_LEARN_MORE" desc="Bluetooth pairing dialog: Message informing the user on what actions to take in order to see a device in the list of available devices.">
     Make sure your Bluetooth device is in pairing mode and nearby. Only pair with devices you trust. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_BLUETOOTH_PAIRING_DESCRIPTION" desc="Bluetooth pairing dialog: Message informing the user on what actions to take in order to see a device in the list of available devices.">
+    Make sure your Bluetooth device is in pairing mode and nearby. Only pair with devices you trust.
+  </message>
   <message name="IDS_BLUETOOTH_PAIRING_ENTER_PIN" desc="Bluetooth pairing dialog: Message displayed informing the user to enter a PIN in other to complete device pairing.">
     Enter PIN to pair with <ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>
   </message>
@@ -1229,69 +1232,34 @@
     Continue
   </message>
 
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE" desc="The title of the dialog that welcomes the user on the first log in, and explains Chrome Sync and privacy options.">
-    You're signed in!
-  </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE" desc="Alternate title for the dialog that explains Chrome Sync and privacy options on first login.">
     Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_ARC_RESTRICTED" desc="Alternate title for the dialog that explains Chrome Sync and privacy options on first login.">
     Get your apps, settings, and more on any ChromeOS device
   </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE" desc="The subtitle of the dialog that explains Chrome Sync and privacy options on first login.">
-    The following services help keep your data safe and secure. You can turn these features off at any time.
-  </message>
   <if expr="reven">
     <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE_2" desc="Alternate subtitle of the dialog that explains Chrome Sync and privacy options on first login for non-split.">
       Your saved preferences and activity will be ready on any ChromeOS Flex device when you sign in with your Google Account. You can choose what to sync in Settings.
-    </message>
-    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-      ChromeOS Flex settings sync
-    </message>
-    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-      Your apps, settings, and other customizations will be synced across all ChromeOS Flex devices signed in with your Google Account.
     </message>
   </if>
   <if expr="not reven">
     <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE_2" desc="Alternate subtitle of the dialog that explains Chrome Sync and privacy options on first login for non-split.">
       Your saved preferences and activity will be ready on any Chrome OS device when you sign in with your Google Account. You can choose what to sync in Settings.
     </message>
-    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-      Chrome OS settings sync
-    </message>
-    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-      Your apps, settings, and other customizations will be synced across all Chrome OS devices signed in with your Google Account.
-    </message>
   </if>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME_2" desc="Alternate title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> apps, settings, and more
-  </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION_WITH_ARC_RESTRICTED" desc="Alternate description of the sync confirmation dialog that is displayed on the first user log in.">
     Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> so your preferences will be ready on any device when you sign in with your Google Account. Preferences include apps, settings, Wi-Fi passwords, languages, wallpaper, keyboard shortcuts, and more.
   </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME" desc="Title of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Chrome browser sync
+
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME_2" desc="Alternate title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> apps, settings, and more
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME_2" desc="Alternate title of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Sync your Chrome browser bookmarks, passwords, history, and more
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_DESCRIPTION" desc="Description of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Google may use your history to personalize Search and other Google services
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_NAME" desc="Title of the 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Chrome sync
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION" desc="The description of 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices.
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_NAME" desc="Title of the personalize services section of the sync confirmation dialog that is displayed on the first user log in.">
-    Personalize Google services
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION" desc="The description of how services personalization works and a URL to configure personalization settings in Google user profile.">
-    Google may use your browsing history to personalize Search and other Google services. You can change this anytime at myaccount.google.com/activitycontrols/search
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION_SUPERVISED_USER" desc="The description of how services personalization works and a URL to configure personalization settings in Google supervised user profile.">
-    Google may use your browsing history to personalize Search and other Google services. You or your parent can change this anytime at myaccount.google.com/activitycontrols/search
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_SYNC_OPTIONS_LATER" desc="The label to the checkbox explaining that when checked, it will trigger user settings screen opened after session start.">
     Review sync options following setup
@@ -1304,17 +1272,6 @@
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TURN_ON_SYNC" desc="The label on the button that closes the dialog while agreeing to sync for minor users.">
     Turn on sync
-  </message>
-  <!-- TODO(jamescook): We landed both sets of labels to get them in before
-       string freeze. After M85 branches, delete the ones we didn't use. -->
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT" desc="The label on the button that closes the dialog while agreeing to sync.">
-    Yes, I'm in
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE" desc="The label on the button that closes the dialog while not agreeing to sync.">
-    No, thanks
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT2" desc="Alternate label on the button that closes the dialog while agreeing to sync.">
-    Got it
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE2" desc="Alternate label on the button that closes the dialog while not agreeing to sync.">
     No thanks
@@ -2983,6 +2940,12 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_DONE" desc="Label for the done button on the success screen in the enterprise enrollment dialog.">
     Done
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ENROLL_ENTERPRISE" desc="Label for the enterprise license enroll button on the password screen in the enterprise enrollment dialog.">
+    Enroll enterprise device
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ENROLL_KIOSK" desc="Label for the kiosk license enroll button on the password screen in the enterprise enrollment dialog.">
+    Enroll kiosk or signage device
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ENROLL_MANUALLY" desc="Label for the button on the error step in the enterprise enrollment dialog that allows to run manual enrollment (after an error during automated enrollment).">
     Enroll manually
   </message>
@@ -3006,6 +2969,24 @@
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL" desc="Label for location tex box on the device naming screen in the enterprise enrollment dialog.">
     Device Location
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_CONFIRM_TITLE" desc="Title of kiosk confirm enrollment screen.">
+    Confirm kiosk and signage device enrollment?
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_CONFIRM_MESSAGE" desc="Message of kiosk confirm enrollment screen.">
+    You will use a Kiosk &amp; Signage Upgrade which only allows the device to run in kiosk or signage mode. If you would like users to sign into the device, please go back and enroll using Chrome Enterpirse Upgrade.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_CONFIRM_POWERWASH_MESSAGE" desc="Message of kiosk confirm enrollment screen.">
+    If you want to switch after enrollment, you will need to factory reset (powerwash) your device.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_CONFIRM_BUTTON" desc="Label for the confirm button on the cofirm kiosk enrollment screen in the enterprise enrollment dialog.">
+    Confirm
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_WORKING_TITLE" desc="Message to show while Kiosk enrollment is in progress.">
+    Kiosk and signage device enrollment
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_SUCCESS_TITLE" desc="Title of the screen to be shown once enterprise kiosk enrollment completes.">
+    Kiosk and signage device enrollment complete
   </message>
   <!-- Pre-enrollment TPM check. -->
   <message name="IDS_TPM_CHECK_TITLE" desc="The title of loading dialog shown during TPM status check.">
@@ -4020,7 +4001,7 @@
     Help improve Chrome and ChromeOS features and performance by automatically sending diagnostic and usage data to Google.
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_LINK" desc="Learn more about usage opt in">
-    Learn more about diagnostic and usage data.
+    Learn more about diagnostic and usage data
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_OWNER" desc="Text shown in a pop-up dialog in the consolidated consent screen when the device owner clicks on the learn more for metrics opt-in.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing your ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features you use, how much memory you typically use, and Android app diagnostic and usage data. Some aggregate data will also help Google apps and partners, such as Android developers.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
@@ -4270,6 +4251,29 @@
   <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_SKIP_SUGGESTION" desc="Message shown when skip button is visible.">
     This is taking longer than expected, you can skip or wait until it's done.
   </message>
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_ERROR_TITLE" desc="Shown if the lacros migration fails.">
+    Chrome browser could not be updated
+  </message>
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_ERROR_LOW_DISK_SPACE" desc="Shown if the lacros migration failed with low disk space error.">
+    There isn't enough space on this device to complete this update. Clean up <ph name="NECESSARY_SPACE">$1<ex>10 MB</ex></ph> on your device and try again from your Chrome browser.
+  </message>
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_ERROR_SUBTITLE" desc="Shown if the lacros migration failed other than low disk space error.">
+    You can try again later in Chrome.
+  </message>
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_ERROR_CANCEL_BUTTON" desc="Text button shown on the lacros data migration failure to cancel everything">
+    Cancel
+  </message>
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_ERROR_GOTO_FILES_BUTTON" desc="Text button shown on the lacros data migration failure to open files.app in the following user session">
+    Go to files
+  </message>
+
+  <!-- Lacros data migration triggering UI. -->
+  <message name="IDS_LACROS_DATA_MIGRATION_RELAUNCH" desc="Message shown as a menu to relaunch Chrome in order to trigger data migration.">
+    Relaunch to update
+  </message>
+  <message name="IDS_LACROS_DATA_MIGRATION_OUT_OF_DISK_ERROR_TEXT" desc="Message shown when a user clicks 'Relaunch to update' button, but failed to restart due to out of disk space.">
+    There isn't enough space on this device to complete this update. Clear up <ph name="NECESSARY_SPACE">$1<ex>10 MB</ex></ph> on your device and try again.
+  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">
@@ -4451,12 +4455,6 @@
   </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_READY" desc="Text shown in the crostini terminal when it just finished the initialization and it is ready to use.">
     Ready
-  </message>
-  <message name="IDS_CROSTINI_TERMINAL_CONNECT_TO_LINUX" desc="Text shown in the right-click menu to allow users to open terminal and use Linux.">
-    Connect to Linux
-  </message>
-  <message name="IDS_CROSTINI_TERMINAL_CONNECT_TO_SSH" desc="Text shown in the right-click menu to allow users to open terminal and connect to a remote machine using SSH. SSH is 'Secure SHell' and should probably not be translated since users of all languages likley know it as 'SSH'.">
-    Connect to SSH
   </message>
   <message name="IDS_CROSTINI_INSTALLER_TITLE" desc="Title of the Crostini installer, a dialog for installing Linux.">
     Set up Linux development environment
@@ -5073,12 +5071,6 @@
   </message>
   <message name="IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_MESSAGE" desc="Message for the notification shown when screen lock is not enabled while using app stream of EcheApp.">
     Set a pin or password on this Chromebook to protect access to your phone’s apps.
-  </message>
-  <message name="IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_TITLE" desc="Title for notification shown when the apps streaming settigs is disabled on phone while using app stream of EcheApp.">
-    Could not launch <ph name="APP_NAME">$1<ex>the app</ex></ph>
-  </message>
-  <message name="IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_MESSAGE" desc="Message for the notification shown when the apps streaming settings is disabled on phone while using app stream of EcheApp.">
-    Enable apps streaming settings from your phone.
   </message>
   <message name="IDS_ECHE_APP_NOTIFICATION_OPEN_AGAIN_BUTTON" desc="Label for the inactivity notification button of EcheApp to open open.">
     Open again
@@ -6149,29 +6141,27 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
 
   <!-- Strings for full restore notifications -->
-  <if expr="chromeos">
-    <message name="IDS_RESTORE_NOTIFICATION_RESTORE_BUTTON" desc="The restore button label of the notification for the user to select restore apps and pages on startup.">
-      Restore
-    </message>
-    <message name="IDS_RESTORE_NOTIFICATION_CANCEL_BUTTON" desc="The cancel button label of the notification for the user to select not restore on startup.">
-      No thanks
-    </message>
-    <message name="IDS_RESTORE_NOTIFICATION_SETTINGS_BUTTON" desc="The settings button label of the notification for the user to set the restore setting.">
-      Settings
-    </message>
-    <message name="IDS_RESTORE_NOTIFICATION_TITLE" desc="This is the title of the notification for the user to select restore or not on startup.">
-      Restore apps?
-    </message>
-    <message name="IDS_RESTORE_CRASH_NOTIFICATION_TITLE" desc="This is the title of the notification for the user to select restore or not on startup after crash.">
-      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> restarted unexpectedly
-    </message>
-    <message name="IDS_RESTORE_NOTIFICATION_MESSAGE" desc="This is the text message of the notification for the user to select restore or not on startup if the 'restore_apps' setting is 'Ask every time', and the system is not crashed before reboot.">
-      Continue from where you left off. You can set apps to always restore on startup or turn off restore in Settings.
-    </message>
-    <message name="IDS_RESTORE_CRASH_NOTIFICATION_MESSAGE" desc="This is the text message of the notification for the user to select restore or not on startup after crash.">
-      You can restore your previous apps
-    </message>
-  </if>
+  <message name="IDS_RESTORE_NOTIFICATION_RESTORE_BUTTON" desc="The restore button label of the notification for the user to select restore apps and pages on startup.">
+    Restore
+  </message>
+  <message name="IDS_RESTORE_NOTIFICATION_CANCEL_BUTTON" desc="The cancel button label of the notification for the user to select not restore on startup.">
+    No thanks
+  </message>
+  <message name="IDS_RESTORE_NOTIFICATION_SETTINGS_BUTTON" desc="The settings button label of the notification for the user to set the restore setting.">
+    Settings
+  </message>
+  <message name="IDS_RESTORE_NOTIFICATION_TITLE" desc="This is the title of the notification for the user to select restore or not on startup.">
+    Restore apps?
+  </message>
+  <message name="IDS_RESTORE_CRASH_NOTIFICATION_TITLE" desc="This is the title of the notification for the user to select restore or not on startup after crash.">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> restarted unexpectedly
+  </message>
+  <message name="IDS_RESTORE_NOTIFICATION_MESSAGE" desc="This is the text message of the notification for the user to select restore or not on startup if the 'restore_apps' setting is 'Ask every time', and the system is not crashed before reboot.">
+    Continue from where you left off. You can set apps to always restore on startup or turn off restore in Settings.
+  </message>
+  <message name="IDS_RESTORE_CRASH_NOTIFICATION_MESSAGE" desc="This is the text message of the notification for the user to select restore or not on startup after crash.">
+    You can restore your previous apps
+  </message>
 
    <!-- Strings for Projector-->
   <message name="IDS_SELFIE_CAM_TITLE" desc="The title for the selfie camera dialog.">
@@ -6206,4 +6196,29 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     ChromeOS-URLs
   </message>
 
+  <!-- Theme Selection -->
+  <message name="IDS_THEME_SELECTION_TITLE" desc="Title of the theme selection screen.">
+    Before we let you go...
+  </message>
+  <message name="IDS_THEME_SELECTION_DESCRIPTION" desc="Description of the theme selection screen.">
+    You can adjust the schedule in Personalisation Hub, as well as set Wallpaper, Screensaver, and customize system colors.
+  </message>
+  <message name="IDS_THEME_LIGHT_LABEL" desc="Name of the light theme button">
+    Light mode
+  </message>
+  <message name="IDS_THEME_LIGHT_DESCRIPTION" desc="Description of the light theme button">
+    Keep things light and airy.
+  </message>
+  <message name="IDS_THEME_DARK_LABEL" desc="Name of the dark theme button">
+    Dark mode
+  </message>
+  <message name="IDS_THEME_DARK_DESCRIPTION" desc="Description of the dark theme button">
+    For those low light rooms. Optimize for your battery life, too.
+  </message>
+  <message name="IDS_THEME_AUTO_LABEL" desc="Name of the auto theme button">
+    Auto mode
+  </message>
+  <message name="IDS_THEME_AUTO_DESCRIPTION" desc="Description of the auto theme button">
+    Light mode at sunrise, and dark mode at sunset. It switches automatically for you.
+  </message>
 </grit-part>

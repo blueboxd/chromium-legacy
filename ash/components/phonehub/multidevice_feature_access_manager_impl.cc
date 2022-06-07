@@ -4,18 +4,28 @@
 
 #include "ash/components/phonehub/multidevice_feature_access_manager_impl.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/phonehub/connection_scheduler.h"
 #include "ash/components/phonehub/message_sender.h"
 #include "ash/components/phonehub/pref_names.h"
 #include "ash/components/phonehub/util/histogram_util.h"
+#include "ash/constants/ash_features.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "ash/webui/eche_app_ui/pref_names.h"
-#include "chromeos/components/multidevice/logging/logging.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "pref_names.h"
 
 namespace ash {
 namespace phonehub {
+
+namespace {
+
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
+
+}  // namespace
 
 // static
 void MultideviceFeatureAccessManagerImpl::RegisterPrefs(
@@ -32,26 +42,38 @@ void MultideviceFeatureAccessManagerImpl::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kHasDismissedSetupRequiredUi, false);
   registry->RegisterBooleanPref(prefs::kNeedsOneTimeNotificationAccessUpdate,
                                 true);
+  registry->RegisterBooleanPref(prefs::kFeatureSetupRequestSupported, false);
 }
 
 MultideviceFeatureAccessManagerImpl::MultideviceFeatureAccessManagerImpl(
     PrefService* pref_service,
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     FeatureStatusProvider* feature_status_provider,
     MessageSender* message_sender,
     ConnectionScheduler* connection_scheduler)
     : pref_service_(pref_service),
+      multidevice_setup_client_(multidevice_setup_client),
       feature_status_provider_(feature_status_provider),
       message_sender_(message_sender),
       connection_scheduler_(connection_scheduler) {
   DCHECK(feature_status_provider_);
   DCHECK(message_sender_);
+  DCHECK(multidevice_setup_client_);
 
   current_feature_status_ = feature_status_provider_->GetStatus();
   feature_status_provider_->AddObserver(this);
+
+  pref_change_registrar_.Init(pref_service_);
+  pref_change_registrar_.Add(
+      eche_app::prefs::kAppsAccessStatus,
+      base::BindRepeating(
+          &MultideviceFeatureAccessManagerImpl::NotifyAppsAccessChanged,
+          base::Unretained(this)));
 }
 
 MultideviceFeatureAccessManagerImpl::~MultideviceFeatureAccessManagerImpl() {
   feature_status_provider_->RemoveObserver(this);
+  pref_change_registrar_.RemoveAll();
 }
 
 bool MultideviceFeatureAccessManagerImpl::
@@ -61,6 +83,15 @@ bool MultideviceFeatureAccessManagerImpl::
 
 void MultideviceFeatureAccessManagerImpl::DismissSetupRequiredUi() {
   pref_service_->SetBoolean(prefs::kHasDismissedSetupRequiredUi, true);
+}
+
+bool MultideviceFeatureAccessManagerImpl::IsAccessRequestAllowed(
+    Feature feature) {
+  const FeatureState feature_state =
+      multidevice_setup_client_->GetFeatureState(feature);
+  bool result = feature_state == FeatureState::kDisabledByUser ||
+                feature_state == FeatureState::kEnabledByUser;
+  return result;
 }
 
 MultideviceFeatureAccessManagerImpl::AccessStatus
@@ -82,6 +113,11 @@ MultideviceFeatureAccessManagerImpl::GetAppsAccessStatus() const {
   // MultiDeviceFeatureOptInView.
   int status = pref_service_->GetInteger(eche_app::prefs::kAppsAccessStatus);
   return static_cast<AccessStatus>(status);
+}
+
+bool MultideviceFeatureAccessManagerImpl::GetFeatureSetupRequestSupported()
+    const {
+  return pref_service_->GetBoolean(prefs::kFeatureSetupRequestSupported);
 }
 
 MultideviceFeatureAccessManagerImpl::AccessProhibitedReason
@@ -127,33 +163,80 @@ void MultideviceFeatureAccessManagerImpl::SetNotificationAccessStatusInternal(
                             static_cast<int>(reason));
   NotifyNotificationAccessChanged();
 
-  if (!IsSetupOperationInProgress())
+  if (IsNotificationSetupOperationInProgress()) {
+    switch (access_status) {
+      case AccessStatus::kProhibited:
+        SetNotificationSetupOperationStatus(
+            NotificationAccessSetupOperation::Status::
+                kProhibitedFromProvidingAccess);
+        break;
+      case AccessStatus::kAccessGranted:
+        SetNotificationSetupOperationStatus(
+            NotificationAccessSetupOperation::Status::kCompletedSuccessfully);
+        break;
+      case AccessStatus::kAvailableButNotGranted:
+        // Intentionally blank; the operation status should not change.
+        break;
+    }
+  } else if (IsCombinedSetupOperationInProgress()) {
+    switch (access_status) {
+      case AccessStatus::kProhibited:
+        SetCombinedSetupOperationStatus(CombinedAccessSetupOperation::Status::
+                                            kProhibitedFromProvidingAccess);
+        break;
+      case AccessStatus::kAccessGranted:
+        combined_setup_notifications_pending_ = false;
+        break;
+      case AccessStatus::kAvailableButNotGranted:
+        // Intentionally blank; the operation status should not change.
+        break;
+    }
+    if (!combined_setup_notifications_pending_ &&
+        !combined_setup_camera_roll_pending_) {
+      SetCombinedSetupOperationStatus(
+          CombinedAccessSetupOperation::Status::kCompletedSuccessfully);
+    }
+  }
+}
+
+void MultideviceFeatureAccessManagerImpl::SetCameraRollAccessStatusInternal(
+    AccessStatus access_status) {
+  PA_LOG(INFO) << "Camera Roll access: " << GetCameraRollAccessStatus()
+               << " => " << access_status;
+  pref_service_->SetInteger(prefs::kCameraRollAccessStatus,
+                            static_cast<int>(access_status));
+  NotifyCameraRollAccessChanged();
+
+  if (!IsCombinedSetupOperationInProgress()) {
     return;
+  }
 
   switch (access_status) {
     case AccessStatus::kProhibited:
-      SetNotificationSetupOperationStatus(
-          NotificationAccessSetupOperation::Status::
-              kProhibitedFromProvidingAccess);
+      SetCombinedSetupOperationStatus(
+          CombinedAccessSetupOperation::Status::kProhibitedFromProvidingAccess);
       break;
     case AccessStatus::kAccessGranted:
-      SetNotificationSetupOperationStatus(
-          NotificationAccessSetupOperation::Status::kCompletedSuccessfully);
+      combined_setup_camera_roll_pending_ = false;
       break;
     case AccessStatus::kAvailableButNotGranted:
       // Intentionally blank; the operation status should not change.
       break;
   }
+  if (!combined_setup_notifications_pending_ &&
+      !combined_setup_camera_roll_pending_) {
+    SetCombinedSetupOperationStatus(
+        CombinedAccessSetupOperation::Status::kCompletedSuccessfully);
+  }
 }
 
-void MultideviceFeatureAccessManagerImpl::SetCameraRollAccessStatusInternal(
-    AccessStatus camera_roll_access_status) {
-  pref_service_->SetInteger(prefs::kCameraRollAccessStatus,
-                            static_cast<int>(camera_roll_access_status));
-  NotifyCameraRollAccessChanged();
+void MultideviceFeatureAccessManagerImpl::
+    SetFeatureSetupRequestSupportedInternal(bool supported) {
+  pref_service_->SetBoolean(prefs::kFeatureSetupRequestSupported, supported);
+  NotifyFeatureSetupRequestSupportedChanged();
 }
 
-void MultideviceFeatureAccessManagerImpl::OnSetupRequested() {
+void MultideviceFeatureAccessManagerImpl::OnNotificationSetupRequested() {
   PA_LOG(INFO) << "Notification access setup flow started.";
 
   switch (feature_status_provider_->GetStatus()) {
@@ -180,10 +263,47 @@ void MultideviceFeatureAccessManagerImpl::OnSetupRequested() {
   }
 }
 
-void MultideviceFeatureAccessManagerImpl::OnFeatureStatusChanged() {
-  if (!IsSetupOperationInProgress())
-    return;
+void MultideviceFeatureAccessManagerImpl::OnCombinedSetupRequested(
+    bool camera_roll,
+    bool notifications) {
+  combined_setup_camera_roll_pending_ = camera_roll;
+  combined_setup_notifications_pending_ = notifications;
+  PA_LOG(INFO) << "Combined access setup flow started.";
 
+  switch (feature_status_provider_->GetStatus()) {
+    // We're already connected, so request that the UI be shown on the phone.
+    case FeatureStatus::kEnabledAndConnected:
+      SendShowCombinedAccessSetupRequest();
+      break;
+    // We're already connecting, so wait until a connection succeeds before
+    // trying to send a message
+    case FeatureStatus::kEnabledAndConnecting:
+      SetCombinedSetupOperationStatus(
+          CombinedAccessSetupOperation::Status::kConnecting);
+      break;
+    // We are not connected, so schedule a connection; once the
+    // connection succeeds, we'll send the message in OnFeatureStatusChanged().
+    case FeatureStatus::kEnabledButDisconnected:
+      SetCombinedSetupOperationStatus(
+          CombinedAccessSetupOperation::Status::kConnecting);
+      connection_scheduler_->ScheduleConnectionNow();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void MultideviceFeatureAccessManagerImpl::OnFeatureStatusChanged() {
+  if (IsNotificationSetupOperationInProgress()) {
+    FeatureStatusChangedNotificationAccessSetup();
+  } else if (IsCombinedSetupOperationInProgress()) {
+    FeatureStatusChangedCombinedAccessSetup();
+  }
+}
+
+void MultideviceFeatureAccessManagerImpl::
+    FeatureStatusChangedNotificationAccessSetup() {
   const FeatureStatus previous_feature_status = current_feature_status_;
   current_feature_status_ = feature_status_provider_->GetStatus();
 
@@ -215,11 +335,51 @@ void MultideviceFeatureAccessManagerImpl::OnFeatureStatusChanged() {
 }
 
 void MultideviceFeatureAccessManagerImpl::
+    FeatureStatusChangedCombinedAccessSetup() {
+  const FeatureStatus previous_feature_status = current_feature_status_;
+  current_feature_status_ = feature_status_provider_->GetStatus();
+
+  if (previous_feature_status == current_feature_status_)
+    return;
+
+  // If we were previously connecting and could not establish a connection,
+  // send a timeout state.
+  if (previous_feature_status == FeatureStatus::kEnabledAndConnecting &&
+      current_feature_status_ != FeatureStatus::kEnabledAndConnected) {
+    SetCombinedSetupOperationStatus(
+        CombinedAccessSetupOperation::Status::kTimedOutConnecting);
+    return;
+  }
+
+  // If we were previously connected and are now no longer connected, send a
+  // connection disconnected state.
+  if (previous_feature_status == FeatureStatus::kEnabledAndConnected &&
+      current_feature_status_ != FeatureStatus::kEnabledAndConnected) {
+    SetCombinedSetupOperationStatus(
+        CombinedAccessSetupOperation::Status::kConnectionDisconnected);
+    return;
+  }
+
+  if (current_feature_status_ == FeatureStatus::kEnabledAndConnected) {
+    SendShowCombinedAccessSetupRequest();
+    return;
+  }
+}
+
+void MultideviceFeatureAccessManagerImpl::
     SendShowNotificationAccessSetupRequest() {
   message_sender_->SendShowNotificationAccessSetupRequest();
   SetNotificationSetupOperationStatus(
       NotificationAccessSetupOperation::Status::
           kSentMessageToPhoneAndWaitingForResponse);
+}
+
+void MultideviceFeatureAccessManagerImpl::SendShowCombinedAccessSetupRequest() {
+  message_sender_->SendFeatureSetupRequest(
+      combined_setup_camera_roll_pending_,
+      combined_setup_notifications_pending_);
+  SetCombinedSetupOperationStatus(CombinedAccessSetupOperation::Status::
+                                      kSentMessageToPhoneAndWaitingForResponse);
 }
 
 bool MultideviceFeatureAccessManagerImpl::HasAccessStatusChanged(

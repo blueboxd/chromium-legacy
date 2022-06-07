@@ -31,6 +31,10 @@
 #include "extensions/common/extension.h"
 #include "ui/aura/window.h"
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/lacros_extensions_util.h"
+#endif
+
 namespace apps {
 
 namespace {
@@ -78,12 +82,43 @@ bool IsWebContentsActive(Browser* browser, content::WebContents* contents) {
   return browser->tab_strip_model()->GetActiveWebContents() == contents;
 }
 
-std::string GetAppIdForTab(content::WebContents* contents) {
-  return GetInstanceAppIdForWebContents(contents).value_or("");
+std::string GetAppIdForTab(content::WebContents* contents, Profile* profile) {
+  std::string app_id = GetInstanceAppIdForWebContents(contents).value_or("");
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!app_id.empty()) {
+    auto* registry = extensions::ExtensionRegistry::Get(profile);
+    auto* extension = registry->GetInstalledExtension(app_id);
+    // Return muxed app_id for Lacros hosted app.
+    if (extension && extension->is_hosted_app())
+      return lacros_extensions_util::MuxId(profile, extension);
+  }
+#endif
+
+  return app_id;
 }
 
 std::string GetAppIdForBrowser(Browser* browser) {
-  return web_app::GetAppIdFromApplicationName(browser->app_name());
+  std::string app_id =
+      web_app::GetAppIdFromApplicationName(browser->app_name());
+  auto* registry = extensions::ExtensionRegistry::Get(browser->profile());
+  auto* extension = registry->GetInstalledExtension(app_id);
+  // This is a web-app.
+  if (!extension)
+    return app_id;
+
+  if (extension->is_hosted_app()) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    return lacros_extensions_util::MuxId(browser->profile(), extension);
+#else
+    return app_id;
+#endif
+  }
+
+  if (extension->is_legacy_packaged_app())
+    return app_id;
+
+  return "";
 }
 
 std::string GetTitle(content::WebContents* contents) {
@@ -96,6 +131,10 @@ std::string GetTitle(Browser* browser) {
   return active_contents ? base::UTF16ToUTF8(active_contents->GetTitle()) : "";
 }
 
+bool IsExtensionNonAppWindow(Browser* browser) {
+  return browser->is_type_app_popup() && GetAppIdForBrowser(browser) == "";
+}
+
 bool IsAppWindow(Browser* browser) {
   return (browser->is_type_app() || browser->is_type_app_popup()) &&
          GetAppIdForBrowser(browser) != "";
@@ -103,7 +142,7 @@ bool IsAppWindow(Browser* browser) {
 
 bool IsBrowserWindow(Browser* browser) {
   return browser->is_type_normal() || browser->is_type_popup() ||
-         browser->is_type_devtools();
+         browser->is_type_devtools() || IsExtensionNonAppWindow(browser);
 }
 
 }  // namespace
@@ -121,12 +160,8 @@ class BrowserAppInstanceTracker::WebContentsObserver
   ~WebContentsObserver() override = default;
 
   // content::WebContentsObserver
-  void DidFinishNavigation(content::NavigationHandle* handle) override {
-    // TODO(crbug.com/1229189): Replace this callback with
-    // WebContentObserver::PrimaryPageChanged() when fixed.
-    if (handle->IsInPrimaryMainFrame() && handle->HasCommitted()) {
-      owner_->OnWebContentsUpdated(web_contents());
-    }
+  void PrimaryPageChanged(content::Page& page) override {
+    owner_->OnWebContentsUpdated(web_contents());
   }
 
   void TitleWasSet(content::NavigationEntry* entry) override {
@@ -449,7 +484,7 @@ void BrowserAppInstanceTracker::OnTabCreated(Browser* browser,
     return;
   }
 
-  std::string app_id = GetAppIdForTab(contents);
+  std::string app_id = GetAppIdForTab(contents, profile_);
   if (!app_id.empty()) {
     CreateAppTabInstance(std::move(app_id), browser, contents);
   }
@@ -470,7 +505,7 @@ void BrowserAppInstanceTracker::OnTabUpdated(Browser* browser,
   }
 
   // Handle app tabs.
-  std::string new_app_id = GetAppIdForTab(contents);
+  std::string new_app_id = GetAppIdForTab(contents, profile_);
   BrowserAppInstance* instance = GetInstance(app_tab_instances_, contents);
   if (instance) {
     if (instance->app_id != new_app_id) {

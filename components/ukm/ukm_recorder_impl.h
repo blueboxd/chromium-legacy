@@ -112,6 +112,9 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
   // map.
   void RemoveUkmRecorderObserver(UkmRecorderObserver* observer);
 
+  // Called when UKM allow state changed.
+  void OnUkmAllowedStateChanged(bool allowed);
+
   // Sets the sampling seed for testing purposes.
   void SetSamplingSeedForTesting(uint32_t seed) {
     // Normally the seed is set during object construction and remains
@@ -120,6 +123,8 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
     // necessary to override that.
     *const_cast<uint32_t*>(&sampling_seed_) = seed;
   }
+
+  bool recording_enabled() const { return recording_enabled_; }
 
  protected:
   // Calculates sampled in/out for a specific source/event based on internal

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/tether/tether_service.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/tether/gms_core_notifications_state_tracker_impl.h"
 #include "ash/components/tether/tether_component.h"
 #include "ash/components/tether/tether_component_impl.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -93,7 +93,7 @@ std::string TetherService::TetherFeatureStateToString(
 TetherService::TetherService(
     Profile* profile,
     chromeos::PowerManagerClient* power_manager_client,
-    chromeos::device_sync::DeviceSyncClient* device_sync_client,
+    device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     chromeos::NetworkStateHandler* network_state_handler,

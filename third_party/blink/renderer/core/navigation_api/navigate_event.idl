@@ -5,7 +5,7 @@
 // https://wicg.github.io/navigation-api/
 [
   Exposed=Window,
-  RuntimeEnabled=AppHistory
+  RuntimeEnabled=NavigationApi
 ] interface NavigateEvent : Event {
   [CallWith=ExecutionContext] constructor(DOMString type, NavigateEventInit eventInit);
 
@@ -16,7 +16,9 @@
   readonly attribute boolean hashChange;
   readonly attribute AbortSignal signal;
   readonly attribute FormData? formData;
+  readonly attribute DOMString? downloadRequest;
   readonly attribute any info;
 
   [CallWith=ScriptState, RaisesException] void transitionWhile(Promise<void> newNavigationAction, optional NavigationTransitionWhileOptions options = {});
+  [RaisesException] void restoreScroll();
 };

@@ -6,6 +6,9 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -56,6 +59,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/color/color_provider.h"
@@ -71,7 +75,8 @@ new_tab_page::mojom::ThemePtr MakeTheme(
     const ui::ColorProvider& color_provider,
     const ui::ThemeProvider* theme_provider,
     ThemeService* theme_service,
-    NtpCustomBackgroundService* ntp_custom_background_service) {
+    NtpCustomBackgroundService* ntp_custom_background_service,
+    content::WebContents* web_contents) {
   if (ntp_custom_background_service) {
     ntp_custom_background_service->RefreshBackgroundIfNeeded();
   }
@@ -178,6 +183,10 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   search_box->bg_hovered =
       GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BACKGROUND,
                       OmniboxPartState::HOVERED);
+  search_box->border_color =
+      webui::GetNativeTheme(web_contents)->UserHasContrastPreference()
+          ? theme_provider->GetColor(ThemeProperties::COLOR_LOCATION_BAR_BORDER)
+          : SkColorSetRGB(218, 220, 224);  // google-grey-300
   search_box->icon = GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_ICON);
   search_box->icon_selected = GetOmniboxColor(
       theme_provider, OmniboxPart::RESULTS_ICON, OmniboxPartState::SELECTED);
@@ -286,45 +295,46 @@ new_tab_page::mojom::PromoPtr MakePromo(const PromoData& data) {
     if (parts) {
       std::vector<new_tab_page::mojom::PromoPartPtr> mojom_parts;
       for (const base::Value& part : parts->GetListDeprecated()) {
-        if (part.FindKey("image")) {
+        const base::Value::Dict& part_dict = part.GetDict();
+        if (part_dict.Find("image")) {
           auto mojom_image = new_tab_page::mojom::PromoImagePart::New();
-          auto* image_url = part.FindStringPath("image.image_url");
+          auto* image_url = part_dict.FindStringByDottedPath("image.image_url");
           if (!image_url || image_url->empty()) {
             continue;
           }
           mojom_image->image_url = GURL(*image_url);
-          auto* target = part.FindStringPath("image.target");
+          auto* target = part_dict.FindStringByDottedPath("image.target");
           if (target && !target->empty()) {
             mojom_image->target = GURL(*target);
           }
           mojom_parts.push_back(
               new_tab_page::mojom::PromoPart::NewImage(std::move(mojom_image)));
-        } else if (part.FindKey("link")) {
+        } else if (part_dict.Find("link")) {
           auto mojom_link = new_tab_page::mojom::PromoLinkPart::New();
-          auto* url = part.FindStringPath("link.url");
+          auto* url = part_dict.FindStringByDottedPath("link.url");
           if (!url || url->empty()) {
             continue;
           }
           mojom_link->url = GURL(*url);
-          auto* text = part.FindStringPath("link.text");
+          auto* text = part_dict.FindStringByDottedPath("link.text");
           if (!text || text->empty()) {
             continue;
           }
           mojom_link->text = *text;
-          auto* color = part.FindStringPath("link.color");
+          auto* color = part_dict.FindStringByDottedPath("link.color");
           if (color && !color->empty()) {
             mojom_link->color = *color;
           }
           mojom_parts.push_back(
               new_tab_page::mojom::PromoPart::NewLink(std::move(mojom_link)));
-        } else if (part.FindKey("text")) {
+        } else if (part_dict.Find("text")) {
           auto mojom_text = new_tab_page::mojom::PromoTextPart::New();
-          auto* text = part.FindStringPath("text.text");
+          auto* text = part_dict.FindStringByDottedPath("text.text");
           if (!text || text->empty()) {
             continue;
           }
           mojom_text->text = *text;
-          auto* color = part.FindStringPath("text.color");
+          auto* color = part_dict.FindStringByDottedPath("text.color");
           if (color && !color->empty()) {
             mojom_text->color = *color;
           }
@@ -399,6 +409,9 @@ void NewTabPageHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kNtpDisabledModules, true);
   registry->RegisterListPref(prefs::kNtpModulesOrder, true);
   registry->RegisterBooleanPref(prefs::kNtpModulesVisible, true);
+  registry->RegisterIntegerPref(prefs::kNtpModulesShownCount, 0);
+  registry->RegisterTimePref(prefs::kNtpModulesFirstShownTime, base::Time());
+  registry->RegisterBooleanPref(prefs::kNtpModulesFreVisible, true);
 }
 
 void NewTabPageHandler::SetMostVisitedSettings(bool custom_links_enabled,
@@ -652,6 +665,43 @@ void NewTabPageHandler::GetModulesOrder(GetModulesOrderCallback callback) {
   std::move(callback).Run(std::move(module_ids));
 }
 
+void NewTabPageHandler::IncrementModulesShownCount() {
+  const auto ntp_modules_shown_count =
+      profile_->GetPrefs()->GetInteger(prefs::kNtpModulesShownCount);
+
+  if (ntp_modules_shown_count == 0) {
+    profile_->GetPrefs()->SetTime(prefs::kNtpModulesFirstShownTime,
+                                  base::Time::Now());
+  }
+  profile_->GetPrefs()->SetInteger(prefs::kNtpModulesShownCount,
+                                   ntp_modules_shown_count + 1);
+}
+
+void NewTabPageHandler::SetModulesFreVisible(bool visible) {
+  profile_->GetPrefs()->SetBoolean(prefs::kNtpModulesFreVisible, visible);
+  page_->SetModulesFreVisibility(visible);
+}
+
+void NewTabPageHandler::UpdateModulesFreVisibility() {
+  const auto ntp_modules_shown_count =
+      profile_->GetPrefs()->GetInteger(prefs::kNtpModulesShownCount);
+  const auto ntp_modules_first_shown_time =
+      profile_->GetPrefs()->GetTime(prefs::kNtpModulesFirstShownTime);
+  auto ntp_modules_fre_visible =
+      profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible);
+
+  // Hide Modular NTP Desktop v1 First Run Experience after 8 impressions or 1
+  // day, whichever comes first.
+  if (ntp_modules_shown_count >= 8 ||
+      (!ntp_modules_first_shown_time.is_null() &&
+       (base::Time::Now() - ntp_modules_first_shown_time) > base::Days(1))) {
+    ntp_modules_fre_visible = false;
+    SetModulesFreVisible(ntp_modules_fre_visible);
+  } else {
+    page_->SetModulesFreVisibility(ntp_modules_fre_visible);
+  }
+}
+
 void NewTabPageHandler::OnPromoDataUpdated() {
   if (promo_load_start_time_.has_value()) {
     base::TimeDelta duration = base::TimeTicks::Now() - *promo_load_start_time_;
@@ -852,7 +902,8 @@ void NewTabPageHandler::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
 void NewTabPageHandler::OnThemeChanged() {
   page_->SetTheme(MakeTheme(web_contents_->GetColorProvider(), theme_provider_,
-                            theme_service_, ntp_custom_background_service_));
+                            theme_service_, ntp_custom_background_service_,
+                            web_contents_));
 }
 
 void NewTabPageHandler::OnCustomBackgroundImageUpdated() {

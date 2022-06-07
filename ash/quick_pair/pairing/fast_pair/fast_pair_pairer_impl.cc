@@ -192,6 +192,11 @@ FastPairPairerImpl::FastPairPairerImpl(
 }
 
 FastPairPairerImpl::~FastPairPairerImpl() {
+  std::string device_address = device_->classic_address().value();
+  device::BluetoothDevice* bt_device = adapter_->GetDevice(device_address);
+  if (bt_device) {
+    bt_device->CancelPairing();
+  }
   adapter_->RemovePairingDelegate(this);
 }
 
@@ -362,7 +367,19 @@ void FastPairPairerImpl::OnParseDecryptedPasskey(
 }
 
 void FastPairPairerImpl::AttemptSendAccountKey() {
+  FastPairRepository::Get()->CheckOptInStatus(base::BindOnce(
+      &FastPairPairerImpl::OnCheckOptInStatus, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FastPairPairerImpl::OnCheckOptInStatus(
+    nearby::fastpair::OptInStatus status) {
   QP_LOG(INFO) << __func__;
+
+  if (status != nearby::fastpair::OptInStatus::STATUS_OPTED_IN) {
+    QP_LOG(INFO) << __func__
+                 << ": User is not opted in to save devices to their account";
+    return;
+  }
   // We only send the account key if we're doing an initial or retroactive
   // pairing. For other FastPair protocols, we can consider the paring
   // procedure complete at this point.

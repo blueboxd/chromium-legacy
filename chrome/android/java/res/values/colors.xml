@@ -69,10 +69,6 @@
 
     <!-- Offline indicator v2 colors -->
     <color name="offline_indicator_offline_color">@android:color/black</color>
-    <color name="offline_indicator_back_online_color">@color/default_bg_color_blue</color>
-
-    <!-- Material colorSurface  See See https://crbug.com/1186712 -->
-    <color name="material_color_surface">@color/default_bg_color_elev_4_baseline</color>
 
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>

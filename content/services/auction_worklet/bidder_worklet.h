@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
@@ -79,11 +80,6 @@ class BidderWorklet : public mojom::BidderWorklet {
   ~BidderWorklet() override;
   BidderWorklet& operator=(const BidderWorklet&) = delete;
 
-  // Returns true if `bid` is a valid bid value. Bids of "0" and other values
-  // that mean no bid was offered are considered invalid, for the purposes of
-  // this method.
-  static bool IsValidBid(double bid);
-
   // Sets the callback to be invoked on errors which require closing the pipe.
   // Callback will also immediately delete `this`. Not an argument to
   // constructor because the Mojo ReceiverId needs to be bound to the callback,
@@ -114,6 +110,8 @@ class BidderWorklet : public mojom::BidderWorklet {
       const std::string& seller_signals_json,
       const GURL& browser_signal_render_url,
       double browser_signal_bid,
+      double browser_signal_highest_scoring_other_bid,
+      bool browser_signal_made_highest_scoring_other_bid,
       const url::Origin& browser_signal_seller_origin,
       const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
       uint32_t bidding_signals_data_version,
@@ -162,6 +160,8 @@ class BidderWorklet : public mojom::BidderWorklet {
     std::string seller_signals_json;
     GURL browser_signal_render_url;
     double browser_signal_bid;
+    double browser_signal_highest_scoring_other_bid;
+    bool browser_signal_made_highest_scoring_other_bid;
     url::Origin browser_signal_seller_origin;
     absl::optional<url::Origin> browser_signal_top_level_seller_origin;
     absl::optional<uint32_t> bidding_signals_data_version;
@@ -179,6 +179,8 @@ class BidderWorklet : public mojom::BidderWorklet {
             scoped_refptr<AuctionV8Helper::DebugId> debug_id,
             const GURL& script_source_url,
             const url::Origin& top_window_origin,
+            const absl::optional<GURL>& wasm_helper_url,
+            const absl::optional<GURL>& trusted_bidding_signals_url,
             base::WeakPtr<BidderWorklet> parent);
 
     void SetWorkletScript(WorkletLoader::Result worklet_script);
@@ -195,6 +197,7 @@ class BidderWorklet : public mojom::BidderWorklet {
         std::vector<std::string> error_msgs)>;
     using ReportWinCallbackInternal =
         base::OnceCallback<void(absl::optional<GURL> report_url,
+                                base::flat_map<std::string, GURL> ad_beacon_map,
                                 std::vector<std::string> errors)>;
 
     void ReportWin(const std::string& interest_group_name,
@@ -203,6 +206,8 @@ class BidderWorklet : public mojom::BidderWorklet {
                    const std::string& seller_signals_json,
                    const GURL& browser_signal_render_url,
                    double browser_signal_bid,
+                   double browser_signal_highest_scoring_other_bid,
+                   bool browser_signal_made_highest_scoring_other_bid,
                    const url::Origin& browser_signal_seller_origin,
                    const absl::optional<url::Origin>&
                        browser_signal_top_level_seller_origin,
@@ -234,11 +239,13 @@ class BidderWorklet : public mojom::BidderWorklet {
     void PostReportWinCallbackToUserThread(
         ReportWinCallbackInternal callback,
         const absl::optional<GURL>& report_url,
+        base::flat_map<std::string, GURL> ad_beacon_map,
         std::vector<std::string> errors);
 
     void PostErrorBidCallbackToUserThread(
         GenerateBidCallbackInternal callback,
-        std::vector<std::string> error_msgs = std::vector<std::string>());
+        std::vector<std::string> error_msgs = std::vector<std::string>(),
+        absl::optional<GURL> debug_loss_report_url = absl::nullopt);
 
     static void PostResumeToUserThread(
         base::WeakPtr<BidderWorklet> parent,
@@ -260,6 +267,8 @@ class BidderWorklet : public mojom::BidderWorklet {
 
     const GURL script_source_url_;
     const url::Origin top_window_origin_;
+    const absl::optional<GURL> wasm_helper_url_;
+    const absl::optional<GURL> trusted_bidding_signals_url_;
 
     SEQUENCE_CHECKER(v8_sequence_checker_);
   };
@@ -300,9 +309,11 @@ class BidderWorklet : public mojom::BidderWorklet {
 
   // Invokes the `callback` of `task` with the provided values, and removes
   // `task` from `report_win_tasks_`.
-  void DeliverReportWinOnUserThread(ReportWinTaskList::iterator task,
-                                    absl::optional<GURL> report_url,
-                                    std::vector<std::string> errors);
+  void DeliverReportWinOnUserThread(
+      ReportWinTaskList::iterator task,
+      absl::optional<GURL> report_url,
+      base::flat_map<std::string, GURL> ad_beacon_map,
+      std::vector<std::string> errors);
 
   // Returns true if unpaused and the script and WASM helper (if needed) have
   // loaded.

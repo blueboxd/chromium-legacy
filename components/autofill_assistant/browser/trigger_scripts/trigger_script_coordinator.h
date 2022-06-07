@@ -60,7 +60,7 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
 
   // |web_contents| must outlive this instance.
   TriggerScriptCoordinator(
-      StarterPlatformDelegate* starter_delegate,
+      base::WeakPtr<StarterPlatformDelegate> starter_delegate,
       content::WebContents* web_contents,
       std::unique_ptr<WebController> web_controller,
       std::unique_ptr<ServiceRequestSender> request_sender,
@@ -137,7 +137,10 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
   void OnDynamicTriggerConditionsEvaluated(
       bool is_out_of_schedule,
       absl::optional<base::TimeTicks> start_time);
-  void OnGetTriggerScripts(int http_status, const std::string& response);
+  void OnGetTriggerScripts(
+      int http_status,
+      const std::string& response,
+      const ServiceRequestSender::ResponseInfo& response_info);
   GURL GetCurrentURL() const;
   void OnEffectiveVisibilityChanged();
   void OnOnboardingFinished(bool onboardingShown, OnboardingResult result);
@@ -159,7 +162,7 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
   TriggerScriptProto::TriggerUIType GetTriggerUiTypeForVisibleScript() const;
 
   // Delegate used to access settings and show the onboarding.
-  raw_ptr<StarterPlatformDelegate> starter_delegate_ = nullptr;
+  base::WeakPtr<StarterPlatformDelegate> starter_delegate_;
 
   // Delegate used to show and hide the UI.
   std::unique_ptr<UiDelegate> ui_delegate_;

@@ -52,8 +52,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
  public:
   using TView = EncryptionMigrationScreenView;
 
-  explicit EncryptionMigrationScreenHandler(
-      JSCallsContainer* js_calls_container);
+  EncryptionMigrationScreenHandler();
 
   EncryptionMigrationScreenHandler(const EncryptionMigrationScreenHandler&) =
       delete;
@@ -79,7 +78,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
  private:
   ash::EncryptionMigrationScreen* delegate_ = nullptr;

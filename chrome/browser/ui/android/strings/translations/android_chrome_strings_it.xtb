@@ -89,6 +89,7 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="1409879593029778104">Download di <ph name="FILE_NAME" /> impedito perché il file esiste già.</translation>
 <translation id="1414981605391750300">Connessione a Google in corso. L'operazione potrebbe richiedere un minuto…</translation>
 <translation id="1416550906796893042">Versione applicazione</translation>
+<translation id="1428770807407000502">Vuoi disattivare la sincronizzazione?</translation>
 <translation id="1430915738399379752">Stampa</translation>
 <translation id="1436784010935106834">Rimosso</translation>
 <translation id="1448440926884431741">Organizza i tuoi prodotti monitorati in Segnalibri</translation>
@@ -184,7 +185,6 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="200114059308480249">Vuoi includere il testo circostante nelle ricerche Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# file}other{# file}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> si aprirà in Chrome. Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio di Google<ph name="END_LINK1" /> e i <ph name="BEGIN_LINK2" />Termini di servizio aggiuntivi di Google Chrome e Chrome OS<ph name="END_LINK2" />. Si applicano anche le <ph name="BEGIN_LINK3" />Norme sulla privacy<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Vuoi rimuovere l'interesse?</translation>
 <translation id="2020309681647789787">La tua cronologia sarà disponibile su tutti i dispositivi sincronizzati, quindi potrai continuare ciò che stavi facendo</translation>
 <translation id="2021896219286479412">Controlli sito a schermo intero</translation>
 <translation id="2038563949887743358">Attiva Richiedi sito desktop</translation>
@@ -213,6 +213,7 @@ Tocca una parola per eseguire una ricerca. Per perfezionare la ricerca, tocca e 
 <translation id="2141396931810938595">In base al tuo utilizzo</translation>
 <translation id="214888715418183969">Scegli quali dati condividere con Chrome. Le metriche che condividi verranno utilizzate per contribuire a migliorare le funzionalità, le prestazioni e la stabilità di Chrome.</translation>
 <translation id="2149973817440762519">Modifica Preferito</translation>
+<translation id="2155214902713132423">Questo metodo di verifica non è disponibile per il dispositivo in uso. Scegli un'opzione diversa sull'altro dispositivo.</translation>
 <translation id="2157851137955077194">Per condividere contenuti dal tuo telefono con un altro dispositivo, attiva la sincronizzazione nelle impostazioni di Chrome su entrambi i dispositivi</translation>
 <translation id="2158408438301413340">Chrome non ha potuto controllare tutte le password</translation>
 <translation id="2169830938017475061">Ora</translation>
@@ -733,7 +734,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5091199029769593641">A breve vedrai storie di <ph name="SITE_NAME" /> quando aprirai una nuova scheda. I siti che segui vengono salvati nel tuo Account Google. Puoi gestirli nelle impostazioni di Discover.</translation>
 <translation id="5091249083535528968">Dati completi sull'utilizzo</translation>
 <translation id="509429900233858213">Si è verificato un errore.</translation>
-<translation id="5098190077610408701">Vuoi aggiungere l'interesse?</translation>
 <translation id="5102401324271069229">Se un sito cerca di rubare la tua password o se scarichi un file dannoso, Chrome potrebbe inviare gli URL, inclusi frammenti dei contenuti delle pagine, a Navigazione sicura</translation>
 <translation id="510275257476243843">1 ora rimanente</translation>
 <translation id="5115811374190515607">in <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +879,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5906513782029855931">Conoscere gli URL dei siti consente all'Assistente Google di aiutarti a completare le attività. Puoi disattivare l'assistente nelle impostazioni di Chrome.</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Aggiorna <ph name="PRODUCT_NAME" /> per avviare la sincronizzazione</translation>
+<translation id="5938820472109305350">Aggiungi <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Google in uso per la ricerca</translation>
 <translation id="5945035219773565305">Consiglio corrente: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Visualizzazione della pagina attiva</translation>
@@ -898,7 +899,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="6033245666633565791">Con <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome sviluppa nuove tecnologie che ti tutelano dai meccanismi di tracciamento tra siti salvaguardando al contempo il Web aperto.
 
 Le prove di Privacy Sandbox sono ancora in fase di sviluppo attivo e sono disponibili soltanto in alcune aree geografiche. Per il momento i siti possono provare Privacy Sandbox continuando a usare le attuali tecnologie web quali i cookie di terze parti.</translation>
-<translation id="6036057147555329831">ICU extra</translation>
 <translation id="6039379616847168523">Vai alla scheda successiva</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="604124094241169006">Automatico</translation>
@@ -1023,6 +1023,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="663674369910034433">Per altre impostazioni relative a privacy, sicurezza e raccolta dei dati, consulta le sezioni <ph name="BEGIN_LINK1" />Sincronizzazione<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />Servizi Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Per contribuire a migliorare l'app, Chrome invia a Google dati sull'utilizzo e sugli arresti anomali. <ph name="BEGIN_UMA_LINK" />Gestisci<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blocca sempre</translation>
+<translation id="6641780377503683465">Rimuovi <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6645629752388991326">Controlla quali dispositivi possono eseguire l'accesso usando questo dispositivo come token di sicurezza.</translation>
 <translation id="6648459603387803038">L'amministratore può modificare da remoto la configurazione del browser. L'attività svolta su questo dispositivo potrebbe essere gestita anche al di fuori di Chrome.</translation>

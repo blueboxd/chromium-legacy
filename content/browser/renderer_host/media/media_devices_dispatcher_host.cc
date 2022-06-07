@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/bind_post_task.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_devices_permission_checker.h"
@@ -273,7 +272,7 @@ void MediaDevicesDispatcherHost::SetCaptureHandleConfig(
             if (!rfhi || !rfhi->IsActive()) {
               return;
             }
-            if (rfhi != rfhi->GetMainFrame()) {
+            if (rfhi->GetParentOrOuterDocument()) {
               // Would be overkill to add thread-hopping just to support a test,
               // so we execute directly.
               bad_message::ReceivedBadMessage(render_process_id,

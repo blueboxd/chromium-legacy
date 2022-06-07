@@ -7,8 +7,16 @@
 #include "media/formats/hls/source_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
-namespace hls {
+namespace media::hls {
+
+namespace {
+
+types::VariableName CreateVarName(base::StringPiece name) {
+  return types::VariableName::Parse(SourceString::CreateForTesting(name))
+      .value();
+}
+
+}  // namespace
 
 TEST(HlsFormatParserTest, ParseDecimalIntegerTest) {
   auto const error_test = [](base::StringPiece input,
@@ -413,16 +421,16 @@ TEST(HlsFormatParserTest, ParseVariableNameTest) {
                           const base::Location& from =
                               base::Location::Current()) {
     auto result =
-        types::ParseVariableName(SourceString::CreateForTesting(input));
+        types::VariableName::Parse(SourceString::CreateForTesting(input));
     ASSERT_TRUE(result.has_value()) << from.ToString();
-    EXPECT_EQ(std::move(result).value().name, input);
+    EXPECT_EQ(std::move(result).value().GetName(), input);
   };
 
   auto const error_test = [](base::StringPiece input,
                              const base::Location& from =
                                  base::Location::Current()) {
     auto result =
-        types::ParseVariableName(SourceString::CreateForTesting(input));
+        types::VariableName::Parse(SourceString::CreateForTesting(input));
     ASSERT_TRUE(result.has_error()) << from.ToString();
     EXPECT_EQ(std::move(result).error().code(),
               ParseStatusCode::kMalformedVariableName);
@@ -451,5 +459,100 @@ TEST(HlsFormatParserTest, ParseVariableNameTest) {
   ok_test("______-___-__---");
 }
 
-}  // namespace hls
-}  // namespace media
+TEST(HlsFormatParserTest, ParseQuotedStringWithoutSubstitutionTest) {
+  const auto ok_test = [](base::StringPiece in,
+                          base::StringPiece expected_out) {
+    auto in_str = SourceString::CreateForTesting(in);
+    auto out = types::ParseQuotedStringWithoutSubstitution(in_str);
+    ASSERT_TRUE(out.has_value());
+    EXPECT_EQ(std::move(out).value().Str(), expected_out);
+  };
+
+  const auto error_test = [](base::StringPiece in) {
+    auto in_str = SourceString::CreateForTesting(in);
+    auto out = types::ParseQuotedStringWithoutSubstitution(in_str);
+    ASSERT_TRUE(out.has_error());
+    EXPECT_EQ(std::move(out).error().code(),
+              ParseStatusCode::kFailedToParseQuotedString);
+  };
+
+  // Test some basic examples
+  ok_test("\"\"", "");
+  ok_test("\" \"", " ");
+  ok_test("\"Hello, world!\"", "Hello, world!");
+
+  // Interior quotes are not checked by this function
+  ok_test("\"Hello, \"World!\"\"", "Hello, \"World!\"");
+
+  // Variables are not substituted by this function, and do not trigger an error
+  ok_test("\"Hello, {$WORLD}\"", "Hello, {$WORLD}");
+
+  // Single-quoted string is not allowed
+  error_test("''");
+  error_test("' '");
+  error_test("'Hello, world!'");
+
+  // Missing leading/trailing quote is not allowed
+  error_test("\"");
+  error_test("\" ");
+  error_test(" \"");
+  error_test("\"Hello, world!");
+  error_test("Hello, world!\"");
+
+  // Empty string is not allowed
+  error_test("");
+}
+
+TEST(HlsFormatParserTest, ParseQuotedStringTest) {
+  VariableDictionary dict;
+  EXPECT_TRUE(dict.Insert(CreateVarName("FOO"), "bar"));
+  EXPECT_TRUE(dict.Insert(CreateVarName("BAZ"), "\"foo\""));
+
+  const auto ok_test = [&dict](base::StringPiece in,
+                               base::StringPiece expected_out) {
+    auto in_str = SourceString::CreateForTesting(in);
+    VariableDictionary::SubstitutionBuffer sub_buffer;
+    auto out = types::ParseQuotedString(in_str, dict, sub_buffer);
+    ASSERT_TRUE(out.has_value());
+    EXPECT_EQ(std::move(out).value(), expected_out);
+  };
+
+  const auto error_test = [&dict](base::StringPiece in,
+                                  ParseStatusCode expected_error) {
+    auto in_str = SourceString::CreateForTesting(in);
+    VariableDictionary::SubstitutionBuffer sub_buffer;
+    auto out = types::ParseQuotedString(in_str, dict, sub_buffer);
+    ASSERT_TRUE(out.has_error());
+    EXPECT_EQ(std::move(out).error().code(), expected_error);
+  };
+
+  // Test some basic examples
+  ok_test("\"\"", "");
+  ok_test("\" \"", " ");
+  ok_test("\"Hello, world!\"", "Hello, world!");
+
+  // Interior quotes are not checked by this function
+  ok_test("\"Hello, \"World!\"\"", "Hello, \"World!\"");
+
+  // Variables ARE substituted by this function
+  ok_test("\"Hello, {$FOO}\"", "Hello, bar");
+  ok_test("\"Hello, {$BAZ}\"", "Hello, \"foo\"");
+  error_test("\"Hello, {$foo}\"", ParseStatusCode::kVariableUndefined);
+
+  // Single-quoted string is not allowed
+  error_test("''", ParseStatusCode::kFailedToParseQuotedString);
+  error_test("' '", ParseStatusCode::kFailedToParseQuotedString);
+  error_test("'Hello, world!'", ParseStatusCode::kFailedToParseQuotedString);
+
+  // Missing leading/trailing quote is not allowed
+  error_test("\"", ParseStatusCode::kFailedToParseQuotedString);
+  error_test("\" ", ParseStatusCode::kFailedToParseQuotedString);
+  error_test(" \"", ParseStatusCode::kFailedToParseQuotedString);
+  error_test("\"Hello, world!", ParseStatusCode::kFailedToParseQuotedString);
+  error_test("Hello, world!\"", ParseStatusCode::kFailedToParseQuotedString);
+
+  // Empty string is not allowed
+  error_test("", ParseStatusCode::kFailedToParseQuotedString);
+}
+
+}  // namespace media::hls

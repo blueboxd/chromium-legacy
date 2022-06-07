@@ -20,8 +20,8 @@
 #include "base/observer_list_types.h"
 #include "base/task/task_runner.h"
 #include "base/trace_event/tracing_agent.h"
-#include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_client.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -255,21 +255,6 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
                                  CupsRemovePrinterCallback callback,
                                  base::OnceClosure error_callback) = 0;
 
-  // Request a list of kernel features supported by device, passing it
-  // a |callback| on receiving the result. |result| is true on
-  // success.
-  using KernelFeatureListCallback =
-      base::OnceCallback<void(bool result, const std::string& feature_list)>;
-  virtual void GetKernelFeatureList(KernelFeatureListCallback callback) = 0;
-
-  // Request a kernel feature |name| to be enabled, passing it a
-  // |callback| which is invoked once on receiving the result. |result|
-  // is true on success. On failure, |err_str| contains the failure reason.
-  using KernelFeatureEnableCallback =
-      base::OnceCallback<void(bool result, const std::string& err_str)>;
-  virtual void KernelFeatureEnable(const std::string& name,
-                                   KernelFeatureEnableCallback callback) = 0;
-
   // A callback to handle the result of
   // StartPluginVmDispatcher/StopPluginVmDispatcher.
   using PluginVmDispatcherCallback = base::OnceCallback<void(bool success)>;
@@ -343,6 +328,6 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
 namespace ash {
 using ::chromeos::DbusLibraryError;
 using ::chromeos::DebugDaemonClient;
-}
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_DEBUG_DAEMON_DEBUG_DAEMON_CLIENT_H_

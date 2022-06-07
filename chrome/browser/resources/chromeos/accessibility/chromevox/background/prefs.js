@@ -7,21 +7,14 @@
  * the background context (background page or options page).
  *
  */
-
-goog.provide('ChromeVoxPrefs');
-goog.provide('RichTextSpeechStyle');
-
-goog.require('ConsoleTts');
-goog.require('EventStreamLogger');
-goog.require('ChromeVox');
-goog.require('ExtensionBridge');
+import {ConsoleTts} from './console_tts.js';
 
 /**
  * This object has default values of preferences and contains the common
  * code for working with preferences shared by the Options and Background
  * pages.
  */
-ChromeVoxPrefs = class {
+export class ChromeVoxPrefs {
   constructor() {
     let lastRunVersion = localStorage['lastRunVersion'];
     if (!lastRunVersion) {
@@ -100,7 +93,7 @@ ChromeVoxPrefs = class {
       EventStreamLogger.instance.notifyEventStreamFilterChangedAll(value);
     }
   }
-};
+}
 
 
 /**

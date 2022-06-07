@@ -26,6 +26,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMAGE_DOCUMENT_H_
 
 #include "base/gtest_prod_util.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 
 namespace gfx {
@@ -94,8 +95,8 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   enum ShrinkToFitMode { kViewport, kDesktop };
   ShrinkToFitMode shrink_to_fit_mode_;
 
-  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, ZoomForDSFScaleImage);
-  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, DivWidthWithZoomForDSF);
+  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, ScaleImage);
+  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, DivWidth);
 };
 
 template <>

@@ -69,7 +69,7 @@ class PhishingClassifier {
   // This must live at least as long as the PhishingClassifier.  The caller is
   // expected to cancel any pending classification before setting a phishing
   // scorer.
-  void set_phishing_scorer(Scorer* scorer);
+  void set_phishing_scorer(const Scorer* scorer);
 
   // Returns true if the classifier is ready to classify pages, i.e. it
   // has had a scorer set via set_phishing_scorer().
@@ -130,10 +130,6 @@ class PhishingClassifier {
   // non-phishy verdict.
   void VisualExtractionFinished(bool success);
 
-  // Callback when visual features have been scored and compared against the
-  // model.
-  void OnVisualTargetsMatched(std::unique_ptr<ClientPhishingRequest> verdict);
-
   // Callback when the visual TFLite model has been applied, and returned a list
   // of scores.
   void OnVisualTfLiteModelDone(std::unique_ptr<ClientPhishingRequest> verdict,
@@ -151,7 +147,7 @@ class PhishingClassifier {
   void Clear();
 
   content::RenderFrame* render_frame_;  // owns us
-  Scorer* scorer_;                      // owned by the caller
+  const Scorer* scorer_;                // owned by the caller
   std::unique_ptr<PhishingUrlFeatureExtractor> url_extractor_;
   std::unique_ptr<PhishingDOMFeatureExtractor> dom_extractor_;
   std::unique_ptr<PhishingTermFeatureExtractor> term_extractor_;

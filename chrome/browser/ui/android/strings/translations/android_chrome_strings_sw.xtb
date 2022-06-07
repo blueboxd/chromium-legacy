@@ -184,7 +184,6 @@ Unapofuta historia yako ya kuvinjari — yote au kwa tovuti mahususi — unafuta
 <translation id="200114059308480249">Ungependa kujumuisha maandishi yaliyo karibu na maneno uliyoyachagua katika utafutaji kwenye Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{Faili #}other{Faili #}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> itafunguka kwenye Chrome. Kwa kuendelea, unakubali <ph name="BEGIN_LINK1" />Sheria na Masharti ya Google<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Sheria na Masharti ya Ziada ya Google Chrome na Mfumo wa Uendeshaji wa Chrome<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Sera ya Faragha<ph name="END_LINK3" /> pia inatumika.</translation>
-<translation id="2019145049163614359">Ungependa kuondoa jambo linalokuvutia?</translation>
 <translation id="2020309681647789787">Utapata historia yako kwenye vifaa vyako vyote vilivyosawazishwa, ili uweze kuendeleza ulichokuwa ukifanya</translation>
 <translation id="2021896219286479412">Vidhibiti vya tovuti vya skrini nzima</translation>
 <translation id="2038563949887743358">Washa Omba Tovuti ya Eneo-kazi</translation>
@@ -213,6 +212,7 @@ Gusa neno lolote ili utafute. Ili uchuje utafutaji wako, gusa na ushikilie ili u
 <translation id="2141396931810938595">Kulingana na matumizi yako</translation>
 <translation id="214888715418183969">Chagua data ambayo ungependa kushiriki na Chrome. Data utakayoshiriki itatumiwa kuboresha vipengele, utendaji na uthabiti wa Chrome.</translation>
 <translation id="2149973817440762519">Badilisha Alamisho</translation>
+<translation id="2155214902713132423">Njia hii ya uthibitishaji haipatikani kwenye kifaa hiki. Teua chaguo tofauti kwenye kifaa chako kingine.</translation>
 <translation id="2157851137955077194">Ili ushiriki kitu kutoka simu yako hadi kifaa kingine, washa usawazishaji katika mipangilio ya Chrome kwenye vifaa vyote viwili</translation>
 <translation id="2158408438301413340">Chrome imeshindwa kukagua manenosiri yote</translation>
 <translation id="2169830938017475061">Sasa</translation>
@@ -733,7 +733,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5091199029769593641">Hivi karibuni, utaona hadithi kutoka <ph name="SITE_NAME" /> unapofungua kichupo kipya. Tovuti unazofuatilia huhifadhiwa katika akaunti yako ya Google. Unaweza kuzidhibiti katika mipangilio ya Dokezo.</translation>
 <translation id="5091249083535528968">Data ya ziada ya matumizi</translation>
 <translation id="509429900233858213">Hitilafu fulani imetokea.</translation>
-<translation id="5098190077610408701">Ungependa kuweka mambo yanayokuvutia?</translation>
 <translation id="5102401324271069229">Tovuti inapojaribu kuiba nenosiri lako au unapopakua faili hatari, Chrome inaweza kuhamisha URL, ikijumuisha sehemu za maudhui ya ukurasa, kwenye kipengele cha Kuvinjari Salama</translation>
 <translation id="510275257476243843">Imesalia saa 1</translation>
 <translation id="5115811374190515607">kwenye <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5906513782029855931">Kujua URL za tovuti huwezesha Mratibu wa Google kukusaidia kukamilisha majukumu. Unaweza kuzima programu ya Mratibu katika mipangilio ya Chrome.</translation>
 <translation id="5916664084637901428">Imewashwa</translation>
 <translation id="5919204609460789179">Sasisha <ph name="PRODUCT_NAME" /> ili uanze kusawazisha</translation>
+<translation id="5938820472109305350">Weka <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Unatumia Google kutafuta</translation>
 <translation id="5945035219773565305">Pendekezo la sasa:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Unaangalia ukurasa wa moja kwa moja</translation>
@@ -898,7 +898,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="6033245666633565791">Kwa kutumia <ph name="BEGIN_LINK" />Utaratibu wa kuwekea vikwazo vya faragha<ph name="END_LINK" />, Chrome inakuza teknolojia mpya zitakazokulinda dhidi ya ufuatiliaji wa data kwenye tovuti nyingi huku zikidumisha wavuti huria.
 
 Majaribio ya Utaratibu wa Kuwekea Vikwazo vya Faragha bado yanaendelea kutengenezwa na yanapatikana katika maeneo mahususi. Kwa sasa, tovuti zinaweza kujaribu Utaratibu wa Kuwekea Vikwazo vya Faragha huku zikiendelea kutumia teknolojia za sasa za wavuti kama vile vidakuzi vya wengine.</translation>
-<translation id="6036057147555329831">ICU ya Ziada</translation>
 <translation id="6039379616847168523">Nenda kwenye kichupo kinachofuata</translation>
 <translation id="6040143037577758943">Funga</translation>
 <translation id="604124094241169006">Otomatiki</translation>
@@ -1023,6 +1022,7 @@ Tokeni za uaminifu zinaboresha faragha kwenye wavuti na haziwezi kutumiwa kukuta
 <translation id="663674369910034433">Ili upate mipangilio zaidi inayohusiana na faragha, usalama na ukusanyaji wa data, angalia <ph name="BEGIN_LINK1" />Usawazishaji<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />huduma za Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Ili kusaidia kuboresha programu, Chrome hutumia Google data ya matumizi na ripoti za kuacha kufanya kazi. <ph name="BEGIN_UMA_LINK" />Dhibiti<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Zuia kila wakati</translation>
+<translation id="6641780377503683465">Ondoa <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Futa</translation>
 <translation id="6645629752388991326">Dhibiti vifaa vinavyoweza kuingia katika akaunti kwa kutumia kifaa hiki kama ufunguo wa usalama.</translation>
 <translation id="6648459603387803038">Msimamizi wako anaweza kubadilisha mipangilio ya kivinjari chako kwa mbali. Huenda shughuli kwenye kifaa hiki zikadhibitiwa nje ya Chrome.</translation>

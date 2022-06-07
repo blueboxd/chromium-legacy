@@ -18,6 +18,8 @@ namespace printing {
 const char kDummyPrinterName[] = "DefaultPrinter";
 
 base::Value GetPrintTicket(mojom::PrinterType type) {
+  DCHECK_NE(type, mojom::PrinterType::kPrivetDeprecated);
+
   base::Value ticket(base::Value::Type::DICTIONARY);
 
   // Letter
@@ -51,10 +53,7 @@ base::Value GetPrintTicket(mojom::PrinterType type) {
   ticket.SetIntKey(kSettingPageHeight, 279400);
   ticket.SetBoolKey(kSettingShowSystemDialog, false);
 
-  if (type == mojom::PrinterType::kCloud) {
-    ticket.SetStringKey(kSettingCloudPrintId, kDummyPrinterName);
-  } else if (type == mojom::PrinterType::kPrivet ||
-             type == mojom::PrinterType::kExtension) {
+  if (type == mojom::PrinterType::kExtension) {
     base::Value capabilities(base::Value::Type::DICTIONARY);
     capabilities.SetBoolKey("duplex", true);  // non-empty
     std::string caps_string;

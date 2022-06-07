@@ -15,6 +15,7 @@
 <translation id="151962892725702025">ማመሳሰል ለጎራዎ ስለማይገኝ Chromium OS ውሂብዎን ማመሳሰል አይችልም።</translation>
 <translation id="1524282610922162960">የChromium ትር ያጋሩ</translation>
 <translation id="1553461853655228091">Chromium የዙሪያዎ 3ል ካርታ መፍጠር እንዲችል ካሜራዎን የመድረስ ፈቃድ ያስፈልገዋል</translation>
+<translation id="1602421994560205104">ይህ ፋይል ለደህንነት ፍተሻ በጣም ትልቅ ስለሆነ Chromium አግዶታል። እስከ 50 ሜባ በሚደርሱ ፋይሎች እንደገና ይሞክሩ</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromiumን ዳግም እንዲያስጀምሩት ይፈልግብዎታል}=1{አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromiumን ዳግም እንዲያስጀምሩት ይፈልግብዎታል። የእርስዎ ማንነት የማያሳውቅ መስኮት ዳግም አይከፈትም}one{አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromiumን ዳግም እንዲያስጀምሩት ይፈልግብዎታል። የእርስዎ # ማንነት የማያሳውቁ መስኮቶች ዳግም አይከፈቱም}other{አንድ ዝማኔ ለመተግበር አስተዳዳሪዎ Chromiumን ዳግም እንዲያስጀምሩት ይፈልግብዎታል። የእርስዎ # ማንነት የማያሳውቁ መስኮቶች ዳግም አይከፈቱም}}</translation>
 <translation id="1625909126243026060">በChromium ውስጥ ቁልፍ የግላዊነት እና የደህንነት ቁጥጥሮችን ይገምግሙ</translation>
 <translation id="1632539827495546968">ይህን መለያ አንድ ጊዜ ብቻ መጠቀም ከፈለጉ በChromium አሳሽ ውስጥ <ph name="GUEST_LINK_BEGIN" />የእንግዳ ሁነታ<ph name="GUEST_LINK_END" />ን መጠቀም ይችላሉ። ለሌላ ሰው መለያ ማከል ከፈለጉ በእርስዎ <ph name="DEVICE_TYPE" /> ላይ <ph name="LINK_BEGIN" />አዲስ ሰው ያክሉ<ph name="LINK_END" />።
@@ -120,6 +121,7 @@
 <translation id="4264410486868823224"><ph name="MANAGER" /> ይህን መሣሪያ ከመጠቀምዎ በፊት የሚከተለውን የአገልግሎት ውል እንዲያነቡት እና እንዲቀበሉት ይፈለጋል። ይህ ውል የChromium ስርዓተ ክወና ውሉን አያስፋፋውም፣ አይቀይረውም ወይም አይገድበውም።</translation>
 <translation id="4271805377592243930">Chromium ላይ እገዛ ያግኙ</translation>
 <translation id="4285930937574705105">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። Chromium አሁን እያሄደ ከሆነ እባክዎ ይዝጉትና እንደገና ይሞክሩ።</translation>
+<translation id="4304713468139749426">የይለፍ ቃል አስተዳዳሪ</translation>
 <translation id="4407044323746248786">የሆነው ሆኖ ከChromium ይወጣ?</translation>
 <translation id="4415566066719264597">Chromium በበስተጀርባ ላይ ያሂድ</translation>
 <translation id="4423735387467980091">Chromiumን ያብጁ እና ይቆጣጠሩ</translation>
@@ -197,6 +199,7 @@
 <translation id="6290827346642914212">የChromium መገለጫዎን ይሰይሙ</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> አደገኛ ሊሆን ስለሚችል Chromium አግዶታል።</translation>
 <translation id="6309712487085796862">Chromium ካሜራዎን እየተጠቀመ ነው።</translation>
+<translation id="632355235628111698">Chromium ይህ ፋይል አደገኛ ስለሆነ አግዶታል</translation>
 <translation id="6333502561965082103">ሌላ ሥርዓተ ክወና በChromium ላይ በሂደት ላይ ነው። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="6334986366598267305">አሁን Chromiumን ከGoogle መለያዎ ጋር እና በተጋሩ ኮምፒውተሮች ላይ መጠቀም ይበልጥ ቀላል ነው።</translation>
 <translation id="6373523479360886564">እርግጠኛ ነዎት Chromiumን ማራገፍ ይፈልጋሉ?</translation>
@@ -221,6 +224,7 @@
 <translation id="673636774878526923">በሁሉም መሣሪያዎችዎ ላይ የእርስዎን Chromium ነገሮች ለመድረስ ይግቡ፣ ከዚያ ስምረትን ያብሩ።</translation>
 <translation id="6774082503108938489">የእርስዎ ወላጅ ለChromium «የጣቢያዎች፣ መተግበሪያዎች እና ቅጥያዎች ፈቃዶች»ን አጥፍተዋል። ይህን <ph name="EXTENSION_TYPE_PARAMETER" /> ማንቃት አይፈቀድም።</translation>
 <translation id="6847869444787758381">Chromium የእርስዎ የይለፍ ቃላት ከተነጠቁ እርስዎ እንዲያውቁት ያደርግዎታል</translation>
+<translation id="6852530923436401894">ይህ ፋይል ተንኮል-አዘል ዌር ስላለው Chromium አግዶታል</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (ወደ Chromium ተቀድቷል)</translation>
 <translation id="6873893289264747459">Chromium «<ph name="EXTENSION_NAME" />» ተንኮል አዘል ዌር እንደያዘ አግኝቷል</translation>
@@ -239,6 +243,7 @@
 <translation id="7218568399872925918">እርስዎ የጎበኟቸው ጣቢያዎች Chromiumን እስኪዘጉ ድረስ መረጃዎን ያስታውሳሉ</translation>
 <translation id="7223968959479464213">ተግባር መሪ - Chromium</translation>
 <translation id="7246575524853130370">በChromium የተገመቱ የእርስዎ ዝንባሌዎች</translation>
+<translation id="7265671031637041256">ይህ ፋይል የተመሰጠረ ስለሆነ Chromium አግዶታል። ባለቤቱ ምስጠራን እንዲፈታ ይጠይቁት</translation>
 <translation id="7309928523159922338">የማስታወቂያ ልኬት እርስዎ የሚጎበኟቸው ጣቢያዎች የማስታወቂያዎቻቸውን አፈጻጸም የሚለካው ጣቢያ የሚያግዘውን መረጃ ከChromium እንዲጠይቁ ያስችላቸዋል። የማስታወቂያ ልኬት በተቻለ መጠን ትንሽ መረጃን በጣቢያዎች መካከል በማስተላለፍ የጣቢያ ተሻጋሪ ክትትልን ይገድባል።</translation>
 <translation id="731795002583552498">Chromiumን በማዘመን ላይ...</translation>
 <translation id="7318036098707714271">የምርጫዎች ፋይልዎ የተበላሸ ወይም ልክ ያልሆነ ነው።
@@ -275,11 +280,12 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="7857220146454061152">የወደፊቱን የChromium ዝመኔዎችን ለማግኘት፣ OS X 10.11 ወይም ከዚያ በኋላ ያለው ያስፈልግዎታል። ይህ ኮምፒተር OS X 10.10 እየተጠቀመ ነው።</translation>
 <translation id="7867198900892795913">Chromium ወደ የቅርብ ጊዜው ስሪት ሊዘመን አልቻለም፣ ስለዚህ አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጡዎት ናቸው። Chromiumን ማዘመን አለብዎት።</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />የእርስዎን ውሂብ እንዴት ማቀናበር እንደሚችሉ፦<ph name="END_BOLD" /> የእርስዎን ግላዊነት ለመጠበቅ ከ4 ሳምንታት በላይ የቆዩ ዝንባሌዎችዎን በራስ-ሰር እንሰርዛለን። ማሰስዎን በሚቀጥሉበት ጊዜ ዝንባሌ እንደገና በዝርዝሩ ላይ ሊታይ ይችላል። ወይም Chromium ከግምት ውስጥ እንዳያስገባቸው የማይፈልጓቸውን ዝንባሌዎች ማስወገድ ይችላሉ።</translation>
-<translation id="788352880609666695">የሚከተሉት መለያዎች ለዚህ Chromium መገለጫ ይገኛሉ</translation>
 <translation id="7898472181347242998">መሣሪያዎ የተዘመነ ከሆነ ለማየት ወደ <ph name="LINK_BEGIN" />የChromium OS ቅንብሮች ይሂዱ<ph name="LINK_END" /></translation>
 <translation id="7937630085815544518">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ወደ Chromium ገብተዋል። እባክዎ እንደገና ለመግባት ተመሳሳዩን መለያ ይጠቀሙ።</translation>
 <translation id="7975919845073681630">ይሄ ሁለተኛ የChromium ጭነት ነው፣ እና ነባሪ አሳሽዎ ማድረግ አይቻልም።</translation>
+<translation id="7997934263947464652">ካልታወቁ ምንጮች የመጡ ቅጥያዎች፣ መተግበሪያዎች እና ገጽታዎች መሣሪያዎን ሊጎዱ ይችላሉ። Chromium እነሱን ከ<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ብቻ መጫንን ይመክራል</translation>
 <translation id="8013436988911883588">አንዴ Chromium መዳረሻ ከኖረው በኋላ ድር ጣቢያዎች እርስዎን መዳረሻ መጠየቅ ይችላሉ።</translation>
+<translation id="8045118833343856403">የሚከተሉት መለያዎች በማናቸውም የChromium መገለጫዎች ውስጥ አልገቡም። አንድ መለያ በሌላ መገለጫ ውስጥ ለመጠቀም ከፈለጉ መጀመሪያ ያንን መገለጫ ያስወግዱት።</translation>
 <translation id="8105840573057009683">Chromium ለዚህ ጣቢያ የአካባቢ ፈቃድ ያስፈልገዋል</translation>
 <translation id="81770708095080097">ይህ ፋይል አደገኛ ስለሆነ Chromium አግዶታል።</translation>
 <translation id="8248265253516264921">አንድ ምስል ጠቃሚ መግለጫ ከሌለው Chromium ለእርስዎ አንድ ለማቅረብ ይሞክራል። ዝርዝር መግለጫዎችን ለመፍጠር፣ ምስሎች ወደ Google ይላካሉ። ይህን በማንኛውም ጊዜ በቅንብሮች ውስጥ ሊያጠፉት ይችላሉ።</translation>

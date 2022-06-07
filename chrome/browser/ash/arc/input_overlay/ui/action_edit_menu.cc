@@ -31,9 +31,7 @@ class ActionEditMenu::BindingButton : public views::LabelButton {
   BindingButton(PressedCallback callback, int text_source_id)
       : LabelButton(callback, l10n_util::GetStringUTF16(text_source_id)) {
     SetAccessibleName(l10n_util::GetStringUTF16(text_source_id));
-    SetBorder(views::CreateEmptyBorder(/*top=*/0, /*left=*/16,
-                                       /*bottom=*/0,
-                                       /*right=*/12));
+    SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(0, 16, 0, 12)));
     SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
     auto* color_provider = ash::AshColorProvider::Get();
@@ -83,21 +81,32 @@ ActionEditMenu::ActionEditMenu(
     DisplayOverlayController* display_overlay_controller,
     ActionView* anchor)
     : display_overlay_controller_(display_overlay_controller),
-      anchor_(anchor) {}
+      anchor_view_(anchor) {}
 
 ActionEditMenu::~ActionEditMenu() = default;
 
 // static
-std::unique_ptr<ActionEditMenu> ActionEditMenu::BuildActionTapEditMenu(
+std::unique_ptr<ActionEditMenu> ActionEditMenu::BuildActionEditMenu(
     DisplayOverlayController* display_overlay_controller,
-    ActionView* anchor) {
+    ActionView* anchor,
+    ActionType action_type) {
   if (!display_overlay_controller)
     return nullptr;
   display_overlay_controller->RemoveActionEditMenu();
 
   auto menu =
       std::make_unique<ActionEditMenu>(display_overlay_controller, anchor);
-  menu->InitActionTapEditMenu();
+
+  switch (action_type) {
+    case ActionType::kTap:
+      menu->InitActionTapEditMenu();
+      break;
+    case ActionType::kMove:
+      menu->InitActionTapEditMenu();
+      break;
+    default:
+      NOTREACHED();
+  }
 
   return menu;
 }
@@ -120,12 +129,13 @@ void ActionEditMenu::InitActionTapEditMenu() {
                           base::Unretained(this)),
       IDS_INPUT_OVERLAY_EDIT_MENU_KEYBOARD_KEY));
   mouse_left_ = AddChildView(std::make_unique<BindingButton>(
-      base::BindRepeating(&ActionEditMenu::OnMouseLeftBindingButtonPressed,
+      base::BindRepeating(&ActionEditMenu::OnMouseLeftClickBindingButtonPressed,
                           base::Unretained(this)),
       IDS_INPUT_OVERLAY_EDIT_MENU_LEFT_MOUSE_CLICK));
   mouse_right_ = AddChildView(std::make_unique<BindingButton>(
-      base::BindRepeating(&ActionEditMenu::OnMouseRightBindingButtonPressed,
-                          base::Unretained(this)),
+      base::BindRepeating(
+          &ActionEditMenu::OnMouseRightClickBindingButtonPressed,
+          base::Unretained(this)),
       IDS_INPUT_OVERLAY_EDIT_MENU_RIGHT_MOUSE_CLICK));
   reset_ = AddChildView(std::make_unique<BindingButton>(
       base::BindRepeating(&ActionEditMenu::OnResetButtonPressed,
@@ -135,40 +145,64 @@ void ActionEditMenu::InitActionTapEditMenu() {
   int additional_width = std::max({keyboard_key_->GetMinSize().width(),
                                    mouse_left_->GetMinSize().width(),
                                    mouse_right_->GetMinSize().width()});
-  SetBorder(views::CreateEmptyBorder(/*top=*/8, /*left=*/0,
-                                     /*bottom=*/8, /*right=*/0));
+  SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(8, 0, 8, 0)));
   SetSize(gfx::Size(kMenuWidth + additional_width, kMenuHeight));
-  SetPosition(anchor_->GetEditMenuPosition(size()));
-  auto* action = anchor_->action();
+  SetPosition(anchor_view_->GetEditMenuPosition(size()));
+  auto* action = anchor_view_->action();
   // It is possible that the action has no binding after customizing, such as
   // users bind the key to another action.
-  if (action->IsKeyboardBound())
+  auto& binding = action->GetCurrentDisplayedBinding();
+  if (IsKeyboardBound(binding))
     keyboard_key_->OnBinding();
-  if (action->IsMouseBound()) {
-    if (action->current_binding()->mouse_action() == kPrimaryClick)
+  if (IsMouseBound(binding)) {
+    if (binding.mouse_action() == kPrimaryClick) {
       mouse_left_->OnBinding();
-    if (action->current_binding()->mouse_action() == kSecondaryClick)
+    } else if (binding.mouse_action() == kSecondaryClick) {
       mouse_right_->OnBinding();
+    } else {
+      NOTREACHED();
+    }
   }
 }
 
+void ActionEditMenu::InitActionMoveEditMenu() {
+  // TODO(cuicuiruan): Implement after post MVP.
+  NOTIMPLEMENTED();
+}
+
 void ActionEditMenu::OnKeyBoardKeyBindingButtonPressed() {
-  // TODO(cuicuiruan): Implement feature here.
+  DCHECK(anchor_view_);
+  if (!anchor_view_)
+    return;
+
+  anchor_view_->OnBindingToKeyboard();
   display_overlay_controller_->RemoveActionEditMenu();
 }
 
-void ActionEditMenu::OnMouseLeftBindingButtonPressed() {
-  // TODO(cuicuiruan): Implement feature here.
+void ActionEditMenu::OnMouseLeftClickBindingButtonPressed() {
+  DCHECK(anchor_view_);
+  if (!anchor_view_)
+    return;
+
+  anchor_view_->OnBindingToMouse(kPrimaryClick);
   display_overlay_controller_->RemoveActionEditMenu();
 }
 
-void ActionEditMenu::OnMouseRightBindingButtonPressed() {
-  // TODO(cuicuiruan): Implement feature here.
+void ActionEditMenu::OnMouseRightClickBindingButtonPressed() {
+  DCHECK(anchor_view_);
+  if (!anchor_view_)
+    return;
+
+  anchor_view_->OnBindingToMouse(kSecondaryClick);
   display_overlay_controller_->RemoveActionEditMenu();
 }
 
 void ActionEditMenu::OnResetButtonPressed() {
-  // TODO(cuicuiruan): Implement feature here.
+  DCHECK(anchor_view_);
+  if (!anchor_view_)
+    return;
+
+  anchor_view_->OnResetBinding();
   display_overlay_controller_->RemoveActionEditMenu();
 }
 

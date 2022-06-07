@@ -6,10 +6,6 @@ import SwiftUI
 
 /// A button view to act as the trailing button of a popup match and provide an additional action for a match.
 struct PopupMatchTrailingButton: View {
-  enum Colors {
-    static let trailingButtonColor = Color(red: 0.769, green: 0.769, blue: 0.769)
-  }
-
   enum Dimensions {
     static let extendedTouchTargetDiameter: CGFloat = 44
     static let trailingButtonSize: CGFloat = 24
@@ -20,8 +16,8 @@ struct PopupMatchTrailingButton: View {
 
   var body: some View {
     Button(action: action) {
-      Image(systemName: match.isAppendable ? "arrow.up.backward" : "arrow.right.square")
-        .foregroundColor(Colors.trailingButtonColor)
+      Image(systemName: match.isTabMatch ? "arrow.right.square" : "arrow.up.backward")
+        .foregroundColor(Color.cr_blue)
         .aspectRatio(contentMode: .fit)
         .frame(
           width: Dimensions.trailingButtonSize, height: Dimensions.trailingButtonSize,
@@ -34,5 +30,18 @@ struct PopupMatchTrailingButton: View {
         )
     }
     .buttonStyle(.plain)
+    // The button shouldn't be an actual accessibility element for
+    // VoiceOver.
+    .accessibilityHidden(true)
+    // TODO(crbug.com/1312110): This should be `children: .contain` so the
+    // new accessibility element isn't accessible. However, EG currently can't
+    // tap on a non-accessible SwiftUI view in a test.
+    // Create a new accessibility element that is non-accessible so tests
+    // can find the button.
+    .accessibilityElement(children: .ignore)
+    .accessibilityIdentifier(
+      match.isTabMatch
+        ? kOmniboxPopupRowSwitchTabAccessibilityIdentifier
+        : kOmniboxPopupRowAppendAccessibilityIdentifier)
   }
 }

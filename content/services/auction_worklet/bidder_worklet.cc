@@ -22,7 +22,9 @@
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/for_debugging_only_bindings.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
+#include "content/services/auction_worklet/register_ad_beacon_bindings.h"
 #include "content/services/auction_worklet/report_bindings.h"
+#include "content/services/auction_worklet/set_bid_bindings.h"
 #include "content/services/auction_worklet/trusted_signals.h"
 #include "content/services/auction_worklet/trusted_signals_request_manager.h"
 #include "content/services/auction_worklet/worklet_loader.h"
@@ -119,32 +121,6 @@ bool CreateAdVector(AuctionV8Helper* v8_helper,
   return true;
 }
 
-// Checks that `url` is a valid URL and is in `ads`. Appends an error to
-// `out_errors` if not. `script_source_url` is used in output error messages
-// only.
-bool IsAllowedAdUrl(const GURL& url,
-                    const GURL& script_source_url,
-                    const char* argument_name,
-                    const std::vector<blink::InterestGroup::Ad>& ads,
-                    std::vector<std::string>& out_errors) {
-  if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme)) {
-    out_errors.push_back(
-        base::StrCat({script_source_url.spec(), " generateBid() returned ",
-                      argument_name, " URL that isn't a valid https:// URL."}));
-    return false;
-  }
-
-  for (const auto& ad : ads) {
-    if (url == ad.render_url)
-      return true;
-  }
-  out_errors.push_back(base::StrCat({script_source_url.spec(),
-                                     " generateBid() returned ", argument_name,
-                                     " URL that isn't one "
-                                     "of the registered creative URLs."}));
-  return false;
-}
-
 }  // namespace
 
 BidderWorklet::BidderWorklet(
@@ -179,6 +155,7 @@ BidderWorklet::BidderWorklet(
 
   v8_state_ = std::unique_ptr<V8State, base::OnTaskRunnerDeleter>(
       new V8State(v8_helper, debug_id_, script_source_url_, top_window_origin_,
+                  wasm_helper_url_, trusted_bidding_signals_url,
                   weak_ptr_factory_.GetWeakPtr()),
       base::OnTaskRunnerDeleter(v8_runner_));
 
@@ -190,10 +167,6 @@ BidderWorklet::BidderWorklet(
 BidderWorklet::~BidderWorklet() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
   debug_id_->AbortDebuggerPauses();
-}
-
-bool BidderWorklet::IsValidBid(double bid) {
-  return !std::isnan(bid) && std::isfinite(bid) && bid > 0;
 }
 
 int BidderWorklet::context_group_id_for_testing() const {
@@ -257,6 +230,8 @@ void BidderWorklet::ReportWin(
     const std::string& seller_signals_json,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
+    double browser_signal_highest_scoring_other_bid,
+    bool browser_signal_made_highest_scoring_other_bid,
     const url::Origin& browser_signal_seller_origin,
     const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     uint32_t bidding_signals_data_version,
@@ -272,6 +247,10 @@ void BidderWorklet::ReportWin(
   report_win_task->seller_signals_json = seller_signals_json;
   report_win_task->browser_signal_render_url = browser_signal_render_url;
   report_win_task->browser_signal_bid = browser_signal_bid;
+  report_win_task->browser_signal_highest_scoring_other_bid =
+      browser_signal_highest_scoring_other_bid;
+  report_win_task->browser_signal_made_highest_scoring_other_bid =
+      browser_signal_made_highest_scoring_other_bid;
   report_win_task->browser_signal_seller_origin = browser_signal_seller_origin;
   report_win_task->browser_signal_top_level_seller_origin =
       browser_signal_top_level_seller_origin;
@@ -307,13 +286,17 @@ BidderWorklet::V8State::V8State(
     scoped_refptr<AuctionV8Helper::DebugId> debug_id,
     const GURL& script_source_url,
     const url::Origin& top_window_origin,
+    const absl::optional<GURL>& wasm_helper_url,
+    const absl::optional<GURL>& trusted_bidding_signals_url,
     base::WeakPtr<BidderWorklet> parent)
     : v8_helper_(std::move(v8_helper)),
       debug_id_(std::move(debug_id)),
       parent_(std::move(parent)),
       user_thread_(base::SequencedTaskRunnerHandle::Get()),
-      script_source_url_(std::move(script_source_url)),
-      top_window_origin_(top_window_origin) {
+      script_source_url_(script_source_url),
+      top_window_origin_(top_window_origin),
+      wasm_helper_url_(wasm_helper_url),
+      trusted_bidding_signals_url_(trusted_bidding_signals_url) {
   DETACH_FROM_SEQUENCE(v8_sequence_checker_);
   v8_helper_->v8_runner()->PostTask(
       FROM_HERE, base::BindOnce(&V8State::FinishInit, base::Unretained(this)));
@@ -338,6 +321,8 @@ void BidderWorklet::V8State::ReportWin(
     const std::string& seller_signals_json,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
+    double browser_signal_highest_scoring_other_bid,
+    bool browser_signal_made_highest_scoring_other_bid,
     const url::Origin& browser_signal_seller_origin,
     const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     const absl::optional<uint32_t>& bidding_signals_data_version,
@@ -350,6 +335,8 @@ void BidderWorklet::V8State::ReportWin(
   v8::Local<v8::ObjectTemplate> global_template =
       v8::ObjectTemplate::New(isolate);
   ReportBindings report_bindings(v8_helper_.get(), global_template);
+  RegisterAdBeaconBindings register_ad_beacon_bindings(v8_helper_.get(),
+                                                       global_template);
 
   // Short lived context, to avoid leaking data at global scope between either
   // repeated calls to this worklet, or to calls to any other worklet.
@@ -362,9 +349,9 @@ void BidderWorklet::V8State::ReportWin(
       !AppendJsonValueOrNull(v8_helper_.get(), context, per_buyer_signals_json,
                              &args) ||
       !v8_helper_->AppendJsonValue(context, seller_signals_json, &args)) {
-    PostReportWinCallbackToUserThread(std::move(callback),
-                                      absl::nullopt /* report_url */,
-                                      std::vector<std::string>() /* errors */);
+    PostReportWinCallbackToUserThread(
+        std::move(callback), absl::nullopt /* report_url */,
+        /*ad_beacon_map=*/{}, std::vector<std::string>() /* errors */);
     return;
   }
 
@@ -379,6 +366,11 @@ void BidderWorklet::V8State::ReportWin(
       !browser_signals_dict.Set("renderUrl",
                                 browser_signal_render_url.spec()) ||
       !browser_signals_dict.Set("bid", browser_signal_bid) ||
+      !browser_signals_dict.Set("highestScoringOtherBid",
+                                browser_signal_highest_scoring_other_bid) ||
+      !browser_signals_dict.Set(
+          "madeHighestScoringOtherBid",
+          browser_signal_made_highest_scoring_other_bid) ||
       !browser_signals_dict.Set("seller",
                                 browser_signal_seller_origin.Serialize()) ||
       (browser_signal_top_level_seller_origin &&
@@ -388,9 +380,9 @@ void BidderWorklet::V8State::ReportWin(
       (bidding_signals_data_version.has_value() &&
        !browser_signals_dict.Set("dataVersion",
                                  bidding_signals_data_version.value()))) {
-    PostReportWinCallbackToUserThread(std::move(callback),
-                                      absl::nullopt /* report_url */,
-                                      std::vector<std::string>() /* errors */);
+    PostReportWinCallbackToUserThread(
+        std::move(callback), absl::nullopt /* report_url */,
+        /*ad_beacon_map=*/{}, std::vector<std::string>() /* errors */);
     return;
   }
   args.push_back(browser_signals);
@@ -405,16 +397,17 @@ void BidderWorklet::V8State::ReportWin(
                       "reportWin", args, /*script_timeout=*/absl::nullopt,
                       errors_out)
           .IsEmpty()) {
-    PostReportWinCallbackToUserThread(std::move(callback),
-                                      absl::nullopt /* report_url */,
-                                      std::move(errors_out));
+    PostReportWinCallbackToUserThread(
+        std::move(callback), absl::nullopt /* report_url */,
+        /*ad_beacon_map=*/{}, std::move(errors_out));
     return;
   }
 
   // This covers both the case where a report URL was provided, and the case one
   // was not.
   PostReportWinCallbackToUserThread(
-      std::move(callback), report_bindings.report_url(), std::move(errors_out));
+      std::move(callback), report_bindings.report_url(),
+      register_ad_beacon_bindings.TakeAdBeaconMap(), std::move(errors_out));
 }
 
 void BidderWorklet::V8State::GenerateBid(
@@ -443,6 +436,11 @@ void BidderWorklet::V8State::GenerateBid(
       v8::ObjectTemplate::New(isolate);
   ForDebuggingOnlyBindings for_debugging_only_bindings(v8_helper_.get(),
                                                        global_template);
+  SetBidBindings set_bid_bindings(
+      v8_helper_.get(), global_template, start,
+      browser_signal_top_level_seller_origin.has_value(),
+      bidder_worklet_non_shared_params->ads,
+      bidder_worklet_non_shared_params->ad_components);
 
   // Short lived context, to avoid leaking data at global scope between either
   // repeated calls to this worklet, or to calls to any other worklet.
@@ -456,6 +454,17 @@ void BidderWorklet::V8State::GenerateBid(
           "owner", url::Origin::Create(script_source_url_).Serialize()) ||
       !interest_group_dict.Set("name",
                                bidder_worklet_non_shared_params->name) ||
+      !interest_group_dict.Set("biddingLogicUrl", script_source_url_.spec()) ||
+      (wasm_helper_url_ &&
+       !interest_group_dict.Set("biddingWasmHelperUrl",
+                                wasm_helper_url_->spec())) ||
+      (bidder_worklet_non_shared_params->daily_update_url &&
+       !interest_group_dict.Set(
+           "dailyUpdateUrl",
+           bidder_worklet_non_shared_params->daily_update_url->spec())) ||
+      (trusted_bidding_signals_url_ &&
+       !interest_group_dict.Set("trustedBiddingSignalsUrl",
+                                trusted_bidding_signals_url_->spec())) ||
       (bidder_worklet_non_shared_params->user_bidding_signals &&
        !v8_helper_->InsertJsonValue(
            context, "userBiddingSignals",
@@ -463,6 +472,28 @@ void BidderWorklet::V8State::GenerateBid(
            interest_group_object))) {
     PostErrorBidCallbackToUserThread(std::move(callback));
     return;
+  }
+
+  if (bidder_worklet_non_shared_params->trusted_bidding_signals_keys) {
+    std::vector<v8::Local<v8::Value>> trusted_bidding_signals_keys;
+    for (const auto& key :
+         *bidder_worklet_non_shared_params->trusted_bidding_signals_keys) {
+      v8::Local<v8::Value> key_value;
+      if (!v8_helper_->CreateUtf8String(key).ToLocal(&key_value)) {
+        PostErrorBidCallbackToUserThread(std::move(callback));
+        return;
+      }
+      trusted_bidding_signals_keys.emplace_back(std::move(key_value));
+    }
+
+    if (!v8_helper_->InsertValue(
+            "trustedBiddingSignalsKeys",
+            v8::Array::New(isolate, trusted_bidding_signals_keys.data(),
+                           trusted_bidding_signals_keys.size()),
+            interest_group_object)) {
+      PostErrorBidCallbackToUserThread(std::move(callback));
+      return;
+    }
   }
 
   v8::Local<v8::Value> ads;
@@ -563,143 +594,37 @@ void BidderWorklet::V8State::GenerateBid(
   std::vector<std::string> errors_out;
   v8_helper_->MaybeTriggerInstrumentationBreakpoint(
       *debug_id_, "beforeBidderWorkletBiddingStart");
-  if (!v8_helper_
-           ->RunScript(context, worklet_script_.Get(isolate), debug_id_.get(),
-                       "generateBid", args, std::move(per_buyer_timeout),
-                       errors_out)
-           .ToLocal(&generate_bid_result)) {
-    PostErrorBidCallbackToUserThread(std::move(callback),
-                                     std::move(errors_out));
+  bool got_return_value =
+      v8_helper_
+          ->RunScript(context, worklet_script_.Get(isolate), debug_id_.get(),
+                      "generateBid", args, std::move(per_buyer_timeout),
+                      errors_out)
+          .ToLocal(&generate_bid_result);
+
+  if (got_return_value) {
+    set_bid_bindings.SetBid(
+        generate_bid_result,
+        base::StrCat({script_source_url_.spec(), " generateBid() "}),
+        errors_out);
+  }
+
+  if (!set_bid_bindings.has_bid()) {
+    // If we either don't have a valid return value, or we have no return value
+    // and no intermediate result was given through setBid, return an error.
+    // Keep debug loss reports since `generateBid()` might use it to detect
+    // script timeout or failures.
+    PostErrorBidCallbackToUserThread(
+        std::move(callback), std::move(errors_out),
+        for_debugging_only_bindings.TakeLossReportUrl());
     return;
-  }
-
-  if (!generate_bid_result->IsObject()) {
-    errors_out.push_back(
-        base::StrCat({script_source_url_.spec(),
-                      " generateBid() return value not an object."}));
-    PostErrorBidCallbackToUserThread(std::move(callback),
-                                     std::move(errors_out));
-    return;
-  }
-
-  gin::Dictionary result_dict(isolate, generate_bid_result.As<v8::Object>());
-
-  v8::Local<v8::Value> ad_object;
-  std::string ad_json;
-  double bid;
-  std::string render_url_string;
-  // Parse and validate values.
-  if (!result_dict.Get("ad", &ad_object) ||
-      !v8_helper_->ExtractJson(context, ad_object, &ad_json) ||
-      !result_dict.Get("bid", &bid) ||
-      !result_dict.Get("render", &render_url_string)) {
-    errors_out.push_back(
-        base::StrCat({script_source_url_.spec(),
-                      " generateBid() return value has incorrect structure."}));
-    PostErrorBidCallbackToUserThread(std::move(callback),
-                                     std::move(errors_out));
-    return;
-  }
-
-  if (browser_signal_top_level_seller_origin) {
-    bool allow_component_auction;
-    if (!result_dict.Get("allowComponentAuction", &allow_component_auction) ||
-        !allow_component_auction) {
-      errors_out.push_back(base::StrCat(
-          {script_source_url_.spec(),
-           " generateBid() return value does not have allowComponentAuction "
-           "set to true. Bid dropped from component auction."}));
-      PostErrorBidCallbackToUserThread(std::move(callback),
-                                       std::move(errors_out));
-      return;
-    }
-  }
-
-  if (!IsValidBid(bid)) {
-    PostErrorBidCallbackToUserThread(std::move(callback),
-                                     std::move(errors_out));
-    return;
-  }
-
-  GURL render_url(render_url_string);
-  if (!IsAllowedAdUrl(render_url, script_source_url_, "render",
-                      *bidder_worklet_non_shared_params->ads, errors_out)) {
-    PostErrorBidCallbackToUserThread(std::move(callback),
-                                     std::move(errors_out));
-    return;
-  }
-
-  absl::optional<std::vector<GURL>> ad_component_urls;
-  v8::Local<v8::Value> ad_components;
-  if (result_dict.Get("adComponents", &ad_components) &&
-      !ad_components->IsNullOrUndefined()) {
-    if (!bidder_worklet_non_shared_params->ad_components) {
-      errors_out.push_back(
-          base::StrCat({script_source_url_.spec(),
-                        " generateBid() return value contains adComponents but "
-                        "InterestGroup has no adComponents."}));
-      PostErrorBidCallbackToUserThread(std::move(callback),
-                                       std::move(errors_out));
-      return;
-    }
-
-    if (!ad_components->IsArray()) {
-      errors_out.push_back(base::StrCat(
-          {script_source_url_.spec(),
-           " generateBid() returned adComponents value must be an array."}));
-      PostErrorBidCallbackToUserThread(std::move(callback),
-                                       std::move(errors_out));
-      return;
-    }
-
-    v8::Local<v8::Array> ad_components_array = ad_components.As<v8::Array>();
-    if (ad_components_array->Length() > blink::kMaxAdAuctionAdComponents) {
-      errors_out.push_back(base::StringPrintf(
-          "%s generateBid() returned adComponents with over %zu items.",
-          script_source_url_.spec().c_str(), blink::kMaxAdAuctionAdComponents));
-      PostErrorBidCallbackToUserThread(std::move(callback),
-                                       std::move(errors_out));
-      return;
-    }
-
-    ad_component_urls.emplace();
-    for (size_t i = 0; i < ad_components_array->Length(); ++i) {
-      std::string url_string;
-      if (!gin::ConvertFromV8(
-              isolate, ad_components_array->Get(context, i).ToLocalChecked(),
-              &url_string)) {
-        errors_out.push_back(
-            base::StrCat({script_source_url_.spec(),
-                          " generateBid() returned adComponents value must be "
-                          "an array of strings."}));
-        PostErrorBidCallbackToUserThread(std::move(callback),
-                                         std::move(errors_out));
-        return;
-      }
-
-      GURL ad_component_url(url_string);
-      if (!IsAllowedAdUrl(ad_component_url, script_source_url_, "adComponents",
-                          *bidder_worklet_non_shared_params->ad_components,
-                          errors_out)) {
-        PostErrorBidCallbackToUserThread(std::move(callback),
-                                         std::move(errors_out));
-        return;
-      }
-      ad_component_urls->emplace_back(std::move(ad_component_url));
-    }
   }
 
   user_thread_->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     mojom::BidderWorkletBid::New(
-                         std::move(ad_json), bid, std::move(render_url),
-                         std::move(ad_component_urls),
-                         /*bid_duration=*/base::TimeTicks::Now() - start),
-                     bidding_signals_data_version,
-                     for_debugging_only_bindings.TakeLossReportUrl(),
-                     for_debugging_only_bindings.TakeWinReportUrl(),
-                     std::move(errors_out)));
+      FROM_HERE, base::BindOnce(std::move(callback), set_bid_bindings.TakeBid(),
+                                bidding_signals_data_version,
+                                for_debugging_only_bindings.TakeLossReportUrl(),
+                                for_debugging_only_bindings.TakeWinReportUrl(),
+                                std::move(errors_out)));
 }
 
 void BidderWorklet::V8State::ConnectDevToolsAgent(
@@ -732,22 +657,24 @@ void BidderWorklet::V8State::PostResumeToUserThread(
 void BidderWorklet::V8State::PostReportWinCallbackToUserThread(
     ReportWinCallbackInternal callback,
     const absl::optional<GURL>& report_url,
+    base::flat_map<std::string, GURL> ad_beacon_map,
     std::vector<std::string> errors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   user_thread_->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(report_url),
-                                std::move(errors)));
+                                std::move(ad_beacon_map), std::move(errors)));
 }
 
 void BidderWorklet::V8State::PostErrorBidCallbackToUserThread(
     GenerateBidCallbackInternal callback,
-    std::vector<std::string> error_msgs) {
+    std::vector<std::string> error_msgs,
+    absl::optional<GURL> debug_loss_report_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   user_thread_->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), mojom::BidderWorkletBidPtr(),
                      /*bidding_signals_data_version=*/absl::nullopt,
-                     /*debug_loss_report_url=*/absl::nullopt,
+                     /*debug_loss_report_url=*/std::move(debug_loss_report_url),
                      /*debug_win_report_url=*/absl::nullopt,
                      std::move(error_msgs)));
 }
@@ -912,6 +839,8 @@ void BidderWorklet::RunReportWin(ReportWinTaskList::iterator task) {
           std::move(task->seller_signals_json),
           std::move(task->browser_signal_render_url),
           std::move(task->browser_signal_bid),
+          std::move(task->browser_signal_highest_scoring_other_bid),
+          std::move(task->browser_signal_made_highest_scoring_other_bid),
           std::move(task->browser_signal_seller_origin),
           std::move(task->browser_signal_top_level_seller_origin),
           std::move(task->bidding_signals_data_version),
@@ -944,11 +873,13 @@ void BidderWorklet::DeliverBidCallbackOnUserThread(
 void BidderWorklet::DeliverReportWinOnUserThread(
     ReportWinTaskList::iterator task,
     absl::optional<GURL> report_url,
+    base::flat_map<std::string, GURL> ad_beacon_map,
     std::vector<std::string> errors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
   errors.insert(errors.end(), load_code_error_msgs_.begin(),
                 load_code_error_msgs_.end());
-  std::move(task->callback).Run(std::move(report_url), errors);
+  std::move(task->callback)
+      .Run(std::move(report_url), std::move(ad_beacon_map), errors);
   report_win_tasks_.erase(task);
 }
 

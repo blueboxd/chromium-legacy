@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/crostini/crostini_export_import_notification_controller.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -104,8 +105,9 @@ class CrostiniExportImport : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  // Export the crostini container showing FileDialog.
-  void ExportContainer(content::WebContents* web_contents);
+  // Export the |container_id| showing FileDialog.
+  void ExportContainer(ContainerId container_id,
+                       content::WebContents* web_contents);
   // Import the crostini container showing FileDialog.
   void ImportContainer(content::WebContents* web_contents);
 
@@ -156,11 +158,15 @@ class CrostiniExportImport : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
                            TestDeprecatedExportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportSuccess);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
+                           TestExportCustomVmContainerSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportFail);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportCancelled);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
                            TestExportDoneBeforeCancelled);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportSuccess);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
+                           TestImportCustomVmContainerSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFail);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportCancelled);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
@@ -184,6 +190,19 @@ class CrostiniExportImport : public KeyedService,
   void Start(OperationData* params,
              base::FilePath path,
              CrostiniManager::CrostiniResultCallback callback);
+
+  // Restart VM with LXD if required and share the file path with VM.
+  void EnsureLxdStartedThenSharePath(
+      const ContainerId& container_id,
+      const base::FilePath& path,
+      bool persist,
+      guest_os::GuestOsSharePath::SharePathCallback callback);
+
+  // Share the file path with VM after VM has been restarted.
+  void SharePath(const std::string& vm_name,
+                 const base::FilePath& path,
+                 guest_os::GuestOsSharePath::SharePathCallback callback,
+                 crostini::CrostiniResult result);
 
   // crostini::ExportContainerProgressObserver implementation.
   void OnExportContainerProgress(const ContainerId& container_id,

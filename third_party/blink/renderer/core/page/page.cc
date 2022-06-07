@@ -29,6 +29,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_feature_overrides.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -68,6 +69,7 @@
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/page/plugins_changed_observer.h"
@@ -142,15 +144,6 @@ HeapVector<Member<Page>> Page::RelatedPages() {
   return result;
 }
 
-float DeviceScaleFactorDeprecated(LocalFrame* frame) {
-  if (!frame)
-    return 1;
-  Page* page = frame->GetPage();
-  if (!page)
-    return 1;
-  return page->DeviceScaleFactorDeprecated();
-}
-
 Page* Page::CreateNonOrdinary(
     ChromeClient& chrome_client,
     scheduler::WebAgentGroupScheduler& agent_group_scheduler) {
@@ -217,7 +210,7 @@ Page::Page(base::PassKey<Page>,
           MakeGarbageCollected<ValidationMessageClientImpl>(*this)),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
-      device_scale_factor_(1),
+      inspector_device_scale_factor_override_(1),
       lifecycle_state_(mojom::blink::PageLifecycleState::New()),
       is_ordinary_(is_ordinary),
       is_cursor_visible_(true),
@@ -233,10 +226,13 @@ Page::Page(base::PassKey<Page>,
       agent_group_scheduler.AsAgentGroupScheduler().CreatePageScheduler(this);
   // The scheduler should be set before the main frame.
   DCHECK(!main_frame_);
-  history_navigation_virtual_time_pauser_ =
-      page_scheduler_->CreateWebScopedVirtualTimePauser(
-          "HistoryNavigation",
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
+  if (auto* virtual_time_controller =
+          page_scheduler_->GetVirtualTimeController()) {
+    history_navigation_virtual_time_pauser_ =
+        virtual_time_controller->CreateWebScopedVirtualTimePauser(
+            "HistoryNavigation",
+            WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
+  }
 }
 
 Page::~Page() {
@@ -503,16 +499,6 @@ void Page::SetPageScaleFactor(float scale) {
 
 float Page::PageScaleFactor() const {
   return GetVisualViewport().Scale();
-}
-
-void Page::SetDeviceScaleFactorDeprecated(float scale_factor) {
-  if (device_scale_factor_ == scale_factor)
-    return;
-
-  device_scale_factor_ = scale_factor;
-
-  if (MainFrame() && MainFrame()->IsLocalFrame())
-    DeprecatedLocalMainFrame()->DeviceScaleFactorChanged();
 }
 
 void Page::AllVisitedStateChanged(bool invalidate_visited_link_hashes) {
@@ -1046,7 +1032,7 @@ void Page::ReportIntervention(const String& text) {
     auto* message = MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning, text,
-        std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
+        std::make_unique<SourceLocation>(String(), String(), 0, 0, nullptr));
     local_frame->GetDocument()->AddConsoleMessage(message);
   }
 }

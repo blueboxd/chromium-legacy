@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -74,7 +75,7 @@ class MessageCenterImpl : public MessageCenter,
   void RemoveNotificationsForNotifierId(const NotifierId& notifier_id) override;
   void RemoveAllNotifications(bool by_user, RemoveType type) override;
   void SetNotificationIcon(const std::string& notification_id,
-                           const gfx::Image& image) override;
+                           const ui::ImageModel& image) override;
   void SetNotificationImage(const std::string& notification_id,
                             const gfx::Image& image) override;
   void ClickOnNotification(const std::string& id) override;

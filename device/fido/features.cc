@@ -19,11 +19,11 @@ const base::Feature kWebAuthUseNativeWinApi{"WebAuthenticationUseNativeWinApi",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_WIN)
 
-extern const base::Feature kWebAuthCableSecondFactor{
-    "WebAuthenticationCableSecondFactor", base::FEATURE_ENABLED_BY_DEFAULT};
-
 extern const base::Feature kWebAuthPhoneSupport{
     "WebAuthenticationPhoneSupport", base::FEATURE_ENABLED_BY_DEFAULT};
+
+extern const base::Feature kWebAuthPasskeysUI{
+    "WebAuthenticationPasskeysUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 extern const base::Feature kWebAuthCableDisco{
     "WebAuthenticationCableDisco", base::FEATURE_DISABLED_BY_DEFAULT};

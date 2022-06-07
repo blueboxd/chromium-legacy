@@ -8,6 +8,7 @@ GEN_INCLUDE(['switch_access_e2e_test_base.js']);
 SwitchAccessTextNavigationManagerTest = class extends SwitchAccessE2ETest {
   /** @override */
   async setUpDeferred() {
+    await super.setUpDeferred();
     await importModule(
         'TextNavigationManager', '/switch_access/text_navigation_manager.js');
     await importModule('Navigator', '/switch_access/navigator.js');
@@ -23,7 +24,7 @@ SwitchAccessTextNavigationManagerTest = class extends SwitchAccessE2ETest {
  * executes the specified text navigation action. Upon detecting the
  * text navigation action, the node will verify that the action correctly
  * changed the index of the text caret.
- * @param {!SwitchAccessE2ETest} testHelper
+ * @param {!SwitchAccessE2ETest} testFixture
  * @param {{content: string,
  *          initialIndex: number,
  *          targetIndex: number,
@@ -32,7 +33,7 @@ SwitchAccessTextNavigationManagerTest = class extends SwitchAccessE2ETest {
  *          cols: (number || undefined),
  *          wrap: (string || undefined)}} textParams
  */
-function runTextNavigationTest(testHelper, textParams) {
+async function runTextNavigationTest(testFixture, textParams) {
   // Required parameters.
   const textContent = textParams.content;
   const initialTextIndex = textParams.initialIndex;
@@ -47,16 +48,15 @@ function runTextNavigationTest(testHelper, textParams) {
   const website = generateWebsiteWithTextArea(
       textId, textContent, initialTextIndex, textCols, textWrap);
 
-  testHelper.runWithLoadedTree(website, function(rootWebArea) {
-    const inputNode = this.findNodeById(textId);
-    assertNotEquals(inputNode, null);
+  await testFixture.runWithLoadedTree(website);
+  const inputNode = this.findNodeById(textId);
+  assertNotEquals(inputNode, null);
 
-    setUpCursorChangeListener(
-        testHelper, inputNode, initialTextIndex, targetTextIndex,
-        targetTextIndex);
+  setUpCursorChangeListener(
+      testFixture, inputNode, initialTextIndex, targetTextIndex,
+      targetTextIndex);
 
-    textNavigationAction();
-  });
+  textNavigationAction();
 }
 
 /**
@@ -81,10 +81,10 @@ function runTextNavigationTest(testHelper, textParams) {
  * in the text area (optional). -wrap: the wrap attribute ("hard" or "soft") of
  * the text area (optional).
  *
- * @param {!SwitchAccessE2ETest} testHelper
+ * @param {!SwitchAccessE2ETest} testFixture
  * @param {selectionTextParams} textParams,
  */
-function runTextSelectionTest(testHelper, textParams) {
+async function runTextSelectionTest(testFixture, textParams) {
   // Required parameters.
   const textContent = textParams.content;
   const initialTextIndex = textParams.initialIndex;
@@ -106,25 +106,24 @@ function runTextSelectionTest(testHelper, textParams) {
     navigationTargetIndex = targetTextStartIndex;
   }
 
-  testHelper.runWithLoadedTree(website, function(rootWebArea) {
-    const inputNode = this.findNodeById(textId);
-    assertNotEquals(inputNode, null);
-    checkNodeIsFocused(inputNode);
-    const callback = testHelper.newCallback(function() {
-      setUpCursorChangeListener(
-          testHelper, inputNode, targetTextEndIndex, targetTextStartIndex,
-          targetTextEndIndex);
-      testHelper.textNavigationManager.saveSelectEnd();
-    });
-
-    testHelper.textNavigationManager.saveSelectStart();
-
+  await testFixture.runWithLoadedTree(website);
+  const inputNode = this.findNodeById(textId);
+  assertNotEquals(inputNode, null);
+  checkNodeIsFocused(inputNode);
+  const callback = testFixture.newCallback(function() {
     setUpCursorChangeListener(
-        testHelper, inputNode, initialTextIndex, navigationTargetIndex,
-        navigationTargetIndex, callback);
-
-    textNavigationAction();
+        testFixture, inputNode, targetTextEndIndex, targetTextStartIndex,
+        targetTextEndIndex);
+    testFixture.textNavigationManager.saveSelectEnd();
   });
+
+  testFixture.textNavigationManager.saveSelectStart();
+
+  setUpCursorChangeListener(
+      testFixture, inputNode, initialTextIndex, navigationTargetIndex,
+      navigationTargetIndex, callback);
+
+  textNavigationAction();
 }
 
 /**
@@ -170,7 +169,7 @@ function checkNodeIsFocused(inputNode) {
  * change from the text navigation action). Also assumes that
  * the text navigation and selection actions directly changes the text caret
  * to the correct index (with no intermediate movements).
- * @param {!SwitchAccessE2ETest} testHelper
+ * @param {!SwitchAccessE2ETest} testFixture
  * @param {!AutomationNode} inputNode
  * @param {number} initialTextIndex
  * @param {number} targetTextStartIndex
@@ -178,7 +177,7 @@ function checkNodeIsFocused(inputNode) {
  * @param {function() || undefined} callback
  */
 function setUpCursorChangeListener(
-    testHelper, inputNode, initialTextIndex, targetTextStartIndex,
+    testFixture, inputNode, initialTextIndex, targetTextStartIndex,
     targetTextEndIndex, callback) {
   // Ensures that the text index has changed before checking the new index.
   const checkActionFinished = function(tab) {
@@ -192,7 +191,7 @@ function setUpCursorChangeListener(
   };
 
   // Test will not exit until this check is called.
-  const checkTextIndex = testHelper.newCallback(function() {
+  const checkTextIndex = testFixture.newCallback(function() {
     assertEquals(inputNode.textSelStart, targetTextStartIndex);
     assertEquals(inputNode.textSelEnd, targetTextEndIndex);
     // If there's a callback then this is the navigation listener for a
@@ -212,8 +211,8 @@ function setUpCursorChangeListener(
 // TODO(crbug.com/1268230): Re-enable test.
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_JumpToBeginning',
-    function() {
-      runTextNavigationTest(this, {
+    async function() {
+      await runTextNavigationTest(this, {
         content: 'hi there',
         initialIndex: 6,
         targetIndex: 0,
@@ -225,8 +224,9 @@ TEST_F(
 
 // TODO(crbug.com/1268230): Re-enable test.
 TEST_F(
-    'SwitchAccessTextNavigationManagerTest', 'DISABLED_JumpToEnd', function() {
-      runTextNavigationTest(this, {
+    'SwitchAccessTextNavigationManagerTest', 'DISABLED_JumpToEnd',
+    async function() {
+      await runTextNavigationTest(this, {
         content: 'hi there',
         initialIndex: 3,
         targetIndex: 8,
@@ -239,8 +239,8 @@ TEST_F(
 // TODO(crbug.com/1177096) Renable test
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_MoveBackwardOneChar',
-    function() {
-      runTextNavigationTest(this, {
+    async function() {
+      await runTextNavigationTest(this, {
         content: 'parrots!',
         initialIndex: 7,
         targetIndex: 6,
@@ -253,8 +253,8 @@ TEST_F(
 // TODO(crbug.com/1268230): Re-enable test.
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_MoveBackwardOneWord',
-    function() {
-      runTextNavigationTest(this, {
+    async function() {
+      await runTextNavigationTest(this, {
         content: 'more parrots!',
         initialIndex: 5,
         targetIndex: 0,
@@ -267,8 +267,8 @@ TEST_F(
 // TODO(crbug.com/1268230): Re-enable test.
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_MoveForwardOneChar',
-    function() {
-      runTextNavigationTest(this, {
+    async function() {
+      await runTextNavigationTest(this, {
         content: 'hello',
         initialIndex: 0,
         targetIndex: 1,
@@ -281,8 +281,8 @@ TEST_F(
 // TODO(crbug.com/1268230): Re-enable test.
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_MoveForwardOneWord',
-    function() {
-      runTextNavigationTest(this, {
+    async function() {
+      await runTextNavigationTest(this, {
         content: 'more parrots!',
         initialIndex: 4,
         targetIndex: 12,
@@ -295,8 +295,8 @@ TEST_F(
 // TODO(crbug.com/1268230): Re-enable test.
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_MoveUpOneLine',
-    function() {
-      runTextNavigationTest(this, {
+    async function() {
+      await runTextNavigationTest(this, {
         content: 'more parrots!',
         initialIndex: 7,
         targetIndex: 2,
@@ -311,8 +311,8 @@ TEST_F(
 // TODO(crbug.com/1268230): Re-enable test.
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_MoveDownOneLine',
-    function() {
-      runTextNavigationTest(this, {
+    async function() {
+      await runTextNavigationTest(this, {
         content: 'more parrots!',
         initialIndex: 3,
         targetIndex: 8,
@@ -331,19 +331,18 @@ TEST_F(
  */
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectStart',
-    function() {
+    async function() {
       const website =
           generateWebsiteWithTextArea('test', 'test123', 3, 20, 'hard');
 
-      this.runWithLoadedTree(website, function(rootWebArea) {
-        const inputNode = this.findNodeById('test');
-        assertNotEquals(inputNode, null);
-        checkNodeIsFocused(inputNode);
+      await this.runWithLoadedTree(website);
+      const inputNode = this.findNodeById('test');
+      assertNotEquals(inputNode, null);
+      checkNodeIsFocused(inputNode);
 
-        this.textNavigationManager.saveSelectStart();
-        const startIndex = this.textNavigationManager.selectionStartIndex_;
-        assertEquals(startIndex, 3);
-      });
+      this.textNavigationManager.saveSelectStart();
+      const startIndex = this.textNavigationManager.selectionStartIndex_;
+      assertEquals(startIndex, 3);
     });
 
 /**
@@ -352,23 +351,23 @@ TEST_F(
  * bounds
  */
 TEST_F(
-    'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectEnd', function() {
+    'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectEnd',
+    async function() {
       const website =
           generateWebsiteWithTextArea('test', 'test 123', 6, 20, 'hard');
 
-      this.runWithLoadedTree(website, function(rootWebArea) {
-        const inputNode = this.findNodeById('test');
-        assertNotEquals(inputNode, null);
-        checkNodeIsFocused(inputNode);
+      await this.runWithLoadedTree(website);
+      const inputNode = this.findNodeById('test');
+      assertNotEquals(inputNode, null);
+      checkNodeIsFocused(inputNode);
 
 
-        const startIndex = 3;
-        this.textNavigationManager.selectionStartIndex_ = startIndex;
-        this.textNavigationManager.selectionStartObject_ = inputNode;
-        this.textNavigationManager.saveSelectEnd();
-        const endIndex = inputNode.textSelEnd;
-        assertEquals(6, endIndex);
-      });
+      const startIndex = 3;
+      this.textNavigationManager.selectionStartIndex_ = startIndex;
+      this.textNavigationManager.selectionStartObject_ = inputNode;
+      this.textNavigationManager.saveSelectEnd();
+      const endIndex = inputNode.textSelEnd;
+      assertEquals(6, endIndex);
     });
 
 /**
@@ -377,8 +376,8 @@ TEST_F(
  */
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectCharacter',
-    function() {
-      runTextSelectionTest(this, {
+    async function() {
+      await runTextSelectionTest(this, {
         content: 'hello world!',
         initialIndex: 0,
         targetStartIndex: 0,
@@ -397,8 +396,8 @@ TEST_F(
  */
 TEST_F(
     'SwitchAccessTextNavigationManagerTest', 'DISABLED_SelectWordBackward',
-    function() {
-      runTextSelectionTest(this, {
+    async function() {
+      await runTextSelectionTest(this, {
         content: 'hello world!',
         initialIndex: 5,
         targetStartIndex: 0,

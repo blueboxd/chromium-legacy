@@ -27,6 +27,8 @@ class ArcEnterpriseReportingService
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcEnterpriseReportingService* GetForBrowserContext(
       content::BrowserContext* context);
+  static ArcEnterpriseReportingService* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   ArcEnterpriseReportingService(content::BrowserContext* context,
                                 ArcBridgeService* arc_bridge_service);
@@ -39,6 +41,9 @@ class ArcEnterpriseReportingService
 
   // mojom::EnterpriseReportingHost overrides:
   void ReportManagementState(mojom::ManagementState state) override;
+  void ReportCloudDpcOperationTime(int64_t time_ms,
+                                   mojom::TimedCloudDpcOp op,
+                                   bool success) override;
 
  private:
   THREAD_CHECKER(thread_checker_);

@@ -62,6 +62,10 @@ class WebAppsCrosapi : public KeyedService,
 
  private:
   friend class StandaloneBrowserPublisherTest;
+  FRIEND_TEST_ALL_PREFIXES(StandaloneBrowserPublisherTest,
+                           WebAppsCrosapiNotUpdated);
+  FRIEND_TEST_ALL_PREFIXES(StandaloneBrowserPublisherTest,
+                           WebAppsCrosapiUpdated);
 
   // apps::AppPublisher overrides.
   void LoadIcon(const std::string& app_id,
@@ -72,6 +76,9 @@ class WebAppsCrosapi : public KeyedService,
                 apps::LoadIconCallback callback) override;
   void LaunchAppWithParams(AppLaunchParams&& params,
                            LaunchCallback callback) override;
+  void LaunchShortcut(const std::string& app_id,
+                      const std::string& shortcut_id,
+                      int64_t display_id) override;
 
   // apps::PublisherBase overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -144,6 +151,12 @@ class WebAppsCrosapi : public KeyedService,
   void OnApplyIconEffects(IconType icon_type,
                           apps::LoadIconCallback callback,
                           IconValuePtr icon_value);
+
+  // Stores a copy of the app deltas, which haven't been published to
+  // AppRegistryCache yet. When the crosapi is bound or changed from disconnect
+  // to bound, we need to publish all app deltas in this cache to
+  // AppRegistryCache.
+  std::vector<AppPtr> delta_cache_;
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
   mojo::Receiver<crosapi::mojom::AppPublisher> receiver_{this};

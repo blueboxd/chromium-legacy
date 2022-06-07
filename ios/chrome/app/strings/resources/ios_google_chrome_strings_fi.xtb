@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
-<translation id="1096883626080133124">Helppokäyttöisellä, turvallisella ja entistäkin nopeammalla Google Chromella saat enemmän aikaan</translation>
 <translation id="1143896152279775643">Salasana tallennetaan Googlen Salasanojen ylläpitoon sähköpostiosoitteella <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Auta parantamaan Chromen ominaisuuksia ja suorituskykyä</translation>
 <translation id="1479202195792305274">Chrome voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Käytä Chromea missä tahansa</translation>
 <translation id="3522659714780527202">Laita synkronointi päälle, niin voit nähdä Chrome-välilehtesi missä tahansa</translation>
 <translation id="3533694711092285624">Ei tallennettuja salasanoja. Chrome voi tarkistaa salasanasi, kun tallennat niitä.</translation>
-<translation id="3634910711516114487">Kirjaudu sisään Chromeen Google-tililläsi, jotta saat parhaan hyödyn Chromesta</translation>
 <translation id="3655656110921623717">Tämä tarkoittaa, että Chrome pyytää aina mobiilisivustoa.</translation>
 <translation id="3706101708757577809">Voit nyt käyttää Chromea aina, kun napautat linkkejä viesteissä, dokumenteissa tai muissa sovelluksissa.</translation>
 <translation id="3720541637541300822">Lukitse incognito-välilehdet, kun suljet Chromen</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Salasanasi vaarantui tietosuojaloukkauksessa. Googlen Salasanojen ylläpito suosittelee, että vaihdat sen heti.</translation>
 <translation id="6822673484890854830">Chrome ei voinut tarkistaa kaikkia salasanoja. Yritä myöhemmin uudelleen.</translation>
 <translation id="6964931465519938134">Voit nyt käyttää Chromea aina, kun napautat linkkejä viesteissä, dokumenteissa tai muissa sovelluksissa.</translation>
-<translation id="7046845777663074840">Kun tietoa lähetetään:
-<ph name="BEGIN_INDENT" />  • Autat tekemään Chromesta paremman muille, jotka käyttävät sitä samoin kuin sinä<ph name="END_INDENT" />
-
-Huomioitavaa:
-<ph name="BEGIN_INDENT" />  • Chromen käytöstä lähetetään tietoa Googlelle, mutta sitä ei liitetä sinuun
-
-  • Chromen kaatumisesta kerättävät tiedot saattavat sisältää henkilökohtaisia tietoja
-
-  • Jos laitat synkronoinnin päälle, tiedot voivat koskea myös avaamiasi URL-osoitteita<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Tee Chromesta näköisesi</translation>
 <translation id="7124339256045485976">Pidä Chrome ajan tasalla</translation>
 <translation id="7161390184744336561">Google Chrome on vanhentunut</translation>
 <translation id="7165736900384873061">Aloita Google Chromen QR-lukijan käyttö</translation>
 <translation id="7172660552945675509">Vinkki: <ph name="BEGIN_LINK" />Siirrä Chrome Dockiin.<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome varmistaa Face ID:llä, että sinulla on lupa käyttää salasanoja.</translation>
+<translation id="7187993566681480880">Pitää sinut turvassa Chromessa ja voi parantaa suojaustasi muissa Google-sovelluksissa, kun olet sisäänkirjautuneena.</translation>
 <translation id="72119412072970160">Voit käyttää Googlen Salasanojen ylläpitoon tallennettuja salasanoja muissa iPadisi sovelluksissa.</translation>
 <translation id="7261678641327190792">Chrome ei voi tarkistaa salasanojasi</translation>
 <translation id="7272930098487145294">Anna Chromen lisätä uusia kuvia valitsemalla Asetukset, niin voit tallentaa kuvia.</translation>
@@ -110,6 +100,7 @@ Huomioitavaa:
 <translation id="766361182512894255">Salasanasi vaarantui tietosuojaloukkauksessa. Chrome suosittelee salasanan vaihtamista välittömästi.</translation>
 <translation id="7693590760643069321">Voit nyt käyttää Chromea aina, kun napautat linkkejä viesteissä, dokumenteissa tai muissa sovelluksissa.</translation>
 <translation id="7698568245838009292">Chrome pyytää kameran käyttöoikeutta</translation>
+<translation id="7780154209050837198">Kirjaudu sisään Chromeen Google-tililläsi, jotta saat parhaan hyödyn Chromesta.</translation>
 <translation id="7855730255114109580">Google Chrome on ajan tasalla</translation>
 <translation id="8022947259858476807">Käytä Chromea oletuksena ja avaa linkkejä, hae widgeteistä ja täytä salasanoja automaattisesti muissa sovelluksissa</translation>
 <translation id="8160472928944011082">Chromea ei voi päivittää</translation>

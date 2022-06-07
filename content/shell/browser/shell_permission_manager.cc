@@ -9,7 +9,7 @@
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/browser/web_contents.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "media/base/media_switches.h"
@@ -57,7 +57,7 @@ bool IsAllowlistedPermissionType(PermissionType permission) {
     case PermissionType::AR:
     case PermissionType::CAMERA_PAN_TILT_ZOOM:
     case PermissionType::WINDOW_PLACEMENT:
-    case PermissionType::FONT_ACCESS:
+    case PermissionType::LOCAL_FONTS:
     case PermissionType::DISPLAY_CAPTURE:
       return false;
   }
@@ -142,12 +142,33 @@ ShellPermissionManager::GetPermissionStatusForFrame(
   return GetPermissionStatus(
       permission, requesting_origin,
       permissions::PermissionUtil::GetLastCommittedOriginAsURL(
-          content::WebContents::FromRenderFrameHost(render_frame_host)));
+          render_frame_host->GetMainFrame()));
+}
+
+blink::mojom::PermissionStatus
+ShellPermissionManager::GetPermissionStatusForCurrentDocument(
+    PermissionType permission,
+    content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host->IsNestedWithinFencedFrame())
+    return blink::mojom::PermissionStatus::DENIED;
+  return GetPermissionStatus(
+      permission, render_frame_host->GetLastCommittedOrigin().GetURL(),
+      permissions::PermissionUtil::GetLastCommittedOriginAsURL(
+          render_frame_host));
+}
+
+blink::mojom::PermissionStatus
+ShellPermissionManager::GetPermissionStatusForWorker(
+    content::PermissionType permission,
+    content::RenderProcessHost* render_process_host,
+    const GURL& worker_origin) {
+  return GetPermissionStatus(permission, worker_origin, worker_origin);
 }
 
 ShellPermissionManager::SubscriptionId
 ShellPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
+    RenderProcessHost* render_process_host,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) {

@@ -8,9 +8,9 @@
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/observer_list.h"
+#include "chromeos/dbus/common/dbus_client.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "dbus/object_proxy.h"
 
 namespace chromeos {
@@ -211,11 +211,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
           vm_tools::concierge::GetVmEnterpriseReportingInfoResponse>
           callback) = 0;
 
-  // Make real-time vCPU for the VM.
+  // Performs necessary operations to complete the boot of ARCVM.
   // |callback| is called after the method call finishes.
-  virtual void MakeRtVcpu(
-      const vm_tools::concierge::MakeRtVcpuRequest& request,
-      DBusMethodCallback<vm_tools::concierge::MakeRtVcpuResponse> callback) = 0;
+  virtual void ArcVmCompleteBoot(
+      const vm_tools::concierge::ArcVmCompleteBootRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ArcVmCompleteBootResponse>
+          callback) = 0;
 
   // Set VM's CPU restriction state.
   // |callback| is called after the method call finishes.
@@ -281,6 +282,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       const vm_tools::concierge::ReclaimVmMemoryRequest& request,
       DBusMethodCallback<vm_tools::concierge::ReclaimVmMemoryResponse>
           callback) = 0;
+
+  // Lists running VMs.
+  // |callback| is called after the method call finishes.
+  virtual void ListVms(
+      const vm_tools::concierge::ListVmsRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ListVmsResponse> callback) = 0;
 
   // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);

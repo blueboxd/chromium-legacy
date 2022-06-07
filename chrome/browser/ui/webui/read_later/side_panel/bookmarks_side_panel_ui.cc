@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/read_later_resources.h"
-#include "chrome/grit/read_later_resources_map.h"
+#include "chrome/grit/side_panel_resources.h"
+#include "chrome/grit/side_panel_resources_map.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/prefs/pref_service.h"
@@ -45,29 +45,25 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
 
-  const bool show_side_panel =
-      base::FeatureList::IsEnabled(features::kSidePanel);
-
   source->AddBoolean("useRipples", views::PlatformStyle::kUseRipples);
 
   Profile* const profile = Profile::FromWebUI(web_ui);
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean(
       "bookmarksDragAndDropEnabled",
-      show_side_panel &&
-          base::FeatureList::IsEnabled(features::kSidePanelDragAndDrop) &&
+
+      base::FeatureList::IsEnabled(features::kSidePanelDragAndDrop) &&
           prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled));
 
   source->AddBoolean("unifiedSidePanel",
-                     show_side_panel && base::FeatureList::IsEnabled(
-                                            features::kUnifiedSidePanel));
+                     base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
 
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
-  const int resource = IDR_READ_LATER_SIDE_PANEL_BOOKMARKS_HTML;
+  const int resource = IDR_SIDE_PANEL_BOOKMARKS_BOOKMARKS_HTML;
   webui::SetupWebUIDataSource(
-      source, base::make_span(kReadLaterResources, kReadLaterResourcesSize),
+      source, base::make_span(kSidePanelResources, kSidePanelResourcesSize),
       resource);
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 source);

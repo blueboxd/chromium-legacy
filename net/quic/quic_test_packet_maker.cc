@@ -37,6 +37,9 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
       case quic::STREAMS_BLOCKED_FRAME:
       case quic::STREAM_FRAME:
       case quic::HANDSHAKE_DONE_FRAME:
+      case quic::BLOCKED_FRAME:
+      case quic::WINDOW_UPDATE_FRAME:
+      case quic::STOP_SENDING_FRAME:
         break;
       case quic::ACK_FRAME:
         frame.ack_frame = new quic::QuicAckFrame(*frame.ack_frame);
@@ -52,20 +55,9 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
       case quic::GOAWAY_FRAME:
         frame.goaway_frame = new quic::QuicGoAwayFrame(*frame.goaway_frame);
         break;
-      case quic::BLOCKED_FRAME:
-        frame.blocked_frame = new quic::QuicBlockedFrame(*frame.blocked_frame);
-        break;
-      case quic::WINDOW_UPDATE_FRAME:
-        frame.window_update_frame =
-            new quic::QuicWindowUpdateFrame(*frame.window_update_frame);
-        break;
       case quic::PATH_CHALLENGE_FRAME:
         frame.path_challenge_frame =
             new quic::QuicPathChallengeFrame(*frame.path_challenge_frame);
-        break;
-      case quic::STOP_SENDING_FRAME:
-        frame.stop_sending_frame =
-            new quic::QuicStopSendingFrame(*frame.stop_sending_frame);
         break;
       case quic::NEW_CONNECTION_ID_FRAME:
         frame.new_connection_id_frame =
@@ -1495,8 +1487,8 @@ void QuicTestPacketMaker::AddQuicPathChallengeFrame() {
 void QuicTestPacketMaker::AddQuicStopSendingFrame(
     quic::QuicStreamId stream_id,
     quic::QuicRstStreamErrorCode error_code) {
-  auto* stop_sending_frame =
-      new quic::QuicStopSendingFrame(1, stream_id, error_code);
+  auto stop_sending_frame =
+      quic::QuicStopSendingFrame(1, stream_id, error_code);
   frames_.push_back(quic::QuicFrame(stop_sending_frame));
   DVLOG(1) << "Adding frame: " << frames_.back();
 }

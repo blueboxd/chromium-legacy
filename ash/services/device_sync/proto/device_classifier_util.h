@@ -7,7 +7,7 @@
 
 #include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -19,6 +19,6 @@ const cryptauth::DeviceClassifier& GetDeviceClassifier();
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_PROTO_DEVICE_CLASSIFIER_UTIL_H_

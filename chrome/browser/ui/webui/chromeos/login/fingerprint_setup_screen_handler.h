@@ -46,7 +46,7 @@ class FingerprintSetupScreenHandler : public BaseScreenHandler,
  public:
   using TView = FingerprintSetupScreenView;
 
-  explicit FingerprintSetupScreenHandler(JSCallsContainer* js_calls_container);
+  FingerprintSetupScreenHandler();
 
   FingerprintSetupScreenHandler(const FingerprintSetupScreenHandler&) = delete;
   FingerprintSetupScreenHandler& operator=(
@@ -69,7 +69,7 @@ class FingerprintSetupScreenHandler : public BaseScreenHandler,
                         int percent_complete) override;
 
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
  private:
   ash::FingerprintSetupScreen* screen_ = nullptr;

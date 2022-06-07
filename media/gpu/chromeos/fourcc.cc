@@ -86,6 +86,11 @@ absl::optional<Fourcc> Fourcc::FromVideoPixelFormat(
       case PIXEL_FORMAT_XR30:
       case PIXEL_FORMAT_XB30:
       case PIXEL_FORMAT_RGBAF16:
+      case PIXEL_FORMAT_I422A:
+      case PIXEL_FORMAT_I444A:
+      case PIXEL_FORMAT_YUV420AP10:
+      case PIXEL_FORMAT_YUV422AP10:
+      case PIXEL_FORMAT_YUV444AP10:
       case PIXEL_FORMAT_UNKNOWN:
         break;
     }
@@ -128,6 +133,11 @@ absl::optional<Fourcc> Fourcc::FromVideoPixelFormat(
       case PIXEL_FORMAT_XB30:
       case PIXEL_FORMAT_BGRA:
       case PIXEL_FORMAT_RGBAF16:
+      case PIXEL_FORMAT_I422A:
+      case PIXEL_FORMAT_I444A:
+      case PIXEL_FORMAT_YUV420AP10:
+      case PIXEL_FORMAT_YUV422AP10:
+      case PIXEL_FORMAT_YUV444AP10:
       case PIXEL_FORMAT_UNKNOWN:
         break;
     }
@@ -253,6 +263,7 @@ absl::optional<Fourcc> Fourcc::ToSinglePlanar() const {
     case NV12:
     case NV21:
     case P010:
+    case MM21:
       return Fourcc(value_);
     case YM12:
       return Fourcc(YU12);
@@ -266,7 +277,6 @@ absl::optional<Fourcc> Fourcc::ToSinglePlanar() const {
     case YM16:
       return Fourcc(YU16);
     case MT21:
-    case MM21:
       return absl::nullopt;
   }
 }

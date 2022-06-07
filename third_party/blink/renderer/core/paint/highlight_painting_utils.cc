@@ -77,6 +77,7 @@ Color ForcedSystemBackgroundColor(PseudoId pseudo_id,
 Color HighlightThemeForegroundColor(const Document& document,
                                     const ComputedStyle& style,
                                     const CSSProperty& color_property,
+                                    Color previous_layer_color,
                                     PseudoId pseudo_id) {
   switch (pseudo_id) {
     case kPseudoIdSelection:
@@ -94,11 +95,15 @@ Color HighlightThemeForegroundColor(const Document& document,
     case kPseudoIdSpellingError:
     case kPseudoIdGrammarError:
     case kPseudoIdHighlight:
-      // TODO(crbug.com/1147859): Unstyled custom highlights should not be
-      // painted, so here we make the color default to transparent. When the
-      // highlight painting code is updated to match the spec, this should
-      // instead return the equivalent of 'currentColor'.
-      return Color::kTransparent;
+      if (RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled()) {
+        return previous_layer_color;
+      } else {
+        // TODO(crbug.com/1147859): Unstyled custom highlights should not be
+        // painted, so here we make the color default to transparent. When the
+        // highlight painting code is updated to match the spec, this should
+        // instead return the equivalent of 'currentColor'.
+        return Color::kTransparent;
+      }
     default:
       NOTREACHED();
       return Color();
@@ -189,6 +194,7 @@ bool UseUaHighlightColors(PseudoId pseudo, const ComputedStyle& pseudo_style) {
 Color HighlightColor(const Document& document,
                      const ComputedStyle& style,
                      Node* node,
+                     Color previous_layer_color,
                      PseudoId pseudo,
                      const CSSProperty& color_property,
                      PaintFlags paint_flags,
@@ -207,10 +213,18 @@ Color HighlightColor(const Document& document,
                                                    pseudo_argument);
 
   mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
-  if (pseudo_style && (!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
-                       !UseUaHighlightColors(pseudo, *pseudo_style))) {
+  if (pseudo_style &&
+      ((!RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+        pseudo != PseudoId::kPseudoIdHighlight) ||
+       !UseUaHighlightColors(pseudo, *pseudo_style))) {
     if (!document.InForcedColorsMode() ||
         pseudo_style->ForcedColorAdjust() != EForcedColorAdjust::kAuto) {
+      if (pseudo_style->ColorIsCurrentColor()) {
+        if (RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled())
+          return previous_layer_color;
+        else
+          return style.VisitedDependentColor(color_property);
+      }
       return pseudo_style->VisitedDependentColor(color_property);
     }
     color_scheme = pseudo_style->UsedColorScheme();
@@ -218,7 +232,8 @@ Color HighlightColor(const Document& document,
 
   if (document.InForcedColorsMode())
     return ForcedSystemForegroundColor(pseudo, color_scheme);
-  return HighlightThemeForegroundColor(document, style, color_property, pseudo);
+  return HighlightThemeForegroundColor(document, style, color_property,
+                                       previous_layer_color, pseudo);
 }
 
 }  // anonymous namespace
@@ -231,7 +246,8 @@ scoped_refptr<const ComputedStyle> HighlightPaintingUtils::HighlightPseudoStyle(
     const ComputedStyle& style,
     PseudoId pseudo,
     const AtomicString& pseudo_argument) {
-  if (!RuntimeEnabledFeatures::HighlightInheritanceEnabled()) {
+  if (!RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+      pseudo != PseudoId::kPseudoIdHighlight) {
     return HighlightPseudoStyleWithOriginatingInheritance(node, pseudo,
                                                           pseudo_argument);
   }
@@ -260,6 +276,7 @@ Color HighlightPaintingUtils::HighlightBackgroundColor(
     const Document& document,
     const ComputedStyle& style,
     Node* node,
+    absl::optional<Color> previous_layer_color,
     PseudoId pseudo,
     const AtomicString& pseudo_argument) {
   if (pseudo == kPseudoIdSelection) {
@@ -271,12 +288,23 @@ Color HighlightPaintingUtils::HighlightBackgroundColor(
       HighlightPseudoStyle(node, style, pseudo, pseudo_argument);
 
   mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
-  if (pseudo_style && (!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
-                       !UseUaHighlightColors(pseudo, *pseudo_style))) {
+  if (pseudo_style &&
+      ((!RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+        pseudo != PseudoId::kPseudoIdHighlight) ||
+       !UseUaHighlightColors(pseudo, *pseudo_style))) {
     if (!document.InForcedColorsMode() ||
         pseudo_style->ForcedColorAdjust() != EForcedColorAdjust::kAuto) {
       Color highlight_color =
           pseudo_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
+      if (pseudo_style->IsBackgroundColorCurrentColor() &&
+          pseudo_style->ColorIsCurrentColor()) {
+        if (RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled() &&
+            previous_layer_color.has_value()) {
+          highlight_color = previous_layer_color.value();
+        } else {
+          highlight_color = style.VisitedDependentColor(GetCSSPropertyColor());
+        }
+      }
       if (pseudo == kPseudoIdSelection && NodeIsReplaced(node)) {
         // Avoid that ::selection full obscures selected replaced elements like
         // images.
@@ -323,10 +351,11 @@ Color HighlightPaintingUtils::HighlightForegroundColor(
     const Document& document,
     const ComputedStyle& style,
     Node* node,
+    Color previous_layer_color,
     PseudoId pseudo,
     PaintFlags paint_flags,
     const AtomicString& pseudo_argument) {
-  return HighlightColor(document, style, node, pseudo,
+  return HighlightColor(document, style, node, previous_layer_color, pseudo,
                         GetCSSPropertyWebkitTextFillColor(), paint_flags,
                         pseudo_argument);
 }
@@ -335,10 +364,11 @@ Color HighlightPaintingUtils::HighlightEmphasisMarkColor(
     const Document& document,
     const ComputedStyle& style,
     Node* node,
+    Color previous_layer_color,
     PseudoId pseudo,
     PaintFlags paint_flags,
     const AtomicString& pseudo_argument) {
-  return HighlightColor(document, style, node, pseudo,
+  return HighlightColor(document, style, node, previous_layer_color, pseudo,
                         GetCSSPropertyTextEmphasisColor(), paint_flags,
                         pseudo_argument);
 }
@@ -360,10 +390,12 @@ TextPaintStyle HighlightPaintingUtils::HighlightPaintingStyle(
   highlight_style.shadow = nullptr;
 
   if (!uses_text_as_clip) {
-    highlight_style.fill_color = HighlightForegroundColor(
-        document, style, node, pseudo, paint_flags, pseudo_argument);
+    highlight_style.fill_color =
+        HighlightForegroundColor(document, style, node, text_style.fill_color,
+                                 pseudo, paint_flags, pseudo_argument);
     highlight_style.emphasis_mark_color = HighlightEmphasisMarkColor(
-        document, style, node, pseudo, paint_flags, pseudo_argument);
+        document, style, node, text_style.emphasis_mark_color, pseudo,
+        paint_flags, pseudo_argument);
   }
 
   if (scoped_refptr<const ComputedStyle> pseudo_style =

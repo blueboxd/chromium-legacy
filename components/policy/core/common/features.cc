@@ -13,15 +13,6 @@ namespace features {
 const base::Feature kDefaultChromeAppsMigration{
     "EnableDefaultAppsMigration", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kPolicyBlocklistThrottleRequiresPoliciesLoaded{
-    "PolicyBlocklistThrottleRequiresPoliciesLoaded",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<base::TimeDelta>
-    kPolicyBlocklistThrottlePolicyLoadTimeout{
-        &kPolicyBlocklistThrottleRequiresPoliciesLoaded,
-        "PolicyBlocklistThrottlePolicyLoadTimeout", base::Seconds(20)};
-
 const base::Feature kUploadBrowserDeviceIdentifier{
     "UploadBrowserDeviceIdentifier", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -32,7 +23,7 @@ const base::Feature kPasswordBreachEventReporting{
     "PasswordBreachEventReporting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeManagementPageAndroid{
-    "ChromeManagementPageAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeManagementPageAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableUserCloudSigninRestrictionPolicyFetcher{
     "UserCloudSigninRestrictionPolicyFetcher",

@@ -1296,8 +1296,13 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
   if (intrinsic_length->HasAuto() && ShouldUseAutoIntrinsicSize()) {
     const Element* elem = DynamicTo<Element>(GetNode());
     const ResizeObserverSize* size = elem ? elem->LastIntrinsicSize() : nullptr;
-    if (size)
-      return ToPhysicalSize(size->size(), StyleRef().GetWritingMode()).width;
+    if (size) {
+      // ResizeObserverSize is adjusted to be in CSS space, we need to adjust it
+      // back to Layout space by applying the effective zoom.
+      return LayoutUnit::FromFloatRound(
+          ToPhysicalSize(size->size(), StyleRef().GetWritingMode()).width *
+          style.EffectiveZoom());
+    }
   }
   DCHECK(intrinsic_length->GetLength().IsFixed());
   DCHECK_GE(intrinsic_length->GetLength().Value(), 0.f);
@@ -1314,8 +1319,13 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   if (intrinsic_length->HasAuto() && ShouldUseAutoIntrinsicSize()) {
     const Element* elem = DynamicTo<Element>(GetNode());
     const ResizeObserverSize* size = elem ? elem->LastIntrinsicSize() : nullptr;
-    if (size)
-      return ToPhysicalSize(size->size(), StyleRef().GetWritingMode()).height;
+    if (size) {
+      // ResizeObserverSize is adjusted to be in CSS space, we need to adjust it
+      // back to Layout space by applying the effective zoom.
+      return LayoutUnit::FromFloatRound(
+          ToPhysicalSize(size->size(), StyleRef().GetWritingMode()).height *
+          style.EffectiveZoom());
+    }
   }
   DCHECK(intrinsic_length->GetLength().IsFixed());
   DCHECK_GE(intrinsic_length->GetLength().Value(), 0.f);
@@ -1815,12 +1825,6 @@ void LayoutBox::Autoscroll(const PhysicalOffset& position_in_root_frame) {
           mojom::blink::ScrollType::kUser));
 }
 
-bool LayoutBox::CanAutoscroll() const {
-  NOT_DESTROYED();
-  // TODO(skobes): Remove one of these methods.
-  return CanBeScrolledAndHasScrollableArea();
-}
-
 // If specified point is outside the border-belt-excluded box (the border box
 // inset by the autoscroll activation threshold), returned offset denotes
 // direction of scrolling.
@@ -1861,13 +1865,13 @@ PhysicalOffset LayoutBox::CalculateAutoscrollDirection(
 
 LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object,
                                          bool is_middle_click_autoscroll) {
-  while (layout_object && !(layout_object->IsBox() &&
-                            To<LayoutBox>(layout_object)->CanAutoscroll())) {
+  while (layout_object &&
+         !(layout_object->IsBox() &&
+           To<LayoutBox>(layout_object)->CanBeScrolledAndHasScrollableArea())) {
     // Do not start selection-based autoscroll when the node is inside a
     // fixed-position element.
     if (!is_middle_click_autoscroll && layout_object->IsBox() &&
-        To<LayoutBox>(layout_object)->HasLayer() &&
-        To<LayoutBox>(layout_object)->Layer()->FixedToViewport()) {
+        To<LayoutBox>(layout_object)->IsFixedToView()) {
       return nullptr;
     }
 
@@ -1906,37 +1910,6 @@ bool LayoutBox::HasHorizontallyScrollableAncestor(LayoutObject* layout_object) {
   }
 
   return false;
-}
-
-void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
-  NOT_DESTROYED();
-  if (delta.IsZero() || !IsScrollContainer())
-    return;
-
-  PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
-  DCHECK(scrollable_area);
-  ScrollOffset new_scroll_offset = scrollable_area->GetScrollOffset() + delta;
-  scrollable_area->SetScrollOffset(new_scroll_offset,
-                                   mojom::blink::ScrollType::kProgrammatic);
-
-  // If this layer can't do the scroll we ask the next layer up that can
-  // scroll to try.
-  ScrollOffset remaining_scroll_offset =
-      new_scroll_offset - scrollable_area->GetScrollOffset();
-  if (!remaining_scroll_offset.IsZero() && Parent()) {
-    if (LayoutBox* scrollable_box = EnclosingScrollableBox())
-      scrollable_box->ScrollByRecursively(remaining_scroll_offset);
-
-    LocalFrame* frame = GetFrame();
-    if (frame && frame->GetPage()) {
-      frame->GetPage()
-          ->GetAutoscrollController()
-          .UpdateAutoscrollLayoutObject();
-    }
-  }
-  // FIXME: If we didn't scroll the whole way, do we want to try looking at
-  // the frames ownerElement?
-  // https://bugs.webkit.org/show_bug.cgi?id=28237
 }
 
 bool LayoutBox::NeedsPreferredWidthsRecalculation() const {
@@ -3389,11 +3362,17 @@ void LayoutBox::AddLayoutResult(const NGLayoutResult* result,
       // spanner, remove subsequent sibling items so that OOFs don't try to
       // access old fragments.
       //
+      // Additionally, if an outer multicol has a spanner break, we may try
+      // to access old fragments of the inner multicol if it hasn't completed
+      // layout yet. Remove subsequent multicol fragments to avoid OOFs from
+      // trying to access old fragments.
+      //
       // TODO(layout-dev): Other solutions to handling interactions between OOFs
       // and spanner breaks may need to be considered.
       if (!box_fragment.BreakToken() ||
           To<NGBlockBreakToken>(box_fragment.BreakToken())
-              ->IsCausedByColumnSpanner()) {
+              ->IsCausedByColumnSpanner() ||
+          box_fragment.IsFragmentationContextRoot()) {
         // Before forgetting any old fragments and their items, we need to clear
         // associations.
         if (box_fragment.IsInlineFormattingContext())
@@ -3554,7 +3533,7 @@ const NGLayoutResult* LayoutBox::GetCachedMeasureResult() const {
 
 const NGLayoutResult* LayoutBox::CachedLayoutResult(
     const NGConstraintSpace& new_space,
-    const NGBreakToken* break_token,
+    const NGBlockBreakToken* break_token,
     const NGEarlyBreak* early_break,
     absl::optional<NGFragmentGeometry>* initial_fragment_geometry,
     NGLayoutCacheStatus* out_cache_status) {
@@ -3625,7 +3604,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
         return nullptr;
 
       // Propagating OOF needs re-layout.
-      if (physical_fragment.HasOutOfFlowPositionedDescendants())
+      if (physical_fragment.NeedsOOFPositionedInfoPropagation())
         return nullptr;
 
       // Any floats might need to move, causing lines to wrap differently,
@@ -3644,7 +3623,8 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
 
   NGBlockNode node(this);
   NGLayoutCacheStatus size_cache_status = CalculateSizeBasedLayoutCacheStatus(
-      node, *cached_layout_result, new_space, initial_fragment_geometry);
+      node, break_token, *cached_layout_result, new_space,
+      initial_fragment_geometry);
 
   // If our size may change (or we know a descendants size may change), we miss
   // the cache.
@@ -3751,6 +3731,13 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
       // the cache (and thus kept the fragment with the OOF), we'd end up with
       // extraneous OOF fragments.
       if (UNLIKELY(physical_fragment.HasNestedMulticolsWithOOFs()))
+        return nullptr;
+
+      // Any fragmented out-of-flow positioned items will be placed once we
+      // reach the fragmentation context root rather than the containing block,
+      // so we should miss the cache in this case to ensure that such OOF
+      // descendants are laid out correctly.
+      if (physical_fragment.HasOutOfFlowFragmentChild())
         return nullptr;
 
       // If the node didn't break into multiple fragments, we might be able to
@@ -8659,6 +8646,10 @@ BackgroundPaintLocation LayoutBox::ComputeBackgroundPaintLocationIfComposited()
   }
 
   return paint_location;
+}
+
+bool LayoutBox::IsFixedToView() const {
+  return IsFixedPositioned() && Container() == View();
 }
 
 }  // namespace blink

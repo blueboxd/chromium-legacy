@@ -8,16 +8,16 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/multidevice/expiring_remote_device_cache.h"
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "chromeos/components/multidevice/expiring_remote_device_cache.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -352,4 +352,4 @@ void DeviceSyncClientImpl::FlushForTesting() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

@@ -337,12 +337,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
            ~CompositingReason::kTrivial3DTransform;
   }
 
-  // TODO(crbug.com/900241): Use HaveActiveTransformAnimation() instead of this
-  // function when we can track animations for each property type.
-  bool RequiresCompositingForAnimation() const {
-    return DirectCompositingReasons() &
-           CompositingReason::kComboActiveAnimation;
-  }
   bool HasActiveTransformAnimation() const {
     return state_.direct_compositing_reasons &
            CompositingReason::kActiveTransformAnimation;
@@ -350,6 +344,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   bool RequiresCompositingForFixedPosition() const {
     return DirectCompositingReasons() & CompositingReason::kFixedPosition;
+  }
+
+  bool RequiresCompositingForFixedToViewport() const {
+    return DirectCompositingReasons() & CompositingReason::kFixedToViewport;
   }
 
   bool RequiresCompositingForScrollDependentPosition() const {

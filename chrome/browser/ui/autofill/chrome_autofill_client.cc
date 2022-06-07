@@ -40,7 +40,7 @@
 #include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -61,6 +61,7 @@
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -867,8 +868,8 @@ bool ChromeAutofillClient::IsAutocompleteEnabled() {
 }
 
 bool ChromeAutofillClient::IsPasswordManagerEnabled() {
-  return GetPrefs()->GetBoolean(
-      password_manager::prefs::kCredentialsEnableService);
+  return password_manager_util::IsSavingPasswordsEnabled(GetPrefs(),
+                                                         GetSyncService());
 }
 
 void ChromeAutofillClient::PropagateAutofillPredictions(

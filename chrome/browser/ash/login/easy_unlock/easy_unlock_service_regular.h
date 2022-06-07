@@ -8,17 +8,17 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 #include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
@@ -33,6 +33,7 @@ class Profile;
 
 namespace ash {
 class EasyUnlockNotificationController;
+class SmartLockFeatureUsageMetrics;
 
 // EasyUnlockService instance that should be used for regular, non-signin
 // profiles.
@@ -89,7 +90,6 @@ class EasyUnlockServiceRegular
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
-  bool IsEligible() const override;
   bool IsEnabled() const override;
   bool IsChromeOSLoginEnabled() const override;
 
@@ -110,6 +110,14 @@ class EasyUnlockServiceRegular
   void ShowNotificationIfNewDevicePresent(
       const std::set<std::string>& public_keys_before_sync,
       const std::set<std::string>& public_keys_after_sync);
+
+  // Called when ready to begin recording Smart Lock feature usage
+  // within Standard Feature Usage Logging (SFUL) framework.
+  void StartFeatureUsageMetrics();
+
+  // Called when ready to stop recording Smart Lock feature usage
+  // within SFUL framework.
+  void StopFeatureUsageMetrics();
 
   // EasyUnlockService:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
@@ -145,6 +153,10 @@ class EasyUnlockServiceRegular
 
   // Used to determine the FeatureState of Smart Lock.
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
+
+  // Tracks Smart Lock feature usage for the Standard Feature Usage Logging
+  // (SFUL) framework.
+  std::unique_ptr<SmartLockFeatureUsageMetrics> feature_usage_metrics_;
 
   // Stores the unlock keys for EasyUnlock before the current device sync, so we
   // can compare it to the unlock keys after syncing.

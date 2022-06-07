@@ -16,9 +16,11 @@
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
+#include "net/disk_cache/simple/simple_file_enumerator.h"
 #include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
@@ -570,10 +572,13 @@ void SimpleIndexFile::SyncRestoreFromDisk(net::CacheType cache_type,
   out_result->Reset();
   SimpleIndex::EntrySet* entries = &out_result->entries;
 
-  const bool did_succeed = TraverseCacheDirectory(
-      cache_directory,
-      base::BindRepeating(&ProcessEntryFile, cache_type, entries));
-  if (!did_succeed) {
+  SimpleFileEnumerator enumerator(cache_directory);
+  while (absl::optional<SimpleFileEnumerator::Entry> entry =
+             enumerator.Next()) {
+    ProcessEntryFile(cache_type, entries, entry->path, entry->last_accessed,
+                     entry->last_modified, entry->size);
+  }
+  if (enumerator.HasError()) {
     LOG(ERROR) << "Could not reconstruct index from disk";
     return;
   }

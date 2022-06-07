@@ -184,7 +184,6 @@ Ko za vsa spletna mesta ali za določeno spletno mesto izbrišete zgodovino brsk
 <translation id="200114059308480249">Želite vključiti sobesedilo v iskanja v Googlu?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# datoteka}one{# datoteka}two{# datoteki}few{# datoteke}other{# datotek}}</translation>
 <translation id="2015836039326522978">Aplikacija <ph name="APP_NAME" /> se bo odprla v Chromu. Če nadaljujete, se strinjate z <ph name="BEGIN_LINK1" />Googlovimi pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />dodatnimi pogoji storitve za Google Chrome in Chrome OS<ph name="END_LINK2" />. Uporablja se tudi <ph name="BEGIN_LINK3" />pravilnik o zasebnosti<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Želite odstraniti zanimanje?</translation>
 <translation id="2020309681647789787">Zgodovino si boste lahko ogledali v vseh sinhroniziranih napravah, da boste lahko nadaljevali, kar ste počeli.</translation>
 <translation id="2021896219286479412">Kontrol. za mesto v celo. načinu</translation>
 <translation id="2038563949887743358">Vklop možnosti »Zahteva za namizno spletno mesto«</translation>
@@ -213,6 +212,7 @@ Dotaknite se poljubne besede, če želite iskati. Če želite izboljšati iskanj
 <translation id="2141396931810938595">Na podlagi uporabe</translation>
 <translation id="214888715418183969">Izberite, kaj želite deliti s Chromom. Meritve, ki jih boste delili, bomo uporabili za izboljšanje Chromovih funkcij, delovanja in stabilnosti.</translation>
 <translation id="2149973817440762519">Uredi zaznamek</translation>
+<translation id="2155214902713132423">Ta način preverjanja ni na voljo za to napravo. V drugi napravi izberite drugo možnost.</translation>
 <translation id="2157851137955077194">Če želite deliti kaj iz telefona z drugo napravo, v obeh napravah v nastavitvah Chroma vklopite sinhronizacijo</translation>
 <translation id="2158408438301413340">Chrome ni mogel preveriti vseh gesel</translation>
 <translation id="2169830938017475061">Zdaj</translation>
@@ -733,7 +733,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5091199029769593641">Kmalu bodo prikazane novice s spletnega mesta <ph name="SITE_NAME" />, ko boste odprli nov zavihek. Spletna mesta, ki jih spremljate, se shranijo v računu Google. Upravljate jih lahko v nastavitvah Odkrivanja.</translation>
 <translation id="5091249083535528968">Razširjeni podatki o uporabi</translation>
 <translation id="509429900233858213">Napaka.</translation>
-<translation id="5098190077610408701">Želite dodati zanimanje?</translation>
 <translation id="5102401324271069229">Če vam spletno mesto poskusi ukrasti geslo ali ko prenašate škodljivo datoteko, lahko Chrome pošlje URL-je, vključno z delčki vsebine strani, Varnemu brskanju.</translation>
 <translation id="510275257476243843">Še 1 h</translation>
 <translation id="5115811374190515607">za <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5906513782029855931">Če Pomočnik Google pozna URL-je spletnih mest, vam lahko pomaga dokončati opravila. Pomočnika lahko izklopite v nastavitvah Chroma.</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5919204609460789179">Posodobite izdelek <ph name="PRODUCT_NAME" />, če želite začeti sinhronizacijo</translation>
+<translation id="5938820472109305350">Dodajanje: <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Uporaba iskalnika Google za iskanje</translation>
 <translation id="5945035219773565305">Trenutno priporočilo:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Ogledovanje strani v živo</translation>
@@ -898,7 +898,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="6033245666633565791">Pri Chromu v okviru pobude <ph name="BEGIN_LINK" />Zasebni peskovnik<ph name="END_LINK" /> razvijamo nove tehnologije, ki vas varujejo pred sledenjem na več spletnih mestih, hkrati pa skrbijo za ohranitev odprtosti spleta.
 
 Preizkusi peskovnika za zasebnost so še vedno v aktivnem razvoju in na voljo le na izbranih območjih. Spletna mesta lahko za zdaj preizkusijo peskovnik za zasebnost, obenem pa še naprej uporabljajo spletne tehnologije, kot so piškotki drugih ponudnikov.</translation>
-<translation id="6036057147555329831">Dodatni modul ICU</translation>
 <translation id="6039379616847168523">Premik na naslednji zavihek</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="604124094241169006">Samodejno</translation>
@@ -1023,13 +1022,14 @@ Glede na interakcijo s spletnim mestom, kot je redno prijavljanje v račun, lahk
 <translation id="663674369910034433">Če vas zanima več nastavitev, povezanih z zasebnostjo, varnostjo in zbiranjem podatkov, si oglejte razdelka <ph name="BEGIN_LINK1" />Sinhronizacija<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />Googlove storitve<ph name="END_LINK2" />.</translation>
 <translation id="6637100877383020115">Zaradi izboljšanja aplikacije Chrome Googlu pošlje podatke o uporabi in zrušitvah. <ph name="BEGIN_UMA_LINK" />Upravljanje<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokiraj ves čas</translation>
+<translation id="6641780377503683465">Odstranitev: <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6645629752388991326">Nadzirajte, katere naprave se lahko prijavo s to napravo kot varnostnim ključem.</translation>
 <translation id="6648459603387803038">Skrbnik lahko spremeni nastavitev brskalnika na daljavo. Dejavnost v tej napravi morda tudi upravljajo zunaj Chroma.</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}two{<ph name="CONTACT_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6649642165559792194">Predogled slike <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">Geslo</translation>
-<translation id="6659594942844771486">Zavihek</translation>
+<translation id="6659594942844771486">Tabulator</translation>
 <translation id="666731172850799929">Odpri v: <ph name="APP_NAME" /></translation>
 <translation id="6671495933530132209">Kopiraj sliko</translation>
 <translation id="6674044799624355221">Pošlje manjši vzorec strani, prenosov, dejavnosti razširitev in podatkov o sistemu zaradi pomoči pri odkrivanju novih groženj.</translation>

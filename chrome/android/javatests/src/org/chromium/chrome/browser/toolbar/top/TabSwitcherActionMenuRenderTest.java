@@ -46,7 +46,10 @@ public class TabSwitcherActionMenuRenderTest extends BlankUiTestActivityTestCase
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(1)
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_TAB_SWITCHER)
+                    .build();
 
     private View mView;
 
@@ -88,7 +91,9 @@ public class TabSwitcherActionMenuRenderTest extends BlankUiTestActivityTestCase
                     coordinator.buildMenuItems(), null);
 
             mView = coordinator.getContentView();
-            ((ViewGroup) mView.getParent()).removeView(mView);
+            if (mView.getParent() != null) {
+                ((ViewGroup) mView.getParent()).removeView(mView);
+            }
 
             int popupWidth =
                     activity.getResources().getDimensionPixelSize(R.dimen.tab_switcher_menu_width);

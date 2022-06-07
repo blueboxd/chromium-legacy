@@ -20,10 +20,9 @@ const char kTPMErrorDbusStep[] = "dbus-error";
 
 constexpr StaticOobeScreenId TpmErrorView::kScreenId;
 
-TpmErrorScreenHandler::TpmErrorScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.TPMErrorMessageScreen.userActed");
+TpmErrorScreenHandler::TpmErrorScreenHandler() : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.TPMErrorMessageScreen.userActed");
 }
 
 TpmErrorScreenHandler::~TpmErrorScreenHandler() {
@@ -49,7 +48,7 @@ void TpmErrorScreenHandler::DeclareLocalizedValues(
                 IDS_INSTALLED_PRODUCT_OS_NAME);
 }
 
-void TpmErrorScreenHandler::Initialize() {
+void TpmErrorScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
@@ -57,11 +56,11 @@ void TpmErrorScreenHandler::Initialize() {
 }
 
 void TpmErrorScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void TpmErrorScreenHandler::SetTPMOwnedErrorStep() {
@@ -75,12 +74,12 @@ void TpmErrorScreenHandler::SetTPMDbusErrorStep() {
 
 void TpmErrorScreenHandler::Bind(TpmErrorScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void TpmErrorScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 }  // namespace chromeos

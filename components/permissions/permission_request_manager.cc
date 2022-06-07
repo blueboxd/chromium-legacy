@@ -182,11 +182,15 @@ void PermissionRequestManager::AddRequest(
 
 #if BUILDFLAG(IS_ANDROID)
   if (request->GetContentSettingsType() == ContentSettingsType::NOTIFICATIONS) {
-    bool enabled_app_level = AreAppLevelNotificationsEnabled();
+    bool app_level_settings_allow_site_notifications =
+        enabled_app_level_notification_permission_for_testing_.has_value()
+            ? enabled_app_level_notification_permission_for_testing_.value()
+            : DoesAppLevelSettingsAllowSiteNotifications();
     base::UmaHistogramBoolean(
-        "Permissions.Prompt.Notifications.EnabledAppLevel", enabled_app_level);
+        "Permissions.Prompt.Notifications.EnabledAppLevel",
+        app_level_settings_allow_site_notifications);
 
-    if (!enabled_app_level &&
+    if (!app_level_settings_allow_site_notifications &&
         base::FeatureList::IsEnabled(
             features::kBlockNotificationPromptsIfDisabledOnAppLevel)) {
       // Automatically cancel site Notification requests when Chrome is not able
@@ -224,8 +228,8 @@ void PermissionRequestManager::AddRequest(
   // correct behavior on interstitials -- we probably want to basically queue
   // any request for which GetVisibleURL != GetLastCommittedURL.
   CHECK_EQ(source_frame->GetMainFrame(), web_contents()->GetMainFrame());
-  const GURL& main_frame_origin =
-      PermissionUtil::GetLastCommittedOriginAsURL(web_contents());
+  const GURL main_frame_origin =
+      PermissionUtil::GetLastCommittedOriginAsURL(source_frame->GetMainFrame());
   bool is_main_frame =
       url::IsSameOriginWith(main_frame_origin, request->requesting_origin());
 
@@ -482,7 +486,8 @@ GURL PermissionRequestManager::GetRequestingOrigin() const {
 }
 
 GURL PermissionRequestManager::GetEmbeddingOrigin() const {
-  return PermissionUtil::GetLastCommittedOriginAsURL(web_contents());
+  return PermissionUtil::GetLastCommittedOriginAsURL(
+      web_contents()->GetMainFrame());
 }
 
 void PermissionRequestManager::Accept() {

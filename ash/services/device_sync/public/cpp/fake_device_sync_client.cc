@@ -4,10 +4,10 @@
 
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
 
-#include "chromeos/components/multidevice/remote_device.h"
-#include "chromeos/components/multidevice/remote_device_cache.h"
+#include "ash/components/multidevice/remote_device.h"
+#include "ash/components/multidevice/remote_device_cache.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 FakeDeviceSyncClient::SetSoftwareFeatureStateInputs::
@@ -232,4 +232,4 @@ void FakeDeviceSyncClient::InvokePendingGetDebugInfoCallback(
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

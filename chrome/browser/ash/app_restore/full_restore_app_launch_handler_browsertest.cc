@@ -48,13 +48,15 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
-#include "components/app_restore/full_restore_info.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/full_restore_read_handler.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/buffer.h"
 #include "components/exo/surface.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -108,10 +110,10 @@ std::unique_ptr<::app_restore::AppLaunchInfo> GetArcAppLaunchInfo(
       ->GetArcAppLaunchInfo(app_id, session_id);
 }
 
-class TestFullRestoreInfoObserver
-    : public ::full_restore::FullRestoreInfo::Observer {
+class TestAppRestoreInfoObserver
+    : public ::app_restore::AppRestoreInfo::Observer {
  public:
-  // ::full_restore::FullRestoreInfo::Observer:
+  // ::app_restore::AppRestoreInfo::Observer:
   void OnAppLaunched(aura::Window* window) override {
     ++launched_windows_[window];
   }
@@ -1105,7 +1107,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
     ::full_restore::FullRestoreSaveHandler::GetInstance()
         ->SetPrimaryProfilePath(profile()->GetPath());
     ::full_restore::SetActiveProfilePath(profile()->GetPath());
-    test_full_restore_info_observer_.Reset();
+    test_app_restore_info_observer_.Reset();
   }
 
   void SaveAppLaunchInfo(const std::string& app_id, int32_t session_id) {
@@ -1116,7 +1118,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
   }
 
   void Restore() {
-    test_full_restore_info_observer_.Reset();
+    test_app_restore_info_observer_.Reset();
 
     auto* arc_task_handler =
         app_restore::AppRestoreArcTaskHandler::GetForProfile(profile());
@@ -1192,8 +1194,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
   }
 
   void VerifyObserver(aura::Window* window, int launch_count, int init_count) {
-    auto& launched_windows =
-        test_full_restore_info_observer_.launched_windows();
+    auto& launched_windows = test_app_restore_info_observer_.launched_windows();
     if (launch_count == 0) {
       EXPECT_TRUE(launched_windows.find(window) == launched_windows.end());
     } else {
@@ -1201,7 +1202,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
     }
 
     auto& initialized_windows =
-        test_full_restore_info_observer_.initialized_windows();
+        test_app_restore_info_observer_.initialized_windows();
     if (init_count == 0) {
       EXPECT_TRUE(initialized_windows.find(window) ==
                   initialized_windows.end());
@@ -1260,8 +1261,8 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
     return app_launch_handler_.get();
   }
 
-  TestFullRestoreInfoObserver* test_full_restore_info_observer() {
-    return &test_full_restore_info_observer_;
+  TestAppRestoreInfoObserver* test_app_restore_info_observer() {
+    return &test_app_restore_info_observer_;
   }
 
   const std::map<int32_t, std::string>& task_id_to_app_id() {
@@ -1278,7 +1279,7 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
 
  private:
   std::unique_ptr<FullRestoreAppLaunchHandler> app_launch_handler_;
-  TestFullRestoreInfoObserver test_full_restore_info_observer_;
+  TestAppRestoreInfoObserver test_app_restore_info_observer_;
 };
 
 // Test the not restored ARC window is not added to the hidden container.
@@ -1290,8 +1291,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
   int32_t session_id1 =
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
-  ::full_restore::FullRestoreInfo::GetInstance()->AddObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->AddObserver(
+      test_app_restore_info_observer());
 
   SaveAppLaunchInfo(app_id, session_id1);
 
@@ -1365,8 +1366,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   app_host()->OnTaskDestroyed(kTaskId3);
   widget2->CloseNow();
 
-  ::full_restore::FullRestoreInfo::GetInstance()->RemoveObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->RemoveObserver(
+      test_app_restore_info_observer());
   arc_helper_.StopInstance();
 }
 
@@ -1380,8 +1381,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
   int32_t session_id1 =
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
-  ::full_restore::FullRestoreInfo::GetInstance()->AddObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->AddObserver(
+      test_app_restore_info_observer());
 
   SaveAppLaunchInfo(app_id, session_id1);
 
@@ -1461,8 +1462,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
 
   ASSERT_FALSE(GetWindowInfo(kTaskId1));
 
-  ::full_restore::FullRestoreInfo::GetInstance()->RemoveObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->RemoveObserver(
+      test_app_restore_info_observer());
   arc_helper_.StopInstance();
 
   RemoveInactiveDesks();
@@ -1478,8 +1479,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
   int32_t session_id1 =
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
-  ::full_restore::FullRestoreInfo::GetInstance()->AddObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->AddObserver(
+      test_app_restore_info_observer());
 
   SaveAppLaunchInfo(app_id, session_id1);
 
@@ -1545,8 +1546,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   app_host()->OnTaskDestroyed(kTaskId2);
   widget->CloseNow();
 
-  ::full_restore::FullRestoreInfo::GetInstance()->RemoveObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->RemoveObserver(
+      test_app_restore_info_observer());
   arc_helper_.StopInstance();
 
   RemoveInactiveDesks();
@@ -1561,8 +1562,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
   int32_t session_id1 =
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
-  ::full_restore::FullRestoreInfo::GetInstance()->AddObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->AddObserver(
+      test_app_restore_info_observer());
 
   SaveAppLaunchInfo(app_id, session_id1);
 
@@ -1649,8 +1650,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   app_host()->OnTaskDestroyed(kTaskId2);
   widget->CloseNow();
 
-  ::full_restore::FullRestoreInfo::GetInstance()->RemoveObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->RemoveObserver(
+      test_app_restore_info_observer());
   arc_helper_.StopInstance();
 
   RemoveInactiveDesks();
@@ -1669,8 +1670,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
   int32_t session_id2 =
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
-  ::full_restore::FullRestoreInfo::GetInstance()->AddObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->AddObserver(
+      test_app_restore_info_observer());
 
   SaveAppLaunchInfo(app_id1, session_id1);
   SaveAppLaunchInfo(app_id2, session_id2);
@@ -1783,8 +1784,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
   int32_t session_id2 =
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
-  ::full_restore::FullRestoreInfo::GetInstance()->AddObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->AddObserver(
+      test_app_restore_info_observer());
 
   SaveAppLaunchInfo(app_id1, session_id1);
   SaveAppLaunchInfo(app_id2, session_id2);
@@ -1864,8 +1865,8 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
   int32_t session_id =
       ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
-  ::full_restore::FullRestoreInfo::GetInstance()->AddObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->AddObserver(
+      test_app_restore_info_observer());
 
   SaveAppLaunchInfo(app_id, session_id);
 
@@ -1900,40 +1901,52 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerArcAppBrowserTest,
 
   app_host()->OnTaskDestroyed(kTaskId);
 
-  ::full_restore::FullRestoreInfo::GetInstance()->RemoveObserver(
-      test_full_restore_info_observer());
+  ::app_restore::AppRestoreInfo::GetInstance()->RemoveObserver(
+      test_app_restore_info_observer());
   arc_helper_.StopInstance();
 }
 
 class ArcAppLaunchHandlerArcAppBrowserTest
     : public FullRestoreAppLaunchHandlerArcAppBrowserTest {
  protected:
-  void UpdateApp(const std::string& app_id, apps::mojom::Readiness readiness) {
-    apps::mojom::AppPtr app = apps::mojom::App::New();
-    app->app_id = app_id;
-    app->app_type = apps::mojom::AppType::kArc;
+  void UpdateApp(const std::string& app_id, apps::Readiness readiness) {
+    apps::AppPtr app = std::make_unique<apps::App>(apps::AppType::kArc, app_id);
     app->readiness = readiness;
 
-    std::vector<apps::mojom::AppPtr> deltas;
-    deltas.push_back(std::move(app));
     auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
-    proxy->AppRegistryCache().OnApps(std::move(deltas),
-                                     apps::mojom::AppType::kArc,
-                                     false /* should_notify_initialized */);
+    if (base::FeatureList::IsEnabled(
+            apps::kAppServiceOnAppUpdateWithoutMojom)) {
+      std::vector<apps::AppPtr> deltas;
+      deltas.push_back(std::move(app));
+      proxy->AppRegistryCache().OnApps(std::move(deltas), apps::AppType::kArc,
+                                       false /* should_notify_initialized */);
+    } else {
+      std::vector<apps::mojom::AppPtr> mojom_deltas;
+      mojom_deltas.push_back(apps::ConvertAppToMojomApp(app));
+      proxy->AppRegistryCache().OnApps(std::move(mojom_deltas),
+                                       apps::mojom::AppType::kArc,
+                                       false /* should_notify_initialized */);
+    }
   }
 
   void RemoveApp(const std::string& app_id) {
-    apps::mojom::AppPtr app = apps::mojom::App::New();
-    app->app_id = app_id;
-    app->app_type = apps::mojom::AppType::kArc;
-    app->readiness = apps::mojom::Readiness::kUninstalledByUser;
+    apps::AppPtr app = std::make_unique<apps::App>(apps::AppType::kArc, app_id);
+    app->readiness = apps::Readiness::kUninstalledByUser;
 
-    std::vector<apps::mojom::AppPtr> deltas;
-    deltas.push_back(std::move(app));
     auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
-    proxy->AppRegistryCache().OnApps(std::move(deltas),
-                                     apps::mojom::AppType::kArc,
-                                     false /* should_notify_initialized */);
+    if (base::FeatureList::IsEnabled(
+            apps::kAppServiceOnAppUpdateWithoutMojom)) {
+      std::vector<apps::AppPtr> deltas;
+      deltas.push_back(std::move(app));
+      proxy->AppRegistryCache().OnApps(std::move(deltas), apps::AppType::kArc,
+                                       false /* should_notify_initialized */);
+    } else {
+      std::vector<apps::mojom::AppPtr> mojom_deltas;
+      mojom_deltas.push_back(apps::ConvertAppToMojomApp(app));
+      proxy->AppRegistryCache().OnApps(std::move(mojom_deltas),
+                                       apps::mojom::AppType::kArc,
+                                       false /* should_notify_initialized */);
+    }
   }
 
   bool HasRestoreData() {
@@ -2063,7 +2076,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLaunchHandlerArcAppBrowserTest, RemoveApps) {
   VerifyNoRestoreData(app_id2);
 
   // Modify `app_id1` status to be ready to simulate `app_id1` is installed.
-  UpdateApp(app_id1, apps::mojom::Readiness::kReady);
+  UpdateApp(app_id1, apps::Readiness::kReady);
   EXPECT_FALSE(HasRestoreData(app_id1));
   EXPECT_TRUE(GetAppIds().empty());
   VerifyNoRestoreData(app_id1);
@@ -2110,8 +2123,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppLaunchHandlerArcAppBrowserTest, UpdateApps) {
   WaitForAppLaunchInfoSaved();
 
   // Modify apps status before restoring, so that apps can't be restored.
-  UpdateApp(app_id1, apps::mojom::Readiness::kDisabledByPolicy);
-  UpdateApp(app_id2, apps::mojom::Readiness::kDisabledByPolicy);
+  UpdateApp(app_id1, apps::Readiness::kDisabledByPolicy);
+  UpdateApp(app_id2, apps::Readiness::kDisabledByPolicy);
   base::HistogramTester histogram_tester;
   Restore();
   widget1->CloseNow();
@@ -2126,14 +2139,14 @@ IN_PROC_BROWSER_TEST_F(ArcAppLaunchHandlerArcAppBrowserTest, UpdateApps) {
   EXPECT_FALSE(HasRestoreData());
 
   // Modify `app_id1` status to be ready to prepare launching `app_id1`.
-  UpdateApp(app_id1, apps::mojom::Readiness::kReady);
+  UpdateApp(app_id1, apps::Readiness::kReady);
   app_ids = GetAppIds();
   EXPECT_FALSE(base::Contains(app_ids, app_id1));
   EXPECT_TRUE(base::Contains(app_ids, app_id2));
   VerifyWindows(activation_index1, app_id1, kTaskId1);
 
   // Modify `app_id2` status to be ready to prepare launching `app_id2`.
-  UpdateApp(app_id2, apps::mojom::Readiness::kReady);
+  UpdateApp(app_id2, apps::Readiness::kReady);
   app_ids = GetAppIds();
   EXPECT_FALSE(base::Contains(app_ids, app_id1));
   EXPECT_FALSE(base::Contains(app_ids, app_id2));
@@ -2260,7 +2273,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLaunchHandlerArcAppBrowserTest, AppIsReadyLate) {
                    app_restore::kRestoredAppWindowCountHistogram, 1));
 
   // Modify `app_id2` status to be ready to prepare launching `app_id2`.
-  UpdateApp(app_id2, apps::mojom::Readiness::kReady);
+  UpdateApp(app_id2, apps::Readiness::kReady);
   EXPECT_TRUE(GetAppIds().empty());
   EXPECT_TRUE(HasRestoreData());
   VerifyWindows(activation_index1, app_id1, kTaskId1);
@@ -2394,24 +2407,32 @@ class FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest
         ->profile_path_to_restore_data_.clear();
   }
 
-  void ModifyAppReadiness(apps::mojom::Readiness readiness) {
-    apps::mojom::AppType app_type = apps::mojom::AppType::kWeb;
+  void ModifyAppReadiness(apps::Readiness readiness) {
+    apps::AppType app_type = apps::AppType::kWeb;
     if (crosapi::browser_util::IsLacrosEnabled() &&
         web_app::IsWebAppsCrosapiEnabled()) {
-      app_type = apps::mojom::AppType::kSystemWeb;
+      app_type = apps::AppType::kSystemWeb;
     }
 
     auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
-    std::vector<apps::mojom::AppPtr> deltas;
     apps::AppRegistryCache& cache = proxy->AppRegistryCache();
-    apps::mojom::AppPtr app = apps::mojom::App::New();
-    app->app_id =
-        *GetManager().GetAppIdForSystemApp(web_app::SystemAppType::HELP);
-    app->app_type = app_type;
+    apps::AppPtr app = std::make_unique<apps::App>(
+        app_type,
+        *GetManager().GetAppIdForSystemApp(web_app::SystemAppType::HELP));
     app->readiness = readiness;
-    deltas.push_back(std::move(app));
-    cache.OnApps(std::move(deltas), app_type,
-                 false /* should_notify_initialized */);
+    if (base::FeatureList::IsEnabled(
+            apps::kAppServiceOnAppUpdateWithoutMojom)) {
+      std::vector<apps::AppPtr> deltas;
+      deltas.push_back(std::move(app));
+      cache.OnApps(std::move(deltas), app_type,
+                   false /* should_notify_initialized */);
+    } else {
+      std::vector<apps::mojom::AppPtr> mojom_deltas;
+      mojom_deltas.push_back(apps::ConvertAppToMojomApp(app));
+      cache.OnApps(std::move(mojom_deltas),
+                   apps::ConvertAppTypeToMojomAppType(app_type),
+                   false /* should_notify_initialized */);
+    }
   }
 
   void SetShouldRestore(FullRestoreAppLaunchHandler* app_launch_handler) {
@@ -2519,7 +2540,7 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
 
   // Modify the app readiness to uninstall to simulate the app is not installed
   // during the system startup phase.
-  ModifyAppReadiness(apps::mojom::Readiness::kUninstalledByUser);
+  ModifyAppReadiness(apps::Readiness::kUninstalledByUser);
 
   // Create FullRestoreAppLaunchHandler.
   auto app_launch_handler =
@@ -2532,7 +2553,7 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
   ASSERT_FALSE(restore_app_browser);
 
   // Modify the app readiness to kReady to simulate the app is installed.
-  ModifyAppReadiness(apps::mojom::Readiness::kReady);
+  ModifyAppReadiness(apps::Readiness::kReady);
 
   // Wait for the restoration.
   content::RunAllTasksUntilIdle();
@@ -2571,7 +2592,7 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
 
   // Modify the app readiness to uninstall to simulate the app is not installed
   // during the system startup phase.
-  ModifyAppReadiness(apps::mojom::Readiness::kUninstalledByUser);
+  ModifyAppReadiness(apps::Readiness::kUninstalledByUser);
 
   // Create FullRestoreAppLaunchHandler to simulate the system reboot.
   auto app_launch_handler1 =
@@ -2594,7 +2615,7 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
   app_launch_handler1.reset();
 
   // Modify the app readiness to kReady to simulate the app is installed.
-  ModifyAppReadiness(apps::mojom::Readiness::kReady);
+  ModifyAppReadiness(apps::Readiness::kReady);
 
   // Create FullRestoreAppLaunchHandler to simulate the system reboot again.
   auto app_launch_handler2 =
@@ -2642,7 +2663,7 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
 
   // Modify the app readiness to uninstall to simulate the app is not installed
   // during the system startup phase.
-  ModifyAppReadiness(apps::mojom::Readiness::kUninstalledByUser);
+  ModifyAppReadiness(apps::Readiness::kUninstalledByUser);
 
   // Create FullRestoreAppLaunchHandler to simulate the system reboot.
   auto app_launch_handler1 =
@@ -2668,7 +2689,7 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
   app_launch_handler1.reset();
 
   // Modify the app readiness to kReady to simulate the app is installed.
-  ModifyAppReadiness(apps::mojom::Readiness::kReady);
+  ModifyAppReadiness(apps::Readiness::kReady);
 
   // Create FullRestoreAppLaunchHandler to simulate the system reboot again.
   auto app_launch_handler2 =

@@ -39,10 +39,20 @@ function validateBid(bid) {
 function validateAuctionConfig(auctionConfig) {
   if (!auctionConfig.seller.includes('b.test'))
     throw 'Wrong seller ' + auctionConfig.seller;
-  // TODO(crbug.com/1186444): Consider validating URL fields like
-  // auctionConfig.decisionLogicUrl once we decide what to do about URL
-  // normalization.
-  if (auctionConfig.interestGroupBuyers !== undefined) {
+
+  if (auctionConfig.decisionLogicUrl !==
+      auctionConfig.seller + '/interest_group' +
+          '/component_auction_top_level_decision_argument_validator.js') {
+    throw 'Wrong decisionLogicUrl ' + auctionConfig.decisionLogicUrl;
+  }
+
+  if (auctionConfig.trustedScoringSignalsUrl !==
+      auctionConfig.seller + '/interest_group/trusted_scoring_signals.json') {
+      throw 'Wrong trustedScoringSignalsUrl ' +
+          auctionConfig.trustedScoringSignalsUrl;
+  }
+
+  if ('interestGroupBuyers' in auctionConfig) {
     throw 'Wrong interestGroupBuyers ' + auctionConfig.interestGroupBuyers;
   }
   // If auctionSignals is passed as a JSON string instead of an object,
@@ -66,6 +76,23 @@ function validateAuctionConfig(auctionConfig) {
       !perBuyerTimeoutsJson.includes('110') ||
       auctionConfig.perBuyerTimeouts['*'] != 150) {
     throw 'Wrong perBuyerTimeouts ' + perBuyerTimeoutsJson;
+  }
+
+  // Check componentAuctions. Don't check all fields of the expected component
+  // auction, just a sampling of them.
+  if (!('componentAuctions' in auctionConfig))
+    throw 'componentAuctions missing';
+  if (auctionConfig.componentAuctions.length != 1)
+    throw 'Wrong componentAuctions ' + JSON.stringify(componentAuctions);
+  const componentAuction = auctionConfig.componentAuctions[0];
+  if (!componentAuction.seller.startsWith('https://d.test') ||
+      componentAuction.decisionLogicUrl != componentAuction.seller +
+          '/interest_group' +
+          '/component_auction_component_decision_argument_validator.js' ||
+      componentAuction.trustedScoringSignalsUrl !== componentAuction.seller +
+          '/interest_group/trusted_scoring_signals2.json' ||
+      componentAuction.sellerTimeout !== 200) {
+    throw 'Wrong componentAuction ' + JSON.stringify(componentAuction);
   }
 }
 
@@ -109,13 +136,17 @@ function validateBrowserSignals(browserSignals, isScoreAd) {
     if (browserSignals.dataVersion !== 1234)
       throw 'Wrong dataVersion ' + browserSignals.dataVersion;
   } else {
-    if (Object.keys(browserSignals).length !== 7) {
+    if (Object.keys(browserSignals).length !== 8) {
       throw 'Wrong number of browser signals fields ' +
           JSON.stringify(browserSignals);
     }
     validateBid(browserSignals.bid);
     if (browserSignals.desirability !== 37)
       throw 'Wrong desireability ' + browserSignals.desirability;
+    if (browserSignals.highestScoringOtherBid !== 0) {
+      throw 'Wrong highestScoringOtherBid ' +
+          browserSignals.highestScoringOtherBid;
+    }
     if (browserSignals.dataVersion !== 1234)
       throw 'Wrong dataVersion ' + browserSignals.dataVersion;
   }

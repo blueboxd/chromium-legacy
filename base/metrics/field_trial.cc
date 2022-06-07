@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_info.h"
@@ -1211,8 +1212,8 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
   HANDLE handle = reinterpret_cast<HANDLE>(field_trial_handle);
   if (tokens[1] == "p") {
     DCHECK(IsCurrentProcessElevated());
-    // LaunchElevatedProcess doesn't have a way to duplicate the handle,
-    // but this process can since by definition it's not sandboxed.
+    // LaunchProcess doesn't have a way to duplicate the handle, but this
+    // process can since by definition it's not sandboxed.
     ProcessId parent_pid = GetParentProcessId(GetCurrentProcess());
     HANDLE parent_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, parent_pid);
     // TODO(https://crbug.com/916461): Duplicating the handle is known to fail

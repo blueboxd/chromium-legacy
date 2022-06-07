@@ -15,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/common/task_annotator.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -139,6 +138,11 @@ BackForwardCacheBrowserTest::~BackForwardCacheBrowserTest() {
                     "InterfaceName"),
                 testing::ElementsAre());
   }
+}
+
+void BackForwardCacheBrowserTest::NotifyNotRestoredReasons(
+    std::unique_ptr<BackForwardCacheCanStoreTreeResult> tree_result) {
+  tree_result_ = std::move(tree_result);
 }
 
   // Disables checking metrics that are recorded recardless of the domains. By
@@ -2506,7 +2510,8 @@ RenderFrameHostImpl* ChildFrame(RenderFrameHostImpl* rfh, int child_index) {
 }
 
 // Verifies that the reasons match those given and no others.
-testing::Matcher<BackForwardCacheCanStoreDocumentResult> MatchesDocumentResult(
+testing::Matcher<BackForwardCacheCanStoreDocumentResult>
+BackForwardCacheBrowserTest::MatchesDocumentResult(
     testing::Matcher<NotStoredReasons> not_stored,
     BlockListedFeatures block_listed) {
   return testing::AllOf(
@@ -2529,7 +2534,7 @@ testing::Matcher<BackForwardCacheCanStoreDocumentResult> MatchesDocumentResult(
 }
 
 // Check the contents of the BackForwardCacheCanStoreTreeResult of a page.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TreeResult1) {
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TreeResultFeatureUsage) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a, b, c)"));
@@ -2603,80 +2608,113 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TreeResult1) {
                             BlockListedFeatures(BlockListedFeatures())));
 }
 
-class BackForwardCacheOptInBrowserTest : public BackForwardCacheBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    EnableFeatureAndSetParams(features::kBackForwardCache,
-                              "opt_in_header_required", "true");
-    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest, NoCacheWithoutHeader) {
+// Check the contents of the BackForwardCacheCanStoreTreeResult of a page when
+// it is evicted.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       TreeResultEvictionMainFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
-  // 1) Navigate to A.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  // 1) Navigate to a.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
 
-  // 2) Navigate to B.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  // 2) Navigate to B and evict A by JavaScript execution.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  EvictByJavaScript(rfh_a.get());
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
-  // 3) Go back.
+  // 3) Go back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-
-  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
-                         kOptInUnloadHeaderNotPresent},
-                    {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kJavaScriptExecution}, {}, {}, {}, {},
+                    FROM_HERE);
+  EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
+              MatchesDocumentResult(
+                  NotStoredReasons(NotRestoredReason::kJavaScriptExecution),
+                  BlockListedFeatures()));
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest,
-                       CacheIfHeaderIsPresent) {
+// Check the contents of the BackForwardCacheCanStoreTreeResult of a page when
+// its subframe is evicted.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       TreeResultEvictionSubFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com",
-                                            "/set-header?"
-                                            "BFCache-Opt-In: unload"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   // 1) Navigate to A.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  RenderFrameHostImplWrapper rfh_b(
+      current_frame_host()->child_at(0)->current_frame_host());
+  rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
 
-  // 2) Navigate to B.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  // 2) Navigate to C and evict A's subframe B by JavaScript execution.
+  ASSERT_TRUE(NavigateToURL(shell(), url_c));
+  EvictByJavaScript(rfh_b.get());
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
-  // 3) Go back.
+  // 3) Go back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-
-  ExpectRestored(FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kJavaScriptExecution}, {}, {}, {}, {},
+                    FROM_HERE);
+  // Main frame result in the tree is empty.
+  EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
+              MatchesDocumentResult(NotStoredReasons(), BlockListedFeatures()));
+  // Subframe result in the tree contains the reason.
+  EXPECT_THAT(GetTreeResult()->GetChildren().at(0)->GetDocumentResult(),
+              MatchesDocumentResult(
+                  NotStoredReasons(NotRestoredReason::kJavaScriptExecution),
+                  BlockListedFeatures()));
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest,
-                       NoCacheIfHeaderOnlyPresentOnDestinationPage) {
+// Check the contents of the BackForwardCacheCanStoreTreeResult of a page when
+// its subframe's subframe is evicted.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       TreeResultEvictionSubFramesSubframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com",
-                                            "/set-header?"
-                                            "BFCache-Opt-In: unload"));
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  GURL url_d(embedded_test_server()->GetURL("d.com", "/title1.html"));
 
   // 1) Navigate to A.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  RenderFrameHostImplWrapper rfh_c(current_frame_host()
+                                       ->child_at(0)
+                                       ->current_frame_host()
+                                       ->child_at(0)
+                                       ->current_frame_host());
+  rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
 
-  // 2) Navigate to B.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  // 2) Navigate to D and evict C by JavaScript execution.
+  ASSERT_TRUE(NavigateToURL(shell(), url_d));
+  EvictByJavaScript(rfh_c.get());
+  ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
 
-  // 3) Go back. - A doesn't have header so it shouldn't be cached.
+  // 3) Go back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-
-  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
-                         kOptInUnloadHeaderNotPresent},
-                    {}, {}, {}, {}, FROM_HERE);
-
-  // 4) Go forward. - B has the header, so it should be cached.
-  ASSERT_TRUE(HistoryGoForward(web_contents()));
-
-  ExpectRestored(FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kJavaScriptExecution}, {}, {}, {}, {},
+                    FROM_HERE);
+  // Main frame result in the tree is empty.
+  EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
+              MatchesDocumentResult(NotStoredReasons(), BlockListedFeatures()));
+  // The first level subframe result in the tree is empty.
+  EXPECT_THAT(GetTreeResult()->GetChildren().at(0)->GetDocumentResult(),
+              MatchesDocumentResult(NotStoredReasons(), BlockListedFeatures()));
+  // The second level subframe result in the tree contains the reason.
+  EXPECT_THAT(GetTreeResult()
+                  ->GetChildren()
+                  .at(0)
+                  ->GetChildren()
+                  .at(0)
+                  ->GetDocumentResult(),
+              MatchesDocumentResult(
+                  NotStoredReasons(NotRestoredReason::kJavaScriptExecution),
+                  BlockListedFeatures()));
 }
 
 class BackForwardCacheUnloadStrategyBrowserTest
@@ -2726,45 +2764,7 @@ class BackForwardCacheUnloadStrategyBrowserTest
 
 INSTANTIATE_TEST_SUITE_P(All,
                          BackForwardCacheUnloadStrategyBrowserTest,
-                         testing::Values("always",
-                                         "opt_in_header_required",
-                                         "no"));
-
-IN_PROC_BROWSER_TEST_P(BackForwardCacheUnloadStrategyBrowserTest,
-                       UnloadHandlerPresentWithOptInHeader) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL url_a(embedded_test_server()->GetURL("a.com",
-                                            "/set-header?"
-                                            "BFCache-Opt-In: unload"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-
-  // 1) Navigate to A.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  InstallUnloadHandlerOnMainFrame();
-
-  // 2) Navigate to B.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
-
-  // 3) Go back.
-  ASSERT_TRUE(HistoryGoBack(web_contents()));
-
-  if (GetParam() == "always" || GetParam() == "opt_in_header_required") {
-    ExpectRestored(FROM_HERE);
-    EXPECT_EQ("0", GetUnloadRunCount());
-  } else {
-    ASSERT_EQ("no", GetParam());
-    ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
-                           kUnloadHandlerExistsInMainFrame},
-                      {}, {}, {}, {}, FROM_HERE);
-    EXPECT_EQ("1", GetUnloadRunCount());
-  }
-
-  // 4) Go forward.
-  ASSERT_TRUE(HistoryGoForward(web_contents()));
-
-  ExpectRestored(FROM_HERE);
-}
+                         testing::Values("always", "no"));
 
 IN_PROC_BROWSER_TEST_P(BackForwardCacheUnloadStrategyBrowserTest,
                        UnloadHandlerPresentWithoutOptInHeader) {
@@ -2786,51 +2786,10 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheUnloadStrategyBrowserTest,
   if (GetParam() == "always") {
     ExpectRestored(FROM_HERE);
     EXPECT_EQ("0", GetUnloadRunCount());
-  } else if (GetParam() == "opt_in_header_required") {
-    ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
-                           kOptInUnloadHeaderNotPresent},
-                      {}, {}, {}, {}, FROM_HERE);
-    EXPECT_EQ("1", GetUnloadRunCount());
   } else {
     ASSERT_EQ("no", GetParam());
     ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
                            kUnloadHandlerExistsInMainFrame},
-                      {}, {}, {}, {}, FROM_HERE);
-    EXPECT_EQ("1", GetUnloadRunCount());
-  }
-
-  // 4) Go forward.
-  ASSERT_TRUE(HistoryGoForward(web_contents()));
-
-  ExpectRestored(FROM_HERE);
-}
-
-IN_PROC_BROWSER_TEST_P(BackForwardCacheUnloadStrategyBrowserTest,
-                       UnloadHandlerPresentInSubFrameWithOptInHeader) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL url_a(embedded_test_server()->GetURL("a.com",
-                                            "/set-header?"
-                                            "BFCache-Opt-In: unload"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-
-  // 1) Navigate to A.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  InstallUnloadHandlerOnSubFrame();
-
-  // 2) Navigate to B.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
-
-  // 3) Go back.
-  ASSERT_TRUE(HistoryGoBack(web_contents()));
-
-  if (GetParam() == "always" || GetParam() == "opt_in_header_required") {
-    ExpectRestored(FROM_HERE);
-    EXPECT_EQ("0", GetUnloadRunCount());
-  } else {
-    ASSERT_EQ("no", GetParam());
-    ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
-                           kUnloadHandlerExistsInSubFrame},
                       {}, {}, {}, {}, FROM_HERE);
     EXPECT_EQ("1", GetUnloadRunCount());
   }
@@ -2862,7 +2821,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheUnloadStrategyBrowserTest,
     ExpectRestored(FROM_HERE);
     EXPECT_EQ("0", GetUnloadRunCount());
   } else {
-    EXPECT_TRUE(GetParam() == "opt_in_header_required" || GetParam() == "no");
+    EXPECT_TRUE(GetParam() == "no");
     ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
                            kUnloadHandlerExistsInSubFrame},
                       {}, {}, {}, {}, FROM_HERE);

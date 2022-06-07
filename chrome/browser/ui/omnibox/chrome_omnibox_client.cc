@@ -32,6 +32,8 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -198,8 +200,8 @@ gfx::Image ChromeOmniboxClient::GetSizedIcon(const gfx::Image& icon) const {
   // around them to align them vertically with the other vector icons.
   DCHECK_GE(icon_size, icon.Height());
   DCHECK_GE(icon_size, icon.Width());
-  gfx::Insets padding_border((icon_size - icon.Height()) / 2,
-                             (icon_size - icon.Width()) / 2);
+  auto padding_border = gfx::Insets::VH((icon_size - icon.Height()) / 2,
+                                        (icon_size - icon.Width()) / 2);
   if (!padding_border.IsEmpty()) {
     return gfx::Image(gfx::CanvasImageSource::CreatePadded(*icon.ToImageSkia(),
                                                            padding_border));
@@ -252,9 +254,14 @@ void ChromeOmniboxClient::OnFocusChanged(OmniboxFocusState state,
 void ChromeOmniboxClient::OnResultChanged(
     const AutocompleteResult& result,
     bool default_match_changed,
-    bool should_prerender,
+    bool should_preload,
     const BitmapFetchedCallback& on_bitmap_fetched) {
-  auto now = base::TimeTicks::Now();
+  if (should_preload) {
+    if (SearchPrefetchService* search_prefetch_service =
+            SearchPrefetchServiceFactory::GetForProfile(profile_)) {
+      search_prefetch_service->OnResultChanged(result);
+    }
+  }
 
   BitmapFetcherService* bitmap_fetcher_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
@@ -269,25 +276,26 @@ void ChromeOmniboxClient::OnResultChanged(
   for (const AutocompleteMatch& match : result) {
     ++result_index;
 
-    // Trigger prerendering only if `should_prerender` is set to true. Caller
-    // uses this parameter to explicitly allow embedders to prerender. A typical
-    // scenario is that the caller will only set it to true if the results will
-    // not change, to ensure that the prerender is not triggered for the same
-    // input repeatedly.
+    // Trigger prerendering only if `should_preload` is set to true. Caller
+    // uses this parameter to explicitly allow embedders to preload (currently,
+    // prefetch or prerender). A typical scenario is that the caller will only
+    // set it to true if the results will not change, to ensure that the
+    // preload operation is not triggered for the same input repeatedly.
+    // TODO(https://crbug.com/1295170): Migrate this part to
+    // SearchPrefetchService, to unify pre* operations.
     if (prerender_utils::IsSearchSuggestionPrerenderEnabled() &&
-        should_prerender && BaseSearchProvider::ShouldPrerender(match)) {
+        should_preload && BaseSearchProvider::ShouldPrerender(match)) {
       DoPrerender(match);
     }
+
     if (match.ImageUrl().is_empty()) {
       continue;
     }
 
     request_ids_.push_back(bitmap_fetcher_service->RequestImage(
-        match.ImageUrl(),
-        base::BindOnce(
-            &ChromeOmniboxClient::OnBitmapFetched, weak_factory_.GetWeakPtr(),
-            on_bitmap_fetched, result_index,
-            bitmap_fetcher_service->IsCached(match.ImageUrl()), now)));
+        match.ImageUrl(), base::BindOnce(&ChromeOmniboxClient::OnBitmapFetched,
+                                         weak_factory_.GetWeakPtr(),
+                                         on_bitmap_fetched, result_index)));
   }
 }
 
@@ -377,7 +385,8 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   // PrerenderManager.
   content::WebContents* web_contents = controller_->GetWebContents();
   auto* prerender_manager = PrerenderManager::FromWebContents(web_contents);
-  if (!prerender_manager || !prerender_manager->search_prerender_handle()) {
+  if (!prerender_manager ||
+      !prerender_manager->HasSearchResultPagePrerendered()) {
     base::UmaHistogramEnumeration(
         internal::kHistogramPrerenderPredictionStatusDefaultSearchEngine,
         PrerenderPredictionStatus::kNotStarted);
@@ -465,15 +474,7 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
 
 void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,
                                           int result_index,
-                                          bool is_cached,
-                                          base::TimeTicks start_time,
                                           const SkBitmap& bitmap) {
-  auto time_delta = base::TimeTicks::Now() - start_time;
-  UMA_HISTOGRAM_TIMES("Omnibox.BitmapFetchLatency", time_delta);
-  if (is_cached)
-    UMA_HISTOGRAM_TIMES("Omnibox.BitmapFetchLatency.Cached", time_delta);
-  else
-    UMA_HISTOGRAM_TIMES("Omnibox.BitmapFetchLatency.Uncached", time_delta);
   callback.Run(result_index, bitmap);
 }
 

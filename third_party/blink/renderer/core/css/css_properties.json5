@@ -547,6 +547,62 @@
       valid_type: "bool",
     },
 
+    // Whether changing this property is so independent that we can apply
+    // a change to them incrementally on top of the old style. This happens
+    // only when inline style is changed. Conceptually, this could be a blocklist,
+    // but being conservative, we have chosen to make it an allowlist.
+    // The properties with known issue are explicitly marked as false,
+    // so changing the default from false to true _should_ have no ill effects,
+    // but bugs are of course possible. (There is a DCHECK verifying that we
+    // computed the correct style when this optimization is in effect.)
+    //
+    // Some situations override this flag:
+    //
+    // 1. We haven't considered interactions between independently inherited
+    //    properties and incremental updates yet, so we currently simply mark all
+    //    inherited properties as not eligible for incremental updates, no matter
+    //    the value of this flag.
+    //
+    // 2. Also, animations can affect pretty much anything else, and we don't
+    //    support their interactions anyway (see CanApplyInlineStyleIncrementally()),
+    //    so animation properties are also never marked as supporting incremental style.
+    //
+    // Both of these exceptions are verified in validate_property().
+    supports_incremental_style: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // If false, this property is known to cause problems if setting
+    // it on an element's inline style will cause problems with computing
+    // that element's style incrementally.
+    //
+    // NOTE: Setting false here is probably indicative of a bug. Long-term,
+    // we should fix all of these and remove the flag.
+    idempotent: {
+      default: true,
+      valid_type: "bool",
+    },
+
+    // - valid_for_canvas_formatted_text: true
+    //
+    // Whether the property can be used to style the top-level container
+    // (similar to display:block, but supporting fewer properties), in the
+    // experimental API to bring multiline text rendering to HTML canvas.
+    // https://github.com/WICG/canvas-formatted-text/
+    valid_for_canvas_formatted_text: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - valid_for_canvas_formatted_text_run: true
+    //
+    // Whether the property can be used to style individual text runs, in the
+    // experimental API to bring multiline text rendering to HTML canvas.
+    valid_for_canvas_formatted_text_run: {
+      default: false,
+      valid_type: "bool",
+    },
   },
 
   // Members in the data objects should appear in the same order as in the
@@ -781,6 +837,8 @@
       valid_for_cue: true,
       valid_for_marker: true,
       valid_for_highlight: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
       is_highlight_colors: true,
     },
     {
@@ -797,6 +855,8 @@
       style_builder_custom_functions: ["value"],
       priority: "High",
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-family",
@@ -814,6 +874,8 @@
       valid_for_cue: true,
       valid_for_marker: true,
       tree_scoped_value: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-kerning",
@@ -828,6 +890,8 @@
       valid_for_first_letter: true,
       valid_for_first_line: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-optical-sizing",
@@ -874,6 +938,8 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-size-adjust",
@@ -910,6 +976,8 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-style",
@@ -926,6 +994,8 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-variant-ligatures",
@@ -946,6 +1016,8 @@
       valid_for_first_letter: true,
       valid_for_first_line: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-variant-caps",
@@ -963,6 +1035,8 @@
       valid_for_first_letter: true,
       valid_for_first_line: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-variant-east-asian",
@@ -980,6 +1054,8 @@
       valid_for_first_letter: true,
       valid_for_first_line: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-variant-numeric",
@@ -998,6 +1074,8 @@
       valid_for_first_letter: true,
       valid_for_first_line: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-weight",
@@ -1015,6 +1093,8 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-synthesis-weight",
@@ -1076,6 +1156,8 @@
       valid_for_first_line: true,
       valid_for_marker: true,
       computable: false,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "font-variation-settings",
@@ -1093,6 +1175,8 @@
       valid_for_cue: true,
       valid_for_marker: true,
       computable: false,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "-webkit-font-smoothing",
@@ -1151,6 +1235,7 @@
       style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
       computable: false,
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "-webkit-text-orientation",
@@ -1173,6 +1258,7 @@
       type_name: "WritingMode",
       style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "-webkit-writing-mode",
@@ -1203,6 +1289,9 @@
       type_name: "float",
       style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
+      // Setting zoom affects the _EffectiveZoom_, which in turns affects every px value
+      // stored on ComputedStyle; see CSSToLengthConversionData::ZoomedComputedPixels.
+      supports_incremental_style: false,
     },
     {
       name: "accent-color",
@@ -1316,6 +1405,7 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       is_background: true,
+      supports_incremental_style: true,
     },
     {
       name: "background-blend-mode",
@@ -1350,6 +1440,7 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       is_background: true,
+      supports_incremental_style: true,
     },
     {
       name: "background-color",
@@ -1375,6 +1466,7 @@
       valid_for_highlight: true,
       is_background: true,
       is_highlight_colors: true,
+      supports_incremental_style: true,
     },
     {
       name: "background-image",
@@ -1392,6 +1484,7 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       is_background: true,
+      supports_incremental_style: true,
     },
     {
       name: "background-origin",
@@ -1407,6 +1500,7 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       is_background: true,
+      supports_incremental_style: true,
     },
     {
       name: "background-position-x",
@@ -1421,6 +1515,7 @@
       valid_for_cue: true,
       is_background: true,
       computable: false,
+      supports_incremental_style: true,
     },
     {
       name: "background-position-y",
@@ -1435,6 +1530,7 @@
       valid_for_cue: true,
       is_background: true,
       computable: false,
+      supports_incremental_style: true,
     },
     {
       name: "background-repeat-x",
@@ -1446,6 +1542,7 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       computable: false,
+      supports_incremental_style: true,
     },
     {
       name: "background-repeat-y",
@@ -1457,6 +1554,7 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       computable: false,
+      supports_incremental_style: true,
     },
     {
       name: "background-size",
@@ -1473,6 +1571,7 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       is_background: true,
+      supports_incremental_style: true,
     },
     {
       name: "baseline-shift",
@@ -1506,6 +1605,7 @@
         name: "border-color",
         resolver: "bottom",
       },
+      supports_incremental_style: true,
     },
     {
       name: "border-bottom-left-radius",
@@ -1673,6 +1773,7 @@
         name: "border-color",
         resolver: "left",
       },
+      supports_incremental_style: true,
     },
     {
       name: "border-left-style",
@@ -1733,6 +1834,7 @@
         name: "border-color",
         resolver: "right",
       },
+      supports_incremental_style: true,
     },
     {
       name: "border-right-style",
@@ -1793,6 +1895,7 @@
         name: "border-color",
         resolver: "top",
       },
+      supports_incremental_style: true,
     },
     {
       name: "border-top-left-radius",
@@ -1850,6 +1953,7 @@
         name: "border-style",
         resolver: "top",
       },
+      supports_incremental_style: true,
     },
     {
       name: "border-top-width",
@@ -1886,6 +1990,7 @@
         name: "inset",
         resolver: "bottom",
       },
+      supports_incremental_style: true,
     },
     {
       name: "box-shadow",
@@ -2147,7 +2252,7 @@
     {
       name: "container-type",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      keywords: ["none", "block-size", "inline-size", "size"],
+      keywords: ["none", "inline-size", "size"],
       field_group: "*",
       field_size: 2,
       field_template: "primitive",
@@ -2171,6 +2276,7 @@
       style_builder_custom_functions: ["initial", "inherit", "value"],
       valid_for_marker: true,
       tree_scoped_value: true,
+      supports_incremental_style: true,
     },
     {
       name: "counter-increment",
@@ -2233,6 +2339,7 @@
       default_value: "Length::Fixed()",
       typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
+      supports_incremental_style: true,
     },
     {
       name: "cy",
@@ -2243,6 +2350,7 @@
       default_value: "Length::Fixed()",
       typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
+      supports_incremental_style: true,
     },
     {
       name: "d",
@@ -2257,6 +2365,7 @@
       converter: "ConvertPathOrNone",
       keywords: ["none"],
       typedom_types: ["Keyword"],
+      supports_incremental_style: true,
     },
     {
       name: "display",
@@ -2270,6 +2379,10 @@
       ],
       typedom_types: ["Keyword"],
       style_builder_custom_functions: ["initial", "inherit", "value"],
+      // In general many things are tweaked after-the-fact based on display/float/position
+      // (e.g. OriginalDisplay is based on display, and setting float can cause blockification),
+      // so we turn off incremental style for all them all.
+      supports_incremental_style: false,
     },
     {
       name: "dominant-baseline",
@@ -2412,6 +2525,8 @@
       name_for_methods: "Floating",
       type_name: "EFloat",
       valid_for_first_letter: true,
+      // See comment on display.
+      supports_incremental_style: false,
     },
     {
       name: "flood-color",
@@ -2429,6 +2544,7 @@
       converter: "ConvertStyleColor",
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      supports_incremental_style: true,
     },
     {
       name: "flood-opacity",
@@ -2440,6 +2556,7 @@
       default_value: "1",
       converter: "ConvertAlpha",
       typedom_types: ["Number"],
+      supports_incremental_style: true,
     },
     {
       name: "grid-auto-columns",
@@ -2452,7 +2569,10 @@
       converter: "ConvertGridTrackSizeList",
       keywords: ["auto", "min-content", "max-content"],
       typedom_types: ["Keyword", "Length", "Percentage", "Flex"],
-      separator: " "
+      separator: " ",
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-auto-flow",
@@ -2466,6 +2586,9 @@
       converter: "ConvertGridAutoFlow",
       keywords: ["row", "column"],
       typedom_types: ["Keyword"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-auto-rows",
@@ -2478,7 +2601,10 @@
       converter: "ConvertGridTrackSizeList",
       keywords: ["auto", "min-content", "max-content"],
       typedom_types: ["Keyword", "Length", "Percentage", "Flex"],
-      separator: " "
+      separator: " ",
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-column-end",
@@ -2491,6 +2617,9 @@
       keywords: ["auto"],
       typedom_types: ["Keyword"],
       converter: "ConvertGridPosition",
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-column-start",
@@ -2503,6 +2632,9 @@
       keywords: ["auto"],
       typedom_types: ["Keyword"],
       converter: "ConvertGridPosition",
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-row-end",
@@ -2515,6 +2647,9 @@
       keywords: ["auto"],
       typedom_types: ["Keyword"],
       converter: "ConvertGridPosition",
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-row-start",
@@ -2527,6 +2662,9 @@
       keywords: ["auto"],
       typedom_types: ["Keyword"],
       converter: "ConvertGridPosition",
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-template-areas",
@@ -2534,6 +2672,9 @@
       style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["none"],
       typedom_types: ["Keyword"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-template-columns",
@@ -2550,6 +2691,9 @@
       },
       keywords: ["none"],
       typedom_types: ["Keyword"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-template-rows",
@@ -2566,6 +2710,9 @@
       },
       keywords: ["none"],
       typedom_types: ["Keyword"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "height",
@@ -2583,6 +2730,8 @@
         name: "size",
         resolver: "vertical",
       },
+      supports_incremental_style: true,
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "hyphens",
@@ -2674,6 +2823,7 @@
         name: "inset",
         resolver: "left",
       },
+      supports_incremental_style: true,
     },
     {
       name: "letter-spacing",
@@ -2794,6 +2944,7 @@
         name: "margin",
         resolver: "bottom",
       },
+      supports_incremental_style: true,
     },
     {
       name: "margin-left",
@@ -2812,6 +2963,7 @@
         name: "margin",
         resolver: "left",
       },
+      supports_incremental_style: true,
     },
     {
       name: "margin-right",
@@ -2830,6 +2982,7 @@
         name: "margin",
         resolver: "right",
       },
+      supports_incremental_style: true,
     },
     {
       name: "margin-top",
@@ -2848,6 +3001,7 @@
         name: "margin",
         resolver: "top",
       },
+      supports_incremental_style: true,
     },
     {
       name: "marker-end",
@@ -2950,6 +3104,7 @@
         name: "max-size",
         resolver: "vertical",
       },
+      supports_incremental_style: true,
     },
     {
       name: "max-width",
@@ -2966,6 +3121,7 @@
         name: "max-size",
         resolver: "horizontal",
       },
+      supports_incremental_style: true,
     },
     {
       name: "min-height",
@@ -2981,6 +3137,7 @@
         name: "min-size",
         resolver: "vertical",
       },
+      supports_incremental_style: true,
     },
     {
       name: "min-width",
@@ -2996,6 +3153,7 @@
         name: "min-size",
         resolver: "horizontal",
       },
+      supports_incremental_style: true,
     },
     {
       name: "mix-blend-mode",
@@ -3024,6 +3182,17 @@
       getter: "GetObjectFit",
     },
     {
+      name: "object-overflow",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      field_group: "*",
+      field_template: "keyword",
+      keywords: ["clip", "visible"],
+      typedom_types: ["Keyword"],
+      default_value: "clip",
+      getter: "GetObjectOverflow",
+      runtime_flag: "CSSObjectViewBoxAndOverflow",
+    },
+    {
       name: "object-position",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
@@ -3034,6 +3203,21 @@
       type_name: "LengthPoint",
       converter: "ConvertPosition",
       typedom_types: ["Keyword", "Position"],
+    },
+    {
+      name: "object-view-box",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      interpolable: true,
+      field_group: "*",
+      field_template: "pointer",
+      include_paths: ["third_party/blink/renderer/core/style/basic_shapes.h"],
+      wrapper_pointer_name: "scoped_refptr",
+      default_value: "nullptr",
+      type_name: "BasicShape",
+      converter: "ConvertObjectViewBox",
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
+      runtime_flag: "CSSObjectViewBoxAndOverflow",
     },
     {
       name: "offset-anchor",
@@ -3114,6 +3298,7 @@
       valid_for_first_letter: true,
       valid_for_first_line: true,
       valid_for_cue: true,
+      supports_incremental_style: true,
     },
     {
       name: "order",
@@ -3267,11 +3452,20 @@
       ],
       typedom_types: ["Keyword"],
       default_value: "visible",
+      // This is to allow us to gather metrics when overflow is explicitly set.
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       type_name: "EOverflow",
       logical_property_group: {
         name: "overflow",
         resolver: "horizontal",
       },
+      // Overflow has special semantics; overflowY can influence overflowX.
+      // But StyleAdjuster::AdjustOverflow() only does this properly if overflowX
+      // is set to the initial value (it cannot distinguish between an explicitly
+      // set overflowX, and one that was already adjusted in a previous pass).
+      // Modifying overflow frequently should not be common, so we take it out.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "overflow-y",
@@ -3282,11 +3476,16 @@
       ],
       typedom_types: ["Keyword"],
       default_value: "visible",
+      // This is to allow us to gather metrics when overflow is explicitly set.
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       type_name: "EOverflow",
       logical_property_group: {
         name: "overflow",
         resolver: "vertical",
       },
+      // See comment on overflow-x.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "overscroll-behavior-inline",
@@ -3346,6 +3545,7 @@
         name: "padding",
         resolver: "bottom",
       },
+      supports_incremental_style: true,
     },
     {
       name: "padding-left",
@@ -3363,6 +3563,7 @@
         name: "padding",
         resolver: "left",
       },
+      supports_incremental_style: true,
     },
     {
       name: "padding-right",
@@ -3380,6 +3581,7 @@
         name: "padding",
         resolver: "right",
       },
+      supports_incremental_style: true,
     },
     {
       name: "padding-top",
@@ -3397,6 +3599,7 @@
         name: "padding",
         resolver: "top",
       },
+      supports_incremental_style: true,
     },
     {
       name: "page",
@@ -3499,6 +3702,8 @@
       getter: "GetPosition",
       computed_style_custom_functions: ["getter"],
       style_builder_custom_functions: ["inherit"],
+      // See comment on display.
+      supports_incremental_style: false,
     },
     {
       name: "quotes",
@@ -3523,6 +3728,10 @@
       default_value: "visible",
       typedom_types: ["Keyword"],
       computable: false,
+      // DisplayLockContext::AdjustElementStyle() can do SetSkipsContents(),
+      // but that value is not unset if the inline style is set incrementally
+      // back to content-visibility: visible.
+      supports_incremental_style: false,
     },
     {
       name: "resize",
@@ -3550,6 +3759,7 @@
         name: "inset",
         resolver: "right",
       },
+      supports_incremental_style: true,
     },
     {
       name: "r",
@@ -3560,6 +3770,7 @@
       default_value: "Length::Fixed()",
       typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
+      supports_incremental_style: true,
     },
     {
       name: "rx",
@@ -3571,6 +3782,7 @@
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
+      supports_incremental_style: true,
     },
     {
       name: "ry",
@@ -3582,6 +3794,7 @@
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
+      supports_incremental_style: true,
     },
     {
       name: "scrollbar-gutter",
@@ -4123,6 +4336,7 @@
       default_value: "start",
       getter: "GetTextAlign",
       style_builder_custom_functions: ["value"],
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "text-align-last",
@@ -4156,6 +4370,7 @@
       name_for_methods: "TextCombine",
       valid_for_marker: true,
       computable: false,
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "text-decoration-color",
@@ -4175,6 +4390,9 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       valid_for_highlight: true,
+      supports_incremental_style: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "text-decoration-line",
@@ -4190,6 +4408,8 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       valid_for_highlight: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "text-decoration-skip-ink",
@@ -4205,6 +4425,8 @@
       valid_for_cue: true,
       valid_for_marker: true,
       valid_for_highlight: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "text-decoration-style",
@@ -4218,6 +4440,8 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       valid_for_highlight: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "text-decoration-thickness",
@@ -4236,6 +4460,8 @@
       valid_for_first_line: true,
       valid_for_highlight: true,
       computable: false,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "text-indent",
@@ -4263,6 +4489,7 @@
       typedom_types: ["Keyword"],
       valid_for_first_letter: true,
       valid_for_first_line: true,
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "text-overflow",
@@ -4272,6 +4499,7 @@
       keywords: ["clip", "ellipsis"],
       typedom_types: ["Keyword"],
       default_value: "clip",
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "text-shadow",
@@ -4292,6 +4520,8 @@
       valid_for_cue: true,
       valid_for_marker: true,
       valid_for_highlight: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "text-size-adjust",
@@ -4320,6 +4550,8 @@
       valid_for_first_letter: true,
       valid_for_first_line: true,
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "text-underline-offset",
@@ -4336,6 +4568,8 @@
       valid_for_first_letter: true,
       valid_for_first_line: true,
       computable: false,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "text-underline-position",
@@ -4352,6 +4586,8 @@
       typedom_types: ["Keyword"],
       valid_for_first_letter: true,
       valid_for_first_line: true,
+      valid_for_canvas_formatted_text: true,
+      valid_for_canvas_formatted_text_run: true,
     },
     {
       name: "top",
@@ -4368,6 +4604,7 @@
         name: "inset",
         resolver: "top",
       },
+      supports_incremental_style: true,
     },
     {
       name: "touch-action",
@@ -4396,6 +4633,7 @@
       typedom_types: ["Keyword", "Transform"],
       type_name: "TransformOperations",
       converter: "ConvertTransformOperations",
+      supports_incremental_style: true,
     },
     {
       name: "transform-box",
@@ -4405,6 +4643,7 @@
       default_value: "view-box",
       typedom_types: ["Keyword"],
       computable: false,
+      supports_incremental_style: true,
     },
     {
       name: "transform-origin",
@@ -4418,6 +4657,7 @@
       getter: "GetTransformOrigin",
       type_name: "TransformOrigin",
       converter: "ConvertTransformOrigin",
+      supports_incremental_style: true,
     },
     {
       name: "transform-style",
@@ -4428,6 +4668,7 @@
       default_value: "flat",
       typedom_types: ["Keyword"],
       name_for_methods: "TransformStyle3D",
+      supports_incremental_style: true,
     },
     {
       name: "translate",
@@ -4443,6 +4684,7 @@
       default_value: "nullptr",
       type_name: "TranslateTransformOperation",
       converter: "ConvertTranslate",
+      supports_incremental_style: true,
     },
     {
       name: "rotate",
@@ -4457,6 +4699,7 @@
       default_value: "nullptr",
       type_name: "RotateTransformOperation",
       converter: "ConvertRotate",
+      supports_incremental_style: true,
     },
     {
       name: "scale",
@@ -4471,6 +4714,7 @@
       default_value: "nullptr",
       type_name: "ScaleTransformOperation",
       converter: "ConvertScale",
+      supports_incremental_style: true,
     },
     {
       name: "unicode-bidi",
@@ -4529,6 +4773,7 @@
       default_value: "Length::Fixed()",
       typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
+      supports_incremental_style: true,
     },
     {
       name: "y",
@@ -4539,6 +4784,7 @@
       default_value: "Length::Fixed()",
       typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
+      supports_incremental_style: true,
     },
     {
       name: "appearance",
@@ -4810,6 +5056,7 @@
       keywords: ["auto", "loose", "normal", "strict", "after-white-space", "anywhere"],
       default_value: "auto",
       type_name: "LineBreak",
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "line-break",
@@ -4819,6 +5066,7 @@
       keywords: ["auto", "loose", "normal", "strict", "anywhere"],
       typedom_types: ["Keyword"],
       valid_for_marker: true,
+      valid_for_canvas_formatted_text: true,
     },
     // An Apple extension.
     {
@@ -5200,6 +5448,8 @@
         name: "size",
         resolver: "horizontal",
       },
+      supports_incremental_style: true,
+      valid_for_canvas_formatted_text: true,
     },
     {
       name: "will-change",
@@ -5886,12 +6136,14 @@
         "background-color"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      supports_incremental_style: true,
     },
     {
       name: "background-position",
       longhands: ["background-position-x", "background-position-y"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       computable: true,
+      supports_incremental_style: true,
     },
     {
       name: "background-repeat",
@@ -5976,6 +6228,7 @@
         "border-left-color"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      supports_incremental_style: true,
     },
     {
       name: "border-image",
@@ -6124,7 +6377,7 @@
     {
       name: "container",
       longhands: [
-        "container-type", "container-name"
+        "container-name", "container-type"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSContainerQueries",
@@ -6172,6 +6425,15 @@
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       layout_dependent: true,
+      // The flow with GridTemplateAreas::ApplyValue() and
+      // GridTemplate{Columns,Rows}::ApplyValue() is not idempotent:
+      // If you set grids twice, it may find a previous implicit
+      // named grid area, wrongly assume it was explicit, and thus set named
+      // grid lines as explicit, too. Since we don't want to track whether
+      // the grid was implicit or e.g. explicit from inheritance, we simply
+      // block out anything related to CSS grids from incremental updates.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "place-content",
@@ -6195,36 +6457,56 @@
         "grid-column-end"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-column",
       longhands: ["grid-column-start", "grid-column-end"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-column-gap",
       longhands: ["column-gap"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-row-gap",
       longhands: ["row-gap"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "gap",
       longhands: ["row-gap", "column-gap"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      // See comment on grid.
+      supports_incremental_style: false,
     },
     {
       name: "grid-gap",
       longhands: ["row-gap", "column-gap"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-row",
       longhands: ["grid-row-start", "grid-row-end"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "grid-template",
@@ -6233,6 +6515,9 @@
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       layout_dependent: true,
+      // See comment on grid.
+      supports_incremental_style: false,
+      idempotent: false,
     },
     {
       name: "inset",
@@ -6305,6 +6590,7 @@
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       layout_dependent: true,
+      supports_incremental_style: true,
     },
     {
       name: "padding-block",

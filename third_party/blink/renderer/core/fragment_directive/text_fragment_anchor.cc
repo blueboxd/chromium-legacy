@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/fragment_directive/text_fragment_anchor.h"
 
+#include "base/trace_event/typed_macros.h"
 #include "components/shared_highlighting/core/common/fragment_directives_utils.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
@@ -44,11 +45,17 @@ bool CheckSecurityRestrictions(LocalFrame& frame) {
   // conditions. See the TODO in the relevant spec section:
   // https://wicg.github.io/ScrollToTextFragment/#restricting-the-text-fragment
 
-  if (!frame.Loader().GetDocumentLoader()->ConsumeTextFragmentToken())
+  if (!frame.Loader().GetDocumentLoader()->ConsumeTextFragmentToken()) {
+    TRACE_EVENT_INSTANT("blink", "CheckSecurityRestrictions", "Result",
+                        "No Token");
     return false;
+  }
 
-  if (frame.GetDocument()->contentType() != "text/html")
+  if (frame.GetDocument()->contentType() != "text/html") {
+    TRACE_EVENT_INSTANT("blink", "CheckSecurityRestrictions", "Result",
+                        "Invalid ContentType");
     return false;
+  }
 
   // For cross origin initiated navigations, we only allow text
   // fragments if the frame is not script accessible by another frame, i.e. no
@@ -56,10 +63,20 @@ bool CheckSecurityRestrictions(LocalFrame& frame) {
   if (!frame.Loader()
            .GetDocumentLoader()
            ->LastNavigationHadTrustedInitiator()) {
-    if (frame.Tree().Parent() || frame.GetPage()->RelatedPages().size())
+    if (frame.Tree().Parent()) {
+      TRACE_EVENT_INSTANT("blink", "CheckSecurityRestrictions", "Result",
+                          "Cross-Origin Subframe");
       return false;
+    }
+
+    if (frame.GetPage()->RelatedPages().size()) {
+      TRACE_EVENT_INSTANT("blink", "CheckSecurityRestrictions", "Result",
+                          "Non-Empty Browsing Context Group");
+      return false;
+    }
   }
 
+  TRACE_EVENT_INSTANT("blink", "CheckSecurityRestrictions", "Result", "Pass");
   return true;
 }
 
@@ -137,6 +154,9 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreate(const KURL& url,
     return nullptr;
   }
 
+  TRACE_EVENT("blink", "TextFragmentAnchor::TryCreate", "url", url,
+              "should_scroll", should_scroll);
+
   if (!CheckSecurityRestrictions(frame)) {
     return nullptr;
   } else if (!should_scroll) {
@@ -166,6 +186,7 @@ TextFragmentAnchor::TextFragmentAnchor(
     : SelectorFragmentAnchor(frame, should_scroll),
       metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
           frame_->GetDocument())) {
+  TRACE_EVENT("blink", "TextFragmentAnchor::TextFragmentAnchor");
   DCHECK(!text_directives.IsEmpty());
   DCHECK(frame_->View());
 
@@ -329,7 +350,7 @@ void TextFragmentAnchor::DidFindMatch(
     DCHECK(enclosing_block);
     frame_->GetDocument()->EnqueueAnimationFrameTask(
         WTF::Bind(&TextFragmentAnchor::FireBeforeMatchEvent,
-                  WrapPersistent(this), WrapWeakPersistent(enclosing_block)));
+                  WrapPersistent(this), WrapPersistent(&range)));
     beforematch_state_ = kEventQueued;
     return;
   }
@@ -339,52 +360,14 @@ void TextFragmentAnchor::DidFindMatch(
   // the beforematch event here and write tests for it once we decide on a
   // behavior here: https://github.com/WICG/display-locking/issues/150
 
-  bool needs_style_and_layout = false;
-
   // Apply :target to the first match
   if (!did_find_match_) {
     ApplyTargetToCommonAncestor(range.ToEphemeralRange());
-    needs_style_and_layout = true;
-  }
-
-  // TODO(crbug.com/1252872): Only |first_node| is considered for the below
-  // ancestor expanding code, but we should be considering the entire |range|
-  // for ancestor unlocking as well.
-  Node& first_node = *range.ToEphemeralRange().Nodes().begin();
-
-  // Activate any find-in-page activatable display-locks in the ancestor
-  // chain.
-  if (DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
-          range.ToEphemeralRange())) {
-    // Since activating a lock dirties layout, we need to make sure it's clean
-    // before computing the text rect below.
-    needs_style_and_layout = true;
-    // TODO(crbug.com/1041942): It is possible and likely that activation
-    // signal causes script to resize something on the page. This code here
-    // should really yield until the next frame to give script an opportunity
-    // to run.
-  }
-
-  // If the active match is hidden inside a <details> element, then we should
-  // expand it so we can scroll to it.
-  if (RuntimeEnabledFeatures::AutoExpandDetailsElementEnabled() &&
-      HTMLDetailsElement::ExpandDetailsAncestors(first_node)) {
-    needs_style_and_layout = true;
-    UseCounter::Count(first_node.GetDocument(),
-                      WebFeature::kAutoExpandedDetailsForScrollToTextFragment);
-  }
-
-  // If the active match is hidden inside a hidden=until-found element, then we
-  // should reveal it so we can scroll to it.
-  needs_style_and_layout |=
-      RuntimeEnabledFeatures::BeforeMatchEventEnabled(
-          first_node.GetExecutionContext()) &&
-      DisplayLockUtilities::RevealHiddenUntilFoundAncestors(first_node);
-
-  if (needs_style_and_layout) {
     frame_->GetDocument()->UpdateStyleAndLayout(
         DocumentUpdateReason::kFindInPage);
   }
+
+  Node& first_node = *range.ToEphemeralRange().Nodes().begin();
 
   metrics_->DidFindMatch(match_metrics);
   did_find_match_ = true;
@@ -501,12 +484,31 @@ void TextFragmentAnchor::ApplyTargetToCommonAncestor(
   }
 }
 
-void TextFragmentAnchor::FireBeforeMatchEvent(Element* element) {
-  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
-          frame_->GetDocument()->GetExecutionContext())) {
-    element->DispatchEvent(
-        *Event::CreateBubble(event_type_names::kBeforematch));
+void TextFragmentAnchor::FireBeforeMatchEvent(const RangeInFlatTree* range) {
+  // TODO(crbug.com/1252872): Only |first_node| is considered for the below
+  // ancestor expanding code, but we should be considering the entire range
+  // of selected text for ancestor unlocking as well.
+  Node& first_node = *range->ToEphemeralRange().Nodes().begin();
+
+  // Activate content-visibility:auto subtrees if needed.
+  DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
+      range->ToEphemeralRange());
+
+  // If the active match is hidden inside a <details> element, then we should
+  // expand it so we can scroll to it.
+  if (RuntimeEnabledFeatures::AutoExpandDetailsElementEnabled() &&
+      HTMLDetailsElement::ExpandDetailsAncestors(first_node)) {
+    UseCounter::Count(first_node.GetDocument(),
+                      WebFeature::kAutoExpandedDetailsForScrollToTextFragment);
   }
+
+  // If the active match is hidden inside a hidden=until-found element, then we
+  // should reveal it so we can scroll to it.
+  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
+          first_node.GetExecutionContext())) {
+    DisplayLockUtilities::RevealHiddenUntilFoundAncestors(first_node);
+  }
+
   beforematch_state_ = kFiredEvent;
 }
 

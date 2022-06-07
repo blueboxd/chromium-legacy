@@ -12,7 +12,6 @@
 #include "base/json/values_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
@@ -211,10 +210,6 @@ void LocalDeskDataManager::GetEntryByUUID(
 void LocalDeskDataManager::AddOrUpdateEntry(
     std::unique_ptr<ash::DeskTemplate> new_entry,
     DeskModel::AddOrUpdateEntryCallback callback) {
-  // When a user creates a desk template locally, the desk template has |kUser|
-  // as its source. Only user desk templates should be saved.
-  DCHECK_EQ(ash::DeskTemplateSource::kUser, new_entry->source());
-
   auto status = std::make_unique<DeskModel::AddOrUpdateEntryStatus>();
 
   task_runner_->PostTaskAndReply(

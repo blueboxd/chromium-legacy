@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/existing_window_sub_menu_model.h"
@@ -52,15 +51,12 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandNewTabToRight,
                       base::i18n::IsRTL() ? IDS_TAB_CXMENU_NEWTABTOLEFT
                                           : IDS_TAB_CXMENU_NEWTABTORIGHT);
-  if (reading_list::switches::IsReadingListEnabled() &&
-      !tab_strip->profile()->IsGuestSession()) {
+  if (!tab_strip->profile()->IsGuestSession()) {
     AddItem(
         TabStripModel::CommandAddToReadLater,
         l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_READ_LATER, num_tabs));
     SetEnabledAt(GetItemCount() - 1,
                  tab_strip->IsReadLaterSupportedForAny(indices));
-    if (base::FeatureList::IsEnabled(features::kReadLaterNewBadgePromo))
-      SetIsNewFeatureAt(GetItemCount() - 1, true);
   }
   if (ExistingTabGroupSubMenuModel::ShouldShowSubmenu(tab_strip, index)) {
     // Create submenu with existing groups
@@ -119,45 +115,28 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                     : l10n_util::GetPluralStringFUTF16(
                           IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_tabs));
   if (base::FeatureList::IsEnabled(feed::kWebUiFeed)) {
-    AddItemWithStringId(TabStripModel::CommandFollowSite,
-                        IDS_TAB_CXMENU_FOLLOW_SITE);
+    const TabWebFeedFollowState follow_state =
+        chrome::GetAggregatedFollowStateOfAllSites(*tab_strip, indices);
+    if (follow_state == TabWebFeedFollowState::kNotFollowed) {
+      AddItemWithStringId(TabStripModel::CommandFollowSite,
+                          IDS_TAB_CXMENU_FOLLOW_SITE);
+    } else if (follow_state == TabWebFeedFollowState::kFollowed) {
+      AddItemWithStringId(TabStripModel::CommandUnfollowSite,
+                          IDS_TAB_CXMENU_UNFOLLOW_SITE);
+    }
   }
   if (send_tab_to_self::ShouldOfferFeature(
           tab_strip->GetWebContentsAt(index))) {
     AddSeparator(ui::NORMAL_SEPARATOR);
-
-    if (send_tab_to_self::GetValidDeviceCount(tab_strip->profile()) == 1) {
 #if BUILDFLAG(IS_MAC)
-      AddItem(TabStripModel::CommandSendTabToSelfSingleTarget,
-              l10n_util::GetStringFUTF16(
-                  IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-                  send_tab_to_self::GetSingleTargetDeviceName(
-                      tab_strip->profile())));
+    AddItem(TabStripModel::CommandSendTabToSelf,
+            l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF));
 #else
-      AddItemWithIcon(TabStripModel::CommandSendTabToSelfSingleTarget,
-                      l10n_util::GetStringFUTF16(
-                          IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-                          (send_tab_to_self::GetSingleTargetDeviceName(
-                              tab_strip->profile()))),
-                      ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
+    AddItemWithIcon(
+        TabStripModel::CommandSendTabToSelf,
+        l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF),
+        ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
-    } else {
-      send_tab_to_self_sub_menu_model_ =
-          std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-              tab_strip->GetWebContentsAt(index),
-              send_tab_to_self::SendTabToSelfMenuType::kTab);
-#if BUILDFLAG(IS_MAC)
-      AddSubMenuWithStringId(TabStripModel::CommandSendTabToSelf,
-                             IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-                             send_tab_to_self_sub_menu_model_.get());
-#else
-      AddSubMenuWithStringIdAndIcon(
-          TabStripModel::CommandSendTabToSelf,
-          IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-          send_tab_to_self_sub_menu_model_.get(),
-          ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
-#endif
-    }
   }
 
   AddSeparator(ui::NORMAL_SEPARATOR);

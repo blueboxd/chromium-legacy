@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/i18n/message_formatter.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -163,7 +164,7 @@ std::unique_ptr<PaymentRequestRowView> CreatePaymentSheetRow(
                                  ? kPaymentRequestRowHorizontalInsets +
                                        kPaymentRequestRowExtraRightInset
                                  : kPaymentRequestRowHorizontalInsets;
-  const gfx::Insets row_insets(
+  const auto row_insets = gfx::Insets::TLBR(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
       kPaymentRequestRowVerticalInsets, trailing_inset);
 
@@ -876,18 +877,17 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
           },
           dialog()));
 
-  // TODO(pbos): Investigate whether this override is necessary.
-  link_style.override_color = gfx::kGoogleBlue700;
-
   return views::Builder<views::BoxLayoutView>()
       .SetOrientation(views::BoxLayout::Orientation::kVertical)
-      .SetInsideBorderInsets(gfx::Insets(0, kPaymentRequestRowHorizontalInsets))
+      .SetInsideBorderInsets(
+          gfx::Insets::VH(0, kPaymentRequestRowHorizontalInsets))
       .SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kStart)
       .SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kStart)
       .AddChild(
           views::Builder<views::StyledLabel>()
               .SetText(data_source)
-              .SetBorder(views::CreateEmptyBorder(22, 0, 0, 0))
+              .SetBorder(
+                  views::CreateEmptyBorder(gfx::Insets::TLBR(22, 0, 0, 0)))
               .SetID(static_cast<int>(DialogViewID::DATA_SOURCE_LABEL))
               .SetDefaultTextStyle(views::style::STYLE_DISABLED)
               .AddStyleRange(gfx::Range(link_begin, link_begin + link_length),

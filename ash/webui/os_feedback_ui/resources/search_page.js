@@ -10,7 +10,8 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {HelpContentProviderInterface, SearchRequest, SearchResponse} from './feedback_types.js';
+import {FeedbackFlowState} from './feedback_flow.js';
+import {HelpContentList, HelpContentProviderInterface, SearchRequest, SearchResponse, SearchResult} from './feedback_types.js';
 import {getHelpContentProvider} from './mojo_interface_provider.js';
 
 /**
@@ -76,6 +77,12 @@ export class SearchPageElement extends PolymerElement {
 
     /** @private {?HTMLIFrameElement} */
     this.iframe_ = null;
+
+    /**
+     * The content list received when query is empty.
+     * @private {!HelpContentList|undefined}
+     */
+    this.popularHelpContentList_;
   }
 
   ready() {
@@ -83,9 +90,12 @@ export class SearchPageElement extends PolymerElement {
 
     this.iframe_ = /** @type {HTMLIFrameElement} */ (
         this.shadowRoot.querySelector('iframe'));
+    // Fetch popular help contents with empty query.
+    this.fetchHelpContent_(/* query= */ '');
   }
+
   /**
-   *
+   * @param {!Event} e
    * @private
    */
   handleInputChanged_(e) {
@@ -93,42 +103,141 @@ export class SearchPageElement extends PolymerElement {
     // Get the number of characters in the input.
     const newCharCount = [...newInput].length;
 
+    if (newCharCount > 0) {
+      this.hideError_();
+    }
+
     if (Math.abs(newCharCount - this.lastCharCount_) >= MIN_CHARS_COUNT) {
       this.lastCharCount_ = newCharCount;
-
-      /** @type {!SearchRequest} */
-      const request = {
-        query: stringToMojoString16(newInput),
-        maxResults: MAX_RESULTS,
-      };
-
-      this.fetchHelpContent_(request);
+      this.fetchHelpContent_(newInput);
     }
   }
 
   /**
-   * @param {!SearchRequest} request
+   * @param {string} query
    * @private
    */
-  fetchHelpContent_(request) {
-    this.helpContentProvider_.getHelpContents(request).then(
-        /**  {{response: !SearchResponse}} */ (response) => {
-          if (!this.iframe_) {
-            console.warn('untrusted iframe is not found');
-            return;
-          }
+  async fetchHelpContent_(query) {
+    if (!this.iframe_) {
+      console.warn('untrusted iframe is not found');
+      return;
+    }
 
-          const data = {
-            response: response.response,
-          };
+    /** @type {!SearchRequest} */
+    const request = {
+      query: stringToMojoString16(query),
+      maxResults: MAX_RESULTS,
+    };
 
-          // Wait for the iframe to complete loading before postMessage.
-          this.iframeLoaded_.then(() => {
-            // TODO(xiangdongkong): Use Mojo to communicate with untrusted page.
-            this.iframe_.contentWindow.postMessage(
-                data, OS_FEEDBACK_UNTRUSTED_ORIGIN);
-          });
-        });
+    /** @type boolean */
+    const isQueryEmpty = (query === '');
+
+    /** @type boolean */
+    let isPopularContent;
+
+    /** @type {{response: !SearchResponse}} */
+    let response;
+
+    if (isQueryEmpty) {
+      // Load popular help content if they are not loaded before.
+      if (this.popularHelpContentList_ === undefined) {
+        response = await this.helpContentProvider_.getHelpContents(request);
+        this.popularHelpContentList_ = response.response.results;
+      }
+      isPopularContent = true;
+    } else {
+      response = await this.helpContentProvider_.getHelpContents(request);
+      isPopularContent = (response.response.totalResults === 0);
+    }
+
+    /** @type {!SearchResult} */
+    const data = {
+      contentList: /** @type {!HelpContentList} */ (
+          isPopularContent ? this.popularHelpContentList_ :
+                             response.response.results),
+      isQueryEmpty: isQueryEmpty,
+      isPopularContent: isPopularContent
+    };
+
+    // Wait for the iframe to complete loading before postMessage.
+    await this.iframeLoaded_;
+    // TODO(xiangdongkong): Use Mojo to communicate with untrusted page.
+    this.iframe_.contentWindow.postMessage(data, OS_FEEDBACK_UNTRUSTED_ORIGIN);
+  }
+
+  /**
+   * @return {!HTMLTextAreaElement}
+   * @private
+   */
+  getInputElement_() {
+    return /** @type {!HTMLTextAreaElement} */ (
+        this.shadowRoot.querySelector('#descriptionText'));
+  }
+
+  /**
+   * Focus on the textarea element.
+   * @private
+   */
+  focusInputElement_() {
+    this.getInputElement_().focus();
+  }
+
+  /**
+   * @private
+   */
+  onInputInvalid_() {
+    this.showError_();
+    this.focusInputElement_();
+  }
+
+  /**
+   * @return {!HTMLElement}
+   * @private
+   */
+  getErrorElement_() {
+    return /** @type {!HTMLElement} */ (
+        this.shadowRoot.querySelector('#descriptionEmptyError'));
+  }
+
+  /**
+   * @private
+   */
+  showError_() {
+    // TODO(xiangdongkong): Change the textarea's aria-labelledby to ensure the
+    // screen reader does (or doesn't) read the error, as appropriate.
+    // If it does read the error, it should do so _before_ it reads the normal
+    // description.
+    const errorElement = this.getErrorElement_();
+    errorElement.hidden = false;
+    errorElement.setAttribute('aria-hidden', false);
+  }
+
+  /**
+   * @private
+   */
+  hideError_() {
+    const errorElement = this.getErrorElement_();
+    errorElement.hidden = true;
+    errorElement.setAttribute('aria-hidden', true);
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  handleContinueButtonClicked_(e) {
+    e.stopPropagation();
+
+    const textInput = this.getInputElement_().value;
+    if (textInput.length === 0) {
+      this.onInputInvalid_();
+    } else {
+      this.dispatchEvent(new CustomEvent('continue-click', {
+        composed: true,
+        bubbles: true,
+        detail: {currentState: FeedbackFlowState.SEARCH}
+      }));
+    }
   }
 }
 

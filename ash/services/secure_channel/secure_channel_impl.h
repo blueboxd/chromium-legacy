@@ -16,14 +16,18 @@
 #include "ash/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "base/containers/flat_map.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/components/multidevice/remote_device_cache.h"
 
 namespace device {
 class BluetoothAdapter;
 }
 
-namespace ash::secure_channel {
+namespace ash {
+
+namespace multidevice {
+class RemoteDeviceCache;
+}
+
+namespace secure_channel {
 
 class BleConnectionManager;
 class BleScanner;
@@ -195,6 +199,7 @@ class SecureChannelImpl : public mojom::SecureChannel,
 std::ostream& operator<<(std::ostream& stream,
                          const SecureChannelImpl::ApiFunctionName& role);
 
-}  // namespace ash::secure_channel
+}  // namespace secure_channel
+}  // namespace ash
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_SECURE_CHANNEL_IMPL_H_

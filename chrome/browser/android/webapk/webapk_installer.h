@@ -18,7 +18,6 @@
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/browser/android/webapk/webapk_icon_hasher.h"
-#include "components/webapps/browser/android/webapk/webapk_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
@@ -40,6 +39,10 @@ struct NetworkTrafficAnnotationTag;
 namespace network {
 class SimpleURLLoader;
 }  // namespace network
+
+namespace webapps {
+enum class WebApkInstallResult;
+}
 
 // The enum values are persisted to logs |WebApkInstallSpaceStatus| in
 // enums.xml, therefore they should never be reused nor renumbered.
@@ -77,7 +80,7 @@ class WebApkInstaller {
   // Creates a self-owned WebApkInstaller instance and talks to the Chrome
   // WebAPK server to generate a WebAPK on the server and locally requests the
   // APK to be installed. This function is used when the install is scheduled by
-  // the WebApkInstallSchedulerService as this already receives the
+  // the WebApkInstallCoordinatorService as this already receives the
   // |serialized_webapk| from the client. Calls |callback| once the install
   // completed or failed.
   static void InstallForServiceAsync(
@@ -141,21 +144,6 @@ class WebApkInstaller {
                         const base::android::JavaParamRef<jobject>& obj,
                         jint status);
 
-  // Asynchronously builds the WebAPK proto on a background thread for an update
-  // or install request. Runs |callback| on the calling thread when complete.
-  static void BuildProto(
-      const webapps::ShortcutInfo& shortcut_info,
-      const std::string& primary_icon_data,
-      bool is_primary_icon_maskable,
-      const std::string& splash_icon_data,
-      const std::string& package_name,
-      const std::string& version,
-      std::map<std::string, webapps::WebApkIconHasher::Icon>
-          icon_url_to_murmur2_hash,
-      bool is_manifest_stale,
-      bool is_app_identity_update_supported,
-      base::OnceCallback<void(std::unique_ptr<std::string>)> callback);
-
   // Builds the WebAPK proto for an update or an install request and stores it
   // to |update_request_path|. Runs |callback| with a boolean indicating
   // whether the proto was successfully written to disk.
@@ -186,7 +174,7 @@ class WebApkInstaller {
   virtual void CheckFreeSpace();
 
   // Called when the install or update process has completed or failed.
-  void OnResult(WebApkInstallResult result);
+  void OnResult(webapps::WebApkInstallResult result);
 
  private:
   enum TaskType {
@@ -269,15 +257,15 @@ class WebApkInstaller {
 
   // Data for installs.
 
-  // True if install was scheduled via WebApkInstallSchedulerService
+  // True if install was scheduled via WebApkInstallCoordinatorService.
   bool install_from_webapk_service_;
 
   // Only available if the install was scheduled by the
-  // WebApkInstallSchedulerService.
+  // WebApkInstallCoordinatorService.
   std::unique_ptr<std::string> serialized_webapk_;
 
   // Only available if the install was scheduled directly in chrome and not in
-  // the WebApkInstallSchedulerService.
+  // the WebApkInstallCoordinatorService.
   std::unique_ptr<webapps::ShortcutInfo> install_shortcut_info_;
 
   SkBitmap install_primary_icon_;

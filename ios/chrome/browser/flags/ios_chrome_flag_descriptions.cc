@@ -33,6 +33,13 @@ const char kAutofillEnableUnmaskCardRequestSetInstrumentIdDescription[] =
     "When enabled, UnmaskCardRequest will set the card's non-legacy ID when "
     "available.";
 
+const char kAutofillEnforceDelaysInStrikeDatabaseName[] =
+    "Enforce delay between offering Autofill opportunities in the strike "
+    "database";
+const char kAutofillEnforceDelaysInStrikeDatabaseDescription[] =
+    "When enabled, if previous Autofill feature offer was declined, "
+    "Chrome will wait for sometime before showing the offer again.";
+
 const char kAutofillFillMerchantPromoCodeFieldsName[] =
     "Enable Autofill of promo code fields in forms";
 const char kAutofillFillMerchantPromoCodeFieldsDescription[] =
@@ -84,6 +91,11 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
+extern const char kBubbleRichIPHName[] = "Bubble rich IPH";
+extern const char kBubbleRichIPHDescription[] =
+    "When enabled, displays a rich description (ex: title, image, etc..) of "
+    "the feature presented in the bubble view.";
+
 const char kContentSuggestionsHeaderMigrationName[] =
     "Content Suggestions header migration";
 const char kContentSuggestionsHeaderMigrationDescription[] =
@@ -100,13 +112,6 @@ const char kCrashpadIOSName[] = "Use Crashpad for crash collection.";
 const char kCrashpadIOSDescription[] =
     "When enabled use Crashpad to generate crash reports crash collection. "
     "When disabled use Breakpad. This flag takes two restarts to take effect";
-
-const char kCredentialProviderExtensionPromoName[] =
-    "Enable the credential provider extension promo";
-const char kCredentialProviderExtensionPromoDescription[] =
-    "When enabled, a new item 'Passwords In Other Apps' item will be available "
-    "Chrome passwords settings, containing promotional instructions to enable"
-    "password autofill using Chrome.";
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 const char kDcheckIsFatalName[] = "DCHECKs are fatal";
@@ -154,8 +159,9 @@ const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
 
-const char kDownloadVcardName[] = "Download Vcard";
-const char kDownloadVcardDescription[] = "Allows user to download & open Vcard";
+const char kDownloadCalendarName[] = "Download Calendar";
+const char kDownloadCalendarDescription[] =
+    "Allows user to download & save Calendar";
 
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
@@ -198,10 +204,12 @@ const char kEnableFREDefaultBrowserScreenTestingDescription[] =
     "browser promo depending on experiment.";
 
 const char kEnableFaviconForPasswordsName[] =
-    "Enable favicons in the Password Manager";
+    "Enable favicons for the Password Manager and for the Credential Provider "
+    "Extension";
 const char kEnableFaviconForPasswordsDescription[] =
     "Show favicons in the Password Manager settings for the Saved Passwords "
-    "and Never Saved sections.";
+    "and Never Saved sections and also for the AutoFill Passwords for the "
+    "Credential Provider.";
 
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module with options";
 const char kEnableFREUIModuleIOSDescription[] =
@@ -217,31 +225,9 @@ const char kEnableLongMessageDurationName[] = "Enable long message duration";
 const char kEnableLongMessageDurationDescription[] =
     "Enables a long duration when an overlay message is shown.";
 
-const char kEnableManualPasswordGenerationName[] =
-    "Enable manual password generation.";
-const char kEnableManualPasswordGenerationDescription[] =
-    "Enable UI that allows to generate a strong password for any password "
-    "field";
-
 const char kEnableNewDownloadAPIName[] = "Enable new download API";
 const char kEnableNewDownloadAPIDescription[] =
     "Enable new download API (restricted to iOS 15.0+).";
-
-const char kEnableOptimizationGuideName[] = "Enable optimization guide";
-const char kEnableOptimizationGuideDescription[] =
-    "Enables the optimization guide to provide intelligence for page loads.";
-
-const char kEnableOptimizationGuideMetadataValidationName[] =
-    "Enable optimization guide metadata validation";
-const char kEnableOptimizationGuideMetadataValidationDescription[] =
-    "Enables the validation of optimization guide metadata fetch and "
-    "allowlist/blocklist bloom filter.";
-
-const char kEnableOptimizationHintsFetchingMSBBName[] =
-    "Enable MSBB optimization hints fetching";
-const char kEnableOptimizationHintsFetchingMSBBDescription[] =
-    "Enable optimization hints fetching for users who have enabled the 'Make "
-    "Searches and Browsing Better' setting.";
 
 const char kEnableUnicornAccountSupportName[] =
     "Enable Unicorn account support";
@@ -273,11 +259,6 @@ const char kFillingAcrossAffiliatedWebsitesName[] =
 const char kFillingAcrossAffiliatedWebsitesDescription[] =
     "Enables filling password on a website when there is saved "
     "password on affiliated website.";
-
-const char kForceDisableExtendedSyncPromosName[] =
-    "Disable all extended sync promos";
-const char kForceDisableExtendedSyncPromosDescription[] =
-    "When enabled, will not display any extended sync promos";
 
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
@@ -424,16 +405,6 @@ const char kPasswordReuseDetectionName[] =
 const char kPasswordReuseDetectionDescription[] =
     "Displays warning when user types or pastes a saved password into a "
     "phishing website.";
-
-const char kReadingListMessagesName[] = "Enables Reading List Messages";
-const char kReadingListMessagesDescription[] =
-    "When enabled, a Messages prompt may be presented to allow the user to "
-    "save the current page to Reading List";
-
-const char kReadingListTimeToReadName[] = "Enables Reading List Time To Read";
-const char kReadingListTimeToReadDescription[] =
-    "When enabled, a Time to Read estimate is added to each Reading List "
-    "entry.";
 
 const char kRecordSnapshotSizeName[] =
     "Record the size of image and PDF snapshots in UMA histograms";

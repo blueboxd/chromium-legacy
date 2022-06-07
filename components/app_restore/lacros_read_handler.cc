@@ -5,8 +5,8 @@
 #include "components/app_restore/lacros_read_handler.h"
 
 #include "ash/constants/app_types.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/app_restore_utils.h"
-#include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/full_restore_read_handler.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
@@ -119,8 +119,10 @@ void LacrosReadHandler::OnWindowDestroyed(aura::Window* window) {
 int32_t LacrosReadHandler::GetLacrosRestoreWindowId(
     const std::string& lacros_window_id) const {
   auto it = lacros_window_id_to_app_id_.find(lacros_window_id);
+  // Set restore window id as 0 to prevent the window is added to the hidden
+  // container. Windows restoration will be done by exo with another method.
   return it == lacros_window_id_to_app_id_.end()
-             ? kParentToHiddenContainer
+             ? 0
              : full_restore::FullRestoreReadHandler::GetInstance()
                    ->FetchRestoreWindowId(it->second);
 }
@@ -149,7 +151,7 @@ void LacrosReadHandler::UpdateWindow(aura::Window* const window) {
   }
 
   // Remove the window from the hidden container.
-  full_restore::FullRestoreInfo::GetInstance()->OnParentWindowToValidContainer(
+  app_restore::AppRestoreInfo::GetInstance()->OnParentWindowToValidContainer(
       window);
 
   window_candidates_.erase(window);

@@ -9,6 +9,7 @@
 #include "media/formats/hls/tag_name.h"
 #include "media/formats/hls/tags.h"
 #include "media/formats/hls/types.h"
+#include "media/formats/hls/variable_dictionary.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
@@ -18,6 +19,14 @@ namespace media::hls {
 struct CommonParserState {
   absl::optional<XVersionTag> version_tag;
   absl::optional<XIndependentSegmentsTag> independent_segments_tag;
+
+  // The dictionary for variables defined in the current playlist.
+  VariableDictionary variable_dict;
+
+  // The dictionary of variables defined in the parent playlist. This may remain
+  // null if there is no parent playlist (in the case of a multivariant
+  // playlist, or a media playlist without other variants).
+  VariableDictionary* parent_variable_dict = nullptr;
 
   // Returns the version specified by `version_tag`, or the default version if
   // the playlist did not contain a version tag.
@@ -55,7 +64,10 @@ absl::optional<ParseStatus> ParseUniqueTag(TagItem tag,
   return absl::nullopt;
 }
 
-ParseStatus::Or<GURL> ParseUri(UriItem item, const GURL& playlist_uri);
+ParseStatus::Or<GURL> ParseUri(UriItem item,
+                               const GURL& playlist_uri,
+                               const CommonParserState& state,
+                               VariableDictionary::SubstitutionBuffer& buffer);
 
 }  // namespace media::hls
 

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1096883626080133124">Få mer gjort med Google Chrome, som är enklare, säkrare och snabbare än någonsin</translation>
 <translation id="1143896152279775643">Lösenordet sparas med Google Lösenordshantering för <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Bidra till att förbättra Chromes funktioner och prestanda</translation>
 <translation id="1479202195792305274">Chrome kan kontrollera dina lösenord när du loggar in med Google-kontot.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Använd Chrome överallt</translation>
 <translation id="3522659714780527202">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter där du använder Chrome</translation>
 <translation id="3533694711092285624">Det finns inga sparade lösenord. Chrome kan bara kontrollera dina lösenord om du sparar dem.</translation>
-<translation id="3634910711516114487">Logga in med Google-kontot i Chrome så att du får ut mesta möjliga av programmet</translation>
 <translation id="3655656110921623717">Detta betyder att mobilversionen av webbplatsen begärs varje gång i Chrome.</translation>
 <translation id="3706101708757577809">Nu kan du använda Chrome varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="3720541637541300822">Lås inkognitoflikar när du stänger Chrome</translation>
@@ -83,19 +81,13 @@
 <translation id="6709398533399187136">Ditt lösenord har läckt ut vid ett dataintrång. Du rekommenderas av Google Lösenordshantering att byta lösenord nu.</translation>
 <translation id="6822673484890854830">Chrome kunde inte kontrollera alla lösenord. Försök igen senare.</translation>
 <translation id="6964931465519938134">Nu kan du använda Chrome varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
-<translation id="7046845777663074840">När detta är aktiverat:
-<ph name="BEGIN_INDENT" />  • Du hjälper oss att göra Chrome bättre för den som använder programmet på samma sätt som du.<ph name="END_INDENT" />
-
-Tänk på detta:
-<ph name="BEGIN_INDENT" />  • Information om hur du använder Chrome skickas till Google men kopplas inte till dig.
-  • Om Chrome kraschar kan personliga uppgifter finnas med i kraschinformationen.
-  • Om du aktiverar synkronisering kan mätvärdena även innehålla information om webbadresser du besöker.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Anpassa Chrome</translation>
 <translation id="7124339256045485976">Håll Chrome uppdaterad</translation>
 <translation id="7161390184744336561">Google Chrome-versionen är inaktuell</translation>
 <translation id="7165736900384873061">Börja använda Google Chrome som QR-skanner</translation>
 <translation id="7172660552945675509">Tips! <ph name="BEGIN_LINK" />Flytta Chrome till Dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome använder Face ID för att se till att endast behöriga har åtkomst till lösenorden.</translation>
+<translation id="7187993566681480880">Skyddar dig i Chrome och kan användas för förbättrad säkerhet i andra Google-appar där du är inloggad.</translation>
 <translation id="72119412072970160">Du kan använda lösenorden som sparats med Google Lösenordshantering i andra iPad-appar.</translation>
 <translation id="7261678641327190792">Chrome kan inte kontrollera dina lösenord</translation>
 <translation id="7272930098487145294">Om du vill spara bilder trycker du på Inställningar och låter Chrome lägga till dina foton</translation>
@@ -108,6 +100,7 @@ Tänk på detta:
 <translation id="766361182512894255">Ditt lösenord har läckt ut vid ett dataintrång. Du rekommenderas att ändra lösenordet nu.</translation>
 <translation id="7693590760643069321">Nu kan du använda Chrome varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="7698568245838009292">Chrome vill ha tillgång till kameran</translation>
+<translation id="7780154209050837198">Logga in med Google-kontot i Chrome så att du får ut mesta möjliga av programmet.</translation>
 <translation id="7855730255114109580">Google Chrome behöver inte uppdateras</translation>
 <translation id="8022947259858476807">Använd Chrome som standard när du öppnar länkar och söker med en widget och få lösenord ifyllda i andra appar automatiskt</translation>
 <translation id="8160472928944011082">Uppdatering inte möjlig</translation>

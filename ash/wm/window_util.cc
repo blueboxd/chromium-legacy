@@ -178,9 +178,7 @@ int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {
 }
 
 void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
-  gfx::Insets mouse_extend(
-      -chromeos::kResizeOutsideBoundsSize, -chromeos::kResizeOutsideBoundsSize,
-      -chromeos::kResizeOutsideBoundsSize, -chromeos::kResizeOutsideBoundsSize);
+  gfx::Insets mouse_extend(-chromeos::kResizeOutsideBoundsSize);
   gfx::Insets touch_extend = gfx::ScaleToFlooredInsets(
       mouse_extend, chromeos::kResizeOutsideBoundsScaleForTouch);
   window->SetEventTargeter(std::make_unique<::wm::EasyResizeWindowTargeter>(
@@ -347,6 +345,10 @@ aura::Window* GetTopWindow() {
 
 bool ShouldMinimizeTopWindowOnBack() {
   Shell* shell = Shell::Get();
+  // We never want to minimize the main app window in the Kiosk session.
+  if (shell->session_controller()->IsRunningInAppMode())
+    return false;
+
   if (!shell->tablet_mode_controller()->InTabletMode())
     return false;
 
@@ -423,7 +425,7 @@ gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
       gfx::RectF header_bounds(window_bounds);
       header_bounds.set_height(top_inset);
       new_transform.TransformRect(&header_bounds);
-      window_bounds.Inset(0, header_bounds.height(), 0, 0);
+      window_bounds.Inset(gfx::InsetsF::TLBR(header_bounds.height(), 0, 0, 0));
     }
     ::wm::TranslateRectToScreen(window->parent(), &window_bounds);
     bounds.Union(window_bounds);

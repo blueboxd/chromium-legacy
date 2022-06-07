@@ -115,7 +115,10 @@ public class InstantStartTabSwitcherTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(1)
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_START)
+                    .build();
 
     /**
      * {@link ParameterProvider} used for parameterized test that provides whether it's single tab
@@ -176,7 +179,7 @@ public class InstantStartTabSwitcherTest {
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS})
-    @DisabledTest(message = "Test doesn't work with FeedV2. FeedV1 is removed crbug.com/1165828.")
+    @DisabledTest(message = "crbug.com/1314460 - test doesn't work with FeedV2. FeedV1 is removed.")
     public void renderTabSwitcher() throws IOException, InterruptedException {
         // clang-format on
         StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2});

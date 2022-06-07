@@ -42,7 +42,7 @@ const base::FeatureParam<int> kAdpfTargetDurationMs{&kAdpf,
 
 const base::Feature kEnableOverlayPrioritization {
   "EnableOverlayPrioritization",
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -76,12 +76,6 @@ const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
 // be enabled.
 const base::Feature kDisableDeJelly{"DisableDeJelly",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// On platform and configuration where viz controls the allocation of frame
-// buffers (ie SkiaOutputDeviceBufferQueue is used), allocate and release frame
-// buffers on demand.
-const base::Feature kDynamicBufferQueueAllocation{
-    "DynamicBufferQueueAllocation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_ANDROID)
 // When wide color gamut content from the web is encountered, promote our
@@ -225,15 +219,6 @@ bool IsSimpleFrameRateThrottlingEnabled() {
 }
 
 bool IsUsingSkiaRenderer() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(https://crbug.com/1145180): SkiaRenderer isn't supported on Chrome
-  // OS boards that still use the legacy video decoder.
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(
-          switches::kPlatformDisallowsChromeOSDirectVideoDecoder))
-    return false;
-#endif
-
   return base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
          features::IsUsingVulkan();
 }

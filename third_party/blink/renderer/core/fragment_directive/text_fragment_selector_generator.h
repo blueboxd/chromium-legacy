@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAGMENT_DIRECTIVE_TEXT_FRAGMENT_SELECTOR_GENERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAGMENT_DIRECTIVE_TEXT_FRAGMENT_SELECTOR_GENERATOR_H_
 
+#include "base/time/time.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -65,6 +66,8 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   LocalFrame* GetFrame() { return frame_; }
 
  private:
+  friend class TextFragmentSelectorGeneratorTest;
+
   FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
                            GetPreviousTextEndPosition_PrevNode);
   FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
@@ -90,7 +93,12 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
                            GetNextTextStartPosition_InvisibleAfterSelection);
   FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           RangeSelector_RangeMultipleNonBlockNodes);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
                            GetNextTextStartPosition_NoNextNode);
+  FRIEND_TEST_ALL_PREFIXES(TextFragmentSelectorGeneratorTest,
+                           ExactTextSelector_Long);
+
   FRIEND_TEST_ALL_PREFIXES(
       TextFragmentSelectorGeneratorTest,
       GetPreviousTextEndPosition_ShouldSkipNodesWithNoLayoutObject);
@@ -158,6 +166,11 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
 
   // Called to notify clients of the result of |Generate|.
   void NotifyClientSelectorReady(const TextFragmentSelector& selector);
+
+  // Called by tests to change default parameters. A negative value will reset
+  // the override.
+  static void OverrideExactTextMaxCharsForTesting(int value);
+  unsigned GetExactTextMaxChars();
 
   Member<LocalFrame> frame_;
 

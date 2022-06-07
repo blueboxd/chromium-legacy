@@ -37,7 +37,7 @@ class FencedFrameTestHelper {
                                      const GURL& url,
                                      net::Error expected_error_code = net::OK);
 
-  // This method is similar to `FencedFrameTestUtil::CreateFencedFrame` but
+  // This method is similar to `FencedFrameTestHelper::CreateFencedFrame` but
   // doesn't wait until the fenced frame completes loading.
   void CreateFencedFrameAsync(RenderFrameHost* fenced_frame_parent_rfh,
                               const GURL& url);
@@ -55,9 +55,19 @@ class FencedFrameTestHelper {
       const GURL& url,
       net::Error expected_error_code = net::OK);
 
+  // Returns the last created fenced frame. This can be used by embedders who
+  // must create fenced frames from script but need to get the fence frame's
+  // inner root RenderFrameHost.
+  static RenderFrameHost* GetMostRecentlyAddedFencedFrame(RenderFrameHost* rfh);
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+// This helper method creates a fenced frame urn to url mapping and returns the
+// urn in GURL format. It applies to both MPArch and ShadowDOM
+// architeectures of fenced frames
+GURL CreateFencedFrameURLMapping(RenderFrameHost* rfh, const GURL& url);
 
 }  // namespace test
 

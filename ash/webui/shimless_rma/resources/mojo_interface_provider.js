@@ -47,8 +47,8 @@ function setupFakeShimlessRmaService_() {
   service.automaticallyTriggerHardwareVerificationStatusObservation();
 
   service.setGetCurrentOsVersionResult(fakeChromeVersion[0]);
-  service.setCheckForOsUpdatesResult(true, 'fake version 1.2.3.4');
-  service.setUpdateOsResult(false);
+  service.setCheckForOsUpdatesResult('99.0.4844.74');
+  service.setUpdateOsResult(true);
   service.automaticallyTriggerOsUpdateObservation();
 
   service.setGetComponentListResult(fakeComponents);
@@ -86,6 +86,7 @@ function setupFakeShimlessRmaService_() {
 
   service.automaticallyTriggerPowerCableStateObservation();
   service.setGetLogResult(fakeLog);
+  service.setGetPowerwashRequiredResult(true);
 
   // Set the fake service.
   setShimlessRmaServiceForTesting(service);

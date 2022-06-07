@@ -61,6 +61,8 @@ static_library("test_support") {
     "../browser/background_fetch/mock_background_fetch_delegate.h",
     "../browser/browsing_data/browsing_data_test_utils.cc",
     "../browser/browsing_data/browsing_data_test_utils.h",
+    "../browser/direct_sockets/direct_sockets_test_utils.cc",
+    "../browser/direct_sockets/direct_sockets_test_utils.h",
     "../browser/file_system_access/fake_file_system_access_permission_context.cc",
     "../browser/file_system_access/fake_file_system_access_permission_context.h",
     "../browser/file_system_access/file_system_chooser_test_helpers.cc",
@@ -185,6 +187,8 @@ static_library("test_support") {
     "../public/test/mock_navigation_handle.h",
     "../public/test/mock_notification_observer.cc",
     "../public/test/mock_notification_observer.h",
+    "../public/test/mock_permission_controller.cc",
+    "../public/test/mock_permission_controller.h",
     "../public/test/mock_permission_manager.cc",
     "../public/test/mock_permission_manager.h",
     "../public/test/mock_policy_container_host.cc",
@@ -680,7 +684,9 @@ static_library("test_support") {
     ]
   }
 
-  if (is_linux || is_chromeos) {
+  # TODO(crbug.com/1290940): Should Fuchsia use this? If so, the condition can
+  # probably be changed to just `use_ozone`, especially after crbug.com/1293575.
+  if (is_linux || is_chromeos || is_fuchsia) {
     deps += [ "//ui/platform_window/common" ]
   }
 
@@ -711,6 +717,9 @@ static_library("test_support") {
 # Fuchsia performance tests on smart displays use web_engine and a browser
 # like shell instead of an actual browser, so Fuchsia needs a separate target.
 if (is_fuchsia) {
+  # TODO(crbug.com/1310086): Split this test suite into chrome/WebEngine
+  # versions.
+  # TODO(crbug.com/1309686): Move WebEngine-specific suites to //fuchsia/engine
   group("performance_web_engine_test_suite") {
     testonly = true
     data = [ "//content/test/gpu/run_telemetry_benchmark_fuchsia.py" ]
@@ -785,8 +794,22 @@ group("telemetry_gpu_integration_test_support") {
   data_deps = [
     ":telemetry_gpu_integration_test_data",
 
+    # For WebGPU CTS tests.
+    "//third_party/dawn/webgpu-cts",
+
     # For anything using Skia Gold (pixel, maps).
     "//ui/base:goldctl",
+  ]
+}
+
+group("webgpu_cts_scripts") {
+  testonly = true
+  data = [
+    "//third_party/node/",
+    "//third_party/dawn/webgpu-cts/scripts/",
+    "//third_party/dawn/third_party/webgpu-cts/src/",
+    "//third_party/dawn/third_party/webgpu-cts/node.tsconfig.json",
+    "//third_party/dawn/third_party/webgpu-cts/tsconfig.json",
   ]
 }
 
@@ -797,6 +820,8 @@ group("telemetry_gpu_common_data") {
     "//content/test/gpu/gpu_path_util/",
     "//content/test/gpu/gpu_tests/",
     "//content/test/gpu/unittest_data/",
+
+    "//third_party/dawn/webgpu-cts/",
 
     "//content/test/gpu/gpu_project_config.py",
     "//content/test/gpu/run_gpu_integration_test.py",
@@ -1126,7 +1151,6 @@ test("content_browsertests") {
     "../browser/database_browsertest.cc",
     "../browser/device_posture/device_posture_browsertest.cc",
     "../browser/device_sensors/device_sensor_browsertest.cc",
-    "../browser/devtools/devtools_conversion_browsertest.cc",
     "../browser/devtools/devtools_issue_storage_browsertest.cc",
     "../browser/devtools/devtools_trust_token_browsertest.cc",
     "../browser/devtools/devtools_video_consumer_browsertest.cc",
@@ -1149,7 +1173,7 @@ test("content_browsertests") {
     "../browser/file_system/file_system_url_loader_factory_browsertest.cc",
     "../browser/file_system/fileapi_browsertest.cc",
     "../browser/find_request_manager_browsertest.cc",
-    "../browser/font_access/font_access_manager_impl_browsertest.cc",
+    "../browser/font_access/font_access_manager_browsertest.cc",
     "../browser/font_unique_name_lookup/font_unique_name_browsertest.cc",
     "../browser/form_controls_browsertest.cc",
     "../browser/generic_sensor/generic_sensor_browsertest.cc",
@@ -1332,8 +1356,6 @@ test("content_browsertests") {
     "../browser/web_package/web_bundle_file_browsertest.cc",
     "../browser/web_package/web_bundle_network_browsertest.cc",
     "../browser/web_package/web_bundle_trustable_file_browsertest.cc",
-    "../browser/webid/test/fake_identity_request_dialog_controller.cc",
-    "../browser/webid/test/fake_identity_request_dialog_controller.h",
     "../browser/webid/test/webid_test_content_browser_client.cc",
     "../browser/webid/test/webid_test_content_browser_client.h",
     "../browser/webid/webid_browsertest.cc",
@@ -1369,6 +1391,7 @@ test("content_browsertests") {
     "../browser/worker_host/worker_browsertest.cc",
     "../browser/worker_network_isolation_key_browsertest.cc",
     "../child/webthemeengine_impl_default_browsertest.cc",
+    "../renderer/accessibility/ax_tree_distiller_browsertest.cc",
     "../renderer/accessibility/render_accessibility_impl_browsertest.cc",
     "../renderer/blink_platform_audio_hardware_browsertest.cc",
     "../renderer/gin_browsertest.cc",
@@ -1948,7 +1971,6 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_data_host_manager_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_filter_data_unittest.cc",
     "../browser/attribution_reporting/attribution_host_unittest.cc",
-    "../browser/attribution_reporting/attribution_host_utils_unittest.cc",
     "../browser/attribution_reporting/attribution_insecure_random_generator_unittest.cc",
     "../browser/attribution_reporting/attribution_manager_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_report_network_sender_unittest.cc",
@@ -2043,8 +2065,10 @@ test("content_unittests") {
     "../browser/file_system_access/file_system_chooser_unittest.cc",
     "../browser/file_system_access/safe_move_helper_unittest.cc",
     "../browser/first_party_sets/addition_overlaps_union_find_unittest.cc",
+    "../browser/first_party_sets/first_party_set_parser_unittest.cc",
     "../browser/first_party_sets/first_party_sets_handler_impl_unittest.cc",
-    "../browser/font_access/font_access_manager_impl_unittest.cc",
+    "../browser/first_party_sets/first_party_sets_loader_unittest.cc",
+    "../browser/font_access/font_access_manager_unittest.cc",
     "../browser/font_access/font_enumeration_data_source_unittest.cc",
     "../browser/generic_sensor/sensor_provider_proxy_impl_unittest.cc",
     "../browser/geolocation/geolocation_service_impl_unittest.cc",
@@ -2158,7 +2182,6 @@ test("content_unittests") {
     "../browser/renderer_host/embedded_frame_sink_provider_impl_unittest.cc",
     "../browser/renderer_host/fenced_frame_tree_node_unittest.cc",
     "../browser/renderer_host/frame_token_message_queue_unittest.cc",
-    "../browser/renderer_host/frame_tree_node_blame_context_unittest.cc",
     "../browser/renderer_host/frame_tree_unittest.cc",
     "../browser/renderer_host/input/fling_controller_unittest.cc",
     "../browser/renderer_host/input/fling_scheduler_unittest.cc",
@@ -2228,6 +2251,7 @@ test("content_unittests") {
     "../browser/renderer_host/render_widget_host_view_base_unittest.cc",
     "../browser/renderer_host/render_widget_host_view_child_frame_unittest.cc",
     "../browser/renderer_host/renderer_sandboxed_process_launcher_delegate_unittest.cc",
+    "../browser/renderer_host/transient_allow_popup_unittest.cc",
     "../browser/renderer_host/visible_time_request_trigger_unittest.cc",
     "../browser/scheduler/browser_io_thread_delegate_unittest.cc",
     "../browser/scheduler/browser_task_executor_unittest.cc",
@@ -2306,8 +2330,6 @@ test("content_unittests") {
     "../browser/web_package/web_bundle_utils_unittest.cc",
     "../browser/webid/federated_auth_request_impl_unittest.cc",
     "../browser/webid/idp_network_request_manager_unittest.cc",
-    "../browser/webid/test/fake_identity_request_dialog_controller.cc",
-    "../browser/webid/test/fake_identity_request_dialog_controller.h",
     "../browser/webid/test/mock_active_session_permission_delegate.cc",
     "../browser/webid/test/mock_active_session_permission_delegate.h",
     "../browser/webid/test/mock_api_permission_delegate.cc",
@@ -2433,7 +2455,6 @@ test("content_unittests") {
     sources += [
       "../browser/accessibility/browser_accessibility_android_unittest.cc",
       "../browser/android/nfc_host_unittest.cc",
-      "../browser/attribution_reporting/attribution_reporter_android_unittest.cc",
       "../browser/renderer_host/input/web_input_event_builders_android_unittest.cc",
       "../browser/tracing/background_reached_code_tracing_observer_android_unittest.cc",
       "../browser/web_contents/color_chooser_unittest.cc",
@@ -2664,6 +2685,7 @@ test("content_unittests") {
     sources += [
       "../browser/media/cdm_storage_impl_unittest.cc",
       "../browser/media/key_system_support_impl_unittest.cc",
+      "../browser/media/media_license_manager_unittest.cc",
     ]
   }
 
@@ -2834,7 +2856,6 @@ test("content_unittests") {
       "//ui/base/dragdrop:types",
       "//ui/base/dragdrop/mojom",
       "//ui/wm",
-      "//ui/wm/public",
     ]
   } else {
     sources -= [
@@ -2891,38 +2912,6 @@ if (enable_nocompile_tests) {
       "//content/public/browser",
       "//testing/gtest",
     ]
-  }
-}
-
-test("content_perftests") {
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  sources = [ "../test/run_all_perftests.cc" ]
-  deps = [
-    "//base/test:test_support",
-    "//cc",
-    "//content/browser:for_content_tests",
-    "//content/public/browser",
-    "//content/public/common",
-    "//content/test:test_support",
-    "//skia",
-    "//testing/gtest",
-    "//testing/perf",
-    "//ui/events/blink",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-
-    # For TestMojoProxyResolverFactory. Remove once it moves to the network
-    # service.
-    "//services/service_manager/public/cpp",
-  ]
-
-  if (is_android) {
-    deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
 }
 

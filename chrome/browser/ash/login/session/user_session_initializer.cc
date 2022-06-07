@@ -6,13 +6,13 @@
 
 #include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -48,7 +48,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/pciguard/pciguard_client.h"
 #include "chromeos/network/network_cert_loader.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,10 +58,8 @@
 #endif
 
 namespace ash {
-namespace {
 
-// TODO(https://crbug.com/1164001): remove when moved to ash::
-using ::chromeos::InstallAttributes;
+namespace {
 
 UserSessionInitializer* g_instance = nullptr;
 

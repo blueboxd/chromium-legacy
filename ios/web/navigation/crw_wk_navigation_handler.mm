@@ -884,6 +884,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     NSError* error = context->GetError();
     if (error) {
       if (web::features::IsLoadSimulatedRequestAPIEnabled()) {
+        context->SetHasCommitted(true);
         self.webStateImpl->OnNavigationFinished(context);
 
         [self.delegate navigationHandler:self
@@ -1767,6 +1768,11 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     if (itemURL != failingURL)
       item->SetVirtualURL(failingURL);
 
+    // Saves original context before, as the original context can be deleted
+    // before the callback is called.
+    __block std::unique_ptr<web::NavigationContextImpl> originalContext =
+        [self.navigationStates removeNavigation:navigation];
+
     web::GetWebClient()->PrepareErrorPage(
         self.webStateImpl, failingURL, contextError,
         navigationContext->IsPost(),
@@ -1783,24 +1789,20 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
                 [NSString stringWithContentsOfFile:path
                                           encoding:NSUTF8StringEncoding
                                              error:nil];
-
-            NSURLRequest* URL = [NSURLRequest
-                requestWithURL:[NSURL URLWithString:failingURLString]];
+            NSURL* URL = [NSURL URLWithString:failingURLString];
+            NSURLRequest* URLRequest = [NSURLRequest requestWithURL:URL];
             WKNavigation* errorNavigation = nil;
 
             if (errorHTML) {
               NSString* injectedHTML =
-                  [errorHTML stringByAppendingString:reloadPageHTMLTemplate];
-              errorNavigation = [webView loadSimulatedRequest:URL
+                  [reloadPageHTMLTemplate stringByAppendingString:errorHTML];
+              errorNavigation = [webView loadSimulatedRequest:URLRequest
                                            responseHTMLString:injectedHTML];
             } else {
-              errorNavigation =
-                  [webView loadSimulatedRequest:URL
-                             responseHTMLString:reloadPageHTMLTemplate];
+              errorNavigation = [webView loadSimulatedRequest:URLRequest
+                                           responseHTMLString:@""];
             }
 
-            std::unique_ptr<web::NavigationContextImpl> originalContext =
-                [self.navigationStates removeNavigation:navigation];
             originalContext->SetLoadingErrorPage(true);
             [self.navigationStates setContext:std::move(originalContext)
                                 forNavigation:errorNavigation];

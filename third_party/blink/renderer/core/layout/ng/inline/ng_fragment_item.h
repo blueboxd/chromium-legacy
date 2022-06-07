@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -329,6 +330,29 @@ class CORE_EXPORT NGFragmentItem final {
 
   MutableForPainting GetMutableForPainting() const {
     return MutableForPainting(*this);
+  }
+
+  // Out-of-flow in nested block fragmentation may require us to replace a
+  // fragment on a line.
+  class MutableForOOFFragmentation {
+    STACK_ALLOCATED();
+
+   public:
+    void ReplaceBoxFragment(const NGPhysicalBoxFragment& new_fragment) {
+      DCHECK(item_.BoxFragment());
+      item_.box_.box_fragment = &new_fragment;
+    }
+
+   private:
+    friend class NGFragmentItem;
+    explicit MutableForOOFFragmentation(const NGFragmentItem& item)
+        : item_(const_cast<NGFragmentItem&>(item)) {}
+
+    NGFragmentItem& item_;
+  };
+
+  MutableForOOFFragmentation GetMutableForOOFFragmentation() const {
+    return MutableForOOFFragmentation(*this);
   }
 
   bool IsHorizontal() const {

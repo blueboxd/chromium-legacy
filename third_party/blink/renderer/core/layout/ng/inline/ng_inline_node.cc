@@ -530,11 +530,9 @@ void NGInlineNode::PrepareLayoutIfNeeded() const {
 
 void NGInlineNode::ShapeTextOrDefer(const NGConstraintSpace& space) const {
   if (Data().shaping_state_ != NGInlineNodeData::kShapingNone) {
-    if (auto* context = GetLayoutBox()->GetDisplayLockContext()) {
-      if (!context->IsLocked() && Data().IsShapingDeferred()) {
-        ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDone,
-                                    MutableData(), nullptr, nullptr);
-      }
+    if (ShouldBeReshaped()) {
+      ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDone, MutableData(),
+                                  nullptr, nullptr);
     }
     return;
   }
@@ -577,15 +575,13 @@ void NGInlineNode::PrepareLayout(NGInlineNodeData* previous_data) const {
   DCHECK(data);
   CollectInlines(data, previous_data);
   SegmentText(data);
-  if ((previous_data &&
-       previous_data->shaping_state_ == NGInlineNodeData::kShapingDone) ||
+  if ((previous_data && previous_data->IsShapingDone()) ||
       UNLIKELY(IsTextCombine())) {
     ShapeTextIncludingFirstLine(
         NGInlineNodeData::kShapingDone, data,
         previous_data ? &previous_data->text_content : nullptr, nullptr);
   } else if (previous_data && previous_data->IsShapingDeferred()) {
-    const auto* context = GetLayoutBox()->GetDisplayLockContext();
-    if (context && context->IsLocked()) {
+    if (IsDisplayLocked()) {
       ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDeferred, data,
                                   &previous_data->text_content, nullptr);
     } else {
@@ -1000,7 +996,7 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
   // Relocates |ShapeResult| in |previous_data| after |offset|+|length|
   editor.Run();
   node.SegmentText(data);
-  if (previous_data->shaping_state_ == NGInlineNodeData::kShapingDone) {
+  if (previous_data->IsShapingDone()) {
     node.ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDone, data,
                                      &previous_data->text_content,
                                      &previous_data->items);
@@ -1465,8 +1461,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
     // Shape each item with the full context of the entire node.
     scoped_refptr<ShapeResult> shape_result;
-    if (MutableData() &&
-        MutableData()->shaping_state_ == NGInlineNodeData::kShapingDeferred &&
+    if (MutableData() && MutableData()->IsShapingDeferred() &&
         font.PrimaryFont()) {
       unsigned length = end_offset - start_item.StartOffset();
       shape_result = ShapeResult::CreateForSpacesWithPerGlyphWidth(
@@ -1592,14 +1587,21 @@ void NGInlineNode::ShapeTextIncludingFirstLine(
   DCHECK_NE(new_state, NGInlineNodeData::kShapingNone);
   data->shaping_state_ = new_state;
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-  ShapeText(data, previous_text, previous_items);
-  ShapeTextForFirstLineIfNeeded(data);
+  // Because |ElapsedTimer| causes notable speed regression on Android and
+  // ChromeOS, we don't use it. See http://crbug.com/1261519
 #else
-  base::ElapsedTimer shaping_timer;
+  struct ShapeTextTimingScope final {
+    ~ShapeTextTimingScope() {
+      FontPerformance::AddShapingTime(shaping_timer.Elapsed());
+    }
+    base::ElapsedTimer shaping_timer;
+  };
+
+  ShapeTextTimingScope shape_text_timing_scope;
+#endif
+
   ShapeText(data, previous_text, previous_items);
   ShapeTextForFirstLineIfNeeded(data);
-  FontPerformance::AddShapingTime(shaping_timer.Elapsed());
-#endif
 }
 
 void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) const {
@@ -2020,6 +2022,34 @@ MinMaxSizesResult NGInlineNode::ComputeMinMaxSizes(
 bool NGInlineNode::UseFirstLineStyle() const {
   return GetLayoutBox() &&
          GetLayoutBox()->GetDocument().GetStyleEngine().UsesFirstLineRules();
+}
+
+bool NGInlineNode::ShouldBeReshaped() const {
+  if (!Data().IsShapingDeferred())
+    return false;
+  if (const auto* context = GetDisplayLockContext()) {
+    if (context->IsLocked())
+      return false;
+    // Need to check the request queue because
+    // 1. ShapeTextOrDefer() in ComputeMinMaxSizes() requested to lock an
+    //    element.
+    // 2. ShapeTextOrDefer() in Layout() calls this function before handling
+    //    the request queue.
+    return !GetLayoutBox()->GetFrameView()->LockDeferredRequested(
+        *To<Element>(GetDOMNode()));
+  }
+  // This is deferred, but not locked yet.
+  return false;
+}
+
+DisplayLockContext* NGInlineNode::GetDisplayLockContext() const {
+  return GetLayoutBox()->GetDisplayLockContext();
+}
+
+bool NGInlineNode::IsDisplayLocked() const {
+  if (const auto* context = GetDisplayLockContext())
+    return context->IsLocked();
+  return false;
 }
 
 void NGInlineNode::CheckConsistency() const {

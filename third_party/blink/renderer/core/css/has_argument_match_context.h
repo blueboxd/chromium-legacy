@@ -5,12 +5,59 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_HAS_ARGUMENT_MATCH_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_HAS_ARGUMENT_MATCH_CONTEXT_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 
-class HasArgumentMatchContext {
+enum HasArgumentMatchTraversalScope {
+  // Case 1: subselector starts with child or descendant combinator, and depth
+  //         is not fixed.
+  //         (e.g. :has(.a), :has(.a > .b), :has(.a + .b), :has(> .a .b) ...))
+  kSubtree,
+
+  // Case 2: subselector starts with direct or indirect adjacent combinator
+  //         and adjacent distance is not fixed and depth is fixed and child
+  //         combinator not exists.
+  //         (.e.g. :has(~ .a), :has(~ .a ~ .b), :has(~ .a + .b))
+  kAllNextSiblings,
+
+  // Case 3: subselector starts with direct adjacent combinator and adjacent
+  //         distance is fixed and depth is not fixed.
+  //         (.e.g. :has(+ .a .b), :has(+ .a > .b .c)), :has(+ .a .b > .c)
+  //                :has(+ .a .b ~ .c), :has(+ .a + .b .c))
+  kOneNextSiblingSubtree,
+
+  // Case 4: subselector starts with direct or indirect adjacent combinator
+  //         and adjacent distance and depth are not fixed.
+  //         (.e.g. :has(~ .a .b), :has(+ .a ~ .b .c))
+  kAllNextSiblingSubtrees,
+
+  // Case 5: subselector starts with direct adjacent combinator and both
+  //         adjacent distance and depth are fixed and no child combinator.
+  //          (.e.g. :has(+ .a), :has(+ .a + .b))
+  kOneNextSibling,
+
+  // Case 6: subselector starts with child combinator and depth is fixed.
+  //         (.e.g. :has(> .a), :has(> .a > .b), :has(> .a + .b),
+  //                :has(> .a ~ .b))
+  kFixedDepthDescendants,
+
+  // Case 7: subselector starts with direct adjacent combinator and both
+  //         adjacent distance and depth are fixed and child combinator exists.
+  //          (.e.g. :has(+ .a > .b), :has(+ .a > .b ~ .c))
+  kOneNextSiblingFixedDepthDescendants,
+
+  // Case 8: subselector starts with direct or indirect adjacent combinator
+  //         and adjacent distance is not fixed and depth is fixed and child
+  //         combinator exists.
+  //            (.e.g. :has(~ .a > .b), :has(+ .a ~ .b > .c),
+  //                   :has(~ .a > .b ~ .c), :has(+ .a ~ .b > .c ~ .d),
+  kAllNextSiblingsFixedDepthDescendants,
+};
+
+class CORE_EXPORT HasArgumentMatchContext {
   STACK_ALLOCATED();
 
  public:
@@ -34,6 +81,12 @@ class HasArgumentMatchContext {
     return sibling_combinator_between_child_or_descendant_combinator_;
   }
 
+  HasArgumentMatchTraversalScope TraversalScope() const {
+    return traversal_scope_;
+  }
+
+  const CSSSelector* HasArgument() const { return has_argument_; }
+
  private:
   const static int kInfiniteDepth = std::numeric_limits<int>::max();
   const static int kInfiniteAdjacentDistance = std::numeric_limits<int>::max();
@@ -49,13 +102,13 @@ class HasArgumentMatchContext {
   // Case 1:  (kDescendant, 0, max)
   //   - Argument selector conditions
   //     - Starts with descendant combinator.
-  //   - E.g. ':has(.a)', ':has(.a)', ':has(.a ~ .b > .c)'
+  //   - E.g. ':has(.a)', ':has(.a ~ .b)', ':has(.a ~ .b > .c)'
   //   - Traverse all descendants of the :has scope element.
   // Case 2:  (kChild, 0, max)
   //   - Argument selector conditions
   //     - Starts with child combinator.
   //     - At least one descendant combinator.
-  //   - E.g. ':has(> .a .b)', ':has(> .a ~ .b .c)'
+  //   - E.g. ':has(> .a .b)', ':has(> .a ~ .b .c)', ':has(> .a + .b .c)'
   //   - Traverse all descendants of the :has scope element.
   // Case 3:  (kChild, 0, n)
   //   - Argument selector conditions
@@ -95,7 +148,7 @@ class HasArgumentMatchContext {
   //     - At least one subsequent-sibling combinator to the left of every
   //       descendant or child combinator.
   //     - At least 1 descendant combinator.
-  //   - E.g. ':has(+ .a ~ .b .c)', ':has(+ .a ~ .b > .c + .e .f)'
+  //   - E.g. ':has(+ .a ~ .b .c)', ':has(+ .a ~ .b > .c + .d .e)'
   //   - Traverse all the subsequent sibling subtrees of the :has scope element.
   //     (all subsequent siblings and it's descendants)
   // Case 8:  (kDirectAdjacent, max, 0)
@@ -114,7 +167,7 @@ class HasArgumentMatchContext {
   //     - No descendant combinator.
   //   - E.g.
   //     - ':has(+ .a ~ .b > .c)'            : (kDirectAdjacent, max, 1)
-  //     - ':has(+ .a ~ .b > .c + .e >.f)'   : (kDirectAdjacent, max, 2)
+  //     - ':has(+ .a ~ .b > .c + .d >.e)'   : (kDirectAdjacent, max, 2)
   //   - Traverse depth n elements of all subsequent sibling subtree of the
   //     :has scope element.
   // Case 10:  (kDirectAdjacent, n, max)
@@ -155,7 +208,7 @@ class HasArgumentMatchContext {
   //   - Traverse the depth m elements of the distance n sibling subtree of
   //     the :has scope element. (elements at depth m of the descendant subtree
   //     of the sibling element at distance n)
-  CSSSelector::RelationType leftmost_relation_;
+  CSSSelector::RelationType leftmost_relation_{CSSSelector::kSubSelector};
   int adjacent_distance_limit_;
   int depth_limit_;
 
@@ -163,6 +216,8 @@ class HasArgumentMatchContext {
   // sibling traversal after subselector matched.
   bool sibling_combinator_at_rightmost_{false};
   bool sibling_combinator_between_child_or_descendant_combinator_{false};
+  HasArgumentMatchTraversalScope traversal_scope_;
+  const CSSSelector* has_argument_;
 };
 
 // Subtree traversal iterator class for ':has' argument matching. To

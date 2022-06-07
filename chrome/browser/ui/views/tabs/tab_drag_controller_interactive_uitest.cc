@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -1361,7 +1360,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   masked_window->SetProperty(aura::client::kZOrderingKey,
                              ui::ZOrderLevel::kFloatingWindow);
   auto targeter = std::make_unique<aura::WindowTargeter>();
-  targeter->SetInsets(gfx::Insets(0, bounds.width() - 10, 0, 0));
+  targeter->SetInsets(gfx::Insets::TLBR(0, bounds.width() - 10, 0, 0));
   masked_window->SetEventTargeter(std::move(targeter));
 
   ASSERT_FALSE(SubtreeShouldBeExplored(masked_window.get(),
@@ -1940,8 +1939,21 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(GetIsDragged(browser()));
 }
 
-// Selects 1 tab out of 4, drags it out and closes the new browser window while
-// dragging.
+namespace {
+
+void CloseTabsWhileDetachedStep2(const BrowserList* browser_list) {
+  ASSERT_EQ(2u, browser_list->size());
+  Browser* old_browser = browser_list->get(0);
+  EXPECT_EQ("0 3", IDString(old_browser->tab_strip_model()));
+  Browser* new_browser = browser_list->get(1);
+  EXPECT_EQ("1 2", IDString(new_browser->tab_strip_model()));
+  chrome::CloseTab(new_browser);
+}
+
+}  // namespace
+
+// Selects 2 tabs out of 4, drags them out and closes the new browser window
+// while dragging tabs.
 #if (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC))
 // TODO(crbug.com/1031801) Test is flaky on Windows and Mac.
 #define MAYBE_DeleteTabsWhileDetached DISABLED_DeleteTabsWhileDetached
@@ -1954,32 +1966,23 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   EXPECT_EQ("0 1 2 3", IDString(browser()->tab_strip_model()));
 
-  // Drag the third tab out of its browser window, request to close the detached
-  // tab and verify its owning window gets properly closed.
-  DragTabAndNotify(
-      tab_strip, base::BindLambdaForTesting([&]() {
-        ASSERT_EQ(2u, browser_list->size());
-        Browser* old_browser = browser_list->get(0);
-        EXPECT_EQ("0 1 3", IDString(old_browser->tab_strip_model()));
-        Browser* new_browser = browser_list->get(1);
-        EXPECT_EQ("2", IDString(new_browser->tab_strip_model()));
-        chrome::CloseTab(new_browser);
-        // Ensure that the newly created tab strip is "closeable" just after
-        // requesting to close it, even if we are still waiting for the nested
-        // move loop to exit. Regression test for https://crbug.com/1309461.
-        EXPECT_TRUE(GetTabStripForBrowser(new_browser)->IsTabStripCloseable());
-      }),
-      2);
+  // Click the first tab and select two middle tabs.
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(ReleaseInput());
+  browser()->tab_strip_model()->ToggleSelectionAt(2);
 
-  // Should no longer be dragging.
+  // Press mouse button in the second tab and drag it enough to detach.
+  DragTabAndNotify(
+      tab_strip, base::BindOnce(&CloseTabsWhileDetachedStep2, browser_list), 2);
+
+  // Should not be dragging.
   ASSERT_EQ(1u, browser_list->size());
   ASSERT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
 
-  // Dragged out tab (and its owning window) should get closed.
-  EXPECT_EQ("0 1 3", IDString(browser()->tab_strip_model()));
+  // Both tabs "1" and "2" get closed.
+  EXPECT_EQ("0 3", IDString(browser()->tab_strip_model()));
 
-  // No longer dragging.
   EXPECT_FALSE(GetIsDragged(browser()));
 }
 
@@ -2392,7 +2395,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(1, 3));
   EXPECT_FALSE(model->IsGroupCollapsed(group));
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 
@@ -2428,7 +2431,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(1, 3));
   EXPECT_FALSE(model->IsGroupCollapsed(group));
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 
@@ -2460,7 +2463,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(model->IsGroupCollapsed(group));
   EnsureFocusToTabStrip(tab_strip);
 
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 
@@ -2478,7 +2481,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(1u, groups.size());
   EXPECT_EQ(model->group_model()->GetTabGroup(groups[0])->ListTabs(),
             gfx::Range(0, 1));
-  EXPECT_TRUE(tab_strip->controller()->IsGroupCollapsed(group));
+  EXPECT_TRUE(tab_strip->IsGroupCollapsed(group));
 }
 
 // Creates a browser with four tabs. The first two tabs belong in Tab Group 1.
@@ -2495,7 +2498,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   AddTabsAndResetBrowser(browser(), 3);
   tab_groups::TabGroupId group = model->AddToNewGroup({2, 3});
   ASSERT_FALSE(model->IsGroupCollapsed(group));
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   ASSERT_TRUE(model->IsGroupCollapsed(group));
   EnsureFocusToTabStrip(tab_strip);
@@ -2534,7 +2537,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   AddTabsAndResetBrowser(browser(), 2);
   tab_groups::TabGroupId group = model->AddToNewGroup({0, 1});
   EXPECT_FALSE(model->IsGroupCollapsed(group));
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 
@@ -2559,7 +2562,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(1u, browser2_groups.size());
   EXPECT_EQ(model2->group_model()->GetTabGroup(browser2_groups[0])->ListTabs(),
             gfx::Range(1, 3));
-  ASSERT_FALSE(tab_strip->controller()->IsGroupCollapsed(browser2_groups[0]));
+  ASSERT_FALSE(tab_strip->IsGroupCollapsed(browser2_groups[0]));
   EXPECT_EQ(browser2_groups[0], group);
 }
 
@@ -4030,7 +4033,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   ASSERT_EQ(2, screen->GetNumDisplays());
   const std::pair<Display, Display> displays = GetDisplays(screen);
   gfx::Rect work_area = displays.second.work_area();
-  work_area.Inset(20, 20, 20, 60);
+  work_area.Inset(gfx::Insets::TLBR(20, 20, 60, 20));
   Browser::CreateParams params(browser()->profile(), true);
   params.initial_show_state = ui::SHOW_STATE_NORMAL;
   params.initial_bounds = work_area;

@@ -944,11 +944,6 @@ bool HTMLInputElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
          TextControlElement::LayoutObjectIsNeeded(style);
 }
 
-// TODO(crbug.com/1040826): Remove this override.
-bool HTMLInputElement::TypeShouldForceLegacyLayout() const {
-  return input_type_view_->TypeShouldForceLegacyLayout();
-}
-
 LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style,
                                                    LegacyLayout legacy) {
   return input_type_view_->CreateLayoutObject(style, legacy);
@@ -2231,6 +2226,13 @@ void HTMLInputElement::showPicker(ExceptionState& exception_state) {
           "HTMLInputElement::showPicker() called from cross-origin iframe.");
       return;
     }
+  }
+
+  if (IsDisabledOrReadOnly()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "HTMLInputElement::showPicker() cannot be used on immutable controls.");
+    return;
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {

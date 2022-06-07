@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/ranges/algorithm.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -137,7 +136,8 @@ void PeerConnectionTrackerHost::OnPeerConnectionSessionIdSet(
   }
 }
 
-void PeerConnectionTrackerHost::AddStandardStats(int lid, base::Value value) {
+void PeerConnectionTrackerHost::AddStandardStats(int lid,
+                                                 base::Value::List value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (auto& observer : GetObserverList()) {
@@ -145,7 +145,8 @@ void PeerConnectionTrackerHost::AddStandardStats(int lid, base::Value value) {
   }
 }
 
-void PeerConnectionTrackerHost::AddLegacyStats(int lid, base::Value value) {
+void PeerConnectionTrackerHost::AddLegacyStats(int lid,
+                                               base::Value::List value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (auto& observer : GetObserverList()) {

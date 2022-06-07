@@ -137,14 +137,10 @@ gfx::SizeF LayoutImageResource::ImageSizeWithDefaultSize(
   return ImageSize(multiplier);
 }
 
-float LayoutImageResource::DeviceScaleFactor() const {
-  return DeviceScaleFactorDeprecated(layout_object_->GetFrame());
-}
-
-Image* LayoutImageResource::BrokenImage(float device_scale_factor) {
+Image* LayoutImageResource::BrokenImage(double device_pixel_ratio) {
   // TODO(schenney): Replace static resources with dynamically
   // generated ones, to support a wider range of device scale factors.
-  if (device_scale_factor >= 2) {
+  if (device_pixel_ratio >= 2) {
     DEFINE_STATIC_REF(
         Image, broken_image_hi_res,
         (Image::LoadPlatformResource(IDR_BROKENIMAGE, ui::k200Percent)));
@@ -156,9 +152,15 @@ Image* LayoutImageResource::BrokenImage(float device_scale_factor) {
   return broken_image_lo_res;
 }
 
+double LayoutImageResource::DevicePixelRatio() const {
+  if (!layout_object_)
+    return 1.0;
+  return layout_object_->GetDocument().DevicePixelRatio();
+}
+
 void LayoutImageResource::UseBrokenImage() {
   SetImageResource(
-      ImageResourceContent::CreateLoaded(BrokenImage(DeviceScaleFactor())));
+      ImageResourceContent::CreateLoaded(BrokenImage(DevicePixelRatio())));
 }
 
 scoped_refptr<Image> LayoutImageResource::GetImage(
@@ -172,7 +174,7 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
     return Image::NullImage();
 
   if (cached_image_->ErrorOccurred())
-    return BrokenImage(DeviceScaleFactor());
+    return BrokenImage(DevicePixelRatio());
 
   if (!cached_image_->HasImage())
     return Image::NullImage();

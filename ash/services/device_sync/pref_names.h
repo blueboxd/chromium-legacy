@@ -5,7 +5,7 @@
 #ifndef ASH_SERVICES_DEVICE_SYNC_PREF_NAMES_H_
 #define ASH_SERVICES_DEVICE_SYNC_PREF_NAMES_H_
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -35,6 +35,7 @@ extern const char kCryptAuthLastSyncedEncryptedLocalDeviceMetadata[];
 extern const char kCryptAuthLastSyncedGroupPublicKey[];
 extern const char kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata[];
 extern const char kCryptAuthBluetoothAddressProvidedDuringLastSync[];
+extern const char kCryptAuthAttestationCertificatesLastGeneratedTimestamp[];
 extern const char kCryptAuthSchedulerClientDirective[];
 extern const char kCryptAuthSchedulerNextEnrollmentRequestClientMetadata[];
 extern const char kCryptAuthSchedulerNextDeviceSyncRequestClientMetadata[];
@@ -47,6 +48,6 @@ extern const char kCryptAuthSchedulerLastSuccessfulDeviceSyncTime[];
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_PREF_NAMES_H_

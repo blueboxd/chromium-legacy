@@ -105,11 +105,12 @@ void VerifyMatchComponents(const ExpectedMatchComponents& expected,
   }
 }
 
-class OmniboxApiTest : public ExtensionApiTest {
+using ContextType = ExtensionBrowserTest::ContextType;
+
+class OmniboxApiTest : public ExtensionApiTest,
+                       public testing::WithParamInterface<ContextType> {
  public:
-  explicit OmniboxApiTest(ExtensionBrowserTest::ContextType context_type =
-                              ExtensionBrowserTest::ContextType::kNone)
-      : ExtensionApiTest(context_type) {}
+  OmniboxApiTest() : ExtensionApiTest(GetParam()) {}
   ~OmniboxApiTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -135,9 +136,22 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 };
 
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         OmniboxApiTest,
+                         testing::Values(ContextType::kServiceWorker));
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         OmniboxApiTest,
+                         testing::Values(ContextType::kPersistentBackground));
+
+using OmniboxApiBackgroundPageTest = OmniboxApiTest;
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         OmniboxApiBackgroundPageTest,
+                         testing::Values(ContextType::kNone));
+
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, SendSuggestions) {
+IN_PROC_BROWSER_TEST_P(OmniboxApiTest, SendSuggestions) {
   constexpr char kManifest[] =
       R"({
            "name": "Basic Send Suggestions",
@@ -263,48 +277,66 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, SendSuggestions) {
   EXPECT_FALSE(match.deletable);
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
-  ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
+IN_PROC_BROWSER_TEST_P(OmniboxApiTest, OnInputEntered) {
+  constexpr char kManifest[] =
+      R"({
+           "name": "Basic Send Suggestions",
+           "manifest_version": 2,
+           "version": "0.1",
+           "omnibox": { "keyword": "alpha" },
+           "background": { "scripts": [ "background.js" ], "persistent": true }
+         })";
+  // This extension will collect input entered into the omnibox and pass it
+  // to the browser when instructed.
+  constexpr char kBackground[] =
+      R"(let results = [];
+         chrome.omnibox.onInputEntered.addListener((text, disposition) => {
+           if (text == 'send results') {
+             chrome.test.sendMessage(JSON.stringify(results));
+             return;
+           }
+           results.push({text, disposition});
+         });)";
+
+  extensions::TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+  const extensions::Extension* extension =
+      LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
 
   LocationBar* location_bar = GetLocationBar(browser());
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   ResultCatcher catcher;
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
-  omnibox_view->OnBeforePossibleChange();
-  omnibox_view->SetUserText(u"kw command");
-  omnibox_view->OnAfterPossibleChange(true);
 
-  {
-    AutocompleteInput input(u"kw command", metrics::OmniboxEventProto::NTP,
+  auto send_input = [this, autocomplete_controller, omnibox_view](
+                        std::u16string input_string,
+                        WindowOpenDisposition disposition) {
+    AutocompleteInput input(input_string, metrics::OmniboxEventProto::NTP,
                             ChromeAutocompleteSchemeClassifier(profile()));
     autocomplete_controller->Start(input);
-  }
-  omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB);
-  WaitForAutocompleteDone(browser());
-  EXPECT_TRUE(autocomplete_controller->done());
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+    omnibox_view->model()->AcceptInput(disposition);
+    WaitForAutocompleteDone(browser());
+  };
 
-  omnibox_view->OnBeforePossibleChange();
-  omnibox_view->SetUserText(u"kw newtab");
-  omnibox_view->OnAfterPossibleChange(true);
-  WaitForAutocompleteDone(browser());
-  EXPECT_TRUE(autocomplete_controller->done());
+  send_input(u"alpha current tab", WindowOpenDisposition::CURRENT_TAB);
+  send_input(u"alpha new tab", WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
-  {
-    AutocompleteInput input(u"kw newtab", metrics::OmniboxEventProto::NTP,
-                            ChromeAutocompleteSchemeClassifier(profile()));
-    autocomplete_controller->Start(input);
-  }
-  omnibox_view->model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB);
-  WaitForAutocompleteDone(browser());
-  EXPECT_TRUE(autocomplete_controller->done());
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ExtensionTestMessageListener listener(/*will_reply=*/false);
+  send_input(u"alpha send results", WindowOpenDisposition::CURRENT_TAB);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  static constexpr char kExpectedResult[] =
+      R"([{"text":"current tab","disposition":"currentTab"},)"
+      R"({"text":"new tab","disposition":"newForegroundTab"}])";
+  EXPECT_EQ(kExpectedResult, listener.message());
 }
 
 // Tests receiving suggestions from and sending input to the incognito context
 // of an incognito split mode extension.
 // Regression test for https://crbug.com/100927.
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, IncognitoSplitMode) {
+IN_PROC_BROWSER_TEST_P(OmniboxApiTest, IncognitoSplitMode) {
   static constexpr char kManifest[] =
       R"({
            "name": "SetDefaultSuggestion",
@@ -419,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, IncognitoSplitMode) {
 // Tests that the autocomplete popup doesn't reopen after accepting input for
 // a given query.
 // http://crbug.com/88552
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_PopupStaysClosed) {
+IN_PROC_BROWSER_TEST_P(OmniboxApiBackgroundPageTest, MAYBE_PopupStaysClosed) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   LocationBar* location_bar = GetLocationBar(browser());
@@ -462,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_PopupStaysClosed) {
 #else
 #define MAYBE_DeleteOmniboxSuggestionResult DeleteOmniboxSuggestionResult
 #endif
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
+IN_PROC_BROWSER_TEST_P(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
   static constexpr char kManifest[] =
       R"({
            "name": "Basic Send Suggestions",
@@ -574,21 +606,45 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
 #endif
 }
 
-// Tests typing something but not staying in keyword mode.
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
-  ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
+// Tests that if the user hits "backspace" (leaving the extension keyword mode),
+// the extension suggestions are not sent.
+IN_PROC_BROWSER_TEST_P(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Basic Send Suggestions",
+           "manifest_version": 2,
+           "version": "0.1",
+           "omnibox": { "keyword": "kw" },
+           "background": { "scripts": [ "background.js" ], "persistent": true }
+         })";
+  static constexpr char kBackground[] =
+      R"(chrome.omnibox.onInputChanged.addListener((text, suggest) => {
+           let simpleDescription = 'simple description';
+           suggest([
+             {content: text + ' first', description: simpleDescription},
+             {content: text + ' second', description: simpleDescription},
+           ]);
+         });)";
+
+  extensions::TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+  const extensions::Extension* extension =
+      LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
 
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   chrome::FocusLocationBar(browser());
   ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 
-  // Input a keyword query and wait for suggestions from the extension.
+  // Input "kw d", triggering the extension, and then wait for suggestions.
   InputKeys(browser(), {ui::VKEY_K, ui::VKEY_W, ui::VKEY_SPACE, ui::VKEY_D});
   WaitForAutocompleteDone(browser());
   EXPECT_TRUE(autocomplete_controller->done());
 
-  // Peek into the controller to see if it has the results we expect.
+  // We expect two suggestions from the extension in addition to the regular
+  // input and "search what you typed".
   {
     const AutocompleteResult& result = autocomplete_controller->result();
     ASSERT_EQ(4U, result.size()) << AutocompleteResultAsString(result);
@@ -597,11 +653,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(0).provider->type());
 
-    EXPECT_EQ(u"kw n1", result.match_at(1).fill_into_edit);
+    EXPECT_EQ(u"kw d first", result.match_at(1).fill_into_edit);
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(1).provider->type());
 
-    EXPECT_EQ(u"kw n2", result.match_at(2).fill_into_edit);
+    EXPECT_EQ(u"kw d second", result.match_at(2).fill_into_edit);
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(2).provider->type());
 
@@ -643,18 +699,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
   }
 }
 
-using ContextType = ExtensionBrowserTest::ContextType;
-
-class OmniboxApiTestWithContextType
-    : public OmniboxApiTest,
-      public testing::WithParamInterface<ContextType> {
- public:
-  OmniboxApiTestWithContextType() : OmniboxApiTest(GetParam()) {}
-  ~OmniboxApiTestWithContextType() override = default;
-};
-
-IN_PROC_BROWSER_TEST_P(OmniboxApiTestWithContextType,
-                       SetDefaultSuggestionFailures) {
+IN_PROC_BROWSER_TEST_P(OmniboxApiTest, SetDefaultSuggestionFailures) {
   constexpr char kManifest[] =
       R"({
            "name": "SetDefaultSuggestion",
@@ -720,8 +765,7 @@ IN_PROC_BROWSER_TEST_P(OmniboxApiTestWithContextType,
 #else
 #define MAYBE_SetDefaultSuggestion SetDefaultSuggestion
 #endif
-IN_PROC_BROWSER_TEST_P(OmniboxApiTestWithContextType,
-                       MAYBE_SetDefaultSuggestion) {
+IN_PROC_BROWSER_TEST_P(OmniboxApiTest, MAYBE_SetDefaultSuggestion) {
   constexpr char kManifest[] =
       R"({
            "name": "SetDefaultSuggestion",
@@ -786,12 +830,5 @@ IN_PROC_BROWSER_TEST_P(OmniboxApiTestWithContextType,
     EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(ServiceWorker,
-                         OmniboxApiTestWithContextType,
-                         testing::Values(ContextType::kServiceWorker));
-INSTANTIATE_TEST_SUITE_P(PersistentBackground,
-                         OmniboxApiTestWithContextType,
-                         testing::Values(ContextType::kPersistentBackground));
 
 }  // namespace extensions

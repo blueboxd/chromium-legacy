@@ -23,6 +23,20 @@ FrameTreeNode* GetFencedFrameRootNode(FrameTreeNode* node) {
   return FrameTreeNode::GloballyFindByID(inner_node_id);
 }
 
+void SimulateSharedStorageURNMappingComplete(
+    FencedFrameURLMapping& fenced_frame_url_mapping,
+    const GURL& urn_uuid,
+    const GURL& mapped_url,
+    const url::Origin& shared_storage_origin,
+    double budget_to_charge) {
+  FencedFrameURLMapping::SharedStorageBudgetMetadata metadata = {
+      .origin = shared_storage_origin, .budget_to_charge = budget_to_charge};
+
+  fenced_frame_url_mapping.OnSharedStorageURNMappingResultDetermined(
+      urn_uuid, FencedFrameURLMapping::SharedStorageURNMappingResult{
+                    .mapped_url = mapped_url, .metadata = metadata});
+}
+
 TestFencedFrameURLMappingResultObserver::
     TestFencedFrameURLMappingResultObserver() = default;
 
@@ -33,11 +47,13 @@ void TestFencedFrameURLMappingResultObserver::OnFencedFrameURLMappingComplete(
     absl::optional<GURL> mapped_url,
     absl::optional<AdAuctionData> ad_auction_data,
     absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-        pending_ad_components_map) {
+        pending_ad_components_map,
+    ReportingMetadata& reporting_metadata) {
   mapping_complete_observed_ = true;
   mapped_url_ = std::move(mapped_url);
   ad_auction_data_ = ad_auction_data;
   pending_ad_components_map_ = std::move(pending_ad_components_map);
+  reporting_metadata_ = reporting_metadata;
 }
 
 }  // namespace content

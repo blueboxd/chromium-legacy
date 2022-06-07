@@ -17,11 +17,13 @@
 #include "content/browser/file_system_access/file_system_access_error.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
 #include "crypto/secure_hash.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "storage/browser/file_system/copy_or_move_hook_delegate.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation.h"
@@ -257,7 +259,7 @@ void SafeMoveHelper::DidAfterWriteCheck(
       FROM_HERE, &storage::FileSystemOperationRunner::Move,
       std::move(result_callback), source_url(), dest_url(), options_,
       storage::FileSystemOperationRunner::ErrorBehavior::ERROR_BEHAVIOR_ABORT,
-      storage::FileSystemOperation::CopyOrMoveProgressCallback());
+      std::make_unique<storage::CopyOrMoveHookDelegate>());
 }
 
 void SafeMoveHelper::DidFileSkipQuarantine(base::File::Error result) {

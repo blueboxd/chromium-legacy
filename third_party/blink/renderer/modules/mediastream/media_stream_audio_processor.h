@@ -81,17 +81,14 @@ class MODULES_EXPORT MediaStreamAudioProcessor
 
   // The format of the processed capture output audio from the processor.
   // Is constant throughout MediaStreamAudioProcessor lifetime.
-  const media::AudioParameters& OutputFormat() const;
+  const media::AudioParameters& output_format() const {
+    return audio_processor_->output_format();
+  }
 
   // Accessor to check if WebRTC audio processing is enabled or not.
   bool has_webrtc_audio_processing() const {
     return audio_processor_->has_webrtc_audio_processing();
   }
-
-  // Instructs the Audio Processing Module (APM) to reduce its complexity when
-  // |muted| is true. This mode is triggered when all audio tracks are disabled.
-  // The default APM complexity mode is restored by |muted| set to false.
-  void SetOutputWillBeMuted(bool muted);
 
   // AecDumpAgentImpl::Delegate implementation.
   // Called on the main render thread.

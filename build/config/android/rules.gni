@@ -195,6 +195,9 @@ if (enable_java_templates) {
         if (use_hashed_jni_names) {
           args += [ "--use_proxy_hash" ]
         }
+        if (enable_jni_multiplexing) {
+          args += [ "--enable_jni_multiplexing" ]
+        }
         if (defined(invoker.namespace)) {
           args += [ "-n ${invoker.namespace}" ]
         }
@@ -308,6 +311,8 @@ if (enable_java_templates) {
   # Variables
   #   targets: List of .build_config.json supported targets to provide java sources.
   #   header_output: Path to the generated .h file (optional).
+  #   manual_jni_registration: Manually do JNI registration - required for
+  #     crazy linker. (optional)
   #   sources_exclusions: List of .java files that should be skipped. (optional)
   #   namespace: Registration functions will be wrapped into this. (optional)
   #   require_native_mocks: Enforce that any native calls using
@@ -324,6 +329,7 @@ if (enable_java_templates) {
   #   generate_jni_registration("chrome_jni_registration") {
   #     targets = [ ":chrome_public_apk" ]
   #     header_output = "$target_gen_dir/$target_name.h"
+  #     manual_jni_registration = false
   #     sources_exclusions = [
   #       "//path/to/Exception.java",
   #     ]
@@ -368,6 +374,10 @@ if (enable_java_templates) {
         args += [ "--use_proxy_hash" ]
       }
 
+      if (enable_jni_multiplexing) {
+        args += [ "--enable_jni_multiplexing" ]
+      }
+
       if (defined(invoker.enable_native_mocks) && invoker.enable_native_mocks) {
         args += [ "--enable_proxy_mocks" ]
 
@@ -383,6 +393,11 @@ if (enable_java_templates) {
           "--header-path",
           rebase_path(invoker.header_output, root_build_dir),
         ]
+
+        if (!defined(invoker.manual_jni_registration) ||
+            invoker.manual_jni_registration) {
+          args += [ "--manual_jni_registration" ]
+        }
       }
 
       if (defined(invoker.sources_exclusions)) {
@@ -1581,7 +1596,6 @@ if (enable_java_templates) {
         requires_android =
             defined(invoker.requires_android) && invoker.requires_android
         possible_config_deps = _deps
-        ignore_dependency_public_deps = _direct_deps_only
         build_config = _build_config
       }
 
@@ -1731,9 +1745,11 @@ if (enable_java_templates) {
   #   proguard_configs: List of proguard configs (optional).
   #   android_manifest: Path to AndroidManifest.xml (optional).
   #   native_libraries: list of native libraries (optional).
-  #   direct_deps_only: Do not recurse on deps. (optional, defaults false).
-  #   jar_excluded_patterns (optional): List of globs for paths to exclude.
-  #   jar_included_patterns (optional): List of globs for paths to include.
+  #   direct_deps_only: Do not recurse on deps (optional, defaults false).
+  #   jar_excluded_patterns: List of globs for paths to exclude (optional).
+  #   jar_included_patterns: List of globs for paths to include (optional).
+  #   generate_final_jni: If defined an true, generate the final
+  #     `GEN_JNI.java` and include it in the output `.aar` (optional)
   #
   # Example
   #   dist_aar("my_aar") {
@@ -1743,13 +1759,32 @@ if (enable_java_templates) {
   template("dist_aar") {
     forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
 
-    _deps = []
-    if (defined(invoker.deps)) {
-      _deps = invoker.deps
-    }
-
     _direct_deps_only =
         defined(invoker.direct_deps_only) && invoker.direct_deps_only
+
+    _deps = []
+
+    _generate_final_jni =
+        defined(invoker.generate_final_jni) && invoker.generate_final_jni
+    if (_generate_final_jni) {
+      _outer_target_name = target_name
+      _jni_srcjar_target = "${target_name}__final_jni"
+      generate_jni_registration(_jni_srcjar_target) {
+        targets = [ ":$_outer_target_name" ]
+      }
+      _jni_java_target = "${target_name}__final_jni_java"
+      java_library_impl(_jni_java_target) {
+        type = "java_library"
+        supports_android = true
+        requires_android = true
+        srcjar_deps = [ ":$_jni_srcjar_target" ]
+      }
+      _deps += [ ":$_jni_java_target" ]
+    }
+
+    if (defined(invoker.deps)) {
+      _deps += invoker.deps
+    }
 
     _build_config = "$target_gen_dir/$target_name.build_config.json"
     _build_config_target_name = "$target_name$build_config_target_suffix"
@@ -1760,7 +1795,6 @@ if (enable_java_templates) {
       possible_config_deps = _deps
       supports_android = true
       requires_android = true
-      ignore_dependency_public_deps = _direct_deps_only
       build_config = _build_config
     }
 
@@ -1769,7 +1803,11 @@ if (enable_java_templates) {
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
 
     action_with_pydeps(target_name) {
-      forward_variables_from(invoker, [ "data" ])
+      forward_variables_from(invoker,
+                             [
+                               "data",
+                               "assert_no_deps",
+                             ])
       depfile = "$target_gen_dir/$target_name.d"
       deps = _deps
       script = "//build/android/gyp/dist_aar.py"
@@ -1797,8 +1835,11 @@ if (enable_java_templates) {
       if (_direct_deps_only) {
         args += [ "--jars=@FileArg($_rebased_build_config:javac:classpath)" ]
       } else {
-        args += [ "--jars=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)" ]
+        args += [
+          "--jars=@FileArg($_rebased_build_config:deps_info:device_classpath)",
+        ]
       }
+
       if (defined(invoker.android_manifest)) {
         args += [
           "--android-manifest",
@@ -2060,6 +2101,10 @@ if (enable_java_templates) {
   #     is true when building with Chromium for non-test APKs.
   #   generate_final_jni: If defined and false, skip generating the
   #     GEN_JNI srcjar.
+  #   generate_native_libraries_java: If defined, whether NativeLibraries.java is
+  #     generated is solely controlled by this flag. Otherwise, the default behavior
+  #     is NativeLibraries.java will only be generated for the base module/apk when
+  #     its `shared_libraries` is not empty.
   #   jni_registration_header: If specified, causes the
   #     ${target_name}__final_jni target to additionally output a
   #     header file to this path for use with manual JNI registration.
@@ -2130,7 +2175,6 @@ if (enable_java_templates) {
   #     ProductConfig.java file will be generated for each package.
   #   enable_proguard_checks: Turns on -checkdiscard directives and missing
   #     symbols check in the proguard step (default=true).
-  #   disable_r8_outlining: Turn off outlining during the proguard step.
   #   annotation_processor_deps: List of java_annotation_processor targets to
   #     use when compiling the sources given to this target (optional).
   #   processor_args_javac: List of args to pass to annotation processors when
@@ -2637,10 +2681,14 @@ if (enable_java_templates) {
       _final_deps += [ ":$_copy_arsc_target" ]
     }
 
-    _generate_native_libraries_java =
-        (!_is_bundle_module || _is_base_module) &&
-        (_native_libs_deps != [] || _secondary_abi_native_libs_deps != []) &&
-        !_uses_static_library_synchronized_proguard
+    if (defined(invoker.generate_native_libraries_java)) {
+      _generate_native_libraries_java = invoker.generate_native_libraries_java
+    } else {
+      _generate_native_libraries_java =
+          (!_is_bundle_module || _is_base_module) &&
+          (_native_libs_deps != [] || _secondary_abi_native_libs_deps != []) &&
+          !_uses_static_library_synchronized_proguard
+    }
     if (_generate_native_libraries_java) {
       write_native_libraries_java("${_template_name}__native_libraries") {
         forward_variables_from(invoker, [ "main_component_library" ])
@@ -2729,6 +2777,7 @@ if (enable_java_templates) {
         }
         if (defined(invoker.jni_registration_header)) {
           header_output = invoker.jni_registration_header
+          manual_jni_registration = true
         }
         if (defined(invoker.jni_sources_exclusions)) {
           sources_exclusions = invoker.jni_sources_exclusions
@@ -2888,9 +2937,6 @@ if (enable_java_templates) {
       if (defined(invoker.enable_proguard_checks)) {
         not_needed(invoker, [ "enable_proguard_checks" ])
       }
-      if (defined(invoker.disable_r8_outlining)) {
-        not_needed(invoker, [ "disable_r8_outlining" ])
-      }
     } else {
       # Dex generation for app bundle modules with proguarding enabled takes
       # place later due to synchronized proguarding.
@@ -2898,7 +2944,6 @@ if (enable_java_templates) {
       dex(_final_dex_target_name) {
         forward_variables_from(invoker,
                                [
-                                 "disable_r8_outlining",
                                  "enable_proguard_checks",
                                  "proguard_enable_obfuscation",
                                ])
@@ -3440,7 +3485,6 @@ if (enable_java_templates) {
                                "data",
                                "data_deps",
                                "deps",
-                               "disable_r8_outlining",
                                "dist_ijar_path",
                                "enable_lint",
                                "enable_multidex",
@@ -3588,6 +3632,7 @@ if (enable_java_templates) {
                                "extra_verification_manifest_dep",
                                "generate_buildconfig_java",
                                "generate_final_jni",
+                               "generate_native_libraries_java",
                                "input_jars_paths",
                                "isolated_splits_enabled",
                                "is_base_module",

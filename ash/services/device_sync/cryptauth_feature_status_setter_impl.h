@@ -9,6 +9,7 @@
 #include <ostream>
 #include <string>
 
+#include "ash/components/multidevice/software_feature.h"
 #include "ash/services/device_sync/cryptauth_feature_status_setter.h"
 #include "ash/services/device_sync/feature_status_change.h"
 #include "ash/services/device_sync/network_request_error.h"
@@ -17,10 +18,9 @@
 #include "base/containers/queue.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/multidevice/software_feature.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -126,6 +126,6 @@ class CryptAuthFeatureStatusSetterImpl : public CryptAuthFeatureStatusSetter {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  //  ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_FEATURE_STATUS_SETTER_IMPL_H_

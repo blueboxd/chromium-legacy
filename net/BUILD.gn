@@ -515,6 +515,8 @@ component("net") {
     "disk_cache/simple/simple_entry_impl.h",
     "disk_cache/simple/simple_entry_operation.cc",
     "disk_cache/simple/simple_entry_operation.h",
+    "disk_cache/simple/simple_file_enumerator.cc",
+    "disk_cache/simple/simple_file_enumerator.h",
     "disk_cache/simple/simple_file_tracker.cc",
     "disk_cache/simple/simple_file_tracker.h",
     "disk_cache/simple/simple_histogram_macros.h",
@@ -778,15 +780,6 @@ component("net") {
     "quic/network_connection.h",
     "quic/platform/impl/quic_chromium_clock.cc",
     "quic/platform/impl/quic_chromium_clock.h",
-    "quic/platform/impl/quic_containers_impl.h",
-    "quic/platform/impl/quic_error_code_wrappers_impl.h",
-    "quic/platform/impl/quic_file_utils_impl.h",
-    "quic/platform/impl/quic_hostname_utils_impl.cc",
-    "quic/platform/impl/quic_hostname_utils_impl.h",
-    "quic/platform/impl/quic_prefetch_impl.h",
-    "quic/platform/impl/quic_server_stats_impl.h",
-    "quic/platform/impl/quic_sleep_impl.h",
-    "quic/platform/impl/quic_stack_trace_impl.h",
     "quic/properties_based_quic_server_info.cc",
     "quic/properties_based_quic_server_info.h",
     "quic/quic_address_mismatch.cc",
@@ -809,8 +802,6 @@ component("net") {
     "quic/quic_connection_logger.h",
     "quic/quic_connectivity_monitor.cc",
     "quic/quic_connectivity_monitor.h",
-    "quic/quic_connectivity_probing_manager.cc",
-    "quic/quic_connectivity_probing_manager.h",
     "quic/quic_context.cc",
     "quic/quic_context.h",
     "quic/quic_crypto_client_config_handle.cc",
@@ -837,12 +828,9 @@ component("net") {
     "quic/web_transport_client.h",
     "quic/web_transport_error.cc",
     "quic/web_transport_error.h",
-    "quiche/common/platform/impl/quiche_command_line_flags_impl.cc",
-    "quiche/common/platform/impl/quiche_command_line_flags_impl.h",
     "quiche/common/platform/impl/quiche_flag_utils_impl.h",
     "quiche/common/platform/impl/quiche_flags_impl.cc",
     "quiche/common/platform/impl/quiche_flags_impl.h",
-    "quiche/common/platform/impl/quiche_iovec_impl.h",
     "socket/client_socket_factory.cc",
     "socket/client_socket_factory.h",
     "socket/client_socket_handle.cc",
@@ -1182,7 +1170,7 @@ component("net") {
     ]
   }
 
-  if ((is_chromeos_ash || is_chromeos_lacros) && use_nss_certs) {
+  if (is_chromeos && use_nss_certs) {
     sources += [
       "cert/nss_cert_database_chromeos.cc",
       "cert/nss_cert_database_chromeos.h",
@@ -1289,7 +1277,6 @@ component("net") {
       "disk_cache/blockfile/file_win.cc",
       "disk_cache/blockfile/mapped_file_win.cc",
       "disk_cache/cache_util_win.cc",
-      "disk_cache/simple/simple_index_file_win.cc",
       "disk_cache/simple/simple_util_win.cc",
       "http/http_auth_handler_ntlm_win.cc",
       "http/http_auth_sspi_win.cc",
@@ -1334,7 +1321,6 @@ component("net") {
       "base/network_interfaces_posix.cc",
       "base/network_interfaces_posix.h",
       "disk_cache/cache_util_posix.cc",
-      "disk_cache/simple/simple_index_file_posix.cc",
       "disk_cache/simple/simple_util_posix.cc",
       "http/url_security_manager_posix.cc",
       "socket/socket_posix.cc",
@@ -2100,6 +2086,8 @@ static_library("test_support") {
     "socket/read_buffering_stream_socket.h",
     "socket/socket_test_util.cc",
     "socket/socket_test_util.h",
+    "socket/transport_client_socket_test_util.cc",
+    "socket/transport_client_socket_test_util.h",
     "spdy/spdy_test_util_common.cc",
     "spdy/spdy_test_util_common.h",
     "ssl/client_cert_identity_test_util.cc",
@@ -2472,14 +2460,7 @@ if (is_linux || is_chromeos || is_mac) {
 
 if (is_linux || is_chromeos) {
   static_library("epoll_server") {
-    sources = [
-      "tools/epoll_server/platform/impl/epoll_bug_impl.h",
-      "tools/epoll_server/platform/impl/epoll_export_impl.h",
-      "tools/epoll_server/platform/impl/epoll_logging_impl.h",
-      "tools/epoll_server/platform/impl/epoll_ptr_util_impl.h",
-      "tools/epoll_server/platform/impl/epoll_thread_impl.h",
-      "tools/epoll_server/platform/impl/epoll_time_impl.h",
-    ]
+    sources = []
     deps = [
       ":net",
       "//base",
@@ -2494,8 +2475,6 @@ if (is_linux || is_chromeos) {
     sources = [
       "quic/platform/impl/quic_epoll_clock.cc",
       "quic/platform/impl/quic_epoll_clock.h",
-      "quic/platform/impl/quic_stream_buffer_allocator_impl.h",
-      "quic/platform/impl/quic_udp_socket_platform_impl.h",
     ]
     deps = [
       ":epoll_server",
@@ -2556,11 +2535,7 @@ if (is_android || is_linux || is_chromeos) {
 
 source_set("epoll_server_test_tools") {
   testonly = true
-  sources = [
-    "tools/epoll_server/platform/impl/epoll_address_test_utils_impl.h",
-    "tools/epoll_server/platform/impl/epoll_expect_bug_impl.h",
-    "tools/epoll_server/platform/impl/epoll_test_impl.h",
-  ]
+  sources = []
   deps = [
     ":net",
     ":test_support",
@@ -2589,12 +2564,7 @@ source_set("spdy_test_tools") {
 
 source_set("quiche_test_tools") {
   testonly = true
-  sources = [
-    "quiche/common/platform/impl/quiche_test_helpers_impl.cc",
-    "quiche/common/platform/impl/quiche_test_helpers_impl.h",
-    "quiche/common/platform/impl/quiche_test_impl.cc",
-    "quiche/common/platform/impl/quiche_test_impl.h",
-  ]
+  sources = []
   deps = [
     ":net",
     ":quic_test_flags_utils",
@@ -2630,12 +2600,6 @@ source_set("quic_test_tools") {
     "quic/mock_encrypter.h",
     "quic/mock_quic_context.cc",
     "quic/mock_quic_context.h",
-    "quic/platform/impl/quic_expect_bug_impl.h",
-    "quic/platform/impl/quic_mock_log_impl.h",
-    "quic/platform/impl/quic_test_loopback_impl.cc",
-    "quic/platform/impl/quic_test_loopback_impl.h",
-    "quic/platform/impl/quic_test_output_impl.cc",
-    "quic/platform/impl/quic_test_output_impl.h",
     "quic/test_task_runner.cc",
     "quic/test_task_runner.h",
     "third_party/quiche/src/quic/test_tools/test_ticket_crypter.cc",
@@ -2663,8 +2627,6 @@ source_set("quic_test_tools") {
 
 source_set("simple_quic_tools") {
   sources = [
-    "quic/platform/impl/quic_default_proof_providers_impl.cc",
-    "quic/platform/impl/quic_default_proof_providers_impl.h",
     "tools/quic/quic_client_message_loop_network_helper.cc",
     "tools/quic/quic_client_message_loop_network_helper.h",
     "tools/quic/quic_http_proxy_backend.cc",
@@ -4188,6 +4150,7 @@ test("net_unittests") {
     "cert/internal/revocation_util_unittest.cc",
     "cert/internal/signature_algorithm_unittest.cc",
     "cert/internal/simple_path_builder_delegate_unittest.cc",
+    "cert/internal/system_trust_store_unittest.cc",
     "cert/internal/test_helpers.cc",
     "cert/internal/test_helpers.h",
     "cert/internal/trust_store_collection_unittest.cc",
@@ -4235,6 +4198,7 @@ test("net_unittests") {
     "disk_cache/blockfile/storage_block_unittest.cc",
     "disk_cache/cache_util_unittest.cc",
     "disk_cache/entry_unittest.cc",
+    "disk_cache/simple/simple_file_enumerator_unittest.cc",
     "disk_cache/simple/simple_file_tracker_unittest.cc",
     "disk_cache/simple/simple_index_file_unittest.cc",
     "disk_cache/simple/simple_index_unittest.cc",
@@ -4340,7 +4304,6 @@ test("net_unittests") {
     "quic/quic_chromium_client_stream_test.cc",
     "quic/quic_chromium_connection_helper_test.cc",
     "quic/quic_clock_skew_detector_test.cc",
-    "quic/quic_connectivity_probing_manager_test.cc",
     "quic/quic_end_to_end_unittest.cc",
     "quic/quic_http_stream_test.cc",
     "quic/quic_http_utils_test.cc",
@@ -4732,6 +4695,7 @@ test("net_unittests") {
       "disk_cache/blockfile/block_files_unittest.cc",
 
       # Need to read input data files.
+      "disk_cache/simple/simple_file_enumerator_unittest.cc",
       "socket/ssl_server_socket_unittest.cc",
       "spdy/fuzzing/hpack_fuzz_util_test.cc",
 

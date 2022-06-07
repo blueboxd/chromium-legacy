@@ -15,7 +15,9 @@ FakeMultideviceFeatureAccessManager::FakeMultideviceFeatureAccessManager(
     : notification_access_status_(notification_access_status),
       camera_roll_access_status_(camera_roll_access_status),
       apps_access_status_(apps_access_status),
-      access_prohibited_reason_(reason) {}
+      access_prohibited_reason_(reason) {
+  ready_for_access_features_ = {};
+}
 
 FakeMultideviceFeatureAccessManager::~FakeMultideviceFeatureAccessManager() =
     default;
@@ -52,6 +54,19 @@ void FakeMultideviceFeatureAccessManager::SetAppsAccessStatusInternal(
     return;
 
   apps_access_status_ = apps_access_status;
+  NotifyAppsAccessChanged();
+}
+
+void FakeMultideviceFeatureAccessManager::SetFeatureReadyForAccess(
+    multidevice_setup::mojom::Feature feature) {
+  ready_for_access_features_.push_back(feature);
+}
+
+bool FakeMultideviceFeatureAccessManager::IsAccessRequestAllowed(
+    multidevice_setup::mojom::Feature feature) {
+  const auto it = std::find(ready_for_access_features_.begin(),
+                            ready_for_access_features_.end(), feature);
+  return (it != ready_for_access_features_.end());
 }
 
 MultideviceFeatureAccessManager::AccessStatus
@@ -102,6 +117,25 @@ void FakeMultideviceFeatureAccessManager::SetNotificationSetupOperationStatus(
 
   MultideviceFeatureAccessManager::SetNotificationSetupOperationStatus(
       new_status);
+}
+
+void FakeMultideviceFeatureAccessManager::SetCombinedSetupOperationStatus(
+    CombinedAccessSetupOperation::Status new_status) {
+  if (new_status ==
+      CombinedAccessSetupOperation::Status::kCompletedSuccessfully) {
+    SetCameraRollAccessStatusInternal(AccessStatus::kAccessGranted);
+  }
+  MultideviceFeatureAccessManager::SetCombinedSetupOperationStatus(new_status);
+}
+
+void FakeMultideviceFeatureAccessManager::
+    SetFeatureSetupRequestSupportedInternal(bool supported) {
+  is_feature_setup_request_supported_ = supported;
+}
+
+bool FakeMultideviceFeatureAccessManager::GetFeatureSetupRequestSupported()
+    const {
+  return is_feature_setup_request_supported_;
 }
 
 }  // namespace phonehub

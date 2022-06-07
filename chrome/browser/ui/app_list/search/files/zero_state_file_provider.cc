@@ -17,7 +17,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -141,12 +140,7 @@ bool ZeroStateFileProvider::ShouldBlockZeroState() const {
 }
 
 void ZeroStateFileProvider::Start(const std::u16string& query) {
-  // Results should be cleared on search only in the classic launcher. In the
-  // productivity launcher, this is handled automatically by the search
-  // controller.
-  if (!ash::features::IsProductivityLauncherEnabled()) {
-    ClearResultsSilently();
-  }
+  ClearResultsSilently();
 }
 
 void ZeroStateFileProvider::StartZeroState() {

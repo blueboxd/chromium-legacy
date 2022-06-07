@@ -6,6 +6,7 @@
 
 #include "base/notreached.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -34,7 +35,8 @@ FrameTreeNode* CreateDelegateFrameTreeNode(
 }  // namespace
 
 FencedFrame::FencedFrame(
-    base::SafeRef<RenderFrameHostImpl> owner_render_frame_host)
+    base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
+    blink::mojom::FencedFrameMode mode)
     : web_contents_(static_cast<WebContentsImpl*>(
           WebContents::FromRenderFrameHost(&*owner_render_frame_host))),
       owner_render_frame_host_(owner_render_frame_host),
@@ -50,7 +52,8 @@ FencedFrame::FencedFrame(
                                       /*render_widget_delegate=*/web_contents_,
                                       /*manager_delegate=*/web_contents_,
                                       /*page_delegate=*/web_contents_,
-                                      FrameTree::Type::kFencedFrame)) {
+                                      FrameTree::Type::kFencedFrame)),
+      mode_(mode) {
   scoped_refptr<SiteInstance> site_instance =
       SiteInstance::Create(web_contents_->GetBrowserContext());
   // Note that even though this is happening in response to an event in the
@@ -70,10 +73,6 @@ FencedFrame::FencedFrame(
   web_contents_->NotifySwappedFromRenderManager(
       /*old_frame=*/nullptr,
       frame_tree_->root()->render_manager()->current_frame_host());
-
-  CreateProxyAndAttachToOuterFrameTree();
-
-  devtools_instrumentation::FencedFrameCreated(owner_render_frame_host_, this);
 }
 
 FencedFrame::~FencedFrame() {
@@ -84,7 +83,20 @@ FencedFrame::~FencedFrame() {
 
 void FencedFrame::Navigate(const GURL& url,
                            base::TimeTicks navigation_start_time) {
+  // We don't need guard against a bad message in the case of prerendering since
+  // we wouldn't even establish the mojo connection in that case.
+  DCHECK_NE(RenderFrameHost::LifecycleState::kPrerendering,
+            owner_render_frame_host_->GetLifecycleState());
+
   FrameTreeNode* inner_root = frame_tree_->root();
+
+  // Rerandomize the fenced frame's storage partitioning nonce, so that state
+  // isn't carried over from the previous document. This is necessary in order
+  // to prevent local joining of extra information from the embedder or
+  // special information hidden behind the opaque URL.
+  // TODO(crbug.com/1123606): Reinitialize more of the fenced frame metadata
+  // as needed to isolate state across navigations.
+  inner_root->SetFencedFrameNonceIfNeeded();
 
   // TODO(crbug.com/1237552): Resolve the discussion around navigations being
   // treated as downloads, and implement the correct thing.
@@ -108,7 +120,8 @@ void FencedFrame::Navigate(const GURL& url,
       /*post_body=*/nullptr, /*extra_headers=*/"",
       /*blob_url_loader_factory=*/nullptr,
       network::mojom::SourceLocation::New(), /*has_user_gesture=*/false,
-      /*impression=*/absl::nullopt, navigation_start_time);
+      /*impression=*/absl::nullopt, navigation_start_time,
+      FencedFrameURLMapping::IsValidUrnUuidURL(url));
 }
 
 bool FencedFrame::IsHidden() {
@@ -146,8 +159,10 @@ void FencedFrame::CreateProxyAndAttachToOuterFrameTree() {
 
   FrameTreeNode* inner_root = frame_tree_->root();
   proxy_to_inner_main_frame_ =
-      inner_root->render_manager()->CreateOuterDelegateProxy(
-          owner_render_frame_host_->GetSiteInstance());
+      inner_root->current_frame_host()
+          ->browsing_context_state()
+          ->CreateOuterDelegateProxy(
+              owner_render_frame_host_->GetSiteInstance(), inner_root);
 
   inner_root->current_frame_host()->PropagateEmbeddingTokenToParentFrame();
 
@@ -180,6 +195,8 @@ void FencedFrame::CreateProxyAndAttachToOuterFrameTree() {
   CHECK(child_rwhv->IsRenderWidgetHostViewChildFrame());
   inner_render_manager->SetRWHViewForInnerFrameTree(
       static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
+
+  devtools_instrumentation::FencedFrameCreated(owner_render_frame_host_, this);
 }
 
 const base::UnguessableToken& FencedFrame::GetDevToolsFrameToken() const {

@@ -29,7 +29,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -474,6 +473,19 @@ ArcSessionManager::ExpansionResult ReadSaltInternal() {
 bool IsDlcRequired() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ash::switches::kEnableHoudiniDlc);
+}
+
+// Inform ArcMetricsServices about the starting time of ARC provisioning.
+void ReportProvisioningStartTime(const base::TimeTicks& start_time,
+                                 Profile* profile) {
+  ArcMetricsService* metrics_service =
+      ArcMetricsService::GetForBrowserContext(profile);
+  // metrics_service might be null in unit tests.
+  if (metrics_service) {
+    auto account_type_suffix = GetHistogramNameByUserType("", profile);
+    metrics_service->ReportProvisioningStartTime(start_time,
+                                                 account_type_suffix);
+  }
 }
 
 }  // namespace
@@ -1641,6 +1653,7 @@ void ArcSessionManager::MaybeStartTimer() {
 
   VLOG(1) << "Setup provisioning timer";
   sign_in_start_time_ = base::TimeTicks::Now();
+  ReportProvisioningStartTime(sign_in_start_time_, profile_);
   arc_sign_in_timer_.Start(
       FROM_HERE, GetArcSignInTimeout(),
       base::BindOnce(&ArcSessionManager::OnArcSignInTimeout,

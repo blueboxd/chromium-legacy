@@ -14,7 +14,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -36,7 +35,6 @@
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -2573,7 +2571,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   const int inset_height = 200;
   parent_render_widget_host_aura->SetLastPointerType(
       ui::EventPointerType::kTouch);
-  parent_render_widget_host_aura->SetInsets(gfx::Insets(0, 0, inset_height, 0));
+  parent_render_widget_host_aura->SetInsets(
+      gfx::Insets::TLBR(0, 0, inset_height, 0));
 
   // After focus on editable element, we expect element to be scrolled
   // into view. Verify that the scroll offset on the root document
@@ -5966,10 +5965,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, MAYBE_PopupMenuTest) {
 
   popup_waiter->Wait();
   gfx::Rect popup_rect = popup_waiter->last_initial_rect();
-  if (IsUseZoomForDSFEnabled()) {
-    popup_rect = gfx::ScaleToRoundedRect(popup_rect,
-                                         1 / screen_info.device_scale_factor);
-  }
+  popup_rect =
+      gfx::ScaleToRoundedRect(popup_rect, 1 / screen_info.device_scale_factor);
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
   // On Mac and Android we receive the coordinates before they are transformed,
   // so they are still relative to the out-of-process iframe origin.

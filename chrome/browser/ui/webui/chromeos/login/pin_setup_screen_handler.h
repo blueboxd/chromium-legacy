@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_PIN_SETUP_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_PIN_SETUP_SCREEN_HANDLER_H_
 
+#include <string>
+
+#include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
@@ -39,7 +42,7 @@ class PinSetupScreenHandler : public BaseScreenHandler,
  public:
   using TView = PinSetupScreenView;
 
-  explicit PinSetupScreenHandler(JSCallsContainer* js_calls_container);
+  PinSetupScreenHandler();
 
   PinSetupScreenHandler(const PinSetupScreenHandler&) = delete;
   PinSetupScreenHandler& operator=(const PinSetupScreenHandler&) = delete;
@@ -49,13 +52,13 @@ class PinSetupScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
+  void GetAdditionalParameters(base::Value::Dict* dict) override;
   void RegisterMessages() override;
 
   // PinSetupScreenView:
   void Bind(ash::PinSetupScreen* screen) override;
   void Hide() override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
   void Show(const std::string& token, bool is_child_account) override;
   void SetLoginSupportAvailable(bool available) override;
 

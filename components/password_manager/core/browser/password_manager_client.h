@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/sync/driver/sync_service.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -99,7 +100,9 @@ enum class SyncState {
 };
 
 // An abstraction of operations that depend on the embedders (e.g. Chrome)
-// environment.
+// environment. PasswordManagerClient is instantiated once per WebContents.
+// Main frame w.r.t WebContents refers to the primary main frame so usages of
+// main frame here are also referring to the primary main frame.
 class PasswordManagerClient {
  public:
   using CredentialsCallback = base::OnceCallback<void(const PasswordForm*)>;
@@ -222,6 +225,24 @@ class PasswordManagerClient {
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           submitted_manager) = 0;
 
+  // Informs that a successful login has just happened.
+  // TODO(crbug.com/1299394): Remove when the TimeToSuccessfulLogin metric is
+  // deprecated.
+  virtual void NotifyOnSuccessfulLogin(
+      const std::u16string& submitted_username) {}
+
+  // Informs that a credential filled by Touch To Fill can be submitted.
+  // TODO(crbug.com/1299394): Remove when the TimeToSuccessfulLogin metric is
+  // deprecated.
+  virtual void StartSubmissionTrackingAfterTouchToFill(
+      const std::u16string& filled_username) {}
+
+  // Informs that a successful submission didn't happen after Touch To Fill
+  // (e.g. a submission failed, a user edited an input field manually).
+  // TODO(crbug.com/1299394): Remove when the TimeToSuccessfulLogin metric is
+  // deprecated.
+  virtual void ResetSubmissionTrackingAfterTouchToFill() {}
+
   // Inform the embedder that the site called 'store()'.
   virtual void NotifyStorePasswordCalled() = 0;
 
@@ -274,6 +295,9 @@ class PasswordManagerClient {
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
 
+  // Gets the sync service associated with this client.
+  virtual const syncer::SyncService* GetSyncService() const = 0;
+
   // Returns the profile PasswordStore associated with this instance.
   virtual PasswordStoreInterface* GetProfilePasswordStore() const = 0;
 
@@ -297,6 +321,8 @@ class PasswordManagerClient {
   virtual bool WasLastNavigationHTTPError() const;
 
   // Obtains the cert status for the main frame.
+  // The WebContents only has a primary main frame, so MainFrame here refers to
+  // the primary main frame.
   virtual net::CertStatus GetMainFrameCertStatus() const;
 
   // Shows the dialog where the user can accept or decline the global autosignin
@@ -326,6 +352,8 @@ class PasswordManagerClient {
   virtual autofill::AutofillDownloadManager* GetAutofillDownloadManager();
 
   // Returns true if the main frame URL has a secure origin.
+  // The WebContents only has a primary main frame, so MainFrame here refers to
+  // the primary main frame.
   virtual bool IsCommittedMainFrameSecure() const;
 
   // Returns the committed main frame URL.

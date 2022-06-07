@@ -8,9 +8,11 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/magnifier/magnifier_utils.h"
+#include "ash/accessibility/scoped_a11y_override_window_setter.h"
 #include "ash/capture_mode/capture_label_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_button.h"
+#include "ash/capture_mode/capture_mode_camera_preview_view.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_settings_view.h"
@@ -47,43 +49,18 @@ std::vector<aura::Window*> GetWindowListIgnoreModalForActiveDesk() {
       DesksMruType::kActiveDesk);
 }
 
+views::Widget* GetCameraPreviewWidget() {
+  auto* camera_controller = CaptureModeController::Get()->camera_controller();
+  return camera_controller ? camera_controller->camera_preview_widget()
+                           : nullptr;
+}
+
+CameraPreviewView* GetCameraPreviewView() {
+  auto* camera_controller = CaptureModeController::Get()->camera_controller();
+  return camera_controller ? camera_controller->camera_preview_view() : nullptr;
+}
+
 }  // namespace
-
-// -----------------------------------------------------------------------------
-// CaptureModeSessionFocusCycler::ScopedA11yOverrideWindowSetter:
-
-// Scoped class that helps setting the window for accessibility focus for the
-// duration of the lifetime of `CaptureModeSessionFocusCycler`. Clears the
-// accessibility focus window when destructed.
-class CaptureModeSessionFocusCycler::ScopedA11yOverrideWindowSetter
-    : public aura::WindowObserver {
- public:
-  ScopedA11yOverrideWindowSetter() = default;
-  ScopedA11yOverrideWindowSetter(const ScopedA11yOverrideWindowSetter&) =
-      delete;
-  ScopedA11yOverrideWindowSetter& operator=(
-      const ScopedA11yOverrideWindowSetter&) = delete;
-  ~ScopedA11yOverrideWindowSetter() override {
-    MaybeUpdateA11yOverrideWindow(nullptr);
-  }
-
-  // Updates the a11y focus window if `current_a11y_override_window_` is not
-  // equal to `a11y_override_window`. This will make sure the accessibility
-  // features can always get the correct a11y override window to focus before
-  // getting the window with actual focus.
-  void MaybeUpdateA11yOverrideWindow(aura::Window* a11y_override_window) {
-    if (current_a11y_override_window_ != a11y_override_window) {
-      Shell::Get()->accessibility_controller()->SetA11yOverrideWindow(
-          a11y_override_window);
-      current_a11y_override_window_ = a11y_override_window;
-    }
-  }
-
- private:
-  // Caches the value of the a11y override window. It will be updated when a
-  // different window should get focus from the accessibility features.
-  aura::Window* current_a11y_override_window_ = nullptr;
-};
 
 // -----------------------------------------------------------------------------
 // CaptureModeSessionFocusCycler::HighlightableView:
@@ -144,13 +121,70 @@ void CaptureModeSessionFocusCycler::HighlightableView::ClickView() {
 }
 
 // -----------------------------------------------------------------------------
+// HighlightableWindow:
+
+CaptureModeSessionFocusCycler::HighlightableWindow::HighlightableWindow(
+    aura::Window* window,
+    CaptureModeSession* session)
+    : window_(window), session_(session) {
+  DCHECK(window_);
+  window_->AddObserver(this);
+}
+
+CaptureModeSessionFocusCycler::HighlightableWindow::~HighlightableWindow() {
+  window_->RemoveObserver(this);
+}
+
+views::View* CaptureModeSessionFocusCycler::HighlightableWindow::GetView() {
+  return nullptr;
+}
+
+void CaptureModeSessionFocusCycler::HighlightableWindow::PseudoFocus() {
+  has_focus_ = true;
+
+  DCHECK(window_);
+  session_->HighlightWindowForTab(window_);
+
+  // TODO(afakhry): Check with a11y team if we need to focus on a
+  // different region of the window.
+  magnifier_utils::MaybeUpdateActiveMagnifierFocus(
+      window_->GetBoundsInScreen().origin());
+}
+
+void CaptureModeSessionFocusCycler::HighlightableWindow::PseudoBlur() {
+  has_focus_ = false;
+}
+
+void CaptureModeSessionFocusCycler::HighlightableWindow::OnWindowDestroying(
+    aura::Window* window) {
+  session_->focus_cycler_->highlightable_windows_.erase(window);
+  // `this` will be deleted after the above operation.
+}
+
+// -----------------------------------------------------------------------------
 // CaptureModeSessionFocusCycler:
 
 CaptureModeSessionFocusCycler::CaptureModeSessionFocusCycler(
     CaptureModeSession* session)
-    : session_(session),
+    : groups_for_fullscreen_{FocusGroup::kNone, FocusGroup::kTypeSource,
+                             FocusGroup::kCameraPreview,
+                             FocusGroup::kSettingsMenu,
+                             FocusGroup::kSettingsClose},
+      groups_for_region_{FocusGroup::kNone,          FocusGroup::kTypeSource,
+                         FocusGroup::kSelection,     FocusGroup::kCameraPreview,
+                         FocusGroup::kCaptureButton, FocusGroup::kSettingsMenu,
+                         FocusGroup::kSettingsClose},
+      groups_for_window_{FocusGroup::kNone, FocusGroup::kTypeSource,
+                         FocusGroup::kCaptureWindow, FocusGroup::kSettingsMenu,
+                         FocusGroup::kSettingsClose},
+      session_(session),
       scoped_a11y_overrider_(
-          std::make_unique<ScopedA11yOverrideWindowSetter>()) {}
+          std::make_unique<ScopedA11yOverrideWindowSetter>()) {
+  for (auto* window : GetWindowListIgnoreModalForActiveDesk()) {
+    highlightable_windows_.emplace(
+        window, std::make_unique<HighlightableWindow>(window, session_));
+  }
+}
 
 CaptureModeSessionFocusCycler::~CaptureModeSessionFocusCycler() = default;
 
@@ -188,9 +222,14 @@ void CaptureModeSessionFocusCycler::AdvanceFocus(bool reverse) {
   scoped_a11y_overrider_->MaybeUpdateA11yOverrideWindow(
       GetA11yOverrideWindow());
 
-  // Focus the new item.
-  std::vector<HighlightableView*> current_views =
+  const std::vector<HighlightableView*> current_views =
       GetGroupItems(current_focus_group_);
+  // If `reverse`, focus the HighlightableWindow first before moving the focus
+  // to items inside it.
+  if (reverse)
+    MaybeFocusHighlightableWindow(current_views);
+
+  // Focus the new item.
   if (!current_views.empty()) {
     DCHECK_LT(focus_index_, current_views.size());
     current_views[focus_index_]->PseudoFocus();
@@ -225,24 +264,6 @@ void CaptureModeSessionFocusCycler::AdvanceFocus(bool reverse) {
 
     return;
   }
-
-  if (current_focus_group_ == FocusGroup::kCaptureWindow) {
-    // Windows highlight is handled directly on a layer owned by |session_|.
-    const std::vector<aura::Window*> windows =
-        GetWindowListIgnoreModalForActiveDesk();
-    // Make sure |focus_index_| is still valid since window could be
-    // destroyed.
-    if (windows.empty() || focus_index_ >= windows.size()) {
-      AdvanceFocus(reverse);
-    } else {
-      auto* window = windows[focus_index_];
-      session_->HighlightWindowForTab(window);
-      // TODO(afakhry): Check with a11y team if we need to focus on a different
-      // region of the window.
-      magnifier_utils::MaybeUpdateActiveMagnifierFocus(
-          window->GetBoundsInScreen().origin());
-    }
-  }
 }
 
 void CaptureModeSessionFocusCycler::ClearFocus() {
@@ -263,7 +284,8 @@ bool CaptureModeSessionFocusCycler::OnSpacePressed() {
   if (current_focus_group_ == FocusGroup::kNone ||
       current_focus_group_ == FocusGroup::kSelection ||
       current_focus_group_ == FocusGroup::kPendingSettings ||
-      current_focus_group_ == FocusGroup::kCaptureWindow) {
+      current_focus_group_ == FocusGroup::kCaptureWindow ||
+      current_focus_group_ == FocusGroup::kCameraPreview) {
     return false;
   }
 
@@ -308,6 +330,16 @@ bool CaptureModeSessionFocusCycler::OnSpacePressed() {
 bool CaptureModeSessionFocusCycler::RegionGroupFocused() const {
   return current_focus_group_ == FocusGroup::kSelection ||
          current_focus_group_ == FocusGroup::kCaptureButton;
+}
+
+bool CaptureModeSessionFocusCycler::CaptureBarFocused() const {
+  return current_focus_group_ == FocusGroup::kTypeSource ||
+         current_focus_group_ == FocusGroup::kSettingsClose ||
+         current_focus_group_ == FocusGroup::kPendingSettings;
+}
+
+bool CaptureModeSessionFocusCycler::CaptureLabelFocused() const {
+  return current_focus_group_ == FocusGroup::kCaptureButton;
 }
 
 FineTunePosition CaptureModeSessionFocusCycler::GetFocusedFineTunePosition()
@@ -367,62 +399,70 @@ void CaptureModeSessionFocusCycler::ClearCurrentVisibleFocus() {
 
 CaptureModeSessionFocusCycler::FocusGroup
 CaptureModeSessionFocusCycler::GetNextGroup(bool reverse) const {
-  // The selection UI and capture button are focusable only when the label
-  // button of CaptureLabelView is visible.
-  bool selection_available = false;
-  views::Widget* widget = session_->capture_label_widget_.get();
-  if (widget) {
-    auto* capture_label_view =
-        static_cast<CaptureLabelView*>(widget->GetContentsView());
-    selection_available = capture_label_view->label_button()->GetVisible();
+  if (current_focus_group_ == FocusGroup::kPendingSettings) {
+    DCHECK(GetSettingsMenuWidget());
+    return FocusGroup::kSettingsMenu;
   }
 
-  const bool capture_window_mode =
-      session_->controller_->source() == CaptureModeSource::kWindow;
+  const std::vector<FocusGroup>& groups_list = GetCurrentGroupList();
+  const int increment = reverse ? -1 : 1;
+  const auto iter = base::ranges::find(groups_list, current_focus_group_);
+  DCHECK(iter != groups_list.end());
+  size_t next_group_index = std::distance(groups_list.begin(), iter);
 
-  switch (current_focus_group_) {
+  do {
+    next_group_index = (next_group_index + increment) % groups_list.size();
+  } while (!IsGroupAvailable(groups_list[next_group_index]));
+
+  return groups_list[next_group_index];
+}
+
+const std::vector<CaptureModeSessionFocusCycler::FocusGroup>&
+CaptureModeSessionFocusCycler::GetCurrentGroupList() const {
+  switch (session_->controller_->source()) {
+    case CaptureModeSource::kFullscreen:
+      return groups_for_fullscreen_;
+    case CaptureModeSource::kRegion:
+      return groups_for_region_;
+    case CaptureModeSource::kWindow:
+      return groups_for_window_;
+  }
+}
+
+bool CaptureModeSessionFocusCycler::IsGroupAvailable(FocusGroup group) const {
+  switch (group) {
     case FocusGroup::kNone:
-      return reverse ? FocusGroup::kSettingsClose : FocusGroup::kTypeSource;
     case FocusGroup::kTypeSource:
-      if (reverse)
-        return FocusGroup::kSettingsClose;
-      if (selection_available)
-        return FocusGroup::kSelection;
-      return capture_window_mode ? FocusGroup::kCaptureWindow
-                                 : FocusGroup::kSettingsClose;
-    case FocusGroup::kSelection:
-      DCHECK(selection_available);
-      return reverse ? FocusGroup::kTypeSource : FocusGroup::kCaptureButton;
-    case FocusGroup::kCaptureButton:
-      DCHECK(selection_available);
-      return reverse ? FocusGroup::kSelection : FocusGroup::kSettingsClose;
-    case FocusGroup::kCaptureWindow:
-      DCHECK(capture_window_mode);
-      return reverse ? FocusGroup::kTypeSource : FocusGroup::kSettingsClose;
     case FocusGroup::kSettingsClose:
-      if (!reverse)
-        return FocusGroup::kTypeSource;
-      if (capture_window_mode)
-        return FocusGroup::kCaptureWindow;
-      return selection_available ? FocusGroup::kCaptureButton
-                                 : FocusGroup::kTypeSource;
     case FocusGroup::kPendingSettings:
-      DCHECK(GetSettingsMenuWidget());
-      return FocusGroup::kSettingsMenu;
+      return true;
+    case FocusGroup::kSelection:
+    case FocusGroup::kCaptureButton: {
+      // The selection UI and capture button are focusable only when the label
+      // button of CaptureLabelView is visible.
+      auto* widget = session_->capture_label_widget_.get();
+      if (!widget)
+        return false;
+      auto* capture_label_view =
+          static_cast<CaptureLabelView*>(widget->GetContentsView());
+      return capture_label_view->label_button()->GetVisible();
+    }
+    case FocusGroup::kCaptureWindow:
+      return session_->controller_->source() == CaptureModeSource::kWindow &&
+             GetGroupSize(FocusGroup::kCaptureWindow) > 0;
     case FocusGroup::kSettingsMenu:
-      return reverse ? FocusGroup::kTypeSource : FocusGroup::kSettingsClose;
+      return session_->capture_mode_settings_view_;
+    case FocusGroup::kCameraPreview: {
+      auto* camera_preview_widget = GetCameraPreviewWidget();
+      return camera_preview_widget && camera_preview_widget->IsVisible();
+    }
   }
-
-  NOTREACHED();
-  return FocusGroup::kNone;
 }
 
 size_t CaptureModeSessionFocusCycler::GetGroupSize(FocusGroup group) const {
   if (group == FocusGroup::kSelection)
     return 9u;
-  return group == FocusGroup::kCaptureWindow
-             ? GetWindowListIgnoreModalForActiveDesk().size()
-             : GetGroupItems(group).size();
+  return GetGroupItems(group).size();
 }
 
 std::vector<CaptureModeSessionFocusCycler::HighlightableView*>
@@ -432,7 +472,6 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
     case FocusGroup::kNone:
     case FocusGroup::kSelection:
     case FocusGroup::kPendingSettings:
-    case FocusGroup::kCaptureWindow:
       break;
     case FocusGroup::kTypeSource: {
       CaptureModeBarView* bar_view = session_->capture_mode_bar_view_;
@@ -456,6 +495,22 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
       items = {static_cast<CaptureLabelView*>(widget->GetContentsView())};
       break;
     }
+    case FocusGroup::kCaptureWindow: {
+      const std::vector<aura::Window*> windows =
+          GetWindowListIgnoreModalForActiveDesk();
+      if (!windows.empty()) {
+        const std::vector<HighlightableView*> camera_items =
+            GetGroupItems(FocusGroup::kCameraPreview);
+        for (auto* window : windows) {
+          auto iter = highlightable_windows_.find(window);
+          if (iter != highlightable_windows_.end()) {
+            items.push_back(iter->second.get());
+            items.insert(items.end(), camera_items.begin(), camera_items.end());
+          }
+        }
+      }
+      break;
+    }
     case FocusGroup::kSettingsClose: {
       CaptureModeBarView* bar_view = session_->capture_mode_bar_view_;
       items = {bar_view->settings_button(), bar_view->close_button()};
@@ -466,6 +521,12 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
           session_->capture_mode_settings_view_;
       DCHECK(settings_view);
       items = settings_view->GetHighlightableItems();
+      break;
+    }
+    case FocusGroup::kCameraPreview: {
+      auto* camera_preview_view = GetCameraPreviewView();
+      if (camera_preview_view)
+        items = {camera_preview_view, camera_preview_view->resize_button()};
       break;
     }
   }
@@ -489,11 +550,17 @@ aura::Window* CaptureModeSessionFocusCycler::GetA11yOverrideWindow() const {
     case FocusGroup::kSettingsClose:
     case FocusGroup::kPendingSettings:
       return session_->capture_mode_bar_widget()->GetNativeWindow();
+    case FocusGroup::kCameraPreview:
+      return GetCameraPreviewWidget()->GetNativeWindow();
   }
 }
 
 bool CaptureModeSessionFocusCycler::FindFocusedViewAndUpdateFocusIndex(
     std::vector<HighlightableView*> views) {
+  // No need to update `focus_index_` if the corresponding view is focused now.
+  if (focus_index_ < views.size() && views[focus_index_]->has_focus())
+    return true;
+
   const size_t current_focus_index =
       std::find_if(views.begin(), views.end(),
                    [](CaptureModeSessionFocusCycler::HighlightableView* item) {
@@ -568,6 +635,30 @@ void CaptureModeSessionFocusCycler::UpdateA11yAnnotation() {
     const int next_index = (i + 1) % size;
     update_a11y_widget_focus(a11y_widgets[i], a11y_widgets[previous_index],
                              a11y_widgets[next_index]);
+  }
+}
+
+void CaptureModeSessionFocusCycler::MaybeFocusHighlightableWindow(
+    const std::vector<HighlightableView*>& current_views) {
+  if (current_focus_group_ != FocusGroup::kCaptureWindow)
+    return;
+
+  const std::vector<HighlightableView*> camera_preview_group_items =
+      GetGroupItems(FocusGroup::kCameraPreview);
+  if (camera_preview_group_items.empty())
+    return;
+
+  DCHECK(!current_views.empty());
+  // Call HighlightableWindow::PseudoFocus() to highlight the window first
+  // before moving the focus to the last focusable item inside the camera
+  // preview. This will set the window as the current selected window, which
+  // will move the camera preview inside it.
+  if (current_views[focus_index_] == camera_preview_group_items.back()) {
+    const size_t focusable_items_in_a_window =
+        1 + camera_preview_group_items.size();
+    const size_t window_index = (focus_index_ / focusable_items_in_a_window) *
+                                focusable_items_in_a_window;
+    current_views[window_index]->PseudoFocus();
   }
 }
 

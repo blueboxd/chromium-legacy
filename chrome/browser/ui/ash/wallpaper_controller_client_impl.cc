@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 
+#include <algorithm>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/settings/cros_settings_names.h"
@@ -51,6 +54,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_service.h"
@@ -182,7 +186,8 @@ std::string GetDailyRefreshCollectionId(value_store::ValueStore* value_store) {
     return std::string();
 
   const auto* daily_refresh_info_string =
-      read_result.settings().FindStringKey(kChromeAppDailyRefreshInfoPref);
+      read_result.settings().GetDict().FindString(
+          kChromeAppDailyRefreshInfoPref);
 
   if (!daily_refresh_info_string)
     return std::string();
@@ -194,7 +199,7 @@ std::string GetDailyRefreshCollectionId(value_store::ValueStore* value_store) {
     return std::string();
 
   const auto* collection_id =
-      daily_refresh_info->FindStringKey(kChromeAppCollectionId);
+      daily_refresh_info->GetDict().FindString(kChromeAppCollectionId);
 
   if (!collection_id)
     return std::string();
@@ -655,7 +660,8 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
   DCHECK(profile);
   if (ash::features::IsWallpaperWebUIEnabled()) {
     web_app::SystemAppLaunchParams params;
-    params.url = GURL(ash::kChromeUIPersonalizationAppWallpaperSubpageURL);
+    params.url = GURL(ash::personalization_app::
+                          kChromeUIPersonalizationAppWallpaperSubpageURL);
     params.launch_source = apps::mojom::LaunchSource::kFromShelf;
     web_app::LaunchSystemWebAppAsync(
         profile, web_app::SystemAppType::PERSONALIZATION, params);
@@ -665,7 +671,7 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   if (proxy->AppRegistryCache().GetAppType(kWallpaperManagerId) ==
-      apps::mojom::AppType::kUnknown) {
+      apps::AppType::kUnknown) {
     return;
   }
 
@@ -700,7 +706,8 @@ void WallpaperControllerClientImpl::SetDefaultWallpaper(
 }
 
 void WallpaperControllerClientImpl::MigrateCollectionIdFromChromeApp(
-    const AccountId& account_id) {
+    const AccountId& account_id,
+    base::OnceCallback<void(const std::string&)> result_callback) {
   Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
   auto* extension_registry = extensions::ExtensionRegistry::Get(profile);
   const extensions::Extension* extension =
@@ -723,7 +730,8 @@ void WallpaperControllerClientImpl::MigrateCollectionIdFromChromeApp(
       extension, extensions::settings_namespace::LOCAL,
       base::BindOnce(
           &WallpaperControllerClientImpl::OnGetWallpaperChromeAppValueStore,
-          storage_weak_factory_.GetWeakPtr(), task_runner, account_id));
+          storage_weak_factory_.GetWeakPtr(), task_runner,
+          std::move(result_callback)));
 }
 
 void WallpaperControllerClientImpl::FetchDailyRefreshWallpaper(
@@ -784,16 +792,14 @@ WallpaperControllerClientImpl::GetDeviceWallpaperImageFilePath() {
 
 void WallpaperControllerClientImpl::OnGetWallpaperChromeAppValueStore(
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
-    const AccountId& account_id,
+    base::OnceCallback<void(const std::string&)> result_callback,
     value_store::ValueStore* value_store) {
   DCHECK(extensions::IsOnBackendSequence());
   std::string collection_id = GetDailyRefreshCollectionId(value_store);
   // Jump back to original task runner.
   main_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &WallpaperControllerClientImpl::SetDailyRefreshCollectionId,
-          weak_factory_.GetWeakPtr(), account_id, collection_id));
+      base::BindOnce(std::move(result_callback), std::move(collection_id)));
 }
 
 void WallpaperControllerClientImpl::SetDailyRefreshCollectionId(
@@ -824,11 +830,16 @@ void WallpaperControllerClientImpl::OnGooglePhotosPhotoFetched(
     FetchGooglePhotosPhotoCallback callback,
     ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
         response) {
-  if (!response->photos.has_value() || response->photos.value().size() != 1) {
-    std::move(callback).Run(nullptr);
-    return;
+  // If we have a `GooglePhotosPhoto`, pass that along. Otherwise, indicate to
+  // `callback` whether the the request succeeded or failed, since `callback`
+  // can take action if the `GooglePhotosPhoto` with the given id has been
+  // deleted.
+  if (response->photos.has_value() && response->photos.value().size() == 1) {
+    std::move(callback).Run(std::move(response->photos.value()[0]),
+                            /*success=*/true);
+  } else {
+    std::move(callback).Run(nullptr, /*success=*/response->photos.has_value());
   }
-  std::move(callback).Run(std::move(response->photos.value()[0]));
 }
 
 void WallpaperControllerClientImpl::ObserveVolumeManagerForAccountId(

@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/predictors/proxy_lookup_client_impl.h"
 #include "chrome/browser/predictors/resolve_host_client_impl.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -224,6 +225,8 @@ class PreconnectManager {
   void OnProxyLookupFinished(PreresolveJobId job_id, bool success);
   void FinishPreresolveJob(PreresolveJobId job_id, bool success);
   void AllPreresolvesForUrlFinished(PreresolveInfo* info);
+
+  // NOTE: Returns a non-null pointer outside of unittesting contexts.
   network::mojom::NetworkContext* GetNetworkContext() const;
 
   base::WeakPtr<Delegate> delegate_;

@@ -184,7 +184,6 @@ Cando eliminas o teu historial de navegación (completo ou dun sitio en concreto
 <translation id="200114059308480249">Queres incluír o texto circundante nas buscas de Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ficheiro}other{# ficheiros}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> abrirase en Chrome. Ao continuar, aceptas as <ph name="BEGIN_LINK1" />Condicións de servizo de Google<ph name="END_LINK1" />, así como as <ph name="BEGIN_LINK2" />Condicións de servizo adicionais de Google Chrome e Chrome OS<ph name="END_LINK2" />. Tamén é aplicable a <ph name="BEGIN_LINK3" />Política de privacidade<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Queres quitar o interese?</translation>
 <translation id="2020309681647789787">Terás o teu historial en todos os dispositivos sincronizados, de tal xeito que poidas continuar co que estabas facendo</translation>
 <translation id="2021896219286479412">Controis de pantalla completa</translation>
 <translation id="2038563949887743358">Activa a opción Ver como ordenador</translation>
@@ -213,6 +212,7 @@ Toca calquera palabra para buscala. Mantena premida para seleccionar máis ou me
 <translation id="2141396931810938595">Segundo o uso que fas do navegador</translation>
 <translation id="214888715418183969">Escolle a información que queiras compartir con Chrome. As métricas que compartas usaranse para axudar a mellorar as funcións, o rendemento e a estabilidade de Chrome.</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
+<translation id="2155214902713132423">Este método de verificación non está dispoñible para este dispositivo. Escolle unha opción distinta no outro dispositivo.</translation>
 <translation id="2157851137955077194">Para compartir contido do teu teléfono con outro dispositivo, activa a sincronización na configuración de Chrome dos dous dispositivos</translation>
 <translation id="2158408438301413340">Chrome non puido comprobar todos os contrasinais</translation>
 <translation id="2169830938017475061">Agora</translation>
@@ -733,7 +733,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5091199029769593641">Pronto se che mostrarán historias de <ph name="SITE_NAME" /> cando abras unha pestana nova. Os sitios que segues gárdanse na túa conta de Google. Podes xestionalos na configuración de Discover.</translation>
 <translation id="5091249083535528968">Datos de uso ampliados</translation>
 <translation id="509429900233858213">Produciuse un erro.</translation>
-<translation id="5098190077610408701">Queres engadir o interese?</translation>
 <translation id="5102401324271069229">Se un sitio tenta roubarche o contrasinal ou se descargas un ficheiro daniño, Chrome pode comprobar os enderezos URL, así como fragmentos de contido das páxinas, a través da función Navegación segura</translation>
 <translation id="510275257476243843">Queda 1 hora</translation>
 <translation id="5115811374190515607">á seguinte localización: <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5906513782029855931">Ao coñecer os URL dos sitios, o Asistente de Google axúdache a realizar tarefas. Podes desactivar o Asistente de Google na configuración de Chrome.</translation>
 <translation id="5916664084637901428">Si</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar a sincronización</translation>
+<translation id="5938820472109305350">Engadir <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Uso de Google para a busca</translation>
 <translation id="5945035219773565305">Recomendación actual: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Vendo páxina publicada</translation>
@@ -898,7 +898,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="6033245666633565791">Con <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome está desenvolvendo novas tecnoloxías para protexerte dos mecanismos de seguimento en varios sitios e para garantir asemade que a Web siga sendo un espazo aberto.
 
 As probas de Privacy Sandbox aínda se atopan nunha fase de desenvolvemento activo e están dispoñibles en rexións seleccionadas. Polo momento, os sitios poden probar Privacy Sandbox sen deixar de usar as tecnoloxías web actuais, como as cookies de terceiros.</translation>
-<translation id="6036057147555329831">ICU extra</translation>
 <translation id="6039379616847168523">Saltar á seguinte pestana</translation>
 <translation id="6040143037577758943">Pechar</translation>
 <translation id="604124094241169006">Automático</translation>
@@ -1023,6 +1022,7 @@ Os tokens de confianza melloran a privacidade na Web e non se poden usar para de
 <translation id="663674369910034433">Para ver máis opcións de configuración relacionadas coa privacidade, a seguranza e a recompilación de datos, consulta <ph name="BEGIN_LINK1" />Sincronización<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />Servizos de Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Para contribuír a mellorar a aplicación, Chrome envíalle a Google datos de uso e de fallos. <ph name="BEGIN_UMA_LINK" />Xestionar<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Bloquear sempre</translation>
+<translation id="6641780377503683465">Quitar <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6645629752388991326">Controla os dispositivos nos que se pode iniciar sesión utilizando este aparello como chave de seguranza.</translation>
 <translation id="6648459603387803038">O teu administrador pode cambiar a configuración do navegador de forma remota. A actividade deste dispositivo tamén se pode xestionar fóra de Chrome.</translation>

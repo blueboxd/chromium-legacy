@@ -151,6 +151,14 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterInvalid) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRadius) {
+#if BUILDFLAG(IS_FUCHSIA)
+  // TODO(crbug.com/1311459): This test case fails on SwiftShader FEMU due
+  // to a new implementation of log/exp functions in SwiftShader. We should
+  // re-enable the test case once the bug is fixed.
+  if (renderer_type() == viz::RendererType::kSkiaVk) {
+    GTEST_SKIP();
+  }
+#endif
   if (use_software_renderer()) {
     // TODO(989238): Software renderer does not support/implement
     // kClamp_TileMode.
@@ -545,6 +553,14 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
+#if BUILDFLAG(IS_FUCHSIA)
+  // TODO(crbug.com/1311459): This test case fails on SwiftShader FEMU due
+  // to a new implementation of log/exp functions in SwiftShader. We should
+  // re-enable the test case once the bug is fixed.
+  if (renderer_type() == viz::RendererType::kSkiaVk) {
+    GTEST_SKIP();
+  }
+#endif
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -563,7 +579,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
 
     background->AddChild(layer);
 
-    rect.Inset(kInset, kInset);
+    rect.Inset(kInset);
   }
 
   scoped_refptr<SolidColorLayer> filter =
@@ -583,8 +599,8 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
   filter->SetBackdropFilters(filters);
   filter->ClearBackdropFilterBounds();
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || defined(_MIPS_ARCH_LOONGSON) || \
-    defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+    defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
 #if BUILDFLAG(IS_WIN)
   // Windows has 153 pixels off by at most 2: crbug.com/225027
   float percentage_pixels_large_error = 0.3825f;  // 153px / (200*200)
@@ -594,8 +610,8 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
     percentage_pixels_large_error = 0.415f;  // 166px / (200*200)
     large_error_allowed = 1;
   }
-#elif BUILDFLAG(IS_MAC)
-  // There's a 1 pixel error on MacOS
+#elif BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
+  // There's a 1 pixel error on MacOS and ChromeOS
   float percentage_pixels_large_error = 0.0025f;  // 1px / (200*200)
   int large_error_allowed = 1;
 #elif defined(_MIPS_ARCH_LOONGSON)
@@ -618,11 +634,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
 
   RunPixelTest(
       background,
-      base::FilePath(
-          (use_swangle() || use_skia_vulkan())
-              ? FILE_PATH_LITERAL("backdrop_filter_on_scaled_layer_.png")
-              : FILE_PATH_LITERAL(
-                    "backdrop_filter_on_scaled_layer_legacy_swiftshader_.png"))
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_on_scaled_layer_.png"))
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
@@ -737,11 +749,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
 
   RunPixelTest(
       background,
-      base::FilePath(
-          (use_swangle() || use_skia_vulkan())
-              ? FILE_PATH_LITERAL("scaled_render_surface_layer_.png")
-              : FILE_PATH_LITERAL(
-                    "scaled_render_surface_layer_legacy_swiftshader_.png"))
+      base::FilePath(FILE_PATH_LITERAL("scaled_render_surface_layer_.png"))
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
@@ -1001,8 +1009,8 @@ TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithAlphaThresholdFilter) {
   filter_layer->AddChild(child1);
   filter_layer->AddChild(child2);
 
-  rect1.Inset(-5, -5);
-  rect2.Inset(-5, -5);
+  rect1.Inset(-5);
+  rect2.Inset(-5);
   FilterOperation::ShapeRects alpha_shape = {rect1, rect2};
   FilterOperations filters;
   filters.Append(

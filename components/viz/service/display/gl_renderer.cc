@@ -25,6 +25,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
@@ -115,7 +116,8 @@ Float4 UVClampRect(gfx::RectF uv_visible_rect,
   } else {
     uv_visible_rect.Scale(texture_size.width(), texture_size.height());
   }
-  uv_visible_rect.Inset(half_texel.width(), half_texel.height());
+  uv_visible_rect.Inset(
+      gfx::InsetsF::VH(half_texel.height(), half_texel.width()));
   return {{uv_visible_rect.x(), uv_visible_rect.y(), uv_visible_rect.right(),
            uv_visible_rect.bottom()}};
 }
@@ -905,7 +907,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     // If we have regular filters or antialiasing, grab an extra one-pixel
     // border around the background, so texture edge clamping gives us a
     // transparent border.
-    backdrop_rect.Inset(-1, -1, -1, -1);
+    backdrop_rect.Inset(-1);
   }
 
   *unclipped_rect = backdrop_rect;
@@ -914,7 +916,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   if (ShouldApplyBackdropFilters(params)) {
     float max_pixel_movement = params->backdrop_filters->MaximumPixelMovement();
     gfx::Rect scissor_rect(current_window_space_viewport_);
-    scissor_rect.Inset(-max_pixel_movement, -max_pixel_movement);
+    scissor_rect.Inset(-max_pixel_movement);
     backdrop_rect.Intersect(scissor_rect);
   }
 
@@ -1188,7 +1190,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     surface->getCanvas()->save();
     gfx::RRectF clip_rect(backdrop_filter_bounds.value());
     surface->getCanvas()->setMatrix(
-        SkMatrix(backdrop_filter_bounds_transform.matrix()));
+        backdrop_filter_bounds_transform.matrix().asM33());
     surface->getCanvas()->clipRRect(SkRRect(clip_rect), SkClipOp::kIntersect,
                                     true /* antialias */);
     surface->getCanvas()->resetMatrix();
@@ -2332,8 +2334,8 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
   float geom_clamp_y =
       std::min(tex_clamp_y * tex_to_geom_scale_y,
                0.5f * clamp_geom_rect.height() - kAntiAliasingEpsilon);
-  clamp_geom_rect.Inset(geom_clamp_x, geom_clamp_y, geom_clamp_x, geom_clamp_y);
-  clamp_tex_rect.Inset(tex_clamp_x, tex_clamp_y, tex_clamp_x, tex_clamp_y);
+  clamp_geom_rect.Inset(gfx::InsetsF::VH(geom_clamp_y, geom_clamp_x));
+  clamp_tex_rect.Inset(gfx::InsetsF::VH(tex_clamp_y, tex_clamp_x));
 
   // Map clamping rectangle to unit square.
   float vertex_tex_translate_x = -clamp_geom_rect.x() / clamp_geom_rect.width();
@@ -2684,12 +2686,12 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 
   gfx::RectF ya_clamp_rect(ya_vertex_tex_translate_x, ya_vertex_tex_translate_y,
                            ya_vertex_tex_scale_x, ya_vertex_tex_scale_y);
-  ya_clamp_rect.Inset(0.5f * ya_tex_scale.width(),
-                      0.5f * ya_tex_scale.height());
+  ya_clamp_rect.Inset(gfx::InsetsF::VH(0.5f * ya_tex_scale.height(),
+                                       0.5f * ya_tex_scale.width()));
   gfx::RectF uv_clamp_rect(uv_vertex_tex_translate_x, uv_vertex_tex_translate_y,
                            uv_vertex_tex_scale_x, uv_vertex_tex_scale_y);
-  uv_clamp_rect.Inset(0.5f * uv_tex_scale.width(),
-                      0.5f * uv_tex_scale.height());
+  uv_clamp_rect.Inset(gfx::InsetsF::VH(0.5f * uv_tex_scale.height(),
+                                       0.5f * uv_tex_scale.width()));
   gl_->Uniform4f(current_program_->ya_clamp_rect_location(), ya_clamp_rect.x(),
                  ya_clamp_rect.y(), ya_clamp_rect.right(),
                  ya_clamp_rect.bottom());
@@ -3012,7 +3014,7 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   quad_rect_matrix = current_frame()->projection_matrix * quad_rect_matrix;
 
   Float16 m;
-  quad_rect_matrix.matrix().asColMajorf(m.data);
+  quad_rect_matrix.matrix().getColMajor(m.data);
   draw_cache_.matrix_data.push_back(m);
 
   // Track the region in the current target surface that has been drawn to.
@@ -3254,7 +3256,7 @@ void GLRenderer::CopyDrawnRenderPass(
 }
 
 void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
-  transform.matrix().asColMajorf(gl_matrix);
+  transform.matrix().getColMajor(gl_matrix);
 }
 
 void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad) {
@@ -3867,7 +3869,6 @@ void GLRenderer::ScheduleCALayers() {
     return;
 
   scoped_refptr<CALayerOverlaySharedState> shared_state;
-  size_t copied_render_pass_count = 0;
 
   for (const CALayerOverlay& ca_layer_overlay : current_frame()->overlay_list) {
     if (ca_layer_overlay.rpdq) {
@@ -3876,7 +3877,6 @@ void GLRenderer::ScheduleCALayers() {
       if (overlay_texture)
         awaiting_swap_overlay_textures_.push_back(std::move(overlay_texture));
       shared_state = nullptr;
-      ++copied_render_pass_count;
       continue;
     }
 
@@ -3913,7 +3913,7 @@ void GLRenderer::ScheduleCALayers() {
     GLint sorting_context_id =
         ca_layer_overlay.shared_state->sorting_context_id;
     GLfloat transform[16];
-    ca_layer_overlay.shared_state->transform.matrix().asColMajorf(transform);
+    ca_layer_overlay.shared_state->transform.matrix().getColMajor(transform);
     unsigned filter = ca_layer_overlay.filter;
 
     if (ca_layer_overlay.shared_state != shared_state) {
@@ -4271,7 +4271,7 @@ GLRenderer::ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay) {
 
   GLint sorting_context_id = ca_layer_overlay->shared_state->sorting_context_id;
   GLfloat gl_transform[16];
-  ca_layer_overlay->shared_state->transform.matrix().asColMajorf(gl_transform);
+  ca_layer_overlay->shared_state->transform.matrix().getColMajor(gl_transform);
   unsigned filter = ca_layer_overlay->filter;
 
   // The alpha has already been applied when copying the RPDQ to an IOSurface.

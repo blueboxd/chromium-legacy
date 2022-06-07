@@ -31,10 +31,9 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId AppDownloadingScreenView::kScreenId;
 
-AppDownloadingScreenHandler::AppDownloadingScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.AppDownloadingScreen.userActed");
+AppDownloadingScreenHandler::AppDownloadingScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.AppDownloadingScreen.userActed");
 }
 
 AppDownloadingScreenHandler::~AppDownloadingScreenHandler() {
@@ -59,17 +58,17 @@ void AppDownloadingScreenHandler::RegisterMessages() {
 
 void AppDownloadingScreenHandler::Bind(AppDownloadingScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void AppDownloadingScreenHandler::Show() {
-  base::DictionaryValue data;
-  data.SetKey("numOfApps", base::Value(GetNumberOfUserSelectedApps()));
-  ShowScreenWithData(kScreenId, &data);
+  base::Value::Dict data;
+  data.Set("numOfApps", GetNumberOfUserSelectedApps());
+  ShowInWebUI(std::move(data));
 }
 
 void AppDownloadingScreenHandler::Hide() {}
 
-void AppDownloadingScreenHandler::Initialize() {}
+void AppDownloadingScreenHandler::InitializeDeprecated() {}
 
 }  // namespace chromeos

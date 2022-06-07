@@ -15,7 +15,6 @@
 #include "ash/system/time/calendar_view_controller.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/i18n/time_formatting.h"
 #include "calendar_event_list_item_view.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,14 +32,17 @@
 namespace ash {
 namespace {
 
+// The paddings in `close_button`.
+constexpr gfx::Insets kCloseButtonInsets{20};
+
 // The paddings in `CalendarEventListView`.
-constexpr gfx::Insets kContentInsets{20, 20, 0, 20};
+constexpr auto kContentInsets = gfx::Insets::TLBR(0, 20, 20, 20);
 
 // The insets for `CalendarEmptyEventListView` label.
-constexpr gfx::Insets kOpenGoogleCalendarInsets{6, 16};
+constexpr auto kOpenGoogleCalendarInsets = gfx::Insets::VH(6, 16);
 
 // The insets for `CalendarEmptyEventListView`.
-constexpr gfx::Insets kOpenGoogleCalendarContainerInsets{20, 60};
+constexpr auto kOpenGoogleCalendarContainerInsets = gfx::Insets::VH(20, 60);
 
 }  // namespace
 
@@ -74,6 +76,9 @@ class CalendarEmptyEventListView : public views::LabelButton {
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
     SetEnabledTextColors(calendar_utils::GetPrimaryTextColor());
+    views::FocusRing::Get(this)->SetColor(
+        ColorProvider::Get()->GetControlsLayerColor(
+            ColorProvider::ControlsLayerType::kFocusRingColor));
   }
 
   // Callback that's invoked when the user clicks on "Open in Google calendar"
@@ -95,10 +100,7 @@ class CalendarEmptyEventListView : public views::LabelButton {
 CalendarEventListView::CalendarEventListView(
     CalendarViewController* calendar_view_controller)
     : calendar_view_controller_(calendar_view_controller),
-      close_button_(AddChildView(std::make_unique<views::ImageButton>(
-          views::Button::PressedCallback(base::BindRepeating(
-              &CalendarViewController::CloseEventListView,
-              base::Unretained(calendar_view_controller)))))),
+      close_button_container_(AddChildView(std::make_unique<views::View>())),
       scroll_view_(AddChildView(std::make_unique<views::ScrollView>())),
       content_view_(
           scroll_view_->SetContents(std::make_unique<views::View>())) {
@@ -114,27 +116,38 @@ CalendarEventListView::CalendarEventListView(
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
 
-  close_button_->SetImage(
+  views::BoxLayout* button_layout = close_button_container_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal));
+  button_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kEnd);
+  auto* close_button = close_button_container_->AddChildView(
+      std::make_unique<views::ImageButton>(views::Button::PressedCallback(
+          base::BindRepeating(&CalendarViewController::CloseEventListView,
+                              base::Unretained(calendar_view_controller)))));
+  close_button->SetImage(
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(views::kIcCloseIcon,
                             calendar_utils::GetPrimaryTextColor()));
-  close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_RIGHT);
-  close_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  close_button_->SetBorder(views::CreateEmptyBorder(kContentInsets));
-  close_button_->SetAccessibleName(
+  close_button->SetHasInkDropActionOnClick(true);
+  close_button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_RIGHT);
+  close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
+  close_button->SetBorder(views::CreateEmptyBorder(kCloseButtonInsets));
+  close_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_CLOSE_BUTTON_ACCESSIBLE_DESCRIPTION));
-  close_button_->SetTooltipText(
+  close_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_CLOSE_BUTTON_TOOLTIP));
-  close_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
+  close_button->SetFocusBehavior(FocusBehavior::ALWAYS);
+  views::FocusRing::Get(close_button)
+      ->SetColor(ColorProvider::Get()->GetControlsLayerColor(
+          ColorProvider::ControlsLayerType::kFocusRingColor));
 
   scroll_view_->SetAllowKeyboardScrolling(false);
   scroll_view_->SetBackgroundColor(absl::nullopt);
   // Gives a min height so the background color can be filled to all the spaces
   // in the available expanded area.
   scroll_view_->ClipHeightTo(
-      calendar_view_controller_->expanded_area_available_height() -
-          close_button_->GetPreferredSize().height(),
-      INT_MAX);
+      INT_MAX - close_button_container_->GetPreferredSize().height(), INT_MAX);
   scroll_view_->SetDrawOverflowIndicator(false);
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
@@ -194,8 +207,8 @@ void CalendarEventListView::UpdateListItems() {
   DCHECK(calendar_view_controller_->selected_date().has_value());
   empty_button->SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_NO_EVENT_BUTTON_ACCESSIBLE_DESCRIPTION,
-      base::TimeFormatWithPattern(
-          calendar_view_controller_->selected_date().value(), "MMMMd")));
+      calendar_utils::GetMonthNameAndDayOfMonth(
+          calendar_view_controller_->selected_date().value())));
   empty_list_view_container->SetBorder(
       views::CreateEmptyBorder(kOpenGoogleCalendarContainerInsets));
   views::View* empty_list_view =

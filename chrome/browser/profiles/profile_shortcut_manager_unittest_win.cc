@@ -14,7 +14,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/test/scoped_path_override.h"
@@ -408,21 +407,6 @@ TEST_F(ProfileShortcutManagerTest, ShortcutFlags) {
       profile_manager_->profiles_dir().Append(kProfileName);
   EXPECT_EQ(L"--profile-directory=\"" + kProfileName + L"\"",
             profiles::internal::CreateProfileShortcutFlags(profile_path));
-}
-
-// Test ensures that the incognito switch and parent profile are added when
-// creating profile shortcut flags for incognito mode.
-TEST_F(ProfileShortcutManagerTest, IncognitoShortcutFlags) {
-  const std::wstring kProfileName = L"MyProfileX";
-  const base::FilePath profile_path =
-      profile_manager_->profiles_dir().Append(kProfileName);
-  const std::wstring shortcut_flags =
-      profiles::internal::CreateProfileShortcutFlags(profile_path,
-                                                     /*incognito=*/true);
-  EXPECT_NE(
-      shortcut_flags.find(L"--profile-directory=\"" + kProfileName + L"\""),
-      shortcut_flags.size());
-  EXPECT_NE(shortcut_flags.find(L"--incognito"), shortcut_flags.size());
 }
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {

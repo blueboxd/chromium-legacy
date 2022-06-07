@@ -14,9 +14,10 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/database/database_maintenance.h"
-#include "components/segmentation_platform/internal/database/segment_info_database.h"
+#include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/proto/types.pb.h"
 
 namespace base {
@@ -28,6 +29,7 @@ using optimization_guide::proto::OptimizationTarget;
 
 namespace segmentation_platform {
 class DefaultModelManager;
+class SegmentInfoDatabase;
 class SignalDatabase;
 class SignalStorageConfig;
 
@@ -58,7 +60,7 @@ class DatabaseMaintenanceImpl : public DatabaseMaintenance {
   // All tasks currently need information about various segments, so this is
   // the callback after the initial database lookup for this data.
   void OnSegmentInfoCallback(
-      std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> segment_infos);
+      DefaultModelManager::SegmentInfoList segment_infos);
 
   // Returns an ordered vector of all the tasks we are supposed to perform.
   // These are unfinished and also need to be linked to the next task to be

@@ -6,8 +6,12 @@
  * @fileoverview ChromeVox options page.
  *
  */
+import {BluetoothBrailleDisplayUI} from '../background/braille/bluetooth_braille_display_ui.js';
+import {ConsoleTts} from '../background/console_tts.js';
+import {ChromeVoxPrefs} from '../background/prefs.js';
+import {TtsBackground} from '../background/tts_background.js';
 
-import {TtsBackground} from '../common/tts_background.js';
+import {AbstractTts} from '../common/abstract_tts.js';
 
 /** @const {string} */
 const GOOGLE_TTS_EXTENSION_ID = 'gjjabgpgjpampikjhjpfhneeoapjbjaf';
@@ -26,8 +30,6 @@ export class OptionsPage {
    */
   static init() {
     OptionsPage.prefs = chrome.extension.getBackgroundPage()['prefs'];
-    OptionsPage.consoleTts =
-        chrome.extension.getBackgroundPage().ConsoleTts.getInstance();
     OptionsPage.backgroundTts =
         chrome.extension.getBackgroundPage().ChromeVoxState.backgroundTts;
     OptionsPage.populateVoicesSelect();
@@ -138,7 +140,7 @@ export class OptionsPage {
     });
 
     $('openDeveloperLog').addEventListener('click', function(evt) {
-      const logPage = {url: 'chromevox/background/logging/log.html'};
+      const logPage = {url: 'chromevox/log_page/log.html'};
       chrome.tabs.create(logPage);
     });
 
@@ -553,6 +555,10 @@ const handleNumericalInputPref = function(id, pref) {
   }, true);
 };
 
+
+chrome.runtime.sendMessage(
+    {target: 'ConsoleTts', action: 'getInstance'},
+    (consoleTts) => OptionsPage.consoleTts = consoleTts);
 
 document.addEventListener('DOMContentLoaded', function() {
   OptionsPage.init();

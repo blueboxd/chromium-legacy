@@ -31,6 +31,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -162,7 +163,7 @@ class SearchResultPageView::HorizontalSeparator : public views::View {
   explicit HorizontalSeparator(int preferred_width)
       : preferred_width_(preferred_width) {
     SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(0, kSeparatorPadding, 0, kSeparatorPadding)));
+        gfx::Insets::TLBR(0, kSeparatorPadding, 0, kSeparatorPadding)));
   }
 
   HorizontalSeparator(const HorizontalSeparator&) = delete;
@@ -219,14 +220,14 @@ SearchResultPageView::SearchResultPageView() : contents_view_(new views::View) {
   // App list bubble search page has its own scroller and result selection
   // controller so we do not need to construct new ones here.
   if (features::IsProductivityLauncherEnabled()) {
-    contents_view_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+    contents_view_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
         kActiveSearchBoxHeight + kSearchBoxBottomSpacing + kSeparatorThickness,
         0, 0, 0)));
     AddChildView(contents_view_);
   } else {
     auto scroller = std::make_unique<views::ScrollView>();
     // Leaves a placeholder area for the search box and the separator below it.
-    scroller->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+    scroller->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
         kActiveSearchBoxHeight + kSearchBoxBottomSpacing + kSeparatorThickness,
         0, 0, 0)));
     scroller->SetDrawOverflowIndicator(false);
@@ -327,7 +328,8 @@ gfx::Size SearchResultPageView::CalculatePreferredSize() const {
       std::max(kMinHeight,
                productivity_launcher_search_view_->TabletModePreferredHeight() +
                    kActiveSearchBoxHeight + kSearchBoxBottomSpacing +
-                   kSeparatorThickness),
+                   kSeparatorThickness +
+                   kExpandedSearchBoxCornerRadiusForProductivityLauncher),
       AppListPage::contents_view()->height());
   return gfx::Size(kWidth, adjusted_height);
 }
@@ -781,7 +783,7 @@ void SearchResultPageView::OnHidden() {
   // being moved onto suggested apps when zero state is enabled.
   AppListPage::OnHidden();
   notify_a11y_results_changed_timer_.Stop();
-  dialog_controller_->SetEnabled(false);
+  dialog_controller_->Reset(false);
   SetVisible(false);
   for (auto* container_view : result_container_views_) {
     container_view->SetShown(false);
@@ -795,7 +797,7 @@ void SearchResultPageView::OnHidden() {
 void SearchResultPageView::OnShown() {
   AppListPage::OnShown();
 
-  dialog_controller_->SetEnabled(true);
+  dialog_controller_->Reset(true);
 
   for (auto* container_view : result_container_views_) {
     container_view->SetShown(ShouldShowSearchResultView());
@@ -850,7 +852,8 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
   }
 
   gfx::Rect bounding_rect = contents_bounds;
-  bounding_rect.Inset(0, 0, 0, kSearchResultPageMinimumBottomMargin);
+  bounding_rect.Inset(
+      gfx::Insets::TLBR(0, 0, kSearchResultPageMinimumBottomMargin, 0));
 
   gfx::Rect preferred_bounds = gfx::Rect(
       search_box_bounds.origin(),

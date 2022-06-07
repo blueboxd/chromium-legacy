@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/bundle_locations.h"
@@ -82,7 +83,6 @@
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/incognito_usage_app_state_agent.h"
 #import "ios/chrome/browser/metrics/window_configuration_recorder.h"
-#import "ios/chrome/browser/net/cookie_util.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/screenshot/screenshot_metrics_recorder.h"
@@ -114,6 +114,7 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
+#import "ios/components/cookie_util/cookie_util.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/empty_nsurlcache.h"
 #include "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
@@ -960,19 +961,19 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // NSUserDefaults here.
 - (void)saveFieldTrialValuesForExtensions {
   using password_manager::features::kIOSEnablePasswordManagerBrandingUpdate;
+  using password_manager::features::kEnableFaviconForPasswords;
 
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
-
-  NSNumber* credentialProviderExtensionPromoValue =
-      [NSNumber numberWithBool:base::FeatureList::IsEnabled(
-                                   kCredentialProviderExtensionPromo)];
-  NSNumber* credentialProviderExtensionPromoVersion =
-      [NSNumber numberWithInt:kCredentialProviderExtensionPromoFeatureVersion];
 
   NSNumber* passwordManagerBrandingUpdateValue =
       @(base::FeatureList::IsEnabled(kIOSEnablePasswordManagerBrandingUpdate));
   NSNumber* passwordManagerBrandingUpdateVersion =
       [NSNumber numberWithInt:kPasswordManagerBrandingUpdateFeatureVersion];
+
+  NSNumber* faviconsForCredentialProviderValue =
+      @(base::FeatureList::IsEnabled(kEnableFaviconForPasswords));
+  NSNumber* faviconsForCredentialProviderVersion = [NSNumber
+      numberWithInt:kCredentialProviderExtensionFaviconsFeatureVersion];
 
   // Add other field trial values here if they are needed by extensions.
   // The general format is
@@ -983,14 +984,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   //   }
   // }
   NSDictionary* fieldTrialValues = @{
-    base::SysUTF8ToNSString(kCredentialProviderExtensionPromo.name) : @{
-      kFieldTrialValueKey : credentialProviderExtensionPromoValue,
-      kFieldTrialVersionKey : credentialProviderExtensionPromoVersion,
-    },
     base::SysUTF8ToNSString(kIOSEnablePasswordManagerBrandingUpdate.name) : @{
       kFieldTrialValueKey : passwordManagerBrandingUpdateValue,
       kFieldTrialVersionKey : passwordManagerBrandingUpdateVersion,
-    }
+    },
+    base::SysUTF8ToNSString(kEnableFaviconForPasswords.name) : @{
+      kFieldTrialValueKey : faviconsForCredentialProviderValue,
+      kFieldTrialVersionKey : faviconsForCredentialProviderVersion,
+    },
   };
   [sharedDefaults setObject:fieldTrialValues
                      forKey:app_group::kChromeExtensionFieldTrialPreference];

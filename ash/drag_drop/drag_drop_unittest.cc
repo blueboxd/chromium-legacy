@@ -63,13 +63,6 @@ class TargetView : public views::View {
   int OnDragUpdated(const ui::DropTargetEvent& event) override {
     return ui::DragDropTypes::DRAG_MOVE;
   }
-  ui::mojom::DragOperation OnPerformDrop(
-      const ui::DropTargetEvent& event) override {
-    ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-    PerformDrop(event, output_drag_op);
-    return output_drag_op;
-  }
-
   DropCallback GetDropCallback(const ui::DropTargetEvent& event) override {
     return base::BindOnce(&TargetView::PerformDrop, base::Unretained(this));
   }
@@ -135,7 +128,8 @@ using DragDropTest = AshTestBase;
 
 // Test if the mouse gets moved properly to another display
 // during drag & drop operation.
-TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
+// Test flaky on ChromeOS: crbug.com/1312727
+TEST_F(DragDropTest, DISABLED_DragDropAcrossMultiDisplay) {
   ui_controls::InstallUIControlsAura(test::CreateAshUIControls());
 
   UpdateDisplay("400x300,400x300");

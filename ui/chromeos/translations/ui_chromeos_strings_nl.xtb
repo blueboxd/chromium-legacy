@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Back-up van <ph name="FILE_COUNT" /> maken</translation>
 <translation id="4218274196133425560">Uitzondering voor <ph name="HOST_NAME" /> verwijderen</translation>
 <translation id="4261901459838235729">Google-presentatie</translation>
+<translation id="4277536868133419688">Het filter <ph name="FILTER_NAME" /> staat aan.</translation>
 <translation id="4290535918735525311">1 map gedeeld met Linux</translation>
 <translation id="4299729908419173967">Braziliaans</translation>
 <translation id="4302605047395093221">Iedereen die dit apparaat gebruikt, moet de pincode opgeven om verbinding te maken met dit mobiele netwerk</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">Meer...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> aan selectie toegevoegd.</translation>
 <translation id="4594543368593301662">Resultaten voor <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">Het filter is gereset.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> kopiëren naar <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Artiest</translation>
 <translation id="4642769377300286600">Mobiel profiel installeren, netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -531,6 +533,7 @@
 <translation id="5469868506864199649">Italiaans</translation>
 <translation id="5473333559083690127">Pincode opnieuw opgeven</translation>
 <translation id="5489067830765222292">Lets</translation>
+<translation id="5489965683297092283">Het filter <ph name="FILTER_NAME" /> staat uit.</translation>
 <translation id="5494920125229734069">Alles selecteren</translation>
 <translation id="5500122897333236901">IJslands</translation>
 <translation id="5508696409934741614">Stippen</translation>
@@ -597,6 +600,7 @@
 <translation id="6082256976217156453">Archief gecomprimeerd met LZMA</translation>
 <translation id="6096979789310008754">Zoektekst is gewist. Alle bestanden en mappen worden getoond.</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> verplaatsen naar <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">Csv-tekst</translation>
 <translation id="6129953537138746214">Spatie</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> verplaatsen...</translation>
 <translation id="613750717151263950">Japans met Amerikaans toetsenbord</translation>
@@ -847,6 +851,7 @@
 <translation id="8208580316430297579">Kunst</translation>
 <translation id="8223479393428528563">Als je deze bestanden wilt opslaan voor offline gebruik, ga je weer online, klik je met de rechtermuisknop op de bestanden en selecteer je de optie <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Annuleren</translation>
+<translation id="8250920743982581267">Documenten</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8261561378965667560">Chinees (Array)</translation>
 <translation id="8269755669432358899">Feedbackvensters voor bestanden samenvouwen</translation>

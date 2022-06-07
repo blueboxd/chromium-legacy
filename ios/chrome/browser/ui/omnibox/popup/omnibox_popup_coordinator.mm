@@ -13,15 +13,20 @@
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/content_providing.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_pedal_annotator.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_container_view.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -58,6 +63,9 @@
   self = [super initWithBaseViewController:nil browser:browser];
   if (self) {
     _popupView = std::move(popupView);
+    if (base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
+      self.pedalExtractor = [[PedalSectionExtractor alloc] init];
+    }
   }
   return self;
 }
@@ -88,17 +96,36 @@
   if (base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
     self.model = [[PopupModel alloc] initWithMatches:@[]
                                              headers:@[]
-                                            delegate:self.mediator];
+                                            delegate:self.pedalExtractor];
     BOOL popupShouldSelfSize =
         (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
     self.mediator.model = self.model;
+
+    std::string variationName = base::GetFieldTrialParamValueByFeature(
+        kIOSOmniboxUpdatedPopupUI, kIOSOmniboxUpdatedPopupUIVariationName);
+
+    PopupUIVariation popupUIVariation =
+        (variationName == kIOSOmniboxUpdatedPopupUIVariation1)
+            ? PopupUIVariationOne
+            : PopupUIVariationTwo;
+
     self.popupViewController = [OmniboxPopupViewProvider
         makeViewControllerWithModel:self.model
-                popupShouldSelfSize:popupShouldSelfSize];
+                   popupUIVariation:popupUIVariation
+                popupShouldSelfSize:popupShouldSelfSize
+            appearanceContainerType:[OmniboxPopupContainerView class]];
     [self.browser->GetCommandDispatcher()
         startDispatchingToTarget:self.model
                      forProtocol:@protocol(OmniboxSuggestionCommands)];
-    self.mediator.consumer = self.model;
+    OmniboxPedalAnnotator* annotator = [[OmniboxPedalAnnotator alloc] init];
+    annotator.pedalsEndpoint = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), ApplicationCommands);
+    annotator.omniboxCommandHandler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), OmniboxCommands);
+    self.mediator.pedalAnnotator = annotator;
+    self.mediator.consumer = self.pedalExtractor;
+    self.pedalExtractor.dataSink = self.model;
+    self.pedalExtractor.delegate = self.mediator;
   } else {
     OmniboxPopupViewController* popupViewController =
         [[OmniboxPopupViewController alloc] init];

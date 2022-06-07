@@ -32,10 +32,9 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId TermsOfServiceScreenView::kScreenId;
 
-TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.TermsOfServiceScreen.userActed");
+TermsOfServiceScreenHandler::TermsOfServiceScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.TermsOfServiceScreen.userActed");
 }
 
 TermsOfServiceScreenHandler::~TermsOfServiceScreenHandler() {
@@ -61,23 +60,23 @@ void TermsOfServiceScreenHandler::DeclareLocalizedValues(
 }
 
 void TermsOfServiceScreenHandler::SetScreen(TermsOfServiceScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
   screen_ = screen;
 }
 
 void TermsOfServiceScreenHandler::Show(const std::string& manager) {
   manager_ = manager;
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
   // Update the UI to show an error message or the Terms of Service.
   UpdateTermsOfServiceInUI();
 
-  base::DictionaryValue data;
-  data.SetStringKey("manager", manager_);
+  base::Value::Dict data;
+  data.Set("manager", manager_);
 
-  ShowScreenWithData(kScreenId, &data);
+  ShowInWebUI(std::move(data));
 }
 
 void TermsOfServiceScreenHandler::Hide() {}
@@ -99,7 +98,7 @@ bool TermsOfServiceScreenHandler::AreTermsLoaded() {
   return !load_error_ && !terms_of_service_.empty();
 }
 
-void TermsOfServiceScreenHandler::Initialize() {
+void TermsOfServiceScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show(manager_);
     show_on_init_ = false;
@@ -107,7 +106,7 @@ void TermsOfServiceScreenHandler::Initialize() {
 }
 
 void TermsOfServiceScreenHandler::UpdateTermsOfServiceInUI() {
-  if (!page_is_ready())
+  if (!IsJavascriptAllowed())
     return;
 
   // If either `load_error_` or `terms_of_service_` is set, the download of the

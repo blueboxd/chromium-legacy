@@ -18,6 +18,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -101,20 +102,19 @@ TreeView::TreeView()
   constexpr bool kUseMdIcons = false;
 #endif
   if (kUseMdIcons) {
-    closed_icon_ = open_icon_ =
-        gfx::CreateVectorIcon(vector_icons::kFolderIcon, gfx::kChromeIconGrey);
+    closed_icon_ = open_icon_ = ui::ImageModel::FromVectorIcon(
+        vector_icons::kFolderIcon, ui::kColorIcon);
   } else {
     // TODO(ellyjones): if the pre-Harmony codepath goes away, merge
     // closed_icon_ and open_icon_.
-    closed_icon_ = *ui::ResourceBundle::GetSharedInstance()
-                        .GetImageNamed(IDR_FOLDER_CLOSED)
-                        .ToImageSkia();
-    open_icon_ = *ui::ResourceBundle::GetSharedInstance()
-                      .GetImageNamed(IDR_FOLDER_OPEN)
-                      .ToImageSkia();
+    closed_icon_ = ui::ImageModel::FromImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_FOLDER_CLOSED));
+    open_icon_ = ui::ImageModel::FromImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_FOLDER_OPEN));
   }
-  text_offset_ =
-      closed_icon_.width() + kImagePadding + kImagePadding + kArrowRegionSize;
+  text_offset_ = closed_icon_.Size().width() + kImagePadding + kImagePadding +
+                 kArrowRegionSize;
 }
 
 TreeView::~TreeView() {
@@ -1034,9 +1034,11 @@ void TreeView::LayoutEditor() {
       GetMirroredXWithWidthInView(row_bounds.x(), row_bounds.width()));
   row_bounds.set_x(row_bounds.x() + text_offset_);
   row_bounds.set_width(row_bounds.width() - text_offset_);
-  row_bounds.Inset(kTextHorizontalPadding, kTextVerticalPadding);
-  row_bounds.Inset(-empty_editor_size_.width() / 2,
-                   -(empty_editor_size_.height() - font_list_.GetHeight()) / 2);
+  row_bounds.Inset(
+      gfx::Insets::VH(kTextVerticalPadding, kTextHorizontalPadding));
+  row_bounds.Inset(gfx::Insets::VH(
+      -(empty_editor_size_.height() - font_list_.GetHeight()) / 2,
+      -empty_editor_size_.width() / 2));
   // Give a little extra space for editing.
   row_bounds.set_width(row_bounds.width() + 50);
   // If contained within a ScrollView, make sure the editor doesn't extend past
@@ -1051,7 +1053,7 @@ void TreeView::LayoutEditor() {
   // The visible bounds should include the focus ring which is outside the
   // |row_bounds|.
   gfx::Rect outter_bounds = row_bounds;
-  outter_bounds.Inset(gfx::Insets(-GetSpaceThicknessForFocusRing()));
+  outter_bounds.Inset(-GetSpaceThicknessForFocusRing());
   // Scroll as necessary to ensure that the editor is visible.
   ScrollRectToVisible(outter_bounds);
   editor_->SetBoundsRect(row_bounds);
@@ -1160,8 +1162,9 @@ void TreeView::PaintExpandControl(gfx::Canvas* canvas,
                                    : SkBitmapOperations::ROTATION_90_CW);
   }
   gfx::Rect arrow_bounds = node_bounds;
-  arrow_bounds.Inset(gfx::Insets((node_bounds.height() - arrow.height()) / 2,
-                                 (kArrowRegionSize - arrow.width()) / 2));
+  arrow_bounds.Inset(
+      gfx::Insets::VH((node_bounds.height() - arrow.height()) / 2,
+                      (kArrowRegionSize - arrow.width()) / 2));
   canvas->DrawImageInt(arrow,
                        base::i18n::IsRTL()
                            ? arrow_bounds.right() - arrow.width()
@@ -1180,12 +1183,15 @@ void TreeView::PaintNodeIcon(gfx::Canvas* canvas,
     canvas->Translate(gfx::Vector2d(bounds.x(), 0));
     scoped_canvas.FlipIfRTL(bounds.width());
     // Now paint the icon local to that flipped region.
-    PaintRowIcon(canvas, node->is_expanded() ? open_icon_ : closed_icon_,
+    PaintRowIcon(canvas,
+                 (node->is_expanded() ? open_icon_ : closed_icon_)
+                     .Rasterize(GetColorProvider()),
                  icon_x,
                  gfx::Rect(0, bounds.y(), bounds.width(), bounds.height()));
   } else {
-    const gfx::ImageSkia& icon = icons_[icon_index];
-    icon_x += (open_icon_.width() - icon.width()) / 2;
+    const gfx::ImageSkia& icon =
+        icons_[icon_index].Rasterize(GetColorProvider());
+    icon_x += (open_icon_.Size().width() - icon.width()) / 2;
     if (base::i18n::IsRTL())
       icon_x = bounds.width() - icon_x - icon.width();
     PaintRowIcon(canvas, icon, icon_x, bounds);
@@ -1248,9 +1254,9 @@ gfx::Rect TreeView::GetForegroundBoundsForNode(InternalNode* node) {
 gfx::Rect TreeView::GetTextBoundsForNode(InternalNode* node) {
   gfx::Rect bounds(GetForegroundBoundsForNode(node));
   if (drawing_provider()->ShouldDrawIconForNode(this, node->model_node()))
-    bounds.Inset(text_offset_, 0, 0, 0);
+    bounds.Inset(gfx::Insets::TLBR(0, text_offset_, 0, 0));
   else
-    bounds.Inset(kArrowRegionSize, 0, 0, 0);
+    bounds.Inset(gfx::Insets::TLBR(0, kArrowRegionSize, 0, 0));
   return bounds;
 }
 

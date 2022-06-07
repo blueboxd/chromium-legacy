@@ -43,10 +43,9 @@ namespace chromeos {
 constexpr StaticOobeScreenId AppLaunchSplashScreenView::kScreenId;
 
 AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
-    JSCallsContainer* js_calls_container,
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen)
-    : BaseScreenHandler(kScreenId, js_calls_container),
+    : BaseScreenHandler(kScreenId),
       network_state_informer_(network_state_informer),
       error_screen_(error_screen) {
   network_state_informer_->AddObserver(this);
@@ -70,7 +69,7 @@ void AppLaunchSplashScreenHandler::DeclareLocalizedValues(
                                           product_os_name));
 }
 
-void AppLaunchSplashScreenHandler::Initialize() {
+void AppLaunchSplashScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
@@ -78,23 +77,23 @@ void AppLaunchSplashScreenHandler::Initialize() {
 }
 
 void AppLaunchSplashScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
 
   is_shown_ = true;
 
-  base::DictionaryValue data;
-  data.SetBoolKey("shortcutEnabled",
-                  !KioskAppManager::Get()->GetDisableBailoutShortcut());
+  base::Value::Dict data;
+  data.Set("shortcutEnabled",
+           !KioskAppManager::Get()->GetDisableBailoutShortcut());
 
   base::DictionaryValue app_info;
   PopulateAppInfo(&app_info);
-  data.SetKey("appInfo", std::move(app_info));
+  data.Set("appInfo", std::move(app_info));
 
   SetLaunchText(l10n_util::GetStringUTF8(GetProgressMessageFromState(state_)));
-  ShowScreenWithData(kScreenId, &data);
+  ShowInWebUI(std::move(data));
   if (toggle_network_config_on_show_.has_value()) {
     DoToggleNetworkConfig(toggle_network_config_on_show_.value());
     toggle_network_config_on_show_.reset();
@@ -131,7 +130,7 @@ void AppLaunchSplashScreenHandler::UpdateAppLaunchState(AppLaunchState state) {
     return;
 
   state_ = state;
-  if (page_is_ready()) {
+  if (IsJavascriptAllowed()) {
     SetLaunchText(
         l10n_util::GetStringUTF8(GetProgressMessageFromState(state_)));
   }

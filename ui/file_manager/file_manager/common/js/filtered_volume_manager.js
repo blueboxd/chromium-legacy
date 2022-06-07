@@ -75,14 +75,15 @@ export class FilteredVolumeInfoList {
  */
 export class FilteredVolumeManager extends EventTarget {
   /**
-   *
    * @param {!AllowedPaths} allowedPaths Which paths are supported in the Files
    *     app dialog.
    * @param {boolean} writableOnly If true, only writable volumes are returned.
    * @param {!Promise<!VolumeManager>} volumeManagerGetter Promise that resolves
    *     when the VolumeManager has been initialized.
+   * @param {!Array<string>} volumeFilter Array of Files app mode dependent
+   *     volume filter names from Files app launch params, [] typically.
    */
-  constructor(allowedPaths, writableOnly, volumeManagerGetter) {
+  constructor(allowedPaths, writableOnly, volumeManagerGetter, volumeFilter) {
     super();
 
     this.allowedPaths_ = allowedPaths;
@@ -102,8 +103,15 @@ export class FilteredVolumeManager extends EventTarget {
 
     this.disposed_ = false;
 
-    /** private {!Promise<!VolumeManager>} */
+    /** @private {!Promise<!VolumeManager>} */
     this.volumeManagerGetter_ = volumeManagerGetter;
+
+    /**
+     * True if |volumeFilter| contains the 'fusebox-only' filter. SelectFileAsh
+     * (file picker) sets this filter.
+     * @private @const {boolean}
+     */
+    this.isFuseBoxOnly_ = volumeFilter.includes('fusebox-only');
 
     /**
      * Tracks async initialization of volume manager.
@@ -121,6 +129,7 @@ export class FilteredVolumeManager extends EventTarget {
    *
    * @param {VolumeManagerCommon.VolumeType} volumeType
    * @return {boolean}
+   * @private
    */
   isAllowedVolumeType_(volumeType) {
     switch (this.allowedPaths_) {
@@ -134,21 +143,49 @@ export class FilteredVolumeManager extends EventTarget {
   }
 
   /**
+   * True if the volume |diskFileSystemType| is a fusebox file system.
+   *
+   * @param {string} diskFileSystemType Volume diskFileSystemType.
+   * @return {boolean}
+   * @private
+   */
+  isFuseBoxFileSystem(diskFileSystemType) {
+    return diskFileSystemType === 'fusebox';
+  }
+
+  /**
    * Checks if a volume is allowed.
    *
    * @param {!VolumeInfo} volumeInfo
    * @return {boolean}
+   * @private
    */
   isAllowedVolume_(volumeInfo) {
     if (!volumeInfo.volumeType) {
       return false;
     }
-    if (!this.isAllowedVolumeType_(volumeInfo.volumeType)) {
-      return false;
-    }
+
     if (this.writableOnly_ && volumeInfo.isReadOnly) {
       return false;
     }
+
+    // If the volume type is supported by fusebox, we have to decide whether
+    // to use the fusebox or non-fusebox version in the UI.
+
+    if (this.isFuseBoxOnly_) {
+      // SelectFileAsh requires native volumes. Note: DocumentsProvider and
+      // FSPs return false here, until they are implemented in the Fusebox.
+      return this.isFuseBoxFileSystem(volumeInfo.diskFileSystemType) ||
+          VolumeManagerCommon.VolumeType.isNative(volumeInfo.volumeType);
+    } else if (this.isFuseBoxFileSystem(volumeInfo.diskFileSystemType)) {
+      // Normal Files app: remove fusebox volumes.
+      return false;
+    }
+
+    if (!this.isAllowedVolumeType_(volumeInfo.volumeType)) {
+      return false;
+    }
+
     return true;
   }
 

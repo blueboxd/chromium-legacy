@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -859,16 +858,6 @@ void ProfileShortcutManagerWin::CreateOrUpdateProfileIcon(
   CreateOrUpdateShortcutsForProfileAtPath(
       profile_path, CREATE_OR_UPDATE_ICON_ONLY, IGNORE_NON_PROFILE_SHORTCUTS,
       /*incognito=*/false);
-}
-
-// Creates an incognito desktop shortcut for the current profile.
-// TODO(crbug.com/1113162): Update the shortcut label and icon to chrome +
-// incognito.
-void ProfileShortcutManagerWin::CreateIncognitoProfileShortcut(
-    const base::FilePath& profile_path) {
-  CreateOrUpdateShortcutsForProfileAtPath(profile_path, CREATE_WHEN_NONE_FOUND,
-                                          IGNORE_NON_PROFILE_SHORTCUTS,
-                                          /*incognito=*/true);
 }
 
 void ProfileShortcutManagerWin::CreateProfileShortcut(

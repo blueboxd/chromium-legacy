@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
@@ -80,6 +81,16 @@ class TouchInjector : public ui::EventRewriter {
   void RegisterEventRewriter();
   // Unregister the EventRewriter.
   void UnRegisterEventRewriter();
+  // Change bindings.
+  void OnBindingChange(Action* target_action,
+                       std::unique_ptr<InputElement> input_element);
+  // Save customized input binding and go back from edit mode to view mode.
+  void OnBindingSave();
+  // Set input binding back to previous status before entering to the edit mode
+  // and go back from edit mode to view mode.
+  void OnBindingCancel();
+  // Set input binding back to original binding.
+  void OnBindingRestore();
 
   // ui::EventRewriter:
   ui::EventDispatchDetails RewriteEvent(
@@ -135,7 +146,7 @@ class TouchInjector : public ui::EventRewriter {
   gfx::PointF GetRewrittenRootLocationForTesting(ui::PointerId original_id);
   int GetRewrittenTouchInfoSizeForTesting();
 
-  aura::Window* target_window_;
+  raw_ptr<aura::Window> target_window_;
   base::WeakPtr<ui::EventRewriterContinuation> continuation_;
   std::vector<std::unique_ptr<Action>> actions_;
   base::ScopedObservation<ui::EventSource,
@@ -148,7 +159,7 @@ class TouchInjector : public ui::EventRewriter {
   // The mouse is unlocked by default.
   bool is_mouse_locked_ = false;
   DisplayMode display_mode_ = DisplayMode::kView;
-  DisplayOverlayController* display_overlay_controller_ = nullptr;
+  raw_ptr<DisplayOverlayController> display_overlay_controller_ = nullptr;
   // Linked to game controller toggle in the menu. Set it enabled by default.
   // This is to save status if display overlay is destroyed during window
   // operations.

@@ -6,6 +6,14 @@
 
 namespace apps {
 
+APP_ENUM_TO_STRING(ConditionType,
+                   kScheme,
+                   kHost,
+                   kPattern,
+                   kAction,
+                   kMimeType,
+                   kFile)
+
 ConditionValue::ConditionValue(const std::string& value,
                                PatternMatchType match_type)
     : value(value), match_type(match_type) {}
@@ -18,6 +26,18 @@ bool ConditionValue::operator==(const ConditionValue& other) const {
 
 bool ConditionValue::operator!=(const ConditionValue& other) const {
   return !(*this == other);
+}
+
+std::string ConditionValue::ToString() const {
+  std::stringstream out;
+  if (match_type == PatternMatchType::kSuffix) {
+    out << "*";
+  }
+  out << value;
+  if (match_type == PatternMatchType::kPrefix) {
+    out << "*";
+  }
+  return out.str();
 }
 
 Condition::Condition(ConditionType condition_type,
@@ -53,6 +73,15 @@ ConditionPtr Condition::Clone() const {
   }
 
   return std::make_unique<Condition>(condition_type, std::move(values));
+}
+
+std::string Condition::ToString() const {
+  std::stringstream out;
+  out << " - " << EnumToString(condition_type) << ":";
+  for (const auto& condition_value : condition_values) {
+    out << " " << condition_value->ToString();
+  }
+  return out.str();
 }
 
 IntentFilter::IntentFilter() = default;
@@ -91,6 +120,116 @@ IntentFilterPtr IntentFilter::Clone() const {
     intent_filter->activity_label = activity_label.value();
 
   return intent_filter;
+}
+
+void IntentFilter::AddSingleValueCondition(
+    ConditionType condition_type,
+    const std::string& value,
+    PatternMatchType pattern_match_type) {
+  ConditionValues condition_values;
+  condition_values.push_back(
+      std::make_unique<ConditionValue>(value, pattern_match_type));
+  conditions.push_back(
+      std::make_unique<Condition>(condition_type, std::move(condition_values)));
+}
+
+int IntentFilter::GetFilterMatchLevel() {
+  int match_level = static_cast<int>(IntentFilterMatchLevel::kNone);
+  for (const auto& condition : conditions) {
+    switch (condition->condition_type) {
+      case ConditionType::kAction:
+        // Action always need to be matched, so there is no need for
+        // match level.
+        break;
+      case ConditionType::kScheme:
+        match_level += static_cast<int>(IntentFilterMatchLevel::kScheme);
+        break;
+      case ConditionType::kHost:
+        match_level += static_cast<int>(IntentFilterMatchLevel::kHost);
+        break;
+      case ConditionType::kPattern:
+        match_level += static_cast<int>(IntentFilterMatchLevel::kPattern);
+        break;
+      case ConditionType::kMimeType:
+      case ConditionType::kFile:
+        match_level += static_cast<int>(IntentFilterMatchLevel::kMimeType);
+        break;
+    }
+  }
+  return match_level;
+}
+
+void IntentFilter::GetMimeTypesAndExtensions(
+    std::set<std::string>& mime_types,
+    std::set<std::string>& file_extensions) {
+  for (const auto& condition : conditions) {
+    if (condition->condition_type != ConditionType::kFile) {
+      continue;
+    }
+    for (const auto& condition_value : condition->condition_values) {
+      if (condition_value->match_type == PatternMatchType::kFileExtension) {
+        file_extensions.insert(condition_value->value);
+      }
+      if (condition_value->match_type == PatternMatchType::kMimeType) {
+        mime_types.insert(condition_value->value);
+      }
+    }
+  }
+}
+
+bool IntentFilter::IsBrowserFilter() {
+  if (GetFilterMatchLevel() !=
+      static_cast<int>(IntentFilterMatchLevel::kScheme)) {
+    return false;
+  }
+  for (const auto& condition : conditions) {
+    if (condition->condition_type != ConditionType::kScheme) {
+      continue;
+    }
+    for (const auto& condition_value : condition->condition_values) {
+      if (condition_value->value == url::kHttpScheme ||
+          condition_value->value == url::kHttpsScheme) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool IntentFilter::IsFileExtensionsFilter() {
+  for (const auto& condition : conditions) {
+    // We expect action conditions to be paired with file conditions.
+    if (condition->condition_type == ConditionType::kAction) {
+      continue;
+    }
+    if (condition->condition_type != ConditionType::kFile) {
+      return false;
+    }
+    for (const auto& condition_value : condition->condition_values) {
+      if (condition_value->match_type != PatternMatchType::kFileExtension) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+std::string IntentFilter::ToString() const {
+  std::stringstream out;
+  if (activity_name.has_value()) {
+    out << " activity_name: " << activity_name.value() << std::endl;
+  }
+  if (activity_label.has_value()) {
+    out << " activity_label: " << activity_label.value() << std::endl;
+  }
+  if (!conditions.empty()) {
+    out << " conditions:" << std::endl;
+    for (const auto& condition : conditions) {
+      out << condition->ToString() << std::endl;
+    }
+  }
+  return out.str();
 }
 
 IntentFilters CloneIntentFilters(const IntentFilters& intent_filters) {

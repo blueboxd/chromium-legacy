@@ -53,7 +53,8 @@ void UkmDatabaseClient::PreProfileInit() {
   // PreProfileInit(). If this changes the metrics service is created on-demand,
   // so will get created by calling GetMetricsServicesManager().
   ukm_data_manager_->NotifyCanObserveUkm(
-      g_browser_process->GetMetricsServicesManager()->GetUkmService());
+      g_browser_process->GetMetricsServicesManager()->GetUkmService(),
+      g_browser_process->local_state());
 }
 
 void UkmDatabaseClient::PostMessageLoopRun() {
@@ -63,11 +64,6 @@ void UkmDatabaseClient::PostMessageLoopRun() {
   // UkmDataManager needs to be available. This does not tear down the
   // UkmDataManager, but only stops observing UKM.
   ukm_data_manager_->StopObservingUkm();
-}
-
-void UkmDatabaseClient::ProfileManagerDestroying() {
-  // All profiles are destroyed, it it safe to tear down the UkmDataManager.
-  ukm_data_manager_.reset();
 }
 
 }  // namespace segmentation_platform

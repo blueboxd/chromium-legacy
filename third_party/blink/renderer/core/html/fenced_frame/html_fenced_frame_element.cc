@@ -38,14 +38,76 @@ PhysicalRect ToPhysicalRect(const DOMRectReadOnly& rect) {
                       LayoutUnit::FromDoubleRound(rect.height()));
 }
 
+mojom::blink::FencedFrameMode GetModeAttributeValue(const String& value) {
+  // Keep this in sync with the values in the `FencedFrameMode` enum.
+  if (EqualIgnoringASCIICase(value, "opaque-ads"))
+    return mojom::blink::FencedFrameMode::kOpaqueAds;
+  return mojom::blink::FencedFrameMode::kDefault;
+}
+
+String FencedFrameModeToString(mojom::blink::FencedFrameMode mode) {
+  switch (mode) {
+    case mojom::blink::FencedFrameMode::kDefault:
+      return "default";
+    case mojom::blink::FencedFrameMode::kOpaqueAds:
+      return "opaque-ads";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
+bool HasDifferentModeThanParent(HTMLFencedFrameElement& outer_element) {
+  mojom::blink::FencedFrameMode current_mode = outer_element.GetMode();
+
+  if (features::kFencedFramesImplementationTypeParam.Get() ==
+      features::FencedFramesImplementationType::kShadowDOM) {
+    // ShadowDOM check.
+    if (Frame* ancestor = outer_element.GetDocument().GetFrame()) {
+      // This loop is only relevant for fenced frames based on ShadowDOM, since
+      // it has to do with the `FramePolicy::is_fenced` bit. We have to keep
+      // traversing up the tree to see if we ever come across a fenced frame of
+      // another mode. In that case, we stop `this` frame from being fully
+      // created, since nested fenced frames of differing modes are not allowed.
+      while (ancestor && ancestor->Owner()) {
+        bool is_ancestor_fenced = ancestor->Owner()->GetFramePolicy().is_fenced;
+        // Note that this variable is only meaningful if `is_ancestor_fenced`
+        // above is true.
+        mojom::blink::FencedFrameMode ancestor_mode =
+            ancestor->Owner()->GetFramePolicy().fenced_frame_mode;
+
+        if (is_ancestor_fenced && ancestor_mode != current_mode) {
+          return true;
+        }
+
+        // If this loop found a fenced ancestor whose mode is compatible with
+        // `current_mode`, it is not necessary to look further up the ancestor
+        // chain. This is because this loop already ran during the creation of
+        // the compatible fenced ancestor, so it is guaranteed that the rest of
+        // the ancestor chain has already been checked and approved for
+        // compatibility.
+        if (is_ancestor_fenced && ancestor_mode == current_mode) {
+          return false;
+        }
+
+        ancestor = ancestor->Tree().Parent();
+      }
+    }
+    return false;
+  }
+  // MPArch check.
+  Page* ancestor_page = outer_element.GetDocument().GetFrame()->GetPage();
+  return ancestor_page->IsMainFrameFencedFrameRoot() &&
+         ancestor_page->FencedFrameMode() != current_mode;
+}
+
 }  // namespace
 
 HTMLFencedFrameElement::HTMLFencedFrameElement(Document& document)
     : HTMLFrameOwnerElement(html_names::kFencedframeTag, document) {
   DCHECK(RuntimeEnabledFeatures::FencedFramesEnabled(GetExecutionContext()));
   UseCounter::Count(document, WebFeature::kHTMLFencedFrameElement);
-  if (!features::IsFencedFramesMPArchBased())
-    StartResizeObserver();
+  StartResizeObserver();
 }
 
 HTMLFencedFrameElement::~HTMLFencedFrameElement() = default;
@@ -57,6 +119,8 @@ void HTMLFencedFrameElement::Trace(Visitor* visitor) const {
 }
 
 void HTMLFencedFrameElement::DisconnectContentFrame() {
+  DCHECK(!GetDocument().IsPrerendering());
+
   // The `frame_delegate_` will not exist if the element was not allowed to
   // create its underlying frame at insertion-time.
   if (frame_delegate_)
@@ -89,6 +153,21 @@ HTMLFencedFrameElement::FencedFrameDelegate::Create(
   DCHECK(RuntimeEnabledFeatures::FencedFramesEnabled(
       outer_element->GetExecutionContext()));
 
+  // If the element has been disconnected by the time we attempt to create the
+  // delegate (eg, due to deferral while prerendering), we should not create the
+  // delegate.
+  //
+  // NB: this check should remain at the beginning of this function so that the
+  // remainder of the function can safely assume the frame is connected.
+  if (!outer_element->isConnected()) {
+    outer_element->GetDocument().AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Can't create a fenced frame when disconnected."));
+    return nullptr;
+  }
+
   if (outer_element->GetExecutionContext()->IsSandboxed(
           kFencedFrameMandatoryUnsandboxedFlags)) {
     outer_element->GetDocument().AddConsoleMessage(
@@ -100,6 +179,53 @@ HTMLFencedFrameElement::FencedFrameDelegate::Create(
             "allow-same-origin, allow-forms, allow-scripts, allow-popups, "
             "allow-popups-to-escape-sandbox and "
             "allow-top-navigation-by-user-activation."));
+    return nullptr;
+  }
+
+  if (!SubframeLoadingDisabler::CanLoadFrame(*outer_element)) {
+    outer_element->GetDocument().AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Can't create a fenced frame. Subframe loading disabled."));
+    return nullptr;
+  }
+
+  // The frame limit only needs to be checked on initial creation before
+  // attempting to insert it into the DOM. This behavior matches how iframes
+  // handles frame limits.
+  if (!outer_element->IsCurrentlyWithinFrameLimit()) {
+    outer_element->GetDocument().AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Can't create a fenced frame. Frame limit exceeded."));
+    return nullptr;
+  }
+
+  // We must be connected at this point due to the isConnected check at the top
+  // of this function.
+  DCHECK(outer_element->GetDocument().GetFrame());
+
+  if (HasDifferentModeThanParent(*outer_element)) {
+    mojom::blink::FencedFrameMode parent_mode =
+        features::kFencedFramesImplementationTypeParam.Get() ==
+                features::FencedFramesImplementationType::kShadowDOM
+            ? outer_element->GetDocument()
+                  .GetFrame()
+                  ->Owner()
+                  ->GetFramePolicy()
+                  .fenced_frame_mode
+            : outer_element->GetDocument().GetPage()->FencedFrameMode();
+
+    outer_element->GetDocument().AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Cannot create a fenced frame with mode '" +
+                FencedFrameModeToString(outer_element->GetMode()) +
+                "' nested in a fenced frame with mode '" +
+                FencedFrameModeToString(parent_mode) + "'."));
     return nullptr;
   }
 
@@ -133,21 +259,7 @@ Node::InsertionNotificationRequest HTMLFencedFrameElement::InsertedInto(
 }
 
 void HTMLFencedFrameElement::DidNotifySubtreeInsertionsToDocument() {
-  // This method is the only place that sets `frame_delegate_`, and it cannot be
-  // called twice before removal.
-  DCHECK(!frame_delegate_);
-
-  if (!SubframeLoadingDisabler::CanLoadFrame(*this))
-    return;
-
-  // The frame limit only needs to be checked on initial creation before
-  // attempting to insert it into the DOM. This behavior matches how iframes
-  // handles frame limits.
-  if (!IsCurrentlyWithinFrameLimit())
-    return;
-
-  frame_delegate_ = FencedFrameDelegate::Create(this);
-  Navigate();
+  CreateDelegateAndNavigate();
 }
 
 void HTMLFencedFrameElement::RemovedFrom(ContainerNode& node) {
@@ -160,7 +272,20 @@ void HTMLFencedFrameElement::RemovedFrom(ContainerNode& node) {
 
 void HTMLFencedFrameElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == html_names::kSrcAttr) {
+  if (params.name == html_names::kModeAttr) {
+    mojom::blink::FencedFrameMode new_mode =
+        GetModeAttributeValue(params.new_value);
+    if (new_mode != mode_ && freeze_mode_attribute_) {
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kJavaScript,
+          mojom::blink::ConsoleMessageLevel::kWarning,
+          "Changing the `mode` attribute on a fenced frame has no effect after "
+          "it has already been frozen due to the first navigation."));
+      return;
+    }
+
+    mode_ = new_mode;
+  } else if (params.name == html_names::kSrcAttr) {
     Navigate();
   } else {
     HTMLFrameOwnerElement::ParseAttribute(params);
@@ -195,6 +320,13 @@ void HTMLFencedFrameElement::CollectStyleForPresentationAttribute(
 void HTMLFencedFrameElement::Navigate() {
   if (!isConnected())
     return;
+
+  // Please see HTMLFencedFrameDelegate::Create for a list of conditions which
+  // could result in not having a frame delegate at this point, one of which is
+  // prerendering. If this function is called while prerendering we won't have a
+  // delegate and will bail early, but this should still be correct since,
+  // post-activation, CreateDelegateAndNavigate will be run which will navigate
+  // to the most current src.
   if (!frame_delegate_)
     return;
 
@@ -217,8 +349,30 @@ void HTMLFencedFrameElement::Navigate() {
 
   frame_delegate_->Navigate(url);
 
+  // Freeze the `mode` attribute to its current value even if it has never been
+  // explicitly set before, so that it cannot change after the first navigation.
+  freeze_mode_attribute_ = true;
+
   if (!frozen_frame_size_)
     FreezeFrameSize();
+}
+
+void HTMLFencedFrameElement::CreateDelegateAndNavigate() {
+  // We may queue up several calls to CreateDelegateAndNavigate while
+  // prerendering, but we should only actually create the delegate once. Note,
+  // this will also mean that we skip calling Navigate() again, but the result
+  // should still be correct since the first Navigate call will use the
+  // up-to-date src.
+  if (frame_delegate_)
+    return;
+  if (GetDocument().IsPrerendering()) {
+    GetDocument().AddPostPrerenderingActivationStep(
+        WTF::Bind(&HTMLFencedFrameElement::CreateDelegateAndNavigate,
+                  WrapWeakPersistent(this)));
+    return;
+  }
+  frame_delegate_ = FencedFrameDelegate::Create(this);
+  Navigate();
 }
 
 void HTMLFencedFrameElement::AttachLayoutTree(AttachContext& context) {
@@ -250,9 +404,17 @@ bool HTMLFencedFrameElement::SupportsFocus() const {
   return features::IsFencedFramesMPArchBased();
 }
 
+const absl::optional<PhysicalSize> HTMLFencedFrameElement::FrozenFrameSize()
+    const {
+  if (!frozen_frame_size_)
+    return absl::nullopt;
+  const float ratio = GetDocument().DevicePixelRatio();
+  return PhysicalSize(
+      LayoutUnit::FromFloatRound(frozen_frame_size_->width * ratio),
+      LayoutUnit::FromFloatRound(frozen_frame_size_->height * ratio));
+}
+
 void HTMLFencedFrameElement::FreezeFrameSize() {
-  if (features::IsFencedFramesMPArchBased())
-    return;
   DCHECK(!frozen_frame_size_);
 
   // When the parser finds `<fencedframe>` with the `src` attribute, the
@@ -265,17 +427,41 @@ void HTMLFencedFrameElement::FreezeFrameSize() {
     return;
   }
 
-  frozen_frame_size_ = content_rect_->size;
-  UpdateInnerStyleOnFrozenInternalFrame();
+  FreezeFrameSize(content_rect_->size);
+}
+
+void HTMLFencedFrameElement::FreezeFrameSize(const PhysicalSize& size) {
+  DCHECK(!frozen_frame_size_);
+  // Store the value divided by the |DevicePixelRatio|, so that it scales with
+  // the browser zoom or when moved to different screens.
+  const float ratio = GetDocument().DevicePixelRatio();
+  frozen_frame_size_ = {LayoutUnit::FromFloatRound(size.width / ratio),
+                        LayoutUnit::FromFloatRound(size.height / ratio)};
+
+  if (!features::IsFencedFramesMPArchBased()) {
+    // With Shadow DOM, update the CSS `transform` property whenever
+    // |content_rect_| or |frozen_frame_size_| change.
+    UpdateInnerStyleOnFrozenInternalFrame();
+    return;
+  }
+  // Stop the `ResizeObserver` when frozen. It is needed only to compute the
+  // frozen size.
+  StopResizeObserver();
 }
 
 void HTMLFencedFrameElement::StartResizeObserver() {
-  DCHECK(!features::IsFencedFramesMPArchBased());
   DCHECK(!resize_observer_);
   resize_observer_ =
       ResizeObserver::Create(GetDocument().domWindow(),
                              MakeGarbageCollected<ResizeObserverDelegate>());
   resize_observer_->observe(this);
+}
+
+void HTMLFencedFrameElement::StopResizeObserver() {
+  if (!resize_observer_)
+    return;
+  resize_observer_->disconnect();
+  resize_observer_ = nullptr;
 }
 
 void HTMLFencedFrameElement::ResizeObserverDelegate::OnResize(
@@ -296,17 +482,20 @@ void HTMLFencedFrameElement::OnResize(const PhysicalRect& content_rect) {
   if (should_freeze_frame_size_on_next_layout_) {
     should_freeze_frame_size_on_next_layout_ = false;
     DCHECK(!frozen_frame_size_);
-    frozen_frame_size_ = content_rect_->size;
+    FreezeFrameSize(content_rect_->size);
+    return;
   }
-  if (frozen_frame_size_)
+  if (frozen_frame_size_ && !features::IsFencedFramesMPArchBased())
     UpdateInnerStyleOnFrozenInternalFrame();
 }
 
 void HTMLFencedFrameElement::UpdateInnerStyleOnFrozenInternalFrame() {
+  DCHECK(!features::IsFencedFramesMPArchBased());
   DCHECK(content_rect_);
-  DCHECK(frozen_frame_size_);
-  const double child_width = frozen_frame_size_->width.ToDouble();
-  const double child_height = frozen_frame_size_->height.ToDouble();
+  const absl::optional<PhysicalSize> frozen_size = FrozenFrameSize();
+  DCHECK(frozen_size);
+  const double child_width = frozen_size->width.ToDouble();
+  const double child_height = frozen_size->height.ToDouble();
   // TODO(kojii): Theoritically this `transform` is the same as `object-fit:
   // contain`, but `<iframe>` does not support the `object-fit` property today.
   // We can change to use the `object-fit` property and stop the resize-observer

@@ -367,6 +367,7 @@
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> கோப்புகளைக் காப்புப் பிரதி எடுக்கிறது</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> க்கான விதிவிலக்கை அகற்றும்</translation>
 <translation id="4261901459838235729">Google விளக்கக்காட்சி</translation>
+<translation id="4277536868133419688"><ph name="FILTER_NAME" /> வடிப்பான் இயக்கப்பட்டுள்ளது.</translation>
 <translation id="4290535918735525311">Linuxஸுடன் 1 ஃபோல்டர் பகிரப்பட்டது</translation>
 <translation id="4299729908419173967">பிரேசிலியன்</translation>
 <translation id="4302605047395093221">இந்த மொபைல் நெட்வொர்க்குடன் இணைக்க இந்தச் சாதனத்தைப் பயன்படுத்தும் எவரும் பின்னை (PIN) உள்ளிட வேண்டும்</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">மேலும்...</translation>
 <translation id="4579744207439506346">தேர்வுக்கு <ph name="ENTRY_NAME" /> சேர்க்கப்பட்டது.</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> என்பதற்கான தேடல் முடிவுகளைக் காட்டுகிறது.</translation>
+<translation id="4599600860674643278">வடிப்பான் மீட்டமைக்கப்பட்டது.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> ஐ <ph name="FOLDER_NAME" />க்கு நகலெடுக்கிறது</translation>
 <translation id="4631887759990505102">கலைஞர்</translation>
 <translation id="4642769377300286600">மொபைல் சுயவிவரத்தை நிறுவுகிறது: நெட்வொர்க் <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -530,6 +532,7 @@
 <translation id="5469868506864199649">இத்தாலியன்</translation>
 <translation id="5473333559083690127">புதிய பின்னை மீண்டும் உள்ளிடவும்</translation>
 <translation id="5489067830765222292">லாட்வியன்</translation>
+<translation id="5489965683297092283"><ph name="FILTER_NAME" /> வடிப்பான் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="5494920125229734069">எல்லாவற்றையும் தேர்ந்தெடு</translation>
 <translation id="5500122897333236901">ஐஸ்லாண்டிக்</translation>
 <translation id="5508696409934741614">புள்ளிகள்</translation>
@@ -718,7 +721,7 @@
 <translation id="7135561821015524160">கன்னட ஒலிப்புமுறை</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165320105431587207">நெட்வொர்க் உள்ளமைவு தோல்வியடைந்தது</translation>
-<translation id="7170041865419449892">வரம்பிற்கு வெளியே உள்ளது</translation>
+<translation id="7170041865419449892">வரம்புக்கு வெளியே</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> ஜி.பை.</translation>
 <translation id="7191454237977785534">ஃபைலை இவ்வாறு சேமி </translation>
@@ -846,6 +849,7 @@
 <translation id="8208580316430297579">கலைப்பணி</translation>
 <translation id="8223479393428528563">இந்த ஃபைல்களை ஆஃப்லைனில் பயன்படுத்துவதற்காகச் சேமிக்க, ஆன்லைனிற்கு சென்று, ஃபைல்களில் வலது-கிளிக் செய்து, <ph name="OFFLINE_CHECKBOX_NAME" /> விருப்பத்தைத் தேர்தெடுக்கவும்.</translation>
 <translation id="8249296373107784235">கைவிடு</translation>
+<translation id="8250920743982581267">ஆவணங்கள்</translation>
 <translation id="8261506727792406068">நீக்கு</translation>
 <translation id="8261561378965667560">சீனம் (அரே)</translation>
 <translation id="8269755669432358899">ஃபைல்கள்  காட்டப்படும் பேனல்களைச் சுருக்கும்</translation>

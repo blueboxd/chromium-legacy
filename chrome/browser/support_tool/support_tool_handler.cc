@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -33,14 +34,15 @@
 #include "third_party/zlib/google/zip.h"
 
 // Zip archieves the contents of `src_path` into `target_path`. Adds ".zip"
-// extension to target file path. Returns true on success, false otherwise.
-bool ZipOutput(base::FilePath src_path, base::FilePath target_path) {
+// extension to target file path. Returns the path of zip archive on success, an
+// empty path otherwise.
+base::FilePath ZipOutput(base::FilePath src_path, base::FilePath target_path) {
   base::FilePath zip_path = target_path.AddExtension(FILE_PATH_LITERAL(".zip"));
   if (!zip::Zip(src_path, zip_path, true)) {
     LOG(ERROR) << "Couldn't zip files";
-    return false;
+    return base::FilePath();
   }
-  return true;
+  return zip_path;
 }
 
 // Creates a unique temp directory to store the output files. The caller is
@@ -56,7 +58,17 @@ base::FilePath CreateTempDirForOutput() {
 }
 
 SupportToolHandler::SupportToolHandler()
-    : task_runner_for_redaction_tool_(
+    : SupportToolHandler(/*case_id=*/std::string(),
+                         /*email_address=*/std::string(),
+                         /*issue_description=*/std::string()) {}
+
+SupportToolHandler::SupportToolHandler(std::string case_id,
+                                       std::string email_address,
+                                       std::string issue_description)
+    : case_id_(case_id),
+      email_address_(email_address),
+      issue_description_(issue_description),
+      task_runner_for_redaction_tool_(
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::TaskPriority::USER_VISIBLE,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
@@ -82,6 +94,10 @@ void SupportToolHandler::CleanUp() {
                        std::move(temp_dir_)));
     temp_dir_.clear();
   }
+}
+
+const std::string& SupportToolHandler::GetCaseID() {
+  return case_id_;
 }
 
 void SupportToolHandler::AddDataCollector(
@@ -172,7 +188,8 @@ void SupportToolHandler::ExportIntoTempDir(
     collected_errors_.insert(
         {SupportToolErrorCode::kDataExportError,
          "Failed to create temporary directory for output."});
-    std::move(on_data_export_done_callback_).Run(collected_errors_);
+    std::move(on_data_export_done_callback_)
+        .Run(base::FilePath(), collected_errors_);
     return;
   }
 
@@ -214,13 +231,14 @@ void SupportToolHandler::OnAllDataCollectorsDoneExporting(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SupportToolHandler::OnDataExportDone(bool success) {
+void SupportToolHandler::OnDataExportDone(base::FilePath exported_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Clean-up the temporary directory after exporting the data.
   CleanUp();
-  if (!success) {
+  if (exported_path.empty()) {
     collected_errors_.insert({SupportToolErrorCode::kDataExportError,
                               "Failed to archive the output files."});
   }
-  std::move(on_data_export_done_callback_).Run(collected_errors_);
+  std::move(on_data_export_done_callback_)
+      .Run(exported_path, collected_errors_);
 }

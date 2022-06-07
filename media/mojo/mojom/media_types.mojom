@@ -6,6 +6,8 @@ module media.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
+import "media/mojo/mojom/encryption_pattern.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -107,14 +109,6 @@ enum MediaContainerName;
 [Native]
 enum MediaStatusState;
 
-// This defines a mojo transport format for media::EncryptionPattern
-// See media/base/encryption_pattern.h for description.
-[Stable]
-struct EncryptionPattern {
-  uint32 crypt_byte_block;
-  uint32 skip_byte_block;
-};
-
 // See media/base/encryption_scheme.h for description.
 [Native]
 enum EncryptionScheme;
@@ -201,6 +195,15 @@ struct VideoDecoderConfig {
 // Native struct media::SubsampleEntry;
 [Native]
 struct SubsampleEntry;
+
+// Important events happened to the CDM.
+[EnableIf=is_win]
+enum CdmEvent {
+  kSignificantPlayback,  // Significant (e.g. played >1 minute) successful
+                         // playback happened using the CDM.
+  kPlaybackError,  // Error happened during playback using the CDM.
+  kCdmError,       // Error happened in the CDM.
+};
 
 // See media::CdmSessionClosedReason for descriptions.
 enum CdmSessionClosedReason {
@@ -334,6 +337,8 @@ struct VideoFrameMetadata {
 
   bool hw_protected;
 
+  bool is_webgpu_compatible;
+
   mojo_base.mojom.UnguessableToken? overlay_plane_id;
 
   bool power_efficient;
@@ -409,9 +414,8 @@ struct EosVideoFrameData {
 
 // This defines video frame data stored in a Mojo shared buffer.
 struct SharedBufferVideoFrameData {
-  // Reference to the shared memory containing the frame's data.
-  handle<shared_buffer> frame_data;
-  uint64 frame_data_size;
+  // Shared memory region for the frame data.
+  mojo_base.mojom.UnsafeSharedMemoryRegion frame_data;
 
   // Stride and offsets for each plane. Offsets are relative to the start
   // of |frame_data|.

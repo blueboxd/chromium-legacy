@@ -20,7 +20,17 @@ namespace ash {
 class DeskActionContextMenu : public views::ContextMenuController,
                               public ui::SimpleMenuModel::Delegate {
  public:
-  DeskActionContextMenu(std::u16string initial_combine_desks_target_name,
+  // An enum with identifiers to link context menu items to their associated
+  // functions.
+  enum CommandId {
+    // Closes target desk and moves its windows to another desk.
+    kCombineDesks,
+    // Saves target desk in DesksController and gives user option to undo the
+    // desk before the desk is fully removed and its windows are closed.
+    kCloseAll,
+  };
+
+  DeskActionContextMenu(const std::u16string& initial_combine_desks_target_name,
                         base::RepeatingClosure combine_desks_callback,
                         base::RepeatingClosure close_all_callback,
                         base::RepeatingClosure on_context_menu_closed_callback);
@@ -32,7 +42,7 @@ class DeskActionContextMenu : public views::ContextMenuController,
   // can change (such as when the user reorders desks), we need to update
   // `combine_desks_target_name_` before we show the context menu.
   void UpdateCombineDesksTargetName(
-      std::u16string new_combine_desks_target_name);
+      const std::u16string& new_combine_desks_target_name);
 
   // ui::SimpleMenuModel::Delegate:
   void ExecuteCommand(int command_id, int event_flags) override;

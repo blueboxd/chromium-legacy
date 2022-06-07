@@ -29,12 +29,12 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/themed_vector_icon.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -42,7 +42,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/image_model_utils.h"
 
 namespace ash {
 
@@ -266,14 +265,14 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
 
   gfx::RectF selection_ring = GetSelectionRingBounds();
-  selection_ring.Inset(0, kSelectionRingWidth / 2.0);
+  selection_ring.Inset(gfx::InsetsF::VH(kSelectionRingWidth / 2.0, 0));
   canvas->DrawRoundRect(selection_ring, kIconSelectedCornerRadius, flags);
 }
 
 gfx::RectF SearchResultTileItemView::GetSelectionRingBounds() const {
   gfx::RectF bounds(GetContentsBounds());
   const float horizontal_padding = (bounds.width() - kIconSelectedSize) / 2.0;
-  bounds.Inset(horizontal_padding, 0);
+  bounds.Inset(gfx::InsetsF::VH(0, horizontal_padding));
   bounds.set_height(kIconSelectedSize);
   return bounds;
 }
@@ -395,8 +394,7 @@ void SearchResultTileItemView::SetBadgeIcon(const ui::ImageModel& badge_icon,
     return;
   }
 
-  gfx::ImageSkia badge_icon_skia =
-      views::GetImageSkiaFromImageModel(badge_icon, GetColorProvider());
+  gfx::ImageSkia badge_icon_skia = badge_icon.Rasterize(GetColorProvider());
 
   if (use_badge_icon_background) {
     badge_icon_skia =
@@ -540,8 +538,8 @@ void SearchResultTileItemView::Layout() {
 
   if (rating_) {
     gfx::Rect rating_rect(rect);
-    rating_rect.Inset(rating_horizontal_offset,
-                      title_->GetPreferredSize().height(), 0, 0);
+    rating_rect.Inset(gfx::Insets::TLBR(title_->GetPreferredSize().height(),
+                                        rating_horizontal_offset, 0, 0));
     rating_rect.set_size(rating_->GetPreferredSize());
     rating_rect.set_width(kSearchRatingSize);
     rating_->SetBoundsRect(rating_rect);
@@ -549,19 +547,19 @@ void SearchResultTileItemView::Layout() {
 
   if (rating_star_) {
     gfx::Rect rating_star_rect(rect);
-    rating_star_rect.Inset(
+    rating_star_rect.Inset(gfx::Insets::TLBR(
+        title_->GetPreferredSize().height() + kSearchRatingStarVerticalSpacing,
         rating_horizontal_offset + kSearchRatingSize +
             kSearchRatingStarHorizontalSpacing,
-        title_->GetPreferredSize().height() + kSearchRatingStarVerticalSpacing,
-        0, 0);
+        0, 0));
     rating_star_rect.set_size(rating_star_->GetPreferredSize());
     rating_star_->SetBoundsRect(rating_star_rect);
   }
 
   if (price_) {
     gfx::Rect price_rect(rect);
-    price_rect.Inset(rect.width() - kSearchPriceSize,
-                     title_->GetPreferredSize().height(), 0, 0);
+    price_rect.Inset(gfx::Insets::TLBR(title_->GetPreferredSize().height(),
+                                       rect.width() - kSearchPriceSize, 0, 0));
     price_rect.set_size(price_->GetPreferredSize());
     price_->SetBoundsRect(price_rect);
   }

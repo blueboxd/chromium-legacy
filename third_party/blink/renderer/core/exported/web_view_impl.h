@@ -118,7 +118,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       mojom::blink::PageVisibilityState visibility,
       bool is_prerendering,
       bool is_inside_portal,
-      bool is_fenced_frame,
+      absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
       bool compositing_enabled,
       bool widgets_never_composited,
       WebViewImpl* opener,
@@ -185,7 +185,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   gfx::Size ContentsPreferredMinimumSize() override;
   void UpdatePreferredSize() override;
   void EnablePreferredSizeChangedMode() override;
-  void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;
   float ZoomFactorForDeviceScaleFactor() override {
     return zoom_factor_for_device_scale_factor_;
@@ -653,7 +652,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       mojom::blink::PageVisibilityState visibility,
       bool is_prerendering,
       bool is_inside_portal,
-      bool is_fenced_frame,
+      absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
       bool does_composite,
       bool widgets_never_composite,
       WebViewImpl* opener,
@@ -681,8 +680,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
   void DisablePopupMouseWheelEventListener();
-
-  float DeviceScaleFactor() const;
 
   LocalFrame* FocusedLocalFrameInWidget() const;
 

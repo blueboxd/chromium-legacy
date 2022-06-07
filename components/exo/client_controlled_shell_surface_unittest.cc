@@ -544,7 +544,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
 
   // With work area top insets.
   display_manager->UpdateWorkAreaOfDisplay(display_id,
-                                           gfx::Insets(200, 0, 0, 0));
+                                           gfx::Insets::TLBR(200, 0, 0, 0));
   shell_surface->SetGeometry(gfx::Rect(0, 0, 800, 368));
   surface->Commit();
 
@@ -552,7 +552,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   EXPECT_TRUE(frame_view->GetFrameEnabled());
   EXPECT_EQ(gfx::Rect(0, 200, 800, 400), widget->GetWindowBoundsInScreen());
 
-  display_manager->UpdateWorkAreaOfDisplay(display_id, gfx::Insets(0, 0, 0, 0));
+  display_manager->UpdateWorkAreaOfDisplay(display_id, gfx::Insets());
 
   // AutoHide
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
@@ -1193,6 +1193,26 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   ASSERT_FALSE(window_state->is_dragged());
 }
 
+TEST_F(ClientControlledShellSurfaceTest, ResizabilityAndSizeConstraints) {
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  shell_surface->SetMinimumSize(gfx::Size(0, 0));
+  shell_surface->SetMaximumSize(gfx::Size(0, 0));
+  surface->Commit();
+  EXPECT_FALSE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+
+  shell_surface->SetMinimumSize(gfx::Size(400, 400));
+  shell_surface->SetMaximumSize(gfx::Size(0, 0));
+  surface->Commit();
+  EXPECT_TRUE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+
+  shell_surface->SetMinimumSize(gfx::Size(400, 400));
+  shell_surface->SetMaximumSize(gfx::Size(400, 400));
+  surface->Commit();
+  EXPECT_FALSE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+}
+
 namespace {
 
 // This class is only meant to used by CloseWindowWhenDraggingTest.
@@ -1586,13 +1606,15 @@ TEST_F(ClientControlledShellSurfaceTest, CaptionButtonModel) {
       views::CAPTION_BUTTON_ICON_CLOSE,
       views::CAPTION_BUTTON_ICON_BACK,
       views::CAPTION_BUTTON_ICON_MENU,
+      views::CAPTION_BUTTON_ICON_FLOAT,
   };
   constexpr uint32_t kAllButtonMask =
       1 << views::CAPTION_BUTTON_ICON_MINIMIZE |
       1 << views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE |
       1 << views::CAPTION_BUTTON_ICON_CLOSE |
       1 << views::CAPTION_BUTTON_ICON_BACK |
-      1 << views::CAPTION_BUTTON_ICON_MENU;
+      1 << views::CAPTION_BUTTON_ICON_MENU |
+      1 << views::CAPTION_BUTTON_ICON_FLOAT;
 
   ash::NonClientFrameViewAsh* frame_view =
       static_cast<ash::NonClientFrameViewAsh*>(
@@ -2729,8 +2751,8 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedClientBounds) {
   // Clear insets so that it won't affects the bounds.
   shell_surface->SetSystemUiVisibility(true);
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  ash::Shell::Get()->display_manager()->UpdateWorkAreaOfDisplay(
-      display_id, gfx::Insets(0, 0, 0, 0));
+  ash::Shell::Get()->display_manager()->UpdateWorkAreaOfDisplay(display_id,
+                                                                gfx::Insets());
 
   auto* delegate =
       TestClientControlledShellSurfaceDelegate::SetUp(shell_surface.get());

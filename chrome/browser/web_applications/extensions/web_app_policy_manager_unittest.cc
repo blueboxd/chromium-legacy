@@ -54,23 +54,28 @@ namespace web_app {
 
 namespace {
 
-const char kWebAppSettingWithDefaultConfiguration[] = R"({
-  "https://windowed.example/": {
+const char kWebAppSettingWithDefaultConfiguration[] = R"([
+  {
+    "manifest_id": "https://windowed.example/",
     "run_on_os_login": "run_windowed"
   },
-  "https://tabbed.example/": {
+  {
+    "manifest_id": "https://tabbed.example/",
     "run_on_os_login": "allowed"
   },
-  "https://no-container.example/" : {
+  {
+    "manifest_id": "https://no-container.example/",
     "run_on_os_login": "unsupported_value"
   },
-  "bad.uri" : {
+  {
+    "manifest_id": "bad.uri",
     "run_on_os_login": "allowed"
   },
-  "*": {
+  {
+    "manifest_id": "*",
     "run_on_os_login": "blocked"
   }
-})";
+])";
 
 const char kDefaultFallbackAppName[] = "fallback app name";
 
@@ -285,12 +290,6 @@ ExternalInstallOptions GetCustomAppIconInstallOptions() {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-Source::Type ConvertExternalInstallSourceToSourceType(
-    ExternalInstallSource external_install_source) {
-  return InferSourceFromMetricsInstallSource(
-      ConvertExternalInstallSourceToInstallSource(external_install_source));
-}
-
 }  // namespace
 
 enum class TestParam { kLacrosDisabled, kLacrosEnabled };
@@ -307,11 +306,18 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
   void SetUp() override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (GetParam() == TestParam::kLacrosEnabled) {
-      scoped_feature_list_.InitAndEnableFeature(features::kWebAppsCrosapi);
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAsEnforceWebAppSettingsPolicy,
+           features::kWebAppsCrosapi},
+          {});
     } else if (GetParam() == TestParam::kLacrosDisabled) {
       scoped_feature_list_.InitWithFeatures(
-          {}, {features::kWebAppsCrosapi, ash::features::kLacrosPrimary});
+          {features::kDesktopPWAsEnforceWebAppSettingsPolicy},
+          {features::kWebAppsCrosapi, ash::features::kLacrosPrimary});
     }
+#else
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDesktopPWAsEnforceWebAppSettingsPolicy);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -343,7 +349,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
                 const auto install_source = install_options.install_source;
                 std::unique_ptr<WebApp> web_app = test::CreateWebApp(
                     install_url,
-                    ConvertExternalInstallSourceToSourceType(install_source));
+                    ConvertExternalInstallSourceToSource(install_source));
                 if (install_options.override_name)
                   web_app->SetName(install_options.override_name.value());
                 RegisterApp(std::move(web_app));
@@ -387,7 +393,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
   void SimulatePreviouslyInstalledApp(const GURL& url,
                                       ExternalInstallSource install_source) {
     auto web_app = test::CreateWebApp(
-        url, ConvertExternalInstallSourceToSourceType(install_source));
+        url, ConvertExternalInstallSourceToSource(install_source));
     RegisterApp(std::move(web_app));
 
     externally_installed_app_prefs().Insert(
@@ -437,11 +443,11 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
     return *fake_registry_controller_;
   }
 
-  void SetWebAppSettingsDictPref(const base::StringPiece pref) {
+  void SetWebAppSettingsListPref(const base::StringPiece pref) {
     base::JSONReader::ValueWithError result =
         base::JSONReader::ReadAndReturnValueWithError(
             pref, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-    ASSERT_TRUE(result.value && result.value->is_dict())
+    ASSERT_TRUE(result.value && result.value->is_list())
         << result.error_message;
     profile()->GetPrefs()->Set(prefs::kWebAppSettings,
                                std::move(*result.value));
@@ -519,7 +525,7 @@ TEST_P(WebAppPolicyManagerTest, NoWebAppSettings) {
   if (ShouldSkipPWASpecificTest())
     return;
   profile()->GetPrefs()->Set(prefs::kWebAppSettings,
-                             base::Value(base::Value::Type::DICTIONARY));
+                             base::Value(base::Value::Type::LIST));
 
   policy_manager().Start();
   AwaitPolicyManagerRefreshPolicySettings();
@@ -529,13 +535,14 @@ TEST_P(WebAppPolicyManagerTest, NoWebAppSettings) {
 TEST_P(WebAppPolicyManagerTest, WebAppSettingsInvalidDefaultConfiguration) {
   if (ShouldSkipPWASpecificTest())
     return;
-  const char kWebAppSettingInvalidDefaultConfiguration[] = R"({
-    "*" : {
+  const char kWebAppSettingInvalidDefaultConfiguration[] = R"([
+    {
+      "manifest_id": "*",
       "run_on_os_login": "unsupported_value"
     }
-  })";
+  ])";
 
-  SetWebAppSettingsDictPref(kWebAppSettingInvalidDefaultConfiguration);
+  SetWebAppSettingsListPref(kWebAppSettingInvalidDefaultConfiguration);
   policy_manager().Start();
   AwaitPolicyManagerRefreshPolicySettings();
   ValidateEmptyWebAppSettingsPolicy();
@@ -545,16 +552,18 @@ TEST_P(WebAppPolicyManagerTest,
        WebAppSettingsInvalidDefaultConfigurationWithValidAppPolicy) {
   if (ShouldSkipPWASpecificTest())
     return;
-  const char kWebAppSettingInvalidDefaultConfiguration[] = R"({
-    "https://windowed.example/": {
+  const char kWebAppSettingInvalidDefaultConfiguration[] = R"([
+    {
+      "manifest_id": "https://windowed.example/",
       "run_on_os_login": "run_windowed"
     },
-    "*" : {
+    {
+      "manifest_id": "*",
       "run_on_os_login": "unsupported_value"
     }
-  })";
+  ])";
 
-  SetWebAppSettingsDictPref(kWebAppSettingInvalidDefaultConfiguration);
+  SetWebAppSettingsListPref(kWebAppSettingInvalidDefaultConfiguration);
   policy_manager().Start();
   AwaitPolicyManagerRefreshPolicySettings();
   EXPECT_EQ(GetUrlRunOnOsLoginPolicy(kWindowedUrl),
@@ -569,22 +578,26 @@ TEST_P(WebAppPolicyManagerTest,
 TEST_P(WebAppPolicyManagerTest, WebAppSettingsNoDefaultConfiguration) {
   if (ShouldSkipPWASpecificTest())
     return;
-  const char kWebAppSettingNoDefaultConfiguration[] = R"({
-    "https://windowed.example/": {
+  const char kWebAppSettingNoDefaultConfiguration[] = R"([
+    {
+      "manifest_id": "https://windowed.example/",
       "run_on_os_login": "run_windowed"
     },
-    "https://tabbed.example/": {
+    {
+      "manifest_id": "https://tabbed.example/",
       "run_on_os_login": "blocked"
     },
-    "https://no-container.example/" : {
+    {
+      "manifest_id": "https://no-container.example/",
       "run_on_os_login": "unsupported_value"
     },
-    "bad.uri" : {
+    {
+      "manifest_id": "bad.uri",
       "run_on_os_login": "allowed"
     }
-  })";
+  ])";
 
-  SetWebAppSettingsDictPref(kWebAppSettingNoDefaultConfiguration);
+  SetWebAppSettingsListPref(kWebAppSettingNoDefaultConfiguration);
   policy_manager().Start();
   AwaitPolicyManagerRefreshPolicySettings();
 
@@ -600,7 +613,7 @@ TEST_P(WebAppPolicyManagerTest, WebAppSettingsNoDefaultConfiguration) {
 TEST_P(WebAppPolicyManagerTest, WebAppSettingsWithDefaultConfiguration) {
   if (ShouldSkipPWASpecificTest())
     return;
-  SetWebAppSettingsDictPref(kWebAppSettingWithDefaultConfiguration);
+  SetWebAppSettingsListPref(kWebAppSettingWithDefaultConfiguration);
   policy_manager().Start();
   AwaitPolicyManagerRefreshPolicySettings();
 
@@ -1100,7 +1113,7 @@ TEST_P(WebAppPolicyManagerTest, DisableWebApps) {
   // Add camera to system features disable list policy.
   auto disabled_apps_list =
       std::make_unique<base::Value>(base::Value::Type::LIST);
-  disabled_apps_list->Append(policy::SystemFeature::kCamera);
+  disabled_apps_list->Append(static_cast<int>(policy::SystemFeature::kCamera));
   testing_local_state_.Get()->SetUserPref(
       policy::policy_prefs::kSystemFeaturesDisableList,
       std::move(disabled_apps_list));
@@ -1126,15 +1139,16 @@ TEST_P(WebAppPolicyManagerTest, DisableWebApps) {
 TEST_P(WebAppPolicyManagerTest, WebAppSettingsDynamicRefresh) {
   if (ShouldSkipPWASpecificTest())
     return;
-  const char kWebAppSettingInitialConfiguration[] = R"({
-    "https://windowed.example/": {
+  const char kWebAppSettingInitialConfiguration[] = R"([
+    {
+      "manifest_id": "https://windowed.example/",
       "run_on_os_login": "blocked"
     }
-  })";
+  ])";
 
   MockAppRegistrarObserver mock_observer;
   app_registrar().AddObserver(&mock_observer);
-  SetWebAppSettingsDictPref(kWebAppSettingInitialConfiguration);
+  SetWebAppSettingsListPref(kWebAppSettingInitialConfiguration);
   policy_manager().Start();
   AwaitPolicyManagerRefreshPolicySettings();
   EXPECT_EQ(GetUrlRunOnOsLoginPolicy(kWindowedUrl),
@@ -1144,7 +1158,7 @@ TEST_P(WebAppPolicyManagerTest, WebAppSettingsDynamicRefresh) {
             RunOnOsLoginPolicy::kAllowed);
   EXPECT_EQ(1, mock_observer.GetOnWebAppSettingsPolicyChangedCalledCount());
 
-  SetWebAppSettingsDictPref(kWebAppSettingWithDefaultConfiguration);
+  SetWebAppSettingsListPref(kWebAppSettingWithDefaultConfiguration);
   EXPECT_EQ(GetUrlRunOnOsLoginPolicy(kWindowedUrl),
             RunOnOsLoginPolicy::kRunWindowed);
   EXPECT_EQ(GetUrlRunOnOsLoginPolicy(kTabbedUrl), RunOnOsLoginPolicy::kAllowed);
@@ -1187,7 +1201,7 @@ TEST_P(WebAppPolicyManagerTest,
   // Now apply WebSettings policy
   MockAppRegistrarObserver mock_observer;
   app_registrar().AddObserver(&mock_observer);
-  SetWebAppSettingsDictPref(kWebAppSettingWithDefaultConfiguration);
+  SetWebAppSettingsListPref(kWebAppSettingWithDefaultConfiguration);
   EXPECT_EQ(1, mock_observer.GetOnWebAppSettingsPolicyChangedCalledCount());
   EXPECT_EQ(GetUrlRunOnOsLoginPolicy(kWindowedUrl),
             RunOnOsLoginPolicy::kRunWindowed);
@@ -1205,7 +1219,7 @@ TEST_P(WebAppPolicyManagerTest, WebAppSettingsForceInstallNewApps) {
   // Apply WebAppSettings Policy
   MockAppRegistrarObserver mock_observer;
   app_registrar().AddObserver(&mock_observer);
-  SetWebAppSettingsDictPref(kWebAppSettingWithDefaultConfiguration);
+  SetWebAppSettingsListPref(kWebAppSettingWithDefaultConfiguration);
   policy_manager().Start();
   AwaitPolicyManagerAppsSynchronized();
   EXPECT_EQ(1, mock_observer.GetOnWebAppSettingsPolicyChangedCalledCount());

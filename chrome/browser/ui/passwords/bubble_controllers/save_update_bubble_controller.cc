@@ -5,16 +5,18 @@
 #include "chrome/browser/ui/passwords/bubble_controllers/save_update_bubble_controller.h"
 
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -202,6 +204,13 @@ void SaveUpdateBubbleController::OnCredentialEdited(
   pending_password_.password_value = std::move(new_password);
 }
 
+void SaveUpdateBubbleController::OnGooglePasswordManagerLinkClicked() {
+  if (delegate_) {
+    delegate_->NavigateToPasswordManagerSettingsPage(
+        password_manager::ManagePasswordsReferrer::kSaveUpdateBubble);
+  }
+}
+
 bool SaveUpdateBubbleController::IsCurrentStateUpdate() const {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_STATE);
@@ -218,9 +227,14 @@ bool SaveUpdateBubbleController::ShouldShowFooter() const {
          IsSyncUser(GetProfile());
 }
 
-bool SaveUpdateBubbleController::IsCurrentStateAffectingTheAccountStore() {
+bool SaveUpdateBubbleController::
+    IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount() {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_STATE);
+
+  if (IsSyncUser(GetProfile()))
+    return true;
+
   bool is_update = false;
   bool is_update_in_account_store = false;
   for (const password_manager::PasswordForm& form : existing_credentials_) {
@@ -289,16 +303,17 @@ bool SaveUpdateBubbleController::IsAccountStorageOptInRequiredBeforeSave() {
   return true;
 }
 
-std::string SaveUpdateBubbleController::GetPrimaryAccountEmail() {
+std::u16string SaveUpdateBubbleController::GetPrimaryAccountEmail() {
   Profile* profile = GetProfile();
   if (!profile)
-    return std::string();
+    return std::u16string();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   if (!identity_manager)
-    return std::string();
-  return identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
-      .email;
+    return std::u16string();
+  return base::UTF8ToUTF16(
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+          .email);
 }
 
 ui::ImageModel SaveUpdateBubbleController::GetPrimaryAccountAvatar(

@@ -183,6 +183,15 @@ const base::FeatureParam<std::string>
         &commerce::kDiscountConsentV2,
         kNtpChromeCartModuleDiscountConsentNtpDialogContentTitleParam, ""};
 
+const char kContextualConsentShowOnCartAndCheckoutPageParam[] =
+    "show-on-cart-and-checkout-page";
+const base::FeatureParam<bool> kContextualConsentShowOnCartAndCheckoutPage{
+    &commerce::kDiscountConsentV2,
+    kContextualConsentShowOnCartAndCheckoutPageParam, false};
+const char kContextualConsentShowOnSRPParam[] = "show-on-srp";
+const base::FeatureParam<bool> kContextualConsentShowOnSRP{
+    &commerce::kDiscountConsentV2, kContextualConsentShowOnSRPParam, false};
+
 bool IsPartnerMerchant(const GURL& url) {
   return commerce::IsCouponDiscountPartnerMerchant(url) ||
          IsRuleDiscountPartnerMerchant(url);
@@ -217,6 +226,11 @@ bool IsFakeDataEnabled() {
   return base::GetFieldTrialParamValueByFeature(
              ntp_features::kNtpChromeCartModule,
              ntp_features::kNtpChromeCartModuleDataParam) == "fake";
+}
+
+bool isContextualConsentEnabled() {
+  return kContextualConsentShowOnCartAndCheckoutPage.Get() ||
+         kContextualConsentShowOnSRP.Get();
 }
 
 }  // namespace commerce

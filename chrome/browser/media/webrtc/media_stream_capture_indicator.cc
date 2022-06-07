@@ -10,10 +10,12 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -649,6 +651,6 @@ void MediaStreamCaptureIndicator::GetStatusTrayIconInfo(
   }
 
   *tool_tip = l10n_util::GetStringUTF16(message_id);
-  *image = gfx::CreateVectorIcon(*icon, 16, gfx::kChromeIconGrey);
+  *image = gfx::CreateVectorIcon(*icon, 16, gfx::kGoogleGrey700);
 #endif  // !BUILDFLAG(IS_ANDROID)
 }

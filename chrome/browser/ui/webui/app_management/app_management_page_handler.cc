@@ -24,8 +24,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
-#include "components/services/app_service/public/cpp/intent_constants.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list_handle.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -39,12 +40,17 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event_constants.h"
 #include "ui/webui/resources/cr_components/app_management/app_management.mojom.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/session/connection_holder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "base/win/default_apps_util.h"
 #endif
 
 using app_management::mojom::OptionalBool;
@@ -61,12 +67,8 @@ const char* kAppIdsWithHiddenPinToShelf[] = {
     app_constants::kLacrosAppId,
 };
 
-#if BUILDFLAG(IS_WIN)
-const char kFileHandlingLearnMore[] = "";
-#elif !BUILDFLAG(IS_CHROMEOS)
 const char kFileHandlingLearnMore[] =
     "https://support.google.com/chrome/?p=pwa_default_associations";
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char const* kAppIdsWithHiddenStoragePermission[] = {
@@ -101,6 +103,17 @@ bool ShouldHideStoragePermission(const std::string app_id) {
 #endif
 }
 
+// Returns true if Chrome can direct users to a centralized system UI for
+// setting default apps/file type associations. If false, a "Learn More" link
+// will be shown instead.
+bool CanShowDefaultAppAssociationsUi() {
+#if BUILDFLAG(IS_WIN)
+  return base::win::CanLaunchDefaultAppsSettingsModernDialog();
+#else
+  return false;
+#endif
+}
+
 // Returns a list of intent filters that support http/https given an app ID.
 std::vector<apps::mojom::IntentFilterPtr> GetSupportedLinkIntentFilters(
     Profile* profile,
@@ -113,7 +126,9 @@ std::vector<apps::mojom::IntentFilterPtr> GetSupportedLinkIntentFilters(
                    if (update.Readiness() == apps::Readiness::kReady) {
                      for (auto& filter : update.IntentFilters()) {
                        if (apps_util::IsSupportedLinkForApp(app_id, filter)) {
-                         intent_filters.emplace_back(std::move(filter));
+                         intent_filters.emplace_back(
+                             apps::ConvertIntentFilterToMojomIntentFilter(
+                                 filter));
                        }
                      }
                    }
@@ -152,7 +167,7 @@ AppManagementPageHandler::AppManagementPageHandler(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       preferred_apps_list_handle_(
           apps::AppServiceProxyFactory::GetForProfile(profile)
-              ->PreferredApps()) {
+              ->PreferredAppsList()) {
   app_registry_cache_observer_.Observe(
       &apps::AppServiceProxyFactory::GetForProfile(profile_)
            ->AppRegistryCache());
@@ -296,7 +311,7 @@ void AppManagementPageHandler::GetOverlappingPreferredApps(
   // Remove the use_browser app ID as it's mainly used inside the intent system and is not an app
   // in app management. This prevents an overlap dialog from being shown when there are no "real"
   // apps that overlap.
-  app_ids.erase(apps::kUseBrowserForLink);
+  app_ids.erase(apps_util::kUseBrowserForLink);
   std::move(callback).Run(std::move(app_ids).extract());
 }
 
@@ -328,6 +343,13 @@ void AppManagementPageHandler::SetFileHandlingEnabled(const std::string& app_id,
                                                       bool enabled) {
   web_app::PersistFileHandlersUserChoice(profile_, app_id, enabled,
                                          base::DoNothing());
+}
+
+void AppManagementPageHandler::ShowDefaultAppAssociationsUi() {
+  DCHECK(CanShowDefaultAppAssociationsUi());
+#if BUILDFLAG(IS_WIN)
+  base::win::LaunchDefaultAppsSettingsModernDialog({});
+#endif
 }
 
 void AppManagementPageHandler::OnWebAppFileHandlerApprovalStateChanged(
@@ -368,6 +390,8 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->install_reason = update.InstallReason();
   app->install_source = update.InstallSource();
 
+  app->version = update.Version();
+
   app->description = update.Description();
 
   // On other OS's, is_pinned defaults to OptionalBool::kUnknown, which is
@@ -396,16 +420,16 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
         std::move(run_on_os_login.value()));
   }
 
-// TODO(crbug/1245293): implement on Chrome OS.
-#if !BUILDFLAG(IS_CHROMEOS)
   if (update.AppType() == apps::AppType::kWeb) {
-    auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
+    auto* provider =
+        web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_);
     const bool fh_enabled =
         !provider->registrar().IsAppFileHandlerPermissionBlocked(app->id);
     std::string file_handling_types;
     std::string file_handling_types_label;
     if (provider->os_integration_manager().IsFileHandlingAPIAvailable(
             app->id) &&
+        !provider->registrar().IsSystemApp(app->id) &&
         !provider->registrar().GetAppFileHandlers(app->id)->empty()) {
       auto [file_handling_types16, count] =
           web_app::GetFileTypeAssociationsHandledByWebAppForDisplay(profile_,
@@ -429,14 +453,39 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
                   static_cast<int>(truncated_extensions.size()),
               "LINK", "#"));
     }
+    absl::optional<GURL> learn_more_url;
+    if (!CanShowDefaultAppAssociationsUi())
+      learn_more_url = GURL(kFileHandlingLearnMore);
     // TODO(crbug/1252505): add file handling policy support.
     app->file_handling_state = app_management::mojom::FileHandlingState::New(
         fh_enabled, /*is_managed=*/false, file_handling_types,
-        file_handling_types_label, GURL(kFileHandlingLearnMore));
+        file_handling_types_label, learn_more_url);
   }
-#endif
 
   return app;
+}
+
+void AppManagementPageHandler::OpenStorePage(const std::string& app_id) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [&proxy](const apps::AppUpdate& update) {
+        if (update.InstallSource() == apps::InstallSource::kPlayStore) {
+          GURL url("https://play.google.com/store/apps/details?id=" +
+                   update.PublisherId());
+          proxy->LaunchAppWithUrl(
+              arc::kPlayStoreAppId, ui::EF_NONE, url,
+              apps::mojom::LaunchSource::kFromChromeInternal);
+        } else if (update.InstallSource() ==
+                   apps::InstallSource::kChromeWebStore) {
+          GURL url("https://chrome.google.com/webstore/detail/" +
+                   update.AppId());
+          proxy->LaunchAppWithUrl(
+              extensions::kWebStoreAppId, ui::EF_NONE, url,
+              apps::mojom::LaunchSource::kFromChromeInternal);
+        }
+      });
+#endif
 }
 
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {

@@ -4,50 +4,25 @@
 
 #include "ash/webui/eche_app_ui/eche_feature_status_provider.h"
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/components/phonehub/feature_status.h"
 #include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/services/device_sync/public/cpp/device_sync_client.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 
 namespace ash {
 namespace eche_app {
 namespace {
 
-using ::chromeos::multidevice::RemoteDeviceRef;
-using ::chromeos::multidevice::RemoteDeviceRefList;
-using ::chromeos::multidevice::SoftwareFeature;
-using ::chromeos::multidevice::SoftwareFeatureState;
-
+using multidevice::RemoteDeviceRef;
+using multidevice::RemoteDeviceRefList;
+using multidevice::SoftwareFeature;
+using multidevice::SoftwareFeatureState;
 using multidevice_setup::mojom::Feature;
 using multidevice_setup::mojom::FeatureState;
 using multidevice_setup::mojom::HostStatus;
-
-bool IsHostDisabled(const RemoteDeviceRef& device) {
-  return device.GetSoftwareFeatureState(SoftwareFeature::kBetterTogetherHost) !=
-             SoftwareFeatureState::kNotSupported &&
-         device.GetSoftwareFeatureState(SoftwareFeature::kEcheHost) ==
-             SoftwareFeatureState::kSupported;
-}
-
-bool HasBeenDisabledByPhone(
-    multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice host_status,
-    const RemoteDeviceRefList& remote_devices) {
-  if (host_status.first == HostStatus::kNoEligibleHosts) {
-    return false;
-  }
-
-  if (host_status.second.has_value()) {
-    return IsHostDisabled(*(host_status.second));
-  }
-  for (const RemoteDeviceRef& device : remote_devices) {
-    if (IsHostDisabled(device))
-      return true;
-  }
-  return false;
-}
 
 bool IsEnabledHost(const RemoteDeviceRef& device) {
   return device.GetSoftwareFeatureState(SoftwareFeature::kBetterTogetherHost) !=
@@ -57,7 +32,7 @@ bool IsEnabledHost(const RemoteDeviceRef& device) {
 }
 
 bool IsEligibleForFeature(
-    const absl::optional<multidevice::RemoteDeviceRef>& local_device,
+    const absl::optional<RemoteDeviceRef>& local_device,
     multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice host_status,
     const RemoteDeviceRefList& remote_devices,
     FeatureState feature_state) {
@@ -190,10 +165,6 @@ FeatureStatus EcheFeatureStatusProvider::ComputeStatus() {
                             multidevice_setup_client_->GetHostStatus(),
                             device_sync_client_->GetSyncedDevices(),
                             feature_state)) {
-    if (HasBeenDisabledByPhone(multidevice_setup_client_->GetHostStatus(),
-                               device_sync_client_->GetSyncedDevices())) {
-      return FeatureStatus::kNotEnabledByPhone;
-    }
     return FeatureStatus::kIneligible;
   }
 

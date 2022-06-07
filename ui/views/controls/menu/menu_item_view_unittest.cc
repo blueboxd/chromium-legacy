@@ -13,10 +13,10 @@
 #include "base/test/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/themed_vector_icon.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -303,7 +303,7 @@ TEST_F(MenuItemViewLayoutTest, ContainerLayoutRespectsMarginsAndPreferredSize) {
   // We want to check that MenuItemView::Layout() respects the child's preferred
   // size and margins.
   const gfx::Size child_size(200, 50);
-  const gfx::Insets child_margins(5, 10);
+  const auto child_margins = gfx::Insets::VH(5, 10);
   child_view->SetPreferredSize(child_size);
   child_view->SetProperty(kMarginsKey, child_margins);
 
@@ -350,7 +350,7 @@ class FakeView : public View {
 // the child view.
 TEST_F(MenuItemViewLayoutTest, ContainerLayoutPassesTrueWidth) {
   const gfx::Size child_size(2, 3);
-  const gfx::Insets child_margins(1, 1);
+  const gfx::Insets child_margins(1);
   FakeView* child_view =
       test_item()->AddChildView(std::make_unique<FakeView>(child_size.width()));
   child_view->SetPreferredSize(child_size);

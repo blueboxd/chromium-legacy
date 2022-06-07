@@ -172,6 +172,7 @@
 <translation id="4600710005438004015">Chrome 无法更新至最新版本，因此您未能获得最新的功能和安全修复程序。</translation>
 <translation id="4627412468266359539">可选：自动向 Google 发送诊断数据和使用情况数据，协助改进 ChromeOS Flex 的功能和性能。</translation>
 <translation id="4633000520311261472">为了提高 Chrome 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
+<translation id="469553575393225953">来源不明的扩展程序、应用和主题可能会危害您的设备。Chrome 建议只从 Chrome 网上应用店安装这些内容</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
 <translation id="4747730611090640388">Chrome 可以推测出您的兴趣。之后，您访问的网站可向 Chrome 请求查看您的兴趣，以便向您展示个性化广告。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -211,6 +212,7 @@
 <translation id="5736850870166430177">如果某个网站企图窃取您的密码，或者您下载了有害的文件，Chrome 可能还会将相应网址连同少量网页内容发送给“安全浏览”功能</translation>
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
 <translation id="5756509061973259733">此设备上已有一份使用该帐号创建的 Chrome 个人资料</translation>
+<translation id="5763280521700030406">Chrome 屏蔽了此文件，因为它太大，无法进行安全检查。请使用不超过 50 MB 的文件重试</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">无法启动 Chrome。请重试。</translation>
 <translation id="5867197326698922595">Google Chrome 正在尝试修改密码。</translation>
@@ -226,6 +228,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome 测试版</translation>
 <translation id="6235018212288296708">Google Chrome的入站规则，允许mDNS流量。</translation>
+<translation id="6247557882553405851">Google 密码管理工具</translation>
 <translation id="6291089322031436445">Chrome 开发者版应用</translation>
 <translation id="6291549208091401781">已为您计算机上的所有用户安装 Google Chrome。</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功劳。</translation>
@@ -234,6 +237,7 @@
 <translation id="6506909944137591434">Chrome 需要获得摄像头权限才能为您的周边环境创建 3D 地图</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome 开发者版</translation>
 <translation id="6568793831116033768">Chrome 操作系统</translation>
+<translation id="659498884637196217">在此设备上的 Google 密码管理器中</translation>
 <translation id="6632473616050862500">ChromeOS Flex 是借助了其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />才得以问世。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6679975945624592337">让 Google Chrome 在后台运行</translation>
@@ -272,6 +276,7 @@
 您已向网站和应用授予的权限可能会应用于此帐号。您可在<ph name="SETTINGS_LINK_BEGIN" />设置<ph name="SETTINGS_LINK_END" />部分中管理您的 Google 帐号。</translation>
 <translation id="7398801000654795464">您之前登录 Chrome 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
 <translation id="7408085963519505752">Chrome操作系统条款</translation>
+<translation id="7410958280246779049">此文件存在危险，因此 Chrome 已将其屏蔽</translation>
 <translation id="7419046106786626209">由于您的网域停用了同步功能，Chrome操作系统无法同步您的数据。</translation>
 <translation id="7481213027396403996">获享 Chrome 的最强安全保护</translation>
 <translation id="7486227612705979895">Chrome 将访问您的云端硬盘，以在地址栏提供建议</translation>
@@ -286,7 +291,6 @@
 <translation id="7655455401911432608">您的浏览记录，即您在此设备上使用 Chrome 访问过的网站的记录。</translation>
 <translation id="7665553140559834626">重新启动以更新 Chrome 操作系统(&amp;C)</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
-<translation id="7748512868279796735">这份 Chrome 个人资料可以使用下列帐号</translation>
 <translation id="7761834446675418963">点击您的姓名即可打开Chrome并开始浏览。</translation>
 <translation id="7777080907402804672">如果图片缺少有用的说明，则 Chrome 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。您可以随时在“设置”中关闭此功能。</translation>
 <translation id="7781002470561365167">Google Chrome 浏览器现已推出新版本。</translation>
@@ -302,10 +306,12 @@
 <translation id="7951272445806340501">需要重启 ChromeOS Flex 以应用更新。</translation>
 <translation id="7962410387636238736">此计算机将不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 已不再受支持</translation>
 <translation id="79947657522496226">Chrome 操作系统是借助了其他<ph name="BEGIN_LINK_CROS_OSS" />开源软件<ph name="END_LINK_CROS_OSS" />才得以问世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux 开发环境<ph name="END_LINK_LINUX_OSS" />也是如此。</translation>
+<translation id="8005666035647241369">保存到此设备上的 Google 密码管理器中</translation>
 <translation id="8008534537613507642">重新安装Chrome</translation>
 <translation id="8013993649590906847">如果图片缺少有用的说明，则 Chrome 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
+<translation id="822971176939352383">以下帐号未登录任何 Chrome 个人资料。如果您要使用某个帐号登录另一份个人资料，请先移除这份个人资料。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>
 <translation id="8286862437124483331">Google Chrome正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
 <translation id="828798499196665338">您的家长已为 Chrome 停用“网站、应用和扩展程序的权限”。因此，您无法启用该<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
@@ -317,8 +323,10 @@
 <translation id="8394720698884623075">将网址与存储在 Chrome 中的不安全网站列表进行比对</translation>
 <translation id="840084489713044809">Google Chrome 想导出您的密码。</translation>
 <translation id="8416347857511542594">在 Chrome 设置中详细了解广告个性化</translation>
+<translation id="8421734018304082652">Chrome 屏蔽了此文件，因为它已加密。请让文件所有者解密</translation>
 <translation id="8433638294851456451">若要从此处向您的 Android 手机发送电话号码，请在这两部设备上分别登录 Chrome。</translation>
 <translation id="8498858610309223613">Google Chrome 刚刚应用了一项特殊的安全更新。请立即重启，以便系统恢复您的标签页。</translation>
+<translation id="8504220326736535258">Chrome 屏蔽了此文件，因为它包含恶意软件</translation>
 <translation id="8516431725144212809">Chrome 推测出的您的兴趣</translation>
 <translation id="8521348052903287641">Google Chrome 开发者版的入站规则，允许 mDNS 流量。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

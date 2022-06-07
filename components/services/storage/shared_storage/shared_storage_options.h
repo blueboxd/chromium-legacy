@@ -25,7 +25,7 @@ struct SharedStorageOptions {
                        int max_entries_per_origin,
                        int max_string_length,
                        int max_init_tries,
-                       int max_allowed_consecutive_errors,
+                       int max_iterator_batch_size,
                        base::TimeDelta stale_origin_purge_initial_interval,
                        base::TimeDelta stale_origin_purge_recurring_interval,
                        base::TimeDelta origin_staleness_threshold);
@@ -51,9 +51,9 @@ struct SharedStorageOptions {
   // initialize the SQL database.
   const int max_init_tries;
 
-  // Maximum number of consecutive operation errors allowed before the database
-  // is deleted and recreated.
-  const int max_allowed_consecutive_errors;
+  // Maximum number of keys or key-value pairs returned per batch by the
+  // async `Keys()` and `Entries()` iterators, respectively.
+  const int max_iterator_batch_size;
 
   // The initial interval at which stale origins are purged.
   const base::TimeDelta stale_origin_purge_initial_interval;
@@ -79,7 +79,8 @@ struct SharedStorageDatabaseOptions {
                                int max_cache_size,
                                int max_entries_per_origin,
                                int max_string_length,
-                               int max_init_tries);
+                               int max_init_tries,
+                               int max_iterator_batch_size);
 
   // The max size of a database page, in bytes. Must be a power of 2 between
   // 512 and 65536 inclusive.
@@ -97,6 +98,10 @@ struct SharedStorageDatabaseOptions {
   // The maximum number of times that `SharedStorageDatabase` will try to
   // initialize the SQL database.
   const int max_init_tries;
+
+  // Maximum number of keys or key-value pairs returned per batch by the
+  // async `Keys()` and `Entries()` iterators, respectively.
+  const int max_iterator_batch_size;
 };
 
 }  // namespace storage

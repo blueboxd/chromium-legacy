@@ -186,7 +186,8 @@ OmniboxResultView::OmniboxResultView(
                                views::MaximumFlexSizeRule::kUnbounded)
           .WithWeight(4));
 
-  const gfx::Insets child_insets(0, 0, 0, OmniboxMatchCellView::kMarginRight);
+  const auto child_insets =
+      gfx::Insets::TLBR(0, 0, 0, OmniboxMatchCellView::kMarginRight);
 
   remove_suggestion_button_ = suggestion_button_container->AddChildView(
       std::make_unique<OmniboxRemoveSuggestionButton>(base::BindRepeating(
@@ -248,7 +249,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   const int suggestion_indent =
       popup_contents_view_->InExplicitExperimentalKeywordMode() ? 70 : 0;
   suggestion_view_->SetProperty(views::kMarginsKey,
-                                gfx::Insets(0, suggestion_indent, 0, 0));
+                                gfx::Insets::TLBR(0, suggestion_indent, 0, 0));
 
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
@@ -273,6 +274,11 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 }
 
 void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
+  views::SetImageFromVectorIconWithColor(
+      remove_suggestion_button_, vector_icons::kCloseRoundedIcon,
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      GetColor(OmniboxPart::RESULTS_ICON));
+
   SetBackground(GetPopupCellBackground(this, GetThemeState()));
 
   // Reapply the dim color to account for the highlight state.
@@ -485,10 +491,6 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void OmniboxResultView::OnThemeChanged() {
   views::View::OnThemeChanged();
-  views::SetImageFromVectorIconWithColor(
-      remove_suggestion_button_, vector_icons::kCloseRoundedIcon,
-      GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetColor(OmniboxPart::RESULTS_ICON));
   ApplyThemeAndRefreshIcons(true);
 }
 

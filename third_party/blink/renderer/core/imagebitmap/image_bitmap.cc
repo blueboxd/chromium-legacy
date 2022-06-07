@@ -15,6 +15,7 @@
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
@@ -149,45 +150,6 @@ bool DstBufferSizeHasOverflow(const ImageBitmap::ParsedOptions& options) {
 
 SkImageInfo GetSkImageInfo(const scoped_refptr<Image>& input) {
   return input->PaintImageForCurrentFrame().GetSkImageInfo();
-}
-
-// This function results in a readback due to using SkImage::readPixels().
-// Returns transparent black pixels if the input SkImageInfo.bounds() does
-// not intersect with the input image boundaries. When apply_orientation
-// is true this method will orient the data according to the source's EXIF
-// information.
-Vector<uint8_t> CopyImageData(const scoped_refptr<StaticBitmapImage>& input,
-                              const SkImageInfo& info,
-                              bool apply_orientation = true) {
-  if (info.isEmpty())
-    return {};
-  PaintImage paint_image = input->PaintImageForCurrentFrame();
-  if (paint_image.GetSkImageInfo().isEmpty())
-    return {};
-
-  wtf_size_t byte_length =
-      base::checked_cast<wtf_size_t>(info.computeMinByteSize());
-  Vector<uint8_t> dst_buffer(byte_length);
-
-  bool read_pixels_successful =
-      paint_image.readPixels(info, dst_buffer.data(), info.minRowBytes(), 0, 0);
-  DCHECK(read_pixels_successful);
-  if (!read_pixels_successful)
-    return {};
-
-  // Orient the data, and re-read the pixels.
-  if (apply_orientation && !input->HasDefaultOrientation()) {
-    paint_image = Image::ResizeAndOrientImage(
-        paint_image, input->CurrentFrameOrientation(), gfx::Vector2dF(1, 1), 1,
-        kInterpolationNone);
-    read_pixels_successful = paint_image.readPixels(info, dst_buffer.data(),
-                                                    info.minRowBytes(), 0, 0);
-    DCHECK(read_pixels_successful);
-    if (!read_pixels_successful)
-      return {};
-  }
-
-  return dst_buffer;
 }
 
 static inline bool ShouldAvoidPremul(
@@ -1002,7 +964,7 @@ SkImageInfo ImageBitmap::GetBitmapSkImageInfo() const {
 
 Vector<uint8_t> ImageBitmap::CopyBitmapData(const SkImageInfo& info,
                                             bool apply_orientation) {
-  return CopyImageData(image_, info, apply_orientation);
+  return image_->CopyImageData(info, apply_orientation);
 }
 
 unsigned ImageBitmap::width() const {

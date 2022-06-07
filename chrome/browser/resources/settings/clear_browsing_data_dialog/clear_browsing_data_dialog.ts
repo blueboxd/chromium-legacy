@@ -20,11 +20,11 @@ import '../controls/settings_checkbox.js';
 import '../icons.js';
 import '../settings_shared_css.js';
 
+import {CrA11yAnnouncerElement} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {IronPagesElement} from 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -92,7 +92,7 @@ export interface SettingsClearBrowsingDataDialogElement {
 const SettingsClearBrowsingDataDialogElementBase =
     RouteObserverMixin(WebUIListenerMixin(I18nMixin(PolymerElement))) as {
       new (): PolymerElement & WebUIListenerMixinInterface &
-      I18nMixinInterface & RouteObserverMixinInterface
+          I18nMixinInterface & RouteObserverMixinInterface,
     };
 
 export class SettingsClearBrowsingDataDialogElement extends
@@ -396,7 +396,8 @@ export class SettingsClearBrowsingDataDialogElement extends
     // Data type deletion preferences are named "browser.clear_data.<datatype>".
     // Strip the common prefix, i.e. use only "<datatype>".
     const matches = prefName.match(/^browser\.clear_data\.(\w+)$/)!;
-    this.set('counters_.' + assert(matches[1]), text);
+    assert(matches[1]);
+    this.set('counters_.' + matches[1], text);
   }
 
   /**
@@ -479,12 +480,8 @@ export class SettingsClearBrowsingDataDialogElement extends
         await this.browserProxy_.clearBrowsingData(
             dataTypes, timePeriod, this.installedApps_);
     this.clearingInProgress_ = false;
-    IronA11yAnnouncer.requestAvailability();
-    this.dispatchEvent(new CustomEvent('iron-announce', {
-      bubbles: true,
-      composed: true,
-      detail: {text: loadTimeData.getString('clearedData')}
-    }));
+    CrA11yAnnouncerElement.getInstance().announce(
+        loadTimeData.getString('clearedData'));
     this.showHistoryDeletionDialog_ = showHistoryNotice;
     // If both the history notice and the passwords notice should be shown, show
     // the history notice first, and then show the passwords notice once the
@@ -542,7 +539,7 @@ export class SettingsClearBrowsingDataDialogElement extends
     }
   }
 
-  // <if expr="not chromeos">
+  // <if expr="not chromeos_ash">
   /** Called when the user clicks the link in the footer. */
   private onSyncDescriptionLinkClicked_(e: Event) {
     if ((e.target as HTMLElement).tagName === 'A') {
@@ -592,7 +589,7 @@ export class SettingsClearBrowsingDataDialogElement extends
 
   private shouldShowFooter_(): boolean {
     let showFooter = false;
-    // <if expr="not chromeos and not lacros">
+    // <if expr="not chromeos_ash and not chromeos_lacros">
     showFooter = !!this.syncStatus && !!this.syncStatus!.signedIn;
     // </if>
     return showFooter;

@@ -131,8 +131,8 @@ static_library("content_shell_lib") {
     "browser/shell_devtools_manager_delegate.h",
     "browser/shell_download_manager_delegate.cc",
     "browser/shell_download_manager_delegate.h",
-    "browser/shell_identity_dialog_controller.cc",
-    "browser/shell_identity_dialog_controller.h",
+    "browser/shell_federated_permission_context.cc",
+    "browser/shell_federated_permission_context.h",
     "browser/shell_javascript_dialog.h",
     "browser/shell_javascript_dialog_manager.cc",
     "browser/shell_javascript_dialog_manager.h",
@@ -234,6 +234,8 @@ static_library("content_shell_lib") {
     "//build:chromeos_buildflags",
     "//cc/base",
     "//components/cdm/renderer",
+    "//components/custom_handlers",
+    "//components/custom_handlers:test_support",
     "//components/keyed_service/content",
     "//components/metrics",
     "//components/metrics:net",
@@ -413,6 +415,7 @@ repack("pak") {
   testonly = true
 
   sources = [
+    "$root_gen_dir/base/tracing/protos/tracing_proto_resources.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
@@ -438,6 +441,7 @@ repack("pak") {
 
   deps = [
     ":resources",
+    "//base/tracing/protos:chrome_track_event_resources",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
     "//content/app/resources",
@@ -820,16 +824,11 @@ if (is_mac) {
     # Add the SwiftShader .dylibs in the Libraries directory of the Framework.
     bundle_data("content_shell_swiftshader_binaries") {
       sources = [
-        "$root_out_dir/egl_intermediates/libswiftshader_libEGL.dylib",
-        "$root_out_dir/egl_intermediates/libswiftshader_libGLESv2.dylib",
         "$root_out_dir/vk_intermediates/libvk_swiftshader.dylib",
         "$root_out_dir/vk_intermediates/vk_swiftshader_icd.json",
       ]
       outputs = [ "{{bundle_contents_dir}}/Libraries/{{source_file_part}}" ]
-      public_deps = [
-        "//ui/gl:swiftshader_egl_library_copy",
-        "//ui/gl:swiftshader_vk_library_copy",
-      ]
+      public_deps = [ "//ui/gl:swiftshader_vk_library_copy" ]
     }
   }
 

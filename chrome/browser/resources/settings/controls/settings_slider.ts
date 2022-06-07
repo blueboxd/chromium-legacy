@@ -12,7 +12,7 @@ import '../settings_vars_css.js';
 import '//resources/cr_elements/cr_slider/cr_slider.js';
 
 import {CrSliderElement, SliderTick} from '//resources/cr_elements/cr_slider/cr_slider.js';
-import {assert} from '//resources/js/assert.m.js';
+import {assert} from '//resources/js/assert_ts.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
@@ -23,7 +23,7 @@ import {getTemplate} from './settings_slider.html.js';
 export interface SettingsSliderElement {
   $: {
     slider: CrSliderElement,
-  }
+  };
 }
 
 const SettingsSliderElementBase = CrPolicyPrefMixin(PolymerElement);

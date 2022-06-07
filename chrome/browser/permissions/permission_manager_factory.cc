@@ -29,7 +29,7 @@
 #include "components/background_sync/background_sync_permission_context.h"
 #include "components/embedder_support/permission_context_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/permissions/contexts/font_access_permission_context.h"
+#include "components/permissions/contexts/local_fonts_permission_context.h"
 #include "components/permissions/contexts/window_placement_permission_context.h"
 #include "components/permissions/permission_manager.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -96,15 +96,15 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
   permission_contexts[ContentSettingsType::DURABLE_STORAGE] =
       std::make_unique<DurableStoragePermissionContext>(profile);
 
-  // TODO(crbug.com/1043295): Still in development for Android so we don't
-  // support it on WebLayer yet.
-  permission_contexts[ContentSettingsType::FONT_ACCESS] =
-      std::make_unique<FontAccessPermissionContext>(profile);
-
   // TODO(crbug.com/878979): Still in development so we don't support it on
   // WebLayer yet.
   permission_contexts[ContentSettingsType::IDLE_DETECTION] =
       std::make_unique<IdleDetectionPermissionContext>(profile);
+
+  // TODO(crbug.com/1043295): Still in development for Android so we don't
+  // support it on WebLayer yet.
+  permission_contexts[ContentSettingsType::LOCAL_FONTS] =
+      std::make_unique<LocalFontsPermissionContext>(profile);
 
   // Depends on Chrome specific policies not available on WebLayer.
   permission_contexts[ContentSettingsType::MEDIASTREAM_CAMERA] =

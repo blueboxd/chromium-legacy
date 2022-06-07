@@ -15,6 +15,8 @@ extern NSString* const kBubbleViewTitleLabelIdentifier;
 extern NSString* const kBubbleViewImageViewIdentifier;
 // Accessibility identifier for the snooze button.
 extern NSString* const kBubbleViewSnoozeButtonIdentifier;
+// Accessibility identifier for the arrow view.
+extern NSString* const kBubbleViewArrowViewIdentifier;
 
 // Direction for the bubble to point.
 typedef NS_ENUM(NSInteger, BubbleArrowDirection) {
@@ -34,6 +36,19 @@ typedef NS_ENUM(NSInteger, BubbleAlignment) {
   BubbleAlignmentTrailing,
 };
 
+// Type of bubble views. BubbleViewTypeDefault uses sizeThatFits for its size,
+// the other types use the full screen width with a maximum limit size.
+typedef NS_ENUM(NSInteger, BubbleViewType) {
+  // Bubble view with text.
+  BubbleViewTypeDefault,
+  // Bubble view with text and close button.
+  BubbleViewTypeWithClose,
+  // Bubble view with title, text, image and close button.
+  BubbleViewTypeRich,
+  // Bubble view with title, text, image, close button and snooze button.
+  BubbleViewTypeRichWithSnooze,
+};
+
 // Delegate for actions happening in BubbleView.
 @protocol BubbleViewDelegate <NSObject>
 
@@ -51,7 +66,7 @@ typedef NS_ENUM(NSInteger, BubbleAlignment) {
 
 // Initialize with the given text, direction that the bubble should point,
 // alignment of the bubble and optionals close button, title, image, snooze
-// button and delegate.
+// button, text alignment (for title, text and snooze button) and delegate.
 - (instancetype)initWithText:(NSString*)text
               arrowDirection:(BubbleArrowDirection)direction
                    alignment:(BubbleAlignment)alignment
@@ -59,11 +74,13 @@ typedef NS_ENUM(NSInteger, BubbleAlignment) {
                        title:(NSString*)titleString
                        image:(UIImage*)image
            showsSnoozeButton:(BOOL)shouldShowSnoozeButton
+               textAlignment:(NSTextAlignment)textAlignment
                     delegate:(id<BubbleViewDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 // Initialize with the given text, direction that the bubble should point, and
-// alignment of the bubble. Optional arguments are set to nil.
+// alignment of the bubble. Optional arguments are set to nil. Text alignment is
+// NSTextAlignmentCenter.
 - (instancetype)initWithText:(NSString*)text
               arrowDirection:(BubbleArrowDirection)direction
                    alignment:(BubbleAlignment)alignment;
@@ -74,8 +91,11 @@ typedef NS_ENUM(NSInteger, BubbleAlignment) {
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Text alignment used in this View. Default is NSTextAlignmentCenter.
-@property(nonatomic) NSTextAlignment textAlignment;
+// Distance between the arrow's centerX and the (leading or trailing) edge of
+// the bubble, depending on the BubbleAlignment. If BubbleAlignment is center,
+// then |alignmentOffset| is ignored. |alignmentOffset| changes the minimum size
+// of the bubble, thus might change the value of |sizeThatFits|.
+@property(nonatomic) CGFloat alignmentOffset;
 
 @end
 

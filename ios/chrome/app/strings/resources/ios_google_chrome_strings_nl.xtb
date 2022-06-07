@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="1096883626080133124">Krijg meer gedaan met Google Chrome. Nu nog eenvoudiger, veiliger en sneller dan ooit</translation>
 <translation id="1143896152279775643">Je wachtwoord wordt opgeslagen in Google Wachtwoordmanager voor <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Help de functies en prestaties van Chrome verbeteren</translation>
 <translation id="1479202195792305274">Chrome kan je wachtwoorden checken als je inlogt met je Google-account.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Chrome overal gebruiken</translation>
 <translation id="3522659714780527202">Zet de synchronisatie aan om je tabbladen te bekijken vanaf elk apparaat waarop je Chrome gebruikt</translation>
 <translation id="3533694711092285624">Geen opgeslagen wachtwoorden. Chrome kan je wachtwoorden controleren als je deze hebt opgeslagen.</translation>
-<translation id="3634910711516114487">Log in bij Chrome met je Google-account om het maximale uit Chrome te halen</translation>
 <translation id="3655656110921623717">Dit betekent dat Chrome altijd de mobiele site opvraagt.</translation>
 <translation id="3706101708757577809">Je kunt Chrome nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
 <translation id="3720541637541300822">Incognitotabbladen vergrendelen als je Chrome sluit</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Je wachtwoord is gelekt bij een gegevenslek. Google Wachtwoordmanager raadt je aan dit wachtwoord nu te wijzigen.</translation>
 <translation id="6822673484890854830">Chrome kan niet alle wachtwoorden checken. Probeer het later opnieuw.</translation>
 <translation id="6964931465519938134">Je kunt Chrome nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
-<translation id="7046845777663074840">Indien aan:
-<ph name="BEGIN_INDENT" />  • Help Chrome te verbeteren voor mensen die de browser gebruiken op dezelfde manier als jij.<ph name="END_INDENT" />
-
-Aandachtspunten:
-<ph name="BEGIN_INDENT" />  • Er wordt informatie over je Chrome-gebruik naar Google gestuurd, maar deze informatie wordt niet aan jou gekoppeld.
-
-  • Als Chrome crasht, kunnen details over de crash bepaalde persoonlijke informatie bevatten.
-
-  • Als je synchronisatie aanzet, kunnen statistieken ook informatie bevatten over de URL's die je bezoekt.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Chrome personaliseren</translation>
 <translation id="7124339256045485976">Houd Chrome up-to-date</translation>
 <translation id="7161390184744336561">Google Chrome is verouderd</translation>
 <translation id="7165736900384873061">QR-scanner van Google Chrome gebruiken</translation>
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Verplaats Chrome naar je dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome gebruikt Face ID om geautoriseerde toegang tot je wachtwoorden mogelijk te maken.</translation>
+<translation id="7187993566681480880">Beschermt je op Chrome en kan worden gebruikt om de beveiliging in andere Google-apps te verbeteren als je bent ingelogd.</translation>
 <translation id="72119412072970160">Je kunt de wachtwoorden die je in Google Wachtwoordmanager hebt opgeslagen, gebruiken in andere apps op je iPad.</translation>
 <translation id="7261678641327190792">Chrome kan je wachtwoorden niet checken</translation>
 <translation id="7272930098487145294">Als je afbeeldingen wilt opslaan, tik je op Instellingen om deze door Chrome aan je foto's te laten toevoegen</translation>
@@ -110,6 +100,7 @@ Aandachtspunten:
 <translation id="766361182512894255">Je wachtwoord is gelekt bij een gegevenslek. Chrome raadt je aan om het wachtwoord nu te wijzigen.</translation>
 <translation id="7693590760643069321">Je kunt Chrome nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
 <translation id="7698568245838009292">Chrome vraagt toegang tot de camera</translation>
+<translation id="7780154209050837198">Log in bij Chrome met je Google-account om het maximale uit Chrome te halen.</translation>
 <translation id="7855730255114109580">Google Chrome is up-to-date</translation>
 <translation id="8022947259858476807">Gebruik standaard Chrome om links te openen, te zoeken via widgets en om wachtwoorden in andere apps automatisch in te vullen</translation>
 <translation id="8160472928944011082">Chrome kan niet updaten</translation>

@@ -1680,7 +1680,7 @@ void TabDragController::EndDragImpl(EndDragType type) {
     if (previous_state != DragState::kNotStarted) {
       // After the drag ends, sometimes it shouldn't restore the focus, because
       // - if |attached_context_| is showing in overview mode, overview mode
-      //   may be ended unexpectly because of the window activation.
+      //   may be ended unexpectedly because of the window activation.
       // - Some dragging gesture (like fling down) minimizes the window, but the
       //   window activation cancels minimized status. See
       //   https://crbug.com/902897
@@ -1977,16 +1977,12 @@ void TabDragController::CompleteDrag() {
       }
 
       // If source window was maximized - maximize the new window as well.
-#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_MAC)
-
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX)
       // Keeping maximized state breaks snap to Grid on Windows when dragging
       // tabs from maximized windows. TODO:(crbug.com/727051) Explore doing this
       // for other desktop OS's. kMaximizedStateRetainedOnTabDrag in
       // tab_drag_controller_interactive_uitest.cc will need to be initialized
       // to false on each desktop OS that changes this behavior.
-      // macOS opts out since this maps maximize to fullscreen, which can
-      // violate user expectations and interacts poorly with some window
-      // management actions.
       if (was_source_maximized_ || was_source_fullscreen_)
         MaximizeAttachedWindow();
 #endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX)
@@ -2147,8 +2143,7 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
   if (new_bounds.size().width() >= work_area.size().width() &&
       new_bounds.size().height() >= work_area.size().height()) {
     new_bounds = work_area;
-    new_bounds.Inset(kMaximizedWindowInset, kMaximizedWindowInset,
-                     kMaximizedWindowInset, kMaximizedWindowInset);
+    new_bounds.Inset(kMaximizedWindowInset);
     // Behave as if the |source| was maximized at the start of a drag since this
     // is consistent with a browser window creation logic in case of windows
     // that are as large as the |work_area|. Note: Some platforms do not support

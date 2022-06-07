@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LACROS_DATA_MIGRATION_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LACROS_DATA_MIGRATION_SCREEN_HANDLER_H_
 
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 class LacrosDataMigrationScreen;
@@ -38,15 +41,22 @@ class LacrosDataMigrationScreenView {
 
   // Notifies the UI about low battery.
   virtual void SetLowBatteryStatus(bool low_battery) = 0;
+
+  // Displays the error page. If |required_size| is non nullopt, the error
+  // message is to navigate users to make some space on their disk to run
+  // migration.
+  // |show_goto_files| can control
+  virtual void SetFailureStatus(const absl::optional<uint64_t>& required_size,
+                                bool show_goto_files) = 0;
 };
 
 class LacrosDataMigrationScreenHandler : public BaseScreenHandler,
-                                         public LacrosDataMigrationScreenView {
+                                         public LacrosDataMigrationScreenView,
+                                         public OobeUI::Observer {
  public:
   using TView = LacrosDataMigrationScreenView;
 
-  explicit LacrosDataMigrationScreenHandler(
-      JSCallsContainer* js_calls_container);
+  LacrosDataMigrationScreenHandler();
   ~LacrosDataMigrationScreenHandler() override;
   LacrosDataMigrationScreenHandler(const LacrosDataMigrationScreenHandler&) =
       delete;
@@ -64,15 +74,24 @@ class LacrosDataMigrationScreenHandler : public BaseScreenHandler,
   void SetProgressValue(int progress) override;
   void ShowSkipButton() override;
   void SetLowBatteryStatus(bool low_battery) override;
+  void SetFailureStatus(const absl::optional<uint64_t>& required_size,
+                        bool show_goto_files) override;
+
+  // OobeUI::Observer:
+  void OnCurrentScreenChanged(OobeScreenId current_screen,
+                              OobeScreenId new_screen) override;
+  void OnDestroyingOobeUI() override;
 
  private:
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   ash::LacrosDataMigrationScreen* screen_ = nullptr;
 
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;
+
+  base::ScopedObservation<OobeUI, OobeUI::Observer> observation_{this};
 };
 
 }  // namespace chromeos

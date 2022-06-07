@@ -8,16 +8,16 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/multidevice/remote_device.h"
 #include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/components/multidevice/remote_device.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace multidevice {
 class SecureMessageDelegate;
-}  // namespace multidevice
+}
 
 namespace device_sync {
 
@@ -101,6 +101,6 @@ class RemoteDeviceLoader {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_REMOTE_DEVICE_LOADER_H_

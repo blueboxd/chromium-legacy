@@ -23,9 +23,6 @@ COMPONENT_EXPORT(OZONE_SWITCHES) extern const char kDisableWaylandIme[];
 
 COMPONENT_EXPORT(OZONE_SWITCHES) extern const char kUseWaylandExplicitGrab[];
 
-COMPONENT_EXPORT(OZONE_SWITCHES)
-extern const char kUseWaylandNormalThreadPriority[];
-
 COMPONENT_EXPORT(OZONE_SWITCHES) extern const char kDisableExplicitDmaFences[];
 
 COMPONENT_EXPORT(OZONE_SWITCHES)
@@ -35,6 +32,9 @@ COMPONENT_EXPORT(OZONE_SWITCHES)
 extern const char kDisableBufferBWCompression[];
 
 COMPONENT_EXPORT(OZONE_SWITCHES) extern const char kOzoneOverrideScreenSize[];
+
+COMPONENT_EXPORT(OZONE_SWITCHES)
+extern const char kPlatformDisallowsChromeOSDirectVideoDecoder[];
 
 }  // namespace switches
 

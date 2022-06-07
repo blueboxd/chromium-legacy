@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
+import {InternetPageBrowserProxyImpl, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.js';
+import {eventToPromise, waitAfterNextRender} from 'chrome://test/test_util.js';
 
-// #import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.m.js';
-// #import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
-// #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
-// #import {TestInternetPageBrowserProxy} from './test_internet_page_browser_proxy.m.js';
-// #import {InternetPageBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {waitAfterNextRender, eventToPromise} from 'chrome://test/test_util.js';
-// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// clang-format on
+import {TestInternetPageBrowserProxy} from './test_internet_page_browser_proxy.js';
 
 suite('InternetDetailPage', function() {
   /** @type {InternetDetailPageElement} */
@@ -63,14 +59,14 @@ suite('InternetDetailPage', function() {
 
   suiteSetup(function() {
     mojoApi_ = new FakeNetworkConfig();
-    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
+    MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
 
     // Disable animations so sub-pages open within one event loop.
     testing.Test.disableAnimationsAndTransitions();
   });
 
   function flushAsync() {
-    Polymer.dom.flush();
+    flush();
     // Use setTimeout to wait for the next macrotask.
     return new Promise(resolve => setTimeout(resolve));
   }
@@ -130,13 +126,12 @@ suite('InternetDetailPage', function() {
     cellularNetwork.typeProperties.cellular.iccid = test_iccid;
     mojoApi_.setManagedPropertiesForTest(cellularNetwork);
 
-    const params = new URLSearchParams;
+    const params = new URLSearchParams();
     params.append('guid', 'cellular_guid');
     params.append('type', 'Cellular');
     params.append('name', 'cellular');
     params.append('settingId', '14');
-    settings.Router.getInstance().navigateTo(
-        settings.routes.NETWORK_DETAIL, params);
+    Router.getInstance().navigateTo(routes.NETWORK_DETAIL, params);
 
     return flushAsync();
   }
@@ -161,7 +156,7 @@ suite('InternetDetailPage', function() {
     mojoApi_.resetForTest();
 
     browserProxy = new TestInternetPageBrowserProxy();
-    settings.InternetPageBrowserProxyImpl.instance_ = browserProxy;
+    InternetPageBrowserProxyImpl.instance_ = browserProxy;
 
     return flushAsync();
   });
@@ -171,7 +166,7 @@ suite('InternetDetailPage', function() {
       internetDetailPage.close();
       internetDetailPage.remove();
       internetDetailPage = null;
-      settings.Router.getInstance().resetRouteForTesting();
+      Router.getInstance().resetRouteForTesting();
     });
   });
 
@@ -390,20 +385,19 @@ suite('InternetDetailPage', function() {
           mojom.NetworkType.kWiFi, 'wifi_device', mojom.OncSource.kDevice);
       mojoApi_.setManagedPropertiesForTest(wifiNetwork);
 
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('guid', 'wifi_device_guid');
       params.append('type', 'WiFi');
       params.append('name', 'wifi_device');
       params.append('settingId', '11');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.NETWORK_DETAIL, params);
+      Router.getInstance().navigateTo(routes.NETWORK_DETAIL, params);
 
       await flushAsync();
 
       const deepLinkElement = internetDetailPage.$$('network-proxy-section')
                                   .$$('#allowShared')
                                   .shadowRoot.querySelector('#control');
-      await test_util.waitAfterNextRender(deepLinkElement);
+      await waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Allow shared proxy toggle should be focused for settingId=11.');
@@ -761,7 +755,7 @@ suite('InternetDetailPage', function() {
     test('Deep link to disconnect button', async () => {
       // Add listener for popstate event fired when the dialog closes and the
       // router navigates backwards.
-      const popStatePromise = test_util.eventToPromise('popstate', window);
+      const popStatePromise = eventToPromise('popstate', window);
 
       init();
       const mojom = chromeos.networkConfig.mojom;
@@ -771,19 +765,18 @@ suite('InternetDetailPage', function() {
       cellularNetwork.connectable = false;
       mojoApi_.setManagedPropertiesForTest(cellularNetwork);
 
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('guid', 'cellular_guid');
       params.append('type', 'Cellular');
       params.append('name', 'cellular');
       params.append('settingId', '17');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.NETWORK_DETAIL, params);
+      Router.getInstance().navigateTo(routes.NETWORK_DETAIL, params);
 
       await flushAsync();
 
       const deepLinkElement =
           getButton('connectDisconnect').shadowRoot.querySelector('cr-button');
-      await test_util.waitAfterNextRender(deepLinkElement);
+      await waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Disconnect network button should be focused for settingId=17.');
@@ -822,20 +815,19 @@ suite('InternetDetailPage', function() {
         }],
       });
 
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('guid', 'cellular_guid');
       params.append('type', 'Cellular');
       params.append('name', 'cellular');
       params.append('settingId', '15');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.NETWORK_DETAIL, params);
+      Router.getInstance().navigateTo(routes.NETWORK_DETAIL, params);
 
       await flushAsync();
 
       const deepLinkElement =
           internetDetailPage.$$('cellular-roaming-toggle-button')
               .getCellularRoamingToggle();
-      await test_util.waitAfterNextRender(deepLinkElement);
+      await waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Cellular roaming toggle button should be focused for settingId=15.');
@@ -848,8 +840,8 @@ suite('InternetDetailPage', function() {
 
       // In this rare case, wait after next render twice due to focus behavior
       // of the siminfo component.
-      await test_util.waitAfterNextRender(simInfo);
-      await test_util.waitAfterNextRender(simInfo);
+      await waitAfterNextRender(simInfo);
+      await waitAfterNextRender(simInfo);
       assertEquals(
           simInfo.$$('#simLockButton'), getDeepActiveElement(),
           'Sim lock toggle should be focused for settingId=14.');
@@ -862,8 +854,8 @@ suite('InternetDetailPage', function() {
 
       // In this rare case, wait after next render twice due to focus behavior
       // of the siminfo component.
-      await test_util.waitAfterNextRender(simInfo);
-      await test_util.waitAfterNextRender(simInfo);
+      await waitAfterNextRender(simInfo);
+      await waitAfterNextRender(simInfo);
       assertEquals(
           simInfo.$$('#unlockPinButton'), getDeepActiveElement(),
           'Sim unlock button should be focused for settingId=14.');
@@ -1266,18 +1258,17 @@ suite('InternetDetailPage', function() {
         OncMojo.getDefaultNetworkState(mojom.NetworkType.kEthernet, 'eth1'),
       ]);
 
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('guid', 'eth1_guid');
       params.append('type', 'Ethernet');
       params.append('name', 'eth1');
       params.append('settingId', '0');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.NETWORK_DETAIL, params);
+      Router.getInstance().navigateTo(routes.NETWORK_DETAIL, params);
 
       await flushAsync();
 
       const deepLinkElement = getButton('configureButton');
-      await test_util.waitAfterNextRender(deepLinkElement);
+      await waitAfterNextRender(deepLinkElement);
 
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
@@ -1332,19 +1323,18 @@ suite('InternetDetailPage', function() {
 
       await flushAsync();
 
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('guid', 'tether1_guid');
       params.append('type', 'Tether');
       params.append('name', 'tether1');
       params.append('settingId', '23');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.NETWORK_DETAIL, params);
+      Router.getInstance().navigateTo(routes.NETWORK_DETAIL, params);
 
       await flushAsync();
 
       const deepLinkElement =
           getButton('connectDisconnect').shadowRoot.querySelector('cr-button');
-      await test_util.waitAfterNextRender(deepLinkElement);
+      await waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Disconnect tether button should be focused for settingId=23.');

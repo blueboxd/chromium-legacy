@@ -137,6 +137,13 @@ class FakeSharesheet : public crosapi::mojom::Sharesheet {
         profile_, selected_app_id_,
         apps_util::ConvertCrosapiToAppServiceIntent(intent, profile_));
   }
+  void ShowBubbleWithOnClosed(
+      const std::string& window_id,
+      sharesheet::LaunchSource source,
+      crosapi::mojom::IntentPtr intent,
+      crosapi::mojom::Sharesheet::ShowBubbleWithOnClosedCallback callback)
+      override {}
+  void CloseBubble(const std::string& window_id) override {}
 
   Profile* profile_ = nullptr;
   web_app::AppId selected_app_id_;
@@ -198,15 +205,6 @@ class WebShareTargetBrowserTest : public WebAppControllerBrowserTest {
     return service && service->IsAvailable<crosapi::mojom::Sharesheet>();
 #else
     return true;
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  }
-
-  void SetSelectedSharesheetApp(const AppId& app_id) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    service_.set_selected_app_id(app_id);
-#else
-    sharesheet::SharesheetService::SetSelectedAppForTesting(
-        base::UTF8ToUTF16(app_id));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 

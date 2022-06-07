@@ -30,12 +30,6 @@ const base::Feature kAdaptiveScreenBrightnessLogging{
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Shows a setting that allows disabling mouse acceleration.
-const base::Feature kAllowDisableMouseAcceleration{
-    "AllowDisableMouseAcceleration", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows settings to adjust and disable touchpad haptic feedback.
 const base::Feature kAllowDisableTouchpadHapticFeedback{
     "AllowDisableTouchpadHapticFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -267,12 +261,17 @@ const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
 
 // Generates customised default offline page that is shown when web app is
 // offline if no custom page is provided by developer.
+#if BUILDFLAG(IS_ANDROID)
+const base::Feature kAndroidPWAsDefaultOfflinePage{
+    "AndroidPWAsDefaultOfflinePage", base::FEATURE_DISABLED_BY_DEFAULT};
+#else
 const base::Feature kDesktopPWAsDefaultOfflinePage{
     "DesktopPWAsDefaultOfflinePage", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Moves the Extensions "puzzle piece" icon from the title bar into the app menu
 // for web app windows.
-const base::Feature kDesktopPWAsElidedExtensionsMenu{
+const base::Feature kDesktopPWAsElidedExtensionsMenu {
   "DesktopPWAsElidedExtensionsMenu",
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -280,6 +279,10 @@ const base::Feature kDesktopPWAsElidedExtensionsMenu{
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+// Whether to parse and enforce the WebAppSettings policy.
+const base::Feature kDesktopPWAsEnforceWebAppSettingsPolicy{
+    "DesktopPWAsEnforceWebAppSettingsPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Replaces the origin text flash and the icon in web app notifications with
 // the name of the app and the icon of the app.
@@ -302,12 +305,6 @@ const base::Feature kDesktopPWAsRunOnOsLogin {
 #endif
 };
 
-// Makes user navigations via links within web app scopes get captured tab
-// tabbed app windows.
-// TODO(crbug.com/897314): Enable this feature.
-const base::Feature kDesktopPWAsTabStripLinkCapturing{
-    "DesktopPWAsTabStripLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Adds a user settings that allows PWAs to be opened with a tab strip.
 const base::Feature kDesktopPWAsTabStripSettings{
     "DesktopPWAsTabStripSettings", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -326,6 +323,10 @@ const base::Feature kDesktopPWAsWebAppSettingsPage{
 // Apps will not launch and will be marked in the UI as deprecated.
 const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+//  Controls whether force installed and preinstalled apps should be exempt from
+//  deprecation.
+const base::Feature kKeepForceInstalledPreinstalledApps{
+    "KeepForceInstalledPreinstalledApps", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enable DNS over HTTPS (DoH).
@@ -380,26 +381,20 @@ const base::Feature kEarlyLibraryLoad{"EarlyLibraryLoad",
 // of the Looper's queue.
 const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks = {
     "ElidePrioritizationOfPreNativeBootstrapTasks",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
 // Under this flag tab preloading at startup will be elided (i.e., not
 // performed).
 const base::Feature kElideTabPreloadAtStartup = {
-    "ElideTabPreloadAtStartup", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ElideTabPreloadAtStartup", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables all registered system web apps, regardless of their respective
 // feature flags.
 const base::Feature kEnableAllSystemWebApps{"EnableAllSystemWebApps",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_WIN)
-// Enables users to create a desktop shortcut for incognito mode.
-const base::Feature kEnableIncognitoShortcutOnDesktop{
-    "EnableIncognitoShortcutOnDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Enable the restricted web APIs for high-trusted apps.
 const base::Feature kEnableRestrictedWebApis{"EnableRestrictedWebApis",
@@ -413,7 +408,7 @@ const base::Feature kEnableWebAppUninstallFromOsSettings{
 // Lazy initialize IndividualSettings for extensions from enterprise policy
 // that are not installed.
 const base::Feature kExtensionDeferredIndividualSettings{
-    "ExtensionDeferredIndividualSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ExtensionDeferredIndividualSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Controls whether the user justification text field is visible on the
@@ -577,6 +572,18 @@ const base::Feature kHappinessTrackingSystemArcGames{
 // Enables or disables the Happiness Tracking System for Audio survey.
 const base::Feature kHappinessTrackingSystemAudio{
     "HappinessTrackingAudio", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the Happiness Tracking System for Personalization Avatar survey.
+const base::Feature kHappinessTrackingPersonalizationAvatar{
+    "HappinessTrackingPersonalizationAvatar",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the Happiness Tracking System for Personalization Screensaver survey.
+const base::Feature kHappinessTrackingPersonalizationScreensaver{
+    "HappinessTrackingPersonalizationScreensaver",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the Happiness Tracking System for Personalization Wallpaper survey.
+const base::Feature kHappinessTrackingPersonalizationWallpaper{
+    "HappinessTrackingPersonalizationWallpaper",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.
@@ -824,6 +831,9 @@ const base::Feature kPrivacyAdvisor{"PrivacyAdvisor",
 const base::Feature kPrivacyGuide{"PrivacyGuide",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPrivacyGuide2{"PrivacyGuide2",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.
 const base::Feature kPushMessagingBackgroundMode{
@@ -851,8 +861,8 @@ const base::Feature kAbusiveNotificationPermissionRevocation{
     "AbusiveOriginNotificationPermissionRevocation",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kRemoveStatusBarInWebApps{
-    "RemoveStatusBarInWebApps",
+const base::Feature kRemoveStatusBarInWebApps {
+  "RemoveStatusBarInWebApps",
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -1115,6 +1125,12 @@ const base::Feature kWebAppManifestPolicyAppIdentityUpdate{
     "WebAppManifestPolicyAppIdentityUpdate", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+// When this feature flag is enabled together with the LacrosAvailability
+// policy, the Chrome app Kiosk session uses Lacros-chrome as the web browser to
+// launch Chrome apps. When disabled, the Ash-chrome will be used instead.
+const base::Feature kChromeKioskEnableLacros{"ChromeKioskEnableLacros",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When this feature flag is enabled together with the LacrosAvailability
 // policy, the web (PWA) Kiosk session uses Lacros-chrome as the web browser to
 // launch web (PWA) applications. When disabled, the Ash-chrome will be used

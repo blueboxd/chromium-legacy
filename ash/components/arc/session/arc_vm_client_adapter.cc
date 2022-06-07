@@ -46,7 +46,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
@@ -55,8 +54,8 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chromeos/components/sensors/buildflags.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -223,12 +222,6 @@ std::vector<std::string> GenerateKernelCmdline(
   VLOG(1) << "Setting ARCVM guest's zram size to " << guest_zram_size;
 
   std::vector<std::string> result = {
-      // Note: Do not change the value "bertha". This string is checked in
-      // platform2/metrics/process_meter.cc to detect ARCVM's crosvm processes,
-      // for example.
-      "androidboot.hardware=bertha",
-
-      "androidboot.container=1",
       base::StringPrintf("androidboot.native_bridge=%s", native_bridge.c_str()),
       base::StringPrintf("androidboot.dev_mode=%d", is_dev_mode),
       base::StringPrintf("androidboot.disable_runas=%d", !is_dev_mode),
@@ -366,6 +359,9 @@ std::vector<std::string> GenerateKernelCmdline(
   if (start_params.disable_download_provider)
     result.push_back("androidboot.disable_download_provider=1");
 
+  if (base::FeatureList::IsEnabled(arc::kVmGmsCoreLowMemoryKillerProtection))
+    result.push_back("androidboot.arc_enable_gmscore_lmk_protection=1");
+
   return result;
 }
 
@@ -383,12 +379,10 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   request.set_owner_id(kArcVmDefaultOwner);
   request.set_use_per_vm_core_scheduling(use_per_vm_core_scheduling);
 
-  request.add_params("root=/dev/vda");
   if (file_system_status.is_host_rootfs_writable() &&
       file_system_status.is_system_image_ext_format()) {
     request.add_params("rw");
   }
-  request.add_params("init=/init");
 
   for (auto& entry : kernel_cmdline)
     request.add_params(std::move(entry));
@@ -806,18 +800,18 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   // ConnectionObserver<arc::mojom::AppInstance> overrides:
   void OnConnectionReady() override {
-    VLOG(2) << "Enabling VM's RT vCPU";
+    VLOG(2) << "Sending ArcVmCompleteBoot Request";
 
     auto* arc_service_manager = arc::ArcServiceManager::Get();
     DCHECK(arc_service_manager);
     arc_service_manager->arc_bridge_service()->app()->RemoveObserver(this);
 
-    vm_tools::concierge::MakeRtVcpuRequest request;
-    request.set_name(kArcVmName);
+    vm_tools::concierge::ArcVmCompleteBootRequest request;
     DCHECK(!user_id_hash_.empty());
     request.set_owner_id(user_id_hash_);
-    GetConciergeClient()->MakeRtVcpu(
-        request, base::BindOnce(&ArcVmClientAdapter::OnMakeRtVcpu));
+    GetConciergeClient()->ArcVmCompleteBoot(
+        request,
+        base::BindOnce(&ArcVmClientAdapter::OnArcVmCompleteBootResponse));
   }
 
   void set_delegate_for_testing(  // IN-TEST
@@ -1302,23 +1296,16 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     std::move(callback).Run(success, failure_reason);
   }
 
-  static void OnMakeRtVcpu(
-      absl::optional<vm_tools::concierge::MakeRtVcpuResponse> reply) {
-    bool success = false;
-    std::string failure_reason;
+  static void OnArcVmCompleteBootResponse(
+      absl::optional<vm_tools::concierge::ArcVmCompleteBootResponse> reply) {
+    vm_tools::concierge::ArcVmCompleteBootResult result =
+        reply.has_value()
+            ? reply.value().result()
+            : vm_tools::concierge::ArcVmCompleteBootResult::BAD_REQUEST;
 
-    if (!reply.has_value()) {
-      failure_reason = "Empty response";
-    } else {
-      const vm_tools::concierge::MakeRtVcpuResponse& response = reply.value();
-      success = response.success();
-      if (!success)
-        failure_reason = response.failure_reason();
-    }
-
-    VLOG(2) << "Enabling VM's RT vCPU: result=" << success;
-    if (!success)
-      LOG(WARNING) << "Failed to enable RT vCPU: reason=" << failure_reason;
+    VLOG(2) << "ArcVmCompleteBoot: result=" << result;
+    if (result != vm_tools::concierge::ArcVmCompleteBootResult::SUCCESS)
+      LOG(WARNING) << "Failed ArcVmCompleteBoot: result=" << result;
   }
 
   std::unique_ptr<ArcVmClientAdapterDelegate> delegate_;

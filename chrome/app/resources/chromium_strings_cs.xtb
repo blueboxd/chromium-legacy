@@ -15,6 +15,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="151962892725702025">Chromium OS nemůže synchronizovat data, protože Synchronizace ve vaší doméně není k dispozici.</translation>
 <translation id="1524282610922162960">Sdílet kartu prohlížeče Chromium</translation>
 <translation id="1553461853655228091">Prohlížeč Chromium potřebuje oprávnění k přístupu k fotoaparátu, aby mohl vytvořit 3D mapu vašeho okolí</translation>
+<translation id="1602421994560205104">Prohlížeč Chromium tento soubor zablokoval, protože je příliš velký na kontrolu zabezpečení. Zkuste to znovu se soubory do 50 MB.</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Váš administrátor vyžaduje, abyste kvůli použití této aktualizace Chromium restartovali}=1{Váš administrátor vyžaduje, abyste kvůli použití této aktualizace Chromium restartovali. Anonymní okno se neotevře znovu.}few{Váš administrátor vyžaduje, abyste kvůli použití této aktualizace Chromium restartovali. # anonymní okna se neotevřou znovu.}many{Váš administrátor vyžaduje, abyste kvůli použití této aktualizace Chromium restartovali. # anonymního okna se neotevře znovu.}other{Váš administrátor vyžaduje, abyste kvůli použití této aktualizace Chromium restartovali. # anonymních oken se neotevře znovu.}}</translation>
 <translation id="1625909126243026060">Zkontrolujte klíčové ovládací prvky ochrany soukromí a zabezpečení v prohlížeči Chromium</translation>
 <translation id="1632539827495546968">Pokud tento účet chcete použít pouze jednorázově, můžete v prohlížeči Chromium použít <ph name="GUEST_LINK_BEGIN" />režim hosta<ph name="GUEST_LINK_END" />. Pokud chcete přidat účet někoho dalšího, přidejte do zařízení <ph name="DEVICE_TYPE" /> <ph name="LINK_BEGIN" />novou osobu<ph name="LINK_END" />.
@@ -120,6 +121,7 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="4264410486868823224">Doména <ph name="MANAGER" /> vyžaduje, abyste si před použitím tohoto zařízení přečetli následující smluvní podmínky a odsouhlasili je. Tyto smluvní podmínky nerozšiřují, neupravují ani neomezují smluvní podmínky systému Chromium OS.</translation>
 <translation id="4271805377592243930">Pomoc s prohlížečem Chromium</translation>
 <translation id="4285930937574705105">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je prohlížeč Chromium právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
+<translation id="4304713468139749426">Správce hesel</translation>
 <translation id="4407044323746248786">Přesto Chromium ukončit?</translation>
 <translation id="4415566066719264597">Nechat Chromium běžet na pozadí</translation>
 <translation id="4423735387467980091">Přizpůsobit a ovládat Chromium</translation>
@@ -197,6 +199,7 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="6290827346642914212">Zadejte název profilu Chromium</translation>
 <translation id="6295779123002464101">Soubor <ph name="FILE_NAME" /> může být nebezpečný, proto jej prohlížeč Chromium zablokoval.</translation>
 <translation id="6309712487085796862">Chromium používá vaši kameru.</translation>
+<translation id="632355235628111698">Prohlížeč Chromium tento soubor zablokoval, protože je nebezpečný</translation>
 <translation id="6333502561965082103">V prohlížeči Chromium právě probíhá jiná operace. Zkuste to znovu později.</translation>
 <translation id="6334986366598267305">Používání prohlížeče Chromium se spravovaným účtem Google a sdílenými počítači je teď snazší.</translation>
 <translation id="6373523479360886564">Jste si jisti, že chcete Chromium odinstalovat?</translation>
@@ -221,6 +224,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="673636774878526923">Chcete-li mít ve všech zařízeních přístup k údajům z prohlížeče Chromium, přihlaste se a zapněte synchronizaci.</translation>
 <translation id="6774082503108938489">Tvůj rodič pro prohlížeč Chromium vypnul možnost Oprávnění pro weby, aplikace a rozšíření. Aktivace tohoto <ph name="EXTENSION_TYPE_PARAMETER" /> není povolena.</translation>
 <translation id="6847869444787758381">Pokud vaše hesla někdo prolomí, Chromium vás o tom bude informovat</translation>
+<translation id="6852530923436401894">Prohlížeč Chromium tento soubor zablokoval, protože obsahuje malware</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (zkopírováno do prohlížeče Chromium)</translation>
 <translation id="6873893289264747459">Prohlížeč Chromium zjistil, že rozšíření <ph name="EXTENSION_NAME" /> obsahuje malware</translation>
@@ -240,6 +244,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="7218568399872925918">Navštívené weby si pamatují vaše údaje, dokud Chromium nezavřete</translation>
 <translation id="7223968959479464213">Správce úloh – Chromium</translation>
 <translation id="7246575524853130370">Vaše zájmy podle odhadu Chromium</translation>
+<translation id="7265671031637041256">Prohlížeč Chromium tento soubor zablokoval, protože je zašifrovaný. Požádejte jeho vlastníka, aby ho dešifroval</translation>
 <translation id="7309928523159922338">Měření reklam umožňuje navštíveným webům žádat Chromium o informace, na základě kterých mohou měřit výkonnost svých reklam. Měření reklam zabraňuje sledování mezi weby, protože se při něm mezi weby přenáší co možná nejméně informací.</translation>
 <translation id="731795002583552498">Aktualizace prohlížeče Chromium</translation>
 <translation id="7318036098707714271">Soubor nastavení je poškozený nebo neplatný.
@@ -275,11 +280,12 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="7857220146454061152">Pokud chcete v budoucnu dostávat aktualizace prohlížeče Chromium, budete potřebovat systém OS X 10.11 nebo novější. Tento počítač používá systém OS X 10.10.</translation>
 <translation id="7867198900892795913">Chromium nebylo možné aktualizovat na nejnovější verzi. Nemáte proto k dispozici nové funkce a opravy zabezpečení.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Jak můžete své údaje spravovat:<ph name="END_BOLD" /> Abychom chránili vaše soukromí, vaše zájmy starší než 4 měsíce automaticky mažeme. Jak budete pracovat s internetem, zájmy se mohou na seznamu znovu objevit. Pokud se zájmy nemají zohledňovat, můžete je z Chromia odstranit.</translation>
-<translation id="788352880609666695">Pro tento profil Chromium jsou k dispozici následující účty</translation>
 <translation id="7898472181347242998">Chcete-li se podívat, zda je zařízení aktualizované, přejděte do <ph name="LINK_BEGIN" />Nastavení operačního systému Chromium<ph name="LINK_END" /></translation>
 <translation id="7937630085815544518">K prohlížeči Chromium jste byli přihlášeni s účtem <ph name="USER_EMAIL_ADDRESS" />. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
 <translation id="7975919845073681630">Toto je druhá instalace prohlížeče Chromium. Tuto instalaci nelze nastavit jako výchozí prohlížeč.</translation>
+<translation id="7997934263947464652">Rozšíření, aplikace a motivy z neznámých zdrojů mohou poškodit vaše zařízení. Chromium doporučuje instalovat je pouze z tohoto zdroje: <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /></translation>
 <translation id="8013436988911883588">Až bude mít Chromium přístup, budou vás weby moci požádat o přístup.</translation>
+<translation id="8045118833343856403">Následující účty nejsou přihlášeny do žádných profilů Chromium. Pokud účet chcete použít v jiném profilu, nejdříve příslušný profil odstraňte.</translation>
 <translation id="8105840573057009683">Chromium pro tento web potřebuje přístup k poloze</translation>
 <translation id="81770708095080097">Tento soubor je nebezpečný, proto jej prohlížeč Chromium zablokoval.</translation>
 <translation id="8248265253516264921">Pokud obrázek nemá užitečný popis, Chromium se vám jej pokusí poskytnout. Za účelem vytváření popisů jsou obrázky odesílány do Googlu. Tuto funkci můžete kdykoliv vypnout v nastavení.</translation>

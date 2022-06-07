@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "components/page_load_metrics/browser/layout_shift_normalization.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/responsiveness_metrics_normalization.h"
@@ -60,8 +61,7 @@ class AMPPageLoadMetricsObserver
   ~AMPPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
-                         ukm::SourceId source_id) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnCommitSameDocumentNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnDidFinishSubFrameNavigation(

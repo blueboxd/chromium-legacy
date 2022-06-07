@@ -64,8 +64,8 @@ sys::ServiceDirectory& WebEngineBrowserTest::published_services() {
     base::ComponentContextForProcess()
         ->outgoing()
         ->GetOrCreateDirectory("svc")
-        ->Serve(fuchsia::io::OPEN_RIGHT_READABLE |
-                    ::fuchsia::io::OPEN_RIGHT_WRITABLE,
+        ->Serve(fuchsia::io::OpenFlags::RIGHT_READABLE |
+                    fuchsia::io::OpenFlags::RIGHT_WRITABLE,
                 svc_request.TakeChannel());
   }
   return *published_services_;

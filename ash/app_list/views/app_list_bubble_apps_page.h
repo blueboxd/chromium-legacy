@@ -9,6 +9,7 @@
 
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/views/app_list_nudge_controller.h"
+#include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/apps_grid_view_focus_delegate.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/ash_export.h"
@@ -37,10 +38,11 @@ class ApplicationDragAndDropHost;
 class AppListA11yAnnouncer;
 class AppListFolderController;
 class AppListNudgeController;
-class AppListToastContainerView;
 class AppListViewDelegate;
 class ContinueSectionView;
 class RecentAppsView;
+class SearchResultPageDialogController;
+class SearchBoxView;
 class ScrollableAppsGridView;
 class ScrollViewGradientHelper;
 
@@ -49,11 +51,13 @@ class ScrollViewGradientHelper;
 // - Continue section with recent tasks and recent apps
 // - Grid of all apps
 // Does not include the search box, which is owned by a parent view.
-class ASH_EXPORT AppListBubbleAppsPage : public views::View,
-                                         public views::ViewObserver,
-                                         public AppListModelProvider::Observer,
-                                         public RecentAppsView::Delegate,
-                                         public AppsGridViewFocusDelegate {
+class ASH_EXPORT AppListBubbleAppsPage
+    : public views::View,
+      public views::ViewObserver,
+      public AppListModelProvider::Observer,
+      public RecentAppsView::Delegate,
+      public AppListToastContainerView::Delegate,
+      public AppsGridViewFocusDelegate {
  public:
   METADATA_HEADER(AppListBubbleAppsPage);
 
@@ -61,7 +65,9 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
                         ApplicationDragAndDropHost* drag_and_drop_host,
                         AppListConfig* app_list_config,
                         AppListA11yAnnouncer* a11y_announcer,
-                        AppListFolderController* folder_controller);
+                        SearchResultPageDialogController* dialog_controller,
+                        AppListFolderController* folder_controller,
+                        SearchBoxView* search_box);
   AppListBubbleAppsPage(const AppListBubbleAppsPage&) = delete;
   AppListBubbleAppsPage& operator=(const AppListBubbleAppsPage&) = delete;
   ~AppListBubbleAppsPage() override;
@@ -97,7 +103,8 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   void UpdateForNewSortingOrder(
       const absl::optional<AppListSortOrder>& new_order,
       bool animate,
-      base::OnceClosure update_position_closure);
+      base::OnceClosure update_position_closure,
+      base::OnceClosure animation_done_closure);
 
   // Scrolls to fully show the toast if the toast is partially shown or hidden
   // from the scroll view's perspective. Returns true if scrolling is performed.
@@ -119,8 +126,16 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   void MoveFocusUpFromRecents() override;
   void MoveFocusDownFromRecents(int column) override;
 
+  // AppListToastContainerView::Delegate:
+  void MoveFocusUpFromToast(int column) override;
+  void MoveFocusDownFromToast(int column) override;
+
   // AppsGridViewFocusDelegate:
   bool MoveFocusUpFromAppsGrid(int column) override;
+
+  // Helper functions to move the focus to RecentAppsView/AppsGridView.
+  bool HandleMovingFocusToRecents(int column);
+  void HandleMovingFocusToAppsGrid(int column);
 
   views::ScrollView* scroll_view() { return scroll_view_; }
   ScrollableAppsGridView* scrollable_apps_grid_view() {
@@ -156,9 +171,12 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   // Callback for when the apps grid view animation ends.
   void OnAppsGridViewAnimationEnded();
 
+  // Called after sort to handle focus.
+  void HandleFocusAfterSort();
+
   // Called when the animation to fade out app list items is completed.
   // `aborted` indicates whether the fade out animation is aborted.
-  void OnAppsGridViewFadeOutAnimationEneded(
+  void OnAppsGridViewFadeOutAnimationEnded(
       const absl::optional<AppListSortOrder>& new_order,
       bool aborted);
 
@@ -179,6 +197,7 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
                              int vertical_offset,
                              base::TimeDelta duration);
 
+  AppListViewDelegate* view_delegate_ = nullptr;
   views::ScrollView* scroll_view_ = nullptr;
   ContinueSectionView* continue_section_ = nullptr;
   RecentAppsView* recent_apps_ = nullptr;
@@ -186,7 +205,13 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   AppListToastContainerView* toast_container_ = nullptr;
   ScrollableAppsGridView* scrollable_apps_grid_view_ = nullptr;
 
+  // The search box owned by AppListBubbleView.
+  SearchBoxView* search_box_ = nullptr;
+
   std::unique_ptr<AppListNudgeController> app_list_nudge_controller_;
+
+  // Controller for showing a modal dialog in the continue section.
+  SearchResultPageDialogController* const dialog_controller_;
 
   // Adds fade in/out gradients to `scroll_view_`.
   std::unique_ptr<ScrollViewGradientHelper> gradient_helper_;
@@ -194,6 +219,9 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   // A closure to update item positions. It should run at the end of the fade
   // out animation when items are reordered.
   base::OnceClosure update_position_closure_;
+
+  // A closure that runs at the end of the reorder animation.
+  base::OnceClosure reorder_animation_done_closure_;
 
   base::WeakPtrFactory<AppListBubbleAppsPage> weak_factory_{this};
 };

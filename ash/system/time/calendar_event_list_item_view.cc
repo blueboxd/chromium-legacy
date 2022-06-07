@@ -4,17 +4,19 @@
 
 #include "ash/system/time/calendar_event_list_item_view.h"
 
+#include <string>
+
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/calendar_view_controller.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,14 +110,22 @@ CalendarEventListItemView::CalendarEventListItemView(
       event_url_(event.html_link()) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  auto start_time = event.start_time().date_time();
-  auto end_time = event.end_time().date_time();
-  auto start_time_string = base::TimeFormatWithPattern(start_time, "h:mm a");
-  auto end_time_string = base::TimeFormatWithPattern(end_time, "h:mm a");
+  const base::Time start_time = event.start_time().date_time();
+  const base::Time end_time = event.end_time().date_time();
+  bool use_12_hour_clock =
+      Shell::Get()->system_tray_model()->clock()->hour_clock_type() ==
+      base::k12HourClock;
+  std::u16string start_time_string =
+      use_12_hour_clock
+          ? calendar_utils::GetTwelveHourClockTime(start_time)
+          : calendar_utils::GetTwentyFourHourClockTime(start_time);
+  std::u16string end_time_string =
+      use_12_hour_clock ? calendar_utils::GetTwelveHourClockTime(end_time)
+                        : calendar_utils::GetTwentyFourHourClockTime(end_time);
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kButton);
   SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION, start_time_string,
-      end_time_string, base::TimeFormatWithPattern(start_time, "zzzz"),
+      end_time_string, calendar_utils::GetTimeZone(start_time),
       base::UTF8ToUTF16(event.summary())));
   SetFocusBehavior(FocusBehavior::ALWAYS);
   summary_->SetText(event.summary().empty()
@@ -123,16 +133,19 @@ CalendarEventListItemView::CalendarEventListItemView(
                         : base::UTF8ToUTF16(event.summary()));
   SetUpLabel(summary_);
   summary_->SetTruncateLength(kTruncatedTitleLength);
-  summary_->SetBorder(
-      views::CreateEmptyBorder(0, kEntryHorizontalPadding, 0, 0));
+  summary_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(0, kEntryHorizontalPadding, 0, 0)));
 
-  if (start_time_string.substr(start_time_string.size() - 2) ==
-      end_time_string.substr(end_time_string.size() - 2)) {
-    // When the start time and end time are in the same meridiem, remove the
-    // first one and the space before it, which are the last 3 characters.
+  // When using AM/PM time format and the start time and end time are in the
+  // same meridiem, remove the first one and the space before it, which are the
+  // last 3 characters.
+  if (use_12_hour_clock &&
+      start_time_string.substr(start_time_string.size() - 2) ==
+          end_time_string.substr(end_time_string.size() - 2)) {
     start_time_string =
         start_time_string.substr(0, start_time_string.size() - 3);
   }
+
   auto time_range = start_time_string + u" - " + end_time_string;
   time_range_->SetText(time_range);
   SetUpLabel(time_range_);

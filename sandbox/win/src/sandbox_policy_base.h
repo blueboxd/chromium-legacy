@@ -23,6 +23,7 @@
 #include "sandbox/win/src/app_container_base.h"
 #include "sandbox/win/src/handle_closer.h"
 #include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/job.h"
 #include "sandbox/win/src/policy_engine_opcodes.h"
 #include "sandbox/win/src/policy_engine_params.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -32,20 +33,18 @@ namespace sandbox {
 class Dispatcher;
 class LowLevelPolicy;
 class PolicyDiagnostic;
-class PolicyInfo;
 class TargetProcess;
 struct PolicyGlobal;
 
 class PolicyBase final : public TargetPolicy {
  public:
   PolicyBase();
+  ~PolicyBase() override;
 
   PolicyBase(const PolicyBase&) = delete;
   PolicyBase& operator=(const PolicyBase&) = delete;
 
   // TargetPolicy:
-  void AddRef() override;
-  void Release() override;
   ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) override;
   TokenLevel GetInitialTokenLevel() const override;
   TokenLevel GetLockdownTokenLevel() const override;
@@ -81,17 +80,23 @@ class PolicyBase final : public TargetPolicy {
                                     bool create_profile) override;
   scoped_refptr<AppContainer> GetAppContainer() override;
   void SetEffectiveToken(HANDLE token) override;
-  std::unique_ptr<PolicyInfo> GetPolicyInfo() override;
   void SetAllowNoSandboxJob() override;
   bool GetAllowNoSandboxJob() override;
 
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel().
-  ResultCode MakeJobObject(base::win::ScopedHandle* job);
+  ResultCode InitJob();
 
-  // Updates the active process limit on the job to zero. Has no effect
-  // if the job is allowed to spawn processes.
-  ResultCode DropActiveProcessLimit(base::win::ScopedHandle* job);
+  // Returns the handle for this policy's job, or INVALID_HANDLE_VALUE if the
+  // job is not initialized.
+  HANDLE GetJobHandle();
+
+  // Returns true if a job is associated with this policy.
+  bool HasJob();
+
+  // Updates the active process limit on the policy's job to zero.
+  // Has no effect if the job is allowed to spawn processes.
+  ResultCode DropActiveProcessLimit();
 
   // Creates the two tokens with the levels specified in a previous call to
   // SetTokenLevel(). Also creates a lowbox token if specified based on the
@@ -104,10 +109,9 @@ class PolicyBase final : public TargetPolicy {
   // call to TargetProcess::Init() is issued.
   ResultCode ApplyToTarget(std::unique_ptr<TargetProcess> target);
 
-  // Called when there are no more active processes in a Job.
-  // Removes a Job object associated with this policy and the target associated
-  // with the job. If a process is not in a job, call OnProcessFinished().
-  bool OnJobEmpty(HANDLE job);
+  // Called when there are no more active processes in the policy's Job.
+  // If a process is not in a job, call OnProcessFinished().
+  bool OnJobEmpty();
 
   // Called when a process no longer needs to be tracked. Processes in jobs
   // should be notified via OnJobEmpty instead.
@@ -122,9 +126,8 @@ class PolicyBase final : public TargetPolicy {
   const base::HandlesToInheritVector& GetHandlesBeingShared();
 
  private:
-  // Allow PolicyInfo to snapshot PolicyBase for diagnostics.
+  // Allow PolicyDiagnostic to snapshot PolicyBase for diagnostics.
   friend class PolicyDiagnostic;
-  ~PolicyBase();
 
   // Sets up interceptions for a new target. This policy must own |target|.
   ResultCode SetupAllInterceptions(TargetProcess& target);
@@ -138,8 +141,6 @@ class PolicyBase final : public TargetPolicy {
 
   // The policy takes ownership of a target as it is applied to it.
   std::unique_ptr<TargetProcess> target_;
-  // Standard object-lifetime reference counter.
-  volatile LONG ref_count;
   // The user-defined global policy settings.
   TokenLevel lockdown_level_;
   TokenLevel initial_level_;
@@ -186,6 +187,7 @@ class PolicyBase final : public TargetPolicy {
 
   HANDLE effective_token_;
   bool allow_no_sandbox_job_;
+  Job job_;
 };
 
 }  // namespace sandbox

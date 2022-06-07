@@ -9081,6 +9081,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.PlatformKeysService.{Operation}.{KeyType}"
+    enum="BooleanSuccess" expires_after="2022-03-19">
+  <obsolete>
+    Removed in 2022/03 as part of https://crbug.com/1294874 and
+    https://crbug.com/1294873
+  </obsolete>
+  <owner>omorsi@google.com</owner>
+  <owner>mgawad@google.com</owner>
+  <summary>
+    Tracks the final result of performing {Operation} operation on an {KeyType}
+    key in PlatformKeysService.
+  </summary>
+  <token key="Operation">
+    <variant name="GenerateKey"/>
+    <variant name="SignKey"/>
+  </token>
+  <token key="KeyType">
+    <variant name="EC"/>
+    <variant name="RSA"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.PlatformVerification.ExpiryStatus"
     enum="ChromeOSPlatformVerificationExpiryStatus" expires_after="M80">
   <obsolete>
@@ -11981,6 +12003,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     The amount of time (ms) for Chrome OS cryptohome to mount the encrypted home
     directory synchronously.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToTakeTpmOwnership" units="ms"
+    expires_after="2022-03-20">
+  <obsolete>
+    Removed 04/2022 as it is not used since crrev.com/c/2637147 (02/2021)
+  </obsolete>
+  <owner>apronin@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for Chrome OS cryptohome daemon to take ownership of
+    the TPM.
   </summary>
 </histogram>
 
@@ -57889,6 +57924,16 @@ chromium-metrics-reviews@google.com.
     http://crbug.com/338657 and http://crosbug.com/p/16009. Note that we log
     retries on all 7 FETs even though we've only ever seen failures of FET1.
   </summary>
+</histogram>
+
+<histogram name="Platform.U2F.LegacyCommand" enum="Cr50U2FCommands"
+    expires_after="2021-12-21">
+  <obsolete>
+    Removed 04/2022 as it is not used since crrev.com/c/1755785 (09/2019)
+  </obsolete>
+  <owner>cylai@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
+  <summary>Records occurrences of legacy U2F commands sent to cr50.</summary>
 </histogram>
 
 <histogram name="PlatformFile.FlushTime" units="ms" expires_after="2016-07-22">

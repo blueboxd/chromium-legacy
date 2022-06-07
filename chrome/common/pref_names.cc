@@ -49,6 +49,10 @@ const char kDisableScreenshots[] = "disable_screenshots";
 // 4 - Block malicious downloads
 const char kDownloadRestrictions[] = "download_restrictions";
 
+// A boolean specifying whether the new download bubble UI is enabled. If it is
+// set to false, the old download shelf UI will be shown instead.
+const char kDownloadBubbleEnabled[] = "download_bubble_enabled";
+
 // If set to true profiles are created in ephemeral mode and do not store their
 // data in the profile folder on disk but only in memory.
 const char kForceEphemeralProfiles[] = "profile.ephemeral_mode";
@@ -442,13 +446,6 @@ const char kNetworkQualities[] = "net.network_qualities";
 // Pref storing the user's network easter egg game high score.
 const char kNetworkEasterEggHighScore[] = "net.easter_egg_high_score";
 
-#if BUILDFLAG(IS_ANDROID)
-// Last time that a check for cloud policy management was done. This time is
-// recorded on Android so that retries aren't attempted on every startup.
-// Instead the cloud policy registration is retried at least 1 or 3 days later.
-const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
-#endif
-
 // A preference of enum chrome_browser_net::NetworkPredictionOptions shows
 // if prediction of network actions is allowed, depending on network type.
 // Actions include DNS prefetching, TCP and SSL preconnection, prerendering
@@ -479,6 +476,10 @@ const char kAttestationExtensionAllowlist[] = "attestation.extension_allowlist";
 // name and the string value.
 const char kPrintingAPIExtensionsAllowlist[] =
     "printing.printing_api_extensions_whitelist";
+
+// A boolean specifying whether the insights extension is enabled. If set to
+// true, the CCaaS Chrome component extension will be installed.
+const char kInsightsExtensionEnabled[] = "insights_extension_enabled";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -834,6 +835,37 @@ const char kHatsAudioSurveyCycleEndTs[] = "hats_audio_cycle_end_timestamp";
 
 // A boolean pref. Indicates if the device is selected for the Audio survey
 const char kHatsAudioDeviceIsSelected[] = "hats_audio_device_is_selected";
+
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the most recent Personalization Avatar survey cycle.
+const char kHatsPersonalizationAvatarSurveyCycleEndTs[] =
+    "hats_personalization_avatar_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the Personalization
+// Avatar survey.
+const char kHatsPersonalizationAvatarSurveyIsSelected[] =
+    "hats_personalization_avatar_is_selected";
+
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the most recent Personalization Screensaver survey
+// cycle.
+const char kHatsPersonalizationScreensaverSurveyCycleEndTs[] =
+    "hats_personalization_screensaver_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the Personalization
+// Screensaver survey.
+const char kHatsPersonalizationScreensaverSurveyIsSelected[] =
+    "hats_personalization_screensaver_is_selected";
+
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the most recent Personalization Wallpaper survey cycle.
+const char kHatsPersonalizationWallpaperSurveyCycleEndTs[] =
+    "hats_personalization_wallpaper_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the Personalization
+// Wallpaper survey.
+const char kHatsPersonalizationWallpaperSurveyIsSelected[] =
+    "hats_personalization_wallpaper_is_selected";
 
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
@@ -1926,6 +1958,12 @@ const char kNtpDisabledModules[] = "NewTabPage.DisabledModules";
 const char kNtpModulesOrder[] = "NewTabPage.ModulesOrder";
 // Whether NTP modules are visible.
 const char kNtpModulesVisible[] = "NewTabPage.ModulesVisible";
+// Number of times user has seen an NTP module.
+const char kNtpModulesShownCount[] = "NewTabPage.ModulesShownCount";
+// Time modules were first shown to user.
+const char kNtpModulesFirstShownTime[] = "NewTabPage.ModulesFirstShownTime";
+// Whether Modular NTP Desktop v1 First Run Experience is visible.
+const char kNtpModulesFreVisible[] = "NewTabPage.ModulesFreVisible";
 // List of promos that the user has dismissed while on the NTP.
 const char kNtpPromoBlocklist[] = "ntp.promo_blocklist";
 // Whether the promo is visible.
@@ -2651,6 +2689,14 @@ const char kLastChromadMigrationAttemptTime[] =
     "chromad.last_migration_attempt_time";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_WIN)
+// A list of base::Time value indicating the timestamps when hardware secure
+// decryption was disabled due to errors or crashes. The implementation
+// maintains a max size of the list (e.g. 2).
+const char kHardwareSecureDecryptionDisabledTimes[] =
+    "media.hardware_secure_decryption.disabled_times";
+#endif  // BUILDFLAG(IS_WIN)
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 
@@ -3127,10 +3173,6 @@ const char kSandboxExternalProtocolBlocked[] =
     "profile.sandbox_external_protocol_blocked";
 
 #if BUILDFLAG(IS_LINUX)
-// Boolean that indicates if native notifications are allowed to be used in
-// place of Chrome notifications. Will be replaced by kAllowSystemNotifications.
-const char kAllowNativeNotifications[] = "native_notifications.allowed";
-
 // Boolean that indicates if system notifications are allowed to be used in
 // place of Chrome notifications.
 const char kAllowSystemNotifications[] = "system_notifications.allowed";

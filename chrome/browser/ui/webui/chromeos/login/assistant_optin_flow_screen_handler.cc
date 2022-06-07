@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/values.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -61,10 +62,10 @@ std::u16string GetGivenNameIfIsChild() {
 
 constexpr StaticOobeScreenId AssistantOptInFlowScreenView::kScreenId;
 
-AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.AssistantOptInFlowScreen.userActed");
+AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.AssistantOptInFlowScreen.userActed");
 }
 
 AssistantOptInFlowScreenHandler::~AssistantOptInFlowScreenHandler() {
@@ -195,40 +196,39 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
 }
 
 void AssistantOptInFlowScreenHandler::GetAdditionalParameters(
-    base::DictionaryValue* dict) {
-  dict->SetBoolKey("voiceMatchDisabled",
-                   chromeos::assistant::features::IsVoiceMatchDisabled());
-  dict->SetStringKey("assistantLocale",
-                     g_browser_process->GetApplicationLocale());
+    base::Value::Dict* dict) {
+  dict->Set("voiceMatchDisabled",
+            chromeos::assistant::features::IsVoiceMatchDisabled());
+  dict->Set("assistantLocale", g_browser_process->GetApplicationLocale());
   BaseScreenHandler::GetAdditionalParameters(dict);
 }
 
 void AssistantOptInFlowScreenHandler::Bind(AssistantOptInFlowScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
   screen_ = screen;
-  if (page_is_ready())
-    Initialize();
+  if (IsJavascriptAllowed())
+    InitializeDeprecated();
 }
 
 void AssistantOptInFlowScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void AssistantOptInFlowScreenHandler::Show() {
-  if (!page_is_ready() || !screen_) {
+  if (!IsJavascriptAllowed() || !screen_) {
     show_on_init_ = true;
     return;
   }
 
   SetupAssistantConnection();
 
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void AssistantOptInFlowScreenHandler::Hide() {}
 
-void AssistantOptInFlowScreenHandler::Initialize() {
+void AssistantOptInFlowScreenHandler::InitializeDeprecated() {
   if (!screen_ || !show_on_init_)
     return;
 
@@ -375,13 +375,14 @@ void AssistantOptInFlowScreenHandler::StopSpeakerIdEnrollment() {
   ResetReceiver();
 }
 
-void AssistantOptInFlowScreenHandler::ReloadContent(const base::Value& dict) {
-  CallJS("login.AssistantOptInFlowScreen.reloadContent", dict);
+void AssistantOptInFlowScreenHandler::ReloadContent(base::Value dict) {
+  CallJS("login.AssistantOptInFlowScreen.reloadContent", std::move(dict));
 }
 
 void AssistantOptInFlowScreenHandler::AddSettingZippy(const std::string& type,
-                                                      const base::Value& data) {
-  CallJS("login.AssistantOptInFlowScreen.addSettingZippy", type, data);
+                                                      base::Value data) {
+  CallJS("login.AssistantOptInFlowScreen.addSettingZippy", type,
+         std::move(data));
 }
 
 void AssistantOptInFlowScreenHandler::UpdateValuePropScreen() {
@@ -495,7 +496,7 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
         consented ? assistant::prefs::ConsentStatus::kActivityControlAccepted
                   : assistant::prefs::ConsentStatus::kUnknown);
   } else {
-    AddSettingZippy("settings", zippy_data);
+    AddSettingZippy("settings", std::move(zippy_data));
   }
 
   const bool is_oobe_in_progress =
@@ -512,7 +513,7 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
       "shouldSkipVoiceMatch",
       base::Value(!ash::AssistantState::Get()->HasAudioInputDevice()));
   dictionary.SetKey("childName", base::Value(GetGivenNameIfIsChild()));
-  ReloadContent(dictionary);
+  ReloadContent(std::move(dictionary));
 
   // Skip activity control and users will be in opted out mode.
   if (skip_activity_control)
@@ -644,7 +645,7 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
   UMA_HISTOGRAM_EXACT_LINEAR("Assistant.OptInFlow.LoadingTimeoutCount",
                              loading_timeout_counter_, 10);
   if (screen_)
-    screen_->HandleUserAction(kFlowFinished);
+    screen_->HandleUserActionDeprecated(kFlowFinished);
   else
     CallJS("login.AssistantOptInFlowScreen.closeDialog");
 }

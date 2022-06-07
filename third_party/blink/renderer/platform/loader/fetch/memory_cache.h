@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_MEMORY_CACHE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_MEMORY_CACHE_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
@@ -35,7 +36,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"

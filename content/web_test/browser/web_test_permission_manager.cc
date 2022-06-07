@@ -156,9 +156,31 @@ WebTestPermissionManager::GetPermissionStatusForFrame(
           .DeprecatedGetOriginAsURL());
 }
 
+blink::mojom::PermissionStatus
+WebTestPermissionManager::GetPermissionStatusForCurrentDocument(
+    PermissionType permission,
+    content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host->IsNestedWithinFencedFrame())
+    return blink::mojom::PermissionStatus::DENIED;
+  return GetPermissionStatus(
+      permission, render_frame_host->GetLastCommittedOrigin().GetURL(),
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetLastCommittedURL()
+          .DeprecatedGetOriginAsURL());
+}
+
+blink::mojom::PermissionStatus
+WebTestPermissionManager::GetPermissionStatusForWorker(
+    content::PermissionType permission,
+    RenderProcessHost* render_process_host,
+    const GURL& worker_origin) {
+  return GetPermissionStatus(permission, worker_origin, worker_origin);
+}
+
 WebTestPermissionManager::SubscriptionId
 WebTestPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
+    RenderProcessHost* render_process_host,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) {

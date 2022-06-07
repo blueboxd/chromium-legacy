@@ -47,7 +47,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LightweightReactions.AssetsFetchSuccess" enum="BooleanSuccess"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>gujen@google.com</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -100,7 +100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LightweightReactions.Funnel" enum="LightweightReactionsFunnel"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>gujen@google.com</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -144,7 +144,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LightweightReactions.GifGenerationDuration" units="ms"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>gujen@google.com</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -153,7 +153,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LightweightReactions.GifGenerationSuccess"
-    enum="BooleanSuccess" expires_after="2022-07-31">
+    enum="BooleanSuccess" expires_after="2022-10-04">
   <owner>gujen@google.com</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -162,7 +162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LightweightReactions.GifShared" enum="BooleanShared"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>gujen@google.com</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>Records whether the GIF was shared in the Share Sheet.</summary>
@@ -179,7 +179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LightweightReactions.ReactionsUsed" enum="ReactionType"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>gujen@google.com</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -257,6 +257,30 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="NoteCreation.SelectedDynamicTemplateID" units="count"
+    expires_after="2022-09-23">
+  <owner>graysonlafleur@google.com</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>
+    Records the ID of the template selected. Recorded only for dynamic templates
+    while NoteCreation.SelectedTemplate records selected template based on an
+    enum of hardcoded template IDs. This will replace
+    NoteCreation.SelectedTemplate.
+  </summary>
+</histogram>
+
+<histogram name="NoteCreation.SelectedDynamicTemplateIndex" units="count"
+    expires_after="2022-09-23">
+  <owner>graysonlafleur@google.com</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>
+    Records the index of the template selected. Recorded only for dynamic
+    templates. Since we will no longer use an enum of template IDs, we will also
+    record the index of the template the user selects so that we can detect
+    where exactly the template was in the carousel.
+  </summary>
+</histogram>
+
 <histogram name="NoteCreation.SelectedTemplate" enum="NoteTemplate"
     expires_after="2022-08-28">
   <owner>sebsg@chromium.org</owner>
@@ -272,6 +296,16 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-creation@google.com</owner>
   <summary>
     Records the destination type (first or third party) for the shared note.
+  </summary>
+</histogram>
+
+<histogram name="NoteCreation.TemplateFetchSuccess" enum="BooleanSuccess"
+    expires_after="2022-09-23">
+  <owner>graysonlafleur@google.com</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>
+    Records whether the Webnote Stylize template data was successfully fetched
+    from gStatic.
   </summary>
 </histogram>
 
@@ -319,7 +353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.AsyncTask.SearchDuration" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-18">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -339,7 +373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error"
-    enum="LinkGenerationError" expires_after="2022-08-07">
+    enum="LinkGenerationError" expires_after="2022-10-09">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>

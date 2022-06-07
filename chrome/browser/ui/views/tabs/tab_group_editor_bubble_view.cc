@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
@@ -86,8 +89,8 @@ std::unique_ptr<views::LabelButton> CreateMenuItem(
 
   const gfx::Insets control_insets =
       ui::TouchUiController::Get()->touch_ui()
-          ? gfx::Insets(5 * vertical_spacing / 4, horizontal_spacing)
-          : gfx::Insets(vertical_spacing, horizontal_spacing);
+          ? gfx::Insets::VH(5 * vertical_spacing / 4, horizontal_spacing)
+          : gfx::Insets::VH(vertical_spacing, horizontal_spacing);
 
   auto button = CreateBubbleMenuItem(button_id, name, callback, icon);
   button->SetBorder(views::CreateEmptyBorder(control_insets));
@@ -447,15 +450,17 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetInteriorMargin(gfx::Insets(vertical_spacing, 0));
+      .SetInteriorMargin(gfx::Insets::VH(vertical_spacing, 0));
 
-  title_field_->SetProperty(views::kMarginsKey,
-                            gfx::Insets(vertical_spacing, horizontal_spacing));
+  title_field_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::VH(vertical_spacing, horizontal_spacing));
 
   color_selector_->SetProperty(views::kMarginsKey,
-                               gfx::Insets(0, horizontal_spacing));
+                               gfx::Insets::VH(0, horizontal_spacing));
 
-  separator->SetProperty(views::kMarginsKey, gfx::Insets(vertical_spacing, 0));
+  separator->SetProperty(views::kMarginsKey,
+                         gfx::Insets::VH(vertical_spacing, 0));
 
   // The save_group_line_container is only created if the
   // feature::kTabGroupsSave is enabled.
@@ -470,7 +475,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
     save_group_icon->SetProperty(
         views::kMarginsKey,
-        gfx::Insets(0, 0, 0, new_tab_menu_item->GetImageLabelSpacing()));
+        gfx::Insets::TLBR(0, 0, 0, new_tab_menu_item->GetImageLabelSpacing()));
 
     save_group_line_container
         ->SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -582,6 +587,15 @@ void TabGroupEditorBubbleView::MoveGroupToNewWindowPressed() {
 }
 
 void TabGroupEditorBubbleView::OnBubbleClose() {
+  // If we're doing the "create a tab group" tutorial, note whether the user
+  // actually entered a tab name.
+  if (browser_->window()->IsFeaturePromoActive(
+          feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
+          /*include_continued_promos =*/true)) {
+    UMA_HISTOGRAM_BOOLEAN("Tutorial.TabGroup.EditedTitle",
+                          !title_field_->GetText().empty());
+  }
+
   if (title_at_opening_ != title_field_->GetText()) {
     base::RecordAction(
         base::UserMetricsAction("TabGroups_TabGroupBubble_NameChanged"));

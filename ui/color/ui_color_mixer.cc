@@ -47,6 +47,9 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorButtonForegroundProminent] =
       GetColorWithMaxContrast(kColorButtonBackgroundProminent);
   mixer[kColorButtonForegroundUnchecked] = {kColorSecondaryForeground};
+  mixer[kColorCustomFrameCaptionForeground] = {SK_ColorWHITE};
+  mixer[kColorDebugBoundsOutline] = SetAlpha(SK_ColorRED, 0x30);
+  mixer[kColorDebugContentOutline] = SetAlpha(SK_ColorBLUE, 0x30);
   mixer[kColorDialogBackground] = {kColorPrimaryBackground};
   mixer[kColorDialogForeground] = {kColorSecondaryForeground};
   mixer[kColorDropdownBackground] = {kColorPrimaryBackground};
@@ -75,6 +78,11 @@ void AddUiColorMixer(ColorProvider* provider,
                       color_utils::kMinimumReadableContrastRatio);
   mixer[kColorLinkForegroundDisabled] = {kColorDisabledForeground};
   mixer[kColorLinkForegroundPressed] = {kColorLinkForeground};
+  mixer[kColorLiveCaptionBubbleBackgroundDefault] = {
+      SkColorSetA(gfx::kGoogleGrey900, 0xE6)};
+  mixer[kColorLiveCaptionBubbleForegroundDefault] =
+      GetColorWithMaxContrast(kColorLiveCaptionBubbleBackgroundDefault);
+  mixer[kColorLiveCaptionBubbleLink] = {gfx::kGoogleBlue300};
   mixer[kColorMenuBackground] = {kColorPrimaryBackground};
   mixer[kColorMenuBorder] = {kColorMidground};
   mixer[kColorMenuDropmarker] = {kColorPrimaryForeground};
@@ -135,13 +143,6 @@ void AddUiColorMixer(ColorProvider* provider,
       SetAlpha(GetColorWithMaxContrast(kColorOverlayScrollbarFillHoveredLight),
                gfx::kGoogleGreyAlpha500);
   mixer[kColorProgressBar] = {kColorAccent};
-  mixer[kColorPwaSecurityChipForeground] = {kColorSecondaryForeground};
-  mixer[kColorPwaSecurityChipForegroundDangerous] = {kColorAlertHighSeverity};
-  mixer[kColorPwaSecurityChipForegroundPolicyCert] = {kColorDisabledForeground};
-  mixer[kColorPwaSecurityChipForegroundSecure] = {
-      kColorPwaSecurityChipForeground};
-  mixer[kColorPwaToolbarBackground] = {kColorEndpointBackground};
-  mixer[kColorPwaToolbarForeground] = {kColorEndpointForeground};
   mixer[kColorSeparator] = {kColorMidground};
   mixer[kColorShadowBase] = {dark_mode ? SK_ColorBLACK : gfx::kGoogleGrey800};
   mixer[kColorShadowValueAmbientShadowElevationThree] =

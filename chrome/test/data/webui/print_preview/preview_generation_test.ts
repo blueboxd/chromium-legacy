@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ColorMode, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationState, DestinationType, Margins, MarginsType, NativeInitialSettings, NativeLayerImpl, PluginProxyImpl, PreviewTicket, PrintPreviewAppElement, PrintPreviewDestinationSettingsElement, Range, ScalingType} from 'chrome://print/print_preview.js';
+import {ColorMode, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationState, Margins, MarginsType, NativeInitialSettings, NativeLayerImpl, PluginProxyImpl, PreviewTicket, PrintPreviewAppElement, PrintPreviewDestinationSettingsElement, Range, ScalingType} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -601,8 +601,8 @@ suite(preview_generation_test.suiteName, function() {
           assertEquals('FooDevice', destinationSettings.destination!.id);
           assertEquals('FooDevice', originalTicket.deviceName);
           const barDestination = new Destination(
-              'BarDevice', DestinationType.LOCAL, DestinationOrigin.LOCAL,
-              'BarName', DestinationConnectionStatus.ONLINE);
+              'BarDevice', DestinationOrigin.LOCAL, 'BarName',
+              DestinationConnectionStatus.ONLINE);
           const capabilities = getCddTemplate(barDestination.id).capabilities!;
           capabilities.printer!.media_size = {
             option: [
@@ -616,7 +616,7 @@ suite(preview_generation_test.suiteName, function() {
           };
           barDestination.capabilities = capabilities;
           nativeLayer.resetResolver('getPreview');
-          destinationSettings.destinationState = DestinationState.SELECTED;
+          destinationSettings.destinationState = DestinationState.SET;
           destinationSettings.set('destination', barDestination);
           destinationSettings.destinationState = DestinationState.UPDATED;
           return nativeLayer.whenCalled('getPreview');

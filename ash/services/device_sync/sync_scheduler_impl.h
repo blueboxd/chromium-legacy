@@ -8,9 +8,10 @@
 #include <stddef.h>
 
 #include "ash/services/device_sync/sync_scheduler.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -103,6 +104,6 @@ class SyncSchedulerImpl : public SyncScheduler {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_SYNC_SCHEDULER_IMPL_H_

@@ -184,7 +184,6 @@ Kur ti fshin historikun tënd të shfletimit — të gjithë ose për një sajt 
 <translation id="200114059308480249">Të përfshihet teksti përreth në kërkimet e Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# skedar}other{# skedarë}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> do të hapet në Chrome. Duke vazhduar, ti pranon <ph name="BEGIN_LINK1" />"Kushtet e shërbimit" të Google<ph name="END_LINK1" /> dhe <ph name="BEGIN_LINK2" />"Kushtet shtesë të shërbimit" të Google Chrome dhe të Chrome OS<ph name="END_LINK2" />. Zbatohet gjithashtu <ph name="BEGIN_LINK3" />Politika e privatësisë<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Të hiqet interesi?</translation>
 <translation id="2020309681647789787">Do të kesh historikun në të gjitha pajisjet e sinkronizuara, në mënyrë që të vazhdosh atë që po bëje</translation>
 <translation id="2021896219286479412">Kontrollet e sajtit në ekranin e plotë</translation>
 <translation id="2038563949887743358">Aktivizo "Kërko sajtin për desktop"</translation>
@@ -213,6 +212,7 @@ Trokit te një fjalë për të kërkuar. Për ta përsosur kërkimin, preke dhe 
 <translation id="2141396931810938595">Bazuar në përdorimin tënd</translation>
 <translation id="214888715418183969">Zgjidh se çfarë informacionesh ndihesh mirë të ndash me Chrome. Metrikat që ndan do të përdoren për të përmirësuar veçoritë, cilësinë e funksionimit dhe qëndrueshmërinë e Chrome.</translation>
 <translation id="2149973817440762519">Redakto faqeshënuesin</translation>
+<translation id="2155214902713132423">Kjo mënyrë verifikimi nuk ofrohet për këtë pajisje. Zgjidh një opsion tjetër në pajisjen tjetër.</translation>
 <translation id="2157851137955077194">Për të ndarë diçka nga telefoni yt në një pajisje tjetër, aktivizo sinkronizimin në cilësimet e Chrome në të dyja pajisjet</translation>
 <translation id="2158408438301413340">Chrome nuk mund t'i kontrollonte të gjitha fjalëkalimet</translation>
 <translation id="2169830938017475061">Tani</translation>
@@ -733,7 +733,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5091199029769593641">Së shpejti do të shikosh histori nga <ph name="SITE_NAME" /> kur të hapësh një skedë të re. Sajtet që ndjek ruhen në llogarinë tënde të Google. Mund t'i menaxhosh te cilësimet e "Zbulo".</translation>
 <translation id="5091249083535528968">Të dhënat e zgjeruara të përdorimit</translation>
 <translation id="509429900233858213">Ndodhi një gabim.</translation>
-<translation id="5098190077610408701">Të shtohet interesi?</translation>
 <translation id="5102401324271069229">Nëse një sajt përpiqet të vjedhë fjalëkalimin tënd ose kur shkarkon një skedar të dëmshëm, Chrome mund t'i dërgojë URL-të, duke përfshirë pjesë të përmbajtjes së faqeve te "Shfletimi i sigurt"</translation>
 <translation id="510275257476243843">1 orë e mbetur</translation>
 <translation id="5115811374190515607">te <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5906513782029855931">Njohja e URL-ve të sajteve lejon që "Asistenti i Google" të të ndihmojë të përfundosh detyrat. "Asistentin" mund ta çaktivizosh te cilësimet e Chrome.</translation>
 <translation id="5916664084637901428">Aktiv</translation>
 <translation id="5919204609460789179">Përditëso <ph name="PRODUCT_NAME" /> për të nisur sinkronizimin</translation>
+<translation id="5938820472109305350">Shto <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Po përdor Google për kërkimin</translation>
 <translation id="5945035219773565305">Rekomandimi aktual: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Po shikon faqen drejtpërdrejt</translation>
@@ -898,7 +898,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="6033245666633565791">Me <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome po zhvillon teknologji të reja për të të mbrojtur nga gjurmimi nëpër sajtet e uebit, ndërkohë që vazhdon të ruajë uebin e hapur.
 
 Provat për Privacy Sandbox janë ende në zhvillim aktiv dhe ofrohen në rajone të zgjedhura. Për momentin, sajtet mund të provojnë Privacy Sandbox ndërkohë që vazhdojnë të përdorin teknologjitë aktuale të uebit si kukit e palëve të treta.</translation>
-<translation id="6036057147555329831">Moduli shtesë ICU</translation>
 <translation id="6039379616847168523">Kalo te skeda tjetër</translation>
 <translation id="6040143037577758943">Mbyll</translation>
 <translation id="604124094241169006">Automatike</translation>
@@ -1023,6 +1022,7 @@ Kodet e besimit përmirësojnë privatësinë në ueb dhe nuk mund të përdoren
 <translation id="663674369910034433">Për cilësime të mëtejshme në lidhje me privatësinë, sigurinë dhe mbledhjen e të dhënave, shih <ph name="BEGIN_LINK1" />Shinkronizimi <ph name="END_LINK1" /> dhe <ph name="BEGIN_LINK2" />Shërbimet e Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Për të ndihmuar në përmirësimin e aplikacionit, Chrome dërgon të dhëna të përdorimit dhe të ndërprerjeve aksidentale te Google. <ph name="BEGIN_UMA_LINK" />Menaxho<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Bllokoji gjithmonë</translation>
+<translation id="6641780377503683465">Hiq <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Pastro</translation>
 <translation id="6645629752388991326">Kontrollo se cilat pajisje mund të identifikohen duke përdorur këtë pajisje si çelës sigurie.</translation>
 <translation id="6648459603387803038">Administratori yt mund të ndryshojë konfigurimin e shfletuesit në distancë. Aktiviteti në këtë pajisje mund të menaxhohet edhe jashtë Chrome.</translation>

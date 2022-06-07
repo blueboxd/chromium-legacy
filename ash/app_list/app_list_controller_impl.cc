@@ -268,6 +268,10 @@ GetTransitionFromMetricsAnimationInfo(
                                                 animation_info->showing);
 }
 
+bool IsKioskSession() {
+  return Shell::Get()->session_controller()->IsRunningInAppMode();
+}
+
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -322,6 +326,9 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kSuggestedContentInfoDismissedInLauncher, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kLauncherFeedbackOnContinueSectionSent, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   AppListNudgeController::RegisterProfilePrefs(registry);
 }
@@ -402,6 +409,9 @@ void AppListControllerImpl::GetAppInfoDialogBounds(
 }
 
 void AppListControllerImpl::ShowAppList() {
+  if (IsKioskSession())
+    return;
+
   if (ShouldShowAppListBubble()) {
     DCHECK(!fullscreen_presenter_->GetTargetVisibility());
     bubble_presenter_->Show(GetDisplayIdToShowAppListOn());
@@ -432,6 +442,9 @@ bool AppListControllerImpl::IsVisible() {
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
+  if (IsKioskSession())
+    return;
+
   if (!IsTabletMode()) {
     DismissAppList();
     return;
@@ -451,7 +464,7 @@ void AppListControllerImpl::OnSessionStateChanged(
   if (!IsTabletMode())
     return;
 
-  if (state != session_manager::SessionState::ACTIVE)
+  if (state != session_manager::SessionState::ACTIVE || IsKioskSession())
     return;
 
   // Show the app list after signing in in tablet mode. For metrics, the app
@@ -498,6 +511,8 @@ bool AppListControllerImpl::GetTargetVisibility(
 void AppListControllerImpl::Show(int64_t display_id,
                                  absl::optional<AppListShowSource> show_source,
                                  base::TimeTicks event_time_stamp) {
+  if (IsKioskSession())
+    return;
   const bool show_app_list_bubble = ShouldShowAppListBubble();
   if (show_source.has_value())
     LogAppListShowSource(show_source.value(), show_app_list_bubble);
@@ -573,6 +588,9 @@ ShelfAction AppListControllerImpl::ToggleAppList(
     int64_t display_id,
     AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
+  if (IsKioskSession())
+    return SHELF_ACTION_APP_LIST_DISMISSED;
+
   if (IsTabletMode()) {
     bool handled = GoHome(display_id);
 
@@ -602,6 +620,9 @@ ShelfAction AppListControllerImpl::ToggleAppList(
 }
 
 bool AppListControllerImpl::GoHome(int64_t display_id) {
+  if (IsKioskSession())
+    return false;
+
   DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   if (fullscreen_presenter_->IsShowingEmbeddedAssistantUI())
@@ -704,7 +725,7 @@ bool AppListControllerImpl::GoHome(int64_t display_id) {
 }
 
 bool AppListControllerImpl::ShouldHomeLauncherBeVisible() const {
-  if (!IsTabletMode())
+  if (!IsTabletMode() || IsKioskSession())
     return false;
 
   if (home_launcher_transition_state_ ==
@@ -834,6 +855,13 @@ void AppListControllerImpl::OnSplitViewStateChanged(
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
+  if (IsKioskSession())
+    return;
+
+  // Reset the keyboard traversal mode to prevent using the value saved in
+  // clamshell mode.
+  SetKeyboardTraversalMode(false);
+
   const AppListView* app_list_view = fullscreen_presenter_->GetView();
   // In tablet mode shelf orientation is always "bottom". Dismiss app list if
   // switching to tablet mode from side shelf app list, to ensure the app list
@@ -871,6 +899,10 @@ void AppListControllerImpl::OnTabletModeStarted() {
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {
+  // Reset the keyboard traversal mode to prevent using the value saved last
+  // time in tablet mode.
+  SetKeyboardTraversalMode(false);
+
   aura::Window* window = fullscreen_presenter_->GetWindow();
   base::AutoReset<bool> auto_reset(
       &should_dismiss_immediately_,
@@ -1129,7 +1161,9 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
   // As such, the |SearchBoxView| must be told to repaint directly.
   if (focused_view ==
       fullscreen_presenter_->GetView()->search_box_view()->search_box()) {
-    fullscreen_presenter_->GetView()->search_box_view()->SchedulePaint();
+    SearchBoxView* search_box_view =
+        fullscreen_presenter_->GetView()->search_box_view();
+    search_box_view->UpdateSearchBoxFocusPaint();
   } else {
     // Ensure that when an app list item's focus ring is triggered by key
     // events, the item is selected.
@@ -1651,6 +1685,9 @@ void AppListControllerImpl::RemoveObserver(
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible,
                                                 int64_t display_id) {
+  // In the Kiosk session we should never show the app list.
+  CHECK(!visible || !IsKioskSession());
+
   DVLOG(1) << __PRETTY_FUNCTION__ << " visible " << visible << " display_id "
            << display_id;
   // Focus and app visibility changes while finishing home launcher state
@@ -1752,6 +1789,9 @@ void AppListControllerImpl::OnWindowDestroyed(aura::Window* window) {
 
 void AppListControllerImpl::OnVisibilityWillChange(bool visible,
                                                    int64_t display_id) {
+  // In the Kiosk session we should never show the app list.
+  CHECK(!visible || !IsKioskSession());
+
   bool real_target_visibility = visible;
   // HomeLauncher is only visible when no other app windows are visible,
   // unless we are in the process of animating to (or dragging) the home
@@ -1830,7 +1870,8 @@ void AppListControllerImpl::ResetHomeLauncherIfShown() {
 void AppListControllerImpl::ShowHomeScreen() {
   DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
-  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted() ||
+      IsKioskSession())
     return;
 
   // App list is only considered shown for metrics if there are currently no
@@ -1863,7 +1904,7 @@ void AppListControllerImpl::UpdateHomeScreenVisibility() {
 }
 
 bool AppListControllerImpl::ShouldShowHomeScreen() const {
-  if (in_window_dragging_ || in_wallpaper_preview_)
+  if (IsKioskSession() || in_window_dragging_ || in_wallpaper_preview_)
     return false;
 
   aura::Window* window = GetHomeScreenWindow();

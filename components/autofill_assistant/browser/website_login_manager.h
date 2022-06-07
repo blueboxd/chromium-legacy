@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill_assistant/browser/save_password_leak_detection_delegate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
@@ -85,11 +86,11 @@ class WebsiteLoginManager {
       const autofill::FormData& form_data,
       base::OnceCallback<void()> callback) = 0;
 
-  // Checks if generated password can be committed.
-  virtual bool ReadyToCommitGeneratedPassword() = 0;
+  // Checks if generated password can be saved.
+  virtual bool ReadyToSaveGeneratedPassword() = 0;
 
-  // Commits the presaved passwod to the store.
-  virtual void CommitGeneratedPassword() = 0;
+  // Saves the presaved passwod to the store.
+  virtual void SaveGeneratedPassword() = 0;
 
   // Clears potentially submitted or pending forms in password manager. Used to
   // make password manager "forget" about any previously processed form that
@@ -97,12 +98,27 @@ class WebsiteLoginManager {
   virtual void ResetPendingCredentials() = 0;
 
   // Returns true if password manager has processed a password update submission
-  // on a 3rd party website and it is ready to commit the updated credential to
+  // on a 3rd party website and it is ready to save the updated credential to
   // the password store.
-  virtual bool ReadyToCommitSubmittedPassword() = 0;
+  virtual bool ReadyToSaveSubmittedPassword() = 0;
+
+  // Checks whether there is a password submission on the website and whether
+  // the submission corresponds to a password update. In particular, it returns
+  // false if the submitted password update is the same as the previously used
+  // password.
+  virtual bool SubmittedPasswordIsSame() = 0;
+
+  // Checks whether the submitted credential is leaked. The result is returned
+  // by calling a SavePasswordLeakDetectionDelegate::Callback with the first
+  // parameter indicating whether the credential check was performed
+  // successfully and the second parameter indicating whether the credential is
+  // known to be leaked.
+  virtual void CheckWhetherSubmittedCredentialIsLeaked(
+      SavePasswordLeakDetectionDelegate::Callback callback,
+      base::TimeDelta timeout) = 0;
 
   // Saves the current submitted password to the disk. Returns true if a
-  // submitted password exist (E.g ReadyToCommitSubmittedPassword) and it is
+  // submitted password exist (e.g. ReadyToSaveSubmittedPassword) and it is
   // properly saved, false otherwise.
   virtual bool SaveSubmittedPassword() = 0;
 };

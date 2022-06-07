@@ -38,7 +38,7 @@ class OfflineLoginView {
   // Preload e-mail, enterprise domain and e-mail domain.
   // TODO(dkuzmin): merge this function with Show() in future and use
   // ShowScreenWithData in handler.
-  virtual void LoadParams(base::DictionaryValue& params) = 0;
+  virtual void LoadParams(base::DictionaryValue params) = 0;
 
   // Proceeds to the password input dialog.
   virtual void ShowPasswordPage() = 0;
@@ -54,7 +54,7 @@ class OfflineLoginScreenHandler : public BaseScreenHandler,
                                   public OfflineLoginView {
  public:
   using TView = OfflineLoginView;
-  explicit OfflineLoginScreenHandler(JSCallsContainer* js_calls_container);
+  OfflineLoginScreenHandler();
   ~OfflineLoginScreenHandler() override;
 
   OfflineLoginScreenHandler(const OfflineLoginScreenHandler&) = delete;
@@ -72,7 +72,7 @@ class OfflineLoginScreenHandler : public BaseScreenHandler,
   void Bind(ash::OfflineLoginScreen* screen) override;
   void Unbind() override;
   void Reset() override;
-  void LoadParams(base::DictionaryValue& params) override;
+  void LoadParams(base::DictionaryValue params) override;
   void ShowPasswordPage() override;
   void ShowOnlineRequiredDialog() override;
   void ShowPasswordMismatchMessage() override;
@@ -81,7 +81,7 @@ class OfflineLoginScreenHandler : public BaseScreenHandler,
   void RegisterMessages() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   ash::OfflineLoginScreen* screen_ = nullptr;
 

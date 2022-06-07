@@ -46,6 +46,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
@@ -1661,12 +1662,47 @@ class SmbfsTestVolume : public LocalTestVolume {
 
 class MockGuestOsMountProvider : public guest_os::GuestOsMountProvider {
  public:
-  explicit MockGuestOsMountProvider(std::string name) : name_(name) {}
+  MockGuestOsMountProvider(Profile* profile, std::string name)
+      : profile_(profile), name_(name) {}
+
+  MockGuestOsMountProvider(const MockGuestOsMountProvider&) = delete;
+  MockGuestOsMountProvider& operator=(const MockGuestOsMountProvider&) = delete;
 
   std::string DisplayName() override { return name_; }
+  Profile* profile() override { return profile_; }
+  crostini::ContainerId ContainerId() override {
+    return crostini::ContainerId::GetDefault();
+  }
+
+  int cid_;
+  int cid() override { return cid_; }
 
  private:
+  Profile* profile_;
   std::string name_;
+  std::unique_ptr<GuestOsTestVolume> volume_;
+};
+
+// GuestOsTestVolume: local test volume for the "Guest OS" directories.
+class GuestOsTestVolume : public LocalTestVolume {
+ public:
+  explicit GuestOsTestVolume(Profile* profile,
+                             MockGuestOsMountProvider* provider)
+      : LocalTestVolume(util::GetGuestOsMountPointName(
+            profile,
+            crostini::ContainerId::GetDefault())),
+        provider_(provider) {}
+
+  GuestOsTestVolume(const GuestOsTestVolume&) = delete;
+  GuestOsTestVolume& operator=(const GuestOsTestVolume&) = delete;
+
+  ~GuestOsTestVolume() override = default;
+
+  bool Mount(Profile* profile) override { return CreateRootDirectory(profile); }
+
+  const base::FilePath& mount_path() const { return root_path(); }
+
+  MockGuestOsMountProvider* provider_;
 };
 
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
@@ -1852,6 +1888,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(chromeos::features::kFiltersInRecents);
   }
 
+  if (options.enable_filters_in_recents_v2) {
+    enabled_features.push_back(chromeos::features::kFiltersInRecentsV2);
+  } else {
+    disabled_features.push_back(chromeos::features::kFiltersInRecentsV2);
+  }
+
   // This is destroyed in |TearDown()|. We cannot initialize this in the
   // constructor due to this feature values' above dependence on virtual
   // method calls, but by convention subclasses of this fixture may initialize
@@ -1942,6 +1984,11 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         dbus_thread_manager->GetCrosDisksClient())
         ->AddCustomMountPointCallback(
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
+                                base::Unretained(this)));
+    static_cast<chromeos::FakeCrosDisksClient*>(
+        dbus_thread_manager->GetCrosDisksClient())
+        ->AddCustomMountPointCallback(
+            base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountGuestOs,
                                 base::Unretained(this)));
 
     if (arc::IsArcAvailable()) {
@@ -3026,12 +3073,24 @@ bool FileManagerBrowserTestBase::HandleGuestOsCommands(
     const base::DictionaryValue& value,
     std::string* output) {
   if (name == "registerMountableGuest") {
-    const std::string* displayName = value.GetDict().FindString("displayName");
+    auto* displayName = value.GetDict().FindString("displayName");
+    auto* canMount = value.GetDict().Find("canMount");
     CHECK(displayName != nullptr);
     auto* registry = guest_os::GuestOsService::GetForProfile(profile())
                          ->MountProviderRegistry();
     auto id = registry->Register(
-        std::make_unique<MockGuestOsMountProvider>(*displayName));
+        std::make_unique<MockGuestOsMountProvider>(profile(), *displayName));
+    MockGuestOsMountProvider* ptr =
+        reinterpret_cast<MockGuestOsMountProvider*>(registry->Get(id));
+    ptr->cid_ = id;
+    if (canMount && canMount->GetBool()) {
+      // If we ask for the volume to be mountable we add it to the map, and it's
+      // mountable. If not then it's an unknown volume and the mount request
+      // fails.
+      guest_os_volumes_[base::StringPrintf("sftp://%d:0", id)] =
+          std::make_unique<GuestOsTestVolume>(profile(), ptr);
+    }
+
     base::JSONWriter::Write(base::Value(id), output);
     return true;
   }
@@ -3081,6 +3140,21 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
   }
   CHECK(crostini_volume_->Mount(profile()));
   return crostini_volume_->mount_path();
+}
+
+base::FilePath FileManagerBrowserTestBase::MaybeMountGuestOs(
+    const std::string& source_path,
+    const std::vector<std::string>& mount_options) {
+  GURL source_url(source_path);
+  DCHECK(source_url.is_valid());
+  if (source_url.scheme() != "sftp") {
+    return {};
+  }
+  if (!guest_os_volumes_.contains(source_path)) {
+    return {};
+  }
+  guest_os_volumes_[source_path]->Mount(profile());
+  return guest_os_volumes_[source_path]->mount_path();
 }
 
 void FileManagerBrowserTestBase::EnableVirtualKeyboard() {

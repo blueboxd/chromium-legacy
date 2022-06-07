@@ -34,7 +34,7 @@ class RecommendAppsScreenView {
 
   // Called when the download of the recommend app list is successful. Shows the
   // downloaded `app_list` to the user.
-  virtual void OnLoadSuccess(const base::Value& app_list) = 0;
+  virtual void OnLoadSuccess(base::Value app_list) = 0;
 
   // Called when parsing the recommend app list response fails. Should skip this
   // screen.
@@ -47,7 +47,7 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
  public:
   using TView = RecommendAppsScreenView;
 
-  explicit RecommendAppsScreenHandler(JSCallsContainer* js_calls_container);
+  RecommendAppsScreenHandler();
 
   RecommendAppsScreenHandler(const RecommendAppsScreenHandler&) = delete;
   RecommendAppsScreenHandler& operator=(const RecommendAppsScreenHandler&) =
@@ -64,21 +64,21 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
   void Bind(ash::RecommendAppsScreen* screen) override;
   void Show() override;
   void Hide() override;
-  void OnLoadSuccess(const base::Value& app_list) override;
+  void OnLoadSuccess(base::Value app_list) override;
   void OnParseResponseError() override;
 
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
  private:
   void OnUserSkip();
 
   // Call the JS function to load the list of apps in the WebView.
-  void LoadAppListInUI(const base::Value& app_list);
+  void LoadAppListInUI(base::Value app_list);
 
   void HandleSkip();
   void HandleRetry();
-  void HandleInstall(const base::ListValue* args);
+  void HandleInstall(const base::Value::List& args);
 
   ash::RecommendAppsScreen* screen_ = nullptr;
 
@@ -86,7 +86,7 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
 
   int recommended_app_count_ = 0;
 
-  // If true, Initialize() will call Show().
+  // If true, InitializeDeprecated() will call Show().
   bool show_on_init_ = false;
 };
 

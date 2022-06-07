@@ -156,7 +156,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Cr50.BoardIdFlags" enum="Cr50BoardIdFlags"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>apronin@chromium.org</owner>
   <owner>vbendeb@chromium.org</owner>
   <summary>
@@ -167,7 +167,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Cr50.BoardIdOfRlzMismatch" enum="Cr50CrosRlzCodes"
-    expires_after="2022-05-01">
+    expires_after="2022-09-30">
   <owner>vbendeb@chromium.org</owner>
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -179,7 +179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Cr50.FlashLog" enum="Cr50FlashLogs"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>apronin@chromium.org</owner>
   <owner>vbendeb@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -203,7 +203,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Cr50.RlzOfBoardIdMismatch" enum="Cr50CrosRlzCodes"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>vbendeb@chromium.org</owner>
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -292,9 +292,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.DetachableBase.ActivePercent" units="%"
-    expires_after="2022-04-10">
-  <owner>drinkcat@chromium.org</owner>
+    expires_after="2022-10-10">
   <owner>fshao@chromium.org</owner>
+  <owner>phoenixshen@chromium.org</owner>
   <owner>chromeos-kukui@google.com</owner>
   <summary>
     Ratio of time a detachable base keyboard is active, i.e. when the USB
@@ -304,9 +304,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.DetachableBase.AttachedOnBoot" enum="BooleanAttached"
-    expires_after="2022-04-10">
-  <owner>drinkcat@chromium.org</owner>
+    expires_after="2022-10-10">
   <owner>fshao@chromium.org</owner>
+  <owner>phoenixshen@chromium.org</owner>
   <owner>chromeos-kukui@google.com</owner>
   <summary>
     For devices with a detachable base: whether or not the base is connected on
@@ -316,16 +316,16 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Platform.DetachableBase.PairResult"
     enum="DetachableBasePairResult" expires_after="2022-04-24">
-  <owner>drinkcat@chromium.org</owner>
   <owner>fshao@chromium.org</owner>
+  <owner>phoenixshen@chromium.org</owner>
   <owner>chromeos-kukui@google.com</owner>
   <summary>Result of a detachable base pair operation.</summary>
 </histogram>
 
 <histogram name="Platform.DetachableBase.PendingRWUpdate"
     enum="DetachableBasePendingRWUpdate" expires_after="2022-04-24">
-  <owner>drinkcat@chromium.org</owner>
   <owner>fshao@chromium.org</owner>
+  <owner>phoenixshen@chromium.org</owner>
   <owner>chromeos-kukui@google.com</owner>
   <summary>
     Detachable base firmware updates can be configured to only occur on boot. In
@@ -343,22 +343,22 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Platform.DetachableBase.ROUpdateResult"
     enum="DetachableBaseROUpdateResult" expires_after="2022-04-24">
-  <owner>drinkcat@chromium.org</owner>
   <owner>fshao@chromium.org</owner>
+  <owner>phoenixshen@chromium.org</owner>
   <owner>chromeos-kukui@google.com</owner>
   <summary>Result of a detachable base RO firmware update.</summary>
 </histogram>
 
 <histogram name="Platform.DetachableBase.RWUpdateResult"
     enum="DetachableBaseRWUpdateResult" expires_after="2022-04-24">
-  <owner>drinkcat@chromium.org</owner>
   <owner>fshao@chromium.org</owner>
+  <owner>phoenixshen@chromium.org</owner>
   <owner>chromeos-kukui@google.com</owner>
   <summary>Result of a detachable base RW firmware update.</summary>
 </histogram>
 
 <histogram name="Platform.DiskUsage.NumUserHomeDirectories"
-    units="home directories" expires_after="2022-08-01">
+    units="home directories" expires_after="2022-10-04">
   <owner>achuith@chromium.org</owner>
   <owner>tls@chromium.org</owner>
   <summary>
@@ -602,7 +602,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Meminfo" units="KB" expires_after="2022-04-03">
+<histogram name="Platform.Meminfo" units="KB" expires_after="2022-10-04">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
@@ -1198,7 +1198,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.AuthFailCommand.Auth2Fail"
-    enum="TPM12CommandOrdinal" expires_after="2021-10-10">
+    enum="TPM12CommandOrdinal" expires_after="2022-10-08">
   <owner>cylai@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1208,7 +1208,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.AuthFailCommand.AuthFail"
-    enum="TPM12CommandOrdinal" expires_after="2021-10-10">
+    enum="TPM12CommandOrdinal" expires_after="2022-10-08">
   <owner>cylai@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1275,8 +1275,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.HardwareAlerts" enum="PlatformTPMHardwareAlerts"
-    expires_after="M85">
+    expires_after="2022-10-08">
   <owner>anatol@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     Trusted Platform Module hardware alerts that signal about the chip abnormal
     situation.
@@ -1284,7 +1285,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.TimeToTakeOwnership" units="ms"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>yich@google.com</owner>
   <owner>cylai@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -1333,14 +1334,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.FirstTimeoutWritingTime" units="seconds"
-    expires_after="2022-04-17">
+    expires_after="2022-10-08">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>System uptime when first timeout writing TPM command occurs</summary>
 </histogram>
 
 <histogram name="Platform.Trunks.TpmErrorCode" enum="TPMResponseCode"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1350,17 +1351,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.U2F.Command" enum="Cr50U2FCommands"
-    expires_after="2022-02-20">
+    expires_after="2022-10-08">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Records occurrences of U2F commands sent to cr50.</summary>
-</histogram>
-
-<histogram name="Platform.U2F.LegacyCommand" enum="Cr50U2FCommands"
-    expires_after="2021-12-21">
-  <owner>cylai@chromium.org</owner>
-  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
-  <summary>Records occurrences of legacy U2F commands sent to cr50.</summary>
 </histogram>
 
 <histogram name="Platform.UnaggregatedUsageTime" units="seconds"
@@ -1379,7 +1373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.UnaggregatedUsageTimeTooBig" units="seconds"
-    expires_after="2022-07-08">
+    expires_after="2022-10-04">
   <owner>mutexlox@chromium.org</owner>
   <owner>iby@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>

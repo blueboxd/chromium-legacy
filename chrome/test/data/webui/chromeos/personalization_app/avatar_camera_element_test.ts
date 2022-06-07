@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AvatarCamera, AvatarCameraMode} from 'chrome://personalization/trusted/user/avatar_camera_element.js';
-import {GetUserMediaProxy, setWebcamUtilsForTesting} from 'chrome://personalization/trusted/user/webcam_utils_proxy.js';
+import 'chrome://personalization/strings.m.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
+
+import {AvatarCamera, AvatarCameraMode, GetUserMediaProxy, setWebcamUtilsForTesting} from 'chrome://personalization/trusted/personalization_app.js';
 import * as webcamUtils from 'chrome://resources/cr_elements/chromeos/cr_picture/webcam_utils.js';
 import {assertDeepEquals, assertEquals, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -66,7 +68,7 @@ class MockGetUserMediaProxy extends
   }
 }
 
-export function AvatarCameraTest() {
+suite('AvatarCameraTest', function() {
   let avatarCameraElement: AvatarCamera|null = null;
   let mockGetUserMediaProxy: MockGetUserMediaProxy;
   let mockWebcamUtils: MockWebcamUtils;
@@ -193,4 +195,4 @@ export function AvatarCameraTest() {
     const uint8View = new Uint8Array(buffer);
     assertTrue(uint8View.every(val => val === 17), 'mock data should be set');
   });
-}
+});

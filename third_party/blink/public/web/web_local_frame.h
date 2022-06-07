@@ -22,11 +22,11 @@
 #include "third_party/blink/public/common/css/page_size_type.h"
 #include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
-#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-shared.h"
@@ -48,7 +48,6 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
-#include "third_party/blink/public/web/web_navigation_params.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/gfx/range/range.h"
@@ -98,6 +97,7 @@ struct FramePolicy;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebIsolatedWorldInfo;
+struct WebPolicyContainer;
 struct WebPrintPageDescription;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
@@ -265,8 +265,8 @@ class WebLocalFrame : public WebFrame {
       const = 0;
 
   // "Returns true if the frame the document belongs to, or any of its ancestor
-  // nodes is a fenced frame. See blink::Frame::IsInFencedFrameTree() for more
-  // details.
+  // nodes (within the frame tree) is a fenced frame. See
+  // blink::Frame::IsInFencedFrameTree() for more details.
   virtual bool IsInFencedFrameTree() const = 0;
 
   // Navigation Ping --------------------------------------------------------
@@ -809,11 +809,14 @@ class WebLocalFrame : public WebFrame {
   // See blink::LocalFrame::AdEvidence()
   virtual const absl::optional<blink::FrameAdEvidence>& AdEvidence() = 0;
 
+  // This is used to check if a script tagged as an ad is currently on the v8
+  // stack. This is the same method used to compute the below bit which will
+  // persist.
+  virtual bool IsAdScriptInStack() const = 0;
+
   // True iff a script tagged as an ad was on the v8 stack when the frame was
   // created and the frame is a subframe. This is not currently propagated when
   // a frame navigates cross-origin.
-  // TODO(crbug.com/1145634): propagate this bit for a frame that navigates
-  // cross-origin.
   virtual bool IsSubframeCreatedByAdScript() = 0;
 
   // User activation -----------------------------------------------------------

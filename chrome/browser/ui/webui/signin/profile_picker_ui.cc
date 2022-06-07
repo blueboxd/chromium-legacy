@@ -44,6 +44,10 @@
 #include "ui/webui/mojo_web_ui_controller.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "ui/chromeos/devicetype_utils.h"
+#endif
+
 namespace {
 
 // Miniumum size for the picker UI.
@@ -55,13 +59,12 @@ bool IsBrowserSigninAllowed() {
   const policy::PolicyMap& policies = policy_service->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
 
-  const base::Value* browser_signin_value =
-      policies.GetValue(policy::key::kBrowserSignin);
+  const base::Value* browser_signin_value = policies.GetValue(
+      policy::key::kBrowserSignin, base::Value::Type::INTEGER);
 
   if (!browser_signin_value)
     return true;
 
-  DCHECK(browser_signin_value->is_int());
   return static_cast<policy::BrowserSigninMode>(
              browser_signin_value->GetInt()) !=
          policy::BrowserSigninMode::kDisabled;
@@ -243,6 +246,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE),
       l10n_util::GetStringUTF16(IDS_OS_SETTINGS_PEOPLE_V2));
   html_source->AddString("removeWarningProfileLacros", remove_warning_profile);
+  html_source->AddString("deviceType", ui::GetChromeOSDeviceName());
 #endif
 
   // Add policies.

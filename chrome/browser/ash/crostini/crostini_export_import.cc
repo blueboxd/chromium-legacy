@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
@@ -132,8 +131,11 @@ CrostiniExportImport::OperationData* CrostiniExportImport::NewOperationData(
   return NewOperationData(type, ContainerId::GetDefault());
 }
 
-void CrostiniExportImport::ExportContainer(content::WebContents* web_contents) {
-  OpenFileDialog(NewOperationData(ExportImportType::EXPORT), web_contents);
+void CrostiniExportImport::ExportContainer(ContainerId container_id,
+                                           content::WebContents* web_contents) {
+  OpenFileDialog(
+      NewOperationData(ExportImportType::EXPORT, std::move(container_id)),
+      web_contents);
 }
 
 void CrostiniExportImport::ImportContainer(content::WebContents* web_contents) {
@@ -301,24 +303,53 @@ void CrostiniExportImport::Start(
               },
               path),
           base::BindOnce(
-              &guest_os::GuestOsSharePath::SharePath,
-              base::Unretained(
-                  guest_os::GuestOsSharePath::GetForProfile(profile_)),
-              kCrostiniDefaultVmName, path, false,
+              &CrostiniExportImport::EnsureLxdStartedThenSharePath,
+              weak_ptr_factory_.GetWeakPtr(), operation_data->container_id,
+              path, false,
               base::BindOnce(&CrostiniExportImport::ExportAfterSharing,
                              weak_ptr_factory_.GetWeakPtr(),
                              operation_data->container_id, path,
                              std::move(callback))));
       break;
     case ExportImportType::IMPORT:
-      guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
-          kCrostiniDefaultVmName, path, false,
+      CrostiniExportImport::EnsureLxdStartedThenSharePath(
+          operation_data->container_id, path, false,
           base::BindOnce(&CrostiniExportImport::ImportAfterSharing,
                          weak_ptr_factory_.GetWeakPtr(),
                          operation_data->container_id, path,
                          std::move(callback)));
       break;
   }
+}
+
+void CrostiniExportImport::EnsureLxdStartedThenSharePath(
+    const ContainerId& container_id,
+    const base::FilePath& path,
+    bool persist,
+    guest_os::GuestOsSharePath::SharePathCallback callback) {
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+  crostini::CrostiniManager::RestartOptions options;
+  options.stop_after_lxd_available = true;
+  crostini_manager->RestartCrostiniWithOptions(
+      container_id, std::move(options),
+      base::BindOnce(&CrostiniExportImport::SharePath,
+                     weak_ptr_factory_.GetWeakPtr(), container_id.vm_name, path,
+                     std::move(callback)));
+}
+
+void CrostiniExportImport::SharePath(
+    const std::string& vm_name,
+    const base::FilePath& path,
+    guest_os::GuestOsSharePath::SharePathCallback callback,
+    crostini::CrostiniResult result) {
+  if (result != CrostiniResult::SUCCESS) {
+    std::move(callback).Run(
+        base::FilePath(), false,
+        base::StringPrintf("VM could not be started: %d", result));
+    return;
+  }
+  guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
+      vm_name, path, false, std::move(callback));
 }
 
 void CrostiniExportImport::ExportAfterSharing(
@@ -341,7 +372,7 @@ void CrostiniExportImport::ExportAfterSharing(
     return;
   }
   CrostiniManager::GetForProfile(profile_)->ExportLxdContainer(
-      ContainerId::GetDefault(), container_path,
+      container_id, container_path,
       base::BindOnce(&CrostiniExportImport::OnExportComplete,
                      weak_ptr_factory_.GetWeakPtr(), base::Time::Now(),
                      container_id, std::move(callback)));
@@ -477,7 +508,7 @@ void CrostiniExportImport::ImportAfterSharing(
     return;
   }
   CrostiniManager::GetForProfile(profile_)->ImportLxdContainer(
-      ContainerId::GetDefault(), container_path,
+      container_id, container_path,
       base::BindOnce(&CrostiniExportImport::OnImportComplete,
                      weak_ptr_factory_.GetWeakPtr(), base::Time::Now(),
                      container_id, std::move(callback)));

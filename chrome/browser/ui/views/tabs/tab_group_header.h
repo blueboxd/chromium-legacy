@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -14,7 +15,7 @@
 #include "ui/views/view_targeter_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-class TabStrip;
+class TabSlotController;
 struct TabSizeInfo;
 
 namespace views {
@@ -31,7 +32,8 @@ class TabGroupHeader : public TabSlotView,
  public:
   METADATA_HEADER(TabGroupHeader);
 
-  TabGroupHeader(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
+  TabGroupHeader(TabSlotController* tab_slot_controller,
+                 const tab_groups::TabGroupId& group);
   TabGroupHeader(const TabGroupHeader&) = delete;
   TabGroupHeader& operator=(const TabGroupHeader&) = delete;
   ~TabGroupHeader() override;
@@ -64,6 +66,8 @@ class TabGroupHeader : public TabSlotView,
   // for our group.
   void VisualsChanged();
 
+  int GetCollapsedHeaderWidth() const;
+
   // Removes {editor_bubble_tracker_} from observing the widget.
   void RemoveObserverFromWidget(views::Widget* widget);
 
@@ -77,7 +81,7 @@ class TabGroupHeader : public TabSlotView,
   // collapsed.
   void LogCollapseTime();
 
-  const raw_ptr<TabStrip> tab_strip_;
+  const raw_ptr<TabSlotController> tab_slot_controller_;
 
   raw_ptr<views::View> title_chip_;
   raw_ptr<views::Label> title_;

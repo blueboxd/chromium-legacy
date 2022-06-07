@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
-
-// #import {PermissionType, TriState, FakePageHandler, AppManagementStore, updateSelectedAppId, createTriStatePermission} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {flushTasks} from 'chrome://test/test_util.js';
-// #import {setupFakeHandler, replaceStore, replaceBody, getPermissionToggleByType } from './test_util.m.js';
-// clang-format on
-
 'use strict';
+
+import {PermissionType, TriState, FakePageHandler, AppManagementStore, updateSelectedAppId, createTriStatePermission} from 'chrome://os-settings/chromeos/os_settings.js';
+import {flushTasks} from 'chrome://test/test_util.js';
+import {setupFakeHandler, replaceStore, replaceBody, getPermissionToggleByType} from './test_util.js';
 
 suite('<app-management-managed-apps>', () => {
   let appDetailView;
@@ -32,16 +28,14 @@ suite('<app-management-managed-apps>', () => {
       isPinned: appManagement.mojom.OptionalBool.kTrue,
       isPolicyPinned: appManagement.mojom.OptionalBool.kTrue,
       installReason: appManagement.mojom.InstallReason.kPolicy,
-      permissions: app_management.FakePageHandler.createWebPermissions(
-          permissionOptions),
+      permissions: FakePageHandler.createWebPermissions(permissionOptions),
     };
     const app = await fakeHandler.addApp(null, policyAppOptions);
     // Select created app.
-    app_management.AppManagementStore.getInstance().dispatch(
-        app_management.actions.updateSelectedAppId(app.id));
+    AppManagementStore.getInstance().dispatch(updateSelectedAppId(app.id));
     appDetailView = document.createElement('app-management-pwa-detail-view');
     replaceBody(appDetailView);
-    await test_util.flushTasks();
+    await flushTasks();
   });
 
   // TODO(crbug.com/999412): rewrite test.
@@ -49,17 +43,17 @@ suite('<app-management-managed-apps>', () => {
     const uninstallWrapper =
         appDetailView.$$('app-management-detail-view-header')
             .$$('#uninstall-wrapper');
-    expectTrue(!!uninstallWrapper.querySelector('#policy-indicator'));
+    assertTrue(!!uninstallWrapper.querySelector('#policy-indicator'));
   });
 
   test('Permission toggles affected by policy', () => {
     function checkToggle(permissionType, policyAffected) {
       const permissionToggle =
           getPermissionToggleByType(appDetailView, permissionType);
-      expectTrue(
+      assertTrue(
           permissionToggle.shadowRoot.querySelector('cr-toggle').disabled ===
           policyAffected);
-      expectTrue(
+      assertTrue(
           !!permissionToggle.root.querySelector('#policyIndicator') ===
           policyAffected);
     }
@@ -72,8 +66,8 @@ suite('<app-management-managed-apps>', () => {
   test('Pin to shelf toggle effected by policy', () => {
     const pinToShelfSetting = appDetailView.$$('#pin-to-shelf-setting')
                                   .$$('app-management-toggle-row');
-    expectTrue(!!pinToShelfSetting.root.querySelector('#policyIndicator'));
-    expectTrue(
+    assertTrue(!!pinToShelfSetting.root.querySelector('#policyIndicator'));
+    assertTrue(
         pinToShelfSetting.shadowRoot.querySelector('cr-toggle').disabled);
   });
 });

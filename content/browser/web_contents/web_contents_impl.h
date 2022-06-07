@@ -106,7 +106,6 @@ namespace {
 class JavaScriptDialogDismissNotifier;
 }
 enum class PictureInPictureResult;
-class AgentSchedulingGroupHost;
 class BeforeUnloadBlockingDelegate;  // content_browser_test_utils_internal.h
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
@@ -570,7 +569,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                   cc::BrowserControlsState current,
                                   bool animate) override;
   void SetTabSwitchStartTime(base::TimeTicks start_time,
-                             bool destination_is_loaded) final;
+                             bool destination_is_loaded) override;
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;
@@ -589,7 +588,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       blink::mojom::NavigationBlockedReason reason) override;
   void OnDidFinishLoad(RenderFrameHostImpl* render_frame_host,
                        const GURL& url) override;
-  void OnManifestUrlChanged(const PageImpl& page) override;
+  void OnManifestUrlChanged(PageImpl& page) override;
   void RenderFrameCreated(RenderFrameHostImpl* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHostImpl* render_frame_host) override;
   void ShowContextMenu(
@@ -748,7 +747,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsTransientAllowFullscreenActive() const override;
   bool IsBackForwardCacheSupported() override;
   RenderWidgetHostImpl* CreateNewPopupWidget(
-      AgentSchedulingGroupHost& agent_scheduling_group,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t route_id,
       mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
           blink_popup_widget_host,
@@ -961,6 +960,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameProxyHost* render_frame_proxy_host,
       blink::mojom::FrameVisibility visibility) override;
   void SendScreenRects() override;
+  void SendActiveState(bool active) override;
   TextInputManager* GetTextInputManager() override;
   bool IsWidgetForPrimaryMainFrame(
       RenderWidgetHostImpl* render_widget_host) override;
@@ -2317,6 +2317,7 @@ class CONTENT_EXPORT WebContentsImpl::FriendWrapper {
   friend class TestNavigationObserver;
   friend class WebContentsAddedObserver;
   friend class ContentBrowserConsistencyChecker;
+  friend class CreateAndLoadWebContentsObserver;
 
   FriendWrapper();  // Not instantiable.
 

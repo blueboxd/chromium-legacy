@@ -116,11 +116,11 @@ void VirtualCardManualFallbackBubbleViews::Init() {
                  views::TableLayout::kFixedSize,
                  views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
       .AddRows(1, views::TableLayout::kFixedSize)  // Virtual card number.
-      .AddPaddingRow(views::GridLayout::kFixedSize, vertical_padding)
+      .AddPaddingRow(views::TableLayout::kFixedSize, vertical_padding)
       .AddRows(1, views::TableLayout::kFixedSize)  // Expiration date.
-      .AddPaddingRow(views::GridLayout::kFixedSize, vertical_padding)
+      .AddPaddingRow(views::TableLayout::kFixedSize, vertical_padding)
       .AddRows(1, views::TableLayout::kFixedSize)  // Cardholder name.
-      .AddPaddingRow(views::GridLayout::kFixedSize, vertical_padding)
+      .AddPaddingRow(views::TableLayout::kFixedSize, vertical_padding)
       .AddRows(1, views::TableLayout::kFixedSize);  // CVC.
 
   // Virtual card number.
@@ -140,12 +140,10 @@ void VirtualCardManualFallbackBubbleViews::Init() {
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetCollapseMargins(true)
-      .SetDefault(views::kMarginsKey,
-                  gfx::Insets(
-                      /*vertical=*/0,
-                      /*horizontal=*/
-                      layout_provider->GetDistanceMetric(
-                          views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets::VH(0, layout_provider->GetDistanceMetric(
+                                 views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
   expiry_row->AddChildView(CreateRowItemButtonForField(
       VirtualCardManualFallbackBubbleField::kExpirationMonth));
   expiry_row->AddChildView(std::make_unique<views::Label>(u"/"));

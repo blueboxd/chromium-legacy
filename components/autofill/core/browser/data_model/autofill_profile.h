@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/address.h"
 #include "components/autofill/core/browser/data_model/autofill_data_model.h"
+#include "components/autofill/core/browser/data_model/birthdate.h"
 #include "components/autofill/core/browser/data_model/contact_info.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
@@ -70,9 +71,17 @@ class AutofillProfile : public AutofillDataModel {
                         ServerFieldTypeSet* matching_types) const override;
 
   std::u16string GetRawInfo(ServerFieldType type) const override;
+
+  int GetRawInfoAsInt(ServerFieldType type) const override;
+
   void SetRawInfoWithVerificationStatus(
       ServerFieldType type,
       const std::u16string& value,
+      structured_address::VerificationStatus status) override;
+
+  void SetRawInfoAsIntWithVerificationStatus(
+      ServerFieldType type,
+      int value,
       structured_address::VerificationStatus status) override;
 
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
@@ -213,10 +222,6 @@ class AutofillProfile : public AutofillDataModel {
   bool has_converted() const { return has_converted_; }
   void set_has_converted(bool has_converted) { has_converted_ = has_converted; }
 
-  base::WeakPtr<const AutofillProfile> GetWeakPtr() const {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   // Calls |FinalizeAfterImport()| on all |FormGroup| members that are
   // implemented using the hybrid-structure |AddressComponent|.
   // If possible, this will initiate the completion of the structure tree to
@@ -288,9 +293,9 @@ class AutofillProfile : public AutofillDataModel {
 
   // Utilities for listing and lookup of the data members that constitute
   // user-visible profile information.
-  std::array<const FormGroup*, 5> FormGroups() const {
+  std::array<const FormGroup*, 6> FormGroups() const {
     // Adjust the return type size as necessary.
-    return {&name_, &email_, &company_, &phone_number_, &address_};
+    return {&name_, &email_, &company_, &phone_number_, &address_, &birthdate_};
   }
 
   const FormGroup* FormGroupForType(const AutofillType& type) const;
@@ -305,6 +310,7 @@ class AutofillProfile : public AutofillDataModel {
   CompanyInfo company_;
   PhoneNumber phone_number_;
   Address address_;
+  Birthdate birthdate_;
 
   // The label is chosen by the user and can contain an arbitrary value.
   // However, there are two labels that play a special role to indicate that an
@@ -333,8 +339,6 @@ class AutofillProfile : public AutofillDataModel {
   // Only useful for SERVER_PROFILEs. Whether this server profile has been
   // converted to a local profile.
   bool has_converted_;
-
-  mutable base::WeakPtrFactory<AutofillProfile> weak_ptr_factory_{this};
 };
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -23,7 +24,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -353,10 +353,6 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   first_party_sets_ =
       std::make_unique<FirstPartySets>(params->first_party_sets_enabled);
-  if (first_party_sets_->is_enabled()) {
-    first_party_sets_->SetManuallySpecifiedSet(
-        command_line->GetSwitchValueASCII(switches::kUseFirstPartySet));
-  }
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   constexpr size_t kMaxSCTAuditingCacheEntries = 1024;
@@ -453,6 +449,12 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
 
   if (doh_probe_activator_)
     doh_probe_activator_->MaybeActivateDohProbes(network_context);
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  network_context->url_request_context()
+      ->transport_security_state()
+      ->SetCTEmergencyDisabled(!ct_enforcement_enabled_);
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 }
 
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
@@ -713,7 +715,8 @@ void NetworkService::ConfigureSCTAuditing(
 }
 
 void NetworkService::UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
-                                     base::Time update_time) {
+                                     base::Time update_time,
+                                     UpdateCtLogListCallback callback) {
   log_list_ = std::move(log_list);
   ct_log_list_update_time_ = update_time;
 
@@ -728,22 +731,29 @@ void NetworkService::UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
           ->SetCTLogListUpdateTime(update_time);
     }
   }
+  std::move(callback).Run();
 }
 
 void NetworkService::UpdateCtKnownPopularSCTs(
-    const std::vector<std::vector<uint8_t>>& sct_hashes) {
+    const std::vector<std::vector<uint8_t>>& sct_hashes,
+    UpdateCtLogListCallback callback) {
   sct_auditing_cache_->set_popular_scts(std::move(sct_hashes));
+  std::move(callback).Run();
 }
 
-void NetworkService::SetCtEnforcementEnabled(bool enabled) {
+void NetworkService::SetCtEnforcementEnabled(
+    bool enabled,
+    SetCtEnforcementEnabledCallback callback) {
+  ct_enforcement_enabled_ = enabled;
   DCHECK(base::FeatureList::IsEnabled(
       certificate_transparency::features::
           kCertificateTransparencyComponentUpdater));
   for (auto* context : network_contexts_) {
     context->url_request_context()
         ->transport_security_state()
-        ->SetCTEmergencyDisabled(!enabled);
+        ->SetCTEmergencyDisabled(!ct_enforcement_enabled_);
   }
+  std::move(callback).Run();
 }
 
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
@@ -791,16 +801,9 @@ void NetworkService::BindTestInterface(
   }
 }
 
-void NetworkService::SetFirstPartySets(base::File sets_file) {
-  first_party_sets_->ParseAndSet(std::move(sets_file));
-}
-
-void NetworkService::SetPersistedFirstPartySetsAndGetCurrentSets(
-    const std::string& persisted_sets,
-    mojom::NetworkService::SetPersistedFirstPartySetsAndGetCurrentSetsCallback
-        callback) {
-  first_party_sets_->SetPersistedSetsAndOnSiteDataCleared(persisted_sets,
-                                                          std::move(callback));
+void NetworkService::SetFirstPartySets(
+    const base::flat_map<net::SchemefulSite, net::SchemefulSite>& sets) {
+  first_party_sets_->SetCompleteSets(sets);
 }
 
 void NetworkService::SetExplicitlyAllowedPorts(

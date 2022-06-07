@@ -16,6 +16,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
+#include "chrome/browser/navigation_predictor/anchor_element_preloader.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/predictors/network_hints_handler_impl.h"
@@ -78,13 +79,13 @@
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/credentialmanagement/credential_manager.mojom.h"
+#include "third_party/blink/public/mojom/loader/anchor_element_interaction_host.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_credential.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
 #include "chrome/browser/android/contextualsearch/unhandled_tap_notifier_impl.h"
@@ -125,6 +126,7 @@
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #else
 #include "chrome/browser/accessibility/live_caption_speech_recognition_host.h"
+#include "chrome/browser/accessibility/live_caption_unavailability_notifier.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/cart/commerce_hint_service.h"
@@ -158,7 +160,7 @@
 #include "chrome/browser/ui/webui/read_later/read_later.mojom.h"
 #include "chrome/browser/ui/webui/read_later/read_later_ui.h"
 #include "chrome/browser/ui/webui/read_later/side_panel/bookmarks_side_panel_ui.h"
-#include "chrome/browser/ui/webui/read_later/side_panel/reader_mode/reader_mode_side_panel_ui.h"
+#include "chrome/browser/ui/webui/read_later/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
@@ -169,6 +171,7 @@
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
 #include "ui/webui/resources/cr_components/most_visited/most_visited.mojom.h"
 #include "ui/webui/resources/js/browser_command/browser_command.mojom.h"
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -272,11 +275,6 @@
 #include "chrome/browser/apps/digital_goods/digital_goods_factory_stub.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#include "components/services/screen_ai/public/cpp/screen_ai_service_router.h"
-#include "components/services/screen_ai/public/cpp/screen_ai_service_router_factory.h"
-#endif
-
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
@@ -340,7 +338,6 @@ void BindUnhandledTapWebContentsObserver(
     return;
 
   contextual_search::CreateUnhandledTapNotifierImpl(
-      unhandled_tap_notifier_observer->device_scale_factor(),
       unhandled_tap_notifier_observer->unhandled_tap_callback(),
       std::move(receiver));
 }
@@ -583,15 +580,19 @@ void BindSpeechRecognitionRecognizerClientHandler(
                                                        std::move(receiver));
   }
 }
-#endif
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-void BindScreenAIAnnotator(
+void BindMediaFoundationRendererNotifierHandler(
     content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<screen_ai::mojom::ScreenAIAnnotator> receiver) {
-  ScreenAIServiceRouterFactory::GetForBrowserContext(
-      frame_host->GetProcess()->GetBrowserContext())
-      ->BindScreenAIAnnotator(std::move(receiver));
+    mojo::PendingReceiver<media::mojom::MediaFoundationRendererNotifier>
+        receiver) {
+  Profile* profile = Profile::FromBrowserContext(
+      frame_host->GetProcess()->GetBrowserContext());
+  PrefService* profile_prefs = profile->GetPrefs();
+  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled) &&
+      media::IsLiveCaptionFeatureEnabled()) {
+    captions::LiveCaptionUnavailabilityNotifier::Create(frame_host,
+                                                        std::move(receiver));
+  }
 }
 #endif
 
@@ -614,6 +615,12 @@ void PopulateChromeFrameBinders(
 
   map->Add<blink::mojom::AnchorElementMetricsHost>(
       base::BindRepeating(&NavigationPredictor::Create));
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kAnchorElementInteraction)) {
+    map->Add<blink::mojom::AnchorElementInteractionHost>(
+        base::BindRepeating(&AnchorElementPreloader::Create));
+  }
 
   map->Add<dom_distiller::mojom::DistillabilityService>(
       base::BindRepeating(&BindDistillabilityService));
@@ -714,6 +721,8 @@ void PopulateChromeFrameBinders(
       base::BindRepeating(&BindSpeechRecognitionClientBrowserInterfaceHandler));
   map->Add<media::mojom::SpeechRecognitionRecognizerClient>(
       base::BindRepeating(&BindSpeechRecognitionRecognizerClientHandler));
+  map->Add<media::mojom::MediaFoundationRendererNotifier>(
+      base::BindRepeating(&BindMediaFoundationRendererNotifierHandler));
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
@@ -730,13 +739,6 @@ void PopulateChromeFrameBinders(
       render_frame_host->IsInPrimaryMainFrame()) {
     map->Add<blink::mojom::SubAppsService>(
         base::BindRepeating(&web_app::SubAppsServiceImpl::CreateIfAllowed));
-  }
-#endif
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(features::kScreenAI)) {
-    map->Add<screen_ai::mojom::ScreenAIAnnotator>(
-        base::BindRepeating(&BindScreenAIAnnotator));
   }
 #endif
 }
@@ -854,35 +856,30 @@ void PopulateChromeWebUIFrameBinders(
                                            NewTabPageUI>(map);
   }
 
-  if (base::FeatureList::IsEnabled(ntp_features::kNtpRecipeTasksModule) ||
-      base::FeatureList::IsEnabled(ntp_features::kNtpShoppingTasksModule)) {
+  if (base::FeatureList::IsEnabled(ntp_features::kNtpRecipeTasksModule)) {
     RegisterWebUIControllerInterfaceBinder<
         task_module::mojom::TaskModuleHandler, NewTabPageUI>(map);
   }
 
-  if (reading_list::switches::IsReadingListEnabled()) {
+  RegisterWebUIControllerInterfaceBinder<read_later::mojom::PageHandlerFactory,
+                                         ReadLaterUI>(map);
+
+  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
     RegisterWebUIControllerInterfaceBinder<
-        read_later::mojom::PageHandlerFactory, ReadLaterUI>(map);
+        side_panel::mojom::BookmarksPageHandlerFactory, BookmarksSidePanelUI>(
+        map);
+  } else {
+    RegisterWebUIControllerInterfaceBinder<
+        side_panel::mojom::BookmarksPageHandlerFactory, ReadLaterUI>(map);
   }
 
-  if (base::FeatureList::IsEnabled(features::kSidePanel)) {
+  if (features::IsReadAnythingEnabled()) {
     if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
       RegisterWebUIControllerInterfaceBinder<
-          side_panel::mojom::BookmarksPageHandlerFactory, BookmarksSidePanelUI>(
-          map);
+          read_anything::mojom::PageHandlerFactory, ReadAnythingUI>(map);
     } else {
       RegisterWebUIControllerInterfaceBinder<
-          side_panel::mojom::BookmarksPageHandlerFactory, ReadLaterUI>(map);
-    }
-  }
-
-  if (features::IsReaderModeSidePanelEnabled()) {
-    if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-      RegisterWebUIControllerInterfaceBinder<
-          reader_mode::mojom::PageHandlerFactory, ReaderModeSidePanelUI>(map);
-    } else {
-      RegisterWebUIControllerInterfaceBinder<
-          reader_mode::mojom::PageHandlerFactory, ReadLaterUI>(map);
+          read_anything::mojom::PageHandlerFactory, ReadLaterUI>(map);
     }
   }
 
@@ -1067,21 +1064,21 @@ void PopulateChromeWebUIFrameBinders(
   if (chromeos::features::IsWallpaperWebUIEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::WallpaperProvider,
-        ash::PersonalizationAppUI>(map);
+        ash::personalization_app::PersonalizationAppUI>(map);
   }
 
   if (ash::features::IsPersonalizationHubEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::AmbientProvider,
-        ash::PersonalizationAppUI>(map);
+        ash::personalization_app::PersonalizationAppUI>(map);
 
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::ThemeProvider,
-        ash::PersonalizationAppUI>(map);
+        ash::personalization_app::PersonalizationAppUI>(map);
 
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::UserProvider,
-        ash::PersonalizationAppUI>(map);
+        ash::personalization_app::PersonalizationAppUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<

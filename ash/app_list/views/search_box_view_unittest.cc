@@ -42,6 +42,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
@@ -56,6 +57,29 @@
 namespace {
 // kBestMatch is the second result container for productivity launcher search.
 constexpr int kBestMatchIndex = 1;
+
+bool IsValidSearchBoxAccessibilityHint(const std::u16string& hint) {
+  SCOPED_TRACE(testing::Message() << "Hint Text: " << hint);
+  // Search box placeholder text is randomly selected for productivity
+  // launcher.
+  std::vector<std::u16string> possible_a11y_text = {
+      l10n_util::GetStringFUTF16(
+          IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
+          l10n_util::GetStringUTF16(
+              IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SHORTCUTS)),
+      l10n_util::GetStringFUTF16(
+          IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
+          l10n_util::GetStringUTF16(
+              IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SETTINGS)),
+      l10n_util::GetStringFUTF16(
+          IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
+          l10n_util::GetStringUTF16(IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TABS))};
+  // Check if the current accessibility text is one of the possible
+  // options.
+  return std::find(begin(possible_a11y_text), end(possible_a11y_text), hint) !=
+         possible_a11y_text.end();
+}
+
 }  // namespace
 
 namespace ash {
@@ -306,18 +330,19 @@ TEST_P(SearchBoxViewTest, SearchBoxInactiveByDefault) {
 }
 
 TEST_P(SearchBoxViewTest, AccessibilityHintRemovedWhenSearchBoxActive) {
-  EXPECT_EQ(view()->search_box()->GetAccessibleName(),
-            l10n_util::GetStringUTF16(
-                IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
-
-  SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   if (IsProductivityLauncherEnabled()) {
+    EXPECT_TRUE(IsValidSearchBoxAccessibilityHint(
+        view()->search_box()->GetAccessibleName()));
+    SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+    EXPECT_TRUE(IsValidSearchBoxAccessibilityHint(
+        view()->search_box()->GetAccessibleName()));
+  } else {
     EXPECT_EQ(view()->search_box()->GetAccessibleName(),
               l10n_util::GetStringUTF16(
                   IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
-
-  } else {
-    // In the non-bubble launcher, when the search box is active there are no
+    SetSearchBoxActive(
+        true, ui::ET_MOUSE_PRESSED);  // In the non-bubble launcher, when the
+                                      // search box is active there are no
     // apps to navigate with arrow keys, so remove the accessibility hint.
     EXPECT_EQ(view()->search_box()->GetAccessibleName(), u"");
   }
@@ -1249,9 +1274,9 @@ TEST_F(SearchBoxViewAppListBubbleTest, HasAccessibilityHintWhenActive) {
   GetAppListTestHelper()->ShowAppList();
   SearchBoxView* view = GetAppListTestHelper()->GetBubbleSearchBoxView();
   EXPECT_TRUE(view->is_search_box_active());
-  EXPECT_EQ(view->search_box()->GetAccessibleName(),
-            l10n_util::GetStringUTF16(
-                IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
+
+  EXPECT_TRUE(IsValidSearchBoxAccessibilityHint(
+      view->search_box()->GetAccessibleName()));
 }
 
 class SearchBoxViewAnimationTest : public AshTestBase {

@@ -24,6 +24,7 @@
 #include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
@@ -44,6 +45,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_utils.h"
 #include "media/audio/audio_manager.h"
@@ -1177,10 +1179,6 @@ void ContentBrowserClient::BlockBluetoothScanning(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin) {}
 
-bool ContentBrowserClient::ShouldLoadExtraIcuDataFile(std::string* split_name) {
-  return false;
-}
-
 bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
     content::BrowserContext* browser_context,
     const GURL& scope,
@@ -1313,11 +1311,6 @@ bool ContentBrowserClient::IsFindInPageDisabledForOrigin(
 
 void ContentBrowserClient::OnWebContentsCreated(WebContents* web_contents) {}
 
-void ContentBrowserClient::FlushBackgroundAttributions(
-    base::OnceClosure callback) {
-  std::move(callback).Run();
-}
-
 bool ContentBrowserClient::ShouldDisableOriginAgentClusterDefault(
     BrowserContext* browser_context) {
   return false;
@@ -1330,6 +1323,10 @@ bool ContentBrowserClient::ShouldPreconnectNavigation(
 
 bool ContentBrowserClient::IsFirstPartySetsEnabled() {
   return base::FeatureList::IsEnabled(features::kFirstPartySets);
+}
+
+base::Value::Dict ContentBrowserClient::GetFirstPartySetsOverrides() {
+  return base::Value::Dict();
 }
 
 mojom::AlternativeErrorPageOverrideInfoPtr

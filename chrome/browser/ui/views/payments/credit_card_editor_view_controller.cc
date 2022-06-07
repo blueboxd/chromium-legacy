@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -196,7 +197,7 @@ CreditCardEditorViewController::CreateHeaderView() {
   constexpr int kRowBottomPadding = 6;
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(kRowBottomPadding, kPaymentRequestRowHorizontalInsets),
+      gfx::Insets::VH(kRowBottomPadding, kPaymentRequestRowHorizontalInsets),
       kRowVerticalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(

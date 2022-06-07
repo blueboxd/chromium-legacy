@@ -41,10 +41,10 @@ InvalidationsMessageHandler::~InvalidationsMessageHandler() {
 }
 
 void InvalidationsMessageHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "doneLoading", base::BindRepeating(&InvalidationsMessageHandler::UIReady,
                                          base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "requestDetailedStatus",
       base::BindRepeating(
           &InvalidationsMessageHandler::HandleRequestDetailedStatus,
@@ -56,7 +56,7 @@ void InvalidationsMessageHandler::OnJavascriptDisallowed() {
     logger_->UnregisterObserver(this);
 }
 
-void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
+void InvalidationsMessageHandler::UIReady(const base::Value::List& args) {
   AllowJavascript();
   invalidation::ProfileInvalidationProvider* invalidation_provider =
       GetInvalidationProvider(Profile::FromWebUI(web_ui()));
@@ -70,7 +70,7 @@ void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
 }
 
 void InvalidationsMessageHandler::HandleRequestDetailedStatus(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   invalidation::ProfileInvalidationProvider* invalidation_provider =
       GetInvalidationProvider(Profile::FromWebUI(web_ui()));
   if (invalidation_provider) {
@@ -80,17 +80,16 @@ void InvalidationsMessageHandler::HandleRequestDetailedStatus(
   }
 }
 
-void InvalidationsMessageHandler::UpdateContent(const base::ListValue* args) {
+void InvalidationsMessageHandler::UpdateContent(const base::Value::List& args) {
   if (logger_)
     logger_->EmitContent();
 }
 
 void InvalidationsMessageHandler::OnRegistrationChange(
-    const std::multiset<std::string>& registered_handlers) {
+    const std::set<std::string>& registered_handlers) {
   base::ListValue list_of_handlers;
-  for (auto it = registered_handlers.begin(); it != registered_handlers.end();
-       ++it) {
-    list_of_handlers.Append(*it);
+  for (const auto& registered_handler : registered_handlers) {
+    list_of_handlers.Append(registered_handler);
   }
   FireWebUIListener("handlers-updated", list_of_handlers);
 }

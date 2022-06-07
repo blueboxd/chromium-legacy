@@ -16,6 +16,8 @@ module.exports = {
     // Enabled checks.
     'brace-style': ['error', '1tbs'],
     'curly': ['error', 'multi-line', 'consistent'],
+    'new-parens': 'error',
+    'no-console': ['error', {allow: ['info', 'warn', 'error', 'assert']}],
     'no-extra-boolean-cast': 'error',
     'no-extra-semi': 'error',
     'no-new-wrappers': 'error',
@@ -50,8 +52,11 @@ module.exports = {
         'message': 'Use ES modules or cr.define() instead',
       },
     ],
+    'no-throw-literal': 'error',
+    'no-trailing-spaces': 'error',
     'no-var': 'error',
     'prefer-const': 'error',
+    'quotes': ['error', 'single', {allowTemplateLiterals: true}],
     'semi': ['error', 'always'],
 
     // TODO(dpapad): Add more checks according to our styleguide.
@@ -70,7 +75,33 @@ module.exports = {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
         }
-      ]
+      ],
+
+      'semi': 'off',
+      '@typescript-eslint/semi': ['error'],
+
+      '@typescript-eslint/member-delimiter-style': ['error', {
+        multiline: {
+          delimiter: 'comma',
+          requireLast: true,
+        },
+        singleline: {
+          delimiter: 'comma',
+          requireLast: false,
+        },
+        overrides: {
+          interface: {
+            multiline: {
+              delimiter: 'semi',
+              requireLast: true,
+            },
+            singleline: {
+              delimiter: 'semi',
+              requireLast: false,
+            },
+          },
+        },
+      }]
     }
   }]
 };

@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -42,7 +43,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/script/script.h"
-#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
@@ -59,6 +59,7 @@ class ConsoleMessage;
 class FetchClientSettingsObjectSnapshot;
 class FontFaceSet;
 class FontMatchingMetrics;
+struct GlobalScopeCreationParams;
 class InstalledScriptsManager;
 class OffscreenFontSelector;
 class WorkerResourceTimingNotifier;

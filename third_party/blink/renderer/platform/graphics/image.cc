@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -110,13 +111,24 @@ scoped_refptr<Image> Image::LoadPlatformResource(
   return image;
 }
 
-// static
 PaintImage Image::ResizeAndOrientImage(
     const PaintImage& image,
     ImageOrientation orientation,
     gfx::Vector2dF image_scale,
     float opacity,
     InterpolationQuality interpolation_quality) {
+  return ResizeAndOrientImage(image, orientation, image_scale, opacity,
+                              interpolation_quality, nullptr);
+}
+
+// static
+PaintImage Image::ResizeAndOrientImage(
+    const PaintImage& image,
+    ImageOrientation orientation,
+    gfx::Vector2dF image_scale,
+    float opacity,
+    InterpolationQuality interpolation_quality,
+    sk_sp<SkColorSpace> color_space) {
   gfx::Size size(image.width(), image.height());
   size = gfx::ScaleToFlooredSize(size, image_scale.x(), image_scale.y());
   AffineTransform transform;
@@ -130,17 +142,24 @@ PaintImage Image::ResizeAndOrientImage(
   if (size.IsEmpty())
     return PaintImage();
 
-  if (transform.IsIdentity() && opacity == 1) {
+  const auto image_color_space = image.GetSkImageInfo().colorSpace()
+                                     ? image.GetSkImageInfo().refColorSpace()
+                                     : SkColorSpace::MakeSRGB();
+  const auto surface_color_space =
+      color_space ? color_space : image_color_space;
+  const bool needs_color_conversion =
+      !SkColorSpace::Equals(image_color_space.get(), surface_color_space.get());
+
+  if (transform.IsIdentity() && opacity == 1 && !needs_color_conversion) {
     // Nothing to adjust, just use the original.
     DCHECK_EQ(image.width(), size.width());
     DCHECK_EQ(image.height(), size.height());
     return image;
   }
 
-  const SkImageInfo info =
-      SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType,
-                           SkColorSpace::MakeSRGB());
-  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+  const SkImageInfo surface_info = SkImageInfo::MakeN32(
+      size.width(), size.height(), kPremul_SkAlphaType, surface_color_space);
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(surface_info);
   if (!surface)
     return PaintImage();
 
@@ -261,8 +280,7 @@ void Image::DrawPattern(GraphicsContext& context,
   gfx::RectF tile_rect(subset_rect);
   tile_rect.Scale(tiling_info.scale.x(), tiling_info.scale.y());
   tile_rect.Offset(tiling_info.phase.OffsetFromOrigin());
-  tile_rect.Outset(0, 0, tiling_info.spacing.width(),
-                   tiling_info.spacing.height());
+  tile_rect.set_size(tile_rect.size() + tiling_info.spacing);
 
   SkMatrix local_matrix;
   local_matrix.setTranslate(tile_rect.x(), tile_rect.y());

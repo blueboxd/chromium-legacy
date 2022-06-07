@@ -15,7 +15,9 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/webui_url_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -104,21 +106,21 @@ void ProfilePickerTurnSyncOnDelegate::ShowLoginError(
 void ProfilePickerTurnSyncOnDelegate::ShowMergeSyncDataConfirmation(
     const std::string& previous_email,
     const std::string& new_email,
-    TurnSyncOnHelper::SigninChoiceCallback callback) {
+    signin::SigninChoiceCallback callback) {
   // A brand new profile cannot have a conflict in sync accounts.
   NOTREACHED();
 }
 
 void ProfilePickerTurnSyncOnDelegate::ShowEnterpriseAccountConfirmation(
     const AccountInfo& account_info,
-    TurnSyncOnHelper::SigninChoiceCallback callback) {
+    signin::SigninChoiceCallback callback) {
   enterprise_account_ = true;
   // In this flow, the enterprise confirmation is replaced by an enterprise
   // welcome screen. Knowing if sync is enabled is needed for the screen. Thus,
   // it is delayed until either ShowSyncConfirmation() or
   // ShowSyncDisabledConfirmation() gets called.
   // Assume an implicit "Continue" here.
-  std::move(callback).Run(TurnSyncOnHelper::SIGNIN_CHOICE_CONTINUE);
+  std::move(callback).Run(signin::SIGNIN_CHOICE_CONTINUE);
   return;
 }
 
@@ -128,13 +130,23 @@ void ProfilePickerTurnSyncOnDelegate::ShowSyncConfirmation(
   DCHECK(callback);
   sync_confirmation_callback_ = std::move(callback);
 
-  if (enterprise_account_ || IsLacrosPrimaryProfileFirstRun(profile_)) {
-    // TODO(crbug.com/1300109): Add separate screen types for the enterprise and
-    // non-enterprise first run experience and implement those screen types.
-    // First show the enterprise welcome screen and only after that (if the user
-    // proceeds with the flow) the sync consent.
-    ShowEnterpriseWelcome(
-        EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncEnabled);
+  absl::optional<EnterpriseProfileWelcomeUI::ScreenType> welcome_screen_type;
+  if (IsLacrosPrimaryProfileFirstRun(profile_)) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    welcome_screen_type =
+        enterprise_account_
+            ? EnterpriseProfileWelcomeUI::ScreenType::kLacrosEnterpriseWelcome
+            : EnterpriseProfileWelcomeUI::ScreenType::kLacrosConsumerWelcome;
+#endif
+  } else if (enterprise_account_) {
+    welcome_screen_type =
+        EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncEnabled;
+  }
+
+  if (welcome_screen_type) {
+    // First show the welcome screen and only after that (if the user proceeds
+    // with the flow) the sync consent.
+    ShowEnterpriseWelcome(*welcome_screen_type);
     return;
   }
 
@@ -223,8 +235,8 @@ void ProfilePickerTurnSyncOnDelegate::ShowEnterpriseWelcome(
 
 void ProfilePickerTurnSyncOnDelegate::OnEnterpriseWelcomeClosed(
     EnterpriseProfileWelcomeUI::ScreenType type,
-    bool proceed) {
-  if (!proceed) {
+    signin::SigninChoice choice) {
+  if (choice == signin::SIGNIN_CHOICE_CANCEL) {
     LogOutcome(ProfileMetrics::ProfileSignedInFlowOutcome::
                    kAbortedOnEnterpriseWelcome);
     // The callback provided by TurnSyncOnHelper must be called, UI_CLOSED
@@ -236,8 +248,14 @@ void ProfilePickerTurnSyncOnDelegate::OnEnterpriseWelcomeClosed(
     return;
   }
 
+  DCHECK_EQ(choice, signin::SIGNIN_CHOICE_NEW_PROFILE);
+
   switch (type) {
     case EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncEnabled:
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    case EnterpriseProfileWelcomeUI::ScreenType::kLacrosConsumerWelcome:
+    case EnterpriseProfileWelcomeUI::ScreenType::kLacrosEnterpriseWelcome:
+#endif
       ShowSyncConfirmationScreen();
       return;
     case EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncDisabled:

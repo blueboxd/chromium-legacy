@@ -53,9 +53,9 @@ void EmptyNetworkManager::StopUpdating() {
   DCHECK_GE(start_count_, 0);
 }
 
-void EmptyNetworkManager::GetNetworks(NetworkList* networks) const {
+std::vector<const rtc::Network*> EmptyNetworkManager::GetNetworks() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  networks->clear();
+  return {};
 }
 
 bool EmptyNetworkManager::GetDefaultLocalAddress(

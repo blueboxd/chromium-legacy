@@ -259,7 +259,7 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
 
   display_->Resize(viewport);
   auto now = base::TimeTicks::Now();
-  display_->DrawAndSwap(now, now);
+  display_->DrawAndSwap({now, now});
 }
 
 void HardwareRendererViz::OnViz::PostDrawOnViz(
@@ -358,7 +358,7 @@ void HardwareRendererViz::DrawAndSwap(const HardwareRendererDrawParams& params,
   viz::FrameTimingDetailsMap timing_details;
 
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
-  transform.matrix().setColMajorf(params.transform);
+  transform.matrix().setColMajor(params.transform);
   transform.Translate(scroll_offset_.x(), scroll_offset_.y());
 
   gfx::Size viewport(params.width, params.height);

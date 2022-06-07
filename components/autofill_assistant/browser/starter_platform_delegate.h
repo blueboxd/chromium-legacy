@@ -85,12 +85,22 @@ class StarterPlatformDelegate {
   // TODO(arbesser): Move this out of the platform delegate.
   // Returns whether the MSBB seetting is enabled.
   virtual bool GetMakeSearchesAndBrowsingBetterEnabled() const = 0;
+  // Returns whether the user is logged in or not.
+  virtual bool GetIsLoggedIn() = 0;
   // Returns whether this is a custom tab or not.
   virtual bool GetIsCustomTab() const = 0;
+  // Returns whether this is running in WebLayer or not.
+  virtual bool GetIsWebLayer() const = 0;
   // Returns whether the tab was created by GSA or not.
   virtual bool GetIsTabCreatedByGSA() const = 0;
   // Creates the util for registering synthetic field trials.
   virtual std::unique_ptr<AssistantFieldTrialUtil> CreateFieldTrialUtil() = 0;
+  // Whether the starter platform delegate is currently attached.
+  // The starter platform delegate should only be interacted with while attached
+  // as it might not be able to perform its functions while detached.
+  virtual bool IsAttached() = 0;
+
+  virtual base::WeakPtr<StarterPlatformDelegate> GetWeakPtr() = 0;
 };
 
 }  // namespace autofill_assistant

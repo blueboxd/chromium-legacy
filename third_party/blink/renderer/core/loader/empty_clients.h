@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "base/notreached.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/trees/paint_holding_reason.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -331,8 +332,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   RemoteFrame* CreateFencedFrame(
       HTMLFencedFrameElement*,
-      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>)
-      override;
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>,
+      mojom::blink::FencedFrameMode) override;
 
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,

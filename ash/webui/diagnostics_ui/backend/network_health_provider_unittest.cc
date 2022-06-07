@@ -5,7 +5,7 @@
 #include "ash/webui/diagnostics_ui/backend/network_health_provider.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/webui/diagnostics_ui/backend/networking_log.h"
+#include "ash/system/diagnostics/networking_log.h"
 #include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -1390,10 +1390,7 @@ TEST_F(NetworkHealthProviderTest, NetworkingLog) {
 TEST_F(NetworkHealthProviderTest, ResetReceiverOnDisconnect) {
   // Ensure required features are enabled before binding to avoid DCHECK.
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      std::vector<base::Feature>{features::kDiagnosticsAppNavigation,
-                                 features::kEnableNetworkingInDiagnosticsApp},
-      std::vector<base::Feature>{});
+  features.InitAndEnableFeature(features::kEnableNetworkingInDiagnosticsApp);
   ASSERT_FALSE(network_health_provider_->ReceiverIsBound());
   mojo::Remote<mojom::NetworkHealthProvider> remote;
   network_health_provider_->BindInterface(remote.BindNewPipeAndPassReceiver());

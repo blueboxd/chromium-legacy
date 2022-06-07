@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 
+#include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/sys/cpp/outgoing_directory.h>
@@ -14,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/important_file_writer_cleaner.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -27,6 +29,7 @@
 #include "base/system/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -38,7 +41,6 @@
 #include "content/public/common/result_codes.h"
 #include "fuchsia/base/inspect.h"
 #include "fuchsia/base/legacymetrics_client.h"
-#include "fuchsia/engine/browser/cdm_provider_service.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
@@ -46,9 +48,11 @@
 #include "fuchsia/engine/common/cast_streaming.h"
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "media/fuchsia/cdm/service/fuchsia_cdm_manager.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "ui/aura/screen_ozone.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/switches.h"
@@ -74,6 +78,58 @@ void FetchHistogramsFromChildProcesses(
       base::BindOnce(std::move(done_cb),
                      std::vector<fuchsia::legacymetrics::Event>()),
       kChildProcessHistogramFetchTimeout);
+}
+
+template <typename KeySystemInterface>
+fidl::InterfaceHandle<fuchsia::media::drm::KeySystem> ConnectToKeySystem() {
+  static_assert(
+      (std::is_same<KeySystemInterface, fuchsia::media::drm::Widevine>::value ||
+       std::is_same<KeySystemInterface, fuchsia::media::drm::PlayReady>::value),
+      "KeySystemInterface must be either fuchsia::media::drm::Widevine or "
+      "fuchsia::media::drm::PlayReady");
+
+  fidl::InterfaceHandle<fuchsia::media::drm::KeySystem> key_system;
+  base::ComponentContextForProcess()->svc()->Connect(key_system.NewRequest(),
+                                                     KeySystemInterface::Name_);
+  return key_system;
+}
+
+std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
+  media::FuchsiaCdmManager::CreateKeySystemCallbackMap
+      create_key_system_callbacks;
+
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableWidevine)) {
+    create_key_system_callbacks.emplace(
+        kWidevineKeySystem,
+        base::BindRepeating(
+            &ConnectToKeySystem<fuchsia::media::drm::Widevine>));
+  }
+
+  std::string playready_key_system =
+      command_line->GetSwitchValueASCII(switches::kPlayreadyKeySystem);
+  if (!playready_key_system.empty()) {
+    create_key_system_callbacks.emplace(
+        playready_key_system,
+        base::BindRepeating(
+            &ConnectToKeySystem<fuchsia::media::drm::PlayReady>));
+  }
+
+  std::string cdm_data_directory =
+      command_line->GetSwitchValueASCII(switches::kCdmDataDirectory);
+
+  absl::optional<uint64_t> cdm_data_quota_bytes;
+  if (command_line->HasSwitch(switches::kCdmDataQuotaBytes)) {
+    uint64_t value = 0;
+    CHECK(base::StringToUint64(
+        command_line->GetSwitchValueASCII(switches::kCdmDataQuotaBytes),
+        &value));
+    cdm_data_quota_bytes = value;
+  }
+
+  return std::make_unique<media::FuchsiaCdmManager>(
+      std::move(create_key_system_callbacks),
+      base::FilePath(cdm_data_directory), cdm_data_quota_bytes);
 }
 
 // Implements the fuchsia.web.FrameHost protocol using a ContextImpl with
@@ -104,6 +160,29 @@ class FrameHostImpl final : public fuchsia::web::FrameHost {
   ContextImpl context_;
 };
 
+// Checks the supported ozone platform with Scenic if no arg is specified
+// already.
+void MaybeSetOzonePlatformArg(base::CommandLine* launch_args) {
+  if (launch_args->HasSwitch(switches::kOzonePlatform))
+    return;
+
+// TODO(crbug.com/1309100): Emulator on ARM hangs at the Scenic call because
+// there is no GPU emulation. We should add HEADLESS to those test
+// configurations and remove this.
+#if !defined(ARCH_CPU_ARM64)
+  fuchsia::ui::scenic::ScenicSyncPtr scenic;
+  zx_status_t status =
+      base::ComponentContextForProcess()->svc()->Connect(scenic.NewRequest());
+  ZX_CHECK(status == ZX_OK, status) << "Couldn't connect to Scenic.";
+
+  bool scenic_uses_flatland = false;
+  status = scenic->UsesFlatland(&scenic_uses_flatland);
+  ZX_CHECK(status == ZX_OK, status) << "UsesFlatland()";
+  launch_args->AppendSwitchNative(switches::kOzonePlatform,
+                                  scenic_uses_flatland ? "flatland" : "scenic");
+#endif
+}
+
 }  // namespace
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
@@ -122,6 +201,11 @@ WebEngineBrowserMainParts::browser_contexts() const {
   for (auto& binding : context_bindings_.bindings())
     contexts.push_back(binding->impl()->browser_context());
   return contexts;
+}
+
+int WebEngineBrowserMainParts::PreEarlyInitialization() {
+  MaybeSetOzonePlatformArg(base::CommandLine::ForCurrentProcess());
+  return content::BrowserMainParts::PreEarlyInitialization();
 }
 
 void WebEngineBrowserMainParts::PostEarlyInitialization() {
@@ -196,10 +280,9 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   screen_ = std::move(screen_ozone);
   display::Screen::SetScreenInstance(screen_.get());
 
-  // Create the CdmProviderService at startup rather than on-demand,
-  // to allow it to perform potentially expensive startup work in the
-  // background.
-  cdm_provider_service_ = std::make_unique<CdmProviderService>();
+  // Create the FuchsiaCdmManager at startup rather than on-demand, to allow it
+  // to perform potentially expensive startup work in the background.
+  cdm_manager_ = CreateCdmManager();
 
   // Disable RenderFrameHost's Javascript injection restrictions so that the
   // Context and Frames can implement their own JS injection policy at a higher

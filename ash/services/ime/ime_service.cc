@@ -81,6 +81,13 @@ void ImeService::BindInputEngineManager(
   manager_receivers_.Add(this, std::move(receiver));
 }
 
+void ImeService::ResetAllBackendConnections() {
+  decoder_engine_.reset();
+  system_engine_.reset();
+  rule_based_engine_.reset();
+  connection_factory_.reset();
+}
+
 void ImeService::ConnectToImeEngine(
     const std::string& ime_spec,
     mojo::PendingReceiver<mojom::InputChannel> to_engine_request,
@@ -97,12 +104,14 @@ void ImeService::ConnectToImeEngine(
   // The extension will only use ConnectToImeEngine, and NativeInputMethodEngine
   // will only use ConnectToInputMethod.
   if ((connection_factory_ && connection_factory_->IsConnected()) ||
-      (input_engine_ && input_engine_->IsConnected())) {
+      (system_engine_ && system_engine_->IsConnected()) ||
+      (rule_based_engine_ && rule_based_engine_->IsConnected())) {
     std::move(callback).Run(/*bound=*/false);
     return;
   }
 
-  input_engine_.reset();
+  ResetAllBackendConnections();
+
   decoder_engine_ = std::make_unique<DecoderEngine>(
       this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
   bool bound = decoder_engine_->BindRequest(
@@ -115,45 +124,45 @@ void ImeService::ConnectToInputMethod(
     mojo::PendingReceiver<mojom::InputMethod> input_method,
     mojo::PendingRemote<mojom::InputMethodHost> input_method_host,
     ConnectToInputMethodCallback callback) {
-  decoder_engine_.reset();
+  ResetAllBackendConnections();
 
   if (IsRuleBasedInputMethod(ime_spec)) {
-    input_engine_ = RuleBasedEngine::Create(ime_spec, std::move(input_method),
-                                            std::move(input_method_host));
-    std::move(callback).Run(/*bound=*/input_engine_ != nullptr);
-    return;
+    rule_based_engine_ = RuleBasedEngine::Create(
+        ime_spec, std::move(input_method), std::move(input_method_host));
+    std::move(callback).Run(/*bound=*/rule_based_engine_ != nullptr);
+  } else {
+    system_engine_ = std::make_unique<SystemEngine>(
+        this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
+    bool bound = system_engine_->BindRequest(ime_spec, std::move(input_method),
+                                             std::move(input_method_host));
+    std::move(callback).Run(bound);
   }
-
-  auto system_engine = std::make_unique<SystemEngine>(
-      this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
-  bool bound = system_engine->BindRequest(ime_spec, std::move(input_method),
-                                          std::move(input_method_host));
-  input_engine_ = std::move(system_engine);
-  std::move(callback).Run(bound);
 }
 
 void ImeService::InitializeConnectionFactory(
     mojo::PendingReceiver<mojom::ConnectionFactory> connection_factory,
     mojom::ConnectionTarget connection_target,
     InitializeConnectionFactoryCallback callback) {
-  // Drop any currently bound pipes.
-  connection_factory_.reset();
-  decoder_engine_.reset();
-  input_engine_.reset();
+  ResetAllBackendConnections();
 
-  if (connection_target == mojom::ConnectionTarget::kImeService) {
-    connection_factory_ =
-        std::make_unique<ConnectionFactory>(std::move(connection_factory));
-    std::move(callback).Run(/*success=*/true);
-    return;
+  switch (connection_target) {
+    case mojom::ConnectionTarget::kImeService: {
+      connection_factory_ =
+          std::make_unique<ConnectionFactory>(std::move(connection_factory));
+      std::move(callback).Run(/*success=*/true);
+      break;
+    }
+    case mojom::ConnectionTarget::kDecoder: {
+      system_engine_ = std::make_unique<SystemEngine>(
+          this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
+      bool bound =
+          system_engine_->BindConnectionFactory(std::move(connection_factory));
+      std::move(callback).Run(bound);
+      break;
+    }
+    default:
+      break;
   }
-
-  auto system_engine = std::make_unique<SystemEngine>(
-      this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
-  bool bound =
-      system_engine->BindConnectionFactory(std::move(connection_factory));
-  input_engine_ = std::move(system_engine);
-  std::move(callback).Run(bound);
 }
 
 const char* ImeService::GetImeBundleDir() {

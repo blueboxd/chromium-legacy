@@ -79,7 +79,7 @@ constexpr const char* MutatorIdToTracingString(
 }
 
 // Inject TRACE_EVENT_BEGIN/END, TRACE_COUNTER1, and UmaHistogramTimes.
-class StatsReporterImpl final : public StatsReporter {
+class StatsReporterImpl final : public partition_alloc::StatsReporter {
  public:
   void ReportTraceEvent(internal::StatsCollector::ScannerId id,
                         [[maybe_unused]] const PlatformThreadId tid,
@@ -147,8 +147,10 @@ void RegisterPCScanStatsReporter() {
 namespace {
 
 void RunThreadCachePeriodicPurge() {
+  // Micros, since periodic purge should typically take at most a few ms.
+  SCOPED_UMA_HISTOGRAM_TIMER_MICROS("Memory.PartitionAlloc.PeriodicPurge");
   TRACE_EVENT0("memory", "PeriodicPurge");
-  auto& instance = internal::ThreadCacheRegistry::Instance();
+  auto& instance = ::partition_alloc::ThreadCacheRegistry::Instance();
   instance.RunPeriodicPurge();
   TimeDelta delay =
       Microseconds(instance.GetPeriodicPurgeNextIntervalInMicroseconds());
@@ -175,7 +177,7 @@ void RunMemoryReclaimer(scoped_refptr<SequencedTaskRunner> task_runner) {
 }  // namespace
 
 void StartThreadCachePeriodicPurge() {
-  auto& instance = internal::ThreadCacheRegistry::Instance();
+  auto& instance = ::partition_alloc::ThreadCacheRegistry::Instance();
   TimeDelta delay =
       Microseconds(instance.GetPeriodicPurgeNextIntervalInMicroseconds());
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(

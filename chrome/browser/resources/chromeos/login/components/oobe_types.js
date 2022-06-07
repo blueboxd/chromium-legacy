@@ -160,11 +160,35 @@ OobeTypes.EnrollmentStep = {
   SUCCESS: 'success',
   CHECKING: 'checking',
   TPM_CHECKING: 'tpm-checking',
+  KIOSK_ENROLLMENT: 'kiosk-enrollment',
 
   /* TODO(dzhioev): define this step on C++ side.
    */
   ATTRIBUTE_PROMPT_ERROR: 'attribute-prompt-error',
   ACTIVE_DIRECTORY_JOIN_ERROR: 'active-directory-join-error',
+};
+
+/**
+ * Bottom buttons type of GAIA dialog.
+ * @enum {string}
+ */
+OobeTypes.GaiaDialogButtonsType = {
+  DEFAULT: 'default',
+  ENTERPRISE_PREFERRED: 'enterprise-preferred',
+  KIOSK_PREFERRED: 'kiosk-preferred',
+};
+
+/**
+ * Type of license used for enrollment.
+ * Numbers for supported licenses should be in sync with
+ * `LicenseType` from enrollment_config.h.
+ * @enum {number}
+ */
+OobeTypes.LicenseType = {
+  /* NONE: 0, not used in js */
+  ENTERPRISE: 1,
+  /* EDUCATION: 2, not used in js */
+  KIOSK: 3,
 };
 
 /**

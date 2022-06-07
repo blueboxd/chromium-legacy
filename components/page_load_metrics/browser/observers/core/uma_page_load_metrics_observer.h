@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_OBSERVERS_CORE_UMA_PAGE_LOAD_METRICS_OBSERVER_H_
 #define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_OBSERVERS_CORE_UMA_PAGE_LOAD_METRICS_OBSERVER_H_
 
+#include "base/time/time.h"
 #include "components/page_load_metrics/browser/observers/click_input_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "content/public/browser/navigation_handle_timing.h"
@@ -181,8 +182,7 @@ class UmaPageLoadMetricsObserver
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnRedirect(
       content::NavigationHandle* navigation_handle) override;
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
-                         ukm::SourceId source_id) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnDomContentLoadedEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadEventStart(

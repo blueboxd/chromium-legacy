@@ -5,10 +5,8 @@
 #include "ash/ambient/ui/ambient_animation_view.h"
 
 #include <algorithm>
-#include <cstdint>
 #include <cstdlib>
 #include <utility>
-#include <vector>
 
 #include "ash/ambient/model/ambient_animation_attribution_provider.h"
 #include "ash/ambient/model/ambient_backend_model.h"
@@ -24,7 +22,6 @@
 #include "ash/ambient/util/ambient_util.h"
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/containers/span.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -115,8 +112,8 @@ std::unique_ptr<views::Border> CreateGlanceableInfoBorder(
   int left_padding = kWeatherTimeBorderPaddingDip + jitter.x();
   DCHECK_GE(top_padding, 0);
   DCHECK_GE(left_padding, 0);
-  return views::CreateEmptyBorder(top_padding, left_padding,
-                                  /*bottom=*/0, /*right=*/0);
+  return views::CreateEmptyBorder(
+      gfx::Insets::TLBR(top_padding, left_padding, 0, 0));
 }
 
 // The border serves as padding between the MediaStringView and its
@@ -131,8 +128,8 @@ std::unique_ptr<views::Border> CreateMediaStringBorder(
       kMediaStringPaddingFromLeftDip + shadow_insets.left() + jitter.x();
   DCHECK_GE(bottom_padding, 0);
   DCHECK_GE(left_padding, 0);
-  return views::CreateEmptyBorder(/*top=*/0, left_padding, bottom_padding,
-                                  /*right=*/0);
+  return views::CreateEmptyBorder(
+      gfx::Insets::TLBR(0, left_padding, bottom_padding, 0));
 }
 
 }  // namespace
@@ -162,14 +159,9 @@ void AmbientAnimationView::Init(AmbientViewDelegate* view_delegate) {
 
   animated_image_view_ = animation_container_view->AddChildView(
       std::make_unique<views::AnimatedImageView>());
-  base::span<const uint8_t> lottie_data_bytes =
-      base::as_bytes(base::make_span(static_resources_->GetLottieData()));
-  // Create a serializable SkottieWrapper since the SkottieWrapper may have to
-  // be serialized and transmitted over IPC for out-of-process rasterization.
   auto animation = std::make_unique<lottie::Animation>(
-      cc::SkottieWrapper::CreateSerializable(std::vector<uint8_t>(
-          lottie_data_bytes.begin(), lottie_data_bytes.end())),
-      cc::SkottieColorMap(), &animation_photo_provider_);
+      static_resources_->GetSkottieWrapper(), cc::SkottieColorMap(),
+      &animation_photo_provider_);
   animation_observer_.Observe(animation.get());
   animated_image_view_->SetAnimatedImage(std::move(animation));
   animated_image_view_observer_.Observe(animated_image_view_);

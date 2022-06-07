@@ -15,10 +15,10 @@ import '../cros_button_style.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {assertInstanceof, assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {WithPersonalizationStore} from '../personalization_store.js';
 
+import {getTemplate} from './avatar_camera_element.html.js';
 import {saveCameraImage} from './user_controller.js';
 import {getUserProvider} from './user_interface_provider.js';
 import {GetUserMediaProxy, getWebcamUtils} from './webcam_utils_proxy.js';
@@ -58,7 +58,7 @@ function getCaptureSize(mode: AvatarCameraMode):
 }
 
 export interface AvatarCamera {
-  $: {dialog: CrDialogElement; webcamVideo: HTMLVideoElement;};
+  $: {dialog: CrDialogElement, webcamVideo: HTMLVideoElement};
 }
 
 export class AvatarCamera extends WithPersonalizationStore {
@@ -67,7 +67,7 @@ export class AvatarCamera extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -211,7 +211,7 @@ export class AvatarCamera extends WithPersonalizationStore {
 
   private getTakePhotoIcon_(mode: AvatarCameraMode): string {
     return mode === AvatarCameraMode.VIDEO ? 'personalization:loop' :
-                                             'personalization:camera';
+                                             'personalization:camera_compact';
   }
 
   private getTakePhotoText_(mode: AvatarCameraMode): string {

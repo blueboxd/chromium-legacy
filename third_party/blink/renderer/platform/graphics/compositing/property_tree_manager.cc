@@ -420,8 +420,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   cc::TransformNode& compositor_node = *transform_tree_.Node(id);
   UpdateCcTransformLocalMatrix(compositor_node, transform_node);
 
-  compositor_node.is_fixed_position =
-      transform_node.RequiresCompositingForFixedPosition();
+  compositor_node.is_fixed_to_viewport =
+      transform_node.RequiresCompositingForFixedToViewport();
   compositor_node.transform_changed = transform_node.NodeChangeAffectsRaster();
   compositor_node.flattens_inherited_transform =
       transform_node.FlattensInheritedTransform();
@@ -466,10 +466,10 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     }
     if (auto shifting_containing_block_element_id =
             sticky_data.constraints.nearest_element_shifting_containing_block) {
-      sticky_data.nearest_node_shifting_containing_block =
-          transform_tree_
-              .FindNodeFromElementId(shifting_containing_block_element_id)
-              ->id;
+      // TODO(crbug.com/1224888): Get rid of the nullptr check below:
+      if (cc::TransformNode* node = transform_tree_.FindNodeFromElementId(
+              shifting_containing_block_element_id))
+        sticky_data.nearest_node_shifting_containing_block = node->id;
     }
   }
 

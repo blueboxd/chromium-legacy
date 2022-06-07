@@ -45,9 +45,9 @@ OmniboxChipButton::OmniboxChipButton(PressedCallback callback,
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   // Equalizing padding on the left, right and between icon and label.
   SetImageLabelSpacing(kChipImagePadding);
-  SetCustomPadding(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
-                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left()));
+  SetCustomPadding(gfx::Insets::VH(
+      GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left()));
 
   constexpr auto kAnimationDuration = base::Milliseconds(350);
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
@@ -125,6 +125,12 @@ void OmniboxChipButton::SetTheme(Theme theme) {
   UpdateIconAndColors();
 }
 
+ui::ImageModel OmniboxChipButton::GetIconImageModel() const {
+  return ui::ImageModel::FromVectorIcon(
+      show_blocked_icon_ ? icon_off_ : icon_on_, GetTextAndIconColor(),
+      GetIconSize(), nullptr);
+}
+
 int OmniboxChipButton::GetIconSize() const {
   return GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
 }
@@ -133,10 +139,7 @@ void OmniboxChipButton::UpdateIconAndColors() {
   if (!GetWidget())
     return;
   SetEnabledTextColors(GetTextAndIconColor());
-  SetImageModel(views::Button::STATE_NORMAL,
-                ui::ImageModel::FromVectorIcon(
-                    show_blocked_icon_ ? icon_off_ : icon_on_,
-                    GetTextAndIconColor(), GetIconSize(), nullptr));
+  SetImageModel(views::Button::STATE_NORMAL, GetIconImageModel());
 }
 
 SkColor OmniboxChipButton::GetTextAndIconColor() const {

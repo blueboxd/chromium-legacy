@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "apps/app_lifetime_monitor_factory.h"
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/proximity_auth/proximity_auth_pref_names.h"
 #include "ash/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "ash/components/proximity_auth/proximity_auth_system.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_names.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_notification_controller.h"
+#include "chrome/browser/ash/login/easy_unlock/smartlock_feature_usage_metrics.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -40,7 +42,6 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -396,10 +397,6 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
   return true;
 }
 
-bool EasyUnlockServiceRegular::IsEligible() const {
-  return pref_manager_ && pref_manager_->IsSmartLockEligible();
-}
-
 bool EasyUnlockServiceRegular::IsEnabled() const {
   return multidevice_setup_client_->GetFeatureState(
              multidevice_setup::mojom::Feature::kSmartLock) ==
@@ -493,6 +490,19 @@ void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
       notification_controller_->ShowPairingChangeNotification();
     }
   }
+}
+
+void EasyUnlockServiceRegular::StartFeatureUsageMetrics() {
+  feature_usage_metrics_ =
+      std::make_unique<SmartLockFeatureUsageMetrics>(multidevice_setup_client_);
+
+  SmartLockMetricsRecorder::SetUsageRecorderInstance(
+      feature_usage_metrics_.get());
+}
+
+void EasyUnlockServiceRegular::StopFeatureUsageMetrics() {
+  feature_usage_metrics_.reset();
+  SmartLockMetricsRecorder::SetUsageRecorderInstance(nullptr);
 }
 
 void EasyUnlockServiceRegular::OnScreenDidLock(

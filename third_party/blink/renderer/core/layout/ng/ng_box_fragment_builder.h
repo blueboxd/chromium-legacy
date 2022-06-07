@@ -7,6 +7,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_data.h"
@@ -69,6 +70,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
         initial_fragment_geometry.border + initial_fragment_geometry.padding;
     border_scrollbar_padding_ =
         border_padding_ + initial_fragment_geometry.scrollbar;
+    original_border_scrollbar_padding_block_start_ =
+        border_scrollbar_padding_.block_start;
     if (space_) {
       child_available_size_ = CalculateChildAvailableSize(
           *space_, To<NGBlockNode>(node_), size_, border_scrollbar_padding_);
@@ -166,6 +169,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   const NGBoxStrut& BorderScrollbarPadding() const {
     DCHECK(initial_fragment_geometry_);
     return border_scrollbar_padding_;
+  }
+  LayoutUnit OriginalBorderScrollbarPaddingBlockStart() const {
+    return original_border_scrollbar_padding_block_start_;
   }
   // The child available-size is subtly different from the content-box size of
   // an element. For an anonymous-block the child available-size is equal to
@@ -481,7 +487,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     box_type_ = box_type;
   }
   bool IsFragmentainerBoxType() const {
-    return BoxType() == NGPhysicalFragment::kColumnBox;
+    NGPhysicalFragment::NGBoxType box_type = BoxType();
+    return box_type == NGPhysicalFragment::kColumnBox ||
+           box_type == NGPhysicalFragment::kPageBox;
   }
   void SetIsFieldsetContainer() { is_fieldset_container_ = true; }
   void SetIsTableNGPart() { is_table_ng_part_ = true; }
@@ -636,10 +644,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // any baselines, OOFs, etc, are also moved by the appropriate amount).
   void MoveChildrenInBlockDirection(LayoutUnit offset);
 
-  void SetMathItalicCorrection(LayoutUnit italic_correction);
+  void SetMathItalicCorrection(LayoutUnit italic_correction) {
+    math_italic_correction_ = italic_correction;
+  }
 
   void AdjustOffsetsForFragmentainerDescendant(
-      NGLogicalOutOfFlowPositionedNode& descendant,
+      NGLogicalOOFNodeForFragmentation& descendant,
       bool only_fixedpos_containing_block = false);
   void AdjustFixedposContainingBlockForFragmentainerDescendants();
   void AdjustFixedposContainingBlockForInnerMulticols();
@@ -666,6 +676,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   bool HasForcedBreak() const { return has_forced_break_; }
 
+  const NGBreakToken* LastChildBreakToken() const {
+    DCHECK(!child_break_tokens_.IsEmpty());
+    return child_break_tokens_.back().Get();
+  }
+
   void InsertLegacyPositionedObject(const NGBlockNode& positioned) const {
     positioned.InsertIntoLegacyPositionedObjectsOf(
         To<LayoutBlock>(layout_object_));
@@ -688,6 +703,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;
   NGBoxStrut border_padding_;
   NGBoxStrut border_scrollbar_padding_;
+  // We clamp the block-start of |border_scrollbar_padding_| after an item
+  // fragments. Store the original block-start, as well, for cases where it is
+  // needed.
+  LayoutUnit original_border_scrollbar_padding_block_start_;
   LogicalSize child_available_size_;
   LayoutUnit intrinsic_block_size_;
   absl::optional<LogicalRect> inflow_bounds_;
@@ -732,6 +751,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   absl::optional<LayoutUnit> baseline_;
   absl::optional<LayoutUnit> last_baseline_;
+  LayoutUnit math_italic_correction_;
 
   // Table specific types.
   absl::optional<PhysicalRect> table_grid_rect_;
@@ -756,7 +776,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   scoped_refptr<SerializedScriptValue> custom_layout_data_;
 
   std::unique_ptr<NGMathMLPaintInfo> mathml_paint_info_;
-  absl::optional<NGLayoutResult::MathData> math_data_;
 
   const NGBlockBreakToken* previous_break_token_ = nullptr;
 

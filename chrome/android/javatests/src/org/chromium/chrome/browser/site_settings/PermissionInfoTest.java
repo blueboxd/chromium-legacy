@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
@@ -32,6 +33,7 @@ import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJ
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +41,8 @@ import java.util.concurrent.TimeoutException;
 
 /** Tests for the PermissionInfoTest. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
 @Batch(SiteSettingsTest.SITE_SETTINGS_BATCH_NAME)
 public class PermissionInfoTest {
     private static final String DSE_ORIGIN = "https://www.google.com";
@@ -125,6 +128,7 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisabledTest(message = "Flaky - https://crbug.com/1314109")
     public void testResetDSEGeolocation_InPrimaryOTRProfile_DefaultsToAskFromBlock()
             throws Throwable {
         Profile primaryOTRProfile = getPrimaryOTRProfile();
@@ -139,6 +143,7 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @DisabledTest(message = "Flaky - https://crbug.com/1314109")
     public void testResetDSEGeolocation_InNonPrimaryOTRProfile_DefaultsToAskFromBlock()
             throws Throwable {
         Profile nonPrimaryOTRProfile = getNonPrimaryOTRProfile();
@@ -154,6 +159,7 @@ public class PermissionInfoTest {
     @SmallTest
     @Feature({"Preferences"})
     @RequiresRestart
+    @DisabledTest(message = "Flaky - https://crbug.com/1314109")
     public void testResetDSEGeolocation_RegularProfile_DefaultsToAskFromBlock() throws Throwable {
         Profile regularProfile = getRegularProfile();
         setGeolocation(DSE_ORIGIN, null, ContentSettingValues.BLOCK, regularProfile);

@@ -17,6 +17,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 import {ComponentTypeToId} from './data.js';
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {CalibrationComponentStatus, CalibrationStatus, ComponentType, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -82,10 +83,7 @@ export class ReimagingCalibrationFailedPage extends
   ready() {
     super.ready();
     this.getInitialComponentsList_();
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: false},
-        ));
+    enableNextButton(this);
   }
 
   /** @private */
@@ -155,17 +153,10 @@ export class ReimagingCalibrationFailedPage extends
 
   /** @private */
   onRetryCalibrationButtonClicked_() {
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.shimlessRmaService_.startCalibration(
-                this.getComponentsList_());
-          })
-        },
-        ));
+    executeThenTransitionState(
+        this,
+        () => this.shimlessRmaService_.startCalibration(
+            this.getComponentsList_()));
   }
 
   /**
@@ -180,16 +171,7 @@ export class ReimagingCalibrationFailedPage extends
   /** @protected */
   onSkipDialogButtonClicked_() {
     this.closeDialog_();
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.skipCalibration_();
-          })
-        },
-        ));
+    executeThenTransitionState(this, () => this.skipCalibration_());
   }
 
   /** @protected */

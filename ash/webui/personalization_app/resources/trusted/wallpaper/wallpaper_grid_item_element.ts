@@ -9,7 +9,9 @@
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import '../../common/styles.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getLoadingPlaceholderAnimationDelay} from '../../common/utils.js';
+import {getTemplate} from './wallpaper_grid_item_element.html.js';
 
 export class WallpaperGridItem extends PolymerElement {
   static get is() {
@@ -17,12 +19,13 @@ export class WallpaperGridItem extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
       imageSrc: String,
+      index: Number,
       primaryText: String,
       secondaryText: String,
 
@@ -36,6 +39,9 @@ export class WallpaperGridItem extends PolymerElement {
   /** The source for the image to render for the grid item. */
   imageSrc: string|undefined;
 
+  /** The index of the grid item within its parent grid. */
+  index: number;
+
   /** The primary text to render for the grid item. */
   primaryText: string|undefined;
 
@@ -45,19 +51,25 @@ export class WallpaperGridItem extends PolymerElement {
   /** Whether the grid item is currently selected. */
   selected: boolean;
 
+  /** Returns the delay to use for the grid item's placeholder animation. */
+  private getItemPlaceholderAnimationDelay_(index: WallpaperGridItem['index']):
+      string {
+    return getLoadingPlaceholderAnimationDelay(index);
+  }
+
   /** Whether the image is currently visible. */
   private isImageVisible_() {
-    return !!this.imageSrc?.length;
+    return !!this.imageSrc && !!this.imageSrc.length;
   }
 
   /** Whether the primary text is currently visible. */
   private isPrimaryTextVisible_() {
-    return !!this.primaryText?.length;
+    return !!this.primaryText && !!this.primaryText.length;
   }
 
   /** Whether the secondary text is currently visible. */
   private isSecondaryTextVisible_() {
-    return !!this.secondaryText?.length;
+    return !!this.secondaryText && !!this.secondaryText.length;
   }
 
   /** Whether any text is currently visible. */

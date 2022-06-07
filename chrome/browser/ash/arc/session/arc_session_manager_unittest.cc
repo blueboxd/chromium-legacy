@@ -54,11 +54,11 @@
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -279,7 +279,7 @@ class ArcSessionManagerTestBase : public testing::Test {
     chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::SessionManagerClient::InitializeFakeInMemory();
-    chromeos::UpstartClient::InitializeFake();
+    ash::UpstartClient::InitializeFake();
 
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
@@ -307,7 +307,7 @@ class ArcSessionManagerTestBase : public testing::Test {
     profile_.reset();
     arc_session_manager_.reset();
     arc_service_manager_.reset();
-    chromeos::UpstartClient::Shutdown();
+    ash::UpstartClient::Shutdown();
     chromeos::SessionManagerClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();

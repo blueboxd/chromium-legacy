@@ -11,7 +11,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
@@ -32,6 +31,8 @@
 #include "net/cookies/same_party_context.h"
 #include "net/cookies/test_cookie_access_delegate.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_test_util.h"
 #include "services/network/cookie_access_delegate_impl.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -310,7 +311,8 @@ class SynchronousCookieManager {
 class CookieManagerTest : public testing::Test {
  public:
   CookieManagerTest() {
-    scoped_feature_list_.Init();
+    scoped_feature_list_.InitWithFeatures({net::features::kPartitionedCookies},
+                                          {});
     InitializeCookieService(nullptr, nullptr);
   }
 
@@ -335,7 +337,7 @@ class CookieManagerTest : public testing::Test {
     if (can_modify_httponly)
       options.set_include_httponly();
 
-    cookie_monster_->SetCanonicalCookieAsync(
+    cookie_store()->SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
         net::cookie_util::SimulatedCookieSource(cookie, source_scheme), options,
         callback.MakeCallback());
@@ -371,7 +373,9 @@ class CookieManagerTest : public testing::Test {
                                        false);
   }
 
-  net::CookieStore* cookie_store() { return cookie_monster_.get(); }
+  net::CookieStore* cookie_store() {
+    return url_request_context_->cookie_store();
+  }
 
   CookieManager* service() const { return cookie_service_.get(); }
 
@@ -396,10 +400,10 @@ class CookieManagerTest : public testing::Test {
     if (cookie_service_) {
       // Make sure that data from any previous store is fully saved.
       // |cookie_service_| destroyed first since it may issue some writes to the
-      // |cookie_monster_|.
+      // |cookie_store()|.
       cookie_service_ = nullptr;
       net::NoResultCookieCallback callback;
-      cookie_monster_->FlushStore(callback.MakeCallback());
+      cookie_store()->FlushStore(callback.MakeCallback());
       callback.WaitUntilDone();
     }
     // Reset |cookie_service_remote_| to allow re-initialize with params
@@ -407,10 +411,11 @@ class CookieManagerTest : public testing::Test {
     cookie_service_remote_.reset();
 
     connection_error_seen_ = false;
-    cookie_monster_ = std::make_unique<net::CookieMonster>(
+    auto cookie_monster = std::make_unique<net::CookieMonster>(
         std::move(store), nullptr /* netlog */, first_party_sets_enabled_);
-    url_request_context_ = std::make_unique<net::URLRequestContext>();
-    url_request_context_->set_cookie_store(cookie_monster_.get());
+    auto context_builder = net::CreateTestURLRequestContextBuilder();
+    context_builder->SetCookieStore(std::move(cookie_monster));
+    url_request_context_ = context_builder->Build();
     cookie_service_ = std::make_unique<CookieManager>(
         url_request_context_.get(), nullptr /* first_party_sets */,
         std::move(cleanup_store), nullptr);
@@ -433,7 +438,6 @@ class CookieManagerTest : public testing::Test {
   const bool first_party_sets_enabled_ = true;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<net::CookieMonster> cookie_monster_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   std::unique_ptr<CookieManager> cookie_service_;
   mojo::Remote<mojom::CookieManager> cookie_service_remote_;
@@ -3177,6 +3181,34 @@ TEST_F(CookieManagerTest, ConvertPartitionedCookiesToUnpartitioned) {
   EXPECT_EQ(4u, cookies.size());
   EXPECT_EQ("__Host-D", cookies[3].Name());
   EXPECT_TRUE(cookies[3].IsPartitioned());
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {net::features::kPartitionedCookies,
+       net::features::kPartitionedCookiesBypassOriginTrial},
+      {});
+
+  // Should not convert partitioned cookies to unpartitioned when
+  // PartitionedCookiesBypassOriginTrial is enabled.
+  ASSERT_TRUE(SetCanonicalCookie(
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "__Host-E", "0", kCookieDomain, "/", base::Time(), base::Time(),
+          base::Time(),
+          /*secure=*/true, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM,
+          /*same_party=*/false,
+          net::CookiePartitionKey::FromURLForTesting(
+              GURL("https://first.com"))),
+      "https", true));
+  service()->ConvertPartitionedCookiesToUnpartitioned(GURL(kCookieHttpsURL));
+  task_environment_.FastForwardBy(base::Milliseconds(50));
+
+  cookies = service_wrapper()->GetCookieList(
+      GURL(kCookieHttpsURL), net::CookieOptions::MakeAllInclusive(),
+      net::CookiePartitionKeyCollection::ContainsAll());
+  EXPECT_EQ(5u, cookies.size());
+  EXPECT_EQ("__Host-E", cookies[4].Name());
+  EXPECT_TRUE(cookies[4].IsPartitioned());
 }
 
 }  // namespace

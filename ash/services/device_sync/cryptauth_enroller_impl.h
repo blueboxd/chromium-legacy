@@ -13,11 +13,11 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace multidevice {
 class SecureMessageDelegate;
-}  // namespace multidevice
+}
 
 namespace device_sync {
 
@@ -110,6 +110,6 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLER_IMPL_H_

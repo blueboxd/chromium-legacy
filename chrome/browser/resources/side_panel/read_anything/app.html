@@ -1,0 +1,34 @@
+<style>
+  #container {
+    background: var(--google-grey-900);
+    color: var(--google-grey-200);
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 18px;
+    padding:  20px;
+  }
+
+  .standard {
+    font-family: Roboto, Arial, sans-serif;
+  }
+  .sans-serif {
+    font-family: Roboto, Tahoma, sans-serif;
+  }
+  .serif {
+    font-family: Didot, Georgia, serif;
+  }
+  .arial {
+    font-family: Arial, Verdona, sans-serif;
+  }
+  .open-sans {
+    font-family: 'Open Sans', Courier, sans-serif;
+  }
+  .calibri {
+    font-family: Calibri, 'Times New Roman', serif;
+  }
+
+</style>
+<div id="container">
+  <template is="dom-repeat" items="[[paragraphs_]]">
+    <p class$="[[fontName_]]">[[item]]</p>
+  </template>
+</div>

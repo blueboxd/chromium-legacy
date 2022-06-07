@@ -1041,7 +1041,8 @@ export class FileManager extends EventTarget {
     // DriveIntegrationService, so here we don't need to take care about it.
     this.volumeManager_ = new FilteredVolumeManager(
         allowedPaths, writableOnly,
-        this.fileBrowserBackground_.getVolumeManager());
+        this.fileBrowserBackground_.getVolumeManager(),
+        this.launchParams_.volumeFilter);
   }
 
   /**
@@ -1289,7 +1290,7 @@ export class FileManager extends EventTarget {
     if (util.isRecentsFilterEnabled()) {
       this.fileTypeFiltersController_ = new FileTypeFiltersController(
           this.ui_.fileTypeFilterContainer, this.directoryModel_,
-          this.recentEntry_);
+          this.recentEntry_, /** @type {!A11yAnnounce} */ (this.ui_));
     }
 
     return directoryTreePromise;

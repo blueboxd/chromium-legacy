@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -100,7 +101,7 @@ class DebugContextScope {
 
 // Utility class to timeout running a v8::Script or calling a v8::Function.
 // Instantiate a ScriptTimeoutHelper, and it will terminate script if
-// kScriptTimeout passes before it is destroyed.
+// `script_timeout` passes before it is destroyed.
 //
 // Creates a v8::SafeForTerminationScope(), so the caller doesn't have to.
 class AuctionV8Helper::ScriptTimeoutHelper {

@@ -44,9 +44,6 @@ export interface SiteEntryElement {
     originList: CrLazyRenderElement<IronCollapseElement>,
     toggleButton: HTMLElement,
   };
-
-  // Declaring here because TypeScript default types seem to lack that method.
-  scrollIntoViewIfNeeded(): void;
 }
 
 const SiteEntryElementBase =
@@ -54,7 +51,7 @@ const SiteEntryElementBase =
         [FocusRowBehavior],
         BaseMixin(SiteSettingsMixin(I18nMixin(PolymerElement)))) as {
       new (): PolymerElement & I18nMixinInterface & SiteSettingsMixinInterface &
-      BaseMixinInterface
+          BaseMixinInterface,
     };
 
 export class SiteEntryElement extends SiteEntryElementBase {

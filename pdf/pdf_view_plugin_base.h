@@ -107,8 +107,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
                              const float* x,
                              const float* y,
                              const float* zoom) override;
-  void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
-  void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifyTouchSelectionOccurred() override;
   void GetDocumentPassword(
       base::OnceCallback<void(const std::string&)> callback) override;
@@ -226,10 +224,13 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // frame's origin.
   virtual std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() = 0;
 
+  // Runs when document load completes.
+  virtual void OnDocumentLoadComplete() = 0;
+
   bool HandleInputEvent(const blink::WebInputEvent& event);
 
   // Handles `postMessage()` calls from the embedder.
-  void HandleMessage(const base::Value& message);
+  void HandleMessage(const base::Value::Dict& message);
 
   // Enqueues a "message" event carrying `message` to the embedder. Messages are
   // guaranteed to be received in the order that they are sent. This method is
@@ -319,17 +320,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // renderer.
   virtual void SetAccessibilityViewportInfo(
       AccessibilityViewportInfo viewport_info) = 0;
-
-  // Find handlers.
-  bool StartFind(const std::string& text, bool case_sensitive);
-  void SelectFindResult(bool forward);
-  void StopFind();
-
-  // Notify the plugin container about the total matches for a find request.
-  virtual void NotifyFindResultsChanged(int total, bool final_result) = 0;
-
-  // Notify the frame about the tickmarks for the find request.
-  virtual void NotifyFindTickmarks(const std::vector<gfx::Rect>& tickmarks) = 0;
 
   // Returns the print preset options for the document.
   blink::WebPrintPresetOptions GetPrintPresetOptions();
@@ -426,24 +416,25 @@ class PdfViewPluginBase : public PDFEngine::Client,
       const gfx::Vector2dF& scroll_offset) const;
 
   // Message handlers.
-  void HandleDisplayAnnotationsMessage(const base::Value& message);
-  void HandleGetNamedDestinationMessage(const base::Value& message);
-  void HandleGetPasswordCompleteMessage(const base::Value& message);
-  void HandleGetSelectedTextMessage(const base::Value& message);
-  void HandleGetThumbnailMessage(const base::Value& message);
-  void HandleLoadPreviewPageMessage(const base::Value& message);
-  void HandlePrintMessage(const base::Value& /*message*/);
-  void HandleResetPrintPreviewModeMessage(const base::Value& message);
-  void HandleRotateClockwiseMessage(const base::Value& /*message*/);
-  void HandleRotateCounterclockwiseMessage(const base::Value& /*message*/);
-  void HandleSaveMessage(const base::Value& message);
-  void HandleSaveAttachmentMessage(const base::Value& message);
-  void HandleSelectAllMessage(const base::Value& /*message*/);
-  void HandleSetBackgroundColorMessage(const base::Value& message);
-  void HandleSetReadOnlyMessage(const base::Value& message);
-  void HandleSetTwoUpViewMessage(const base::Value& message);
-  void HandleStopScrollingMessage(const base::Value& /*message*/);
-  void HandleViewportMessage(const base::Value& message);
+  void HandleDisplayAnnotationsMessage(const base::Value::Dict& message);
+  void HandleGetNamedDestinationMessage(const base::Value::Dict& message);
+  void HandleGetPasswordCompleteMessage(const base::Value::Dict& message);
+  void HandleGetSelectedTextMessage(const base::Value::Dict& message);
+  void HandleGetThumbnailMessage(const base::Value::Dict& message);
+  void HandleLoadPreviewPageMessage(const base::Value::Dict& message);
+  void HandlePrintMessage(const base::Value::Dict& /*message*/);
+  void HandleResetPrintPreviewModeMessage(const base::Value::Dict& message);
+  void HandleRotateClockwiseMessage(const base::Value::Dict& /*message*/);
+  void HandleRotateCounterclockwiseMessage(
+      const base::Value::Dict& /*message*/);
+  void HandleSaveMessage(const base::Value::Dict& message);
+  void HandleSaveAttachmentMessage(const base::Value::Dict& message);
+  void HandleSelectAllMessage(const base::Value::Dict& /*message*/);
+  void HandleSetBackgroundColorMessage(const base::Value::Dict& message);
+  void HandleSetReadOnlyMessage(const base::Value::Dict& message);
+  void HandleSetTwoUpViewMessage(const base::Value::Dict& message);
+  void HandleStopScrollingMessage(const base::Value::Dict& /*message*/);
+  void HandleViewportMessage(const base::Value::Dict& message);
 
   // Sends start/stop loading notifications to the plugin's render frame
   // depending on `did_call_start_loading_`.
@@ -466,41 +457,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Callback to clear deferred invalidates after painting finishes.
   void ClearDeferredInvalidates();
 
-  // Sends the attachments data.
-  void SendAttachments();
-
-  // Sends the bookmarks data.
-  void SendBookmarks();
-
-  // Send document metadata data.
-  void SendMetadata();
-
   // Sends the thumbnail image data.
   void SendThumbnail(base::Value reply, Thumbnail thumbnail);
 
   // Starts loading accessibility information.
   void LoadAccessibility();
-
-  void ResetRecentlySentFindUpdate();
-
-  // Records metrics about the attachment types.
-  void RecordAttachmentTypes();
-
-  // Records metrics about the document metadata.
-  void RecordDocumentMetrics();
-
-  // Adds a sample to an enumerated histogram and filters out print preview
-  // usage.
-  template <typename T>
-  void HistogramEnumeration(const char* name, T sample);
-
-  // Adds a sample to a custom counts histogram and filters out print preview
-  // usage.
-  void HistogramCustomCounts(const char* name,
-                             int32_t sample,
-                             int32_t min,
-                             int32_t max,
-                             uint32_t bucket_count);
 
   // Handles `LoadUrl()` result.
   void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result);
@@ -630,13 +591,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // The next accessibility page index, used to track interprocess calls when
   // reconstructing the tree for new document layouts.
   int32_t next_accessibility_page_index_ = 0;
-
-  // Whether an update to the number of find results found was sent less than
-  // `kFindResultCooldownMs` milliseconds ago.
-  bool recently_sent_find_update_ = false;
-
-  // Stores the tickmarks to be shown for the current find results.
-  std::vector<gfx::Rect> tickmarks_;
 
   // Keeps track of which unsupported features have been reported to avoid
   // spamming the metrics if a feature shows up many times per document.

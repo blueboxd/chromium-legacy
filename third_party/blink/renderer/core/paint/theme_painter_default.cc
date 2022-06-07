@@ -49,8 +49,6 @@ namespace blink {
 
 namespace {
 
-const unsigned kDefaultButtonBackgroundColor = 0xffdddddd;
-
 bool IsIndeterminate(const Element& element) {
   if (const auto* input = DynamicTo<HTMLInputElement>(element))
     return input->ShouldAppearIndeterminate();
@@ -230,12 +228,7 @@ bool ThemePainterDefault::PaintButton(const Element& element,
   WebThemeEngine::ExtraParams extra_params;
   extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.has_border = true;
-  extra_params.button.background_color = kDefaultButtonBackgroundColor;
   extra_params.button.zoom = style.EffectiveZoom();
-  if (style.HasBackground()) {
-    extra_params.button.background_color =
-        style.VisitedDependentColor(GetCSSPropertyBackgroundColor()).Rgb();
-  }
 
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartButton,
@@ -565,14 +558,14 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
             ? cancel_pressed_image
             : cancel_pressed_image_dark_mode;
   }
-  paint_info.context.DrawImage(
-      To<Element>(cancel_button_object.GetNode())->IsActive()
-          ? color_scheme_adjusted_cancel_pressed_image
-          : color_scheme_adjusted_cancel_image,
-      Image::kSyncDecode,
-      PaintAutoDarkMode(cancel_button_object.StyleRef(),
-                        DarkModeFilter::ElementRole::kBackground),
-      gfx::RectF(painting_rect));
+  Image* target_image = To<Element>(cancel_button_object.GetNode())->IsActive()
+                            ? color_scheme_adjusted_cancel_pressed_image
+                            : color_scheme_adjusted_cancel_image;
+  // TODO(penglin): It's no need to do further classification here but
+  // force Dark mode may not pick up the correct resource image now.
+  paint_info.context.DrawImage(target_image, Image::kSyncDecode,
+                               ImageAutoDarkMode::Disabled(),
+                               gfx::RectF(painting_rect));
   return false;
 }
 

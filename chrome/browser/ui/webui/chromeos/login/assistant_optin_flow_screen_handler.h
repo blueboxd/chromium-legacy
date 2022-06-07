@@ -12,6 +12,8 @@
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/containers/circular_deque.h"
+#include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/services/assistant/public/cpp/assistant_settings.h"
 #include "components/sync/protocol/user_consent_types.pb.h"
@@ -65,8 +67,7 @@ class AssistantOptInFlowScreenHandler
 
   using TView = AssistantOptInFlowScreenView;
 
-  explicit AssistantOptInFlowScreenHandler(
-      JSCallsContainer* js_calls_container);
+  AssistantOptInFlowScreenHandler();
 
   AssistantOptInFlowScreenHandler(const AssistantOptInFlowScreenHandler&) =
       delete;
@@ -86,7 +87,7 @@ class AssistantOptInFlowScreenHandler
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void RegisterMessages() override;
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
+  void GetAdditionalParameters(base::Value::Dict* dict) override;
 
   // AssistantOptInFlowScreenView:
   void Bind(ash::AssistantOptInFlowScreen* screen) override;
@@ -115,7 +116,7 @@ class AssistantOptInFlowScreenHandler
 
  private:
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // ash::AssistantStateObserver:
   void OnAssistantSettingsEnabled(bool enabled) override;
@@ -129,8 +130,8 @@ class AssistantOptInFlowScreenHandler
   void StopSpeakerIdEnrollment();
 
   // Send message and consent data to the page.
-  void ReloadContent(const base::Value& dict);
-  void AddSettingZippy(const std::string& type, const base::Value& data);
+  void ReloadContent(base::Value dict);
+  void AddSettingZippy(const std::string& type, base::Value data);
 
   // Update value prop screen to show the next settings.
   void UpdateValuePropScreen();

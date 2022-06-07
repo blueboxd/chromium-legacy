@@ -2,6 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * The dark-mode fingerprint icon displayed temporarily each time a user scans
+ * their fingerprint and persistently once the enrollment process is complete.
+ * @type {string}
+ */
+/* #export */ const FINGERPRINT_SCANNED_ICON_DARK =
+    'cr-fingerprint-icon:fingerprint-scanned-dark';
+
+/**
+ * The light-mode fingerprint icon displayed temporarily each time a user scans
+ * their fingerprint and persistently once the enrollment process is complete.
+ * @type {string}
+ */
+/* #export */ const FINGERPRINT_SCANNED_ICON_LIGHT =
+    'cr-fingerprint-icon:fingerprint-scanned-light';
+
 /** @type {string} */
 /* #export */ const FINGERPRINT_TICK_DARK_URL =
     'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK_DARK';
@@ -9,7 +25,6 @@
 /** @type {string} */
 /* #export */ const FINGERPRINT_TICK_LIGHT_URL =
     'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK';
-
 
 /**
  * The dark-mode color of the progress circle background: Google Grey 700.
@@ -19,11 +34,11 @@
     'rgba(95, 99, 104, 1.0)';
 
 /**
- * The light-mode color of the progress circle background: Google Grey 300.
+ * The light-mode color of the progress circle background: Google Grey 200.
  * @type {string}
  */
 /* #export */ const PROGRESS_CIRCLE_BACKGROUND_COLOR_LIGHT =
-    'rgba(218, 220, 224, 1.0)';
+    'rgba(232, 234, 237, 1.0)';
 
 /**
  * The dark-mode color of the setup progress arc: Google Blue 400.
@@ -175,11 +190,13 @@ Polymer({
     this.clearCanvas_();
     this.drawProgressCircle_(this.progressPercentDrawn_);
     this.updateAnimationAsset_();
+    this.updateIconAsset_();
   },
 
   /** @override */
   attached() {
     this.scale_ = this.circleRadius / DEFAULT_PROGRESS_CIRCLE_RADIUS;
+    this.updateIconAsset_();
     this.updateImages_();
   },
 
@@ -193,7 +210,7 @@ Polymer({
     this.isComplete_ = false;
     // Draw an empty background for the progress circle.
     this.drawProgressCircle_(/** currentPercent = */ 0);
-    this.$.enrollmentDone.hidden = true;
+    this.$.fingerprintScanned.hidden = true;
 
     const scanningAnimation =
         /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
@@ -341,8 +358,21 @@ Polymer({
           FINGERPRINT_TICK_LIGHT_URL;
       return;
     }
-    scanningAnimation.animationUrl =
-        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION';
+    scanningAnimation.animationUrl = this.isDarkModeActive_ ?
+        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION_DARK' :
+        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION_LIGHT';
+  },
+
+  /**
+   * Updates the fingerprint-scanned icon based on whether dark mode is enabled.
+   * @private
+   */
+  updateIconAsset_() {
+    const fingerprintScanned =
+        /** @type {IronIconElement} */ (this.$.fingerprintScanned);
+    fingerprintScanned.icon = this.isDarkModeActive_ ?
+        FINGERPRINT_SCANNED_ICON_DARK :
+        FINGERPRINT_SCANNED_ICON_LIGHT;
   },
 
   /*
@@ -372,7 +402,7 @@ Polymer({
     scanningAnimation.classList.remove('translucent');
     this.updateAnimationAsset_();
     this.resizeCheckMark_(scanningAnimation);
-    this.$.enrollmentDone.hidden = false;
+    this.$.fingerprintScanned.hidden = false;
   },
 
   /**
@@ -380,9 +410,11 @@ Polymer({
    * @private
    */
   animateScanProgress_() {
-    this.$.enrollmentDone.hidden = false;
+    this.$.fingerprintScanned.hidden = false;
+    this.$.scanningAnimation.hidden = true;
     this.updateTimerId_ = window.setTimeout(() => {
-      this.$.enrollmentDone.hidden = true;
+      this.$.scanningAnimation.hidden = false;
+      this.$.fingerprintScanned.hidden = true;
     }, FINGERPRINT_SCAN_SUCCESS_MS);
   },
 
@@ -404,7 +436,7 @@ Polymer({
     this.resizeAndCenterIcon_(
         /** @type {!HTMLElement} */ (this.$.scanningAnimation));
     this.resizeAndCenterIcon_(
-        /** @type {!HTMLElement} */ (this.$.enrollmentDone));
+        /** @type {!HTMLElement} */ (this.$.fingerprintScanned));
   },
 
   /**

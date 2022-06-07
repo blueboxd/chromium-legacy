@@ -156,8 +156,6 @@ LayoutObject* FindAncestorByPredicate(const LayoutObject* descendant,
 }
 
 inline bool MightTraversePhysicalFragments(const LayoutObject& obj) {
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled())
-    return false;
   if (!obj.IsLayoutNGObject()) {
     // Non-NG objects should be painted, hit-tested, etc. by legacy.
     if (obj.IsBox())
@@ -1068,7 +1066,6 @@ LayoutBlock* LayoutObject::ContainingFragmentationContextRoot() const {
        ancestor = ancestor->ContainingBlock()) {
     if (ancestor->IsFragmentationContextRoot())
       return ancestor;
-    // TODO(mstensho): Make sure that we return the LayoutView when printing.
   }
   return nullptr;
 }
@@ -1596,6 +1593,18 @@ LayoutObject* LayoutObject::NearestAncestorForElement() const {
   return ancestor;
 }
 
+bool LayoutObject::IsAnonymousNGMulticolInlineWrapper() const {
+  NOT_DESTROYED();
+  if (!IsLayoutNGBlockFlow() || !IsAnonymousBlock())
+    return false;
+
+  const LayoutBlock* containing_block = ContainingNGBlock();
+  if (!containing_block)
+    return false;
+
+  return containing_block->IsFragmentationContextRoot();
+}
+
 LayoutBlock* LayoutObject::FindNonAnonymousContainingBlock(
     LayoutObject* container,
     AncestorSkipInfo* skip_info) {
@@ -1623,15 +1632,6 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   NOT_DESTROYED();
   if (!style)
     return false;
-  bool is_document_element = IsDocumentElement();
-  // https://www.w3.org/TR/filter-effects-1/#FilterProperty
-  if (!is_document_element && style->HasNonInitialFilter())
-    return true;
-  // Backdrop-filter creates a containing block for fixed and absolute
-  // positioned elements:
-  // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
-  if (!is_document_element && style->HasNonInitialBackdropFilter())
-    return true;
   // The LayoutView is always a container of fixed positioned descendants. In
   // addition, SVG foreignObjects become such containers, so that descendants
   // of a foreignObject cannot escape it. Similarly, text controls let authors
@@ -1641,8 +1641,27 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   if (IsA<LayoutView>(this) || IsSVGForeignObject() ||
       IsTextControlIncludingNG())
     return true;
+  // SVG elements other than foreignObject should never be fixed-position
+  // containing blocks; see https://github.com/w3c/fxtf-drafts/issues/307.
+  // Checking this here also avoids getting inconsistent results from IsInline()
+  // below because this function is sometimes called before IsInline() return
+  // the correct result.
+  // TODO(crbug.com/1312217): This doesn't completely prevent SVG elements other
+  // than foreignObject from being positioned containing blocks, since it
+  // doesn't affect the result of
+  // LayoutObject::CanContainAbsolutePositionObjects.
+  if (IsSVG())
+    return false;
+  bool is_document_element = IsDocumentElement();
+  // https://www.w3.org/TR/filter-effects-1/#FilterProperty
+  if (!is_document_element && style->HasNonInitialFilter())
+    return true;
+  // Backdrop-filter creates a containing block for fixed and absolute
+  // positioned elements:
+  // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
+  if (!is_document_element && style->HasNonInitialBackdropFilter())
+    return true;
   // https://www.w3.org/TR/css-transforms-1/#containing-block-for-all-descendants
-
   // For transform-style specifically, we want to consider the computed
   // value rather than the used value.
   if (style->HasTransformRelatedProperty() ||
@@ -2944,6 +2963,39 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     }
     UseCounter::Count(GetDocument(),
                       WebFeature::kCSSContainStrictWithoutContentVisibility);
+  }
+
+  // See the discussion at
+  // https://github.com/w3c/csswg-drafts/issues/7144#issuecomment-1090933632
+  // for more information.
+  //
+  // For a replaced element that isn't SVG or a embedded content, such as iframe
+  // or object, we want to count the number of pages that have an explicit
+  // overflow: visible (that remains visible after style adjuster). Separately,
+  // we also want to count out of those cases how many have an object-fit none
+  // or cover or non-default object-position, all of which may cause overflow.
+  //
+  // Note that SVG already supports overflow: visible, meaning we won't be
+  // changing the behavior regardless of the counts. Likewise, embedded content
+  // will remain clipped regardless of the overflow: visible behvaior change.
+  // Note for this reason we exclude SVG and embedded content from the counts.
+  if (IsLayoutReplaced() && !IsSVG() && !IsLayoutEmbeddedContent()) {
+    if ((StyleRef().HasExplicitOverflowXVisible() &&
+         StyleRef().OverflowX() == EOverflow::kVisible) ||
+        (StyleRef().HasExplicitOverflowYVisible() &&
+         StyleRef().OverflowY() == EOverflow::kVisible)) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kExplicitOverflowVisibleOnReplacedElement);
+      if (StyleRef().GetObjectFit() == EObjectFit::kNone ||
+          StyleRef().GetObjectFit() == EObjectFit::kCover ||
+          StyleRef().ObjectPosition() !=
+              LengthPoint(Length::Percent(50.0), Length::Percent(50.0))) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::
+                kExplicitOverflowVisibleOnReplacedElementWithObjectProp);
+      }
+    }
   }
 
   // First assume the outline will be affected. It may be updated when we know

@@ -4,8 +4,8 @@
 
 import {InlineLoginBrowserProxy} from 'chrome://chrome-signin/inline_login_browser_proxy.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-// <if expr="chromeos">
-import {Account, ArcAccountPickerBrowserProxy, ArcAccountPickerBrowserProxyImpl} from 'chrome://chrome-signin/arc_account_picker_browser_proxy.js';
+import {AuthMode, AuthParams} from 'chrome://chrome-signin/gaia_auth_host/authenticator.m.js';
+// <if expr="chromeos_ash">
 import {AccountAdditionOptions} from 'chrome://chrome-signin/inline_login_util.js';
 // </if>
 import {TestBrowserProxy} from '../test_browser_proxy.js';
@@ -40,19 +40,12 @@ export const fakeSigninBlockedByPolicyData = {
 export class TestAuthenticator extends EventTarget {
   constructor() {
     super();
-    // Note: We cannot import types from authenticator.m.js because we replace
-    // "chrome://chrome-signin/" with "chrome/browser/resources/inline_login/"
-    // and authenticator is in "chrome/browser/resources/gaia_auth_host/"
-    // folder.
-
     /**
-     * Type AuthMode (see Authenticator).
-     * @type {?Object}
+     * @type {?AuthMode}
      */
     this.authMode = null;
     /**
-     * Type AuthParams (see Authenticator).
-     * @type {?Object}
+     * @type {?AuthParams}
      */
     this.data = null;
     /** @type {number} */
@@ -64,9 +57,8 @@ export class TestAuthenticator extends EventTarget {
   }
 
   /**
-   * @param {Object} authMode Authorization mode (type AuthMode).
-   * @param {Object} data Parameters for the authorization flow (type
-   *     AuthParams).
+   * @param {AuthMode} authMode Authorization mode.
+   * @param {AuthParams} data Parameters for the authorization flow.
    */
   load(authMode, data) {
     this.loadCalls++;
@@ -96,14 +88,14 @@ export class TestInlineLoginBrowserProxy extends TestBrowserProxy {
       'showIncognito',
       'getAccounts',
       'dialogClose',
-      // <if expr="chromeos">
+      // <if expr="chromeos_ash">
       'skipWelcomePage',
       'openGuestWindow',
       'getDialogArguments',
       // </if>
     ]);
 
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     /**
      * @private {?AccountAdditionOptions}
      */
@@ -111,7 +103,7 @@ export class TestInlineLoginBrowserProxy extends TestBrowserProxy {
     // </if>
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   /**
    * @param {?AccountAdditionOptions} dialogArguments
    */
@@ -166,7 +158,7 @@ export class TestInlineLoginBrowserProxy extends TestBrowserProxy {
     this.methodCalled('dialogClose');
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   /** @override */
   skipWelcomePage(skip) {
     this.methodCalled('skipWelcomePage', skip);
@@ -183,51 +175,3 @@ export class TestInlineLoginBrowserProxy extends TestBrowserProxy {
   }
   // </if>
 }
-
-// <if expr="chromeos">
-
-/** @return {!Array<Account>} */
-export function getFakeAccountsNotAvailableInArcList() {
-  return [
-    {
-      id: '1',
-      email: 'test@gmail.com',
-      fullName: 'Test User',
-      image: 'data:image/png;base64,abc123'
-    },
-    {id: '2', email: 'test2@gmail.com', fullName: 'Test2 User', image: ''},
-    {id: '3', email: 'test3@gmail.com', fullName: 'Test3 User', image: ''},
-  ];
-}
-
-/** @implements {ArcAccountPickerBrowserProxy} */
-export class TestArcAccountPickerBrowserProxy extends TestBrowserProxy {
-  constructor() {
-    super([
-      'getAccountsNotAvailableInArc',
-      'makeAvailableInArc',
-    ]);
-
-    /** @private */
-    this.accountsNotAvailableInArc_ = [];
-  }
-
-  /**
-   * @param {!Array<Account>} accountsNotAvailableInArc
-   */
-  setAccountsNotAvailableInArc(accountsNotAvailableInArc) {
-    this.accountsNotAvailableInArc_ = accountsNotAvailableInArc;
-  }
-
-  /** @override */
-  getAccountsNotAvailableInArc() {
-    this.methodCalled('getAccountsNotAvailableInArc');
-    return Promise.resolve(this.accountsNotAvailableInArc_);
-  }
-
-  /** @override */
-  makeAvailableInArc(account) {
-    this.methodCalled('makeAvailableInArc', account);
-  }
-}
-// </if>

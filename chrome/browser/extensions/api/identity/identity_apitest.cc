@@ -84,12 +84,12 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/net/network_portal_detector_test_impl.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
@@ -2858,9 +2858,8 @@ class GetAuthTokenFunctionDeviceLocalAccountTest
 
   // Set up fake install attributes to make the device appeared as
   // enterprise-managed.
-  chromeos::ScopedStubInstallAttributes test_install_attributes_{
-      chromeos::StubInstallAttributes::CreateCloudManaged("example.com",
-                                                          "fake-id")};
+  ash::ScopedStubInstallAttributes test_install_attributes_{
+      ash::StubInstallAttributes::CreateCloudManaged("example.com", "fake-id")};
 
   // Owned by |user_manager_enabler|.
   ash::MockUserManager* user_manager_;

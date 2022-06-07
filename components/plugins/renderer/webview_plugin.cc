@@ -119,9 +119,6 @@ bool WebViewPlugin::Initialize(WebPluginContainer* container) {
 
   old_title_ = container_->GetElement().GetAttribute("title");
 
-  // Propagate device scale and zoom level to inner webview to load the correct
-  // resources when images have a "srcset" attribute.
-  web_view()->SetDeviceScaleFactor(container_->DeviceScaleFactor());
   web_view()->SetZoomLevel(
       blink::PageZoomFactorToZoomLevel(container_->PageZoomFactor()));
 
@@ -267,18 +264,18 @@ WebViewPlugin::WebViewHelper::WebViewHelper(
       agent_group_scheduler_(
           blink::scheduler::WebThreadScheduler::MainThreadScheduler()
               ->CreateAgentGroupScheduler()) {
-  web_view_ =
-      WebView::Create(/*client=*/this,
-                      /*is_hidden=*/false,
-                      /*is_prerendering=*/false,
-                      /*is_inside_portal=*/false,
-                      /*is_fenced_frame=*/false,
-                      /*compositing_enabled=*/false,
-                      /*widgets_never_composited=*/false,
-                      /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
-                      *agent_group_scheduler_,
-                      /*session_storage_namespace_id=*/base::EmptyString(),
-                      /*page_base_background_color=*/absl::nullopt);
+  web_view_ = WebView::Create(
+      /*client=*/this,
+      /*is_hidden=*/false,
+      /*is_prerendering=*/false,
+      /*is_inside_portal=*/false,
+      /*fenced_frame_mode=*/absl::nullopt,
+      /*compositing_enabled=*/false,
+      /*widgets_never_composited=*/false,
+      /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
+      *agent_group_scheduler_,
+      /*session_storage_namespace_id=*/base::EmptyString(),
+      /*page_base_background_color=*/absl::nullopt);
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   blink::WebView::ApplyWebPreferences(parent_web_preferences, web_view_);

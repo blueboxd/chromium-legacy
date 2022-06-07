@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tab.HistoricalTabSaver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -190,7 +189,6 @@ public class TabPersistentStore {
             @Override
             public void didCloseTab(Tab tab) {
                 PersistedTabData.onTabClose(tab);
-                if (!tab.isIncognito()) HistoricalTabSaver.createHistoricalTab(tab);
                 removeTabFromQueues(tab);
             }
 
@@ -1132,7 +1130,7 @@ public class TabPersistentStore {
         saveListToFile(getStateDirectory(), mPersistencePolicy.getStateFileName(), listData);
         mLastSavedMetadata = listData;
         if (LibraryLoader.getInstance().isInitialized()) {
-            RecordHistogram.recordCountHistogram(
+            RecordHistogram.recordCount1MHistogram(
                     "Android.TabPersistentStore.MetadataFileSize", listData.length);
         }
     }
@@ -1508,9 +1506,9 @@ public class TabPersistentStore {
             cleanUpPersistentData();
             onStateLoaded();
             mTabLoader = null;
-            RecordHistogram.recordCountHistogram(
+            RecordHistogram.recordCount1MHistogram(
                     "Tabs.Startup.TabCount.Regular", mTabModelSelector.getModel(false).getCount());
-            RecordHistogram.recordCountHistogram(
+            RecordHistogram.recordCount1MHistogram(
                     "Tabs.Startup.TabCount.Incognito", mTabModelSelector.getModel(true).getCount());
             Log.i(TAG,
                     "Loaded tab lists; counts: " + mTabModelSelector.getModel(false).getCount()

@@ -22,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -328,7 +327,7 @@ Profile* ExtensionBrowserTest::profile() {
     if (browser())
       profile_ = browser()->profile();
     else
-      profile_ = ProfileManager::GetActiveUserProfile();
+      profile_ = ProfileManager::GetLastUsedProfile();
   }
   return profile_;
 }

@@ -2,18 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AlbumsSubpage} from 'chrome://personalization/trusted/ambient/albums_subpage_element.js';
-import {AmbientActionName, SetAlbumsAction, SetAmbientModeEnabledAction, SetAnimationThemeAction, SetTemperatureUnitAction, SetTopicSourceAction} from 'chrome://personalization/trusted/ambient/ambient_actions.js';
-import {AmbientObserver} from 'chrome://personalization/trusted/ambient/ambient_observer.js';
-import {AmbientSubpage} from 'chrome://personalization/trusted/ambient/ambient_subpage_element.js';
-import {AnimationThemeItem} from 'chrome://personalization/trusted/ambient/animation_theme_item_element.js';
-import {TopicSourceItem} from 'chrome://personalization/trusted/ambient/topic_source_item_element.js';
-import {AmbientModeAlbum, AnimationTheme, TemperatureUnit, TopicSource} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
-import {Paths, PersonalizationRouter} from 'chrome://personalization/trusted/personalization_router_element.js';
-import {emptyState} from 'chrome://personalization/trusted/personalization_state.js';
-import {WallpaperGridItem} from 'chrome://personalization/trusted/wallpaper/wallpaper_grid_item_element.js';
+import 'chrome://personalization/strings.m.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
+
+import {AlbumsSubpage, AmbientActionName, AmbientModeAlbum, AmbientObserver, AmbientSubpage, AnimationTheme, AnimationThemeItem, emptyState, Paths, PersonalizationRouter, SetAlbumsAction, SetAmbientModeEnabledAction, SetAnimationThemeAction, SetTemperatureUnitAction, SetTopicSourceAction, TemperatureUnit, TopicSource, TopicSourceItem, WallpaperGridItem} from 'chrome://personalization/trusted/personalization_app.js';
 import {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
-import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
@@ -28,7 +23,7 @@ export function getSelectedAlbums(
       album => album.topicSource === topicSource && album.checked);
 }
 
-export function AmbientSubpageTest() {
+suite('AmbientSubpageTest', function() {
   let ambientSubpageElement: AmbientSubpage|null;
   let ambientProvider: TestAmbientProvider;
   let personalizationStore: TestPersonalizationStore;
@@ -36,6 +31,7 @@ export function AmbientSubpageTest() {
   const routerMock = TestBrowserProxy.fromClass(PersonalizationRouter);
 
   setup(() => {
+    loadTimeData.overrideValues({isAmbientModeAllowed: true});
     const mocks = baseSetup();
     ambientProvider = mocks.ambientProvider;
     personalizationStore = mocks.personalizationStore;
@@ -52,7 +48,7 @@ export function AmbientSubpageTest() {
 
   async function displayMainSettings(
       topicSource: TopicSource|null, temperatureUnit: TemperatureUnit|null,
-      ambientModeEnabled: boolean,
+      ambientModeEnabled: boolean|null,
       animationTheme = AnimationTheme.kSlideshow): Promise<AmbientSubpage> {
     personalizationStore.data.ambient.albums = ambientProvider.albums;
     personalizationStore.data.ambient.animationTheme = animationTheme;
@@ -69,7 +65,21 @@ export function AmbientSubpageTest() {
   test('displays content', async () => {
     ambientSubpageElement = await displayMainSettings(
         /*topicSource=*/ null, /*temperatureUnit=*/ null,
-        /*ambientModeEnabled=*/ false);
+        /*ambientModeEnabled=*/ null);
+    // Shows placeholder for ambient mode toggle row while loading ambient mode
+    // status.
+    const toggleRowPlaceholder =
+        ambientSubpageElement.shadowRoot!.querySelector(
+            '#toggleRowPlaceholder');
+    assertTrue(!!toggleRowPlaceholder);
+
+    personalizationStore.data.ambient.ambientModeEnabled = false;
+    personalizationStore.notifyObservers();
+    await waitAfterNextRender(ambientSubpageElement);
+
+    // Ambient mode is loaded, should not show toggle row placeholder.
+    assertTrue(!!toggleRowPlaceholder);
+    assertEquals(getComputedStyle(toggleRowPlaceholder).display, 'none');
 
     const toggleRow =
         ambientSubpageElement.shadowRoot!.querySelector('toggle-row');
@@ -82,10 +92,56 @@ export function AmbientSubpageTest() {
     personalizationStore.notifyObservers();
     await waitAfterNextRender(ambientSubpageElement);
 
-    let spinner =
-        ambientSubpageElement.shadowRoot!.querySelector('paper-spinner-lite');
-    assertTrue(!!spinner, 'paper-spinner-lite element exists');
-    assertTrue(spinner.active, 'paper-spinner-lite is active');
+    // Preview element should show placeholders for preview images, preview
+    // album info and preview album collage.
+    const ambientPreview =
+        ambientSubpageElement.shadowRoot!.querySelector('ambient-preview');
+    assertTrue(!!ambientPreview, 'ambient-preview element exists');
+
+    const previewImagePlaceholder =
+        ambientPreview.shadowRoot!.querySelector('#imagePlaceholder');
+    assertTrue(!!previewImagePlaceholder);
+
+    const previewTextPlaceholder =
+        ambientPreview.shadowRoot!.querySelector('#textPlaceholder');
+    assertTrue(!!previewTextPlaceholder);
+
+    const previewItemPlaceholders =
+        ambientPreview.shadowRoot!.querySelectorAll('.placeholder');
+    assertEquals(5, previewItemPlaceholders!.length);
+
+    // Should show image placeholders for the 3 theme items.
+    const animationThemePlaceholder =
+        ambientSubpageElement.shadowRoot!.querySelector(
+            '#animationThemePlaceholder');
+    assertTrue(!!animationThemePlaceholder);
+
+    const animationItemPlaceholders =
+        ambientSubpageElement!.shadowRoot!.querySelectorAll(
+            '.animation-placeholder-container:not([hidden])');
+    assertEquals(3, animationItemPlaceholders!.length);
+
+    // Should show placeholders for the 2 topic source radio buttons.
+    const topicSourcePlaceholder =
+        ambientSubpageElement.shadowRoot!.querySelector(
+            '#topicSourcePlaceholder');
+    assertTrue(!!topicSourcePlaceholder);
+
+    const topicSourceItemPlaceholders =
+        ambientSubpageElement.shadowRoot!.querySelectorAll(
+            '#topicSourceTextPlaceholder:not([hidden])');
+    assertEquals(2, topicSourceItemPlaceholders!.length);
+
+    // Should show placeholders for 2 weather unit radio buttons.
+    const weatherUnitPlaceholder =
+        ambientSubpageElement.shadowRoot!.querySelector(
+            '#weatherUnitPlaceholder');
+    assertTrue(!!weatherUnitPlaceholder);
+
+    const weatherUnitItemPlaceholders =
+        ambientSubpageElement.shadowRoot!.querySelectorAll(
+            '#weatherUnitTextPlaceholder:not([hidden])');
+    assertEquals(2, weatherUnitItemPlaceholders!.length);
 
     personalizationStore.data.ambient.albums = ambientProvider.albums;
     personalizationStore.data.ambient.topicSource = TopicSource.kGooglePhotos;
@@ -94,18 +150,22 @@ export function AmbientSubpageTest() {
     personalizationStore.notifyObservers();
     await waitAfterNextRender(ambientSubpageElement);
 
-    spinner =
-        ambientSubpageElement.shadowRoot!.querySelector('paper-spinner-lite');
-    assertTrue(!!spinner, 'paper-spinner-lite still exists');
-    assertEquals(getComputedStyle(spinner).display, 'none');
+    // Placeholders will be hidden for preview, animation theme, topic source
+    // and temperature unit elements.
+    assertTrue(!!previewImagePlaceholder);
+    assertEquals(getComputedStyle(previewImagePlaceholder).display, 'none');
 
-    const topicSource =
-        ambientSubpageElement.shadowRoot!.querySelector('topic-source-list');
-    assertTrue(!!topicSource, 'topic-source-list element exists');
+    assertTrue(!!previewTextPlaceholder);
+    assertEquals(getComputedStyle(previewTextPlaceholder).display, 'none');
 
-    const weatherUnit =
-        ambientSubpageElement.shadowRoot!.querySelector('ambient-weather-unit');
-    assertTrue(!!weatherUnit);
+    assertTrue(!!animationThemePlaceholder);
+    assertEquals(getComputedStyle(animationThemePlaceholder).display, 'none');
+
+    assertTrue(!!topicSourcePlaceholder);
+    assertEquals(getComputedStyle(topicSourcePlaceholder).display, 'none');
+
+    assertTrue(!!weatherUnitPlaceholder);
+    assertEquals(getComputedStyle(weatherUnitPlaceholder).display, 'none');
   });
 
   test('sets ambient mode enabled in store on first load', async () => {
@@ -394,15 +454,15 @@ export function AmbientSubpageTest() {
         const reloadCalledPromise = new Promise<void>((resolve) => {
           PersonalizationRouter.reloadAtAmbient = resolve;
         });
-        initElement(AlbumsSubpage, {
-          path: Paths.AmbientAlbums,
-          disabled: true,
-        });
+        let albumsSubpageElement = initElement(AlbumsSubpage);
+        personalizationStore.data.ambient.ambientModeEnabled = false;
+        personalizationStore.notifyObservers();
+        await waitAfterNextRender(albumsSubpageElement);
 
         await reloadCalledPromise;
       });
 
-  test('has spinner when no albums on albums subpage', async () => {
+  test('show placeholders when no albums on albums subpage', async () => {
     ambientSubpageElement = initElement(AmbientSubpage, {
       path: Paths.AmbientAlbums,
       queryParams: {topicSource: TopicSource.kGooglePhotos}
@@ -417,9 +477,15 @@ export function AmbientSubpageTest() {
     assertFalse(albumsSubpage.hidden);
     await waitAfterNextRender(albumsSubpage);
 
-    let spinner = albumsSubpage.shadowRoot!.querySelector('paper-spinner-lite');
-    assertTrue(!!spinner);
-    assertTrue(spinner.active);
+    const descPlaceholder =
+        albumsSubpage.shadowRoot!.querySelector('#descPlaceholderContainer');
+    assertTrue(!!descPlaceholder);
+    assertNotEquals(getComputedStyle(descPlaceholder).display, 'none');
+
+    const albumsPlaceholder =
+        albumsSubpage.shadowRoot!.querySelector('#albumsPlaceholderContainer');
+    assertTrue(!!albumsPlaceholder);
+    assertNotEquals(getComputedStyle(albumsPlaceholder).display, 'none');
 
     personalizationStore.data.ambient.albums = ambientProvider.albums;
     personalizationStore.data.ambient.topicSource = TopicSource.kGooglePhotos;
@@ -428,9 +494,11 @@ export function AmbientSubpageTest() {
     personalizationStore.notifyObservers();
     await waitAfterNextRender(albumsSubpage);
 
-    spinner = albumsSubpage.shadowRoot!.querySelector('paper-spinner-lite');
-    assertTrue(!!spinner);
-    assertEquals(getComputedStyle(spinner).display, 'none');
+    assertTrue(!!descPlaceholder);
+    assertEquals(getComputedStyle(descPlaceholder).display, 'none');
+
+    assertTrue(!!albumsPlaceholder);
+    assertEquals(getComputedStyle(albumsPlaceholder).display, 'none');
   });
 
   test('has correct albums on Google Photos albums subpage', async () => {
@@ -637,4 +705,4 @@ export function AmbientSubpageTest() {
         ambientSubpageElement.shadowRoot!.querySelector('ambient-zero-state');
     assertTrue(!!zeroState);
   });
-}
+});

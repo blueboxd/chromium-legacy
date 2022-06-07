@@ -693,25 +693,25 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
 String StylePropertySerializer::ContainerValue() const {
   CHECK_EQ(containerShorthand().length(), 2u);
   CHECK_EQ(containerShorthand().properties()[0],
-           &GetCSSPropertyContainerType());
-  CHECK_EQ(containerShorthand().properties()[1],
            &GetCSSPropertyContainerName());
+  CHECK_EQ(containerShorthand().properties()[1],
+           &GetCSSPropertyContainerType());
 
   CSSValueList* list = CSSValueList::CreateSlashSeparated();
 
-  const CSSValue* type =
-      property_set_.GetPropertyCSSValue(GetCSSPropertyContainerType());
   const CSSValue* name =
       property_set_.GetPropertyCSSValue(GetCSSPropertyContainerName());
+  const CSSValue* type =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyContainerType());
 
-  DCHECK(type);
   DCHECK(name);
+  DCHECK(type);
 
-  list->Append(*type);
+  list->Append(*name);
 
-  if (!(IsA<CSSIdentifierValue>(name) &&
-        To<CSSIdentifierValue>(*name).GetValueID() == CSSValueID::kNone)) {
-    list->Append(*name);
+  if (!(IsA<CSSIdentifierValue>(type) &&
+        To<CSSIdentifierValue>(*type).GetValueID() == CSSValueID::kNone)) {
+    list->Append(*type);
   }
 
   return list->CssText();
@@ -1258,6 +1258,16 @@ String StylePropertySerializer::GetShorthandValueForGrid(
           CSSValueID::kAuto) {
     return GetShorthandValueForGridTemplate(shorthand);
   }
+
+  // If we have grid-auto-{flow,row,column} along with named lines, we can't
+  // serialize as a "grid" shorthand, as a syntax that combines the two is not
+  // valid per the grammar.
+  const CSSValue* template_area_value =
+      property_set_.GetPropertyCSSValue(*shorthand.properties()[2]);
+  if (*template_area_value !=
+      *(To<Longhand>(GetCSSPropertyGridTemplateAreas()).InitialValue()))
+    return String();
+
   const CSSValue* template_row_values =
       property_set_.GetPropertyCSSValue(*shorthand.properties()[0]);
   const CSSValue* template_column_values =
@@ -1365,11 +1375,9 @@ String StylePropertySerializer::GetShorthandValueForGridTemplate(
         result.Append('"');
         ++grid_area_index;
       }
-      if (row_value_text != "auto") {
-        if (!result.IsEmpty())
-          result.Append(' ');
-        result.Append(row_value_text);
-      }
+      if (!result.IsEmpty())
+        result.Append(' ');
+      result.Append(row_value_text);
     }
   }
   if (!(IsA<CSSIdentifierValue>(template_column_values) &&

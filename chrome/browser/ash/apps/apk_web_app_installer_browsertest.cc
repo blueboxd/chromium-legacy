@@ -100,7 +100,7 @@ void ExpectInitialManifestFieldsFromWebAppInstallInfo(
     const web_app::WebApp* web_app,
     const GURL& url) {
   // Manifest fields:
-  EXPECT_EQ(web_app->name(), "App Title");
+  EXPECT_EQ(web_app->untranslated_name(), "App Title");
   EXPECT_EQ(web_app->start_url(), url);
   EXPECT_EQ(web_app->scope().spec(), url.Resolve("scope"));
   EXPECT_EQ(web_app->display_mode(), web_app::DisplayMode::kBrowser);
@@ -434,8 +434,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerDelayedArcStartBrowserTest,
   {
     for (const auto& id : installed_web_app_ids_) {
       base::RunLoop run_loop;
-      provider_->install_finalizer().UninstallExternalWebApp(
-          id, webapps::WebappUninstallSource::kArc,
+      provider_->install_finalizer().UninstallWebApp(
+          id, webapps::WebappUninstallSource::kShelf,
           base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
             EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
             run_loop.Quit();

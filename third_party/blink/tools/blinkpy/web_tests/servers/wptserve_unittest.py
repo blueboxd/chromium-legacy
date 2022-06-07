@@ -5,6 +5,7 @@
 import json
 import logging
 import six
+import unittest
 
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.log_testing import LoggingTestCase
@@ -74,13 +75,17 @@ class TestWPTServe(LoggingTestCase):
         server = WPTServe(self.port, '/foo')
         server._prepare_config()
         config = json.loads(
-            self.port._filesystem.files[server._config_file])
+            self.port._filesystem.read_text_file(server._config_file))
         self.assertEqual(len(config['aliases']), 1)
         self.assertDictEqual(config['aliases'][0], {
             'url-path': '/gen/',
             'local-dir': '/mock-checkout/out/Release/gen'
         })
 
+    @unittest.skipIf(
+        six.PY3,
+        'This test is flaky when run as part of the suite. See crbug.com/1308877'
+    )
     def test_start_with_stale_pid(self):
         # Allow asserting about debug logs.
         self.set_logging_level(logging.DEBUG)
@@ -97,9 +102,10 @@ class TestWPTServe(LoggingTestCase):
         server.start()
         # PID file should be overwritten (MockProcess.pid == 42)
         self.assertEqual(server._pid, 42)
-        self.assertEqual(self.host.filesystem.files[server._pid_file], b'42')
+        self.assertEqual(self.host.filesystem.read_text_file(server._pid_file),
+                         '42')
         # Config file should exist.
-        json.loads(self.port._filesystem.files[server._config_file])
+        json.loads(self.port._filesystem.read_text_file(server._config_file))
 
         logs = self.logMessages()
         self.assertEqual(len(logs), 4)
@@ -111,6 +117,10 @@ class TestWPTServe(LoggingTestCase):
         self.assertEqual(logs[-1],
                          'DEBUG: wptserve successfully started (pid = 42)\n')
 
+    @unittest.skipIf(
+        six.PY3,
+        'This test is flaky when run as part of the suite. See crbug.com/1308877'
+    )
     def test_start_with_unkillable_zombie_process(self):
         # Allow asserting about debug logs.
         self.set_logging_level(logging.DEBUG)
@@ -129,7 +139,8 @@ class TestWPTServe(LoggingTestCase):
 
         server.start()
         self.assertEqual(server._pid, 42)
-        self.assertEqual(self.host.filesystem.files[server._pid_file], b'42')
+        self.assertEqual(self.host.filesystem.read_text_file(server._pid_file),
+                         '42')
 
         # In this case, we'll try to kill the process repeatedly,
         # then give up and just try to start a new process anyway.

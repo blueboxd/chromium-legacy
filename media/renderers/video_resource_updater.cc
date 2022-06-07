@@ -185,6 +185,11 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_I422A:
+    case PIXEL_FORMAT_I444A:
+    case PIXEL_FORMAT_YUV420AP10:
+    case PIXEL_FORMAT_YUV422AP10:
+    case PIXEL_FORMAT_YUV444AP10:
     case PIXEL_FORMAT_UNKNOWN:
       break;
   }
@@ -1029,6 +1034,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         output_plane_resource_size.height() > max_resource_size_) {
       // This output plane has invalid geometry so return an empty external
       // resources.
+      DLOG(ERROR)
+          << "Video resource is too large to upload. Maximum dimension is "
+          << max_resource_size_ << " and resource is "
+          << output_plane_resource_size.ToString();
       return VideoFrameExternalResources();
     }
   }

@@ -39,6 +39,7 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/web_ui.mojom.h"
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
+#include "content/public/common/extra_mojo_js_features.mojom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/widget_type.h"
@@ -108,6 +109,7 @@
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -150,6 +152,7 @@ class Origin;
 namespace content {
 
 class AgentSchedulingGroup;
+class AXTreeDistiller;
 class BlinkInterfaceRegistryImpl;
 class DocumentState;
 class MediaPermissionDispatcher;
@@ -381,8 +384,6 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       blink::TaskType task_type) override;
   int GetEnabledBindings() override;
-  void EnableMojoJsBindingsWithBroker(
-      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>) override;
   void SetAccessibilityModeForTest(ui::AXMode new_mode) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   const RenderFrameMediaPlaybackOptions& GetRenderFrameMediaPlaybackOptions()
@@ -419,7 +420,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // mojom::FrameBindingsControl implementation:
   void AllowBindings(int32_t enabled_bindings_flags) override;
-  void EnableMojoJsBindings() override;
+  void EnableMojoJsBindings(
+      content::mojom::ExtraMojoJsFeaturesPtr features) override;
+  void EnableMojoJsBindingsWithBroker(
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>) override;
   void BindWebUI(
       mojo::PendingAssociatedReceiver<mojom::WebUI> Receiver,
       mojo::PendingAssociatedRemote<mojom::WebUIHost> remote) override;
@@ -518,7 +522,8 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebRemoteFrame* CreateFencedFrame(
       const blink::WebElement& fenced_frame_element,
       blink::CrossVariantMojoAssociatedReceiver<
-          blink::mojom::FencedFrameOwnerHostInterfaceBase> receiver) override;
+          blink::mojom::FencedFrameOwnerHostInterfaceBase> receiver,
+      blink::mojom::FencedFrameMode mode) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void WillDetach() override;
   void FrameDetached() override;
@@ -752,6 +757,8 @@ class CONTENT_EXPORT RenderFrameImpl
     send_content_state_immediately_ = value;
   }
 
+  base::WeakPtr<media::DecoderFactory> GetMediaDecoderFactory();
+
  protected:
   explicit RenderFrameImpl(CreateParams params);
 
@@ -851,6 +858,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void SnapshotAccessibilityTree(
       mojom::SnapshotAccessibilityTreeParamsPtr params,
       SnapshotAccessibilityTreeCallback callback) override;
+  void SnapshotAndDistillAXTree(
+      SnapshotAndDistillAXTreeCallback callback) override;
   void GetSerializedHtmlWithLocalLinks(
       const base::flat_map<GURL, base::FilePath>& url_map,
       const base::flat_map<blink::FrameToken, base::FilePath>& frame_token_map,
@@ -1341,6 +1350,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // the time the next script context is created.
   bool enable_mojo_js_bindings_ = false;
 
+  // This struct describes a set of MojoJs features to be enabled when the next
+  // script context is created (requires MojoJs to be enabled).
+  content::mojom::ExtraMojoJsFeaturesPtr mojo_js_features_;
+
   mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote_;
   mojo::ReceiverSet<service_manager::mojom::InterfaceProvider>
       interface_provider_receivers_;
@@ -1388,6 +1401,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Contains a representation of the accessibility tree stored in content for
   // use inside of Blink.
   std::unique_ptr<blink::WebComputedAXTree> computed_ax_tree_;
+
+  // The AXTreeDistiller for this render frame.
+  std::unique_ptr<AXTreeDistiller> ax_tree_distiller_;
 
   // Used for tracking a frame's main frame document intersection and
   // and replicating it to the browser when it changes.

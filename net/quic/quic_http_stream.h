@@ -14,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/idempotency.h"
 #include "net/base/io_buffer.h"
@@ -50,8 +51,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
   ~QuicHttpStream() override;
 
   // HttpStream implementation.
-  int InitializeStream(const HttpRequestInfo* request_info,
-                       bool can_send_early,
+  void RegisterRequest(const HttpRequestInfo* request_info) override;
+  int InitializeStream(bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
                        CompletionOnceCallback callback) override;

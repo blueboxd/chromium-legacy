@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/startup_data.h"
@@ -104,10 +105,6 @@ class ChromeWebAuthenticationDelegate;
 namespace vr {
 class ChromeXrIntegrationClient;
 }
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-class BackgroundAttributionFlusher;
 #endif
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
@@ -692,8 +689,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                               const url::Origin& requesting_origin,
                               const url::Origin& embedding_origin) override;
 
-  bool ShouldLoadExtraIcuDataFile(std::string* split_name) override;
-
   bool ArePersistentMediaDeviceIDsAllowed(
       content::BrowserContext* browser_context,
       const GURL& scope,
@@ -777,8 +772,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool IsFindInPageDisabledForOrigin(const url::Origin& origin) override;
   bool IsFirstPartySetsEnabled() override;
+  base::Value::Dict GetFirstPartySetsOverrides() override;
 
-  void FlushBackgroundAttributions(base::OnceClosure callback) override;
   bool ShouldPreconnectNavigation(
       content::BrowserContext* browser_context) override;
 
@@ -898,9 +893,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   StartupData startup_data_;
 
-#if BUILDFLAG(IS_ANDROID)
-  std::unique_ptr<BackgroundAttributionFlusher> background_attribution_flusher_;
-#else
+#if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<ChromeSerialDelegate> serial_delegate_;
   std::unique_ptr<ChromeHidDelegate> hid_delegate_;
   std::unique_ptr<ChromeWebAuthenticationDelegate> web_authentication_delegate_;

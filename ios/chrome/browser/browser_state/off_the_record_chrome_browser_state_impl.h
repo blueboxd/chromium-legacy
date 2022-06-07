@@ -5,11 +5,16 @@
 #ifndef IOS_CHROME_BROWSER_BROWSER_STATE_OFF_THE_RECORD_CHROME_BROWSER_STATE_IMPL_H_
 #define IOS_CHROME_BROWSER_BROWSER_STATE_OFF_THE_RECORD_CHROME_BROWSER_STATE_IMPL_H_
 
+#include "base/time/time.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/off_the_record_chrome_browser_state_io_data.h"
 
 namespace sync_preferences {
 class PrefServiceSyncable;
+}
+
+namespace policy {
+class UserCloudPolicyManager;
 }
 
 // The implementation of ChromeBrowserState that is used for incognito browsing.
@@ -31,6 +36,7 @@ class OffTheRecordChromeBrowserStateImpl final : public ChromeBrowserState {
   void DestroyOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
   BrowserStatePolicyConnector* GetPolicyConnector() override;
+  policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
   PrefService* GetPrefs() override;
   ChromeBrowserStateIOData* GetIOData() override;
   void ClearNetworkingHistorySince(base::Time time,

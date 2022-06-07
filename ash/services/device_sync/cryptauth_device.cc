@@ -6,14 +6,14 @@
 
 #include <sstream>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/services/device_sync/proto/cryptauth_logging.h"
 #include "ash/services/device_sync/value_string_encoding.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/values_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -224,4 +224,4 @@ std::ostream& operator<<(std::ostream& stream, const CryptAuthDevice& device) {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

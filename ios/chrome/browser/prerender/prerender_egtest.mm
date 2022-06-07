@@ -12,6 +12,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/version_info/version_info.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -136,6 +137,11 @@ GREYElementInteraction* RequestDesktopButton() {
         @"Disabled for iPad due to alternate letters educational screen.");
   }
 
+  // TODO(crbug.com/1315304): Reenable.
+  if ([ChromeEarlGrey isNewOmniboxPopupEnabled]) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for new popup");
+  }
+
   [self addURLToHistory];
   const GURL pageURL = self.testServer->GetURL(kPageURL);
   NSString* pageString = base::SysUTF8ToNSString(pageURL.GetContent());
@@ -167,14 +173,20 @@ GREYElementInteraction* RequestDesktopButton() {
 
   // Open the suggestion. The suggestion needs to be the first suggestion to
   // have the prerenderer activated.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(pageString),
-                                   grey_kindOfClassName(@"FadeTruncatingLabel"),
-                                   grey_ancestor(grey_accessibilityID(
-                                       @"omnibox suggestion 0")),
-                                   grey_sufficientlyVisible(), nil)]
-      performAction:grey_tap()];
+  id<GREYMatcher> rowMatcher =
+      [ChromeEarlGrey isNewOmniboxPopupEnabled]
+          ? grey_allOf(
+                grey_accessibilityValue(pageString),
+                grey_ancestor(grey_accessibilityID(@"omnibox suggestion 0 0")),
+                chrome_test_util::OmniboxPopupRow(), grey_sufficientlyVisible(),
+                nil)
+          : grey_allOf(grey_descendant(
+                           chrome_test_util::StaticTextWithAccessibilityLabel(
+                               pageString)),
+                       grey_accessibilityID(@"omnibox suggestion 0 0"),
+                       chrome_test_util::OmniboxPopupRow(),
+                       grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:rowMatcher] performAction:grey_tap()];
 
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
   GREYAssertEqual(visitCountBeforePrerender + 1, _visitCounter,
@@ -215,7 +227,7 @@ GREYElementInteraction* RequestDesktopButton() {
                                    grey_accessibilityLabel(pageString),
                                    grey_kindOfClassName(@"FadeTruncatingLabel"),
                                    grey_ancestor(grey_accessibilityID(
-                                       @"omnibox suggestion 0")),
+                                       @"omnibox suggestion 0 0")),
                                    grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
@@ -240,6 +252,79 @@ GREYElementInteraction* RequestDesktopButton() {
   // The content of the page can be cached, check the button also.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestDesktopButton() assertWithMatcher:grey_notNil()];
+}
+
+@end
+
+// Test case for the prerender, except new popup flag is enabled.
+@interface NewOmniboxPopupPrerenderTestCase : PrerenderTestCase {
+  // Which variant of the new popup flag to use.
+  std::string _variant;
+}
+
+@end
+
+@implementation NewOmniboxPopupPrerenderTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config = [super appConfigurationForTestCase];
+
+  config.additional_args.push_back(
+      "--enable-features=" + std::string(kIOSOmniboxUpdatedPopupUI.name) + "<" +
+      std::string(kIOSOmniboxUpdatedPopupUI.name));
+
+  config.additional_args.push_back(
+      "--force-fieldtrials=" + std::string(kIOSOmniboxUpdatedPopupUI.name) +
+      "/Test");
+
+  config.additional_args.push_back(
+      "--force-fieldtrial-params=" +
+      std::string(kIOSOmniboxUpdatedPopupUI.name) + ".Test:" +
+      std::string(kIOSOmniboxUpdatedPopupUIVariationName) + "/" + _variant);
+
+  return config;
+}
+
+@end
+
+// Test case for the prerender, except new popup flag is enabled with variant 1.
+@interface NewOmniboxPopupPrerenderVariant1TestCase
+    : NewOmniboxPopupPrerenderTestCase
+@end
+
+@implementation NewOmniboxPopupPrerenderVariant1TestCase
+
+- (void)setUp {
+  _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation1);
+
+  // |appConfigurationForTestCase| is called during [super setUp], and
+  // depends on _variant.
+  [super setUp];
+}
+
+// This is currently needed to prevent this test case from being ignored.
+- (void)testEmpty {
+}
+
+@end
+
+// Test case for the prerender, except new popup flag is enabled with variant 2.
+@interface NewOmniboxPopupPrerenderVariant2TestCase
+    : NewOmniboxPopupPrerenderTestCase
+@end
+
+@implementation NewOmniboxPopupPrerenderVariant2TestCase
+
+- (void)setUp {
+  _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation2);
+
+  // |appConfigurationForTestCase| is called during [super setUp], and
+  // depends on _variant.
+  [super setUp];
+}
+
+// This is currently needed to prevent this test case from being ignored.
+- (void)testEmpty {
 }
 
 @end

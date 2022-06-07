@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/session_id.h"
@@ -56,7 +57,6 @@
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_illustrated_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
@@ -79,6 +79,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/modals/modals_api.h"
@@ -754,6 +755,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
   TableViewModel* model = self.tableViewModel;
 
+  UIColor* actionsTextColor = self.styler.tintColor
+                                  ? self.styler.tintColor
+                                  : [UIColor colorNamed:kBlueColor];
+
   [model addSectionWithIdentifier:SectionIdentifierSuggestedActions];
   TableViewTextHeaderFooterItem* header = [[TableViewTextHeaderFooterItem alloc]
       initWithType:ItemTypeSuggestedActionsHeader];
@@ -765,7 +770,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       initWithType:ItemTypeSuggestedActionSearchWeb];
   searchWebItem.title =
       l10n_util::GetNSString(IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_WEB);
-  searchWebItem.image = [[UIImage imageNamed:@"popup_menu_web"]
+  searchWebItem.textColor = actionsTextColor;
+  searchWebItem.image = [[UIImage imageNamed:@"suggested_action_web"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [model addItem:searchWebItem
       toSectionWithIdentifier:SectionIdentifierSuggestedActions];
@@ -776,8 +782,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
         initWithType:ItemTypeSuggestedActionSearchOpenTabs];
     searchOpenTabsItem.title = l10n_util::GetNSString(
         IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_OPEN_TABS);
-    searchOpenTabsItem.image = [[UIImage imageNamed:@"popup_menu_open_tabs"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    searchOpenTabsItem.textColor = actionsTextColor;
+    searchOpenTabsItem.image =
+        [[UIImage imageNamed:@"suggested_action_open_tabs"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [model addItem:searchOpenTabsItem
         toSectionWithIdentifier:SectionIdentifierSuggestedActions];
   }
@@ -785,6 +793,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   TableViewTabsSearchSuggestedHistoryItem* searchHistoryItem =
       [[TableViewTabsSearchSuggestedHistoryItem alloc]
           initWithType:ItemTypeSuggestedActionSearchHistory];
+  searchHistoryItem.textColor = actionsTextColor;
   [model addItem:searchHistoryItem
       toSectionWithIdentifier:SectionIdentifierSuggestedActions];
 }

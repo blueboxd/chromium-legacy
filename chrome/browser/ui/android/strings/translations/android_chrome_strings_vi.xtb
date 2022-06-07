@@ -44,7 +44,7 @@
 <translation id="1208340532756947324">Để đồng bộ hóa và cá nhân hóa trên các thiết bị, hãy bật tính năng đồng bộ hóa</translation>
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="1227058898775614466">Lịch sử di chuyển</translation>
-<translation id="1231733316453485619">Bật tính năng đồng bộ hóa?</translation>
+<translation id="1231733316453485619">Bạn muốn bật tính năng đồng bộ hóa?</translation>
 <translation id="123724288017357924">Tải lại trang hiện tại, bỏ qua nội dung được lưu trong bộ nhớ đệm</translation>
 <translation id="1239792311949352652">Chia sẻ nhanh trang này. Để chỉnh sửa lối tắt này, hãy chuyển đến phần Cài đặt.</translation>
 <translation id="1240190568154816272">Mẹo dùng Chrome</translation>
@@ -184,7 +184,6 @@ Khi xoá nhật ký duyệt web (tất cả hoặc một trang cụ thể), bạ
 <translation id="200114059308480249">Bao gồm văn bản xung quanh trong các lượt tìm kiếm của Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# tệp}other{# tệp}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> sẽ mở ra trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ của Google<ph name="END_LINK1" /> cũng như <ph name="BEGIN_LINK2" />Điều khoản dịch vụ bổ sung của Google Chrome và Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Chính sách quyền riêng tư<ph name="END_LINK3" /> cũng được áp dụng.</translation>
-<translation id="2019145049163614359">Xoá mối quan tâm?</translation>
 <translation id="2020309681647789787">Bạn sẽ thấy nhật ký duyệt web trên tất cả thiết bị đã đồng bộ hoá của mình, để bạn có thể tiếp tục thực hiện những việc bạn đang làm</translation>
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
@@ -213,6 +212,7 @@ Nhấn vào từ bất kỳ để tìm kiếm. Để điều chỉnh nội dung 
 <translation id="2141396931810938595">Dựa trên tùy chọn sử dụng của bạn</translation>
 <translation id="214888715418183969">Chọn những thông tin mà bạn muốn chia sẻ với Chrome. Những thông tin bạn chia sẻ sẽ góp phần cải thiện các tính năng, hiệu suất và độ ổn định của Chrome.</translation>
 <translation id="2149973817440762519">Chỉnh sửa dấu trang</translation>
+<translation id="2155214902713132423">Hiện không dùng được phương thức xác minh này trên thiết bị này. Hãy chọn một cách khác trên thiết bị còn lại.</translation>
 <translation id="2157851137955077194">Để chia sẻ nội dung trên điện thoại của bạn với một thiết bị khác, hãy bật tính năng đồng bộ hóa trong phần Cài đặt của Chrome trên cả hai thiết bị</translation>
 <translation id="2158408438301413340">Chrome không thể kiểm tra một số mật khẩu</translation>
 <translation id="2169830938017475061">Bây giờ</translation>
@@ -344,7 +344,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2888126860611144412">Giới thiệu về Chrome</translation>
 <translation id="2891154217021530873">Ngừng tải trang</translation>
 <translation id="2892647708214602204">Bạn sẽ nhìn thấy thông báo khi tệp này sẵn sàng để tải xuống</translation>
-<translation id="2893180576842394309">Google có thể sử dụng nhật ký hoạt động của bạn để điều chỉnh tính năng Tìm kiếm và các dịch vụ khác của Google cho phù hợp hơn với bạn</translation>
+<translation id="2893180576842394309">Google có thể sử dụng lịch sử của bạn để điều chỉnh tính năng Tìm kiếm và các dịch vụ khác của Google cho phù hợp với bạn</translation>
 <translation id="2900528713135656174">Tạo sự kiện</translation>
 <translation id="2901411048554510387">Hiển thị nội dung đề xuất cho <ph name="WEBSITE_TITLE" /></translation>
 <translation id="2904414404539560095">Danh sách các thiết bị mà bạn có thể chia sẻ một thẻ đã mở trên toàn màn hình.</translation>
@@ -470,7 +470,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3524334353996115845">Cho phép <ph name="ORIGIN" /> xác minh danh tính của bạn</translation>
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3542235761944717775">Còn <ph name="KILOBYTES" /> KB</translation>
-<translation id="3549657413697417275">Tìm kiếm trong nhật ký duyệt web</translation>
+<translation id="3549657413697417275">Tìm kiếm trong lịch sử duyệt web</translation>
 <translation id="3557336313807607643">Thêm vào danh bạ</translation>
 <translation id="3563767357928833671">Đã hiện nội dung của bảng nhớ tạm</translation>
 <translation id="3566923219790363270">Chrome vẫn đang chuẩn bị mô-đun Thực tế ảo. Hãy khởi động lại Chrome sau.</translation>
@@ -622,7 +622,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="451872707440238414">Tìm kiếm trong các dấu trang</translation>
 <translation id="4521489764227272523">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị đã đồng bộ hóa của bạn.
 
-Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="452750746583162491">Xem lại các dữ liệu đã đồng bộ hóa của bạn</translation>
 <translation id="4532845899244822526">Chọn thư mục</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> thẻ}other{<ph name="TAB_COUNT_MANY" /> thẻ, <ph name="TAB_COUNT_INCOGNITO" /> ẩn danh}}</translation>
@@ -733,7 +733,6 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="5091199029769593641">Bạn sẽ sớm thấy các tin bài của <ph name="SITE_NAME" /> khi mở một thẻ mới. Các trang web bạn theo dõi sẽ được lưu trong tài khoản Google của bạn. Bạn có thể quản lý các trang web đó trong phần cài đặt Khám phá.</translation>
 <translation id="5091249083535528968">Dữ liệu sử dụng mở rộng</translation>
 <translation id="509429900233858213">Đã xảy ra lỗi.</translation>
-<translation id="5098190077610408701">Thêm mối quan tâm?</translation>
 <translation id="5102401324271069229">Nếu một trang web cố đánh cắp mật khẩu của bạn hoặc nếu bạn tải một tệp gây hại xuống, thì có thể Chrome sẽ gửi các URL (bao gồm cả các đoạn nội dung trên trang) đến tính năng Duyệt web an toàn</translation>
 <translation id="510275257476243843">Còn 1 giờ</translation>
 <translation id="5115811374190515607">đến <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="5906513782029855931">Bằng việc biết được URL của trang web, Trợ lý Google có thể giúp bạn hoàn tất một số công việc. Bạn có thể tắt Trợ lý trong phần cài đặt của Chrome.</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5919204609460789179">Cập nhật <ph name="PRODUCT_NAME" /> để bắt đầu đồng bộ hóa</translation>
+<translation id="5938820472109305350">Thêm <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Sử dụng Google để tìm kiếm</translation>
 <translation id="5945035219773565305">Đề xuất hiện tại: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Đang xem trang hiển thị công khai</translation>
@@ -898,7 +898,6 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="6033245666633565791">Với <ph name="BEGIN_LINK" />Hộp cát về quyền riêng tư<ph name="END_LINK" />, Chrome sẽ phát triển các công nghệ mới để giúp bạn không bị theo dõi trên nhiều trang web trong khi vẫn duy trì môi trường web mở.
 
 Chế độ dùng thử Hộp cát về quyền riêng tư vẫn đang trong giai đoạn phát triển và được cung cấp ở một số khu vực. Các trang web hiện có thể dùng thử Hộp cát về quyền riêng tư trong khi tiếp tục sử dụng các công nghệ web hiện tại như cookie của bên thứ ba.</translation>
-<translation id="6036057147555329831">Bộ chuyển đổi giao diện (ICU) bổ sung</translation>
 <translation id="6039379616847168523">Chuyển sang thẻ tiếp theo</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="604124094241169006">Tự động</translation>
@@ -1023,6 +1022,7 @@ Mã thông báo tin cậy giúp cải thiện quyền riêng tư trên web và 
 <translation id="663674369910034433">Bạn có thể xem thêm các tùy chọn cài đặt liên quan đến quyền riêng tư, bảo mật và hoạt động thu thập dữ liệu trong phần <ph name="BEGIN_LINK1" />Đồng bộ hóa<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Các dịch vụ của Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Để giúp cải thiện ứng dụng, Chrome sẽ gửi dữ liệu sử dụng và dữ liệu sự cố cho Google. <ph name="BEGIN_UMA_LINK" />Quản lý<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Luôn chặn</translation>
+<translation id="6641780377503683465">Xoá <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6645629752388991326">Kiểm soát việc thiết bị nào có thể đăng nhập bằng cách sử dụng thiết bị này làm khoá bảo mật.</translation>
 <translation id="6648459603387803038">Quản trị viên có thể thay đổi quy trình thiết lập trình duyệt của bạn từ xa. Hoạt động trên thiết bị này cũng có thể được quản lý bên ngoài Chrome.</translation>
@@ -1156,7 +1156,7 @@ Mã thông báo tin cậy giúp cải thiện quyền riêng tư trên web và 
 <translation id="7403691278183511381">Trải nghiệm lần chạy đầu tiên của Chrome</translation>
 <translation id="741204030948306876">Có, tôi đồng ý</translation>
 <translation id="7419565702166471774">Luôn sử dụng kết nối an toàn</translation>
-<translation id="7431991332293347422">Kiểm soát cách Google sử dụng nhật ký duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm và các dịch vụ khác</translation>
+<translation id="7431991332293347422">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm và các dịch vụ khác</translation>
 <translation id="7435356471928173109">Quản trị viên đã tắt</translation>
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
 <translation id="7443901082822119557">Ở chế độ ẩn danh, các trang web không thể dùng cookie để giám sát hoạt động duyệt web của bạn trên nhiều trang web, chẳng hạn như để cá nhân hoá quảng cáo. Do đó, các tính năng trên một số trang web có thể hoạt động không đúng cách.</translation>
@@ -1321,7 +1321,7 @@ Mã thông báo tin cậy giúp cải thiện quyền riêng tư trên web và 
 <translation id="8255617931166444521">Các trang web chỉ có thể dùng cookie để xem hoạt động duyệt web của bạn trên trang web của riêng họ</translation>
 <translation id="8259179246279078674">Vì các trang tải trước đã được mã hóa, nên Google sẽ không tìm hiểu bất cứ điều gì về nội dung trên trang được tải trước. Máy chủ của Google sẽ tìm hiểu những trang web nào đã được tải trước ở chế độ riêng tư. Thông tin này chỉ được dùng để tải trước các trang và không được liên kết với thông tin khác trong Tài khoản Google của bạn.</translation>
 <translation id="8260126382462817229">Thử đăng nhập lại</translation>
-<translation id="8261506727792406068">Xoá</translation>
+<translation id="8261506727792406068">Xóa</translation>
 <translation id="82619448491672958">Xem các thẻ khác</translation>
 <translation id="8266862848225348053">Vị trí tải xuống</translation>
 <translation id="8274165955039650276">Xem tệp đã tải xuống</translation>
@@ -1395,7 +1395,7 @@ Mã thông báo tin cậy giúp cải thiện quyền riêng tư trên web và 
 <translation id="860043288473659153">Tên chủ thẻ</translation>
 <translation id="8602358303461588329">Đã đóng trang Đăng nhập vào Chrome.</translation>
 <translation id="860282621117673749">Thông báo khi có mặt hàng giảm giá</translation>
-<translation id="8616006591992756292">Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="8616006591992756292">Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Mở URL đề xuất được chỉ định trong nội dung được tải xuống?</translation>
 <translation id="8621068256433641644">điện thoại</translation>
 <translation id="8636825310635137004">Để có các thẻ từ các thiết bị khác của bạn, hãy bật đồng bộ hóa.</translation>

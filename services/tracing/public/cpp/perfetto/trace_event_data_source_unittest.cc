@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/common/task_annotator.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -1317,7 +1316,13 @@ TEST_F(TraceEventDataSourceTest, EventWithConvertableArgs) {
   EXPECT_EQ(annotations[1].legacy_json_value(), kArgValue2);
 }
 
-TEST_F(TraceEventDataSourceTest, NestableAsyncTraceEvent) {
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+// TODO(crbug.com/1309080): Re-enable after fix.
+#define MAYBE_NestableAsyncTraceEvent DISABLED_NestableAsyncTraceEvent
+#else
+#define MAYBE_NestableAsyncTraceEvent NestableAsyncTraceEvent
+#endif
+TEST_F(TraceEventDataSourceTest, MAYBE_NestableAsyncTraceEvent) {
   constexpr bool kPrivacyFilteringEnabled = true;
   StartTraceEventDataSource(kPrivacyFilteringEnabled);
 

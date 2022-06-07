@@ -268,7 +268,7 @@ std::vector<IconSizes> CreateRandomDownloadedShortcutsMenuIconsSizes(
 }  // namespace
 
 std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,
-                                     Source::Type source_type) {
+                                     WebAppManagement::Type source_type) {
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
 
   auto web_app = std::make_unique<WebApp>(app_id);
@@ -303,18 +303,18 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
 
   // Generate all possible permutations of field values in a random way:
   if (AreSystemWebAppsSupported() && random.next_bool())
-    app->AddSource(Source::kSystem);
+    app->AddSource(WebAppManagement::kSystem);
   if (random.next_bool())
-    app->AddSource(Source::kPolicy);
+    app->AddSource(WebAppManagement::kPolicy);
   if (random.next_bool())
-    app->AddSource(Source::kWebAppStore);
+    app->AddSource(WebAppManagement::kWebAppStore);
   if (random.next_bool())
-    app->AddSource(Source::kSync);
+    app->AddSource(WebAppManagement::kSync);
   if (random.next_bool())
-    app->AddSource(Source::kDefault);
+    app->AddSource(WebAppManagement::kDefault);
   // Must always be at least one source.
   if (!app->HasAnySources())
-    app->AddSource(Source::kSync);
+    app->AddSource(WebAppManagement::kSync);
 
   if (random.next_bool()) {
     dark_mode_theme_color = SkColorSetA(random.next_uint(), SK_AlphaOPAQUE);
@@ -457,11 +457,8 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   app->SetSyncFallbackData(std::move(sync_fallback_data));
 
   if (random.next_bool()) {
-    LaunchHandler launch_handler;
-    launch_handler.route_to = random.next_enum<LaunchHandler::RouteTo>();
-    launch_handler.navigate_existing_client =
-        random.next_enum<LaunchHandler::NavigateExistingClient>();
-    app->SetLaunchHandler(launch_handler);
+    app->SetLaunchHandler(
+        LaunchHandler{random.next_enum<LaunchHandler::RouteTo>()});
   }
 
   const base::Time manifest_update_time =
@@ -500,7 +497,6 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
 void TestAcceptDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
-    ForInstallableSite for_installable_site,
     WebAppInstallationAcceptanceCallback acceptance_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(acceptance_callback), true /*accept*/,
@@ -510,7 +506,6 @@ void TestAcceptDialogCallback(
 void TestDeclineDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
-    ForInstallableSite for_installable_site,
     WebAppInstallationAcceptanceCallback acceptance_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(acceptance_callback),
@@ -546,11 +541,11 @@ void CheckServiceWorkerStatus(const GURL& url,
   run_loop.Run();
 }
 
-void SetWebAppSettingsDictPref(Profile* profile, const base::StringPiece pref) {
+void SetWebAppSettingsListPref(Profile* profile, const base::StringPiece pref) {
   base::JSONReader::ValueWithError result =
       base::JSONReader::ReadAndReturnValueWithError(
           pref, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-  DCHECK(result.value && result.value->is_dict()) << result.error_message;
+  DCHECK(result.value && result.value->is_list()) << result.error_message;
   profile->GetPrefs()->Set(prefs::kWebAppSettings, std::move(*result.value));
 }
 

@@ -17,7 +17,9 @@
 #include "base/observer_list_types.h"
 #include "base/sequence_checker.h"
 #include "components/account_id/account_id.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/features.h"
 
 namespace apps {
 
@@ -119,7 +121,9 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
               apps::AppType app_type,
               bool should_notify_initialized);
 
-  apps::mojom::AppType GetAppType(const std::string& app_id);
+  AppType GetAppType(const std::string& app_id);
+
+  std::vector<AppPtr> GetAllApps();
 
   void SetAccountId(const AccountId& account_id);
 
@@ -135,12 +139,14 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   //
   // f must be synchronous, and if it asynchronously calls ForEachApp again,
   // it's not guaranteed to see a consistent state.
-  //
-  // TODO(crbug.com/1253250): ForEachApp will be replaced by ForApp when all
-  // fields of the App struct are added.
   template <typename FunctionType>
   void ForEachApp(FunctionType f) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+    if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
+      ForAllApps(std::move(f));
+      return;
+    }
 
     for (const auto& s_iter : mojom_states_) {
       const apps::mojom::App* state = s_iter.second.get();
@@ -198,12 +204,13 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   //
   // f must be synchronous, and if it asynchronously calls ForOneApp again,
   // it's not guaranteed to see a consistent state.
-  //
-  // TODO(crbug.com/1253250): ForOneApp will be replaced by ForApp when all
-  // fields of the App struct are added.
   template <typename FunctionType>
   bool ForOneApp(const std::string& app_id, FunctionType f) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+    if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
+      return ForApp(app_id, std::move(f));
+    }
 
     auto s_iter = mojom_states_.find(app_id);
     const apps::mojom::App* state =

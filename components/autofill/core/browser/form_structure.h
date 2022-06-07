@@ -75,19 +75,43 @@ class FormStructure {
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       LogManager* log_manager);
 
-  // Encodes the proto |upload| request from this FormStructure, and stores
-  // the (single) FormSignature and the signatures of the fields to be uploaded
-  // in |encoded_signatures|.
-  // In some cases, a |login_form_signature| is included as part of the upload.
-  // This field is empty when sending upload requests for non-login forms.
-  bool EncodeUploadRequest(
+  // Encodes this FormStructure as a vector of protobufs.
+  //
+  // On success, the returned vector is non-empty. The first element encodes the
+  // entire FormStructure. In some cases, a |login_form_signature| is included
+  // as part of the upload. This field is empty when sending upload requests for
+  // non-login forms.
+  //
+  // If the FormStructure is a frame-transcending form, there may be additional
+  // AutofillUploadContents elements in the vector, which encode the renderer
+  // forms (see below for an explanation). These elements omit the renderer
+  // form's metadata because retrieving this would require significant plumbing
+  // from ContentAutofillRouter.
+  //
+  // The renderer forms are the forms that constitute a frame-transcending form.
+  // ContentAutofillRouter receives these forms from the renderer and flattens
+  // them into a single fresh form. Only the latter form is exposed to the rest
+  // of the browser process. For server predictions, however, we want to query
+  // and upload also votes also for the signatures of the renderer forms. For
+  // example, the frame-transcending form
+  //   <form id=1>
+  //     <input autocomplete="cc-name">
+  //     <iframe>
+  //       #document
+  //         <form id=2>
+  //           <input autocomplete="cc-number">
+  //         </form>
+  //     </iframe>
+  //   </form>
+  // is flattened into a single form that contains the cc-name and cc-number
+  // fields. We want to vote for this flattened form as well as for the original
+  // form signatures of forms 1 and 2.
+  std::vector<AutofillUploadContents> EncodeUploadRequest(
       const ServerFieldTypeSet& available_field_types,
       bool form_was_autofilled,
-      const std::string& login_form_signature,
+      const base::StringPiece& login_form_signature,
       bool observed_submission,
-      bool is_raw_metadata_uploading_enabled,
-      autofill::AutofillUploadContents* upload,
-      std::vector<FormSignature>* encoded_signatures) const;
+      bool is_raw_metadata_uploading_enabled) const;
 
   // Encodes the proto |query| request for the list of |forms| and their fields
   // that are valid. The queried FormSignatures and FieldSignatures are stored
@@ -526,10 +550,16 @@ class FormStructure {
                           std::vector<FormSignature>* queried_form_signatures,
                           std::set<FormSignature>* processed_forms) const;
 
-  void EncodeFormForUpload(
+  // Encodes the fields of `this` in the in-out parameter `upload`.
+  // Helper function for EncodeUploadRequest().
+  //
+  // If `filter_renderer_form_id` is non-nullopt, only fields that originate
+  // from the given renderer form are encoded. See EncodeUploadRequest() for
+  // details.
+  void EncodeFormFieldsForUpload(
       bool is_raw_metadata_uploading_enabled,
-      autofill::AutofillUploadContents* upload,
-      std::vector<FormSignature>* encoded_signatures) const;
+      absl::optional<FormGlobalId> filter_renderer_form_id,
+      autofill::AutofillUploadContents* upload) const;
 
   // Returns true if the form has no fields, or too many.
   bool IsMalformed() const;
@@ -591,6 +621,9 @@ class FormStructure {
   GURL target_url_;
 
   // The origin of the main frame of this form.
+  // |main_frame_origin| represents the main frame (not necessarily primary
+  // main frame) of the form's frame tree as described by MPArch nested frame
+  // trees. For details, see RenderFrameHost::GetMainFrame().
   url::Origin main_frame_origin_;
 
   // The number of fields able to be auto-filled.

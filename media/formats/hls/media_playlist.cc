@@ -9,15 +9,12 @@
 #include "media/formats/hls/media_segment.h"
 #include "media/formats/hls/playlist_common.h"
 #include "media/formats/hls/types.h"
+#include "media/formats/hls/variable_dictionary.h"
 #include "url/gurl.h"
 
 namespace media::hls {
 
-MediaPlaylist::MediaPlaylist(const MediaPlaylist&) = default;
-
 MediaPlaylist::MediaPlaylist(MediaPlaylist&&) = default;
-
-MediaPlaylist& MediaPlaylist::operator=(const MediaPlaylist&) = default;
 
 MediaPlaylist& MediaPlaylist::operator=(MediaPlaylist&&) = default;
 
@@ -38,9 +35,11 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(base::StringPiece source,
   }
 
   CommonParserState common_state;
+  VariableDictionary::SubstitutionBuffer sub_buffer;
   absl::optional<InfTag> inf_tag;
   absl::optional<XGapTag> gap_tag;
   absl::optional<XDiscontinuityTag> discontinuity_tag;
+  absl::optional<XPlaylistTypeTag> playlist_type_tag;
   std::vector<MediaSegment> segments;
 
   // Get segments out of the playlist
@@ -107,6 +106,13 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(base::StringPiece source,
         case MediaPlaylistTagName::kXIFramesOnly:
           // TODO(crbug.com/1266991): Implement the #EXT-X-I-FRAMES-ONLY tag
           break;
+        case MediaPlaylistTagName::kXPlaylistType: {
+          auto error = ParseUniqueTag(*tag, playlist_type_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
       }
 
       continue;
@@ -116,8 +122,8 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(base::StringPiece source,
     // `GetNextLineItem` should return either a TagItem (handled above) or a
     // UriItem.
     static_assert(absl::variant_size<GetNextLineItemResult>() == 2);
-    auto segment_uri_result =
-        ParseUri(absl::get<UriItem>(std::move(item)), uri);
+    auto segment_uri_result = ParseUri(absl::get<UriItem>(std::move(item)), uri,
+                                       common_state, sub_buffer);
     if (segment_uri_result.has_error()) {
       return std::move(segment_uri_result).error();
     }
@@ -138,19 +144,24 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(base::StringPiece source,
     discontinuity_tag.reset();
   }
 
+  absl::optional<PlaylistType> playlist_type;
+  if (playlist_type_tag) {
+    playlist_type = playlist_type_tag->type;
+  }
+
   return MediaPlaylist(std::move(uri), common_state.GetVersion(),
                        common_state.independent_segments_tag.has_value(),
-                       std::move(segments));
+                       std::move(segments), playlist_type);
 }
 
 MediaPlaylist::MediaPlaylist(GURL uri,
                              types::DecimalInteger version,
                              bool independent_segments,
-                             std::vector<MediaSegment> segments)
-    : uri_(std::move(uri)),
-      version_(version),
-      independent_segments_(independent_segments),
-      segments_(std::move(segments)) {
+                             std::vector<MediaSegment> segments,
+                             absl::optional<PlaylistType> playlist_type)
+    : Playlist(std::move(uri), version, independent_segments),
+      segments_(std::move(segments)),
+      playlist_type_(playlist_type) {
   base::TimeDelta duration;
   for (const auto& segment : segments_) {
     duration += base::Seconds(segment.GetDuration());

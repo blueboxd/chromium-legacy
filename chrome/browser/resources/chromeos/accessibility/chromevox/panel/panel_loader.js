@@ -4,7 +4,21 @@
 
 /**
  * @fileoverview Loads the panel script.
- *
  */
 
-goog.require('Panel');
+goog.require('AutomationTreeWalker');
+goog.require('AutomationUtil');
+goog.require('ChromeVoxState');
+goog.require('EventGenerator');
+goog.require('EventSourceType');
+goog.require('KeyCode');
+goog.require('KeySequence');
+goog.require('LocaleOutputHelper');
+goog.require('Msgs');
+goog.require('Output');
+goog.require('Output');
+goog.require('PanelCommand');
+goog.require('QueueMode');
+goog.require('constants');
+goog.require('cursors.Cursor');
+goog.require('cursors.Range');

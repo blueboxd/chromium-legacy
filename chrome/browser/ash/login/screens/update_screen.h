@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -124,7 +125,7 @@ class UpdateScreen : public BaseScreen,
   bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
   void ExitUpdate(Result result);
 

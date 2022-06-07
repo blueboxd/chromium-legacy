@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -174,9 +175,6 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
   WriteDocument(data.get());
   float zoom_factor = anchor_->GetDocument().GetFrame()->PageZoomFactor();
   frame->SetPageZoomFactor(zoom_factor);
-  // Propagate deprecated DSF for platforms without use-zoom-for-dsf.
-  page_->SetDeviceScaleFactorDeprecated(
-      main_page_->DeviceScaleFactorDeprecated());
   frame->ForceSynchronousDocumentInstall("text/html", data);
 
   Element& main_message = GetElementById("main-message");

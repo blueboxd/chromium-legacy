@@ -176,6 +176,7 @@
 <translation id="4600710005438004015">Браўзеру Chrome не ўдалося абнавіцца да апошняй версіі, таму ў ім няма новых функцый і выпраўленняў сістэмы бяспекі.</translation>
 <translation id="4627412468266359539">Дапамагаць паляпшаць функцыі і прадукцыйнасць Chrome OS Flex шляхам аўтаматычнай адпраўкі ў Google даных пра выкарыстанне і дыягностыку (неабавязкова).</translation>
 <translation id="4633000520311261472">У мэтах бяспекі Chrome мы выключылі некаторыя пашырэнні, якія не значацца ў спісе <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і маглі быць дададзены без вашага ведама.</translation>
+<translation id="469553575393225953">Пашырэнні, праграмы і тэмы з невядомых крыніц могуць прычыніць шкоду вашай прыладзе. Chrome рэкамендуе ўсталёўваць іх толькі з Вэб-крамы Chrome</translation>
 <translation id="4728575227883772061">Збой усталявання з-за нявызначанай памылкі. Калі Google Chrome зараз запушчаны, закрыйце яго і паўтарыце спробу.</translation>
 <translation id="4747730611090640388">Chrome можа ацэньваць, якія вы маеце інтарэсы.  Пасля гэтага сайты, якія вы наведваеце, могуць запытваць у браўзера Chrome інфармацыю пра вашы інтарэсы, каб персаналізаваць для вас рэкламу.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -219,6 +220,7 @@
 <translation id="5736850870166430177">Пры спробе сайта выкрасці пароль або пры спампоўванні шкоднага файла браўзер Chrome можа таксама адпраўляць у Бяспечны прагляд URL-адрасы, уключаючы фрагменты змесціва старонкі</translation>
 <translation id="573759479754913123">Пра Chrome OS</translation>
 <translation id="5756509061973259733">Профіль Chrome з такім уліковым запісам ужо існуе на гэтай прыладзе</translation>
+<translation id="5763280521700030406">Браўзер Chrome заблакіраваў гэты файл, бо ён занадта вялікі, каб прайсці праверку бяспекі. Паўтарыце спробу, выкарыстоўваючы файлы, памер якіх не перавышаў бы 50 МБ</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Не ўдалося запусціць Chrome. Паўтарыце спробу.</translation>
 <translation id="5867197326698922595">Google Chrome спрабуе змяніць паролі.</translation>
@@ -234,6 +236,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome (бэта-версія)</translation>
 <translation id="6235018212288296708">Уваходнае правіла для Google Chrome, якое дазваляе трафік mDNS.</translation>
+<translation id="6247557882553405851">Менеджар пароляў Google</translation>
 <translation id="6291089322031436445">Праграмы Chrome для распрацоўшчыкаў</translation>
 <translation id="6291549208091401781">Google Chrome зараз усталяваны для ўсіх карыстальнікаў на камп'ютары.</translation>
 <translation id="6368958679917195344">Chrome OS працуе дзякуючы дадатковаму <ph name="BEGIN_LINK_CROS_OSS" />праграмнаму забеспячэнню з адкрытым зыходным кодам<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -242,6 +245,7 @@
 <translation id="6506909944137591434">Каб стварыць 3D-карту наваколля, Chrome запытвае дазвол на доступ да камеры</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" />: Google Chrome для распрацоўшчыкаў</translation>
 <translation id="6568793831116033768">Сістэма Chrome OS</translation>
+<translation id="659498884637196217">У Менеджары пароляў Google на гэтай прыладзе</translation>
 <translation id="6632473616050862500">Chrome OS Flex працуе дзякуючы дадатковаму <ph name="BEGIN_LINK_CROS_OSS" />праграмнаму забеспячэнню з адкрытым зыходным кодам<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Доступ у інтэрнэт</translation>
 <translation id="6679975945624592337">Дазволіць браўзеру Google Chrome працаваць у фонавым рэжыме</translation>
@@ -280,6 +284,7 @@
 Дазволы, якія вы ўжо далі вэб-сайтам і праграмам, могуць дзейнічаць для гэтага ўліковага запісу. Кіраваць Уліковымі запісамі Google можна ў <ph name="SETTINGS_LINK_BEGIN" />Наладах<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Раней вы ўваходзілі ў Chrome як <ph name="USER_EMAIL_ADDRESS" />. Для паўторнага ўваходу скарыстайце той жа ўліковы запіс.</translation>
 <translation id="7408085963519505752">Умовы выкарыстання Chrome OS</translation>
+<translation id="7410958280246779049">Chrome заблакіраваў гэты файл, бо ён небяспечны</translation>
 <translation id="7419046106786626209">Chrome OS не ўдалося сінхранізаваць даныя, бо гэта функцыя недаступная для вашага дамена.</translation>
 <translation id="7481213027396403996">Засцеражыце браўзер Chrome ад небяспек</translation>
 <translation id="7486227612705979895">Каб выводзіць прапановы ў адрасным радку, браўзер Chrome будзе карыстацца доступам да вашага Дыска</translation>
@@ -294,7 +299,6 @@
 <translation id="7655455401911432608">Гісторыя прагляду сайтаў – інфармацыя пра сайты, якія вы наведалі праз Chrome на гэтай прыладзе.</translation>
 <translation id="7665553140559834626">Перазапусціць, каб абнавіць &amp;Chrome OS</translation>
 <translation id="7747138024166251722">Усталёўшчыку не ўдалося стварыць часовы каталог. Праверце, ці ёсць вольнае месца на дыску і дазвол на ўсталяванне праграмнага забеспячэння.</translation>
-<translation id="7748512868279796735">Для дадзенага профілю Chrome даступныя гэтыя ўліковыя запісы:</translation>
 <translation id="7761834446675418963">Каб адкрыць Chrome і пачаць прагляд вэб-старонак, націсніце на сваё імя.</translation>
 <translation id="7777080907402804672">Калі відарыс не мае прыдатнага апісання, Chrome паспрабуе дадаць яго для вас. Каб стварыць апісанні, відарысы адпраўляюцца ў Google. Гэты параметр можна адключыць у наладах у любы час.</translation>
 <translation id="7781002470561365167">Даступная новая версія Google Chrome.</translation>
@@ -310,10 +314,12 @@
 <translation id="7951272445806340501">Каб прымяніць абнаўленне, трэба перазапусціць Chrome OS Flex.</translation>
 <translation id="7962410387636238736">Гэты камп'ютар больш не будзе атрымліваць абнаўленні Google Chrome: Windows XP і Windows Vista цяпер не падтрымліваюцца</translation>
 <translation id="79947657522496226">Chrome OS, як і <ph name="BEGIN_LINK_LINUX_OSS" />Асяроддзе распрацоўкі Linux<ph name="END_LINK_LINUX_OSS" />, працуе дзякуючы дадатковаму <ph name="BEGIN_LINK_CROS_OSS" />праграмнаму забеспячэнню з адкрытым зыходным кодам<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="8005666035647241369">У Менеджары пароляў Google на гэтай прыладзе</translation>
 <translation id="8008534537613507642">Пераўсталяваць Chrome</translation>
 <translation id="8013993649590906847">Калі відарыс не мае прыдатнага апісання, Chrome паспрабуе дадаць яго для вас. Каб стварыць апісанні, відарысы адпраўляюцца ў Google.</translation>
 <translation id="8064015586118426197">Chrome OS Flex</translation>
 <translation id="8129812357326543296">Пра &amp;Google Chrome</translation>
+<translation id="822971176939352383">Наступныя ўліковыя запісы не выкарыстаны для ўваходу ні ў адзін з профіляў Chrome. Калі вы хочаце выкарыстоўваць адзін з гэтых уліковых запісаў у новым профілі, неабходна спачатку выдаліць існуючы профіль.</translation>
 <translation id="8255190535488645436">Google Chrome выкарыстоўвае вашу камеру і мікрафон.</translation>
 <translation id="8286862437124483331">Google Chrome спрабуе паказаць паролі. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="828798499196665338">Бацькі выключылі "Дазволы для сайтаў, праграм і пашырэнняў" для Chrome. Уключэнне гэтага элемента (<ph name="EXTENSION_TYPE_PARAMETER" />) забаронена.</translation>
@@ -325,8 +331,10 @@
 <translation id="8394720698884623075">Правярае, ці знаходзяцца URL-адрасы ў спісе небяспечных сайтаў, захаваным у Chrome</translation>
 <translation id="840084489713044809">Google Chrome запытвае дазвол на экспартаванне вашых пароляў.</translation>
 <translation id="8416347857511542594">Даведацца больш пра персаналізацыю рэкламы ў Chrome</translation>
+<translation id="8421734018304082652">Браўзер Chrome заблакіраваў гэты файл, бо ён зашыфраваны. Папрасіце ўладальніка файла расшыфраваць яго.</translation>
 <translation id="8433638294851456451">Каб адпраўляць нумары з гэтай прылады на свой тэлефон Android, увайдзіце ў Chrome на абедзвюх прыладах.</translation>
 <translation id="8498858610309223613">Толькі што было прыменена спецыяльнае абнаўленне бяспекі для Google Chrome. Перазапусціце браўзер, і вашы ўкладкі будуць адноўлены.</translation>
+<translation id="8504220326736535258">Браўзер Chrome заблакіраваў гэты файл, бо ён змяшчае шкоднае ПЗ</translation>
 <translation id="8516431725144212809">Вашы інтарэсы паводле ацэнкі Chrome</translation>
 <translation id="8521348052903287641">Уваходнае правіла версіі Google Chrome для распрацоўшчыкаў, якое дазваляе трафік mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

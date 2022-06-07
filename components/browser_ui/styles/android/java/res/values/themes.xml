@@ -44,9 +44,6 @@
         <item name="android:textColorSecondary">@color/default_text_color_secondary_list</item>
         <item name="colorOnPrimaryContainer">@color/baseline_primary_900</item>
         <item name="colorPrimaryContainer">@color/baseline_primary_100</item>
-        <!-- Supports dynamic colors now. -->
-        <item name="default_bg_color_dynamic">?attr/colorSurface</item>
-        <item name="divider_line_bg_color_dynamic">?attr/colorSurfaceVariant</item>
     </style>
 
     <!-- Applied to the SettingsActivity's AppBarLayout to disable the
@@ -73,6 +70,7 @@
         <item name="globalFilledButtonBgColor">@color/filled_button_bg_dynamic</item>
         <item name="globalFilledButtonTextColor">@color/default_text_color_on_accent1_list</item>
         <item name="globalTextButtonTextColor">@color/default_text_color_accent1_tint_list</item>
+        <item name="globalOutlinedButtonBorderColor">@macro/divider_line_bg_color</item>
         <item name="globalLinkTextColor">?attr/colorPrimary</item>
         <item name="globalClickableSpanColor">?attr/colorPrimary</item>
     </style>

@@ -12,6 +12,7 @@
 #include "base/containers/contains.h"
 #include "base/guid.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -190,8 +191,20 @@ void ServiceWorkerContainerHost::Register(
   if (!service_worker_security_utils::AllOriginsMatchAndCanAccessServiceWorkers(
           urls)) {
     mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
-    // ReportBadMessage() will kill the renderer process, but Mojo complains if
-    // the callback is not run. Just run it with nonsense arguments.
+    // ReportBadMessage() will terminate the renderer process, but Mojo
+    // complains if the callback is not run. Just run it with nonsense
+    // arguments.
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
+                            std::string(), nullptr);
+    return;
+  }
+
+  if (!service_worker_security_utils::
+          OriginCanRegisterServiceWorkerFromJavascript(url_)) {
+    mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
+    // ReportBadMessage() will terminate the renderer process, but Mojo
+    // complains if the callback is not run. Just run it with nonsense
+    // arguments.
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
                             std::string(), nullptr);
     return;

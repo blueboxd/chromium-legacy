@@ -26,9 +26,19 @@ import {record, UserAction} from '../metrics.js';
 
 import {getTemplate} from './viewer-toolbar.html.js';
 
+declare global {
+  interface HTMLElementEventMap {
+    'annotation-mode-toggled': CustomEvent<boolean>;
+    'display-annotations-changed': CustomEvent<boolean>;
+    'fit-to-changed': CustomEvent<FittingType>;
+  }
+}
+
 export interface ViewerToolbarElement {
   $: {
+    sidenavToggle: HTMLElement,
     menu: CrActionMenuElement,
+    'two-page-view-button': HTMLButtonElement,
   };
 }
 
@@ -298,7 +308,7 @@ export class ViewerToolbarElement extends PolymerElement {
   }
 
   private onMoreClick_() {
-    const anchor = this.shadowRoot!.querySelector('#more')!;
+    const anchor = this.shadowRoot!.querySelector<HTMLElement>('#more')!;
     this.$.menu.showAt(anchor, {
       anchorAlignmentX: AnchorAlignment.CENTER,
       anchorAlignmentY: AnchorAlignment.AFTER_END,

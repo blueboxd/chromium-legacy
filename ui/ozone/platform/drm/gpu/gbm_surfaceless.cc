@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/gpu_fence_handle.h"
@@ -166,7 +165,7 @@ void GbmSurfaceless::SwapBuffersAsync(
   CHECK_NE(fence, EGL_NO_SYNC_KHR) << "eglCreateSyncKHR failed";
 
   base::OnceClosure fence_wait_task =
-      base::BindOnce(&WaitForFence, GetDisplay(), fence);
+      base::BindOnce(&WaitForFence, GetEGLDisplay(), fence);
 
   base::OnceClosure fence_retired_callback = base::BindOnce(
       &GbmSurfaceless::FenceRetired, weak_factory_.GetWeakPtr(), frame);
@@ -206,7 +205,7 @@ EGLConfig GbmSurfaceless::GetConfig() {
                                EGL_SURFACE_TYPE,
                                EGL_DONT_CARE,
                                EGL_NONE};
-    config_ = ChooseEGLConfig(GetDisplay(), config_attribs);
+    config_ = ChooseEGLConfig(GetEGLDisplay(), config_attribs);
   }
   return config_;
 }
@@ -282,7 +281,7 @@ EGLSyncKHR GbmSurfaceless::InsertFence(bool implicit) {
   const EGLint attrib_list[] = {EGL_SYNC_CONDITION_KHR,
                                 EGL_SYNC_PRIOR_COMMANDS_IMPLICIT_EXTERNAL_ARM,
                                 EGL_NONE};
-  return eglCreateSyncKHR(GetDisplay(), EGL_SYNC_FENCE_KHR,
+  return eglCreateSyncKHR(GetEGLDisplay(), EGL_SYNC_FENCE_KHR,
                           implicit ? attrib_list : NULL);
 }
 

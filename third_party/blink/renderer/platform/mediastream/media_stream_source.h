@@ -89,12 +89,15 @@ class PLATFORM_EXPORT MediaStreamSource final
       ReadyState state = kReadyStateLive,
       bool requires_consumer = false);
 
-  MediaStreamSource(const String& id,
-                    StreamType type,
-                    const String& name,
-                    bool remote,
-                    ReadyState state = kReadyStateLive,
-                    bool requires_consumer = false);
+  // TODO(crbug.com/1302689): Remove once all callers have been migrated.
+  [[deprecated(
+      "Provide a WebPlatformMediaStreamSource during "
+      "construction")]] MediaStreamSource(const String& id,
+                                          StreamType type,
+                                          const String& name,
+                                          bool remote,
+                                          ReadyState state = kReadyStateLive,
+                                          bool requires_consumer = false);
 
   const String& Id() const { return id_; }
   StreamType GetType() const { return type_; }
@@ -112,12 +115,6 @@ class PLATFORM_EXPORT MediaStreamSource final
   WebPlatformMediaStreamSource* GetPlatformSource() const {
     return platform_source_.get();
   }
-
-  // TODO(crbug.com/1302689): Remove once all callers have been migrated.
-  [[deprecated(
-      "Use the constructor that takes a WebPlatformMediaStreamSource")]] void
-  SetPlatformSource(
-      std::unique_ptr<WebPlatformMediaStreamSource> platform_source);
 
   void SetAudioProcessingProperties(EchoCancellationMode echo_cancellation_mode,
                                     bool auto_gain_control,
@@ -159,8 +156,8 @@ class PLATFORM_EXPORT MediaStreamSource final
   // The WebAudioDestinationConsumer is not owned, and has to be disposed of
   // separately after calling removeAudioConsumer.
   bool RequiresAudioConsumer() const { return requires_consumer_; }
-  void AddAudioConsumer(WebAudioDestinationConsumer*);
-  bool RemoveAudioConsumer(WebAudioDestinationConsumer*);
+  void SetAudioConsumer(WebAudioDestinationConsumer*);
+  bool RemoveAudioConsumer();
 
   void OnDeviceCaptureHandleChange(const MediaStreamDevice& device);
 
@@ -194,9 +191,9 @@ class PLATFORM_EXPORT MediaStreamSource final
   ReadyState ready_state_;
   bool requires_consumer_;
   HeapHashSet<WeakMember<Observer>> observers_;
-  base::Lock audio_consumers_lock_;
-  HashMap<WebAudioDestinationConsumer*, std::unique_ptr<ConsumerWrapper>>
-      audio_consumers_ GUARDED_BY(audio_consumers_lock_);
+  base::Lock audio_consumer_lock_;
+  std::unique_ptr<ConsumerWrapper> audio_consumer_
+      GUARDED_BY(audio_consumer_lock_);
   std::unique_ptr<WebPlatformMediaStreamSource> platform_source_;
   MediaConstraints constraints_;
   Capabilities capabilities_;

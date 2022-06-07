@@ -745,6 +745,17 @@ bool SiteInstanceImpl::RequiresDedicatedProcess() {
   return site_info_.RequiresDedicatedProcess(GetIsolationContext());
 }
 
+bool SiteInstanceImpl::RequiresOriginKeyedProcess() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!has_site_)
+    return false;
+
+  // TODO(wjmaclean): once SiteInstanceGroups are ready we may give logically
+  // (same-process) isolated origins their own SiteInstances ... in that case we
+  // should consider updating this function.
+  return site_info_.requires_origin_keyed_process();
+}
+
 void SiteInstanceImpl::IncrementRelatedActiveContentsCount() {
   browsing_instance_->increment_active_contents_count();
 }
@@ -807,8 +818,9 @@ bool SiteInstanceImpl::IsSameSiteWithURLInfo(const UrlInfo& url_info) {
     // that should be routed to the default SiteInstance.
     DCHECK_EQ(site_info_.site_url(), GetDefaultSiteURL());
 
-    // TODO(1243449): Verify if WebExposedIsolationInfo should match between
-    // GetWebExposedIsolationInfo() and url_info's member.
+    // We're only interested in knowning if we're same-site.
+    // WebExposedIsolationInfo should not come into play here so we make them
+    // match explicitly.
     UrlInfo updated_url_info = url_info;
     updated_url_info.web_exposed_isolation_info = GetWebExposedIsolationInfo();
 
@@ -1315,16 +1327,6 @@ void SiteInstance::StartIsolatingSite(
   }
 }
 
-void SiteInstanceImpl::WriteIntoTrace(perfetto::TracedValue context) {
-  auto dict = std::move(context).WriteDictionary();
-  dict.Add("id", GetId().value());
-  dict.Add("browsing_instance_id", GetBrowsingInstanceId().value());
-  dict.Add("is_default", IsDefaultSiteInstance());
-  dict.Add("site_info", site_info_);
-  if (group())
-    dict.Add("site_instance_group", group());
-}
-
 void SiteInstanceImpl::WriteIntoTrace(
     perfetto::TracedProto<perfetto::protos::pbzero::SiteInstance> proto) {
   proto->set_site_instance_id(GetId().value());
@@ -1332,11 +1334,14 @@ void SiteInstanceImpl::WriteIntoTrace(
   proto->set_is_default(IsDefaultSiteInstance());
   proto->set_has_process(HasProcess());
   proto->set_related_active_contents_count(GetRelatedActiveContentsCount());
+
+  proto.Set(TraceProto::kSiteInstanceGroup, group());
   if (group()) {
     proto->set_active_rfh_count(site_instance_group_->active_frame_count());
-    group()->WriteIntoTrace(proto.WriteNestedMessage(
-        perfetto::protos::pbzero::SiteInstance::kSiteInstanceGroup));
   }
+
+  perfetto::TracedDictionary dict = std::move(proto).AddDebugAnnotations();
+  dict.Add("site_info", site_info_);
 }
 
 int SiteInstanceImpl::EstimateOriginAgentClusterOverheadForMetrics() {

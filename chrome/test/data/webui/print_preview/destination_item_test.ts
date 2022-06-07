@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, PrintPreviewDestinationListItemElement} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, PrintPreviewDestinationListItemElement} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
-import {createDestinationWithCertificateStatus} from './print_preview_test_utils.js';
 
 const destination_item_test = {
   suiteName: 'DestinationItemTest',
   TestNames: {
     Online: 'online',
     Offline: 'offline',
-    BadCertificate: 'bad certificate',
     QueryName: 'query name',
     QueryDescription: 'query description',
   },
@@ -36,8 +34,9 @@ suite(destination_item_test.suiteName, function() {
 
     // Create destination
     item.destination = new Destination(
-        printerId, DestinationType.GOOGLE, DestinationOrigin.COOKIES,
-        printerName, DestinationConnectionStatus.ONLINE);
+        printerId, DestinationOrigin.EXTENSION, printerName,
+        DestinationConnectionStatus.ONLINE,
+        {extensionId: 'aaa111', extensionName: 'myPrinterExtension'});
     item.searchQuery = null;
     document.body.appendChild(item);
   });
@@ -55,11 +54,9 @@ suite(destination_item_test.suiteName, function() {
         '',
         item.shadowRoot!.querySelector(
                             '.connection-status')!.textContent!.trim());
-    assertTrue(item.shadowRoot!.querySelector<HTMLElement>(
-                                   '.learn-more-link')!.hidden);
-    assertTrue(item.shadowRoot!
-                   .querySelector<HTMLElement>(
-                       '.extension-controlled-indicator')!.hidden);
+    assertFalse(item.shadowRoot!
+                    .querySelector<HTMLElement>(
+                        '.extension-controlled-indicator')!.hidden);
   });
 
   // Test that the destination is opaque and the correct status shows up if
@@ -74,9 +71,11 @@ suite(destination_item_test.suiteName, function() {
     }
     twoMonthsAgo.setMonth(month);
     item.destination = new Destination(
-        printerId, DestinationType.GOOGLE, DestinationOrigin.COOKIES,
-        printerName, DestinationConnectionStatus.OFFLINE,
-        {lastAccessTime: twoMonthsAgo.getTime()});
+        printerId, DestinationOrigin.EXTENSION, printerName,
+        DestinationConnectionStatus.OFFLINE, {
+          extensionId: 'aaa111',
+          extensionName: 'myPrinterExtension',
+        });
 
     const name = item.shadowRoot!.querySelector('.name')!;
     assertEquals(printerName, name.textContent);
@@ -85,38 +84,12 @@ suite(destination_item_test.suiteName, function() {
         '',
         item.shadowRoot!.querySelector('.search-hint')!.textContent!.trim());
     assertEquals(
-        loadTimeData.getString('offlineForMonth'),
+        loadTimeData.getString('offline'),
         item.shadowRoot!.querySelector(
                             '.connection-status')!.textContent!.trim());
-    assertTrue(item.shadowRoot!.querySelector<HTMLElement>(
-                                   '.learn-more-link')!.hidden);
-    assertTrue(item.shadowRoot!
-                   .querySelector<HTMLElement>(
-                       '.extension-controlled-indicator')!.hidden);
-  });
-
-  // Test that the destination is opaque and the correct status shows up if
-  // the destination has a bad cloud print certificate.
-  test(assert(destination_item_test.TestNames.BadCertificate), function() {
-    loadTimeData.overrideValues({isEnterpriseManaged: false});
-    item.destination =
-        createDestinationWithCertificateStatus(printerId, printerName, true);
-
-    const name = item.shadowRoot!.querySelector('.name')!;
-    assertEquals(printerName, name.textContent);
-    assertEquals('0.4', window.getComputedStyle(name).opacity);
-    assertEquals(
-        '',
-        item.shadowRoot!.querySelector('.search-hint')!.textContent!.trim());
-    assertEquals(
-        loadTimeData.getString('noLongerSupported'),
-        item.shadowRoot!.querySelector(
-                            '.connection-status')!.textContent!.trim());
-    assertFalse(item.shadowRoot!.querySelector<HTMLElement>(
-                                    '.learn-more-link')!.hidden);
-    assertTrue(item.shadowRoot!
-                   .querySelector<HTMLElement>(
-                       '.extension-controlled-indicator')!.hidden);
+    assertFalse(item.shadowRoot!
+                    .querySelector<HTMLElement>(
+                        '.extension-controlled-indicator')!.hidden);
   });
 
   // Test that the destination is displayed correctly when the search query
@@ -144,10 +117,12 @@ suite(destination_item_test.suiteName, function() {
     const params = {
       description: 'ABCPrinterBrand Model 123',
       location: 'Building 789 Floor 6',
+      extensionId: 'aaa111',
+      extensionName: 'myPrinterExtension',
     };
     item.destination = new Destination(
-        printerId, DestinationType.GOOGLE, DestinationOrigin.COOKIES,
-        printerName, DestinationConnectionStatus.ONLINE, params);
+        printerId, DestinationOrigin.EXTENSION, printerName,
+        DestinationConnectionStatus.ONLINE, params);
     item.searchQuery = /(ABC)/ig;
 
     // No highlighting on name.

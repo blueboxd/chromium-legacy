@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationStoreEventType, DestinationType, NativeLayerCrosImpl, NativeLayerImpl, PrintPreviewDestinationDialogCrosElement} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationStoreEventType, NativeLayerCrosImpl, NativeLayerImpl, PrintPreviewDestinationDialogCrosElement} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -18,7 +18,6 @@ const destination_search_test_chromeos = {
   TestNames: {
     ReceiveSuccessfulSetup: 'receive successful setup',
     ResolutionFails: 'resolution fails',
-    CloudKioskPrinter: 'cloud kiosk printer',
     ReceiveSuccessfulSetupWithPolicies:
         'receive successful setup with policies',
   },
@@ -58,8 +57,6 @@ suite(destination_search_test_chromeos.suiteName, function() {
 
     // Set up dialog
     dialog = document.createElement('print-preview-destination-dialog-cros');
-    dialog.users = [];
-    dialog.activeUser = '';
     dialog.destinationStore = destinationStore;
     document.body.innerHTML = '';
     document.body.appendChild(dialog);
@@ -90,7 +87,7 @@ suite(destination_search_test_chromeos.suiteName, function() {
    */
   function requestSetup(destId: string) {
     const dest = new Destination(
-        destId, DestinationType.LOCAL, DestinationOrigin.CROS, 'displayName',
+        destId, DestinationOrigin.CROS, 'displayName',
         DestinationConnectionStatus.ONLINE);
 
     // Add the destination to the list.
@@ -141,25 +138,5 @@ suite(destination_search_test_chromeos.suiteName, function() {
               assertEquals(
                   originalDestination, destinationStore.selectedDestination);
             });
-      });
-
-  // Test what happens when a simulated cloud kiosk printer is selected.
-  test(
-      assert(destination_search_test_chromeos.TestNames.CloudKioskPrinter),
-      function() {
-        const printerId = 'cloud-printer-id';
-
-        // Create cloud destination.
-        const cloudDest = new Destination(
-            printerId, DestinationType.GOOGLE, DestinationOrigin.DEVICE,
-            'displayName', DestinationConnectionStatus.ONLINE);
-        cloudDest.capabilities =
-            getCddTemplate(printerId, 'displayName').capabilities;
-
-        // Place destination in the local list as happens for Kiosk printers.
-        simulateDestinationSelect(cloudDest);
-
-        // Verify that the destination has been selected.
-        assertEquals(printerId, destinationStore.selectedDestination!.id);
       });
 });

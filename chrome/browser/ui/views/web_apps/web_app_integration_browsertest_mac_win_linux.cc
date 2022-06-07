@@ -13,6 +13,15 @@ using WebAppIntegrationBrowserTestMacWinLinux = WebAppIntegrationBrowserTest;
 
 // Manual tests:
 
+IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTest,
+                       LaunchFromPlatformShortcut) {
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.ClosePwa();
+  helper_.LaunchFromPlatformShortcut("SiteA");
+  helper_.CheckWindowCreated();
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
                        CheckPlatformShortcutAndIcon) {
   helper_.CheckPlatformShortcutNotExists("SiteA");
@@ -30,255 +39,20 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
   helper_.CheckPlatformShortcutNotExists("SiteA");
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckRunOnOsLoginModeOnPolicyAppWorks) {
-  helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
-  helper_.CheckAppInListTabbed("SiteA");
-  helper_.EnableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginEnabled("SiteA");
-  helper_.DisableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginDisabled("SiteA");
-  // Clear out installed app
-  helper_.UninstallPolicyApp("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckRunOnOsLoginModeOnNormalAppWorks) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckPlatformShortcutAndIcon("SiteA");
-  helper_.EnableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginEnabled("SiteA");
-  helper_.DisableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginDisabled("SiteA");
-  // Clear out installed app
-  helper_.UninstallFromList("SiteA");
-  helper_.CheckPlatformShortcutNotExists("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckRunOnOsLoginWorksOnPolicyAppAllowed) {
-  helper_.InstallPolicyAppWindowedShortcut("SiteA");
-  helper_.ApplyRunOnOsLoginPolicyAllowed("SiteA");
-  helper_.EnableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginEnabled("SiteA");
-  helper_.DisableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginDisabled("SiteA");
-  helper_.UninstallPolicyApp("SiteA");
-  helper_.CheckPlatformShortcutNotExists("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckRunOnOsLoginWorksOnPolicyAppBlocked) {
-  helper_.InstallPolicyAppWindowedShortcut("SiteA");
-  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
-  helper_.EnableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginDisabled("SiteA");
-  helper_.UninstallPolicyApp("SiteA");
-  helper_.CheckPlatformShortcutNotExists("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckRunOnOsLoginWorksOnPolicyAppRunWindowed) {
-  helper_.InstallPolicyAppWindowedShortcut("SiteA");
-  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
-  helper_.DisableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginEnabled("SiteA");
-  helper_.UninstallPolicyApp("SiteA");
-  helper_.CheckPlatformShortcutNotExists("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckRunOnOsLoginWorksOnBlockedAfterUserTurnOn) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.EnableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginEnabled("SiteA");
-  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
-  helper_.EnableRunOnOSLogin("SiteA");
-  helper_.CheckRunOnOSLoginDisabled("SiteA");
-  helper_.RemoveRunOnOsLoginPolicy("SiteA");
-  helper_.CheckRunOnOSLoginEnabled("SiteA");
-  helper_.UninstallFromList("SiteA");
-  helper_.CheckPlatformShortcutNotExists("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckLaunchFromPlatformShortcut) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckWindowCreated();
-  helper_.ClosePwa();
-  helper_.LaunchFromPlatformShortcut("SiteA");
-  helper_.CheckWindowCreated();
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckNavigateToAppSettingsFromChromeAppsWorks) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.OpenAppSettingsFromChromeApps("SiteA");
-  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
-  helper_.UninstallFromMenu("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckNavigateToAppSettingsFromAppMenu) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.LaunchFromChromeApps("SiteA");
-  helper_.OpenAppSettingsFromAppMenu("SiteA");
-  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
-  helper_.UninstallFromMenu("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckUninstallFromAppSettingsWorks) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.UninstallFromAppSettings("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckAppSettingsAppState) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.CheckAppSettingsAppState("SiteA");
-  helper_.UninstallFromMenu("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-}
-
 // Generated tests:
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_31SiteA_24_12SiteA_43SiteA_15SiteA_37SiteA_18_19) {
-  // Test contents are generated by script. Please do not modify!
-  // See `chrome/test/webapps/README.md` for more info.
-  // Sheriffs: Disabling this test is supported.
-  helper_.InstallOmniboxIcon("SiteA");
-  helper_.CheckWindowCreated();
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.UninstallFromMenu("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-  helper_.NavigateBrowser("SiteA");
-  helper_.CheckInstallIconShown();
-  helper_.CheckLaunchIconNotShown();
-}
-
-IN_PROC_BROWSER_TEST_F(
-    WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_47SiteA_24_12SiteA_43SiteA_15SiteA_37SiteA_18_19) {
-  // Test contents are generated by script. Please do not modify!
-  // See `chrome/test/webapps/README.md` for more info.
-  // Sheriffs: Disabling this test is supported.
-  helper_.InstallMenuOption("SiteA");
-  helper_.CheckWindowCreated();
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.UninstallFromMenu("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-  helper_.NavigateBrowser("SiteA");
-  helper_.CheckInstallIconShown();
-  helper_.CheckLaunchIconNotShown();
-}
-
-IN_PROC_BROWSER_TEST_F(
-    WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_30SiteA_24_12SiteA_43SiteA_15SiteA_37SiteA_18_19) {
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_32SiteA_7SiteA_12SiteA_1SiteA_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutWindowed("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
-  helper_.UninstallFromMenu("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-  helper_.NavigateBrowser("SiteA");
-  helper_.CheckInstallIconShown();
-  helper_.CheckLaunchIconNotShown();
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_30SiteC_12SiteC_43SiteC_15SiteA) {
-  // Test contents are generated by script. Please do not modify!
-  // See `chrome/test/webapps/README.md` for more info.
-  // Sheriffs: Disabling this test is supported.
-  helper_.InstallCreateShortcutWindowed("SiteC");
-  helper_.CheckAppInListWindowed("SiteC");
-  helper_.UninstallFromMenu("SiteC");
-  helper_.CheckAppNotInList("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(
-    WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_30SiteA_24_12SiteA_98SiteA_15SiteA_37SiteA_18_19) {
-  // Test contents are generated by script. Please do not modify!
-  // See `chrome/test/webapps/README.md` for more info.
-  // Sheriffs: Disabling this test is supported.
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckWindowCreated();
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.UninstallFromAppSettings("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-  helper_.NavigateBrowser("SiteA");
-  helper_.CheckInstallIconShown();
-  helper_.CheckLaunchIconNotShown();
-}
-
-IN_PROC_BROWSER_TEST_F(
-    WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_31SiteA_24_12SiteA_98SiteA_15SiteA_37SiteA_18_19) {
-  // Test contents are generated by script. Please do not modify!
-  // See `chrome/test/webapps/README.md` for more info.
-  // Sheriffs: Disabling this test is supported.
-  helper_.InstallOmniboxIcon("SiteA");
-  helper_.CheckWindowCreated();
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.UninstallFromAppSettings("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-  helper_.NavigateBrowser("SiteA");
-  helper_.CheckInstallIconShown();
-  helper_.CheckLaunchIconNotShown();
-}
-
-IN_PROC_BROWSER_TEST_F(
-    WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_47SiteA_24_12SiteA_98SiteA_15SiteA_37SiteA_18_19) {
-  // Test contents are generated by script. Please do not modify!
-  // See `chrome/test/webapps/README.md` for more info.
-  // Sheriffs: Disabling this test is supported.
-  helper_.InstallMenuOption("SiteA");
-  helper_.CheckWindowCreated();
-  helper_.CheckAppInListWindowed("SiteA");
-  helper_.UninstallFromAppSettings("SiteA");
-  helper_.CheckAppNotInList("SiteA");
-  helper_.NavigateBrowser("SiteA");
-  helper_.CheckInstallIconShown();
-  helper_.CheckLaunchIconNotShown();
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_30SiteC_12SiteC_98SiteC_15SiteA) {
-  // Test contents are generated by script. Please do not modify!
-  // See `chrome/test/webapps/README.md` for more info.
-  // Sheriffs: Disabling this test is supported.
-  helper_.InstallCreateShortcutWindowed("SiteC");
-  helper_.CheckAppInListWindowed("SiteC");
-  helper_.UninstallFromAppSettings("SiteC");
-  helper_.CheckAppNotInList("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(
-    WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_30SiteA_24_12SiteA_32SiteA_12SiteA_1SiteA_24) {
-  // Test contents are generated by script. Please do not modify!
-  // See `chrome/test/webapps/README.md` for more info.
-  // Sheriffs: Disabling this test is supported.
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckWindowCreated();
-  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowCreated();
@@ -286,13 +60,14 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_30SiteA_24_12SiteA_48SiteA_12SiteA_1SiteA_24) {
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_48SiteA_12SiteA_1SiteA_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutWindowed("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.InstallPolicyAppTabbedShortcut("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -301,13 +76,14 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_30SiteA_24_12SiteA_28_70SiteA_1SiteA_94_24_25) {
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_28_70SiteA_1SiteA_94_24_25) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutWindowed("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.ClosePwa();
   helper_.ManifestUpdateDisplayBrowser("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -318,27 +94,30 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_30SiteA_24_12SiteA_28_36SiteA_1SiteA_25) {
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_28_36SiteA_1SiteA_25) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutWindowed("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.ClosePwa();
   helper_.ManifestUpdateDisplayMinimal("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowDisplayMinimal();
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_30SiteA_24_12SiteA_1SiteA_24_26) {
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_1SiteA_24_26) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutWindowed("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckWindowDisplayStandalone();
@@ -346,13 +125,14 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_30SiteA_24_12SiteA_50SiteA_11SiteA_1SiteA_22) {
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_50SiteA_11SiteA_1SiteA_22) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutWindowed("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.SetOpenInTab("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -361,14 +141,50 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_31SiteA_24_12SiteA_32SiteA_12SiteA_1SiteA_24) {
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_43SiteA_15SiteA_37SiteA_18_19) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.UninstallFromMenu("SiteA");
+  helper_.CheckAppNotInList("SiteA");
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconShown();
+  helper_.CheckLaunchIconNotShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_98SiteA_15SiteA_37SiteA_18_19) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.UninstallFromAppSettings("SiteA");
+  helper_.CheckAppNotInList("SiteA");
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconShown();
+  helper_.CheckLaunchIconNotShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_32SiteA_7SiteA_12SiteA_1SiteA_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallOmniboxIcon("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowCreated();
@@ -376,13 +192,14 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_31SiteA_24_12SiteA_48SiteA_12SiteA_1SiteA_24) {
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_48SiteA_12SiteA_1SiteA_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallOmniboxIcon("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.InstallPolicyAppTabbedShortcut("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -391,13 +208,14 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_31SiteA_24_12SiteA_28_70SiteA_1SiteA_94_24_25) {
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_28_70SiteA_1SiteA_94_24_25) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallOmniboxIcon("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.ClosePwa();
   helper_.ManifestUpdateDisplayBrowser("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -408,27 +226,30 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_31SiteA_24_12SiteA_28_36SiteA_1SiteA_25) {
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_28_36SiteA_1SiteA_25) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallOmniboxIcon("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.ClosePwa();
   helper_.ManifestUpdateDisplayMinimal("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowDisplayMinimal();
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_31SiteA_24_12SiteA_1SiteA_24_26) {
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_1SiteA_24_26) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallOmniboxIcon("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckWindowDisplayStandalone();
@@ -436,13 +257,14 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_31SiteA_24_12SiteA_50SiteA_11SiteA_1SiteA_22) {
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_50SiteA_11SiteA_1SiteA_22) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallOmniboxIcon("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.SetOpenInTab("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -451,14 +273,50 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_47SiteA_24_12SiteA_32SiteA_12SiteA_1SiteA_24) {
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_43SiteA_15SiteA_37SiteA_18_19) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.UninstallFromMenu("SiteA");
+  helper_.CheckAppNotInList("SiteA");
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconShown();
+  helper_.CheckLaunchIconNotShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_98SiteA_15SiteA_37SiteA_18_19) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.UninstallFromAppSettings("SiteA");
+  helper_.CheckAppNotInList("SiteA");
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconShown();
+  helper_.CheckLaunchIconNotShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_32SiteA_7SiteA_12SiteA_1SiteA_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallMenuOption("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowCreated();
@@ -466,13 +324,14 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_47SiteA_24_12SiteA_48SiteA_12SiteA_1SiteA_24) {
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_48SiteA_12SiteA_1SiteA_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallMenuOption("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.InstallPolicyAppTabbedShortcut("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -481,13 +340,14 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_47SiteA_24_12SiteA_28_70SiteA_1SiteA_94_24_25) {
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_28_70SiteA_1SiteA_94_24_25) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallMenuOption("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.ClosePwa();
   helper_.ManifestUpdateDisplayBrowser("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -498,27 +358,30 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_47SiteA_24_12SiteA_28_36SiteA_1SiteA_25) {
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_28_36SiteA_1SiteA_25) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallMenuOption("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.ClosePwa();
   helper_.ManifestUpdateDisplayMinimal("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowDisplayMinimal();
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_47SiteA_24_12SiteA_1SiteA_24_26) {
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_1SiteA_24_26) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallMenuOption("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckWindowDisplayStandalone();
@@ -526,13 +389,14 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_47SiteA_24_12SiteA_50SiteA_11SiteA_1SiteA_22) {
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_50SiteA_11SiteA_1SiteA_22) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallMenuOption("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.SetOpenInTab("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -541,13 +405,49 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_29SiteA_11SiteA_33SiteA_11SiteA_1SiteA_22) {
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_43SiteA_15SiteA_37SiteA_18_19) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.UninstallFromMenu("SiteA");
+  helper_.CheckAppNotInList("SiteA");
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconShown();
+  helper_.CheckLaunchIconNotShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_98SiteA_15SiteA_37SiteA_18_19) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.UninstallFromAppSettings("SiteA");
+  helper_.CheckAppNotInList("SiteA");
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconShown();
+  helper_.CheckLaunchIconNotShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_29SiteA_11SiteA_7SiteA_33SiteA_7SiteA_11SiteA_1SiteA_22) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutTabbed("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.InstallPolicyAppWindowedNoShortcut("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckTabCreated();
@@ -555,13 +455,15 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_29SiteA_11SiteA_49SiteA_11SiteA_1SiteA_22) {
+    WebAppIntegration_29SiteA_11SiteA_7SiteA_49SiteA_7SiteA_11SiteA_1SiteA_22) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutTabbed("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.InstallPolicyAppWindowedShortcut("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckTabCreated();
@@ -569,12 +471,13 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebAppIntegrationBrowserTestMacWinLinux,
-    WebAppIntegration_29SiteA_11SiteA_51SiteA_12SiteA_1SiteA_24) {
+    WebAppIntegration_29SiteA_11SiteA_7SiteA_51SiteA_12SiteA_1SiteA_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutTabbed("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.SetOpenInWindow("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
@@ -606,24 +509,27 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_49SiteA_12SiteA_1SiteA_24_26) {
+                       WebAppIntegration_49SiteA_12SiteA_7SiteA_1SiteA_24_26) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallPolicyAppWindowedShortcut("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowCreated();
   helper_.CheckWindowDisplayStandalone();
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_49SiteA_12SiteA_50SiteA_1SiteA_22) {
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_49SiteA_12SiteA_7SiteA_50SiteA_1SiteA_22) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallPolicyAppWindowedShortcut("SiteA");
   helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.SetOpenInTab("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckTabCreated();
@@ -641,38 +547,68 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
   helper_.CheckWindowCreated();
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_48SiteA_11SiteA_51SiteA_1SiteA_24) {
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_48SiteA_11SiteA_7SiteA_51SiteA_1SiteA_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallPolicyAppTabbedShortcut("SiteA");
   helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
   helper_.SetOpenInWindow("SiteA");
   helper_.LaunchFromPlatformShortcut("SiteA");
   helper_.CheckWindowCreated();
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_29SiteC_11SiteC_1SiteC_22) {
+                       WebAppIntegration_29SiteC_11SiteC_7SiteC_1SiteC_22) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutTabbed("SiteC");
   helper_.CheckAppInListTabbed("SiteC");
+  helper_.CheckPlatformShortcutAndIcon("SiteC");
   helper_.LaunchFromPlatformShortcut("SiteC");
   helper_.CheckTabCreated();
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_30SiteC_12SiteC_1SiteC_24) {
+                       WebAppIntegration_30SiteC_12SiteC_7SiteC_1SiteC_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallCreateShortcutWindowed("SiteC");
   helper_.CheckAppInListWindowed("SiteC");
+  helper_.CheckPlatformShortcutAndIcon("SiteC");
   helper_.LaunchFromPlatformShortcut("SiteC");
   helper_.CheckWindowCreated();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteC_12SiteC_7SiteC_43SiteC_15SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteC");
+  helper_.CheckAppInListWindowed("SiteC");
+  helper_.CheckPlatformShortcutAndIcon("SiteC");
+  helper_.UninstallFromMenu("SiteC");
+  helper_.CheckAppNotInList("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteC_12SiteC_7SiteC_98SiteC_15SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteC");
+  helper_.CheckAppInListWindowed("SiteC");
+  helper_.CheckPlatformShortcutAndIcon("SiteC");
+  helper_.UninstallFromAppSettings("SiteC");
+  helper_.CheckAppNotInList("SiteA");
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
@@ -698,12 +634,13 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_48SiteC_11SiteC_1SiteC_22) {
+                       WebAppIntegration_48SiteC_11SiteC_7SiteC_1SiteC_22) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallPolicyAppTabbedShortcut("SiteC");
   helper_.CheckAppInListTabbed("SiteC");
+  helper_.CheckPlatformShortcutAndIcon("SiteC");
   helper_.LaunchFromPlatformShortcut("SiteC");
   helper_.CheckTabCreated();
 }
@@ -759,14 +696,711 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       WebAppIntegration_49SiteC_12SiteC_1SiteC_24) {
+                       WebAppIntegration_49SiteC_12SiteC_7SiteC_1SiteC_24) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
   helper_.InstallPolicyAppWindowedShortcut("SiteC");
   helper_.CheckAppInListWindowed("SiteC");
+  helper_.CheckPlatformShortcutAndIcon("SiteC");
   helper_.LaunchFromPlatformShortcut("SiteC");
   helper_.CheckWindowCreated();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteAFoo_8SiteA_28_1SiteAFoo_28_37SiteA_17_20) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteAFoo");
+  helper_.ManifestUpdateScopeSiteAFooTo("SiteA");
+  helper_.ClosePwa();
+  helper_.LaunchFromPlatformShortcut("SiteAFoo");
+  helper_.ClosePwa();
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconNotShown();
+  helper_.CheckLaunchIconShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteAFoo_28_8SiteA_1SiteAFoo_9SiteABar_21) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteAFoo");
+  helper_.ClosePwa();
+  helper_.ManifestUpdateScopeSiteAFooTo("SiteA");
+  helper_.LaunchFromPlatformShortcut("SiteAFoo");
+  helper_.NavigatePwaSiteAFooTo("SiteABar");
+  helper_.CheckNoToolbar();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteAFoo_8SiteA_28_1SiteAFoo_28_37SiteA_17_20) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteAFoo");
+  helper_.ManifestUpdateScopeSiteAFooTo("SiteA");
+  helper_.ClosePwa();
+  helper_.LaunchFromPlatformShortcut("SiteAFoo");
+  helper_.ClosePwa();
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconNotShown();
+  helper_.CheckLaunchIconShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteAFoo_28_8SiteA_1SiteAFoo_9SiteABar_21) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteAFoo");
+  helper_.ClosePwa();
+  helper_.ManifestUpdateScopeSiteAFooTo("SiteA");
+  helper_.LaunchFromPlatformShortcut("SiteAFoo");
+  helper_.NavigatePwaSiteAFooTo("SiteABar");
+  helper_.CheckNoToolbar();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteAFoo_8SiteA_28_1SiteAFoo_28_37SiteA_17_20) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteAFoo");
+  helper_.ManifestUpdateScopeSiteAFooTo("SiteA");
+  helper_.ClosePwa();
+  helper_.LaunchFromPlatformShortcut("SiteAFoo");
+  helper_.ClosePwa();
+  helper_.NavigateBrowser("SiteA");
+  helper_.CheckInstallIconNotShown();
+  helper_.CheckLaunchIconShown();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteAFoo_28_8SiteA_1SiteAFoo_9SiteABar_21) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteAFoo");
+  helper_.ClosePwa();
+  helper_.ManifestUpdateScopeSiteAFooTo("SiteA");
+  helper_.LaunchFromPlatformShortcut("SiteAFoo");
+  helper_.NavigatePwaSiteAFooTo("SiteABar");
+  helper_.CheckNoToolbar();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_101SiteA_111SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_104SiteA_106SiteA_101SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_104SiteA_106SiteA_105SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.DisableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_102SiteA_106SiteA_111SiteA_103SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+  helper_.RemoveRunOnOsLoginPolicy("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_96SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.OpenAppSettingsFromChromeApps("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_30SiteA_24_12SiteA_7SiteA_97SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.OpenAppSettingsFromAppMenu("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_101SiteA_111SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_104SiteA_106SiteA_101SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_104SiteA_106SiteA_105SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.DisableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_102SiteA_106SiteA_111SiteA_103SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+  helper_.RemoveRunOnOsLoginPolicy("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_96SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.OpenAppSettingsFromChromeApps("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_31SiteA_24_12SiteA_7SiteA_97SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallOmniboxIcon("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.OpenAppSettingsFromAppMenu("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_101SiteA_111SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_104SiteA_106SiteA_101SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_104SiteA_106SiteA_105SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.DisableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_102SiteA_106SiteA_111SiteA_103SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+  helper_.RemoveRunOnOsLoginPolicy("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_96SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.OpenAppSettingsFromChromeApps("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_47SiteA_24_12SiteA_7SiteA_97SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.OpenAppSettingsFromAppMenu("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
+                       WebAppIntegration_33SiteA_12SiteA_101SiteA_111SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedNoShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_33SiteA_12SiteA_104SiteA_106SiteA_101SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedNoShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_33SiteA_12SiteA_104SiteA_106SiteA_105SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedNoShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.DisableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_33SiteA_12SiteA_102SiteA_106SiteA_111SiteA_103SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedNoShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+  helper_.RemoveRunOnOsLoginPolicy("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
+                       WebAppIntegration_33SiteA_12SiteA_96SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedNoShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.OpenAppSettingsFromChromeApps("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
+                       WebAppIntegration_33SiteA_12SiteA_97SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedNoShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.OpenAppSettingsFromAppMenu("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
+                       WebAppIntegration_32SiteA_11SiteA_101SiteA_111SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_32SiteA_11SiteA_104SiteA_106SiteA_101SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_32SiteA_11SiteA_104SiteA_106SiteA_105SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.DisableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_32SiteA_11SiteA_102SiteA_106SiteA_111SiteA_103SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+  helper_.RemoveRunOnOsLoginPolicy("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_49SiteA_12SiteA_7SiteA_101SiteA_111SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_49SiteA_12SiteA_7SiteA_104SiteA_106SiteA_101SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_49SiteA_12SiteA_7SiteA_104SiteA_106SiteA_105SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.DisableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_49SiteA_12SiteA_7SiteA_102SiteA_106SiteA_111SiteA_103SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+  helper_.RemoveRunOnOsLoginPolicy("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_49SiteA_12SiteA_7SiteA_96SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.OpenAppSettingsFromChromeApps("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_49SiteA_12SiteA_7SiteA_97SiteA_109SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppWindowedShortcut("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.OpenAppSettingsFromAppMenu("SiteA");
+  helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_48SiteA_11SiteA_7SiteA_101SiteA_111SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppTabbedShortcut("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_48SiteA_11SiteA_7SiteA_104SiteA_106SiteA_101SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppTabbedShortcut("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_48SiteA_11SiteA_7SiteA_104SiteA_106SiteA_105SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppTabbedShortcut("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.DisableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_48SiteA_11SiteA_7SiteA_102SiteA_106SiteA_111SiteA_103SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallPolicyAppTabbedShortcut("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+  helper_.RemoveRunOnOsLoginPolicy("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_29SiteA_11SiteA_7SiteA_101SiteA_111SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutTabbed("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_29SiteA_11SiteA_7SiteA_104SiteA_106SiteA_101SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutTabbed("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyBlocked("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_29SiteA_11SiteA_7SiteA_104SiteA_106SiteA_105SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutTabbed("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.EnableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.DisableRunOnOsLogin("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebAppIntegrationBrowserTestMacWinLinux,
+    WebAppIntegration_29SiteA_11SiteA_7SiteA_102SiteA_106SiteA_111SiteA_103SiteA_107SiteA) {
+  // Test contents are generated by script. Please do not modify!
+  // See `chrome/test/webapps/README.md` for more info.
+  // Sheriffs: Disabling this test is supported.
+  helper_.InstallCreateShortcutTabbed("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
+  helper_.CheckPlatformShortcutAndIcon("SiteA");
+  helper_.ApplyRunOnOsLoginPolicyRunWindowed("SiteA");
+  helper_.CheckRunOnOsLoginEnabled("SiteA");
+  helper_.CheckUserCannotSetRunOnOsLogin("SiteA");
+  helper_.RemoveRunOnOsLoginPolicy("SiteA");
+  helper_.CheckRunOnOsLoginDisabled("SiteA");
 }
 
 }  // namespace

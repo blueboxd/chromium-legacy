@@ -5,16 +5,10 @@
 /**
  * @fileoverview ChromeVox keyboard handler.
  */
+import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
 
-goog.provide('BackgroundKeyboardHandler');
-
-goog.require('ChromeVoxState');
-goog.require('EventSourceState');
-goog.require('KeyCode');
-goog.require('MathHandler');
-goog.require('Output');
-goog.require('ChromeVoxKbHandler');
-goog.require('ChromeVoxPrefs');
+import {MathHandler} from './math_handler.js';
+import {ChromeVoxPrefs} from './prefs.js';
 
 /**
  * @enum {string}
@@ -34,7 +28,7 @@ const KeyboardPassThroughState_ = {
   PENDING_SHORTCUT_KEYUPS: 'pending_shortcut_keyups'
 };
 
-BackgroundKeyboardHandler = class {
+export class BackgroundKeyboardHandler {
   constructor() {
     /** @private {!KeyboardPassThroughState_} */
     this.passThroughState_ = KeyboardPassThroughState_.NO_PASS_THROUGH;
@@ -136,4 +130,4 @@ BackgroundKeyboardHandler = class {
 
     return false;
   }
-};
+}

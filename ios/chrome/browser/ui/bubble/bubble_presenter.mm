@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#include "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
@@ -309,18 +308,23 @@ presentBubbleForFeature:(const base::Feature&)feature
                    text:(NSString*)text
   voiceOverAnnouncement:(NSString*)voiceOverAnnouncement
             anchorPoint:(CGPoint)anchorPoint {
+  DCHECK(self.browserState);
   BubbleViewControllerPresenter* presenter =
       [self bubblePresenterForFeature:feature
                             direction:direction
                             alignment:alignment
                                  text:text];
-
+  if (!presenter)
+    return nil;
   presenter.voiceOverAnnouncement = voiceOverAnnouncement;
-
-  [presenter presentInViewController:self.rootViewController
-                                view:self.rootViewController.view
-                         anchorPoint:anchorPoint];
-
+  if ([presenter canPresentInView:self.rootViewController.view
+                      anchorPoint:anchorPoint] &&
+      feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+          ->ShouldTriggerHelpUI(feature)) {
+    [presenter presentInViewController:self.rootViewController
+                                  view:self.rootViewController.view
+                           anchorPoint:anchorPoint];
+  }
   return presenter;
 }
 
@@ -479,7 +483,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                      text:(NSString*)text {
   DCHECK(self.browserState);
   if (!feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-           ->ShouldTriggerHelpUI(feature)) {
+           ->WouldTriggerHelpUI(feature)) {
     return nil;
   }
   // Capture |weakSelf| instead of the feature engagement tracker object
@@ -487,14 +491,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // the feature engagement tracker will remain pointing to invalid memory if
   // its owner (the ChromeBrowserState) is deallocated.
   __weak BubblePresenter* weakSelf = self;
-  void (^dismissalCallback)(void) = ^{
-    BubblePresenter* strongSelf = weakSelf;
-    if (strongSelf) {
-      feature_engagement::TrackerFactory::GetForBrowserState(
-          strongSelf.browserState)
-          ->Dismissed(feature);
-    }
-  };
+  ProceduralBlockWithSnoozeAction dismissalCallback =
+      ^(feature_engagement::Tracker::SnoozeAction snoozeAction) {
+        BubblePresenter* strongSelf = weakSelf;
+        if (strongSelf) {
+          feature_engagement::TrackerFactory::GetForBrowserState(
+              strongSelf.browserState)
+              ->DismissedWithSnooze(feature, snoozeAction);
+        }
+      };
 
   BubbleViewControllerPresenter* bubbleViewControllerPresenter =
       [[BubbleViewControllerPresenter alloc] initWithText:text

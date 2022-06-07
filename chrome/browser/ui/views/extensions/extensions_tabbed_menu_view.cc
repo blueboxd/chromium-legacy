@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension_urls.h"
@@ -52,8 +53,12 @@ namespace {
 
 using UserSiteSetting = extensions::PermissionsManager::UserSiteSetting;
 
-// Site access settings group id for the radio buttons.
+// Radio buttons group id for site access settings.
 constexpr int kGroupId = 1;
+// Button's indexes for site access settings.
+constexpr size_t kGrantAllExtensionsIndex = 0;
+constexpr size_t kBlockAllExtensionsIndex = 1;
+constexpr size_t kCustomizeByExtensionIndex = 2;
 
 ExtensionsTabbedMenuView* g_extensions_dialog = nullptr;
 
@@ -161,45 +166,28 @@ int FindIndex(views::View* parent_view, const std::u16string extension_name) {
          children.begin();
 }
 
-// Updates the `installed_extension_view` state and its position under
-// `parent_view`.
-void UpdateInstalledExtensionMenuItem(
-    views::View* parent_view,
-    InstalledExtensionMenuItemView* installed_extension_view) {
-  installed_extension_view->Update();
-
-  int new_index =
-      FindIndex(parent_view,
-                installed_extension_view->view_controller()->GetActionName());
-  parent_view->ReorderChildView(installed_extension_view, new_index);
-}
-
-// Updates the `site_access_view` state and its position under `parent_view`.
-void UpdateSiteAccessMenuItem(views::View* parent_view,
-                              SiteAccessMenuItemView* site_access_view) {
-  site_access_view->Update();
-
-  int new_index = FindIndex(
-      parent_view, site_access_view->view_controller()->GetActionName());
-  parent_view->ReorderChildView(site_access_view, new_index);
-}
-
-// Returns the active webcontent's host. This method should only be called when
+// Returns the web content's host. This method should only be called when
 // web contents are present.
-std::u16string GetCurrentSite(Browser* browser) {
-  auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
+std::u16string GetCurrentHost(content::WebContents* web_contents) {
   DCHECK(web_contents);
-  return base::UTF8ToUTF16(web_contents->GetLastCommittedURL().host());
+  return url_formatter::IDNToUnicode(
+      url_formatter::StripWWW(web_contents->GetLastCommittedURL().host()));
 }
 
-// Sets the `label` text to `message_id` with `current_site` emphasized.
+// Sets the `label` text to `message_id` with `current_host` emphasized.
 void SetLabelTextAndStyle(views::Label& label,
                           int message_id,
-                          std::u16string current_site) {
+                          std::u16string current_host) {
   size_t offset = 0u;
-  label.SetText(l10n_util::GetStringFUTF16(message_id, current_site, &offset));
+  label.SetText(l10n_util::GetStringFUTF16(message_id, current_host, &offset));
   label.SetTextStyleRange(ChromeTextStyle::STYLE_EMPHASIZED,
-                          gfx::Range(offset, offset + current_site.length()));
+                          gfx::Range(offset, offset + current_host.length()));
+}
+
+void SetButtonChecked(views::View* container, size_t index) {
+  DCHECK_LT(index, container->children().size());
+  static_cast<views::RadioButton*>(container->children().at(index))
+      ->SetChecked(true);
 }
 
 }  // namespace
@@ -244,6 +232,8 @@ ExtensionsTabbedMenuView::ExtensionsTabbedMenuView(
 
   toolbar_model_observation_.Observe(toolbar_model_.get());
   browser_->tab_strip_model()->AddObserver(this);
+  permissions_manager_observation_.Observe(
+      extensions::PermissionsManager::Get(browser_->profile()));
 
   Populate();
 
@@ -362,7 +352,7 @@ void ExtensionsTabbedMenuView::OnToolbarActionAdded(
   CreateAndInsertInstalledExtension(action_id, index);
 
   MaybeCreateAndInsertSiteAccessItem(action_id);
-  UpdateSiteAccessSectionsVisibility();
+  UpdateSiteAccessTab();
 
   ConsistencyCheck();
 }
@@ -381,36 +371,17 @@ void ExtensionsTabbedMenuView::OnToolbarActionRemoved(
   remove_item(has_access_.items,
               GetSiteAccessMenuItem(has_access_.items, action_id));
 
-  UpdateSiteAccessSectionsVisibility();
+  UpdateSiteAccessTab();
 
   ConsistencyCheck();
 }
 
 void ExtensionsTabbedMenuView::OnToolbarActionUpdated(
     const ToolbarActionsModel::ActionId& action_id) {
-  auto update_installed_extension_item =
-      [](views::View* parent_view,
-         const ToolbarActionsModel::ActionId& action_id) {
-        auto* item_view = GetInstalledExtensionMenuItem(parent_view, action_id);
-        if (item_view)
-          UpdateInstalledExtensionMenuItem(parent_view, item_view);
-      };
+  UpdateInstalledExtensionMenuItems({action_id});
+  UpdateSiteAccessMenuItems({action_id});
 
-  auto update_site_access_item =
-      [](views::View* parent_view,
-         const ToolbarActionsModel::ActionId& action_id) {
-        auto* item_view = GetSiteAccessMenuItem(parent_view, action_id);
-        if (item_view)
-          UpdateSiteAccessMenuItem(parent_view, item_view);
-      };
-
-  update_installed_extension_item(installed_items_, action_id);
-  update_site_access_item(requests_access_.items, action_id);
-  update_site_access_item(has_access_.items, action_id);
-
-  MoveItemsBetweenSectionsIfNecessary();
-
-  UpdateSiteAccessSectionsVisibility();
+  UpdateSiteAccessTab();
 
   ConsistencyCheck();
 }
@@ -456,32 +427,35 @@ void ExtensionsTabbedMenuView::Populate() {
     MaybeCreateAndInsertSiteAccessItem(sorted_ids[i]);
   }
 
-  UpdateSiteAccessSectionsVisibility();
+  UpdateSiteAccessTab();
 
   ConsistencyCheck();
 }
 
+void ExtensionsTabbedMenuView::UserPermissionsSettingsChanged(
+    const extensions::PermissionsManager::UserPermissionsSettings& settings) {
+  UpdateSiteAccessMenuItems(toolbar_model_->action_ids());
+  UpdateSiteAccessTab();
+
+  SizeToContents();
+}
+
 void ExtensionsTabbedMenuView::Update() {
-  // An extension that previously did not want access, and therefore was not in
-  // a site access section, may want access now. This means moving existent
-  // items between sections is not sufficient. Therefore, we need to clear the
-  // site access sections and re-insert items in the correct place.
-  requests_access_.items->RemoveAllChildViews();
-  has_access_.items->RemoveAllChildViews();
+  const auto& action_ids = toolbar_model_->action_ids();
+  UpdateInstalledExtensionMenuItems(action_ids);
+  UpdateSiteAccessMenuItems(action_ids);
 
-  for (views::View* view : installed_items_->children()) {
-    auto* item_view = GetAsInstalledExtensionMenuItem(view);
-    UpdateInstalledExtensionMenuItem(installed_items_, item_view);
-    MaybeCreateAndInsertSiteAccessItem(item_view->view_controller()->GetId());
-  }
-
-  UpdateSiteAccessSectionsVisibility();
+  UpdateSiteAccessTab();
 
   ConsistencyCheck();
 }
 
 void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
-  auto current_site = GetCurrentSite(browser_);
+  auto* web_contents = browser_->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
+    return;
+
+  auto current_host = GetCurrentHost(web_contents);
   const int horizontal_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
   const int vertical_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -504,9 +478,9 @@ void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
                         .SetTextContext(
                             ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL)
                         .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-                        .SetBorder(views::CreateEmptyBorder(
+                        .SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
                             vertical_spacing, horizontal_spacing,
-                            vertical_spacing, horizontal_spacing)),
+                            vertical_spacing, horizontal_spacing))),
                     // Empty section for the menu items. Items
                     // will be populated later.
                     views::Builder<views::BoxLayoutView>()
@@ -531,18 +505,18 @@ void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
                   .CopyAddressTo(&site_access_message_)
                   .SetVisible(false)
                   .SetBorder(views::CreateEmptyBorder(
-                      gfx::Insets(vertical_spacing, horizontal_spacing,
-                                  vertical_spacing, horizontal_spacing)))
+                      gfx::Insets::TLBR(vertical_spacing, horizontal_spacing,
+                                        vertical_spacing, horizontal_spacing)))
                   .SetTextContext(
                       ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL))
 
           .Build();
 
   const auto create_radio_button_builder =
-      [this, current_site](UserSiteSetting site_settings, int label_id) {
+      [this, current_host](UserSiteSetting site_settings, int label_id) {
         auto label = ((site_settings == UserSiteSetting::kGrantAllExtensions) ||
                       (site_settings == UserSiteSetting::kBlockAllExtensions))
-                         ? l10n_util::GetStringFUTF16(label_id, current_site)
+                         ? l10n_util::GetStringFUTF16(label_id, current_host)
                          : l10n_util::GetStringUTF16(label_id);
         return views::Builder<views::RadioButton>(
                    std::make_unique<views::RadioButton>(label, kGroupId))
@@ -568,16 +542,21 @@ void ExtensionsTabbedMenuView::CreateSiteAccessTab() {
                   .CopyAddressTo(&site_settings_)
                   .SetOrientation(views::BoxLayout::Orientation::kVertical)
                   .SetVisible(show_site_settings_)
-                  .AddChildren(
+                  .AddChildAt(
                       create_radio_button_builder(
                           UserSiteSetting::kGrantAllExtensions,
                           IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_USER_SETTINGS_ALLOW_ALL_TEXT),
+                      kGrantAllExtensionsIndex)
+                  .AddChildAt(
                       create_radio_button_builder(
                           UserSiteSetting::kBlockAllExtensions,
                           IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_USER_SETTINGS_BLOCK_ALL_TEXT),
+                      kBlockAllExtensionsIndex)
+                  .AddChildAt(
                       create_radio_button_builder(
                           UserSiteSetting::kCustomizeByExtension,
-                          IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_USER_SETTINGS_CUSTOMIZE_EACH_TEXT)))
+                          IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_USER_SETTINGS_CUSTOMIZE_EACH_TEXT),
+                      kCustomizeByExtensionIndex))
           .Build();
 
   CreateTab(tabbed_pane_, 0, IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_TITLE,
@@ -654,63 +633,126 @@ void ExtensionsTabbedMenuView::InsertSiteAccessItem(
   section->items->AddChildViewAt(std::move(item), index);
 }
 
-void ExtensionsTabbedMenuView::MoveItemsBetweenSectionsIfNecessary() {
-  content::WebContents* const web_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
+void ExtensionsTabbedMenuView::UpdateInstalledExtensionMenuItems(
+    const base::flat_set<ToolbarActionsModel::ActionId>& action_ids) {
+  for (const auto& action_id : action_ids) {
+    auto* item = GetInstalledExtensionMenuItem(installed_items_, action_id);
+    // Extensions should always have an installed extension menu entry.
+    DCHECK(item);
 
-  auto move_items_between_sections_if_necessary =
-      [web_contents, this](SiteAccessSection* section) {
-        // Collect the views to move separately, so that we don't change the
-        // children of the view during iteration.
-        std::vector<SiteAccessMenuItemView*> items_to_move;
-        for (views::View* view : section->items->children()) {
-          auto* item_view = GetAsSiteAccessMenuItem(view);
-          auto site_interaction =
-              item_view->view_controller()->GetSiteInteraction(web_contents);
-          if (site_interaction == section->site_interaction)
-            continue;
-
-          items_to_move.push_back(item_view);
-        }
-
-        for (SiteAccessMenuItemView* item_view : items_to_move) {
-          auto item_view_to_move = section->items->RemoveChildViewT(item_view);
-          auto site_interaction =
-              item_view_to_move->view_controller()->GetSiteInteraction(
-                  web_contents);
-          auto* new_section = GetSectionForSiteInteraction(site_interaction);
-          if (!new_section)
-            return;
-
-          InsertSiteAccessItem(std::move(item_view_to_move), new_section);
-        }
-      };
-
-  move_items_between_sections_if_necessary(&requests_access_);
-  move_items_between_sections_if_necessary(&has_access_);
+    item->Update();
+    installed_items_->ReorderChildView(
+        item,
+        FindIndex(installed_items_, item->view_controller()->GetActionName()));
+  }
 }
 
-// TODO(crbug.com/1263310): Add user permissions changes listener to update the
-// site access content views.
+void ExtensionsTabbedMenuView::UpdateSiteAccessMenuItems(
+    const base::flat_set<ToolbarActionsModel::ActionId>& action_ids) {
+  for (const auto& action_id : action_ids) {
+    // Retrieve the current section and item for the action id, if any.
+    SiteAccessSection* section = nullptr;
+    SiteAccessMenuItemView* item = nullptr;
+    if (auto* current_item =
+            GetSiteAccessMenuItem(requests_access_.items, action_id)) {
+      section = &requests_access_;
+      item = current_item;
+    } else if (auto* current_item =
+                   GetSiteAccessMenuItem(has_access_.items, action_id)) {
+      section = &has_access_;
+      item = current_item;
+    }
 
-void ExtensionsTabbedMenuView::UpdateSiteAccessSectionsVisibility() {
+    // Create item when it was not on a site access section. This can happen
+    // when an extension didn't previously have or request access, and now does.
+    if (!item) {
+      MaybeCreateAndInsertSiteAccessItem(action_id);
+      continue;
+    }
+
+    // Reorder item when it is in the same section.
+    auto site_interaction = item->view_controller()->GetSiteInteraction(
+        browser_->tab_strip_model()->GetActiveWebContents());
+    if (site_interaction == section->site_interaction) {
+      item->Update();
+      int new_index =
+          FindIndex(section->items, item->view_controller()->GetActionName());
+      section->items->ReorderChildView(item, new_index);
+      return;
+    }
+
+    // Remove item when it is in a different section or no section at all.
+    std::unique_ptr<SiteAccessMenuItemView> item_to_move =
+        section->items->RemoveChildViewT(item);
+    auto* new_section = GetSectionForSiteInteraction(site_interaction);
+    if (!new_section)
+      return;
+
+    // Re insert item to the correct section.
+    item_to_move->Update();
+    InsertSiteAccessItem(std::move(item_to_move), new_section);
+  }
+}
+
+void ExtensionsTabbedMenuView::UpdateSiteAccessTab() {
   // Site access tab should only display content related to the current site.
   // Therefore, hide all the site access content views if this method is called
   // when there are no active web contents (e.g tab strip update is closing its
   // tabs).
   // TODO(emiliapaz): Consider adding a message instead of hiding the views.
-  if (!browser_->tab_strip_model()->GetActiveWebContents()) {
+  auto* web_contents = browser_->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents) {
     has_access_.container->SetVisible(false);
     requests_access_.container->SetVisible(false);
     site_access_message_->SetVisible(false);
     return;
   }
 
-  auto current_site = GetCurrentSite(browser_);
+  // TODO(crbug.com/1263310): If user is on a chrome:-scheme page, show
+  // respective message, and hide site settings.
+  url::Origin origin = url::Origin::Create(web_contents->GetLastCommittedURL());
+  extensions::PermissionsManager::UserSiteSetting site_setting =
+      extensions::PermissionsManager::Get(browser_->profile())
+          ->GetUserSiteSetting(origin);
+  switch (site_setting) {
+    case extensions::PermissionsManager::UserSiteSetting::kGrantAllExtensions:
+      SetButtonChecked(site_settings_, kGrantAllExtensionsIndex);
+      // TODO(crbug.com/1263310): Remove combobox from SiteAccessMenuItems.
+      UpdateSiteAccessSectionsVisibility();
+      // TODO(crbug.com/1263310): After finishing implementation of user
+      // permission (grant user permissions with precedence over extension
+      // permissions), check that "requests access" section is hidden, and
+      // either "has access" section or message is visible.
+      break;
+    case extensions::PermissionsManager::UserSiteSetting::kBlockAllExtensions:
+      SetButtonChecked(site_settings_, kBlockAllExtensionsIndex);
+      site_access_message_->SetText(l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_BLOCK_ALL_EXTENSIONS_TEXT));
+      site_access_message_->SetVisible(true);
+      has_access_.container->SetVisible(false);
+      requests_access_.container->SetVisible(false);
+      break;
+    case extensions::PermissionsManager::UserSiteSetting::kCustomizeByExtension:
+      SetButtonChecked(site_settings_, kCustomizeByExtensionIndex);
+      UpdateSiteAccessSectionsVisibility();
+      break;
+  }
 
-  auto update_section = [current_site](SiteAccessSection* section) {
+  // Site access tab updates can happen during the menu construction, and
+  // afterwards. The dialog bubble is created after constructing the menu,
+  // therefore we can only resize the contents when the dialog exists.
+  if (g_extensions_dialog)
+    SizeToContents();
+}
+
+void ExtensionsTabbedMenuView::UpdateSiteAccessSectionsVisibility() {
+  auto* web_contents = browser_->tab_strip_model()->GetActiveWebContents();
+  DCHECK(web_contents);
+
+  auto current_host = GetCurrentHost(web_contents);
+  auto update_section = [current_host](SiteAccessSection* section) {
     SetLabelTextAndStyle(*section->header, section->header_string_id,
-                         current_site);
+                         current_host);
     bool should_be_visible = !section->items->children().empty();
     if (section->container->GetVisible() != should_be_visible)
       section->container->SetVisible(should_be_visible);
@@ -726,16 +768,10 @@ void ExtensionsTabbedMenuView::UpdateSiteAccessSectionsVisibility() {
     SetLabelTextAndStyle(
         *site_access_message_,
         IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_NO_EXTENSIONS_HAVE_ACCESS_TEXT,
-        current_site);
+        current_host);
   } else {
     site_access_message_->SetVisible(false);
   }
-
-  // TODO(crbug.com/1263310): If no extensions have or request access to the
-  // current site, show respective message.
-
-  // TODO(crbug.com/1263310): If user is on a chrome:-scheme page, show
-  // respective message.
 }
 
 ExtensionsTabbedMenuView::SiteAccessSection*

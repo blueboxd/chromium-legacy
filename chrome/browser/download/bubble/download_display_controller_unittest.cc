@@ -10,9 +10,12 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/test/browser_task_environment.h"
@@ -78,8 +81,8 @@ class FakeDownloadDisplay : public DownloadDisplay {
 
 class FakeDownloadBubbleUIController : public DownloadBubbleUIController {
  public:
-  explicit FakeDownloadBubbleUIController(Profile* profile)
-      : DownloadBubbleUIController(profile) {}
+  explicit FakeDownloadBubbleUIController(Browser* browser)
+      : DownloadBubbleUIController(browser) {}
   ~FakeDownloadBubbleUIController() override = default;
   const OfflineItemList& GetOfflineItems() override { return offline_items_; }
   void InitOfflineItems(DownloadDisplayController* display_controller,
@@ -119,8 +122,13 @@ class DownloadDisplayControllerTest : public testing::Test {
         ->SetDownloadManagerDelegateForTesting(std::move(delegate));
 
     display_ = std::make_unique<FakeDownloadDisplay>();
+    window_ = std::make_unique<TestBrowserWindow>();
+    Browser::CreateParams params(profile_, true);
+    params.type = Browser::TYPE_NORMAL;
+    params.window = window_.get();
+    browser_ = std::unique_ptr<Browser>(Browser::Create(params));
     bubble_controller_ =
-        std::make_unique<FakeDownloadBubbleUIController>(profile_);
+        std::make_unique<FakeDownloadBubbleUIController>(browser_.get());
     controller_ = std::make_unique<DownloadDisplayController>(
         display_.get(), profile_, bubble_controller_.get());
     controller_->set_manager_for_testing(manager_.get());
@@ -147,12 +155,15 @@ class DownloadDisplayControllerTest : public testing::Test {
   Profile* profile() { return profile_; }
 
   void InitDownloadItem(const base::FilePath::CharType* path,
-                        DownloadState state) {
+                        DownloadState state,
+                        bool show_details = true) {
     size_t index = items_.size();
     items_.push_back(std::make_unique<StrictMockDownloadItem>());
     EXPECT_CALL(item(index), GetId())
         .WillRepeatedly(Return(static_cast<uint32_t>(items_.size() + 1)));
     EXPECT_CALL(item(index), GetState()).WillRepeatedly(Return(state));
+    EXPECT_CALL(item(index), GetDangerType())
+        .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     int received_bytes =
         state == download::DownloadItem::IN_PROGRESS ? 50 : 100;
     EXPECT_CALL(item(index), GetReceivedBytes())
@@ -172,7 +183,8 @@ class DownloadDisplayControllerTest : public testing::Test {
     EXPECT_CALL(*manager_.get(), GetAllDownloads(_))
         .WillRepeatedly(SetArgPointee<0>(items));
     item(index).AddObserver(&controller().get_download_notifier_for_testing());
-    controller().OnNewItem(state == download::DownloadItem::IN_PROGRESS);
+    controller().OnNewItem((state == download::DownloadItem::IN_PROGRESS) &&
+                           show_details);
   }
 
   void InitOfflineItem(OfflineItemState state) {
@@ -186,13 +198,20 @@ class DownloadDisplayControllerTest : public testing::Test {
     if (state == OfflineItemState::COMPLETE) {
       bubble_controller().UpdateOfflineItem(item_index, state);
     }
-    controller().OnUpdatedItem(state == OfflineItemState::COMPLETE);
+    controller().OnUpdatedItem(state == OfflineItemState::COMPLETE,
+                               /*show_details_if_done=*/false);
   }
 
-  void UpdateDownloadItem(int item_index, DownloadState state) {
+  void UpdateDownloadItem(int item_index,
+                          DownloadState state,
+                          download::DownloadDangerType danger_type =
+                              download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          bool show_details_if_done = false) {
     DCHECK_GT(items_.size(), static_cast<size_t>(item_index));
 
     EXPECT_CALL(item(item_index), GetState()).WillRepeatedly(Return(state));
+    EXPECT_CALL(item(item_index), GetDangerType())
+        .WillRepeatedly(Return(danger_type));
     if (state == DownloadState::COMPLETE) {
       EXPECT_CALL(item(item_index), IsDone()).WillRepeatedly(Return(true));
       in_progress_count_--;
@@ -203,7 +222,8 @@ class DownloadDisplayControllerTest : public testing::Test {
     } else {
       EXPECT_CALL(item(item_index), IsDone()).WillRepeatedly(Return(false));
     }
-    controller().OnUpdatedItem(state == DownloadState::COMPLETE);
+    controller().OnUpdatedItem(state == DownloadState::COMPLETE,
+                               show_details_if_done);
   }
 
   bool VerifyDisplayState(bool shown,
@@ -250,6 +270,8 @@ class DownloadDisplayControllerTest : public testing::Test {
   std::unique_ptr<FakeDownloadBubbleUIController> bubble_controller_;
   TestingProfileManager testing_profile_manager_;
   Profile* profile_;
+  std::unique_ptr<TestBrowserWindow> window_;
+  std::unique_ptr<Browser> browser_;
 };
 
 TEST_F(DownloadDisplayControllerTest, GetProgressItemsInProgress) {
@@ -298,12 +320,20 @@ TEST_F(DownloadDisplayControllerTest, UpdateToolbarButtonState) {
                                  /*is_active=*/false));
 
   InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
+                   download::DownloadItem::IN_PROGRESS,
+                   /*show_details=*/false);
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/false,
+                                 /*icon_state=*/DownloadIconState::kProgress,
+                                 /*is_active=*/true));
+
+  InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
                    download::DownloadItem::IN_PROGRESS);
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
                                  /*icon_state=*/DownloadIconState::kProgress,
                                  /*is_active=*/true));
 
   UpdateDownloadItem(/*item_index=*/0, DownloadState::COMPLETE);
+  UpdateDownloadItem(/*item_index=*/1, DownloadState::COMPLETE);
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/true));
@@ -378,6 +408,17 @@ TEST_F(DownloadDisplayControllerTest,
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/false,
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/true));
+
+  InitDownloadItem(FILE_PATH_LITERAL("/foo/bar3.pdf"),
+                   download::DownloadItem::IN_PROGRESS);
+  display().SetDetailsShown(false);
+  // Pop open partial view on completed download.
+  UpdateDownloadItem(/*item_index=*/2, DownloadState::COMPLETE,
+                     download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                     /*show_details_if_done=*/true);
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
+                                 /*icon_state=*/DownloadIconState::kComplete,
+                                 /*is_active=*/true));
 }
 
 TEST_F(DownloadDisplayControllerTest,
@@ -392,6 +433,30 @@ TEST_F(DownloadDisplayControllerTest,
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/false, /*detail_shown=*/false,
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/false));
+}
+
+TEST_F(DownloadDisplayControllerTest, UpdateToolbarButtonState_DeepScanning) {
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/false, /*detail_shown=*/false,
+                                 /*icon_state=*/DownloadIconState::kComplete,
+                                 /*is_active=*/false));
+
+  InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
+                   download::DownloadItem::IN_PROGRESS);
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
+                                 /*icon_state=*/DownloadIconState::kProgress,
+                                 /*is_active=*/true));
+
+  UpdateDownloadItem(/*item_index=*/0, DownloadState::IN_PROGRESS,
+                     download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING);
+  EXPECT_TRUE(
+      VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
+                         /*icon_state=*/DownloadIconState::kDeepScanning,
+                         /*is_active=*/true));
+
+  UpdateDownloadItem(/*item_index=*/0, DownloadState::COMPLETE);
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
+                                 /*icon_state=*/DownloadIconState::kComplete,
+                                 /*is_active=*/true));
 }
 
 TEST_F(DownloadDisplayControllerTest, InitialState_OldLastDownload) {

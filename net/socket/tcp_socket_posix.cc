@@ -21,7 +21,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
@@ -44,6 +43,7 @@
 #include "net/socket/socket_posix.h"
 #include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/perfetto/include/perfetto/tracing/string_helpers.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "net/android/network_library.h"
@@ -461,8 +461,9 @@ void TCPSocketPosix::Close() {
   // trace event for this case so that it can be correlated with jank in traces.
   // Use the "base" category since "net" isn't enabled by default. See
   // https://crbug.com/1194888.
-  TRACE_EVENT("base", "CloseSocketTCP", "connected_to_zero",
-              PeerIsZeroIPv4(*this));
+  TRACE_EVENT("base", PeerIsZeroIPv4(*this)
+                          ? perfetto::StaticString{"CloseSocketTCP.PeerIsZero"}
+                          : perfetto::StaticString{"CloseSocketTCP"});
 #endif  // BUILDFLAG(IS_APPLE) && !BUILDFLAG(CRONET_BUILD)
   socket_.reset();
   tag_ = SocketTag();

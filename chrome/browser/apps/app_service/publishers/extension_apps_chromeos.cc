@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
@@ -696,7 +697,7 @@ void ExtensionAppsChromeOs::OnSystemFeaturesPrefChanged() {
   is_disabled_apps_mode_hidden_ = is_pref_disabled_mode_hidden;
 
   UpdateAppDisabledState(disabled_system_features_pref,
-                         policy::SystemFeature::kWebStore,
+                         static_cast<int>(policy::SystemFeature::kWebStore),
                          extensions::kWebStoreAppId, is_disabled_mode_changed);
 }
 
@@ -721,6 +722,15 @@ bool ExtensionAppsChromeOs::Accepts(const extensions::Extension* extension) {
   if (!extension->is_app() || IsBlocklisted(extension->id())) {
     return false;
   }
+
+  //  Do not publish hosted apps in Ash if hosted apps should run in
+  //  Lacros.
+  if (extension->is_hosted_app() &&
+      extension->id() != app_constants::kChromeAppId &&
+      apps::ShouldHostedAppsRunInLacros()) {
+    return false;
+  }
+
   return true;
 }
 
@@ -814,6 +824,7 @@ AppPtr ExtensionAppsChromeOs::CreateApp(const extensions::Extension* extension,
     app->show_in_launcher = false;
     app->show_in_search = false;
     app->show_in_shelf = false;
+    app->handles_intents = false;
   }
   if (disable_for_lacros)
     app->show_in_management = false;
@@ -862,6 +873,7 @@ apps::mojom::AppPtr ExtensionAppsChromeOs::Convert(
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
     app->show_in_search = apps::mojom::OptionalBool::kFalse;
     app->show_in_shelf = apps::mojom::OptionalBool::kFalse;
+    app->handles_intents = apps::mojom::OptionalBool::kFalse;
   }
   if (disable_for_lacros)
     app->show_in_management = apps::mojom::OptionalBool::kFalse;

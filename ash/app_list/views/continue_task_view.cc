@@ -11,15 +11,23 @@
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
+#include "ash/app_list/views/remove_task_feedback_dialog.h"
+#include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/bubble/bubble_utils.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/highlight_border.h"
 #include "ash/style/style_util.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -45,8 +53,8 @@ constexpr int kIconSize = 20;
 constexpr int kCircleRadius = 18;
 
 constexpr int kBetweenChildPadding = 16;
-constexpr gfx::Insets kInteriorMarginClamshell(7, 8, 7, 16);
-constexpr gfx::Insets kInteriorMarginTablet(13, 16, 13, 20);
+constexpr auto kInteriorMarginClamshell = gfx::Insets::TLBR(7, 8, 7, 16);
+constexpr auto kInteriorMarginTablet = gfx::Insets::TLBR(13, 16, 13, 20);
 
 constexpr int kViewCornerRadiusClamshell = 8;
 constexpr int kViewCornerRadiusTablet = 20;
@@ -65,11 +73,24 @@ int GetCornerRadius(bool tablet_mode) {
   return tablet_mode ? kViewCornerRadiusTablet : kViewCornerRadiusClamshell;
 }
 
+PrefService* GetActiveUserPrefService() {
+  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+
+  auto* pref_service =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  DCHECK(pref_service);
+  return pref_service;
+}
+
 }  // namespace
 
-ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
-                                   bool tablet_mode)
-    : view_delegate_(view_delegate), is_tablet_mode_(tablet_mode) {
+ContinueTaskView::ContinueTaskView(
+    AppListViewDelegate* view_delegate,
+    SearchResultPageDialogController* dialog_controller,
+    bool tablet_mode)
+    : view_delegate_(view_delegate),
+      dialog_controller_(dialog_controller),
+      is_tablet_mode_(tablet_mode) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -238,13 +259,22 @@ void ContinueTaskView::ShowContextMenuForViewImpl(
       views::InkDropState::ACTIVATED);
 }
 
+bool ContinueTaskView::ShouldShowFeedbackDialog() {
+  return app_list_features::IsFeedbackOnContinueSectionRemoveEnabled() &&
+         !GetActiveUserPrefService()->GetBoolean(
+             prefs::kLauncherFeedbackOnContinueSectionSent);
+}
+
 void ContinueTaskView::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case ContinueTaskCommandId::kOpenResult:
       OpenResult(event_flags);
       break;
     case ContinueTaskCommandId::kRemoveResult:
-      RemoveResult();
+      if (ShouldShowFeedbackDialog())
+        ShowFeedbackDialog();
+      else
+        RemoveResult();
       break;
     default:
       NOTREACHED();
@@ -287,15 +317,42 @@ void ContinueTaskView::OpenResult(int event_flags) {
       false /* launch_as_default */);
 }
 
+ContinueTaskView::TaskResultType ContinueTaskView::GetTaskResultType() {
+  switch (result()->result_type()) {
+    case AppListSearchResultType::kFileChip:
+    case AppListSearchResultType::kZeroStateFile:
+      return TaskResultType::kLocalFile;
+    case AppListSearchResultType::kDriveChip:
+    case AppListSearchResultType::kZeroStateDrive:
+      return TaskResultType::kDriveFile;
+    default:
+      NOTREACHED();
+  }
+  return TaskResultType::kUnknown;
+}
+
+void ContinueTaskView::ShowFeedbackDialog() {
+  dialog_controller_->Show(std::make_unique<RemoveTaskFeedbackDialog>(
+      base::BindOnce(&ContinueTaskView::RemoveResultAndMaybeUpdateFeedbackPref,
+                     weak_ptr_factory_.GetWeakPtr()),
+      GetTaskResultType()));
+}
+
+void ContinueTaskView::RemoveResultAndMaybeUpdateFeedbackPref(
+    bool has_feedback) {
+  if (has_feedback) {
+    GetActiveUserPrefService()->SetBoolean(
+        prefs::kLauncherFeedbackOnContinueSectionSent, true);
+  }
+  RemoveResult();
+}
+
 void ContinueTaskView::RemoveResult() {
   // May be null if the result got reset, and the task view is animating out.
   if (!result())
     return;
 
   LogMetricsOnResultRemoved();
-
-  // TODO(crbug.com/1264530): The ML service may change the way Search Results
-  // are removed.
   view_delegate_->InvokeSearchResultAction(result()->id(),
                                            SearchResultActionType::kRemove);
 }
@@ -330,15 +387,8 @@ void ContinueTaskView::UpdateStyleForTabletMode() {
 }
 
 void ContinueTaskView::LogMetricsOnResultRemoved() {
-  if (result()->result_type() == AppListSearchResultType::kFileChip) {
-    base::UmaHistogramEnumeration("Apps.AppList.ContinueResultRemoved",
-                                  TaskResultType::kLocalFile,
-                                  TaskResultType::kMaxValue);
-  } else if (result()->result_type() == AppListSearchResultType::kFileChip) {
-    base::UmaHistogramEnumeration("Apps.AppList.ContinueResultRemoved",
-                                  TaskResultType::kDriveFile,
-                                  TaskResultType::kMaxValue);
-  }
+  base::UmaHistogramEnumeration("Apps.AppList.Search.ContinueResultRemoved",
+                                GetTaskResultType(), TaskResultType::kMaxValue);
 }
 
 BEGIN_METADATA(ContinueTaskView, views::View)

@@ -23,7 +23,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
@@ -635,6 +634,7 @@ void HeadlessShell::OnFileOpened(const protocol::Binary& data,
     LOG(ERROR) << "Writing to file " << file_name.value()
                << " was unsuccessful, could not open file: "
                << base::File::ErrorToString(error_code);
+    ShutdownSoon();
     return;
   }
   if (!file_proxy_->Write(

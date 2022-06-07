@@ -65,6 +65,7 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/flex_layout.h"
@@ -78,17 +79,17 @@
 
 namespace {
 
-constexpr gfx::Insets kNotificationViewPadding(0, 16, 18, 6);
-constexpr gfx::Insets kMainRightViewPadding(0, 0, 0, 10);
+constexpr auto kNotificationViewPadding = gfx::Insets::TLBR(0, 16, 18, 6);
+constexpr auto kMainRightViewPadding = gfx::Insets::TLBR(0, 0, 0, 10);
 constexpr int kMainRightViewVerticalSpacing = 4;
 
 // This padding is applied to all the children of `main_right_view_` except the
 // action buttons.
-constexpr gfx::Insets kMainRightViewChildPadding(0, 14, 0, 0);
+constexpr auto kMainRightViewChildPadding = gfx::Insets::TLBR(0, 14, 0, 0);
 
-constexpr gfx::Insets kImageContainerPadding(12, 14, 0, 0);
+constexpr auto kImageContainerPadding = gfx::Insets::TLBR(12, 14, 0, 0);
 
-constexpr gfx::Insets kActionButtonsRowPadding(16, 22, 0, 4);
+constexpr auto kActionButtonsRowPadding = gfx::Insets::TLBR(16, 22, 0, 4);
 constexpr int kActionsRowHorizontalSpacing = 8;
 
 constexpr int kContentRowHorizontalSpacing = 16;
@@ -142,7 +143,7 @@ views::Builder<views::View> CreateMainRightViewBuilder() {
   auto layout_manager = std::make_unique<views::FlexLayout>();
   layout_manager
       ->SetDefault(views::kMarginsKey,
-                   gfx::Insets(0, 0, kMainRightViewVerticalSpacing, 0))
+                   gfx::Insets::TLBR(0, 0, kMainRightViewVerticalSpacing, 0))
       .SetOrientation(views::LayoutOrientation::kVertical)
       .SetInteriorMargin(kMainRightViewPadding);
 
@@ -167,13 +168,27 @@ views::Builder<views::BoxLayoutView> CreateCollapsedSummaryBuilder(
       .SetBetweenChildSpacing(ash::kGroupedCollapsedSummaryLabelSpacing)
       .SetOrientation(views::BoxLayout::Orientation::kHorizontal)
       .SetVisible(false)
-      .AddChild(views::Builder<views::Label>()
-                    .SetText(notification.title())
-                    .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT))
+      .AddChild(
+          views::Builder<views::Label>()
+              .SetText(notification.title())
+              .SetFontList(gfx::FontList({kGoogleSansFont}, gfx::Font::NORMAL,
+                                         message_center::kTitleFontSize,
+                                         gfx::Font::Weight::MEDIUM)))
       .AddChild(views::Builder<views::Label>()
                     .SetText(notification.message())
                     .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT)
                     .SetTextStyle(views::style::STYLE_SECONDARY));
+}
+
+views::Builder<ash::AshNotificationView::GroupedNotificationsContainer>
+CreateGroupedNotificationsContainerBuilder(
+    ash::AshNotificationView* parent_notification_view) {
+  return views::Builder<
+             ash::AshNotificationView::GroupedNotificationsContainer>()
+      .SetParentNotificationView(parent_notification_view)
+      .SetOrientation(views::BoxLayout::Orientation::kVertical)
+      .SetInsideBorderInsets(ash::kGroupedNotificationContainerCollapsedInsets)
+      .SetBetweenChildSpacing(ash::kGroupedNotificationsCollapsedSpacing);
 }
 
 // Perform a scale and translate animation by scale from (scale_value_x,
@@ -240,7 +255,8 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
       timestamp_in_collapsed_view_(
           AddChildView(std::make_unique<views::Label>())) {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetDefault(views::kMarginsKey, gfx::Insets(0, 0, 0, kTitleRowSpacing));
+      ->SetDefault(views::kMarginsKey,
+                   gfx::Insets::TLBR(0, 0, 0, kTitleRowSpacing));
   title_view_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
@@ -363,7 +379,7 @@ AshNotificationView::AshNotificationView(
               views::Builder<views::BoxLayoutView>()
                   .SetMainAxisAlignment(MainAxisAlignment::kEnd)
                   .SetInsideBorderInsets(
-                      gfx::Insets(0, kContentRowHorizontalSpacing, 0, 0))
+                      gfx::Insets::TLBR(0, kContentRowHorizontalSpacing, 0, 0))
                   .SetBetweenChildSpacing(kContentRowHorizontalSpacing)
                   .SetProperty(views::kFlexBehaviorKey,
                                views::FlexSpecification(
@@ -447,22 +463,25 @@ AshNotificationView::AshNotificationView(
                    .CopyAddressTo(&collapsed_summary_view_)
                    .Build());
 
-  AddChildView(
-      views::Builder<views::ScrollView>()
-          .CopyAddressTo(&grouped_notifications_scroll_view_)
-          .SetBackgroundColor(absl::nullopt)
-          .SetDrawOverflowIndicator(false)
-          .ClipHeightTo(0, std::numeric_limits<int>::max())
-          .SetContents(
-              views::Builder<GroupedNotificationsContainer>()
-                  .CopyAddressTo(&grouped_notifications_container_)
-                  .SetParentNotificationView(this)
-                  .SetOrientation(Orientation::kVertical)
-                  .SetInsideBorderInsets(kGroupedNotificationContainerInsets)
-                  .SetBetweenChildSpacing(
-                      IsExpanded() ? kGroupedNotificationsExpandedSpacing
-                                   : kGroupedNotificationsCollapsedSpacing))
-          .Build());
+  // We only need a scroll view if the notification is being shown in its own
+  // popup. Scrolling is handled by `UnifiedMessageCenterView` otherwise. Having
+  // a nested scroll view results in crbug/1302756.
+  if (shown_in_popup) {
+    AddChildView(
+        views::Builder<views::ScrollView>()
+            .CopyAddressTo(&grouped_notifications_scroll_view_)
+            .SetBackgroundColor(absl::nullopt)
+            .SetDrawOverflowIndicator(false)
+            .ClipHeightTo(0, std::numeric_limits<int>::max())
+            .SetContents(
+                CreateGroupedNotificationsContainerBuilder(this).CopyAddressTo(
+                    &grouped_notifications_container_))
+            .Build());
+  } else {
+    AddChildView(CreateGroupedNotificationsContainerBuilder(this)
+                     .CopyAddressTo(&grouped_notifications_container_)
+                     .Build());
+  }
 
   AddChildView(CreateActionsRow(std::make_unique<views::FlexLayout>()));
 
@@ -470,7 +489,7 @@ AshNotificationView::AshNotificationView(
   action_buttons_row()
       ->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetDefault(views::kMarginsKey,
-                   gfx::Insets(0, 0, 0, kActionsRowHorizontalSpacing))
+                   gfx::Insets::TLBR(0, 0, 0, kActionsRowHorizontalSpacing))
       .SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetInteriorMargin(kActionButtonsRowPadding);
   action_buttons_row()->SetProperty(
@@ -490,16 +509,18 @@ AshNotificationView::AshNotificationView(
                     gfx::Font::Weight::NORMAL),
       gfx::Insets(), true);
 
+  // Corner radius for popups is handled below. We do not set corner radius if
+  // the view is  in the message center here. Rounded corners for message_views
+  // in the message center view are handled in `UnifiedMessageListView`.
   if (shown_in_popup_ && !notification.group_child()) {
+    UpdateCornerRadius(kMessagePopupCornerRadius, kMessagePopupCornerRadius);
+
     layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
     layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
     layer()->SetRoundedCornerRadius(
         gfx::RoundedCornersF{kMessagePopupCornerRadius});
-  } else if (!notification.group_child()) {
-    layer()->SetRoundedCornerRadius(
-        gfx::RoundedCornersF{kMessageCenterNotificationCornerRadius});
+    layer()->SetIsFastRoundedCorner(true);
   }
-  layer()->SetIsFastRoundedCorner(true);
 
   // Create layer in some views for animations.
   message_center_utils::InitLayerForAnimations(header_row());
@@ -670,9 +691,10 @@ void AshNotificationView::PopulateGroupNotifications(
   total_grouped_notifications_ = 0;
   grouped_notifications_container_->RemoveAllChildViews();
 
-  for (auto* notification : notifications) {
+  for (auto notification = notifications.rbegin();
+       notification != notifications.rend(); notification++) {
     auto notification_view =
-        std::make_unique<AshNotificationView>(*notification,
+        std::make_unique<AshNotificationView>(**notification,
                                               /*shown_in_popup=*/false);
     notification_view->SetVisible(
         total_grouped_notifications_ <
@@ -682,10 +704,11 @@ void AshNotificationView::PopulateGroupNotifications(
     notification_view->set_scroller(
         scroller() ? scroller() : grouped_notifications_scroll_view_);
 
-    grouped_notifications_container_->AddChildViewAt(
-        std::move(notification_view), 0);
+    grouped_notifications_container_->AddChildView(
+        std::move(notification_view));
+
+    total_grouped_notifications_++;
   }
-  total_grouped_notifications_ = notifications.size();
   left_content_->SetVisible(total_grouped_notifications_ == 0);
   expand_button_->UpdateGroupedNotificationsCount(total_grouped_notifications_);
 }
@@ -710,10 +733,13 @@ const char* AshNotificationView::GetClassName() const {
 }
 
 void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
+  // Grouped parent views should always use the expanded paddings, even if they
+  // are collapsed.
+  bool use_expanded_padding = expanded || is_grouped_parent_view_;
   static_cast<views::BoxLayout*>(control_buttons_container_->GetLayoutManager())
       ->set_inside_border_insets(
-          expanded ? kControlButtonsContainerExpandedPadding
-                   : kControlButtonsContainerCollapsedPadding);
+          use_expanded_padding ? kControlButtonsContainerExpandedPadding
+                               : kControlButtonsContainerCollapsedPadding);
 
   bool is_single_expanded_notification =
       !is_grouped_child_view_ && !is_grouped_parent_view_ && expanded;
@@ -727,10 +753,6 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
 
   if (message_label()) {
     // `message_label()` is shown only in collapsed mode.
-    if (!expanded) {
-      ConfigureLabelStyle(message_label(), kMessageLabelSize, false);
-      message_center_utils::InitLayerForAnimations(message_label());
-    }
     message_label()->SetVisible(!expanded);
     message_label_in_expanded_state_->SetVisible(expanded &&
                                                  !is_grouped_parent_view_);
@@ -739,23 +761,29 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
   // Custom padding for app icon and expand button. These 2 views should always
   // use the same padding value so that they are vertical aligned.
   app_icon_view_->SetBorder(views::CreateEmptyBorder(
-      expanded ? gfx::Insets() : kAppIconExpandButtonCollapsedPadding));
+      use_expanded_padding ? gfx::Insets()
+                           : kAppIconExpandButtonCollapsedPadding));
   expand_button_container_->SetInteriorMargin(
-      expanded ? gfx::Insets() : kAppIconExpandButtonCollapsedPadding);
+      use_expanded_padding ? gfx::Insets()
+                           : kAppIconExpandButtonCollapsedPadding);
 
   expand_button_->SetExpanded(expanded);
 
   if (is_grouped_parent_view_) {
-    if (shown_in_popup_) {
+    if (grouped_notifications_scroll_view_) {
       grouped_notifications_scroll_view_->ClipHeightTo(
           0, CalculateMaxHeightForGroupedNotifications());
     }
 
-    static_cast<views::BoxLayout*>(
-        grouped_notifications_container_->GetLayoutManager())
-        ->set_between_child_spacing(
-            expanded ? kGroupedNotificationsExpandedSpacing
-                     : kGroupedNotificationsCollapsedSpacing);
+    auto* grouped_notifications_container_layout_manager =
+        static_cast<views::BoxLayout*>(
+            grouped_notifications_container_->GetLayoutManager());
+    grouped_notifications_container_layout_manager->set_inside_border_insets(
+        expanded ? kGroupedNotificationContainerExpandedInsets
+                 : kGroupedNotificationContainerCollapsedInsets);
+    grouped_notifications_container_layout_manager->set_between_child_spacing(
+        expanded ? kGroupedNotificationsExpandedSpacing
+                 : kGroupedNotificationsCollapsedSpacing);
 
     int notification_count = 0;
     for (auto* child : grouped_notifications_container_->children()) {
@@ -777,7 +805,9 @@ void AshNotificationView::UpdateWithNotification(
   is_grouped_child_view_ = notification.group_child();
   is_grouped_parent_view_ = notification.group_parent();
 
-  grouped_notifications_scroll_view_->SetVisible(is_grouped_parent_view_);
+  if (grouped_notifications_scroll_view_)
+    grouped_notifications_scroll_view_->SetVisible(is_grouped_parent_view_);
+  grouped_notifications_container_->SetVisible(is_grouped_parent_view_);
 
   if (is_grouped_child_view_ && !is_nested())
     SetIsNested();
@@ -788,7 +818,17 @@ void AshNotificationView::UpdateWithNotification(
   NotificationViewBase::UpdateWithNotification(notification);
 
   CreateOrUpdateSnoozeButton(notification);
+
+  // Configure views style.
   UpdateIconAndButtonsColor(&notification);
+  if (message_label())
+    ConfigureLabelStyle(message_label(), kMessageLabelSize, false);
+  if (inline_reply()) {
+    SkColor text_color = ash::AshColorProvider::Get()->GetContentLayerColor(
+        ash::AshColorProvider::ContentLayerType::kTextColorSecondary);
+    inline_reply()->textfield()->SetTextColor(text_color);
+    inline_reply()->textfield()->set_placeholder_text_color(text_color);
+  }
 }
 
 void AshNotificationView::CreateOrUpdateHeaderView(
@@ -838,7 +878,7 @@ void AshNotificationView::CreateOrUpdateTitleView(
 void AshNotificationView::CreateOrUpdateSmallIconView(
     const message_center::Notification& notification) {
   if (is_grouped_child_view_ && !notification.icon().IsEmpty()) {
-    app_icon_view_->SetImage(notification.icon().AsImageSkia(),
+    app_icon_view_->SetImage(notification.icon().Rasterize(GetColorProvider()),
                              gfx::Size(kAppIconViewSize, kAppIconViewSize));
     return;
   }
@@ -964,6 +1004,13 @@ void AshNotificationView::OnThemeChanged() {
   UpdateIconAndButtonsColor(
       message_center::MessageCenter::Get()->FindVisibleNotificationById(
           notification_id()));
+
+  if (inline_reply()) {
+    SkColor text_color = ash::AshColorProvider::Get()->GetContentLayerColor(
+        ash::AshColorProvider::ContentLayerType::kTextColorSecondary);
+    inline_reply()->textfield()->SetTextColor(text_color);
+    inline_reply()->textfield()->set_placeholder_text_color(text_color);
+  }
 }
 
 std::unique_ptr<message_center::NotificationInputContainer>
@@ -1261,6 +1308,7 @@ void AshNotificationView::PerformExpandCollapseAnimation() {
   // when `message_label()` is truncated).
   if (message_label() && message_label()->GetVisible() &&
       IsMessageLabelTruncated()) {
+    message_center_utils::InitLayerForAnimations(message_label());
     message_center_utils::FadeInView(
         message_label(), kMessageLabelFadeInAnimationDelayMs,
         kMessageLabelFadeInAnimationDurationMs, gfx::Tween::LINEAR,

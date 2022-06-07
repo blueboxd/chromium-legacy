@@ -4,7 +4,7 @@
 
 import {fakeSearchResponse} from 'chrome://os-feedback/fake_data.js';
 import {FakeHelpContentProvider} from 'chrome://os-feedback/fake_help_content_provider.js';
-import {HelpContentElement} from 'chrome://os-feedback/help_content.js';
+import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
 import {setHelpContentProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
 import {OS_FEEDBACK_UNTRUSTED_ORIGIN, SearchPageElement} from 'chrome://os-feedback/search_page.js';
 
@@ -50,7 +50,7 @@ export function searchPageTestSuite() {
     // Verify the title is in the page.
     const title = page.shadowRoot.querySelector('#title');
     assertTrue(!!title);
-    assertEquals('Send feedback', title.textContent);
+    assertEquals('Send feedback', title.textContent.trim());
 
     // Verify the help content is not in the page. For security reason, help
     // contents fetched online can't be displayed in trusted context.
@@ -65,8 +65,9 @@ export function searchPageTestSuite() {
         untrustedFrame.src);
 
     // Verify the continue button is in the page.
-    const btnContinue = page.shadowRoot.querySelector('#btnContinue');
-    assertTrue(!!btnContinue);
+    const buttonContinue = page.shadowRoot.querySelector('#buttonContinue');
+    assertTrue(!!buttonContinue);
+    assertEquals('Continue', buttonContinue.textContent.trim());
   });
 
   /**
@@ -142,7 +143,9 @@ export function searchPageTestSuite() {
     });
 
     const data = {
-      response: fakeSearchResponse,
+      contentList: fakeSearchResponse.results,
+      isQueryEmpty: true,
+      isPopularContent: true
     };
     iframe.contentWindow.postMessage(data, OS_FEEDBACK_UNTRUSTED_ORIGIN);
 
@@ -152,5 +155,63 @@ export function searchPageTestSuite() {
     assertTrue(helpContentReceived);
     // Verify that 5 help contents have been received.
     assertEquals(5, helpContentCountReceived);
+  });
+
+  /**
+   * Test that when there is no text entered and the continue button is clicked,
+   * the error message should be displayed below the textarea and the textarea
+   * should receive focus to accept input. Once some text has been entered, the
+   * error message should be hidden.
+   */
+  test('DescriptionEmptyError', async () => {
+    await initializePage();
+
+    const errorMsg = page.shadowRoot.querySelector('#descriptionEmptyError');
+    // Verify that the error message is hidden in the beginning.
+    assertTrue(errorMsg.hidden);
+
+    const textInput = page.shadowRoot.querySelector('#descriptionText');
+    assertTrue(textInput.value.length === 0);
+    // Remove focus on the textarea.
+    textInput.blur();
+    assertNotEquals(page.shadowRoot.activeElement, textInput);
+
+    const buttonContinue = page.shadowRoot.querySelector('#buttonContinue');
+    buttonContinue.click();
+    // Verify that the message is not hidden now.
+    assertFalse(errorMsg.hidden);
+    // Verify that the textarea received focus again.
+    assertEquals(page.shadowRoot.activeElement, textInput);
+
+    // Now enter some text. The error message should be hidden again.
+    textInput.value = 'hello';
+    textInput.dispatchEvent(new Event('input'));
+
+    assertTrue(errorMsg.hidden);
+  });
+
+  /**
+   * Test that when there are certain text entered and the continue button is
+   * clicked, an on-continue is fired.
+   */
+  test('Continue', async () => {
+    await initializePage();
+
+    const textInput = page.shadowRoot.querySelector('#descriptionText');
+    textInput.value = 'hello';
+
+    const clickPromise = eventToPromise('continue-click', page);
+    let actualCurrentState;
+
+    page.addEventListener('continue-click', (event) => {
+      actualCurrentState = event.detail.currentState;
+    });
+
+    const buttonContinue = page.shadowRoot.querySelector('#buttonContinue');
+    buttonContinue.click();
+
+    await clickPromise;
+    assertTrue(!!actualCurrentState);
+    assertEquals(FeedbackFlowState.SEARCH, actualCurrentState);
   });
 }

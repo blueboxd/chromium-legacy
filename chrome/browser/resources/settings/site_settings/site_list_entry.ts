@@ -15,7 +15,7 @@ import '../icons.js';
 import '../settings_shared_css.js';
 import '../site_favicon.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -33,7 +33,7 @@ export interface SiteListEntryElement {
   $: {
     actionMenuButton: HTMLElement,
     resetSite: HTMLElement,
-  }
+  };
 }
 
 const SiteListEntryElementBase =
@@ -108,7 +108,8 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
 
   private onShowTooltip_() {
     const indicator =
-        assert(this.shadowRoot!.querySelector('cr-policy-pref-indicator')!);
+        this.shadowRoot!.querySelector('cr-policy-pref-indicator');
+    assert(!!indicator);
     // The tooltip text is used by an paper-tooltip contained inside the
     // cr-policy-pref-indicator. This text is needed here to send up to the
     // common tooltip component.
@@ -117,7 +118,7 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
   }
 
   private onShowIncognitoTooltip_() {
-    const tooltip = assert(this.shadowRoot!.querySelector('#incognitoTooltip'));
+    const tooltip = this.shadowRoot!.querySelector('#incognitoTooltip');
     // The tooltip text is used by an paper-tooltip contained inside the
     // cr-policy-pref-indicator. The text is currently held in a private
     // property. This text is needed here to send up to the common tooltip
@@ -198,7 +199,7 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
       description = loadTimeData.getString('embeddedOnAnyHost');
     }
 
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     if (this.model.category === ContentSettingsTypes.NOTIFICATIONS &&
         this.model.showAndroidSmsNote) {
       description = loadTimeData.getString('androidSmsNote');

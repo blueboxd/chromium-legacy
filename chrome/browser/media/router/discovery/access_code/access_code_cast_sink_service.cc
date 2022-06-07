@@ -7,12 +7,15 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_cast_pref_updater.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_media_sink_util.h"
+#include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
 #include "chrome/browser/media/router/discovery/mdns/media_sink_util.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
@@ -22,6 +25,8 @@
 #include "components/media_router/common/media_route.h"
 #include "components/media_router/common/media_sink.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
+#include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace media_router {
 
@@ -62,8 +67,11 @@ AccessCodeCastSinkService::AccessCodeCastSinkService(
       media_routes_observer_(
           std::make_unique<AccessCodeMediaRoutesObserver>(media_router, this)),
       cast_media_sink_service_impl_(cast_media_sink_service_impl),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      network_monitor_(DiscoveryNetworkMonitor::GetInstance()) {
   DCHECK(profile_);
+  pref_updater_ =
+      std::make_unique<AccessCodeCastPrefUpdater>(profile_->GetPrefs());
   backoff_policy_ = {
       // Number of initial errors (in sequence) to ignore before going into
       // exponential backoff.
@@ -172,7 +180,7 @@ void AccessCodeCastSinkService::HandleMediaRouteDiscoveredByAccessCode(
   // discovery.
   auto it = pending_callbacks_.find(sink->id());
   if (it != pending_callbacks_.end()) {
-    std::move(it->second).Run(true);
+    std::move(it->second).Run(AddSinkResultCode::OK, sink->id());
     pending_callbacks_.erase(sink->id());
   } else {
     if (sink->cast_data().discovered_by_access_code) {
@@ -218,9 +226,19 @@ void AccessCodeCastSinkService::OnAccessCodeRouteRemoved(
   }
 }
 
+void AccessCodeCastSinkService::DiscoverSink(const std::string& access_code,
+                                             AddSinkResultCallback callback) {
+  discovery_server_interface_ =
+      std::make_unique<AccessCodeCastDiscoveryInterface>(
+          profile_, access_code, media_router_->GetLogger());
+  discovery_server_interface_->ValidateDiscoveryAccessCode(
+      base::BindOnce(&AccessCodeCastSinkService::OnAccessCodeValidated,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void AccessCodeCastSinkService::AddSinkToMediaRouter(
     const MediaSinkInternal& sink,
-    ChannelOpenedCallback callback) {
+    AddSinkResultCallback add_sink_callback) {
   // Check to see if the media sink already exists in the media router.
   base::PostTaskAndReplyWithResult(
       cast_media_sink_service_impl_->task_runner().get(), FROM_HERE,
@@ -229,12 +247,39 @@ void AccessCodeCastSinkService::AddSinkToMediaRouter(
                      sink.id()),
       base::BindOnce(&AccessCodeCastSinkService::OpenChannelIfNecessary,
                      weak_ptr_factory_.GetWeakPtr(), sink,
-                     std::move(callback)));
+                     std::move(add_sink_callback)));
+}
+
+void AccessCodeCastSinkService::OnAccessCodeValidated(
+    AddSinkResultCallback add_sink_callback,
+    absl::optional<DiscoveryDevice> discovery_device,
+    AddSinkResultCode result_code) {
+  if (result_code != AddSinkResultCode::OK) {
+    std::move(add_sink_callback).Run(result_code, absl::nullopt);
+    return;
+  }
+  if (!discovery_device.has_value()) {
+    std::move(add_sink_callback)
+        .Run(AddSinkResultCode::EMPTY_RESPONSE, absl::nullopt);
+    return;
+  }
+  std::pair<absl::optional<MediaSinkInternal>, CreateCastMediaSinkResult>
+      creation_result = CreateAccessCodeMediaSink(discovery_device.value());
+
+  if (!creation_result.first.has_value() ||
+      creation_result.second != CreateCastMediaSinkResult::kOk) {
+    std::move(add_sink_callback)
+        .Run(AddSinkResultCode::SINK_CREATION_ERROR, absl::nullopt);
+    return;
+  }
+  auto media_sink = creation_result.first.value();
+
+  AddSinkToMediaRouter(media_sink, std::move(add_sink_callback));
 }
 
 void AccessCodeCastSinkService::OpenChannelIfNecessary(
     const MediaSinkInternal& sink,
-    ChannelOpenedCallback callback,
+    AddSinkResultCallback add_sink_callback,
     bool has_sink) {
   if (has_sink) {
     media_router_->GetLogger()->LogInfo(
@@ -258,12 +303,23 @@ void AccessCodeCastSinkService::OpenChannelIfNecessary(
           "terminate it.",
           sink.id(), "", "");
       media_router_->TerminateRoute(route_it->media_route_id());
-      pending_callbacks_.emplace(sink.id(), std::move(callback));
+      pending_callbacks_.emplace(sink.id(), std::move(add_sink_callback));
     } else {
-      std::move(callback).Run(true);
+      std::move(add_sink_callback).Run(AddSinkResultCode::OK, sink.id());
     }
     return;
   }
+
+  // The OnChannelOpenedResult() callback needs to be be bound with
+  // BindPostTask() to ensure that the callback is invoked on this specific task
+  // runner.
+  auto channel_cb = base::BindOnce(
+      &AccessCodeCastSinkService::OnChannelOpenedResult,
+      weak_ptr_factory_.GetWeakPtr(), std::move(add_sink_callback), sink.id());
+
+  auto returned_channel_cb =
+      base::BindPostTask(task_runner_, std::move(channel_cb));
+
   auto backoff_entry = std::make_unique<net::BackoffEntry>(&backoff_policy_);
   media_router_->GetLogger()->LogInfo(
       mojom::LogCategory::kDiscovery, kLoggerComponent,
@@ -273,7 +329,8 @@ void AccessCodeCastSinkService::OpenChannelIfNecessary(
       base::BindOnce(&CastMediaSinkServiceImpl::OpenChannel,
                      base::Unretained(cast_media_sink_service_impl_), sink,
                      std::move(backoff_entry), SinkSource::kAccessCode,
-                     std::move(callback), CreateCastSocketOpenParams(sink)));
+                     std::move(returned_channel_cb),
+                     CreateCastSocketOpenParams(sink)));
 }
 
 cast_channel::CastSocketOpenParams
@@ -284,6 +341,67 @@ AccessCodeCastSinkService::CreateCastSocketOpenParams(
       base::Seconds(kLivenessTimeoutInSeconds),
       base::Seconds(kPingIntervalInSeconds),
       cast_channel::CastDeviceCapability::NONE);
+}
+
+void AccessCodeCastSinkService::OnChannelOpenedResult(
+    AddSinkResultCallback add_sink_callback,
+    MediaSink::Id sink_id,
+    bool channel_opened) {
+  if (!channel_opened) {
+    media_router_->GetLogger()->LogError(
+        mojom::LogCategory::kDiscovery, kLoggerComponent,
+        "The channel failed to open.", sink_id, "", "");
+    std::move(add_sink_callback)
+        .Run(AddSinkResultCode::CHANNEL_OPEN_ERROR, absl::nullopt);
+    return;
+  }
+  media_router_->GetLogger()->LogInfo(
+      mojom::LogCategory::kDiscovery, kLoggerComponent,
+      "The channel successfully opened.", sink_id, "", "");
+  std::move(add_sink_callback).Run(AddSinkResultCode::OK, sink_id);
+}
+
+void AccessCodeCastSinkService::StoreSinkInPrefsById(
+    const MediaSink::Id sink_id) {
+  base::PostTaskAndReplyWithResult(
+      cast_media_sink_service_impl_->task_runner().get(), FROM_HERE,
+      base::BindOnce(&CastMediaSinkServiceImpl::GetSinkById,
+                     base::Unretained(cast_media_sink_service_impl_), sink_id),
+      base::BindOnce(&AccessCodeCastSinkService::StoreSinkInPrefs,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AccessCodeCastSinkService::StoreSinkInPrefs(
+    const MediaSinkInternal* sink) {
+  // For some reason the sink_id isn't in the media router. We can't update
+  // prefs.
+  if (!sink) {
+    media_router_->GetLogger()->LogError(
+        mojom::LogCategory::kDiscovery, kLoggerComponent,
+        "Unable to remember the cast sink since it was not present in the "
+        "media router.",
+        "", "", "");
+    return;
+  }
+  // The UpdateDiscoveredNetworksDict() callback needs to be be
+  // bound with BindPostTask() to ensure that the callback is invoked on this
+  // specific task runner.
+  auto network_cb =
+      base::BindOnce(&AccessCodeCastPrefUpdater::UpdateDiscoveredNetworksDict,
+                     pref_updater_->GetWeakPtr(), sink->id());
+
+  auto returned_network_cb =
+      base::BindPostTask(task_runner_, std::move(network_cb));
+
+  // We need to run this task on the IO thread since the DiscoveryNetworkMonitor
+  // runs on the IO thread.
+  cast_media_sink_service_impl_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&DiscoveryNetworkMonitor::GetNetworkId,
+                                base::Unretained(network_monitor_),
+                                std::move(returned_network_cb)));
+
+  pref_updater_->UpdateDevicesDict(*sink);
+  pref_updater_->UpdateDeviceAdditionTimeDict(sink->id());
 }
 
 void AccessCodeCastSinkService::Shutdown() {

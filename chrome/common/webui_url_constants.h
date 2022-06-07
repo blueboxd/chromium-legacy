@@ -32,11 +32,13 @@ extern const char kChromeUIAboutURL[];
 extern const char kChromeUIActivateSafetyCheckSettingsURL[];
 extern const char kChromeUIAccessibilityHost[];
 extern const char kChromeUIAllSitesPath[];
+extern const char kChromeUIAPCInternalsHost[];
 extern const char kChromeUIAppIconHost[];
 extern const char kChromeUIAppIconURL[];
 extern const char kChromeUIAppLauncherPageHost[];
 extern const char kChromeUIAppsURL[];
 extern const char kChromeUIAppsWithDeprecationDialogURL[];
+extern const char kChromeUIAppsWithForceInstalledDeprecationDialogURL[];
 extern const char kChromeUIAutofillInternalsHost[];
 extern const char kChromeUIBluetoothInternalsHost[];
 extern const char kChromeUIBookmarksHost[];
@@ -104,6 +106,7 @@ extern const char kChromeUIHistoryClustersURL[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIHistorySyncedTabs[];
 extern const char kChromeUIHistoryURL[];
+extern const char kChromeUIHpsInternalsHost[];
 extern const char kChromeUIIdentityInternalsHost[];
 extern const char kChromeUIImageEditorHost[];
 extern const char kChromeUIImageEditorURL[];
@@ -154,6 +157,7 @@ extern const char kChromeUIPrefsInternalsHost[];
 extern const char kChromeUIPrintURL[];
 extern const char kChromeUIPrivacySandboxDialogHost[];
 extern const char kChromeUIPrivacySandboxDialogURL[];
+extern const char kChromeUIProfileInternalsHost[];
 extern const char kChromeUIQuitHost[];
 extern const char kChromeUIQuitURL[];
 extern const char kChromeUIResetPasswordHost[];
@@ -228,11 +232,12 @@ extern const char kChromeUIAppServiceInternalsHost[];
 extern const char kChromeUINearbyInternalsHost[];
 extern const char kChromeUIBookmarksSidePanelHost[];
 extern const char kChromeUIBookmarksSidePanelURL[];
-extern const char kChromeUIReaderModeSidePanelHost[];
-extern const char kChromeUIReaderModeSidePanelURL[];
+extern const char kChromeUIReadAnythingSidePanelHost[];
+extern const char kChromeUIReadAnythingSidePanelURL[];
 extern const char kChromeUIReadLaterHost[];
 extern const char kChromeUIReadLaterURL[];
 extern const char kChromeUIWebAppInternalsHost[];
+extern const char kChromeUIWebUITestHost[];
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -373,6 +378,7 @@ extern const char kChromeUIOSSettingsURL[];
 extern const char kOsUIAboutURL[];
 extern const char kOsUIComponentsURL[];
 extern const char kOsUIFlagsURL[];
+extern const char kOsUIHelpAppURL[];
 extern const char kOsUIVersionURL[];
 #endif
 

@@ -16,10 +16,10 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/webui/shared_resources_data_source.h"
 #include "content/browser/webui/url_data_source_impl.h"
@@ -109,7 +109,7 @@ void URLDataManagerBackend::AddDataSource(URLDataSourceImpl* source) {
 
 void URLDataManagerBackend::UpdateWebUIDataSource(
     const std::string& source_name,
-    const base::DictionaryValue& update) {
+    const base::Value::Dict& update) {
   auto it = data_sources_.find(source_name);
   if (it == data_sources_.end() || !it->second->IsWebUIDataSourceImpl()) {
     NOTREACHED();

@@ -30,6 +30,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/graphics/decoding_image_generator.h"
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {

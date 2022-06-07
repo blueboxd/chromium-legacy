@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="1096883626080133124">S Google Chrome toho stihnete víc – je jednoduchý, bezpečný a rychlejší než kdy dřív</translation>
 <translation id="1143896152279775643">Heslo bude uloženo do Správce hesel Google pro účet <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Pomozte zlepšit funkce a výkon Chromu</translation>
 <translation id="1479202195792305274">Když se přihlásíte k účtu Google, může vám Chrome kontrolovat hesla</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Používejte Chrome všude</translation>
 <translation id="3522659714780527202">Chcete-li mít své karty k dispozici všude, kde používáte Chrome, zapněte synchronizaci</translation>
 <translation id="3533694711092285624">Nemáte žádná uložená hesla. Chrome může hesla zkontrolovat, pouze když si je uložíte.</translation>
-<translation id="3634910711516114487">Pokud z Chromu chcete získat maximum, přihlaste se do něj pomocí účtu Google</translation>
 <translation id="3655656110921623717">To znamená, že Chrom bude pokaždé odesílat požadavek na mobilní web.</translation>
 <translation id="3706101708757577809">Nyní můžete Chrome použít pokaždé, když klepnete na odkazy ve zprávách, dokumentech a ostatních aplikacích.</translation>
 <translation id="3720541637541300822">Při zavření Chromu zamknout anonymní karty</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Vaše heslo bylo vyzrazeno při porušení zabezpečení údajů. Správce hesel Google doporučuje ihned ho změnit.</translation>
 <translation id="6822673484890854830">Chromu se nepodařilo zkontrolovat všechna hesla. Zkuste to později.</translation>
 <translation id="6964931465519938134">Nyní můžete Chrome použít pokaždé, když klepnete na odkazy ve zprávách, dokumentech a ostatních aplikacích.</translation>
-<translation id="7046845777663074840">Když je tato funkce zapnutá:
-<ph name="BEGIN_INDENT" />  • Pomáháte s vylepšováním Chromu pro lidi, kteří jej používají stejně jako vy.<ph name="END_INDENT" />
-
-Co je třeba zvážit:
-<ph name="BEGIN_INDENT" />  • Informace o vašem používání prohlížeče Chrome se odesílají do Googlu, ale nejsou spojeny s vámi.
-
-  • Pokud Chrome spadne, podrobnosti o selhání mohou zahrnovat některé osobní údaje.
-
-  • Pokud zapnete synchronizaci, mohou metriky zahrnovat také informace o navštívených adresách URL.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Přizpůsobte si Chrome</translation>
 <translation id="7124339256045485976">Udržují Chrome aktuální</translation>
 <translation id="7161390184744336561">Google Chrome je zastaralý</translation>
 <translation id="7165736900384873061">Začněte používat čtečku QR kódů prohlížeče Google Chrome</translation>
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Přesuňte si Chrome do doku<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome pomocí funkce Face ID ověřuje přístup k heslům.</translation>
+<translation id="7187993566681480880">Zajišťuje vám bezpečí v Chromu a může zvýšit vaši bezpečnost v jiných aplikacích Google, když jste přihlášeni.</translation>
 <translation id="72119412072970160">Hesla, která jste si uložili do Správce hesel Google, můžete používat v jiných aplikacích na svém iPadu.</translation>
 <translation id="7261678641327190792">Chrome nemůže zkontrolovat hesla</translation>
 <translation id="7272930098487145294">Pokud chcete ukládat obrázky, klepněte na Nastavení a povolte Chromu přidávat obrázky do vašich fotek</translation>
@@ -110,6 +100,7 @@ Co je třeba zvážit:
 <translation id="766361182512894255">Vaše heslo bylo vyzrazeno při porušení zabezpečení údajů. Chrome doporučuje heslo okamžitě změnit.</translation>
 <translation id="7693590760643069321">Nyní můžete Chrome použít pokaždé, když klepnete na odkazy ve zprávách, dokumentech a ostatních aplikacích.</translation>
 <translation id="7698568245838009292">Chrome potřebuje přístup k fotoaparátu</translation>
+<translation id="7780154209050837198">Pokud z Chromu chcete získat maximum, přihlaste se do něj pomocí účtu Google.</translation>
 <translation id="7855730255114109580">Google Chrome je aktuální</translation>
 <translation id="8022947259858476807">Používejte Chrome jako výchozí prohlížeč k otevírání odkazů, vyhledávání z widgetů a automatickému vyplňování hesel v jiných aplikacích</translation>
 <translation id="8160472928944011082">Chrome nelze aktualizovat</translation>

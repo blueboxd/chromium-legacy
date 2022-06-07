@@ -50,15 +50,25 @@ public class PasswordGenerationDialogMediator {
     static PropertyModel.Builder createDialogModelBuilder(
             Callback<Boolean> onPasswordAcceptedOrRejected, View customView) {
         Resources resources = customView.getResources();
-        return new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                .with(ModalDialogProperties.CONTROLLER,
-                        new DialogController(onPasswordAcceptedOrRejected))
-                .with(ModalDialogProperties.TITLE, resources,
-                        R.string.password_generation_dialog_title)
-                .with(ModalDialogProperties.CUSTOM_VIEW, customView)
-                .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
-                        R.string.password_generation_dialog_use_password_button)
-                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
-                        R.string.password_generation_dialog_cancel_button);
+        PropertyModel.Builder builder =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER,
+                                new DialogController(onPasswordAcceptedOrRejected))
+                        .with(ModalDialogProperties.CUSTOM_VIEW, customView)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                R.string.password_generation_dialog_use_password_button)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                R.string.password_generation_dialog_cancel_button);
+        if (PasswordManagerHelper.usesUnifiedPasswordManagerUI()) {
+            builder = builder.with(ModalDialogProperties.TITLE_ICON, customView.getContext(),
+                                     new PasswordManagerResourceProviderImpl()
+                                             .getPasswordManagerIcon())
+                              .with(ModalDialogProperties.TITLE, resources,
+                                      R.string.password_generation_dialog_title_upm_branded);
+        } else {
+            builder = builder.with(ModalDialogProperties.TITLE, resources,
+                    R.string.password_generation_dialog_title);
+        }
+        return builder;
     }
 }

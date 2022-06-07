@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/dcheck_is_on.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -42,7 +43,7 @@ class CustomLayoutChild;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
 class NGBoxFragmentBuilder;
-class NGBreakToken;
+class NGBlockBreakToken;
 class NGConstraintSpace;
 class NGEarlyBreak;
 class NGLayoutResult;
@@ -400,11 +401,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return frame_rect_.Size();
   }
-  // TODO(crbug.com/962299): This is incorrect in some cases.
-  gfx::Size PixelSnappedSize() const {
-    NOT_DESTROYED();
-    return frame_rect_.PixelSnappedSize();
-  }
 
   void SetLocation(const LayoutPoint& location) {
     NOT_DESTROYED();
@@ -602,11 +598,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   PhysicalRect PhysicalLayoutOverflowRect() const {
     NOT_DESTROYED();
     return FlipForWritingMode(LayoutOverflowRect());
-  }
-  // TODO(crbug.com/962299): This is incorrect in some cases.
-  gfx::Rect PixelSnappedLayoutOverflowRect() const {
-    NOT_DESTROYED();
-    return ToPixelSnappedRect(LayoutOverflowRect());
   }
   LayoutSize MaxLayoutOverflow() const {
     NOT_DESTROYED();
@@ -896,7 +887,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   int PixelSnappedScrollWidth() const;
   int PixelSnappedScrollHeight() const;
 
-  void ScrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.
   PhysicalRect ScrollRectToVisibleRecursive(
@@ -1233,7 +1223,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // TODO(ikilpatrick): Move this function into NGBlockNode.
   const NGLayoutResult* CachedLayoutResult(
       const NGConstraintSpace&,
-      const NGBreakToken*,
+      const NGBlockBreakToken*,
       const NGEarlyBreak*,
       absl::optional<NGFragmentGeometry>* initial_fragment_geometry,
       NGLayoutCacheStatus* out_cache_status);
@@ -1519,7 +1509,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool CanBeScrolledAndHasScrollableArea() const;
   virtual bool CanBeProgramaticallyScrolled() const;
   virtual void Autoscroll(const PhysicalOffset&);
-  bool CanAutoscroll() const;
   PhysicalOffset CalculateAutoscrollDirection(
       const gfx::PointF& point_in_root_frame) const;
   static LayoutBox* FindAutoscrollable(LayoutObject*,
@@ -2102,6 +2091,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return ChildrenInline() && PhysicalFragments().HasFragmentItems();
   }
+
+  // Returns true if this box is fixed position and will not move with
+  // scrolling.
+  bool IsFixedToView() const;
 
  protected:
   ~LayoutBox() override;

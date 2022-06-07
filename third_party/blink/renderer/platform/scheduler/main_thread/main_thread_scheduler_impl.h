@@ -14,11 +14,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/single_sample_metrics.h"
+#include "base/observer_list.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "components/power_scheduler/power_mode_voter.h"
@@ -44,6 +47,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/user_model.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
+#include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -76,6 +80,7 @@ class CPUTimeBudgetPool;
 
 class PLATFORM_EXPORT MainThreadSchedulerImpl
     : public ThreadSchedulerImpl,
+      public VirtualTimeController,
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
@@ -149,8 +154,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   static const char* UseCaseToString(UseCase use_case);
   static const char* RAILModeToString(RAILMode rail_mode);
-  static const char* VirtualTimePolicyToString(
-      PageScheduler::VirtualTimePolicy);
+  static const char* VirtualTimePolicyToString(VirtualTimePolicy);
 
   explicit MainThreadSchedulerImpl(
       std::unique_ptr<base::sequence_manager::SequenceManager>
@@ -264,7 +268,15 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   base::TimeTicks NowTicks() const;
 
-  scoped_refptr<base::SingleThreadTaskRunner> VirtualTimeControlTaskRunner();
+  TaskAttributionTracker* GetTaskAttributionTracker() override {
+    return main_thread_only().task_attribution_tracker.get();
+  }
+
+  void InitializeTaskAttributionTracker(
+      std::unique_ptr<TaskAttributionTracker> tracker) override {
+    DCHECK(!main_thread_only().task_attribution_tracker);
+    main_thread_only().task_attribution_tracker = std::move(tracker);
+  }
 
   // Returns a new task queue created with given params.
   scoped_refptr<MainThreadTaskQueue> NewTaskQueue(
@@ -283,20 +295,21 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   scoped_refptr<base::sequence_manager::TaskQueue> NewTaskQueueForTest();
 
-  using VirtualTimePolicy = PageScheduler::VirtualTimePolicy;
+  // VirtualTimeController implementation.
+  base::TimeTicks EnableVirtualTime(base::Time initial_time) override;
+  void DisableVirtualTimeForTesting() override;
+  bool VirtualTimeAllowedToAdvance() const override;
+  void GrantVirtualTimeBudget(
+      base::TimeDelta budget,
+      base::OnceClosure budget_exhausted_callback) override;
+  void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;
+  void SetMaxVirtualTimeTaskStarvationCount(
+      int max_task_starvation_count) override;
+  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      const WTF::String& name,
+      WebScopedVirtualTimePauser::VirtualTaskDuration) override;
 
-  // Tells the scheduler that all TaskQueues should use virtual time. Returns
-  // the base::TimeTicks that virtual time offsets will be relative to.
-  base::TimeTicks EnableVirtualTime(base::Time initial_time);
   bool IsVirtualTimeEnabled() const;
-
-  // Migrates all task queues to real time.
-  void DisableVirtualTimeForTesting();
-
-  // Returns true if virtual time is not paused.
-  bool VirtualTimeAllowedToAdvance() const;
-  void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy);
-  void SetMaxVirtualTimeTaskStarvationCount(int max_task_starvation_count);
   base::TimeTicks IncrementVirtualTimePauseCount();
   void DecrementVirtualTimePauseCount();
   void MaybeAdvanceVirtualTime(base::TimeTicks new_virtual_time);
@@ -411,9 +424,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
   scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
   scoped_refptr<MainThreadTaskQueue> V8TaskQueue();
-  // A control task queue which also respects virtual time. Only available if
-  // virtual time has been enabled.
-  scoped_refptr<MainThreadTaskQueue> VirtualTimeControlTaskQueue();
 
   // `current_use_case` will be overwritten by the next call to UpdatePolicy.
   // Thus, this function should be only used for testing purposes.
@@ -909,6 +919,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     WTF::Vector<AgentGroupSchedulerScope> agent_group_scheduler_scope_stack;
 
     std::unique_ptr<power_scheduler::PowerModeVoter> audible_power_mode_voter;
+
+    std::unique_ptr<TaskAttributionTracker> task_attribution_tracker;
   };
 
   struct AnyThread {

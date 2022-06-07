@@ -11,9 +11,11 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/back_forward_cache.h"
+#include "content/public/common/extra_mojo_js_features.mojom.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -30,6 +32,8 @@
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-forward.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -44,7 +48,6 @@ class JavaRef;
 
 class TimeDelta;
 class UnguessableToken;
-class Value;
 }  // namespace base
 
 namespace blink {
@@ -79,9 +82,9 @@ class URLLoaderFactory;
 }
 }  // namespace network
 
-namespace perfetto {
-class TracedValue;
-}
+namespace perfetto::protos::pbzero {
+class RenderFrameHost;
+}  // namespace perfetto::protos::pbzero
 
 namespace service_manager {
 class InterfaceProvider;
@@ -166,7 +169,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   ~RenderFrameHost() override {}
 
   // Returns the route id for this frame.
-  virtual int GetRoutingID() = 0;
+  virtual int GetRoutingID() const = 0;
 
   // Returns the frame token for this frame.
   virtual const blink::LocalFrameToken& GetFrameToken() = 0;
@@ -190,19 +193,26 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
                                      size_t max_nodes,
                                      const base::TimeDelta& timeout) = 0;
 
+  using AXTreeDistillerCallback = base::OnceCallback<void(
+      const ui::AXTreeUpdate&,
+      const std::vector<ui::AXNodeID>& content_node_ids)>;
+  // Requests a one-time snapshot of the accessibility tree with distilled
+  // node IDs identified.
+  virtual void RequestDistilledAXTree(AXTreeDistillerCallback callback) = 0;
+
   // Returns the SiteInstance grouping all RenderFrameHosts that have script
   // access to this RenderFrameHost, and must therefore live in the same
   // process.
   // Associated SiteInstance never changes.
-  virtual SiteInstance* GetSiteInstance() = 0;
+  virtual SiteInstance* GetSiteInstance() const = 0;
 
   // Returns the process for this frame.
   // Associated RenderProcessHost never changes.
-  virtual RenderProcessHost* GetProcess() = 0;
+  virtual RenderProcessHost* GetProcess() const = 0;
 
   // Returns the GlobalRenderFrameHostId for this frame. Embedders should store
   // this instead of a raw RenderFrameHost pointer.
-  virtual GlobalRenderFrameHostId GetGlobalId() = 0;
+  virtual GlobalRenderFrameHostId GetGlobalId() const = 0;
 
   // Returns a StoragePartition associated with this RenderFrameHost.
   // Associated StoragePartition never changes.
@@ -247,7 +257,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost is the main one and there is no parent.
   // The result may be in a different process than the
   // current RenderFrameHost.
-  virtual RenderFrameHost* GetParent() = 0;
+  virtual RenderFrameHost* GetParent() const = 0;
 
   // Returns the document owning the frame this RenderFrameHost is located
   // in, which will either be a parent (for <iframe>s) or outer document (for
@@ -269,7 +279,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   //  C GetParent & GetParentOrOuterDocument returns A.
   //  B GetParent & GetParentOrOuterDocument returns A.
   //  A GetParent & GetParentOrOuterDocument returns nullptr.
-  virtual RenderFrameHost* GetParentOrOuterDocument() = 0;
+  virtual RenderFrameHost* GetParentOrOuterDocument() const = 0;
 
   // Returns the eldest parent of this RenderFrameHost.
   // Always non-null, but might be equal to |this|.
@@ -312,7 +322,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns true if `this` was loaded in a <fencedframe> element directly or if
   // one of `this` ancestors was loaded in a <fencedframe> element. This
   // supports both Shadow DOM and MPArch implementations.
-  virtual bool IsNestedWithinFencedFrame() = 0;
+  virtual bool IsNestedWithinFencedFrame() const = 0;
 
   // |ForEachRenderFrameHost| traverses this RenderFrameHost and all of its
   // descendants, including frames in any inner frame trees, in breadth-first
@@ -490,10 +500,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Note that this does not reflect navigations in other RenderFrameHosts,
   // frames, or pages within the same WebContents, so it may differ from
   // NavigationController::GetLastCommittedEntry().
-  virtual const GURL& GetLastCommittedURL() = 0;
+  virtual const GURL& GetLastCommittedURL() const = 0;
 
   // Returns the last committed origin of this RenderFrameHost.
-  virtual const url::Origin& GetLastCommittedOrigin() = 0;
+  virtual const url::Origin& GetLastCommittedOrigin() const = 0;
 
   // Returns the network isolation key used for subresources from the currently
   // committed navigation. It's set on commit and does not change until the next
@@ -542,7 +552,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   //   ExecuteJavaScript("obj.foo(1, true)", callback)
   virtual void ExecuteJavaScriptMethod(const std::u16string& object_name,
                                        const std::u16string& method_name,
-                                       base::Value arguments,
+                                       base::Value::List arguments,
                                        JavaScriptResultCallback callback) = 0;
 
   // This is the default API to run JavaScript in this frame. This API can only
@@ -569,6 +579,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // activation.
   virtual void ExecuteJavaScriptWithUserGestureForTests(
       const std::u16string& javascript,
+      JavaScriptResultCallback callback,
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
 
   // Tells the renderer to perform a given action on the plugin located at a
@@ -605,7 +616,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void SaveImageAt(int x, int y) = 0;
 
   // RenderViewHost for this frame.
-  virtual RenderViewHost* GetRenderViewHost() = 0;
+  virtual RenderViewHost* GetRenderViewHost() const = 0;
 
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
@@ -1001,8 +1012,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // created on the document.
   virtual bool DocumentUsedWebOTP() = 0;
 
+  using TraceProto = perfetto::protos::pbzero::RenderFrameHost;
   // Write a description of this RenderFrameHost into the provided |context|.
-  virtual void WriteIntoTrace(perfetto::TracedValue context) = 0;
+  virtual void WriteIntoTrace(
+      perfetto::TracedProto<TraceProto> context) const = 0;
 
   // Start/stop event log output from WebRTC on this RFH for the peer connection
   // identified locally within the RFH using the ID `lid`.
@@ -1010,7 +1023,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void DisableWebRtcEventLogOutput(int lid) = 0;
 
   // Return true if onload has been executed in the renderer in the main frame.
-  virtual bool IsDocumentOnLoadCompletedInPrimaryMainFrame() = 0;
+  virtual bool IsDocumentOnLoadCompletedInMainFrame() = 0;
 
   // Returns the raw list of favicon candidates as reported to observers via
   // since the last navigation start. If called on a subframe, returns the
@@ -1037,6 +1050,17 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost is deleted or navigates to another document.
   virtual DocumentRef GetDocumentRef() = 0;
   virtual WeakDocumentPtr GetWeakDocumentPtr() = 0;
+
+  // Enable Mojo JavaScript bindings in the renderer process. It will be
+  // effective on the first creation of script context after the call is made.
+  // If called at frame creation time (RenderFrameCreated) or just before a
+  // document is committed (ReadyToCommitNavigation), the resulting document
+  // will have the JS bindings enabled.
+  //
+  // If |features| is nullptr, only MojoJs will be enabled. Otherwise |features|
+  // enables a set of additional features that can be used with MojoJs. For
+  // example, helper methods for MojoJs to better work with Web API objects.
+  virtual void EnableMojoJsBindings(mojom::ExtraMojoJsFeaturesPtr features) = 0;
 
  private:
   // This interface should only be implemented inside content.

@@ -488,8 +488,7 @@ void Create(const base::FieldTrial::EntropyProvider& low_entropy_provider,
   if (base::FieldTrialList::TrialExists(kFREThirdUITrialName) ||
       base::FieldTrialList::TrialExists(kEnableFREUIModuleIOS.name) ||
       base::FieldTrialList::TrialExists(
-          signin::kNewMobileIdentityConsistencyFRE.name) ||
-      base::FieldTrialList::TrialExists("EnableFREUIModuleIOS")) {
+          signin::kNewMobileIdentityConsistencyFRE.name)) {
     return;
   }
 

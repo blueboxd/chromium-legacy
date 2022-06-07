@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -114,6 +115,29 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
     response.google_legal_message = {google_legal_message};
     response.issuer_legal_message = {issuer_legal_message};
     return response;
+  }
+
+  void SetUpStrikeDatabaseTest() {
+    raw_ptr<VirtualCardEnrollmentProcessState> state =
+        virtual_card_enrollment_manager_
+            ->GetVirtualCardEnrollmentProcessState();
+    state->vcn_context_token = kTestVcnContextToken;
+    SetUpCard();
+    state->virtual_card_enrollment_fields.credit_card = *card_;
+    personal_data_manager_->SetPaymentsCustomerData(
+        std::make_unique<PaymentsCustomerData>("123456"));
+    EXPECT_FALSE(
+        virtual_card_enrollment_manager_
+            ->IsVirtualCardEnrollmentBlockedDueToMaxStrikes(
+                base::NumberToString(state->virtual_card_enrollment_fields
+                                         .credit_card.instrument_id()),
+                VirtualCardEnrollmentSource::kUpstream));
+    EXPECT_FALSE(
+        virtual_card_enrollment_manager_
+            ->IsVirtualCardEnrollmentBlockedDueToMaxStrikes(
+                base::NumberToString(state->virtual_card_enrollment_fields
+                                         .credit_card.instrument_id()),
+                VirtualCardEnrollmentSource::kDownstream));
   }
 
  protected:
@@ -519,20 +543,10 @@ TEST_F(VirtualCardEnrollmentManagerTest, UpstreamAnimationSync_ResponseFirst) {
 #if !BUILDFLAG(IS_IOS)
 TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleAccepted) {
   base::HistogramTester histogram_tester;
+  SetUpStrikeDatabaseTest();
+
   raw_ptr<VirtualCardEnrollmentProcessState> state =
       virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
-  state->vcn_context_token = kTestVcnContextToken;
-  SetUpCard();
-  state->virtual_card_enrollment_fields.credit_card = *card_;
-  personal_data_manager_->SetPaymentsCustomerData(
-      std::make_unique<PaymentsCustomerData>("123456"));
-  EXPECT_FALSE(
-      virtual_card_enrollment_manager_
-          ->IsVirtualCardEnrollmentBlockedDueToMaxStrikes(
-              base::NumberToString(state->virtual_card_enrollment_fields
-                                       .credit_card.instrument_id()),
-              VirtualCardEnrollmentSource::kUpstream));
-
   // Reject the bubble and log strike.
   virtual_card_enrollment_manager_->OnVirtualCardEnrollmentBubbleCancelled();
   EXPECT_EQ(
@@ -563,23 +577,13 @@ TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleAccepted) {
 
 TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleCanceled) {
   base::HistogramTester histogram_tester;
-  raw_ptr<VirtualCardEnrollmentProcessState> state =
-      virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
-  state->vcn_context_token = kTestVcnContextToken;
-  SetUpCard();
-  state->virtual_card_enrollment_fields.credit_card = *card_;
-  personal_data_manager_->SetPaymentsCustomerData(
-      std::make_unique<PaymentsCustomerData>("123456"));
-  EXPECT_FALSE(
-      virtual_card_enrollment_manager_
-          ->IsVirtualCardEnrollmentBlockedDueToMaxStrikes(
-              base::NumberToString(state->virtual_card_enrollment_fields
-                                       .credit_card.instrument_id()),
-              VirtualCardEnrollmentSource::kUpstream));
+  SetUpStrikeDatabaseTest();
 
   // Reject the bubble and log strike.
   virtual_card_enrollment_manager_->OnVirtualCardEnrollmentBubbleCancelled();
 
+  raw_ptr<VirtualCardEnrollmentProcessState> state =
+      virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
   // Ensure a strike has been logged.
   EXPECT_EQ(
       virtual_card_enrollment_manager_->GetVirtualCardEnrollmentStrikeDatabase()
@@ -600,25 +604,7 @@ TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleCanceled) {
 
 TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleBlocked) {
   base::HistogramTester histogram_tester;
-  raw_ptr<VirtualCardEnrollmentProcessState> state =
-      virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
-  state->vcn_context_token = kTestVcnContextToken;
-  SetUpCard();
-  state->virtual_card_enrollment_fields.credit_card = *card_;
-  personal_data_manager_->SetPaymentsCustomerData(
-      std::make_unique<PaymentsCustomerData>("123456"));
-  EXPECT_FALSE(
-      virtual_card_enrollment_manager_
-          ->IsVirtualCardEnrollmentBlockedDueToMaxStrikes(
-              base::NumberToString(state->virtual_card_enrollment_fields
-                                       .credit_card.instrument_id()),
-              VirtualCardEnrollmentSource::kUpstream));
-  EXPECT_FALSE(
-      virtual_card_enrollment_manager_
-          ->IsVirtualCardEnrollmentBlockedDueToMaxStrikes(
-              base::NumberToString(state->virtual_card_enrollment_fields
-                                       .credit_card.instrument_id()),
-              VirtualCardEnrollmentSource::kDownstream));
+  SetUpStrikeDatabaseTest();
 
   for (int i = 0; i < virtual_card_enrollment_manager_
                           ->GetVirtualCardEnrollmentStrikeDatabase()
@@ -647,6 +633,8 @@ TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleBlocked) {
         "Autofill.VirtualCardEnrollBubble.MaxStrikesLimitReached", source, 1);
   }
 
+  raw_ptr<VirtualCardEnrollmentProcessState> state =
+      virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
   EXPECT_TRUE(virtual_card_enrollment_manager_
                   ->IsVirtualCardEnrollmentBlockedDueToMaxStrikes(
                       base::NumberToString(state->virtual_card_enrollment_fields
@@ -661,14 +649,7 @@ TEST_F(VirtualCardEnrollmentManagerTest, StrikeDatabase_BubbleBlocked) {
 
 TEST_F(VirtualCardEnrollmentManagerTest,
        StrikeDatabase_SettingsPageNotBlocked) {
-  raw_ptr<VirtualCardEnrollmentProcessState> state =
-      virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
-  state->vcn_context_token = kTestVcnContextToken;
-  SetUpCard();
-  state->virtual_card_enrollment_fields.credit_card = *card_;
-
-  personal_data_manager_->SetPaymentsCustomerData(
-      std::make_unique<PaymentsCustomerData>("123456"));
+  SetUpStrikeDatabaseTest();
 
   for (int i = 0; i < virtual_card_enrollment_manager_
                           ->GetVirtualCardEnrollmentStrikeDatabase()
@@ -682,9 +663,49 @@ TEST_F(VirtualCardEnrollmentManagerTest,
   EXPECT_FALSE(
       virtual_card_enrollment_manager_
           ->IsVirtualCardEnrollmentBlockedDueToMaxStrikes(
-              base::NumberToString(state->virtual_card_enrollment_fields
+              base::NumberToString(virtual_card_enrollment_manager_
+                                       ->GetVirtualCardEnrollmentProcessState()
+                                       ->virtual_card_enrollment_fields
                                        .credit_card.instrument_id()),
               VirtualCardEnrollmentSource::kSettingsPage));
+}
+
+// Test to ensure that the |last_show| inside a VirtualCardEnrollmentFields is
+// set correctly.
+TEST_F(VirtualCardEnrollmentManagerTest, VirtualCardEnrollmentFields_LastShow) {
+  base::HistogramTester histogram_tester;
+  raw_ptr<VirtualCardEnrollmentProcessState> state =
+      virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
+  state->vcn_context_token = kTestVcnContextToken;
+  SetUpCard();
+  state->virtual_card_enrollment_fields.credit_card = *card_;
+  personal_data_manager_->SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>("123456"));
+
+  // Making sure there is no existing strike for the card.
+  ASSERT_EQ(
+      virtual_card_enrollment_manager_->GetVirtualCardEnrollmentStrikeDatabase()
+          ->GetStrikes(
+              base::NumberToString(state->virtual_card_enrollment_fields
+                                       .credit_card.instrument_id())),
+      0);
+
+  for (int i = 0; i < virtual_card_enrollment_manager_
+                              ->GetVirtualCardEnrollmentStrikeDatabase()
+                              ->GetMaxStrikesLimit() -
+                          1;
+       i++) {
+    // Show the bubble and ensures VirtualCardEnrollmentFields is set correctly.
+    virtual_card_enrollment_manager_->ShowVirtualCardEnrollBubble();
+    EXPECT_FALSE(state->virtual_card_enrollment_fields.last_show);
+    // Reject the bubble and log strike.
+    virtual_card_enrollment_manager_->OnVirtualCardEnrollmentBubbleCancelled();
+  }
+
+  // Show the bubble for the last time and ensures VirtualCardEnrollmentFields
+  // is set correctly.
+  virtual_card_enrollment_manager_->ShowVirtualCardEnrollBubble();
+  EXPECT_TRUE(state->virtual_card_enrollment_fields.last_show);
 }
 #endif  // !BUILDFLAG(IS_IOS)
 

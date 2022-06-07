@@ -16,10 +16,10 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId FingerprintSetupScreenView::kScreenId;
 
-FingerprintSetupScreenHandler::FingerprintSetupScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.FingerprintSetupScreen.userActed");
+FingerprintSetupScreenHandler::FingerprintSetupScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.FingerprintSetupScreen.userActed");
 }
 
 FingerprintSetupScreenHandler::~FingerprintSetupScreenHandler() = default;
@@ -133,19 +133,19 @@ void FingerprintSetupScreenHandler::RegisterMessages() {
 
 void FingerprintSetupScreenHandler::Bind(FingerprintSetupScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void FingerprintSetupScreenHandler::Show() {
   auto* user_manager = user_manager::UserManager::Get();
-  base::DictionaryValue data;
-  data.SetBoolKey("isChildAccount", user_manager->IsLoggedInAsChildUser());
-  ShowScreenWithData(kScreenId, &data);
+  base::Value::Dict data;
+  data.Set("isChildAccount", user_manager->IsLoggedInAsChildUser());
+  ShowInWebUI(std::move(data));
 }
 
 void FingerprintSetupScreenHandler::Hide() {}
 
-void FingerprintSetupScreenHandler::Initialize() {}
+void FingerprintSetupScreenHandler::InitializeDeprecated() {}
 
 void FingerprintSetupScreenHandler::OnEnrollScanDone(
     device::mojom::ScanResult scan_result,

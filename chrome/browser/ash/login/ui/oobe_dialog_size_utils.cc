@@ -19,7 +19,7 @@ constexpr double kEightPrecent = 0.08;
 constexpr gfx::Size kMaxDialogSize{768, 768};
 // Min height should match --oobe-dialog-min-height;
 constexpr gfx::Size kMinDialogSize{464, 384};
-constexpr gfx::Insets kMinMargins{48, 48};
+constexpr gfx::Insets kMinMargins{48};
 
 // Sizes come from specs except min widths which are taken as maximal zoomed
 // display widths of smallest device ChromeTab (960x600).
@@ -62,7 +62,7 @@ void CalculateOobeDialogBounds(const gfx::Rect& host_bounds,
                                gfx::Rect* result) {
   // Area to position dialog.
   *result = host_bounds;
-  result->Inset(0, 0, 0, shelf_height);
+  result->Inset(gfx::Insets().set_bottom(shelf_height));
 
   // Center dialog within an available area.
   result->ClampToCenteredSize(

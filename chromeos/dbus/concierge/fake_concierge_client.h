@@ -100,9 +100,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       DBusMethodCallback<
           vm_tools::concierge::GetVmEnterpriseReportingInfoResponse> callback)
       override;
-  void MakeRtVcpu(const vm_tools::concierge::MakeRtVcpuRequest& request,
-                  DBusMethodCallback<vm_tools::concierge::MakeRtVcpuResponse>
-                      callback) override;
+  void ArcVmCompleteBoot(
+      const vm_tools::concierge::ArcVmCompleteBootRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ArcVmCompleteBootResponse>
+          callback) override;
   void SetVmCpuRestriction(
       const vm_tools::concierge::SetVmCpuRestrictionRequest& request,
       DBusMethodCallback<vm_tools::concierge::SetVmCpuRestrictionResponse>
@@ -138,6 +139,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       const vm_tools::concierge::ReclaimVmMemoryRequest& request,
       DBusMethodCallback<vm_tools::concierge::ReclaimVmMemoryResponse> callback)
       override;
+
+  void ListVms(const vm_tools::concierge::ListVmsRequest& request,
+               DBusMethodCallback<vm_tools::concierge::ListVmsResponse>
+                   callback) override;
 
   const base::ObserverList<Observer>& observer_list() const {
     return observer_list_;
@@ -175,7 +180,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   int get_vm_enterprise_reporting_info_call_count() const {
     return get_vm_enterprise_reporting_info_call_count_;
   }
-  int make_rt_vcpu_call_count() const { return make_rt_vcpu_call_count_; }
+  int arcvm_complete_boot_call_count() const {
+    return arcvm_complete_boot_call_count_;
+  }
   int get_container_ssh_keys_call_count() const {
     return get_container_ssh_keys_call_count_;
   }
@@ -192,6 +199,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   int reclaim_vm_memory_call_count() const {
     return reclaim_vm_memory_call_count_;
   }
+  int list_vms_call_count() const { return list_vms_call_count_; }
 
   void set_vm_started_signal_connected(bool connected) {
     is_vm_started_signal_connected_ = connected;
@@ -259,10 +267,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
     get_vm_enterprise_reporting_info_response_ =
         get_vm_enterprise_reporting_info_response;
   }
-  void set_make_rt_vcpu_response(
-      absl::optional<vm_tools::concierge::MakeRtVcpuResponse>
-          make_rt_vcpu_response) {
-    make_rt_vcpu_response_ = make_rt_vcpu_response;
+  void set_arcvm_complete_boot_response(
+      absl::optional<vm_tools::concierge::ArcVmCompleteBootResponse>
+          arcvm_complete_boot_response) {
+    arcvm_complete_boot_response_ = arcvm_complete_boot_response;
   }
   void set_set_vm_cpu_restriction_response(
       absl::optional<vm_tools::concierge::SetVmCpuRestrictionResponse>
@@ -302,6 +310,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       absl::optional<vm_tools::concierge::ReclaimVmMemoryResponse>
           reclaim_vm_memory_response) {
     reclaim_vm_memory_response_ = reclaim_vm_memory_response;
+  }
+  void set_list_vms_response(
+      absl::optional<vm_tools::concierge::ListVmsResponse> list_vms_response) {
+    list_vms_response_ = list_vms_response;
   }
 
   void set_send_create_disk_image_response_delay(base::TimeDelta delay) {
@@ -357,7 +369,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   int stop_vm_call_count_ = 0;
   int get_vm_info_call_count_ = 0;
   int get_vm_enterprise_reporting_info_call_count_ = 0;
-  int make_rt_vcpu_call_count_ = 0;
+  int arcvm_complete_boot_call_count_ = 0;
   int set_vm_cpu_restriction_call_count_ = 0;
   int get_container_ssh_keys_call_count_ = 0;
   int attach_usb_device_call_count_ = 0;
@@ -366,6 +378,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   int resize_disk_image_call_count_ = 0;
   int set_vm_id_call_count_ = 0;
   int reclaim_vm_memory_call_count_ = 0;
+  int list_vms_call_count_ = 0;
 
   bool is_vm_started_signal_connected_ = true;
   bool is_vm_stopped_signal_connected_ = true;
@@ -392,8 +405,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   absl::optional<vm_tools::concierge::GetVmInfoResponse> get_vm_info_response_;
   absl::optional<vm_tools::concierge::GetVmEnterpriseReportingInfoResponse>
       get_vm_enterprise_reporting_info_response_;
-  absl::optional<vm_tools::concierge::MakeRtVcpuResponse>
-      make_rt_vcpu_response_;
+  absl::optional<vm_tools::concierge::ArcVmCompleteBootResponse>
+      arcvm_complete_boot_response_;
   absl::optional<vm_tools::concierge::SetVmCpuRestrictionResponse>
       set_vm_cpu_restriction_response_;
   absl::optional<vm_tools::concierge::ContainerSshKeysResponse>
@@ -407,6 +420,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   absl::optional<vm_tools::concierge::SetVmIdResponse> set_vm_id_response_;
   absl::optional<vm_tools::concierge::ReclaimVmMemoryResponse>
       reclaim_vm_memory_response_;
+  absl::optional<vm_tools::concierge::ListVmsResponse> list_vms_response_;
 
   base::TimeDelta send_create_disk_image_response_delay_;
   base::TimeDelta send_start_vm_response_delay_;

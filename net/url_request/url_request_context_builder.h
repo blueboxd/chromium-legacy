@@ -139,21 +139,22 @@ class NET_EXPORT URLRequestContextBuilder {
   // Sets whether Brotli compression is enabled.  Disabled by default;
   void set_enable_brotli(bool enable_brotli) { enable_brotli_ = enable_brotli; }
 
+  // Sets the |check_cleartext_permitted| flag, which controls whether to check
+  // system policy before allowing a cleartext http or ws request.
+  void set_check_cleartext_permitted(bool value) {
+    check_cleartext_permitted_ = value;
+  }
+
+  void set_require_network_isolation_key(bool value) {
+    require_network_isolation_key_ = value;
+  }
+
   // Unlike most other setters, the builder does not take ownership of the
   // NetworkQualityEstimator.
   void set_network_quality_estimator(
       NetworkQualityEstimator* network_quality_estimator) {
     network_quality_estimator_ = network_quality_estimator;
   }
-
-  // Extracts the component pointers required to construct an HttpNetworkSession
-  // and copies them into the HttpNetworkSession::Context used to create the
-  // session. This function should be used to ensure that a context and its
-  // associated HttpNetworkSession are consistent.
-  static void SetHttpNetworkSessionComponents(
-      const URLRequestContext* request_context,
-      HttpNetworkSessionContext* session_context,
-      bool suppress_setting_socket_performance_watcher_factory = false);
 
   // These functions are mutually exclusive.  The ProxyConfigService, if
   // set, will be used to construct a ConfiguredProxyResolutionService.
@@ -288,6 +289,8 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
 
 #if BUILDFLAG(ENABLE_REPORTING)
+  void set_reporting_service(
+      std::unique_ptr<ReportingService> reporting_service);
   void set_reporting_policy(std::unique_ptr<ReportingPolicy> reporting_policy);
 
   void set_network_error_logging_enabled(bool network_error_logging_enabled) {
@@ -321,6 +324,13 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetCreateHttpTransactionFactoryCallback(
       CreateHttpTransactionFactoryCallback
           create_http_network_transaction_factory);
+
+  template <typename T>
+  T* SetHttpTransactionFactoryForTesting(std::unique_ptr<T> factory) {
+    create_http_network_transaction_factory_.Reset();
+    http_transaction_factory_ = std::move(factory);
+    return static_cast<T*>(http_transaction_factory_.get());
+  }
 
   // Sets a ClientSocketFactory so a test can mock out sockets. This must
   // outlive the URLRequestContext that will be built.
@@ -361,6 +371,16 @@ class NET_EXPORT URLRequestContextBuilder {
       bool pac_quick_check_enabled);
 
  private:
+  // Extracts the component pointers required to construct an HttpNetworkSession
+  // and copies them into the HttpNetworkSession::Context used to create the
+  // session. This function should be used to ensure that a context and its
+  // associated HttpNetworkSession are consistent.
+  static void SetHttpNetworkSessionComponents(
+      const URLRequestContext* request_context,
+      HttpNetworkSessionContext* session_context,
+      bool suppress_setting_socket_performance_watcher_factory = false,
+      ClientSocketFactory* client_socket_factory = nullptr);
+
   // Factory that will be used to create all client sockets used by the
   // URLRequestContext that will be built.
   // `client_socket_factory` must outlive the context.
@@ -369,6 +389,8 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 
   bool enable_brotli_ = false;
+  bool check_cleartext_permitted_ = false;
+  bool require_network_isolation_key_ = false;
   raw_ptr<NetworkQualityEstimator> network_quality_estimator_ = nullptr;
 
   std::string accept_language_;
@@ -387,6 +409,7 @@ class NET_EXPORT URLRequestContextBuilder {
   HttpCacheParams http_cache_params_;
   HttpNetworkSessionParams http_network_session_params_;
   CreateHttpTransactionFactoryCallback create_http_network_transaction_factory_;
+  std::unique_ptr<HttpTransactionFactory> http_transaction_factory_;
   base::FilePath transport_security_persister_file_path_;
   std::vector<std::string> hsts_policy_bypass_list_;
   raw_ptr<NetLog> net_log_ = nullptr;
@@ -407,6 +430,7 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<SCTAuditingDelegate> sct_auditing_delegate_;
   std::unique_ptr<QuicContext> quic_context_;
 #if BUILDFLAG(ENABLE_REPORTING)
+  std::unique_ptr<ReportingService> reporting_service_;
   std::unique_ptr<ReportingPolicy> reporting_policy_;
   bool network_error_logging_enabled_ = false;
   std::unique_ptr<NetworkErrorLoggingService> network_error_logging_service_;

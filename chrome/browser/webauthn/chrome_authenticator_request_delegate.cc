@@ -12,9 +12,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -77,7 +80,7 @@ ChromeAuthenticatorRequestDelegate::TestObserver* g_observer = nullptr;
 
 // Returns true iff |relying_party_id| is listed in the
 // SecurityKeyPermitAttestation policy.
-bool IsWebauthnRPIDListedInEnterprisePolicy(
+bool IsWebAuthnRPIDListedInSecurityKeyPermitAttestationPolicy(
     content::BrowserContext* browser_context,
     const std::string& relying_party_id) {
   const Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -89,6 +92,19 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
                      [&relying_party_id](const base::Value& v) {
                        return v.GetString() == relying_party_id;
                      });
+}
+
+bool IsOriginListedInEnterpriseAttestationSwitch(
+    const url::Origin& caller_origin) {
+  std::string cmdline_origins =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          webauthn::switches::kPermitEnterpriseAttestationOriginList);
+  std::vector<base::StringPiece> origin_strings = base::SplitStringPiece(
+      cmdline_origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return base::ranges::any_of(
+      origin_strings, [&caller_origin](base::StringPiece origin_string) {
+        return url::Origin::Create(GURL(origin_string)) == caller_origin;
+      });
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -246,6 +262,7 @@ ChromeWebAuthenticationDelegate::MaybeGetRelyingPartyIdOverride(
 
 bool ChromeWebAuthenticationDelegate::ShouldPermitIndividualAttestation(
     content::BrowserContext* browser_context,
+    const url::Origin& caller_origin,
     const std::string& relying_party_id) {
   constexpr char kGoogleCorpAppId[] =
       "https://www.gstatic.com/securitykey/a/google.com/origins.json";
@@ -254,8 +271,9 @@ bool ChromeWebAuthenticationDelegate::ShouldPermitIndividualAttestation(
   // actually a U2F request originating from cryptotoken), or is listed in the
   // enterprise policy, signal that individual attestation is permitted.
   return relying_party_id == kGoogleCorpAppId ||
-         IsWebauthnRPIDListedInEnterprisePolicy(browser_context,
-                                                relying_party_id);
+         IsOriginListedInEnterpriseAttestationSwitch(caller_origin) ||
+         IsWebAuthnRPIDListedInSecurityKeyPermitAttestationPolicy(
+             browser_context, relying_party_id);
 }
 
 bool ChromeWebAuthenticationDelegate::SupportsResidentKeys(
@@ -494,8 +512,8 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     const device::FidoAuthenticator* authenticator,
     bool is_enterprise_attestation,
     base::OnceCallback<void(bool)> callback) {
-  if (IsWebauthnRPIDListedInEnterprisePolicy(GetBrowserContext(),
-                                             relying_party_id)) {
+  if (IsWebAuthnRPIDListedInSecurityKeyPermitAttestationPolicy(
+          GetBrowserContext(), relying_party_id)) {
     // Enterprise attestations should have been approved already and not reach
     // this point.
     DCHECK(!is_enterprise_attestation);
@@ -513,7 +531,7 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
   }
 
 #if BUILDFLAG(IS_WIN)
-  if (authenticator->IsWinNativeApiAuthenticator() &&
+  if (authenticator->GetType() == device::FidoAuthenticator::Type::kWinNative &&
       static_cast<const device::WinWebAuthnApiAuthenticator*>(authenticator)
           ->ShowsPrivacyNotice()) {
     // The OS' native API includes an attestation prompt.
@@ -536,6 +554,12 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
 
   const bool cable_extension_permitted = ShouldPermitCableExtension(origin);
 
+  // TODO(crbug.com/1052397): Revisit the macro expression once build flag
+  // switch of lacros-chrome is complete.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+  pairings_from_extension = base::span<const device::CableDiscoveryData>();
+#endif
+
   std::vector<device::CableDiscoveryData> pairings;
   if (cable_extension_permitted) {
     pairings.insert(pairings.end(), pairings_from_extension.begin(),
@@ -552,9 +576,8 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
   std::vector<AuthenticatorRequestDialogModel::PairedPhone>
       paired_phone_entries;
   base::RepeatingCallback<void(size_t)> contact_phone_callback;
-  if ((!cable_extension_provided ||
-       base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere)) &&
-      base::FeatureList::IsEnabled(device::kWebAuthCableSecondFactor)) {
+  if (!cable_extension_provided ||
+      base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere)) {
     DCHECK(phone_names_.empty());
     DCHECK(phone_public_keys_.empty());
 
@@ -598,9 +621,7 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
 
   const bool android_accessory_possible =
       base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) ||
-      cablev2_extension_provided ||
-      (!cable_extension_permitted &&
-       base::FeatureList::IsEnabled(device::kWebAuthCableSecondFactor));
+      cablev2_extension_provided || !cable_extension_permitted;
 
   absl::optional<std::array<uint8_t, device::cablev2::kQRKeySize>>
       qr_generator_key;
@@ -610,7 +631,7 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     // displayed is up to the UI.
     qr_generator_key.emplace();
     crypto::RandBytes(*qr_generator_key);
-    qr_string = device::cablev2::qr::Encode(*qr_generator_key);
+    qr_string = device::cablev2::qr::Encode(*qr_generator_key, request_type);
 
     auto linking_handler = std::make_unique<CableLinkingEventHandler>(
         Profile::FromBrowserContext(GetBrowserContext()));
@@ -621,14 +642,18 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
         base::BindRepeating(
             &ChromeAuthenticatorRequestDelegate::OnInvalidatedCablePairing,
             weak_ptr_factory_.GetWeakPtr()));
-    discovery_factory->set_network_context(
-        SystemNetworkContextManager::GetInstance()->GetContext());
+    if (SystemNetworkContextManager::GetInstance()) {
+      discovery_factory->set_network_context(
+          SystemNetworkContextManager::GetInstance()->GetContext());
+    }
   }
 
   if (android_accessory_possible) {
     mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager;
-    content::GetDeviceService().BindUsbDeviceManager(
-        usb_device_manager.BindNewPipeAndPassReceiver());
+    if (!pass_empty_usb_device_manager_) {
+      content::GetDeviceService().BindUsbDeviceManager(
+          usb_device_manager.BindNewPipeAndPassReceiver());
+    }
     discovery_factory->set_android_accessory_params(
         std::move(usb_device_manager),
         l10n_util::GetStringUTF8(IDS_WEBAUTHN_CABLEV2_AOA_REQUEST_DESCRIPTION));
@@ -847,6 +872,11 @@ ChromeAuthenticatorRequestDelegate::GetDialogModelForTesting() {
   return weak_dialog_model_;
 }
 
+void ChromeAuthenticatorRequestDelegate::SetPassEmptyUsbDeviceManagerForTesting(
+    bool value) {
+  pass_empty_usb_device_manager_ = value;
+}
+
 content::RenderFrameHost*
 ChromeAuthenticatorRequestDelegate::GetRenderFrameHost() const {
   content::RenderFrameHost* ret =
@@ -866,19 +896,6 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
     return true;
   }
 
-  // TODO(crbug.com/1052397): Revisit the macro expression once build flag
-  // switch of lacros-chrome is complete. If updating this, also update
-  // kWebAuthCableServerLink.
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
-
-  // caBLEv1 is disabled on these platforms. It never launched on them because
-  // it causes problems in bluez. Rather than disabling caBLE completely, which
-  // is what was done prior to Jan 2022, this `return` just disables caBLEv1
-  // on these platforms.
-  return false;
-
-#else
-
   // Because the future of the caBLE extension might be that we transition
   // everything to QR-code or sync-based pairing, we don't want use of the
   // extension to spread without consideration. Therefore it's limited to
@@ -890,8 +907,6 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
   const GURL test_site("https://webauthndemo.appspot.com");
   DCHECK(test_site.is_valid());
   return origin.IsSameOriginWith(test_site);
-
-#endif
 }
 
 void ChromeAuthenticatorRequestDelegate::OnInvalidatedCablePairing(

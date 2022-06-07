@@ -12,6 +12,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -85,14 +86,12 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
 
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
-  layer_tree_impl_->AddToElementLayerList(element_id_, this);
 
   SetNeedsPushProperties();
 }
 
 LayerImpl::~LayerImpl() {
   layer_tree_impl_->UnregisterLayer(this);
-  layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
 }
@@ -284,7 +283,7 @@ void LayerImpl::AppendDebugBorderQuad(
         color, static_cast<uint8_t>(SkColorGetA(color) * kFillOpacity));
     float fill_width = width * 3;
     gfx::Rect fill_rect = quad_rect;
-    fill_rect.Inset(fill_width / 2.f, fill_width / 2.f);
+    fill_rect.Inset(fill_width / 2.f);
     if (fill_rect.IsEmpty())
       return;
     gfx::Rect visible_fill_rect =
@@ -605,10 +604,7 @@ void LayerImpl::SetElementId(ElementId element_id) {
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "LayerImpl::SetElementId",
                "element", element_id.ToString());
-
-  layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   element_id_ = element_id;
-  layer_tree_impl_->AddToElementLayerList(element_id_, this);
 }
 
 void LayerImpl::UnionUpdateRect(const gfx::Rect& update_rect) {

@@ -14,7 +14,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -22,7 +21,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/policy/messaging_layer/util/dm_token_retriever_provider.h"
-#include "chrome/browser/policy/messaging_layer/util/test.h"
+#include "chrome/browser/policy/messaging_layer/util/test_request_payload.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/reporting/client/dm_token_retriever.h"
 #include "components/reporting/client/mock_dm_token_retriever.h"
@@ -394,7 +393,8 @@ TEST_P(ReportClientTest, EnqueueMessageAndUpload) {
     }
 
     // Uploader is available, let it set the key.
-    EXPECT_CALL(*client_, UploadEncryptedReport(_, _, _))
+    EXPECT_CALL(*client_, UploadEncryptedReport(
+                              IsEncryptionKeyRequestUploadRequestValid(), _, _))
         .WillOnce(WithArgs<0, 2>(Invoke(GetEncryptionKeyInvocation())))
         .RetiresOnSaturation();
   }
@@ -443,7 +443,9 @@ TEST_P(ReportClientTest, SpeculativelyEnqueueMessageAndUpload) {
     // Note: there does not seem to be another way to define the expectations
     // A+B for encrypted case and just B for non-encrypted.
     if (is_encryption_enabled()) {
-      EXPECT_CALL(*client_, UploadEncryptedReport(_, _, _))
+      EXPECT_CALL(*client_,
+                  UploadEncryptedReport(
+                      IsEncryptionKeyRequestUploadRequestValid(), _, _))
           .WillOnce(WithArgs<0, 2>(Invoke(GetEncryptionKeyInvocation())));
       EXPECT_CALL(*client_,
                   UploadEncryptedReport(IsDataUploadRequestValid(), _, _))

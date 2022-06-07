@@ -32,7 +32,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1107,8 +1106,7 @@ void WebTestControlHost::RenderProcessExited(
   }
 }
 
-void WebTestControlHost::OnGpuProcessCrashed(
-    base::TerminationStatus exit_code) {
+void WebTestControlHost::OnGpuProcessCrashed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->AddErrorMessage("#CRASHED - gpu");
   DiscardMainWindow();

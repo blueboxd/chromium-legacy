@@ -9,6 +9,7 @@
 GEN('#include "ash/webui/personalization_app/test/personalization_app_browsertest_fixture.h"');
 
 GEN('#include "ash/constants/ash_features.h"');
+GEN('#include "ash/public/cpp/ambient/ambient_client.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
@@ -39,7 +40,7 @@ class PersonalizationAppBrowserTest extends testing.Test {
 
   /** @override */
   get typedefCppFixture() {
-    return 'PersonalizationAppBrowserTestFixture';
+    return 'ash::personalization_app::PersonalizationAppBrowserTestFixture';
   }
 }
 
@@ -91,37 +92,18 @@ TEST_F('PersonalizationAppBrowserTest', 'HasRootPageUrl', () => {
   const wallpaperPreview = document.querySelector('personalization-router')
                                .shadowRoot.querySelector('personalization-main')
                                .shadowRoot.querySelector('wallpaper-preview');
-  const ambientPreview = document.querySelector('personalization-router')
-                             .shadowRoot.querySelector('personalization-main')
-                             .shadowRoot.querySelector('ambient-preview');
   assertTrue(!!userPreview);
   assertTrue(!!wallpaperPreview);
-  assertTrue(!!ambientPreview);
   testDone();
 });
 
-TEST_F('PersonalizationAppBrowserTest', 'ShowsAmbientPreview', () => {
-  const preview = document.querySelector('personalization-router')
-                      .shadowRoot.querySelector('personalization-main')
-                      .shadowRoot.querySelector('ambient-preview');
-  assertTrue(!!preview);
-  testDone();
-});
-
-TEST_F('PersonalizationAppBrowserTest', 'ShowsAmbientSubpageLink', () => {
-  const ambientSubpageLink =
-      document.querySelector('personalization-router')
-          .shadowRoot.querySelector('personalization-main')
-          .shadowRoot.querySelector('#ambientSubpageLink');
-  assertTrue(!!ambientSubpageLink);
-  testDone();
-});
-
-TEST_F('PersonalizationAppBrowserTest', 'ShowsThemeButtons', () => {
+TEST_F('PersonalizationAppBrowserTest', 'ShowsThemeButtons', async () => {
   const theme = document.querySelector('personalization-router')
                     .shadowRoot.querySelector('personalization-main')
                     .shadowRoot.querySelector('personalization-theme');
-
+  await waitUntil(
+      () => theme.shadowRoot.getElementById('lightMode'),
+      'failed to find light button');
   const lightButton = theme.shadowRoot.getElementById('lightMode');
   assertTrue(!!lightButton);
   assertEquals(lightButton.getAttribute('aria-pressed'), 'true');
@@ -145,6 +127,74 @@ TEST_F('PersonalizationAppBrowserTest', 'ShowsUserInfo', async () => {
       'Fake Name', preview.shadowRoot.getElementById('name').innerText);
   testDone();
 });
+
+class PersonalizationAppAmbientModeAllowedBrowserTest extends
+    PersonalizationAppBrowserTest {
+  /** @override */
+  get testGenPreamble() {
+    return () => {
+      GEN('ash::AmbientClient::Get()->SetAmbientModeAllowedForTesting(true);');
+    };
+  }
+}
+
+this[PersonalizationAppAmbientModeAllowedBrowserTest.name] =
+    PersonalizationAppAmbientModeAllowedBrowserTest;
+
+TEST_F(
+    'PersonalizationAppAmbientModeAllowedBrowserTest', 'ShowsAmbientPreview',
+    () => {
+      const preview = document.querySelector('personalization-router')
+                          .shadowRoot.querySelector('personalization-main')
+                          .shadowRoot.querySelector('ambient-preview');
+      assertTrue(!!preview);
+      testDone();
+    });
+
+TEST_F(
+    'PersonalizationAppAmbientModeAllowedBrowserTest',
+    'ShowsAmbientSubpageLink', () => {
+      const ambientSubpageLink =
+          document.querySelector('personalization-router')
+              .shadowRoot.querySelector('personalization-main')
+              .shadowRoot.querySelector('#ambientSubpageLink');
+      assertTrue(!!ambientSubpageLink);
+      testDone();
+    });
+
+class PersonalizationAppAmbientModeDisllowedBrowserTest extends
+    PersonalizationAppBrowserTest {
+  /** @override */
+  get testGenPreamble() {
+    return () => {
+      GEN('ash::AmbientClient::Get()->SetAmbientModeAllowedForTesting(false);');
+    };
+  }
+}
+
+this[PersonalizationAppAmbientModeDisllowedBrowserTest.name] =
+    PersonalizationAppAmbientModeDisllowedBrowserTest;
+
+TEST_F(
+    'PersonalizationAppAmbientModeDisllowedBrowserTest',
+    'NotShowAmbientPreview', () => {
+      const preview = document.querySelector('personalization-router')
+                          .shadowRoot.querySelector('personalization-main')
+                          .shadowRoot.querySelector('ambient-preview');
+      assertFalse(!!preview);
+      testDone();
+    });
+
+TEST_F(
+    'PersonalizationAppAmbientModeDisllowedBrowserTest',
+    'NotShowAmbientSubpageLink', () => {
+      const ambientSubpageLink =
+          document.querySelector('personalization-router')
+              .shadowRoot.querySelector('personalization-main')
+              .shadowRoot.querySelector('#ambientSubpageLink');
+      assertFalse(!!ambientSubpageLink);
+      testDone();
+    });
 
 class WallpaperSubpageBrowserTest extends PersonalizationAppBrowserTest {
   /** @override */

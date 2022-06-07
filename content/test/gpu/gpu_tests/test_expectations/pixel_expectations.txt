@@ -54,7 +54,9 @@
 # tags: [ display-server-wayland display-server-x ]
 # OOP-Canvas
 # tags: [ oop-c no-oop-c ]
-# results: [ Failure RetryOnFailure Skip ]
+# WebGPU Backend Validation
+# tags: [ dawn-backend-validation dawn-no-backend-validation ]
+# results: [ Failure RetryOnFailure Skip Slow ]
 # END TAG HEADER
 
 ###############################
@@ -206,7 +208,7 @@ crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUWebGLTexImage2D [ Skip ]
 # WebGPU pixel tests fail on Linux+SkiaRenderer+Vulkan
 crbug.com/1213657 [ linux skia-renderer-vulkan ] Pixel_WebGPU* [ Skip ]
 
-crbug.com/1298943 [ chromeos skia-renderer-gl chromeos-board-amd64-generic ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
+crbug.com/1298943 [ chromeos skia-renderer-gl chromeos-board-amd64-generic ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 
 crbug.com/1299016 [ chromeos chromeos-board-kevin passthrough skia-renderer-disabled ] Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 
@@ -233,9 +235,6 @@ crbug.com/575305 [ fuchsia ] Pixel_WebGLSadCanvas [ Failure ]
 
 # Fails on Nexus 5
 crbug.com/883500 [ android android-nexus-5 ] Pixel_BackgroundImage [ Failure ]
-
-# Fails on Nexus 5X.
-crbug.com/1307317 [ android android-chromium android-nexus-5x ] Pixel_PrecisionRoundedCorner [ Failure ]
 
 # Flakes on Nexus 5X.
 crbug.com/883500 [ android android-chromium android-nexus-5x ] Pixel_BackgroundImage [ RetryOnFailure ]

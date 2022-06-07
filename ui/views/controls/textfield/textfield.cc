@@ -190,6 +190,11 @@ bool CanUseTransparentBackgroundForDragImage() {
 #endif
 }
 
+#if BUILDFLAG(IS_MAC)
+const float kAlmostTransparent = 1.0 / 255.0;
+const float kOpaque = 1.0;
+#endif
+
 }  // namespace
 
 // static
@@ -599,7 +604,7 @@ void Textfield::FitToLocalBounds() {
   } else {
     // The text will draw with the correct vertical alignment if we don't apply
     // the vertical insets.
-    bounds.Inset(insets.left(), 0, insets.right(), 0);
+    bounds.Inset(gfx::Insets::TLBR(0, insets.left(), 0, insets.right()));
   }
 
   bounds.set_x(GetMirroredXForRect(bounds));
@@ -2346,7 +2351,7 @@ void Textfield::UpdateBackgroundColor() {
 void Textfield::UpdateBorder() {
   auto border = std::make_unique<views::FocusableBorder>();
   const LayoutProvider* provider = LayoutProvider::Get();
-  border->SetInsets(
+  border->SetInsets(gfx::Insets::TLBR(
       extra_insets_.top() +
           provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
       extra_insets_.left() + provider->GetDistanceMetric(
@@ -2354,7 +2359,7 @@ void Textfield::UpdateBorder() {
       extra_insets_.bottom() +
           provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
       extra_insets_.right() + provider->GetDistanceMetric(
-                                  DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
+                                  DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
   if (invalid_)
     border->SetColorId(ui::kColorAlertHighSeverity);
   View::SetBorder(std::move(border));
@@ -2396,6 +2401,12 @@ void Textfield::UpdateAfterChange(
 
 void Textfield::UpdateCursorVisibility() {
   cursor_view_->SetVisible(ShouldShowCursor());
+#if BUILDFLAG(IS_MAC)
+  // If we called SetVisible(true) above we want the cursor layer to be opaque.
+  // If we called SetVisible(false), making the layer opaque has no effect on
+  // its visibility.
+  cursor_view_->layer()->SetOpacity(kOpaque);
+#endif
   if (ShouldBlinkCursor())
     StartBlinkingCursor();
   else
@@ -2546,12 +2557,6 @@ void Textfield::UpdateContextMenu() {
       MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU);
 }
 
-void Textfield::InvalidateContextMenu() {
-  // Ensure that the Runner doesn't outlive the Model.
-  context_menu_runner_.reset();
-  context_menu_contents_.reset();
-}
-
 bool Textfield::ImeEditingAllowed() const {
   // Disallow input method editing of password fields.
   ui::TextInputType t = GetTextInputType();
@@ -2629,7 +2634,27 @@ void Textfield::OnCursorBlinkTimerFired() {
   // would be better to detect locale change explicitly (how?) and update
   // there.
   UpdateCursorViewPosition();
+
+#if BUILDFLAG(IS_MAC)
+  // https://crbug.com/1311416 . The cursor is a solid color Layer which we make
+  // flash by toggling the Layer's visibility. A bug in the CARendererLayerTree
+  // causes all Layers that come after the cursor in the Layer tree (the
+  // bookmarks bar, for example) to be pushed to the screen with each
+  // appearance and disappearance of the cursor, consuming unnecessary CPU in
+  // the window server. The same also happens if we leave the cursor visible
+  // but make its color or layer 100% transparent (there's an optimization
+  // somewhere that removes completely transparent layers from the hierarchy).
+  // Until this bug is fixed, flash the cursor by alternating the cursor
+  // layer's opacity between opaque and "almost" transparent. Once
+  // https://crbug.com/1313999 is fixed, this Mac-specific code and its tests
+  // can be removed.
+  float new_opacity = cursor_view_->layer()->opacity() != kOpaque
+                          ? kOpaque
+                          : kAlmostTransparent;
+  cursor_view_->layer()->SetOpacity(new_opacity);
+#else
   cursor_view_->SetVisible(!cursor_view_->GetVisible());
+#endif
 }
 
 void Textfield::OnEnabledChanged() {

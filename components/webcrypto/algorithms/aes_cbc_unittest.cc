@@ -89,13 +89,9 @@ TEST_F(WebCryptoAesCbcTest, ExportKeyUnsupportedFormat) {
 // Tests importing of keys (in a variety of formats), errors during import,
 // encryption, and decryption, using known answers.
 TEST_F(WebCryptoAesCbcTest, KnownAnswerEncryptDecrypt) {
-  base::Value tests;
-  ASSERT_TRUE(ReadJsonTestFileAsList("aes_cbc.json", &tests));
-
-  for (size_t test_index = 0; test_index < tests.GetListDeprecated().size();
-       ++test_index) {
-    SCOPED_TRACE(test_index);
-    const base::Value& test_value = tests.GetListDeprecated()[test_index];
+  base::Value::List tests = ReadJsonTestFileAsList("aes_cbc.json");
+  for (const auto& test_value : tests) {
+    SCOPED_TRACE(&test_value - &tests[0]);
     ASSERT_TRUE(test_value.is_dict());
     const base::DictionaryValue* test =
         &base::Value::AsDictionaryValue(test_value);
@@ -341,20 +337,15 @@ TEST_F(WebCryptoAesCbcTest, ImportKeyJwkUseEnc) {
 TEST_F(WebCryptoAesCbcTest, ImportJwkInvalidJson) {
   blink::WebCryptoKey key;
   // Fail on empty JSON.
-  EXPECT_EQ(
-      Status::ErrorJwkNotDictionary(),
-      ImportKey(blink::kWebCryptoKeyFormatJwk, CryptoData(MakeJsonVector("")),
-                CreateAlgorithm(blink::kWebCryptoAlgorithmIdAesCbc), false,
-                blink::kWebCryptoKeyUsageEncrypt, &key));
+  EXPECT_EQ(Status::ErrorJwkNotDictionary(),
+            ImportKey(blink::kWebCryptoKeyFormatJwk, CryptoData(),
+                      CreateAlgorithm(blink::kWebCryptoAlgorithmIdAesCbc),
+                      false, blink::kWebCryptoKeyUsageEncrypt, &key));
 
   // Fail on invalid JSON.
-  const std::vector<uint8_t> bad_json_vec = MakeJsonVector(
-      "{"
-      "\"kty\"         : \"oct\","
-      "\"alg\"         : \"HS256\","
-      "\"use\"         : ");
+  const std::string bad_json = R"({ "kty": "oct", "alg": "HS256", "use": )";
   EXPECT_EQ(Status::ErrorJwkNotDictionary(),
-            ImportKey(blink::kWebCryptoKeyFormatJwk, CryptoData(bad_json_vec),
+            ImportKey(blink::kWebCryptoKeyFormatJwk, CryptoData(bad_json),
                       CreateAlgorithm(blink::kWebCryptoAlgorithmIdAesCbc),
                       false, blink::kWebCryptoKeyUsageEncrypt, &key));
 }

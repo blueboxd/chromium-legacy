@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -66,7 +67,6 @@
 #include "extensions/common/switches.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/chromeos/devicetype_utils.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
 #endif
 

@@ -40,6 +40,7 @@
 #include "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#include "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -70,6 +71,7 @@
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_client_factory.h"
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
 #include "ios/chrome/browser/credential_provider/credential_provider_service_factory.h"
@@ -142,10 +144,12 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ManagedBookmarkServiceFactory::GetInstance();
   ModelTypeStoreServiceFactory::GetInstance();
   OptimizationGuideServiceFactory::GetInstance();
+  policy::UserPolicySigninServiceFactory::GetInstance();
   TabsSearchServiceFactory::GetInstance();
   SyncServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
   RealTimeUrlLookupServiceFactory::GetInstance();
+  SafeBrowsingClientFactory::GetInstance();
   SafeBrowsingMetricsCollectorFactory::GetInstance();
   SigninBrowserStateInfoUpdaterFactory::GetInstance();
   SigninClientFactory::GetInstance();

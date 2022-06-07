@@ -364,8 +364,24 @@ class DlpContentManager : public DlpContentObserver,
 
   // One ObserverList per restriction.
   std::array<base::ObserverList<DlpContentManagerObserver>,
-             DlpContentRestriction::kMaxValue + 1>
+             static_cast<int>(DlpContentRestriction::kMaxValue) + 1>
       observer_lists_;
+
+  // A helper structure that contains web contents which were reported during
+  // the current screen share.
+  // Navigating a tab or switching a tab with share-this-tab-instead does not
+  // invalidate this contents.
+  struct LastReportedScreenShare {
+    // Checks if DLP should report for |label| and |confidential_contents|. If
+    // yes, then updates internal structures. Does not emit any reporting event.
+    bool ShouldReportAndUpdate(
+        const std::string& label,
+        const DlpConfidentialContents& confidential_contents);
+
+   private:
+    std::string label_;
+    DlpConfidentialContents confidential_contents_;
+  } last_reported_screen_share_;
 };
 
 }  // namespace policy

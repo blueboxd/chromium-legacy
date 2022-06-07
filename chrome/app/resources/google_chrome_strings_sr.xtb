@@ -178,6 +178,7 @@
 <translation id="4600710005438004015">Chrome није успео да се ажурира на најновију верзију, па пропуштате нове функције и безбедносне исправке.</translation>
 <translation id="4627412468266359539">Опционално: Аутоматски шаљите Google-у дијагностику и податке о коришћењу да бисте нам помогли да побољшамо функције и учинак Chrome OS Flex-а.</translation>
 <translation id="4633000520311261472">Да бисмо учинили Chrome безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
+<translation id="469553575393225953">Додаци, апликације и теме из непознатих извора могу да нашкоде уређају. Chrome препоручује да их инсталирате само из Chrome веб-продавнице</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4747730611090640388">Chrome може да процени ваша интересовања.  Сајт који касније посетите може да затражи од Chrome-а приступ вашим интересовањима да би персонализовао огласе који вам се приказују.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -221,6 +222,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5736850870166430177">Ако неки сајт покуша да украде вашу лозинку или пробате да преузмете штетни фајл, Chrome може да пошаље URL-ове, укључујући делове садржаја странице, у Безбедно прегледање</translation>
 <translation id="573759479754913123">О Chrome ОС-у</translation>
 <translation id="5756509061973259733">Chrome профил са овим налогом већ постоји на овом уређају</translation>
+<translation id="5763280521700030406">Chrome је блокирао овај фајл јер је превелики за безбедносну проверу. Пробајте поново са фајловима од највише 50 MB</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Није могуће покренути Chrome. Покушајте поново.</translation>
 <translation id="5867197326698922595">Google Chrome покушава да измени лозинке.</translation>
@@ -236,6 +238,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome бета</translation>
 <translation id="6235018212288296708">Правило за долазни саобраћај за Google Chrome да бисте омогућили mDNS саобраћај.</translation>
+<translation id="6247557882553405851">Google менаџеру лозинки</translation>
 <translation id="6291089322031436445">Chrome апликације за програмерски канал</translation>
 <translation id="6291549208091401781">Google Chrome је већ инсталиран за све кориснике на рачунару.</translation>
 <translation id="6368958679917195344">Chrome OС je могућ захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтвер отвореног кода<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -244,6 +247,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6506909944137591434">Chrome-у треба дозвола за камеру да би направио 3D мапу окружења</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Програмерска верзија Google Chrome-а</translation>
 <translation id="6568793831116033768">Систем Chrome ОС</translation>
+<translation id="659498884637196217">У Google менаџеру лозинки на овом уређају</translation>
 <translation id="6632473616050862500">Chrome OS Flex је омогућен захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтверу са отвореним кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="6679975945624592337">Нека Google Chrome ради у позадини</translation>
@@ -283,6 +287,7 @@ Google Chrome не може да врати подешавања.</translation>
 Дозволе које сте већ дали веб-сајтовима и апликацијама могу да важе за овај налог. Google налозима можете да управљате у <ph name="SETTINGS_LINK_BEGIN" />Подешавањима<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Били сте пријављени у Chrome као <ph name="USER_EMAIL_ADDRESS" />. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="7408085963519505752">Chrome ОС услови</translation>
+<translation id="7410958280246779049">Chrome је блокирао овај фајл јер је опасан</translation>
 <translation id="7419046106786626209">Chrome ОС не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="7481213027396403996">Набавите најјачу Chrome заштиту</translation>
 <translation id="7486227612705979895">Chrome ће приступати Диску да би приказивао предлоге на траци за адресу</translation>
@@ -297,7 +302,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7655455401911432608">Историја прегледања, евиденција сајтова које сте посетили помоћу Chrome-а на овом уређају.</translation>
 <translation id="7665553140559834626">Поново покрени да би се &amp;Chrome ОС ажурирао</translation>
 <translation id="7747138024166251722">Програм за инсталацију није могао да направи привремени директоријум. Проверите да ли имате слободног простора на диску, као и дозволу да инсталирате софтвер.</translation>
-<translation id="7748512868279796735">Следећи налози су доступни за овај Chrome профил</translation>
 <translation id="7761834446675418963">Кликните на име да бисте отворили Chrome и почните да прегледате.</translation>
 <translation id="7777080907402804672">Ако слика нема користан опис, Chrome ће пробати да вам га пружи. Слике се шаљу Google-у ради прављења описа. То можете да искључите у подешавањима у сваком тренутку.</translation>
 <translation id="7781002470561365167">Доступна је нова верзија Google Chrome прегледача.</translation>
@@ -313,10 +317,12 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7951272445806340501">Треба да рестартујете Chrome OS Flex да бисте применили ажурирање.</translation>
 <translation id="7962410387636238736">Овај рачунар више неће добијати ажурирања за Google Chrome јер Windows XP и Windows Vista више нису подржани</translation>
 <translation id="79947657522496226">Chrome ОС је омогућен захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтверу са отвореним кодом<ph name="END_LINK_CROS_OSS" />, као што је <ph name="BEGIN_LINK_LINUX_OSS" />Linux окружење за програмирање<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="8005666035647241369">У Google менаџеру лозинки на овом уређају</translation>
 <translation id="8008534537613507642">Поново инсталирај Chrome</translation>
 <translation id="8013993649590906847">Ако слика нема користан опис, Chrome ће пробати да вам га пружи. Слике се шаљу Google-у ради прављења описа.</translation>
 <translation id="8064015586118426197">Chrome OS Flex</translation>
 <translation id="8129812357326543296">О &amp;Google Chrome-у</translation>
+<translation id="822971176939352383">Следећи налози нису пријављени ни на један Chrome профил. Ако желите да користите налог на другом профилу, уклоните прво тај профил.</translation>
 <translation id="8255190535488645436">Google Chrome користи камеру и микрофон.</translation>
 <translation id="8286862437124483331">Google Chrome покушава да прикаже лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="828798499196665338">Родитељ је искључио „Дозволе за сајтове, апликације и додатке“ за Chrome. Омогућавање ове ставке (<ph name="EXTENSION_TYPE_PARAMETER" />) није дозвољено.</translation>
@@ -328,8 +334,10 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8394720698884623075">Проверава URL-ове са листом небезбедних сајтова који се чувају у Chrome-у</translation>
 <translation id="840084489713044809">Google Chrome жели да извезе лозинке.</translation>
 <translation id="8416347857511542594">Сазнајте више о персонализацији огласа у Chrome-у</translation>
+<translation id="8421734018304082652">Chrome је блокирао овај фајл јер је шифрован. Затражите од власника да га дешифрује</translation>
 <translation id="8433638294851456451">Да бисте послали број са овог уређаја на Android телефон, пријавите се у Chrome на оба уређаја.</translation>
 <translation id="8498858610309223613">Посебно безбедносно ажурирање за Google Chrome је управо примењено. Рестартујте га и вратићемо вам картице.</translation>
+<translation id="8504220326736535258">Chrome је блокирао овај фајл јер садржи малвер</translation>
 <translation id="8516431725144212809">Ваша интересовања према процени Chrome-а</translation>
 <translation id="8521348052903287641">Правило за долазни саобраћај за програмерску верзију Google Chrome-а да бисте омогућили mDNS саобраћај.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -344,6 +352,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8649026945479135076">Уобичајено је да сајтови које посећујете памте ствари које вас занимају ради персонализације доживљаја. Сајтови могу и да чувају информације о вашим интересовањима у Chrome-у.</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="8679801911857917785">Контролише и страницу која се приказује када покренете Chrome.</translation>
+<translation id="8684875378076460854">Chrome препоручује скенирање овог фајла јер може да буде опасан</translation>
 <translation id="8686817260976772516">Помоћу Chrome профила можете да раздвојите све Chrome садржаје. Направите профиле за пријатеље и породицу или раздвојите посао и забаву.</translation>
 <translation id="8712767363896337380">Скоро је ажуриран! Поново покрените Chrome да бисте завршили ажурирање.</translation>
 <translation id="873133009373065397">Google Chrome не може да одреди ни да подеси подразумевани прегледач</translation>

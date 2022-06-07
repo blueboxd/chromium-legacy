@@ -20,11 +20,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 
-namespace base {
+// TODO(crbug.com/1288247): Remove this when migration is complete.
+namespace partition_alloc::internal {
 
-class StatsReporter;
-
-namespace internal {
+class StarScanSnapshot;
 
 class PCScanTask;
 
@@ -61,7 +60,7 @@ class PCScanInternal final {
 
   void PerformScan(PCScan::InvocationMode);
   void PerformScanIfNeeded(PCScan::InvocationMode);
-  void PerformDelayedScan(TimeDelta delay);
+  void PerformDelayedScan(base::TimeDelta delay);
   void JoinScan();
 
   TaskHandle CurrentPCScanTask() const;
@@ -107,19 +106,19 @@ class PCScanInternal final {
   void ReinitForTesting(PCScan::InitConfig);                 // IN-TEST
   void FinishScanForTesting();                               // IN-TEST
 
-  void RegisterStatsReporter(StatsReporter* reporter);
-  StatsReporter& GetReporter();
+  void RegisterStatsReporter(partition_alloc::StatsReporter* reporter);
+  partition_alloc::StatsReporter& GetReporter();
 
  private:
   friend base::NoDestructor<PCScanInternal>;
-  friend class StarScanSnapshot;
+  friend class partition_alloc::internal::StarScanSnapshot;
 
   using StackTops = std::unordered_map<
-      PlatformThreadId,
+      ::base::PlatformThreadId,
       void*,
-      std::hash<PlatformThreadId>,
+      std::hash<::base::PlatformThreadId>,
       std::equal_to<>,
-      MetadataAllocator<std::pair<const PlatformThreadId, void*>>>;
+      MetadataAllocator<std::pair<const ::base::PlatformThreadId, void*>>>;
 
   PCScanInternal();
 
@@ -142,13 +141,18 @@ class PCScanInternal final {
   const SimdSupport simd_support_;
 
   std::unique_ptr<WriteProtector> write_protector_;
-  StatsReporter* stats_reporter_ = nullptr;
+  partition_alloc::StatsReporter* stats_reporter_ = nullptr;
 
   bool is_initialized_ = false;
 };
 
-}  // namespace internal
+}  // namespace partition_alloc::internal
 
-}  // namespace base
+// TODO(crbug.com/1288247): Remove this when migration is complete.
+namespace base::internal {
+
+using ::partition_alloc::internal::PCScanInternal;
+
+}  // namespace base::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_STARSCAN_PCSCAN_INTERNAL_H_

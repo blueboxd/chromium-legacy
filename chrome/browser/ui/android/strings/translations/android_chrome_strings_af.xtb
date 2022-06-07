@@ -184,7 +184,6 @@ Wanneer jy jou blaaigeskiedenis uitvee — alles of vir ’n spesifieke werf —
 <translation id="200114059308480249">Sluit omringende teks by Google-soektogte in?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# lêer}other{# lêers}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> sal in Chrome oopmaak. As jy voortgaan, stem jy in tot <ph name="BEGIN_LINK1" />Google se diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />Google Chrome en Chrome-bedryfstelsel se bykomende diensbepalings<ph name="END_LINK2" />. Die <ph name="BEGIN_LINK3" />privaatheidsbeleid<ph name="END_LINK3" /> geld ook.</translation>
-<translation id="2019145049163614359">Verwyder belangstelling?</translation>
 <translation id="2020309681647789787">Jy sal jou geskiedenis op al jou gesinkroniseerde toestelle hê sodat jy kan voortgaan met dit waarmee jy besig was</translation>
 <translation id="2021896219286479412">Volskermwerfkontroles</translation>
 <translation id="2038563949887743358">Skakel Versoek rekenaarwerf aan</translation>
@@ -213,6 +212,7 @@ Tik op enige woord om te soek. Raak en hou om meer of minder woorde te kies as j
 <translation id="2141396931810938595">Gegrond op jou gebruik</translation>
 <translation id="214888715418183969">Kies wat jy gemaklik voel om met Chrome te deel. Die maatstawwe wat jy deel, sal gebruik word om te help om Chrome se kenmerke, werkverrigting en stabiliteit te verbeter.</translation>
 <translation id="2149973817440762519">Wysig boekmerk</translation>
+<translation id="2155214902713132423">Hierdie verifikasiemetode is nie beskikbaar vir hierdie toestel nie. Kies ’n ander opsie op jou ander toestel.</translation>
 <translation id="2157851137955077194">Skakel sinkronisering op albei toestelle in Chrome-instellings aan om iets van jou foon af na 'n ander toestel toe te deel</translation>
 <translation id="2158408438301413340">Chrome kon nie alle wagwoorde nagaan nie</translation>
 <translation id="2169830938017475061">Nou</translation>
@@ -733,7 +733,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5091199029769593641">Jy sal binnekort stories van <ph name="SITE_NAME" /> af sien wanneer jy 'n nuwe oortjie oopmaak. Werwe wat jy volg, word in jou Google-rekening gestoor. Jy kan hulle bestuur in Ontdek-instellings.</translation>
 <translation id="5091249083535528968">Uitgebreide datagebruik</translation>
 <translation id="509429900233858213">'n Fout het voorgekom.</translation>
-<translation id="5098190077610408701">Voeg belangstelling by?</translation>
 <translation id="5102401324271069229">As 'n werf probeer om jou wagwoord te steel, of wanneer jy 'n skadelike lêer aflaai, sal Chrome dalk URL'e, insluitend stukkies bladsyinhoud, na Veiligblaai toe stuur</translation>
 <translation id="510275257476243843">1 uur oor</translation>
 <translation id="5115811374190515607">na <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5906513782029855931">As Google Assistent weet wat werwe se URL'e is, kan dit jou help om take te voltooi. Jy kan Assistent in Chrome-instellings afskakel.</translation>
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5919204609460789179">Dateer <ph name="PRODUCT_NAME" /> op om sinkronisering te begin</translation>
+<translation id="5938820472109305350">Voeg <ph name="INTEREST" /> by</translation>
 <translation id="5942872142862698679">Gebruik Google om te soek</translation>
 <translation id="5945035219773565305">Huidige aanbeveling:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Bekyk tans regstreekse bladsy</translation>
@@ -898,7 +898,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="6033245666633565791">Met <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> ontwikkel Chrome nuwe tegnologieë om jou teen kruiswerfnasporing te beveilig terwyl dit die oop web in stand hou.
 
 Privacy Sandbox-proeflopies word nog aktief ontwikkel en is in uitgesoekte streke beskikbaar. Vir nou kan werwe Privacy Sandbox probeer terwyl hulle steeds huidige webtegnologieë soos derdepartywebkoekies gebruik.</translation>
-<translation id="6036057147555329831">Ekstra ICU</translation>
 <translation id="6039379616847168523">Spring na die volgende oortjie</translation>
 <translation id="6040143037577758943">Maak toe</translation>
 <translation id="604124094241169006">Outomaties</translation>
@@ -1023,6 +1022,7 @@ Vertrouenstokens verbeter privaatheid op die web en kan nie gebruik word om uit 
 <translation id="663674369910034433">Raadpleeg <ph name="BEGIN_LINK1" />Sinkronisering<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />Google-dienste<ph name="END_LINK2" /> vir meer instellings wat verband hou met privaatheid, sekuriteit en data-insameling</translation>
 <translation id="6637100877383020115">Chrome stuur gebruik- en omvaldata na Google toe om te help om die program beter te maak. <ph name="BEGIN_UMA_LINK" />Bestuur<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokkeer altyd</translation>
+<translation id="6641780377503683465">Verwyder <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Vee uit</translation>
 <translation id="6645629752388991326">Beheer watter toestelle kan aanmeld deur hierdie toestel as 'n sekuriteitsleutel te gebruik.</translation>
 <translation id="6648459603387803038">Jou administrateur kan jou blaaieropstelling oor 'n afstand verander. Aktiwiteit op hierdie toestel kan ook buite Chrome bestuur word.</translation>

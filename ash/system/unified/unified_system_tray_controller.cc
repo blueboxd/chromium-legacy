@@ -36,6 +36,7 @@
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/nearby_share/nearby_share_feature_pod_controller.h"
+#include "ash/system/network/network_detailed_view_controller.h"
 #include "ash/system/network/network_feature_pod_controller.h"
 #include "ash/system/network/network_feature_pod_controller_legacy.h"
 #include "ash/system/network/unified_network_detailed_view_controller.h"
@@ -207,6 +208,14 @@ void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
   }
 }
 
+void UnifiedSystemTrayController::HandleOpenPowerSettingsAction() {
+  ClockModel* model = Shell::Get()->system_tray_model()->clock();
+
+  if (Shell::Get()->session_controller()->ShouldEnableSettings()) {
+    model->ShowPowerSettings();
+  }
+}
+
 void UnifiedSystemTrayController::HandleEnterpriseInfoAction() {
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.OpenHelpPageForManaged",
                             MANAGED_TYPE_ENTERPRISE, MANAGED_TYPE_COUNT);
@@ -334,8 +343,13 @@ void UnifiedSystemTrayController::ShowNetworkDetailedView(bool force) {
     return;
 
   base::RecordAction(base::UserMetricsAction("StatusArea_Network_Detailed"));
-  ShowDetailedView(
-      std::make_unique<UnifiedNetworkDetailedViewController>(this));
+
+  if (ash::features::IsQuickSettingsNetworkRevampEnabled()) {
+    ShowDetailedView(std::make_unique<NetworkDetailedViewController>(this));
+  } else {
+    ShowDetailedView(
+        std::make_unique<UnifiedNetworkDetailedViewController>(this));
+  }
 }
 
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
@@ -395,6 +409,8 @@ void UnifiedSystemTrayController::ShowCalendarView(
 
   calendar_metrics::RecordCalendarShowMetrics(show_source, event_source);
   ShowDetailedView(std::make_unique<UnifiedCalendarViewController>(this));
+  showing_calendar_view_ = true;
+  showing_audio_detailed_view_ = false;
 }
 
 void UnifiedSystemTrayController::ShowMediaControlsDetailedView() {
@@ -404,6 +420,7 @@ void UnifiedSystemTrayController::ShowMediaControlsDetailedView() {
 
 void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
   showing_audio_detailed_view_ = false;
+  showing_calendar_view_ = false;
   detailed_view_controller_.reset();
   unified_view_->ResetDetailedView();
   if (restore_focus)

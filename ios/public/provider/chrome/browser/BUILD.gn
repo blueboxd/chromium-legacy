@@ -13,7 +13,6 @@ source_set("browser") {
   deps = [
     "//base",
     "//components/metrics",
-    "//ios/public/provider/chrome/browser/mailto",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/web/public",
     "//ios/web/public/js_messaging",
@@ -28,6 +27,7 @@ group("provider_api") {
     "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/public/provider/chrome/browser/app_utils:app_utils_api",
     "//ios/public/provider/chrome/browser/branded_images:branded_images_api",
+    "//ios/public/provider/chrome/browser/context_menu:context_menu_api",
     "//ios/public/provider/chrome/browser/discover_feed:discover_feed_api",
     "//ios/public/provider/chrome/browser/lens:lens_api",
     "//ios/public/provider/chrome/browser/mailto_handler:mailto_handler_api",
@@ -58,7 +58,6 @@ source_set("test_support") {
     "//base",
     "//ios/chrome/browser/ui/ntp:logo",
     "//ios/public/provider/chrome/browser/follow",
-    "//ios/public/provider/chrome/browser/mailto:test_support",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/public/provider/chrome/browser/user_feedback:test_support",

@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
@@ -184,7 +183,6 @@ void WebFeedSubscriptionCoordinator::FollowWebFeedFromUrlStart(
     const WebFeedPageInformation& page_info,
     base::OnceCallback<void(FollowWebFeedResult)> callback) {
   DCHECK(model_);
-  WebFeedIndex::Entry entry = index_.FindWebFeed(page_info);
 
   SubscribeToWebFeedTask::Request request;
   request.page_info = page_info;
@@ -539,11 +537,20 @@ void WebFeedSubscriptionCoordinator::WithModel(base::OnceClosure closure) {
     if (!loading_model_) {
       loading_model_ = true;
       loading_token_ = token_generator_.Token();
-      feed_stream_->GetStore().ReadWebFeedStartupData(
-          base::BindOnce(&WebFeedSubscriptionCoordinator::ModelDataLoaded,
-                         base::Unretained(this)));
+      feed_stream_->GetTaskQueue().AddTask(
+          FROM_HERE,
+          std::make_unique<offline_pages::ClosureTask>(base::BindOnce(
+              &WebFeedSubscriptionCoordinator::ReadWebFeedStartupDataTask,
+              base::Unretained(this))));
     }
   }
+}
+
+void WebFeedSubscriptionCoordinator::ReadWebFeedStartupDataTask() {
+  DCHECK(populated_);
+  feed_stream_->GetStore().ReadWebFeedStartupData(
+      base::BindOnce(&WebFeedSubscriptionCoordinator::ModelDataLoaded,
+                     base::Unretained(this)));
 }
 
 void WebFeedSubscriptionCoordinator::ModelDataLoaded(
@@ -852,6 +859,8 @@ WebFeedSubscriptionCoordinator::GetAllWebFeedSubscriptionStatus() const {
 }
 
 void WebFeedSubscriptionCoordinator::SubscriptionsChanged() {
+  if (!populated_)
+    return;
   datastore_provider_.Update(GetAllWebFeedSubscriptionStatus());
 }
 

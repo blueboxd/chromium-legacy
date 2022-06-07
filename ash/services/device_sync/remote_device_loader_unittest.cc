@@ -9,13 +9,13 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/multidevice/fake_secure_message_delegate.h"
 #include "ash/services/device_sync/proto/enum_util.h"
 #include "base/bind.h"
-#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -194,4 +194,4 @@ TEST_F(DeviceSyncRemoteDeviceLoaderTest, SoftwareFeatures) {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

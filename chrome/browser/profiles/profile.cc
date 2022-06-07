@@ -15,7 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
+#include "base/tracing/protos/chrome_track_event.pbzero.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
@@ -25,7 +26,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/live_caption/pref_names.h"
-#include "components/media_router/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/variations/variations.mojom.h"
@@ -86,6 +86,8 @@ namespace {
 const char kDevToolsOTRProfileIDPrefix[] = "Devtools::BrowserContext";
 const char kMediaRouterOTRProfileIDPrefix[] = "MediaRouter::Presentation";
 const char kTestOTRProfileIDPrefix[] = "Test::OTR";
+
+using perfetto::protos::pbzero::ChromeTrackEvent;
 
 }  // namespace
 
@@ -348,13 +350,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                std::string());
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
-  registry->RegisterBooleanPref(
-      media_router::prefs::kMediaRouterMediaRemotingEnabled, true);
-  registry->RegisterListPref(
-      media_router::prefs::kMediaRouterTabMirroringSources);
-#endif
-
   registry->RegisterDictionaryPref(prefs::kWebShareVisitedTargets);
   registry->RegisterDictionaryPref(
       prefs::kProtocolHandlerPerOriginAllowedProtocols);
@@ -436,8 +431,8 @@ bool Profile::ShouldPersistSessionCookies() const {
 }
 
 void Profile::MaybeSendDestroyedNotification() {
-  TRACE_EVENT1("shutdown", "Profile::MaybeSendDestroyedNotification", "profile",
-               this);
+  TRACE_EVENT("shutdown", "Profile::MaybeSendDestroyedNotification",
+               ChromeTrackEvent::kChromeBrowserContext, this);
 
   if (!sent_destroyed_notification_) {
     sent_destroyed_notification_ = true;

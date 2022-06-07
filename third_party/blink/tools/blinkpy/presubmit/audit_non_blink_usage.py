@@ -568,6 +568,7 @@ _CONFIG = [
 
             # CanonicalCookie and related headers
             'net::CanonicalCookie',
+            'net::CookieInclusionStatus',
             'net::CookiePriority',
             'net::CookieSameSite',
             'net::CookieSourceScheme',
@@ -1454,7 +1455,7 @@ _CONFIG = [
         'paths': [
             'third_party/blink/renderer/modules/webaudio/',
         ],
-        'allowed': ['audio_utilities::.+'],
+        'allowed': ['audio_utilities::.+', 'media::.+'],
     },
     {
         'paths': [

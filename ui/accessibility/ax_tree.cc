@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "components/crash/core/common/crash_key.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -1290,8 +1291,11 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
 
   // Now that the unignored cached values are up to date, notify observers of
   // new nodes in the tree.
-  for (AXNodeID node_id : update_state.new_node_ids)
-    NotifyNodeHasBeenReparentedOrCreated(GetFromId(node_id), &update_state);
+  for (AXNodeID node_id : update_state.new_node_ids) {
+    AXNode* node = GetFromId(node_id);
+    if (node)
+      NotifyNodeHasBeenReparentedOrCreated(node, &update_state);
+  }
 
   // Now that the unignored cached values are up to date, notify observers of
   // node changes.

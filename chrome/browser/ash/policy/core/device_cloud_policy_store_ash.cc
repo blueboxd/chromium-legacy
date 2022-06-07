@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/components/tpm/install_attributes.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ash/policy/core/device_policy_decoder.h"
 #include "chrome/browser/ash/policy/dev_mode/dev_mode_policy_util.h"
 #include "chrome/browser/ash/policy/value_validation/onc_device_policy_value_validator.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -35,7 +35,7 @@ const char kDMTokenCheckHistogram[] = "Enterprise.EnrolledPolicyHasDMToken";
 void RecordDeviceIdValidityMetric(
     const std::string& histogram_name,
     const em::PolicyData& policy_data,
-    const chromeos::InstallAttributes& install_attributes) {
+    const ash::InstallAttributes& install_attributes) {
   PolicyDeviceIdValidity device_id_validity = PolicyDeviceIdValidity::kMaxValue;
   if (install_attributes.GetDeviceId().empty())
     device_id_validity = PolicyDeviceIdValidity::kActualIdUnknown;
@@ -52,7 +52,7 @@ void RecordDeviceIdValidityMetric(
 
 DeviceCloudPolicyStoreAsh::DeviceCloudPolicyStoreAsh(
     ash::DeviceSettingsService* device_settings_service,
-    chromeos::InstallAttributes* install_attributes,
+    ash::InstallAttributes* install_attributes,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : device_settings_service_(device_settings_service),
       install_attributes_(install_attributes),

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -28,6 +29,7 @@
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -61,6 +63,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
@@ -184,6 +187,17 @@ class SyntheticKeyEventTest : public DevToolsProtocolTest {
 };
 
 class SyntheticMouseEventTest : public DevToolsProtocolTest {
+ public:
+  SyntheticMouseEventTest() {
+// On Android, zoom level is set to 0 in
+// WebContentsImpl::GetPendingPageZoomLevel unless the kAccessibilityPageZoom
+// feature is enabled. We enable it to be able to test mouse events across all
+// platforms.
+#if BUILDFLAG(IS_ANDROID)
+    feature_list_.InitAndEnableFeature(features::kAccessibilityPageZoom);
+#endif
+  }
+
  protected:
   void SendMouseEvent(const std::string& type,
                       int x,
@@ -200,6 +214,21 @@ class SyntheticMouseEventTest : public DevToolsProtocolTest {
     }
     SendCommand("Input.dispatchMouseEvent", std::move(params), wait);
   }
+
+  void InitMouseDownLog() {
+    ASSERT_TRUE(
+        content::ExecJs(shell()->web_contents(),
+                        "logs = []; window.addEventListener('mousedown', e => "
+                        "logs.push(`${e.type},${e.clientX},${e.clientY}`));"));
+  }
+
+  std::string GetMouseDownLog() {
+    return content::EvalJs(shell()->web_contents(), "window.logs.join(';')")
+        .ExtractString();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
@@ -294,6 +323,44 @@ IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, DISABLED_MouseEventAck) {
   SendCommand("Debugger.resume", nullptr);
   filter->WaitForAck();
   EXPECT_EQ(3u, result_ids_.size());
+}
+
+IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventCoordinates) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->GetURL("/devtools/zoom.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
+  InitMouseDownLog();
+  // In about 1 out of 1000 runs, the event gets lost on the way to the
+  // renderer. We repeat the event dispatch until it succeeds since we want to
+  // test event coordinates.
+  while (GetMouseDownLog() == "") {
+    SendMouseEvent("mousePressed", 15, 15, "left", true);
+  }
+  ASSERT_EQ("mousedown,15,15", GetMouseDownLog());
+}
+
+IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventCoordinatesWithZoom) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->GetURL("/devtools/zoom.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
+  SendCommand("Page.enable", nullptr, true);
+  InitMouseDownLog();
+
+  HostZoomMap* host_zoom_map =
+      HostZoomMap::GetForWebContents(shell()->web_contents());
+  host_zoom_map->SetZoomLevelForHost(test_url.host(),
+                                     blink::PageZoomFactorToZoomLevel(2.5));
+  ASSERT_TRUE(WaitForNotification("Page.frameResized", true));
+
+  // In about 1 out of 1000 runs, the event gets lost on the way to the
+  // renderer. We repeat the event dispatch until it succeeds since we want to
+  // test event coordinates.
+  while (GetMouseDownLog() == "") {
+    SendMouseEvent("mousePressed", 15, 15, "left", true);
+  }
+  ASSERT_EQ("mousedown,15,15", GetMouseDownLog());
 }
 
 namespace {
@@ -456,7 +523,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 #if BUILDFLAG(IS_MAC)
     // Mask out the corners, which may be drawn differently on Mac because of
     // rounded corners.
-    matching_mask.Inset(4, 4, 4, 4);
+    matching_mask.Inset(4);
 #endif
 
     // A color profile can be installed on the host that could affect

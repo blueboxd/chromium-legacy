@@ -23,6 +23,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
@@ -142,7 +143,7 @@ class VideoRendererImplTest : public testing::Test {
                       bool low_delay,
                       bool expect_success) {
     if (low_delay)
-      demuxer_stream->set_liveness(DemuxerStream::LIVENESS_LIVE);
+      demuxer_stream->set_liveness(StreamLiveness::kLive);
     EXPECT_CALL(mock_cb_, OnWaiting(_)).Times(0);
     EXPECT_CALL(mock_cb_, OnAudioConfigChange(_)).Times(0);
     EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());

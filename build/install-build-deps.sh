@@ -284,11 +284,34 @@ lib_list="\
   $chromeos_lib_list
 "
 
+# this can be moved into the lib list without a guard when xenial is deprecated
+if package_exists libgl1; then
+  lib_list="${lib_list} libgl1"
+fi
+if package_exists libgl1:i386; then
+  lib_list="${lib_list} libgl1:i386"
+fi
+
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
 lib32_list="linux-libc-dev:i386 libpci3:i386"
 
 # 32-bit libraries needed for a 32-bit build
-lib32_list="$lib32_list libx11-xcb1:i386"
+lib32_list="$lib32_list
+  libasound2:i386
+  libatk-bridge2.0-0:i386
+  libatk1.0-0:i386
+  libatspi2.0-0:i386
+  libdbus-1-3:i386
+  libglib2.0-0:i386
+  libnss3:i386
+  libpango-1.0-0:i386
+  libx11-xcb1:i386
+  libxcomposite1:i386
+  libxdamage1:i386
+  libxkbcommon0:i386
+  libxrandr2:i386
+  libxtst6:i386
+"
 
 # Packages that have been removed from this script.  Regardless of configuration
 # or options passed to this script, whenever a package is removed, it should be
@@ -362,6 +385,26 @@ fi
 
 if package_exists python-yaml; then
   backwards_compatible_list="${backwards_compatible_list} python-yaml"
+fi
+if package_exists apache2.2-bin; then
+  backwards_compatible_list="${backwards_compatible_list} apache2.2-bin"
+else
+  backwards_compatible_list="${backwards_compatible_list} apache2-bin"
+fi
+if package_exists php7.4-cgi; then
+  backwards_compatible_list="${backwards_compatible_list} php7.4-cgi libapache2-mod-php7.4"
+elif package_exists php7.3-cgi; then
+  backwards_compatible_list="${backwards_compatible_list} php7.3-cgi libapache2-mod-php7.3"
+elif package_exists php7.2-cgi; then
+  backwards_compatible_list="${backwards_compatible_list} php7.2-cgi libapache2-mod-php7.2"
+elif package_exists php7.1-cgi; then
+  backwards_compatible_list="${backwards_compatible_list} php7.1-cgi libapache2-mod-php7.1"
+elif package_exists php7.0-cgi; then
+  backwards_compatible_list="${backwards_compatible_list} php7.0-cgi libapache2-mod-php7.0"
+elif package_exists php8.0-cgi; then
+  backwards_compatible_list="${backwards_compatible_list} php8.0-cgi libapache2-mod-php8.0"
+else
+  backwards_compatible_list="${backwards_compatible_list} php5-cgi libapache2-mod-php5"
 fi
 
 case $distro_codename in
@@ -492,28 +535,8 @@ elif package_exists libbrlapi0.6; then
 else
   dev_list="${dev_list} libbrlapi0.5"
 fi
-if package_exists apache2.2-bin; then
-  dev_list="${dev_list} apache2.2-bin"
-else
-  dev_list="${dev_list} apache2-bin"
-fi
 if package_exists libav-tools; then
   dev_list="${dev_list} libav-tools"
-fi
-if package_exists php7.4-cgi; then
-  dev_list="${dev_list} php7.4-cgi libapache2-mod-php7.4"
-elif package_exists php7.3-cgi; then
-  dev_list="${dev_list} php7.3-cgi libapache2-mod-php7.3"
-elif package_exists php7.2-cgi; then
-  dev_list="${dev_list} php7.2-cgi libapache2-mod-php7.2"
-elif package_exists php7.1-cgi; then
-  dev_list="${dev_list} php7.1-cgi libapache2-mod-php7.1"
-elif package_exists php7.0-cgi; then
-  dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
-elif package_exists php8.0-cgi; then
-  dev_list="${dev_list} php8.0-cgi libapache2-mod-php8.0"
-else
-  dev_list="${dev_list} php5-cgi libapache2-mod-php5"
 fi
 
 # Some packages are only needed if the distribution actually supports
@@ -736,7 +759,7 @@ if [ "$do_inst_chromeos_fonts" != "0" ]; then
       echo "This is expected if your repo is installed on a remote file system."
     fi
     echo "It is recommended to install your repo on a local file system."
-    echo "You can skip the installation of the Chrome OS default founts with"
+    echo "You can skip the installation of the Chrome OS default fonts with"
     echo "the command line option: --no-chromeos-fonts."
     exit 1
   fi

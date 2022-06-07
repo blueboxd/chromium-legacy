@@ -30,7 +30,6 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -38,6 +37,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
@@ -1328,6 +1328,12 @@ void TabStripModel::FollowSites(const std::vector<int>& indices) {
     delegate_->FollowSite(GetWebContentsAt(index));
 }
 
+void TabStripModel::UnfollowSites(const std::vector<int>& indices) {
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
+  for (int index : indices)
+    delegate_->UnfollowSite(GetWebContentsAt(index));
+}
+
 int TabStripModel::GetTabCount() const {
   return static_cast<int>(contents_data_.size());
 }
@@ -1376,9 +1382,6 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandSendTabToSelf:
       return true;
 
-    case CommandSendTabToSelfSingleTarget:
-      return true;
-
     case CommandAddToReadLater:
       return true;
 
@@ -1402,7 +1405,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
              delegate()->CanMoveTabsToWindow(indices);
     }
 
-    case CommandFollowSite: {
+    case CommandFollowSite:
+      // [[fallthrough]];
+    case CommandUnfollowSite: {
       std::vector<int> indices = GetIndicesForCommand(context_index);
       // Since all tabs should belong to same profile, it is enough to do the
       // check based on the first tab.
@@ -1493,10 +1498,10 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       break;
     }
 
-    case CommandSendTabToSelfSingleTarget: {
-      send_tab_to_self::ShareToSingleTarget(GetWebContentsAt(context_index));
-      send_tab_to_self::RecordDeviceClicked(
-          send_tab_to_self::ShareEntryPoint::kTabMenu);
+    case CommandSendTabToSelf: {
+      send_tab_to_self::SendTabToSelfBubbleController::
+          CreateOrGetFromWebContents(GetWebContentsAt(context_index))
+              ->ShowBubble();
       break;
     }
 
@@ -1602,6 +1607,12 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       break;
     }
 
+    case CommandUnfollowSite: {
+      base::RecordAction(UserMetricsAction("DesktopFeed.UnfollowSite"));
+      UnfollowSites(GetIndicesForCommand(context_index));
+      break;
+    }
+
     default:
       NOTREACHED();
   }
@@ -1674,9 +1685,6 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
       break;
     case CommandSendTabToSelf:
       *browser_cmd = IDC_SEND_TAB_TO_SELF;
-      break;
-    case CommandSendTabToSelfSingleTarget:
-      *browser_cmd = IDC_SEND_TAB_TO_SELF_SINGLE_TARGET;
       break;
     case CommandCloseTab:
       *browser_cmd = IDC_CLOSE_TAB;
@@ -2051,17 +2059,18 @@ TabStripSelectionChange TabStripModel::SetSelection(
 
   if (!triggered_by_other_operation &&
       (selection.active_tab_changed() || selection.selection_changed())) {
-    // Show the in-product help dialog pointing users to the tab mute button if
-    // the user backgrounds an audible tab.
-    if (selection.active_tab_changed() &&
-        base::FeatureList::IsEnabled(media::kEnableTabMuting)) {
-      if (selection.old_contents &&
-          selection.old_contents->IsCurrentlyAudible()) {
-        Browser* browser =
-            chrome::FindBrowserWithWebContents(selection.old_contents);
-        DCHECK(browser);
-        browser->window()->MaybeShowFeaturePromo(
-            feature_engagement::kIPHTabAudioMutingFeature);
+    if (selection.active_tab_changed()) {
+      if (base::FeatureList::IsEnabled(media::kEnableTabMuting)) {
+        // Show the in-product help dialog pointing users to the tab mute button
+        // if the user backgrounds an audible tab.
+        if (selection.old_contents &&
+            selection.old_contents->IsCurrentlyAudible()) {
+          Browser* browser =
+              chrome::FindBrowserWithWebContents(selection.old_contents);
+          DCHECK(browser);
+          browser->window()->MaybeShowFeaturePromo(
+              feature_engagement::kIPHTabAudioMutingFeature);
+        }
       }
 
       auto now = base::TimeTicks::Now();

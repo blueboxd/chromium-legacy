@@ -34,8 +34,7 @@ WGPUColor AsDawnType(const GPUColorDict*);
 WGPUColor AsDawnType(const V8GPUColor* webgpu_color);
 WGPUExtent3D AsDawnType(const V8GPUExtent3D* webgpu_extent);
 WGPUOrigin3D AsDawnType(const V8GPUOrigin3D* webgpu_extent);
-WGPUImageCopyTexture AsDawnType(const GPUImageCopyTexture* webgpu_view,
-                                GPUDevice* device);
+WGPUImageCopyTexture AsDawnType(const GPUImageCopyTexture* webgpu_view);
 WGPUTextureFormat AsDawnType(SkColorType color_type);
 
 const char* ValidateTextureDataLayout(const GPUImageDataLayout* webgpu_layout,
@@ -64,9 +63,15 @@ std::unique_ptr<TypeOfDawnType<WebGPUType>[]> AsDawnType(
   wtf_size_t count = webgpu_objects.size();
   // TODO(enga): Pass in temporary memory or an allocator so we don't make a
   // separate memory allocation here.
-  std::unique_ptr<DawnType[]> dawn_objects(new DawnType[count]);
+  std::unique_ptr<DawnType[]> dawn_objects =
+      std::make_unique<DawnType[]>(count);
   for (wtf_size_t i = 0; i < count; ++i) {
-    dawn_objects[i] = AsDawnType(webgpu_objects[i].Get());
+    if (webgpu_objects[i]) {
+      dawn_objects[i] = AsDawnType(webgpu_objects[i].Get());
+    } else {
+      // Construct a default object if it is null
+      dawn_objects[i] = {};
+    }
   }
   return dawn_objects;
 }
@@ -79,6 +84,26 @@ std::unique_ptr<DawnEnum[]> AsDawnEnum(const Vector<WebGPUEnum>& webgpu_enums) {
   std::unique_ptr<DawnEnum[]> dawn_enums(new DawnEnum[count]);
   for (wtf_size_t i = 0; i < count; ++i) {
     dawn_enums[i] = AsDawnEnum<DawnEnum>(webgpu_enums[i]);
+  }
+  return dawn_enums;
+}
+
+// For sequence of nullable enums, convert null value to undefined
+// dawn_enums should be a pre-allocated array with a size of count
+template <typename DawnEnum, typename WebGPUEnum>
+std::unique_ptr<DawnEnum[]> AsDawnEnum(
+    const Vector<absl::optional<WebGPUEnum>>& webgpu_enums) {
+  wtf_size_t count = webgpu_enums.size();
+  // TODO(enga): Pass in temporary memory or an allocator so we don't make a
+  // separate memory allocation here.
+  std::unique_ptr<DawnEnum[]> dawn_enums = std::make_unique<DawnEnum[]>(count);
+  for (wtf_size_t i = 0; i < count; ++i) {
+    if (webgpu_enums[i].has_value()) {
+      dawn_enums[i] = AsDawnEnum<DawnEnum>(webgpu_enums[i].value());
+    } else {
+      // Undefined is always 0
+      dawn_enums[i] = static_cast<DawnEnum>(0);
+    }
   }
   return dawn_enums;
 }

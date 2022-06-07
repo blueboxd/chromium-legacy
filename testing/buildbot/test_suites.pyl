@@ -492,6 +492,9 @@
       },
       'variations_smoke_tests': {
         'isolate_name': 'variations_smoke_tests',
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
           'result_format': 'single'
@@ -572,7 +575,6 @@
           'bullhead',
           'flame',
           'hammerhead',
-          'kitkat',
           'marshmallow',
           'marshmallow_generic',
           'mdarcy',
@@ -612,7 +614,9 @@
       'chrome_all_tast_tests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
-          'shards': 6,
+          # Tast test doesn't always output. See crbug.com/1306300
+          'io_timeout': 3600,
+          'shards': 7,
         },
         'resultdb': {
           'enable': True,
@@ -915,7 +919,7 @@
       },
       'content_browsertests': {
         'android_swarming': {
-          'shards': 9,
+          'shards': 15,
         },
         'swarming': {
           'shards': 6,
@@ -1516,7 +1520,6 @@
           'bullhead',
           'flame',
           'hammerhead',
-          'kitkat',
           'marshmallow',
           'marshmallow_generic',
           'mdarcy',
@@ -1798,9 +1801,6 @@
         'swarming': {
           'shards': 2,
         },
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter',
-        ],
       },
       'compositor_unittests': {},
       'content_unittests': {
@@ -2622,6 +2622,9 @@
           '--use-cmd-decoder=passthrough',
           '--use-gl=angle',
         ],
+        'chromeos_args': [
+          '--stop-ui',
+        ],
         'desktop_args': [
           '--use-gpu-in-tests',
         ],
@@ -2631,8 +2634,16 @@
         },
       },
       'gl_unittests': {
-        'desktop_args': ['--use-gpu-in-tests'],
-        'linux_args': ['--no-xvfb'],
+        'chromeos_args': [
+          '--stop-ui',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.gl_unittests.filter',
+        ],
+        'desktop_args': [
+          '--use-gpu-in-tests',
+        ],
+        'linux_args': [
+          '--no-xvfb',
+        ],
       },
     },
     'gpu_common_gtests_validating': {
@@ -2641,14 +2652,26 @@
         'args' : [
           '--use-cmd-decoder=validating',
         ],
+        'chromeos_args': [
+          '--stop-ui',
+          '$$MAGIC_SUBSTITUTION_ChromeOSGtestFilterFile',
+        ],
         'desktop_args': [
           '--use-gpu-in-tests',
         ],
         'linux_args': ['--no-xvfb'],
       },
       'gl_unittests': {
-        'desktop_args': ['--use-gpu-in-tests'],
-        'linux_args': ['--no-xvfb'],
+        'chromeos_args': [
+          '--stop-ui',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.gl_unittests.filter',
+        ],
+        'desktop_args': [
+          '--use-gpu-in-tests',
+        ],
+        'linux_args': [
+          '--no-xvfb',
+        ],
       },
     },
 
@@ -2716,6 +2739,66 @@
             '--smoke-test-mode',
           ],
         },
+      },
+    },
+
+    'gpu_dawn_telemetry_cts_tests': {
+      'webgpu_cts': {
+        'args': [
+          '--extra-browser-args=--force_high_performance_gpu',
+          '--retry-limit=3',
+        ],
+        'linux_args': [
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'swarming': {
+          'shards': 4,
+        },
+      },
+    },
+
+    'gpu_dawn_telemetry_cts_tests_with_partial_validation': {
+      'webgpu_cts_with_validation': {
+        'args': [
+          '--extra-browser-args=--force_high_performance_gpu',
+          '--is-backend-validation',
+          '--override-timeout=30',
+          '--retry-limit=3',
+        ],
+        'linux_args': [
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'swarming': {
+          'shards': 4,
+        },
+        'telemetry_test_name': 'webgpu_cts',
+      },
+    },
+
+    'gpu_dawn_telemetry_cts_tests_with_validation': {
+      'webgpu_cts_with_validation': {
+        'args': [
+          '--extra-browser-args=--force_high_performance_gpu',
+          '--is-backend-validation',
+          '--override-timeout=30',
+          '--retry-limit=3',
+        ],
+        'linux_args': [
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'swarming': {
+          'shards': 4,
+        },
+        'telemetry_test_name': 'webgpu_cts',
       },
     },
 
@@ -3736,6 +3819,15 @@
     },
 
     'gpu_webgpu_integration_isolated_scripts': {
+      # Test that expectations files are well-formed.
+      'telemetry_gpu_unittests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+        },
+        'resultdb': {
+          'enable': True,
+        },
+      },
       'webgpu_blink_web_tests': {
         'name': 'webgpu_blink_web_tests',
         'isolate_name': 'webgpu_blink_web_tests',
@@ -3847,7 +3939,11 @@
           'shards': 8,
         },
       },
-      'ios_chrome_signin_eg2tests_module': {},
+      'ios_chrome_signin_eg2tests_module': {
+      'swarming': {
+          'shards': 2,
+        },
+      },
       'ios_chrome_ui_eg2tests_module': {
         'swarming': {
           'shards': 12,
@@ -4265,7 +4361,6 @@
           'bullhead',
           'flame',
           'hammerhead',
-          'kitkat',
           'marshmallow',
           'marshmallow_generic',
           'mdarcy',
@@ -5034,6 +5129,9 @@
     'variations_smoke_tests': {
       'variations_smoke_tests': {
         'isolate_name': 'variations_smoke_tests',
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
           'result_format': 'single'
@@ -6200,6 +6298,16 @@
       'gpu_webgpu_integration_partial_backend_validation_isolated_scripts',
     ],
 
+    'gpu_dawn_telemetry_cts_regular_and_partial_validation': [
+      'gpu_dawn_telemetry_cts_tests',
+      'gpu_dawn_telemetry_cts_tests_with_partial_validation',
+    ],
+
+    'gpu_dawn_telemetry_cts_regular_and_validation': [
+      'gpu_dawn_telemetry_cts_tests',
+      'gpu_dawn_telemetry_cts_tests_with_validation',
+    ],
+
     'gpu_desktop_mac_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_passthrough',
@@ -6251,7 +6359,7 @@
       # 'gpu_angle_unit_gtests',
       # TODO(crbug.com/1087567, crbug.com/1087590): Enable once there are tests
       # that actually pass.
-      # 'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       # TODO(crbug.com/1087563): Enable once tab_capture_end2end_tests passes
       # on CrOS.
       # 'gpu_desktop_specific_gtests',
@@ -6841,6 +6949,29 @@
       }
     },
 
+    'fieldtrial_ios_simulator_tests': {
+      'ios_eg2_cq_tests': {
+        'mixins': [
+          'xcode_parallelization',
+          'disable_field_trial_config_for_earl_grey',
+        ],
+        'variants': [
+          'SIM_IPAD_AIR_2_15_2',
+          'SIM_IPHONE_6S_15_2',
+        ]
+      },
+      'ios_eg2_tests': {
+        'mixins': [
+          'xcode_parallelization',
+          'disable_field_trial_config_for_earl_grey',
+        ],
+        'variants': [
+          'SIM_IPAD_AIR_2_15_2',
+          'SIM_IPHONE_6S_15_2',
+        ]
+      },
+    },
+
     'gpu_angle_ios_gtests': {
       'gpu_angle_end2end_gtests': {
         'variants': [
@@ -6887,48 +7018,6 @@
         'variants': [
           'SIM_IPHONE_6S_PLUS_14_5',
           'SIM_IPHONE_X_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-        ],
-      },
-    },
-
-    'ios14_sdk_simulator_tests': {
-      'ios_common_tests': {
-        'variants': [
-          # Latest beta iOS version Sims
-          'SIM_IPHONE_6S_14_5',
-        ],
-      },
-      'ios_crash_unittests': {
-        'variants': [
-          # Latest beta iOS version Sims
-          'SIM_IPHONE_6S_14_5',
-        ],
-      },
-      'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
-        'variants': [
-          # Latest beta iOS version Sims
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_X_14_5',
-        ]
-      },
-      'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
-        'variants': [
-          # Latest beta iOS version Sims
-          'SIM_IPHONE_X_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPAD_PRO_2ND_GEN_14_5',
-        ]
-      },
-      'ios_screen_size_dependent_tests': {
-        'variants': [
-          # Latest beta iOS version Sims
-          'SIM_IPHONE_6S_PLUS_14_5',
-          'SIM_IPHONE_6S_14_5',
-          'SIM_IPHONE_SE_1ST_GEN_14_5',
           'SIM_IPAD_AIR_2_14_5',
         ],
       },
@@ -7117,6 +7206,48 @@
           'SIM_IPHONE_6S_14_4',
           'SIM_IPHONE_SE_1ST_GEN_14_4',
           'SIM_IPAD_AIR_2_14_4',
+        ],
+      },
+    },
+
+    'ios_m1_simulator_tests': {
+      'ios_common_tests': {
+        'variants': [
+          # Latest beta iOS version Sims
+          'SIM_IPHONE_6S_14_5',
+        ],
+      },
+      'ios_crash_unittests': {
+        'variants': [
+          # Latest beta iOS version Sims
+          'SIM_IPHONE_6S_14_5',
+        ],
+      },
+      'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
+        'variants': [
+          # Latest beta iOS version Sims
+          'SIM_IPHONE_7_14_5',
+          'SIM_IPAD_AIR_2_14_5',
+          'SIM_IPHONE_X_14_5',
+        ]
+      },
+      'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
+        'variants': [
+          # Latest beta iOS version Sims
+          'SIM_IPHONE_X_14_5',
+          'SIM_IPAD_AIR_2_14_5',
+          'SIM_IPAD_PRO_2ND_GEN_14_5',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
+        'variants': [
+          # Latest beta iOS version Sims
+          'SIM_IPHONE_6S_PLUS_14_5',
+          'SIM_IPHONE_6S_14_5',
+          'SIM_IPHONE_SE_1ST_GEN_14_5',
+          'SIM_IPAD_AIR_2_14_5',
         ],
       },
     },
@@ -7332,8 +7463,14 @@
     'lacros_skylab_arm': {
       'lacros_skylab_arm_tests': {
         'variants': [
-          'CROS_KEVIN_RELEASE_LKGM',
           'CROS_HANA_RELEASE_LKGM',
+          'CROS_HANA_RELEASE_DEV',
+          'CROS_HANA_RELEASE_BETA',
+          'CROS_HANA_RELEASE_STABLE',
+          'CROS_JACUZZI_RELEASE_LKGM',
+          'CROS_JACUZZI_RELEASE_DEV',
+          'CROS_JACUZZI_RELEASE_BETA',
+          'CROS_JACUZZI_RELEASE_STABLE',
         ]
       },
     },
@@ -7342,8 +7479,10 @@
     'lacros_skylab_arm_fyi': {
       'lacros_skylab_arm_tests_fyi': {
         'variants': [
-          'CROS_KEVIN_RELEASE_LKGM',
-          'CROS_HANA_RELEASE_LKGM',
+          'CROS_STRONGBAD_RELEASE_LKGM',
+          'CROS_STRONGBAD_RELEASE_DEV',
+          'CROS_STRONGBAD_RELEASE_BETA',
+          'CROS_STRONGBAD_RELEASE_STABLE',
         ]
       },
     },
@@ -7411,145 +7550,6 @@
           'LACROS_VERSION_SKEW_BETA',
           'LACROS_VERSION_SKEW_STABLE',
         ]
-      },
-    },
-
-    'linux_optional_gpu_tests_rel_gpu_telemetry_tests': {
-      'gpu_common_and_optional_telemetry_tests': {
-        'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
-          'LINUX_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_mediapipe_passthrough_telemetry_tests': {
-        'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
-          'LINUX_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webcodecs_telemetry_test': {
-        'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
-          'LINUX_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
-        'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
-          'LINUX_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
-        'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
-          'LINUX_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-    },
-
-    'linux_optional_gpu_tests_rel_gtests': {
-      'gpu_gles2_conform_gtests': {
-        'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
-          'LINUX_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-    },
-
-    'linux_optional_gpu_tests_rel_isolated_scripts': {
-      'test_buildbucket_api_gpu_use_cases': {
-        'variants': [
-          'LINUX_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-    },
-
-    'mac_optional_gpu_tests_rel_gpu_telemetry_tests': {
-      'gpu_common_and_optional_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
-      },
-      'gpu_mediapipe_passthrough_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
-      },
-      'gpu_mediapipe_validating_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
-      },
-      'gpu_passthrough_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-        ],
-      },
-      'gpu_webcodecs_telemetry_test': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
-      },
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-        ],
-      },
-      'gpu_webgl2_conformance_validating_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_metal_passthrough_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-        ],
-      },
-    },
-
-    'mac_optional_gpu_tests_rel_gtests': {
-      'gpu_fyi_and_optional_non_linux_gtests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
-      },
-      'gpu_fyi_mac_specific_gtests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
-      },
-      'gpu_gles2_conform_gtests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
       },
     },
   }

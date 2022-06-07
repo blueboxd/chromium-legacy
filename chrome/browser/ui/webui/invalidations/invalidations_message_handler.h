@@ -33,7 +33,7 @@ class InvalidationsMessageHandler
 
   // Implementation of InvalidationLoggerObserver.
   void OnRegistrationChange(
-      const std::multiset<std::string>& registered_handlers) override;
+      const std::set<std::string>& registered_handlers) override;
   void OnStateChange(const invalidation::InvalidatorState& new_state,
                      const base::Time& last_change_timestamp) override;
   void OnUpdatedTopics(
@@ -49,13 +49,13 @@ class InvalidationsMessageHandler
   void OnJavascriptDisallowed() override;
 
   // Triggers the logger to send the current state and objects ids.
-  void UpdateContent(const base::ListValue* args);
+  void UpdateContent(const base::Value::List& args);
 
   // Called by the javascript whenever the page is ready to receive messages.
-  void UIReady(const base::ListValue* args);
+  void UIReady(const base::Value::List& args);
 
   // Calls the InvalidationService for any internal details.
-  void HandleRequestDetailedStatus(const base::ListValue* args);
+  void HandleRequestDetailedStatus(const base::Value::List& args);
 
  private:
   // The pointer to the internal InvalidatorService InvalidationLogger.

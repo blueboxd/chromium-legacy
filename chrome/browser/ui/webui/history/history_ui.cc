@@ -147,7 +147,6 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   static constexpr webui::LocalizedString kHistoryClustersStrings[] = {
       {"disableHistoryClusters", IDS_HISTORY_CLUSTERS_DISABLE_MENU_ITEM_LABEL},
       {"enableHistoryClusters", IDS_HISTORY_CLUSTERS_ENABLE_MENU_ITEM_LABEL},
-      {"headerText", IDS_HISTORY_CLUSTERS_HEADER_TEXT},
       {"historyClustersTabLabel", IDS_HISTORY_CLUSTERS_JOURNEYS_TAB_LABEL},
       {"historyListTabLabel", IDS_HISTORY_CLUSTERS_LIST_TAB_LABEL},
       {"loadMoreButtonLabel", IDS_HISTORY_CLUSTERS_LOAD_MORE_BUTTON_LABEL},
@@ -231,15 +230,14 @@ void HistoryUI::UpdateDataSource() {
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  std::unique_ptr<base::DictionaryValue> update =
-      std::make_unique<base::DictionaryValue>();
-  update->SetBoolKey(kIsUserSignedInKey, IsUserSignedIn(profile));
-  update->SetBoolKey(
+  base::Value::Dict update;
+  update.Set(kIsUserSignedInKey, IsUserSignedIn(profile));
+  update.Set(
       kIsHistoryClustersVisibleKey,
       profile->GetPrefs()->GetBoolean(history_clusters::prefs::kVisible));
-  update->SetBoolKey(kIsHistoryClustersVisibleManagedByPolicyKey,
-                     profile->GetPrefs()->IsManagedPreference(
-                         history_clusters::prefs::kVisible));
+  update.Set(kIsHistoryClustersVisibleManagedByPolicyKey,
+             profile->GetPrefs()->IsManagedPreference(
+                 history_clusters::prefs::kVisible));
 
   content::WebUIDataSource::Update(profile, chrome::kChromeUIHistoryHost,
                                    std::move(update));

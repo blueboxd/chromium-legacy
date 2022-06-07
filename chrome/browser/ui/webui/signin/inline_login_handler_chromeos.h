@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_helper_chromeos.h"
 #include "components/account_manager_core/account.h"
@@ -34,7 +35,7 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
 
   // InlineLoginHandler overrides.
   void RegisterMessages() override;
-  void SetExtraInitParams(base::DictionaryValue& params) override;
+  void SetExtraInitParams(base::Value::Dict& params) override;
   void CompleteLogin(const CompleteLoginParams& params) override;
   void HandleDialogClose(const base::ListValue* args) override;
 
@@ -46,8 +47,8 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
   // Creates a `SigninHelper` instance to complete login of the new account.
   void CreateSigninHelper(const CompleteLoginParams& params,
                           std::unique_ptr<SigninHelper::ArcHelper> arc_helper);
-  void ShowIncognitoAndCloseDialog(const base::ListValue* args);
-  void GetAccountsInSession(const base::ListValue* args);
+  void ShowIncognitoAndCloseDialog(const base::Value::List& args);
+  void GetAccountsInSession(const base::Value::List& args);
   void OnGetAccounts(const std::string& callback_id,
                      const std::vector<::account_manager::Account>& accounts);
   void GetAccountsNotAvailableInArc(const base::Value::List& args);
@@ -59,10 +60,17 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
       const std::vector<::account_manager::Account>& accounts,
       const base::flat_set<account_manager::Account>& arc_accounts);
   void MakeAvailableInArcAndCloseDialog(const base::Value::List& args);
-  void HandleSkipWelcomePage(const base::ListValue* args);
+  void HandleSkipWelcomePage(const base::Value::List& args);
   void OpenGuestWindowAndCloseDialog(const base::Value::List& args);
+  // Show a screen to inform the user that adding `email` as a Secondary Account
+  // is not allowed by `email`'s user policies.
+  // See `SecondaryGoogleAccountUsage` for details.
+  void ShowSigninBlockedErrorPage(const std::string& email,
+                                  const std::string& hosted_domain);
 
   base::RepeatingClosure close_dialog_closure_;
+  base::RepeatingCallback<void(const std::string&, const std::string&)>
+      show_signin_blocked_error_;
   base::WeakPtrFactory<InlineLoginHandlerChromeOS> weak_factory_{this};
 };
 

@@ -10,6 +10,7 @@
 #include "ash/style/close_button.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/background.h"
 
 namespace ash {
@@ -22,9 +23,10 @@ constexpr int kCornerRadius = 11;
 
 }  // namespace
 
-DeskActionView::DeskActionView(std::u16string initial_combine_desks_target_name,
-                               base::RepeatingClosure combine_desks_callback,
-                               base::RepeatingClosure close_all_callback)
+DeskActionView::DeskActionView(
+    const std::u16string& initial_combine_desks_target_name,
+    base::RepeatingClosure combine_desks_callback,
+    base::RepeatingClosure close_all_callback)
     : close_all_button_(AddChildView(
           std::make_unique<CloseButton>(std::move(close_all_callback),
                                         CloseButton::Type::kMediumFloating))),
@@ -42,14 +44,16 @@ DeskActionView::DeskActionView(std::u16string initial_combine_desks_target_name,
   close_all_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_DESKS_CLOSE_ALL_DESCRIPTION));
   combine_desks_button_->SetVectorIcon(kCombineDesksIcon);
-  UpdateCombineDesksTooltip(std::move(initial_combine_desks_target_name));
+  UpdateCombineDesksTooltip(initial_combine_desks_target_name);
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 void DeskActionView::UpdateCombineDesksTooltip(
-    std::u16string new_combine_desks_target_name) {
-  combine_desks_button_->SetTooltipText(
-      l10n_util::GetStringFUTF16(IDS_ASH_DESKS_COMBINE_DESKS_DESCRIPTION,
-                                 std::move(new_combine_desks_target_name)));
+    const std::u16string& new_combine_desks_target_name) {
+  combine_desks_button_->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_ASH_DESKS_COMBINE_DESKS_DESCRIPTION, new_combine_desks_target_name));
 }
 
 BEGIN_METADATA(DeskActionView, views::BoxLayoutView)

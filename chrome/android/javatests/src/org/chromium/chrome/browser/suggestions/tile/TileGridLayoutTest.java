@@ -57,6 +57,7 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
@@ -81,6 +82,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+@Features.DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
 public class TileGridLayoutTest {
     public final int TILE_GRID_ROWS = 2;
     public final int TILE_GRID_COLUMNS = 4;
@@ -96,7 +98,10 @@ public class TileGridLayoutTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(
+                            ChromeRenderTestRule.Component.UI_BROWSER_CONTENT_SUGGESTIONS_HISTORY)
+                    .build();
 
     private static final String[] FAKE_MOST_VISITED_URLS = new String[] {
             "/chrome/test/data/android/navigate/one.html",
@@ -143,11 +148,10 @@ public class TileGridLayoutTest {
     }
 
     @Test
-    //@MediumTest
-    @DisabledTest(message = "crbug.com/771648")
+    @MediumTest
+    @DisabledTest(message = "crbug.com/768779")
     @Feature({"NewTabPage", "RenderTest"})
-    public void testModernTileGridAppearance_Full()
-            throws IOException, InterruptedException {
+    public void testModernTileGridAppearance_Full() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
         setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, mActivityTestRule.getActivity());
@@ -169,11 +173,10 @@ public class TileGridLayoutTest {
     }
 
     @Test
-    //@MediumTest
-    @DisabledTest(message = "crbug.com/771648")
+    @MediumTest
+    @DisabledTest(message = "crbug.com/768779")
     @Feature({"NewTabPage", "RenderTest"})
-    public void testModernTileGridAppearance_Two()
-            throws IOException, InterruptedException {
+    public void testModernTileGridAppearance_Two() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(2));
 
         setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, mActivityTestRule.getActivity());

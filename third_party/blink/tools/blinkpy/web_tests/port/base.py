@@ -1257,11 +1257,13 @@ class Port(object):
         """Checks whether the given test is skipped for this port.
 
         Returns True if the test is skipped because the port runs smoke tests
-        only or because the test is marked as Skip in NeverFixTest (otherwise
+        only or because the test is marked as Skip in NeverFixTest or because
+        it is a virtual test not intended to run on this platform (otherwise
         the test is only marked as Skip indicating a temporary skip).
         """
         return self.skipped_due_to_smoke_tests(
-            test) or self.skipped_in_never_fix_tests(test)
+            test) or self.skipped_in_never_fix_tests(
+            test) or self.virtual_test_skipped_due_to_platform_config(test)
 
     @memoized
     def _tests_from_file(self, filename):
@@ -1312,6 +1314,17 @@ class Port(object):
 
     def path_to_never_fix_tests_file(self):
         return self._filesystem.join(self.web_tests_dir(), 'NeverFixTests')
+
+    def virtual_test_skipped_due_to_platform_config(self, test):
+        """Checks if the virtual test is skipped based on the platform config.
+
+        Returns True if the virtual test is not intend to run on this port, due
+        to the platform config in VirtualTestSuites; returns False otherwise.
+        """
+        suite = self._lookup_virtual_suite(test)
+        if suite is not None:
+            return self.operating_system() not in suite.platforms
+        return False
 
     def name(self):
         """Returns a name that uniquely identifies this particular type of port.
@@ -1921,15 +1934,10 @@ class Port(object):
                       r'\1', config)
 
     def _apache_config_file_name_for_platform(self):
-        if self.host.platform.is_linux():
-            distribution = self.host.platform.linux_distribution()
-
-            custom_configurations = ['arch', 'debian', 'fedora', 'redhat']
-            if distribution in custom_configurations:
-                return '%s-httpd-%s.conf' % (distribution,
-                                             self._apache_version())
-
-        return 'apache2-httpd-' + self._apache_version() + '.conf'
+        # Keep the logic to use apache version even though we only have
+        # configuration file for 2.4 now, in case we will have newer version in
+        # future.
+        return 'apache2-httpd-' + self._apache_version() + '-php7.conf'
 
     def _path_to_driver(self, target=None):
         """Returns the full path to the test driver."""
@@ -2371,16 +2379,19 @@ class Port(object):
 
 
 class VirtualTestSuite(object):
-    def __init__(self, prefix=None, bases=None, args=None):
+    def __init__(self, prefix=None, platforms=None, bases=None, args=None):
         assert VALID_FILE_NAME_REGEX.match(prefix), \
             "Virtual test suite prefix '{}' contains invalid characters".format(prefix)
+        assert isinstance(platforms, list)
         assert isinstance(bases, list)
         assert args
         assert isinstance(args, list)
         self.full_prefix = 'virtual/' + prefix + '/'
+        self.platforms = [x.lower() for x in platforms]
         self.bases = bases
         self.args = args
 
     def __repr__(self):
-        return "VirtualTestSuite('%s', %s, %s)" % (self.full_prefix,
-                                                   self.bases, self.args)
+        return "VirtualTestSuite('%s', %s, %s, %s)" % (self.full_prefix,
+                                                       self.platforms,
+                                                       self.bases, self.args)

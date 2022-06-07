@@ -43,6 +43,8 @@ extern const base::Feature kChromeWhatsNewInMainMenuNewBadge;
 extern const base::Feature kAccessCodeCastUI;
 #endif
 
+extern const base::Feature kDisplayOpenLinkAsProfile;
+
 extern const base::Feature kEvDetailsInPageInfo;
 
 extern const base::Feature kExtensionsMenuAccessControl;
@@ -50,10 +52,6 @@ extern const base::Feature kExtensionsMenuAccessControl;
 extern const base::Feature kForceSignInReauth;
 
 extern const base::Feature kProminentDarkModeActiveTabTitle;
-
-extern const base::Feature kReadLaterNewBadgePromo;
-
-extern const base::Feature kReadLaterAddFromDialog;
 
 extern const base::Feature kQuickCommands;
 
@@ -64,9 +62,10 @@ extern const base::Feature kScrollableTabStripButtons;
 
 // TODO(pbos): Once kReadLater is cleaned up on Desktop, move definition into
 // ui_features.cc. This is currently temporarily in reading_list_switches.h.
-extern const base::Feature kSidePanel;
 extern const base::Feature kSidePanelDragAndDrop;
 extern const base::Feature kSidePanelImprovedClobbering;
+
+extern const base::Feature kSidePanelJourneys;
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
 extern const base::Feature kSideSearch;
@@ -75,8 +74,6 @@ extern const base::Feature kSideSearchFeedback;
 extern const base::Feature kSideSearchDSESupport;
 extern const base::Feature kClobberAllSideSearchSidePanels;
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
-
-extern const base::Feature kTabGroupsAutoCreate;
 
 extern const base::Feature kTabGroupsNewBadgePromo;
 

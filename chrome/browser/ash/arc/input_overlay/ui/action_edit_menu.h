@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
 #include "ui/views/controls/button/label_button.h"
@@ -28,28 +29,33 @@ class ActionEditMenu : public views::View {
   ActionEditMenu& operator=(const ActionEditMenu&) = delete;
   ~ActionEditMenu() override;
 
-  static std::unique_ptr<ActionEditMenu> BuildActionTapEditMenu(
+  static std::unique_ptr<ActionEditMenu> BuildActionEditMenu(
       DisplayOverlayController* display_overlay_controller,
-      ActionView* anchor);
+      ActionView* anchor,
+      ActionType action_type);
 
  private:
   class BindingButton;
 
+  // Create edit menu for each action types.
   void InitActionTapEditMenu();
+  void InitActionMoveEditMenu();
+
+  // Function calls for each menu item button.
   void OnKeyBoardKeyBindingButtonPressed();
-  void OnMouseLeftBindingButtonPressed();
-  void OnMouseRightBindingButtonPressed();
+  void OnMouseLeftClickBindingButtonPressed();
+  void OnMouseRightClickBindingButtonPressed();
   void OnResetButtonPressed();
 
   // Reference to owner class.
-  DisplayOverlayController* const display_overlay_controller_ = nullptr;
+  const raw_ptr<DisplayOverlayController> display_overlay_controller_ = nullptr;
   // Reference to position.
-  ActionView* anchor_ = nullptr;
+  raw_ptr<ActionView> anchor_view_ = nullptr;
   // Reference to the menu items.
-  BindingButton* keyboard_key_ = nullptr;
-  BindingButton* mouse_left_ = nullptr;
-  BindingButton* mouse_right_ = nullptr;
-  BindingButton* reset_ = nullptr;
+  raw_ptr<BindingButton> keyboard_key_ = nullptr;
+  raw_ptr<BindingButton> mouse_left_ = nullptr;
+  raw_ptr<BindingButton> mouse_right_ = nullptr;
+  raw_ptr<BindingButton> reset_ = nullptr;
 };
 
 }  // namespace input_overlay

@@ -25,7 +25,7 @@ group("all") {
     deps += [ ":remoting_host_branded" ]
   }
 
-  if (!is_chromeos_ash && !is_chromeos_lacros && !is_android && !is_ios) {
+  if (!is_chromeos && !is_android && !is_ios) {
     deps += [
       "//remoting/host:remoting_native_messaging_host",
       "//remoting/host:remoting_native_messaging_manifests",
@@ -451,7 +451,7 @@ static_library("common") {
     ]
   }
 
-  if (is_linux && !is_chromeos_lacros) {
+  if (is_linux) {
     sources += [
       "linux/audio_pipe_reader.cc",
       "linux/audio_pipe_reader.h",
@@ -482,20 +482,19 @@ static_library("common") {
       "//ui/events/platform/x11",
       "//ui/gfx/x",
     ]
-    if (is_linux && !is_chromeos_lacros) {
+    if (is_linux) {
       deps += [ "//build/config/linux/gtk" ]
     }
   }
 
-  if (is_linux &&
-      (!remoting_use_x11 || is_chromeos_ash || is_chromeos_lacros)) {
+  if (is_linux && (!remoting_use_x11 || is_chromeos)) {
     # On Linux, exactly one of desktop_resizer_{linux,x11}.cc should be
     # compiled in. The _linux version is a no-op and should be used on
     # platforms without X11.
     sources += [ "desktop_resizer_linux.cc" ]
   }
 
-  if (is_linux && !is_chromeos_lacros) {
+  if (is_linux) {
     sources += [
       "audio_capturer_linux.cc",
       "audio_capturer_linux.h",
@@ -750,11 +749,11 @@ source_set("unit_tests") {
     "//ui/events:events",
   ]
 
-  if (is_linux && !is_chromeos) {
+  if (is_linux) {
     sources += [ "pairing_registry_delegate_linux_unittest.cc" ]
   }
 
-  if (is_linux && !is_chromeos_lacros) {
+  if (is_linux) {
     deps += [ "//remoting/host/linux:unit_tests" ]
   }
 

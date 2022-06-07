@@ -2,6 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview 'os-settings-search-box' is the container for the search input
+ * and settings search results.
+ */
+import '//resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
+import '//resources/js/cr/ui/focus_row.m.js';
+import '//resources/polymer/v3_0/iron-dropdown/iron-dropdown.js';
+import '//resources/polymer/v3_0/iron-list/iron-list.js';
+import './os_search_result_row.js';
+import '../../settings_shared_css.js';
+
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrA11yAnnouncerElement} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+
+import {Route, Router} from '../../router.js';
+import {recordSearch} from '../metrics_recorder.js';
+import {routes} from '../os_route.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
+import {getSearchHandler, setSearchHandlerForTesting} from '../search_handler.js';
+
 const MAX_NUM_SEARCH_RESULTS = 5;
 
 const SEARCH_REQUEST_METRIC_NAME = 'ChromeOS.Settings.SearchRequests';
@@ -29,27 +51,6 @@ const OsSettingSearchBoxUserAction = {
   SEARCH_RESULT_CLICKED: 0,
   CLICKED_OUT_OF_SEARCH_BOX: 1,
 };
-
-/**
- * @fileoverview 'os-settings-search-box' is the container for the search input
- * and settings search results.
- */
-import {afterNextRender, Polymer, html, flush, Templatizer, TemplateInstanceBase} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {CrToolbarSearchFieldElement} from '//resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
-import {assert, assertNotReached} from '//resources/js/assert.m.js';
-import '//resources/js/cr/ui/focus_row.m.js';
-import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
-import {IronA11yAnnouncer} from '//resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import '//resources/polymer/v3_0/iron-dropdown/iron-dropdown.js';
-import '//resources/polymer/v3_0/iron-list/iron-list.js';
-import './os_search_result_row.js';
-import {recordSettingChange, recordSearch, setUserActionRecorderForTesting, recordPageFocus, recordPageBlur, recordClick, recordNavigation} from '../metrics_recorder.m.js';
-import {getSearchHandler, setSearchHandlerForTesting} from '../search_handler.js';
-import '../../settings_shared_css.js';
-import {Router, Route} from '../../router.js';
-import {RouteObserverBehavior} from '../route_observer_behavior.js';
-import {routes} from '../os_route.m.js';
 
 Polymer({
   _template: html`{__html_template__}`,
@@ -186,10 +187,7 @@ Polymer({
 
     // Setting the search box value without triggering a 'search-changed'
     // event, to prevent an unnecessary duplicate entry in |window.history|.
-    toolbarSearchField.setValue(urlSearchQuery, /*noEvent=*/true);
-
-    // Initialize the announcer once.
-    IronA11yAnnouncer.requestAvailability();
+    toolbarSearchField.setValue(urlSearchQuery, /*noEvent=*/ true);
 
     // Log number of search requests made each time settings window closes.
     window.addEventListener('beforeunload', () => {
@@ -442,7 +440,8 @@ Polymer({
     }
 
     if (!this.searchResultsExist_) {
-      this.fire('iron-announce', {text: this.i18n('searchNoResults')});
+      CrA11yAnnouncerElement.getInstance().announce(
+          this.i18n('searchNoResults'));
       return;
     }
   },

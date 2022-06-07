@@ -96,12 +96,12 @@ void TestRenderFrameHost::FlushLocalFrameMessages() {
   local_frame_.FlushForTesting();
 }
 
-TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
+TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() const {
   return static_cast<TestRenderViewHost*>(
       RenderFrameHostImpl::GetRenderViewHost());
 }
 
-MockRenderProcessHost* TestRenderFrameHost::GetProcess() {
+MockRenderProcessHost* TestRenderFrameHost::GetProcess() const {
   return static_cast<MockRenderProcessHost*>(RenderFrameHostImpl::GetProcess());
 }
 
@@ -253,11 +253,13 @@ void TestRenderFrameHost::SimulateManifestURLUpdate(const GURL& manifest_url) {
   GetPage().UpdateManifestUrl(manifest_url);
 }
 
-TestRenderFrameHost* TestRenderFrameHost::AppendFencedFrame() {
+TestRenderFrameHost* TestRenderFrameHost::AppendFencedFrame(
+    blink::mojom::FencedFrameMode mode) {
   fenced_frames_.push_back(
-      std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef()));
-  return static_cast<TestRenderFrameHost*>(
-      fenced_frames_.back().get()->GetInnerRoot());
+      std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef(), mode));
+  FencedFrame* fenced_frame = fenced_frames_.back().get();
+  fenced_frame->CreateProxyAndAttachToOuterFrameTree();
+  return static_cast<TestRenderFrameHost*>(fenced_frame->GetInnerRoot());
 }
 
 void TestRenderFrameHost::SendNavigate(int nav_entry_id,

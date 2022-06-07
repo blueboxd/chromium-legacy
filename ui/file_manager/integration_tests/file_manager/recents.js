@@ -29,6 +29,19 @@ const RECENTLY_MODIFIED_MOV_VIDEO = new TestEntryInfo({
   typeText: 'QuickTime video'
 });
 
+// Test entry for a recently-modified document file.
+const RECENTLY_MODIFIED_DOCUMENT = new TestEntryInfo({
+  type: EntryType.FILE,
+  sourceFileName: 'text.docx',
+  targetPath: 'word.docx',
+  mimeType: 'application/vnd.openxmlformats-officedocument' +
+      '.wordprocessingml.document',
+  lastModifiedTime: 'Jul 4, 2038, 10:35 AM',
+  nameText: 'word.docx',
+  sizeText: '9 KB',
+  typeText: 'Word document'
+});
+
 /**
  * Enum for supported recent filter types.
  * @enum {string}
@@ -38,6 +51,7 @@ const RecentFilterType = {
   AUDIO: 'audio',
   IMAGE: 'image',
   VIDEO: 'video',
+  DOCUMENT: 'document',
 };
 
 /**
@@ -63,6 +77,7 @@ async function navigateToRecent(appId, type = RecentFilterType.ALL) {
     [RecentFilterType.AUDIO]: '/Audio',
     [RecentFilterType.IMAGE]: '/Images',
     [RecentFilterType.VIDEO]: '/Videos',
+    [RecentFilterType.DOCUMENT]: '/Documents',
   };
 
   if (await isFiltersInRecentsEnabled()) {
@@ -156,6 +171,18 @@ async function verifyRecentImages(appId, expectedEntries) {
  */
 async function verifyRecentVideos(appId, expectedEntries) {
   await navigateToRecent(appId, RecentFilterType.VIDEO);
+  await verifyCurrentEntries(appId, expectedEntries);
+}
+
+/**
+ * Opens the Recent Document folder and checks the expected entries are
+ * showing there.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {!Array<!TestEntryInfo>} expectedEntries Expected file entries.
+ */
+async function verifyRecentDocuments(appId, expectedEntries) {
+  await navigateToRecent(appId, RecentFilterType.DOCUMENT);
   await verifyCurrentEntries(appId, expectedEntries);
 }
 
@@ -403,6 +430,32 @@ testcase.recentVideosDownloadsAndDrive = async () => {
 };
 
 /**
+ * Tests that the document file entries populated in Downloads folder recently
+ * will be displayed in Recent Document folder.
+ */
+testcase.recentDocumentsDownloads = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [RECENTLY_MODIFIED_DOCUMENT], []);
+  await verifyRecentDocuments(appId, [RECENTLY_MODIFIED_DOCUMENT]);
+};
+
+/**
+ * Tests that if the video file entries with MIME type are being populated
+ * in both Downloads folder and My Drive folder, the file entries will be
+ * displayed in Recent Document folder regardless of whether it's from Downloads
+ * or My Drive.
+ */
+testcase.recentDocumentsDownloadsAndDrive = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [RECENTLY_MODIFIED_DOCUMENT],
+      [RECENTLY_MODIFIED_DOCUMENT]);
+  // RECENTLY_MODIFIED_DOCUMENT exists in both local and drive folder, the
+  // file will appear twice in the result.
+  await verifyRecentDocuments(
+      appId, [RECENTLY_MODIFIED_DOCUMENT, RECENTLY_MODIFIED_DOCUMENT]);
+};
+
+/**
  * Tests if an active filter button is clicked again, it will become inactive
  * and the "All" filter button will become active and focus.
  */
@@ -419,4 +472,40 @@ testcase.recentsFilterResetToAll = async () => {
       await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
   chrome.test.assertEq('all', focusedElement.attributes['file-type-filter']);
   await verifyCurrentEntries(appId, RECENT_ENTRY_SET);
+};
+
+/**
+ * Tests when we switch the active filter button between All and others, the
+ * correct a11y messages will be announced.
+ */
+testcase.recentsA11yMessages = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+  await navigateToRecent(appId, RecentFilterType.IMAGE);
+  // Checks "images filter on" a11y message is announced.
+  let a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(
+      'Images filter is on.', a11yMessages[a11yMessages.length - 1]);
+
+  // Clicks the "Videos" filter button to activate it.
+  await remoteCall.waitAndClickElement(appId, ['[file-type-filter="video"]']);
+  await remoteCall.waitForElement(appId, ['[file-type-filter="video"].active']);
+  // Checks "video filter on" a11y message is announced.
+  a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(
+      'Images filter is off. Videos filter is on.',
+      a11yMessages[a11yMessages.length - 1]);
+
+  // Clicks the active "Videos" filter button again.
+  await remoteCall.waitAndClickElement(
+      appId, ['[file-type-filter="video"].active']);
+  await remoteCall.waitForElement(appId, ['[file-type-filter="all"].active']);
+  // Checks "filter reset" a11y message is announced.
+  a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(
+      'Videos filter is off. Filter is reset.',
+      a11yMessages[a11yMessages.length - 1]);
 };

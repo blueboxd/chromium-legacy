@@ -10,23 +10,18 @@
 #include <vector>
 
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/login/oobe_configuration.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/version_info_updater.h"
 #include "chrome/browser/ash/tpm_firmware_update.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/event_source.h"
-
-namespace base {
-class ListValue;
-class Value;
-}
 
 namespace ui {
 class EventSink;
@@ -38,7 +33,9 @@ class CoreOobeView {
  public:
   virtual ~CoreOobeView() = default;
 
-  virtual void ReloadContent(const base::DictionaryValue& dictionary) = 0;
+  virtual void ShowScreenWithData(const ash::OobeScreenId& screen,
+                                  absl::optional<base::Value::Dict> data) = 0;
+  virtual void ReloadContent(base::Value::Dict dictionary) = 0;
   virtual void SetVirtualKeyboardShown(bool shown) = 0;
   virtual void SetShelfHeight(int height) = 0;
   virtual void UpdateKeyboardState() = 0;
@@ -56,7 +53,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
                         public ash::TabletModeObserver,
                         public OobeConfiguration::Observer {
  public:
-  explicit CoreOobeHandler(JSCallsContainer* js_calls_container);
+  CoreOobeHandler();
 
   CoreOobeHandler(const CoreOobeHandler&) = delete;
   CoreOobeHandler& operator=(const CoreOobeHandler&) = delete;
@@ -66,10 +63,10 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // BaseScreenHandler implementation:
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
+  void GetAdditionalParameters(base::Value::Dict* dict) override;
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -101,7 +98,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
  private:
   // CoreOobeView implementation:
-  void ReloadContent(const base::DictionaryValue& dictionary) override;
+  void ShowScreenWithData(const ash::OobeScreenId& screen,
+                          absl::optional<base::Value::Dict> data) override;
+  void ReloadContent(base::Value::Dict dictionary) override;
   void SetVirtualKeyboardShown(bool displayed) override;
   void SetShelfHeight(int height) override;
   void FocusReturned(bool reverse) override;
@@ -124,12 +123,8 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleInitialized();
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSkipToLoginForTesting();
-  void HandleLaunchHelpApp(double help_topic_id);
+  void HandleLaunchHelpApp(int help_topic_id);
   void HandleToggleResetScreen();
-  void HandleGetPrimaryDisplayNameForTesting(const base::ListValue* args);
-  void GetPrimaryDisplayNameCallback(
-      const base::Value& callback_id,
-      std::vector<ash::mojom::DisplayUnitInfoPtr> info_list);
   // Handles demo mode setup for tests. Accepts 'online' and 'offline' as
   // `demo_config`.
   void HandleStartDemoModeSetupForTesting(const std::string& demo_config);
@@ -155,12 +150,10 @@ class CoreOobeHandler : public BaseWebUIHandler,
   bool show_oobe_ui_ = false;
 
   // Updates when version info is changed.
-  VersionInfoUpdater version_info_updater_;
+  VersionInfoUpdater version_info_updater_{this};
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
-
-  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
 
   base::WeakPtrFactory<CoreOobeHandler> weak_ptr_factory_{this};
 };

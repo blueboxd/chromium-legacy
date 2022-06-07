@@ -135,6 +135,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableFiltersInRecentsV2() {
+    options.enable_filters_in_recents_v2 = true;
+    return *this;
+  }
+
   TestCase& EnableTrash() {
     options.enable_trash = true;
     return *this;
@@ -190,6 +195,9 @@ struct TestCase {
 
     if (options.enable_filters_in_recents)
       full_name += "_FiltersInRecents";
+
+    if (options.enable_filters_in_recents_v2)
+      full_name += "_FiltersInRecentsV2";
 
     return full_name;
   }
@@ -483,6 +491,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("zipCreateFileDrive").FilesSwa(),
         TestCase("zipCreateFileUsb"),
         TestCase("zipCreateFileUsb").FilesSwa(),
+        TestCase("zipExtractA11y").ExtractArchive().FilesSwa(),
+        TestCase("zipExtractCheckContent").ExtractArchive().FilesSwa(),
+        TestCase("zipExtractCheckDuplicates").ExtractArchive().FilesSwa(),
+        TestCase("zipExtractCheckEncodings").ExtractArchive().FilesSwa(),
         TestCase("zipExtractShowPanel").ExtractArchive().FilesSwa(),
         TestCase("zipExtractSelectionMenus").ExtractArchive().FilesSwa()));
 
@@ -1545,6 +1557,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Recents, /* recents.js */
     FilesAppBrowserTest,
     ::testing::Values(
+        TestCase("recentsA11yMessages").EnableFiltersInRecents(),
+        TestCase("recentsA11yMessages").EnableFiltersInRecents().FilesSwa(),
         TestCase("recentsDownloads"),
         TestCase("recentsDownloads").FilesSwa(),
         TestCase("recentsDownloads").EnableFiltersInRecents(),
@@ -1592,6 +1606,20 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("recentAudioDownloadsAndDrive")
             .EnableFiltersInRecents()
             .FilesSwa(),
+        TestCase("recentDocumentsDownloads")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2(),
+        TestCase("recentDocumentsDownloads")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2()
+            .FilesSwa(),
+        TestCase("recentDocumentsDownloadsAndDrive")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2(),
+        TestCase("recentDocumentsDownloadsAndDrive")
+            .EnableFiltersInRecents()
+            .EnableFiltersInRecentsV2()
+            .FilesSwa(),
         TestCase("recentImagesDownloads"),
         TestCase("recentImagesDownloads").FilesSwa(),
         TestCase("recentImagesDownloads").EnableFiltersInRecents(),
@@ -1633,24 +1661,27 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Search, /* search.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("searchDownloadsWithResults"),
-                      TestCase("searchDownloadsWithResults").FilesSwa(),
-                      TestCase("searchDownloadsWithNoResults"),
-                      TestCase("searchDownloadsWithNoResults").FilesSwa(),
-                      TestCase("searchDownloadsClearSearchKeyDown"),
-                      TestCase("searchDownloadsClearSearchKeyDown").FilesSwa(),
-                      TestCase("searchDownloadsClearSearch"),
-                      TestCase("searchDownloadsClearSearch").FilesSwa(),
-                      TestCase("searchHidingViaTab"),
-                      TestCase("searchHidingViaTab").FilesSwa(),
-                      TestCase("searchHidingTextEntryField"),
-                      TestCase("searchHidingTextEntryField").FilesSwa(),
-                      TestCase("searchButtonToggles"),
-                      TestCase("searchButtonToggles").FilesSwa(),
-                      TestCase("searchQueryLaunchParam")
-                      // TODO(b/189173190): Enable
-                      // TestCase("searchQueryLaunchParam").FilesSwa()
-                      ));
+    ::testing::Values(
+        TestCase("searchDownloadsWithResults"),
+        TestCase("searchDownloadsWithResults").FilesSwa(),
+        TestCase("searchDownloadsWithNoResults"),
+        TestCase("searchDownloadsWithNoResults").FilesSwa(),
+        // TODO(https://crbug.com/1313907): These tests are flaky on ash-chrome
+        // w/ SwANGLE.
+        // TestCase("searchDownloadsClearSearchKeyDown"),
+        // TestCase("searchDownloadsClearSearchKeyDown").FilesSwa(),
+        TestCase("searchDownloadsClearSearch"),
+        TestCase("searchDownloadsClearSearch").FilesSwa(),
+        TestCase("searchHidingViaTab"),
+        TestCase("searchHidingViaTab").FilesSwa(),
+        TestCase("searchHidingTextEntryField"),
+        TestCase("searchHidingTextEntryField").FilesSwa(),
+        TestCase("searchButtonToggles"),
+        TestCase("searchButtonToggles").FilesSwa(),
+        TestCase("searchQueryLaunchParam")
+        // TODO(b/189173190): Enable
+        // TestCase("searchQueryLaunchParam").FilesSwa()
+        ));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */
@@ -1787,8 +1818,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("fakesListed").EnableGuestOsFiles(),
-        TestCase("mountGuestError").EnableGuestOsFiles(),
         TestCase("listUpdatedWhenGuestsChanged").EnableGuestOsFiles(),
+        TestCase("mountGuestSuccess").EnableGuestOsFiles(),
         TestCase("notListedWithoutFlag")));
 
 }  // namespace file_manager

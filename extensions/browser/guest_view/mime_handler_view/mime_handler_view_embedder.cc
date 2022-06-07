@@ -180,7 +180,7 @@ void MimeHandlerViewEmbedder::CreateMimeHandlerViewGuest(
             browser_context));
   }
   base::DictionaryValue create_params;
-  create_params.SetStringKey(mime_handler_view::kViewId, stream_id_);
+  create_params.SetStringKey(mime_handler_view::kStreamId, stream_id_);
   manager->CreateGuest(
       MimeHandlerViewGuest::Type, web_contents(), create_params,
       base::BindOnce(&MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest,
@@ -220,8 +220,9 @@ void MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest(
   // Full page plugin refers to <iframe> or main frame navigations to a
   // MimeHandlerView resource. In such cases MHVG does not have a frame
   // container.
-  bool is_full_page = !guest_view->maybe_has_frame_container() &&
-                      !guest_view->GetEmbedderFrame()->GetParent();
+  bool is_full_page =
+      !guest_view->maybe_has_frame_container() &&
+      !guest_view->GetEmbedderFrame()->GetParentOrOuterDocument();
   MimeHandlerViewAttachHelper::Get(embedder_frame_process_id)
       ->AttachToOuterWebContents(guest_view, embedder_frame_process_id,
                                  outer_contents_rfh_, element_instance_id,

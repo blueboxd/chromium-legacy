@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/services/device_sync/attestation_certificates_syncer_impl.h"
 #include "ash/services/device_sync/cryptauth_client.h"
 #include "ash/services/device_sync/cryptauth_device_syncer_impl.h"
 #include "ash/services/device_sync/cryptauth_key_registry.h"
@@ -13,9 +15,8 @@
 #include "ash/services/device_sync/synced_bluetooth_address_tracker_impl.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -46,16 +47,20 @@ CryptAuthV2DeviceManagerImpl::Factory::Create(
     CryptAuthClientFactory* client_factory,
     CryptAuthGCMManager* gcm_manager,
     CryptAuthScheduler* scheduler,
-    PrefService* pref_service) {
+    PrefService* pref_service,
+    AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+        get_attestation_certificates_function) {
   if (test_factory_) {
     return test_factory_->CreateInstance(client_app_metadata, device_registry,
                                          key_registry, client_factory,
-                                         gcm_manager, scheduler, pref_service);
+                                         gcm_manager, scheduler, pref_service,
+                                         get_attestation_certificates_function);
   }
 
   return base::WrapUnique(new CryptAuthV2DeviceManagerImpl(
       client_app_metadata, device_registry, key_registry, client_factory,
-      gcm_manager, scheduler, pref_service));
+      gcm_manager, scheduler, pref_service,
+      get_attestation_certificates_function));
 }
 
 // static
@@ -73,10 +78,17 @@ CryptAuthV2DeviceManagerImpl::CryptAuthV2DeviceManagerImpl(
     CryptAuthClientFactory* client_factory,
     CryptAuthGCMManager* gcm_manager,
     CryptAuthScheduler* scheduler,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+        get_attestation_certificates_function)
     : synced_bluetooth_address_tracker_(
           SyncedBluetoothAddressTrackerImpl::Factory::Create(scheduler,
                                                              pref_service)),
+      attestation_certificates_syncer_(
+          AttestationCertificatesSyncerImpl::Factory::Create(
+              scheduler,
+              pref_service,
+              get_attestation_certificates_function)),
       client_app_metadata_(client_app_metadata),
       device_registry_(device_registry),
       key_registry_(key_registry),
@@ -143,7 +155,8 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncRequested(
   PA_LOG(VERBOSE) << "Starting CryptAuth v2 DeviceSync.";
   device_syncer_ = CryptAuthDeviceSyncerImpl::Factory::Create(
       device_registry_, key_registry_, client_factory_,
-      synced_bluetooth_address_tracker_.get(), pref_service_);
+      synced_bluetooth_address_tracker_.get(),
+      attestation_certificates_syncer_.get(), pref_service_);
   device_syncer_->Sync(
       *current_client_metadata_, client_app_metadata_,
       base::BindOnce(&CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished,
@@ -211,4 +224,4 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished(
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

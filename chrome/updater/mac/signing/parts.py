@@ -53,6 +53,11 @@ def get_parts(config):
             config.keystone_app_name,
             options=CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS,
             verify_options=VerifyOptions.DEEP | VerifyOptions.STRICT),
+        CodeSignedProduct(  # Metainstaller
+            'UpdaterSetup',
+            'UpdaterSetup',
+            options=CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS,
+            verify_options=VerifyOptions.DEEP | VerifyOptions.STRICT),
         CodeSignedProduct(  # Updater bundle
             '{.app_product}.app'.format(config),
             config.base_bundle_id,

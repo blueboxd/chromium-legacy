@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_CAST_STREAMING_BROWSER_RECEIVER_SESSION_IMPL_H_
 #define COMPONENTS_CAST_STREAMING_BROWSER_RECEIVER_SESSION_IMPL_H_
 
+#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "components/cast_streaming/browser/cast_streaming_session.h"
+#include "components/cast_streaming/browser/demuxer_stream_data_provider.h"
 #include "components/cast_streaming/browser/public/receiver_session.h"
 #include "components/cast_streaming/public/mojom/cast_streaming_session.mojom.h"
 #include "components/cast_streaming/public/mojom/renderer_controller.mojom.h"
@@ -45,7 +48,8 @@ class ReceiverSessionImpl final
  private:
   class RendererControllerImpl : public ReceiverSession::RendererController {
    public:
-    RendererControllerImpl();
+    explicit RendererControllerImpl(
+        base::OnceCallback<void()> on_mojo_disconnect);
     ~RendererControllerImpl() override;
 
     mojo::PendingReceiver<media::mojom::Renderer> Bind();
@@ -57,6 +61,8 @@ class ReceiverSessionImpl final
     void SetVolume(float volume) override;
 
    private:
+    base::OnceCallback<void()> on_mojo_disconnect_;
+
     mojo::Remote<media::mojom::Renderer> renderer_controls_;
   };
 
@@ -65,6 +71,9 @@ class ReceiverSessionImpl final
 
   // Callback for mojom::CastStreamingReceiver::EnableReceiver()
   void OnReceiverEnabled();
+
+  // Informs the client of updated configs.
+  void InformClientOfConfigChange();
 
   // cast_streaming::CastStreamingSession::Client implementation.
   void OnSessionInitialization(
@@ -89,12 +98,16 @@ class ReceiverSessionImpl final
   mojo::AssociatedRemote<mojom::CastStreamingReceiver> cast_streaming_receiver_;
   cast_streaming::CastStreamingSession cast_streaming_session_;
 
-  mojo::Remote<mojom::CastStreamingBufferReceiver> audio_remote_;
-  mojo::Remote<mojom::CastStreamingBufferReceiver> video_remote_;
+  std::unique_ptr<AudioDemuxerStreamDataProvider>
+      audio_demuxer_stream_data_provider_;
+  std::unique_ptr<VideoDemuxerStreamDataProvider>
+      video_demuxer_stream_data_provider_;
 
   ReceiverSession::Client* const client_;
   std::unique_ptr<RendererControllerImpl> external_renderer_controls_;
   absl::optional<RendererControllerConfig> renderer_control_config_;
+
+  base::WeakPtrFactory<ReceiverSessionImpl> weak_factory_;
 };
 
 }  // namespace cast_streaming

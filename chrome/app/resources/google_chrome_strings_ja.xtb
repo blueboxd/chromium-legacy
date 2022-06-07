@@ -173,6 +173,7 @@
 <translation id="4600710005438004015">Chrome を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
 <translation id="4627412468266359539">オプション: 診断と使用状況のデータを Google に自動送信して ChromeOS Flex の機能と動作の改善に役立てる。</translation>
 <translation id="4633000520311261472">Chrome をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
+<translation id="469553575393225953">提供元不明の拡張機能、アプリ、テーマはデバイスに危害を及ぼす可能性があります。Chrome ウェブストアで公開されているアイテムのみをインストールすることをおすすめします</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4747730611090640388">Chrome はユーザーの興味 / 関心を推定する場合があります。その後、アクセスしたサイトは、表示する広告をカスタマイズするために、Chrome にユーザーの興味 / 関心を確認するよう依頼できます。</translation>
 <translation id="4754614261631455953">Google Chrome Canary（mDNS インバウンド）</translation>
@@ -212,6 +213,7 @@
 <translation id="5736850870166430177">サイトがパスワードを不正に取得しようとしている場合や、ユーザーが安全でないファイルをダウンロードしようとした場合は、URL とページ コンテンツの一部をセーフ ブラウジングに送信することがあります</translation>
 <translation id="573759479754913123">Chrome OS について</translation>
 <translation id="5756509061973259733">このアカウントの Chrome プロファイルは、このデバイスにすでに存在します</translation>
+<translation id="5763280521700030406">このファイルはセキュリティ チェックには大きすぎるため、Chrome でブロックされました。ファイルを 50 MB 以下にしてから、もう一度お試しください</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome を起動できませんでした。もう一度お試しください。</translation>
 <translation id="5867197326698922595">Google Chrome でパスワードを編集しようとしています。</translation>
@@ -227,6 +229,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="6235018212288296708">mDNS トラフィックを許可する Google Chrome のインバウンド ルールです。</translation>
+<translation id="6247557882553405851">Google パスワード マネージャー</translation>
 <translation id="6291089322031436445">Chrome Dev アプリ</translation>
 <translation id="6291549208091401781">Google Chrome は既にパソコンのすべてのユーザー対してインストールされています。</translation>
 <translation id="6368958679917195344">Chrome OS は、さらに追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
@@ -235,6 +238,7 @@
 <translation id="6506909944137591434">周囲の 3D マップを作成するには、Chrome にカメラの使用を許可する必要があります</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS システム</translation>
+<translation id="659498884637196217">このデバイスの Google パスワード マネージャー</translation>
 <translation id="6632473616050862500">ChromeOS Flex は、追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="6679975945624592337">Google Chrome をバックグラウンドで実行する</translation>
@@ -274,6 +278,7 @@
 これまでにウェブサイトやアプリに許可した権限がこのアカウントに適用される可能性があります。Google アカウントは [<ph name="SETTINGS_LINK_BEGIN" />設定<ph name="SETTINGS_LINK_END" />] で管理できます。</translation>
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="7408085963519505752">Chrome OS 利用規約</translation>
+<translation id="7410958280246779049">危険なファイルのため Chrome でブロックされました</translation>
 <translation id="7419046106786626209">お使いのドメインでは同期を利用できないため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="7481213027396403996">Chrome の最高水準のセキュリティで保護</translation>
 <translation id="7486227612705979895">Chrome からお客様のドライブにアクセスして、アドレスバーに候補を表示します</translation>
@@ -288,7 +293,6 @@
 <translation id="7655455401911432608">閲覧履歴（このデバイスで Chrome を使用してアクセスしたサイトの記録）。</translation>
 <translation id="7665553140559834626">再起動して Chrome OS を更新(&amp;C)</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
-<translation id="7748512868279796735">次のアカウントはこの Chrome プロフィールでは使用できません</translation>
 <translation id="7761834446675418963">Chrome を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="7777080907402804672">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。この機能は設定でいつでも無効にできます。</translation>
 <translation id="7781002470561365167">Google クロームブラウザの最新バージョンを是非お試しください。</translation>
@@ -304,10 +308,12 @@
 <translation id="7951272445806340501">アップデートを適用するには ChromeOS Flex を再起動する必要があります。</translation>
 <translation id="7962410387636238736">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません</translation>
 <translation id="79947657522496226">Chrome OS も <ph name="BEGIN_LINK_LINUX_OSS" />Linux 開発環境<ph name="END_LINK_LINUX_OSS" />も追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
+<translation id="8005666035647241369">このデバイスの Google パスワード マネージャーに移動</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
 <translation id="8013993649590906847">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
+<translation id="822971176939352383">以下のアカウントは Chrome プロファイルにログインしていません。別のプロファイルでアカウントを使用する場合は、最初にそのプロファイルを削除してください。</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="828798499196665338">保護者が Chrome の「サイト、アプリ、拡張機能の権限」をオフにしました。この <ph name="EXTENSION_TYPE_PARAMETER" /> を有効にすることはできません。</translation>
@@ -319,8 +325,10 @@
 <translation id="8394720698884623075">Chrome に保存されている安全でないサイトのリストと URL を照合します</translation>
 <translation id="840084489713044809">Google Chrome からパスワードをエクスポートするための許可を求められています。</translation>
 <translation id="8416347857511542594">Chrome での広告のカスタマイズの詳細</translation>
+<translation id="8421734018304082652">このファイルは暗号化されているため、Chrome でブロックされました。所有者に暗号化の解除を依頼してください</translation>
 <translation id="8433638294851456451">Android スマートフォンに番号を送信するには、両方のデバイスで Chrome にログインしてください。</translation>
 <translation id="8498858610309223613">Google Chrome の特別なセキュリティ アップデートが適用されました。今すぐ再起動してください。タブは復元されます。</translation>
+<translation id="8504220326736535258">このファイルにはマルウェアが含まれているため、Chrome でブロックされました</translation>
 <translation id="8516431725144212809">Chrome が推定したお客様の興味 / 関心</translation>
 <translation id="8521348052903287641">mDNS トラフィックを許可する Google Chrome Dev のインバウンド ルールです。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -28,7 +28,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/management/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
@@ -57,7 +57,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/browsing_data/core/features.h"
-#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/google/core/common/google_util.h"
@@ -873,7 +872,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                         content::WebContents* web_contents) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"autofillPageTitle", IDS_SETTINGS_AUTOFILL},
-      {"passwords", IDS_SETTINGS_PASSWORDS},
+      {"passwordsDescription", IDS_SETTINGS_PASSWORD_MANAGER_DESCRIPTION},
       {"passwordsDevice", IDS_SETTINGS_DEVICE_PASSWORDS},
       {"checkPasswords", IDS_SETTINGS_CHECK_PASSWORDS},
       {"checkPasswordsCanceled", IDS_SETTINGS_CHECK_PASSWORDS_CANCELED},
@@ -1126,6 +1125,15 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"unenrollVirtualCardDialogConfirm",
        IDS_AUTOFILL_VIRTUAL_CARD_UNENROLL_DIALOG_CONFIRM_BUTTON_LABEL}};
 
+  bool unifiedPasswordManagerEnabled = base::FeatureList::IsEnabled(
+      password_manager::features::kUnifiedPasswordManagerDesktop);
+  html_source->AddBoolean("unifiedPasswordManagerEnabled",
+                          unifiedPasswordManagerEnabled);
+  html_source->AddString(
+      "passwords", l10n_util::GetStringUTF16(unifiedPasswordManagerEnabled
+                                                 ? IDS_SETTINGS_PASSWORD_MANAGER
+                                                 : IDS_SETTINGS_PASSWORDS));
+
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
       password_manager::ManagePasswordsReferrer::kChromeSettings);
 
@@ -1259,7 +1267,19 @@ void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile);
 #endif
 
-  if (is_dice_enabled) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  bool is_main_profile = profile->IsMainProfile();
+#else
+  bool is_main_profile = false;
+#endif
+
+  if (is_main_profile) {
+    static constexpr webui::LocalizedString kTurnOffStrings[] = {
+        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+        {"syncDisconnectTitle", IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_TITLE},
+    };
+    html_source->AddLocalizedStrings(kTurnOffStrings);
+  } else if (is_dice_enabled) {
     static constexpr webui::LocalizedString kTurnOffStrings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
@@ -1280,7 +1300,17 @@ void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
           g_browser_process->GetApplicationLocale())
           .spec();
 
-  if (is_dice_enabled) {
+  if (is_main_profile) {
+    static constexpr webui::LocalizedString kSyncDisconnectStrings[] = {
+        {"syncDisconnectDeleteProfile",
+         IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
+        {"syncDisconnectConfirm",
+         IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_MANAGED_CONFIRM},
+        {"syncDisconnectExplanation",
+         IDS_SETTINGS_SYNC_DISCONNECT_MAIN_PROFILE_EXPLANATION},
+    };
+    html_source->AddLocalizedStrings(kSyncDisconnectStrings);
+  } else if (is_dice_enabled) {
     static constexpr webui::LocalizedString kSyncDisconnectStrings[] = {
         {"syncDisconnectDeleteProfile",
          IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
@@ -1767,6 +1797,10 @@ void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
       {"privacyGuidePromoBody", IDS_SETTINGS_PRIVACY_GUIDE_PROMO_BODY},
       {"privacyGuidePromoStartButton",
        IDS_SETTINGS_PRIVACY_GUIDE_PROMO_START_BUTTON},
+      {"privacyGuideBackToSettingsAriaLabel",
+       IDS_SETTINGS_PRIVACY_GUIDE_BACK_TO_SETTINGS_ARIA_LABEL},
+      {"privacyGuideBackToSettingsAriaRoleDescription",
+       IDS_SETTINGS_PRIVACY_GUIDE_BACK_TO_SETTINGS_ARIA_ROLE_DESC},
       {"privacyGuideBackButton", IDS_SETTINGS_PRIVACY_GUIDE_BACK_BUTTON},
       {"privacyGuideSteps", IDS_SETTINGS_PRIVACY_GUIDE_STEPS},
       {"privacyGuideNextButton", IDS_SETTINGS_PRIVACY_GUIDE_NEXT_BUTTON},

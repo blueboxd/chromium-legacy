@@ -15,6 +15,7 @@
 // This must be before Windows headers
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/log/net_log.h"
@@ -132,7 +133,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "net/test/ssl_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -142,6 +142,7 @@
 #include "net/url_request/referrer_policy.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_http_job.h"
@@ -9672,68 +9673,6 @@ TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
   }
 }
 
-TEST_F(HTTPSRequestTest, EncryptedClientHello) {
-  // Configure a test server that speaks ECH.
-  static constexpr char kRealName[] = "secret.example";
-  static constexpr char kPublicName[] = "public.example";
-  EmbeddedTestServer::ServerCertificateConfig server_cert_config;
-  server_cert_config.dns_names = {kRealName};
-
-  SSLServerConfig ssl_server_config;
-  std::vector<uint8_t> ech_config_list;
-  ssl_server_config.ech_keys =
-      MakeTestEchKeys(kPublicName, /*max_name_len=*/128, &ech_config_list);
-  ASSERT_TRUE(ssl_server_config.ech_keys);
-
-  EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
-  test_server.SetSSLConfig(server_cert_config, ssl_server_config);
-  RegisterDefaultHandlers(&test_server);
-  ASSERT_TRUE(test_server.Start());
-
-  AddressList addr;
-  ASSERT_TRUE(test_server.GetAddressList(&addr));
-
-  for (bool ech_enabled : {true, false}) {
-    SCOPED_TRACE(ech_enabled);
-    base::test::ScopedFeatureList features;
-    if (ech_enabled) {
-      features.InitAndEnableFeature(features::kEncryptedClientHello);
-    } else {
-      features.InitAndDisableFeature(features::kEncryptedClientHello);
-    }
-
-    // Configure `MockHostResolver` to return `ech_config_list`.
-    //
-    // TODO(https://crbug.com/1264933): Replace this with an end-to-end test
-    // when the `HostResolver` portion is implemented.
-    auto host_resolver = std::make_unique<MockHostResolver>();
-    HostResolverEndpointResult endpoint;
-    endpoint.ip_endpoints = addr.endpoints();
-    endpoint.metadata.supported_protocol_alpns = {"http/1.1"};
-    endpoint.metadata.ech_config_list = ech_config_list;
-    host_resolver->rules()->AddRule(kRealName, std::vector{endpoint});
-    auto context_builder = CreateTestURLRequestContextBuilder();
-    context_builder->set_host_resolver(std::move(host_resolver));
-    auto context = context_builder->Build();
-
-    TestDelegate d;
-    {
-      std::unique_ptr<URLRequest> r = context->CreateRequest(
-          test_server.GetURL(kRealName, "/defaultresponse"), DEFAULT_PRIORITY,
-          &d, TRAFFIC_ANNOTATION_FOR_TESTS);
-      r->Start();
-      EXPECT_TRUE(r->is_pending());
-
-      d.RunUntilComplete();
-
-      EXPECT_EQ(1, d.response_started_count());
-      EXPECT_FALSE(d.received_data_before_response());
-      EXPECT_NE(0, d.bytes_received());
-      EXPECT_EQ(ech_enabled, r->ssl_info().encrypted_client_hello);
-    }
-  }
-}
-
 // A TestDelegate used to test that an appropriate net error code is provided
 // when an SSL certificate error occurs.
 class SSLNetErrorTestDelegate : public TestDelegate {
@@ -10414,7 +10353,7 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
   }
 }
 
-// Test that sessions aren't resumed across HttpNetworkSessions.
+// Test that sessions aren't resumed across URLRequestContexts.
 TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   // Start a server.
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
@@ -10422,10 +10361,27 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   ASSERT_TRUE(test_server.Start());
   const auto url = test_server.GetURL("/");
 
+  // Connect to the server once. This will add an entry to the session cache.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+
+    d.RunUntilComplete();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, r->ssl_info().handshake_type);
+  }
+
+  // Clear the socket pools and connect again. This should resume the previous
+  // session.
   default_context()
       .http_transaction_factory()
       ->GetSession()
-      ->ClearSSLSessionCache();
+      ->CloseAllConnections(ERR_FAILED, /*net_log_reason_utf8=*/"");
 
   {
     TestDelegate d;
@@ -10438,35 +10394,16 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
     d.RunUntilComplete();
 
     EXPECT_EQ(1, d.response_started_count());
+    EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, r->ssl_info().handshake_type);
   }
 
-  // Now create a new HttpNetworkSession.
-  HttpNetworkSessionContext session_context;
-  session_context.host_resolver = default_context().host_resolver();
-  session_context.cert_verifier = default_context().cert_verifier();
-  session_context.transport_security_state =
-      default_context().transport_security_state();
-  session_context.ct_policy_enforcer = default_context().ct_policy_enforcer();
-  session_context.proxy_resolution_service =
-      default_context().proxy_resolution_service();
-  session_context.ssl_config_service = default_context().ssl_config_service();
-  session_context.http_auth_handler_factory =
-      default_context().http_auth_handler_factory();
-  session_context.http_server_properties =
-      default_context().http_server_properties();
-  session_context.quic_context = default_context().quic_context();
-
-  HttpNetworkSession network_session(HttpNetworkSessionParams(),
-                                     session_context);
-  std::unique_ptr<HttpCache> cache(
-      new HttpCache(&network_session, HttpCache::DefaultBackend::InMemory(0),
-                    false /* is_main_cache */));
-
-  default_context().set_http_transaction_factory(cache.get());
+  // Now fetch on a new URLRequestContext. This should not resume the session.
+  auto context_builder = CreateTestURLRequestContextBuilder();
+  auto other_context = context_builder->Build();
 
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> r(other_context->CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     r->Start();
@@ -13103,26 +13040,25 @@ class URLRequestMaybeAsyncFirstPartySetsTest
     : public URLRequestTest,
       public testing::WithParamInterface<bool> {
  public:
-  URLRequestMaybeAsyncFirstPartySetsTest()
-      : cookie_monster_(/*store=*/nullptr,
-                        /*net_log=*/nullptr,
-                        /*first_party_sets_enabled=*/true) {
+  URLRequestMaybeAsyncFirstPartySetsTest() { CHECK(test_server_.Start()); }
+
+  std::unique_ptr<CookieStore> CreateCookieStore() {
+    auto cookie_monster =
+        std::make_unique<CookieMonster>(/*store=*/nullptr,
+                                        /*net_log=*/nullptr,
+                                        /*first_party_sets_enabled=*/true);
     auto cookie_access_delegate = std::make_unique<TestCookieAccessDelegate>();
     cookie_access_delegate->set_invoke_callbacks_asynchronously(
         invoke_callbacks_asynchronously());
-    cookie_monster_.SetCookieAccessDelegate(std::move(cookie_access_delegate));
-
-    CHECK(test_server_.Start());
+    cookie_monster->SetCookieAccessDelegate(std::move(cookie_access_delegate));
+    return cookie_monster;
   }
 
   bool invoke_callbacks_asynchronously() { return GetParam(); }
 
-  CookieStore* cookie_store() { return &cookie_monster_; }
-
   HttpTestServer& test_server() { return test_server_; }
 
  private:
-  CookieMonster cookie_monster_;
   HttpTestServer test_server_;
 };
 
@@ -13132,12 +13068,12 @@ TEST_P(URLRequestMaybeAsyncFirstPartySetsTest, SimpleRequest) {
       url::Origin::Create(test_server().GetURL(kHost, "/"));
   const SiteForCookies kSiteForCookies = SiteForCookies::FromOrigin(kOrigin);
 
-  TestURLRequestContext context(/*delay_initialization=*/true);
-  context.set_cookie_store(cookie_store());
-  context.Init();
+  auto context_builder = CreateTestURLRequestContextBuilder();
+  context_builder->SetCookieStore(CreateCookieStore());
+  auto context = context_builder->Build();
 
   TestDelegate d;
-  std::unique_ptr<URLRequest> req(context.CreateRequest(
+  std::unique_ptr<URLRequest> req(context->CreateRequest(
       test_server().GetURL(kHost, "/echo"), DEFAULT_PRIORITY, &d,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   req->set_isolation_info(
@@ -13157,12 +13093,12 @@ TEST_P(URLRequestMaybeAsyncFirstPartySetsTest, SingleRedirect) {
       url::Origin::Create(test_server().GetURL(kHost, "/"));
   const SiteForCookies kSiteForCookies = SiteForCookies::FromOrigin(kOrigin);
 
-  TestURLRequestContext context(/*delay_initialization=*/true);
-  context.set_cookie_store(cookie_store());
-  context.Init();
+  auto context_builder = CreateTestURLRequestContextBuilder();
+  context_builder->SetCookieStore(CreateCookieStore());
+  auto context = context_builder->Build();
 
   TestDelegate d;
-  std::unique_ptr<URLRequest> req(context.CreateRequest(
+  std::unique_ptr<URLRequest> req(context->CreateRequest(
       test_server().GetURL(kHost,
                            base::StrCat({
                                "/server-redirect?",

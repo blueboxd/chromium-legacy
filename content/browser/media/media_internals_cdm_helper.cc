@@ -22,9 +22,32 @@ namespace {
 std::string GetCdmInfoRobustnessName(CdmInfo::Robustness robustness) {
   switch (robustness) {
     case CdmInfo::Robustness::kHardwareSecure:
-      return "hardware-secure";
+      return "Hardware Secure";
     case CdmInfo::Robustness::kSoftwareSecure:
-      return "software-secure";
+      return "Software Secure";
+  }
+}
+
+std::string GetCdmInfoCapabilityStatusName(CdmInfo::Status status) {
+  switch (status) {
+    case CdmInfo::Status::kUninitialized:
+      return "Uninitialized";
+    case CdmInfo::Status::kEnabled:
+      return "Enabled";
+    case CdmInfo::Status::kCommandLineOverridden:
+      return "Overridden from command line";
+    case CdmInfo::Status::kHardwareSecureDecryptionDisabled:
+      return "Disabled because Hardware Secure Decryption is disabled";
+    case CdmInfo::Status::kAcceleratedVideoDecodeDisabled:
+      return "Disabled because Accelerated Video Decode is disabled";
+    case CdmInfo::Status::kGpuFeatureDisabled:
+      return "Disabled via GPU feature (e.g. bad GPU or driver)";
+    case CdmInfo::Status::kGpuCompositionDisabled:
+      return "Disabled because GPU (direct) composition is disabled";
+    case CdmInfo::Status::kDisabledByPref:
+      return "Disabled due to previous errors (stored in Local State)";
+    case CdmInfo::Status::kDisabledOnError:
+      return "Disabled after errors or crashes";
   }
 }
 
@@ -79,10 +102,12 @@ base::Value CdmCapabilityToValue(const media::CdmCapability& cdm_capability) {
 base::Value CdmInfoToValue(const CdmInfo& cdm_info) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("key_system", cdm_info.key_system);
-  dict.SetStringKey("robustness", cdm_info.name);
-  dict.SetStringKey("name", GetCdmInfoRobustnessName(cdm_info.robustness));
+  dict.SetStringKey("robustness",
+                    GetCdmInfoRobustnessName(cdm_info.robustness));
+  dict.SetStringKey("name", cdm_info.name);
   dict.SetStringKey("version", cdm_info.version.GetString());
   dict.SetStringKey("path", cdm_info.path.AsUTF8Unsafe());
+  dict.SetStringKey("status", GetCdmInfoCapabilityStatusName(cdm_info.status));
 
   if (cdm_info.capability) {
     dict.SetKey("capability",
@@ -122,6 +147,7 @@ void MediaInternalsCdmHelper::OnKeySystemCapabilitiesUpdated(
 
   base::Value cdm_list(base::Value::Type::LIST);
   for (const auto& cdm_info : cdms) {
+    DCHECK(cdm_info.status != CdmInfo::Status::kUninitialized);
     cdm_list.Append(CdmInfoToValue(cdm_info));
   }
 

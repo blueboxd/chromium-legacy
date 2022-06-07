@@ -129,7 +129,8 @@ TEST_P(EnterpriseConnectorsPolicyHandlerTest, Test) {
   if (policy_scope())
     EXPECT_EQ(policy_is_set, prefs.GetInteger(policy_scope(), &pref_scope));
 
-  auto* value_set_in_map = policy_map.GetValue(kPolicyName);
+  // It is safe to use `GetValueUnsafe()` as multiple policy types are handled.
+  auto* value_set_in_map = policy_map.GetValueUnsafe(kPolicyName);
   if (value_set_in_map) {
     ASSERT_EQ(*value_set_in_map, *value_set_in_pref);
     if (policy_scope())

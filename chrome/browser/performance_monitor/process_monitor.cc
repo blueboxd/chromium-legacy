@@ -9,12 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
-#include "base/process/process_iterator.h"
+#include "base/process/process_handle.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/performance_monitor/process_metrics_history.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -45,8 +46,35 @@ namespace {
 // The global instance.
 ProcessMonitor* g_process_monitor = nullptr;
 
-void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
-                                   ProcessMetadata* data) {
+std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
+    base::ProcessHandle process_handle) {
+#if BUILDFLAG(IS_MAC)
+  return base::ProcessMetrics::CreateProcessMetrics(
+      process_handle, content::BrowserChildProcessHost::GetPortProvider());
+#else
+  return base::ProcessMetrics::CreateProcessMetrics(process_handle);
+#endif
+}
+
+ProcessMonitor::Metrics SampleMetrics(base::ProcessMetrics& process_metrics) {
+  ProcessMonitor::Metrics metrics;
+
+  metrics.cpu_usage = process_metrics.GetPlatformIndependentCPUUsage();
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_AIX)
+  metrics.idle_wakeups = process_metrics.GetIdleWakeupsPerSecond();
+#endif
+#if BUILDFLAG(IS_MAC)
+  metrics.package_idle_wakeups =
+      process_metrics.GetPackageIdleWakeupsPerSecond();
+  metrics.energy_impact = process_metrics.GetEnergyImpact();
+#endif
+
+  return metrics;
+}
+
+ProcessSubtypes GetProcessSubtypeForRenderProcess(
+    content::RenderProcessHost* host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   content::BrowserContext* browser_context = host->GetBrowserContext();
@@ -59,7 +87,7 @@ void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
   // We only collect more granular metrics when there's only one extension
   // running in a given renderer, to reduce noise.
   if (extension_ids.size() != 1)
-    return;
+    return kProcessSubtypeUnknown;
 
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(browser_context);
@@ -68,12 +96,13 @@ void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
       extension_registry->enabled_extensions().GetByID(*extension_ids.begin());
 
   if (!extension)
-    return;
+    return kProcessSubtypeUnknown;
 
-  data->process_subtype =
-      extensions::BackgroundInfo::HasPersistentBackgroundPage(extension)
-          ? kProcessSubtypeExtensionPersistent
-          : kProcessSubtypeExtensionEvent;
+  return extensions::BackgroundInfo::HasPersistentBackgroundPage(extension)
+             ? kProcessSubtypeExtensionPersistent
+             : kProcessSubtypeExtensionEvent;
+#else
+  return kProcessSubtypeUnknown;
 #endif
 }
 
@@ -99,6 +128,14 @@ ProcessMonitor::Metrics& operator+=(ProcessMonitor::Metrics& lhs,
 
 constexpr base::TimeDelta ProcessMonitor::kGatherInterval;
 
+ProcessInfo::ProcessInfo(int process_type,
+                         ProcessSubtypes process_subtype,
+                         std::unique_ptr<base::ProcessMetrics> process_metrics)
+    : process_type(process_type),
+      process_subtype(process_subtype),
+      process_metrics(std::move(process_metrics)) {}
+ProcessInfo::~ProcessInfo() = default;
+
 ProcessMonitor::Metrics::Metrics() = default;
 ProcessMonitor::Metrics::Metrics(const ProcessMonitor::Metrics& other) =
     default;
@@ -120,12 +157,14 @@ ProcessMonitor* ProcessMonitor::Get() {
 ProcessMonitor::~ProcessMonitor() {
   DCHECK(g_process_monitor);
   g_process_monitor = nullptr;
+
+  content::BrowserChildProcessObserver::Remove(this);
 }
 
 void ProcessMonitor::StartGatherCycle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   repeating_timer_.Start(FROM_HERE, kGatherInterval, this,
-                         &ProcessMonitor::GatherProcesses);
+                         &ProcessMonitor::SampleAllProcesses);
 }
 
 void ProcessMonitor::AddObserver(Observer* observer) {
@@ -136,124 +175,136 @@ void ProcessMonitor::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-ProcessMonitor::ProcessMonitor() {
+ProcessMonitor::ProcessMonitor()
+    : browser_process_info_(
+          content::PROCESS_TYPE_BROWSER,
+          kProcessSubtypeUnknown,
+          CreateProcessMetrics(base::GetCurrentProcessHandle())) {
   DCHECK(!g_process_monitor);
   g_process_monitor = this;
+
+  // Ensure ProcessMonitor is created before any child process so that none is
+  // missed.
+  DCHECK(content::BrowserChildProcessHostIterator().Done());
+  DCHECK(content::RenderProcessHost::AllHostsIterator().IsAtEnd());
+
+  content::BrowserChildProcessObserver::Add(this);
+
+  // TODO(pmonette): Do an initial call to SampleMetrics() so that the next one
+  //                 returns meaningful data.
 }
 
-void ProcessMonitor::MarkProcessAsAlive(const ProcessMetadata& process_data,
-                                        int current_update_sequence) {
-  const base::ProcessHandle& handle = process_data.handle;
-  if (handle == base::kNullProcessHandle) {
-    // Process may not be valid yet.
+void ProcessMonitor::OnRenderProcessHostCreated(
+    content::RenderProcessHost* render_process_host) {
+  // If the host is reused after the process exited, it is possible to get a
+  // second created notification for the same host.
+  if (!render_process_host_observations_.IsObservingSource(render_process_host))
+    render_process_host_observations_.AddObservation(render_process_host);
+}
+
+void ProcessMonitor::RenderProcessReady(
+    content::RenderProcessHost* render_process_host) {
+  bool inserted =
+      render_process_infos_
+          .emplace(std::piecewise_construct,
+                   std::forward_as_tuple(render_process_host),
+                   std::forward_as_tuple(
+                       content::PROCESS_TYPE_RENDERER,
+                       GetProcessSubtypeForRenderProcess(render_process_host),
+                       CreateProcessMetrics(
+                           render_process_host->GetProcess().Handle())))
+          .second;
+  DCHECK(inserted);
+
+  // TODO(pmonette): Do an initial call to SampleMetrics() so that the next one
+  //                 returns meaningful data.
+}
+
+void ProcessMonitor::RenderProcessExited(
+    content::RenderProcessHost* render_process_host,
+    const content::ChildProcessTerminationInfo& info) {
+  auto it = render_process_infos_.find(render_process_host);
+  if (it == render_process_infos_.end()) {
+    // This process was never ready.
+    return;
+  }
+  render_process_infos_.erase(it);
+}
+
+void ProcessMonitor::RenderProcessHostDestroyed(
+    content::RenderProcessHost* render_process_host) {
+  render_process_host_observations_.RemoveObservation(render_process_host);
+}
+
+void ProcessMonitor::BrowserChildProcessLaunchedAndConnected(
+    const content::ChildProcessData& data) {
+#if BUILDFLAG(IS_WIN)
+  // Cannot gather process metrics for elevated process as browser has no
+  // access to them.
+  if (data.sandbox_type ==
+      sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges) {
+    return;
+  }
+#endif
+
+  ProcessSubtypes process_subtype =
+      data.metrics_name == network::mojom::NetworkService::Name_
+          ? kProcessSubtypeNetworkProcess
+          : kProcessSubtypeUnknown;
+  bool inserted =
+      browser_child_process_infos_
+          .emplace(std::piecewise_construct, std::forward_as_tuple(data.id),
+                   std::forward_as_tuple(
+                       data.process_type, process_subtype,
+                       CreateProcessMetrics(data.GetProcess().Handle())))
+          .second;
+  DCHECK(inserted);
+
+  // TODO(pmonette): Do an initial call to SampleMetrics() so that the next one
+  //                 returns meaningful data.
+}
+
+void ProcessMonitor::BrowserChildProcessHostDisconnected(
+    const content::ChildProcessData& data) {
+#if BUILDFLAG(IS_WIN)
+  // Cannot gather process metrics for elevated process as browser has no
+  // access to them.
+  if (data.sandbox_type ==
+      sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges) {
+    return;
+  }
+#endif
+
+  auto it = browser_child_process_infos_.find(data.id);
+  if (it == browser_child_process_infos_.end()) {
+    // It is possible to receive this notification without a launch-and-connect
+    // notification. See https://crbug.com/942500 for a similar issue.
     return;
   }
 
-  auto process_metrics_iter = metrics_map_.find(handle);
-  if (process_metrics_iter == metrics_map_.end()) {
-    // If we're not already watching the process, let's initialize it.
-    metrics_map_[handle] = std::make_unique<ProcessMetricsHistory>();
-    metrics_map_[handle]->Initialize(process_data, current_update_sequence);
-  } else {
-    // If we are watching the process, touch it to keep it alive.
-    ProcessMetricsHistory* process_metrics = process_metrics_iter->second.get();
-    process_metrics->set_last_update_sequence(current_update_sequence);
-  }
+  browser_child_process_infos_.erase(it);
 }
 
-// static
-std::vector<ProcessMetadata> ProcessMonitor::GatherRendererProcesses() {
+void ProcessMonitor::SampleAllProcesses() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::vector<ProcessMetadata> processes;
+  std::vector<ProcessInfo*> process_infos;
+  process_infos.reserve(1 + render_process_infos_.size() +
+                        browser_child_process_infos_.size());
+  process_infos.push_back(&browser_process_info_);
+  for (auto& [_, process_info] : render_process_infos_)
+    process_infos.push_back(&process_info);
+  for (auto& [_, process_info] : browser_child_process_infos_)
+    process_infos.push_back(&process_info);
 
-  for (content::RenderProcessHost::iterator rph_iter =
-           content::RenderProcessHost::AllHostsIterator();
-       !rph_iter.IsAtEnd(); rph_iter.Advance()) {
-    content::RenderProcessHost* host = rph_iter.GetCurrentValue();
-    ProcessMetadata data;
-    data.process_type = content::PROCESS_TYPE_RENDERER;
-    data.handle = host->GetProcess().Handle();
-
-    GatherMetricsForRenderProcess(host, &data);
-
-    processes.push_back(data);
-  }
-
-  return processes;
-}
-
-// static
-std::vector<ProcessMetadata> ProcessMonitor::GatherNonRendererProcesses() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  std::vector<ProcessMetadata> processes;
-
-  // Find all child processes (does not include renderers), which has to be
-  // done on the IO thread.
-  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-#if BUILDFLAG(IS_WIN)
-    // Cannot gather process metrics for elevated process as browser has no
-    // access to them.
-    if (iter.GetData().sandbox_type ==
-        sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges) {
-      continue;
-    }
-#endif
-    ProcessMetadata child_process_data;
-    child_process_data.handle = iter.GetData().GetProcess().Handle();
-    child_process_data.process_type = iter.GetData().process_type;
-
-    if (iter.GetData().metrics_name == network::mojom::NetworkService::Name_) {
-      child_process_data.process_subtype = kProcessSubtypeNetworkProcess;
-    }
-
-    processes.push_back(child_process_data);
-  }
-
-  // Add the current (browser) process.
-  ProcessMetadata browser_process_data;
-  browser_process_data.process_type = content::PROCESS_TYPE_BROWSER;
-  browser_process_data.handle = base::GetCurrentProcessHandle();
-
-  processes.push_back(browser_process_data);
-
-  return processes;
-}
-
-void ProcessMonitor::GatherProcesses() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  static uint32_t current_update_sequence = 0;
-  // Even in the "somewhat" unlikely event this wraps around,
-  // it doesn't matter. We just check it for inequality.
-  current_update_sequence++;
-
-  std::vector<ProcessMetadata> processes = GatherRendererProcesses();
-  auto non_renderers = GatherNonRendererProcesses();
-  processes.insert(processes.end(), non_renderers.begin(), non_renderers.end());
-
-  for (const auto& process : processes)
-    MarkProcessAsAlive(process, current_update_sequence);
-
-  // Update metrics for all watched processes; remove dead entries from the map.
   Metrics aggregated_metrics;
-  auto iter = metrics_map_.begin();
-  while (iter != metrics_map_.end()) {
-    ProcessMetricsHistory* process_metrics = iter->second.get();
-    if (process_metrics->last_update_sequence() !=
-        static_cast<int>(current_update_sequence)) {
-      // Not touched this iteration; let's get rid of it.
-      metrics_map_.erase(iter++);
-    } else {
-      Metrics metrics = process_metrics->SampleMetrics();
-      aggregated_metrics += metrics;
-      for (auto& observer : observer_list_)
-        observer.OnMetricsSampled(process_metrics->metadata(), metrics);
-      ++iter;
-    }
+  for (auto* process_info : process_infos) {
+    Metrics metrics = SampleMetrics(*process_info->process_metrics);
+    aggregated_metrics += metrics;
+    for (auto& observer : observer_list_)
+      observer.OnMetricsSampled(process_info->process_type,
+                                process_info->process_subtype, metrics);
   }
-
   for (auto& observer : observer_list_)
     observer.OnAggregatedMetricsSampled(aggregated_metrics);
 }

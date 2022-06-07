@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
-<translation id="1096883626080133124">Aumenta la tua produttività grazie a Google Chrome, che ti offre semplicità, sicurezza e velocità senza precedenti</translation>
 <translation id="1143896152279775643">La tua password verrà salvata in Gestore delle password di Google per <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Contribuisci a migliorare le funzionalità e le prestazioni di Chrome</translation>
 <translation id="1479202195792305274">Chrome può controllare le tue password quando accedi con il tuo Account Google.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Utilizza Chrome ovunque</translation>
 <translation id="3522659714780527202">Per visualizzare le tue schede su tutti i dispositivi su cui utilizzi Chrome, attiva la sincronizzazione</translation>
 <translation id="3533694711092285624">Nessuna password salvata. Chrome può controllare le password quando le salvi.</translation>
-<translation id="3634910711516114487">Accedi con il tuo Account Google a Chrome per usare al meglio questo browser</translation>
 <translation id="3655656110921623717">Ciò significa che Chrome richiederà ogni volta il sito per dispositivi mobili.</translation>
 <translation id="3706101708757577809">Ora puoi usare Chrome ogni volta che tocchi link in messaggi, documenti e altre app.</translation>
 <translation id="3720541637541300822">Blocca le schede di navigazione in incognito quando chiudi Chrome</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">La tua password è stata compromessa nell'ambito di una violazione dei dati. Gestore delle password di Google consiglia di cambiarla subito.</translation>
 <translation id="6822673484890854830">Chrome non ha potuto controllare tutte le password. Riprova più tardi.</translation>
 <translation id="6964931465519938134">Ora puoi usare Chrome ogni volta che tocchi link in messaggi, documenti e altre app.</translation>
-<translation id="7046845777663074840">Quando l'opzione è attiva:
-<ph name="BEGIN_INDENT" />  • Contribuisci a migliorare Chrome per le persone che lo usano come fai tu.<ph name="END_INDENT" />
-
-Aspetti da considerare:
-<ph name="BEGIN_INDENT" />  • Google riceve delle informazioni relative al tuo utilizzo di Chrome, ma che non sono riconducibili a te.
-
-  • Se Chrome si arresta in modo anomalo, i dettagli relativi a questo evento potrebbero includere alcune informazioni personali.
-
-  • Se attivi la sincronizzazione, le metriche potrebbero includere anche informazioni relative agli URL che visiti.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Personalizza Chrome</translation>
 <translation id="7124339256045485976">Mantieni Chrome aggiornato</translation>
 <translation id="7161390184744336561">Google Chrome non è aggiornato</translation>
 <translation id="7165736900384873061">Inizia a utilizzare lo scanner QR di Google Chrome</translation>
 <translation id="7172660552945675509">Suggerimento. <ph name="BEGIN_LINK" />Sposta Chrome nel dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome utilizza Face ID per garantire accesso autorizzato alle tue password.</translation>
+<translation id="7187993566681480880">Ti protegge su Chrome e potrebbe essere utilizzata per migliorare la sicurezza su altre app Google se esegui l'accesso.</translation>
 <translation id="72119412072970160">Puoi utilizzare le password salvate con Gestore delle password di Google in altre app sull'iPad.</translation>
 <translation id="7261678641327190792">Chrome non può controllare le tue password</translation>
 <translation id="7272930098487145294">Per salvare le immagini, tocca Impostazioni e consenti a Chrome di aggiungere le tue foto</translation>
@@ -110,6 +100,7 @@ Aspetti da considerare:
 <translation id="766361182512894255">La tua password è stata compromessa a causa di una violazione dei dati. Chrome consiglia di cambiare subito la password.</translation>
 <translation id="7693590760643069321">Ora puoi usare Chrome ogni volta che tocchi i link in messaggi, documenti e altre app.</translation>
 <translation id="7698568245838009292">Chrome vorrebbe accedere alla fotocamera</translation>
+<translation id="7780154209050837198">Accedi con il tuo Account Google a Chrome per usare al meglio questo browser.</translation>
 <translation id="7855730255114109580">Google Chrome è aggiornato</translation>
 <translation id="8022947259858476807">Usa Chrome per impostazione predefinita per aprire link, eseguire ricerche dai widget e compilare automaticamente le password in altre app</translation>
 <translation id="8160472928944011082">Impossibile aggiornare Chrome</translation>

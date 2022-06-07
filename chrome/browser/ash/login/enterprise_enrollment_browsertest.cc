@@ -24,10 +24,10 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/enrollment_status.h"
-#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -155,7 +155,8 @@ class EnterpriseEnrollmentTestBase : public OobeBaseTest {
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
     enrollment_screen()->OnLoginDone(
-        "testuser@test.com", test::EnrollmentHelperMixin::kTestAuthCode);
+        "testuser@test.com", static_cast<int>(policy::LicenseType::kEnterprise),
+        test::EnrollmentHelperMixin::kTestAuthCode);
     ExecutePendingJavaScript();
   }
 
@@ -520,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   CheckActiveDirectoryCredentialsShown();
   CheckConfigurationSelectionVisible(false);
@@ -550,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
@@ -583,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   // Checking error in case of empty password. Whether password is not empty
@@ -628,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
@@ -652,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, binary_config, kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::UpstartClient::Get()->StartAuthPolicyService();
+  UpstartClient::Get()->StartAuthPolicyService();
 
   ExecutePendingJavaScript();
   content::DOMMessageQueue message_queue;

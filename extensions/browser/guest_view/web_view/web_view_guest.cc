@@ -17,7 +17,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -36,6 +35,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
@@ -398,7 +398,7 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   // We must install the mapping from guests to WebViews prior to resuming
   // suspended resource loads so that the WebRequest API will catch resource
   // requests.
-  PushWebViewStateToIOThread();
+  PushWebViewStateToIOThread(web_contents()->GetMainFrame());
 
   ApplyAttributes(create_params);
 }
@@ -492,13 +492,12 @@ int WebViewGuest::GetTaskPrefix() const {
 }
 
 void WebViewGuest::GuestDestroyed() {
+  // Note that this is not always redundant with guest removal in
+  // RenderFrameDeleted(), such as when destroying unattached guests that never
+  // had a RenderFrame created.
   WebViewRendererState::GetInstance()->RemoveGuest(
-      web_contents()
-          ->GetMainFrame()
-          ->GetRenderViewHost()
-          ->GetProcess()
-          ->GetID(),
-      web_contents()->GetMainFrame()->GetRenderViewHost()->GetRoutingID());
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID());
 }
 
 void WebViewGuest::GuestReady() {
@@ -913,8 +912,13 @@ void WebViewGuest::UserAgentOverrideSet(
 void WebViewGuest::FrameNameChanged(RenderFrameHost* render_frame_host,
                                     const std::string& name) {
   // WebViewGuest does not support back/forward cache or prerendering so
-  // |render_frame_host| should always be active.
-  DCHECK(render_frame_host->IsActive());
+  // |render_frame_host| should be either active or pending deletion. Note that
+  // the pending deletion state becomes possible with site isolation for
+  // <webview> (crbug.com/1267977).
+  DCHECK(render_frame_host->IsActive() ||
+         (content::SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled() &&
+          render_frame_host->IsInLifecycleState(
+              RenderFrameHost::LifecycleState::kPendingDeletion)));
   if (render_frame_host->GetParentOrOuterDocument())
     return;
 
@@ -949,6 +953,42 @@ void WebViewGuest::OnDidAddMessageToConsole(
       webview::kEventConsoleMessage, std::move(args)));
 }
 
+void WebViewGuest::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host->GetSiteInstance()->IsGuest())
+    PushWebViewStateToIOThread(render_frame_host);
+}
+
+void WebViewGuest::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->GetSiteInstance()->IsGuest())
+    return;
+
+  WebViewRendererState::GetInstance()->RemoveGuest(
+      render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID());
+}
+
+void WebViewGuest::RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                                          content::RenderFrameHost* new_host) {
+  if (!old_host || !old_host->GetSiteInstance()->IsGuest())
+    return;
+
+  // A guest RenderFrameHost cannot navigate to a non-guest RenderFrameHost.
+  DCHECK(new_host->GetSiteInstance()->IsGuest());
+
+  // If we've swapped from a non-live guest RenderFrameHost, we won't hear a
+  // RenderFrameDeleted for that RenderFrameHost.  This ensures that it's
+  // removed from WebViewRendererState.  Note that it would be too early to
+  // remove live RenderFrameHosts here, as they could still need their
+  // WebViewRendererState entry while in pending deletion state.  For those
+  // cases, we rely on calling RemoveGuest() from RenderFrameDeleted().
+  if (!old_host->IsRenderFrameCreated()) {
+    WebViewRendererState::GetInstance()->RemoveGuest(
+        old_host->GetProcess()->GetID(), old_host->GetRoutingID());
+  }
+}
+
 void WebViewGuest::ReportFrameNameChange(const std::string& name) {
   name_ = name;
   auto args = std::make_unique<base::DictionaryValue>();
@@ -957,13 +997,14 @@ void WebViewGuest::ReportFrameNameChange(const std::string& name) {
       webview::kEventFrameNameChanged, std::move(args)));
 }
 
-void WebViewGuest::PushWebViewStateToIOThread() {
-  if (!web_contents()->GetSiteInstance()->IsGuest()) {
+void WebViewGuest::PushWebViewStateToIOThread(
+    content::RenderFrameHost* guest_host) {
+  if (!guest_host->GetSiteInstance()->IsGuest()) {
     NOTREACHED();
     return;
   }
   auto storage_partition_config =
-      web_contents()->GetSiteInstance()->GetStoragePartitionConfig();
+      guest_host->GetSiteInstance()->GetStoragePartitionConfig();
 
   WebViewRendererState::WebViewInfo web_view_info;
   web_view_info.embedder_process_id =
@@ -981,12 +1022,7 @@ void WebViewGuest::PushWebViewStateToIOThread() {
       web_view_info.embedder_process_id, web_view_info.instance_id);
 
   WebViewRendererState::GetInstance()->AddGuest(
-      web_contents()
-          ->GetMainFrame()
-          ->GetRenderViewHost()
-          ->GetProcess()
-          ->GetID(),
-      web_contents()->GetMainFrame()->GetRenderViewHost()->GetRoutingID(),
+      guest_host->GetProcess()->GetID(), guest_host->GetRoutingID(),
       web_view_info);
 }
 
@@ -1026,7 +1062,10 @@ void WebViewGuest::WillAttachToEmbedder() {
   // We must install the mapping from guests to WebViews prior to resuming
   // suspended resource loads so that the WebRequest API will catch resource
   // requests.
-  PushWebViewStateToIOThread();
+  //
+  // TODO(alexmos): This may be redundant with the call in
+  // RenderFrameCreated() and should be cleaned up.
+  PushWebViewStateToIOThread(web_contents()->GetMainFrame());
 }
 
 content::JavaScriptDialogManager* WebViewGuest::GetJavaScriptDialogManager(

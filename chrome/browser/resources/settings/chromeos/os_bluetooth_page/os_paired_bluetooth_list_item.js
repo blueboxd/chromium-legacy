@@ -24,7 +24,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {FocusRowBehavior, FocusRowBehaviorInterface} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 
 import {Router} from '../../router.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 
 /**
  * @constructor
@@ -264,6 +264,8 @@ class SettingsPairedBluetoothListItemElement extends
         return 'bluetoothA11yDeviceTypeGameController';
       case deviceType.kKeyboard:
         return 'bluetoothA11yDeviceTypeKeyboard';
+      case deviceType.kKeyboardMouseCombo:
+        return 'bluetoothA11yDeviceTypeKeyboardMouseCombo';
       case deviceType.kMouse:
         return 'bluetoothA11yDeviceTypeMouse';
       case deviceType.kTablet:

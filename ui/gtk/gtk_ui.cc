@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
+#include "base/observer_list.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/themes/theme_properties.h"  // nogncheck
 #include "printing/buildflags/buildflags.h"          // nogncheck
@@ -165,7 +166,7 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
       if (!GtkCheckVersion(3, 14)) {
         gint focus_pad;
         GtkStyleContextGetStyle(context, "focus-padding", &focus_pad, nullptr);
-        focus_rect.Inset(focus_pad, focus_pad);
+        focus_rect.Inset(focus_pad);
 
         if (state_ == ui::NativeTheme::kPressed) {
           gint child_displacement_x, child_displacement_y;
@@ -521,6 +522,7 @@ bool GtkUi::GetDefaultUsesSystemTheme() const {
     case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
     case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
+    case base::nix::DESKTOP_ENVIRONMENT_UKUI:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
       return true;

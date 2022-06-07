@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_
 
 #include "ash/wm/desks/persistent_desks_bar_button.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_circle.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_edit_button.h"
-#include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/action_tag.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/views/view.h"
@@ -32,31 +33,51 @@ class ActionView : public views::View {
   ActionView& operator=(const ActionView&) = delete;
   ~ActionView() override;
 
-  Action* action() { return action_; }
+  // Each type of the actions sets view content differently.
+  virtual void SetViewContent(BindingOption binding_option,
+                              const gfx::RectF& content_bounds) = 0;
+  // Each type of the actions acts differently on key binding change.
+  virtual void OnKeyBindingChange(ActionTag* action_tag, ui::DomCode code) = 0;
+  virtual void OnBindingToKeyboard() = 0;
+  virtual void OnBindingToMouse(std::string mouse_action) = 0;
+  // Each type of the actions shows different edit menu.
+  virtual void OnMenuEntryPressed() = 0;
 
-  void set_editable(bool editable) { editable_ = editable; }
+  // TODO(cuicuiruan): Remove virtual for post MVP once edit menu is ready for
+  // |ActionMove|.
+  virtual void SetDisplayMode(const DisplayMode mode);
 
   // Set position from its center position.
   void SetPositionFromCenterPosition(gfx::PointF& center_position);
-  void SetDisplayMode(const DisplayMode mode);
-  void OnMenuEntryPressed();
   // Get edit menu position in parent's bounds.
   gfx::Point GetEditMenuPosition(gfx::Size menu_size);
   void RemoveEditMenu();
+  // Show error message for action.
+  void ShowErrorMsg(base::StringPiece error_msg);
+  // Reset binding to its previous binding before entering to the edit mode.
+  void OnResetBinding();
+
+  Action* action() { return action_; }
+  void set_editable(bool editable) { editable_ = editable; }
+  DisplayOverlayController* display_overlay_controller() {
+    return display_overlay_controller_;
+  }
 
  protected:
+  bool ShouldShowErrorMsg(ui::DomCode code);
+
   // Reference to the action of this UI.
-  Action* action_ = nullptr;
+  raw_ptr<Action> action_ = nullptr;
   // Reference to the owner class.
-  DisplayOverlayController* const display_overlay_controller_ = nullptr;
+  const raw_ptr<DisplayOverlayController> display_overlay_controller_ = nullptr;
   // Some types are not supported to edit.
   bool editable_ = false;
   // Three-dot button to show the |ActionEditMenu|.
-  ActionEditButton* menu_entry_ = nullptr;
+  raw_ptr<ActionEditButton> menu_entry_ = nullptr;
   // The circle view shows up for editing the action.
-  ActionCircle* circle_ = nullptr;
+  raw_ptr<ActionCircle> circle_ = nullptr;
   // Labels for mapping hints.
-  std::vector<ActionLabel*> labels_;
+  std::vector<ActionTag*> tags_;
   // Current display mode.
   DisplayMode current_display_mode_ = DisplayMode::kNone;
   // Center position of the circle view.

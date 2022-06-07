@@ -32,12 +32,12 @@ import {getTemplate} from './preview_area.html.js';
 import {SettingsMixin} from './settings_mixin.js';
 
 export type PreviewTicket = Ticket&{
-  headerFooterEnabled: boolean;
-  pageRange: Array<{to: number, from: number}>;
-  pagesPerSheet: number;
-  isFirstRequest: boolean;
-  requestID: number;
-}
+  headerFooterEnabled: boolean,
+  pageRange: Array<{to: number, from: number}>,
+  pagesPerSheet: number,
+  isFirstRequest: boolean,
+  requestID: number,
+};
 
 export enum PreviewAreaState {
   LOADING = 'loading',
@@ -48,7 +48,7 @@ export enum PreviewAreaState {
 }
 
 export interface PrintPreviewPreviewAreaElement {
-  $: {marginControlContainer: PrintPreviewMarginControlContainerElement;};
+  $: {marginControlContainer: PrintPreviewMarginControlContainerElement};
 }
 
 const PrintPreviewPreviewAreaElementBase =
@@ -237,14 +237,6 @@ export class PrintPreviewPreviewAreaElement extends
   }
 
   /**
-   * @return Whether the "learn more" link to the cloud print help
-   *     page should be shown.
-   */
-  private shouldShowLearnMoreLink_(): boolean {
-    return this.error === Error.UNSUPPORTED_PRINTER;
-  }
-
-  /**
    * @return The current preview area message to display.
    */
   private currentMessage_(): string {
@@ -260,7 +252,7 @@ export class PrintPreviewPreviewAreaElement extends
       // </if>
       case PreviewAreaState.ERROR:
         // The preview area is responsible for displaying all errors except
-        // print failed and cloud print error.
+        // print failed.
         return this.getErrorMessage_();
       default:
         return '';
@@ -736,11 +728,6 @@ export class PrintPreviewPreviewAreaElement extends
       rasterizePDF: this.getSettingValue('rasterize') as boolean,
     };
 
-    // Set 'cloudPrintID' only if the this.destination is not local.
-    if (this.destination && !this.destination.isLocal) {
-      ticket.cloudPrintID = this.destination.id;
-    }
-
     if (this.getSettingValue('margins') === MarginsType.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
@@ -764,11 +751,6 @@ export class PrintPreviewPreviewAreaElement extends
     switch (this.error) {
       case Error.INVALID_PRINTER:
         return this.i18nAdvanced('invalidPrinterSettings', {
-          substitutions: [],
-          tags: ['BR'],
-        });
-      case Error.UNSUPPORTED_PRINTER:
-        return this.i18nAdvanced('unsupportedCloudPrinter', {
           substitutions: [],
           tags: ['BR'],
         });

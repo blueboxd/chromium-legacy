@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -297,9 +298,6 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
     return is_authentication_in_progress_;
   }
 
-  // Returns true only if |credit_card| is a local card.
-  bool IsLocalCard(const CreditCard* credit_card);
-
   // Returns whether the user has opted in to FIDO auth.
   bool IsUserOptedInToFidoAuth();
 
@@ -311,9 +309,31 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // FIDO eligible.
   bool IsSelectedCardFidoAuthorized();
 
+  // Returns true if there should be an immediate response after a CVC
+  // Authentication. The cases where we would have an immediate response is if
+  // there is no need for FIDO authentication after a successful CVC
+  // authentication, or the CVC authentication was unsuccessful. The result of
+  // this function and ShouldRegisterCardWithFido() are mutually exclusive (can
+  // not both be true).
+  bool ShouldRespondImmediately(
+      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response);
+
+  // Returns true if FIDO registration should occur. The result of this function
+  // and ShouldRespondImmediately() are mutually exclusive (can not both be
+  // true).
+  bool ShouldRegisterCardWithFido(
+      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response);
+
+  // Returns true if the we can offer FIDO opt-in for the user. In the
+  // downstream flow, after we offer FIDO opt-in, if the user accepts we might
+  // also offer FIDO authentication for the downstreamed card so that the FIDO
+  // registration flow is complete.
+  bool ShouldOfferFidoOptInDialog(
+      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response);
+
   // TODO(crbug.com/991037): Move this function under the build flags after the
-  // refactoring is done.
-  // Offer the option to use WebAuthn for authenticating future card unmasking.
+  // refactoring is done. Offer the option to use WebAuthn for authenticating
+  // future card unmasking.
   void ShowWebauthnOfferDialog(std::string card_authorization_token);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -325,13 +345,6 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // the Webauthn offer dialog or verify pending dialog.
   void HandleDialogUserResponse(WebauthnDialogCallbackType type);
 #endif
-
-  // Additionlly authorizes the card with FIDO. It also delays the form filling.
-  // It should only be called when registering a new card or opting-in from
-  // Android.
-  void AdditionallyPerformFidoAuth(
-      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response,
-      base::Value request_options);
 
   // Returns the key for the given card to be used for inserting or querying the
   // `unmasked_card_cache_`.

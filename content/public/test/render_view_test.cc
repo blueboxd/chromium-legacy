@@ -25,9 +25,9 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/public/test/content_test_suite_base.h"
 #include "content/public/test/fake_render_widget_host.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/policy_container_utils.h"
@@ -418,6 +418,8 @@ void RenderViewTest::GoForward(const GURL& url, const blink::PageState& state) {
 }
 
 void RenderViewTest::SetUp() {
+  ContentTestSuiteBase::InitializeResourceBundle();
+
   // Ensure that this looks like the renderer process based on the command line.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kProcessType, switches::kRendererProcess);
@@ -444,16 +446,20 @@ void RenderViewTest::SetUp() {
 
   render_thread_->SetIOTaskRunner(test_io_thread_->task_runner());
 
+  // ContentClient must be initialized before Blink, because Blink now eagerly
+  // loads the default stylesheets, which are fetched from the resource bundle
+  // using ContentClient.
+  content_client_.reset(CreateContentClient());
+  SetContentClient(content_client_.get());
+
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
   blink_platform_impl_.Initialize();
   blink::Initialize(blink_platform_impl_.Get(), &binders_,
                     blink_platform_impl_.GetMainThreadScheduler());
 
-  content_client_.reset(CreateContentClient());
   content_browser_client_.reset(CreateContentBrowserClient());
   content_renderer_client_.reset(CreateContentRendererClient());
-  SetContentClient(content_client_.get());
   SetBrowserClientForTesting(content_browser_client_.get());
   SetRendererClientForTesting(content_renderer_client_.get());
 
@@ -546,7 +552,6 @@ void RenderViewTest::SetUp() {
       view->GetWebView()->MainFrame()->ToWebLocalFrame()));
   render_widget_host_->widget_remote_for_testing()->WasShown(
       /*was_evicted=*/false,
-      /*in_active_window=*/true,
       blink::mojom::RecordContentToVisibleTimeRequestPtr());
   waiter.Wait();
 
@@ -853,10 +858,6 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
           true /* is_synchronously_committed */,
           blink::mojom::SameDocumentNavigationType::kFragment,
           false /* is_client_redirect */);
-}
-
-void RenderViewTest::SetUseZoomForDSFEnabled(bool enabled) {
-  render_thread_->SetUseZoomForDSFEnabled(enabled);
 }
 
 blink::WebFrameWidget* RenderViewTest::GetWebFrameWidget() {

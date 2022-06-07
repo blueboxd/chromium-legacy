@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper_delegate.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
@@ -45,6 +44,18 @@ std::string GetMimeTypeSuffix(web::DownloadTask* download_task) {
   DCHECK(IsUsdzFileFormat(download_task->GetOriginalMimeType(),
                           download_task->GetSuggestedFilename()));
   return kUsdzMimeTypeHistogramSuffix;
+}
+
+// Returns whether the `download_task` is complete or failed.
+bool IsDownloadCompleteOrFailed(web::DownloadTask* download_task) {
+  switch (download_task->GetState()) {
+    case web::DownloadTask::State::kComplete:
+    case web::DownloadTask::State::kFailed:
+    case web::DownloadTask::State::kFailedNotResumable:
+      return YES;
+    default:
+      return NO;
+  }
 }
 
 // Returns an enum for Download.IOSDownloadARModelState histogram for the
@@ -125,7 +136,7 @@ void ARQuickLookTabHelper::Download(
 }
 
 void ARQuickLookTabHelper::DidFinishDownload() {
-  DCHECK_EQ(download_task_->GetState(), web::DownloadTask::State::kComplete);
+  DCHECK(IsDownloadCompleteOrFailed(download_task_.get()));
   // Inform the delegate only if the download has been successful.
   if (download_task_->GetHttpCode() == 401 ||
       download_task_->GetHttpCode() == 403 || download_task_->GetErrorCode() ||

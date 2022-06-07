@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#include "ios/chrome/browser/discover_feed/feed_constants.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
@@ -66,7 +67,6 @@
 #import "ios/chrome/browser/ui/commands/help_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
-#import "ios/chrome/browser/ui/commands/search_image_with_lens_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -152,8 +152,6 @@
 #import "ios/chrome/common/ui/promo_style/promo_style_view_controller.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/lens/lens_api.h"
-#include "ios/public/provider/chrome/browser/lens/lens_configuration.h"
 #include "ios/public/provider/chrome/browser/voice_search/voice_search_api.h"
 #include "ios/public/provider/chrome/browser/voice_search/voice_search_controller.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
@@ -262,7 +260,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Note other delegates defined in the Delegates category header.
 @interface BrowserViewController () <CaptivePortalTabHelperDelegate,
                                      CRWWebStateObserver,
-                                     ChromeLensControllerDelegate,
                                      FindBarPresentationDelegate,
                                      FullscreenUIElement,
                                      InfobarPositioner,
@@ -375,10 +372,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // one single drag gesture.  When NO, full screen disabler is reset when
   // the thumb strip animation ends.
   BOOL _deferEndFullscreenDisabler;
-
-  // A controller that can provide an entrypoint into Lens features.
-  // TODO(crbug.com/1272549): Move this into BrowserCoordinator.
-  id<ChromeLensController> _lensController;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -549,6 +542,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.commandDispatcher
         startDispatchingToTarget:self
                      forProtocol:@protocol(BrowserCommands)];
+    [self.commandDispatcher
+        startDispatchingToTarget:self
+                     forProtocol:@protocol(NewTabPageCommands)];
 
     _toolbarCoordinatorAdaptor =
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
@@ -3897,63 +3893,23 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-// TODO(crbug.com/1272549): Move this command implementation into
-// BrowserCoordinator, and potentially into a child coordinator from there.
-- (void)searchImageWithLens:(SearchImageWithLensCommand*)command {
-  LensConfiguration* configuration = [[LensConfiguration alloc] init];
-  configuration.isIncognito = self.isOffTheRecord;
-  configuration.ssoService = GetApplicationContext()->GetSSOService();
+#pragma mark - NewTabPageCommands
 
-  if (!self.isOffTheRecord) {
-    ChromeBrowserState* browserState = _browser->GetBrowserState();
-    AuthenticationService* authenticationService =
-        AuthenticationServiceFactory::GetForBrowserState(browserState);
-    ChromeIdentity* chromeIdentity = authenticationService->GetPrimaryIdentity(
-        ::signin::ConsentLevel::kSignin);
-    configuration.identity = chromeIdentity;
+- (void)openNTPScrolledIntoFeedType:(FeedType)feedType {
+  // Configure next NTP to be scrolled into |feedType|.
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.currentWebState);
+  if (NTPHelper) {
+    NTPHelper->SetNextNTPFeedType(feedType);
+    NTPHelper->SetNextNTPScrolledToFeed(YES);
   }
 
-  _lensController = ios::provider::NewChromeLensController(configuration);
-  if (!_lensController) {
-    // Lens is not available.
-    return;
-  }
-  _lensController.delegate = self;
-
-  UIViewController* lensViewController =
-      [_lensController postCaptureViewControllerForImage:command.image];
-  [lensViewController setModalPresentationStyle:UIModalPresentationFullScreen];
-
-  // TODO(crbug.com/1234532): Integrate Lens with the browser's navigation
-  // stack.
-  [self presentViewController:lensViewController animated:YES completion:nil];
-}
-
-#pragma mark - ChromeLensControllerDelegate
-// TODO(crbug.com/1272549): Move this delegate implmentation into
-// BrowserCoordinator, or into the dedicated lens coordinator.
-
-- (void)lensControllerDidTapDismissButton {
-  // TODO(crbug.com/1234532): Integrate Lens with the browser's navigation
-  // stack.
-  [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)lensControllerDidSelectURL:(NSURL*)URL {
-  // Dismiss the Lens view controller.
-  if (self.presentedViewController != nil) {
-    [self dismissViewControllerAnimated:YES completion:nil];
-  }
-
-  // TODO(crbug.com/1234532): Integrate Lens with the browser's navigation
-  // stack.
-  UrlLoadParams loadParams = UrlLoadParams::InNewTab(net::GURLWithNSURL(URL));
-  loadParams.SetInBackground(NO);
-  loadParams.in_incognito = self.isOffTheRecord;
-  loadParams.append_to = kCurrentTab;
-  UrlLoadingBrowserAgent* loadingAgent =
+  // Navigate to NTP in same tab.
+  UrlLoadingBrowserAgent* urlLoadingBrowserAgent =
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
-  loadingAgent->Load(loadParams);
+  UrlLoadParams urlLoadParams =
+      UrlLoadParams::InCurrentTab(GURL(kChromeUINewTabURL));
+  urlLoadingBrowserAgent->Load(urlLoadParams);
 }
 
 #pragma mark - WebStateListObserving methods
@@ -4542,6 +4498,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     if (NTPHelper->IsActive()) {
       [self.ntpCoordinator ntpDidChangeVisibility:YES];
       self.ntpCoordinator.webState = webState;
+      self.ntpCoordinator.selectedFeed = NTPHelper->GetNextNTPFeedType();
+      self.ntpCoordinator.shouldScrollIntoFeed =
+          NTPHelper->GetNextNTPScrolledToFeed();
     } else {
       [self.ntpCoordinator ntpDidChangeVisibility:NO];
       self.ntpCoordinator.webState = nullptr;
@@ -4562,6 +4521,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       newTabPageCoordinator.toolbarDelegate = self.toolbarInterface;
       newTabPageCoordinator.webState = webState;
       newTabPageCoordinator.bubblePresenter = self.bubblePresenter;
+      newTabPageCoordinator.selectedFeed = NTPHelper->GetNextNTPFeedType();
+      newTabPageCoordinator.shouldScrollIntoFeed =
+          NTPHelper->GetNextNTPScrolledToFeed();
       _ntpCoordinatorsForWebStates[webState] = newTabPageCoordinator;
     } else {
       NewTabPageCoordinator* newTabPageCoordinator =

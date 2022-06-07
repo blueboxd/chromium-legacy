@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.download.interstitial.DownloadIntersti
 import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.SECONDARY_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.SECONDARY_BUTTON_TEXT;
 import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.STATE;
+import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.TITLE_TEXT;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -26,6 +27,8 @@ import org.chromium.chrome.browser.download.home.list.ShareUtils;
 import org.chromium.chrome.browser.download.home.rename.RenameDialogManager;
 import org.chromium.chrome.browser.download.internal.R;
 import org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.State;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
@@ -53,9 +56,11 @@ class DownloadInterstitialMediator {
 
     private final Context mContext;
     private final PropertyModel mModel;
+    private final String mDownloadUrl;
     private final OfflineContentProvider mProvider;
     private final SnackbarManager mSnackbarManager;
     private final OfflineContentProvider.Observer mObserver;
+    private final SharedPreferencesManager mSharedPrefs;
     private boolean mDownloadIsComplete;
     private boolean mPendingDeletion;
 
@@ -69,12 +74,15 @@ class DownloadInterstitialMediator {
      * @param snackbarManager A {@link SnackbarManager} used to display snackbars within the
      *         download interstitial view.
      */
-    DownloadInterstitialMediator(Context context, PropertyModel model,
-            OfflineContentProvider provider, SnackbarManager snackbarManager) {
+    DownloadInterstitialMediator(Context context, PropertyModel model, String downloadUrl,
+            OfflineContentProvider provider, SnackbarManager snackbarManager,
+            SharedPreferencesManager sharedPrefs) {
         mContext = context;
         mModel = model;
+        mDownloadUrl = downloadUrl;
         mProvider = provider;
         mSnackbarManager = snackbarManager;
+        mSharedPrefs = sharedPrefs;
 
         mModel.set(ListProperties.ENABLE_ITEM_ANIMATIONS, true);
         mModel.set(ListProperties.CALLBACK_OPEN, this::onOpenItem);
@@ -103,12 +111,14 @@ class DownloadInterstitialMediator {
                 mProvider.cancelDownload(mModel.get(DOWNLOAD_ITEM).id);
             }
         }
+        clearDownloadPendingRemoval();
     }
 
     private void setState(@State int state) {
         mModel.set(STATE, state);
         switch (state) {
             case State.IN_PROGRESS:
+                mModel.set(TITLE_TEXT, mContext.getString(R.string.download_started));
                 mModel.set(PRIMARY_BUTTON_IS_VISIBLE, false);
                 mModel.set(SECONDARY_BUTTON_TEXT,
                         mContext.getString(R.string.download_notification_cancel_button));
@@ -116,6 +126,9 @@ class DownloadInterstitialMediator {
                 mModel.set(SECONDARY_BUTTON_IS_VISIBLE, true);
                 break;
             case State.SUCCESSFUL:
+                mModel.set(TITLE_TEXT,
+                        mContext.getResources().getQuantityString(
+                                R.plurals.download_message_multiple_download_complete, 1));
                 mModel.set(PRIMARY_BUTTON_TEXT, mContext.getString(R.string.open_downloaded_label));
                 mModel.set(PRIMARY_BUTTON_CALLBACK, mModel.get(ListProperties.CALLBACK_OPEN));
                 mModel.set(PRIMARY_BUTTON_IS_VISIBLE, true);
@@ -125,12 +138,14 @@ class DownloadInterstitialMediator {
                 mDownloadIsComplete = true;
                 break;
             case State.CANCELLED:
+                mModel.set(TITLE_TEXT, mContext.getString(R.string.menu_download));
                 mModel.set(PRIMARY_BUTTON_TEXT, mContext.getString(R.string.menu_download));
                 mModel.set(PRIMARY_BUTTON_CALLBACK, mModel.get(ListProperties.CALLBACK_RESUME));
                 mModel.set(PRIMARY_BUTTON_IS_VISIBLE, true);
                 mModel.set(SECONDARY_BUTTON_IS_VISIBLE, false);
                 break;
             case State.PAUSED:
+                mModel.set(TITLE_TEXT, mContext.getString(R.string.menu_download));
                 mModel.set(PRIMARY_BUTTON_TEXT,
                         mContext.getString(R.string.download_notification_resume_button));
                 mModel.set(PRIMARY_BUTTON_CALLBACK, mModel.get(ListProperties.CALLBACK_RESUME));
@@ -152,16 +167,19 @@ class DownloadInterstitialMediator {
     private void onResumeItem(OfflineItem item) {
         setState(mDownloadIsComplete ? State.SUCCESSFUL : State.IN_PROGRESS);
         mPendingDeletion = false;
+        clearDownloadPendingRemoval();
         mProvider.resumeDownload(item.id, true /* hasUserGesture */);
     }
 
     private void onCancelItem(OfflineItem item) {
         setState(State.CANCELLED);
+        storeDownloadPendingRemoval(item.id);
         mProvider.pauseDownload(item.id);
     }
 
     private void onDeleteItem(OfflineItem item) {
         mPendingDeletion = true;
+        storeDownloadPendingRemoval(item.id);
         showDeletedSnackbar();
         setState(State.CANCELLED);
     }
@@ -227,8 +245,11 @@ class DownloadInterstitialMediator {
 
             @Override
             public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
-                if (mModel.get(DOWNLOAD_ITEM) != null
-                        && !item.id.equals(mModel.get(DOWNLOAD_ITEM).id)) {
+                if (mModel.get(DOWNLOAD_ITEM) == null) {
+                    if (!mDownloadUrl.equals(item.originalUrl)) {
+                        return;
+                    }
+                } else if (!item.id.equals(mModel.get(DOWNLOAD_ITEM).id)) {
                     return;
                 }
                 mModel.set(DOWNLOAD_ITEM, item);
@@ -246,5 +267,28 @@ class DownloadInterstitialMediator {
                 }
             }
         };
+    }
+
+    private void storeDownloadPendingRemoval(ContentId downloadId) {
+        final String key = ChromePreferenceKeys.DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL;
+        boolean success = mSharedPrefs.writeStringSync(
+                key, String.format("%s,%s", downloadId.namespace, downloadId.id));
+
+        if (!success) {
+            // Write synchronously because it might be used on restart and needs to stay
+            // up-to-date.
+            Log.e(TAG, "Failed to write DownloadInfo " + key);
+        }
+    }
+
+    private void clearDownloadPendingRemoval() {
+        final String key = ChromePreferenceKeys.DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL;
+        boolean success = mSharedPrefs.removeKeySync(key);
+
+        if (!success) {
+            // Write synchronously because it might be used on restart and needs to stay
+            // up-to-date.
+            Log.e(TAG, "Failed to clear DownloadInfo " + key);
+        }
     }
 }

@@ -384,11 +384,12 @@ void PagedAppsGridView::SetMaxColumnsAndRows(int max_columns,
   max_rows_ = max_rows;
   SetMaxColumnsInternal(max_columns);
 
-  // Update paging if the page sizes have changed.
+  // Update paging and pulsing blocks if the page sizes have changed.
   if (item_list() && (TilesPerPage(0) != first_page_size ||
                       TilesPerPage(1) != default_page_size)) {
     view_structure_.LoadFromMetadata();
     UpdatePaging();
+    UpdatePulsingBlockViews();
     PreferredSizeChanged();
   }
 }
@@ -585,7 +586,7 @@ gfx::Size PagedAppsGridView::GetTileViewSize() const {
 }
 
 gfx::Insets PagedAppsGridView::GetTilePadding(int page) const {
-  return gfx::Insets(
+  return gfx::Insets::VH(
       page == 0 ? -first_page_vertical_tile_padding_ : -vertical_tile_padding_,
       -horizontal_tile_padding_);
 }
@@ -626,7 +627,8 @@ void PagedAppsGridView::UpdateBorder() {
     return;
 
   if (!features::IsProductivityLauncherEnabled())
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(GetFadeoutMaskHeight(), 0)));
+    SetBorder(
+        views::CreateEmptyBorder(gfx::Insets::VH(GetFadeoutMaskHeight(), 0)));
 }
 
 void PagedAppsGridView::MaybeStartCardifiedView() {
@@ -947,7 +949,7 @@ bool PagedAppsGridView::DoesIntersectRect(const views::View* target,
   gfx::Rect target_bounds(target->GetLocalBounds());
   if (features::IsProductivityLauncherEnabled() && GetSelectedPage() == 0) {
     // Allow events to pass to the continue section and recent apps.
-    target_bounds.Inset(0, first_page_offset_, 0, 0);
+    target_bounds.Inset(gfx::Insets::TLBR(first_page_offset_, 0, 0, 0));
   }
   return target_bounds.Intersects(rect);
 }
@@ -1040,12 +1042,32 @@ int PagedAppsGridView::GetPageFlipTargetForDrag(const gfx::Point& drag_point) {
 
   // Drag zones are at the edges of the scroll axis.
   if (IsScrollAxisVertical()) {
-    if (drag_point.y() < kPageFlipZoneSize + GetInsets().top()) {
-      new_page_flip_target = pagination_model_.selected_page() - 1;
-    } else if (container_delegate_->IsPointWithinBottomDragBuffer(
-                   drag_point, kPageFlipZoneSize)) {
-      // If the drag point is within the drag buffer, but not over the shelf.
-      new_page_flip_target = pagination_model_.selected_page() + 1;
+    if (features::IsProductivityLauncherEnabled()) {
+      if (background_cards_.empty() ||
+          !container_delegate_->IsPointWithinPageFlipBuffer(drag_point)) {
+        return new_page_flip_target;
+      }
+
+      gfx::RectF background_card_rect_in_grid(
+          background_cards_[GetSelectedPage()]->bounds());
+      View::ConvertRectToTarget(items_container(), this,
+                                &background_card_rect_in_grid);
+
+      // Set page flip target when the drag is above or below the background
+      // card of the currently selected page.
+      if (drag_point.y() < background_card_rect_in_grid.y()) {
+        new_page_flip_target = pagination_model_.selected_page() - 1;
+      } else if (drag_point.y() > background_card_rect_in_grid.bottom()) {
+        new_page_flip_target = pagination_model_.selected_page() + 1;
+      }
+    } else {
+      if (drag_point.y() < kPageFlipZoneSize + GetInsets().top()) {
+        new_page_flip_target = pagination_model_.selected_page() - 1;
+      } else if (container_delegate_->IsPointWithinBottomDragBuffer(
+                     drag_point, kPageFlipZoneSize)) {
+        // If the drag point is within the drag buffer, but not over the shelf.
+        new_page_flip_target = pagination_model_.selected_page() + 1;
+      }
     }
   } else {
     // TODO(xiyuan): Fix this for RTL.

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
@@ -51,6 +52,10 @@ struct VirtualCardEnrollmentFields {
   // The source for which the VirtualCardEnrollmentBubble will be shown.
   VirtualCardEnrollmentSource virtual_card_enrollment_source =
       VirtualCardEnrollmentSource::kNone;
+  // A boolean value indicating if this will be the final time the user will see
+  // this offer, until strikes eventually expire.  Determined by the number of
+  // existing strikes.
+  bool last_show = false;
 };
 
 // This struct is used to track the state of the virtual card enrollment
@@ -237,6 +242,8 @@ class VirtualCardEnrollmentManager {
                            StrikeDatabase_BubbleCanceled);
   FRIEND_TEST_ALL_PREFIXES(VirtualCardEnrollmentManagerTest,
                            StrikeDatabase_SettingsPageNotBlocked);
+  FRIEND_TEST_ALL_PREFIXES(VirtualCardEnrollmentManagerTest,
+                           VirtualCardEnrollmentFields_LastShow);
 
   // Called once the risk data is loaded. The |risk_data| will be used with
   // |state_|'s |virtual_card_enrollment_fields|'s |credit_card|'s

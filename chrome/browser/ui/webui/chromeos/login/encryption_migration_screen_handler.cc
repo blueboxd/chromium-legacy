@@ -15,10 +15,10 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId EncryptionMigrationScreenView::kScreenId;
 
-EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.EncryptionMigrationScreen.userActed");
+EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.EncryptionMigrationScreen.userActed");
 }
 
 EncryptionMigrationScreenHandler::~EncryptionMigrationScreenHandler() {
@@ -27,11 +27,11 @@ EncryptionMigrationScreenHandler::~EncryptionMigrationScreenHandler() {
 }
 
 void EncryptionMigrationScreenHandler::Show() {
-  if (!page_is_ready() || !delegate_) {
+  if (!IsJavascriptAllowed() || !delegate_) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void EncryptionMigrationScreenHandler::Hide() {
@@ -41,9 +41,9 @@ void EncryptionMigrationScreenHandler::Hide() {
 void EncryptionMigrationScreenHandler::SetDelegate(
     EncryptionMigrationScreen* delegate) {
   delegate_ = delegate;
-  BaseScreenHandler::SetBaseScreen(delegate);
-  if (page_is_ready())
-    Initialize();
+  BaseScreenHandler::SetBaseScreenDeprecated(delegate);
+  if (IsJavascriptAllowed())
+    InitializeDeprecated();
 }
 
 void EncryptionMigrationScreenHandler::DeclareLocalizedValues(
@@ -94,8 +94,8 @@ void EncryptionMigrationScreenHandler::DeclareLocalizedValues(
   builder->Add("gaiaLoading", IDS_LOGIN_GAIA_LOADING_MESSAGE);
 }
 
-void EncryptionMigrationScreenHandler::Initialize() {
-  if (!page_is_ready() || !delegate_)
+void EncryptionMigrationScreenHandler::InitializeDeprecated() {
+  if (!IsJavascriptAllowed() || !delegate_)
     return;
 
   if (show_on_init_) {

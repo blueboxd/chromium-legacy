@@ -9,12 +9,12 @@
 #include <cstdint>
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/base/bits.h"
 #include "base/allocator/partition_allocator/partition_alloc-inl.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
-#include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 #include "base/immediate_crash.h"
@@ -289,6 +289,13 @@ ALWAYS_INLINE PartitionFreelistEntry* PartitionFreelistEntry::GetNextInternal(
   // |for_thread_cache|, since the argument is always a compile-time constant.
   if (UNLIKELY(!IsSane(this, ret, for_thread_cache))) {
     if constexpr (crash_on_corruption) {
+      // Put the corrupted data on the stack, it may give us more information
+      // about what kind of corruption that was.
+      PA_DEBUG_DATA_ON_STACK("first",
+                             static_cast<size_t>(encoded_next_.encoded_));
+#if defined(PA_HAS_FREELIST_SHADOW_ENTRY)
+      PA_DEBUG_DATA_ON_STACK("second", static_cast<size_t>(shadow_));
+#endif
       FreelistCorruptionDetected(extra);
     } else {
       return nullptr;

@@ -22,6 +22,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/token.h"
 #include "base/version.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/test/browser_task_environment.h"
@@ -96,11 +97,19 @@ class CdmRegistryImplTest : public testing::Test {
   void SetUp() final {
     DVLOG(1) << __func__;
 
+    auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+
     // Simulate GPU process initialization completing with GL unavailable.
     gpu::GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfoWithOneDisabled(
         gpu::GpuFeatureType::GPU_FEATURE_TYPE_ACCELERATED_GL);
-    GpuDataManagerImpl::GetInstance()->UpdateGpuFeatureInfo(gpu_feature_info,
-                                                            absl::nullopt);
+    gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info, absl::nullopt);
+
+#if BUILDFLAG(IS_WIN)
+    // Simulate enabling direct composition.
+    gpu::GPUInfo gpu_info;
+    gpu_info.overlay_info.direct_composition = true;
+    gpu_data_manager->UpdateGpuInfo(gpu_info, absl::nullopt);
+#endif  // BUILDFLAG(IS_WIN)
 
     cdm_registry_.SetHardwareSecureCapabilityCBForTesting(
         hw_secure_capability_cb_.Get());
@@ -415,7 +424,8 @@ TEST_F(CdmRegistryImplTest, KeySystemCapabilities_LazyInitialize_NotSupported) {
 
   auto cdm_info = cdm_registry_.GetCdmInfo(
       kTestKeySystem, CdmInfo::Robustness::kHardwareSecure);
-  ASSERT_FALSE(cdm_info);
+  ASSERT_EQ(cdm_info->status, CdmInfo::Status::kEnabled);
+  ASSERT_FALSE(cdm_info->capability);
 }
 
 TEST_F(CdmRegistryImplTest, KeySystemCapabilities_HardwareSecureDisabled) {
@@ -430,7 +440,9 @@ TEST_F(CdmRegistryImplTest, KeySystemCapabilities_HardwareSecureDisabled) {
 
   auto cdm_info = cdm_registry_.GetCdmInfo(
       kTestKeySystem, CdmInfo::Robustness::kHardwareSecure);
-  ASSERT_FALSE(cdm_info);
+  ASSERT_EQ(cdm_info->status,
+            CdmInfo::Status::kHardwareSecureDecryptionDisabled);
+  ASSERT_FALSE(cdm_info->capability);
 }
 
 TEST_F(CdmRegistryImplTest, KeySystemCapabilities_SoftwareAndHardwareSecure) {
@@ -644,5 +656,63 @@ TEST_F(CdmRegistryImplTest,
   ASSERT_EQ(other_support.hw_secure_capability.value(),
             GetOtherCdmCapability());
 }
+
+TEST_F(CdmRegistryImplTest, KeySystemCapabilities_DisableHardwareSecureCdms) {
+  Register(GetTestCdmInfo());
+  Register(kTestKeySystem, GetTestCdmCapability(), Robustness::kHardwareSecure);
+  SelectHardwareSecureDecryption(true);
+
+  GetKeySystemCapabilities();
+
+  // Both software and hardware security are supported for `kTestKeySystem`.
+  ASSERT_TRUE(results_.count(kObserver1));
+  ASSERT_EQ(results_[kObserver1].size(), 1u);
+  auto& key_system_capabilities_1 = results_[kObserver1][0];
+  ASSERT_EQ(key_system_capabilities_1.size(), 1u);
+  ASSERT_TRUE(key_system_capabilities_1.count(kTestKeySystem));
+  const auto& support_1 = key_system_capabilities_1[kTestKeySystem];
+  ASSERT_EQ(support_1.sw_secure_capability.value(), GetTestCdmCapability());
+  ASSERT_EQ(support_1.hw_secure_capability.value(), GetTestCdmCapability());
+
+  {
+    base::RunLoop run_loop;
+    cdm_registry_.SetHardwareSecureCdmStatus(CdmInfo::Status::kDisabledOnError);
+    run_loop.RunUntilIdle();
+  }
+
+  // Now hardware security is NOT supported for `kTestKeySystem`. Software
+  // security is not affected.
+  ASSERT_TRUE(results_.count(kObserver1));
+  ASSERT_EQ(results_[kObserver1].size(), 2u);
+  auto& key_system_capabilities_2 = results_[kObserver1][1];
+  ASSERT_EQ(key_system_capabilities_2.size(), 1u);
+  ASSERT_TRUE(key_system_capabilities_2.count(kTestKeySystem));
+  const auto& support_2 = key_system_capabilities_2[kTestKeySystem];
+  ASSERT_EQ(support_2.sw_secure_capability.value(), GetTestCdmCapability());
+  ASSERT_FALSE(support_2.hw_secure_capability);
+}
+
+#if BUILDFLAG(IS_WIN)
+TEST_F(CdmRegistryImplTest, KeySystemCapabilities_DirectCompositionDisabled) {
+  // Simulate disabling direct composition.
+  gpu::GPUInfo gpu_info;
+  gpu_info.overlay_info.direct_composition = false;
+  GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info, absl::nullopt);
+
+  RegisterForLazyInitialization();
+  SelectHardwareSecureDecryption(true);
+  GetKeySystemCapabilities();
+
+  ASSERT_TRUE(results_.count(kObserver1));
+  ASSERT_EQ(results_[kObserver1].size(), 1u);
+  auto& key_system_capabilities = results_[kObserver1][0];
+  ASSERT_TRUE(key_system_capabilities.empty());
+
+  auto cdm_info = cdm_registry_.GetCdmInfo(
+      kTestKeySystem, CdmInfo::Robustness::kHardwareSecure);
+  ASSERT_EQ(cdm_info->status, CdmInfo::Status::kGpuCompositionDisabled);
+  ASSERT_FALSE(cdm_info->capability);
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace content

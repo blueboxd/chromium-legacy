@@ -39,8 +39,8 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
-import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
-import {routes} from '../os_route.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
+import {routes} from '../os_route.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
@@ -595,7 +595,7 @@ Polymer({
   onShowDetail_(event) {
     const networkState = event.detail;
     this.detailType_ = networkState.type;
-    const params = new URLSearchParams;
+    const params = new URLSearchParams();
     params.append('guid', networkState.guid);
     params.append('type', OncMojo.getNetworkTypeString(networkState.type));
     params.append('name', OncMojo.getNetworkStateDisplayName(networkState));
@@ -737,7 +737,7 @@ Polymer({
     const type = event.detail;
     this.detailType_ = type;
     this.knownNetworksType_ = type;
-    const params = new URLSearchParams;
+    const params = new URLSearchParams();
     params.append('type', OncMojo.getNetworkTypeString(type));
     Router.getInstance().navigateTo(routes.KNOWN_NETWORKS, params);
   },
@@ -774,7 +774,7 @@ Polymer({
    */
   showNetworksSubpage_(type) {
     this.detailType_ = type;
-    const params = new URLSearchParams;
+    const params = new URLSearchParams();
     params.append('type', OncMojo.getNetworkTypeString(type));
     this.subpageType_ = type;
     Router.getInstance().navigateTo(routes.INTERNET_NETWORKS, params);
@@ -882,7 +882,7 @@ Polymer({
     if (!event.detail.bypassConnectionDialog &&
         type === mojom.NetworkType.kTether &&
         !networkState.typeState.tether.hasConnectedToHost) {
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('guid', networkState.guid);
       params.append('type', OncMojo.getNetworkTypeString(type));
       params.append('name', displayName);

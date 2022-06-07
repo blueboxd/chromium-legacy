@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_INPUT_MENU_VIEW_H_
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_INPUT_MENU_VIEW_H_
 
-#include "ui/views/view.h"
-
 #include <memory>
+
+#include "base/memory/raw_ptr.h"
+#include "ui/views/view.h"
 
 namespace ash {
 class PillButton;
@@ -40,11 +41,10 @@ class InputMenuView : public views::View {
  public:
   static std::unique_ptr<InputMenuView> BuildMenuView(
       DisplayOverlayController* display_overlay_controller,
-      views::View* anchor_view);
+      views::View* entry_view);
 
-  // TODO(djacobo): Pass a callback to return responses to owner.
   InputMenuView(DisplayOverlayController* display_overlay_controller,
-                views::View* anchor_view);
+                views::View* entry_view);
 
   InputMenuView(const InputMenuView&) = delete;
   InputMenuView& operator=(const InputMenuView&) = delete;
@@ -59,16 +59,16 @@ class InputMenuView : public views::View {
   void OnToggleShowHintPressed();
   void OnButtonCustomizedPressed();
 
-  views::ToggleButton* game_control_toggle_ = nullptr;
-  views::ToggleButton* show_hint_toggle_ = nullptr;
-  ash::PillButton* customize_button_ = nullptr;
-  views::ImageButton* close_button_ = nullptr;
+  raw_ptr<views::ToggleButton> game_control_toggle_ = nullptr;
+  raw_ptr<views::ToggleButton> show_hint_toggle_ = nullptr;
+  raw_ptr<ash::PillButton> customize_button_ = nullptr;
+  raw_ptr<views::ImageButton> close_button_ = nullptr;
 
   // Kept around to determine bounds(), not owned.
-  views::View* const entry_view_ = nullptr;
+  const raw_ptr<views::View> entry_view_ = nullptr;
 
   // DisplayOverlayController owns this class, no need to deallocate.
-  DisplayOverlayController* const display_overlay_controller_ = nullptr;
+  const raw_ptr<DisplayOverlayController> display_overlay_controller_ = nullptr;
 };
 
 }  // namespace input_overlay

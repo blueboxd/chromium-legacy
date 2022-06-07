@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -66,6 +67,22 @@ std::string GetManagedAccountTitleWithEmail(
       base::UTF8ToUTF16(domain_name));
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+std::string GetLacrosFirstRunManagedAccountInfo(
+    ProfileAttributesEntry* entry,
+    const std::string& fallback_domain_name) {
+  DCHECK(entry);
+  if (entry->GetHostedDomain() == kNoHostedDomainFound)
+    return std::string();
+  const std::string domain_name = entry->GetHostedDomain().empty()
+                                      ? fallback_domain_name
+                                      : entry->GetHostedDomain();
+  return l10n_util::GetStringFUTF8(
+      IDS_PRIMARY_PROFILE_FIRST_RUN_SESSION_MANAGED_BY_DESCRIPTION,
+      base::UTF8ToUTF16(domain_name));
+}
+#endif
+
 std::string GetManagedDeviceTitle() {
   absl::optional<std::string> device_manager =
       chrome::GetDeviceManagerIdentity();
@@ -92,11 +109,13 @@ SkColor GetHighlightColor(absl::optional<SkColor> theme_color) {
 EnterpriseProfileWelcomeHandler::EnterpriseProfileWelcomeHandler(
     Browser* browser,
     EnterpriseProfileWelcomeUI::ScreenType type,
+    bool force_new_profile,
     const AccountInfo& account_info,
     absl::optional<SkColor> profile_color,
-    base::OnceCallback<void(bool)> proceed_callback)
+    signin::SigninChoiceCallback proceed_callback)
     : browser_(browser),
       type_(type),
+      force_new_profile_(force_new_profile),
       email_(base::UTF8ToUTF16(account_info.email)),
       domain_name_(gaia::ExtractDomainName(account_info.email)),
       account_id_(account_info.account_id),
@@ -112,12 +131,12 @@ EnterpriseProfileWelcomeHandler::EnterpriseProfileWelcomeHandler(
 
 EnterpriseProfileWelcomeHandler::~EnterpriseProfileWelcomeHandler() {
   BrowserList::RemoveObserver(this);
-  HandleCancel(nullptr);
+  HandleCancel(base::Value::List());
 }
 
 void EnterpriseProfileWelcomeHandler::RegisterMessages() {
   profile_path_ = Profile::FromWebUI(web_ui())->GetPath();
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "initialized",
       base::BindRepeating(&EnterpriseProfileWelcomeHandler::HandleInitialized,
                           base::Unretained(this)));
@@ -126,11 +145,11 @@ void EnterpriseProfileWelcomeHandler::RegisterMessages() {
       base::BindRepeating(
           &EnterpriseProfileWelcomeHandler::HandleInitializedWithSize,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "proceed",
       base::BindRepeating(&EnterpriseProfileWelcomeHandler::HandleProceed,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "cancel",
       base::BindRepeating(&EnterpriseProfileWelcomeHandler::HandleCancel,
                           base::Unretained(this)));
@@ -181,10 +200,10 @@ void EnterpriseProfileWelcomeHandler::OnJavascriptDisallowed() {
 }
 
 void EnterpriseProfileWelcomeHandler::HandleInitialized(
-    const base::ListValue* args) {
-  CHECK_EQ(1u, args->GetListDeprecated().size());
+    const base::Value::List& args) {
+  CHECK_EQ(1u, args.size());
   AllowJavascript();
-  const base::Value& callback_id = args->GetListDeprecated()[0];
+  const base::Value& callback_id = args[0];
   ResolveJavascriptCallback(callback_id, GetProfileInfoValue());
 }
 
@@ -197,15 +216,21 @@ void EnterpriseProfileWelcomeHandler::HandleInitializedWithSize(
 }
 
 void EnterpriseProfileWelcomeHandler::HandleProceed(
-    const base::ListValue* args) {
-  if (proceed_callback_)
-    std::move(proceed_callback_).Run(true);
+    const base::Value::List& args) {
+  CHECK_EQ(1u, args.size());
+  if (proceed_callback_) {
+    bool use_existing_profile = args[0].GetIfBool().value_or(false);
+    std::move(proceed_callback_)
+        .Run(use_existing_profile || !force_new_profile_
+                 ? signin::SIGNIN_CHOICE_CONTINUE
+                 : signin::SIGNIN_CHOICE_NEW_PROFILE);
+  }
 }
 
 void EnterpriseProfileWelcomeHandler::HandleCancel(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   if (proceed_callback_)
-    std::move(proceed_callback_).Run(false);
+    std::move(proceed_callback_).Run(signin::SIGNIN_CHOICE_CANCEL);
 }
 
 void EnterpriseProfileWelcomeHandler::UpdateProfileInfo(
@@ -222,14 +247,17 @@ base::Value EnterpriseProfileWelcomeHandler::GetProfileInfoValue() {
                                            GetHighlightColor(profile_color_)));
   dict.SetStringKey("pictureUrl", GetPictureUrl());
 
-  std::string enterprise_title;
+  std::string title =
+      l10n_util::GetStringUTF8(IDS_ENTERPRISE_PROFILE_WELCOME_TITLE);
+  std::string subtitle;
   std::string enterprise_info;
+  bool show_cancel_button = true;
   ProfileAttributesEntry* entry = GetProfileEntry();
 
   switch (type_) {
     case EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncEnabled:
       dict.SetBoolKey("showEnterpriseBadge", true);
-      enterprise_title = GetManagedAccountTitle(entry, domain_name_);
+      subtitle = GetManagedAccountTitle(entry, domain_name_);
       enterprise_info = l10n_util::GetStringUTF8(
           IDS_ENTERPRISE_PROFILE_WELCOME_MANAGED_DESCRIPTION_WITH_SYNC);
       dict.SetStringKey(
@@ -238,32 +266,55 @@ base::Value EnterpriseProfileWelcomeHandler::GetProfileInfoValue() {
       break;
     case EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncDisabled:
       dict.SetBoolKey("showEnterpriseBadge", true);
-      enterprise_title = GetManagedAccountTitle(entry, domain_name_);
+      subtitle = GetManagedAccountTitle(entry, domain_name_);
       enterprise_info = l10n_util ::GetStringUTF8(
           IDS_ENTERPRISE_PROFILE_WELCOME_MANAGED_DESCRIPTION_WITHOUT_SYNC);
       dict.SetStringKey("proceedLabel", l10n_util::GetStringUTF8(IDS_DONE));
       break;
     case EnterpriseProfileWelcomeUI::ScreenType::kConsumerAccountSyncDisabled:
       dict.SetBoolKey("showEnterpriseBadge", false);
-      enterprise_title = GetManagedDeviceTitle();
+      subtitle = GetManagedDeviceTitle();
       enterprise_info =
           l10n_util::GetStringUTF8(IDS_SYNC_DISABLED_CONFIRMATION_DETAILS);
       dict.SetStringKey("proceedLabel", l10n_util::GetStringUTF8(IDS_DONE));
       break;
     case EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation:
       dict.SetBoolKey("showEnterpriseBadge", false);
-      enterprise_title =
-          GetManagedAccountTitleWithEmail(entry, domain_name_, email_);
+      subtitle = GetManagedAccountTitleWithEmail(entry, domain_name_, email_);
       enterprise_info = l10n_util::GetStringUTF8(
           IDS_ENTERPRISE_PROFILE_WELCOME_MANAGED_DESCRIPTION_WITH_SYNC);
       dict.SetStringKey(
           "proceedLabel",
           l10n_util::GetStringUTF8(
-              IDS_ENTERPRISE_PROFILE_WELCOME_CREATE_PROFILE_BUTTON));
+              force_new_profile_
+                  ? IDS_ENTERPRISE_PROFILE_WELCOME_CREATE_PROFILE_BUTTON
+                  : IDS_WELCOME_SIGNIN_VIEW_SIGNIN));
+      break;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    case EnterpriseProfileWelcomeUI::ScreenType::kLacrosEnterpriseWelcome:
+      dict.SetBoolKey("showEnterpriseBadge", true);
+      enterprise_info =
+          GetLacrosFirstRunManagedAccountInfo(entry, domain_name_);
+      [[fallthrough]];
+    case EnterpriseProfileWelcomeUI::ScreenType::kLacrosConsumerWelcome:
+      // TODO(crbug.com/1300109): Replace `email` with the first name. Pass this
+      // info only once the first name is available.
+      title = l10n_util::GetStringFUTF8(IDS_PRIMARY_PROFILE_FIRST_RUN_TITLE,
+                                        email_);
+      subtitle =
+          l10n_util::GetStringUTF8(IDS_PRIMARY_PROFILE_FIRST_RUN_SUBTITLE);
+      dict.SetStringKey("proceedLabel",
+                        l10n_util::GetStringUTF8(
+                            IDS_PRIMARY_PROFILE_FIRST_RUN_NEXT_BUTTON_LABEL));
+      show_cancel_button = false;
+      break;
+#endif
   }
 
-  dict.SetStringKey("enterpriseTitle", enterprise_title);
+  dict.SetStringKey("title", title);
+  dict.SetStringKey("subtitle", subtitle);
   dict.SetStringKey("enterpriseInfo", enterprise_info);
+  dict.SetBoolKey("showCancelButton", show_cancel_button);
 
   return dict;
 }
@@ -306,7 +357,7 @@ EnterpriseProfileWelcomeHandler::GetTypeForTesting() {
 }
 
 void EnterpriseProfileWelcomeHandler::CallProceedCallbackForTesting(
-    bool proceed) {
+    signin::SigninChoice choice) {
   if (proceed_callback_)
-    std::move(proceed_callback_).Run(proceed);
+    std::move(proceed_callback_).Run(choice);
 }

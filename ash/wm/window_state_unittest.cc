@@ -11,12 +11,15 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_window_builder.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/pip/pip_positioner.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state_util.h"
@@ -32,6 +35,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
@@ -432,6 +436,28 @@ TEST_F(WindowStateTest, TestIgnoreTooBigMinimumSize) {
   WindowState* window_state = WindowState::Get(window.get());
   window_state->Maximize();
   EXPECT_EQ(work_area_size.ToString(), window->bounds().size().ToString());
+}
+
+// Test that the maximum size specified by aura::WindowDelegate gets respected.
+TEST_F(WindowStateTest, TestRespectMaximumSize) {
+  aura::test::TestWindowDelegate delegate;
+  constexpr gfx::Size max_size(300, 250);
+  constexpr gfx::Size smaller_size(100, 100);
+  constexpr gfx::Size larger_size(500, 400);
+
+  delegate.set_maximum_size(max_size);
+
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, -1, gfx::Rect(larger_size)));
+
+  // Check that the window has the correct maximum size.
+  EXPECT_EQ(max_size, window->bounds().size());
+
+  window->SetBounds(gfx::Rect(smaller_size));
+  EXPECT_EQ(smaller_size, window->bounds().size());
+
+  window->SetBounds(gfx::Rect(larger_size));
+  EXPECT_EQ(max_size, window->bounds().size());
 }
 
 // Tests UpdateSnapRatio. (1) It should have ratio reset when window
@@ -1307,6 +1333,8 @@ TEST_F(WindowStateTest, WindowSnapActionSourceUmaMetrics) {
   histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
                                WindowSnapActionSource::kDragWindowToEdgeToSnap,
                                1);
+  histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
+                               WindowSnapActionSource::kOthers, 1);
   window_state->Maximize();
 
   // Use keyboard to snap a window.
@@ -1315,6 +1343,8 @@ TEST_F(WindowStateTest, WindowSnapActionSourceUmaMetrics) {
   histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
                                WindowSnapActionSource::kKeyboardShortcutToSnap,
                                1);
+  histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
+                               WindowSnapActionSource::kOthers, 1);
   window_state->Maximize();
 
   // Restore the maximized window to snap window state.
@@ -1322,6 +1352,8 @@ TEST_F(WindowStateTest, WindowSnapActionSourceUmaMetrics) {
   histograms.ExpectBucketCount(
       kWindowSnapActionSourceHistogram,
       WindowSnapActionSource::kSnapByWindowStateRestore, 1);
+  histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
+                               WindowSnapActionSource::kOthers, 1);
   window_state->Maximize();
 
   // Drag or select overview window to snap window.
@@ -1338,6 +1370,8 @@ TEST_F(WindowStateTest, WindowSnapActionSourceUmaMetrics) {
   histograms.ExpectBucketCount(
       kWindowSnapActionSourceHistogram,
       WindowSnapActionSource::kDragOrSelectOverviewWindowToSnap, 1);
+  histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
+                               WindowSnapActionSource::kOthers, 1);
   window_state->Maximize();
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
@@ -1349,11 +1383,34 @@ TEST_F(WindowStateTest, WindowSnapActionSourceUmaMetrics) {
   histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
                                WindowSnapActionSource::kKeyboardShortcutToSnap,
                                2);
+  histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
+                               WindowSnapActionSource::kOthers, 1);
 
   // Auto-snap in splitview.
   std::unique_ptr<aura::Window> window2(CreateAppWindow());
   histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
                                WindowSnapActionSource::kAutoSnapBySplitview, 1);
+  histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
+                               WindowSnapActionSource::kOthers, 1);
+
+  // Resize in splitview.
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  auto* split_view_divider = split_view_controller->split_view_divider();
+  gfx::Rect divider_bounds =
+      split_view_divider->GetDividerBoundsInScreen(false);
+  split_view_controller->StartResize(divider_bounds.CenterPoint());
+  gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window.get());
+  gfx::Point resize_point(display_bounds.width() * 0.33f, 0);
+  split_view_controller->Resize(resize_point);
+  // This should not cause any metrics change.
+  histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
+                               WindowSnapActionSource::kOthers, 1);
+  split_view_controller->EndResize(resize_point);
+  histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
+                               WindowSnapActionSource::kOthers, 1);
 }
 
 // Test WindowStateTest functionalities with portrait display. This test is

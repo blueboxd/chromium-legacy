@@ -84,7 +84,7 @@ class AppServiceProxyBase : public KeyedService,
 
   apps::BrowserAppLauncher* BrowserAppLauncher();
 
-  apps::PreferredAppsListHandle& PreferredApps();
+  apps::PreferredAppsListHandle& PreferredAppsList();
 
   // Registers `publisher` with the App Service as exclusively publishing apps
   // of type `app_type`. `publisher` must have a lifetime equal to or longer
@@ -255,9 +255,9 @@ class AppServiceProxyBase : public KeyedService,
                      apps::mojom::WindowMode window_mode);
 
   // Called by an app publisher to inform the proxy of a change in app state.
-  void OnApps(std::vector<AppPtr> deltas,
-              AppType app_type,
-              bool should_notify_initialized);
+  virtual void OnApps(std::vector<AppPtr> deltas,
+                      AppType app_type,
+                      bool should_notify_initialized);
 
  protected:
   // An adapter, presenting an IconLoader interface based on the underlying
@@ -399,7 +399,7 @@ class AppServiceProxyBase : public KeyedService,
   IconCoalescer icon_coalescer_;
   IconCache outer_icon_loader_;
 
-  apps::PreferredAppsList preferred_apps_;
+  apps::PreferredAppsList preferred_apps_list_;
 
   raw_ptr<Profile> profile_;
 

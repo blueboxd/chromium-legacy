@@ -17,14 +17,14 @@ namespace ime {
 // START: Signatures of "C" API entry points of CrOS 1P IME shared library.
 // Must match API specs in ash/services/ime/public/cpp/shared_lib/interfaces.h
 
-inline constexpr char kImeDecoderInitOnceFnName[] = "ImeDecoderInitOnce";
-typedef void (*ImeDecoderInitOnceFn)(ImeCrosPlatform* platform);
-
 inline constexpr char kSetImeEngineLoggerFnName[] = "SetImeEngineLogger";
 typedef void (*SetImeEngineLoggerFn)(ChromeLoggerFunc logger_func);
 
-inline constexpr char kImeDecoderCloseFnName[] = "ImeDecoderClose";
-typedef void (*ImeDecoderCloseFn)();
+inline constexpr char kInitProtoModeFnName[] = "InitProtoMode";
+typedef void (*InitProtoModeFn)(ImeCrosPlatform* platform);
+
+inline constexpr char kCloseProtoModeFnName[] = "CloseProtoMode";
+typedef void (*CloseProtoModeFn)();
 
 inline constexpr char kImeDecoderSupportsFnName[] = "ImeDecoderSupports";
 typedef bool (*ImeDecoderSupportsFn)(const char* ime_spec);
@@ -35,6 +35,12 @@ typedef bool (*ImeDecoderActivateImeFn)(const char* ime_spec,
 
 inline constexpr char kImeDecoderProcessFnName[] = "ImeDecoderProcess";
 typedef void (*ImeDecoderProcessFn)(const uint8_t* data, size_t size);
+
+inline constexpr char kInitMojoModeFnName[] = "InitMojoMode";
+typedef void (*InitMojoModeFn)(ImeCrosPlatform* platform);
+
+inline constexpr char kCloseMojoModeFnName[] = "CloseMojoMode";
+typedef void (*CloseMojoModeFn)();
 
 inline constexpr char kConnectToInputMethodFnName[] = "ConnectToInputMethod";
 typedef bool (*ConnectToInputMethodFn)(
@@ -54,6 +60,9 @@ typedef bool (*IsInputMethodConnectedFn)();
 
 // END: Signatures of "C" API entry points of CrOS 1P IME shared lib.
 
+// TODO(b/214153032): Rename to ImeSharedLib to better reflect what this
+// represents. This class manages the dynamic loading of CrOS 1P IME shared lib
+// .so, and facilitates access to its "C" API entry points.
 class ImeDecoder {
  public:
   virtual ~ImeDecoder() = default;
@@ -61,11 +70,24 @@ class ImeDecoder {
   // Function pointers to "C" API entry points of the loaded IME shared library.
   // See ash/services/ime/public/cpp/shared_lib/interfaces.h for API specs.
   struct EntryPoints {
-    ImeDecoderInitOnceFn init_once;
-    ImeDecoderCloseFn close;
+    InitProtoModeFn init_proto_mode;
+    CloseProtoModeFn close_proto_mode;
+
+    // TODO(b/214153032): Prefix the following with "proto_mode_" to better
+    // indicate they only pertain to the IME shared lib's ProtoMode. While it's
+    // "hard" to rename corresponding "C" API functions due to cross-repo
+    // backward compat requirements, these are local and rename is feasible.
     ImeDecoderSupportsFn supports;
     ImeDecoderActivateImeFn activate_ime;
     ImeDecoderProcessFn process;
+
+    InitMojoModeFn init_mojo_mode;
+    CloseMojoModeFn close_mojo_mode;
+
+    // TODO(b/214153032): Prefix the following with "mojo_mode_" to better
+    // indicate they only pertain to the IME shared lib's MojoMode. While it's
+    // "hard" to rename corresponding "C" API functions due to cross-repo
+    // backward compat requirements, these are local and rename is feasible.
     ConnectToInputMethodFn connect_to_input_method;
     InitializeConnectionFactoryFn initialize_connection_factory;
     IsInputMethodConnectedFn is_input_method_connected;
@@ -80,6 +102,8 @@ class ImeDecoder {
 // A proxy class for the IME decoder.
 // ImeDecoder is implemented as a singleton and is initialized before 'ime'
 // sandbox is engaged.
+// TODO(b/214153032): Rename to ImeSharedLibImpl, as soon as ImeDecoder is
+// renamed to ImeSharedLib, to better reflect what this represents.
 class ImeDecoderImpl : public ImeDecoder {
  public:
   // Gets the singleton ImeDecoderImpl.

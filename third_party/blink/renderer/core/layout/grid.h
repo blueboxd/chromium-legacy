@@ -7,11 +7,12 @@
 
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/grid_linked_list.h"
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/doubly_linked_list.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -29,7 +30,6 @@ struct OrderedTrackIndexSetHashTraits : public HashTraits<wtf_size_t> {
   }
 };
 
-// TODO(svillar): Perhaps we should use references here.
 typedef Vector<UntracedMember<LayoutBox>, 1> GridItemList;
 typedef LinkedHashSet<wtf_size_t, OrderedTrackIndexSetHashTraits>
     OrderedTrackIndexSet;
@@ -93,9 +93,7 @@ class CORE_EXPORT Grid {
   bool HasAnyGridItemPaintOrder() const;
 #endif
 
-  class GridIterator {
-    USING_FAST_MALLOC(GridIterator);
-
+  class GridIterator : public GarbageCollected<GridIterator> {
    public:
     virtual LayoutBox* NextGridItem() = 0;
 
@@ -106,6 +104,8 @@ class CORE_EXPORT Grid {
     GridIterator(const GridIterator&) = delete;
     GridIterator& operator=(const GridIterator&) = delete;
     virtual ~GridIterator() = default;
+
+    virtual void Trace(Visitor* visitor) const {}
 
    protected:
     // |direction| is the direction that is fixed to |fixed_track_index| so e.g
@@ -121,7 +121,7 @@ class CORE_EXPORT Grid {
     wtf_size_t child_index_;
   };
 
-  virtual std::unique_ptr<GridIterator> CreateIterator(
+  virtual GridIterator* CreateIterator(
       GridTrackSizingDirection,
       wtf_size_t fixed_track_index,
       wtf_size_t varying_track_index = 0) const = 0;
@@ -159,7 +159,10 @@ class CORE_EXPORT Grid {
 // the track index.
 class CORE_EXPORT ListGrid final : public Grid {
  public:
-  explicit ListGrid(const LayoutGrid* grid) : Grid(grid) {}
+  explicit ListGrid(const LayoutGrid* grid)
+      : Grid(grid),
+        rows_(MakeGarbageCollected<GridLinkedList<GridTrack>>()),
+        columns_(MakeGarbageCollected<GridLinkedList<GridTrack>>()) {}
 
   wtf_size_t NumTracks(GridTrackSizingDirection direction) const override {
     return direction == kForRows ? num_rows_ : num_columns_;
@@ -169,16 +172,11 @@ class CORE_EXPORT ListGrid final : public Grid {
   void EnsureGridSize(wtf_size_t maximum_row_size,
                       wtf_size_t maximum_column_size) override;
 
-  ~ListGrid() final;
-
   // This is the class representing a cell in the grid. GridCell's are
   // only created for those cells which do have items inside. Each
   // GridCell will be part of two different DLL, one representing the
   // column and another one representing the row.
-  class GridCell final : public DoublyLinkedListNode<GridCell> {
-    USING_FAST_MALLOC(GridCell);
-    friend class WTF::DoublyLinkedListNode<GridCell>;
-
+  class GridCell final : public GridLinkedListNodeBase<GridCell> {
    public:
     GridCell(wtf_size_t row, wtf_size_t column) : row_(row), column_(column) {}
 
@@ -189,6 +187,12 @@ class CORE_EXPORT ListGrid final : public Grid {
     void AppendItem(LayoutBox& item) { items_.push_back(&item); }
 
     const GridItemList& Items() const { return items_; }
+
+    void Trace(Visitor* visitor) const final {
+      visitor->Trace(prev_ortho_);
+      visitor->Trace(next_ortho_);
+      GridLinkedListNodeBase<GridCell>::Trace(visitor);
+    }
 
     // DoublyLinkedListNode classes must provide a next_ and prev_
     // pointers to the DoublyLinkedList class so that it could perform
@@ -213,10 +217,8 @@ class CORE_EXPORT ListGrid final : public Grid {
     GridCell* NextInDirection(GridTrackSizingDirection) const;
 
    private:
-    GridCell* prev_{nullptr};
-    GridCell* next_{nullptr};
-    GridCell* prev_ortho_{nullptr};
-    GridCell* next_ortho_{nullptr};
+    Member<GridCell> prev_ortho_;
+    Member<GridCell> next_ortho_;
 
     GridTrackSizingDirection direction_{kForColumns};
     GridItemList items_;
@@ -233,52 +235,51 @@ class CORE_EXPORT ListGrid final : public Grid {
   // index of the cell in the orthogonal direction, i.e., the list of
   // cells in a GridTrack representing a column will be sorted by
   // their row index.
-  class CORE_EXPORT GridTrack final : public DoublyLinkedListNode<GridTrack> {
-    USING_FAST_MALLOC(GridTrack);
-    friend class WTF::DoublyLinkedListNode<GridTrack>;
-
+  class CORE_EXPORT GridTrack final : public GridLinkedListNodeBase<GridTrack> {
    public:
     GridTrack(wtf_size_t index, GridTrackSizingDirection direction)
-        : index_(index), direction_(direction) {}
+        : cells_(MakeGarbageCollected<GridLinkedList<GridCell>>()),
+          index_(index),
+          direction_(direction) {}
 
     wtf_size_t Index() const { return index_; }
-    DoublyLinkedList<GridCell>::AddResult Insert(GridCell*);
-    DoublyLinkedList<GridCell>::AddResult InsertAfter(
-        GridCell* cell,
-        GridCell* insertion_point);
-    DoublyLinkedList<GridCell>::AddResult Insert(LayoutBox&, const GridSpan&);
+
+    void Trace(Visitor* visitor) const final {
+      visitor->Trace(cells_);
+      GridLinkedListNodeBase<GridTrack>::Trace(visitor);
+    }
+
+    GridLinkedList<GridCell>::AddResult Insert(GridCell*);
+    GridLinkedList<GridCell>::AddResult InsertAfter(GridCell* cell,
+                                                    GridCell* insertion_point);
+    GridLinkedList<GridCell>::AddResult Insert(LayoutBox&, const GridSpan&);
     GridCell* Find(wtf_size_t cell_index) const;
 
-    const DoublyLinkedList<GridCell>& Cells() const { return cells_; }
-
-    ~GridTrack();
+    const GridLinkedList<GridCell>& Cells() const { return *cells_; }
 
    private:
-    DoublyLinkedList<GridCell> cells_;
+    Member<GridLinkedList<GridCell>> cells_;
     wtf_size_t index_;
     GridTrackSizingDirection direction_;
-
-    GridTrack* prev_;
-    GridTrack* next_;
   };
 
  private:
   friend class ListGridIterator;
 
   // Returns a pointer to the first track.
-  GridTrack* InsertTracks(DoublyLinkedList<GridTrack>&,
+  GridTrack* InsertTracks(GridLinkedList<GridTrack>&,
                           const GridSpan&,
                           GridTrackSizingDirection);
 
   void ClearGridDataStructure() override;
   void ConsolidateGridDataStructure() override {}
 
-  const DoublyLinkedList<GridTrack>& Tracks(
+  const GridLinkedList<GridTrack>& Tracks(
       GridTrackSizingDirection direction) const {
-    return direction == kForRows ? rows_ : columns_;
+    return direction == kForRows ? *rows_ : *columns_;
   }
 
-  std::unique_ptr<GridIterator> CreateIterator(
+  GridIterator* CreateIterator(
       GridTrackSizingDirection,
       wtf_size_t fixed_track_index,
       wtf_size_t varying_track_index = 0) const override;
@@ -286,13 +287,11 @@ class CORE_EXPORT ListGrid final : public Grid {
   wtf_size_t num_rows_{0};
   wtf_size_t num_columns_{0};
 
-  DoublyLinkedList<GridTrack> columns_;
-  DoublyLinkedList<GridTrack> rows_;
+  Persistent<GridLinkedList<GridTrack>> rows_;
+  Persistent<GridLinkedList<GridTrack>> columns_;
 };
 
 class ListGridIterator final : public Grid::GridIterator {
-  USING_FAST_MALLOC(ListGridIterator);
-
  public:
   ListGridIterator(const ListGrid& grid,
                    GridTrackSizingDirection,
@@ -301,6 +300,11 @@ class ListGridIterator final : public Grid::GridIterator {
   ListGridIterator(const ListGridIterator&) = delete;
   ListGridIterator& operator=(const ListGridIterator&) = delete;
 
+  void Trace(Visitor* visitor) const final {
+    visitor->Trace(cell_node_);
+    GridIterator::Trace(visitor);
+  }
+
   LayoutBox* NextGridItem() override;
   std::unique_ptr<GridArea> NextEmptyGridArea(
       wtf_size_t fixed_track_span,
@@ -308,7 +312,7 @@ class ListGridIterator final : public Grid::GridIterator {
 
  private:
   const ListGrid& grid_;
-  ListGrid::GridCell* cell_node_{nullptr};
+  Member<ListGrid::GridCell> cell_node_;
 };
 
 }  // namespace blink

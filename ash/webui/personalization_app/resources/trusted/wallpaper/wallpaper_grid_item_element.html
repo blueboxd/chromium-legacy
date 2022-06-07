@@ -31,6 +31,7 @@
     background-color: rgba(0, 0, 0, 0.12);
     border-radius: var(--personalization-app-grid-item-border-radius);
     box-sizing: border-box;
+    cursor: pointer;
     display: flex;
     height: 100%;
     justify-content: center;
@@ -41,6 +42,10 @@
 
   :host(:focus-visible) .item {
     outline: 2px solid var(--cros-focus-ring-color);
+  }
+
+  :host([placeholder]) .item {
+    animation: 2210ms linear var(--animation-delay, 1s) infinite ripple;
   }
 
   .item[aria-selected] {
@@ -133,7 +138,8 @@
     }
   }
 </style>
-<div class="item" aria-selected$="[[selected]]">
+<div class="item" aria-selected$="[[selected]]"
+     style$="[[getItemPlaceholderAnimationDelay_(index)]]">
   <template is="dom-if" if="[[isImageVisible_(imageSrc)]]">
     <img is="cr-auto-img" auto-src="[[imageSrc]]" clear-src with-cookies></img>
   </template>

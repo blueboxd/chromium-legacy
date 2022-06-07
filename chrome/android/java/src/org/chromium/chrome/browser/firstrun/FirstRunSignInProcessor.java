@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -64,7 +65,14 @@ public final class FirstRunSignInProcessor {
         if (getFirstRunFlowSignInComplete()) {
             return;
         }
+
         final String accountName = getFirstRunFlowSignInAccountName();
+        if (TextUtils.isEmpty(accountName) && getFirstRunFlowSignInSetup()) {
+            assert ChromeFeatureList.isEnabled(ChromeFeatureList.ENABLE_SYNC_IMMEDIATELY_IN_FRE);
+            openAdvancedSyncSettings(activity);
+            setFirstRunFlowSignInComplete(true);
+        }
+
         if (!FirstRunUtils.canAllowSync() || !signinManager.isSyncOptInAllowed()
                 || TextUtils.isEmpty(accountName)) {
             setFirstRunFlowSignInComplete(true);
@@ -122,8 +130,7 @@ public final class FirstRunSignInProcessor {
     /**
      * @return Whether there is no pending sign-in requests from the First Run Experience.
      */
-    @VisibleForTesting
-    public static boolean getFirstRunFlowSignInComplete() {
+    private static boolean getFirstRunFlowSignInComplete() {
         return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_COMPLETE, false);
     }
@@ -150,7 +157,7 @@ public final class FirstRunSignInProcessor {
      * Sets the account name for the pending sign-in First Run Experience request.
      * @param accountName The account name, or null.
      */
-    private static void setFirstRunFlowSignInAccountName(String accountName) {
+    public static void setFirstRunFlowSignInAccountName(String accountName) {
         SharedPreferencesManager.getInstance().writeString(
                 ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME, accountName);
     }
@@ -167,32 +174,8 @@ public final class FirstRunSignInProcessor {
      * Sets the preference to see the settings once signed in after FRE.
      * @param isComplete Whether the user selected to see the settings once signed in.
      */
-    private static void setFirstRunFlowSignInSetup(boolean isComplete) {
+    public static void setFirstRunFlowSignInSetup(boolean isComplete) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP, isComplete);
-    }
-
-    /**
-     * Finalize the state of the FRE flow (mark is as "complete" and finalize parameters).
-     * @param syncConsentAccountName The account name for the pending sign-in request. (Or null)
-     * @param showAdvancedSyncSettings Whether the user selected to see the settings once signed in.
-     */
-    public static void finalizeFirstRunFlowState(
-            String syncConsentAccountName, boolean showAdvancedSyncSettings) {
-        FirstRunStatus.setFirstRunFlowComplete(true);
-        setFirstRunFlowSignInAccountName(syncConsentAccountName);
-        setFirstRunFlowSignInSetup(showAdvancedSyncSettings);
-    }
-
-    /**
-     * Allows the user to sign-in if there are no pending FRE sign-in requests.
-     */
-    public static void updateSigninManagerFirstRunCheckDone() {
-        SigninManager manager = IdentityServicesProvider.get().getSigninManager(
-                Profile.getLastUsedRegularProfile());
-        if (manager.isSyncOptInAllowed()) return;
-        if (!FirstRunStatus.getFirstRunFlowComplete()) return;
-        if (!getFirstRunFlowSignInComplete()) return;
-        manager.onFirstRunCheckDone();
     }
 }

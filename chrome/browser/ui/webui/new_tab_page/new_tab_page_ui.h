@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_NEW_TAB_PAGE_NEW_TAB_PAGE_UI_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/new_tab_page/modules/drive/drive.mojom.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos.mojom.h"
@@ -117,7 +118,7 @@ class NewTabPageUI
           pending_receiver);
 
   // Instantiates the implementor of the
-  // shopping_tasks::mojom::ShoppingTasksHandler mojo interface passing the
+  // recipe_tasks::mojom::RecipeTasksHandler mojo interface passing the
   // pending receiver that will be internally bound.
   void BindInterface(
       mojo::PendingReceiver<task_module::mojom::TaskModuleHandler>

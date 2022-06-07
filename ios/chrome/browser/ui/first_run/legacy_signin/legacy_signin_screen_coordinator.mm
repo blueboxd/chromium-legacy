@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
@@ -128,8 +129,11 @@
   self.viewController = [[LegacySigninScreenViewController alloc] init];
   self.viewController.delegate = self;
   PrefService* prefService = browserState->GetPrefs();
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState());
   self.viewController.enterpriseSignInRestrictions =
-      GetEnterpriseSignInRestrictions(prefService);
+      GetEnterpriseSignInRestrictions(authenticationService, prefService,
+                                      syncService);
 
   self.accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
@@ -276,12 +280,13 @@
 // the delegate to skip the rest of the FRE if |skipRemainingScreens| is YES, or
 // to continue the FRE.
 - (void)finishPresentingAndSkipRemainingScreens:(BOOL)skipRemainingScreens {
-  signin::IdentityManager* identityManager =
-      IdentityManagerFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-  RecordFirstRunSignInMetrics(identityManager, self.attemptStatus,
-                              self.hadIdentitiesAtStartup);
-
+  if (self.firstRun) {
+    signin::IdentityManager* identityManager =
+        IdentityManagerFactory::GetForBrowserState(
+            self.browser->GetBrowserState());
+    RecordFirstRunSignInMetrics(identityManager, self.attemptStatus,
+                                self.hadIdentitiesAtStartup);
+  }
   if (skipRemainingScreens) {
     [self.delegate skipAll];
   } else {

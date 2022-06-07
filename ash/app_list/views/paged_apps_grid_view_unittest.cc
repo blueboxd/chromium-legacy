@@ -11,11 +11,13 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/test/test_focus_change_listener.h"
 #include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/shell.h"
@@ -27,6 +29,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {
 namespace {
@@ -101,6 +105,26 @@ class PagedAppsGridViewTest : public PagedAppsGridViewTestBase {
  public:
   PagedAppsGridViewTest() {
     scoped_features_.InitAndEnableFeature(ash::features::kProductivityLauncher);
+  }
+
+  // Sorts app list with the specified order. If `wait` is true, wait for the
+  // reorder animation to complete.
+  void SortAppList(const absl::optional<AppListSortOrder>& order, bool wait) {
+    AppListController::Get()->UpdateAppListWithNewTemporarySortOrder(
+        order,
+        /*animate=*/true, /*update_position_closure=*/base::DoNothing());
+
+    if (!wait)
+      return;
+
+    base::RunLoop run_loop;
+    GetAppListTestHelper()
+        ->GetAppsContainerView()
+        ->apps_grid_view()
+        ->AddReorderCallbackForTest(base::BindRepeating(
+            &PagedAppsGridViewTest::OnReorderAnimationDone,
+            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
   base::test::ScopedFeatureList scoped_features_;
@@ -267,6 +291,113 @@ TEST_F(PagedAppsGridViewTest, DragItemToNextPage) {
   EXPECT_EQ(1, pagination_model->selected_page());
 }
 
+// Test that dragging an app item just above or just below the background card
+// of the selected page will trigger a page flip.
+TEST_F(PagedAppsGridViewTest, PageFlipBufferSizedByBackgroundCard) {
+  PaginationModel* pagination_model =
+      GetAppListTestHelper()->GetRootPagedAppsGridView()->pagination_model();
+
+  // Populate with enough apps to fill 2 pages.
+  GetAppListTestHelper()->AddAppItems(30);
+  EXPECT_EQ(2, pagination_model->total_pages());
+  GetPagedAppsGridView()->GetWidget()->LayoutRootViewIfNecessary();
+  auto page_flip_waiter = std::make_unique<PageFlipWaiter>(pagination_model);
+
+  // Drag down to the next page.
+  StartDragOnItemViewAtVisualIndex(0, 0);
+  GetEventGenerator()->MoveMouseBy(10, 10);
+
+  // Test that dragging an item to just past the bottom of the background card
+  // causes a page flip.
+  gfx::Point bottom_of_card = GetPagedAppsGridView()
+                                  ->GetBackgroundCardBoundsForTesting(0)
+                                  .bottom_left();
+  bottom_of_card.Offset(0, 1);
+  views::View::ConvertPointToScreen(GetPagedAppsGridView(), &bottom_of_card);
+  GetEventGenerator()->MoveMouseTo(bottom_of_card);
+  page_flip_waiter->Wait();
+  GetEventGenerator()->ReleaseLeftButton();
+
+  EXPECT_EQ(1, pagination_model->selected_page());
+
+  // Drag up to the previous page.
+  StartDragOnItemViewAtVisualIndex(1, 0);
+  GetEventGenerator()->MoveMouseBy(10, 10);
+
+  // Test that dragging an item to just past the top of the background card
+  // causes a page flip.
+  gfx::Point top_of_card =
+      GetPagedAppsGridView()->GetBackgroundCardBoundsForTesting(1).origin();
+  top_of_card.Offset(0, -1);
+  views::View::ConvertPointToScreen(GetPagedAppsGridView(), &top_of_card);
+  GetEventGenerator()->MoveMouseTo(top_of_card);
+  page_flip_waiter->Wait();
+  GetEventGenerator()->ReleaseLeftButton();
+
+  EXPECT_EQ(0, pagination_model->selected_page());
+}
+
+// Test that dragging an item to just past the top of the first page
+// background card does not cause a page flip.
+TEST_F(PagedAppsGridViewTest, NoPageFlipUpOnFirstPage) {
+  PaginationModel* pagination_model =
+      GetAppListTestHelper()->GetRootPagedAppsGridView()->pagination_model();
+
+  // Populate with enough apps to fill 2 pages.
+  GetAppListTestHelper()->AddAppItems(30);
+  EXPECT_EQ(2, pagination_model->total_pages());
+  GetPagedAppsGridView()->GetWidget()->LayoutRootViewIfNecessary();
+
+  StartDragOnItemViewAtVisualIndex(0, 0);
+  GetEventGenerator()->MoveMouseBy(10, 10);
+
+  // Drag an item to just past the top of the first page background card.
+  gfx::Point top_of_first_card =
+      GetPagedAppsGridView()->GetBackgroundCardBoundsForTesting(0).origin();
+  top_of_first_card.Offset(0, -1);
+
+  views::View::ConvertPointToScreen(GetPagedAppsGridView(), &top_of_first_card);
+  GetEventGenerator()->MoveMouseTo(top_of_first_card);
+  task_environment()->FastForwardBy(base::Seconds(2));
+  GetEventGenerator()->ReleaseLeftButton();
+
+  // Selected page should still be at the first page.
+  EXPECT_EQ(0, pagination_model->selected_page());
+}
+
+// Test that dragging an item to just past the bottom of the last background
+// card does not cause a page flip.
+TEST_F(PagedAppsGridViewTest, NoPageFlipDownOnLastPage) {
+  PaginationModel* pagination_model =
+      GetAppListTestHelper()->GetRootPagedAppsGridView()->pagination_model();
+
+  // Populate with enough apps to fill 2 pages.
+  GetAppListTestHelper()->AddAppItems(30);
+  EXPECT_EQ(2, pagination_model->total_pages());
+  GetPagedAppsGridView()->GetWidget()->LayoutRootViewIfNecessary();
+
+  // Select the last page.
+  pagination_model->SelectPage(pagination_model->total_pages() - 1, false);
+  EXPECT_EQ(1, pagination_model->selected_page());
+
+  StartDragOnItemViewAtVisualIndex(1, 0);
+  GetEventGenerator()->MoveMouseBy(10, 10);
+
+  // Drag an item to just past the bottom of the last background card.
+  gfx::Point bottom_of_last_card = GetPagedAppsGridView()
+                                       ->GetBackgroundCardBoundsForTesting(1)
+                                       .bottom_left();
+  bottom_of_last_card.Offset(0, 1);
+  views::View::ConvertPointToScreen(GetPagedAppsGridView(),
+                                    &bottom_of_last_card);
+  GetEventGenerator()->MoveMouseTo(bottom_of_last_card);
+  task_environment()->FastForwardBy(base::Seconds(2));
+  GetEventGenerator()->ReleaseLeftButton();
+
+  // Selected page should not have changed and should still be the last page.
+  EXPECT_EQ(1, pagination_model->selected_page());
+}
+
 // Test that the first page of the root level paged apps grid holds less apps to
 // accommodate the recent apps, which are shown at the top of the first page,
 // and the app list nudge, which is shown right above the apps grid view. Then
@@ -359,10 +490,10 @@ TEST_F(PagedAppsGridViewTest, SortAppsMakesA11yAnnouncement) {
         run_loop.Quit();
       }));
 
-  // Simulate sorting the apps.
-  container_view->UpdateForNewSortingOrder(AppListSortOrder::kNameAlphabetical,
-                                           /*animate=*/false,
-                                           /*update_position_closure=*/{});
+  // Simulate sorting the apps. Because `run_loop` waits for the a11y event,
+  // it is unnecessary to wait for app list sort.
+  SortAppList(AppListSortOrder::kNameAlphabetical, /*wait=*/false);
+
   run_loop.Run();
 
   // An alert fired with a message.
@@ -371,6 +502,67 @@ TEST_F(PagedAppsGridViewTest, SortAppsMakesA11yAnnouncement) {
   announcement_view->GetViewAccessibility().GetAccessibleNodeData(&node_data);
   EXPECT_EQ(node_data.GetStringAttribute(ax::mojom::StringAttribute::kName),
             "Apps are sorted by name");
+}
+
+// Verifies that sorting app list with an app item focused works as expected.
+TEST_F(PagedAppsGridViewTest, SortAppsWithItemFocused) {
+  ui::ScopedAnimationDurationScaleMode scope_duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Show an app list with enough apps to create multiple pages.
+  auto* helper = GetAppListTestHelper();
+  helper->AddAppItems(grid_test_api_->AppsOnPage(0) + 50);
+  helper->AddRecentApps(5);
+  helper->GetAppsContainerView()->ResetForShowApps();
+
+  PaginationModel* pagination_model =
+      helper->GetRootPagedAppsGridView()->pagination_model();
+  EXPECT_GT(pagination_model->total_pages(), 1);
+
+  AppsContainerView* container_view = helper->GetAppsContainerView();
+  AppListToastContainerView* reorder_undo_toast_container =
+      container_view->toast_container_for_test();
+  EXPECT_FALSE(reorder_undo_toast_container->is_toast_visible());
+
+  SortAppList(AppListSortOrder::kNameAlphabetical, /*wait=*/true);
+
+  // After sorting, the undo toast should be visible.
+  EXPECT_TRUE(reorder_undo_toast_container->is_toast_visible());
+
+  views::View* first_item =
+      grid_test_api_->GetViewAtVisualIndex(/*page=*/0, /*slot=*/0);
+  first_item->RequestFocus();
+
+  // Install the focus listener before reorder.
+  TestFocusChangeListener listener(
+      helper->GetRootPagedAppsGridView()->GetFocusManager());
+
+  // Wait until the fade out animation ends.
+  {
+    AppListController::Get()->UpdateAppListWithNewTemporarySortOrder(
+        AppListSortOrder::kColor,
+        /*animate=*/true, /*update_position_closure=*/base::DoNothing());
+
+    base::RunLoop run_loop;
+    container_view->apps_grid_view()->AddFadeOutAnimationDoneClosureForTest(
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Verify that the reorder undo toast's layer opacity does not change.
+  EXPECT_EQ(1.f, reorder_undo_toast_container->layer()->opacity());
+
+  // Verify that the focus moves twice. It first goes to the search box during
+  // the animation and then the undo button on the undo toast after the end of
+  // animation.
+  EXPECT_EQ(2, listener.focus_change_count());
+  EXPECT_FALSE(first_item->HasFocus());
+  EXPECT_TRUE(reorder_undo_toast_container->GetToastButton()->HasFocus());
+
+  // Simulate the sort undo by setting the new order to nullopt. The focus
+  // should be on the search box after undoing the sort.
+  SortAppList(absl::nullopt, /*wait=*/true);
+  EXPECT_TRUE(helper->GetSearchBoxView()->search_box()->HasFocus());
 }
 
 // Verify on the paged apps grid the undo toast should show after scrolling.
@@ -395,17 +587,7 @@ TEST_F(PagedAppsGridViewTest, ScrollToShowUndoToastWhenSorting) {
       container_view->toast_container_for_test();
   EXPECT_FALSE(reorder_undo_toast_container->is_toast_visible());
 
-  {
-    container_view->UpdateForNewSortingOrder(
-        AppListSortOrder::kNameAlphabetical,
-        /*animate=*/true, /*update_position_closure=*/base::DoNothing());
-
-    base::RunLoop run_loop;
-    container_view->apps_grid_view()->AddReorderCallbackForTest(
-        base::BindRepeating(&PagedAppsGridViewTest::OnReorderAnimationDone,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-  }
+  SortAppList(AppListSortOrder::kNameAlphabetical, /*wait=*/true);
 
   // After sorting, the undo toast should be visible.
   EXPECT_TRUE(reorder_undo_toast_container->is_toast_visible());
@@ -419,17 +601,7 @@ TEST_F(PagedAppsGridViewTest, ScrollToShowUndoToastWhenSorting) {
   EXPECT_FALSE(apps_container_screen_bounds.Contains(
       reorder_undo_toast_container->GetBoundsInScreen()));
 
-  {
-    container_view->UpdateForNewSortingOrder(
-        AppListSortOrder::kColor,
-        /*animate=*/true, /*update_position_closure=*/base::DoNothing());
-
-    base::RunLoop run_loop;
-    container_view->apps_grid_view()->AddReorderCallbackForTest(
-        base::BindRepeating(&PagedAppsGridViewTest::OnReorderAnimationDone,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-  }
+  SortAppList(AppListSortOrder::kColor, /*wait=*/true);
 
   // After sorting, the undo toast should still be visible.
   EXPECT_TRUE(reorder_undo_toast_container->is_toast_visible());

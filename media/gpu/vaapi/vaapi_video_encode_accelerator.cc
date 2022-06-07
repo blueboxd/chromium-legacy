@@ -24,7 +24,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,7 +34,6 @@
 #include "media/base/format_utils.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/base/media_util.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
@@ -141,6 +139,9 @@ struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
   const off_t offset;
 };
 
+// static
+base::AtomicRefCount VaapiVideoEncodeAccelerator::num_instances_(0);
+
 VideoEncodeAccelerator::SupportedProfiles
 VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
   if (IsConfiguredForTesting())
@@ -149,7 +150,8 @@ VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
 }
 
 VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
-    : output_buffer_byte_size_(0),
+    : can_use_encoder_(num_instances_.Increment() < kMaxNumOfInstances),
+      output_buffer_byte_size_(0),
       state_(kUninitialized),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       // TODO(akahuang): Change to use SequencedTaskRunner to see if the
@@ -175,22 +177,25 @@ VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
 VaapiVideoEncodeAccelerator::~VaapiVideoEncodeAccelerator() {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
+
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
+
+  num_instances_.Decrement();
 }
 
 bool VaapiVideoEncodeAccelerator::Initialize(
     const Config& config,
     Client* client,
-
     std::unique_ptr<MediaLog> media_log) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
   DCHECK_EQ(state_, kUninitialized);
   VLOGF(2) << "Initializing VAVEA, " << config.AsHumanReadableString();
 
-  // NullMediaLog silently and safely does nothing.
-  if (!media_log)
-    media_log = std::make_unique<media::NullMediaLog>();
+  if (!can_use_encoder_) {
+    MEDIA_LOG(ERROR, media_log.get()) << "Too many encoders are allocated";
+    return false;
+  }
 
   if (AttemptedInitialization()) {
     MEDIA_LOG(ERROR, media_log.get())

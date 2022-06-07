@@ -269,6 +269,7 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   company_.set_profile(this);
   phone_number_ = profile.phone_number_;
   phone_number_.set_profile(this);
+  birthdate_ = profile.birthdate_;
 
   address_ = profile.address_;
   set_language_code(profile.language_code());
@@ -319,10 +320,20 @@ void AutofillProfile::GetMatchingTypes(
 
 std::u16string AutofillProfile::GetRawInfo(ServerFieldType type) const {
   const FormGroup* form_group = FormGroupForType(AutofillType(type));
-  if (!form_group)
+  if (!form_group) {
+    NOTREACHED();
     return std::u16string();
-
+  }
   return form_group->GetRawInfo(type);
+}
+
+int AutofillProfile::GetRawInfoAsInt(ServerFieldType type) const {
+  const FormGroup* form_group = FormGroupForType(AutofillType(type));
+  if (!form_group) {
+    NOTREACHED();
+    return 0;
+  }
+  return form_group->GetRawInfoAsInt(type);
 }
 
 void AutofillProfile::SetRawInfoWithVerificationStatus(
@@ -330,9 +341,23 @@ void AutofillProfile::SetRawInfoWithVerificationStatus(
     const std::u16string& value,
     VerificationStatus status) {
   FormGroup* form_group = MutableFormGroupForType(AutofillType(type));
-  if (form_group) {
-    form_group->SetRawInfoWithVerificationStatus(type, value, status);
+  if (!form_group) {
+    NOTREACHED();
+    return;
   }
+  form_group->SetRawInfoWithVerificationStatus(type, value, status);
+}
+
+void AutofillProfile::SetRawInfoAsIntWithVerificationStatus(
+    ServerFieldType type,
+    int value,
+    VerificationStatus status) {
+  FormGroup* form_group = MutableFormGroupForType(AutofillType(type));
+  if (!form_group) {
+    NOTREACHED();
+    return;
+  }
+  form_group->SetRawInfoAsIntWithVerificationStatus(type, value, status);
 }
 
 void AutofillProfile::GetSupportedTypes(
@@ -659,6 +684,7 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
   CompanyInfo company(this);
   PhoneNumber phone_number(this);
   Address address;
+  Birthdate birthdate;
 
   DVLOG(1) << "Merging profiles:\nSource = " << profile << "\nDest = " << *this;
 
@@ -672,7 +698,8 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
       !comparator.MergeEmailAddresses(profile, *this, email) ||
       !comparator.MergeCompanyNames(profile, *this, company) ||
       !comparator.MergePhoneNumbers(profile, *this, phone_number) ||
-      !comparator.MergeAddresses(profile, *this, address)) {
+      !comparator.MergeAddresses(profile, *this, address) ||
+      !comparator.MergeBirthdates(profile, *this, birthdate)) {
     NOTREACHED();
     return false;
   }
@@ -720,6 +747,11 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
 
   if (address_ != address) {
     address_ = address;
+    modified = true;
+  }
+
+  if (birthdate_ != birthdate) {
+    birthdate_ = birthdate;
     modified = true;
   }
 
@@ -1068,11 +1100,13 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
     case FieldTypeGroup::kAddressBilling:
       return &address_;
 
+    case FieldTypeGroup::kBirthdateField:
+      return &birthdate_;
+
     case FieldTypeGroup::kNoGroup:
     case FieldTypeGroup::kCreditCard:
     case FieldTypeGroup::kPasswordField:
     case FieldTypeGroup::kUsernameField:
-    case FieldTypeGroup::kBirthdateField:
     case FieldTypeGroup::kTransaction:
     case FieldTypeGroup::kUnfillable:
       return nullptr;

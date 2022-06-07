@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/time/time.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/global_routing_id.h"
@@ -16,7 +17,6 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
-#include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/use_counter/use_counter_feature.h"
@@ -205,7 +205,9 @@ struct ExtraRequestCompleteInfo {
 };
 
 // Interface for PageLoadMetrics observers. All instances of this class are
-// owned by the PageLoadTracker tracking a page load.
+// owned by the PageLoadTracker tracking a page load. The page would be a
+// primary page, Prerendering page, FencedFrames page, or pages for new other
+// features based on MPArch.
 class PageLoadMetricsObserver {
  public:
   // ObservePolicy is used as a return value on some PageLoadMetricsObserver
@@ -250,6 +252,16 @@ class PageLoadMetricsObserver {
                                 const GURL& currently_committed_url,
                                 bool started_in_foreground);
 
+  // For FencedFrames pages, OnFencedFramesStart is called instead of OnStart.
+  // The default implementation returns STOP_OBSERVING, so that observers that
+  // are not aware of FencedFrames will not mix FencedFrames metrics into the
+  // existing reports. FencedFrames will show different characteristics as it's
+  // content is likely a subframe rather than a main frame.
+  // TODO(crbug.com/1301880): FencedFrames support is still in progress.
+  virtual ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url);
+
   // For prerendered pages, OnPrerenderStart is called instead of OnStart. The
   // default implementation returns STOP_OBSERVING, so that observers that are
   // not aware of prerender will not see prerendered page loads.
@@ -272,8 +284,7 @@ class PageLoadMetricsObserver {
   // reference to it.
   // Observers that return STOP_OBSERVING will not receive any additional
   // callbacks, and will be deleted after invocation of this method returns.
-  virtual ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
-                                 ukm::SourceId source_id);
+  virtual ObservePolicy OnCommit(content::NavigationHandle* navigation_handle);
 
   // OnDidInternalNavigationAbort is triggered when the main frame navigation
   // aborts with HTTP responses that don't commit, such as HTTP 204 responses

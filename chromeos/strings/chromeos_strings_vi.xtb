@@ -114,7 +114,6 @@
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Thử lại</translation>
 <translation id="2161394479394250669">Hủy lệnh in</translation>
 <translation id="2180197493692062006">Đã xảy ra lỗi. Hãy thử mở lại ứng dụng.</translation>
-<translation id="2201770616342964496">Thông tin nhận dạng cục bộ</translation>
 <translation id="2209788852729124853">Đặt lại Bộ đếm lưu lượng truy cập</translation>
 <translation id="2212733584906323460">Độ phân giải tên</translation>
 <translation id="2217935453350629363">Tốc độ hiện tại</translation>
@@ -130,6 +129,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Bật Bluetooth để khám phá các thiết bị lân cận</translation>
 <translation id="2346474577291266260">Tuyệt vời (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2363636958541445404">Bật tính năng này để lựa chọn trình bảo vệ màn hình</translation>
 <translation id="2364498172489649528">Đã đạt</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Gửi báo cáo phản hồi</translation>
@@ -216,6 +216,7 @@
 <translation id="3595596368722241419">Pin đầy</translation>
 <translation id="3600339377155080675">Phản chiếu lên màn hình</translation>
 <translation id="3603829704940252505">Hình đại diện</translation>
+<translation id="3604713164406837697">Thay đổi hình nền</translation>
 <translation id="360565022852130722">Mạng Wi-Fi được bảo mật bằng giao thức yếu WEP 802.1x</translation>
 <translation id="3606583719724308068">Đường kết nối đến các trang web HTTPS có độ trễ cao</translation>
 <translation id="3632579075709132555">Bật/tắt Màn hình bảo vệ quyền riêng tư</translation>
@@ -226,6 +227,7 @@
 <translation id="3748026146096797577">Chưa được kết nối</translation>
 <translation id="3749289110408117711">Tên tệp</translation>
 <translation id="3771294271822695279">Tệp video</translation>
+<translation id="3784455785234192852">Khóa</translation>
 <translation id="38114475217616659">Xóa toàn bộ lịch sử</translation>
 <translation id="3820172043799983114">Mã PIN không hợp lệ.</translation>
 <translation id="3838338534323494292">Mật khẩu mới</translation>
@@ -260,6 +262,7 @@
 <translation id="4170180284036919717">Chụp ảnh</translation>
 <translation id="4170700058716978431">KHÔNG THÀNH CÔNG</translation>
 <translation id="4176463684765177261">Đã tắt</translation>
+<translation id="4176659219503619100">Bảng điều khiển</translation>
 <translation id="4213104098953699324">Bàn phím USB</translation>
 <translation id="4227825898293920515">Mật khẩu sẽ hết hạn sau <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Không có lệnh in nào đang xử lý</translation>
@@ -303,7 +306,6 @@
 <translation id="4593212453765072419">Yêu cầu xác thực proxy</translation>
 <translation id="4609350030397390689">Giảm độ sáng đèn bàn phím</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" />. Hãy nhấn để hủy lệnh in.</translation>
-<translation id="4627645661474370390">Thông tin nhận dạng từ xa</translation>
 <translation id="463791356324567266">Đang hủy quá trình quét...</translation>
 <translation id="4646949265910132906">Kết nối Wi-Fi an toàn</translation>
 <translation id="4650608062294027130">Nút Shift phải</translation>
@@ -320,6 +322,7 @@
 <translation id="4773299976671772492">Đã dừng</translation>
 <translation id="4782311465517282004">Xem định nghĩa, bản dịch hoặc kết quả chuyển đổi đơn vị bằng cách nhấp chuột phải hoặc chạm và giữ văn bản</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> ảnh</translation>
+<translation id="4793710386569335688">Để được trợ giúp thêm, hãy truy cập <ph name="BEGIN_LINK" />Trung tâm trợ giúp<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Thuật toán nén</translation>
 <translation id="4794140124556169553">Việc chạy quá trình kiểm tra CPU có thể ảnh hưởng đến hiệu suất của hệ thống</translation>
 <translation id="4808449224298348341">Đã hủy lệnh in <ph name="DOCUMENT_TITLE" /></translation>
@@ -412,6 +415,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5669267381087807207">Đang kích hoạt</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Gia đình</translation>
+<translation id="5695599963893094957">Nhấn phím bất kỳ trên bàn phím. Bạn có thể nhấn tối đa 4 phím cùng lúc.</translation>
 <translation id="5701381305118179107">Giữa</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Cập nhật <ph name="DEVICE_NAME" /></translation>
@@ -424,6 +428,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5843706793424741864">Độ F</translation>
 <translation id="5849570051105887917">Mã của nhà cung cấp Home</translation>
 <translation id="5860033963881614850">Tắt</translation>
+<translation id="5860491529813859533">Bật</translation>
 <translation id="5866840822086176774">Rất mạnh</translation>
 <translation id="588258955323874662">Toàn màn hình</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
@@ -472,6 +477,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6348738456043757611">Tên người dùng và mật khẩu</translation>
 <translation id="636850387210749493">Đăng ký doanh nghiệp</translation>
 <translation id="6379086450106841622">Màn hình cảm ứng</translation>
+<translation id="6381741036071372448">Kiểm tra bàn phím</translation>
 <translation id="6388847657025262518">Khay nạp tài liệu của máy quét bị kẹt. Hãy kiểm tra khay nạp rồi thử lại.</translation>
 <translation id="6410257289063177456">Tệp hình ảnh</translation>
 <translation id="641081527798843608">Khớp với chủ đề</translation>

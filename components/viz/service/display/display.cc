@@ -172,10 +172,11 @@ gfx::RectF GetOccludingRectForRRectF(const gfx::RRectF& bounds) {
   // Get a bounding rect that does not intersect with the rounding clip.
   // When a rect has rounded corner with radius r, then the largest rect that
   // can be inscribed inside it has an inset of |((2 - sqrt(2)) / 2) * radius|.
-  occluding_rect.Inset(std::max(top_left, lower_left) * 0.3f,
-                       std::max(top_left, top_right) * 0.3f,
-                       std::max(top_right, lower_right) * 0.3f,
-                       std::max(lower_right, lower_left) * 0.3f);
+  occluding_rect.Inset(
+      gfx::InsetsF::TLBR(std::max(top_left, top_right) * 0.3f,
+                         std::max(top_left, lower_left) * 0.3f,
+                         std::max(lower_right, lower_left) * 0.3f,
+                         std::max(top_right, lower_right) * 0.3f));
   return occluding_rect;
 }
 
@@ -679,8 +680,7 @@ void VisualDebuggerSync(gfx::OverlayTransform current_display_transform,
 
 }  // namespace
 
-bool Display::DrawAndSwap(base::TimeTicks frame_time,
-                          base::TimeTicks expected_display_time) {
+bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   TRACE_EVENT0("viz", "Display::DrawAndSwap");
   if (debug_settings_->show_aggregated_damage !=
       aggregator_->HasFrameAnnotator()) {
@@ -700,6 +700,15 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
   if (!output_surface_) {
     TRACE_EVENT_INSTANT0("viz", "No output surface", TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
+
+  if (params.max_pending_swaps >= 0 && skia_output_surface_ &&
+      skia_output_surface_->capabilities()
+          .supports_dynamic_frame_buffer_allocation) {
+    if (skia_output_surface_->EnsureMinNumberOfBuffers(
+            params.max_pending_swaps + 1)) {
+      renderer_->ReallocatedFrameBuffers();
+    }
   }
 
   gfx::OverlayTransform current_display_transform = gfx::OVERLAY_TRANSFORM_NONE;
@@ -748,8 +757,9 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
     target_damage_bounding_rect.Union(
         renderer_->GetDelegatedInkTrailDamageRect());
     frame = aggregator_->Aggregate(
-        current_surface_id_, expected_display_time, current_display_transform,
-        target_damage_bounding_rect, ++swapped_trace_id_);
+        current_surface_id_, params.expected_display_time,
+        current_display_transform, target_damage_bounding_rect,
+        ++swapped_trace_id_);
 
     // Dump aggregated frame (will dump render passes and draw quads) if run
     // with: --vmodule=display=3
@@ -918,7 +928,7 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
         thread_ids.insert(surface_thread_ids.begin(), surface_thread_ids.end());
       }
     }
-    presentation_group_timing.OnDraw(frame_time, draw_timer->Begin(),
+    presentation_group_timing.OnDraw(params.frame_time, draw_timer->Begin(),
                                      std::move(thread_ids));
 
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
@@ -1190,11 +1200,6 @@ base::TimeDelta Display::GetEstimatedDisplayDrawTime(base::TimeDelta interval,
         kMinEstimatedDisplayDrawTime, default_estimate);
   }
   return default_estimate;
-}
-
-void Display::OnObservingBeginFrameSourceChanged(bool observing) {
-  if (skia_output_surface_)
-    skia_output_surface_->OnObservingBeginFrameSourceChanged(observing);
 }
 
 const SurfaceId& Display::CurrentSurfaceId() const {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/trees/effect_node.h"
+#include "base/notreached.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/property_tree.h"
@@ -43,7 +44,8 @@ EffectNode::EffectNode()
       target_id(1),
       closest_ancestor_with_cached_render_surface_id(-1),
       closest_ancestor_with_copy_request_id(-1),
-      closest_ancestor_being_captured_id(-1) {}
+      closest_ancestor_being_captured_id(-1),
+      closest_ancestor_with_shared_element_id(-1) {}
 
 EffectNode::EffectNode(const EffectNode& other) = default;
 
@@ -99,7 +101,9 @@ bool EffectNode::operator==(const EffectNode& other) const {
          closest_ancestor_with_copy_request_id ==
              other.closest_ancestor_with_copy_request_id &&
          closest_ancestor_being_captured_id ==
-             other.closest_ancestor_being_captured_id;
+             other.closest_ancestor_being_captured_id &&
+         closest_ancestor_with_shared_element_id ==
+             other.closest_ancestor_with_shared_element_id;
 }
 #endif  // DCHECK_IS_ON()
 
@@ -131,6 +135,8 @@ const char* RenderSurfaceReasonToString(RenderSurfaceReason reason) {
       return "backdrop filter animation";
     case RenderSurfaceReason::kRoundedCorner:
       return "rounded corner";
+    case RenderSurfaceReason::kGradientMask:
+      return "gradient mask";
     case RenderSurfaceReason::kClipPath:
       return "clip path";
     case RenderSurfaceReason::kClipAxisAlignment:
@@ -180,6 +186,10 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
           mask_filter_info.rounded_corner_bounds(), value);
       value->SetBoolean("mask_filter_is_fast_rounded_corner",
                         is_fast_rounded_corner);
+    }
+    if (mask_filter_info.HasGradientMask()) {
+      MathUtil::AddToTracedValue("mask_filter_gradient_mask",
+                                 mask_filter_info.gradient_mask(), value);
     }
   }
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));

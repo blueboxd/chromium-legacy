@@ -263,22 +263,22 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
  public:
   void SetUp() override {
     ScrollbarsTest::SetUp();
-    WebView().Scheduler()->EnableVirtualTime(base::Time());
+    GetVirtualTimeController()->EnableVirtualTime(base::Time());
   }
 
   void TearDown() override {
-    WebView().Scheduler()->DisableVirtualTimeForTesting();
+    GetVirtualTimeController()->DisableVirtualTimeForTesting();
     ScrollbarsTest::TearDown();
   }
 
   void TimeAdvance() {
-    WebView().Scheduler()->SetVirtualTimePolicy(
-        PageScheduler::VirtualTimePolicy::kAdvance);
+    GetVirtualTimeController()->SetVirtualTimePolicy(
+        VirtualTimeController::VirtualTimePolicy::kAdvance);
   }
 
   void StopVirtualTimeAndExitRunLoop() {
-    WebView().Scheduler()->SetVirtualTimePolicy(
-        PageScheduler::VirtualTimePolicy::kPause);
+    GetVirtualTimeController()->SetVirtualTimePolicy(
+        VirtualTimeController::VirtualTimePolicy::kPause);
     test::ExitRunLoop();
   }
 
@@ -293,6 +293,10 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
             WTF::Unretained(this)),
         delay);
     test::EnterRunLoop();
+  }
+
+  VirtualTimeController* GetVirtualTimeController() {
+    return WebView().Scheduler()->GetVirtualTimeController();
   }
 };
 
@@ -350,9 +354,8 @@ TEST_P(ScrollbarsTest, ScrollbarsUpdatedOnOverlaySettingsChange) {
   EXPECT_FALSE(layout_viewport->VerticalScrollbar()->IsOverlayScrollbar());
 }
 
-TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeForUseZoomDSF) {
+TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeF) {
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform;
-  platform->SetUseZoomForDSF(true);
   frame_test_helpers::WebViewHelper web_view_helper;
   // Needed so visual viewport supplies its own scrollbars. We don't support
   // this setting changing after initialization, so we must set it through

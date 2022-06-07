@@ -21,10 +21,9 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId HIDDetectionView::kScreenId;
 
-HIDDetectionScreenHandler::HIDDetectionScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.HIDDetectionScreen.userActed");
+HIDDetectionScreenHandler::HIDDetectionScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.HIDDetectionScreen.userActed");
 }
 
 HIDDetectionScreenHandler::~HIDDetectionScreenHandler() {
@@ -33,12 +32,12 @@ HIDDetectionScreenHandler::~HIDDetectionScreenHandler() {
 }
 
 void HIDDetectionScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
 
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void HIDDetectionScreenHandler::Hide() {
@@ -46,14 +45,14 @@ void HIDDetectionScreenHandler::Hide() {
 
 void HIDDetectionScreenHandler::Bind(HIDDetectionScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
-  if (page_is_ready())
-    Initialize();
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
+  if (IsJavascriptAllowed())
+    InitializeDeprecated();
 }
 
 void HIDDetectionScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void HIDDetectionScreenHandler::SetKeyboardState(const std::string& value) {
@@ -166,7 +165,7 @@ void HIDDetectionScreenHandler::HandleEmulateDevicesConnectedForTesting() {
   screen_->InputDeviceAddedForTesting(std::move(keyboard));  // IN-TEST
 }
 
-void HIDDetectionScreenHandler::Initialize() {
+void HIDDetectionScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;

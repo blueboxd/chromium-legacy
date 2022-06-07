@@ -85,6 +85,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/google_api_keys.h"
@@ -225,6 +226,16 @@ class TestTabHelperObserver : public PrefetchProxyTabHelper::Observer {
     on_nsp_finished_closure_ = std::move(closure);
   }
 
+  void SetOnCookiesChangedForPrefetchAfterInitialCheckClosure(
+      base::OnceClosure closure) {
+    on_cookies_changed_after_initial_check_ = std::move(closure);
+  }
+
+  void SetExpectedURLCookiesChangedForPrefetchAfterInitialCheck(
+      const GURL& url) {
+    expected_url_cookies_changed_after_initial_check_ = url;
+  }
+
   // PrefetchProxyTabHelper::Observer:
   void OnDecoyPrefetchCompleted(const GURL& url) override {
     if (on_decoy_prefetch_closure_) {
@@ -269,6 +280,16 @@ class TestTabHelperObserver : public PrefetchProxyTabHelper::Observer {
     }
   }
 
+  void OnCookiesChangedForPrefetchAfterInitialCheck(const GURL& url) override {
+    if (url != expected_url_cookies_changed_after_initial_check_)
+      return;
+
+    if (!on_cookies_changed_after_initial_check_)
+      return;
+
+    std::move(on_cookies_changed_after_initial_check_).Run();
+  }
+
  private:
   raw_ptr<PrefetchProxyTabHelper> tab_helper_;
 
@@ -281,6 +302,9 @@ class TestTabHelperObserver : public PrefetchProxyTabHelper::Observer {
   std::set<std::pair<GURL, int>> expected_prefetch_errors_;
 
   base::OnceClosure on_nsp_finished_closure_;
+
+  base::OnceClosure on_cookies_changed_after_initial_check_;
+  GURL expected_url_cookies_changed_after_initial_check_;
 };
 
 // A stub ClientCertStore that returns a FakeClientCertIdentity.
@@ -532,8 +556,6 @@ class PrefetchProxyBrowserTest
     cmd->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                            "SpeculationRulesPrefetchProxy");
   }
-
-  void ResetFeatureList() { scoped_feature_list_.Reset(); }
 
   content::WebContents* GetWebContents() const {
     return browser()->tab_strip_model()->GetActiveWebContents();
@@ -1274,22 +1296,29 @@ IN_PROC_BROWSER_TEST_F(
 
   TestTabHelperObserver tab_helper_observer(tab_helper);
   tab_helper_observer.SetExpectedSuccessfulURLs({prefetch_url});
+  tab_helper_observer.SetExpectedURLCookiesChangedForPrefetchAfterInitialCheck(
+      prefetch_url);
 
-  base::RunLoop run_loop;
-  tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
+  base::RunLoop prefetch_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
 
   GURL doc_url("https://www.google.com/search?q=test");
   MakeNavigationPrediction(doc_url, {prefetch_url});
 
-  run_loop.Run();
+  prefetch_run_loop.Run();
 
   EXPECT_EQ(1U, tab_helper->srp_metrics().predicted_urls_count_);
   EXPECT_EQ(1U, tab_helper->srp_metrics().prefetch_eligible_count_);
   EXPECT_EQ(1U, tab_helper->srp_metrics().prefetch_successful_count_);
 
+  base::RunLoop cookie_run_loop;
+  tab_helper_observer.SetOnCookiesChangedForPrefetchAfterInitialCheckClosure(
+      cookie_run_loop.QuitClosure());
+
   ASSERT_TRUE(content::SetCookie(browser()->profile(), GetOriginServerURL("/"),
                                  "cookietype=Oatmeal"));
-  base::RunLoop().RunUntilIdle();
+  cookie_run_loop.Run();
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), prefetch_url));
 
@@ -1521,30 +1550,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
                   BuildPrefetchResourceMatchers(expected_entries)))
       << ActualHumanReadableMetricsToDebugString(actual_entries);
 
-  // This bit mask records which links were eligible for prefetching with
-  // respect to their order in the navigation prediction. The LSB corresponds to
-  // the first index in the prediction, and is set if that url was eligible.
-  // Given the above URLs, they map to each bit accordingly:
-  //
-  // Note: The only difference between eligible and non-eligible urls is the
-  // scheme.
-  //
-  //  (eligible)                           https://a.test/1
-  //  (eligible)                        https://a.test/2  |
-  //  (not eligible)        http://not-eligible.com/1  |  |
-  //  (not eligible)     http://not-eligible.com/2  |  |  |
-  //  (not eligible)  http://not-eligible.com/3  |  |  |  |
-  //  (eligible)            https://a.test/3  |  |  |  |  |
-  //                                       |  |  |  |  |  |
-  //                                       V  V  V  V  V  V
-  // int64_t expected_bitmask =        0b  1  0  0  0  1  1;
-
-  constexpr int64_t expected_bitmask = 0b100011;
-
-  VerifyUKMOnSRP(
-      starting_page,
-      ukm::builders::PrefetchProxy::kordered_eligible_pages_bitmaskName,
-      expected_bitmask);
   VerifyUKMOnSRP(starting_page,
                  ukm::builders::PrefetchProxy::kprefetch_eligible_countName, 3);
   VerifyUKMOnSRP(starting_page,
@@ -1753,9 +1758,6 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), prefetch_404_url));
   base::RunLoop().RunUntilIdle();
 
-  VerifyUKMOnSRP(
-      starting_page,
-      ukm::builders::PrefetchProxy::kordered_eligible_pages_bitmaskName, 0b01);
   VerifyUKMOnSRP(starting_page,
                  ukm::builders::PrefetchProxy::kprefetch_eligible_countName, 1);
   VerifyUKMOnSRP(starting_page,
@@ -1828,9 +1830,6 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), link_not_on_srp));
   base::RunLoop().RunUntilIdle();
 
-  VerifyUKMOnSRP(
-      starting_page,
-      ukm::builders::PrefetchProxy::kordered_eligible_pages_bitmaskName, 0b01);
   VerifyUKMOnSRP(starting_page,
                  ukm::builders::PrefetchProxy::kprefetch_eligible_countName, 1);
   VerifyUKMOnSRP(starting_page,
@@ -1891,9 +1890,6 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), ineligible_link));
   base::RunLoop().RunUntilIdle();
 
-  VerifyUKMOnSRP(
-      starting_page,
-      ukm::builders::PrefetchProxy::kordered_eligible_pages_bitmaskName, 0b00);
   VerifyUKMOnSRP(starting_page,
                  ukm::builders::PrefetchProxy::kprefetch_eligible_countName, 0);
   VerifyUKMOnSRP(starting_page,
@@ -1969,9 +1965,6 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), eligible_link_2));
   base::RunLoop().RunUntilIdle();
 
-  VerifyUKMOnSRP(
-      starting_page,
-      ukm::builders::PrefetchProxy::kordered_eligible_pages_bitmaskName, 0b11);
   VerifyUKMOnSRP(starting_page,
                  ukm::builders::PrefetchProxy::kprefetch_eligible_countName, 2);
   VerifyUKMOnSRP(starting_page,
@@ -4313,10 +4306,7 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
 
 class PrefetchProxyPrerenderBrowserTest : public PrefetchProxyBrowserTest {
  public:
-  PrefetchProxyPrerenderBrowserTest()
-      : prerender_test_helper_(base::BindRepeating(
-            &PrefetchProxyPrerenderBrowserTest::GetWebContents,
-            base::Unretained(this))) {}
+  PrefetchProxyPrerenderBrowserTest() = default;
   ~PrefetchProxyPrerenderBrowserTest() override = default;
   PrefetchProxyPrerenderBrowserTest(const PrefetchProxyPrerenderBrowserTest&) =
       delete;
@@ -4324,21 +4314,27 @@ class PrefetchProxyPrerenderBrowserTest : public PrefetchProxyBrowserTest {
   PrefetchProxyPrerenderBrowserTest& operator=(
       const PrefetchProxyPrerenderBrowserTest&) = delete;
 
-  void TearDown() override { PrefetchProxyBrowserTest::ResetFeatureList(); }
-
-  void SetUp() override {
-    prerender_test_helper_.SetUp(embedded_test_server());
-    PrefetchProxyBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
+    prerender_test_helper_->SetUp(embedded_test_server());
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     PrefetchProxyBrowserTest::SetUpOnMainThread();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PrefetchProxyBrowserTest::SetUpCommandLine(command_line);
+    // |prerender_test_helper_| has a ScopedFeatureList so we needed to delay
+    // its creation until now because PrefetchProxyBrowserTest also uses a
+    // ScopedFeatureList and initialization order matters.
+    prerender_test_helper_ =
+        std::make_unique<content::test::PrerenderTestHelper>(
+            base::BindRepeating(
+                &PrefetchProxyPrerenderBrowserTest::GetWebContents,
+                base::Unretained(this)));
+  }
+
   content::test::PrerenderTestHelper& prerender_test_helper() {
-    return prerender_test_helper_;
+    return *prerender_test_helper_;
   }
 
   content::WebContents* GetWebContents() {
@@ -4346,7 +4342,7 @@ class PrefetchProxyPrerenderBrowserTest : public PrefetchProxyBrowserTest {
   }
 
  private:
-  content::test::PrerenderTestHelper prerender_test_helper_;
+  std::unique_ptr<content::test::PrerenderTestHelper> prerender_test_helper_;
 };
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyPrerenderBrowserTest,
@@ -4392,6 +4388,84 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyPrerenderBrowserTest,
 
   // Check if the prefetched URL is different from the prerendered frame.
   EXPECT_NE(tab_helper->after_srp_metrics()->url_, prerender_render_frame_url);
+}
+
+class PrefetchProxyFencedFrameBrowserTest : public PrefetchProxyBrowserTest {
+ public:
+  PrefetchProxyFencedFrameBrowserTest() = default;
+  ~PrefetchProxyFencedFrameBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    PrefetchProxyBrowserTest::SetUpOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PrefetchProxyBrowserTest::SetUpCommandLine(command_line);
+    // |fenced_frame_helper_| has a ScopedFeatureList so we needed to delay
+    // its creation until now because PrefetchProxyBrowserTest also uses a
+    // ScopedFeatureList and initialization order matters.
+    fenced_frame_helper_ =
+        std::make_unique<content::test::FencedFrameTestHelper>();
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  content::test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return *fenced_frame_helper_;
+  }
+
+ private:
+  std::unique_ptr<content::test::FencedFrameTestHelper> fenced_frame_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(PrefetchProxyFencedFrameBrowserTest,
+                       EnsureFencedFrameDoesNotAffectPrefetchProxyTabHelper) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
+  WaitForUpdatedCustomProxyConfig();
+
+  ASSERT_TRUE(content::SetCookie(browser()->profile(), GURL("https://foo.com"),
+                                 "type=PeanutButter"));
+
+  GURL initial_url = embedded_test_server()->GetURL("/empty.html");
+  ASSERT_NE(ui_test_utils::NavigateToURL(browser(), initial_url), nullptr);
+
+  PrefetchProxyTabHelper* tab_helper =
+      PrefetchProxyTabHelper::FromWebContents(GetWebContents());
+
+  // Create a fenced frame to check if it affects on the prefetch proxy.
+  GURL fenced_frame_url(
+      embedded_test_server()->GetURL("/fenced_frames/title1.html"));
+  content::RenderFrameHost* fenced_frame_host =
+      fenced_frame_test_helper().CreateFencedFrame(
+          GetWebContents()->GetMainFrame(), fenced_frame_url);
+  ASSERT_TRUE(fenced_frame_host);
+  ASSERT_EQ(fenced_frame_url, fenced_frame_host->GetLastCommittedURL());
+
+  ASSERT_FALSE(tab_helper->after_srp_metrics());
+  EXPECT_EQ(0U, tab_helper->srp_metrics().predicted_urls_count_);
+
+  GURL prefetch_url("https://m.foo.com");
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {prefetch_url});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1U, tab_helper->srp_metrics().predicted_urls_count_);
+  EXPECT_EQ(0U, tab_helper->srp_metrics().prefetch_eligible_count_);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), prefetch_url));
+
+  ASSERT_TRUE(tab_helper->after_srp_metrics());
+  EXPECT_EQ(
+      absl::make_optional(
+          PrefetchProxyPrefetchStatus::kPrefetchNotEligibleUserHasCookies),
+      tab_helper->after_srp_metrics()->prefetch_status_);
+
+  // Check if the prefetched URL is different from the fenced frame.
+  EXPECT_NE(tab_helper->after_srp_metrics()->url_, fenced_frame_url);
 }
 
 class ZeroCacheTimePrefetchProxyBrowserTest : public PrefetchProxyBrowserTest {

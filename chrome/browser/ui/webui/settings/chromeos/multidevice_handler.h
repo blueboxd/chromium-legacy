@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_MULTIDEVICE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_MULTIDEVICE_HANDLER_H_
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/phonehub/camera_roll_manager.h"
+#include "ash/components/phonehub/combined_access_setup_operation.h"
 #include "ash/components/phonehub/multidevice_feature_access_manager.h"
 #include "ash/components/phonehub/notification_access_setup_operation.h"
 #include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
@@ -16,7 +18,6 @@
 #include "chrome/browser/ash/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
@@ -38,7 +39,8 @@ class MultideviceHandler
       public phonehub::NotificationAccessSetupOperation::Delegate,
       public ash::eche_app::AppsAccessManager::Observer,
       public ash::eche_app::AppsAccessSetupOperation::Delegate,
-      public ash::phonehub::CameraRollManager::Observer {
+      public ash::phonehub::CameraRollManager::Observer,
+      public phonehub::CombinedAccessSetupOperation::Delegate {
  public:
   MultideviceHandler(
       PrefService* prefs,
@@ -74,16 +76,21 @@ class MultideviceHandler
           feature_states_map) override;
 
   // NotificationAccessSetupOperation::Delegate:
-  void OnStatusChange(
+  void OnNotificationStatusChange(
       phonehub::NotificationAccessSetupOperation::Status new_status) override;
 
   // ash::eche_app::AppsAccessSetupOperation::Delegate:
   void OnAppsStatusChange(
       ash::eche_app::AppsAccessSetupOperation::Status new_status) override;
 
+  // CombinedAccessSetupOperation::Delegate:
+  void OnCombinedStatusChange(
+      phonehub::CombinedAccessSetupOperation::Status new_status) override;
+
   // phonehub::MultideviceFeatureAccessManager::Observer:
   void OnNotificationAccessChanged() override;
   void OnCameraRollAccessChanged() override;
+  void OnFeatureSetupRequestSupportedChanged() override;
 
   // multidevice_setup::AndroidSmsPairingStateTracker::Observer:
   void OnPairingStateChanged() override;
@@ -118,6 +125,8 @@ class MultideviceHandler
   void HandleCancelNotificationSetup(const base::Value::List& args);
   void HandleAttemptAppsSetup(const base::Value::List& args);
   void HandleCancelAppsSetup(const base::Value::List& args);
+  void HandleAttemptCombinedFeatureSetup(const base::Value::List& args);
+  void HandleCancelCombinedFeatureSetup(const base::Value::List& args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
@@ -155,6 +164,8 @@ class MultideviceHandler
       multidevice_feature_access_manager_;
   std::unique_ptr<phonehub::NotificationAccessSetupOperation>
       notification_access_operation_;
+  std::unique_ptr<phonehub::CombinedAccessSetupOperation>
+      combined_access_operation_;
 
   multidevice_setup::AndroidSmsPairingStateTracker*
       android_sms_pairing_state_tracker_;

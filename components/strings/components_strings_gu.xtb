@@ -13,7 +13,6 @@
 <translation id="1024111578869940408">હુમલાખોરો ઘણી વાર વેબ ઍડ્રેસમાં સરળતાથી જોઈ ન શકાય એવા ફેરફારો કરીને સાઇટની નકલ કરતાં હોય છે.</translation>
 <translation id="1028781062521375153">વિગતો જુઓ</translation>
 <translation id="1030706264415084469"><ph name="URL" /> તમારા ઉપકરણ પર કાયમી ધોરણે વિશાળ ડેટા સ્ટોર કરવા માગે છે</translation>
-<translation id="1032854598605920125">ઘડિયાળની દિશામાં ફેરવો</translation>
 <translation id="1033329911862281889">છૂપા મોડ થકી તમે ઑનલાઇન અદૃશ્ય બની જતા નથી:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />સાઇટ અને તેમના દ્વારા ઉપયોગમાં લેવાતી સેવાઓ મુલાકાતો જોઈ શકે છે<ph name="END_LIST_ITEM" />
@@ -174,7 +173,6 @@
 <translation id="1386623374109090026">ટીકાટિપ્પણી</translation>
 <translation id="1391289752476847787">સ્ટૉક અને બોન્ડ</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> એ કોઈપણ ડેટા મોકલ્યો ન હતો.</translation>
-<translation id="1403196654932095242"><ph name="HISTORY_CLUSTERS_SEARCH_FOCUSED_FRIENDLY_MATCH_TEXT" />, તમારી શોધ ફરી શરૂ કરવા અને તમારા Chrome ઇતિહાસમાં સંબંધિત પ્રવૃત્તિ જોવા માટે, પહેલાં Tab પછી Enter કી દબાવો</translation>
 <translation id="1405567553485452995">આછો લીલો</translation>
 <translation id="1407135791313364759">બધું ખોલો</translation>
 <translation id="1408787208417187241">ઉપરની બાજુએ ત્રણ સ્ટેપલ લગાવો</translation>
@@ -254,7 +252,6 @@
 <translation id="1567040042588613346">આ પૉલિસી હેતુ મુજબ કાર્ય કરી રહી છે પરંતુ સમાન મૂલ્ય બીજે ક્યાંક સેટ કરવામાં આવ્યું છે અને આ પૉલિસી તેની જગ્યા લે છે.</translation>
 <translation id="1569487616857761740">સમાપ્તિ તારીખ દાખલ કરો</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583294866416602487">Plex</translation>
 <translation id="1583429793053364125">આ વેબપેજ બતાવતી વખતે કંઈક ખોટું થયું.</translation>
 <translation id="1586541204584340881">તમે કયા એક્સ્ટેંશન ઇન્સ્ટૉલ કર્યા છે</translation>
 <translation id="1588438908519853928">સામાન્ય</translation>
@@ -291,6 +288,7 @@
 <translation id="1662550410081243962">ચુકવણી પદ્ધતિઓ સાચવો અને ભરો</translation>
 <translation id="1663943134801823270">કાર્ડ અને સરનામા Chromeમાંથી છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં મેનેજ કરી શકો છો.</translation>
 <translation id="1671391448414634642">હવેથી <ph name="SOURCE_LANGUAGE" />માં છે તે પેજનો અનુવાદ <ph name="TARGET_LANGUAGE" />માં થશે.</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />થી<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">પહેલાં ટૂંકી કિનારી</translation>
 <translation id="168693727862418163">આ પૉલિસીનું મૂલ્ય તેના સ્કીમા સામે માન્ય કરવામાં નિષ્ફળ ગયું છે અને તેને અવગણવામાં આવશે.</translation>
 <translation id="168841957122794586">સર્વર પ્રમાણપત્ર એક નબળી ક્રિપ્ટોગ્રાફિક કી ધરાવે છે.</translation>
@@ -349,6 +347,7 @@
 <translation id="1807246157184219062">આછું</translation>
 <translation id="1807528111851433570">શરૂઆતની શીટ</translation>
 <translation id="1812527064848182527">લૅન્ડસ્કેપ</translation>
+<translation id="1813414402673211292">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="182139138257690338">ઑટોમૅટિક રીતે ડાઉનલોડ</translation>
 <translation id="1821930232296380041">અમાન્ય વિનંતી અથવા વિનંતી પરિમાણો</translation>
 <translation id="1822540298136254167">તમે મુલાકાત લો તે વેબસાઇટ અને તેના પર વિતાવેલો સમય</translation>
@@ -537,7 +536,6 @@
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="236340516568226369">કદ બદલવા માટેના ટૉગલ ધરાવતું મેનૂ</translation>
 <translation id="2367567093518048410">સ્તર</translation>
-<translation id="2372464001869762664">તમે કન્ફર્મ કરો પછી, આ સાઇટ સાથે તમારા Google એકાઉન્ટમાંથી કાર્ડની વિગતો શેર કરવામાં આવશે. તમારા Plex એકાઉન્ટની વિગતોમાંથી CVC મેળવો.</translation>
 <translation id="2380886658946992094">કાનૂની</translation>
 <translation id="2383455408879745299">Chrome સેટિંગમાં તમારા ઍક્સેસિબિલિટીના સાધનો મનગમતા બનાવો</translation>
 <translation id="2384307209577226199">એન્ટરપ્રાઇઝ ડિફોલ્ટ</translation>
@@ -580,6 +578,7 @@
 <translation id="2505268675989099013">એકાઉન્ટ સુરક્ષિત કરો</translation>
 <translation id="2509167091171468975">ખાણીપીણી અને કરિયાણાના છૂટક વેપારીઓ</translation>
 <translation id="2512101340618156538">કોઈ મંજૂરી નથી (ડિફૉલ્ટ)</translation>
+<translation id="2512413427717747692">'Chromeને ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરો' બટન, iOS સેટિંગમાં Chromeને સિસ્ટમના ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરવા માટે Enter કી દબાવો</translation>
 <translation id="2515629240566999685">તમારા વિસ્તારમાં સિગ્નલ તપાસીને</translation>
 <translation id="2521385132275182522">નીચે જમણી બાજુએ સ્ટેપલ લાગાવો</translation>
 <translation id="2521736961081452453">ફોર્મ બનાવો</translation>
@@ -595,6 +594,7 @@
 <translation id="2542106216580219892">સર્ફિંગ</translation>
 <translation id="2544546346215446551">તમારા ઍડમિનિસ્ટ્રેટર દ્વારા તમારા ડિવાઇસને ફરી શરૂ કરવામાં આવ્યું છે</translation>
 <translation id="2544644783021658368">માત્ર એક દસ્તાવેજ</translation>
+<translation id="254524874071906077">Chrome ને ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
 <translation id="2546283357679194313">કૂકીઝ અને સાઇટ ડેટા</translation>
 <translation id="2547466893236767989">વેબ ડિઝાઇન અને ડેવલપમેન્ટ</translation>
 <translation id="254947805923345898">પૉલિસી મૂલ્ય માન્ય નથી.</translation>
@@ -675,7 +675,6 @@
 <translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા સહી ઍલ્ગોરિધમનો ઉપયોગ કરીને સહીિત કરેલું છે.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />કનેક્ટિવિટી ડાયગ્નોસ્ટિક્સ ચલાવી રહ્યાં છે<ph name="END_LINK" /></translation>
 <translation id="2730600605555029057">શાસ્ત્રીય સંગીત</translation>
-<translation id="2737403869486738563">તમારા Chrome ઇતિહાસમાં સંબંધિત પ્રવૃત્તિ જોવા માટે, તમારી શોધ ફરીથી શરૂ કરો</translation>
 <translation id="2738330467931008676">પિકઅપ માટેનું સરનામું પસંદ કરો</translation>
 <translation id="2740531572673183784">બરાબર, સમજાઇ ગયું</translation>
 <translation id="2742511345840685325">ટેબલ ટેનિસ</translation>
@@ -691,7 +690,6 @@
 <translation id="2792012897584536778">આ ડિવાઇસના વ્યવસ્થાપકોએ સુરક્ષા પ્રમાણપત્રો સેટ અપ કર્યા છે, જેના કારણે તેમને તમે મુલાકાત લો તે વેબસાઇટનું કન્ટેન્ટ જોવાની મંજૂરી મળી શકે છે.</translation>
 <translation id="2799020568854403057">સાઇટ આગળ હાનિકારક ઍપ્લિકેશનો ધરાવે છે</translation>
 <translation id="2799223571221894425">ફરીથી લોંચ કરો</translation>
-<translation id="2799846101868535739">તમારી શોધ ફરી શરૂ કરવા માટેનું બટન, તમારી શોધ ફરી શરૂ કરવા અને તમારા Chrome ઇતિહાસમાં સંબંધિત પ્રવૃત્તિ જોવા માટે Enter કી દબાવો</translation>
 <translation id="2803306138276472711">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />મૉલવેર મળ્યું<ph name="END_LINK" />. વેબસાઇટ્સ કે જે સામાન્ય રીતે સુરક્ષિત છે તે ક્યારેક મૉલવેરથી દૂષિત હોય છે.</translation>
 <translation id="2807052079800581569">છબીની Y અક્ષ પરની સ્થિતિ</translation>
 <translation id="2820957248982571256">સ્કૅન કરી રહ્યાં છીએ…</translation>
@@ -771,7 +769,6 @@
 <translation id="3029752078111257850">વિશ્વ સમાચાર</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
 <translation id="3041612393474885105">પ્રમાણપત્ર માહિતી</translation>
-<translation id="3044034790304486808">તમારી શોધ ફરી શરૂ કરો</translation>
 <translation id="305162504811187366">ટાઇમસ્ટેમ્પ, હોસ્ટ અને ક્લાયન્ટ સત્ર ids સહિત Chrome રીમોટ ડેસ્કટૉપનો ઇતિહાસ</translation>
 <translation id="3060227939791841287">C9 (એન્વલપ)</translation>
 <translation id="3061707000357573562">પૅચ સેવા</translation>
@@ -882,6 +879,7 @@
 <translation id="3366477098757335611">કાર્ડ જુઓ</translation>
 <translation id="3369192424181595722">ઘડિયાળ ભૂલ</translation>
 <translation id="3369459162151165748">વાહનના ભાગો અને ઍક્સેસરી</translation>
+<translation id="3371064404604898522">Chromeને ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
 <translation id="3371076217486966826"><ph name="URL" /> આ કરવા માગે છે:
       • તમારી આસપાસનો 3D નકશો બનાવવા અને તમારા કૅમેરાનું સ્ટેટસ ટ્રૅક કરવા
       • તમારા કૅમેરાનો ઉપયોગ કરવા</translation>
@@ -1057,7 +1055,6 @@
 <translation id="3816482573645936981">મૂલ્ય (જગ્યા અન્ય દ્વારા લેવામાં આવી છે)</translation>
 <translation id="382518646247711829">જો તમે કોઈ પ્રૉક્સી સર્વરનો ઉપયોગ કરો છો...</translation>
 <translation id="3827112369919217609">ચોક્કસ</translation>
-<translation id="3827475930221174051">"<ph name="SEARCH_TERM" />"થી સંબંધિત પ્રવૃત્તિના આધારે</translation>
 <translation id="3827666161959873541">પારિવારિક મૂવી</translation>
 <translation id="3828924085048779000">ખાલી પાસફ્રેઝને અનુમતિ નથી. </translation>
 <translation id="3831065134033923230">તમારા સાચવેલા પાસવર્ડ ચેક કરો</translation>
@@ -1355,6 +1352,7 @@
 <translation id="467662567472608290">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રમાં ભૂલો છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ઍક્સેસિબિલિટી ઇવેન્ટનો જવાબ આપવા માગે છે</translation>
 <translation id="467809019005607715">Google Slides</translation>
+<translation id="4682496302933121474">પેજનો અનુવાદ કરીએ?</translation>
 <translation id="468314109939257734">તમારો વર્ચ્યુઅલ કાર્ડ નંબર જુઓ</translation>
 <translation id="4691835149146451662">સ્થાપત્ય-A (એન્વલપ)</translation>
 <translation id="4692623383562244444">શોધ એન્જિન</translation>
@@ -1801,10 +1799,12 @@
 <translation id="5922853866070715753">લગભગ થઈ ગયું</translation>
 <translation id="5928444777041341328">ઘર અને બગીચા માટેની વસ્તુઓ</translation>
 <translation id="5932224571077948991">સાઇટ ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવે છે</translation>
+<translation id="5937560539988385583">પેજનો અનુવાદ કર્યો</translation>
 <translation id="5938153366081463283">વર્ચ્યુઅલ કાર્ડ ઉમેરો</translation>
 <translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> ખોલી રહ્યાં છે…</translation>
 <translation id="5951495562196540101">ઉપભોક્તા એકાઉન્ટ સાથે નોંધણી કરાવી શકાતી નથી (પૅકેજમાં લાઇસન્સ ઉપલબ્ધ છે).</translation>
+<translation id="5953516610448771166">આ મીડિયા માટે લાઇવ કૅપ્શનની સુવિધા ઉપલબ્ધ નથી. કૅપ્શનની સુવિધા મેળવવા, આ સાઇટ માટે <ph name="CONTENT_SETTINGS" />ને બ્લૉક કરો.</translation>
 <translation id="5955063559762970069">હોટલ અને નિવાસની સગવડવાળા સ્થાનો</translation>
 <translation id="5963413905009737549">સેક્શન</translation>
 <translation id="5967592137238574583">સંપર્ક માહિતીમાં ફેરફાર કરો</translation>
@@ -1898,6 +1898,7 @@
 <translation id="6232271601416750929">પ્રાકૃતિક બ્યુટી પ્રોડક્ટ</translation>
 <translation id="6233160458685643793">ખડખડાટ હસતો ચહેરો</translation>
 <translation id="6234122620015464377">પ્રત્યેક દસ્તાવેજ પછી ટ્રિમ કરો</translation>
+<translation id="6236290670123303279">સેટિંગને મેનેજ કરો</translation>
 <translation id="6240447795304464094">Google Payનો લોગો</translation>
 <translation id="6241121617266208201">સૂચનો છુપાવો</translation>
 <translation id="624499991300733384">કમ્પોઝિટર સેવા પ્રિન્ટ કરો</translation>
@@ -1929,6 +1930,7 @@
 <translation id="6319249456820053699">કૅમેરા અને કૅમકોર્ડર</translation>
 <translation id="6321917430147971392">તમારા DNS સેટિંગ તપાસો</translation>
 <translation id="6322182122604171028">Windows Helloનો ઉપયોગ કરી શક્યાં નથી</translation>
+<translation id="6326947323444967009">iOS સેટિંગમાં Chromeને સિસ્ટમના ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
 <translation id="6328639280570009161">નેટવર્ક પૂર્વાનુમાનને અક્ષમ કરવાનો પ્રયાસ કરો</translation>
 <translation id="6328784461820205019">"તમારું કનેક્શન ખાનગી નથી" અથવા "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" અથવા "SSL પ્રમાણપત્ર ભૂલ"</translation>
 <translation id="6328786501058569169">આ સાઇટ ભ્રામક છે</translation>
@@ -2533,7 +2535,9 @@
 <translation id="7995512525968007366">નિર્દિષ્ટ કરાયેલ નથી</translation>
 <translation id="7998269595945679889">છૂપી ટૅબ બટન ખોલો, ખાનગી રીતે બ્રાઉઝ કરવા, નવી છૂપી ટૅબ ખોલવા માટે Enter દબાવો</translation>
 <translation id="800218591365569300">મેમરી ખાલી કરવા માટે અન્ય ટૅબ અથવા પ્રોગ્રામને બંધ કરવાનો પ્રયાસ કરો.</translation>
+<translation id="8003046808285812021">“<ph name="SEARCH_TERMS" />”</translation>
 <translation id="8004582292198964060">બ્રાઉઝર</translation>
+<translation id="8009225694047762179">બધા પાસવર્ડ મેનેજ કરો</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{આ કાર્ડ અને તેનું બિલિંગ સરનામું સાચવવામાં આવશે. જ્યારે <ph name="USER_EMAIL" />માં સાઇન ઇન કર્યું હશે ત્યારે તમે તેનો ઉપયોગ કરી શકશો.}one{આ કાર્ડ અને તેના બિલિંગ સરનામાં સાચવવામાં આવશે. જ્યારે <ph name="USER_EMAIL" />માં સાઇન ઇન કર્યું હશે ત્યારે તમે તેમનો ઉપયોગ કરી શકશો.}other{આ કાર્ડ અને તેના બિલિંગ સરનામાં સાચવવામાં આવશે. જ્યારે <ph name="USER_EMAIL" />માં સાઇન ઇન કર્યું હશે ત્યારે તમે તેમનો ઉપયોગ કરી શકશો.}}</translation>
 <translation id="8025119109950072390">આ સાઇટ પરના હુમલાખોરો તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ, ફોન નંબર અથવા ક્રેડિટ કાર્ડ)ને દર્શાવવા અથવા સોફ્ટવેર ઇન્સ્ટૉલ કરવા જેવી જોખમી વસ્તુઓને કરવા માટે તમને છેતરવાનો પ્રયાસ કરી શકે છે.</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
@@ -2632,6 +2636,7 @@
 <translation id="8277900682056760511">ચુકવણી માટેની હૅન્ડલર શીટ ખુલ્લી છે</translation>
 <translation id="8280630997017109758">ટ્રે 11</translation>
 <translation id="8281084378435768645">મોટો-ફોટો</translation>
+<translation id="8281886186245836920">છોડો</translation>
 <translation id="8282947398454257691">તમારા અનન્ય ઉપકરણ ઓળખકર્તાને જાણો</translation>
 <translation id="8284769179630993263">Chrome સેટિંગમાં Safe Browsing જેવી તમારી બીજી ઘણી સુવિધાઓ મેનેજ કરો</translation>
 <translation id="8286036467436129157">સાઇન ઇન કરો</translation>
@@ -2891,6 +2896,7 @@
 <translation id="908796725011587895">કોલેજની રમતો</translation>
 <translation id="9089260154716455634">બિન-કામકાજી સમય સંબંધી પૉલિસી:</translation>
 <translation id="9095388113577226029">વધુ ભાષાઓ...</translation>
+<translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />, iOS સેટિંગમાં Chromeને સિસ્ટમના ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરવા માટે, પહેલાં tab અને પછી Enter કી દબાવો</translation>
 <translation id="9096679202588811390">ટીવી શો અને પ્રોગ્રામ</translation>
 <translation id="9101630580131696064">ટ્રે 1</translation>
 <translation id="9103537084693478942">વીડિયો સૉફ્ટવેર</translation>

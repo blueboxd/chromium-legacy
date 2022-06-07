@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, PrintPreviewButtonStripElement, State} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, PrintPreviewButtonStripElement, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
@@ -23,8 +23,12 @@ suite(button_strip_interactive_test.suiteName, function() {
     document.body.innerHTML = '';
     buttonStrip = document.createElement('print-preview-button-strip');
     buttonStrip.destination = new Destination(
-        'FooDevice', DestinationType.GOOGLE, DestinationOrigin.COOKIES,
-        'FooName', DestinationConnectionStatus.ONLINE);
+        'FooDevice',
+        DestinationOrigin.EXTENSION,
+        'FooName',
+        DestinationConnectionStatus.ONLINE,
+        {extensionId: 'aaa111', extensionName: 'myPrinterExtension'},
+    );
     buttonStrip.state = State.NOT_READY;
     buttonStrip.firstLoad = true;
     document.body.appendChild(buttonStrip);

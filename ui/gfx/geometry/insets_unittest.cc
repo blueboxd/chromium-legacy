@@ -20,12 +20,20 @@ TEST(InsetsTest, Default) {
   EXPECT_EQ(0, insets.right());
 }
 
-TEST(InsetsTest, Insets) {
-  Insets insets(1, 2, 3, 4);
+TEST(InsetsTest, TLBR) {
+  Insets insets = Insets::TLBR(1, 2, 3, 4);
   EXPECT_EQ(1, insets.top());
   EXPECT_EQ(2, insets.left());
   EXPECT_EQ(3, insets.bottom());
   EXPECT_EQ(4, insets.right());
+}
+
+TEST(InsetsTest, VH) {
+  Insets insets = Insets::VH(1, 2);
+  EXPECT_EQ(1, insets.top());
+  EXPECT_EQ(2, insets.left());
+  EXPECT_EQ(1, insets.bottom());
+  EXPECT_EQ(2, insets.right());
 }
 
 TEST(InsetsTest, SetLeftRight) {
@@ -88,15 +96,6 @@ TEST(InsetsTest, SetRight) {
   EXPECT_EQ(1, insets.bottom());
   EXPECT_EQ(2, insets.right());
   EXPECT_EQ(insets, Insets(1).set_right(2));
-}
-
-TEST(InsetsTest, Set) {
-  Insets insets;
-  insets.Set(1, 2, 3, 4);
-  EXPECT_EQ(1, insets.top());
-  EXPECT_EQ(2, insets.left());
-  EXPECT_EQ(3, insets.bottom());
-  EXPECT_EQ(4, insets.right());
 }
 
 TEST(InsetsTest, WidthHeightAndIsEmpty) {

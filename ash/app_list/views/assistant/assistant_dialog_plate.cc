@@ -24,6 +24,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
@@ -319,8 +320,8 @@ void AssistantDialogPlate::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(kPaddingTopDip, kPaddingHorizontalDip, kPaddingBottomDip,
-                      kPaddingHorizontalDip)));
+          gfx::Insets::TLBR(kPaddingTopDip, kPaddingHorizontalDip,
+                            kPaddingBottomDip, kPaddingHorizontalDip)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -361,7 +362,7 @@ void AssistantDialogPlate::InitKeyboardLayoutContainer() {
       keyboard_layout_container->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal,
-              gfx::Insets(0, kLeftPaddingDip, 0, 0)));
+              gfx::Insets::TLBR(0, kLeftPaddingDip, 0, 0)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -452,7 +453,8 @@ void AssistantDialogPlate::InitVoiceLayoutContainer() {
   params.tooltip_id = IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP;
   keyboard_input_toggle_ =
       voice_layout_container->AddChildView(AssistantButton::Create(
-          this, kKeyboardIcon, AssistantButtonId::kKeyboardInputToggle,
+          this, vector_icons::kKeyboardIcon,
+          AssistantButtonId::kKeyboardInputToggle,
           std::move(params)));
   keyboard_input_toggle_->SetID(AssistantViewID::kKeyboardInputToggle);
 

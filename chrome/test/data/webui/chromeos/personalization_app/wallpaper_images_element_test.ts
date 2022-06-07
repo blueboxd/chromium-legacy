@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {IFrameApi} from 'chrome://personalization/trusted/iframe_api.js';
-import {WallpaperLayout, WallpaperType} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
-import {PersonalizationRouter} from 'chrome://personalization/trusted/personalization_router_element.js';
-import {getDarkLightImageTiles, getRegularImageTiles, WallpaperImages} from 'chrome://personalization/trusted/wallpaper/wallpaper_images_element.js';
+import 'chrome://personalization/strings.m.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
+
+import {getDarkLightImageTiles, getRegularImageTiles, IFrameApi, PersonalizationRouter, WallpaperImages, WallpaperLayout, WallpaperType} from 'chrome://personalization/trusted/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
@@ -14,7 +14,7 @@ import {baseSetup, initElement, setupTestIFrameApi, teardownElement} from './per
 import {TestPersonalizationStore} from './test_personalization_store.js';
 import {TestWallpaperProvider} from './test_wallpaper_interface_provider.js';
 
-export function WallpaperImagesTest() {
+suite('WallpaperImagesTest', function() {
   let wallpaperImagesElement: WallpaperImages|null = null;
   let wallpaperProvider: TestWallpaperProvider;
   let personalizationStore: TestPersonalizationStore;
@@ -243,4 +243,4 @@ export function WallpaperImagesTest() {
 
     await reloadPromise;
   });
-}
+});

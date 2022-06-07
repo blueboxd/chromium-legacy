@@ -219,7 +219,8 @@ cr.define('cr.ui', function() {
      * Shows the add user dialog. Used in browser tests.
      */
     static showAddUserForTesting() {
-      chrome.send('showAddUser');
+      // TODO(crbug.com/1100910): migrate logic to dedicated test api.
+      chrome.send('OobeTestApi.showGaiaDialog');
     }
 
     /**
@@ -269,17 +270,6 @@ cr.define('cr.ui', function() {
      */
     static setUpOnlineDemoModeForTesting() {
       DemoModeTestHelper.setUp('online');
-    }
-
-    /**
-     * Get the primary display's name.
-     *
-     * Same as the displayInfo.name parameter returned by
-     * chrome.system.display.getInfo(), but unlike chrome.system it's available
-     * during OOBE.
-     */
-    static getPrimaryDisplayNameForTesting() {
-      return cr.sendWithPromise('getPrimaryDisplayNameForTesting');
     }
 
     /**

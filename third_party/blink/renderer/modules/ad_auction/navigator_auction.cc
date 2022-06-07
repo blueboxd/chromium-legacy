@@ -214,7 +214,7 @@ bool CopyDailyUpdateUrlFromIdlToMojo(const ExecutionContext& context,
   }
   // TODO(https://crbug.com/1271540): Validate against interest group owner
   // origin.
-  output.update_url = daily_update_url;
+  output.daily_update_url = daily_update_url;
   return true;
 }
 
@@ -745,8 +745,8 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
                                  exception_state, *idl_component_auction);
       if (!mojo_component_auction)
         return mojom::blink::AuctionAdConfigPtr();
-      mojo_config->component_auctions.emplace_back(
-          std::move(mojo_component_auction));
+      mojo_config->auction_ad_config_non_shared_params->component_auctions
+          .emplace_back(std::move(mojo_component_auction));
     }
   }
 

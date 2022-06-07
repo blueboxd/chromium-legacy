@@ -29,26 +29,11 @@ extern const base::Feature kAdSamplerTriggerFeature;
 // Browsing.
 extern const base::Feature kBetterTelemetryAcrossReports;
 
-// Controls whether Office documents will be scanned using //third_party maldoca
-extern const base::Feature kClientSideDetectionDocumentScanning;
-
-// Enables client side detection on Android.
-extern const base::Feature kClientSideDetectionForAndroid;
-
 // The client side detection model is a flatbuffer.
 extern const base::Feature kClientSideDetectionModelIsFlatBuffer;
 
-// Determines the experimental version of client side detection model, for
-// Desktop.
-extern const base::Feature kClientSideDetectionModelVersion;
-
 // Determines the tag to pass to Omaha to get a client side detection model.
 extern const base::Feature kClientSideDetectionModelTag;
-
-// Determines the tag to pass to Omaha to get a client side detection model.
-// This is used for high-memory devices, when `kClientSideDetectionModelTag` is
-// disabled.
-extern const base::Feature kClientSideDetectionModelHighMemoryTag;
 
 // The parameter name used for getting the tag values from client side detection
 // features, `kClientSideDetectionModelTag` and
@@ -57,6 +42,10 @@ const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
 
 // Enables client side detection referrer chain.
 extern const base::Feature kClientSideDetectionReferrerChain;
+
+// Controls whether an access token is attached to scanning requests triggered
+// by enterprise Connectors.
+extern const base::Feature kConnectorsScanningAccessToken;
 
 // Controls the non-blocking scanning UI for Connectors scanning requests. If
 // this is enabled, the downloaded file(s) will be renamed immediately and the
@@ -79,6 +68,11 @@ extern const base::Feature kEnhancedProtection;
 // Enables collection of signals related to extension activity and uploads
 // of telemetry reports to SB servers.
 extern const base::Feature kExtensionTelemetry;
+
+// Enables data collected by the kExtensionTelemetry to be written and read to
+// disk. This data will be uploaded for analysis.
+extern const base::Feature kExtensionTelemetryPersistence;
+
 // Specifies the upload interval for extension telemetry reports.
 extern const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds;
 // Enables collection of telemetry signal whenever an extension invokes the
@@ -98,13 +92,6 @@ const char kFileTypePoliciesTagParamName[] = "policy_omaha_tag";
 // Enable omitting non-user gesture from referrer chain.
 extern const base::Feature kOmitNonUserGesturesFromReferrerChain;
 
-// Enable GAIA password protection for signed-in users.
-extern const base::Feature kPasswordProtectionForSignedInUsers;
-
-// Controls whether Chrome prompts Enhanced Safe Browsing users for deep
-// scanning.
-extern const base::Feature kPromptEsbForDeepScanning;
-
 // Controls whether Client Safe Browsing Reports are sent with a GAIA-tied token
 // for Enhanced Safe Browsing users
 extern const base::Feature kSafeBrowsingCsbrrWithToken;
@@ -123,11 +110,6 @@ extern const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise;
 
 // Controls whether page load tokens are added to Safe Browsing requests.
 extern const base::Feature kSafeBrowsingPageLoadToken;
-
-// Controls whether Safe Browsing password reuse warnings are updated with
-// a "Check passwords" button integrated with the CheckPasswords page.
-extern const base::Feature
-    kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid;
 
 // Controls whether cookies are removed when the access token is present.
 extern const base::Feature kSafeBrowsingRemoveCookiesInAuthRequests;
@@ -169,21 +151,12 @@ extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 // Controls whether Chrome uses new download warning UX.
 extern const base::Feature kUseNewDownloadWarnings;
 
-// Controls whether we include visual features in password protection pings on
-// Android.
-extern const base::Feature kVisualFeaturesInPasswordProtectionAndroid;
-
 // Controls the behavior of visual features in CSD pings. This feature is
 // checked for the final size of the visual features and the minimum size of
 // the screen.
 extern const base::Feature kVisualFeaturesSizes;
 
 base::ListValue GetFeatureStatusList();
-
-// Returns whether or not to stop filling in the SyncAccountType and
-// ReusedPasswordType enums. This is used in the
-// |kPasswordProtectionForSignedInUsers| experiment.
-bool GetShouldFillOldPhishGuardProto();
 
 // Returns the tag used for Client Side Phishing Detection models, as
 // computed from the current feature flags.

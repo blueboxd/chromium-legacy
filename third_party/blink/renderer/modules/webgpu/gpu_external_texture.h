@@ -24,7 +24,7 @@ class GPUExternalTexture : public DawnObject<WGPUExternalTexture> {
       ExceptionState& exception_state);
   explicit GPUExternalTexture(
       GPUDevice* device,
-      WGPUExternalTexture externalTexture,
+      WGPUExternalTexture external_texture,
       scoped_refptr<WebGPUMailboxTexture> mailbox_texture);
 
   GPUExternalTexture(const GPUExternalTexture&) = delete;
@@ -33,6 +33,11 @@ class GPUExternalTexture : public DawnObject<WGPUExternalTexture> {
   void Destroy();
 
  private:
+  void setLabelImpl(const String& value) override {
+    std::string utf8_label = value.Utf8();
+    GetProcs().externalTextureSetLabel(GetHandle(), utf8_label.c_str());
+  }
+
   scoped_refptr<WebGPUMailboxTexture> mailbox_texture_;
 };
 

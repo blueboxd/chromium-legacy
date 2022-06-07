@@ -68,25 +68,13 @@ class Scorer {
   // (range is inclusive on both ends).
   virtual double ComputeScore(const FeatureMap& features) const = 0;
 
-  // This method matches the given |bitmap| against the visual model. It
-  // modifies |request| appropriately, and returns the new request. This expects
-  // to be called on the renderer main thread, but will perform scoring
-  // asynchronously on a worker thread.
-  virtual void GetMatchingVisualTargets(
-      const SkBitmap& bitmap,
-      std::unique_ptr<ClientPhishingRequest> request,
-      base::OnceCallback<void(std::unique_ptr<ClientPhishingRequest>)> callback)
-      const = 0;
-
-// TODO(crbug/1278502): This is disabled as a temporary measure due to crashes.
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !BUILDFLAG(IS_CHROMEOS) && \
-    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   // This method applies the TfLite visual model to the given bitmap. It
   // asynchronously returns the list of scores for each category, in the same
   // order as `tflite_thresholds()`.
   virtual void ApplyVisualTfLiteModel(
       const SkBitmap& bitmap,
-      base::OnceCallback<void(std::vector<double>)> callback) = 0;
+      base::OnceCallback<void(std::vector<double>)> callback) const = 0;
 #endif
 
   // Returns the version number of the loaded client model.
@@ -136,33 +124,14 @@ class Scorer {
   // [0.0,1.0].
   static double LogOdds2Prob(double log_odds);
 
-  // Helper struct used to return the scores and the memory mapped file
-  // containing the model back to the main thread.
-  struct VisualTfliteModelHelperResult {
-    VisualTfliteModelHelperResult();
-    ~VisualTfliteModelHelperResult();
-    VisualTfliteModelHelperResult(const VisualTfliteModelHelperResult&) =
-        delete;
-    VisualTfliteModelHelperResult& operator=(
-        const VisualTfliteModelHelperResult&) = delete;
-    VisualTfliteModelHelperResult(VisualTfliteModelHelperResult&&);
-    VisualTfliteModelHelperResult& operator=(VisualTfliteModelHelperResult&&);
-
-    std::vector<double> scores;
-    std::unique_ptr<base::MemoryMappedFile> visual_tflite_model;
-  };
-
   // Apply the tflite model to the bitmap, and return scores.
-  static VisualTfliteModelHelperResult ApplyVisualTfLiteModelHelper(
+  static std::vector<double> ApplyVisualTfLiteModelHelper(
       const SkBitmap& bitmap,
       int input_width,
       int input_height,
-      std::unique_ptr<base::MemoryMappedFile> visual_tflite_model);
-  void OnVisualTfLiteModelComplete(
-      base::OnceCallback<void(std::vector<double>)> callback,
-      VisualTfliteModelHelperResult result);
+      const std::string& model_data);
 
-  std::unique_ptr<base::MemoryMappedFile> visual_tflite_model_;
+  base::MemoryMappedFile visual_tflite_model_;
   base::WeakPtrFactory<Scorer> weak_ptr_factory_{this};
 
  private:

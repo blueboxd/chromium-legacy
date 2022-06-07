@@ -4,9 +4,9 @@
 
 #include "ash/services/device_sync/sync_scheduler.h"
 
-#include "chromeos/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -36,4 +36,4 @@ void SyncScheduler::SyncRequest::Cancel() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

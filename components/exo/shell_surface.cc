@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "components/exo/custom_window_state_delegate.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -41,11 +42,14 @@ namespace {
 constexpr int kMaximizedOrFullscreenOrPinnedLockTimeoutMs = 100;
 
 gfx::Rect GetClientBoundsInScreen(views::Widget* widget) {
-  ash::NonClientFrameViewAsh* frame_view =
-      static_cast<ash::NonClientFrameViewAsh*>(
-          widget->non_client_view()->frame_view());
   gfx::Rect window_bounds = widget->GetWindowBoundsInScreen();
-  return frame_view->GetClientBoundsForWindowBounds(window_bounds);
+  // Account for popup windows not having a non-client view.
+  if (widget->non_client_view()) {
+    return static_cast<ash::NonClientFrameViewAsh*>(
+               widget->non_client_view()->frame_view())
+        ->GetClientBoundsForWindowBounds(window_bounds);
+  }
+  return window_bounds;
 }
 
 }  // namespace
@@ -122,6 +126,9 @@ ShellSurface::~ShellSurface() {
   origin_change_callback_.Reset();
   if (widget_)
     ash::WindowState::Get(widget_->GetNativeWindow())->RemoveObserver(this);
+
+  for (auto& observer : observers_)
+    observer.OnShellSurfaceDestroyed();
 }
 
 void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
@@ -145,6 +152,9 @@ void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
     if (config->serial == serial)
       break;
   }
+
+  for (auto& observer : observers_)
+    observer.OnAcknowledgeConfigure(serial);
 
   // Shadow bounds update should be called in the next Commit() when applying
   // config instead of updating right when the client acknowledge the config.
@@ -259,6 +269,14 @@ void ShellSurface::StartResize(int component) {
     return;
 
   AttemptToStartDrag(component);
+}
+
+void ShellSurface::AddObserver(ShellSurfaceObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ShellSurface::RemoveObserver(ShellSurfaceObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -524,6 +542,14 @@ bool ShellSurface::OnPreWidgetCommit() {
   return true;
 }
 
+std::unique_ptr<views::NonClientFrameView>
+ShellSurface::CreateNonClientFrameView(views::Widget* widget) {
+  ash::WindowState* window_state =
+      ash::WindowState::Get(widget->GetNativeWindow());
+  window_state->SetDelegate(std::make_unique<CustomWindowStateDelegate>(this));
+  return CreateNonClientFrameViewInternal(widget);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
 
@@ -601,6 +627,15 @@ void ShellSurface::Configure(bool ends_drag) {
   LOG_IF(WARNING, pending_configs_.size() > 100)
       << "Number of pending configure acks for shell surface has reached: "
       << pending_configs_.size();
+
+  for (auto& observer : observers_)
+    observer.OnConfigure(serial);
+}
+
+bool ShellSurface::GetCanResizeFromSizeConstraints() const {
+  // Both the default min and max sizes are empty and windows must be resizable
+  // in that case.
+  return (minimum_size_.IsEmpty() || minimum_size_ != maximum_size_);
 }
 
 void ShellSurface::AttemptToStartDrag(int component) {

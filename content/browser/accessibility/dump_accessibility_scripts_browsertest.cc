@@ -26,6 +26,8 @@ constexpr const char kMacAttributes[]{"mac/attributes"};
 constexpr const char kMacSelection[]{"mac/selection"};
 constexpr const char kMacTextMarker[]{"mac/textmarker"};
 constexpr const char kMacMethods[]{"mac/methods"};
+constexpr const char kMacParameterizedAttributes[]{
+    "mac/parameterized-attributes"};
 constexpr const char kRegression[]{"mac/regression"};
 
 #endif
@@ -432,6 +434,24 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AccessibilityURL) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, IsAccessibilityElement) {
   RunTypedTest<kMacMethods>("is-accessibility-element.html");
+}
+
+// Parameterized attributes
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AXAttributedStringForRange) {
+  RunTypedTest<kMacParameterizedAttributes>(
+      "ax-attributed-string-for-range.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AXAttributedStringForTextMarkerRange) {
+  RunTypedTest<kMacParameterizedAttributes>(
+      "ax-attributed-string-for-text-marker-range.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXStringForRange) {
+  RunTypedTest<kMacParameterizedAttributes>("ax-string-for-range.html");
 }
 
 // Regression tests

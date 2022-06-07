@@ -17,6 +17,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/process/process.h"
 #include "base/task/current_thread.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -74,14 +76,60 @@ void CrashResolveHost(const std::string& host_to_crash,
     base::Process::TerminateCurrentProcessImmediately(1);
 }
 
+class SimpleCacheEntry : public network::mojom::SimpleCacheEntry {
+ public:
+  explicit SimpleCacheEntry(disk_cache::ScopedEntryPtr entry)
+      : entry_(std::move(entry)) {}
+
+ private:
+  disk_cache::ScopedEntryPtr entry_;
+};
+
 class SimpleCache : public network::mojom::SimpleCache {
  public:
   explicit SimpleCache(std::unique_ptr<disk_cache::Backend> backend)
-      : backend_(std::move(backend)) {}
+      : backend_(std::move(backend)) {
+    DCHECK(backend_);
+  }
   ~SimpleCache() override = default;
 
+  void CreateEntry(const std::string& key,
+                   CreateEntryCallback callback) override {
+    auto callback_holder =
+        base::MakeRefCounted<base::RefCountedData<CreateEntryCallback>>();
+    callback_holder->data = std::move(callback);
+
+    disk_cache::EntryResult result = backend_->CreateEntry(
+        key, net::DEFAULT_PRIORITY,
+        base::BindOnce(&SimpleCache::OnEntryCreated, weak_factory_.GetWeakPtr(),
+                       callback_holder));
+    if (result.net_error() == net::ERR_IO_PENDING) {
+      return;
+    }
+    OnEntryCreated(std::move(callback_holder), std::move(result));
+  }
+
  private:
+  void OnEntryCreated(
+      scoped_refptr<base::RefCountedData<CreateEntryCallback>> callback_holder,
+      disk_cache::EntryResult result) {
+    CreateEntryCallback callback = std::move(callback_holder->data);
+    if (result.net_error() != net::OK) {
+      std::move(callback).Run(mojo::NullRemote());
+      return;
+    }
+    disk_cache::ScopedEntryPtr entry(result.ReleaseEntry());
+
+    mojo::PendingRemote<network::mojom::SimpleCacheEntry> remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<SimpleCacheEntry>(std::move(entry)),
+        remote.InitWithNewPipeAndPassReceiver());
+    std::move(callback).Run(std::move(remote));
+  }
+
   std::unique_ptr<disk_cache::Backend> backend_;
+
+  base::WeakPtrFactory<SimpleCache> weak_factory_{this};
 };
 
 }  // namespace
@@ -314,6 +362,42 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
                 base::OnceCallback<void(bool)> callback) override {
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     std::move(callback).Run(file.IsValid());
+  }
+
+  void EnumerateFiles(
+      const base::FilePath& path,
+      mojo::PendingRemote<network::mojom::HttpCacheBackendFileOperationsFactory>
+          factory_remote,
+      EnumerateFilesCallback callback) override {
+    auto task_runner =
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
+    auto factory =
+        base::MakeRefCounted<network::MojoBackendFileOperationsFactory>(
+            std::move(factory_remote));
+    auto ops = factory->Create(task_runner);
+
+    using Entry = disk_cache::BackendFileOperations::FileEnumerationEntry;
+
+    task_runner->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(
+            [](const base::FilePath& path,
+               std::unique_ptr<disk_cache::BackendFileOperations> ops) {
+              base::ScopedAllowBaseSyncPrimitivesForTesting scope;
+              auto enumerator = ops->EnumerateFiles(path);
+              std::vector<Entry> entries;
+              while (auto entry = enumerator->Next()) {
+                entries.push_back(std::move(*entry));
+              }
+              return std::make_pair(entries, enumerator->HasError());
+            },
+            path, std::move(ops)),
+        base::BindOnce(
+            [](EnumerateFilesCallback callback,
+               std::pair<std::vector<Entry>, bool> arg) {
+              std::move(callback).Run(arg.first, arg.second);
+            },
+            std::move(callback)));
   }
 
   void CreateSimpleCache(

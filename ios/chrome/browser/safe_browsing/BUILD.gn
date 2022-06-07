@@ -4,7 +4,7 @@
 
 import("//ios/build/config.gni")
 import("//ios/features.gni")
-import("//ios/web/js_compile.gni")
+import("//ios/web/public/js_messaging/optimize_js.gni")
 
 source_set("safe_browsing") {
   sources = [
@@ -15,14 +15,13 @@ source_set("safe_browsing") {
     "input_event_observer.h",
     "password_protection_java_script_feature.h",
     "password_protection_java_script_feature.mm",
-    "pending_unsafe_resource_storage.h",
-    "pending_unsafe_resource_storage.mm",
     "real_time_url_lookup_service_factory.h",
     "real_time_url_lookup_service_factory.mm",
     "safe_browsing_blocking_page.h",
     "safe_browsing_blocking_page.mm",
-    "safe_browsing_error.h",
-    "safe_browsing_error.mm",
+    "safe_browsing_client_factory.mm",
+    "safe_browsing_client_impl.h",
+    "safe_browsing_client_impl.mm",
     "safe_browsing_metrics_collector_factory.h",
     "safe_browsing_metrics_collector_factory.mm",
     "safe_browsing_query_manager.h",
@@ -32,8 +31,6 @@ source_set("safe_browsing") {
     "safe_browsing_service_impl.mm",
     "safe_browsing_tab_helper.h",
     "safe_browsing_tab_helper.mm",
-    "safe_browsing_unsafe_resource_container.h",
-    "safe_browsing_unsafe_resource_container.mm",
     "url_checker_delegate_impl.h",
     "url_checker_delegate_impl.mm",
     "user_population_helper.h",
@@ -44,7 +41,6 @@ source_set("safe_browsing") {
 
   deps = [
     ":password_protection_js",
-    ":util",
     "//base",
     "//build:branding_buildflags",
     "//components/keyed_service/core",
@@ -85,7 +81,10 @@ source_set("safe_browsing") {
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
+    "//ios/components/cookie_util",
     "//ios/components/security_interstitials",
+    "//ios/components/security_interstitials/safe_browsing",
+    "//ios/components/security_interstitials/safe_browsing:util",
     "//ios/net",
     "//ios/web/common:user_agent",
     "//ios/web/public",
@@ -102,10 +101,10 @@ source_set("safe_browsing") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-js_compile_bundle("password_protection_js") {
+optimize_js("password_protection_js") {
   visibility = [ ":safe_browsing" ]
-  closure_entry_point = "__crWeb.passwordProtection"
 
+  primary_script = "resources/password_protection.js"
   sources = [ "resources/password_protection.js" ]
 }
 
@@ -138,24 +137,6 @@ source_set("test_support") {
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("util") {
-  sources = [
-    "unsafe_resource_util.h",
-    "unsafe_resource_util.mm",
-  ]
-
-  deps = [
-    "//base",
-    "//components/safe_browsing/core/browser/db:v4_protocol_manager_util",
-    "//components/safe_browsing/ios/browser:allow_list",
-    "//components/security_interstitials/core",
-    "//components/security_interstitials/core:unsafe_resource",
-    "//ios/web/public",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -197,13 +178,13 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chrome_password_protection_service_unittest.mm",
-    "pending_unsafe_resource_storage_unittest.mm",
     "real_time_url_lookup_service_factory_unittest.mm",
     "safe_browsing_blocking_page_unittest.mm",
+    "safe_browsing_client_factory_unittest.mm",
+    "safe_browsing_client_impl_unittest.mm",
     "safe_browsing_query_manager_unittest.mm",
     "safe_browsing_service_unittest.mm",
     "safe_browsing_tab_helper_unittest.mm",
-    "safe_browsing_unsafe_resource_container_unittest.mm",
     "url_checker_delegate_impl_unittest.mm",
     "verdict_cache_manager_factory_unittest.mm",
   ]
@@ -249,6 +230,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
+    "//ios/components/security_interstitials/safe_browsing",
     "//ios/web/public",
     "//ios/web/public/test",
     "//net:test_support",

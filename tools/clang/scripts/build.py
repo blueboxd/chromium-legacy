@@ -23,6 +23,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 
 from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     FORCE_HEAD_REVISION_FILE, PACKAGE_VERSION, RELEASE_VERSION,
@@ -44,11 +45,11 @@ ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_ndk')
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
                                'sdk')
+PINNED_CLANG_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'pinned-clang')
 
 BUG_REPORT_URL = ('https://crbug.com and run'
                   ' tools/clang/scripts/process_crashreports.py'
                   ' (only works inside Google) which will upload a report')
-
 
 win_sdk_dir = None
 def GetWinSDKDir():
@@ -196,21 +197,14 @@ def AddCMakeToPath(args):
     return
 
   if sys.platform == 'win32':
-    zip_name = 'cmake-3.17.1-win64-x64.zip'
-    dir_name = ['cmake-3.17.1-win64-x64', 'bin']
+    zip_name = 'cmake-3.23.0-windows-x86_64.zip'
+    dir_name = ['cmake-3.23.0-windows-x86_64', 'bin']
   elif sys.platform == 'darwin':
-    if platform.machine() == 'arm64':
-      # TODO(thakis): Move to 3.20 everywhere.
-      zip_name = 'cmake-3.20.0-macos-universal.tar.gz'
-      dir_name = [
-          'cmake-3.20.0-macos-universal', 'CMake.app', 'Contents', 'bin'
-      ]
-    else:
-      zip_name = 'cmake-3.17.1-Darwin-x86_64.tar.gz'
-      dir_name = ['cmake-3.17.1-Darwin-x86_64', 'CMake.app', 'Contents', 'bin']
+    zip_name = 'cmake-3.23.0-macos-universal.tar.gz'
+    dir_name = ['cmake-3.23.0-macos-universal', 'CMake.app', 'Contents', 'bin']
   else:
-    zip_name = 'cmake-3.17.1-Linux-x86_64.tar.gz'
-    dir_name = ['cmake-3.17.1-Linux-x86_64', 'bin']
+    zip_name = 'cmake-3.23.0-linux-x86_64.tar.gz'
+    dir_name = ['cmake-3.23.0-linux-x86_64', 'bin']
 
   cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, *dir_name)
   if not os.path.exists(cmake_dir):
@@ -394,9 +388,27 @@ def DownloadRPMalloc():
   return rpmalloc_dir
 
 
+def DownloadPinnedClang():
+  # The update.py in this current revision may have a patched revision while
+  # building new clang packages. Get update.py off HEAD~ to pull the current
+  # pinned clang.
+  with tempfile.NamedTemporaryFile() as f:
+    subprocess.check_call(
+        ['git', 'show', 'HEAD~:tools/clang/scripts/update.py'],
+        stdout=f,
+        cwd=CHROMIUM_DIR)
+    print("Running update.py")
+    # Without the flush, the subprocess call below doesn't work.
+    f.flush()
+    subprocess.check_call(
+        [sys.executable, f.name, '--output-dir=' + PINNED_CLANG_DIR])
+
+
+# TODO(crbug.com/929645): Remove once we don't need gcc's libstdc++.
 def MaybeDownloadHostGcc(args):
   """Download a modern GCC host compiler on Linux."""
-  if not sys.platform.startswith('linux') or args.gcc_toolchain:
+  assert sys.platform.startswith('linux')
+  if args.gcc_toolchain:
     return
   gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc-10.2.0-trusty')
   if not os.path.exists(gcc_dir):
@@ -567,10 +579,6 @@ def main():
   # move this down to where we fetch other build tools.
   AddGnuWinToPath()
 
-  # TODO(crbug.com/929645): Remove once we build on host systems with a modern
-  # enough GCC to build Clang.
-  MaybeDownloadHostGcc(args)
-
   if sys.platform == 'darwin':
     isysroot = subprocess.check_output(['xcrun', '--show-sdk-path'],
                                        universal_newlines=True).rstrip()
@@ -650,16 +658,21 @@ def main():
       '-DLLVM_ENABLE_CURL=OFF',
       # Build libclang.a as well as libclang.so
       '-DLIBCLANG_BUILD_STATIC=ON',
+      # TODO(https://crbug.com/1312610): remove once we figure out what's going on
+      '-DLLVM_DISABLE_ASSEMBLY_FILES=ON',
   ]
 
-  if args.gcc_toolchain:
-    # Use the specified gcc installation for building.
-    cc = os.path.join(args.gcc_toolchain, 'bin', 'gcc')
-    cxx = os.path.join(args.gcc_toolchain, 'bin', 'g++')
-    if not os.access(cc, os.X_OK):
-      print('Invalid --gcc-toolchain: ' + args.gcc_toolchain)
-      return 1
+  if sys.platform.startswith('linux'):
+    MaybeDownloadHostGcc(args)
+    DownloadPinnedClang()
+    cc = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang')
+    cxx = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang++')
+    # Use the libraries in the specified gcc installation for building.
+    cflags.append('--gcc-toolchain=' + args.gcc_toolchain)
+    cxxflags.append('--gcc-toolchain=' + args.gcc_toolchain)
     base_cmake_args += [
+        # The host clang has lld.
+        '-DLLVM_ENABLE_LLD=ON',
         '-DLLVM_STATIC_LINK_CXX_STDLIB=ON',
         # Force compiler-rt tests to use our gcc toolchain
         # because the one on the host may be too old.
@@ -683,8 +696,6 @@ def main():
 
   if sys.platform == 'win32':
     base_cmake_args.append('-DLLVM_USE_CRT_RELEASE=MT')
-    # TODO(crbug.com/1292528): We need Visual Studio 19.27 or later.
-    base_cmake_args.append('-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON')
 
     # Require zlib compression.
     zlib_dir = AddZlibToPath()
@@ -797,14 +808,6 @@ def main():
     else:
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
-    if sys.platform.startswith('linux'):
-      base_cmake_args.append('-DLLVM_ENABLE_LLD=ON')
-
-    if args.gcc_toolchain:
-      # Tell the bootstrap compiler where to find the standard library headers
-      # and shared object files.
-      cflags.append('--gcc-toolchain=' + args.gcc_toolchain)
-      cxxflags.append('--gcc-toolchain=' + args.gcc_toolchain)
 
     print('Bootstrap compiler installed.')
 

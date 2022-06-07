@@ -6,6 +6,7 @@
 
 #include "ash/login/ui/login_auth_factors_view.h"
 
+#include "ash/login/resources/grit/login_resources.h"
 #include "ash/login/ui/animated_auth_factors_label_wrapper.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/auth_icon_view.h"
@@ -40,6 +41,8 @@ constexpr int kSpacingBetweenIconsAndLabelDp = 8;
 constexpr int kIconTopSpacingDp = 10;
 constexpr int kArrowButtonSizeDp = 32;
 constexpr base::TimeDelta kErrorTimeout = base::Seconds(3);
+constexpr base::TimeDelta kCheckmarkAnimationDuration = base::Milliseconds(450);
+constexpr int kCheckmarkAnimationNumFrames = 13;
 
 // The values of this enum should be nearly the same as the values of
 // AuthFactorState, except instead of kErrorTemporary and kErrorPermanent, we
@@ -177,7 +180,8 @@ LoginAuthFactorsView::LoginAuthFactorsView(
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  SetBorder(views::CreateEmptyBorder(kIconTopSpacingDp, 0, 0, 0));
+  SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(kIconTopSpacingDp, 0, 0, 0)));
 
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kVertical);
@@ -214,7 +218,7 @@ LoginAuthFactorsView::LoginAuthFactorsView(
   arrow_nudge_animation_->SetCircleImage(
       kArrowButtonSizeDp / 2, AshColorProvider::Get()->GetControlsLayerColor(
                                   AshColorProvider::ControlsLayerType::
-                                      kControlBackgroundColorInactive));
+                                      kHairlineBorderColor));
 
   arrow_nudge_animation_->set_on_tap_or_click_callback(base::BindRepeating(
       &LoginAuthFactorsView::RelayArrowButtonPressed, base::Unretained(this)));
@@ -232,9 +236,7 @@ LoginAuthFactorsView::LoginAuthFactorsView(
       AddChildView(std::make_unique<AnimatedAuthFactorsLabelWrapper>());
   label_wrapper_->SetProperty(
       views::kMarginsKey,
-      gfx::Insets(/*top=*/kSpacingBetweenIconsAndLabelDp, /*left=*/0,
-                  /*bottom=*/0,
-                  /*right=*/0));
+      gfx::Insets::TLBR(kSpacingBetweenIconsAndLabelDp, 0, 0, 0));
 }
 
 LoginAuthFactorsView::~LoginAuthFactorsView() = default;
@@ -414,11 +416,20 @@ void LoginAuthFactorsView::ShowReadyAndDisabledAuthFactors() {
 }
 
 void LoginAuthFactorsView::ShowCheckmark() {
+  const bool arrow_button_was_visible = arrow_button_->GetVisible();
   auth_factor_icon_row_->SetVisible(false);
   checkmark_icon_->SetVisible(true);
   SetArrowVisibility(false);
-  // TODO(crbug.com/1233614): If transitioning from Click Required state, show
-  // animation.
+  if (arrow_button_was_visible) {
+    const auto& resource = AshColorProvider::Get()->IsDarkModeEnabled()
+                               ? IDR_LOGIN_ARROW_CHECKMARK_SPINNER_DARKMODE
+                               : IDR_LOGIN_ARROW_CHECKMARK_SPINNER_LIGHTMODE;
+    checkmark_icon_->SetAnimation(resource, kCheckmarkAnimationDuration,
+                                  kCheckmarkAnimationNumFrames);
+  } else {
+    checkmark_icon_->SetIcon(kLockScreenFingerprintSuccessIcon,
+                             AuthIconView::Color::kPositive);
+  }
 }
 
 int LoginAuthFactorsView::GetReadyLabelId() const {

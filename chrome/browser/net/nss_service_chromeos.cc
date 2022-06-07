@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/tpm_token_info_getter.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/userdataauth/cryptohome_pkcs11_client.h"
-#include "chromeos/tpm/tpm_token_info_getter.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -69,14 +69,14 @@ namespace {
 //                   v---------------------------------------/
 //     GetTPMInfoForUserOnUIThread
 //                   |
-// chromeos::TPMTokenInfoGetter::Start
+//   ash::TPMTokenInfoGetter::Start
 //                   |
 //     DidGetTPMInfoForUserOnUIThread
 //                   \---------------------------------------v
 //                                          crypto::InitializeTPMForChromeOSUser
 
 void DidGetTPMInfoForUserOnUIThread(
-    std::unique_ptr<chromeos::TPMTokenInfoGetter> getter,
+    std::unique_ptr<ash::TPMTokenInfoGetter> getter,
     const std::string& username_hash,
     absl::optional<user_data_auth::TpmTokenInfo> token_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -96,12 +96,11 @@ void GetTPMInfoForUserOnUIThread(const AccountId& account_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "Getting TPM info from cryptohome for "
            << " " << account_id.Serialize() << " " << username_hash;
-  std::unique_ptr<chromeos::TPMTokenInfoGetter> scoped_token_info_getter =
-      chromeos::TPMTokenInfoGetter::CreateForUserToken(
+  std::unique_ptr<ash::TPMTokenInfoGetter> scoped_token_info_getter =
+      ash::TPMTokenInfoGetter::CreateForUserToken(
           account_id, chromeos::CryptohomePkcs11Client::Get(),
           base::ThreadTaskRunnerHandle::Get());
-  chromeos::TPMTokenInfoGetter* token_info_getter =
-      scoped_token_info_getter.get();
+  ash::TPMTokenInfoGetter* token_info_getter = scoped_token_info_getter.get();
 
   // Bind |token_info_getter| to the callback to ensure it does not go away
   // before TPM token info is fetched.

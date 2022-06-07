@@ -184,7 +184,6 @@ Dzēšot pārlūkošanas vēsturi (visu vai konkrētas vietnes vēsturi), tiek d
 <translation id="200114059308480249">Vai iekļaut apkārtējo tekstu Google meklēšanā?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fails}zero{# faili}one{# fails}other{# faili}}</translation>
 <translation id="2015836039326522978">Lietotne <ph name="APP_NAME" /> tiks atvērta pārlūkā Chrome. Turpinot jūs piekrītat <ph name="BEGIN_LINK1" />Google pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />Google Chrome un Chrome OS pakalpojumu sniegšanas papildu noteikumiem<ph name="END_LINK2" />. Ir spēkā arī <ph name="BEGIN_LINK3" />konfidencialitātes politika<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Vai noņemt interesi?</translation>
 <translation id="2020309681647789787">Jūsu vēsture būs pieejama visās sinhronizētajās ierīcēs, tāpēc varēsiet turpināt iesākto</translation>
 <translation id="2021896219286479412">Pilnekrāna vietnes vadīklas</translation>
 <translation id="2038563949887743358">Ieslēgt iestatījumu “Pieprasīt datora vietni”</translation>
@@ -213,6 +212,7 @@ Pieskarieties jebkuram vārdam, lai to meklētu. Ja vēlaties precizēt meklēš
 <translation id="2141396931810938595">Pamatojoties uz jūsu lietojumu</translation>
 <translation id="214888715418183969">Izvēlieties, kādu informāciju jums nav iebildumu kopīgot ar Chrome. Jūsu kopīgotie rādītāji tiks izmantoti, lai uzlabotu Chrome funkcijas, veiktspēju un stabilitāti.</translation>
 <translation id="2149973817440762519">Rediģēt grāmatzīmes</translation>
+<translation id="2155214902713132423">Šī verifikācijas metode nav pieejama šai ierīcei. Izvēlieties citu opciju savā otrā ierīcē.</translation>
 <translation id="2157851137955077194">Lai kopīgotu sava tālruņa saturu ar citu ierīci, ieslēdziet sinhronizāciju abu ierīču Chrome iestatījumos.</translation>
 <translation id="2158408438301413340">Pārlūkprogrammā Chrome nevarēja pārbaudīt visas paroles</translation>
 <translation id="2169830938017475061">Tikko</translation>
@@ -733,7 +733,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5091199029769593641">Drīzumā, atverot jaunu cilni, būs redzami raksti no vietnes <ph name="SITE_NAME" />. Vietnes, kurām sekojat, tiek saglabātas jūsu Google kontā. Varat tās pārvaldīt Discover iestatījumu sadaļā.</translation>
 <translation id="5091249083535528968">Detalizēti lietojuma dati</translation>
 <translation id="509429900233858213">Radās kļūda.</translation>
-<translation id="5098190077610408701">Vai pievienot interesi?</translation>
 <translation id="5102401324271069229">Ja kādā vietnē tiek mēģināts nozagt jūsu paroli vai ja jūs lejupielādējat kaitīgu failu, Chrome var nosūtīt attiecīgos URL, tostarp lapas satura fragmentus, uz funkciju Droša pārlūkošana.</translation>
 <translation id="510275257476243843">Atlikusi 1 h</translation>
 <translation id="5115811374190515607">uz: <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5906513782029855931">Zinot vietņu vietrāžus URL, Google asistents var palīdzēt jums veikt uzdevumus. Chrome iestatījumos varat izslēgt Asistentu.</translation>
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5919204609460789179">Lai sāktu sinhronizēšanu, atjauniniet <ph name="PRODUCT_NAME" /></translation>
+<translation id="5938820472109305350">Pievienot interesi “<ph name="INTEREST" />”</translation>
 <translation id="5942872142862698679">Tiek izmantota meklētājprogramma Google</translation>
 <translation id="5945035219773565305">Pašreizējais ieteikums: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Tiek skatīta tiešsaistē pieejamā lapa</translation>
@@ -898,7 +898,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="6033245666633565791">Izmantojot <ph name="BEGIN_LINK" />konfidencialitātes smilškasti<ph name="END_LINK" />, pārlūkā Chrome ir iespējams izstrādāt jaunas tehnoloģijas, kas aizsargā jūs no starpvietņu izsekošanas, vienlaikus saglabājot atvērtā tīmekļa darbību.
 
 Konfidencialitātes smilškastes izmēģinājuma versijas joprojām tiek izstrādātas, un šī tehnoloģiju kopa ir pieejama noteiktos reģionos. Pagaidām vietnēs vienlaikus var tikt izmēģinātas konfidencialitātes smilškastes tehnoloģijas un turpināta pašreizējo tīmekļa tehnoloģiju (piemēram, trešās puses sīkfailu) lietošana.</translation>
-<translation id="6036057147555329831">Citi ICU</translation>
 <translation id="6039379616847168523">Pāriet uz nākamo cilni</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="604124094241169006">Automātiski</translation>
@@ -1023,6 +1022,7 @@ Uzticamības marķieri uzlabo konfidencialitāti tīmeklī. Tos nevar izmantot, 
 <translation id="663674369910034433">Papildu iestatījumus, kas attiecas uz konfidencialitāti, drošību un datu vākšanu, skatiet sadaļās <ph name="BEGIN_LINK1" />Sinhronizēšana<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />Google pakalpojumi<ph name="END_LINK2" />.</translation>
 <translation id="6637100877383020115">Lai palīdzētu uzlabot lietotni, uzņēmumam Google tiek sūtīti lietojuma un avāriju dati no pārlūka Chrome. <ph name="BEGIN_UMA_LINK" />Pārvaldīt<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Vienmēr bloķēt</translation>
+<translation id="6641780377503683465">Noņemt interesi “<ph name="INTEREST" />”</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="6645629752388991326">Pārvaldiet, kurās ierīcēs var veikt pierakstīšanos, izmantojot šo ierīci kā drošības atslēgu.</translation>
 <translation id="6648459603387803038">Jūsu administrators var attālināti mainīt jūsu pārlūka iestatījumus. Darbību šajā ierīcē var pārvaldīt arī ārpus Chrome.</translation>

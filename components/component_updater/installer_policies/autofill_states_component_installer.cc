@@ -4,11 +4,11 @@
 
 #include "components/component_updater/installer_policies/autofill_states_component_installer.h"
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
-#include "base/task/post_task.h"
 #include "components/autofill/core/browser/geo/country_data.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/component_updater/component_updater_service.h"

@@ -17,7 +17,6 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/ax_serialization_utils.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -164,10 +163,16 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetFirstChild() const {
+  if (PlatformChildCount() == 0)
+    return nullptr;
+
   return PlatformGetChild(0);
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetLastChild() const {
+  if (PlatformChildCount() == 0)
+    return nullptr;
+
   BrowserAccessibility* child_tree_root = PlatformGetRootOfChildTree();
   return child_tree_root ? child_tree_root : InternalGetLastChild();
 }
@@ -212,6 +217,9 @@ bool BrowserAccessibility::IsLineBreakObject() const {
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32_t child_index) const {
+  if (PlatformChildCount() == 0)
+    return nullptr;
+
   BrowserAccessibility* child_tree_root = PlatformGetRootOfChildTree();
   if (child_tree_root) {
     // A node with a child tree has only one child.
@@ -480,14 +488,6 @@ gfx::Rect BrowserAccessibility::GetHypertextRangeBoundsRect(
     // Convert to screen coordinates.
     bounds.Offset(
         manager()->GetViewBoundsInScreenCoordinates().OffsetFromOrigin());
-  }
-
-  if (coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels) {
-    // Convert to physical pixels.
-    if (!IsUseZoomForDSFEnabled()) {
-      bounds =
-          gfx::ScaleToEnclosingRect(bounds, manager()->device_scale_factor());
-    }
   }
 
   return bounds;
@@ -794,9 +794,8 @@ BrowserAccessibility* BrowserAccessibility::ApproximateHitTest(
   // most tightly encloses the specified point. Walk backwards so that in
   // the absence of any other information, we assume the object that occurs
   // later in the tree is on top of one that comes before it.
-  for (int i = static_cast<int>(PlatformChildCount()) - 1; i >= 0; --i) {
-    BrowserAccessibility* child = PlatformGetChild(i);
-
+  for (BrowserAccessibility* child = PlatformGetLastChild(); child != nullptr;
+       child = child->PlatformGetPreviousSibling()) {
     // Skip table columns because cells are only contained in rows,
     // not columns.
     if (child->GetRole() == ax::mojom::Role::kColumn)
@@ -983,9 +982,6 @@ gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
     }
     bounds.Offset(
         manager()->GetViewBoundsInScreenCoordinates().OffsetFromOrigin());
-    if (coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels &&
-        !IsUseZoomForDSFEnabled())
-      bounds.Scale(manager()->device_scale_factor());
   }
 
   if (offscreen_result) {

@@ -32,7 +32,7 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ(gfx::Size(288, 380), info.size_in_pixel());
   EXPECT_EQ(Display::ROTATE_0, info.GetActiveRotation());
   EXPECT_EQ(gfx::DisplayColorSpaces(), info.display_color_spaces());
-  EXPECT_EQ(gfx::Insets(5, 3, 5, 3), info.overscan_insets_in_dip());
+  EXPECT_EQ(gfx::Insets::TLBR(5, 3, 5, 3), info.overscan_insets_in_dip());
 
   info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/oh", 10);
   EXPECT_EQ(gfx::Rect(10, 20, 300, 400), info.bounds_in_native());
@@ -41,14 +41,14 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ(gfx::DisplayColorSpaces(gfx::ColorSpace::CreateHDR10(),
                                     gfx::BufferFormat::BGRA_1010102),
             info.display_color_spaces());
-  EXPECT_EQ(gfx::Insets(5, 3, 5, 3), info.overscan_insets_in_dip());
+  EXPECT_EQ(gfx::Insets::TLBR(5, 3, 5, 3), info.overscan_insets_in_dip());
 
   info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/ob", 10);
   EXPECT_EQ(gfx::Rect(10, 20, 300, 400), info.bounds_in_native());
   EXPECT_EQ(gfx::Size(288, 380), info.size_in_pixel());
   EXPECT_EQ(Display::ROTATE_0, info.GetActiveRotation());
   EXPECT_EQ(gfx::DisplayColorSpaces(), info.display_color_spaces());
-  EXPECT_EQ(gfx::Insets(5, 3, 5, 3), info.overscan_insets_in_dip());
+  EXPECT_EQ(gfx::Insets::TLBR(5, 3, 5, 3), info.overscan_insets_in_dip());
 
   info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/or", 10);
   EXPECT_EQ(gfx::Rect(10, 20, 300, 400), info.bounds_in_native());
@@ -56,15 +56,15 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ(Display::ROTATE_90, info.GetActiveRotation());
   EXPECT_EQ(gfx::DisplayColorSpaces(), info.display_color_spaces());
   // TODO(oshima): This should be rotated too. Fix this.
-  EXPECT_EQ(gfx::Insets(5, 3, 5, 3), info.overscan_insets_in_dip());
+  EXPECT_EQ(gfx::Insets::TLBR(5, 3, 5, 3), info.overscan_insets_in_dip());
 
   info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/or@1.5", 10);
   EXPECT_EQ(gfx::Rect(10, 20, 300, 400), info.bounds_in_native());
   EXPECT_EQ(gfx::Size(380, 288), info.size_in_pixel());
   EXPECT_EQ(Display::ROTATE_90, info.GetActiveRotation());
   EXPECT_EQ(gfx::DisplayColorSpaces(), info.display_color_spaces());
-  EXPECT_EQ(gfx::Insets(5, 3, 5, 3), info.overscan_insets_in_dip());
-  EXPECT_EQ(gfx::Insets(10, 6, 10, 6), info.GetOverscanInsetsInPixel());
+  EXPECT_EQ(gfx::Insets::TLBR(5, 3, 5, 3), info.overscan_insets_in_dip());
+  EXPECT_EQ(gfx::Insets::TLBR(10, 6, 10, 6), info.GetOverscanInsetsInPixel());
 
   info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/l@1.5", 10);
   EXPECT_EQ(gfx::Rect(10, 20, 300, 400), info.bounds_in_native());
@@ -101,6 +101,16 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_FALSE(info.display_modes()[2].native());
   EXPECT_FALSE(info.display_modes()[3].native());
   EXPECT_TRUE(info.display_modes()[4].native());
+
+  info = ManagedDisplayInfo::CreateFromSpecWithID(
+      "250x200*2#300x200|250x200*1.25|150x100", 10);
+
+  EXPECT_EQ(gfx::Size(150, 100), info.display_modes()[0].size());
+  EXPECT_EQ(gfx::Size(300, 200), info.display_modes()[1].size());
+  EXPECT_EQ(gfx::Size(250, 200), info.display_modes()[2].size());
+  EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor());
+  EXPECT_EQ(2.0f, info.display_modes()[1].device_scale_factor());
+  EXPECT_EQ(1.25f, info.display_modes()[2].device_scale_factor());
 }
 
 }  // namespace display

@@ -6,9 +6,11 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -26,6 +28,8 @@ const CGFloat kTitleHorizontalMargin = 19;
 const CGFloat kButtonHorizontalMargin = 14;
 // Font size for label text in header.
 const CGFloat kDiscoverFeedTitleFontSize = 16;
+// Font size for the custom search engine label.
+const CGFloat kCustomSearchEngineLabelFontSize = 13;
 // Insets for header menu button.
 const CGFloat kHeaderMenuButtonInsetTopAndBottom = 2;
 const CGFloat kHeaderMenuButtonInsetSides = 2;
@@ -36,14 +40,21 @@ const CGFloat kDiscoverFeedContentWith = 430;
 // TODO(crbug.com/1277504): Only keep the WC header after launch.
 const CGFloat kWebChannelsHeaderHeight = 52;
 const CGFloat kDiscoverFeedHeaderHeight = 40;
+const CGFloat kCustomSearchEngineLabelHeight = 18;
 // * Values below are exclusive to Web Channels.
-// The width of the feed selector segments.
-const CGFloat kHeaderSegmentWidth = 150;
+// The width of the segmented control to toggle between feeds.
+// TODO(crbug.com/1277974): See how segments react to longer words.
+const CGFloat kHeaderSegmentWidth = 300;
 // The height and width of the header menu button. Based on the default
 // UISegmentedControl height.
 const CGFloat kButtonSize = 28;
-// Duration of the fade animation when the sort button appears/disappears.
-const CGFloat kSortButtonAnimationDuration = 0.3;
+// The radius of the dot indicating that there is new content in the Following
+// feed.
+const CGFloat kFollowingSegmentDotRadius = 3;
+// The distance between the Following segment dot and the Following label.
+const CGFloat kFollowingSegmentDotMargin = 8;
+// Duration of the fade animation for elements that toggle when switching feeds.
+const CGFloat kSegmentAnimationDuration = 0.3;
 
 // Image names for feed header icons.
 NSString* kMenuIcon = @"ellipsis";
@@ -70,19 +81,39 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 // Segmented control for toggling between the two feeds.
 @property(nonatomic, strong) UISegmentedControl* segmentedControl;
 
+// The dot in the Following segment indicating new content in the Following
+// feed.
+@property(nonatomic, strong) UIView* followingSegmentDot;
+
 // Currently selected feed.
-// TODO(crbug.com/1277974): Reassign this value instead of recreating feed
-// header when NTP coordinator's restart is improved.
 @property(nonatomic, assign) FeedType selectedFeed;
+
+// The blurred background of the feed header.
+@property(nonatomic, strong) UIVisualEffectView* blurBackgroundView;
+
+// The view informing the user that the feed is powered by Google if they don't
+// have Google as their default search engine.
+@property(nonatomic, strong) UILabel* customSearchEngineView;
+
+// The constraints for the currently visible components of the header.
+@property(nonatomic, strong)
+    NSMutableArray<NSLayoutConstraint*>* feedHeaderConstraints;
 
 @end
 
 @implementation FeedHeaderViewController
 
-- (instancetype)initWithSelectedFeed:(FeedType)selectedFeed {
+- (instancetype)initWithSelectedFeed:(FeedType)selectedFeed
+               followingFeedSortType:
+                   (FollowingFeedSortType)followingFeedSortType
+          followingSegmentDotVisible:(BOOL)followingSegmentDotVisible
+         isGoogleDefaultSearchEngine:(BOOL)isGoogleDefaultSearchEngine {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _selectedFeed = selectedFeed;
+    _followingFeedSortType = followingFeedSortType;
+    _followingSegmentDotVisible = followingSegmentDotVisible;
+    _isGoogleDefaultSearchEngine = isGoogleDefaultSearchEngine;
 
     // The menu button is created early so that it can be assigned a tap action
     // before the view loads.
@@ -94,10 +125,12 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.container = [[UIView alloc] init];
-
+  // Applies an opacity to the background. If ReduceTransparency is enabled,
+  // then this replaces the blur effect.
   self.view.backgroundColor =
       [[UIColor colorNamed:kBackgroundColor] colorWithAlphaComponent:0.95];
+
+  self.container = [[UIView alloc] init];
 
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   self.container.translatesAutoresizingMaskIntoConstraints = NO;
@@ -111,6 +144,23 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
     self.sortButton = [self createSortButton];
     self.sortButton.menu = [self createSortMenu];
     [self.container addSubview:self.sortButton];
+
+    self.followingSegmentDot = [self createFollowingSegmentDot];
+    self.followingSegmentDot.hidden = !self.followingSegmentDotVisible;
+    [self.segmentedControl addSubview:self.followingSegmentDot];
+
+    if (!UIAccessibilityIsReduceTransparencyEnabled()) {
+      self.blurBackgroundView = [self createBlurBackground];
+      [self.view addSubview:self.blurBackgroundView];
+      // The blurred background has a tint that is visible when the header is
+      // over the standard NTP background. For this reason, we only add the blur
+      // background when scrolled into the feed.
+      self.blurBackgroundView.hidden = YES;
+    }
+
+    if (!self.isGoogleDefaultSearchEngine) {
+      [self addCustomSearchEngineView];
+    }
   } else {
     self.titleLabel = [self createTitleLabel];
     [self.container addSubview:self.titleLabel];
@@ -119,6 +169,45 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   [self.container addSubview:self.menuButton];
   [self.view addSubview:self.container];
   [self applyHeaderConstraints];
+}
+
+- (void)toggleBackgroundBlur:(BOOL)blurred animated:(BOOL)animated {
+  if (UIAccessibilityIsReduceTransparencyEnabled() || !IsWebChannelsEnabled()) {
+    return;
+  }
+  DCHECK(self.blurBackgroundView);
+
+  // Applies blur to header background. Also reduces opacity when blur is
+  // applied so that the blur is still transluscent.
+  if (!animated) {
+    self.blurBackgroundView.hidden = !blurred;
+    self.view.backgroundColor = [[UIColor colorNamed:kBackgroundColor]
+        colorWithAlphaComponent:(blurred ? 0.1 : 0.95)];
+    return;
+  }
+  [UIView transitionWithView:self.blurBackgroundView
+      duration:0.3
+      options:UIViewAnimationOptionTransitionCrossDissolve
+      animations:^{
+        self.blurBackgroundView.hidden = !blurred;
+      }
+      completion:^(BOOL finished) {
+        // Only reduce opacity after the animation is complete to avoid showing
+        // content suggestions tiles momentarily.
+        self.view.backgroundColor = [[UIColor colorNamed:kBackgroundColor]
+            colorWithAlphaComponent:(blurred ? 0.1 : 0.95)];
+      }];
+}
+
+- (CGFloat)feedHeaderHeight {
+  return IsWebChannelsEnabled() ? kWebChannelsHeaderHeight
+                                : kDiscoverFeedHeaderHeight;
+}
+
+- (CGFloat)customSearchEngineViewHeight {
+  return self.isGoogleDefaultSearchEngine || !IsWebChannelsEnabled()
+             ? 0
+             : kCustomSearchEngineLabelHeight;
 }
 
 #pragma mark - Setters
@@ -132,31 +221,75 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   }
 }
 
+// Sets |followingFeedSortType| and recreates the sort menu to assign the active
+// sort type.
+- (void)setFollowingFeedSortType:(FollowingFeedSortType)followingFeedSortType {
+  _followingFeedSortType = followingFeedSortType;
+  if (self.sortButton) {
+    self.sortButton.menu = [self createSortMenu];
+  }
+}
+
+// Sets |followingSegmentDotVisible| and animates |followingSegmentDot|'s
+// visibility accordingly.
+- (void)setFollowingSegmentDotVisible:(BOOL)followingSegmentDotVisible {
+  DCHECK(IsWebChannelsEnabled());
+  _followingSegmentDotVisible = followingSegmentDotVisible;
+  [UIView animateWithDuration:kSegmentAnimationDuration
+                   animations:^{
+                     self.followingSegmentDot.alpha =
+                         followingSegmentDotVisible ? 1 : 0;
+                   }];
+}
+
+// Sets whether Google is the default search engine and adds a view to inform
+// the users if needed.
+- (void)setIsGoogleDefaultSearchEngine:(BOOL)isGoogleDefaultSearchEngine {
+  DCHECK(IsWebChannelsEnabled());
+  _isGoogleDefaultSearchEngine = isGoogleDefaultSearchEngine;
+  if (isGoogleDefaultSearchEngine) {
+    [self removeCustomSearchEngineView];
+  } else {
+    [self addCustomSearchEngineView];
+  }
+  [self applyHeaderConstraints];
+}
+
 #pragma mark - Private
 
-// Creates sort menu with its content.
+// Creates sort menu with its content and active sort type.
 - (UIMenu*)createSortMenu {
   NSMutableArray<UIAction*>* sortActions = [NSMutableArray array];
 
+  // Create menu actions.
   UIAction* sortByPublisherAction = [UIAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_FEED_SORT_PUBLISHER)
                 image:nil
            identifier:nil
-              handler:^(UIAction* action){
-                  // TODO(crbug.com/1277974): Handle selected sorting.
+              handler:^(UIAction* action) {
+                [self.feedControlDelegate handleSortTypeForFollowingFeed:
+                                              FollowingFeedSortTypeByPublisher];
               }];
-  // TODO(crbug.com/1277974): Set the active state based on selected sorting.
-  sortByPublisherAction.state = UIMenuElementStateOn;
   [sortActions addObject:sortByPublisherAction];
-
-  UIAction* sortByLatestAction =
-      [UIAction actionWithTitle:l10n_util::GetNSString(IDS_IOS_FEED_SORT_LATEST)
-                          image:nil
-                     identifier:nil
-                        handler:^(UIAction* action){
-                            // TODO(crbug.com/1277974): Handle selected sorting.
-                        }];
+  UIAction* sortByLatestAction = [UIAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_FEED_SORT_LATEST)
+                image:nil
+           identifier:nil
+              handler:^(UIAction* action) {
+                [self.feedControlDelegate handleSortTypeForFollowingFeed:
+                                              FollowingFeedSortTypeByLatest];
+              }];
   [sortActions addObject:sortByLatestAction];
+
+  // Set active sorting.
+  switch (self.followingFeedSortType) {
+    case FollowingFeedSortTypeByLatest:
+      sortByLatestAction.state = UIMenuElementStateOn;
+      break;
+    case FollowingFeedSortTypeByPublisher:
+    default:
+      sortByPublisherAction.state = UIMenuElementStateOn;
+  }
 
   return [UIMenu menuWithTitle:@"" children:sortActions];
 }
@@ -202,7 +335,7 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   // The sort button is only visible if the Following feed is selected.
   // TODO(crbug.com/1277974): Determine if the button should show when the feed
   // is hidden.
-  sortButton.alpha = self.selectedFeed == FeedType::kFollowingFeed ? 1 : 0;
+  sortButton.alpha = self.selectedFeed == FeedTypeFollowing ? 1 : 0;
 
   return sortButton;
 }
@@ -232,9 +365,6 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
       [[UISegmentedControl alloc] initWithItems:headerLabels];
   segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
   [segmentedControl setApportionsSegmentWidthsByContent:NO];
-  for (NSUInteger i = 0; i < segmentedControl.numberOfSegments; ++i) {
-    [segmentedControl setWidth:kHeaderSegmentWidth forSegmentAtIndex:i];
-  }
 
   // Set text font and color.
   UIFont* font = [UIFont systemFontOfSize:kDiscoverFeedTitleFontSize
@@ -255,11 +385,63 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   return segmentedControl;
 }
 
+// Configures and returns the dot indicating that there is new content in the
+// Following feed.
+- (UIView*)createFollowingSegmentDot {
+  UIView* followingSegmentDot = [[UIView alloc] init];
+  followingSegmentDot.layer.cornerRadius = kFollowingSegmentDotRadius;
+  followingSegmentDot.backgroundColor = [UIColor colorNamed:kBlue500Color];
+  followingSegmentDot.translatesAutoresizingMaskIntoConstraints = NO;
+  return followingSegmentDot;
+}
+
+// Configures and returns the blurred background of the feed header.
+- (UIVisualEffectView*)createBlurBackground {
+  UIBlurEffect* blurEffect =
+      [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterial];
+  UIVisualEffectView* blurBackgroundView =
+      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  blurBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
+  return blurBackgroundView;
+}
+
+- (void)addCustomSearchEngineView {
+  if (self.customSearchEngineView) {
+    [self removeCustomSearchEngineView];
+  }
+  self.customSearchEngineView = [[UILabel alloc] init];
+  self.customSearchEngineView.text =
+      l10n_util::GetNSString(IDS_IOS_FEED_CUSTOM_SEARCH_ENGINE_LABEL);
+  self.customSearchEngineView.font =
+      [UIFont systemFontOfSize:kCustomSearchEngineLabelFontSize];
+  self.customSearchEngineView.textColor = [UIColor colorNamed:kGrey500Color];
+  self.customSearchEngineView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.customSearchEngineView.textAlignment = NSTextAlignmentCenter;
+  [self.view addSubview:self.customSearchEngineView];
+}
+
+- (void)removeCustomSearchEngineView {
+  [self.customSearchEngineView removeFromSuperview];
+  self.customSearchEngineView = nil;
+}
+
 // Applies constraints for the feed header elements' positioning.
 - (void)applyHeaderConstraints {
-  // Anchor container and menu button.
-  [NSLayoutConstraint activateConstraints:@[
-    [self.container.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+  // Remove previous constraints if they were already set.
+  if (self.feedHeaderConstraints) {
+    [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
+    self.feedHeaderConstraints = nil;
+  }
+
+  self.feedHeaderConstraints = [[NSMutableArray alloc] init];
+
+  [self.feedHeaderConstraints addObjectsFromArray:@[
+    // Anchor container and menu button.
+    [self.view.heightAnchor
+        constraintEqualToConstant:([self feedHeaderHeight] +
+                                   [self customSearchEngineViewHeight])],
+    [self.container.heightAnchor
+        constraintEqualToConstant:kWebChannelsHeaderHeight],
     [self.container.bottomAnchor
         constraintEqualToAnchor:self.view.bottomAnchor],
     [self.container.centerXAnchor
@@ -273,15 +455,22 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
     [self.menuButton.centerYAnchor
         constraintEqualToAnchor:self.container.centerYAnchor],
   ]];
+
   if (IsWebChannelsEnabled()) {
-    [NSLayoutConstraint activateConstraints:@[
-      [self.view.heightAnchor
-          constraintEqualToConstant:kWebChannelsHeaderHeight],
+    [self.feedHeaderConstraints addObjectsFromArray:@[
       // Anchor segmented control.
       [self.segmentedControl.centerXAnchor
           constraintEqualToAnchor:self.container.centerXAnchor],
       [self.segmentedControl.centerYAnchor
           constraintEqualToAnchor:self.container.centerYAnchor],
+      [self.segmentedControl.trailingAnchor
+          constraintEqualToAnchor:self.menuButton.leadingAnchor
+                         constant:-kButtonHorizontalMargin],
+      [self.segmentedControl.leadingAnchor
+          constraintEqualToAnchor:self.sortButton.trailingAnchor
+                         constant:kButtonHorizontalMargin],
+      [self.segmentedControl.widthAnchor
+          constraintLessThanOrEqualToConstant:kHeaderSegmentWidth],
       // Set menu button size.
       [self.menuButton.heightAnchor constraintEqualToConstant:kButtonSize],
       [self.menuButton.widthAnchor constraintEqualToConstant:kButtonSize],
@@ -293,10 +482,74 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
                          constant:kButtonHorizontalMargin],
       [self.sortButton.centerYAnchor
           constraintEqualToAnchor:self.container.centerYAnchor],
+      // Set Following segment dot size.
+      [self.followingSegmentDot.heightAnchor
+          constraintEqualToConstant:kFollowingSegmentDotRadius * 2],
+      [self.followingSegmentDot.widthAnchor
+          constraintEqualToConstant:kFollowingSegmentDotRadius * 2],
     ]];
+
+    // Find the "Following" label within the segmented control, since it is not
+    // exposed by UISegmentedControl.
+    UIView* followingSegment = self.segmentedControl.subviews[0];
+    UILabel* followingLabel;
+    for (UIView* view in followingSegment.subviews) {
+      if ([view isKindOfClass:[UILabel class]]) {
+        followingLabel = static_cast<UILabel*>(view);
+      }
+    }
+
+    // If the label was found, anchor the dot to it. Otherwise, anchor the dot
+    // to the top corner of the segmented control.
+    if (followingLabel) {
+      [self.feedHeaderConstraints addObjectsFromArray:@[
+        // Anchor Following segment dot to label text.
+        [self.followingSegmentDot.leftAnchor
+            constraintEqualToAnchor:followingLabel.rightAnchor
+                           constant:kFollowingSegmentDotMargin],
+        [self.followingSegmentDot.bottomAnchor
+            constraintEqualToAnchor:followingLabel.topAnchor
+                           constant:kFollowingSegmentDotMargin],
+      ]];
+    } else {
+      [self.feedHeaderConstraints addObjectsFromArray:@[
+        // Anchor Following segment dot to top corner.
+        [self.followingSegmentDot.rightAnchor
+            constraintEqualToAnchor:self.segmentedControl.rightAnchor
+                           constant:-kFollowingSegmentDotMargin],
+        [self.followingSegmentDot.topAnchor
+            constraintEqualToAnchor:self.segmentedControl.topAnchor
+                           constant:kFollowingSegmentDotMargin],
+      ]];
+    }
+
+    if (self.blurBackgroundView) {
+      [self.feedHeaderConstraints addObjectsFromArray:@[
+        // Anchor blur background view.
+        [self.blurBackgroundView.trailingAnchor
+            constraintEqualToAnchor:self.container.trailingAnchor],
+        [self.blurBackgroundView.leadingAnchor
+            constraintEqualToAnchor:self.container.leadingAnchor],
+        [self.blurBackgroundView.topAnchor
+            constraintEqualToAnchor:self.container.topAnchor],
+        [self.blurBackgroundView.bottomAnchor
+            constraintEqualToAnchor:self.container.bottomAnchor],
+      ]];
+    }
+    if (!self.isGoogleDefaultSearchEngine) {
+      [self.feedHeaderConstraints addObjectsFromArray:@[
+        // Anchors custom search engine view.
+        [self.customSearchEngineView.widthAnchor
+            constraintEqualToAnchor:self.view.widthAnchor],
+        [self.customSearchEngineView.heightAnchor
+            constraintEqualToConstant:kCustomSearchEngineLabelHeight],
+        [self.customSearchEngineView.bottomAnchor
+            constraintEqualToAnchor:self.container.topAnchor],
+      ]];
+    }
   } else {
-    // Anchors title label.
-    [NSLayoutConstraint activateConstraints:@[
+    [self.feedHeaderConstraints addObjectsFromArray:@[
+      // Anchors title label.
       [self.view.heightAnchor
           constraintEqualToConstant:kDiscoverFeedHeaderHeight],
       [self.titleLabel.leadingAnchor
@@ -308,22 +561,24 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
           constraintEqualToAnchor:self.container.centerYAnchor],
     ]];
   }
+  [NSLayoutConstraint activateConstraints:self.feedHeaderConstraints];
 }
 
 // Handles a new feed being selected from the header.
 - (void)onSegmentSelected:(UISegmentedControl*)segmentedControl {
   switch (segmentedControl.selectedSegmentIndex) {
-    case static_cast<NSInteger>(FeedType::kDiscoverFeed): {
-      [self.feedControlDelegate handleFeedSelected:FeedType::kDiscoverFeed];
-      [UIView animateWithDuration:kSortButtonAnimationDuration
+    case static_cast<NSInteger>(FeedTypeDiscover): {
+      [self.feedControlDelegate handleFeedSelected:FeedTypeDiscover];
+      [UIView animateWithDuration:kSegmentAnimationDuration
                        animations:^{
                          self.sortButton.alpha = 0;
                        }];
       break;
     }
-    case static_cast<NSInteger>(FeedType::kFollowingFeed): {
-      [self.feedControlDelegate handleFeedSelected:FeedType::kFollowingFeed];
-      [UIView animateWithDuration:kSortButtonAnimationDuration
+    case static_cast<NSInteger>(FeedTypeFollowing): {
+      [self.feedControlDelegate handleFeedSelected:FeedTypeFollowing];
+      // Only show sorting button for Following feed.
+      [UIView animateWithDuration:kSegmentAnimationDuration
                        animations:^{
                          self.sortButton.alpha = 1;
                        }];

@@ -20,14 +20,14 @@ import './add_site_dialog.js';
 import './edit_exception_dialog.js';
 import './site_list_entry.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/js/list_property_update_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 import {loadTimeData} from '../i18n_setup.js';
 
 import {AndroidInfoBrowserProxyImpl, AndroidSmsInfo} from './android_info_browser_proxy.js';
@@ -176,14 +176,14 @@ export class SiteListElement extends SiteListElementBase {
   private browserProxy_: SiteSettingsPrefsBrowserProxy =
       SiteSettingsPrefsBrowserProxyImpl.getInstance();
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   private androidSmsInfo_: AndroidSmsInfo|null;
   // </if>
 
   constructor() {
     super();
 
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     /**
      * Android messages info object containing messages feature state and
      * exception origin.
@@ -209,7 +209,7 @@ export class SiteListElement extends SiteListElementBase {
         'onIncognitoStatusChanged',
         (hasIncognito: boolean) =>
             this.onIncognitoStatusChanged_(hasIncognito));
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     this.addWebUIListener(
         'settings.onAndroidSmsInfoChange', (info: AndroidSmsInfo) => {
           this.androidSmsInfo_ = info;
@@ -258,11 +258,11 @@ export class SiteListElement extends SiteListElementBase {
 
     this.setUpActionMenu_();
 
-    // <if expr="not chromeos">
+    // <if expr="not chromeos_ash">
     this.populateList_();
     // </if>
 
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     this.updateAndroidSmsInfo_().then(() => this.populateList_());
     // </if>
 
@@ -304,7 +304,7 @@ export class SiteListElement extends SiteListElementBase {
 
   private onAddSiteDialogClosed_() {
     this.showAddSiteDialog_ = false;
-    focusWithoutInk(assert(this.$.addSite));
+    focusWithoutInk(this.$.addSite);
   }
 
   /**
@@ -334,7 +334,7 @@ export class SiteListElement extends SiteListElementBase {
     this.$.tooltip.show();
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   /**
    * Load android sms info if required and sets it to the |androidSmsInfo_|
    * property. Returns a promise that resolves when load is complete.
@@ -395,7 +395,7 @@ export class SiteListElement extends SiteListElementBase {
                             site.setting === this.categorySubtype)
                     .map(site => this.expandSiteException(site));
 
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     sites = this.processExceptionsForAndroidSmsInfo_(sites);
     // </if>
     this.updateList('sites', x => x.origin, sites);
@@ -466,9 +466,10 @@ export class SiteListElement extends SiteListElementBase {
   }
 
   private onResetTap_() {
-    const site = assert(this.actionMenuSite_!);
+    assert(this.actionMenuSite_);
     this.browserProxy.resetCategoryPermissionForPattern(
-        site!.origin, site!.embeddingOrigin, this.category, site!.incognito);
+        this.actionMenuSite_.origin, this.actionMenuSite_.embeddingOrigin,
+        this.category, this.actionMenuSite_.incognito);
     this.closeActionMenu_();
   }
 

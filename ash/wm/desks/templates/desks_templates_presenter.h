@@ -17,8 +17,10 @@
 
 namespace ash {
 
+class Desk;
 class DeskTemplate;
 class OverviewSession;
+enum class DeskTemplateType;
 
 // DesksTemplatesPresenter is the presenter for the desks templates UI. It
 // handles all calls to the model, and lets the UI know what to show or update.
@@ -61,11 +63,12 @@ class ASH_EXPORT DesksTemplatesPresenter : desks_storage::DeskModelObserver {
                           base::TimeDelta delay,
                           aura::Window* root_window);
 
-  // Calls the DeskModel to capture the active desk as a template entry, with a
+  // Calls the DeskModel to capture the active desk as a `template_type`, with a
   // callback to `OnAddOrUpdateEntry`. If there are unsupported apps on the
   // active desk, a dialog will open up and we may or may not save the desk
   // asynchronously based on the user's decision.
-  void MaybeSaveActiveDeskAsTemplate(aura::Window* root_window_to_show);
+  void MaybeSaveActiveDeskAsTemplate(DeskTemplateType template_type,
+                                     aura::Window* root_window_to_show);
 
   // Saves or updates the `desk_template` to the model.
   void SaveOrUpdateDeskTemplate(bool is_update,
@@ -104,6 +107,13 @@ class ASH_EXPORT DesksTemplatesPresenter : desks_storage::DeskModelObserver {
       aura::Window* const root_window,
       desks_storage::DeskModel::GetEntryByUuidStatus status,
       std::unique_ptr<DeskTemplate> entry);
+
+  // Callback after creating a new desk for launching a template.
+  void OnNewDeskCreatedForTemplate(std::unique_ptr<DeskTemplate> desk_template,
+                                   base::Time time_launch_started,
+                                   base::TimeDelta delay,
+                                   aura::Window* root_window,
+                                   const Desk* new_desk);
 
   // Callback after adding or updating an entry. Will then call
   // `AddOrUpdateUIEntries` to update the UI by adding or updating the template.

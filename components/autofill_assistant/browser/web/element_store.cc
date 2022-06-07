@@ -37,14 +37,16 @@ ClientStatus ElementStore::GetElement(
 ClientStatus ElementStore::RestoreElement(
     const DomObjectFrameStack& object,
     ElementFinder::Result* out_element) const {
-  out_element->dom_object = object;
+  out_element->SetObjectId(object.object_data.object_id);
+  out_element->SetNodeFrameId(object.object_data.node_frame_id);
+  out_element->SetFrameStack(object.frame_stack);
   auto* frame = FindCorrespondingRenderFrameHost(
       object.object_data.node_frame_id, web_contents_);
   if (frame == nullptr) {
     VLOG(1) << __func__ << " failed to resolve frame.";
     return ClientStatus(CLIENT_ID_RESOLUTION_FAILED);
   }
-  out_element->container_frame_host = frame;
+  out_element->SetRenderFrameHost(frame);
   return OkClientStatus();
 }
 

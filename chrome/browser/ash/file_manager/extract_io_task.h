@@ -39,6 +39,14 @@ class ExtractIOTask : public IOTask {
 
   void ZipExtractCallback(bool success);
 
+  void ExtractIntoNewDirectory(base::FilePath destination_directory,
+                               base::FilePath source_file,
+                               bool created_ok);
+
+  void ExtractArchive(
+      size_t index,
+      base::FileErrorOr<storage::FileSystemURL> destination_result);
+
   // URLs of the files that have archives in them for extraction.
   const std::vector<storage::FileSystemURL> source_urls_;
 

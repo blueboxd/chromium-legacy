@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/run_loop.h"
@@ -15,9 +16,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -36,7 +36,7 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
   ActiveDirectoryPolicyManagerTest()
       : user_manager_enabler_(std::make_unique<ash::FakeChromeUserManager>()),
         install_attributes_(
-            chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
+            ash::StubInstallAttributes::CreateActiveDirectoryManaged(
                 "realm.com",
                 "device_id")) {}
 
@@ -47,7 +47,7 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
 
   // testing::Test overrides:
   void SetUp() override {
-    chromeos::AuthPolicyClient::InitializeFake();
+    ash::AuthPolicyClient::InitializeFake();
     fake_client()->SetStarted(true);
     fake_client()->set_refresh_user_policy_error(authpolicy::ERROR_NONE);
   }
@@ -56,7 +56,7 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
     if (mock_external_data_manager())
       EXPECT_CALL(*mock_external_data_manager(), Disconnect());
     policy_manager_->Shutdown();
-    chromeos::AuthPolicyClient::Shutdown();
+    ash::AuthPolicyClient::Shutdown();
   }
 
  protected:
@@ -88,8 +88,8 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
   }
 
   // Owned by the AuthPolicyClient global instance.
-  chromeos::FakeAuthPolicyClient* fake_client() {
-    return chromeos::FakeAuthPolicyClient::Get();
+  ash::FakeAuthPolicyClient* fake_client() {
+    return ash::FakeAuthPolicyClient::Get();
   }
 
   // Used to set FakeUserManager.
@@ -103,7 +103,7 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  chromeos::ScopedStubInstallAttributes install_attributes_;
+  ash::ScopedStubInstallAttributes install_attributes_;
 };
 
 class UserActiveDirectoryPolicyManagerTest

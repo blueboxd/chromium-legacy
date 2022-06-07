@@ -26,6 +26,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/autofill/autofill_uitest.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,7 +52,6 @@
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/pattern_provider/pattern_configuration_parser.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_tick_clock.h"
 #include "components/autofill/core/browser/validation.h"
@@ -65,8 +65,6 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -1356,7 +1354,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifySelectFieldAndFill) {
               ValuesAre(MergeValue(kDefaultAddress, {"state", "CA"})));
 }
 
-// Test that autofill works when the website prefills the form.
+// Test that autofill works when the website prefills the form when
+// |kAutofillPreventOverridingPrefilledValues| is not enabled, otherwise, the
+// prefilled field values are not overridden.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, PrefillFormAndFill) {
   const char kPrefillScript[] =
       R"( <script>
@@ -1377,7 +1377,18 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, PrefillFormAndFill) {
   ASSERT_TRUE(
       AutofillFlow(GetElementById("firstname"), this,
                    {.after_focus = base::BindLambdaForTesting(Delete)}));
-  EXPECT_THAT(GetFormValues(), ValuesAre(kDefaultAddress));
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillPreventOverridingPrefilledValues)) {
+    EXPECT_EQ("Milton", GetFieldValueById("firstname"));
+    EXPECT_EQ("Bell", GetFieldValueById("lastname"));
+    EXPECT_EQ("3243 Notre-Dame Ouest", GetFieldValueById("address1"));
+    EXPECT_EQ("apt 843", GetFieldValueById("address2"));
+    EXPECT_EQ("Montreal", GetFieldValueById("city"));
+    EXPECT_EQ("H5D 4D3", GetFieldValueById("zip"));
+    EXPECT_EQ("15142223344", GetFieldValueById("phone"));
+  } else {
+    EXPECT_THAT(GetFormValues(), ValuesAre(kDefaultAddress));
+  }
 }
 
 // Test that autofill doesn't refill a field modified by the user.
@@ -2606,10 +2617,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   ASSERT_TRUE(AutofillFlow(GetElementById("NAME_FIRST"), this));
 
-  content::WindowedNotificationObserver load_stop_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &GetWebContents()->GetController()));
+  content::LoadStopObserver load_stop_observer(GetWebContents());
 
   ASSERT_TRUE(content::ExecuteScript(
       GetWebContents(), "document.getElementById('testform').submit();"));

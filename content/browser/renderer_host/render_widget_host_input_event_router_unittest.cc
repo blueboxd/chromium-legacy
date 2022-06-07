@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_targeter.h"
+#include "content/browser/site_instance_group.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -47,15 +48,12 @@ class MockFrameConnector : public CrossProcessFrameConnector {
  public:
   MockFrameConnector(RenderWidgetHostViewChildFrame* view,
                      RenderWidgetHostViewBase* parent_view,
-                     RenderWidgetHostViewBase* root_view,
-                     bool use_zoom_for_device_scale_factor)
+                     RenderWidgetHostViewBase* root_view)
       : CrossProcessFrameConnector(nullptr),
         parent_view_(parent_view),
         root_view_(root_view) {
     view_ = view;
     view_->SetFrameConnector(this);
-    set_use_zoom_for_device_scale_factor_for_testing(
-        use_zoom_for_device_scale_factor);
   }
 
   MockFrameConnector(const MockFrameConnector&) = delete;
@@ -211,10 +209,11 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
     process_host_root_ =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
-    agent_scheduling_group_host_root_ =
-        std::make_unique<AgentSchedulingGroupHost>(*process_host_root_);
+    site_instance_group_root_ = base::WrapRefCounted(new SiteInstanceGroup(
+        SiteInstanceImpl::NextBrowsingInstanceId(), process_host_root_.get()));
     widget_host_root_ = RenderWidgetHostImpl::Create(
-        /*frame_tree=*/nullptr, &delegate_, *agent_scheduling_group_host_root_,
+        /*frame_tree=*/nullptr, &delegate_,
+        site_instance_group_root_->GetSafeRef(),
         process_host_root_->GetNextRoutingID(),
         /*hidden=*/false, /*renderer_initiated_creation=*/false,
         std::make_unique<FrameTokenMessageQueue>());
@@ -254,7 +253,7 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
   struct ChildViewState {
     std::unique_ptr<MockRenderProcessHost> process_host;
-    std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host;
+    scoped_refptr<SiteInstanceGroup> site_instance_group;
     std::unique_ptr<RenderWidgetHostImpl> widget_host;
     std::unique_ptr<TestRenderWidgetHostViewChildFrame> view;
     std::unique_ptr<MockFrameConnector> frame_connector;
@@ -269,18 +268,19 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
     child.process_host =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
-    child.agent_scheduling_group_host =
-        std::make_unique<AgentSchedulingGroupHost>(*child.process_host);
+    child.site_instance_group = base::WrapRefCounted(
+        new SiteInstanceGroup(site_instance_group_root_->browsing_instance_id(),
+                              child.process_host.get()));
     child.widget_host = RenderWidgetHostImpl::Create(
-        /*frame_tree=*/nullptr, &delegate_, *child.agent_scheduling_group_host,
+        /*frame_tree=*/nullptr, &delegate_,
+        child.site_instance_group->GetSafeRef(),
         child.process_host->GetNextRoutingID(),
         /*hidden=*/false, /*renderer_initiated_creation=*/false,
         std::make_unique<FrameTokenMessageQueue>());
     child.view = std::make_unique<TestRenderWidgetHostViewChildFrame>(
         child.widget_host.get());
     child.frame_connector = std::make_unique<MockFrameConnector>(
-        child.view.get(), parent_view, view_root_.get(),
-        false /* use_zoom_for_device_scale_factor */);
+        child.view.get(), parent_view, view_root_.get());
 
     EXPECT_EQ(child.view.get(),
               rwhier()->FindViewFromFrameSinkId(child.view->GetFrameSinkId()));
@@ -292,7 +292,7 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
     view_root_.reset();
     widget_host_root_.reset();
     process_host_root_->Cleanup();
-    agent_scheduling_group_host_root_.reset();
+    site_instance_group_root_.reset();
     process_host_root_.reset();
     base::RunLoop().RunUntilIdle();
 
@@ -325,7 +325,7 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   std::unique_ptr<BrowserContext> browser_context_;
 
   std::unique_ptr<MockRenderProcessHost> process_host_root_;
-  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host_root_;
+  scoped_refptr<SiteInstanceGroup> site_instance_group_root_;
   std::unique_ptr<RenderWidgetHostImpl> widget_host_root_;
   std::unique_ptr<MockRootRenderWidgetHostView> view_root_;
   std::unique_ptr<MockInputTargetClient> input_target_client_root_;

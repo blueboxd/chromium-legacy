@@ -6,6 +6,7 @@
 
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -294,7 +295,7 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_TraceEvent_Candidate) {
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ("loading", events[0]->category);
 
-  EXPECT_TRUE(events[0]->HasArg("frame"));
+  EXPECT_TRUE(events[0]->HasStringArg("frame"));
 
   ASSERT_TRUE(events[0]->HasDictArg("data"));
   base::Value::Dict arg_dict = events[0]->GetKnownArgAsDict("data");
@@ -342,7 +343,7 @@ TEST_F(TextPaintTimingDetectorTest,
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ("loading", events[0]->category);
 
-  EXPECT_TRUE(events[0]->HasArg("frame"));
+  EXPECT_TRUE(events[0]->HasStringArg("frame"));
 
   ASSERT_TRUE(events[0]->HasDictArg("data"));
   base::Value::Dict arg_dict = events[0]->GetKnownArgAsDict("data");

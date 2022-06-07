@@ -184,7 +184,6 @@
 <translation id="200114059308480249">ຮວມຂໍ້ຄວາມທີ່ຢູ່ອ້ອມຂ້າງໃນການຊອກຫາ Google ບໍ?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ໄຟລ໌}other{# ໄຟລ໌}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> ຈະເປີດໃນ Chrome. ໂດຍການສືບຕໍ່, ແມ່ນຖືວ່າທ່ານຍອມຮັບ <ph name="BEGIN_LINK1" />ຂໍ້ກຳນົດບໍລິການຂອງ Google<ph name="END_LINK1" /> ແລະ <ph name="BEGIN_LINK2" />ຂໍ້ກຳນົດບໍລິການເພີ່ມເຕີມຂອງ Google Chrome ແລະ Chrome OS<ph name="END_LINK2" />. ຈະນຳໃຊ້ <ph name="BEGIN_LINK3" />ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ<ph name="END_LINK3" /> ນຳ.</translation>
-<translation id="2019145049163614359">ລຶບຄວາມສົນໃຈອອກບໍ?</translation>
 <translation id="2020309681647789787">ທ່ານຈະສາມາດໃຊ້ປະຫວັດຂອງທ່ານໄດ້ຢູ່ອຸປະກອນທີ່ຊິ້ງຂໍ້ມູນແລ້ວທັງໝົດຂອງທ່ານ, ເພື່ອໃຫ້ທ່ານສາມາດສືບຕໍ່ສິ່ງທີ່ທ່ານກຳລັງເຮັດໄດ້</translation>
 <translation id="2021896219286479412">ການຄວບຄຸມເວັບໄຊແບບເຕັມຈໍ</translation>
 <translation id="2038563949887743358">ເປີດ​ຂໍ​ເວັບ​ໄຊ​ທ໌​ເດັ​ສ​ທັອບ</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">ອ້າງອີງຈາກການນຳໃຊ້ຂອງທ່ານ</translation>
 <translation id="214888715418183969">ເລືອກສິ່ງທີ່ທ່ານສະບາຍໃຈຈະແບ່ງປັນກັບ Chrome. ການວັດແທກທີ່ທ່ານແບ່ງປັນຈະຖືກໃຊ້ເພື່ອຊ່ວຍປັບປຸງຄຸນສົມບັດ, ປະສິດທິພາບ ແລະ ຄວາມສະຖຽນຂອງ Chrome.</translation>
 <translation id="2149973817440762519">ແກ້​ໄຂບຸກມາກສ໌</translation>
+<translation id="2155214902713132423">ບໍ່ສາມາດໃຊ້ວິທີການຢັ້ງຢືນນີ້ສຳລັບອຸປະກອນນີ້ໄດ້. ກະລຸນາເລືອກຕົວເລືອກອື່ນຢູ່ອຸປະກອນຂອງທ່ານ.</translation>
 <translation id="2157851137955077194">ເພື່ອແບ່ງປັນບາງຢ່າງຈາກໂທລະສັບຂອງທ່ານກັບອຸປະກອນອື່ນ, ເປີດການຊິ້ງຂໍ້ມູນໃນການຕັ້ງຄ່າ Chrome ຢູ່ໃນທັງສອງອຸປະກອນ</translation>
 <translation id="2158408438301413340">Chrome ບໍ່ສາມາດກວດລະຫັດຜ່ານທັງໝົດໄດ້</translation>
 <translation id="2169830938017475061">ຕອນນີ້</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">ໃນອີກບໍ່ດົນ, ທ່ານຈະເຫັນຂ່າວຈາກ <ph name="SITE_NAME" /> ເມື່ອທ່ານເປີດແຖບໃໝ່. ເວັບໄຊທີ່ທ່ານຕິດຕາມແມ່ນຖືກບັນທຶກໄວ້ໃນບັນຊີ Google ຂອງທ່ານ. ທ່ານສາມາດຈັດການພວກມັນໄດ້ໃນການຕັ້ງຄ່າ Discover.</translation>
 <translation id="5091249083535528968">ຂໍ້ມູນການນຳໃຊ້ເພີ່ມເຕີມ</translation>
 <translation id="509429900233858213">ເກີດຄວາມຜິດພາດຂຶ້ນ.</translation>
-<translation id="5098190077610408701">ເພີ່ມຄວາມສົນໃຈບໍ?</translation>
 <translation id="5102401324271069229">ຖ້າເວັບໄຊພະຍາຍາມລັກເອົາລະຫັດຜ່ານຂອງທ່ານ ຫຼື ເມື່ອທ່ານດາວໂຫຼດໄຟລ໌ທີ່ເປັນອັນຕະລາຍ, Chrome ອາດສົ່ງ URL ຮວມທັງເນື້ອຫາບາງສ່ວນຂອງໜ້າໄປໃຫ້ Safe Browsing</translation>
 <translation id="510275257476243843">ຍັງເຫຼືອ 1 ຊົ່ວໂມງ</translation>
 <translation id="5115811374190515607">ຫາ <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">ການຮູ້ URL ຂອງເວັບໄຊຈະເຮັດໃຫ້ຜູ້ຊ່ວຍ Google ຊ່ວຍທ່ານເຮັດໜ້າວຽກຕ່າງໆໃຫ້ສຳເລັດໄດ້. ທ່ານສາມາດປິດຜູ້ຊ່ວຍໄດ້ໃນການຕັ້ງຄ່າ Chrome.</translation>
 <translation id="5916664084637901428">ເປີດ</translation>
 <translation id="5919204609460789179">ອັບເດດ <ph name="PRODUCT_NAME" /> ເພື່ອເລີ່ມການຊິ້ງຂໍ້ມູນ</translation>
+<translation id="5938820472109305350">ເພີ່ມ <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">ກຳລັງໃຊ້ Google ສຳລັບການຊອກຫາ</translation>
 <translation id="5945035219773565305">ການແນະນຳປັດຈຸບັນ:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">ກຳລັງເບິ່ງໜ້າສົດ</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791">ດ້ວຍ <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome ກຳລັງພັດທະນາເທັກໂນໂລຢີໃໝ່ເພື່ອປ້ອງກັນທ່ານຈາກການຕິດຕາມຂ້າມເວັບໄຊໃນຂະນະທີ່ຍັງຄົງຮັກສາຄວາມເປີດກວ້າງຂອງເວັບໄວ້.
 
 ການທົດລອງໃຊ້ Privacy Sandbox ຍັງຄົງຢູ່ໃນລະຫວ່າງການພັດທະນາຢ່າງຫ້າວຫັນ ແລະ ສາມາດໃຊ້ໄດ້ໃນບາງພາກພື້ນ. ສຳລັບຕອນນີ້, ເວັບໄຊອາດລອງໃຊ້ Privacy Sandbox ໃນຂະນະທີ່ສືບຕໍ່ໃຊ້ເທັກໂນໂລຢີເວັບປັດຈຸບັນ ເຊັ່ນ: ຄຸກກີ້ພາກສ່ວນທີສາມ.</translation>
-<translation id="6036057147555329831">ICU ເພີ່ມເຕີມ</translation>
 <translation id="6039379616847168523">ໂດດໄປຫາແຖບຕໍ່ໄປ</translation>
 <translation id="6040143037577758943">ປິດ</translation>
 <translation id="604124094241169006">ອັດ​ຕະ​ໂນ​ມັດ</translation>
@@ -1023,6 +1022,7 @@
 <translation id="663674369910034433">ສຳລັບການຕັ້ງຄ່າເພີ່ມເຕີມທີ່ກ່ຽວຂ້ອງກັບຄວາມເປັນສ່ວນຕົວ, ຄວາມປອດໄພ ແລະ ການເກັບກຳຂໍ້ມູນ, ກະລຸນາເບິ່ງ <ph name="BEGIN_LINK1" />ການຊິ້ງຂໍ້ມູນ<ph name="END_LINK1" /> ແລະ <ph name="BEGIN_LINK2" />ການບໍລິການຂອງ Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">ເພື່ອຊ່ວຍປັບປຸງແອັບ, Chrome ຈະສົ່ງຂໍ້ມູນການນຳໃຊ້ ແລະ ການຫຼົ້ມໄປໃຫ້ Google. <ph name="BEGIN_UMA_LINK" />ຈັດການ<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">ບລັອກຕະຫຼອດເວລາ</translation>
+<translation id="6641780377503683465">ລຶບ <ph name="INTEREST" /> ອອກ</translation>
 <translation id="6643016212128521049">ລຶບ</translation>
 <translation id="6645629752388991326">ຄວບຄຸມວ່າອຸປະກອນໃດສາມາດເຂົ້າສູ່ລະບົບໄດ້ໂດຍການໃຊ້ອຸປະກອນນີ້ເປັນກະແຈຄວາມປອດໄພ.</translation>
 <translation id="6648459603387803038">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານສາມາດປ່ຽນການຕັ້ງຄ່າໂປຣແກຣມທ່ອງເວັບຂອງທ່ານຈາກທາງໄກໄດ້. ການເຄື່ອນໄຫວໃນອຸປະກອນນີ້ອາດຈະຖືກຈັດການຢູ່ນອກ Chrome ໄດ້ເຊັ່ນກັນ.</translation>

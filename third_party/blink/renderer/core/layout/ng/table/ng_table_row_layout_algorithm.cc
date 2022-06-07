@@ -13,8 +13,22 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_layout_algorithm_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_row_break_token_data.h"
 
 namespace blink {
+
+struct ResultWithOffset {
+  DISALLOW_NEW();
+
+ public:
+  Member<const NGLayoutResult> result;
+  LogicalOffset offset;
+
+  ResultWithOffset(const NGLayoutResult* result, LogicalOffset offset)
+      : result(result), offset(offset) {}
+
+  void Trace(Visitor* visitor) const { visitor->Trace(result); }
+};
 
 NGTableRowLayoutAlgorithm::NGTableRowLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
@@ -24,116 +38,181 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
   const NGTableConstraintSpaceData& table_data = *ConstraintSpace().TableData();
   const auto& row = table_data.rows[ConstraintSpace().TableRowIndex()];
 
-  auto CreateCellConstraintSpace = [this, &row, &table_data](
-                                       NGBlockNode cell, wtf_size_t cell_index,
-                                       absl::optional<LayoutUnit> row_baseline,
-                                       LayoutUnit* cell_inline_offset = nullptr,
-                                       bool use_block_fragmentation = false) {
-    const auto& cell_data = table_data.cells[cell_index];
-    const LayoutUnit cell_block_size =
-        cell_data.rowspan_block_size != kIndefiniteSize
-            ? cell_data.rowspan_block_size
-            : row.block_size;
+  auto CreateCellConstraintSpace =
+      [this, &table_data](
+          NGBlockNode cell, const NGTableConstraintSpaceData::Cell& cell_data,
+          LayoutUnit row_block_size, absl::optional<LayoutUnit> row_baseline,
+          bool min_block_size_should_encompass_intrinsic_size) {
+        const LayoutUnit cell_block_size =
+            cell_data.rowspan_block_size != kIndefiniteSize
+                ? cell_data.rowspan_block_size
+                : row_block_size;
 
-    // Our initial block-size is definite if this cell has a fixed block-size,
-    // or we have grown and the table has a specified block-size.
-    const bool is_initial_block_size_definite =
-        cell_data.is_constrained ||
-        (cell_data.has_grown && table_data.is_table_block_size_specified);
+        NGConstraintSpaceBuilder builder =
+            NGTableAlgorithmUtils::CreateTableCellConstraintSpaceBuilder(
+                table_data.table_writing_direction, cell, cell_data.borders,
+                table_data.column_locations, cell_block_size,
+                container_builder_.InlineSize(), row_baseline,
+                cell_data.start_column,
+                cell_data.is_initial_block_size_indefinite,
+                table_data.is_table_block_size_specified,
+                table_data.has_collapsed_borders, NGCacheSlot::kLayout);
 
-    const wtf_size_t start_column = cell_data.start_column;
-    if (cell_inline_offset)
-      *cell_inline_offset = table_data.column_locations[start_column].offset;
+        if (ConstraintSpace().HasBlockFragmentation()) {
+          SetupSpaceBuilderForFragmentation(
+              ConstraintSpace(), cell,
+              /* fragmentainer_offset_delta */ LayoutUnit(), &builder,
+              /* is_new_fc */ true,
+              container_builder_.RequiresContentBeforeBreaking());
 
-    NGConstraintSpaceBuilder builder =
-        NGTableAlgorithmUtils::CreateTableCellConstraintSpaceBuilder(
-            table_data.table_writing_direction, cell, cell_data.borders,
-            table_data.column_locations, cell_block_size,
-            container_builder_.InlineSize(), row_baseline, start_column,
-            !is_initial_block_size_definite,
-            table_data.is_table_block_size_specified,
-            table_data.has_collapsed_borders, NGCacheSlot::kLayout);
+          if (min_block_size_should_encompass_intrinsic_size)
+            builder.SetMinBlockSizeShouldEncompassIntrinsicSize();
+        }
 
-    if (use_block_fragmentation) {
-      SetupSpaceBuilderForFragmentation(
-          ConstraintSpace(), cell,
-          /* fragmentainer_offset_delta */ LayoutUnit(), &builder,
-          /* is_new_fc */ true,
-          container_builder_.RequiresContentBeforeBreaking());
-    }
+        return builder.ToConstraintSpace();
+      };
 
-    return builder.ToConstraintSpace();
-  };
-
-  // A cell with perecentage block-size descendants can layout with size that
-  // differs from its intrinsic size. This might cause row baseline to move, if
-  // cell was baseline-aligned.
-  // To compute correct baseline, we need to do an initial layout pass.
-  LayoutUnit row_baseline = row.baseline;
-  if (row.has_baseline_aligned_percentage_block_size_descendants) {
-    wtf_size_t cell_index = row.start_cell_index;
-    NGRowBaselineTabulator row_baseline_tabulator;
-    for (NGBlockNode cell = To<NGBlockNode>(Node().FirstChild()); cell;
-         cell = To<NGBlockNode>(cell.NextSibling()), ++cell_index) {
-      NGConstraintSpace cell_constraint_space =
-          CreateCellConstraintSpace(cell, cell_index, absl::nullopt);
-      const NGLayoutResult* layout_result = cell.Layout(cell_constraint_space);
-      NGBoxFragment fragment(
-          table_data.table_writing_direction,
-          To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
-      row_baseline_tabulator.ProcessCell(
-          fragment,
-          NGTableAlgorithmUtils::IsBaseline(cell.Style().VerticalAlign()),
-          cell.TableCellRowspan() > 1,
-          layout_result->HasDescendantThatDependsOnPercentageBlockSize());
-    }
-    row_baseline = row_baseline_tabulator.ComputeBaseline(row.block_size);
-  }
-
+  bool has_block_fragmentation = ConstraintSpace().HasBlockFragmentation();
   bool should_propagate_child_break_values =
       ConstraintSpace().ShouldPropagateChildBreakValues();
-  EBreakBetween row_break_before = EBreakBetween::kAuto;
-  EBreakBetween row_break_after = EBreakBetween::kAuto;
 
-  // Generate cell fragments.
-  NGRowBaselineTabulator row_baseline_tabulator;
-  NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken(),
-                                      /* calculate_child_idx */ true);
-  for (auto entry = child_iterator.NextChild();
-       NGBlockNode cell = To<NGBlockNode>(entry.node);
-       entry = child_iterator.NextChild()) {
-    const auto* cell_break_token = To<NGBlockBreakToken>(entry.token);
-    const auto& cell_style = cell.Style();
-    wtf_size_t cell_index = row.start_cell_index + *entry.index;
-    LayoutUnit cell_inline_offset;
-    NGConstraintSpace cell_constraint_space = CreateCellConstraintSpace(
-        cell, cell_index, row_baseline, &cell_inline_offset,
-        ConstraintSpace().HasBlockFragmentation());
-    const NGLayoutResult* cell_result =
-        cell.Layout(cell_constraint_space, cell_break_token);
-    container_builder_.AddResult(
-        *cell_result,
-        {cell_inline_offset - table_data.table_border_spacing.inline_size,
-         LayoutUnit()});
+  auto MinBlockSizeShouldEncompassIntrinsicSize =
+      [&](const NGBlockNode& cell,
+          const NGTableConstraintSpaceData::Cell& cell_data) -> bool {
+    if (!has_block_fragmentation)
+      return false;
 
-    if (should_propagate_child_break_values) {
-      auto cell_break_before = JoinFragmentainerBreakValues(
-          cell_style.BreakBefore(), cell_result->InitialBreakBefore());
-      auto cell_break_after = JoinFragmentainerBreakValues(
-          cell_style.BreakAfter(), cell_result->FinalBreakAfter());
-      row_break_before =
-          JoinFragmentainerBreakValues(row_break_before, cell_break_before);
-      row_break_after =
-          JoinFragmentainerBreakValues(row_break_after, cell_break_after);
+    if (cell.IsMonolithic())
+      return false;
+
+    // If this item has (any) descendant that is percentage based, we can end
+    // up in a situation where we'll constantly try and expand the row. E.g.
+    // <div style="display: table-cell; height: 100px;">
+    //   <div style="height: 200%;"></div>
+    // </div>
+    if (cell_data.has_descendant_that_depends_on_percentage_block_size)
+      return false;
+
+    // If we have a cell which has rowspan - only disable encompassing if it
+    // (actually) spans more than one non-empty row.
+    bool has_rowspan = cell_data.rowspan_block_size != kIndefiniteSize;
+    if (has_rowspan) {
+      if (cell_data.rowspan_block_size != row.block_size)
+        return false;
     }
 
-    NGBoxFragment fragment(
-        table_data.table_writing_direction,
-        To<NGPhysicalBoxFragment>(cell_result->PhysicalFragment()));
-    row_baseline_tabulator.ProcessCell(
-        fragment, NGTableAlgorithmUtils::IsBaseline(cell_style.VerticalAlign()),
-        cell.TableCellRowspan() > 1,
-        cell_result->HasDescendantThatDependsOnPercentageBlockSize());
+    return true;
+  };
+
+  LayoutUnit max_cell_block_size;
+  EBreakBetween row_break_before;
+  EBreakBetween row_break_after;
+  NGRowBaselineTabulator row_baseline_tabulator;
+  HeapVector<ResultWithOffset> results;
+  auto PlaceCells = [&](LayoutUnit row_block_size,
+                        absl::optional<LayoutUnit> row_baseline) {
+    // Reset our state.
+    max_cell_block_size = LayoutUnit();
+    row_break_before = EBreakBetween::kAuto;
+    row_break_after = EBreakBetween::kAuto;
+    row_baseline_tabulator = NGRowBaselineTabulator();
+    results.clear();
+
+    NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken(),
+                                        /* calculate_child_idx */ true);
+    for (auto entry = child_iterator.NextChild();
+         NGBlockNode cell = To<NGBlockNode>(entry.node);
+         entry = child_iterator.NextChild()) {
+      const auto* cell_break_token = To<NGBlockBreakToken>(entry.token);
+      const auto& cell_style = cell.Style();
+      const wtf_size_t cell_index = row.start_cell_index + *entry.index;
+      const NGTableConstraintSpaceData::Cell& cell_data =
+          table_data.cells[cell_index];
+
+      bool min_block_size_should_encompass_intrinsic_size =
+          MinBlockSizeShouldEncompassIntrinsicSize(cell, cell_data);
+
+      const auto cell_space = CreateCellConstraintSpace(
+          cell, cell_data, row_block_size, row_baseline,
+          min_block_size_should_encompass_intrinsic_size);
+      const NGLayoutResult* cell_result =
+          cell.Layout(cell_space, cell_break_token);
+
+      const LogicalOffset offset(
+          table_data.column_locations[cell_data.start_column].offset -
+              table_data.table_border_spacing.inline_size,
+          LayoutUnit());
+      if (has_block_fragmentation || !row_baseline)
+        results.emplace_back(cell_result, offset);
+      else
+        container_builder_.AddResult(*cell_result, offset);
+
+      if (should_propagate_child_break_values) {
+        auto cell_break_before = JoinFragmentainerBreakValues(
+            cell_style.BreakBefore(), cell_result->InitialBreakBefore());
+        auto cell_break_after = JoinFragmentainerBreakValues(
+            cell_style.BreakAfter(), cell_result->FinalBreakAfter());
+        row_break_before =
+            JoinFragmentainerBreakValues(row_break_before, cell_break_before);
+        row_break_after =
+            JoinFragmentainerBreakValues(row_break_after, cell_break_after);
+      }
+
+      bool has_rowspan = cell_data.rowspan_block_size != kIndefiniteSize;
+      const NGBoxFragment fragment(
+          table_data.table_writing_direction,
+          To<NGPhysicalBoxFragment>(cell_result->PhysicalFragment()));
+      row_baseline_tabulator.ProcessCell(
+          fragment,
+          NGTableAlgorithmUtils::IsBaseline(cell_style.VerticalAlign()),
+          has_rowspan,
+          cell_data.has_descendant_that_depends_on_percentage_block_size);
+      if (min_block_size_should_encompass_intrinsic_size) {
+        max_cell_block_size =
+            std::max(max_cell_block_size, fragment.BlockSize());
+      }
+    }
+  };
+
+  // Determine the baseline for the table-row if we haven't been provided a
+  // cached one. This can happen if we have a %-block-size descendant which may
+  // adjust the position of the baseline.
+  //
+  // We also don't perform baseline alignment if block-fragmentation is
+  // present, as the alignment baseline may end up in another fragmentainer.
+  absl::optional<LayoutUnit> row_baseline;
+  if (!has_block_fragmentation) {
+    row_baseline = row.baseline;
+    if (!row_baseline) {
+      PlaceCells(row.block_size, absl::nullopt);
+      row_baseline = row_baseline_tabulator.ComputeBaseline(row.block_size);
+    }
+  }
+
+  PlaceCells(row.block_size, row_baseline);
+
+  LayoutUnit previous_consumed_row_block_size;
+  if (IsResumingLayout(BreakToken())) {
+    const auto* table_row_data =
+        To<NGTableRowBreakTokenData>(BreakToken()->TokenData());
+    previous_consumed_row_block_size =
+        table_row_data->previous_consumed_row_block_size;
+  }
+
+  // The total block-size of the row is (at a minimum) the size which we
+  // calculated while defining the table-grid, but also allowing for any
+  // expansion due to fragmentation.
+  LayoutUnit row_block_size =
+      max_cell_block_size + previous_consumed_row_block_size;
+  row_block_size = std::max(row_block_size, row.block_size);
+
+  if (has_block_fragmentation) {
+    // If we've expanded due to fragmentation, relayout with the new block-size.
+    if (row.block_size != row_block_size)
+      PlaceCells(row_block_size, absl::nullopt);
+
+    for (auto& result : results)
+      container_builder_.AddResult(*result.result, result.offset);
   }
 
   // Since we always visit all cells in a row (cannot break halfway through;
@@ -141,10 +220,7 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
   // separately), we have seen all children by now.
   container_builder_.SetHasSeenAllChildren();
 
-  container_builder_.SetFragmentsTotalBlockSize(row.block_size);
-
-  container_builder_.SetBaseline(
-      row_baseline_tabulator.ComputeBaseline(row.block_size));
+  container_builder_.SetFragmentsTotalBlockSize(row_block_size);
   if (row.is_collapsed)
     container_builder_.SetIsHiddenForPaint(true);
   container_builder_.SetIsTableNGPart();
@@ -160,10 +236,21 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
         FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
     // TODO(mstensho): Deal with early-breaks.
     DCHECK_EQ(status, NGBreakStatus::kContinue);
+
+    container_builder_.SetBreakTokenData(
+        MakeGarbageCollected<NGTableRowBreakTokenData>(
+            container_builder_.GetBreakTokenData(),
+            previous_consumed_row_block_size +
+                container_builder_.FragmentBlockSize()));
   }
+
+  container_builder_.SetBaseline(row_baseline_tabulator.ComputeBaseline(
+      container_builder_.FragmentBlockSize()));
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
   return container_builder_.ToBoxFragment();
 }
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::ResultWithOffset)

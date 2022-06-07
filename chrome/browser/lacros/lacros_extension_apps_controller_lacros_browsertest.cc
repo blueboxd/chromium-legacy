@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -47,10 +48,12 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, ShowsInShelf) {
   }
 
   // Create the controller and publisher.
-  LacrosExtensionAppsPublisher publisher;
-  publisher.Initialize();
-  LacrosExtensionAppsController controller;
-  controller.Initialize(publisher.publisher());
+  std::unique_ptr<LacrosExtensionAppsPublisher> publisher =
+      LacrosExtensionAppsPublisher::MakeForChromeApps();
+  publisher->Initialize();
+  std::unique_ptr<LacrosExtensionAppsController> controller =
+      LacrosExtensionAppsController::MakeForChromeApps();
+  controller->Initialize(publisher->publisher());
 
   // No item should exist in the shelf before the window is launched.
   const extensions::Extension* extension =
@@ -67,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, ShowsInShelf) {
       crosapi::mojom::LaunchParams::New();
   launch_params->app_id = app_id;
   launch_params->launch_source = apps::mojom::LaunchSource::kFromTest;
-  controller.Launch(std::move(launch_params), base::DoNothing());
+  controller->Launch(std::move(launch_params), base::DoNothing());
 
   // Wait for item to exist in shelf.
   browser_test_util::WaitForShelfItem(app_id, /*exists=*/true);
@@ -95,10 +98,12 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, LaunchPinnedApp) {
   }
 
   // Create the controller and publisher.
-  LacrosExtensionAppsPublisher publisher;
-  publisher.Initialize();
-  LacrosExtensionAppsController controller;
-  controller.Initialize(publisher.publisher());
+  std::unique_ptr<LacrosExtensionAppsPublisher> publisher =
+      LacrosExtensionAppsPublisher::MakeForChromeApps();
+  publisher->Initialize();
+  std::unique_ptr<LacrosExtensionAppsController> controller =
+      LacrosExtensionAppsController::MakeForChromeApps();
+  controller->Initialize(publisher->publisher());
 
   // No item should exist in the shelf before the window is launched.
   const extensions::Extension* extension =
@@ -111,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, LaunchPinnedApp) {
       crosapi::mojom::LaunchParams::New();
   launch_params->app_id = app_id;
   launch_params->launch_source = apps::mojom::LaunchSource::kFromTest;
-  controller.Launch(std::move(launch_params), base::DoNothing());
+  controller->Launch(std::move(launch_params), base::DoNothing());
 
   // Wait for item to exist in shelf.
   browser_test_util::WaitForShelfItem(app_id, /*exists=*/true);
@@ -126,8 +131,9 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, LaunchPinnedApp) {
   ASSERT_TRUE(success);
 
   // Close all app windows.
-  for (extensions::AppWindow* app_window :
-       extensions::AppWindowRegistry::Get(profile())->app_windows()) {
+  extensions::AppWindowRegistry::AppWindowList app_windows =
+      extensions::AppWindowRegistry::Get(profile())->app_windows();
+  for (extensions::AppWindow* app_window : app_windows) {
     std::string window_id = browser_test_util::GetWindowId(
         app_window->GetNativeWindow()->GetRootWindow());
     app_window->GetBaseWindow()->Close();
@@ -176,10 +182,12 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, DefaultContextMenu) {
   }
 
   // Create the controller and publisher.
-  LacrosExtensionAppsPublisher publisher;
-  publisher.Initialize();
-  LacrosExtensionAppsController controller;
-  controller.Initialize(publisher.publisher());
+  std::unique_ptr<LacrosExtensionAppsPublisher> publisher =
+      LacrosExtensionAppsPublisher::MakeForChromeApps();
+  publisher->Initialize();
+  std::unique_ptr<LacrosExtensionAppsController> controller =
+      LacrosExtensionAppsController::MakeForChromeApps();
+  controller->Initialize(publisher->publisher());
 
   // No item should exist in the shelf before the window is launched.
   const extensions::Extension* extension =
@@ -192,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest, DefaultContextMenu) {
       crosapi::mojom::LaunchParams::New();
   launch_params->app_id = app_id;
   launch_params->launch_source = apps::mojom::LaunchSource::kFromTest;
-  controller.Launch(std::move(launch_params), base::DoNothing());
+  controller->Launch(std::move(launch_params), base::DoNothing());
 
   // Wait for item to exist in shelf.
   browser_test_util::WaitForShelfItem(app_id, /*exists=*/true);
@@ -225,10 +233,12 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest,
   }
 
   // Create the controller and publisher.
-  LacrosExtensionAppsPublisher publisher;
-  publisher.Initialize();
-  LacrosExtensionAppsController controller;
-  controller.Initialize(publisher.publisher());
+  std::unique_ptr<LacrosExtensionAppsPublisher> publisher =
+      LacrosExtensionAppsPublisher::MakeForChromeApps();
+  publisher->Initialize();
+  std::unique_ptr<LacrosExtensionAppsController> controller =
+      LacrosExtensionAppsController::MakeForChromeApps();
+  controller->Initialize(publisher->publisher());
 
   // No item should exist in the shelf before the window is launched.
   const extensions::Extension* extension =
@@ -242,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(LacrosExtensionAppsControllerTest,
       crosapi::mojom::LaunchParams::New();
   launch_params->app_id = app_id;
   launch_params->launch_source = apps::mojom::LaunchSource::kFromTest;
-  controller.Launch(std::move(launch_params), base::DoNothing());
+  controller->Launch(std::move(launch_params), base::DoNothing());
 
   // Wait for item to exist in shelf.
   LOG(INFO) << "Wait for item to appear in shelf after install";

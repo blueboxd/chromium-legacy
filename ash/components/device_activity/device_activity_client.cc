@@ -32,9 +32,9 @@ constexpr size_t kMaxFresnelResponseSizeBytes = 5 << 20;  // 5MB;
 
 // Timeout for each Fresnel request.
 constexpr base::TimeDelta kHealthCheckRequestTimeout = base::Seconds(10);
-constexpr base::TimeDelta kImportRequestTimeout = base::Seconds(10);
-constexpr base::TimeDelta kOprfRequestTimeout = base::Seconds(10);
-constexpr base::TimeDelta kQueryRequestTimeout = base::Seconds(60);
+constexpr base::TimeDelta kImportRequestTimeout = base::Seconds(15);
+constexpr base::TimeDelta kOprfRequestTimeout = base::Seconds(15);
+constexpr base::TimeDelta kQueryRequestTimeout = base::Seconds(65);
 
 // TODO(https://crbug.com/1272922): Move shared configuration constants to
 // separate file.
@@ -376,33 +376,23 @@ void DeviceActivityClient::TransitionOutOfIdle(
 
     switch (current_use_case->GetPsmUseCase()) {
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY:
-        // Check membership continues when the cached local state pref
-        // is not set. The local state pref may not be set if the device is
-        // new, powerwashed, recovered, RMA, or the local state was corrupted.
         if (base::FeatureList::IsEnabled(
-                features::kDeviceActiveClientDailyCheckMembership) &&
-            (current_use_case->GetLastKnownPingTimestamp() ==
-             base::Time::UnixEpoch())) {
+                features::kDeviceActiveClientDailyCheckMembership)) {
           TransitionToCheckMembershipOprf(current_use_case);
           return;
         } else {
-          // |TransitionToCheckIn| if the local state pref is set.
+          // During rollout, we perform CheckIn without CheckMembership for
+          // powerwash, recovery, or RMA devices.
           TransitionToCheckIn(current_use_case);
           return;
         }
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY:
-        // Check membership continues when the cached local state pref is not
-        // set. The local state pref may not be set if the device is
-        // new, powerwashed, recovered, RMA, or the local state was corrupted.
         if (base::FeatureList::IsEnabled(
-                features::kDeviceActiveClientMonthlyCheckMembership) &&
-            (current_use_case->GetLastKnownPingTimestamp() ==
-             base::Time::UnixEpoch())) {
+                features::kDeviceActiveClientMonthlyCheckMembership)) {
           TransitionToCheckMembershipOprf(current_use_case);
           return;
         }
 
-        // |TransitionToCheckIn| if the local state pref is set.
         if (base::FeatureList::IsEnabled(
                 features::kDeviceActiveClientMonthlyCheckIn)) {
           // During rollout, we perform CheckIn without CheckMembership for
@@ -655,10 +645,10 @@ void DeviceActivityClient::OnCheckMembershipQueryDone(
 
   psm_rlwe::PrivateMembershipRlweQueryResponse query_response =
       psm_query_response.rlwe_query_response();
+
   auto status_or_response =
       current_use_case->GetPsmRlweClient()->ProcessQueryResponse(
           query_response);
-
   if (!status_or_response.ok()) {
     RecordDurationStateMetric(state_, state_timer_.Elapsed());
     TransitionToIdle(current_use_case);
@@ -669,8 +659,11 @@ void DeviceActivityClient::OnCheckMembershipQueryDone(
   // regarding the current PSM ID.
   psm_rlwe::RlweMembershipResponses rlwe_membership_responses =
       status_or_response.value();
-
-  if (rlwe_membership_responses.membership_responses_size() != 1) {
+  if (rlwe_membership_responses.membership_responses_size() != 1 ||
+      rlwe_membership_responses.membership_responses(0)
+              .plaintext_id()
+              .sensitive_id() !=
+          current_use_case->GetPsmIdentifier().value().sensitive_id()) {
     RecordDurationStateMetric(state_, state_timer_.Elapsed());
     TransitionToIdle(current_use_case);
     return;

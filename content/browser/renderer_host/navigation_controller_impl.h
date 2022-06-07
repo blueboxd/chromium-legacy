@@ -218,7 +218,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       network::mojom::SourceLocationPtr source_location,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       const absl::optional<blink::Impression>& impression,
-      base::TimeTicks navigation_start_time);
+      base::TimeTicks navigation_start_time,
+      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
 
   // Navigates to the history entry associated with the given navigation API
   // |key|. Searches |entries_| for a FrameNavigationEntry associated with
@@ -235,7 +236,15 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // |entries_|, or due to a race condition) or compromised.
   // If a matching entry is found, navigate to that entry and proceed like any
   // other history navigation.
-  void NavigateToNavigationApiKey(FrameTreeNode* node, const std::string& key);
+  //
+  // |sandboxed_source_frame_tree_node_id| is set to something besides
+  // FrameTreeNode::kFrameTreeNodeInvalidId when the source frame is not allowed
+  // to navigate frames outside its subtree, because of sandboxing. It then is
+  // used by the appropriate checks which will drop the navigation if it would
+  // result in a navigation outside its subtree.
+  void NavigateToNavigationApiKey(FrameTreeNode* node,
+                                  int sandboxed_source_frame_tree_node_id,
+                                  const std::string& key);
 
   // Whether this is the initial navigation in an unmodified new tab.  In this
   // case, we know there is no content displayed in the page.
@@ -556,7 +565,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       ReloadType reload_type,
       NavigationEntryImpl* entry,
       FrameNavigationEntry* frame_entry,
-      base::TimeTicks navigation_start_time);
+      base::TimeTicks navigation_start_time,
+      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
 
   // Creates and returns a NavigationRequest for a navigation to |entry|. Will
   // return nullptr if the parameters are invalid and the navigation cannot

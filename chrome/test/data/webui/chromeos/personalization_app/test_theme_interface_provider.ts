@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ThemeObserverInterface, ThemeObserverRemote, ThemeProviderInterface} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
+import {ThemeObserverInterface, ThemeObserverRemote, ThemeProviderInterface} from 'chrome://personalization/trusted/personalization_app.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestThemeProvider extends
@@ -11,8 +11,14 @@ export class TestThemeProvider extends
     super([
       'setThemeObserver',
       'setColorModePref',
+      'setColorModeAutoScheduleEnabled',
+      'isDarkModeEnabled',
+      'isColorModeAutoScheduleEnabled',
     ]);
   }
+
+  isDarkModeEnabledResponse = true;
+  isColorModeAutoScheduleEnabledResponse = true;
 
   themeObserverRemote: ThemeObserverInterface|null = null;
 
@@ -26,5 +32,20 @@ export class TestThemeProvider extends
 
   setColorModePref(darkModeEnabled: boolean) {
     this.methodCalled('setColorModePref', darkModeEnabled);
+  }
+
+  setColorModeAutoScheduleEnabled(enabled: boolean) {
+    this.methodCalled('setColorModeAutoScheduleEnabled', enabled);
+  }
+
+  isDarkModeEnabled() {
+    this.methodCalled('isDarkModeEnabled');
+    return Promise.resolve({darkModeEnabled: this.isDarkModeEnabledResponse});
+  }
+
+  isColorModeAutoScheduleEnabled() {
+    this.methodCalled('isColorModeAutoScheduleEnabled');
+    return Promise.resolve(
+        {enabled: this.isColorModeAutoScheduleEnabledResponse});
   }
 }

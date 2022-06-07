@@ -4,8 +4,8 @@
 
 #include "ash/webui/eche_app_ui/eche_signaler.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/webui/eche_app_ui/proto/exo_messages.pb.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace ash {
 namespace eche_app {
@@ -28,7 +28,7 @@ void EcheSignaler::SendSignalingMessage(const std::vector<uint8_t>& signal) {
   request.set_data(encoded_signal);
   proto::ExoMessage message;
   *message.mutable_request() = std::move(request);
-  eche_connector_->SendMessage(message.SerializeAsString());
+  eche_connector_->SendMessage(message);
 }
 
 void EcheSignaler::SetSignalingMessageObserver(
@@ -44,7 +44,7 @@ void EcheSignaler::TearDownSignaling() {
   action.set_action_type(proto::ActionType::ACTION_TEAR_DOWN);
   proto::ExoMessage message;
   *message.mutable_action() = std::move(action);
-  eche_connector_->SendMessage(message.SerializeAsString());
+  eche_connector_->SendMessage(message);
 }
 
 void EcheSignaler::Bind(

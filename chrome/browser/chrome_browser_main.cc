@@ -101,7 +101,7 @@
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/webui/chrome_untrusted_web_ui_controller_factory.h"
+#include "chrome/browser/ui/webui/chrome_untrusted_web_ui_configs.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -349,16 +349,6 @@ void HandleTestParameters(const base::CommandLine& command_line) {
   }
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
-                        const std::vector<GURL>& new_tabs) {
-  for (const auto& new_tab : new_tabs) {
-    if (new_tab.is_valid())
-      browser_creator->AddFirstRunTab(new_tab);
-  }
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-
 // Initializes the initial profile, possibly doing some user prompting to pick
 // a fallback profile. Returns either
 // - kBrowserWindow mode with the newly created profile,
@@ -418,6 +408,19 @@ StartupProfileInfo CreateInitialProfile(
   CHECK(profile_info.profile) << "Cannot get default profile.";
 
 #else
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros has a special "primary" profile that is tied to the active ChromeOS
+  // user identity. Lacros might attempt to load this profile synchorously via
+  // `ProfileManager::GetPrimaryUserProfile()` or
+  // `ProfileManager::GetActiveUserProfile()`. In combination with asynchronous
+  // profile loading, this can lead to a crash (see https://crbug.com/1289527).
+  // Load the primary Lacros profile before any other profile to ensure that the
+  // primary profile is always loaded.
+  // TODO(https://crbug.com/1264436): remove this once Lacros no longer uses
+  // GetActiveUserProfile() and GetPrimaryUserProfile().
+  ProfileManager::GetPrimaryUserProfile();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   profile_info = GetStartupProfile(cur_dir, parsed_command_line);
 
   if (profile_info.mode == StartupProfileMode::kError && !last_used_profile_set)
@@ -1003,7 +1006,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   if (first_run::IsChromeFirstRun()) {
     if (!parsed_command_line().HasSwitch(switches::kApp) &&
         !parsed_command_line().HasSwitch(switches::kAppId)) {
-      AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
+      browser_creator_->AddFirstRunTabs(master_prefs_->new_tabs);
     }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -1582,7 +1585,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // called inside PostProfileInit.
   content::WebUIControllerFactory::RegisterFactory(
       ChromeWebUIControllerFactory::GetInstance());
-  ChromeUntrustedWebUIControllerFactory::RegisterInstance();
+  RegisterChromeUntrustedWebUIConfigs();
 
 #if BUILDFLAG(IS_ANDROID)
   page_info::SetPageInfoClient(new ChromePageInfoClient());

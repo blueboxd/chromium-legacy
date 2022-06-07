@@ -31,7 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/tpm/stub_install_attributes.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #endif
 
 using ::testing::Return;
@@ -131,7 +131,7 @@ class ProxyPolicyTest : public testing::Test {
   std::unique_ptr<PolicyServiceImpl> policy_service_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+  ash::ScopedStubInstallAttributes test_install_attributes_;
 #endif
 };
 

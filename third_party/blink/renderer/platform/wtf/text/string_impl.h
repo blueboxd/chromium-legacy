@@ -231,8 +231,6 @@ class WTF_EXPORT StringImpl {
 
   bool IsLowerASCII() const;
 
-  bool IsSafeToSendToAnotherThread() const;
-
   // The high bits of 'hash' are always empty, but we prefer to store our
   // flags in the low bits because it makes them slightly more efficient to
   // access.  So, we shift left and right when setting and getting our hash
@@ -610,7 +608,7 @@ class WTF_EXPORT StringImpl {
 
 #if DCHECK_IS_ON()
   mutable ThreadRestrictionVerifier verifier_;
-  mutable unsigned int ref_count_change_count_{0};
+  mutable std::atomic<unsigned> ref_count_change_count_{0};
 #endif
   // TODO (crbug.com/1083392): Use base::AtomicRefCount once Blink strings are
   // fully thread-safe and ThreadRestrictionVerifier is no longer needed.

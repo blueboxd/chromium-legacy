@@ -16,6 +16,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "sql/sqlite_result_code.h"
+#include "sql/sqlite_result_code_values.h"
 #include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
@@ -64,16 +66,16 @@ bool Statement::CheckValid() const {
   return is_valid();
 }
 
-int Statement::StepInternal() {
+SqliteResultCode Statement::StepInternal() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!CheckValid())
-    return SQLITE_ERROR;
+    return SqliteResultCode::kError;
 
   absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   ref_->InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
-  int sqlite_result_code = sqlite3_step(ref_->stmt());
+  auto sqlite_result_code = ToSqliteResultCode(sqlite3_step(ref_->stmt()));
   return CheckSqliteResultCode(sqlite_result_code);
 }
 
@@ -85,7 +87,7 @@ bool Statement::Run() {
   run_called_ = true;
   DCHECK(!step_called_) << "Run() must not be mixed with Step()";
 #endif  // DCHECK_IS_ON()
-  return StepInternal() == SQLITE_DONE;
+  return StepInternal() == SqliteResultCode::kDone;
 }
 
 bool Statement::Step() {
@@ -95,7 +97,7 @@ bool Statement::Step() {
   DCHECK(!run_called_) << "Run() must not be mixed with Step()";
   step_called_ = true;
 #endif  // DCHECK_IS_ON()
-  return StepInternal() == SQLITE_ROW;
+  return StepInternal() == SqliteResultCode::kRow;
 }
 
 void Statement::Reset(bool clear_bound_vars) {
@@ -572,24 +574,34 @@ bool Statement::ColumnBlobAsVector(int column_index,
                             reinterpret_cast<std::vector<char>*>(result));
 }
 
-const char* Statement::GetSQLStatement() {
+std::string Statement::GetSQLStatement() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // SQLite promises to keep the returned buffer alive until the statement is
+  // finalized. We immediately copy the buffer contents into a std::string so we
+  // don't need to worry about its lifetime. The performance overhead is
+  // acceptable because this method should only be invoked for logging details
+  // about SQLite errors.
+  //
+  // It may be tempting to consider using sqlite3_expanded_sql() here. We
+  // currently prefer sqlite3_sql() because the returned SQL string matches the
+  // source code (making it easy to search for), and because we don't need to
+  // worry about SQL statements that work with large data, such as BLOBS storing
+  // images.
+  // See https://www.sqlite.org/c3ref/expanded_sql.html for more details on the
+  // difference between sqlite3_sql() and sqlite3_expanded_sql().
   return sqlite3_sql(ref_->stmt());
 }
 
-int Statement::CheckSqliteResultCode(int sqlite_result_code) {
+SqliteResultCode Statement::CheckSqliteResultCode(
+    SqliteResultCode sqlite_result_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // https://www.sqlite.org/rescode.html lists the result codes that are not'
-  // errors.
-  succeeded_ =
-      (sqlite_result_code == SQLITE_OK || sqlite_result_code == SQLITE_ROW ||
-       sqlite_result_code == SQLITE_DONE);
-
-  // Database::OnSqliteError() DCHECKs for
-  if (!succeeded_ && ref_.get() && ref_->database())
-    ref_->database()->OnSqliteError(sqlite_result_code, this, nullptr);
+  succeeded_ = IsSqliteSuccessCode(sqlite_result_code);
+  if (!succeeded_ && ref_.get() && ref_->database()) {
+    auto sqlite_error_code = ToSqliteErrorCode(sqlite_result_code);
+    ref_->database()->OnSqliteError(sqlite_error_code, this, nullptr);
+  }
   return sqlite_result_code;
 }
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OS_INSTALL_SCREEN_HANDLER_H_
 
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chromeos/dbus/os_install/os_install_client.h"
+#include "chromeos/ash/components/dbus/os_install/os_install_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -22,7 +22,6 @@ class LocalizedValuesBuilder;
 }  // namespace login
 
 namespace chromeos {
-class JSCallsContainer;
 
 // Interface for dependency injection between OsInstallScreen and its
 // WebUI representation.
@@ -52,7 +51,7 @@ class OsInstallScreenHandler : public BaseScreenHandler,
  public:
   using TView = OsInstallScreenView;
 
-  explicit OsInstallScreenHandler(JSCallsContainer* js_calls_container);
+  OsInstallScreenHandler();
   OsInstallScreenHandler(const OsInstallScreenHandler&) = delete;
   OsInstallScreenHandler& operator=(const OsInstallScreenHandler&) = delete;
   ~OsInstallScreenHandler() override;
@@ -61,7 +60,7 @@ class OsInstallScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // OsInstallScreenView:
   void Show() override;

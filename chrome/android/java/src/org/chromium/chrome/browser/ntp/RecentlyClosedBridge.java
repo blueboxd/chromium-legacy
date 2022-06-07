@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -19,16 +20,65 @@ import java.util.List;
 /**
  * This class allows Java code to get and clear the list of recently closed tabs.
  */
+@JNINamespace("recent_tabs")
 public class RecentlyClosedBridge implements RecentlyClosedTabManager {
     private long mNativeBridge;
 
     @Nullable
     private Runnable mTabsUpdatedRunnable;
 
+    // TODO(crbug/1307345): Remove in favor of generic entries.
     @CalledByNative
-    private static void pushTab(List<RecentlyClosedTab> tabs, int id, String title, GURL url) {
-        RecentlyClosedTab tab = new RecentlyClosedTab(id, title, url);
+    private static void pushTab(List<RecentlyClosedTab> tabs, int id, long timestamp, String title,
+            GURL url, String groupId) {
+        RecentlyClosedTab tab = new RecentlyClosedTab(id, timestamp, title, url, groupId);
         tabs.add(tab);
+    }
+
+    private static void addTabs(List<RecentlyClosedTab> tabs, int[] tabIds, long[] tabTimestamps,
+            String[] tabTitles, GURL[] tabUrls, String[] tabGroupIds) {
+        assert tabIds.length == tabTimestamps.length;
+        assert tabIds.length == tabTitles.length;
+        assert tabIds.length == tabUrls.length;
+        assert tabIds.length == tabGroupIds.length;
+        for (int i = 0; i < tabIds.length; i++) {
+            tabs.add(new RecentlyClosedTab(
+                    tabIds[i], tabTimestamps[i], tabTitles[i], tabUrls[i], tabGroupIds[i]));
+        }
+    }
+
+    @CalledByNative
+    private static void addTabToEntries(List<RecentlyClosedEntry> entries, int id, long timestamp,
+            String title, GURL url, String groupId) {
+        RecentlyClosedTab tab = new RecentlyClosedTab(id, timestamp, title, url, groupId);
+        entries.add(tab);
+    }
+
+    @CalledByNative
+    private static void addGroupToEntries(List<RecentlyClosedEntry> entries, int id,
+            long groupTimestamp, String groupTitle, int[] tabIds, long[] tabTimestamps,
+            String[] tabTitles, GURL[] tabUrls, String[] tabGroupIds) {
+        RecentlyClosedGroup group = new RecentlyClosedGroup(id, groupTimestamp, groupTitle);
+
+        addTabs(group.getTabs(), tabIds, tabTimestamps, tabTitles, tabUrls, tabGroupIds);
+
+        entries.add(group);
+    }
+
+    @CalledByNative
+    private static void addBulkEventToEntries(List<RecentlyClosedEntry> entries, int id,
+            long eventTimestamp, String[] groupIds, String[] groupsTitles, int[] tabIds,
+            long[] tabTimestamps, String[] tabTitles, GURL[] tabUrls, String[] tabGroupIds) {
+        RecentlyClosedBulkEvent event = new RecentlyClosedBulkEvent(id, eventTimestamp);
+
+        assert groupIds.length == groupsTitles.length;
+        for (int i = 0; i < groupIds.length; i++) {
+            event.getGroupIdToTitleMap().put(groupIds[i], groupsTitles[i]);
+        }
+
+        addTabs(event.getTabs(), tabIds, tabTimestamps, tabTitles, tabUrls, tabGroupIds);
+
+        entries.add(event);
     }
 
     /**
@@ -42,7 +92,7 @@ public class RecentlyClosedBridge implements RecentlyClosedTabManager {
     @Override
     public void destroy() {
         assert mNativeBridge != 0;
-        RecentlyClosedBridgeJni.get().destroy(mNativeBridge, RecentlyClosedBridge.this);
+        RecentlyClosedBridgeJni.get().destroy(mNativeBridge);
         mNativeBridge = 0;
         mTabsUpdatedRunnable = null;
     }
@@ -56,27 +106,33 @@ public class RecentlyClosedBridge implements RecentlyClosedTabManager {
     public List<RecentlyClosedTab> getRecentlyClosedTabs(int maxTabCount) {
         List<RecentlyClosedTab> tabs = new ArrayList<RecentlyClosedTab>();
         boolean received = RecentlyClosedBridgeJni.get().getRecentlyClosedTabs(
-                mNativeBridge, RecentlyClosedBridge.this, tabs, maxTabCount);
+                mNativeBridge, tabs, maxTabCount);
         return received ? tabs : null;
+    }
+
+    @Override
+    public List<RecentlyClosedEntry> getRecentlyClosedEntries(int maxEntryCount) {
+        List<RecentlyClosedEntry> entries = new ArrayList<RecentlyClosedEntry>();
+        boolean received = RecentlyClosedBridgeJni.get().getRecentlyClosedEntries(
+                mNativeBridge, entries, maxEntryCount);
+        return received ? entries : null;
     }
 
     @Override
     public boolean openRecentlyClosedTab(
             TabModel tabModel, RecentlyClosedTab recentTab, int windowOpenDisposition) {
-        return RecentlyClosedBridgeJni.get().openRecentlyClosedTab(mNativeBridge,
-                RecentlyClosedBridge.this, tabModel, recentTab.id, windowOpenDisposition);
+        return RecentlyClosedBridgeJni.get().openRecentlyClosedTab(
+                mNativeBridge, tabModel, recentTab.getSessionId(), windowOpenDisposition);
     }
 
     @Override
     public void openMostRecentlyClosedTab(TabModel tabModel) {
-        RecentlyClosedBridgeJni.get().openMostRecentlyClosedTab(
-                mNativeBridge, RecentlyClosedBridge.this, tabModel);
+        RecentlyClosedBridgeJni.get().openMostRecentlyClosedTab(mNativeBridge, tabModel);
     }
 
     @Override
-    public void clearRecentlyClosedTabs() {
-        RecentlyClosedBridgeJni.get().clearRecentlyClosedTabs(
-                mNativeBridge, RecentlyClosedBridge.this);
+    public void clearRecentlyClosedEntries() {
+        RecentlyClosedBridgeJni.get().clearRecentlyClosedEntries(mNativeBridge);
     }
 
     /**
@@ -91,15 +147,14 @@ public class RecentlyClosedBridge implements RecentlyClosedTabManager {
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public interface Natives {
         long init(RecentlyClosedBridge caller, Profile profile);
-        void destroy(long nativeRecentlyClosedTabsBridge, RecentlyClosedBridge caller);
-        boolean getRecentlyClosedTabs(long nativeRecentlyClosedTabsBridge,
-                RecentlyClosedBridge caller, List<RecentlyClosedTab> tabs, int maxTabCount);
-        boolean openRecentlyClosedTab(long nativeRecentlyClosedTabsBridge,
-                RecentlyClosedBridge caller, TabModel tabModel, int recentTabId,
-                int windowOpenDisposition);
-        boolean openMostRecentlyClosedTab(long nativeRecentlyClosedTabsBridge,
-                RecentlyClosedBridge caller, TabModel tabModel);
-        void clearRecentlyClosedTabs(
-                long nativeRecentlyClosedTabsBridge, RecentlyClosedBridge caller);
+        void destroy(long nativeRecentlyClosedTabsBridge);
+        boolean getRecentlyClosedTabs(
+                long nativeRecentlyClosedTabsBridge, List<RecentlyClosedTab> tabs, int maxTabCount);
+        boolean getRecentlyClosedEntries(long nativeRecentlyClosedTabsBridge,
+                List<RecentlyClosedEntry> entries, int maxEntryCount);
+        boolean openRecentlyClosedTab(long nativeRecentlyClosedTabsBridge, TabModel tabModel,
+                int recentTabId, int windowOpenDisposition);
+        boolean openMostRecentlyClosedTab(long nativeRecentlyClosedTabsBridge, TabModel tabModel);
+        void clearRecentlyClosedEntries(long nativeRecentlyClosedTabsBridge);
     }
 }

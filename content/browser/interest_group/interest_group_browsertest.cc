@@ -323,8 +323,8 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
       buf << ", biddingWasmHelperUrl: '" << *group.bidding_wasm_helper_url
           << "'";
     }
-    if (group.update_url) {
-      buf << ", dailyUpdateUrl: '" << *group.update_url << "'";
+    if (group.daily_update_url) {
+      buf << ", dailyUpdateUrl: '" << *group.daily_update_url << "'";
     }
     if (group.trusted_bidding_signals_url) {
       buf << ", trustedBiddingSignalsUrl: '"
@@ -469,7 +469,7 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
     return JoinInterestGroupAndWaitInJs(blink::InterestGroup(
         /*expiry=*/base::Time(), owner, name, priority, std::move(bidding_url),
         /*bidding_wasm_helper_url=*/absl::nullopt,
-        /*update_url=*/absl::nullopt,
+        /*daily_update_url=*/absl::nullopt,
         /*trusted_bidding_signals_url=*/absl::nullopt,
         /*trusted_bidding_signals_keys=*/absl::nullopt,
         /*user_bidding_signals=*/absl::nullopt, std::move(ads),
@@ -1179,7 +1179,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, JoinLeaveInterestGroup) {
       /*priority=*/0.0,
       /*bidding_url=*/GURL("https://bid.a.test"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -1195,7 +1195,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, JoinLeaveInterestGroup) {
       /*priority=*/0.0,
       /*bidding_url=*/absl::nullopt,
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/GURL("https://update.a.test"),
+      /*daily_update_url=*/GURL("https://update.a.test"),
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -1211,7 +1211,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, JoinLeaveInterestGroup) {
       /*priority=*/0.0,
       /*bidding_url=*/absl::nullopt,
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/GURL("https://signals.a.test"),
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -1254,7 +1254,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, JoinLeaveInterestGroup) {
           /*priority=*/0.0,
           /*bidding_url=*/absl::nullopt,
           /*bidding_wasm_helper_url=*/absl::nullopt,
-          /*update_url=*/absl::nullopt,
+          /*daily_update_url=*/absl::nullopt,
           /*trusted_bidding_signals_url=*/absl::nullopt,
           /*trusted_bidding_signals_keys=*/absl::nullopt,
           /*user_bidding_signals=*/absl::nullopt,
@@ -1669,7 +1669,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -1963,7 +1963,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -2043,7 +2043,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL(test_url.host(),
                             "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL(test_url.host(),
                             "/interest_group/trusted_bidding_signals.json"),
@@ -2096,7 +2096,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithWinner) {
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -2231,7 +2231,7 @@ IN_PROC_BROWSER_TEST_F(
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -2274,7 +2274,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithBidderWasm) {
                             "/interest_group/bidding_logic_use_wasm.js"),
       /*bidding_wasm_helper_url=*/
       https_server_->GetURL("a.test", "/interest_group/multiply.wasm"),
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/{},
       /*user_bidding_signals=*/"{}",
@@ -2311,7 +2311,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_with_debugging_report.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -2326,7 +2326,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_with_debugging_report.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -2341,7 +2341,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_with_debugging_report.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -2421,6 +2421,89 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                 ->trusted_params->isolation_info.network_isolation_key());
 }
 
+// All bidders' genereteBid() failed so no bid was made, thus no render url.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionWithDebugReportingNoBid) {
+  URLLoaderMonitor url_loader_monitor;
+
+  GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad1_url = https_server_->GetURL("c.test", "/echo?render_shoes");
+  GURL ad2_url = https_server_->GetURL("c.test", "/echo?render_bikes");
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
+      /*expiry=*/base::Time(),
+      /*owner=*/test_origin,
+      /*name=*/"shoes",
+      /*priority=*/0.0,
+      /*bidding_url=*/
+      https_server_->GetURL("a.test",
+                            "/interest_group/bidding_logic_loop_forever.js"),
+      /*bidding_wasm_helper_url=*/absl::nullopt,
+      /*update_url=*/absl::nullopt,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/absl::nullopt,
+      /*user_bidding_signals=*/absl::nullopt,
+      /*ads=*/{{{ad1_url, /*metadata=*/absl::nullopt}}},
+      /*ad_components=*/absl::nullopt)));
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
+      /*expiry=*/base::Time(),
+      /*owner=*/test_origin,
+      /*name=*/"bikes",
+      /*priority=*/0.0,
+      /*bidding_url=*/
+      https_server_->GetURL("a.test",
+                            "/interest_group/bidding_logic_throws.js"),
+      /*bidding_wasm_helper_url=*/absl::nullopt,
+      /*update_url=*/absl::nullopt,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/absl::nullopt,
+      /*user_bidding_signals=*/absl::nullopt,
+      /*ads=*/{{{ad2_url, /*metadata=*/absl::nullopt}}},
+      /*ad_components=*/absl::nullopt)));
+
+  EXPECT_EQ(
+      nullptr,
+      RunAuctionAndWait(JsReplace(
+          R"({
+    seller: $1,
+    decisionLogicUrl: $2,
+    interestGroupBuyers: [$1],
+    auctionSignals: {x: 1},
+    sellerSignals: {yet: 'more', info: 1},
+                })",
+          test_origin,
+          https_server_->GetURL(
+              "a.test",
+              "/interest_group/decision_logic_with_debugging_report.js"))));
+
+  // Debugging loss reports which are made before generateBid()'s timeout and
+  // error-throwing statements should be sent. Those made after that should not
+  // be sent.
+  const GURL kExpectedReportUrls[] = {
+      // Debugging loss report URL (before the timeout) from bidder whose
+      // generateBid() timed out.
+      https_server_->GetURL(
+          "a.test", "/echo?bidder_debug_report_loss/shoes/before_timeout"),
+      // Debugging loss report URL (before the error) from bidder whose
+      // generateBid() throws an error.
+      https_server_->GetURL(
+          "a.test", "/echo?bidder_debug_report_loss/bikes/before_error")};
+
+  for (const auto& expected_report_url : kExpectedReportUrls) {
+    SCOPED_TRACE(expected_report_url);
+
+    // Wait for the report URL to be fetched, which only happens after the
+    // auction has completed.
+    WaitForURL(expected_report_url);
+
+    absl::optional<network::ResourceRequest> request =
+        url_loader_monitor.GetRequestInfo(expected_report_url);
+    ASSERT_TRUE(request);
+  }
+}
+
 // Runs auction just like test InterestGroupBrowserTest.RunAdAuctionWithWinner,
 // but runs with fenced frames enabled and expects to receive a URN URL to be
 // used. After the auction, loads the URL in a fenced frame, and expects the
@@ -2443,7 +2526,7 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -2580,7 +2663,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, CrossOrigin) {
       /*bidding_url=*/
       https_server_->GetURL(kBidder, "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL(kBidder,
                             "/interest_group/trusted_bidding_signals.json"),
@@ -2670,7 +2753,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -2724,7 +2807,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, TopFrameHostname) {
           kOtherHost,
           "/interest_group/bidding_logic_expect_top_frame_a_test.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -2849,83 +2932,6 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, Iframe) {
       iframe));
 }
 
-// All bids got rejected by seller, thus no winning bid.
-IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
-                       RunAdAuctionWithDebugReportingAllBidsRejected) {
-  URLLoaderMonitor url_loader_monitor;
-
-  GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
-  ASSERT_TRUE(NavigateToURL(shell(), test_url));
-  url::Origin test_origin = url::Origin::Create(test_url);
-  GURL ad1_url = https_server_->GetURL("c.test", "/echo?render_shoes");
-  GURL ad2_url = https_server_->GetURL("c.test", "/echo?render_bikes");
-
-  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
-      /*expiry=*/base::Time(),
-      /*owner=*/test_origin,
-      /*name=*/"shoes",
-      /*priority=*/0.0,
-      /*bidding_url=*/
-      https_server_->GetURL(
-          "a.test", "/interest_group/bidding_logic_with_debugging_report.js"),
-      /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
-      /*trusted_bidding_signals_url=*/absl::nullopt,
-      /*trusted_bidding_signals_keys=*/absl::nullopt,
-      /*user_bidding_signals=*/absl::nullopt,
-      /*ads=*/{{{ad1_url, /*metadata=*/absl::nullopt}}},
-      /*ad_components=*/absl::nullopt)));
-  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
-      /*expiry=*/base::Time(),
-      /*owner=*/test_origin,
-      /*name=*/"bikes",
-      /*priority=*/0.0,
-      /*bidding_url=*/
-      https_server_->GetURL(
-          "a.test", "/interest_group/bidding_logic_with_debugging_report.js"),
-      /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
-      /*trusted_bidding_signals_url=*/absl::nullopt,
-      /*trusted_bidding_signals_keys=*/absl::nullopt,
-      /*user_bidding_signals=*/absl::nullopt,
-      /*ads=*/{{{ad2_url, /*metadata=*/absl::nullopt}}},
-      /*ad_components=*/absl::nullopt)));
-
-  EXPECT_EQ(
-      nullptr,
-      RunAuctionAndWait(JsReplace(
-          R"({
-    seller: $1,
-    decisionLogicUrl: $2,
-    interestGroupBuyers: [$1],
-    auctionSignals: {x: 1},
-    sellerSignals: {yet: 'more', info: 1},
-                })",
-          test_origin,
-          https_server_->GetURL(
-              "a.test", "/interest_group/decision_logic_reject_all.js"))));
-
-  // Debugging loss reports should be sent if not empty, even if there's no
-  // winning bid.
-  const GURL kExpectedReportUrls[] = {
-      // Debugging loss report URL from bid which got rejected by seller.
-      https_server_->GetURL("a.test", "/echo?bidder_debug_report_loss/shoes"),
-      // Debugging loss report URL from bid which got rejected by seller.
-      https_server_->GetURL("a.test", "/echo?bidder_debug_report_loss/bikes")};
-
-  for (const auto& expected_report_url : kExpectedReportUrls) {
-    SCOPED_TRACE(expected_report_url);
-
-    // Wait for the report URL to be fetched, which only happens after the
-    // auction has completed.
-    WaitForURL(expected_report_url);
-
-    absl::optional<network::ResourceRequest> request =
-        url_loader_monitor.GetRequestInfo(expected_report_url);
-    ASSERT_TRUE(request);
-  }
-}
-
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        RunAdAuctionWithWinnerManyInterestGroups) {
   GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
@@ -2945,7 +2951,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_stop_bidding_after_win.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -2959,7 +2965,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -2975,7 +2981,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3019,7 +3025,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionAllGroupsLimited) {
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3033,7 +3039,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionAllGroupsLimited) {
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -3049,7 +3055,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionAllGroupsLimited) {
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3096,7 +3102,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_stop_bidding_after_win.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3110,7 +3116,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -3126,7 +3132,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3142,7 +3148,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
       /*bidding_url=*/
       https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3156,7 +3162,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
       /*bidding_url=*/
       https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("b.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -3172,7 +3178,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
       /*bidding_url=*/
       https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3225,7 +3231,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_stop_bidding_after_win.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3239,7 +3245,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -3255,7 +3261,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3271,7 +3277,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3285,7 +3291,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("b.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -3301,7 +3307,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3353,7 +3359,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionMultipleAuctions) {
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_stop_bidding_after_win.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3372,7 +3378,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionMultipleAuctions) {
       /*bidding_url=*/
       https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3515,7 +3521,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -3570,7 +3576,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithInvalidAdUrl) {
       https_server_->GetURL("a.test",
                             "/interest_group/bidding_logic_invalid_ad_url.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -3904,7 +3910,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL("a.test",
                             "/interest_group/bidding_logic_throws.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -4122,7 +4128,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ValidateWorkletParameters) {
       https_server_->GetURL(kBidderHost,
                             "/interest_group/bidding_argument_validator.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/
+      https_server_->GetURL(kBidderHost, "/not_found_daily_update_url.json"),
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL(kBidderHost,
                             "/interest_group/trusted_bidding_signals.json"),
@@ -4197,7 +4204,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           kBidderHost,
           "/interest_group/component_auction_bidding_argument_validator.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/
+      https_server_->GetURL(kBidderHost, "/not_found_daily_update_url.json"),
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL(kBidderHost,
                             "/interest_group/trusted_bidding_signals.json"),
@@ -4283,7 +4291,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
                             "/interest_group/trusted_bidding_signals.json"),
@@ -4479,7 +4487,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, QuitWithRunningAuction) {
       /*priority=*/0.0,
       /*bidding_url=*/hanging_url,
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
@@ -4533,7 +4541,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, UpdateAllUpdatableFields) {
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/
+      /*daily_update_url=*/
       https_server_->GetURL("a.test", kDailyUpdateUrlPath),
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
@@ -4597,7 +4605,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/
+      /*daily_update_url=*/
       https_server_->GetURL("a.test", kDailyUpdateUrlPath),
       /*trusted_bidding_signals_url=*/
       https_server_->GetURL("a.test",
@@ -4624,8 +4632,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
             return group.name == "cars" && group.bidding_url.has_value() &&
                    group.bidding_url->path() ==
                        "/interest_group/bidding_logic.js" &&
-                   group.update_url.has_value() &&
-                   group.update_url->path() ==
+                   group.daily_update_url.has_value() &&
+                   group.daily_update_url->path() ==
                        "/interest_group/daily_update_partial.json" &&
                    group.trusted_bidding_signals_url.has_value() &&
                    group.trusted_bidding_signals_url->path() ==
@@ -5016,7 +5024,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTestRunAdAuctionBypassBlink,
   // This is invalid because it's cross-origin to the seller.
   component_auction_config->decision_logic_url =
       https_server_->GetURL("d.test", "/interest_group/decision_logic.js");
-  config->component_auctions.emplace_back(std::move(component_auction_config));
+  config->auction_ad_config_non_shared_params->component_auctions.emplace_back(
+      std::move(component_auction_config));
 
   EXPECT_THAT(RunAuctionBypassBlink(std::move(config)), Eq(absl::nullopt));
 }
@@ -5026,9 +5035,10 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTestRunAdAuctionBypassBlink,
                        InvalidComponentAuctionDepth) {
   auto config = CreateValidAuctionConfig();
   auto component_auction_config = CreateValidAuctionConfig();
-  component_auction_config->component_auctions.emplace_back(
-      CreateValidAuctionConfig());
-  config->component_auctions.emplace_back(std::move(component_auction_config));
+  component_auction_config->auction_ad_config_non_shared_params
+      ->component_auctions.emplace_back(CreateValidAuctionConfig());
+  config->auction_ad_config_non_shared_params->component_auctions.emplace_back(
+      std::move(component_auction_config));
 
   EXPECT_THAT(RunAuctionBypassBlink(std::move(config)), Eq(absl::nullopt));
 }
@@ -5263,7 +5273,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
       /*owner=*/test_origin,
       /*name=*/bidder_report_to_url.spec(), /*priority=*/0.0, bidder_url,
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt, trusted_bidding_signals_url,
+      /*daily_update_url=*/absl::nullopt, trusted_bidding_signals_url,
       /*trusted_bidding_signals_keys=*/{{"key1"}},
       /*user_bidding_signals=*/absl::nullopt,
       /*ads=*/{{{ad_url, /*metadata=*/absl::nullopt}}},
@@ -5644,7 +5654,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
         /*bidding_url=*/
         https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
         /*bidding_wasm_helper_url=*/absl::nullopt,
-        /*update_url=*/update_url_a,
+        /*daily_update_url=*/update_url_a,
         /*trusted_bidding_signals_url=*/absl::nullopt,
         /*trusted_bidding_signals_keys=*/absl::nullopt,
         /*user_bidding_signals=*/absl::nullopt,
@@ -5661,7 +5671,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
         /*bidding_url=*/
         https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
         /*bidding_wasm_helper_url=*/absl::nullopt,
-        /*update_url=*/update_url_b,
+        /*daily_update_url=*/update_url_b,
         /*trusted_bidding_signals_url=*/absl::nullopt,
         /*trusted_bidding_signals_keys=*/absl::nullopt,
         /*user_bidding_signals=*/absl::nullopt,
@@ -5838,7 +5848,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
             /*bidding_url=*/
             https_server_->GetURL(host, "/interest_group/bidding_logic.js"),
             /*bidding_wasm_helper_url=*/absl::nullopt,
-            /*update_url=*/
+            /*daily_update_url=*/
             https_server_->GetURL(host,
                                   "/interest_group/daily_update_partial.json"),
             /*trusted_bidding_signals_url=*/absl::nullopt,
@@ -6011,7 +6021,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupRestrictedPermissionsPolicyBrowserTest,
             /*bidding_url=*/
             https_server_->GetURL(host, "/interest_group/bidding_logic.js"),
             /*bidding_wasm_helper_url=*/absl::nullopt,
-            /*update_url=*/
+            /*daily_update_url=*/
             https_server_->GetURL(host,
                                   "/interest_group/daily_update_partial.json"),
             /*trusted_bidding_signals_url=*/absl::nullopt,
@@ -6128,7 +6138,7 @@ IN_PROC_BROWSER_TEST_F(
           /*bidding_url=*/
           https_server_->GetURL("b.test", "/interest_group/bidding_logic.js"),
           /*bidding_wasm_helper_url=*/absl::nullopt,
-          /*update_url=*/
+          /*daily_update_url=*/
           https_server_->GetURL("b.test",
                                 "/interest_group/daily_update_partial.json"),
           /*trusted_bidding_signals_url=*/absl::nullopt,
@@ -6243,7 +6253,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupAuctionLimitBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -6321,7 +6331,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupAuctionLimitBrowserTest,
       /*bidding_url=*/
       https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -6407,7 +6417,7 @@ IN_PROC_BROWSER_TEST_F(
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_with_debugging_report.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -6422,7 +6432,7 @@ IN_PROC_BROWSER_TEST_F(
       https_server_->GetURL(
           "a.test", "/interest_group/bidding_logic_with_debugging_report.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,

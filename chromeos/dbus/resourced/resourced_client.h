@@ -7,7 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 
 namespace dbus {
 class Bus;
@@ -80,6 +80,17 @@ class COMPONENT_EXPORT(RESOURCED) ResourcedClient {
   virtual void SetGameModeWithTimeout(bool state,
                                       uint32_t refresh_seconds,
                                       DBusMethodCallback<bool> callback) = 0;
+
+  using SetMemoryMarginsBpsCallback =
+      base::OnceCallback<void(bool, uint64_t, uint64_t)>;
+
+  // Informs resourced that it should use a different value for the critical
+  // threshold. The value provided for |critical_bps| and |moderate_bps| must be
+  // in basis points which represent one-one hundredth of a percent, eg. 1354
+  // = 13.54%.
+  virtual void SetMemoryMarginsBps(uint32_t critical_bps,
+                                   uint32_t moderate_bps,
+                                   SetMemoryMarginsBpsCallback callback) = 0;
 
   // Adds an observer to the observer list to listen on memory pressure events.
   virtual void AddObserver(Observer* observer) = 0;

@@ -51,10 +51,20 @@ enum class PageLoadPrerenderEvent {
   kMaxValue = kPrerenderActivationNavigation,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PageLoadTrackerPageType {
+  kPrimaryPage = 0,
+  kPrerenderPage = 1,
+  kFencedFramesPage = 2,
+  kMaxValue = kFencedFramesPage,
+};
+
 extern const char kErrorEvents[];
 extern const char kPageLoadCompletedAfterAppBackground[];
-extern const char kPageLoadStartedInForeground[];
 extern const char kPageLoadPrerender2Event[];
+extern const char kPageLoadStartedInForeground[];
+extern const char kPageLoadTrackerPageType[];
 
 }  // namespace internal
 
@@ -179,7 +189,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                   const GURL& currently_committed_url,
                   bool is_first_navigation_in_web_contents,
                   content::NavigationHandle* navigation_handle,
-                  UserInitiatedInfo user_initiated_info);
+                  UserInitiatedInfo user_initiated_info,
+                  ukm::SourceId source_id);
 
   PageLoadTracker(const PageLoadTracker&) = delete;
   PageLoadTracker& operator=(const PageLoadTracker&) = delete;
@@ -469,7 +480,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
 
-  ukm::SourceId source_id_ = ukm::kInvalidSourceId;
+  ukm::SourceId source_id_;
 
   const raw_ptr<content::WebContents> web_contents_;
 

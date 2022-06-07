@@ -33,12 +33,10 @@ ChromeKioskAppInstaller::AppInstallData::~AppInstallData() = default;
 ChromeKioskAppInstaller::ChromeKioskAppInstaller(
     Profile* profile,
     const AppInstallData& install_data,
-    KioskAppLauncher::Delegate* delegate,
-    bool finalize_only)
+    KioskAppLauncher::Delegate* delegate)
     : profile_(profile),
       primary_app_install_data_(install_data),
-      delegate_(delegate),
-      finalize_only_(finalize_only) {}
+      delegate_(delegate) {}
 
 ChromeKioskAppInstaller::~ChromeKioskAppInstaller() {}
 
@@ -48,11 +46,6 @@ void ChromeKioskAppInstaller::BeginInstall(InstallCallback callback) {
   SYSLOG(INFO) << "BeginInstall";
 
   on_ready_callback_ = std::move(callback);
-
-  if (finalize_only_) {
-    FinalizeAppInstall();
-    return;
-  }
 
   extensions::file_util::SetUseSafeInstallation(true);
   ChromeKioskExternalLoaderBroker::Get()->TriggerPrimaryAppInstall(
@@ -86,9 +79,7 @@ void ChromeKioskAppInstaller::MaybeInstallSecondaryApps() {
     return;
 
   if (!AreSecondaryAppsInstalled() && !delegate_->IsNetworkReady()) {
-    RetryWhenNetworkIsAvailable(
-        base::BindOnce(&ChromeKioskAppInstaller::MaybeInstallSecondaryApps,
-                       weak_ptr_factory_.GetWeakPtr()));
+    ReportInstallFailure(InstallResult::kNetworkMissing);
     return;
   }
 
@@ -168,43 +159,9 @@ void ChromeKioskAppInstaller::OnExtensionUpdateCheckFinished(
 void ChromeKioskAppInstaller::FinalizeAppInstall() {
   DCHECK(!install_complete_);
 
-  const extensions::Extension* primary_app = GetPrimaryAppExtension();
-  // Verify that required apps are installed. While the apps should be
-  // present at this point, crash recovery flow skips app installation steps -
-  // this means that the kiosk app might not yet be downloaded. If that is
-  // the case, bail out from the app launch.
-  if (!primary_app || !AreSecondaryAppsInstalled()) {
-    ReportInstallFailure(
-        ChromeKioskAppInstaller::InstallResult::kUnableToLaunch);
-    return;
-  }
-
-  const bool offline_enabled =
-      extensions::OfflineEnabledInfo::IsOfflineEnabled(primary_app);
-  // If the app is not offline enabled, make sure the network is ready before
-  // launching.
-  if (!offline_enabled && !delegate_->IsNetworkReady()) {
-    ReportInstallFailure(InstallResult::kNetworkMissing);
-    return;
-  }
-
   install_complete_ = true;
 
-  SetSecondaryAppsEnabledState(primary_app);
-  MaybeUpdateAppData();
-
   ReportInstallSuccess();
-}
-
-void ChromeKioskAppInstaller::MaybeUpdateAppData() {
-  // Skip copying meta data from the current installed primary app when
-  // there is a pending update.
-  if (PrimaryAppHasPendingUpdate())
-    return;
-
-  KioskAppManager::Get()->ClearAppData(primary_app_install_data_.id);
-  KioskAppManager::Get()->UpdateAppDataFromProfile(primary_app_install_data_.id,
-                                                   profile_, NULL);
 }
 
 void ChromeKioskAppInstaller::OnFinishCrxInstall(
@@ -265,16 +222,10 @@ void ChromeKioskAppInstaller::ReportInstallSuccess() {
 
 void ChromeKioskAppInstaller::ReportInstallFailure(
     ChromeKioskAppInstaller::InstallResult error) {
-  SYSLOG(ERROR) << "App launch failed, error: " << static_cast<int>(error);
+  SYSLOG(ERROR) << "App install failed, error: " << static_cast<int>(error);
   DCHECK_NE(ChromeKioskAppInstaller::InstallResult::kSuccess, error);
 
   std::move(on_ready_callback_).Run(error);
-}
-
-void ChromeKioskAppInstaller::RetryWhenNetworkIsAvailable(
-    base::OnceClosure callback) {
-  DelayNetworkCall(base::Milliseconds(kDefaultNetworkRetryDelayMS),
-                   std::move(callback));
 }
 
 void ChromeKioskAppInstaller::ObserveActiveInstallations() {
@@ -351,46 +302,6 @@ bool ChromeKioskAppInstaller::DidPrimaryOrSecondaryAppFailedToInstall(
 
   SYSLOG(WARNING) << "Failed to install crx file for an app id=" << id;
   return false;
-}
-
-void ChromeKioskAppInstaller::SetSecondaryAppsEnabledState(
-    const extensions::Extension* primary_app) {
-  extensions::KioskModeInfo* info = extensions::KioskModeInfo::Get(primary_app);
-  for (const auto& app_info : info->secondary_apps) {
-    // If the enabled on launch is not specified in the manifest, the apps
-    // enabled state should be kept as is.
-    if (!app_info.enabled_on_launch.has_value())
-      continue;
-
-    SetAppEnabledState(app_info.id, app_info.enabled_on_launch.value());
-  }
-}
-
-void ChromeKioskAppInstaller::SetAppEnabledState(
-    const extensions::ExtensionId& id,
-    bool new_enabled_state) {
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
-
-  // If the app is already enabled, and we want it to be enabled, nothing to do.
-  if (service->IsExtensionEnabled(id) && new_enabled_state) {
-    return;
-  }
-
-  if (new_enabled_state) {
-    // Remove USER_ACTION disable reason - if no other disabled reasons are
-    // present, enable the app.
-    prefs->RemoveDisableReason(id,
-                               extensions::disable_reason::DISABLE_USER_ACTION);
-    if (prefs->GetDisableReasons(id) ==
-        extensions::disable_reason::DISABLE_NONE) {
-      service->EnableExtension(id);
-    }
-  } else {
-    service->DisableExtension(id,
-                              extensions::disable_reason::DISABLE_USER_ACTION);
-  }
 }
 
 }  // namespace ash

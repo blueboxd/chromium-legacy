@@ -15,18 +15,15 @@ import '../site_favicon.js';
 import './passwords_shared_css.js';
 
 import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 
-// <if expr="chromeos_ash or chromeos_lacros">
-import {BlockingRequestManager} from './blocking_request_manager.js';
-// </if>
-
 import {getTemplate} from './password_check_list_item.html.js';
 import {PasswordCheckInteraction, PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+import {PasswordRequestorMixin} from './password_requestor_mixin.js';
 
 export interface PasswordCheckListItemElement {
   $: {
@@ -37,7 +34,10 @@ export interface PasswordCheckListItemElement {
   };
 }
 
-export class PasswordCheckListItemElement extends PolymerElement {
+const PasswordCheckListItemElementBase = PasswordRequestorMixin(PolymerElement);
+
+export class PasswordCheckListItemElement extends
+    PasswordCheckListItemElementBase {
   static get is() {
     return 'password-check-list-item';
   }
@@ -48,10 +48,6 @@ export class PasswordCheckListItemElement extends PolymerElement {
 
   static get properties() {
     return {
-      // <if expr="chromeos_ash or chromeos_lacros">
-      tokenRequestManager: Object,
-      // </if>
-
       /**
        * The password that is being displayed.
        */
@@ -92,10 +88,6 @@ export class PasswordCheckListItemElement extends PolymerElement {
     };
   }
 
-  // <if expr="chromeos_ash or chromeos_lacros">
-  tokenRequestManager: BlockingRequestManager;
-  // </if>
-
   item: chrome.passwordsPrivate.InsecureCredential;
   isPasswordVisible: boolean;
   private password_: string;
@@ -131,12 +123,11 @@ export class PasswordCheckListItemElement extends PolymerElement {
         return loadTimeData.getString('leakedPassword');
       case chrome.passwordsPrivate.CompromiseType.PHISHED_AND_LEAKED:
         return loadTimeData.getString('phishedAndLeakedPassword');
+      default:
+        assertNotReached(
+            'Can\'t find a string for type: ' +
+            this.item.compromisedInfo!.compromiseType);
     }
-
-    assertNotReached(
-        'Can\'t find a string for type: ' +
-        this.item.compromisedInfo!.compromiseType);
-    return '';
   }
 
   private fire_(eventName: string, detail?: any) {
@@ -147,8 +138,8 @@ export class PasswordCheckListItemElement extends PolymerElement {
   private onChangePasswordClick_() {
     this.fire_('change-password-clicked', {id: this.item.id});
 
-    const url = assert(this.item.changePasswordUrl!);
-    OpenWindowProxyImpl.getInstance().openURL(url);
+    assert(this.item.changePasswordUrl);
+    OpenWindowProxyImpl.getInstance().openURL(this.item.changePasswordUrl);
 
     PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
         PasswordCheckInteraction.CHANGE_PASSWORD);
@@ -196,19 +187,9 @@ export class PasswordCheckListItemElement extends PolymerElement {
   showPassword() {
     this.passwordManager_.recordPasswordCheckInteraction(
         PasswordCheckInteraction.SHOW_PASSWORD);
-    this.passwordManager_
-        .getPlaintextInsecurePassword(
-            assert(this.item), chrome.passwordsPrivate.PlaintextReason.VIEW)
-        .then(
-            insecureCredential => {
-              this.set('item', insecureCredential);
-            },
-            _error => {
-              // <if expr="chromeos_ash or chromeos_lacros">
-              // If no password was found, refresh auth token and retry.
-              this.tokenRequestManager.request(() => this.showPassword());
-              // </if>
-            });
+    this.getPlaintextInsecurePassword(
+            this.item, chrome.passwordsPrivate.PlaintextReason.VIEW)
+        .then(insecureCredential => this.item = insecureCredential);
   }
 
   private onReadonlyInputTap_() {
@@ -226,7 +207,7 @@ export class PasswordCheckListItemElement extends PolymerElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'password-check-list-item': PasswordCheckListItemElement,
+    'password-check-list-item': PasswordCheckListItemElement;
   }
 }
 

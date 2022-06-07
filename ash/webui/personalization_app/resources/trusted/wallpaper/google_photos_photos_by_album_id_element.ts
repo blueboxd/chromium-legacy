@@ -7,24 +7,40 @@
  * for the currently selected album id.
  */
 
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 import './styles.js';
-import '/common/styles.js';
+import '../../common/styles.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import {afterNextRender, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
+import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isSelectionEvent} from '../../common/utils.js';
-import {CurrentWallpaper, GooglePhotosPhoto, WallpaperImage, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
+import {getLoadingPlaceholders, isSelectionEvent} from '../../common/utils.js';
+import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosPhoto, WallpaperImage, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isGooglePhotosPhoto} from '../utils.js';
 
+import {recordWallpaperGooglePhotosSourceUMA, WallpaperGooglePhotosSource} from './google_photos_metrics_logger.js';
+import {getTemplate} from './google_photos_photos_by_album_id_element.html.js';
 import {fetchGooglePhotosAlbum, selectWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 
+const PLACEHOLDER_ID = 'placeholder';
+
+/** Returns placeholders to show while Google Photos photos are loading. */
+function getPlaceholders(): GooglePhotosPhoto[] {
+  return getLoadingPlaceholders(() => {
+    const photo = new GooglePhotosPhoto();
+    photo.id = PLACEHOLDER_ID;
+    return photo;
+  });
+}
+
 export interface GooglePhotosPhotosByAlbumId {
-  $: {grid: IronListElement;};
+  $: {grid: IronListElement, gridScrollThreshold: IronScrollThresholdElement};
 }
 
 export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
@@ -33,14 +49,12 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
-      albumId: {
-        type: String,
-      },
+      albumId: String,
 
       hidden: {
         type: Boolean,
@@ -51,15 +65,23 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
 
       album_: {
         type: Array,
-        computed:
-            'computeAlbum_(albumId, photosByAlbumId_, photosByAlbumIdLoading_)',
+        value: getPlaceholders,
       },
 
+      albums: Array,
       currentSelected_: Object,
       pendingSelected_: Object,
       photosByAlbumId_: Object,
       photosByAlbumIdLoading_: Object,
+      photosByAlbumIdResumeTokens_: Object,
     };
+  }
+
+  static get observers() {
+    return [
+      'onAlbumIdOrAlbumsOrPhotosByAlbumIdChanged_(albumId, albums_, photosByAlbumId_)',
+      'onAlbumIdOrPhotosByAlbumIdResumeTokensChanged_(albumId, photosByAlbumIdResumeTokens_)',
+    ];
   }
 
   /** The currently selected album id. */
@@ -69,7 +91,10 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   override hidden: boolean;
 
   /** The list of photos for the currently selected album id. */
-  private album_: GooglePhotosPhoto[]|null|undefined;
+  private album_: GooglePhotosPhoto[];
+
+  /** The list of albums. */
+  private albums_: GooglePhotosAlbum[]|null|undefined;
 
   /** The currently selected wallpaper. */
   private currentSelected_: CurrentWallpaper|null;
@@ -78,10 +103,14 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   private pendingSelected_: FilePath|GooglePhotosPhoto|WallpaperImage|null;
 
   /** The list of photos by album id. */
-  private photosByAlbumId_: Record<string, GooglePhotosPhoto[]|null|undefined>;
+  private photosByAlbumId_: Record<string, GooglePhotosPhoto[]|null|undefined>|
+      undefined;
 
   /** Whether the list of photos by album id is currently loading. */
-  private photosByAlbumIdLoading_: Record<string, boolean>;
+  private photosByAlbumIdLoading_: Record<string, boolean>|undefined;
+
+  /** The resume tokens needed to fetch the next page of photos by album id. */
+  private photosByAlbumIdResumeTokens_: Record<string, string|null>|undefined;
 
   /** The singleton wallpaper provider interface. */
   private wallpaperProvider_: WallpaperProviderInterface =
@@ -90,6 +119,8 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   override connectedCallback() {
     super.connectedCallback();
 
+    this.watch<GooglePhotosPhotosByAlbumId['albums_']>(
+        'albums_', state => state.wallpaper.googlePhotos.albums);
     this.watch<GooglePhotosPhotosByAlbumId['currentSelected_']>(
         'currentSelected_', state => state.wallpaper.currentSelected);
     this.watch<GooglePhotosPhotosByAlbumId['pendingSelected_']>(
@@ -100,8 +131,38 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
     this.watch<GooglePhotosPhotosByAlbumId['photosByAlbumIdLoading_']>(
         'photosByAlbumIdLoading_',
         state => state.wallpaper.loading.googlePhotos.photosByAlbumId);
+    this.watch<GooglePhotosPhotosByAlbumId['photosByAlbumIdResumeTokens_']>(
+        'photosByAlbumIdResumeTokens_',
+        state => state.wallpaper.googlePhotos.resumeTokens.photosByAlbumId);
 
     this.updateFromStore();
+  }
+
+  /** Invoked on grid scroll threshold reached. */
+  private onGridScrollThresholdReached_() {
+    // Ignore this event if fired during initialization.
+    if (!this.$.gridScrollThreshold.scrollHeight || !this.albumId) {
+      this.$.gridScrollThreshold.clearTriggers();
+      return;
+    }
+
+    // Ignore this event if photos are already being loaded.
+    if (this.photosByAlbumIdLoading_ &&
+        this.photosByAlbumIdLoading_[this.albumId] === true) {
+      return;
+    }
+
+
+    // Ignore this event if there is no resume token (indicating there are no
+    // additional photos to load).
+    if (!this.photosByAlbumIdResumeTokens_ ||
+        !this.photosByAlbumIdResumeTokens_[this.albumId]) {
+      return;
+    }
+
+    // Fetch the next page of photos.
+    fetchGooglePhotosAlbum(
+        this.wallpaperProvider_, this.getStore(), this.albumId);
   }
 
   /** Invoked on changes to this element's |hidden| state. */
@@ -116,36 +177,67 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
     afterNextRender(this, () => this.$.grid.fire('iron-resize'));
   }
 
-  /** Invoked on selection of a photo. */
-  private onPhotoSelected_(e: Event&{model: {photo: GooglePhotosPhoto}}) {
-    assert(e.model.photo);
-    if (isSelectionEvent(e)) {
-      selectWallpaper(e.model.photo, this.wallpaperProvider_, this.getStore());
-    }
-  }
-
-  /** Invoked to compute |album_|. */
-  private computeAlbum_(
+  /** Invoked on changes to |albumId|, |albums_|, or |photosByAlbumId_|. */
+  private onAlbumIdOrAlbumsOrPhotosByAlbumIdChanged_(
       albumId: GooglePhotosPhotosByAlbumId['albumId'],
-      photosByAlbumId: GooglePhotosPhotosByAlbumId['photosByAlbumId_'],
-      photosByAlbumIdLoading:
-          GooglePhotosPhotosByAlbumId['photosByAlbumIdLoading_']):
-      GooglePhotosPhoto[]|null {
-    // If no album is currently selected or if the currently selected album is
-    // still loading then there is nothing to display.
-    if (!albumId || photosByAlbumIdLoading[albumId]) {
-      return null;
+      albums: GooglePhotosPhotosByAlbumId['albums_'],
+      photosByAlbumId: GooglePhotosPhotosByAlbumId['photosByAlbumId_']) {
+    // If no album is currently selected there is nothing to display.
+    if (!albumId) {
+      this.album_ = [];
+      return;
+    }
+
+    // If the album associated with |albumId| or |photosByAlbumId| have not yet
+    // been set, there is nothing to display except placeholders. This occurs
+    // if the user refreshes the wallpaper app while its navigated to a Google
+    // Photos album.
+    if (!Array.isArray(albums) || !albums.some(album => album.id === albumId) ||
+        !photosByAlbumId) {
+      this.album_ = getPlaceholders();
+      return;
     }
 
     // If the currently selected album has not already been fetched, do so
-    // though there is still nothing to display.
+    // though there is still nothing to display except placeholders.
     if (!photosByAlbumId.hasOwnProperty(albumId)) {
       fetchGooglePhotosAlbum(this.wallpaperProvider_, this.getStore(), albumId);
-      return null;
+      this.album_ = getPlaceholders();
+      return;
     }
 
-    // Once the currently selected album has been fetched it can be displayed.
-    return photosByAlbumId[albumId]!;
+    // NOTE: |album_| is updated in place to avoid resetting the scroll
+    // position of the grid which would otherwise occur during reassignment.
+    this.updateList(
+        /*propertyPath=*/ 'album_',
+        /*identityGetter=*/ (photo: GooglePhotosPhoto) => photo.id,
+        /*newList=*/ photosByAlbumId[albumId] || [],
+        /*identityBasedUpdate=*/ true);
+  }
+
+  /** Invoked on changes to |albumId| or |photosByAlbumIdResumeTokens_|. */
+  private onAlbumIdOrPhotosByAlbumIdResumeTokensChanged_(
+      albumId: GooglePhotosPhotosByAlbumId['albumId'],
+      photosByAlbumIdResumeTokens:
+          GooglePhotosPhotosByAlbumId['photosByAlbumIdResumeTokens_']) {
+    if (albumId && photosByAlbumIdResumeTokens &&
+        photosByAlbumIdResumeTokens[albumId]) {
+      this.$.gridScrollThreshold.clearTriggers();
+    }
+  }
+
+  /** Invoked on selection of a photo. */
+  private onPhotoSelected_(e: Event&{model: {photo: GooglePhotosPhoto}}) {
+    assert(e.model.photo);
+    if (!this.isPhotoPlaceholder_(e.model.photo) && isSelectionEvent(e)) {
+      selectWallpaper(e.model.photo, this.wallpaperProvider_, this.getStore());
+      recordWallpaperGooglePhotosSourceUMA(WallpaperGooglePhotosSource.Albums);
+    }
+  }
+
+  /** Returns whether the specified |photo| is a placeholder. */
+  private isPhotoPlaceholder_(photo: GooglePhotosPhoto|null): boolean {
+    return !!photo && photo.id === PLACEHOLDER_ID;
   }
 
   // Returns whether the specified |photo| is currently selected.
@@ -161,9 +253,9 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
         pendingSelected!.id === photo.id) {
       return true;
     }
-    if (!pendingSelected &&
-        currentSelected?.type === WallpaperType.kGooglePhotos &&
-        currentSelected!.key === photo.id) {
+    if (!pendingSelected && !!currentSelected &&
+        currentSelected.type === WallpaperType.kGooglePhotos &&
+        currentSelected.key === photo.id) {
       return true;
     }
     return false;

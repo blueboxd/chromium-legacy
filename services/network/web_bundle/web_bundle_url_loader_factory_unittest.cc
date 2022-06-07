@@ -30,7 +30,6 @@ const char kBundleRequestId[] = "bundle-devtools-request-id";
 const char kResourceUrl[] = "https://example.com/";
 const char kResourceUrl2[] = "https://example.com/another";
 const char kResourceUrl3[] = "https://example.com/yetanother";
-const char kUrnUuidUrl[] = "urn:uuid:e9448fc0-3fef-4568-a910-55448df1b863";
 const char kResourceRequestId[] = "resource-1-devtools-request-id";
 const char kResourceRequestId2[] = "resource-2-devtools-request-id";
 const char kResourceRequestId3[] = "resource-3-devtools-request-id";
@@ -46,7 +45,7 @@ using ::testing::Optional;
 using ::testing::Pointee;
 
 std::vector<uint8_t> CreateSmallBundle() {
-  web_package::WebBundleBuilder builder(kResourceUrl, "" /* manifest_url */);
+  web_package::WebBundleBuilder builder;
   builder.AddExchange(kResourceUrl,
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "body");
@@ -54,7 +53,7 @@ std::vector<uint8_t> CreateSmallBundle() {
 }
 
 std::vector<uint8_t> CreateLargeBundle() {
-  web_package::WebBundleBuilder builder(kResourceUrl, "" /* manifest_url */);
+  web_package::WebBundleBuilder builder;
   builder.AddExchange(kResourceUrl,
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "body");
@@ -68,8 +67,7 @@ std::vector<uint8_t> CreateLargeBundle() {
 }
 
 std::vector<uint8_t> CreateCrossOriginBundle() {
-  web_package::WebBundleBuilder builder(kCrossOriginJsonUrl,
-                                        "" /* manifest_url */);
+  web_package::WebBundleBuilder builder;
   builder.AddExchange(
       kCrossOriginJsonUrl,
       {{":status", "200"}, {"content-type", "application/json"}},
@@ -77,23 +75,6 @@ std::vector<uint8_t> CreateCrossOriginBundle() {
   builder.AddExchange(kCrossOriginJsUrl,
                       {{":status", "200"}, {"content-type", "application/js"}},
                       "const not_secret = 1;");
-  return builder.CreateBundle();
-}
-
-std::vector<uint8_t> CreateB1Bundle() {
-  web_package::WebBundleBuilder builder(kResourceUrl, "" /* manifest_url */,
-                                        web_package::BundleVersion::kB1);
-  builder.AddExchange(kResourceUrl,
-                      {{":status", "200"}, {"content-type", "text/plain"}},
-                      "body");
-  return builder.CreateBundle();
-}
-
-std::vector<uint8_t> CreateBundleWithUrnUuidResource() {
-  web_package::WebBundleBuilder builder(kUrnUuidUrl, "" /* manifest_url */);
-  builder.AddExchange(kUrnUuidUrl,
-                      {{":status", "200"}, {"content-type", "text/plain"}},
-                      "body");
   return builder.CreateBundle();
 }
 
@@ -320,7 +301,7 @@ TEST_F(WebBundleURLLoaderFactoryTest, MetadataParseError) {
 }
 
 TEST_F(WebBundleURLLoaderFactoryTest, ResponseParseError) {
-  web_package::WebBundleBuilder builder(kResourceUrl, "" /* manifest_url */);
+  web_package::WebBundleBuilder builder;
   // An invalid response.
   builder.AddExchange(kResourceUrl, {{":status", "0"}}, "body");
   WriteBundle(builder.CreateBundle());
@@ -372,7 +353,7 @@ TEST_F(WebBundleURLLoaderFactoryTest, ResourceNotFoundInBundle) {
 }
 
 TEST_F(WebBundleURLLoaderFactoryTest, RedirectResponseIsNotAllowed) {
-  web_package::WebBundleBuilder builder(kResourceUrl, "" /* manifest_url */);
+  web_package::WebBundleBuilder builder;
   builder.AddExchange(kResourceUrl,
                       {{":status", "301"}, {"location", kResourceUrl2}}, "");
   builder.AddExchange(kResourceUrl2,
@@ -552,52 +533,6 @@ TEST_F(WebBundleURLLoaderFactoryTest, WrongBundleURL) {
   EXPECT_THAT(bad_message_helper.bad_message_reports(),
               ::testing::ElementsAre(
                   "WebBundleURLLoaderFactory: Bundle URL does not match"));
-}
-
-TEST_F(WebBundleURLLoaderFactoryTest, DeprecatedBundleVersion) {
-  WriteBundle(CreateB1Bundle());
-  FinishWritingBundle();
-
-  EXPECT_CALL(*devtools_observer_,
-              OnSubresourceWebBundleMetadata(kBundleRequestId,
-                                             ElementsAre(GURL(kResourceUrl))));
-  EXPECT_CALL(*devtools_observer_,
-              OnSubresourceWebBundleInnerResponse(
-                  kResourceRequestId, GURL(kResourceUrl),
-                  Optional(std::string(kBundleRequestId))));
-
-  auto request = StartRequest(GURL(kResourceUrl), kResourceRequestId);
-  request.client->RunUntilComplete();
-
-  EXPECT_EQ(net::OK, request.client->completion_status().error_code);
-  EXPECT_EQ(last_bundle_error()->first,
-            mojom::WebBundleErrorType::kDeprecationWarning);
-  EXPECT_EQ(last_bundle_error()->second,
-            "WebBundle format \"b1\" is deprecated. See migration guide at "
-            "https://bit.ly/3rpDuEX.");
-}
-
-TEST_F(WebBundleURLLoaderFactoryTest, DeprecatedUrnUuidResource) {
-  WriteBundle(CreateBundleWithUrnUuidResource());
-  FinishWritingBundle();
-
-  EXPECT_CALL(*devtools_observer_,
-              OnSubresourceWebBundleMetadata(kBundleRequestId,
-                                             ElementsAre(GURL(kUrnUuidUrl))));
-  EXPECT_CALL(*devtools_observer_,
-              OnSubresourceWebBundleInnerResponse(
-                  kResourceRequestId, GURL(kUrnUuidUrl),
-                  Optional(std::string(kBundleRequestId))));
-
-  auto request = StartRequest(GURL(kUrnUuidUrl), kResourceRequestId);
-  request.client->RunUntilComplete();
-
-  EXPECT_EQ(net::OK, request.client->completion_status().error_code);
-  EXPECT_EQ(last_bundle_error()->first,
-            mojom::WebBundleErrorType::kDeprecationWarning);
-  EXPECT_EQ(last_bundle_error()->second,
-            "urn:uuid resource URL in WebBundles is deprecated. See migration "
-            "guide at https://bit.ly/3rpDuEX.");
 }
 
 }  // namespace network

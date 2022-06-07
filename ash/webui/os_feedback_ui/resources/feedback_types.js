@@ -42,6 +42,20 @@ export const SearchRequest = ash.osFeedbackUi.mojom.SearchRequest;
 export const SearchResponse = ash.osFeedbackUi.mojom.SearchResponse;
 
 /**
+ * Type alias for search result. When isPopularContent is true, the contentList
+ * contains top popular help contents, i.e. returned where the search query is
+ * empty. The isQueryEmpty is true when the current query is empty. The
+ * isPopularContent is true when the current query is not empty and no matches
+ * are found.
+ * @typedef {{
+ *   contentList: HelpContentList,
+ *   isQueryEmpty: boolean,
+ *   isPopularContent: boolean
+ * }}
+ */
+export let SearchResult;
+
+/**
  * Type alias for the HelpContentProviderInterface.
  * @typedef {ash.osFeedbackUi.mojom.HelpContentProviderInterface}
  */
@@ -53,3 +67,23 @@ export const HelpContentProviderInterface =
  * @typedef {ash.osFeedbackUi.mojom.HelpContentProvider}
  */
 export const HelpContentProvider = ash.osFeedbackUi.mojom.HelpContentProvider;
+
+/**
+ * Type alias for feedback context. It contains context information such as
+ * the signed user email, the URL of active page, etc.
+ * @typedef {{
+ *   email: string,
+ *   pageUrl: url.mojom.Url
+ * }}
+ */
+export let FeedbackContext;
+
+/**
+ * Type alias for the FeedbackServiceProviderInterface.
+ * TODO(xiangdongkong): Replace with a real mojo type when implemented.
+ * @typedef {{
+ *   getFeedbackContext: !function(): !Promise<{
+ *       feedbackContext: !FeedbackContext}>,
+ * }}
+ */
+export let FeedbackServiceProviderInterface;

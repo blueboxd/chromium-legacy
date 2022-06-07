@@ -42,9 +42,8 @@ constexpr const char kCellularPermission[] = "cellular";
 
 }  // namespace
 
-UpdateScreenHandler::UpdateScreenHandler(JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.UpdateScreen.userActed");
+UpdateScreenHandler::UpdateScreenHandler() : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.UpdateScreen.userActed");
 }
 
 UpdateScreenHandler::~UpdateScreenHandler() {
@@ -53,23 +52,23 @@ UpdateScreenHandler::~UpdateScreenHandler() {
 }
 
 void UpdateScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void UpdateScreenHandler::Hide() {}
 
 void UpdateScreenHandler::Bind(UpdateScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void UpdateScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void UpdateScreenHandler::SetUpdateState(UpdateView::UIState value) {
@@ -155,7 +154,7 @@ void UpdateScreenHandler::DeclareLocalizedValues(
                IDS_UPDATE_OVER_CELLULAR_PROMPT_MESSAGE);
 }
 
-void UpdateScreenHandler::Initialize() {
+void UpdateScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;

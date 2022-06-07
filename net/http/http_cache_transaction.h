@@ -165,7 +165,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   void SetEarlyResponseHeadersCallback(
       ResponseHeadersCallback callback) override;
   int ResumeNetworkStart() override;
-  void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  ConnectionAttempts GetConnectionAttempts() const override;
   void CloseConnectionOnDestruction() override;
 
   // Invoked when parallel validation cannot proceed due to response failure
@@ -256,6 +256,8 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     STATE_COMPLETE_PARTIAL_CACHE_VALIDATION,
     STATE_CACHE_UPDATE_STALE_WHILE_REVALIDATE_TIMEOUT,
     STATE_CACHE_UPDATE_STALE_WHILE_REVALIDATE_TIMEOUT_COMPLETE,
+    STATE_CONNECTED_CALLBACK,
+    STATE_CONNECTED_CALLBACK_COMPLETE,
     STATE_SETUP_ENTRY_FOR_READ,
     STATE_SEND_REQUEST,
     STATE_SEND_REQUEST_COMPLETE,
@@ -334,6 +336,8 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   int DoCacheQueryDataComplete(int result);
   int DoCacheUpdateStaleWhileRevalidateTimeout();
   int DoCacheUpdateStaleWhileRevalidateTimeoutComplete(int result);
+  int DoConnectedCallback();
+  int DoConnectedCallbackComplete(int result);
   int DoSetupEntryForRead();
   int DoStartPartialCacheValidation();
   int DoCompletePartialCacheValidation(int result);
@@ -486,7 +490,16 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // to/from the entry. If |entry_is_complete| is false the result may be either
   // a truncated or a doomed entry based on whether the stored response can be
   // resumed or not.
-  void DoneWithEntry(bool did_finish);
+  void DoneWithEntry(bool entry_is_complete);
+
+  // Dooms the given entry so that it will not be re-used for other requests,
+  // then calls `DoneWithEntry()`.
+  //
+  // This happens when network conditions have changed since the entry was
+  // cached, which results in deterministic failures when trying to use the
+  // cache entry. In order to let future requests succeed, the cache entry
+  // should be doomed.
+  void DoomInconsistentEntry();
 
   // Returns an error to signal the caller that the current read failed. The
   // current operation |result| is also logged. If |restart| is true, the
@@ -576,7 +589,11 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // headers.
   bool ShouldDisableCaching(const HttpResponseHeaders& headers) const;
 
-  State next_state_;
+  // 304 revalidations of resources that set security headers and that get
+  // forwarded might need to set these headers again to avoid being blocked.
+  void UpdateSecurityHeadersBeforeForwarding();
+
+  State next_state_{STATE_NONE};
 
   // Initial request with which Start() was invoked.
   raw_ptr<const HttpRequestInfo> initial_request_;

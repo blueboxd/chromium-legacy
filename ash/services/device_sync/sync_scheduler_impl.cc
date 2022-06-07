@@ -9,13 +9,13 @@
 #include <limits>
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -193,4 +193,4 @@ base::TimeDelta SyncSchedulerImpl::GetPeriod() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

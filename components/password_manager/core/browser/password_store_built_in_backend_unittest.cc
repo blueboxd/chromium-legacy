@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -49,6 +51,24 @@ constexpr const char kTestAndroidRealm2[] =
 constexpr const char kTestAndroidRealm3[] =
     "android://hash@com.example.three.android/";
 constexpr const time_t kTestLastUsageTime = 1546300800;  // 00:00 Jan 1 2019 UTC
+constexpr PasswordFormData kTestCredentials[] = {
+    {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", u"", u"", u"",
+     u"username_value_1", u"", kTestLastUsageTime, 1},
+    {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", u"", u"", u"",
+     u"username_value_2", u"", kTestLastUsageTime, 1},
+    {PasswordForm::Scheme::kHtml, kTestAndroidRealm3, "", "", u"", u"", u"",
+     u"username_value_3", u"", kTestLastUsageTime, 1},
+    {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", u"", u"",
+     u"", u"username_value_4", u"", kTestLastUsageTime, 1},
+    // A PasswordFormData with nullptr as the username_value will be converted
+    // in a blocklisted PasswordForm in FillPasswordFormWithData().
+    {PasswordForm::Scheme::kHtml, kTestWebRealm2, kTestWebOrigin2, "", u"", u"",
+     u"", nullptr, u"", kTestLastUsageTime, 1},
+    {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", u"", u"",
+     u"", nullptr, u"", kTestLastUsageTime, 1}};
+constexpr auto kLatencyDelta = base::Milliseconds(123u);
+constexpr auto kStart = base::Time::FromTimeT(1000);
+constexpr auto kEnd = base::Time::FromTimeT(2000);
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   MOCK_METHOD(void,
@@ -99,6 +119,10 @@ PasswordFormData CreateTestPasswordFormData() {
   return data;
 }
 
+bool AnyUrl(const GURL& gurl) {
+  return true;
+}
+
 }  // anonymous namespace
 
 class PasswordStoreBuiltInBackendTest : public testing::Test {
@@ -145,6 +169,14 @@ class PasswordStoreBuiltInBackendTest : public testing::Test {
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
+  void AdvanceClock(base::TimeDelta millis) {
+    // AdvanceClock is used here because FastForwardBy doesn't work for the
+    // intended purpose. FastForwardBy performs the queued actions first and
+    // then makes the clock tick and for the tests that follow we want to
+    // advance the clock before certain async tasks happen.
+    task_environment_.AdvanceClock(millis);
+  }
+
  private:
   void SetupTempDir();
 
@@ -155,7 +187,9 @@ class PasswordStoreBuiltInBackendTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+      base::test::TaskEnvironment::MainThreadType::UI,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<PasswordStoreBuiltInBackend> store_;
 };
@@ -313,21 +347,6 @@ TEST_F(PasswordStoreBuiltInBackendTest, OperationsOnABadDatabaseSilentlyFail) {
 }
 
 TEST_F(PasswordStoreBuiltInBackendTest, GetAllLoginsAsync) {
-  static constexpr PasswordFormData kTestCredentials[] = {
-      {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", u"", u"", u"",
-       u"username_value_1", u"", kTestLastUsageTime, 1},
-      {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", u"", u"", u"",
-       u"username_value_2", u"", kTestLastUsageTime, 1},
-      {PasswordForm::Scheme::kHtml, kTestAndroidRealm3, "", "", u"", u"", u"",
-       u"username_value_3", u"", kTestLastUsageTime, 1},
-      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", u"",
-       u"", u"", u"username_value_4", u"", kTestLastUsageTime, 1},
-      // A PasswordFormData with nullptr as the username_value will be converted
-      // in a blocklisted PasswordForm in FillPasswordFormWithData().
-      {PasswordForm::Scheme::kHtml, kTestWebRealm2, kTestWebOrigin2, "", u"",
-       u"", u"", nullptr, u"", kTestLastUsageTime, 1},
-      {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", u"",
-       u"", u"", nullptr, u"", kTestLastUsageTime, 1}};
   PasswordStoreBackend* backend = Initialize();
 
   // Populate store with test credentials.
@@ -352,6 +371,403 @@ TEST_F(PasswordStoreBuiltInBackendTest, GetAllLoginsAsync) {
   backend->GetAllLoginsAsync(mock_reply.Get());
 
   RunUntilIdle();
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, GetAllLoginsAsyncMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.GetAllLoginsAsync.Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.GetAllLoginsAsync.Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* backend = Initialize();
+
+  // Fill the store
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+
+  const PasswordStoreChange add_change =
+      PasswordStoreChange(PasswordStoreChange::ADD, form);
+
+  testing::StrictMock<MockPasswordStoreBackendTester> tester;
+  EXPECT_CALL(tester, HandleChanges(Optional(ElementsAre(add_change))));
+  backend->AddLoginAsync(
+      form, base::BindOnce(&MockPasswordStoreBackendTester::HandleChanges,
+                           base::Unretained(&tester)));
+
+  // Get the logins
+  backend->GetAllLoginsAsync(base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, true, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, GetAllLoginsAsyncFailsMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.GetAllLoginsAsync.Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.GetAllLoginsAsync.Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* bad_backend =
+      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+
+  bad_backend->GetAllLoginsAsync(base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, false, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, GetAutofillableLoginsAsyncMetrics) {
+  const char kDurationMetricGetLogins[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "GetAutofillableLoginsAsync.Latency";
+  const char kSuccessMetricGetLogins[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "GetAutofillableLoginsAsync.Success";
+  const char kDurationMetricAddLogin[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.AddLoginAsync.Latency";
+  const char kSuccessMetricAddLogin[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.AddLoginAsync.Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* backend = Initialize();
+
+  // Fill the store
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+
+  const PasswordStoreChange add_change =
+      PasswordStoreChange(PasswordStoreChange::ADD, form);
+
+  testing::StrictMock<MockPasswordStoreBackendTester> tester;
+  EXPECT_CALL(tester, HandleChanges(Optional(ElementsAre(add_change))));
+  backend->AddLoginAsync(
+      form, base::BindOnce(&MockPasswordStoreBackendTester::HandleChanges,
+                           base::Unretained(&tester)));
+
+  // Get the logins
+  backend->GetAutofillableLoginsAsync(base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  // Metrics for GetAutofillableLoginsAsyncMetrics
+  histogram_tester.ExpectTotalCount(kDurationMetricGetLogins, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetricGetLogins,
+                                         kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetricGetLogins, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetricGetLogins, true, 1);
+  // Metrics for AddLoginAsync that also gets called in this test
+  histogram_tester.ExpectTotalCount(kDurationMetricAddLogin, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetricAddLogin, kLatencyDelta,
+                                         1);
+  histogram_tester.ExpectTotalCount(kSuccessMetricAddLogin, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetricAddLogin, true, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest,
+       GetAutofillableLoginsAsyncFailsMetrics) {
+  const char kDurationMetricGetLogins[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "GetAutofillableLoginsAsync.Latency";
+  const char kSuccessMetricGetLogins[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "GetAutofillableLoginsAsync.Success";
+  const char kDurationMetricAddLogin[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.AddLoginAsync.Latency";
+  const char kSuccessMetricAddLogin[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.AddLoginAsync.Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* bad_backend =
+      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+
+  // Fill the store
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+  bad_backend->AddLoginAsync(form, base::DoNothing());
+
+  // Get the logins
+  bad_backend->GetAutofillableLoginsAsync(base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  // Metrics for GetAutofillableLoginsAsyncMetrics
+  histogram_tester.ExpectTotalCount(kDurationMetricGetLogins, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetricGetLogins,
+                                         kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetricGetLogins, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetricGetLogins, false, 1);
+  // Metrics for AddLoginAsync that also gets called in this test
+  histogram_tester.ExpectTotalCount(kDurationMetricAddLogin, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetricAddLogin, kLatencyDelta,
+                                         1);
+  histogram_tester.ExpectTotalCount(kSuccessMetricAddLogin, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetricAddLogin, false, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, UpdateLoginAsyncMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.UpdateLoginAsync.Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.UpdateLoginAsync.Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* backend = Initialize();
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+
+  backend->AddLoginAsync(form, base::DoNothing());
+  RunUntilIdle();
+
+  form.password_value = u"a different password";
+  const PasswordStoreChange update_change =
+      PasswordStoreChange(PasswordStoreChange::UPDATE, form);
+
+  testing::StrictMock<MockPasswordStoreBackendTester> tester;
+  EXPECT_CALL(tester, HandleChanges(Optional(ElementsAre(update_change))));
+  backend->UpdateLoginAsync(
+      form, base::BindOnce(&MockPasswordStoreBackendTester::HandleChanges,
+                           base::Unretained(&tester)));
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, true, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, UpdateLoginAsyncFailsMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.UpdateLoginAsync.Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.UpdateLoginAsync.Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* bad_backend =
+      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+
+  bad_backend->UpdateLoginAsync(form, base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, false, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, RemoveLoginAsyncMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.RemoveLoginAsync.Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.RemoveLoginAsync.Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* backend = Initialize();
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+
+  backend->AddLoginAsync(form, base::DoNothing());
+  RunUntilIdle();
+
+  PasswordStoreChange remove_change =
+      PasswordStoreChange(PasswordStoreChange::REMOVE, form);
+
+  backend->RemoveLoginAsync(form, base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, true, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, RemoveLoginAsyncFailsMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.RemoveLoginAsync.Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend.RemoveLoginAsync.Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* bad_backend =
+      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+
+  bad_backend->AddLoginAsync(form, base::DoNothing());
+  RunUntilIdle();
+
+  PasswordStoreChange remove_change =
+      PasswordStoreChange(PasswordStoreChange::REMOVE, form);
+
+  bad_backend->RemoveLoginAsync(form, base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, false, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest,
+       RemoveLoginsCreatedBetweenAsyncMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsCreatedBetweenAsync."
+      "Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsCreatedBetweenAsync."
+      "Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* backend = Initialize();
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+  form.date_created = base::Time::FromTimeT(1500);
+  backend->AddLoginAsync(form, base::DoNothing());
+  RunUntilIdle();
+
+  backend->RemoveLoginsCreatedBetweenAsync(kStart, kEnd, base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, true, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest,
+       RemoveLoginsCreatedBetweenAsyncNothingToDeleteMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsCreatedBetweenAsync."
+      "Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsCreatedBetweenAsync."
+      "Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* backend = Initialize();
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+  form.date_created = base::Time::FromTimeT(300);
+  backend->AddLoginAsync(form, base::DoNothing());
+  RunUntilIdle();
+
+  backend->RemoveLoginsCreatedBetweenAsync(kStart, kEnd, base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, true, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest,
+       RemoveLoginsCreatedBetweenAsyncFailsMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsCreatedBetweenAsync."
+      "Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsCreatedBetweenAsync."
+      "Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* bad_backend =
+      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+
+  bad_backend->RemoveLoginsCreatedBetweenAsync(kStart, kEnd, base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, false, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, RemoveLoginsByURLAndTimeAsyncMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsByURLAndTimeAsync."
+      "Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsByURLAndTimeAsync."
+      "Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* backend = Initialize();
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+  form.date_created = kStart + base::Milliseconds(500);
+  DCHECK(form.date_created < kEnd);
+  backend->AddLoginAsync(form, base::DoNothing());
+  RunUntilIdle();
+
+  backend->RemoveLoginsByURLAndTimeAsync(base::BindRepeating(&AnyUrl), kStart,
+                                         kEnd, base::DoNothing(),
+                                         base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, true, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest,
+       RemoveLoginsByURLAndTimeAsyncNothingToDeleteMetrics) {
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsByURLAndTimeAsync."
+      "Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreBuiltInBackend."
+      "RemoveLoginsByURLAndTimeAsync."
+      "Success";
+  base::HistogramTester histogram_tester;
+
+  PasswordStoreBackend* backend = Initialize();
+  PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
+  form.date_created = kStart - base::Milliseconds(500);
+  backend->AddLoginAsync(form, base::DoNothing());
+  RunUntilIdle();
+
+  backend->RemoveLoginsByURLAndTimeAsync(base::BindRepeating(&AnyUrl), kStart,
+                                         kEnd, base::DoNothing(),
+                                         base::DoNothing());
+
+  AdvanceClock(kLatencyDelta);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 1);
+  histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
+  histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
+  histogram_tester.ExpectBucketCount(kSuccessMetric, true, 1);
 }
 
 }  // namespace password_manager

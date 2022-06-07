@@ -34,6 +34,16 @@
 		</dict>
 		<dict>
 			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Reset First Follow</string>
+			<key>Key</key>
+			<string>ResetFirstFollow</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
 			<string>UI Settings</string>
@@ -186,6 +196,16 @@
 		</dict>
 		<dict>
 			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Enable UserPolicy</string>
+			<key>Key</key>
+			<string>EnableUserPolicy</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 			<key>Title</key>
 			<string>SyncTypesListDisabled</string>
@@ -273,6 +293,16 @@
 			<string></string>
 			<key>AutocorrectionType</key>
 			<string>No</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Disallow Chrome Data In Backups</string>
+			<key>Key</key>
+			<string>DisallowChromeDataInBackups</string>
+			<key>DefaultValue</key>
+			<false/>
 		</dict>
 		<dict>
 			<key>Type</key>

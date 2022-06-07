@@ -17,13 +17,14 @@
 #include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
 #include "chrome/browser/prefetch/search_prefetch/streaming_search_prefetch_request.h"
+#include "chrome/browser/prerender/prerender_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
@@ -229,6 +230,13 @@ void SearchPrefetchService::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   prefetches_[match_search_terms]->MarkPrefetchAsClicked();
 }
 
+void SearchPrefetchService::AddCacheEntryForPrerender(
+    const GURL& updated_prerendered_url,
+    const GURL& prerendering_url) {
+  DCHECK(prerender_utils::IsSearchSuggestionPrerenderEnabled());
+  AddCacheEntry(updated_prerendered_url, prerendering_url);
+}
+
 absl::optional<SearchPrefetchStatus>
 SearchPrefetchService::GetSearchPrefetchStatusForTesting(
     std::u16string search_terms) {
@@ -388,10 +396,7 @@ void SearchPrefetchService::ReportFetchResult(bool error) {
   last_error_time_ticks_ = base::TimeTicks::Now();
 }
 
-void SearchPrefetchService::OnResultChanged(
-    AutocompleteController* controller) {
-  const auto& result = controller->result();
-
+void SearchPrefetchService::OnResultChanged(const AutocompleteResult& result) {
   auto* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   DCHECK(template_url_service);

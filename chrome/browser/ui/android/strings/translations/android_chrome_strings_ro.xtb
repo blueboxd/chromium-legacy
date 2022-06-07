@@ -184,7 +184,6 @@ Când ștergi istoricul de navigare (în întregime sau pentru un anumit site), 
 <translation id="200114059308480249">Incluzi text din jur în căutările de pe Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{Un fișier}few{# fișiere}other{# de fișiere}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> se va deschide în Chrome. Dacă alegi să continui, ești de acord cu <ph name="BEGIN_LINK1" />Termenii și condițiile Google<ph name="END_LINK1" /> și cu <ph name="BEGIN_LINK2" />Termenii și condițiile suplimentare pentru Google Chrome și Sistemul de operare Chrome<ph name="END_LINK2" />. Se aplică și <ph name="BEGIN_LINK3" />Politica de confidențialitate<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Elimini categoria de interese?</translation>
 <translation id="2020309681647789787">Istoricul apare pe toate dispozitivele tale sincronizate. Astfel, poți continua ceea ce făceai</translation>
 <translation id="2021896219286479412">Comenzi site în ecran complet</translation>
 <translation id="2038563949887743358">Activează opțiunea Versiune site pentru desktop</translation>
@@ -213,6 +212,7 @@ Atinge orice cuvânt pentru a-l căuta. Ca să rafinezi căutarea, atinge lung p
 <translation id="2141396931810938595">În funcție de utilizare</translation>
 <translation id="214888715418183969">Alege informațiile la care permiți accesul Chrome. Valorile transmise vor fi folosite pentru a ajuta la îmbunătățirea funcțiilor, performanței și stabilității Chrome.</translation>
 <translation id="2149973817440762519">Editați marcajul</translation>
+<translation id="2155214902713132423">Această metodă de confirmare nu este disponibilă pentru dispozitiv. Alege altă opțiune pe alt dispozitiv.</translation>
 <translation id="2157851137955077194">Ca să trimiți ceva de pe telefon pe alt dispozitiv, activează sincronizarea în setările Chrome pe ambele dispozitive</translation>
 <translation id="2158408438301413340">Chrome nu a putut verifica toate parolele</translation>
 <translation id="2169830938017475061">Acum</translation>
@@ -733,7 +733,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5091199029769593641">În curând vei vedea articole de la <ph name="SITE_NAME" /> când deschizi o filă nouă. Site-urile pe care le urmărești sunt salvate în contul tău Google. Le poți gestiona din setările Discover.</translation>
 <translation id="5091249083535528968">Date de utilizare detaliate</translation>
 <translation id="509429900233858213">A apărut o eroare.</translation>
-<translation id="5098190077610408701">Adaugi categoria de interese?</translation>
 <translation id="5102401324271069229">Dacă un site încearcă să îți fure parola sau descarci un fișier dăunător, Chrome poate să trimită adresele URL, inclusiv fragmente din conținutul paginilor, către funcția Navigare sigură</translation>
 <translation id="510275257476243843">1 oră rămasă</translation>
 <translation id="5115811374190515607">în <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5906513782029855931">Dacă știe adresele URL ale site-urilor, Asistentul Google te poate ajuta să finalizezi activități. Poți să dezactivezi Asistentul din setările Chrome.</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5919204609460789179">Actualizează <ph name="PRODUCT_NAME" /> pentru a începe sincronizarea</translation>
+<translation id="5938820472109305350">Adaugă <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Pentru căutare se folosește Google</translation>
 <translation id="5945035219773565305">Recomandare actuală:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Se afișează pagina live</translation>
@@ -898,7 +898,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="6033245666633565791">Cu <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome dezvoltă noi tehnologii care te apără de mecanismele de urmărire de pe mai multe site-uri, păstrând un web deschis.
 
 Versiunile de încercare Privacy Sandbox sunt încă în dezvoltare și sunt disponibile în anumite regiuni. Pentru moment, site-urile pot încerca Privacy Sandbox în timp ce folosesc mai departe tehnologiile web actuale, precum cookie-urile terțe.</translation>
-<translation id="6036057147555329831">ICU suplimentar</translation>
 <translation id="6039379616847168523">Accesează fila următoare</translation>
 <translation id="6040143037577758943">Închide</translation>
 <translation id="604124094241169006">Automat</translation>
@@ -1023,6 +1022,7 @@ Trust Tokens îmbunătățește confidențialitatea pe web și nu poate fi folos
 <translation id="663674369910034433">Pentru mai multe setări privind confidențialitatea, securitatea și colectarea datelor, consultă <ph name="BEGIN_LINK1" />Sincronizarea<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Serviciile Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Pentru a contribui la îmbunătățirea aplicației, Chrome trimite date de utilizare și despre erori la Google. <ph name="BEGIN_UMA_LINK" />Gestionează<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blochează tot timpul</translation>
+<translation id="6641780377503683465">Elimină <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Șterge</translation>
 <translation id="6645629752388991326">Controlează ce dispozitive se pot conecta folosind acest dispozitiv drept cheie de securitate.</translation>
 <translation id="6648459603387803038">Administratorul poate schimba configurația browserului de la distanță. Este posibil ca activitatea de pe acest dispozitiv să fie gestionată și din afara Chrome.</translation>

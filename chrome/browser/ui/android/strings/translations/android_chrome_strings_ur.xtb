@@ -184,7 +184,6 @@
 <translation id="200114059308480249">‏Google تلاشیوں میں آس پاس کا متن شامل کریں؟</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# فائل}other{# فائلیں}}</translation>
 <translation id="2015836039326522978">‏<ph name="APP_NAME" /> Chrome میں کھلے گی۔ جاری رکھ کر آپ، <ph name="BEGIN_LINK1" />Google کی سروس کی شرائط<ph name="END_LINK1" /> اور <ph name="BEGIN_LINK2" />Google Chrome اور Chrome OS کی اضافی سروس کی شرائط سے اتفاق کرتے ہیں<ph name="END_LINK2" />۔ <ph name="BEGIN_LINK3" />رازداری کی پالیسی<ph name="END_LINK3" /> بھی لاگو ہوتی ہے۔</translation>
-<translation id="2019145049163614359">دلچسپی ہٹائیں؟</translation>
 <translation id="2020309681647789787">آپ کو اپنے سِنک کردہ سبھی آلات پر اپنی سرگزشت دکھائی دیں گی تاکہ آپ کیا کر رہے تھے اسے جاری رکھ سکیں</translation>
 <translation id="2021896219286479412">پوری اسکرین کے سائٹ کنٹرولز</translation>
 <translation id="2038563949887743358">ڈیسک ٹاپ سائٹ کی درخواست کو آن کریں</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">آپ کے استعمال کی بنیاد پر</translation>
 <translation id="214888715418183969">‏منتخب کریں کہ Chrome کے ساتھ کون سی معلومات کا اشتراک کرنے کے لیے آپ مطمئن ہیں۔ آپ کی اشتراک کی جانے والی میٹرکس کا استعمال Chrome کی خصوصیات، کارکردگی اور استحکام کو بہتر بنانے کے لئے کیا جائے گا۔</translation>
 <translation id="2149973817440762519">بک مارک میں ترمیم کریں</translation>
+<translation id="2155214902713132423">توثیق کا یہ طریقہ اس آلے کے لیے دستیاب نہیں ہے۔ اپنے دوسرے آلے پر ایک مختلف اختیار منتخب کریں۔</translation>
 <translation id="2157851137955077194">‏اپنے فون سے کسی دوسرے آلہ پر کسی چیز کا اشتراک کرنے کے لیے، دونوں آلات پر Chrome کی ترتیبات میں مطابقت پذیری کو آن کریں</translation>
 <translation id="2158408438301413340">‏Chrome سبھی پاس ورڈز چیک نہیں کر سکا</translation>
 <translation id="2169830938017475061">ابھی</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">‏جلد ہی، نیا ٹیب کھولنے پر آپ کو <ph name="SITE_NAME" /> سے کہانیاں دکھائی دیں گی۔ آپ جن سائٹس کی پیروی کرتے ہیں انہیں آپ کے Google اکاؤنٹ میں محفوظ کیا جاتا ہے۔ آپ Discover کی ترتیبات میں ان کا نظم کر سکتے ہیں۔</translation>
 <translation id="5091249083535528968">توسیع کردہ استعمال کا ڈیٹا</translation>
 <translation id="509429900233858213">ایک خرابی پیش آگئی۔</translation>
-<translation id="5098190077610408701">دلچسپی شامل کریں؟</translation>
 <translation id="5102401324271069229">‏اگر کوئی سائٹ آپ کا پاس ورڈ چرانے کی کوشش کرتی ہے یا جب آپ نقصان دہ فائل ڈاؤن لوڈ کرتے ہیں تو Chrome محفوظ براؤزنگ پر صفحہ کے مواد کے کچھ حصوں سمیت URLs بھیج سکتا ہے</translation>
 <translation id="510275257476243843">1 گھنٹہ باقی</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> تک</translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">‏سائٹس کے URLs کو جاننے سے Google اسسٹنٹ ٹاسکس مکمل کرنے میں آپ کی مدد کر سکتی ہے۔ آپ Chrome کی ترتیبات میں اسسٹنٹ کو آف کر سکتے ہیں۔</translation>
 <translation id="5916664084637901428">آن</translation>
 <translation id="5919204609460789179">مطابقت پذیری شروع کرنے کیلئے <ph name="PRODUCT_NAME" /> کو اپ ڈیٹ کریں</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> شامل کریں</translation>
 <translation id="5942872142862698679">‏تلاش کیلئے Google کا استعمال کیا جا رہا ہے</translation>
 <translation id="5945035219773565305">موجودہ تجویز: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">لائیو صفحہ دیکھا جا رہا ہے</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791">‏<ph name="BEGIN_LINK" />رازداری سینڈ باکس<ph name="END_LINK" /> کے ساتھ، Chrome آپ کو اوپن ویب کے تحفظ کے دوران کراس سائٹ کی ٹریکنگ سے محفوظ رکھنے کے لیے نئی ٹیکنالوجیز تیار کر رہا ہے۔
 
 رازداری سینڈ باکس ٹرائلز کا ڈیولپمنٹ ابھی بھی جاری ہے اور یہ منتخب علاقوں میں دستیاب ہیں۔ ابھی کے لئے، سائٹس فریق ثالث کوکیز جیسی موجودہ ویب ٹیکنالوجیز کا استعمال جاری رکھتے ہوئے رازداری سینڈ باکس کو آزما کر دیکھ سکتی ہیں۔</translation>
-<translation id="6036057147555329831">‏اضافی ICU</translation>
 <translation id="6039379616847168523">اگلے ٹیب پر جائیں</translation>
 <translation id="6040143037577758943">بند کریں</translation>
 <translation id="604124094241169006">خود کار</translation>
@@ -1023,13 +1022,14 @@
 <translation id="663674369910034433">‏رازداری، سیکیورٹی اور ڈیٹا جمع کرنے سے متعلق مزید ترتیبات کیلئے، <ph name="BEGIN_LINK1" />مطابقت پذیری<ph name="END_LINK1" /> اور <ph name="BEGIN_LINK2" />Google سروسز<ph name="END_LINK2" /> دیکھیں</translation>
 <translation id="6637100877383020115">‏ایپ کو بہتر بنانے میں مدد کرنے کے لیے، Chrome استعمال اور ناکامی کا ڈیٹا Google کو بھیجتا ہے۔ <ph name="BEGIN_UMA_LINK" />نظم کریں<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">ہر وقت مسدود کریں</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> ہٹائیں</translation>
 <translation id="6643016212128521049">صاف کریں</translation>
 <translation id="6645629752388991326">کنٹرول کریں کہ کون سے آلات اس آلے کو سیکیورٹی کلید کے بطور استعمال کر کے سائن ان کر سکتے ہیں۔</translation>
 <translation id="6648459603387803038">‏آپ کا منتظم دور سے آپ کے براؤزر کا سیٹ اپ تبدیل کر سکتا ہے۔ اس آلے پر ہونے والی سرگرمی کا نظم Chrome سے باہر بھی کیا جا سکتا ہے۔</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مزید}other{‏<ph name="CONTACT_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مزید}}</translation>
 <translation id="6649642165559792194">تصویر کا پیش منظر دیکھیں <ph name="BEGIN_NEW" />نیا<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">پاس ورڈ</translation>
-<translation id="6659594942844771486">براؤزر ٹیب</translation>
+<translation id="6659594942844771486">ٹیب</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> میں کھولیں</translation>
 <translation id="6671495933530132209">تصویر کاپی کریں</translation>
 <translation id="6674044799624355221">نئے خطرات کا پتہ لگانے میں مدد کے لیے صفحات، ڈاؤن لوڈز، ایکسٹینشن کی سرگرمی اور سسٹم کی معلومات کا چھوٹا سا نمونہ بھیجتا ہے</translation>

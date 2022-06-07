@@ -198,8 +198,8 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
         mContainer = new PageInfoContainer(mContext);
         PageInfoContainer.Params containerParams = new PageInfoContainer.Params();
         boolean useDarkText = !ColorUtils.inNightMode(mContext);
-        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
-                autocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkText,
+        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext, autocompleteSchemeClassifier,
+                mSecurityLevel, mIsInternalPage, useDarkText,
                 /*emphasizeScheme=*/true);
         containerParams.url = displayUrlBuilder;
         containerParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
@@ -353,7 +353,7 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
         button.setOnClickListener((View v) -> {
             recordAction(PageInfoAction.PAGE_INFO_FORGET_SITE_OPENED);
             mForgetSiteDialog =
-                    new AlertDialog.Builder(mContext, R.style.Theme_Chromium_AlertDialog)
+                    new AlertDialog.Builder(mContext, R.style.ThemeOverlay_BrowserUI_AlertDialog)
                             .setTitle(R.string.page_info_forget_site_title)
                             .setMessage(R.string.page_info_forget_site_message)
                             .setPositiveButton(R.string.page_info_forget_site_confirmation_button,

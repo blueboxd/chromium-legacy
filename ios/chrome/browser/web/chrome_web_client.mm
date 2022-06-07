@@ -35,18 +35,16 @@
 #import "ios/chrome/browser/link_to_text/link_to_text_java_script_feature.h"
 #include "ios/chrome/browser/ntp/browser_policy_new_tab_page_rewriter.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/prerender/prerender_service.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/safe_browsing/password_protection_java_script_feature.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/chrome/browser/search_engines/search_engine_java_script_feature.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper_factory.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_javascript_feature.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/error_page_util.h"
@@ -58,11 +56,17 @@
 #include "ios/chrome/browser/web/print/print_java_script_feature.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/web_performance_metrics/web_performance_metrics_java_script_feature.h"
+#import "ios/components/security_interstitials/https_only_mode/https_only_mode_blocking_page.h"
+#import "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
+#import "ios/components/security_interstitials/https_only_mode/https_only_mode_controller_client.h"
+#import "ios/components/security_interstitials/https_only_mode/https_only_mode_error.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_blocking_page.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_controller_client.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_error.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/protocol_handler_util.h"
 #include "ios/public/provider/chrome/browser/url_rewriters/url_rewriters_api.h"
@@ -149,6 +153,27 @@ NSString* GetLookalikeUrlErrorPageHtml(web::WebState* web_state,
   security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state)
       ->AssociateBlockingPage(navigation_id, std::move(page));
 
+  return base::SysUTF8ToNSString(error_page_content);
+}
+
+// Returns the HTTPS only mode error page HTML.
+NSString* GetHttpsOnlyModeErrorPageHtml(web::WebState* web_state,
+                                        int64_t navigation_id) {
+  // Fetch the HTTP URL from the container.
+  HttpsOnlyModeContainer* container =
+      HttpsOnlyModeContainer::FromWebState(web_state);
+
+  // Construct the blocking page and associate it with the WebState.
+  std::unique_ptr<security_interstitials::IOSSecurityInterstitialPage> page =
+      std::make_unique<HttpsOnlyModeBlockingPage>(
+          web_state, container->http_url(),
+          std::make_unique<HttpsOnlyModeControllerClient>(
+              web_state, container->http_url(),
+              GetApplicationContext()->GetApplicationLocale()));
+
+  std::string error_page_content = page->GetHtmlContents();
+  security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state)
+      ->AssociateBlockingPage(navigation_id, std::move(page));
   return base::SysUTF8ToNSString(error_page_content);
 }
 
@@ -266,14 +291,6 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
 
   features.push_back(print_feature.get());
 
-  BOOL shouldInjectReadingListJavaScript =
-      IsReadingListMessagesEnabled() || IsReadingListTimeToReadEnabled();
-  if (!browser_state->IsOffTheRecord() && shouldInjectReadingListJavaScript) {
-    static base::NoDestructor<ReadingListJavaScriptFeature>
-        reading_list_feature;
-    features.push_back(reading_list_feature.get());
-  }
-
   features.push_back(autofill::AutofillJavaScriptFeature::GetInstance());
   features.push_back(autofill::FormHandlersJavaScriptFeature::GetInstance());
   features.push_back(
@@ -306,7 +323,7 @@ void ChromeWebClient::PrepareErrorPage(
     NSError* error,
     bool is_post,
     bool is_off_the_record,
-    const absl::optional<net::SSLInfo>& info,
+    const absl::optional<net::SSLInfo>& ssl_info,
     int64_t navigation_id,
     base::OnceCallback<void(NSString*)> callback) {
   OfflinePageTabHelper* offline_page_tab_helper =
@@ -342,16 +359,22 @@ void ChromeWebClient::PrepareErrorPage(
     DCHECK_EQ(kLookalikeUrlErrorCode, final_underlying_error.code);
     std::move(error_html_callback)
         .Run(GetLookalikeUrlErrorPageHtml(web_state, navigation_id));
-  } else if (info.has_value()) {
+  } else if ([final_underlying_error.domain
+                 isEqual:kHttpsOnlyModeErrorDomain]) {
+    // Only kHttpsOnlyModeErrorCode is supported.
+    DCHECK_EQ(kHttpsOnlyModeErrorCode, final_underlying_error.code);
+    std::move(error_html_callback)
+        .Run(GetHttpsOnlyModeErrorPageHtml(web_state, navigation_id));
+  } else if (ssl_info.has_value()) {
     base::OnceCallback<void(NSString*)> blocking_page_callback =
         base::BindOnce(^(NSString* blocking_page_html) {
           error_html = blocking_page_html;
           std::move(error_html_callback).Run(error_html);
         });
     IOSSSLErrorHandler::HandleSSLError(
-        web_state, net::MapCertStatusToNetError(info.value().cert_status),
-        info.value(), url, info.value().is_fatal_cert_error, navigation_id,
-        std::move(blocking_page_callback));
+        web_state, net::MapCertStatusToNetError(ssl_info.value().cert_status),
+        ssl_info.value(), url, ssl_info.value().is_fatal_cert_error,
+        navigation_id, std::move(blocking_page_callback));
   } else {
     std::move(error_html_callback)
         .Run(GetErrorPage(url, error, is_post, is_off_the_record));
@@ -416,5 +439,17 @@ void ChromeWebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {
       item->SetVirtualURL(
           reading_list::EntryURLForOfflineURL(item->GetVirtualURL()));
     }
+  }
+}
+
+void ChromeWebClient::WillDisplayMediaCapturePermissionPrompt(
+    web::WebState* web_state) const {
+  // When a prendered page displays a prompt, cancel the prerender.
+  PrerenderService* prerender_service =
+      PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state->GetBrowserState()));
+  if (prerender_service &&
+      prerender_service->IsWebStatePrerendered(web_state)) {
+    prerender_service->CancelPrerender();
   }
 }

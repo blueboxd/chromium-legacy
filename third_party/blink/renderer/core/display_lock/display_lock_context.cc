@@ -22,10 +22,12 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -379,10 +381,8 @@ bool DisplayLockContext::IsActivatable(
   return activatable_mask_ & static_cast<uint16_t>(reason);
 }
 
-void DisplayLockContext::CommitForActivationWithSignal(
-    Element* activated_element,
+void DisplayLockContext::CommitForActivation(
     DisplayLockActivationReason reason) {
-  DCHECK(activated_element);
   DCHECK(element_);
   DCHECK(ConnectedToView());
   DCHECK(IsLocked());
@@ -636,8 +636,12 @@ bool DisplayLockContext::MarkForLayoutIfNeeded() {
       // to mark its ancestors as dirty here so that it will be traversed to on
       // the next layout.
       layout_object->MarkContainerChainForLayout();
-      if (layout_object->IsShapingDeferred())
+      if (layout_object->IsShapingDeferred()) {
+        layout_object->SetIntrinsicLogicalWidthsDirty();
         layout_object->SetChildNeedsLayout();
+        // Make sure we don't use cached NGFragmentItem objects.
+        To<LayoutBox>(layout_object)->ClearLayoutResults();
+      }
     }
     return true;
   }
@@ -936,12 +940,15 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
   if (!style->ContainsStyle() || !style->ContainsLayout())
     return rejection_names::kContainmentNotSatisfied;
 
-  // We allow replaced elements to be locked. This check is similar to the check
-  // in DefinitelyNewFormattingContext() in element.cc, but in this case we
-  // allow object element to get locked.
-  if (IsA<HTMLObjectElement>(*element_) || IsA<HTMLImageElement>(*element_) ||
-      element_->IsFormControlElement() || element_->IsMediaElement() ||
-      element_->IsFrameOwnerElement() || element_->IsSVGElement()) {
+  // We allow replaced elements without fallback content to be locked. This
+  // check is similar to the check in DefinitelyNewFormattingContext() in
+  // element.cc, but in this case we allow object element to get locked.
+  if (const auto* object_element = DynamicTo<HTMLObjectElement>(*element_)) {
+    if (!object_element->UseFallbackContent())
+      return nullptr;
+  } else if (IsA<HTMLImageElement>(*element_) ||
+             element_->IsFormControlElement() || element_->IsMediaElement() ||
+             element_->IsFrameOwnerElement() || element_->IsSVGElement()) {
     return nullptr;
   }
 

@@ -8,15 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "base/values.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
 class WelcomeScreen;
-}
-
-namespace base {
-class ListValue;
 }
 
 namespace chromeos {
@@ -63,8 +60,7 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
  public:
   using TView = WelcomeView;
 
-  WelcomeScreenHandler(JSCallsContainer* js_calls_container,
-                       CoreOobeView* core_oobe_view);
+  explicit WelcomeScreenHandler(CoreOobeView* core_oobe_view);
 
   WelcomeScreenHandler(const WelcomeScreenHandler&) = delete;
   WelcomeScreenHandler& operator=(const WelcomeScreenHandler&) = delete;
@@ -88,8 +84,8 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void DeclareJSCallbacks() override;
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
-  void Initialize() override;
+  void GetAdditionalParameters(base::Value::Dict* dict) override;
+  void InitializeDeprecated() override;
 
  private:
   // JS callbacks.

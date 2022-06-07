@@ -13,12 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/input_method/assistive_suggester_switch.h"
 #include "chrome/browser/ash/input_method/emoji_suggester.h"
-#include "chrome/browser/ash/input_method/input_method_engine.h"
 #include "chrome/browser/ash/input_method/multi_word_suggester.h"
 #include "chrome/browser/ash/input_method/personal_info_suggester.h"
 #include "chrome/browser/ash/input_method/suggester.h"
 #include "chrome/browser/ash/input_method/suggestion_enums.h"
+#include "chrome/browser/ash/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/ash/input_method/suggestions_source.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 
 namespace ash {
 namespace input_method {
@@ -27,24 +28,30 @@ namespace input_method {
 // dismiss the suggestion according to the user action.
 class AssistiveSuggester : public SuggestionsSource {
  public:
-  enum AssistiveFeature {
+  // Features handled by assistive suggester.
+  enum class AssistiveFeature {
+    kUnknown,  // Includes features not handled by assistive suggester.
     kEmojiSuggestion,
     kMultiWordSuggestion,
     kPersonalInfoSuggestion,
   };
 
-  AssistiveSuggester(
-      InputMethodEngine* engine,
-      Profile* profile,
-      std::unique_ptr<AssistiveSuggesterSwitch> suggester_switch);
+  // personal_data_manager is only used for testing to override the default
+  // autofill data for PersonalInfoSuggester.
+  AssistiveSuggester(SuggestionHandlerInterface* suggestion_handler,
+                     Profile* profile,
+                     std::unique_ptr<AssistiveSuggesterSwitch> suggester_switch,
+                     autofill::PersonalDataManager*
+                         personal_data_manager_for_testing = nullptr);
 
   ~AssistiveSuggester() override;
 
   bool IsAssistiveFeatureEnabled();
 
-  // Is the given assisitive feature blocked from being shown to a user given
-  // the current browser context.
-  bool IsAssistiveFeatureAllowed(const AssistiveFeature& feature);
+  // Fetches enabled suggestions in the current browser context then run
+  // callback.
+  void FetchEnabledSuggestionsFromBrowserContextThen(
+      AssistiveSuggesterSwitch::FetchEnabledSuggestionsCallback callback);
 
   // SuggestionsSource overrides
   std::vector<ime::TextSuggestion> GetSuggestions() override;
@@ -58,16 +65,10 @@ class AssistiveSuggester : public SuggestionsSource {
   // Called when a text field loses focus, and suggester stops working.
   void OnBlur();
 
-  // Checks the text before cursor, emits metric if any assistive prefix is
-  // matched.
-  void RecordAssistiveMatchMetrics(const std::u16string& text,
-                                   int cursor_pos,
-                                   int anchor_pos);
-
   // Called when a surrounding text is changed.
   // Returns true if it changes the surrounding text, e.g. a suggestion is
   // generated or dismissed.
-  bool OnSurroundingTextChanged(const std::u16string& text,
+  void OnSurroundingTextChanged(const std::u16string& text,
                                 int cursor_pos,
                                 int anchor_pos);
 
@@ -79,7 +80,8 @@ class AssistiveSuggester : public SuggestionsSource {
   void OnExternalSuggestionsUpdated(
       const std::vector<ime::TextSuggestion>& suggestions);
 
-  // Accepts the suggestion at a given index if a suggester is currently active.
+  // Accepts the suggestion at a given index if a suggester is currently
+  // active.
   void AcceptSuggestion(size_t index);
 
   // Check if suggestion is being shown.
@@ -90,9 +92,20 @@ class AssistiveSuggester : public SuggestionsSource {
   }
 
  private:
+  // Callback that is run after enabled_suggestions is received.
+  void ProcessOnSurroundingTextChanged(
+      const std::u16string& text,
+      int cursor_pos,
+      int anchor_pos,
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
+
   // Returns if any suggestion text should be displayed according to the
   // surrounding text information.
-  bool Suggest(const std::u16string& text, int cursor_pos, int anchor_pos);
+  bool TrySuggestWithSurroundingText(
+      const std::u16string& text,
+      int cursor_pos,
+      int anchor_pos,
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
   void DismissSuggestion();
 
@@ -106,19 +119,37 @@ class AssistiveSuggester : public SuggestionsSource {
 
   bool IsExpandedMultiWordSuggestEnabled();
 
-  void RecordAssistiveMatchMetricsForAction(AssistiveType action);
+  // Checks the text before cursor, emits metric if any assistive prefix is
+  // matched.
+  void RecordAssistiveMatchMetrics(
+      const std::u16string& text,
+      int cursor_pos,
+      int anchor_pos,
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
+
+  void RecordAssistiveMatchMetricsForAssistiveType(
+      AssistiveType type,
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
   // Only the first applicable reason in DisabledReason enum is returned.
-  DisabledReason GetDisabledReasonForEmoji();
+  DisabledReason GetDisabledReasonForEmoji(
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
   // Only the first applicable reason in DisabledReason enum is returned.
-  DisabledReason GetDisabledReasonForPersonalInfo();
+  DisabledReason GetDisabledReasonForPersonalInfo(
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
   // Only the first applicable reason in DisabledReason enum is returned.
   DisabledReason GetDisabledReasonForMultiWord(
       const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
-  bool IsActionEnabled(AssistiveType action);
+  AssistiveFeature GetAssistiveFeatureForType(AssistiveType type);
+
+  bool IsAssistiveTypeEnabled(AssistiveType type);
+
+  bool IsAssistiveTypeAllowedInBrowserContext(
+      AssistiveType type,
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
   bool WithinGrammarFragment(int cursor_pos, int anchor_pos);
 
@@ -128,7 +159,8 @@ class AssistiveSuggester : public SuggestionsSource {
 
   // This records any text input state metrics for each relevant assistive
   // feature. It is called once when a text field gains focus.
-  void RecordTextInputStateMetrics();
+  void RecordTextInputStateMetrics(
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
   Profile* profile_;
   PersonalInfoSuggester personal_info_suggester_;

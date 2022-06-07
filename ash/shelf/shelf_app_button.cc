@@ -334,7 +334,7 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   // the parent view won't clip it.
   views::FocusRing::Get(this)->SetPathGenerator(
       std::make_unique<views::RoundRectHighlightPathGenerator>(
-          gfx::Insets(views::FocusRing::kDefaultHaloThickness / 2, 0), 0));
+          gfx::Insets::VH(views::FocusRing::kDefaultHaloThickness / 2, 0), 0));
 }
 
 ShelfAppButton::~ShelfAppButton() {
@@ -664,7 +664,7 @@ gfx::Rect ShelfAppButton::GetIconViewBounds(const gfx::Rect& button_bounds,
       gfx::RectF(button_bounds.x() + x_offset, button_bounds.y() + y_offset,
                  icon_width, icon_height);
 
-  icon_view_bounds.Inset(insets_shadows);
+  icon_view_bounds.Inset(gfx::InsetsF(insets_shadows));
   // Icon size has been incorrect when running
   // PanelLayoutManagerTest.PanelAlignmentSecondDisplay on valgrind bot, see
   // http://crbug.com/234854.

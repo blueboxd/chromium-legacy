@@ -31,6 +31,8 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/wallpaper/wallpaper_enumerator.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/thumbnail_loader.h"
@@ -58,6 +60,9 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "url/gurl.h"
+
+namespace ash {
+namespace personalization_app {
 
 namespace {
 
@@ -99,7 +104,17 @@ PersonalizationAppWallpaperProviderImpl::
 }
 
 PersonalizationAppWallpaperProviderImpl::
-    ~PersonalizationAppWallpaperProviderImpl() = default;
+    ~PersonalizationAppWallpaperProviderImpl() {
+  if (!image_asset_id_map_.empty()) {
+    // User viewed wallpaper page at least once during this session because
+    // |image_asset_id_map_| has wallpaper asset ids saved. Check if this user
+    // should see a wallpaper HaTS.
+    ::ash::personalization_app::PersonalizationAppManagerFactory::
+        GetForBrowserContext(profile_)
+            ->MaybeStartHatsTimer(
+                ::ash::personalization_app::HatsSurveyType::kWallpaper);
+  }
+}
 
 void PersonalizationAppWallpaperProviderImpl::BindInterface(
     mojo::PendingReceiver<ash::personalization_app::mojom::WallpaperProvider>
@@ -132,7 +147,19 @@ void PersonalizationAppWallpaperProviderImpl::MakeTransparent() {
   static_cast<ContentsWebView*>(BrowserView::GetBrowserViewForNativeWindow(
                                     web_contents->GetTopLevelNativeWindow())
                                     ->contents_web_view())
-      ->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
+      ->SetBackgroundVisible(false);
+}
+
+void PersonalizationAppWallpaperProviderImpl::MakeOpaque() {
+  auto* web_contents = web_ui_->GetWebContents();
+
+  // Reversing `contents_web_view` is sufficient to make the view opaque,
+  // as `window_backdrop`, `top_level_window` and `web_contents` are not
+  // highly impactful to the animated theme change effect.
+  static_cast<ContentsWebView*>(BrowserView::GetBrowserViewForNativeWindow(
+                                    web_contents->GetTopLevelNativeWindow())
+                                    ->contents_web_view())
+      ->SetBackgroundVisible(true);
 }
 
 void PersonalizationAppWallpaperProviderImpl::FetchCollections(
@@ -180,6 +207,16 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosAlbums(
     return;
   }
 
+  if (!is_google_photos_enterprise_enabled_) {
+    mojo::ReportBadMessage(
+        "Cannot call `FetchGooglePhotosAlbums()` without confirming that the "
+        "Google Photos enterprise setting is enabled.");
+    std::move(callback).Run(
+        ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponse::New(
+            absl::nullopt, absl::nullopt));
+    return;
+  }
+
   if (!google_photos_albums_fetcher_) {
     google_photos_albums_fetcher_ =
         std::make_unique<wallpaper_handlers::GooglePhotosAlbumsFetcher>(
@@ -195,6 +232,14 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosCount(
     mojo::ReportBadMessage(
         "Cannot call `FetchGooglePhotosCount()` without Google Photos "
         "Wallpaper integration enabled.");
+    std::move(callback).Run(-1);
+    return;
+  }
+
+  if (!is_google_photos_enterprise_enabled_) {
+    mojo::ReportBadMessage(
+        "Cannot call `FetchGooglePhotosCount()` without confirming that the "
+        "Google Photos enterprise setting is enabled.");
     std::move(callback).Run(-1);
     return;
   }
@@ -224,8 +269,11 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosEnabled(
         std::make_unique<wallpaper_handlers::GooglePhotosEnabledFetcher>(
             profile_);
   }
-  google_photos_enabled_fetcher_->AddRequestAndStartIfNecessary(
-      std::move(callback));
+  // base::Unretained is safe to use because |this| outlives
+  // |google_photos_enabled_fetcher_|.
+  google_photos_enabled_fetcher_->AddRequestAndStartIfNecessary(base::BindOnce(
+      &PersonalizationAppWallpaperProviderImpl::OnFetchGooglePhotosEnabled,
+      base::Unretained(this), std::move(callback)));
 }
 
 void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosPhotos(
@@ -237,6 +285,16 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosPhotos(
     mojo::ReportBadMessage(
         "Cannot call `FetchGooglePhotosPhotos()` without Google Photos "
         "Wallpaper integration enabled.");
+    std::move(callback).Run(
+        ash::personalization_app::mojom::FetchGooglePhotosPhotosResponse::New(
+            absl::nullopt, absl::nullopt));
+    return;
+  }
+
+  if (!is_google_photos_enterprise_enabled_) {
+    mojo::ReportBadMessage(
+        "Cannot call `FetchGooglePhotosPhotos()` without confirming that the "
+        "Google Photos enterprise setting is enabled.");
     std::move(callback).Run(
         ash::personalization_app::mojom::FetchGooglePhotosPhotosResponse::New(
             absl::nullopt, absl::nullopt));
@@ -447,6 +505,14 @@ void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosPhoto(
     const std::string& id,
     ash::WallpaperLayout layout,
     SelectGooglePhotosPhotoCallback callback) {
+  if (!is_google_photos_enterprise_enabled_) {
+    mojo::ReportBadMessage(
+        "Cannot call `SelectGooglePhotosPhoto()` without confirming that the "
+        "Google Photos enterprise setting is enabled.");
+    std::move(callback).Run(false);
+    return;
+  }
+
   if (pending_select_google_photos_photo_callback_)
     std::move(pending_select_google_photos_photo_callback_).Run(false);
   pending_select_google_photos_photo_callback_ = std::move(callback);
@@ -583,6 +649,15 @@ void PersonalizationAppWallpaperProviderImpl::OnFetchCollectionImages(
   std::move(callback).Run(std::move(result));
 }
 
+void PersonalizationAppWallpaperProviderImpl::OnFetchGooglePhotosEnabled(
+    FetchGooglePhotosEnabledCallback callback,
+    ash::personalization_app::mojom::GooglePhotosEnablementState state) {
+  is_google_photos_enterprise_enabled_ =
+      state ==
+      ash::personalization_app::mojom::GooglePhotosEnablementState::kEnabled;
+  std::move(callback).Run(state);
+}
+
 void PersonalizationAppWallpaperProviderImpl::OnGetLocalImages(
     GetLocalImagesCallback callback,
     const std::vector<base::FilePath>& images) {
@@ -714,10 +789,12 @@ void PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection(
 void PersonalizationAppWallpaperProviderImpl::SendGooglePhotosAttribution(
     const ash::WallpaperInfo& info,
     const GURL& wallpaper_data_url,
-    mojo::StructPtr<ash::personalization_app::mojom::GooglePhotosPhoto> photo) {
+    mojo::StructPtr<ash::personalization_app::mojom::GooglePhotosPhoto> photo,
+    bool success) {
   std::vector<std::string> attribution;
-  if (!photo.is_null())
+  if (!photo.is_null()) {
     attribution.push_back(photo->name);
+  }
   NotifyWallpaperChanged(ash::personalization_app::mojom::CurrentWallpaper::New(
       wallpaper_data_url, attribution, info.layout, info.type,
       /*key=*/info.location));
@@ -738,3 +815,6 @@ void PersonalizationAppWallpaperProviderImpl::NotifyWallpaperChanged(
   DCHECK(wallpaper_observer_remote_.is_bound());
   wallpaper_observer_remote_->OnWallpaperChanged(std::move(current_wallpaper));
 }
+
+}  // namespace personalization_app
+}  // namespace ash

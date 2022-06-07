@@ -237,8 +237,13 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
       params.navigated_or_inserted_contents));
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_WebBlockedAfterBrowser DISABLED_WebBlockedAfterBrowser
+#else
+#define MAYBE_WebBlockedAfterBrowser WebBlockedAfterBrowser
+#endif
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
-                       WebBlockedAfterBrowser) {
+                       MAYBE_WebBlockedAfterBrowser) {
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
   NavigateParams params(browser(), url,
@@ -409,7 +414,14 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents3));
 }
 
-IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, WebContentTitleSet) {
+// TODO(crbug.com/1313933): Flaky on ChromeOS
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_WebContentTitleSet DISABLED_WebContentTitleSet
+#else
+#define MAYBE_WebContentTitleSet WebContentTitleSet
+#endif
+IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
+                       MAYBE_WebContentTitleSet) {
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
   NavigateParams params(browser(), url,
@@ -430,15 +442,9 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, WebContentTitleSet) {
   EXPECT_EQ(web_contents->GetTitle(), title);
 }
 
-// TODO(crbug.com/1291093): Flaky on Linux.
 // TODO(crbug.com/1291093): Flaky on ChromeOS.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_EnsureQueryIsCleared DISABLED_EnsureQueryIsCleared
-#else
-#define MAYBE_EnsureQueryIsCleared EnsureQueryIsCleared
-#endif
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
-                       MAYBE_EnsureQueryIsCleared) {
+                       DISABLED_EnsureQueryIsCleared) {
   AllowlistUrlRegx(kExampleHost);
   BlockWeb();
 

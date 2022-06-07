@@ -54,18 +54,8 @@ from update import (CHROMIUM_DIR, CLANG_REVISION, CLANG_SUB_REVISION,
                     LLVM_BUILD_DIR, GetDefaultHostOs, RmTree, UpdatePackage)
 import build
 
-# Trunk on 3/11/2022
-RUST_REVISION = '2c6a29'
-RUST_SUB_REVISION = 1
-
-# Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
-# We trust the Rust build system checks, but to ensure it is not tampered with
-# itself check the hash.
-STAGE0_JSON_SHA256 = (
-    'a38b7ea8b8cbdb592b1a7ae8b97fa31746a2bda309597de111be4893a035070d')
-
-PACKAGE_VERSION = '%s-%s-%s-%s' % (RUST_REVISION, RUST_SUB_REVISION,
-                                   CLANG_REVISION, CLANG_SUB_REVISION)
+from update_rust import (RUST_REVISION, RUST_SUB_REVISION, STAGE0_JSON_SHA256,
+                         GetPackageVersion)
 
 RUST_GIT_URL = 'https://github.com/rust-lang/rust/'
 
@@ -162,7 +152,7 @@ def Configure(llvm_libs_root):
   subs = {}
   subs['INSTALL_DIR'] = RUST_TOOLCHAIN_OUT_DIR
   subs['LLVM_ROOT'] = llvm_libs_root
-  subs['PACKAGE_VERSION'] = PACKAGE_VERSION
+  subs['PACKAGE_VERSION'] = GetPackageVersion()
 
   # ...and apply substitutions, writing to config.toml in Rust tree.
   with open(os.path.join(RUST_SRC_DIR, 'config.toml'), 'w') as output:
@@ -184,6 +174,7 @@ def RunXPy(sub, args, gcc_toolchain_path, verbose):
                         if gcc_toolchain_path else '')
   # These affect how C/C++ files are compiled, but not Rust libs/exes.
   RUSTENV['CFLAGS'] += f' {gcc_toolchain_flag}'
+  RUSTENV['CXXFLAGS'] += f' {gcc_toolchain_flag}'
   RUSTENV['LDFLAGS'] += f' {gcc_toolchain_flag}'
   # These affect how Rust crates are built. A `-Clink-arg=<foo>` arg passes foo
   # to the clang invocation used to link.
@@ -216,8 +207,8 @@ def main():
   parser.add_argument(
       '--verify-stage0-hash',
       action='store_true',
-      help='checkout Rust, verify the stage0 hash, then immediately quit without '
-      'building. Will print the actual hash if different than expected.')
+      help='checkout Rust, verify the stage0 hash, then quit without building. '
+      'Will print the actual hash if different than expected.')
   parser.add_argument(
       '--skip-checkout',
       action='store_true',
@@ -241,7 +232,14 @@ def main():
       action='store_true',
       help='use libs in LLVM_BUILD_DIR instead of LLVM_BOOTSTRAP_DIR. Useful '
       'with --fetch-llvm-libs for local builds.')
-  args = parser.parse_args()
+  parser.add_argument(
+      '--run-xpy',
+      action='store_true',
+      help='run x.py command in configured Rust checkout. Quits after running '
+      'specified command, skipping all normal build steps. For debugging. '
+      'Running x.py directly will not set the appropriate env variables nor '
+      'update config.toml')
+  args, rest = parser.parse_known_args()
 
   # Get the LLVM root for libs. We use LLVM_BUILD_DIR tools either way.
   #
@@ -269,15 +267,23 @@ def main():
   args.gcc_toolchain = None
   build.MaybeDownloadHostGcc(args)
 
+  # Set up config.toml in Rust source tree to configure build.
+  Configure(llvm_libs_root)
+
+  if args.run_xpy:
+    if rest[0] == '--':
+      rest = rest[1:]
+    RunXPy(rest[0], rest[1:], args.gcc_toolchain, args.verbose)
+    return 0
+  else:
+    assert not rest
+
   # Delete vendored sources and .cargo subdir. Otherwise when updating an
   # existing checkout, vendored sources will not be re-fetched leaving deps out
   # of date.
   for dir in [os.path.join(RUST_SRC_DIR, d) for d in ['vendor', '.cargo']]:
     if os.path.exists(dir):
       shutil.rmtree(dir)
-
-  # Set up config.toml in Rust source tree to configure build.
-  Configure(llvm_libs_root)
 
   if not args.skip_clean:
     print('Cleaning build artifacts...')
@@ -313,7 +319,7 @@ def main():
       rust_version = version_file.readline().rstrip()
     with open(VERSION_STAMP_PATH, 'w') as stamp:
       stamp.write('rustc %s-dev (%s chromium)\n' %
-                  (rust_version, PACKAGE_VERSION))
+                  (rust_version, GetPackageVersion()))
 
   return 0
 

@@ -501,7 +501,14 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, NavigationServerError) {
   EXPECT_TRUE(NavigateToURL(shell(), net::QuicSimpleTestServer::GetFileURL(
                                          kPageWithHintedScriptPath)));
   PreloadedResources preloads = WaitForPreloadedResources();
-  EXPECT_TRUE(preloads.empty());
+  EXPECT_EQ(preloads.size(), 1UL);
+
+  GURL preloaded_url = net::QuicSimpleTestServer::GetFileURL(kHintedScriptPath);
+  auto it = preloads.find(preloaded_url);
+  ASSERT_NE(it, preloads.end());
+  ASSERT_FALSE(it->second.was_canceled);
+  ASSERT_TRUE(it->second.error_code.has_value());
+  EXPECT_EQ(it->second.error_code.value(), net::OK);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, RedirectSameOrigin) {
@@ -561,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, InvalidPreloadLink) {
   EXPECT_TRUE(preloads.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DuplicatePreloads) {
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, MultipleEarlyHints) {
   RegisterHintedScriptResource();
   RegisterHintedStylesheetResource();
 
@@ -569,6 +576,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DuplicatePreloads) {
   entry.body = kPageWithHintedScriptBody;
 
   // Set two Early Hints responses which contain duplicate preload link headers.
+  // The second response should be ignored.
   HeaderField script_link_header = CreatePreloadLinkForScript();
   HeaderField stylesheet_link_header = CreatePreloadLinkForStylesheet();
   entry.AddEarlyHints({script_link_header});
@@ -579,13 +587,13 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DuplicatePreloads) {
       net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath),
       "Done"));
   PreloadedResources preloads = WaitForPreloadedResources();
-  EXPECT_EQ(preloads.size(), 2UL);
+  EXPECT_EQ(preloads.size(), 1UL);
 
   GURL script_url = net::QuicSimpleTestServer::GetFileURL(kHintedScriptPath);
   GURL stylesheet_url =
       net::QuicSimpleTestServer::GetFileURL(kHintedStylesheetPath);
   EXPECT_TRUE(preloads.contains(script_url));
-  EXPECT_TRUE(preloads.contains(stylesheet_url));
+  EXPECT_FALSE(preloads.contains(stylesheet_url));
 }
 
 const char kPageWithCrossOriginScriptPage[] =
@@ -739,7 +747,31 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, NetworkIsolationKey) {
   ASSERT_FALSE(is_cached.value());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, SimplePreconnect) {
+class NavigationEarlyHintsPreconnectTest
+    : public NavigationEarlyHintsTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  NavigationEarlyHintsPreconnectTest() {
+    if (!IsPreconnectEnabled()) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          features::kEarlyHintsPreloadForNavigation,
+          {{"enable_preconnect", "false"}});
+    }
+  }
+
+  ~NavigationEarlyHintsPreconnectTest() override = default;
+
+ protected:
+  bool IsPreconnectEnabled() { return GetParam(); }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         NavigationEarlyHintsPreconnectTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(NavigationEarlyHintsPreconnectTest, SimplePreconnect) {
   const char kPageWithPreconnect[] = "/page_with_preconnect.html";
   const GURL kPreconnectUrl = cross_origin_server().GetURL("/");
   ResponseEntry page_entry(kPageWithPreconnect, net::HTTP_OK);
@@ -753,10 +785,23 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, SimplePreconnect) {
       shell(), net::QuicSimpleTestServer::GetFileURL(kPageWithPreconnect)));
   ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  EXPECT_EQ(preconnect_listener().num_accepted_sockets(), 1UL);
+  if (IsPreconnectEnabled()) {
+    EXPECT_EQ(preconnect_listener().num_accepted_sockets(), 1UL);
+  } else {
+    EXPECT_EQ(preconnect_listener().num_accepted_sockets(), 0UL);
+  }
   EXPECT_TRUE(GetEarlyHintsManager(static_cast<RenderFrameHostImpl*>(
                                        shell()->web_contents()->GetMainFrame()))
                   ->WasResourceHintsReceived());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, InvalidHeader_NewLine) {
+  const std::string kPath = "/header-contains-newline.html";
+  ResponseEntry entry(kPath, net::HTTP_OK);
+  entry.AddEarlyHints({HeaderField("invalid-header", "foo\r\nbar")});
+  RegisterResponse(entry);
+  EXPECT_FALSE(
+      NavigateToURL(shell(), net::QuicSimpleTestServer::GetFileURL(kPath)));
 }
 
 class NavigationEarlyHintsAddressSpaceTest : public NavigationEarlyHintsTest {

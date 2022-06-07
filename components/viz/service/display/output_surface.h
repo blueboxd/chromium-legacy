@@ -136,7 +136,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // Some configuration supports allocating frame buffers on demand.
     // When enabled, `number_of_buffers` should be interpreted as the maximum
     // number of buffers to allocate.
-    bool use_dynamic_frame_buffer_allocation = false;
+    bool supports_dynamic_frame_buffer_allocation = false;
 
     // SkColorType for all supported buffer formats.
     SkColorType sk_color_types[static_cast<int>(gfx::BufferFormat::LAST) + 1] =

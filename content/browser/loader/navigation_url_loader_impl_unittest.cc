@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader.h"
@@ -74,11 +73,10 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
     url_request_context_ = url_request_context_builder.Build();
     url_loader_context_.set_url_request_context(url_request_context_.get());
 
-    constexpr int child_id = 4;
-    constexpr int route_id = 8;
+    constexpr network::ResourceScheduler::ClientId kClientId(3);
     resource_scheduler_client_ =
         base::MakeRefCounted<network::ResourceSchedulerClient>(
-            child_id, route_id, &resource_scheduler_,
+            kClientId, network::IsBrowserInitiated(false), &resource_scheduler_,
             url_request_context_->network_quality_estimator());
     url_loader_context_.set_resource_scheduler_client(
         resource_scheduler_client_);

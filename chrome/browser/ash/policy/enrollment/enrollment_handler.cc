@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -34,10 +33,10 @@
 #include "chrome/browser/policy/enrollment_status.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/authpolicy/authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/signing_service.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -232,7 +231,7 @@ EnrollmentAttestationBasedCertificateStatus CertificateStatusToMetric(
 
 EnrollmentHandler::EnrollmentHandler(
     DeviceCloudPolicyStoreAsh* store,
-    chromeos::InstallAttributes* install_attributes,
+    ash::InstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
     ash::attestation::AttestationFlow* attestation_flow,
     std::unique_ptr<SigningService> signing_service,
@@ -240,6 +239,7 @@ EnrollmentHandler::EnrollmentHandler(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     ActiveDirectoryJoinDelegate* ad_join_delegate,
     const EnrollmentConfig& enrollment_config,
+    LicenseType license_type,
     DMAuth dm_auth,
     const std::string& client_id,
     const std::string& requisition,
@@ -281,6 +281,12 @@ EnrollmentHandler::EnrollmentHandler(
         GetPsmExecutionResult(*g_browser_process->local_state()));
     register_params_->SetPsmDeterminationTimestamp(
         GetPsmDeterminationTimestamp(*g_browser_process->local_state()));
+    // License type is set only if terminal license is used. Unset field is
+    // treated as enterprise license.
+    if (license_type == LicenseType::kTerminal) {
+      register_params_->SetLicenseType(
+          em::LicenseType_LicenseTypeEnum::LicenseType_LicenseTypeEnum_KIOSK);
+    }
 
     register_params_->requisition = requisition;
   }
@@ -393,7 +399,7 @@ void EnrollmentHandler::OnRegistrationStateChanged(CloudPolicyClient* client) {
       // Do nothing.
       break;
     case DEVICE_MODE_ENTERPRISE_AD:
-      chromeos::UpstartClient::Get()->StartAuthPolicyService();
+      ash::UpstartClient::Get()->StartAuthPolicyService();
       break;
     default:
       LOG(ERROR) << "Supplied device mode is not supported:" << device_mode_;
@@ -814,17 +820,17 @@ void EnrollmentHandler::HandleDMTokenStoreResult(bool success) {
 }
 
 void EnrollmentHandler::HandleLockDeviceResult(
-    chromeos::InstallAttributes::LockResult lock_result) {
+    ash::InstallAttributes::LockResult lock_result) {
   DCHECK_EQ(STEP_LOCK_DEVICE, enrollment_step_);
   switch (lock_result) {
-    case chromeos::InstallAttributes::LOCK_SUCCESS:
+    case ash::InstallAttributes::LOCK_SUCCESS:
       if (device_mode_ == DEVICE_MODE_ENTERPRISE_AD) {
         StartStoreDMToken();
       } else {
         StartStoreRobotAuth();
       }
       break;
-    case chromeos::InstallAttributes::LOCK_NOT_READY:
+    case ash::InstallAttributes::LOCK_NOT_READY:
       // We wait up to |kLockRetryTimeoutMs| milliseconds and if it hasn't
       // succeeded by then show an error to the user and stop the enrollment.
       if (lockbox_init_duration_ < kLockRetryTimeoutMs) {
@@ -838,17 +844,17 @@ void EnrollmentHandler::HandleLockDeviceResult(
             base::Milliseconds(kLockRetryIntervalMs));
         lockbox_init_duration_ += kLockRetryIntervalMs;
       } else {
-        HandleLockDeviceResult(chromeos::InstallAttributes::LOCK_TIMEOUT);
+        HandleLockDeviceResult(ash::InstallAttributes::LOCK_TIMEOUT);
       }
       break;
-    case chromeos::InstallAttributes::LOCK_TIMEOUT:
-    case chromeos::InstallAttributes::LOCK_BACKEND_INVALID:
-    case chromeos::InstallAttributes::LOCK_ALREADY_LOCKED:
-    case chromeos::InstallAttributes::LOCK_SET_ERROR:
-    case chromeos::InstallAttributes::LOCK_FINALIZE_ERROR:
-    case chromeos::InstallAttributes::LOCK_READBACK_ERROR:
-    case chromeos::InstallAttributes::LOCK_WRONG_DOMAIN:
-    case chromeos::InstallAttributes::LOCK_WRONG_MODE:
+    case ash::InstallAttributes::LOCK_TIMEOUT:
+    case ash::InstallAttributes::LOCK_BACKEND_INVALID:
+    case ash::InstallAttributes::LOCK_ALREADY_LOCKED:
+    case ash::InstallAttributes::LOCK_SET_ERROR:
+    case ash::InstallAttributes::LOCK_FINALIZE_ERROR:
+    case ash::InstallAttributes::LOCK_READBACK_ERROR:
+    case ash::InstallAttributes::LOCK_WRONG_DOMAIN:
+    case ash::InstallAttributes::LOCK_WRONG_MODE:
       ReportResult(EnrollmentStatus::ForLockError(lock_result));
       break;
   }
@@ -885,7 +891,7 @@ void EnrollmentHandler::OnDeviceAccountTokenStored() {
     // policy is accepted.
     ash::DeviceSettingsService::Get()->SetDeviceMode(
         install_attributes_->GetMode());
-    chromeos::AuthPolicyClient::Get()->RefreshDevicePolicy(
+    ash::AuthPolicyClient::Get()->RefreshDevicePolicy(
         base::BindOnce(&EnrollmentHandler::HandleActiveDirectoryPolicyRefreshed,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {

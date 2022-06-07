@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/components/login/auth/user_context.h"
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "ash/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "ash/components/proximity_auth/proximity_auth_system.h"
@@ -39,7 +40,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -791,22 +791,6 @@ void EasyUnlockService::SetProximityAuthDevices(
   proximity_auth_system_->SetRemoteDevicesForUser(account_id, remote_devices,
                                                   local_device);
   proximity_auth_system_->Start();
-}
-
-void EasyUnlockService::StartFeatureUsageMetrics() {
-  feature_usage_metrics_ = std::make_unique<SmartLockFeatureUsageMetrics>(
-      base::BindRepeating(&EasyUnlockService::IsEligible,
-                          base::Unretained(this)),
-      base::BindRepeating(&EasyUnlockService::IsEnabled,
-                          base::Unretained(this)));
-
-  SmartLockMetricsRecorder::SetUsageRecorderInstance(
-      feature_usage_metrics_.get());
-}
-
-void EasyUnlockService::StopFeatureUsageMetrics() {
-  feature_usage_metrics_.reset();
-  SmartLockMetricsRecorder::SetUsageRecorderInstance(nullptr);
 }
 
 void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(

@@ -138,7 +138,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.DesktopScreenshot.Action"
-    enum="SharingDesktopScreenshotAction" expires_after="M105">
+    enum="SharingDesktopScreenshotAction" expires_after="2022-10-04">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -341,7 +341,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.Screenshot.Action" enum="SharingScreenshotAction"
-    expires_after="M105">
+    expires_after="2022-10-04">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -351,7 +351,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.ScreenshotFallback.Action"
-    enum="SharingScreenshotFallbackAction" expires_after="M105">
+    enum="SharingScreenshotFallbackAction" expires_after="2022-10-04">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -586,7 +586,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubDesktop.CrOSSharesheetResult"
-    enum="SharingHubSharesheetResult" expires_after="2022-04-03">
+    enum="SharingHubSharesheetResult" expires_after="2022-10-04">
   <owner>kristipark@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -595,10 +595,47 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Sharing.SharingHubDesktop.TimeToFetchFaviconPreviewImage"
+    units="ms" expires_after="2022-10-08">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records the elapsed time (in milliseconds) between the sharing hub becoming
+    visible on screen and the favicon image (if there is one) replacing the
+    default image. Only logged for cases where the favicon is both present and
+    is delivered to the sharing hub asynchronously, so this metric tracks how
+    slow async favicon fetching is.
+  </summary>
+</histogram>
+
+<histogram name="Sharing.SharingHubDesktop.TimeToFetchHQPreviewImage"
+    units="ms" expires_after="2022-10-08">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records the elapsed time (in milliseconds) between the sharing hub becoming
+    visible on screen and the high-quality image (if there is one) replacing the
+    default image. Only logged for cases where such a replacement eventually
+    happens - pages with no high-quality image do not produce an entry. This
+    metric essentially tracks how slow asynchronous HQ image fetching is.
+  </summary>
+</histogram>
+
+<histogram name="Sharing.SharingHubDesktop.TimeToShow" units="ms"
+    expires_after="2022-10-08">
+  <owner>ellyjones@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records the elapsed time (in milliseconds) between the user gesture that
+    should summon the sharing hub and the sharing hub actually becoming visible
+    on screen.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.SmsFetcherAvailableDeviceCount" units="devices"
     expires_after="2022-08-21">
   <owner>yigu@chromium.org</owner>
-  <owner>web-identity@google.com</owner>
+  <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
     The number of available devices when making a request on desktop which is
     triggered by calling the WebOTP API. This is logged once per API call.
@@ -607,9 +644,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherClientNameIsEmpty" enum="BooleanEmpty"
-    expires_after="2022-05-01">
+    expires_after="2022-08-21">
   <owner>yigu@chromium.org</owner>
-  <owner>web-identity@google.com</owner>
+  <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
     Records whether the remote client name is empty. This could happen on early
     version of Chrome. This is logged once per notification when asking for user
@@ -618,9 +655,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherScreenOnAndUnlocked" enum="Boolean"
-    expires_after="2022-07-17">
+    expires_after="2022-08-21">
   <owner>yigu@chromium.org</owner>
-  <owner>web-identity@google.com</owner>
+  <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
     Records whether the phone is on and unlocked when we show the notification
     to users. False if either the phone is locked or the phone does not have a
@@ -629,9 +666,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherTapWithChromeDestroyed" enum="Boolean"
-    expires_after="2022-05-01">
+    expires_after="2022-08-21">
   <owner>yigu@chromium.org</owner>
-  <owner>web-identity@google.com</owner>
+  <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
     Records whether a user taps/dismisses the notification after Chrome is
     destroyed. This could happen if the user manually swipes away Chrome from

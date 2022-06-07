@@ -14,6 +14,7 @@
 #include "ash/accessibility/ui/layer_animation_info.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "base/memory/values_equivalent.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -179,7 +180,7 @@ void AccessibilityFocusRingGroup::RectsToRings(
   rects.resize(src_rects.size());
   for (size_t i = 0; i < src_rects.size(); ++i) {
     rects[i] = src_rects[i];
-    rects[i].Inset(-GetMargin(), -GetMargin());
+    rects[i].Inset(-GetMargin());
   }
 
   // Split the rects into contiguous regions.

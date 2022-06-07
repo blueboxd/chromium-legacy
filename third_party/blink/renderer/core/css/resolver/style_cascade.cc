@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_expansion-inl.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_expansion.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_interpolations.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_resolver.h"
@@ -113,6 +114,7 @@ CascadeOrigin TargetOriginForRevert(CascadeOrigin origin) {
       return CascadeOrigin::kNone;
     case CascadeOrigin::kUser:
       return CascadeOrigin::kUserAgent;
+    case CascadeOrigin::kAuthorPresentationalHint:
     case CascadeOrigin::kAuthor:
     case CascadeOrigin::kAnimation:
       return CascadeOrigin::kUser;
@@ -152,6 +154,7 @@ bool IsInterpolation(CascadePriority priority) {
     case CascadeOrigin::kNone:
     case CascadeOrigin::kUserAgent:
     case CascadeOrigin::kUser:
+    case CascadeOrigin::kAuthorPresentationalHint:
     case CascadeOrigin::kAuthor:
       return false;
   }
@@ -219,14 +222,16 @@ void StyleCascade::Apply(CascadeFilter filter) {
   ApplyMatchResult(resolver);
   ApplyInterpolations(resolver);
 
-  if (state_.Style()->HasAppearance()) {
-    if (resolver.AuthorFlags() & CSSProperty::kBackground)
-      state_.Style()->SetHasAuthorBackground();
-    if (resolver.AuthorFlags() & CSSProperty::kBorder)
-      state_.Style()->SetHasAuthorBorder();
-    if (resolver.AuthorFlags() & CSSProperty::kBorderRadius)
-      state_.Style()->SetHasAuthorBorderRadius();
-  }
+  // These three flags are only used if HasAppearance() is set
+  // (they are used for knowing whether appearance: auto is to be overridden),
+  // but we compute them nevertheless, to avoid suddenly having to compute them
+  // after-the-fact if inline style is updated incrementally.
+  if (resolver.AuthorFlags() & CSSProperty::kBackground)
+    state_.Style()->SetHasAuthorBackground();
+  if (resolver.AuthorFlags() & CSSProperty::kBorder)
+    state_.Style()->SetHasAuthorBorder();
+  if (resolver.AuthorFlags() & CSSProperty::kBorderRadius)
+    state_.Style()->SetHasAuthorBorderRadius();
 
   // TODO(crbug.com/1024156): spec issue: user origin?
   // TODO(crbug.com/1024156): https://github.com/w3c/csswg-drafts/issues/6386
@@ -328,11 +333,18 @@ void StyleCascade::AnalyzeIfNeeded() {
 }
 
 void StyleCascade::AnalyzeMatchResult() {
-  for (auto e : match_result_.Expansions(GetDocument(), CascadeFilter())) {
-    for (; !e.AtEnd(); e.Next()) {
-      const CSSProperty& property = ResolveSurrogate(e.Property());
-      map_.Add(property.GetCSSPropertyName(), e.Priority());
-    }
+  int index = 0;
+  for (const MatchedProperties& properties :
+       match_result_.GetMatchedProperties()) {
+    ExpandCascade(properties, GetDocument(), CascadeFilter(), index++,
+                  [this](CascadePriority cascade_priority,
+                         const CSSProperty& css_property,
+                         const CSSValue& css_value [[maybe_unused]],
+                         uint16_t tree_order [[maybe_unused]]) {
+                    const CSSProperty& property =
+                        ResolveSurrogate(css_property);
+                    map_.Add(property.GetCSSPropertyName(), cascade_priority);
+                  });
   }
 }
 
@@ -436,26 +448,34 @@ void StyleCascade::ApplyWebkitBorderImage(CascadeResolver& resolver) {
 }
 
 void StyleCascade::ApplyMatchResult(CascadeResolver& resolver) {
-  for (auto e : match_result_.Expansions(GetDocument(), resolver.filter_)) {
-    for (; !e.AtEnd(); e.Next()) {
-      auto priority = CascadePriority(e.Priority(), resolver.generation_);
-      const CSSProperty& property = ResolveSurrogate(e.Property());
-      CascadePriority* p = map_.Find(property.GetCSSPropertyName());
-      if (!p || *p >= priority)
-        continue;
-      *p = priority;
-      CascadeOrigin origin = priority.GetOrigin();
-      const CSSValue* value =
-          Resolve(property, e.Value(), priority, origin, resolver);
-      // TODO(futhark): Use a user scope TreeScope to support tree-scoped names
-      // for animations in user stylesheets.
-      const TreeScope* tree_scope =
-          origin == CascadeOrigin::kAuthor
-              ? &match_result_.ScopeFromTreeOrder(e.TreeOrder())
-              : nullptr;
-      StyleBuilder::ApplyProperty(property, state_,
-                                  ScopedCSSValue(*value, tree_scope));
-    }
+  int index = 0;
+  for (const MatchedProperties& properties :
+       match_result_.GetMatchedProperties()) {
+    ExpandCascade(
+        properties, GetDocument(), resolver.filter_, index++,
+        [this, &resolver](CascadePriority cascade_priority,
+                          const CSSProperty& css_property,
+                          const CSSValue& css_value, uint16_t tree_order) {
+          auto priority =
+              CascadePriority(cascade_priority, resolver.generation_);
+          const CSSProperty& property = ResolveSurrogate(css_property);
+          CascadePriority* p = map_.Find(property.GetCSSPropertyName());
+          if (!p || *p >= priority)
+            return;
+          *p = priority;
+          CascadeOrigin origin = priority.GetOrigin();
+          const CSSValue* value =
+              Resolve(property, css_value, priority, origin, resolver);
+          // TODO(futhark): Use a user scope TreeScope to support tree-scoped
+          // names for animations in user stylesheets.
+          const TreeScope* tree_scope = nullptr;
+          if (origin == CascadeOrigin::kAuthor)
+            tree_scope = &match_result_.ScopeFromTreeOrder(tree_order);
+          else if (origin == CascadeOrigin::kAuthorPresentationalHint)
+            tree_scope = &GetDocument();
+          StyleBuilder::ApplyProperty(property, state_,
+                                      ScopedCSSValue(*value, tree_scope));
+        });
   }
 }
 
@@ -584,6 +604,8 @@ void StyleCascade::LookupAndApplyDeclaration(const CSSProperty& property,
   const TreeScope* tree_scope{nullptr};
   if (origin == CascadeOrigin::kAuthor)
     tree_scope = &TreeScopeAt(match_result_, priority.GetPosition());
+  else if (origin == CascadeOrigin::kAuthorPresentationalHint)
+    tree_scope = &GetDocument();
   StyleBuilder::ApplyProperty(property, state_,
                               ScopedCSSValue(*value, tree_scope));
 }
@@ -831,6 +853,7 @@ const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
       return cssvalue::CSSUnsetValue::Create();
     case CascadeOrigin::kUserAgent:
     case CascadeOrigin::kUser:
+    case CascadeOrigin::kAuthorPresentationalHint:
     case CascadeOrigin::kAuthor:
     case CascadeOrigin::kAnimation: {
       const CascadePriority* p =

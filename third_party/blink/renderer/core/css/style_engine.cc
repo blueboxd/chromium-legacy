@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
 #include "third_party/blink/renderer/core/css/resolver/viewport_style_resolver.h"
@@ -1927,7 +1928,6 @@ void StyleEngine::ApplyUserRuleSetChanges(
       changed_rule_flags = kRuleSetFlagsAll;
   }
 
-  bool has_rebuilt_font_face_cache = false;
   if (changed_rule_flags & kFontFaceRules) {
     if (ScopedStyleResolver* scoped_resolver =
             GetDocument().GetScopedStyleResolver()) {
@@ -1938,8 +1938,12 @@ void StyleEngine::ApplyUserRuleSetChanges(
       scoped_resolver->SetNeedsAppendAllSheets();
       MarkDocumentDirty();
     } else {
-      has_rebuilt_font_face_cache =
+      bool has_rebuilt_font_face_cache =
           ClearFontFaceCacheAndAddUserFonts(new_style_sheets);
+      if (has_rebuilt_font_face_cache) {
+        GetFontSelector()->FontFaceInvalidated(
+            FontInvalidationReason::kGeneralInvalidation);
+      }
     }
   }
 
@@ -1999,11 +2003,6 @@ void StyleEngine::ApplyUserRuleSetChanges(
     }
   }
 
-  if ((changed_rule_flags & kFontFaceRules) || has_rebuilt_font_face_cache) {
-    GetFontSelector()->FontFaceInvalidated(
-        FontInvalidationReason::kGeneralInvalidation);
-  }
-
   InvalidateForRuleSetChanges(GetDocument(), changed_rule_sets,
                               changed_rule_flags, kInvalidateAllScopes);
 }
@@ -2048,29 +2047,30 @@ void StyleEngine::ApplyRuleSetChanges(
     MarkCounterStylesNeedUpdate();
 
   unsigned append_start_index = 0;
+  bool rebuild_cascade_layer_map = changed_rule_flags & kLayerRules;
   if (scoped_resolver) {
     // - If all sheets were removed, we remove the ScopedStyleResolver
     // - If new sheets were appended to existing ones, start appending after the
-    //   common prefix.
+    //   common prefix, and rebuild CascadeLayerMap only if layers are changed.
     // - For other diffs, reset author style and re-add all sheets for the
-    //   TreeScope.
-    if (new_style_sheets.IsEmpty())
+    //   TreeScope. If there is an existing CascadeLayerMap, rebuild it.
+    if (new_style_sheets.IsEmpty()) {
+      rebuild_cascade_layer_map = false;
       ResetAuthorStyle(tree_scope);
-    else if (change == kActiveSheetsAppended)
+    } else if (change == kActiveSheetsAppended) {
       append_start_index = old_style_sheets.size();
-    else
+    } else {
+      rebuild_cascade_layer_map = scoped_resolver->HasCascadeLayerMap();
       scoped_resolver->ResetStyle();
+    }
   }
 
-  // Cascade layer map must be built before adding other at-rules, because other
-  // at-rules rely on layer order to resolve name conflicts.
+  if (rebuild_cascade_layer_map) {
+    tree_scope.EnsureScopedStyleResolver().RebuildCascadeLayerMap(
+        new_style_sheets);
+  }
+
   if (changed_rule_flags & kLayerRules) {
-    if (!new_style_sheets.IsEmpty()) {
-      // Rebuild cascade layer map in all cases, because a newly inserted
-      // sub-layer can precede an original layer in the final ordering.
-      tree_scope.EnsureScopedStyleResolver().RebuildCascadeLayerMap(
-          new_style_sheets);
-    }
     if (resolver_)
       resolver_->InvalidateMatchedPropertiesCache();
 
@@ -2122,24 +2122,23 @@ void StyleEngine::ApplyRuleSetChanges(
     }
   }
 
-  bool has_rebuilt_font_face_cache = false;
-  if (rebuild_font_face_cache) {
-    has_rebuilt_font_face_cache =
-        ClearFontFaceCacheAndAddUserFonts(active_user_style_sheets_);
-  }
-
-  if (!new_style_sheets.IsEmpty()) {
-    tree_scope.EnsureScopedStyleResolver().AppendActiveStyleSheets(
-        append_start_index, new_style_sheets);
-  }
-
   if (tree_scope.RootNode().IsDocumentNode()) {
+    bool has_rebuilt_font_face_cache = false;
+    if (rebuild_font_face_cache) {
+      has_rebuilt_font_face_cache =
+          ClearFontFaceCacheAndAddUserFonts(active_user_style_sheets_);
+    }
     if ((changed_rule_flags & kFontFaceRules) ||
         (changed_rule_flags & kFontPaletteValuesRules) ||
         has_rebuilt_font_face_cache) {
       GetFontSelector()->FontFaceInvalidated(
           FontInvalidationReason::kGeneralInvalidation);
     }
+  }
+
+  if (!new_style_sheets.IsEmpty()) {
+    tree_scope.EnsureScopedStyleResolver().AppendActiveStyleSheets(
+        append_start_index, new_style_sheets);
   }
 
   InvalidateForRuleSetChanges(tree_scope, changed_rule_sets, changed_rule_flags,
@@ -2548,8 +2547,10 @@ void StyleEngine::RecalcStyleForNonLayoutNGContainerDescendants(
   if (!cq_data)
     return;
 
-  if (cq_data->SkippedStyleRecalc())
+  if (cq_data->SkippedStyleRecalc()) {
+    DecrementSkippedContainerRecalc();
     RecalcStyleForContainer(container, {});
+  }
 }
 
 void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
@@ -2559,8 +2560,6 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
   DCHECK(!style_recalc_root_.GetRootNode());
   DCHECK(!container.NeedsStyleRecalc());
   DCHECK(!in_container_query_style_recalc_);
-
-  skipped_container_recalc_ = false;
 
   base::AutoReset<bool> cq_recalc(&in_container_query_style_recalc_, true);
 
@@ -2595,6 +2594,8 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
 
   NthIndexCache nth_index_cache(GetDocument());
 
+  if (cq_data->SkippedStyleRecalc())
+    DecrementSkippedContainerRecalc();
   RecalcStyleForContainer(container, change);
 
   if (UNLIKELY(container.NeedsReattachLayoutTree())) {
@@ -2638,6 +2639,7 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
 void StyleEngine::RecalcStyle(StyleRecalcChange change,
                               const StyleRecalcContext& style_recalc_context) {
   DCHECK(GetDocument().documentElement());
+  ScriptForbiddenScope forbid_script;
   HasMatchedCacheScope has_matched_cache_scope(&GetDocument());
   Element& root_element = style_recalc_root_.RootElement();
   Element* parent = FlatTreeTraversal::ParentElement(root_element);
@@ -2880,22 +2882,10 @@ void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
 }
 
 bool StyleEngine::SupportsDarkColorScheme() {
-  if (!meta_color_scheme_)
-    return false;
-  bool has_light = false;
-  bool has_dark = false;
-  if (const auto* scheme_list = DynamicTo<CSSValueList>(*meta_color_scheme_)) {
-    for (auto& item : *scheme_list) {
-      if (const auto* ident = DynamicTo<CSSIdentifierValue>(*item)) {
-        if (ident->GetValueID() == CSSValueID::kDark)
-          has_dark = true;
-        else if (ident->GetValueID() == CSSValueID::kLight)
-          has_light = true;
-      }
-    }
-  }
-  return has_dark &&
-         (!has_light ||
+  return (page_color_schemes_ &
+          static_cast<ColorSchemeFlags>(ColorSchemeFlag::kDark)) &&
+         (!(page_color_schemes_ &
+            static_cast<ColorSchemeFlags>(ColorSchemeFlag::kLight)) ||
           preferred_color_scheme_ == mojom::blink::PreferredColorScheme::kDark);
 }
 
@@ -2961,17 +2951,10 @@ void StyleEngine::UpdateColorSchemeMetrics() {
   // dark (though dark may not be used). This metric is also recorded in
   // longhands_custom.cc (see: ColorScheme::ApplyValue) if the root style
   // color-scheme contains dark.
-  if (meta_color_scheme_) {
-    const auto* scheme_list = DynamicTo<CSSValueList>(*meta_color_scheme_);
-    if (scheme_list) {
-      for (auto& item : *scheme_list) {
-        const auto* ident = DynamicTo<CSSIdentifierValue>(*item);
-        if (ident && ident->GetValueID() == CSSValueID::kDark) {
-          UseCounter::Count(GetDocument(),
-                            WebFeature::kColorSchemeDarkSupportedOnRoot);
-        }
-      }
-    }
+  if (page_color_schemes_ &
+      static_cast<ColorSchemeFlags>(ColorSchemeFlag::kDark)) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kColorSchemeDarkSupportedOnRoot);
   }
 }
 
@@ -2979,12 +2962,25 @@ void StyleEngine::ColorSchemeChanged() {
   UpdateColorScheme();
 }
 
-void StyleEngine::SetColorSchemeFromMeta(const CSSValue* color_scheme) {
-  meta_color_scheme_ = color_scheme;
+void StyleEngine::SetPageColorSchemes(const CSSValue* color_scheme) {
+  if (!GetDocument().IsActive())
+    return;
+
+  if (auto* value_list = DynamicTo<CSSValueList>(color_scheme)) {
+    page_color_schemes_ = StyleBuilderConverter::ExtractColorSchemes(
+        GetDocument(), *value_list, nullptr /* color_schemes */);
+  } else {
+    page_color_schemes_ =
+        static_cast<ColorSchemeFlags>(ColorSchemeFlag::kNormal);
+  }
   DCHECK(GetDocument().documentElement());
+  // kSubtreeStyleChange is necessary since the page color schemes may affect
+  // used values of any element in the document with a specified color-scheme of
+  // 'normal'. A more targeted invalidation would need to traverse the whole
+  // document tree for specified values.
   GetDocument().documentElement()->SetNeedsStyleRecalc(
-      kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                             style_change_reason::kPlatformColorChange));
+      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
+                               style_change_reason::kPlatformColorChange));
   UpdateColorScheme();
   UpdateColorSchemeBackground();
 }
@@ -3178,7 +3174,6 @@ void StyleEngine::Trace(Visitor* visitor) const {
   visitor->Trace(text_to_sheet_cache_);
   visitor->Trace(sheet_to_text_cache_);
   visitor->Trace(tracker_);
-  visitor->Trace(meta_color_scheme_);
   visitor->Trace(text_tracks_);
   visitor->Trace(vtt_originating_element_);
   visitor->Trace(parent_for_detached_subtree_);

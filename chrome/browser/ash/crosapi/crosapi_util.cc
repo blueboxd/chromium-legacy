@@ -7,10 +7,12 @@
 #include <sys/mman.h>
 
 #include "ash/components/settings/cros_settings_provider.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "base/files/file_util.h"
+#include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/browser_version_service_ash.h"
 #include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
@@ -81,12 +83,13 @@
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/account_manager_core/account_manager_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/ukm_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "media/capture/mojom/video_capture.mojom.h"
@@ -355,6 +358,13 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
       params->metrics_service_client_id = client_id;
   }
 
+  if (auto* metrics_services_manager =
+          g_browser_process->GetMetricsServicesManager()) {
+    if (auto* ukm_service = metrics_services_manager->GetUkmService()) {
+      params->ukm_client_id = ukm_service->client_id();
+    }
+  }
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kOndeviceHandwritingSwitch)) {
     const auto handwriting_switch =
@@ -396,6 +406,7 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
 
   params->standalone_browser_is_only_browser = !IsAshWebBrowserEnabled();
   params->publish_chrome_apps = browser_util::IsLacrosChromeAppsEnabled();
+  params->publish_hosted_apps = apps::ShouldHostedAppsRunInLacros();
 
   // Keep-alive mojom API is now used by the current ash-chrome.
   params->initial_keep_alive =
@@ -409,8 +420,7 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   // Pass the accepted internal urls to lacros. Only accepted urls are allowed
   // to be passed via OpenURL from Lacros to Ash.
   params->accepted_internal_ash_urls =
-      std::move(ChromeWebUIControllerFactory::GetInstance())
-          ->GetListOfAcceptableURLs();
+      ChromeWebUIControllerFactory::GetInstance()->GetListOfAcceptableURLs();
 
   // Pass holding space feature flag state to lacros.
   params->is_holding_space_incognito_profile_integration_enabled = true;
@@ -422,7 +432,7 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->ash_capabilities = {{kBrowserManagerReloadBrowserCapability}};
 
   params->is_device_enterprised_managed =
-      chromeos::InstallAttributes::Get()->IsEnterpriseManaged();
+      ash::InstallAttributes::Get()->IsEnterpriseManaged();
 
   params->device_type = ConvertDeviceType(chromeos::GetDeviceType());
 

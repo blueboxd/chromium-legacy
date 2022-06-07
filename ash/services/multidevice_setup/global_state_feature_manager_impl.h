@@ -15,13 +15,15 @@
 #include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/components/multidevice/software_feature.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
 namespace ash {
+
+namespace multidevice {
+enum class SoftwareFeature;
+}
 
 namespace multidevice_setup {
 
@@ -137,7 +139,7 @@ class GlobalStateFeatureManagerImpl
   void AttemptSetHostStateNetworkRequest(bool is_retry);
   void OnSetHostStateNetworkRequestFinished(
       bool attempted_to_enable,
-      chromeos::device_sync::mojom::NetworkRequestResult result_code);
+      device_sync::mojom::NetworkRequestResult result_code);
   bool ShouldEnableOnVerify();
   void ProcessEnableOnVerifyAttempt();
   bool ShouldAttemptToEnableAfterHostVerified();

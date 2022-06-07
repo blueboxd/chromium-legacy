@@ -78,8 +78,14 @@
   "audio": [
     {
       "channel": "stable",
-      "extension_types": ["extension", "platform_app"],
+      "extension_types": ["platform_app"],
       "platforms": ["chromeos"],
+      "session_types": ["kiosk"]
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["extension"],
+      "platforms": ["chromeos", "lacros"],
       "session_types": ["kiosk"]
     },
     {
@@ -481,6 +487,12 @@
       "F9AEB1FBFD91AFB39A16798763FB4707E5EB71C2",  // http://crbug.com/1256996
       "A547E19FA29B6371C507EFF218B4948AF7B8597B"   // http://crbug.com/1256996
     ]
+  },
+  {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "platforms": ["chromeos", "lacros"],
+    "session_types": ["kiosk"]
   }],
   "networkingPrivate": {
     "channel": "stable",
@@ -613,6 +625,12 @@
       "channel": "stable",
       "extension_types": ["hosted_app"],
       "allowlist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["extension"],
+      "platforms": ["chromeos", "lacros"],
+      "session_types": ["kiosk"]
     }
   ],
   "system.storage": [
@@ -669,6 +687,12 @@
         "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
         "A28C9619C4C41306FA5236FB4D94DA812F504DE8"   // CryptoToken (dev)
       ]
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["extension"],
+      "platforms": ["chromeos", "lacros"],
+      "session_types": ["kiosk"]
     }
   ],
   "usbDevices": [
@@ -689,6 +713,12 @@
         "4839A26B29CD1BD021B2E126EF6D28C9CB84018B",  // http://crbug.com/710541
         "8F44FBB4474CCDF23450B166C9E83E85BD03AE24"   // http://crbug.com/710541
       ]
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["extension"],
+      "platforms": ["chromeos", "lacros"],
+      "session_types": ["kiosk"]
     }
   ],
   "videoCapture": [
@@ -705,12 +735,17 @@
       ]
     }
   ],
-  "virtualKeyboard": {
+  "virtualKeyboard": [{
     "channel": "stable",
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"],
     "session_types": ["kiosk"]
-  },
+  }, {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "platforms": ["chromeos", "lacros"],
+    "session_types": ["kiosk"]
+  }],
   "virtualKeyboardPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],

@@ -755,8 +755,9 @@ class MetaBuildWrapper(object):
       if ret != 0:
         return ret
       collect_json = json.loads(self.ReadFile(collect_output))
-      # The exit_code field is not included if the task was successful.
-      ret = collect_json.get(task_id, {}).get('results', {}).get('exit_code', 0)
+      # The exit_code field might not be included if the task was successful.
+      ret = int(
+          collect_json.get(task_id, {}).get('results', {}).get('exit_code', 0))
     finally:
       if json_dir:
         self.RemoveDirectory(json_dir)
@@ -1768,7 +1769,16 @@ class MetaBuildWrapper(object):
       if clang_coverage or java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']
     elif is_fuchsia and test_type != 'script':
+      # On Fuchsia, the generated bin/run_* test scripts are used both in
+      # infrastructure and by developers. test_env.py is intended to establish a
+      # predictable environment for automated testing. In particular, it adds
+      # CHROME_HEADLESS=1 to the environment for child processes. This variable
+      # is a signal to both test and production code that it is running in the
+      # context of automated an testing environment, and should not be present
+      # for normal developer workflows.
       cmdline += [
+          vpython_exe,
+          '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
           '--test-launcher-bot-mode',
           '--logs-dir=${ISOLATED_OUTDIR}',
@@ -1786,10 +1796,7 @@ class MetaBuildWrapper(object):
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
           '--asan=%d' % asan,
-          # Enable lsan when asan is enabled except on Windows where LSAN isn't
-          # supported.
-          # TODO(https://crbug.com/948939): Enable on Mac once things pass.
-          '--lsan=%d' % (asan and not is_mac and not is_win),
+          '--lsan=%d' % asan,  # Enable lsan when asan is enabled.
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,

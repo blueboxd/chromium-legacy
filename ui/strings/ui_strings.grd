@@ -27,6 +27,7 @@ need to be translated for each locale.-->
     <output filename="ui_strings_bs.pak" type="data_package" lang="bs" />
     <output filename="ui_strings_ca.pak" type="data_package" lang="ca" />
     <output filename="ui_strings_cs.pak" type="data_package" lang="cs" />
+    <output filename="ui_strings_cy.pak" type="data_package" lang="cy" />
     <output filename="ui_strings_da.pak" type="data_package" lang="da" />
     <output filename="ui_strings_de.pak" type="data_package" lang="de" />
     <output filename="ui_strings_el.pak" type="data_package" lang="el" />
@@ -127,6 +128,7 @@ need to be translated for each locale.-->
     <file path="translations/ui_strings_bs.xtb" lang="bs" />
     <file path="translations/ui_strings_ca.xtb" lang="ca" />
     <file path="translations/ui_strings_cs.xtb" lang="cs" />
+    <file path="translations/ui_strings_cy.xtb" lang="cy" />
     <file path="translations/ui_strings_da.xtb" lang="da" />
     <file path="translations/ui_strings_de.xtb" lang="de" />
     <file path="translations/ui_strings_el.xtb" lang="el" />
@@ -517,6 +519,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_ACCNAME_MENU" desc="The accessible name for the Menu button.">
         Menu
       </message>
+      <message name="IDS_APP_ACCNAME_FLOAT" desc="The accessible name for the Floating button.">
+        Float
+      </message>
       <message name="IDS_APP_ACCNAME_COLOR_CHOOSER_HEX_INPUT" desc="The accessible name for the color chooser hexadecimal input field">
         Hex color value
       </message>
@@ -603,7 +608,7 @@ need to be translated for each locale.-->
           Emoji &amp;&amp; Symbols
         </message>
       </if>
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_APP_SHOW_CLIPBOARD_HISTORY" desc="The context menu item to show the clipboard history menu.">
           Clipboard
         </message>
@@ -717,7 +722,7 @@ need to be translated for each locale.-->
           Win
         </message>
       </if>
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_APP_META_KEY" desc="External Meta key (Search key on ChromeOS keyboards, Windows key on Windows keyboards, and Command key on Mac keyboards)">
           Meta
         </message>
@@ -872,7 +877,7 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_MESSAGE" desc="The message text for the comformation notification when the user failed to share a tab to other devices.">
         Please try again
       </message>
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME" desc="The name of hats notifier that is a system component">
           Survey
         </message>

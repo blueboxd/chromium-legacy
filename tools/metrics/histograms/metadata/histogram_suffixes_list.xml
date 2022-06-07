@@ -372,7 +372,11 @@ chromium-metrics-reviews@google.com.
   <suffix name="chime" label="Chime Notification Module"/>
   <suffix name="chrome" label="Chrome Module"/>
   <suffix name="dev_ui" label="Developer UI Module"/>
-  <suffix name="extra_icu" label="Extra ICU Module"/>
+  <suffix name="extra_icu" label="Extra ICU Module">
+    <obsolete>
+      Deprecated in M98 since we removed the extra_icu module.
+    </obsolete>
+  </suffix>
   <suffix name="feedv2" label="Feed V2 Module"/>
   <suffix name="image_editor" label="Image Editor Module"/>
   <suffix name="stack_unwinder" label="Stack Unwinder Module"/>
@@ -1225,15 +1229,6 @@ chromium-metrics-reviews@google.com.
       label="Activity launched in DOCUMENT mode (Tabs and apps together) on
              Android"/>
   <affected-histogram name="MobileStartup.ToolbarInflationTime"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ChromeCleanerDialogDoneReason" separator="_">
-  <suffix name="Accepted" label="User accepted the prompt."/>
-  <suffix name="Canceled" label="User clicked the cancel button."/>
-  <suffix name="DetailsButtonClicked" label="User clicked the details button."/>
-  <suffix name="Dismissed"
-      label="User dismissed the prompt, for example by pressing ESC."/>
-  <affected-histogram name="SoftwareReporter.PromptDialog.TimeUntilDone"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ChromeCleanerFetchCompletedReason" separator="_">
@@ -3070,14 +3065,6 @@ chromium-metrics-reviews@google.com.
       name="GPU.DirectComposition.SwapChainCreationResult3.SoftwareProtected"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="GPU_WatchdogStage" separator=".">
-  <suffix name="Foregrounded" label="Foregrounded"/>
-  <suffix name="Init" label="Init"/>
-  <suffix name="Normal" label="Normal"/>
-  <suffix name="PowerResume" label="PowerResume"/>
-  <affected-histogram name="GPU.WatchdogThread.Timeout"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="GPUBlocklistPerFeature" separator=".">
   <suffix name="Accelerated2dCanvas" label="Accelerated2dCanvas"/>
   <suffix name="GpuCompositing" label="GpuCompositing"/>
@@ -3878,13 +3865,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Manifest.HasProperty"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="MaxPressureBeforeFirstNonEmptyPaint" separator=".">
-  <suffix name="CriticalMemoryPressure" label="Critical memory pressure."/>
-  <suffix name="ModerateMemoryPressure" label="Moderate memory pressure."/>
-  <suffix name="NoMemoryPressure" label="No memory pressure."/>
-  <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint3"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="Media_Learning_BinaryThreshold" separator=".">
   <suffix name="BaseTable" label="Basic features, lookup table model"/>
   <suffix name="BaseUnweightedTable"
@@ -4269,24 +4249,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Mobile.Messages.Passwords.Modal.Dismiss"/>
   <affected-histogram name="Mobile.Messages.Passwords.Modal.Event"/>
   <affected-histogram name="Mobile.Messages.Passwords.Modal.Present"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="Mobile_Messages_Type" separator=".">
-  <suffix name="InfobarTypeAutofillAddressProfile"
-      label="Recorded for Autofill Address Messages."/>
-  <suffix name="InfobarTypeConfirm" label="Recorded for Confirm Messages."/>
-  <suffix name="InfobarTypePasswordSave"
-      label="Recorded for Save Password Messages."/>
-  <suffix name="InfobarTypePasswordUpdate"
-      label="Recorded for Update Password Messages."/>
-  <suffix name="InfobarTypeReadingList"
-      label="Recorded for Reading List Messages."/>
-  <suffix name="InfobarTypeSaveCard" label="Recorded for Save Card Messages."/>
-  <suffix name="InfobarTypeTranslate" label="Recorded for Translate Messages."/>
-  <affected-histogram name="Mobile.Messages.Badge.Tapped"/>
-  <affected-histogram name="Mobile.Messages.Banner.Dismiss"/>
-  <affected-histogram name="Mobile.Messages.Banner.Event"/>
-  <affected-histogram name="Mobile.Messages.Modal.Event"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MobileDownloadBytesDownloadedTypes" separator=".">
@@ -5955,6 +5917,8 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="NewTabPage.LogoShown"/>
 </histogram_suffixes>
 
+<!-- TODO(crbug.com/1309706): Migrate these histograms to use the patterned histograms instead. -->
+
 <histogram_suffixes name="NewTabPageModules" separator=".">
   <suffix name="chrome_cart" label="Module ID for Chrome Cart"/>
   <suffix name="drive" label="Module ID for Google Drive module"/>
@@ -7397,6 +7361,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="DisplayCapture" label="Display capture permission actions"/>
   <suffix name="Geolocation" label="Geolocation permission actions"/>
   <suffix name="IdleDetection" label="Idle detection permission actions"/>
+  <suffix name="LocalFonts" label="Local fonts permission actions"/>
   <suffix name="MidiSysEx" label="Midi SysEx permsision actions"/>
   <suffix name="Nfc" label="Nfc permsision actions"/>
   <suffix name="Notifications" label="Notification permission actions"/>
@@ -7838,8 +7803,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="BlinkGC" label="Only counting Blink GC memory."/>
   <suffix name="BlinkGC.AllocatedObjects"
       label="Only counting objects allocated using Blink GC."/>
-  <suffix name="BlinkGC.Fragmentation"
-      label="Fragmentation of Blink GC."/>
+  <suffix name="BlinkGC.Fragmentation" label="Fragmentation of Blink GC."/>
   <suffix name="BlinkGC.Main.Heap"
       label="Only counting memory on Blink GC's main thread heap."/>
   <suffix name="BlinkGC.Main.Heap.AllocatedObjects"
@@ -10013,17 +9977,8 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="SoftwareReporter.MajorVersion"/>
   <affected-histogram name="SoftwareReporter.MemoryUsed"/>
   <affected-histogram name="SoftwareReporter.MinorVersion"/>
-  <affected-histogram name="SoftwareReporter.RunningTime"/>
   <affected-histogram name="SoftwareReporter.RunningTimeAccordingToChrome2"/>
-  <affected-histogram name="SoftwareReporter.RunningTimeRegistryError"/>
   <affected-histogram name="SoftwareReporter.RunningTimeWithoutSleep2"/>
-  <affected-histogram name="SoftwareReporter.Step"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SoftwareReporterInvocationType" separator="_">
-  <suffix name="Periodic" label="Periodic run of the reporter."/>
-  <suffix name="UserInitiated" label="User-initiated run of the reporter."/>
-  <affected-histogram name="SoftwareReporter.ReporterSequenceResult"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SpdyImpact" separator="_">

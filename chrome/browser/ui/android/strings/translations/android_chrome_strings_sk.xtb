@@ -89,6 +89,7 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="1409879593029778104">Sťahovanie súboru <ph name="FILE_NAME" /> bolo zrušené, pretože daný súbor už existuje.</translation>
 <translation id="1414981605391750300">Kontaktuje sa Google. Môže to chvíľu trvať…</translation>
 <translation id="1416550906796893042">Verzia aplikácie</translation>
+<translation id="1428770807407000502">Chcete vypnúť synchronizáciu?</translation>
 <translation id="1430915738399379752">Tlačiť</translation>
 <translation id="1436784010935106834">Odstránené</translation>
 <translation id="1448440926884431741">Organizujte svoje sledované produkty v Záložkách</translation>
@@ -184,7 +185,6 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="200114059308480249">Chcete zahŕňať okolitý text vo vyhľadávaniach na Googli?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# súbor}few{# súbory}many{# Files}other{# súborov}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> sa otvorí v Chrome. Pokračovaním vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami spoločnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatočnými zmluvnými podmienkami prehliadača Google Chrome a systému Chrome OS<ph name="END_LINK2" />. Uplatňujú sa aj <ph name="BEGIN_LINK3" />pravidlá ochrany súkromia<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Chcete odstrániť záujem?</translation>
 <translation id="2020309681647789787">Históriu budete mať vo všetkých synchronizovaných zariadeniach, takže budete môcť pokračovať v tom, čo ste robili</translation>
 <translation id="2021896219286479412">Ovládanie webu na celú obrazovku</translation>
 <translation id="2038563949887743358">Zapnutie žiadosti o verziu stránok pre počítače</translation>
@@ -213,6 +213,7 @@ Vyhľadávanie spustíte klepnutím na ľubovoľné slovo. Spresníte ho pridrž
 <translation id="2141396931810938595">Na základe vášho používania</translation>
 <translation id="214888715418183969">Vyberte, čo chcete zdieľať s Chromom. Zdieľané metriky pomôžu zlepšovať funkcie, výkonnosť aj stabilitu Chromu.</translation>
 <translation id="2149973817440762519">Upraviť záložku</translation>
+<translation id="2155214902713132423">Tento spôsob overenia nie pre toto zariadenie k dispozícii. Vyberte si inú možnosť v druhom zariadení.</translation>
 <translation id="2157851137955077194">Ak chcete niečo zo svojho telefónu zdieľať s iným zariadením, zapnite v oboch synchronizáciu v nastaveniach Chromu</translation>
 <translation id="2158408438301413340">Chromu sa nepodarilo skontrolovať všetky heslá</translation>
 <translation id="2169830938017475061">Teraz</translation>
@@ -733,7 +734,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5091199029769593641">Keď otvoríte novú kartu, čoskoro sa vám budú zobrazovať príbehy z webu <ph name="SITE_NAME" />. Weby, ktoré sledujete, sa ukladajú do vášho účtu Google. Môžete ich spravovať v nastaveniach kanála Objaviť.</translation>
 <translation id="5091249083535528968">Rozšírené údaje o používaní</translation>
 <translation id="509429900233858213">Vyskytla sa chyba.</translation>
-<translation id="5098190077610408701">Chcete pridať záujem?</translation>
 <translation id="5102401324271069229">Ak sa vám určitý web pokúsi ukradnúť heslo alebo stiahnete škodlivý súbor, Chrome môže odoslať Bezpečnému prehliadaniu webové adresy vrátane častí obsahu stránok</translation>
 <translation id="510275257476243843">Zostáva: 1 h</translation>
 <translation id="5115811374190515607">do služby <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +879,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5906513782029855931">Keď bude Asistent Google poznať webové adresy, bude vám môcť pomáhať s plnením úloh. Asistenta môžete vypnúť v nastaveniach Chromu.</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
 <translation id="5919204609460789179">Ak chcete spustiť synchronizáciu, aktualizujte aplikáciu <ph name="PRODUCT_NAME" /></translation>
+<translation id="5938820472109305350">Pridať <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Na vyhľadávanie sa používa Google</translation>
 <translation id="5945035219773565305">Aktuálne odporúčanie: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Je zobrazená zverejnená stránka</translation>
@@ -898,7 +899,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="6033245666633565791">Pomocou technológií <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> vyvíja Chrome nové technológie, ktoré vás ochránia pred mechanizmami sledovania na rôznych weboch a súčasne zachovajú internet otvorený.
 
 Skúšobné obdobia technológií Privacy Sandbox sú stále v aktívnom vývoji a v niektorých oblastiach sú dostupné. Weby si zatiaľ môžu technológie Privacy Sandbox vyskúšať a zároveň používať aktuálne internetové technológie, ako sú súbory cookie tretej strany.</translation>
-<translation id="6036057147555329831">Dodatočný modul ICU</translation>
 <translation id="6039379616847168523">Prechod na ďalšiu kartu</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
 <translation id="604124094241169006">Automatické</translation>
@@ -1023,6 +1023,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa pod
 <translation id="663674369910034433">Ďalšie nastavenia týkajúce sa ochrany súkromia, zabezpečenia a zhromažďovania údajov nájdete v sekciách <ph name="BEGIN_LINK1" />Synchronizácia<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />služby Googlu<ph name="END_LINK2" />.</translation>
 <translation id="6637100877383020115">Na účely zlepšovania aplikácie odosiela Chrome údaje o využití a pádoch Googlu. <ph name="BEGIN_UMA_LINK" />Spravovať<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokovať neustále</translation>
+<translation id="6641780377503683465">Odstrániť <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="6645629752388991326">Ovládajte, ktoré zariadenia sa môžu prihlásiť pomocou tohto zariadenia nastaveného ako bezpečnostný kľúč.</translation>
 <translation id="6648459603387803038">Nastavenia prehliadača môže vzdialene zmeniť správca. Aktivita v tomto zariadení môže byť tiež spravovaná mimo Chromu.</translation>

@@ -12,7 +12,7 @@
 
 import {afterNextRender, Polymer, html, flush, Templatizer, TemplateInstanceBase} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import '//resources/cr_elements/cr_button/cr_button.m.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import '//resources/cr_elements/cr_toast/cr_toast.js';
@@ -28,8 +28,8 @@ import {Router, Route} from '../../router.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 import '../../settings_shared_css.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
-import {recordSettingChange, recordSearch, setUserActionRecorderForTesting, recordPageFocus, recordPageBlur, recordClick, recordNavigation} from '../metrics_recorder.m.js';
-import {routes} from '../os_route.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
+import {routes} from '../os_route.js';
 import {KerberosAccount, KerberosAccountsBrowserProxyImpl, KerberosAccountsBrowserProxy, KerberosErrorType, KerberosConfigErrorCode, ValidateKerberosConfigResult} from './kerberos_accounts_browser_proxy.js';
 import './kerberos_add_account_dialog.js';
 
@@ -206,7 +206,7 @@ Polymer({
 
   /**
    * Opens the Account actions menu.
-   * @param {!{model: !{item: !KerberosAccount}, target: !Element}}
+   * @param {!{model: !{item: !KerberosAccount}, target: !HTMLElement}}
    *      event
    * @private
    */

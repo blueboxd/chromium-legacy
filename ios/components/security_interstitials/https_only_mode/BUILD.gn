@@ -5,6 +5,8 @@
 source_set("https_only_mode") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "https_only_mode_allowlist.h",
+    "https_only_mode_allowlist.mm",
     "https_only_mode_blocking_page.h",
     "https_only_mode_blocking_page.mm",
     "https_only_mode_container.h",
@@ -18,5 +20,30 @@ source_set("https_only_mode") {
     "//base",
     "//components/security_interstitials/core",
     "//ios/components/security_interstitials",
+    "//ios/web/public:public",
+  ]
+}
+
+source_set("feature") {
+  sources = [
+    "feature.cc",
+    "feature.h",
+  ]
+  deps = [ "//base" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "https_only_mode_blocking_page_unittest.mm" ]
+  deps = [
+    ":https_only_mode",
+    "//base/test:test_support",
+    "//components/security_interstitials/core",
+    "//ios/web/public",
+    "//ios/web/public/test",
+    "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//testing/gtest",
   ]
 }

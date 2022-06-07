@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">‏تصاویر محفوظ کرنے کے لیے، Chromium کو آپ کی تصاویر میں شامل کرنے دینے کے لیے ترتیبات پر تھپتھپائیں</translation>
 <translation id="1289216811211435351">‏Chromium پر جائیں</translation>
 <translation id="1361748954329991663">‏Chromium پرانا ہے۔ اگر کوئی اپ ڈیٹ <ph name="BEGIN_LINK" />App اسٹور<ph name="END_LINK" /> میں دستیاب نہیں ہے تو یہ ممکن ہے کہ آپ کا آلہ مزید Chromium کے نئے ورژنز کو سپورٹ نہیں کرتا ہے۔</translation>
-<translation id="1370204544543370355">‏Chromium سے بھرپور فائدہ اٹھانے کے لیے اپنے Google اکاؤنٹ کے ساتھ Chromium میں سائن ان کریں</translation>
 <translation id="1431818719585918472">‏Chromium کو آپ کی پوشیدگی ٹیبز کو مقفل کرنے دیں۔</translation>
 <translation id="1472013873724362412">‏آپ کا اکاؤنٹ Chromium پر کام نہیں کرتا ہے۔ سائن ان کرنے کیلئے براہ کرم اپنے ڈومین کے منتظم سے رابطہ کریں یا ایک مستقل Google اکاؤنٹ استعمال کریں۔</translation>
 <translation id="1507010443238049608">‏Chromium کی خصوصیات اور کارکردگی کو بہتر بنانے میں مدد کریں</translation>
@@ -31,7 +30,6 @@
 <translation id="2426113998523353159">‏آپ کی تنظیم چاہتی ہے کہ آپ Chromium استعمال کرنے کیلئے سائن ان کریں۔</translation>
 <translation id="2450140762465183767">‏اب جب بھی آپ پیغامات، دستاویزات اور دیگر ایپس میں لنکس کو تھپتھپائیں تو آپ Chromium استعمال کر سکتے ہیں۔</translation>
 <translation id="2478931088402984578">‏<ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> کو منتخب کریں</translation>
-<translation id="2567507405773541360">‏ایک آسان، محفوظ اور پہلے سے کہیں زیادہ تیز Chromium کے ساتھ مزید کام کریں</translation>
 <translation id="2590893390871230428">‏اپنے Chromium ڈیٹا کو مطابقت پذیر بنائیں</translation>
 <translation id="2650312721222849884">‏اپنے ٹیبز کو دیکھنے کے لئے جہاں بھی آپ Chromium استعمال کرتے ہیں، سِنک کو آن کریں</translation>
 <translation id="2684230048001240293">‏اپنے ٹیبز، پاس ورڈز اور ادائیگی کی معلومات کو اپنے تمام آلات پر سنک کرنے کیلئے Chromium کو بطور ڈیفالٹ براؤزر سیٹ کریں</translation>
@@ -43,6 +41,7 @@
 <translation id="3256316712990552818">‏Chromium میں کاپی کر دیا گیا</translation>
 <translation id="3344973607274501920">‏Chromium آپ کے پاس ورڈز چیک نہیں کر سکا۔ اپنا انٹرنیٹ کنکشن چیک کرنے کی کوشش کریں۔</translation>
 <translation id="3472200483164753384">‏Chromium Canary پر تعاون یافتہ نہیں ہے</translation>
+<translation id="3567399274263440288">‏Chromium سے بھرپور فائدہ اٹھانے کے لیے اپنے Google اکاؤنٹ کے ساتھ Chromium میں سائن ان کریں۔</translation>
 <translation id="3639997914391704523">‏جب آپ اپنے Google اکاؤنٹ سے سائن ان کرتے ہیں تو Chromium آپ کے پاس ورڈز کو چیک کر سکتا ہے۔</translation>
 <translation id="3650632991272923014">‏<ph name="USER_EMAIL1" /> Chromium استعمال کر رہا تھا اور اس آلہ پر بُک مارکس، پاس ورڈز اور دیگر ترتیبات چھوڑ دی ہیں۔</translation>
 <translation id="3805899903892079518">‏Chromium کو آپ کی تصاویر یا ویڈیوز تک رسائی حاصل نہیں ہے۔ iOS ترتیبات &gt; رازداری &gt; تصاویر میں رسائی کو فعال کریں۔</translation>
@@ -56,13 +55,6 @@
 <translation id="4828317641996116749">‏Chromium سبھی پاس ورڈز چیک نہیں کر سکا۔ بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="4985291216379576555">‏آف لائن، Chromium اپ ڈیٹس چیک نہیں کر سکتا ہے۔</translation>
 <translation id="4999538639245140991">‏چونکہ آپ <ph name="SIGNOUT_MANAGED_DOMAIN" /> کے زیر انتظام ایک اکاؤنٹ سے سائن آؤٹ کر رہے ہیں، لہذا آپ کا Chromium ڈیٹا اس آلہ سے حذف ہو جائے گا۔ آپ کا ڈیٹا آپ کے Google اکاؤنٹ میں رہے گا۔</translation>
-<translation id="5039881550736388123">‏آن ہونے پر:
-<ph name="BEGIN_INDENT" />  • Chromium کو ان لوگوں کے لیے بہتر بنانے میں مدد کریں جو اسے آپ کے طریقے سے استعمال کرتے ہیں۔<ph name="END_INDENT" />
-
-غور کرنے کی چیزیں:
-<ph name="BEGIN_INDENT" />  • آپ کے Chromium کے استعمال کے بارے میں معلومات Google کو بھیجی جاتی ہے، لیکن یہ آپ سے منسلک نہیں ہے۔
-  • اگر Chromium کریش ہو جاتا ہے تو کریش کی تفصیلات میں کچھ ذاتی معلومات شامل ہو سکتی ہیں۔
-  • اگر آپ مطابقت پذیری کو آن کرتے ہیں تو میٹرکس میں ان URLs کے بارے میں معلومات بھی شامل ہو سکتی ہیں جنہیں آپ ملاحظہ کرتے ہیں۔<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">‏Chromium میں سائن ان کریں</translation>
 <translation id="5224391634244552924">‏کوئی محفوظ کردہ پاس ورڈ نہیں۔ جب آپ پاس ورڈز کو محفوظ کرتے ہیں تو Chromium انہیں چیک کر سکتا ہے۔</translation>
 <translation id="5308226104666789935">‏Chromium اپ ڈیٹس چیک نہیں کر سکتا ہے</translation>

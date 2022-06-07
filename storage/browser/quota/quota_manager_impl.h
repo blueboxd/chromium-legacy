@@ -359,6 +359,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
       const std::string& host,
       storage::mojom::StorageType storage_type,
       GetHostUsageForInternalsCallback callback) override;
+  void GetGlobalUsageForInternals(
+      storage::mojom::StorageType storage_type,
+      GetGlobalUsageForInternalsCallback callback) override;
 
   // Called by UI and internal modules.
   void GetPersistentHostQuota(const std::string& host, QuotaCallback callback);
@@ -475,7 +478,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   class StorageKeyGathererTask;
   class BucketDataDeleter;
   class HostDataDeleter;
-  class DumpQuotaTableHelper;
   class DumpBucketTableHelper;
   class StorageCleanupHelper;
 
@@ -492,17 +494,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
     std::set<int> active_override_session_ids;
   };
 
-  using QuotaTableEntry = QuotaDatabase::QuotaTableEntry;
   using BucketTableEntry = QuotaDatabase::BucketTableEntry;
-  using QuotaTableEntries = std::vector<QuotaTableEntry>;
   using BucketTableEntries = std::vector<BucketTableEntry>;
   using StorageKeysByType =
       base::flat_map<blink::mojom::StorageType, std::set<blink::StorageKey>>;
 
   using QuotaSettingsCallback = base::OnceCallback<void(const QuotaSettings&)>;
 
-  using DumpQuotaTableCallback =
-      base::OnceCallback<void(const QuotaTableEntries&)>;
   using DumpBucketTableCallback =
       base::OnceCallback<void(const BucketTableEntries&)>;
 
@@ -544,7 +542,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   UsageTracker* GetUsageTracker(blink::mojom::StorageType type) const;
 
-  void DumpQuotaTable(DumpQuotaTableCallback callback);
   void DumpBucketTable(DumpBucketTableCallback callback);
   void DidRetrieveBucketsTable(RetrieveBucketsTableCallback callback,
                                const BucketTableEntries& entries);
@@ -667,7 +664,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // pressure event dispatch if appropriate.
   // TODO(crbug.com/1088004): Implement UsageAndQuotaInfoGatherer::Completed()
   // to use DetermineStoragePressure().
-  // TODO(crbug.com/1102433): Define and explain StoragePressure in the README.
   void DetermineStoragePressure(int64_t free_space, int64_t total_space);
 
   absl::optional<int64_t> GetQuotaOverrideForStorageKey(

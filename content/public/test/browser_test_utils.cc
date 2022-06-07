@@ -29,7 +29,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
@@ -78,7 +77,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
@@ -173,8 +171,8 @@ namespace {
     // Prerendering pages will never have user gesture.
     CHECK(render_frame_host->GetLifecycleState() !=
           RenderFrameHost::LifecycleState::kPrerendering);
-    render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16,
-                                                                world_id);
+    render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
+        script16, base::NullCallback(), world_id);
   } else {
     // Note that |user_gesture| here is ignored when the world is not main. We
     // allow a value of |true| because it's the default, but in blink, the
@@ -804,8 +802,10 @@ BindFakeFrameWidgetInterfaces(RenderFrameHost* frame) {
 }
 
 void SimulateActiveStateForWidget(RenderFrameHost* frame, bool active) {
-  static_cast<RenderFrameHostImpl*>(frame)->GetRenderWidgetHost()->SetActive(
-      active);
+  static_cast<RenderFrameHostImpl*>(frame)
+      ->GetRenderWidgetHost()
+      ->delegate()
+      ->SendActiveState(active);
 }
 
 void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents) {
@@ -848,7 +848,7 @@ void PrepContentsForBeforeUnloadTest(WebContents* web_contents,
       [](bool trigger_user_activation, RenderFrameHost* render_frame_host) {
         if (trigger_user_activation) {
           render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
-              std::u16string());
+              std::u16string(), base::NullCallback());
         }
 
         // Disable the hang monitor, otherwise there will be a race between the
@@ -1395,7 +1395,7 @@ void ExecuteScriptAsync(const ToRenderFrameHost& adapter,
         base::UTF8ToUTF16(script), base::NullCallback());
   } else {
     adapter.render_frame_host()->ExecuteJavaScriptWithUserGestureForTests(
-        base::UTF8ToUTF16(script));
+        base::UTF8ToUTF16(script), base::NullCallback());
   }
 }
 
@@ -3924,15 +3924,14 @@ void SynchronizeVisualPropertiesInterceptor::SynchronizeVisualProperties(
   last_pinch_gesture_active_ = visual_properties.is_pinch_gesture_active;
 
   gfx::Rect screen_space_rect_in_dip = visual_properties.screen_space_rect;
-  if (IsUseZoomForDSFEnabled()) {
-    const float dsf =
-        visual_properties.screen_infos.current().device_scale_factor;
-    screen_space_rect_in_dip =
-        gfx::Rect(gfx::ScaleToFlooredPoint(
-                      visual_properties.screen_space_rect.origin(), 1.f / dsf),
-                  gfx::ScaleToCeiledSize(
-                      visual_properties.screen_space_rect.size(), 1.f / dsf));
-  }
+  const float dsf =
+      visual_properties.screen_infos.current().device_scale_factor;
+  screen_space_rect_in_dip =
+      gfx::Rect(gfx::ScaleToFlooredPoint(
+                    visual_properties.screen_space_rect.origin(), 1.f / dsf),
+                gfx::ScaleToCeiledSize(
+                    visual_properties.screen_space_rect.size(), 1.f / dsf));
+
   // Track each rect updates.
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
@@ -4161,6 +4160,66 @@ bool HistoryGoBack(WebContents* wc) {
 bool HistoryGoForward(WebContents* wc) {
   wc->GetController().GoForward();
   return WaitForLoadStop(wc);
+}
+
+CreateAndLoadWebContentsObserver::CreateAndLoadWebContentsObserver()
+    : web_contents_created_callback_(base::BindRepeating(
+          &CreateAndLoadWebContentsObserver::OnWebContentsCreated,
+          base::Unretained(this))) {
+  WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(
+      web_contents_created_callback_);
+}
+
+CreateAndLoadWebContentsObserver::~CreateAndLoadWebContentsObserver() {
+  UnregisterIfNeeded();
+}
+
+void CreateAndLoadWebContentsObserver::OnWebContentsCreated(
+    WebContents* web_contents) {
+  // If there is already a WebContents, then this will fail the test later.
+  if (web_contents_) {
+    failed_ = true;
+    // If we're called before Wait(), then `quit_closure_` has not been set.  If
+    // we're called after, then we'll clear this the first time through and it
+    // won't be set again.
+    DCHECK(!quit_closure_);
+    return;
+  }
+
+  web_contents_ = web_contents;
+  load_stop_observer_.emplace(web_contents_);
+
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
+}
+
+void CreateAndLoadWebContentsObserver::UnregisterIfNeeded() {
+  if (!web_contents_created_callback_)
+    return;
+
+  WebContentsImpl::FriendWrapper::RemoveCreatedCallbackForTesting(
+      web_contents_created_callback_);
+  web_contents_created_callback_.Reset();
+}
+
+WebContents* CreateAndLoadWebContentsObserver::Wait() {
+  // Wait for a new WebContents if we haven't gotten one yet.
+  if (!load_stop_observer_) {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  load_stop_observer_->Wait();
+
+  // Do this after waiting for load to complete, since exactly one WebContents
+  // should be created before Wait() returns.  If a second one is created while
+  // the first is loading, then it's still broken.
+  UnregisterIfNeeded();
+
+  EXPECT_FALSE(failed_);
+
+  return web_contents_;
 }
 
 }  // namespace content

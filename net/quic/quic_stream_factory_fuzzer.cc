@@ -110,7 +110,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   params.migrate_sessions_on_network_change_v2 = false;
   params.retry_on_alternate_network_before_handshake = false;
   params.migrate_idle_sessions = false;
-  params.go_away_on_path_degrading = false;
 
   if (!params.close_sessions_on_ip_change) {
     params.goaway_sessions_on_ip_change = data_provider.ConsumeBool();
@@ -124,10 +123,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         params.migrate_idle_sessions = data_provider.ConsumeBool();
       }
     }
-  }
-
-  if (!params.migrate_sessions_early_v2) {
-    params.go_away_on_path_degrading = data_provider.ConsumeBool();
   }
 
   std::unique_ptr<QuicStreamFactory> factory =
@@ -170,7 +165,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   request_info.url = GURL(kUrl);
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-  stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY, env->net_log,
+  stream->RegisterRequest(&request_info);
+  stream->InitializeStream(true, DEFAULT_PRIORITY, env->net_log,
                            CompletionOnceCallback());
 
   HttpResponseInfo response;

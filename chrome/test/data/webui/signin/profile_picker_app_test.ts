@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 import 'chrome://profile-picker/profile_picker.js';
-// <if expr="lacros">
+// <if expr="chromeos_lacros">
 import 'chrome://profile-picker/lazy_load.js';
 // </if>
 
-// <if expr="lacros">
+// <if expr="chromeos_lacros">
 import {AvailableAccount} from 'chrome://profile-picker/profile_picker.js';
 // </if>
 
@@ -61,10 +61,6 @@ suite('ProfilePickerAppTest', function() {
             .getPropertyValue('--theme-text-color')
             .trim(),
         browserProxy.profileThemeInfo.themeFrameTextColor);
-    assertEquals(
-        getComputedStyle(element.shadowRoot!.querySelector('#headerContainer')!)
-            .backgroundColor,
-        browserProxy.profileThemeInfo.themeFrameColor);
   }
 
   test('ProfilePickerMainView', async function() {
@@ -92,7 +88,7 @@ suite('ProfilePickerAppTest', function() {
     verifyProfileCreationViewStyle(choice!);
   });
 
-  // <if expr="lacros">
+  // <if expr="chromeos_lacros">
   test('SignInPromoSignInWithAvailableAccountLacros', async function() {
     await resetTestElement(Routes.NEW_PROFILE);
     await waitForProfileCreationLoad();

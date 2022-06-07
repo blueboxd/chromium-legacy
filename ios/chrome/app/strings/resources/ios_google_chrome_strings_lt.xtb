@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="1096883626080133124">Nuveikite daugiau naudodami paprastą, saugią ir spartesnę nei bet kada anksčiau „Google Chrome“</translation>
 <translation id="1143896152279775643">Slaptažodis bus išsaugotas „Google“ slaptažodžių tvarkytuvėje kaip priskirtas el. pašto adresui <ph name="EMAIL" /></translation>
 <translation id="1282031177488366470">Padėti tobulinti „Chrome“ funkcijas ir našumą</translation>
 <translation id="1479202195792305274">„Chrome“ gali tikrinti jūsų slaptažodžius, kai prisijungiate naudodami „Google“ paskyrą.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Naudokite „Chrome“ visur</translation>
 <translation id="3522659714780527202">Kad matytumėte skirtukus iš visų įrenginių, kuriuose naudojate „Chrome“, įjunkite sinchronizavimą</translation>
 <translation id="3533694711092285624">Nėra išsaugotų slaptažodžių. „Chrome“ gali tikrinti jūsų slaptažodžius, kai juos išsaugote.</translation>
-<translation id="3634910711516114487">Jei norite išnaudoti visas „Chrome“ galimybes, prisijunkite prie „Chrome“ naudodami „Google“ paskyrą</translation>
 <translation id="3655656110921623717">Tai reiškia, kad kiekvieną kartą „Chrome“ teiks svetainės mobiliesiems užklausą.</translation>
 <translation id="3706101708757577809">Dabar galite naudoti „Chrome“ bet kada palietę nuorodas pranešimuose, dokumentuose ir kitose programose.</translation>
 <translation id="3720541637541300822">Užrakinti inkognito skirtukus uždarius „Chrome“</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Jūsų slaptažodis atskleistas įvykus duomenų saugos pažeidimui. „Google“ slaptažodžių tvarkytuvė rekomenduoja pakeisti jį dabar.</translation>
 <translation id="6822673484890854830">„Chrome“ nepavyko patikrinti visų slaptažodžių. Bandykite dar kartą vėliau.</translation>
 <translation id="6964931465519938134">Dabar galite naudoti „Chrome“ bet kada palietę nuorodas pranešimuose, dokumentuose ir kitose programose.</translation>
-<translation id="7046845777663074840">Kai įjungta
-<ph name="BEGIN_INDENT" />  • Padėkite tobulinti „Chrome“ žmonėms, naudojantiems ją kaip jūs.<ph name="END_INDENT" />
-
-Į ką reikėtų atsižvelgti
-<ph name="BEGIN_INDENT" />  • Sistemai „Google“ siunčiama informacija apie „Chrome“ naudojimą, bet ji su jumis nesusiejama.
-
-  • Jei „Chrome“ užstringa, į strigties ataskaitą gali būti įtraukta tam tikros asmens informacijos.
-
-  • Jei įjungsite sinchronizavimą, į metriką taip pat gali būti įtraukta informacijos apie URL, kuriais lankotės.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Suasmeninkite „Chrome“</translation>
 <translation id="7124339256045485976">Atnaujinkite „Chrome“</translation>
 <translation id="7161390184744336561">„Google Chrome“ versija yra pasenusi</translation>
 <translation id="7165736900384873061">Prad. naudoti „Google Chrome“ QR skait.</translation>
 <translation id="7172660552945675509">Patarimas: <ph name="BEGIN_LINK" />perkelkite „Chrome“ į doką<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">„Chrome“ naudoja „Face ID“, kad užtikrintų teisėtą prieigą prie slaptažodžių.</translation>
+<translation id="7187993566681480880">Apsaugo jus naršyklėje „Chrome“ ir gali būti naudojama apsaugai kitose „Google“ programose pagerinti, kai esate prisijungę.</translation>
 <translation id="72119412072970160">Galite naudoti „Google“ slaptažodžių tvarkytuvėje išsaugotus slaptažodžius kitose „iPad“ programose.</translation>
 <translation id="7261678641327190792">„Chrome“ negali patikrinti jūsų slaptažodžių</translation>
 <translation id="7272930098487145294">Jei norite išsaugoti vaizdus, palieskite „Nustatymai“ ir leiskite „Chrome“ pridėti jūsų nuotraukas</translation>
@@ -110,6 +100,7 @@
 <translation id="766361182512894255">Jūsų slaptažodis atskleistas įvykus duomenų saugos pažeidimui. „Chrome“ rekomenduoja dabar pakeisti slaptažodį.</translation>
 <translation id="7693590760643069321">Dabar galite naudoti „Chrome“ bet kada palietę nuorodas pranešimuose, dokumentuose ir kitose programose.</translation>
 <translation id="7698568245838009292">„Chrome“ nori pasiekti fotoaparatą</translation>
+<translation id="7780154209050837198">Jei norite išnaudoti visas „Chrome“ galimybes, prisijunkite prie „Chrome“ naudodami „Google“ paskyrą.</translation>
 <translation id="7855730255114109580">„Google Chrome“ yra naujausios versijos</translation>
 <translation id="8022947259858476807">Naudokite „Chrome“ pagal numatytuosius nustatymus, kad atidarytumėte nuorodas, ieškotumėte iš valdiklių ir automatiškai pildytumėte slaptažodžius kitose programose</translation>
 <translation id="8160472928944011082">Nepavyko atnaujinti „Chrome“</translation>

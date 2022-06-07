@@ -18,7 +18,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -350,7 +349,7 @@ void IndexedDBContextImpl::GetAllStorageKeysDetails(
 
   std::sort(storage_keys.begin(), storage_keys.end());
 
-  base::Value list(base::Value::Type::LIST);
+  base::Value::List list;
   for (const auto& storage_key : storage_keys) {
     base::Value info(base::Value::Type::DICTIONARY);
     // TODO(https://crbug.com/1199077): Serialize storage key directly

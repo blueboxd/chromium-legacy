@@ -19,6 +19,13 @@ class FrameTreeNode;
 //    we're in the MPArch version of fenced frames
 FrameTreeNode* GetFencedFrameRootNode(FrameTreeNode* node);
 
+void SimulateSharedStorageURNMappingComplete(
+    FencedFrameURLMapping& fenced_frame_url_mapping,
+    const GURL& urn_uuid,
+    const GURL& mapped_url,
+    const url::Origin& shared_storage_origin,
+    double budget_to_charge);
+
 // Tests can use this class to observe and check the URL mapping result.
 class TestFencedFrameURLMappingResultObserver
     : public FencedFrameURLMapping::MappingResultObserver {
@@ -30,7 +37,8 @@ class TestFencedFrameURLMappingResultObserver
       absl::optional<GURL> mapped_url,
       absl::optional<AdAuctionData> ad_auction_data,
       absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-          pending_ad_components_map) override;
+          pending_ad_components_map,
+      ReportingMetadata& reporting_metadata) override;
 
   bool mapping_complete_observed() const { return mapping_complete_observed_; }
 
@@ -45,12 +53,15 @@ class TestFencedFrameURLMappingResultObserver
     return ad_auction_data_;
   }
 
+  ReportingMetadata reporting_metadata() { return reporting_metadata_; }
+
  private:
   bool mapping_complete_observed_ = false;
   absl::optional<GURL> mapped_url_;
   absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
       pending_ad_components_map_;
   absl::optional<AdAuctionData> ad_auction_data_;
+  ReportingMetadata reporting_metadata_;
 };
 
 }  // namespace content

@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_key_information.h"
@@ -2086,7 +2087,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_M4A) {
 
 // TODO(crbug.com/1289825): Make this work on Android.
 #if BUILDFLAG(IS_MAC)
-constexpr char kXHE_AACAudioHash[] = "23.59,6.31,-7.32,9.22,11.70,7.36,";
+constexpr char kXHE_AACAudioHash[] = "34.02,8.92,-11.02,12.15,16.11,10.75,";
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackXHE_AAC) {
   if (__builtin_available(macOS 10.15, *)) {
@@ -2811,6 +2812,12 @@ TEST_F(PipelineIntegrationTest, Spherical) {
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_HASH_EQ("1cb7f980020d99ea852e22dd6bd8d9de", GetVideoHash());
+}
+
+TEST_F(PipelineIntegrationTest, StereoAACMarkedAsMono) {
+  ASSERT_EQ(PIPELINE_OK, Start("mono_cpe.adts"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
 }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 

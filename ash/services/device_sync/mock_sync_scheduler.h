@@ -8,7 +8,7 @@
 #include "ash/services/device_sync/sync_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -35,6 +35,6 @@ class MockSyncScheduler : public SyncScheduler {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_MOCK_SYNC_SCHEDULER_H_

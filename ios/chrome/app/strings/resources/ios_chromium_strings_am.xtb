@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">ምስሎችን ለማስቀመጥ፣ Chromium ወደ የእርስዎ ፎቶዎች ማከል እንዲችል ለማድረግ ቅንብሮች ላይ መታ ያድርጉ</translation>
 <translation id="1289216811211435351">ወደ Chromium ይቀየር?</translation>
 <translation id="1361748954329991663">Chromium ጊዜው አልፎበታል። በ<ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> ውስጥ ምንም ዝማኔ ከሌለ የእርስዎ መሣሪያ አዲስ የChromium ስሪቶችን ከእንግዲህ ላይደግፍ ይችላል።</translation>
-<translation id="1370204544543370355">ከChromium የበለጠ ለማግኘት በGoogle መለያዎ ወደ Chromium ይግቡ</translation>
 <translation id="1431818719585918472">Chromium የእርስዎን ማንነት የማያሳውቁ ትሮች እንዲቆልፍ ይፍቀዱለት።</translation>
 <translation id="1472013873724362412">የእርስዎ መለያ በChromium ላይ አይሠራም። እባክዎ የእርስዎን የጎራ አስተዳዳሪ ያነጋግሩ ወይም ለመግባት መደበኛ Google መለያ ይጠቀሙ።</translation>
 <translation id="1507010443238049608">የChromium ባህሪያት እና አፈጻጸም እንዲሻሻል ያግዙ</translation>
@@ -30,7 +29,6 @@
 <translation id="2426113998523353159">Chromiumን ለመጠቀም የእርስዎ ድርጅት እርስዎ በመለያ እንዲገቡ ይጠይቃል።</translation>
 <translation id="2450140762465183767">አገናኞችን በመልዕክቶች፣ በሰነዶች እና በሌሎች መተግበሪያዎች ውስጥ መታ በሚያደርጉበት ጊዜ ሁሉ Chromiumን አሁን መጠቀም ይችላሉ።</translation>
 <translation id="2478931088402984578"><ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />ን ይምረጡ</translation>
-<translation id="2567507405773541360">ከመቼውም ጊዜ በበለጠ ቀላል፣ ደህንነቱ በተጠበቀ እና ፈጣን በሆነ Chromium አማካኝነት ተጨማሪ ነገሮችን ያከናውኑ</translation>
 <translation id="2590893390871230428">የChromium ውሂብዎን ያስምሩ</translation>
 <translation id="2650312721222849884">Chromiumን ከሚጠቀሙበት የትኛዉም ቦታ ትሮችን ለማየት ስምረትን ያብሩ</translation>
 <translation id="2684230048001240293">በሁሉም መሣሪያዎችዎ ላይ ትሮችዎን፣ የይለፍ ቃላትዎን እና የክፍያ መረጃዎን ለማስመር Chromiumን እንደ ነባሪ ያዘጋጁ</translation>
@@ -42,6 +40,7 @@
 <translation id="3256316712990552818">ወደ Chromium ተቀድቷል</translation>
 <translation id="3344973607274501920">Chromium የእርስዎን የይለፍ ቃላት መፈተሽ አይችልም። የበይነመረብ ግንኙነትዎን ለመፈተሽ ይሞክሩ።</translation>
 <translation id="3472200483164753384">በChromium Canary ላይ አይደገፍም</translation>
+<translation id="3567399274263440288">ከChromium የበለጠ ለማግኘት በGoogle መለያዎ ወደ Chromium ይግቡ።</translation>
 <translation id="3639997914391704523">Chromium በእርስዎ የGoogle መለያ በሚገቡበት ጊዜ የእርስዎን የይለፍ ቃላትን ሊፈትሽ ይችላል።</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> በዚህ መሣሪያ ላይ Chromiumን እና ግራ ዕልባቶችን፣ የይለፍ ቃላትን እና ሌሎች ቅንብሮችን እየተጠቀመ ነበር።</translation>
 <translation id="3805899903892079518">Chromium የእርስዎ ፎቶዎች ወይም ቪዲዮዎች መዳረሻ የለውም። በiOS ቅንብሮች &gt; ግላዊነት &gt; ፎቶዎች ውስጥ መዳረሻን ያንቁ።</translation>
@@ -55,13 +54,6 @@
 <translation id="4828317641996116749">Chromium ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="4985291216379576555">ከመስመር ውጭ፣ Chromium ዝማኔዎች ካሉ መፈተሽ አልቻለም</translation>
 <translation id="4999538639245140991">በ<ph name="SIGNOUT_MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ስለሆነ የእርስዎ Chromium ውሂብ ከዚህ መሣሪያ ላይ ይሰረዛል። የእርስዎ ውሂብ በGoogle መለያዎ ውስጥ ይቆያል።</translation>
-<translation id="5039881550736388123">ሲበራ፦
-<ph name="BEGIN_INDENT" />  • Chromium እርስዎ በሚጠቀሙበት መንገድ ለሚጠቀሙ ሰዎች የተሻለ እንዲሆን ያግዙ።<ph name="END_INDENT" />
-
-ከግምት ውስጥ መግባት የሚገቡ ነገሮች፦
-<ph name="BEGIN_INDENT" />  • ስለ Chromium አጠቃቀምዎ መረጃ ወደ Google ተልኳል፣ ነገር ግን ከእርስዎ ጋር አልተያያዘም።
-  • Chromium ከተበላሸ፣ ስለ ብልሽቱ ዝርዝሮች አንዳንድ የግል መረጃዎችን ሊያካትቱ ይችላሉ።
-  • ማስመርን ካበሩት፣ መለኪያዎች እርስዎ ስለሚጎበኟቸው ዩአርኤሎች መረጃንም ሊያካትቱ ይችላሉ።<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Chromium ውስጥ ይግቡ</translation>
 <translation id="5224391634244552924">ምንም የተቀመጡ የይለፍ ቃላት የሉም። እርስዎ የይለፍ ቃላትዎን ሲያስቀምጧቸው Chromium መፈተሽ ይችላል።</translation>
 <translation id="5308226104666789935">Chromium ዝማኔዎች ካሉ መፈተሽ አልቻለም</translation>

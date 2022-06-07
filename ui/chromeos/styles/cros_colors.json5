@@ -31,6 +31,7 @@
     color_secondary: {
       light: "$google_grey_700",
       dark: "$google_grey_400",
+      generate_per_mode: true,
     },
     color_disabled: {
       light: "$google_grey_600",
@@ -109,8 +110,10 @@
       debug: "$google_green_400",
     },
     text_color_secondary: {
-      default: "$color_secondary",
+      light: "$color_secondary_light",
+      dark: "$color_secondary_dark",
       debug: "$google_green_400",
+      generate_per_mode: true,
     },
     text_color_disabled: "$color_disabled",
     text_color_prominent: "$color_prominent",
@@ -132,8 +135,10 @@
       debug: "#ff00ff",
     },
     icon_color_secondary: {
-      default: "$color_secondary",
+      light: "$color_secondary_light",
+      dark: "$color_secondary_dark",
       debug: "#00ffff",
+      generate_per_mode: true,
     },
     icon_color_disabled: "$color_disabled",
     icon_color_prominent: "$color_prominent",
@@ -176,6 +181,7 @@
     app_shield_40: {
       light: "rgba($google_grey_300_rgb, 0.4)",
       dark: "rgba($black_rgb, 0.4)",
+      generate_per_mode: true,
     },
     app_shield_20: {
       light: "rgba($google_grey_300_rgb, 0.2)",
@@ -219,9 +225,22 @@
       light: "rgba($black_rgb, 0.06)",
       dark: "rgba($white_rgb, 0.08)",
     },
+    highlight_color_green: {
+      light: "rgb($google_green_50_rgb)",
+      dark: "rgba($google_green_300_rgb, 0.3)",
+    },
+    highlight_color_red: {
+      light: "rgb($google_red_50_rgb)",
+      dark: "rgba($google_red_600_rgb, 0.3)",
+    },
+    highlight_color_yellow: {
+      light: "rgb($google_yellow_50_rgb)",
+      dark: "rgba($google_yellow_600_rgb, 0.3)",
+    },
     ripple_color: {
       light: "rgba($black_rgb, 0.06)",
       dark: "rgba($white_rgb, 0.08)",
+      generate_per_mode: true,
     },
     ripple_color_prominent: {
       light: "rgba($color_prominent_rgb, 0.06)",

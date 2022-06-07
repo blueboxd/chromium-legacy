@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -155,12 +156,15 @@ void ApplyCellConstraintsToColumnConstraints(
   }
 }
 
+template <typename RowCountFunc>
 NGTableTypes::Row ComputeMinimumRowBlockSize(
+    const RowCountFunc& row_count_func,
     const NGBlockNode& row,
     const LayoutUnit cell_percentage_inline_size,
     const bool is_table_block_size_specified,
     const Vector<NGTableColumnLocation>& column_locations,
     const NGTableBorders& table_borders,
+    wtf_size_t start_row_index,
     wtf_size_t row_index,
     wtf_size_t section_index,
     bool is_section_collapsed,
@@ -212,19 +216,31 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
                               cell_style.GetWritingMode())
             ? cell_style.LogicalHeight()
             : cell_style.LogicalWidth();
-    const wtf_size_t rowspan = cell.TableCellRowspan();
+
+    // Clamp the rowspan if it exceeds the total section row-count.
+    wtf_size_t effective_rowspan = cell.TableCellRowspan();
+    if (effective_rowspan > 1) {
+      const wtf_size_t max_rows =
+          row_count_func() - (row_index - start_row_index);
+      effective_rowspan = std::min(max_rows, effective_rowspan);
+    }
+    bool has_rowspan = effective_rowspan > 1;
+    bool has_descendant_that_depends_on_percentage_block_size =
+        layout_result->HasDescendantThatDependsOnPercentageBlockSize();
 
     NGTableTypes::CellBlockConstraint cell_block_constraint = {
-        fragment.BlockSize(), cell_borders,
-        colspan_cell_tabulator->CurrentColumn(), rowspan,
-        cell_specified_block_length.IsFixed()};
+        fragment.BlockSize(),
+        cell_borders,
+        colspan_cell_tabulator->CurrentColumn(),
+        effective_rowspan,
+        cell_specified_block_length.IsFixed(),
+        has_descendant_that_depends_on_percentage_block_size};
     colspan_cell_tabulator->ProcessCell(cell);
     cell_block_constraints->push_back(cell_block_constraint);
-    is_constrained |= cell_block_constraint.is_constrained && rowspan == 1;
+    is_constrained |= cell_block_constraint.is_constrained && !has_rowspan;
     row_baseline_tabulator.ProcessCell(
         fragment, NGTableAlgorithmUtils::IsBaseline(cell_style.VerticalAlign()),
-        rowspan > 1,
-        layout_result->HasDescendantThatDependsOnPercentageBlockSize());
+        has_rowspan, has_descendant_that_depends_on_percentage_block_size);
 
     // Compute cell's css block size.
     absl::optional<LayoutUnit> cell_css_block_size;
@@ -249,7 +265,7 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
       }
     }
 
-    if (rowspan == 1) {
+    if (!has_rowspan) {
       if (cell_css_block_size || cell_css_percent)
         is_constrained = true;
       if (cell_css_percent)
@@ -264,8 +280,8 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
       LayoutUnit min_block_size = cell_block_constraint.min_block_size;
       if (cell_css_block_size)
         min_block_size = std::max(min_block_size, *cell_css_block_size);
-      rowspan_cells->push_back(
-          NGTableTypes::RowspanCell{row_index, rowspan, min_block_size});
+      rowspan_cells->push_back(NGTableTypes::RowspanCell{
+          row_index, effective_rowspan, min_block_size});
     }
   }
 
@@ -283,18 +299,17 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
 
   const LayoutUnit row_block_size =
       row_baseline_tabulator.ComputeRowBlockSize(max_cell_block_size);
-  const LayoutUnit row_baseline =
-      row_baseline_tabulator.ComputeBaseline(row_block_size);
+  absl::optional<LayoutUnit> row_baseline;
+  if (!row_baseline_tabulator.BaselineDependsOnPercentageBlockDescendant())
+    row_baseline = row_baseline_tabulator.ComputeBaseline(row_block_size);
 
   return NGTableTypes::Row{
       row_block_size,
-      row_baseline,
-      row_percent,
       start_cell_index,
       cell_block_constraints->size() - start_cell_index,
+      row_baseline,
+      row_percent,
       is_constrained,
-      row_baseline_tabulator
-          .ComputeBaselineDependsOnPercentageBlockDescendant(),
       has_rowspan_start,
       /* is_collapsed */ is_section_collapsed ||
           row.Style().Visibility() == EVisibility::kCollapse};
@@ -427,6 +442,38 @@ void ComputeSectionInlineConstraints(
 }
 
 }  // namespace
+
+// static
+NGTableAlgorithmUtils::CellBlockSizeData
+NGTableAlgorithmUtils::ComputeCellBlockSize(
+    const NGTableTypes::CellBlockConstraint& cell_block_constraint,
+    const NGTableTypes::Rows& rows,
+    wtf_size_t row_index,
+    const LogicalSize& border_spacing,
+    bool is_table_block_size_specified) {
+  // NOTE: Confusingly rowspanned cells originating from a collapsed-row also
+  // have no block-size.
+  LayoutUnit cell_block_size;
+  if (!rows[row_index].is_collapsed) {
+    for (wtf_size_t i = 0; i < cell_block_constraint.effective_rowspan; ++i) {
+      if (rows[row_index + i].is_collapsed)
+        continue;
+      cell_block_size += rows[row_index + i].block_size;
+      if (i != 0)
+        cell_block_size += border_spacing.block_size;
+    }
+  }
+
+  bool has_grown = cell_block_size > cell_block_constraint.min_block_size;
+
+  // Our initial block-size is definite if this cell has a fixed block-size,
+  // or we have grown and the table has a specified block-size.
+  bool is_initial_block_size_definite =
+      cell_block_constraint.is_constrained ||
+      (has_grown && is_table_block_size_specified);
+
+  return {cell_block_size, !is_initial_block_size_definite};
+}
 
 // static
 NGConstraintSpaceBuilder
@@ -571,6 +618,22 @@ void NGTableAlgorithmUtils::ComputeSectionMinimumRowBlockSizes(
     NGTableTypes::Sections* sections,
     NGTableTypes::Rows* rows,
     NGTableTypes::CellBlockConstraints* cell_block_constraints) {
+  // In rare circumstances we need to know the total row count before we've
+  // visited all them (for computing effective rowspans). We don't want to
+  // perform this unnecessarily.
+  absl::optional<wtf_size_t> row_count;
+  auto RowCountFunc = [&]() -> wtf_size_t {
+    if (!row_count) {
+      row_count = 0;
+      for (NGBlockNode row = To<NGBlockNode>(section.FirstChild()); row;
+           row = To<NGBlockNode>(row.NextSibling())) {
+        (*row_count)++;
+      }
+    }
+
+    return *row_count;
+  };
+
   wtf_size_t start_row = rows->size();
   wtf_size_t current_row = start_row;
   NGTableTypes::RowspanCells rowspan_cells;
@@ -584,8 +647,9 @@ void NGTableAlgorithmUtils::ComputeSectionMinimumRowBlockSizes(
        row = To<NGBlockNode>(row.NextSibling())) {
     colspan_cell_tabulator.StartRow();
     NGTableTypes::Row row_constraint = ComputeMinimumRowBlockSize(
-        row, cell_percentage_inline_size, is_table_block_size_specified,
-        column_locations, table_borders, current_row++, section_index,
+        RowCountFunc, row, cell_percentage_inline_size,
+        is_table_block_size_specified, column_locations, table_borders,
+        start_row, current_row++, section_index,
         /* is_section_collapsed */ section.Style().Visibility() ==
             EVisibility::kCollapse,
         cell_block_constraints, &rowspan_cells, &colspan_cell_tabulator);
@@ -598,21 +662,19 @@ void NGTableAlgorithmUtils::ComputeSectionMinimumRowBlockSizes(
     section_block_size += row_constraint.block_size;
     colspan_cell_tabulator.EndRow();
   }
+
+  // Redistribute rowspanned cell block sizes.
+  std::stable_sort(rowspan_cells.begin(), rowspan_cells.end());
+  for (const auto& rowspan_cell : rowspan_cells) {
+    NGTableAlgorithmHelpers::DistributeRowspanCellToRows(
+        rowspan_cell, block_border_spacing, rows);
+  }
+
   const wtf_size_t block_spacing_count =
       current_row == start_row ? 0 : current_row - start_row - 1;
   const LayoutUnit border_spacing_total =
       block_border_spacing * block_spacing_count;
   section_block_size += border_spacing_total;
-
-  // Redistribute rowspanned cell block sizes.
-  std::stable_sort(rowspan_cells.begin(), rowspan_cells.end());
-  for (NGTableTypes::RowspanCell& rowspan_cell : rowspan_cells) {
-    // Truncate rows that are too long.
-    rowspan_cell.span =
-        std::min(current_row - rowspan_cell.start_row, rowspan_cell.span);
-    NGTableAlgorithmHelpers::DistributeRowspanCellToRows(
-        rowspan_cell, block_border_spacing, rows);
-  }
 
   // Redistribute section's css block size.
   const Length& section_specified_block_length =
@@ -726,8 +788,7 @@ LayoutUnit NGRowBaselineTabulator::ComputeBaseline(
   return LayoutUnit();
 }
 
-bool NGRowBaselineTabulator::
-    ComputeBaselineDependsOnPercentageBlockDescendant() {
+bool NGRowBaselineTabulator::BaselineDependsOnPercentageBlockDescendant() {
   if (max_cell_ascent_)
     return max_cell_baseline_depends_on_percentage_block_descendant_;
   if (fallback_cell_descent_)

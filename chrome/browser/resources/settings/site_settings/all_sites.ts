@@ -23,7 +23,7 @@ import './site_entry.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
@@ -91,7 +91,7 @@ const AllSitesElementBaseTemp = GlobalScrollTargetMixin(
 
 const AllSitesElementBase = AllSitesElementBaseTemp as unknown as {
   new (): PolymerElement & I18nMixinInterface & WebUIListenerMixinInterface &
-  SiteSettingsMixinInterface & RouteObserverMixinInterface
+      SiteSettingsMixinInterface & RouteObserverMixinInterface,
 };
 
 export class AllSitesElement extends AllSitesElementBase {
@@ -487,7 +487,6 @@ export class AllSitesElement extends AllSitesElementBase {
       updatedSiteGroup.origins = siteGroupToUpdate.origins.filter(
           o => (o.isPartitioned !== isPartitioned || o.origin !== origin));
 
-      console.log(updatedSiteGroup.origins);
       updatedSiteGroup.hasInstalledPWA =
           updatedSiteGroup.origins.some(o => o.isInstalled);
       updatedSiteGroup.numCookies -=

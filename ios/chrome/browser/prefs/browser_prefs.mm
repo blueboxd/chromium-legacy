@@ -73,8 +73,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/web/common/features.h"
@@ -134,7 +132,14 @@ const char kTrialGroupPrefName[] = "location_permissions.trial_group";
 // Deprecated 10/2021
 const char kSigninBottomSheetShownCount[] =
     "ios.signin.bottom_sheet_shown_count";
+
+// Deprecated 03/2022
+const char kShowReadingListInBookmarkBar[] = "bookmark_bar.show_reading_list";
 }
+
+// Deprecated 03/2022
+const char kPrefReadingListMessagesNeverShow[] =
+    "reading_list_message_never_show";
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   BrowserStateInfoCache::RegisterPrefs(registry);
@@ -277,6 +282,11 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Defaults to 3, which is the id of bookmarkModel_->mobile_node()
   registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
 
+  // The Following feed sort type comes from
+  // ios/chrome/browser/discover_feed/feed_constants.h Defaults to 1, which is
+  // grouped by publisher.
+  registry->RegisterIntegerPref(prefs::kNTPFollowingFeedSortType, 1);
+
   // Register prefs used by Clear Browsing Data UI.
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
 
@@ -304,14 +314,12 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kWasOnboardingFeatureCheckedBefore, false);
   registry->RegisterDictionaryPref(kDomainsWithCookiePref);
 
-  if (IsReadingListMessagesEnabled()) {
-    registry->RegisterBooleanPref(kPrefReadingListMessagesNeverShow, false);
-  }
-
-  registry->RegisterBooleanPref(prefs::kBackupDisallowedPolicy, false);
+  registry->RegisterBooleanPref(prefs::kAllowChromeDataInBackups, true);
 
   // Preference related to the browser sign-in policy that is being deprecated.
   registry->RegisterBooleanPref(kSigninAllowedByPolicy, true);
+
+  registry->RegisterBooleanPref(kShowReadingListInBookmarkBar, true);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -377,4 +385,12 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 8/2021.
   prefs->ClearPref(kSigninAllowedByPolicy);
+
+  // Added 03/2022
+  prefs->ClearPref(kShowReadingListInBookmarkBar);
+
+  // Added 3/2022.
+  if (prefs->FindPreference(kPrefReadingListMessagesNeverShow)) {
+    prefs->ClearPref(kPrefReadingListMessagesNeverShow);
+  }
 }

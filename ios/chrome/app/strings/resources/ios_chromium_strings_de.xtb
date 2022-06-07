@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">Um Bilder zu speichern, gib Chromium unter „Einstellungen“ die Berechtigung zum Hinzufügen von Fotos</translation>
 <translation id="1289216811211435351">Zu Chromium wechseln</translation>
 <translation id="1361748954329991663">Chromium ist veraltet. Wenn im <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> kein Update verfügbar ist, unterstützt dein Gerät neuere Versionen von Chromium möglicherweise nicht mehr.</translation>
-<translation id="1370204544543370355">Wenn du Chromium optimal nutzen möchtest, melde dich mit deinem Google-Konto in Chromium an</translation>
 <translation id="1431818719585918472">Erlaube Chromium, deine Inkognitotabs zu sperren.</translation>
 <translation id="1472013873724362412">Dieses Konto funktioniert in Chromium nicht. Wende dich an deinen Domainadministrator oder melde dich mit einem Google-Standardkonto an.</translation>
 <translation id="1507010443238049608">Ich möchte dabei helfen, die Funktionen und die Leistung von Chromium zu verbessern</translation>
@@ -30,7 +29,6 @@
 <translation id="2426113998523353159">Deine Organisation verlangt, dass du dich für die Verwendung von Chromium anmeldest.</translation>
 <translation id="2450140762465183767">Du kannst jetzt Chromium jederzeit nutzen, wenn du in Nachrichten, Dokumenten und anderen Apps auf Links tippst.</translation>
 <translation id="2478931088402984578">Wähle <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> aus</translation>
-<translation id="2567507405773541360">Jetzt mit dem neuen ultraschnellen Chromium ganz einfach und sicherer noch mehr erledigen</translation>
 <translation id="2590893390871230428">Chromium-Daten synchronisieren</translation>
 <translation id="2650312721222849884">Aktiviere die Synchronisierung, um deine Tabs überall dort aufzurufen, wo du Chromium verwendest</translation>
 <translation id="2684230048001240293">Du kannst Chromium als Standardbrowser festlegen, um Tabs, Passwörter und Zahlungsinformationen auf allen deinen Geräten zu synchronisieren</translation>
@@ -42,6 +40,7 @@
 <translation id="3256316712990552818">In Chromium kopiert</translation>
 <translation id="3344973607274501920">Chromium konnte deine Passwörter nicht prüfen. Prüfe deine Internetverbindung.</translation>
 <translation id="3472200483164753384">Wird von Chromium Canary nicht unterstützt</translation>
+<translation id="3567399274263440288">Wenn du Chromium optimal nutzen möchtest, melde dich mit deinem Google-Konto in Chromium an.</translation>
 <translation id="3639997914391704523">Chromium kann deine Passwörter prüfen, wenn du dich mit deinem Google-Konto anmeldest.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> hat Chromium genutzt und Lesezeichen, Passwörter und andere Einstellungen auf diesem Gerät festgelegt.</translation>
 <translation id="3805899903892079518">Chromium hat keinen Zugriff auf deine Fotos und Videos. Aktiviere den Zugriff unter "iOS-Einstellungen &gt; Datenschutz &gt; Fotos".</translation>
@@ -55,13 +54,6 @@
 <translation id="4828317641996116749">Chromium konnte nicht alle Passwörter prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="4985291216379576555">Offline, Chromium kann nicht nach Aktualisierungen suchen</translation>
 <translation id="4999538639245140991">Du meldest dich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden deine Chromium-Daten von diesem Gerät gelöscht. Sie bleiben jedoch in deinem Google-Konto erhalten.</translation>
-<translation id="5039881550736388123">Wenn aktiviert:
-<ph name="BEGIN_INDENT" />  • Trage dazu bei, Chromium für Nutzer zu optimieren, die es genauso verwenden wie du.<ph name="END_INDENT" />
-
-Wichtige Hinweise:
-<ph name="BEGIN_INDENT" />  • Daten zu deiner Chromium-Nutzung werden an Google gesendet, können aber nicht mit dir in Verbindung gebracht werden.
-  • Falls Chromium abstürzt, können die Details zum Absturz einige personenbezogene Daten enthalten.
-  • Falls du die Synchronisierung aktivierst, können die Messwerte auch Informationen zu den von dir besuchten URLs enthalten.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">In Chromium anmelden</translation>
 <translation id="5224391634244552924">Keine gespeicherten Passwörter. Chromium kann deine Passwörter prüfen, wenn du sie speicherst.</translation>
 <translation id="5308226104666789935">Chromium kann nicht nach Aktualisierungen suchen</translation>
@@ -116,6 +108,7 @@ Wichtige Hinweise:
 <translation id="8240981428553046115">Chromium konnte nicht nach Updates suchen. Versuche es später noch einmal.</translation>
 <translation id="858114650497379505">Du kannst die im Passwortmanager gespeicherten Passwörter in anderen Apps auf deinem iPhone verwenden.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
+<translation id="865600487977764604">Schützt dich in Chromium und erhöht möglicherweise die Sicherheit in anderen Google-Apps, wenn du angemeldet bist.</translation>
 <translation id="8663480472502753423">Chromium auf dem neuesten Stand halten</translation>
 <translation id="8776843108004031667">Dieses Konto und alle nicht gespeicherten Daten werden aus Chromium entfernt.</translation>
 <translation id="894437814105052438">Wenn du dich abmeldest, synchronisiert Chromium keine neuen Daten mehr mit deinem Google-Konto. Daten, die bereits synchronisiert wurden, bleiben im Konto gespeichert.</translation>

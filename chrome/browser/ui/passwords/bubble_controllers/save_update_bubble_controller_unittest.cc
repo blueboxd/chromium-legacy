@@ -68,6 +68,11 @@ std::unique_ptr<KeyedService> BuildTestSyncService(
   return std::make_unique<syncer::TestSyncService>();
 }
 
+void SetupAccountPasswordStore(syncer::TestSyncService* sync_service) {
+  sync_service->SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
+  sync_service->SetHasSyncConsent(false);
+}
+
 }  // namespace
 
 class SaveUpdateBubbleControllerTest : public ::testing::Test {
@@ -117,6 +122,11 @@ class SaveUpdateBubbleControllerTest : public ::testing::Test {
   PrefService* prefs() { return profile_->GetPrefs(); }
 
   TestingProfile* profile() { return profile_.get(); }
+
+  syncer::TestSyncService* sync_service() {
+    return static_cast<syncer::TestSyncService*>(
+        SyncServiceFactory::GetForProfile(profile()));
+  }
 
   password_manager::MockPasswordStoreInterface* GetStore() {
     return static_cast<password_manager::MockPasswordStoreInterface*>(
@@ -713,6 +723,7 @@ TEST_F(SaveUpdateBubbleControllerTest, DisableEditing) {
 
 TEST_F(SaveUpdateBubbleControllerTest,
        UpdateAccountStoreAffectsTheAccountStore) {
+  SetupAccountPasswordStore(sync_service());
   EXPECT_CALL(*delegate(), GetPendingPassword())
       .WillOnce(ReturnRef(pending_password()));
   std::vector<std::unique_ptr<password_manager::PasswordForm>> forms;
@@ -724,11 +735,14 @@ TEST_F(SaveUpdateBubbleControllerTest,
   EXPECT_CALL(*delegate(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
                  PasswordBubbleControllerBase::DisplayReason::kAutomatic);
-  EXPECT_TRUE(controller()->IsCurrentStateAffectingTheAccountStore());
+  EXPECT_TRUE(
+      controller()->IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount());
 }
 
 TEST_F(SaveUpdateBubbleControllerTest,
        UpdateProfileStoreDoesnotAffectTheAccountStore) {
+  SetupAccountPasswordStore(sync_service());
+
   EXPECT_CALL(*delegate(), GetPendingPassword())
       .WillOnce(ReturnRef(pending_password()));
   std::vector<std::unique_ptr<password_manager::PasswordForm>> forms;
@@ -740,10 +754,12 @@ TEST_F(SaveUpdateBubbleControllerTest,
   EXPECT_CALL(*delegate(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
                  PasswordBubbleControllerBase::DisplayReason::kAutomatic);
-  EXPECT_FALSE(controller()->IsCurrentStateAffectingTheAccountStore());
+  EXPECT_FALSE(
+      controller()->IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount());
 }
 
 TEST_F(SaveUpdateBubbleControllerTest, UpdateBothStoresAffectsTheAccountStore) {
+  SetupAccountPasswordStore(sync_service());
   EXPECT_CALL(*delegate(), GetPendingPassword())
       .WillOnce(ReturnRef(pending_password()));
 
@@ -763,23 +779,28 @@ TEST_F(SaveUpdateBubbleControllerTest, UpdateBothStoresAffectsTheAccountStore) {
   EXPECT_CALL(*delegate(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
                  PasswordBubbleControllerBase::DisplayReason::kAutomatic);
-  EXPECT_TRUE(controller()->IsCurrentStateAffectingTheAccountStore());
+  EXPECT_TRUE(
+      controller()->IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount());
 }
 
 TEST_F(SaveUpdateBubbleControllerTest,
        SaveInAccountStoreAffectsTheAccountStore) {
+  SetupAccountPasswordStore(sync_service());
   ON_CALL(*password_feature_manager(), GetDefaultPasswordStore)
       .WillByDefault(
           Return(password_manager::PasswordForm::Store::kAccountStore));
   PretendPasswordWaiting();
-  EXPECT_TRUE(controller()->IsCurrentStateAffectingTheAccountStore());
+  EXPECT_TRUE(
+      controller()->IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount());
 }
 
 TEST_F(SaveUpdateBubbleControllerTest,
        SaveInProfileStoreDoesntAffectTheAccountStore) {
+  SetupAccountPasswordStore(sync_service());
   ON_CALL(*password_feature_manager(), GetDefaultPasswordStore)
       .WillByDefault(
           Return(password_manager::PasswordForm::Store::kProfileStore));
   PretendPasswordWaiting();
-  EXPECT_FALSE(controller()->IsCurrentStateAffectingTheAccountStore());
+  EXPECT_FALSE(
+      controller()->IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount());
 }

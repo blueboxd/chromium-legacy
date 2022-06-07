@@ -23,6 +23,7 @@ Søkemotoren din er <ph name="DSE_NAME" />. Se eventuelt instruksjonene deres om
 <translation id="110724200315609752">Bytt til åpent vindu</translation>
 <translation id="1112015203684611006">Utskriften mislyktes.</translation>
 <translation id="1125564390852150847">Åpne en ny fane.</translation>
+<translation id="1126809382673880764">Beskytter deg ikke mot farlige nettsteder, nedlastinger eller utvidelser. Du får fremdeles beskyttelse fra Safe Browsing der dette er tilgjengelig, på andre Google-tjenester, som Gmail og Søk.</translation>
 <translation id="1145536944570833626">Slett eksisterende data.</translation>
 <translation id="1147031633655575115">Pålogget som <ph name="USER" /></translation>
 <translation id="1154984953698510061">Se andre faner</translation>
@@ -43,7 +44,6 @@ Søkemotoren din er <ph name="DSE_NAME" />. Se eventuelt instruksjonene deres om
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1275718070701477396">Valgt</translation>
 <translation id="1281818060020671000">Administrer data</translation>
-<translation id="1282311502488501110">Ikke logg på</translation>
 <translation id="1283524564873030414">Siste døgn</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="1291506870746876680">Tillatelsene for <ph name="BEGIN_BOLD" />«<ph name="SITE_NAME" />»<ph name="END_BOLD" /> blir tilbakestilt til å være avslått når du forlater dette nettstedet.</translation>
@@ -87,6 +87,7 @@ Søkemotoren din er <ph name="DSE_NAME" />. Se eventuelt instruksjonene deres om
 <translation id="1608337082864370066">Søk etter bildet du kopierte</translation>
 <translation id="1612730193129642006">Vis fanerutenett</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="1644574205037202324">Logg</translation>
 <translation id="1650222530560417226">Trykk på «Start logging»-knappen for å samle inn fremtidige JavaScript-konsollogger og -feil fra alle faner. Loggene samles inn (og lagres bare i minnet) frem til denne siden lukkes eller du trykker på «Stopp logging».</translation>
 <translation id="1657011748321897393">Delingen mislyktes fordi du ikke er tilkoblet nettverket.</translation>
@@ -166,12 +167,14 @@ Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din
 <translation id="2421044535038393232">Fortsett redigeringen</translation>
 <translation id="2434405374328098816">Du har allerede lagret et passord for «<ph name="USERNAME" />» på <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Vis passord</translation>
+<translation id="2469960372084740698">Vil du slå av Safe Browsing?</translation>
 <translation id="2473876017985765807">Du har allerede lagret et passord for <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Ikke valgt</translation>
 <translation id="2497852260688568942">Administratoren din har slått av synkronisering</translation>
 <translation id="2500374554657206846">Alternativer for passordlagring</translation>
 <translation id="2523363575747517183">Dette nettstedet prøver gjentatte ganger å åpne en annen app.</translation>
 <translation id="2529021024822217800">Åpne alle</translation>
+<translation id="2556092377360758201">Ingen beskyttelse (anbefales ikke)</translation>
 <translation id="2562041823070056534">Sender til <ph name="DEVICE_NAME" /> …</translation>
 <translation id="2570206273416014374">Sender standardsøkemotoren din noen informasjonskapsler og søk fra adressefeltet og søkefeltet.</translation>
 <translation id="2578571896248130439">Send nettside</translation>
@@ -210,11 +213,13 @@ Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din
 <translation id="2848086008667475748">Angi som standard i innstillingene …</translation>
 <translation id="2858204748079866344">For å beskytte personvernet ditt legger ikke Chrome passordet ditt automatisk inn i dette feltet.</translation>
 <translation id="285960592395650245">Prøv å laste ned på nytt</translation>
+<translation id="2866378026651742652">Nå kommer du til å se artikler fra denne kanalen når du åpner nye faner.</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2871695793448672541">Skjult passord</translation>
 <translation id="2876369937070532032">Sender Google nettadressene til noen av sidene du besøker, når sikkerheten din står i fare</translation>
 <translation id="2883151425485251736">Se og rediger emner du har skjult for kontoen din</translation>
 <translation id="288655811176831528">Lukk fane</translation>
+<translation id="2890171748217283516">Nettstedene du følger, lagres i Google-kontoen din. Du kan administrere dem i innstillingene for Discover.</translation>
 <translation id="2893180576842394309">Google kan bruke loggen din for å gi Søk og andre Google-tjenester et personlig preg</translation>
 <translation id="2898963176829412617">Ny mappe</translation>
 <translation id="2916171785467530738">Autofullfør søk og nettadresser</translation>
@@ -227,7 +232,7 @@ Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din
 <translation id="2958718410589002129">Passord</translation>
 <translation id="2961210776189273067">Tittel</translation>
 <translation id="2964349545761222050">Blokkér informasjonskapsler fra tredjeparter</translation>
-<translation id="2969979262385602596">Kunne ikke logge på. Prøv på nytt senere.</translation>
+<translation id="2969979262385602596">Kunne ikke logge på. Prøv igjen senere.</translation>
 <translation id="2975121486251958312">Kun inkognitomodus er tilgjengelig</translation>
 <translation id="2982481275546140226">Slett data</translation>
 <translation id="298306318844797842">Legg til betalingsmåte …</translation>
@@ -310,6 +315,7 @@ Følg fremgangsmåten under:</translation>
 <translation id="3691593122358196899">Satt som bokmerke i <ph name="FOLDER_TITLE" /></translation>
 <translation id="369349502275246497">Tilby å lagre passord</translation>
 <translation id="3709582977625132201">Merk som ulest</translation>
+<translation id="371230970611282515">Forutser og advarer deg om farlige hendelser før de inntreffer.</translation>
 <translation id="3740397331642243698">Åpner de oppgitte nettadressene i Google Chrome i inkognitomodus.</translation>
 <translation id="3762232513783804601">Laget for iPaden din</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
@@ -320,6 +326,7 @@ Følg fremgangsmåten under:</translation>
 <translation id="380329542618494757">Navn</translation>
 <translation id="3803696231112616155">Tilby å oversette dette nettstedet</translation>
 <translation id="3810973564298564668">Administrer</translation>
+<translation id="3819183753496523827">Du er uten nett. Sjekk internettilkoblingen din, og prøv på nytt.</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3858860766373142691">Navn</translation>
 <translation id="3861486700625780712">Slutt å følge</translation>
@@ -343,13 +350,14 @@ Følg fremgangsmåten under:</translation>
 <translation id="4038354071007134711">Ingen apper på denne enheten kan åpne filen.</translation>
 <translation id="4042870976416480368">Finn på siden</translation>
 <translation id="4049507953662678203">Sørg for at du er koblet til et nettverk, og prøv igjen.</translation>
+<translation id="4063300985191096908">Gå til feeden</translation>
 <translation id="408404951701638773">Søkefeltet er nå enklere å finne</translation>
-<translation id="4108314971463891922">Følg</translation>
 <translation id="411254640334432676">Nedlastingen mislyktes.</translation>
 <translation id="4112644173421521737">Søk</translation>
 <translation id="4113030288477039509">Styres av administratoren din</translation>
 <translation id="4121993058175073134">For å sende data for netteksport må du konfigurere e-postkontoen din i Innstillinger-appen.</translation>
 <translation id="4124987746317609294">Tidsperiode</translation>
+<translation id="4133265950310064865">Økt beskyttelse</translation>
 <translation id="4152011295694446843">Her finner du bokmerkene dine</translation>
 <translation id="4172051516777682613">Vis alltid</translation>
 <translation id="418156467088430727">Se versjonen uten nett i en ny fane</translation>
@@ -387,10 +395,12 @@ Følg fremgangsmåten under:</translation>
 <translation id="4505980578794259603">Sist sjekket <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Lukk påloggingskampanjen</translation>
 <translation id="4526249700380860531">Se og administrer lagrede passord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
+<translation id="452750746583162491">Gjennomgå de synkroniserte dataene dine</translation>
 <translation id="4536418791685807335">Prøv å logge på igjen.</translation>
 <translation id="4540780316273593836">Noe gikk galt</translation>
 <translation id="457386861538956877">Mer</translation>
 <translation id="4592368184551360546">Tastatur</translation>
+<translation id="4606247758155004938">Nettleseren administreres av organisasjonen din.</translation>
 <translation id="461440297010471931">Søker med Google</translation>
 <translation id="4619564267100705184">Bekreft at det er deg</translation>
 <translation id="4619615317237390068">Faner fra andre enheter</translation>
@@ -522,6 +532,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5737974891429562743">Påloggingsdetaljene for kontoen er utdatert. Oppdater for å starte synkroniseringen.</translation>
 <translation id="5738887413654608789">Med denne kan du oppdage relevante nettsider basert på omgivelsene dine.</translation>
 <translation id="5758631781033351321">Her finner du leselisten din</translation>
+<translation id="5765456154762864099">Meny → Innstillinger → Standardnettleser</translation>
 <translation id="5782227691023083829">Oversetter</translation>
 <translation id="5791632441210678828">Sorteringsknapp for Følger-feeden.</translation>
 <translation id="5802829331520313983">Konfigurer…</translation>
@@ -576,6 +587,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6144589619057374135">Åpne ${url} i inkognitomodus</translation>
 <translation id="6149061208933997199">Bruk passord</translation>
 <translation id="6159839020698489198">valgfritt</translation>
+<translation id="6173386249456979368">Raskere, proaktiv beskyttelse mot farlige nettsteder, nedlastinger og utvidelser. Advarer deg om passordbrudd. Krever at nettlesingsdata sendes til Google</translation>
 <translation id="6177442314419606057">Søk i Chrome</translation>
 <translation id="6184086493125982861">Vis faner</translation>
 <translation id="6187302354554850004">Sist synkronisert: <ph name="LAST_USED_TIME" /></translation>
@@ -601,12 +613,14 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="634878792104344809">Synkroniser blant annet passord og logg på alle enhetene dine</translation>
 <translation id="6362362396625799311">Ingen inkognitofaner</translation>
 <translation id="6363526231572697780">Brukernavnet mangler</translation>
+<translation id="6366190659675876144">Standardbeskyttelse</translation>
 <translation id="6366663624406569102">Logg av og slå av synkronisering</translation>
 <translation id="6374469231428023295">Prøv på nytt</translation>
 <translation id="6377118281273296434">Nettstedssikkerhet</translation>
 <translation id="6380866119319257197">Hvis du glemmer passordfrasen din eller vil endre denne innstillingen, må du <ph name="BEGIN_LINK" />tilbakestille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Navn som er oppført på kortet</translation>
 <translation id="6406506848690869874">Synkroniser</translation>
+<translation id="6410390304316730527">Safe Browsing beskytter deg mot angripere som kan prøve å lure deg til å gjøre farlige ting, som å installere skadelig programvare eller avsløre personopplysninger, for eksempel passord, telefonnumre eller kredittkortinformasjon. Hvis du slår det av, må du være forsiktig når du surfer på ukjente eller useriøse nettsteder.</translation>
 <translation id="6410883413783534063">Åpne faner for å besøke ulike sider samtidig</translation>
 <translation id="641799622251403418">Logget på som <ph name="EMAIL" />.
 
@@ -632,6 +646,7 @@ Prøv å bruke unike passord for hvert nettsted.</translation>
 <translation id="650279896687777322">Finn ut mer …</translation>
 <translation id="651505212789431520">Vil du avbryte synkroniseringen? Du kan når som helst slå på synkronisering i Innstillinger.</translation>
 <translation id="6524918542306337007">Inkognitomodus er ikke tilgjengelig</translation>
+<translation id="6530992499366869131">Få en advarsel hvis passord blir avdekket i databrudd</translation>
 <translation id="6537746030088321027">eteksempel.no</translation>
 <translation id="6561262006871132942">Zoom inn</translation>
 <translation id="6583087784430677195">For å slå av funksjonen, åpne <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" /> og gå til Autoutfylling av passord.</translation>
@@ -640,6 +655,7 @@ Prøv å bruke unike passord for hvert nettsted.</translation>
 <translation id="6603393121510733479">Organisasjonen din har slått av privat surfing.
 <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="6610002944194042868">Alternativer for oversettelse</translation>
+<translation id="661266467055912436">Øker sikkerheten for deg og alle andre på nettet.</translation>
 <translation id="6620279676667515405">Avbryt</translation>
 <translation id="6624219055418309072">Blokkér i inkognitomodus</translation>
 <translation id="6628106477656132239">Ugyldig utløpsdato</translation>
@@ -656,7 +672,6 @@ Prøv å bruke unike passord for hvert nettsted.</translation>
 Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se nettleseraktiviteten din på andre nettsteder, for eksempel for å vise deg personlig tilpassede annonser.</translation>
 <translation id="6674571176963658787">For å starte synkroniseringen, skriv inn passordfrasen din</translation>
 <translation id="667999046851023355">Dokument</translation>
-<translation id="6691331417640343772">Administrer synkroniserte data i Google Oversikt</translation>
 <translation id="6710079714193676716">Administreres av organisasjonen din. Noen funksjoner er kanskje ikke tilgjengelige. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Kan ikke eksportere passordene</translation>
@@ -679,6 +694,7 @@ Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se 
 <translation id="6867369562105931222">passord</translation>
 <translation id="6869389390665537774">Du kan se sidene du har besøkt, eller fjerne dem fra loggen</translation>
 <translation id="6873263987691478642">Delt visning</translation>
+<translation id="6882836635272038266">Standardbeskyttelse mot nettsteder, nedlastinger og utvidelser som anses som farlige.</translation>
 <translation id="6888009575607455378">Er du sikker på at du vil forkaste endringene?</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6897187120838603299">Passordet blir lagret på enheten din.</translation>
@@ -691,7 +707,6 @@ Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se 
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="6988572888918530647">Administrer Google-kontoen din</translation>
 <translation id="6989674195860388998">Bytt i Innstillinger…</translation>
-<translation id="6995899638241819463">Få en advarsel hvis passord blir avdekket i databrudd</translation>
 <translation id="6998989275928107238">Til</translation>
 <translation id="7004032350256606903">Organisasjonen din krever at du surfer privat.
 <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
@@ -700,6 +715,7 @@ Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se 
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7062545763355031412">Godta og bytt konto</translation>
+<translation id="7080806333218412752">Sender nettadresser til Safe Browsing for å sjekke dem. Sender også et lite utvalg av sider, nedlastinger, utvidelsesaktivitet og systeminformasjon for å bidra til å oppdage nye trusler. Knytter disse dataene til Google-kontoen din midlertidig når du er pålogget, slik at du er beskyttet i alle Google-appene.</translation>
 <translation id="7099761977003084116">Nylige faner</translation>
 <translation id="7102005569666697658">Laster ned … <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Skjul</translation>
@@ -720,7 +736,6 @@ Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se 
 <translation id="7272437679830969316">Kan ikke bekrefte identiteten din. Passordet er ikke kopiert.</translation>
 <translation id="7291368939935408496">Klargjør passordene …</translation>
 <translation id="7313347584264171202">Her finner du inkognitofanene dine</translation>
-<translation id="7319242366286515846">Ved å fortsette godtar du <ph name="BEGIN_LINK" />vilkårene for bruk<ph name="END_LINK" />.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosent fullført</translation>
 <translation id="7340958967809483333">Alternativer for Discover</translation>
 <translation id="7346909386216857016">Greit</translation>
@@ -760,6 +775,8 @@ Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se 
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
 <translation id="7701040980221191251">Ingen</translation>
+<translation id="7720410380936703141">PRØV PÅ NYTT</translation>
+<translation id="7726702057919861819">Meny → Logg → Slett nettlesingsdata</translation>
 <translation id="7741325291586284254">Ny side i inkognitofane</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7772032839648071052">Bekreft passord</translation>
@@ -776,6 +793,7 @@ Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se 
 <translation id="7884694604461143138">Søkelogg (fant <ph name="COUNT" />)</translation>
 <translation id="7887198238286927132">For å beskytte personvernet ditt fyller ikke Chrome automatisk ut dette feltet.</translation>
 <translation id="7911190106180361398">Organisasjonen din lar deg ikke synkronisere alt.</translation>
+<translation id="7930998711684428189">Advarer deg hvis passord blir avdekket i databrudd.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportér passord</translation>
 <translation id="794799177247607889">Stopp loggføringen</translation>
@@ -832,6 +850,7 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="8386068868580335421">Tilbakestill</translation>
 <translation id="8407669440184693619">Fant ingen passord for dette nettstedet</translation>
 <translation id="842017693807136194">Logget på med</translation>
+<translation id="8427613705947111202">Meny → Innstillinger → Passord</translation>
 <translation id="8428045167754449968">By/tettsted</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8428634594422941299">Greit</translation>
@@ -868,7 +887,7 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="8706588385081740091">Passord</translation>
 <translation id="8717864919010420084">Kopiér linken</translation>
 <translation id="8721297211384281569">Verktøy-menyen</translation>
-<translation id="8725066075913043281">Prøv på nytt</translation>
+<translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8741995161408053644">Google-kontoen din kan ha andre typer nettleserlogger på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8750037785291841318">Her finner du fanene dine</translation>
@@ -922,6 +941,7 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Programstopprapporten er sendt.</translation>
 <translation id="952704832371081537">Avbryt</translation>
+<translation id="959066944189734975">Du følger <ph name="CHANNEL_NAME" /></translation>
 <translation id="981498610235328462">Organisasjonen din lar deg kun logge på med visse kontoer. Kontoer som ikke tillates, er skjult.</translation>
 <translation id="984509647832111802">Synkroniseringen fungerer ikke.</translation>
 <translation id="988141524645182168">Andre enheter</translation>

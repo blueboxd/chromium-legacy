@@ -13,8 +13,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
@@ -95,6 +97,7 @@ class SellerWorklet : public mojom::SellerWorklet {
       const GURL& browser_signal_render_url,
       double browser_signal_bid,
       double browser_signal_desirability,
+      double browser_signal_highest_scoring_other_bid,
       auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
           browser_signals_component_auction_report_result_params,
       uint32_t scoring_signals_data_version,
@@ -157,6 +160,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     GURL browser_signal_render_url;
     double browser_signal_bid;
     double browser_signal_desirability;
+    double browser_signal_highest_scoring_other_bid;
     auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
         browser_signals_component_auction_report_result_params;
     absl::optional<uint32_t> scoring_signals_data_version;
@@ -185,11 +189,13 @@ class SellerWorklet : public mojom::SellerWorklet {
     using ReportResultCallbackInternal =
         base::OnceCallback<void(absl::optional<std::string> signals_for_winner,
                                 absl::optional<GURL> report_url,
+                                base::flat_map<std::string, GURL> ad_beacon_map,
                                 std::vector<std::string> errors)>;
 
     V8State(scoped_refptr<AuctionV8Helper> v8_helper,
             scoped_refptr<AuctionV8Helper::DebugId> debug_id,
             const GURL& decision_logic_url,
+            const absl::optional<GURL>& trusted_scoring_signals_url,
             const url::Origin& top_window_origin,
             base::WeakPtr<SellerWorklet> parent);
 
@@ -217,6 +223,7 @@ class SellerWorklet : public mojom::SellerWorklet {
         const GURL& browser_signal_render_url,
         double browser_signal_bid,
         double browser_signal_desirability,
+        double browser_signal_highest_scoring_other_bid,
         auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
             browser_signals_component_auction_report_result_params,
         absl::optional<uint32_t> scoring_signals_data_version,
@@ -245,6 +252,7 @@ class SellerWorklet : public mojom::SellerWorklet {
         ReportResultCallbackInternal callback,
         absl::optional<std::string> signals_for_winner,
         absl::optional<GURL> report_url,
+        base::flat_map<std::string, GURL> ad_beacon_map,
         std::vector<std::string> errors);
 
     static void PostResumeToUserThread(
@@ -261,6 +269,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     v8::Global<v8::UnboundScript> worklet_script_;
 
     const GURL decision_logic_url_;
+    const absl::optional<GURL> trusted_scoring_signals_url_;
     const url::Origin top_window_origin_;
 
     SEQUENCE_CHECKER(v8_sequence_checker_);
@@ -303,6 +312,7 @@ class SellerWorklet : public mojom::SellerWorklet {
       ReportResultTaskList::iterator task,
       absl::optional<std::string> signals_for_winner,
       absl::optional<GURL> report_url,
+      base::flat_map<std::string, GURL> ad_beacon_map,
       std::vector<std::string> errors);
 
   // Returns true if unpaused and the script has loaded.

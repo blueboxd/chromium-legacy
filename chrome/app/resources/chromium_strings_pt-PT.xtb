@@ -13,6 +13,7 @@
 <translation id="151962892725702025">O SO Chromium não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>
 <translation id="1524282610922162960">Partilhe um separador do Chromium</translation>
 <translation id="1553461853655228091">O Chromium necessita de autorização de acesso à câmara para criar um mapa 3D do ambiente à sua volta.</translation>
+<translation id="1602421994560205104">O Chromium bloqueou este ficheiro porque é demasiado grande para uma verificação de segurança. Tente novamente com ficheiros até 50 MB.</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{O seu administrador necessita que reinicie o Chromium para aplicar uma atualização.}=1{O seu administrador necessita que reinicie o Chromium para aplicar uma atualização. Não é possível reabrir a sua janela de navegação anónima.}other{O seu administrador necessita que reinicie o Chromium para aplicar uma atualização. Não é possível reabrir as suas # janelas de navegação anónima.}}</translation>
 <translation id="1625909126243026060">Reveja os principais controlos de privacidade e segurança no Chromium</translation>
 <translation id="1632539827495546968">Se quiser utilizar esta conta apenas uma vez, pode utilizar o <ph name="GUEST_LINK_BEGIN" />Modo convidado<ph name="GUEST_LINK_END" /> no navegador Chromium. Se quiser adicionar uma conta para outra pessoa, <ph name="LINK_BEGIN" />adicione uma nova pessoa<ph name="LINK_END" /> ao seu dispositivo <ph name="DEVICE_TYPE" />.
@@ -86,7 +87,8 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="331951419404882060">O Chromium não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
 <translation id="3349211344363550267">O Chromium recomenda que não transfira nem abra este ficheiro</translation>
 <translation id="3350761136195634146">Já existe um perfil do Chromium com esta conta.</translation>
-<translation id="3406848076815591792">Mudar para o perfil do Chromium existente?</translation>
+<translation id="3406848076815591792">Pretende mudar para o perfil do Chromium existente?</translation>
+<translation id="3412460710772753638">No Gestor de Palavras-passe neste dispositivo</translation>
 <translation id="3430503420100763906">Com os perfis do Chromium, pode separar todos os seus itens do Chromium. Crie perfis para amigos e familiares ou separe o trabalho da diversão.</translation>
 <translation id="347328004046849135">O Chromium envia-lhe uma notificação quando iniciar sessão com uma palavra-passe comprometida.</translation>
 <translation id="3474745554856756813">Esta ação elimina <ph name="ITEMS_COUNT" /> itens deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como <ph name="USER_EMAIL" />.</translation>
@@ -109,6 +111,7 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="3889543394854987837">Clique no seu nome para abrir o Chromium e começar a navegar.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> já tem sessão iniciada neste perfil do Chromium. Para manter a sua navegação separada, o Chromium pode criar-lhe o seu próprio perfil.</translation>
 <translation id="3945058413678539331">O Chromium está a tentar copiar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
+<translation id="3962623956404948996">O Chromium recomenda que analise este ficheiro porque pode ser perigoso</translation>
 <translation id="4036079820698952681">Ajude a melhorar o Chromium ao comunicar as <ph name="BEGIN_LINK" />definições atuais<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
 <translation id="419998258129752635"><ph name="PAGE_TITLE" /> – Início de sessão na rede – Chromium</translation>
@@ -118,6 +121,7 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="4264410486868823224"><ph name="MANAGER" /> requer a leitura e aceitação dos seguintes Termos de Utilização antes de utilizar este dispositivo. Estes termos não ampliam, não modificam nem limitam os Termos do Chromium OS.</translation>
 <translation id="4271805377592243930">Obter ajuda relacionada com o Chromium</translation>
 <translation id="4285930937574705105">A instalação falhou devido a um erro não especificado. Se o Chromium estiver em execução, feche-o e tente de novo.</translation>
+<translation id="4304713468139749426">Gestor de palavras-passe</translation>
 <translation id="4407044323746248786">Pretende sair do Chromium mesmo assim?</translation>
 <translation id="4415566066719264597">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="4423735387467980091">Personalizar e controlar o Chromium</translation>
@@ -126,6 +130,7 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="4544142686420020088">O Chromium não foi atualizado. Ocorreu um erro. <ph name="BEGIN_LINK" />Corrija problemas de atualização do Chrome e falhas nas atualizações<ph name="END_LINK" />.</translation>
 <translation id="454579500955453258">Pretende continuar num novo perfil do Chromium?</translation>
 <translation id="4567424176335768812">Tem sessão iniciada como <ph name="USER_EMAIL_ADDRESS" />. Agora, pode aceder aos seus marcadores, ao histórico e a outras definições em todos os dispositivos com sessão iniciada.</translation>
+<translation id="4594305310729380060">No Gestor de Palavras-passe neste dispositivo</translation>
 <translation id="459535195905078186">Apps do Chromium</translation>
 <translation id="4621240073146040695">Quase atualizado! Reinicie o Chromium para concluir a atualização.</translation>
 <translation id="4665829708273112819">Aviso: o Chromium não consegue impedir que as extensões gravem o seu histórico de navegação. Para desativar esta extensão no Modo de navegação anónima, desselecione esta opção.</translation>
@@ -195,6 +200,7 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="6290827346642914212">Atribua um nome ao seu perfil do Chromium</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> pode ser perigoso, por isso o Chromium bloqueou-o.</translation>
 <translation id="6309712487085796862">O Chromium está a utilizar a câmara.</translation>
+<translation id="632355235628111698">O Chromium bloqueou este ficheiro porque é perigoso</translation>
 <translation id="6333502561965082103">Está em curso outra operação no Chromium. Tente novamente mais tarde.</translation>
 <translation id="6334986366598267305">Agora é mais fácil utilizar o Chromium com a sua Conta Google e em computadores partilhados.</translation>
 <translation id="6373523479360886564">Tem a certeza de que pretende desinstalar o Chromium?</translation>
@@ -219,6 +225,7 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="673636774878526923">Para aceder aos seus itens do Chromium em todos os seus dispositivos, inicie sessão e, em seguida, ative a sincronização.</translation>
 <translation id="6774082503108938489">O teu pai/mãe desativou as "Autorizações para sites, apps e extensões" para o Chromium. Não é permitido ativar esta <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6847869444787758381">O Chromium indica-lhe se as suas palavras-passe forem comprometidas.</translation>
+<translation id="6852530923436401894">O Chromium bloqueou este ficheiro porque tem software malicioso</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiado para o Chromium)</translation>
 <translation id="6873893289264747459">O Chromium encontrou software malicioso na extensão "<ph name="EXTENSION_NAME" />"</translation>
@@ -238,6 +245,7 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="7218568399872925918">Os sites que visita memorizam as suas informações até fechar o Chromium</translation>
 <translation id="7223968959479464213">Gestor de Tarefas - Chromium</translation>
 <translation id="7246575524853130370">Os seus interesses conforme estimado pelo Chromium</translation>
+<translation id="7265671031637041256">O Chromium bloqueou este ficheiro porque está encriptado. Peça ao respetivo proprietário para o desencriptar</translation>
 <translation id="7309928523159922338">A medição de anúncios permite que os sites que visita peçam informações ao Chromium que ajudam o site a medir o desempenho dos respetivos anúncios. A medição de anúncios restringe a monitorização entre sites ao transferir o mínimo de informações possível entre sites.</translation>
 <translation id="731795002583552498">A atualizar o Chromium…</translation>
 <translation id="7318036098707714271">O ficheiro de preferências está danificado ou não é válido.
@@ -274,11 +282,12 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="7857220146454061152">Para obter atualizações futuras do Chromium, precisa do OS X 10.11 ou posterior. Este computador está a utilizar o OS X 10.10.</translation>
 <translation id="7867198900892795913">Não foi possível atualizar o Chromium para a versão mais recente, pelo que não está a beneficiar das novas funcionalidades e correções de segurança.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Como pode gerir os seus dados:<ph name="END_BOLD" /> para proteger a sua privacidade, eliminamos automaticamente os seus interesses com mais de 4 semanas. Enquanto navega, um interesse pode aparecer novamente na lista. Em alternativa, pode remover os interesses que não quer que o Chromium considere.</translation>
-<translation id="788352880609666695">As seguintes contas estão disponíveis para este perfil do Chromium</translation>
 <translation id="7898472181347242998">Para ver se o seu dispositivo está atualizado, aceda às <ph name="LINK_BEGIN" />Definições do Chromium OS<ph name="LINK_END" />.</translation>
 <translation id="7937630085815544518">Iniciou sessão no Chromium com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
 <translation id="7975919845073681630">Esta é uma instalação secundária do Chromium, pelo que não pode tornar-se o navegador predefinido.</translation>
+<translation id="7997934263947464652">As extensões, as apps e os temas de fontes desconhecidas podem danificar o seu dispositivo. O Chromium recomenda instalá-los apenas a partir da <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /></translation>
 <translation id="8013436988911883588">Assim que o Chromium tiver acesso, os Websites poderão solicitar-lhe o acesso.</translation>
+<translation id="8045118833343856403">As seguintes contas não têm sessão iniciada em perfis do Chromium. Se pretender utilizar uma conta noutro perfil, remova esse perfil primeiro.</translation>
 <translation id="8105840573057009683">O Chromium necessita da autorização de acesso à localização para este site</translation>
 <translation id="81770708095080097">Este ficheiro é perigoso. Como tal, o Chromium bloqueou-o.</translation>
 <translation id="8248265253516264921">Se uma imagem não tiver uma descrição útil, o Chromium tenta fornecer uma. Para criar as descrições, são enviadas imagens para a Google. Pode desativar esta opção nas definições em qualquer altura.</translation>

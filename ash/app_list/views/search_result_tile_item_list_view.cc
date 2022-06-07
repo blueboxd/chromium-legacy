@@ -81,16 +81,16 @@ SearchResultTileItemListView::SearchResultTileItemListView(
           SharedAppListConfig::instance().max_search_result_tiles()) {
   layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
+      gfx::Insets::VH(kItemListVerticalSpacing, kItemListHorizontalSpacing),
       kBetweenItemSpacing));
   for (size_t i = 0; i < max_search_result_tiles_; ++i) {
     views::Separator* separator =
         AddChildView(std::make_unique<views::Separator>());
     separator->SetVisible(false);
-    separator->SetBorder(views::CreateEmptyBorder(
+    separator->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
         kSeparatorTopPadding, kSeparatorLeftRightPadding,
         SharedAppListConfig::instance().search_tile_height() - kSeparatorHeight,
-        kSeparatorLeftRightPadding));
+        kSeparatorLeftRightPadding)));
     separator->SetColor(AppListColorProvider::Get()->GetSeparatorColor());
     separator_views_.push_back(separator);
     layout_->SetFlexForView(separator, 0);
@@ -133,7 +133,6 @@ int SearchResultTileItemListView::DoUpdate() {
   bool is_previous_result_installable_app = false;
   int installed_app_index = -1;
   int playstore_app_index = -1;
-  int reinstall_app_index = -1;
   int app_group_index = -1;
   bool found_playstore_results = false;
 
@@ -159,7 +158,6 @@ int SearchResultTileItemListView::DoUpdate() {
       found_playstore_results = true;
     } else if (item->result_type() ==
                AppListSearchResultType::kPlayStoreReinstallApp) {
-      ++reinstall_app_index;
       app_group_index = playstore_app_index;
     } else {
       ++installed_app_index;

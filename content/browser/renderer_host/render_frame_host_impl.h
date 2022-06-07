@@ -53,6 +53,7 @@
 #include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/transient_allow_popup.h"
 #include "content/browser/site_instance_group.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -73,6 +74,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/extra_mojo_js_features.mojom-forward.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom-forward.h"
@@ -315,7 +317,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ~RenderFrameHostImpl() override;
 
   // RenderFrameHost
-  int GetRoutingID() override;
+  int GetRoutingID() const override;
   const blink::LocalFrameToken& GetFrameToken() override;
   const base::UnguessableToken& GetReportingSource() override;
 
@@ -325,19 +327,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
                              bool exclude_offscreen,
                              size_t max_nodes,
                              const base::TimeDelta& timeout) override;
-  SiteInstanceImpl* GetSiteInstance() override;
-  RenderProcessHost* GetProcess() override;
-  GlobalRenderFrameHostId GetGlobalId() override;
+  void RequestDistilledAXTree(AXTreeDistillerCallback callback) override;
+  SiteInstanceImpl* GetSiteInstance() const override;
+  RenderProcessHost* GetProcess() const override;
+  GlobalRenderFrameHostId GetGlobalId() const override;
   RenderWidgetHostImpl* GetRenderWidgetHost() override;
   RenderWidgetHostView* GetView() override;
-  RenderFrameHostImpl* GetParent() override;
-  RenderFrameHostImpl* GetParentOrOuterDocument() override;
+  RenderFrameHostImpl* GetParent() const override;
+  RenderFrameHostImpl* GetParentOrOuterDocument() const override;
   RenderFrameHostImpl* GetMainFrame() override;
   PageImpl& GetPage() override;
   bool IsInPrimaryMainFrame() override;
   RenderFrameHostImpl* GetOutermostMainFrame() override;
   bool IsFencedFrameRoot() override;
-  bool IsNestedWithinFencedFrame() override;
+  bool IsNestedWithinFencedFrame() const override;
   void ForEachRenderFrameHost(FrameIterationCallback on_frame) override;
   void ForEachRenderFrameHost(
       FrameIterationAlwaysContinueCallback on_frame) override;
@@ -352,8 +355,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   size_t GetFrameDepth() override;
   bool IsCrossProcessSubframe() override;
   WebExposedIsolationLevel GetWebExposedIsolationLevel() override;
-  const GURL& GetLastCommittedURL() override;
-  const url::Origin& GetLastCommittedOrigin() override;
+  const GURL& GetLastCommittedURL() const override;
+  const url::Origin& GetLastCommittedOrigin() const override;
   const net::NetworkIsolationKey& GetNetworkIsolationKey() override;
   const net::IsolationInfo& GetIsolationInfoForSubresources() override;
   net::IsolationInfo GetPendingIsolationInfoForSubresources() override;
@@ -362,7 +365,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            const std::string& message) override;
   void ExecuteJavaScriptMethod(const std::u16string& object_name,
                                const std::u16string& method_name,
-                               base::Value arguments,
+                               base::Value::List arguments,
                                JavaScriptResultCallback callback) override;
   void ExecuteJavaScript(const std::u16string& javascript,
                          JavaScriptResultCallback callback) override;
@@ -375,6 +378,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) override;
   void ExecuteJavaScriptWithUserGestureForTests(
       const std::u16string& javascript,
+      JavaScriptResultCallback callback,
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) override;
   void ExecutePluginActionAtLocalLocation(
       const gfx::Point& local_location,
@@ -383,7 +387,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void InsertVisualStateCallback(VisualStateCallback callback) override;
   void CopyImageAt(int x, int y) override;
   void SaveImageAt(int x, int y) override;
-  RenderViewHost* GetRenderViewHost() override;
+  RenderViewHost* GetRenderViewHost() const override;
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
   content::PageVisibilityState GetVisibilityState() override;
@@ -449,22 +453,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   StoragePartitionImpl* GetStoragePartition() override;
   BrowserContext* GetBrowserContext() override;
   void ReportInspectorIssue(blink::mojom::InspectorIssueInfoPtr info) override;
-  void WriteIntoTrace(perfetto::TracedValue context) override;
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
   void GetCanonicalUrl(
       base::OnceCallback<void(const absl::optional<GURL>&)> callback) override;
   bool IsErrorDocument() override;
   DocumentRef GetDocumentRef() override;
   WeakDocumentPtr GetWeakDocumentPtr() override;
+  void EnableMojoJsBindings(
+      content::mojom::ExtraMojoJsFeaturesPtr features) override;
 
   // Additional non-override const version of GetMainFrame.
   const RenderFrameHostImpl* GetMainFrame() const;
-
-  // Additional non-override const version of GetParent.
-  const RenderFrameHostImpl* GetParent() const;
-
-  // Write a representation of this object into a trace.
-  void WriteIntoTrace(
-      perfetto::TracedProto<perfetto::protos::pbzero::RenderFrameHost> proto);
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -486,12 +485,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsInactiveAndDisallowActivationForAXEvents(
       const std::vector<ui::AXEvent>& events);
 
+  // Evict the RenderFrameHostImpl with |reason| that causes the eviction. This
+  // constructs a flattened list of NotRestoredReasons and calls
+  // |EvictFromBackForwardCacheWithFlattenedReasons|.
   void EvictFromBackForwardCacheWithReason(
       BackForwardCacheMetrics::NotRestoredReason reason);
-  void EvictFromBackForwardCacheWithReasons(
-      const BackForwardCacheCanStoreDocumentResult& can_store_flat,
-      std::unique_ptr<BackForwardCacheCanStoreTreeResult> can_store_tree =
-          nullptr);
+  // Evict the RenderFrameHostImpl with |can_store_flat| as the eviction reason.
+  // This constructs a tree of NotRestoredReasons based on |can_store_flat| and
+  // calls |EvictFromBackForwardCacheWithFlattenedAndTreeReasons|.
+  void EvictFromBackForwardCacheWithFlattenedReasons(
+      BackForwardCacheCanStoreDocumentResult can_store_flat);
+  // Evict the RenderFrameHostImpl with |can_store| that causes the eviction.
+  // This reports the flattened list and the tree of NotRestoredReasons to
+  // metrics, and posts a task to evict the frame.
+  void EvictFromBackForwardCacheWithFlattenedAndTreeReasons(
+      BackForwardCacheCanStoreDocumentResultWithTree& can_store);
 
   // Only for testing sticky WebBackForwardCacheDisablingFeature.
   void UseDummyStickyBackForwardCacheDisablingFeatureForTesting();
@@ -582,8 +590,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // from AudioStreamMonitor, and should not be invoked with the same value
   // successively.
   void OnAudibleStateChanged(bool is_audible);
-
-  int routing_id() const { return routing_id_; }
 
   // Called when this frame has added a child. This is a continuation of an IPC
   // that was partially handled on the IO thread (to allocate |new_routing_id|,
@@ -778,13 +784,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   WebUIImpl* web_ui() const { return web_ui_.get(); }
   WebUI::TypeID web_ui_type() const { return web_ui_type_; }
 
-  // Enable Mojo JavaScript bindings in the renderer process. It will be
-  // effective on the first creation of script context after the call is made.
-  // If called at frame creation time (RenderFrameCreated) or just before a
-  // document is committed (ReadyToCommitNavigation), the resulting document
-  // will have the JS bindings enabled.
-  void EnableMojoJsBindings();
-
   // Enable Mojo JavaScript bindings in the renderer process, and use the
   // provided BrowserInterfaceBroker to handle JavaScript calls to
   // Mojo.bindInterface. This method should be called in
@@ -867,6 +866,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // with the navigation to this RenderFrameHost.
   void SetNavigationRequest(
       std::unique_ptr<NavigationRequest> navigation_request);
+
+  const scoped_refptr<NavigationOrDocumentHandle>&
+  GetNavigationOrDocumentHandle();
 
   // Tells the renderer that this RenderFrame is being replaced with one in a
   // different renderer process.  It should run its unload handler and move to
@@ -1513,7 +1515,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Called when a Portal needs to be destroyed.
   void DestroyPortal(Portal* portal);
 
-  // Return fenced frames owned by |this|.
+  // Return fenced frames owned by |this|. The returned vector is in the order
+  // the fenced frames were added (most recent at end).
   std::vector<FencedFrame*> GetFencedFrames() const;
 
   // Called when a fenced frame needs to be destroyed.
@@ -1876,6 +1879,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
 
   bool anonymous() const { return anonymous_; }
+
+  bool is_fenced_frame_opaque_url() const {
+    return is_fenced_frame_opaque_url_;
+  }
 
   PolicyContainerHost* policy_container_host() {
     return policy_container_host_.get();
@@ -2334,7 +2341,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost> receiver);
   void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
   void DisableWebRtcEventLogOutput(int lid) override;
-  bool IsDocumentOnLoadCompletedInPrimaryMainFrame() override;
+  bool IsDocumentOnLoadCompletedInMainFrame() override;
   const std::vector<blink::mojom::FaviconURLPtr>& FaviconURLs() override;
 
 #if BUILDFLAG(ENABLE_MDNS)
@@ -2402,7 +2409,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //  B GetParent & GetParentOrOuterDocumentOrEmbedder returns A.
   //  A GetParent & GetParentOrOuterDocumentOrEmbedder returns
   //  nullptr.
-  RenderFrameHostImpl* GetParentOrOuterDocumentOrEmbedder();
+  RenderFrameHostImpl* GetParentOrOuterDocumentOrEmbedder() const;
 
   // Computes the nonce to be used for isolation info and storage key.
   absl::optional<base::UnguessableToken> ComputeNonce(bool anonymous);
@@ -2441,11 +2448,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void DidChangeReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy);
 
-  enum class FencedFrameStatus {
-    kNotNestedInFencedFrame,
-    kFencedFrameRoot,
-    kIframeNestedWithinFencedFrame
-  };
+  // TODO: While FencedFrame shadow DOM implementation exists and is dependent
+  // on the effective frame policy in BrowsingContextState, fenced frame status
+  // is dependent on FrameTreeNode being initialized and associated with a
+  // RenderFrameHostImpl. However, it may need to be accessed before node
+  // initialization, which is the reason for these methods. For example,
+  // RenderFrameHostImpl needs to have access to the effective frame policy
+  // (which is stored in FrameReplicationState), and we need to call this
+  // inside RenderFrameHostImpl's constructor (where FrameTreeNode doesn't
+  // have current RenderFrameHost yet). Remove these methods when shadow DOM is
+  // also removed.
+  bool IsFencedFrameRootNoStatus();
+  bool IsInFencedFrameTree();
+
+  float GetPageScaleFactor() const;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -2617,6 +2633,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   class SubresourceLoaderFactoriesConfig;
 
+  enum class FencedFrameStatus {
+    kNotNestedInFencedFrame,
+    kFencedFrameRoot,
+    kIframeNestedWithinFencedFrame
+  };
+
   FrameTreeNode* GetSibling(int relative_offset) const;
 
   FrameTreeNode* FindAndVerifyChildInternal(
@@ -2661,6 +2683,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateFencedFrame(
       mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
           pending_receiver,
+      blink::mojom::FencedFrameMode mode,
       CreateFencedFrameCallback callback) override;
   void GetKeepAliveHandleFactory(
       mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver)
@@ -2901,6 +2924,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // standalone snapshot of the accessibility tree as |snapshot|.
   void RequestAXTreeSnapshotCallback(AXTreeSnapshotCallback callback,
                                      const ui::AXTreeUpdate& snapshot);
+
+  // Callback that will be called as a response to the call to the method
+  // content::mojom::RenderAccessibility::DistillAXTree(). The |callback| passed
+  // will be invoked after the renderer has responded with a list of
+  // |content_node_ids|.
+  void RequestDistilledAXTreeCallback(
+      AXTreeDistillerCallback callback,
+      const ui::AXTreeUpdate& snapshot,
+      const std::vector<ui::AXNodeID>& content_node_ids);
+
+  // Makes a copy of an AXTreeUpdate to send to the destination.
+  void CopyAXTreeUpdate(const ui::AXTreeUpdate& snapshot,
+                        ui::AXTreeUpdate* snapshot_copy);
 
   // Callback that will be called as a response to the call to the method
   // blink::mojom::LocalFrame::GetSavableResourceLinks(). The |reply| passed
@@ -3298,8 +3334,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedReceiver<blink::mojom::BroadcastChannelProvider>
           receiver);
 
-  perfetto::protos::pbzero::RenderFrameHost::LifecycleState
-  LifecycleStateToProto();
+  TraceProto::LifecycleState LifecycleStateToProto() const;
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   void RunScreenAIAnnotator();
@@ -3932,7 +3967,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // back to |this|.
   base::flat_set<std::unique_ptr<Portal>, base::UniquePtrComparator> portals_;
 
-  // The fenced frames owned by this document.
+  // The fenced frames owned by this document, ordered with newer fenced frames
+  // being appended to the end.
   std::vector<std::unique_ptr<FencedFrame>> fenced_frames_;
 
   // Tracking active features in this frame, for use in figuring out whether
@@ -3989,6 +4025,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // "Owned" but not with std::unique_ptr, as a DocumentServiceBase is
     // allowed to delete itself directly.
     std::vector<internal::DocumentServiceBase*> services;
+
+    // This handle supports a seamless transfer from a navigation to a committed
+    // document.
+    scoped_refptr<NavigationOrDocumentHandle> navigation_or_document_handle;
 
     // Produces weak pointers to the hosting RenderFrameHostImpl. This is
     // invalidated whenever DocumentAssociatedData is destroyed, due to
@@ -4086,6 +4126,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // on every cross-document navigation.
   bool anonymous_ = false;
 
+  // Indicates whether the fenced frame is navigated to an opaque url. This flag
+  // can only change when the embedder navigates the fenced frame. Any
+  // subsequent navigation from within the fenced frame tree will keep the same
+  // flag. Note that this flag is only relevant for fenced frames based on
+  // MPArch.
+  bool is_fenced_frame_opaque_url_ = false;
+
   // The PolicyContainerHost for the current document, containing security
   // policies that apply to it. It should never be null if the RenderFrameHost
   // is displaying a document. Its lifetime should coincide with the lifetime of
@@ -4145,6 +4192,25 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Manages the snapshot processing by Screen AI, if enabled.
   std::unique_ptr<AXScreenAIAnnotator> ax_screen_ai_annotator_;
 #endif
+
+  // Manages a transient affordance for this frame or subframes to open a popup.
+  TransientAllowPopup transient_allow_popup_;
+
+  // Used to avoid sending AXTreeData to the renderer if the renderer has not
+  // been told root ID yet. See UpdateAXTreeData() for more details.
+  bool needs_ax_root_id_ = true;
+
+  // The most recent page scale factor sent by the main frame's renderer.
+  // Note that the renderer uses a different mechanism to persist its page
+  // scale factor when performing session history navigations (see
+  // blink::PageState).
+  // Conceptually this should be per-PageImpl, since it is only non-one for main
+  // frames, but we need to store it here due to how the renderer sends page
+  // scale change notifications. If a cross-page, same-RenderFrameHost
+  // navigation occurs where both pages have the same initial scale, we will
+  // not get another notification.
+  // TODO(crbug.com/936696): Revisit after RenderDocument ships.
+  float page_scale_factor_ = 1.f;
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

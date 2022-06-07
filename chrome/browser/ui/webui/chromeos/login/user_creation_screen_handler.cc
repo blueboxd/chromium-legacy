@@ -17,10 +17,9 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId UserCreationView::kScreenId;
 
-UserCreationScreenHandler::UserCreationScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.UserCreationScreen.userActed");
+UserCreationScreenHandler::UserCreationScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.UserCreationScreen.userActed");
 }
 
 UserCreationScreenHandler::~UserCreationScreenHandler() {
@@ -64,20 +63,20 @@ void UserCreationScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_USER_CREATION_CHILD_SIGN_IN_LEARN_MORE_DIALOG_TEXT);
 }
 
-void UserCreationScreenHandler::Initialize() {}
+void UserCreationScreenHandler::InitializeDeprecated() {}
 
 void UserCreationScreenHandler::Show() {
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void UserCreationScreenHandler::Bind(UserCreationScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void UserCreationScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void UserCreationScreenHandler::SetIsBackButtonVisible(bool value) {

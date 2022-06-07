@@ -7,14 +7,16 @@ import './setup.js';
 import '../trusted/wallpaper/styles.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
-import {afterNextRender, html, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {Events, EventType, kMaximumGooglePhotosPreviews, kMaximumLocalImagePreviews} from '../common/constants.js';
-import {getCountText, getLoadingPlaceholderAnimationDelay, getNumberOfGridItemsPerRow, isNullOrArray, isNullOrNumber, isSelectionEvent} from '../common/utils.js';
-import {WallpaperCollection} from '../trusted/personalization_app.mojom-webui.js';
+import {getCountText, getLoadingPlaceholderAnimationDelay, getLoadingPlaceholders, isNonEmptyArray, isNullOrArray, isNullOrNumber, isSelectionEvent} from '../common/utils.js';
+import {GooglePhotosEnablementState, WallpaperCollection} from '../trusted/personalization_app.mojom-webui.js';
 import {selectCollection, selectGooglePhotosCollection, selectLocalCollection, validateReceivedData} from '../untrusted/iframe_api.js';
+
+import {getTemplate} from './collections_grid.html.js';
 
 /**
  * @fileoverview Responds to |SendCollectionsEvent| from trusted. Handles user
@@ -24,17 +26,16 @@ import {selectCollection, selectGooglePhotosCollection, selectLocalCollection, v
 const kGooglePhotosCollectionId = 'google_photos_';
 const kLocalCollectionId = 'local_';
 
-/** Height in pixels of a tile. */
-const kTileHeightPx = 136;
-
 enum TileType {
   LOADING = 'loading',
-  IMAGE = 'image',
+  IMAGE_GOOGLE_PHOTOS = 'image_google_photos',
+  IMAGE_LOCAL = 'image_local',
+  IMAGE_ONLINE = 'image_online',
   FAILURE = 'failure',
 }
 
 type LoadingTile = {
-  type: TileType.LOADING
+  type: TileType.LOADING,
 };
 
 /**
@@ -53,7 +54,7 @@ type FailureTile = {
  * WallpaperCollection.
  */
 type ImageTile = {
-  type: TileType.IMAGE,
+  type: TileType.IMAGE_GOOGLE_PHOTOS|TileType.IMAGE_LOCAL|TileType.IMAGE_ONLINE,
   id: string,
   name: string,
   count: string,
@@ -74,9 +75,11 @@ function getGooglePhotosTile(
   return {
     name: loadTimeData.getString('googlePhotosLabel'),
     id: kGooglePhotosCollectionId,
-    count: getCountText(googlePhotosCount ?? 0),
-    preview: googlePhotos?.slice(0, kMaximumGooglePhotosPreviews) ?? [],
-    type: TileType.IMAGE,
+    count: getCountText(googlePhotosCount || 0),
+    preview: Array.isArray(googlePhotos) ?
+        googlePhotos.slice(0, kMaximumGooglePhotosPreviews) :
+        [],
+    type: TileType.IMAGE_GOOGLE_PHOTOS,
   };
 }
 
@@ -129,7 +132,7 @@ function getLocalTile(
     count: getCountText(
         Array.isArray(localImages) ? localImages.length - failureCount : 0),
     preview: imagesToDisplay,
-    type: TileType.IMAGE,
+    type: TileType.IMAGE_LOCAL,
   };
 }
 
@@ -139,7 +142,7 @@ export class CollectionsGrid extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -155,6 +158,11 @@ export class CollectionsGrid extends PolymerElement {
        * The count of Google Photos photos.
        */
       googlePhotosCount_: Number,
+
+      /**
+       * Whether the user is allowed to access Google Photos.
+       */
+      googlePhotosEnabled_: Number,
 
       /**
        * Mapping of collection id to number of images. Loads in progressively
@@ -177,9 +185,7 @@ export class CollectionsGrid extends PolymerElement {
         value() {
           // Fill the view with loading tiles. Will be adjusted to the correct
           // number of tiles when collections are received.
-          const x = getNumberOfGridItemsPerRow();
-          const y = Math.floor(window.innerHeight / kTileHeightPx);
-          return Array.from({length: x * y}, () => ({type: TileType.LOADING}));
+          return getLoadingPlaceholders(() => ({type: TileType.LOADING}));
         }
       },
     };
@@ -188,6 +194,7 @@ export class CollectionsGrid extends PolymerElement {
   private collections_: WallpaperCollection[];
   private googlePhotos_: unknown[]|null;
   private googlePhotosCount_: number|null;
+  private googlePhotosEnabled_: GooglePhotosEnablementState;
   private imageCounts_: {[key: string]: number|null};
   private localImages_: FilePath[];
   private localImageData_: {[key: string]: string};
@@ -232,6 +239,9 @@ export class CollectionsGrid extends PolymerElement {
       this.pop('tiles_');
     }
 
+    const isDarkLightModeEnabled =
+        loadTimeData.getBoolean('isDarkLightModeEnabled');
+
     collections.forEach((collection, i) => {
       const index = i + offset;
       const tile = this.tiles_[index];
@@ -241,7 +251,7 @@ export class CollectionsGrid extends PolymerElement {
           id: collection.id,
           name: collection.name,
           count: '',
-          preview: [collection.preview],
+          preview: [],
           type: TileType.FAILURE,
         });
         return;
@@ -253,8 +263,13 @@ export class CollectionsGrid extends PolymerElement {
           id: collection.id,
           name: collection.name,
           count: getCountText(imageCounts[collection.id]),
-          preview: [collection.preview],
-          type: TileType.IMAGE,
+          // Return all the previews in D/L mode to display the split view.
+          // Otherwise, only the first preview is needed.
+          preview: isNonEmptyArray(collection.previews) ?
+              isDarkLightModeEnabled ? collection.previews :
+                                       [collection.previews[0]] :
+              [],
+          type: TileType.IMAGE_ONLINE,
         });
       }
     });
@@ -301,6 +316,14 @@ export class CollectionsGrid extends PolymerElement {
       case EventType.SEND_GOOGLE_PHOTOS_COUNT:
         if (isValid) {
           this.googlePhotosCount_ = event.count;
+        } else {
+          this.googlePhotos_ = null;
+          this.googlePhotosCount_ = null;
+        }
+        break;
+      case EventType.SEND_GOOGLE_PHOTOS_ENABLED:
+        if (isValid) {
+          this.googlePhotosEnabled_ = event.enabled;
         } else {
           this.googlePhotos_ = null;
           this.googlePhotosCount_ = null;
@@ -357,9 +380,29 @@ export class CollectionsGrid extends PolymerElement {
   }
 
   private getClassForImagesContainer_(tile: ImageTile): string {
-    const numImages = Array.isArray(tile?.preview) ? tile.preview.length : 0;
+    if (tile.type === TileType.IMAGE_ONLINE) {
+      // Only apply base class for online collections.
+      return 'photo-images-container';
+    }
+    const numImages =
+        !!tile && Array.isArray(tile.preview) ? tile.preview.length : 0;
     return `photo-images-container photo-images-container-${
         Math.min(numImages, kMaximumLocalImagePreviews)}`;
+  }
+
+  /** Apply custom class for <img> to show a split view. */
+  private getClassForImg_(index: number, tile: ImageTile): string {
+    if (tile.type !== TileType.IMAGE_ONLINE || tile.preview.length < 2) {
+      return '';
+    }
+    switch (index) {
+      case 0:
+        return 'left';
+      case 1:
+        return 'right';
+      default:
+        return '';
+    }
   }
 
   getClassForEmptyTile_(tile: ImageTile): string {
@@ -403,28 +446,41 @@ export class CollectionsGrid extends PolymerElement {
   }
 
   private isLoadingTile_(item: Tile|null): item is LoadingTile {
-    return item?.type === TileType.LOADING;
+    return !!item && item.type === TileType.LOADING;
   }
 
   private isFailureTile_(item: Tile|null): item is FailureTile {
-    return item?.type === TileType.FAILURE;
+    return !!item && item.type === TileType.FAILURE;
+  }
+
+  private isTileTypeImage_(item: Tile|null): item is ImageTile {
+    return !!item &&
+        (item.type === TileType.IMAGE_GOOGLE_PHOTOS ||
+         item.type === TileType.IMAGE_LOCAL ||
+         item.type === TileType.IMAGE_ONLINE);
   }
 
   private isEmptyTile_(item: Tile|null): item is ImageTile {
-    return !!item && item.type === TileType.IMAGE && item.preview.length === 0;
+    return this.isTileTypeImage_(item) && item.preview.length === 0;
   }
 
   private isGooglePhotosTile_(item: Tile|null): item is ImageTile|FailureTile {
-    return !!item && (item.type !== TileType.LOADING) &&
-        (item?.id === kGooglePhotosCollectionId);
+    return !!item && (item.type === TileType.IMAGE_GOOGLE_PHOTOS) &&
+        (item.id === kGooglePhotosCollectionId);
   }
 
   private isImageTile_(item: Tile|null): item is ImageTile {
-    return item?.type === TileType.IMAGE && !this.isEmptyTile_(item);
+    return this.isTileTypeImage_(item) && !this.isEmptyTile_(item);
+  }
+
+  private isManagedTile_(item: Tile|null): boolean {
+    return this.isGooglePhotosTile_(item) &&
+        this.googlePhotosEnabled_ === GooglePhotosEnablementState.kDisabled;
   }
 
   private isSelectableTile_(item: Tile|null): item is ImageTile|FailureTile {
-    return this.isGooglePhotosTile_(item) || this.isImageTile_(item);
+    return (this.isGooglePhotosTile_(item) && !this.isManagedTile_(item)) ||
+        this.isImageTile_(item);
   }
 
   /**

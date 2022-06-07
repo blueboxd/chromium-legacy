@@ -59,6 +59,7 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_widget_builder.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -1032,7 +1033,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   // Activate one window in one display.
   wm::ActivateWindow(window_1);
 
-  Shell::Get()->UpdateShelfVisibility();
+  Shelf::UpdateShelfVisibility();
   GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
@@ -1041,7 +1042,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
 
   // Show the app list; only the shelf on the same display should be shown.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  Shell::Get()->UpdateShelfVisibility();
+  Shelf::UpdateShelfVisibility();
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf_1->GetAutoHideState());
@@ -1050,7 +1051,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
 
   // Hide the app list, both shelves should be hidden.
   GetAppListTestHelper()->DismissAndRunLoop();
-  Shell::Get()->UpdateShelfVisibility();
+  Shelf::UpdateShelfVisibility();
   GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
@@ -1259,7 +1260,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowSingleDisplay) {
   ShellTestApi().SimulateModalWindowOpenForTest(true);
   EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   EXPECT_FALSE(wm::CanActivateWindow(window));
-  Shell::Get()->UpdateShelfVisibility();
+  Shelf::UpdateShelfVisibility();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
@@ -1303,11 +1304,34 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   EXPECT_FALSE(wm::CanActivateWindow(window_1));
   EXPECT_FALSE(wm::CanActivateWindow(window_2));
-  Shell::Get()->UpdateShelfVisibility();
+  Shelf::UpdateShelfVisibility();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
+}
+
+TEST_F(ShelfLayoutManagerTest, FullscreenWidgetHidesShelf) {
+  Shelf* shelf = GetPrimaryShelf();
+  // Create a normal window.
+  views::Widget* widget = TestWidgetBuilder()
+                              .SetBounds(gfx::Rect(11, 22, 300, 400))
+                              .BuildOwnedByNativeWidget();
+  ASSERT_FALSE(widget->IsFullscreen());
+
+  // Shelf defaults to visible.
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  // Fullscreen window hides it.
+  widget->SetFullscreen(true);
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
+
+  // Restoring the window restores it.
+  widget->Restore();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  // Clean up.
+  widget->Close();
 }
 
 // Tests that the shelf is only hidden for a fullscreen window at the front and
@@ -1534,6 +1558,38 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
     RunGestureDragTests(right_center, shelf_bounds.left_center());
     GetAppListTestHelper()->WaitUntilIdle();
   }
+}
+
+TEST_F(ShelfLayoutManagerTest, ShelfDragDisabledForProductivityLauncher) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kProductivityLauncher);
+
+  Shelf* shelf = GetPrimaryShelf();
+  ASSERT_EQ(shelf->auto_hide_behavior(), ShelfAutoHideBehavior::kNever);
+  ASSERT_EQ(shelf->GetVisibilityState(), SHELF_VISIBLE);
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  gfx::Rect shelf_bounds_in_screen = GetVisibleShelfWidgetBoundsInScreen();
+  // Pick an `x` position 1/4 of the way from the left so mouse events are
+  // received by the Shelf instead of the HomeButton.
+  const int x = shelf_bounds_in_screen.x() + shelf_bounds_in_screen.width() / 4;
+  // Start dragging inside the shelf.
+  generator->MoveMouseTo(x, shelf_bounds_in_screen.y() + 20);
+  generator->PressLeftButton();
+  // Try to drag to above the shelf.
+  generator->MoveMouseTo(x, shelf_bounds_in_screen.y() - 20);
+
+  // A drag "attempt" is happening but the shelf is not actually being dragged.
+  EXPECT_NE(GetShelfLayoutManager()->drag_status_for_test(),
+            ShelfLayoutManager::kDragInProgress);
+  EXPECT_NE(GetShelfLayoutManager()->drag_status_for_test(),
+            ShelfLayoutManager::kDragAppListInProgress);
+
+  // Complete the drag. The app list did not open.
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(GetShelfLayoutManager()->drag_status_for_test(),
+            ShelfLayoutManager::kDragNone);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 }
 
 TEST_F(ShelfLayoutManagerTest, MouseDragOnShelfShowsAppList) {
@@ -2362,7 +2418,7 @@ TEST_F(ShelfLayoutManagerTest, StatusAreaHitBoxCoversEdge) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Rect inset_display_bounds = display.bounds();
-  inset_display_bounds.Inset(0, 0, 1, 1);
+  inset_display_bounds.Inset(gfx::Insets::TLBR(0, 0, 1, 1));
 
   // Test bottom right pixel for bottom alignment.
   GetPrimaryShelf()->SetAlignment(ShelfAlignment::kBottom);
@@ -2916,7 +2972,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfShownForSinglePipWindow) {
   window->Show();
   const WMEvent pip_event(WM_EVENT_PIP);
   WindowState::Get(window)->OnWMEvent(&pip_event);
-  Shell::Get()->UpdateShelfVisibility();
+  Shelf::UpdateShelfVisibility();
 
   // Expect the shelf to be hidden.
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());

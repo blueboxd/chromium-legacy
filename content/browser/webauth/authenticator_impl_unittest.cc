@@ -1862,6 +1862,7 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
 
   bool ShouldPermitIndividualAttestation(
       content::BrowserContext* browser_context,
+      const url::Origin& caller_origin,
       const std::string& relying_party_id) override {
     return permit_individual_attestation ||
            (permit_individual_attestation_for_rp_id.has_value() &&
@@ -6714,9 +6715,8 @@ class ResidentKeyAuthenticatorImplWithFlagsTest
     : public ResidentKeyAuthenticatorImplTest {
  public:
   ResidentKeyAuthenticatorImplWithFlagsTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kWebAuthCable, device::kWebAuthCableSecondFactor},
-        /*disabled_features=*/{});
+    scoped_feature_list_.InitWithFeatures({features::kWebAuthCable},
+                                          /*disabled_features=*/{});
   }
 
  private:

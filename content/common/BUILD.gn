@@ -145,8 +145,6 @@ source_set("common") {
     "trace_utils.h",
     "url_schemes.cc",
     "url_schemes.h",
-    "url_utils.cc",
-    "url_utils.h",
     "user_agent.cc",
     "web_package/signed_exchange_utils.cc",
     "web_package/signed_exchange_utils.h",
@@ -276,7 +274,6 @@ source_set("common") {
       "android/surface_wrapper.h",
       "android/sync_compositor_statics.cc",
       "android/sync_compositor_statics.h",
-      "android/use_zoom_for_dsf_policy_android.cc",
       "cursors/webcursor_android.cc",
       "font_list_android.cc",
     ]

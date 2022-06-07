@@ -24,11 +24,11 @@ namespace base {
 class Clock;
 }
 
-namespace chromeos {
+namespace ash {
 
 namespace multidevice {
 class SecureMessageDelegate;
-}  // namespace multidevice
+}
 
 namespace device_sync {
 
@@ -196,6 +196,6 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_MANAGER_IMPL_H_

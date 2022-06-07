@@ -46,7 +46,7 @@ class HIDDetectionScreenHandler
  public:
   using TView = HIDDetectionView;
 
-  explicit HIDDetectionScreenHandler(JSCallsContainer* js_calls_container);
+  HIDDetectionScreenHandler();
 
   HIDDetectionScreenHandler(const HIDDetectionScreenHandler&) = delete;
   HIDDetectionScreenHandler& operator=(const HIDDetectionScreenHandler&) =
@@ -73,7 +73,7 @@ class HIDDetectionScreenHandler
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void DeclareJSCallbacks() override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // Emulate that a USB Mouse and a USB Keyboard are connected for testing.
   void HandleEmulateDevicesConnectedForTesting();
@@ -113,7 +113,7 @@ class HIDDetectionScreenHandler
 
   ash::HIDDetectionScreen* screen_ = nullptr;
 
-  // If true, Initialize() will call Show().
+  // If true, InitializeDeprecated() will call Show().
   bool show_on_init_ = false;
 };
 

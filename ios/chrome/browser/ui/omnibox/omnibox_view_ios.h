@@ -30,7 +30,8 @@ struct AutocompleteMatch;
 // interfaces with the rest of the autocomplete system.
 class OmniboxViewIOS : public OmniboxView,
                        public OmniboxPopupViewSuggestionsDelegate,
-                       public OmniboxTextChangeDelegate {
+                       public OmniboxTextChangeDelegate,
+                       public OmniboxTextAcceptDelegate {
  public:
   // Retains |field|.
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
@@ -133,11 +134,13 @@ class OmniboxViewIOS : public OmniboxView,
   void OnDidChange(bool processing_user_input) override;
   void OnWillEndEditing() override;
   void EndEditing() override;
-  void OnAccept() override;
   void OnCopy() override;
   void ClearText() override;
   void WillPaste() override;
   void OnDeleteBackward() override;
+
+  // OmniboxTextAcceptDelegate methods
+  void OnAccept() override;
 
   // OmniboxPopupViewSuggestionsDelegate methods
 
@@ -186,14 +189,6 @@ class OmniboxViewIOS : public OmniboxView,
 
   // Removes the query refinement chip from the omnibox.
   void RemoveQueryRefinementChip();
-
-  // Returns true if user input should currently be ignored.  On iOS7,
-  // modifying the contents of a text field while Siri is pending leads to a
-  // UIKit crash.  In order to sidestep that crash, OmniboxViewIOS checks that
-  // voice search is not pending before attempting to process user actions that
-  // may modify text field contents.
-  // TODO(crbug.com/303212): Remove this workaround once the crash is fixed.
-  bool ShouldIgnoreUserInputDueToPendingVoiceSearch();
 
   OmniboxTextFieldIOS* field_;
 

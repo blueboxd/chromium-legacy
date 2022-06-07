@@ -189,12 +189,18 @@ void AddLocallySavedPredictions(FieldInfoManager* field_info_manager,
   }
 }
 
-bool HasMutedCredentials(base::span<const InsecureCredential> credentials,
+bool IsMutedInsecureCredential(const PasswordForm* credential,
+                               InsecureType insecure_type) {
+  auto it = credential->password_issues.find(insecure_type);
+  return it != credential->password_issues.end() && it->second.is_muted;
+}
+
+bool HasMutedCredentials(const std::vector<const PasswordForm*>& credentials,
                          const std::u16string& username) {
   return base::ranges::any_of(credentials, [&username](const auto& credential) {
-    return credential.username == username && credential.is_muted &&
-           (credential.insecure_type == InsecureType::kLeaked ||
-            credential.insecure_type == InsecureType::kPhished);
+    return credential->username_value == username &&
+           (IsMutedInsecureCredential(credential, InsecureType::kLeaked) ||
+            IsMutedInsecureCredential(credential, InsecureType::kPhished));
   });
 }
 
@@ -247,6 +253,8 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kPasswordDismissCompromisedAlertEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kOfferToSavePasswordsEnabledGMS, true);
+  registry->RegisterBooleanPref(prefs::kAutoSignInEnabledGMS, true);
   registry->RegisterIntegerPref(
       prefs::kCurrentMigrationVersionToGoogleMobileServices, 0);
   registry->RegisterDoublePref(prefs::kTimeOfLastMigrationAttempt, 0.0);
@@ -869,6 +877,10 @@ void PasswordManager::OnPasswordFormsRendered(
     logger->LogMessage(Logger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD);
   }
 
+  // No submitted manager => no submission tracking.
+  if (!GetSubmittedManager())
+    client_->ResetSubmissionTrackingAfterTouchToFill();
+
   if (!IsAutomaticSavePromptAvailable())
     return;
 
@@ -967,6 +979,7 @@ void PasswordManager::OnLoginSuccessful() {
       submitted_form->url, submitted_form->IsFederatedCredential(),
       submitted_form->federation_origin,
       submitted_manager->GetPendingCredentials().username_value);
+  client_->NotifyOnSuccessfulLogin(submitted_form->username_value);
   if (!client_->IsSavingAndFillingEnabled(submitted_form->url))
     return;
 
@@ -1178,13 +1191,27 @@ bool PasswordManager::HasSubmittedManager() const {
   return GetSubmittedManager() != nullptr;
 }
 
+bool PasswordManager::HasSubmittedManagerWithSamePassword() const {
+  PasswordFormManager* submitted_manager = GetSubmittedManager();
+  return submitted_manager && submitted_manager->IsSamePassword();
+}
+
 void PasswordManager::SaveSubmittedManager() {
   PasswordFormManager* submitted_manager = GetSubmittedManager();
   DCHECK(submitted_manager);
   submitted_manager->Save();
 }
 
+absl::optional<PasswordForm> PasswordManager::GetSubmittedCredentials() {
+  PasswordFormManager* submitted_manager = GetSubmittedManager();
+  if (submitted_manager)
+    return submitted_manager->GetPendingCredentials();
+  return absl::nullopt;
+}
+
 void PasswordManager::ResetSubmittedManager() {
+  client_->ResetSubmissionTrackingAfterTouchToFill();
+
   if (owned_submitted_form_manager_) {
     owned_submitted_form_manager_.reset();
     return;

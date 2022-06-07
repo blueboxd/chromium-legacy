@@ -22,7 +22,7 @@ import './privacy_guide_welcome_fragment.js';
 import './step_indicator.js';
 
 import {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -32,6 +32,7 @@ import {loadTimeData} from '../../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyGuideInteractions} from '../../metrics_browser_proxy.js';
 import {SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../../people_page/sync_browser_proxy.js';
 import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
+import {CrSettingsPrefs} from '../../prefs/prefs_types.js';
 import {SafeBrowsingSetting} from '../../privacy_page/security_page.js';
 import {routes} from '../../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../../router.js';
@@ -52,13 +53,13 @@ interface PrivacyGuideStepComponents {
 export interface SettingsPrivacyGuidePageElement {
   $: {
     viewManager: CrViewManagerElement,
-  },
+  };
 }
 
 const PrivacyGuideBase = RouteObserverMixin(WebUIListenerMixin(
                              I18nMixin(PrefsMixin(PolymerElement)))) as {
   new (): PolymerElement & I18nMixinInterface & WebUIListenerMixinInterface &
-  RouteObserverMixinInterface & PrefsMixinInterface
+      RouteObserverMixinInterface & PrefsMixinInterface,
 };
 
 export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
@@ -165,7 +166,10 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
       return;
     }
     // Set the pref that the user has viewed the Privacy guide.
-    this.setPrefValue('privacy_guide.viewed', true);
+    CrSettingsPrefs.initialized.then(() => {
+      this.setPrefValue('privacy_guide.viewed', true);
+    });
+
     this.updateStateFromQueryParameters_();
   }
 
@@ -330,15 +334,19 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
   /** Sets the privacy guide step from the URL parameter. */
   private updateStateFromQueryParameters_() {
     assert(Router.getInstance().getCurrentRoute() === routes.PRIVACY_GUIDE);
-    const step = Router.getInstance().getQueryParameters().get('step');
-    // TODO(crbug/1215630): If the parameter is welcome but the user has opted
-    // to skip the welcome card in a previous flow, then navigate to the first
-    // settings card instead
-    if (Object.values(PrivacyGuideStep).includes(step as PrivacyGuideStep)) {
-      this.navigateToCard_(step as PrivacyGuideStep, false, true);
+    const step = Router.getInstance().getQueryParameters().get('step') as
+        PrivacyGuideStep;
+
+    if (this.privacyGuideStep_ && step === this.privacyGuideStep_) {
+      // This is the currently shown step. No need to navigate.
+      return;
+    }
+
+    if (Object.values(PrivacyGuideStep).includes(step)) {
+      this.navigateToCard_(step, false, true, true);
     } else {
       // If no step has been specified, then navigate to the welcome step.
-      this.navigateToCard_(PrivacyGuideStep.WELCOME, false, false);
+      this.navigateToCard_(PrivacyGuideStep.WELCOME, false, true, false);
     }
   }
 
@@ -353,7 +361,7 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
       components.onForwardNavigation();
     }
     if (components.nextStep) {
-      this.navigateToCard_(components.nextStep, false, true);
+      this.navigateToCard_(components.nextStep, false, false, true);
     }
   }
 
@@ -368,17 +376,16 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
       components.onBackwardNavigation();
     }
     if (components.previousStep) {
-      this.navigateToCard_(components.previousStep, true, true);
+      this.navigateToCard_(components.previousStep, true, false, true);
     }
   }
 
   private navigateToCard_(
       step: PrivacyGuideStep, isBackwardNavigation: boolean,
-      playAnimation: boolean) {
-    if (step === this.privacyGuideStep_) {
-      return;
-    }
+      isFirstNavigation: boolean, playAnimation: boolean) {
+    assert(step !== this.privacyGuideStep_);
     this.privacyGuideStep_ = step;
+
     if (!this.privacyGuideStepToComponentsMap_.get(step)!.isAvailable()) {
       // This card is currently not available. Navigate to the next one, or
       // the previous one if this was a back navigation.
@@ -404,6 +411,17 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
       }
       Router.getInstance().updateRouteParams(
           new URLSearchParams('step=' + step));
+
+      if (isFirstNavigation) {
+        return;
+      }
+
+      // On navigations within privacy guide, put the focus on the newly shown
+      // fragment.
+      const elementToFocus = this.shadowRoot!.querySelector<HTMLElement>(
+          '#' + this.privacyGuideStep_);
+      assert(elementToFocus);
+      afterNextRender(this, () => elementToFocus.focus());
     }
   }
 
@@ -447,6 +465,10 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
   }
 
   private shouldShowCookiesCard_(): boolean {
+    if (!this.prefs) {
+      // Prefs are not available yet. Show the card until they become available.
+      return true;
+    }
     const currentCookieSetting =
         this.getPref('generated.cookie_primary_setting').value;
     return currentCookieSetting === CookiePrimarySetting.BLOCK_THIRD_PARTY ||
@@ -455,6 +477,10 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
   }
 
   private shouldShowSafeBrowsingCard_(): boolean {
+    if (!this.prefs) {
+      // Prefs are not available yet. Show the card until they become available.
+      return true;
+    }
     const currentSafeBrowsingSetting =
         this.getPref('generated.safe_browsing').value;
     return currentSafeBrowsingSetting === SafeBrowsingSetting.ENHANCED ||
@@ -464,16 +490,6 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
   private showAnySettingFragment_(): boolean {
     return this.privacyGuideStep_ !== PrivacyGuideStep.WELCOME &&
         this.privacyGuideStep_ !== PrivacyGuideStep.COMPLETION;
-  }
-
-  private onViewEnterStart_(event: Event) {
-    // The |view-enter-start| event was dispatched to the fragment that is now
-    // becoming visible. Every fragment has a [focus-element] element that is
-    // focused programmatically when the fragment becomes visible.
-    const elementToFocus =
-        assert((event.target! as HTMLElement)
-                   .shadowRoot!.querySelector<HTMLElement>('[focus-element]'));
-    afterNextRender(this, () => elementToFocus!.focus());
   }
 
   private onKeyDown_(event: KeyboardEvent) {

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_canvas.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -181,9 +182,11 @@ class PrintRenderFrameHelper
   // CREATE_IN_PROGRESS signifies that the preview document is being rendered
   // asynchronously by a PrintRenderer.
   enum CreatePreviewDocumentResult {
-    CREATE_SUCCESS,
-    CREATE_IN_PROGRESS,
-    CREATE_FAIL,
+    CREATE_SUCCESS = 0,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    CREATE_IN_PROGRESS = 1,
+#endif
+    CREATE_FAIL = 2,
   };
 
   enum PrintingResult {
@@ -485,12 +488,14 @@ class PrintRenderFrameHelper
   // Used to check the prerendering status.
   const std::unique_ptr<Delegate> delegate_;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Settings used by a PrintRenderer to create a preview document.
   base::Value print_renderer_job_settings_;
 
   // Used to render print documents from an external source (ARC, Crostini,
   // etc.).
   mojo::AssociatedRemote<mojom::PrintRenderer> print_renderer_;
+#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Used to notify the browser of preview UI actions.
@@ -554,7 +559,9 @@ class PrintRenderFrameHelper
     // Helper functions
     uint32_t GetNextPageNumber();
     bool IsRendering() const;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     bool IsForArc() const;
+#endif
     bool IsPlugin() const;
     bool IsModifiable() const;
     bool HasSelection();
@@ -562,7 +569,9 @@ class PrintRenderFrameHelper
     bool IsFinalPageRendered() const;
 
     // Setters
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     void SetIsForArc(bool is_for_arc);
+#endif
     void set_error(enum PrintPreviewErrorBuckets error);
 
     // Getters
@@ -625,8 +634,10 @@ class PrintRenderFrameHelper
     // True, if the document source is modifiable. e.g. HTML and not PDF.
     bool is_modifiable_ = true;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // True, if the document source is from ARC.
     bool is_for_arc_ = false;
+#endif
 
     // Specifies the total number of pages in the print ready metafile.
     int print_ready_metafile_page_count_ = 0;

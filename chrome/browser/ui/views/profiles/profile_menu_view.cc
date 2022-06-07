@@ -36,7 +36,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -187,21 +187,17 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() const {
     // This is done regardless of GetAvatarSyncErrorType() because the icon
     // should reflect that sync-the-feature is off. The error will still be
     // highlighted by other parts of the UI.
-    return ColoredImageForMenu(kSyncPausedCircleIcon, gfx::kGoogleGrey500);
+    return ColoredImageForMenu(kSyncPausedCircleIcon, ui::kColorIcon);
   }
 
   absl::optional<AvatarSyncErrorType> error = GetAvatarSyncErrorType(profile);
-  const auto* color_provider = GetColorProvider();
-  if (!error) {
-    return ColoredImageForMenu(
-        kSyncCircleIcon, color_provider->GetColor(ui::kColorAlertLowSeverity));
-  }
+  if (!error)
+    return ColoredImageForMenu(kSyncCircleIcon, ui::kColorAlertLowSeverity);
 
   ui::ColorId color_id = error == AvatarSyncErrorType::kAuthError
                              ? ui::kColorButtonBackgroundProminent
                              : ui::kColorAlertHighSeverity;
-  return ColoredImageForMenu(kSyncPausedCircleIcon,
-                             color_provider->GetColor(color_id));
+  return ColoredImageForMenu(kSyncPausedCircleIcon, color_id);
 }
 
 std::u16string ProfileMenuView::GetAccessibleWindowTitle() const {
@@ -511,6 +507,10 @@ void ProfileMenuView::BuildSyncInfo() {
   Profile* profile = browser()->profile();
   if (!profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed))
     return;
+
+  if (!SyncServiceFactory::IsSyncAllowed(profile)) {
+    return;
+  }
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);

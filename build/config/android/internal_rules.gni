@@ -148,7 +148,6 @@ template("write_build_config") {
     outputs = [ invoker.build_config ]
 
     _deps_configs = []
-    _public_deps_configs = []
     if (defined(invoker.possible_config_deps)) {
       foreach(_possible_dep, invoker.possible_config_deps) {
         _dep_label = get_label_info(_possible_dep, "label_no_toolchain")
@@ -161,12 +160,22 @@ template("write_build_config") {
           _dep_config = "$_dep_gen_dir/$_dep_name.build_config.json"
 
           _deps_configs += [ _dep_config ]
-          if (defined(invoker.possible_config_public_deps)) {
-            if (filter_include([ _possible_dep ],
-                               invoker.possible_config_public_deps) != []) {
-              _public_deps_configs += [ _dep_config ]
-            }
-          }
+        }
+      }
+    }
+    _public_deps_configs = []
+    if (defined(invoker.possible_config_public_deps)) {
+      foreach(_possible_dep, invoker.possible_config_public_deps) {
+        _dep_label = get_label_info(_possible_dep, "label_no_toolchain")
+        if (filter_exclude([ _dep_label ], java_target_patterns) == []) {
+          # Put the bug number in the target name so that false-positives
+          # have a hint in the error message about non-existent dependencies.
+          deps += [ "$_dep_label$build_config_target_suffix" ]
+          _dep_gen_dir = get_label_info(_possible_dep, "target_gen_dir")
+          _dep_name = get_label_info(_possible_dep, "name")
+          _dep_config = "$_dep_gen_dir/$_dep_name.build_config.json"
+
+          _public_deps_configs += [ _dep_config ]
         }
       }
     }
@@ -185,11 +194,6 @@ template("write_build_config") {
       "--gn-target",
       _target_label,
     ]
-
-    if (defined(invoker.ignore_dependency_public_deps) &&
-        invoker.ignore_dependency_public_deps) {
-      args += [ "--ignore-dependency-public-deps" ]
-    }
 
     if (defined(invoker.aar_path)) {
       args += [
@@ -1241,10 +1245,6 @@ if (enable_java_templates) {
     }
     _outputs += [ _mapping_path ]
 
-    if (defined(invoker.disable_r8_outlining) && invoker.disable_r8_outlining) {
-      _args += [ "--disable-outlining" ]
-    }
-
     if (defined(invoker.enable_proguard_checks) &&
         !invoker.enable_proguard_checks) {
       _args += [ "--disable-checks" ]
@@ -1478,7 +1478,6 @@ if (enable_java_templates) {
                                      "data_deps",
                                      "deps",
                                      "desugar_jars_paths",
-                                     "disable_r8_outlining",
                                      "enable_proguard_checks",
                                      "expected_proguard_config",
                                      "expected_proguard_config_base",
@@ -1592,8 +1591,7 @@ if (enable_java_templates) {
           rebase_path(_custom_d8_path, root_build_dir),
 
           # Uncomment when rebuilding custom_d8.jar.
-          # Temporarily enabling to fix: https://crbug.com/1305987
-          "--skip-custom-d8",
+          #"--skip-custom-d8",
         ]
         if (treat_warnings_as_errors) {
           args += [ "--warnings-as-errors" ]
@@ -3279,24 +3277,21 @@ if (enable_java_templates) {
 
     forward_variables_from(invoker, [ "testonly" ])
     _is_prebuilt = defined(invoker.jar_path)
-    _is_annotation_processor = invoker.type == "java_annotation_processor"
-    _is_java_binary =
-        invoker.type == "java_binary" || invoker.type == "junit_binary"
+    _type = invoker.type
+    _is_annotation_processor = _type == "java_annotation_processor"
+    _is_java_binary = _type == "java_binary" || _type == "junit_binary"
     _supports_android =
         defined(invoker.supports_android) && invoker.supports_android
     _requires_android =
         defined(invoker.requires_android) && invoker.requires_android
+    _bypass_platform_checks = defined(invoker.bypass_platform_checks) &&
+                              invoker.bypass_platform_checks
 
     _invoker_deps = []
     if (defined(invoker.deps)) {
       _invoker_deps += invoker.deps
     }
     if (defined(invoker.public_deps)) {
-      foreach(_public_dep, invoker.public_deps) {
-        if (filter_include([ _public_dep ], _invoker_deps) != []) {
-          assert(false, "'public_deps' and 'deps' overlap: $_public_dep")
-        }
-      }
       _invoker_deps += invoker.public_deps
     }
 
@@ -3328,14 +3323,13 @@ if (enable_java_templates) {
     }
 
     if (_is_java_binary) {
-      assert(defined(invoker.main_class),
-             "${invoker.type}() must set main_class")
+      assert(defined(invoker.main_class), "${_type}() must set main_class")
     } else if (_is_annotation_processor) {
       assert(defined(invoker.main_class),
              "java_annotation_processor() must set main_class")
     } else {
       assert(!defined(invoker.main_class),
-             "main_class cannot be used for target of type ${invoker.type}")
+             "main_class cannot be used for target of type ${_type}")
     }
 
     if (defined(invoker.chromium_code)) {
@@ -3370,10 +3364,9 @@ if (enable_java_templates) {
         _output_name = _main_target_name
       }
 
-      _build_host_jar = _is_java_binary || _is_annotation_processor ||
-                        invoker.type == "java_library"
-      _build_device_jar =
-          invoker.type != "system_java_library" && _supports_android
+      _build_host_jar =
+          _is_java_binary || _is_annotation_processor || _type == "java_library"
+      _build_device_jar = _type != "system_java_library" && _supports_android
 
       _jacoco_instrument =
           use_jacoco_coverage && _chromium_code && _java_files != [] &&
@@ -3532,7 +3525,7 @@ if (enable_java_templates) {
                                "r_text_path",
                                "type",
                              ])
-      if (type == "android_apk" || type == "android_app_bundle_module") {
+      if (_type == "android_apk" || _type == "android_app_bundle_module") {
         forward_variables_from(
             invoker,
             [
@@ -3553,7 +3546,7 @@ if (enable_java_templates) {
               "library_renames",
             ])
       }
-      if (type == "android_apk") {
+      if (_type == "android_apk") {
         forward_variables_from(invoker,
                                [
                                  "apk_path",
@@ -3562,7 +3555,7 @@ if (enable_java_templates) {
                                  "incremental_install_json_path",
                                ])
       }
-      if (type == "android_app_bundle_module") {
+      if (_type == "android_app_bundle_module") {
         forward_variables_from(invoker,
                                [
                                  "add_view_trace_events",
@@ -3580,7 +3573,13 @@ if (enable_java_templates) {
 
       # Specifically avoid passing in invoker.base_module_target as one of the
       # possible_config_deps.
-      possible_config_deps = _invoker_deps
+      possible_config_deps = []
+      if (defined(invoker.deps)) {
+        possible_config_deps = invoker.deps
+      }
+      if (defined(invoker.public_deps)) {
+        possible_config_public_deps = invoker.public_deps
+      }
       if (defined(_extra_java_deps)) {
         possible_config_deps += _extra_java_deps
       }
@@ -3588,14 +3587,9 @@ if (enable_java_templates) {
         possible_config_deps += [ apk_under_test ]
       }
 
-      if (defined(invoker.public_deps)) {
-        possible_config_public_deps = invoker.public_deps
-      }
-
       supports_android = _supports_android
       requires_android = _requires_android
-      bypass_platform_checks = defined(invoker.bypass_platform_checks) &&
-                               invoker.bypass_platform_checks
+      bypass_platform_checks = _bypass_platform_checks
 
       if (defined(_resources_package)) {
         custom_package = _resources_package
@@ -3648,21 +3642,19 @@ if (enable_java_templates) {
             _java_files != [] && _chromium_code && use_errorprone_java_compiler
       }
 
-      _type = invoker.type
+      if (defined(_resources_package) && _type == "java_library") {
+        assert(_requires_android || _bypass_platform_checks,
+               "Setting resources_package applicable only for " +
+                   "android_library(), or java_library() with " +
+                   "bypass_platform_checks=true. Target=$target_name")
 
-      _uses_fake_rjava = _type == "java_library" && _requires_android
-
-      if (_uses_fake_rjava && defined(_resources_package)) {
         # has _resources at the end so it looks like a resources pattern, since
         # it does act like one (and other resources patterns need to depend on
         # this before they can read its output R.txt).
         _fake_rjava_target = "${target_name}__rjava_resources"
-        _possible_resource_deps = _invoker_deps
         generate_r_java(_fake_rjava_target) {
           deps = [ ":$_build_config_target_name" ]
-          if (defined(_possible_resource_deps)) {
-            possible_resource_deps = _possible_resource_deps
-          }
+          possible_resource_deps = _invoker_deps
           build_config = _build_config
 
           # Filepath has to be exactly this because compile_java looks for the

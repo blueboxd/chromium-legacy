@@ -9,9 +9,11 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
+#include "base/callback_list.h"
 #include "chrome/browser/ui/user_education/tutorial/tutorial.h"
 #include "chrome/browser/ui/user_education/tutorial/tutorial_identifier.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/interaction/element_tracker.h"
 
 class HelpBubble;
@@ -60,6 +62,9 @@ class TutorialService : public KeyedService {
     return currently_displayed_bubble_.get();
   }
 
+  // Calls the abort code for the running tutorial.
+  void AbortTutorial(absl::optional<int> abort_step);
+
  private:
   friend class Tutorial;
   friend class TutorialInteractiveUitest;
@@ -74,9 +79,6 @@ class TutorialService : public KeyedService {
     ui::ElementContext context_;
   };
 
-  // Calls the abort code for the running tutorial.
-  void AbortTutorial();
-
   // Calls the completion code for the running tutorial.
   // TODO (dpenning): allow for registering a callback that performs any
   // IPH/other code on completion of tutorial
@@ -84,6 +86,9 @@ class TutorialService : public KeyedService {
 
   // Reset all of the running tutorial member variables.
   void ResetRunningTutorial();
+
+  // Tracks when the user toggles focus to a help bubble via the keyboard.
+  void OnFocusToggledForAccessibility(HelpBubble* bubble);
 
   // Creation params for the last started tutorial. Used to restart the
   // tutorial after it has been completed.
@@ -112,6 +117,10 @@ class TutorialService : public KeyedService {
   // help bubbles.
   TutorialRegistry* const tutorial_registry_;
   HelpBubbleFactoryRegistry* const help_bubble_factory_registry_;
+
+  // Number of times focus was toggled during the current tutorial.
+  int toggle_focus_count_ = 0;
+  base::CallbackListSubscription toggle_focus_subscription_;
 
   // status bit to denote that the tutorial service is in the process of
   // restarting a tutorial. This prevents calling the abort callbacks.

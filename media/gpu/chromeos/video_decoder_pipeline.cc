@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -118,6 +117,8 @@ absl::optional<SupportedVideoDecoderConfigs>
 VideoDecoderPipeline::GetSupportedConfigs(
     const gpu::GpuDriverBugWorkarounds& workarounds) {
   absl::optional<SupportedVideoDecoderConfigs> configs =
+  // TODO(b/195769334): figure out the best way to query the supported
+  // configurations when using an out-of-process video decoder.
 #if BUILDFLAG(USE_VAAPI)
       VaapiVideoDecoder::GetSupportedConfigs();
 #elif BUILDFLAG(USE_V4L2_CODEC)

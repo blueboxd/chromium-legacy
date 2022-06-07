@@ -60,7 +60,9 @@ class PortTest(LoggingTestCase):
         if with_tests:
             add_unit_tests_to_mock_filesystem(host.filesystem)
             return TestPort(host, **kwargs)
-        return Port(host, port_name or 'baseport', **kwargs)
+        port = Port(host, port_name or 'baseport', **kwargs)
+        port.operating_system = lambda: 'linux'
+        return port
 
     def test_validate_wpt_dirs(self):
         # Keys should not have trailing slashes.
@@ -298,7 +300,8 @@ class PortTest(LoggingTestCase):
         virtual_test = 'virtual/flag/fast/test.html'
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'VirtualTestSuites',
-            '[{ "prefix": "flag", "bases": ["fast"], "args": ["--flag"]}]')
+            '[{ "prefix": "flag", "platforms": ["Linux", "Mac", "Win"],'
+            ' "bases": ["fast"], "args": ["--flag"]}]')
 
         # The default baseline for base test
         self.assertEqual(
@@ -1382,6 +1385,7 @@ class PortTest(LoggingTestCase):
 
     def test_can_load_actual_virtual_test_suite_file(self):
         port = Port(SystemHost(), 'baseport')
+        port.operating_system = lambda: 'linux'
 
         # If this call returns successfully, we found and loaded the web_tests/VirtualTestSuites.
         _ = port.virtual_test_suites()
@@ -1391,7 +1395,8 @@ class PortTest(LoggingTestCase):
         port.host.filesystem.write_text_file(
             port.host.filesystem.join(port.web_tests_dir(),
                                       'VirtualTestSuites'),
-            '[{"prefix": "bar", "bases": ["fast/bar"], "args": ["--bar"]}]')
+            '[{"prefix": "bar", "platforms": ["Linux", "Mac", "Win"], '
+            '"bases": ["fast/bar"], "args": ["--bar"]}]')
 
         # If this call returns successfully, we found and loaded the web_tests/VirtualTestSuites.
         _ = port.virtual_test_suites()
@@ -1401,8 +1406,8 @@ class PortTest(LoggingTestCase):
         port.host.filesystem.write_text_file(
             port.host.filesystem.join(port.web_tests_dir(),
                                       'VirtualTestSuites'), '['
-            '{"prefix": "bar", "bases": ["fast/bar"], "args": ["--bar"]},'
-            '{"prefix": "bar", "bases": ["fast/foo"], "args": ["--bar"]}'
+            '{"prefix": "bar", "platforms": ["Linux"], "bases": ["fast/bar"], "args": ["--bar"]},'
+            '{"prefix": "bar", "platforms": ["Linux"], "bases": ["fast/foo"], "args": ["--bar"]}'
             ']')
 
         self.assertRaises(ValueError, port.virtual_test_suites)
@@ -1543,26 +1548,18 @@ class PortTest(LoggingTestCase):
 
     def test_apache_config_file_name_for_platform(self):
         port = self.make_port()
-        port._apache_version = lambda: '2.2'  # pylint: disable=protected-access
+        port._apache_version = lambda: '2.4'  # pylint: disable=protected-access
         self._assert_config_file_for_platform(port, 'linux',
-                                              'apache2-httpd-2.2.conf')
+                                              'apache2-httpd-2.4-php7.conf')
         self._assert_config_file_for_linux_distribution(
-            port, 'arch', 'arch-httpd-2.2.conf')
-        self._assert_config_file_for_linux_distribution(
-            port, 'debian', 'debian-httpd-2.2.conf')
-        self._assert_config_file_for_linux_distribution(
-            port, 'fedora', 'fedora-httpd-2.2.conf')
-        self._assert_config_file_for_linux_distribution(
-            port, 'slackware', 'apache2-httpd-2.2.conf')
-        self._assert_config_file_for_linux_distribution(
-            port, 'redhat', 'redhat-httpd-2.2.conf')
+            port, 'arch', 'apache2-httpd-2.4-php7.conf')
 
         self._assert_config_file_for_platform(port, 'mac',
-                                              'apache2-httpd-2.2.conf')
+                                              'apache2-httpd-2.4-php7.conf')
         self._assert_config_file_for_platform(port, 'win32',
-                                              'apache2-httpd-2.2.conf')
+                                              'apache2-httpd-2.4-php7.conf')
         self._assert_config_file_for_platform(port, 'barf',
-                                              'apache2-httpd-2.2.conf')
+                                              'apache2-httpd-2.4-php7.conf')
 
     def test_skips_test_in_smoke_tests(self):
         port = self.make_port(with_tests=True)
@@ -1759,15 +1756,22 @@ class KeyCompareTest(unittest.TestCase):
 
 class VirtualTestSuiteTest(unittest.TestCase):
     def test_basic(self):
-        suite = VirtualTestSuite(
-            prefix='suite', bases=['base/foo', 'base/bar'], args=['--args'])
+        suite = VirtualTestSuite(prefix='suite',
+                                 platforms=['Linux', 'Mac', 'Win'],
+                                 bases=['base/foo', 'base/bar'],
+                                 args=['--args'])
         self.assertEqual(suite.full_prefix, 'virtual/suite/')
+        self.assertEqual(suite.platforms, ['linux', 'mac', 'win'])
         self.assertEqual(suite.bases, ['base/foo', 'base/bar'])
         self.assertEqual(suite.args, ['--args'])
 
     def test_empty_bases(self):
-        suite = VirtualTestSuite(prefix='suite', bases=[], args=['--args'])
+        suite = VirtualTestSuite(prefix='suite',
+                                 platforms=['Linux', 'Mac', 'Win'],
+                                 bases=[],
+                                 args=['--args'])
         self.assertEqual(suite.full_prefix, 'virtual/suite/')
+        self.assertEqual(suite.platforms, ['linux', 'mac', 'win'])
         self.assertEqual(suite.bases, [])
         self.assertEqual(suite.args, ['--args'])
 

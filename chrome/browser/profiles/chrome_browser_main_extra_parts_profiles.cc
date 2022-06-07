@@ -35,6 +35,7 @@
 #include "chrome/browser/download/background_download_service_factory.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/enterprise/reporting/cloud_profile_reporting_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -224,6 +225,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/chromeos/extensions/login_screen/login/cleanup/cleanup_manager_lacros_factory.h"
 #include "chrome/browser/lacros/account_manager/profile_account_manager_factory.h"
 #include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
 #endif
@@ -306,6 +308,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   browser_sync::UserEventServiceFactory::GetInstance();
   BrowsingDataHistoryObserverService::Factory::GetInstance();
   browsing_topics::BrowsingTopicsServiceFactory::GetInstance();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::CleanupManagerLacrosFactory::GetInstance();
+#endif
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
 #endif
@@ -443,6 +448,10 @@ void ChromeBrowserMainExtraPartsProfiles::
   policy::UserCloudPolicyInvalidatorFactory::GetInstance();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   policy::UserPolicySigninServiceFactory::GetInstance();
+#endif
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  enterprise_reporting::CloudProfileReportingServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   if (base::FeatureList::IsEnabled(

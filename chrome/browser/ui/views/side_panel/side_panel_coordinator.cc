@@ -21,12 +21,13 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/read_later/side_panel/bookmarks_side_panel_ui.h"
-#include "chrome/browser/ui/webui/read_later/side_panel/reader_mode/reader_mode_side_panel_ui.h"
+#include "chrome/browser/ui/webui/read_later/side_panel/read_anything/read_anything_container_view.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/user_notes/user_notes_features.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -107,12 +108,21 @@ SidePanelCoordinator::SidePanelCoordinator(BrowserView* browser_view,
       ui::ImageModel::FromVectorIcon(omnibox::kStarIcon, ui::kColorIcon),
       base::BindRepeating(&SidePanelCoordinator::CreateBookmarksWebView,
                           base::Unretained(this), browser_view->browser())));
-  if (features::IsReaderModeSidePanelEnabled()) {
+  if (features::IsReadAnythingEnabled()) {
     global_registry->Register(std::make_unique<SidePanelEntry>(
-        SidePanelEntry::Id::kReaderMode,
-        l10n_util::GetStringUTF16(IDS_READER_MODE_TITLE),
+        SidePanelEntry::Id::kReadAnything,
+        l10n_util::GetStringUTF16(IDS_READ_ANYTHING_TITLE),
         ui::ImageModel::FromVectorIcon(kReaderModeIcon, ui::kColorIcon),
-        base::BindRepeating(&SidePanelCoordinator::CreateReaderModeWebView,
+        base::BindRepeating(&SidePanelCoordinator::CreateReadAnythingWebView,
+                            base::Unretained(this), browser_view->browser())));
+  }
+
+  if (user_notes::IsUserNotesEnabled()) {
+    global_registry->Register(std::make_unique<SidePanelEntry>(
+        SidePanelEntry::Id::kUserNote,
+        l10n_util::GetStringUTF16(IDS_USER_NOTE_TITLE),
+        ui::ImageModel::FromVectorIcon(kInkHighlighterIcon, ui::kColorIcon),
+        base::BindRepeating(&SidePanelCoordinator::CreateUserNoteView,
                             base::Unretained(this), browser_view->browser())));
   }
 }
@@ -162,6 +172,7 @@ void SidePanelCoordinator::Close() {
   global_registry_->ResetActiveEntry();
   if (auto* contextual_registry = GetActiveContextualRegistry())
     contextual_registry->ResetActiveEntry();
+  ClearCachedEntryViews();
 
   // TODO(pbos): Make this button observe panel-visibility state instead.
   browser_view_->toolbar()->side_panel_button()->SetTooltipText(
@@ -227,11 +238,35 @@ void SidePanelCoordinator::PopulateSidePanel(SidePanelEntry* entry) {
   views::View* content_wrapper =
       GetContentView()->GetViewByID(kSidePanelContentWrapperViewId);
   DCHECK(content_wrapper);
-  content_wrapper->RemoveAllChildViews();
-  content_wrapper->AddChildView(entry->CreateContent());
+  // |content_wrapper| should have either no child views or one child view for
+  // the currently hosted SidePanelEntry.
+  DCHECK(content_wrapper->children().size() <= 1);
+  if (content_wrapper->children().size()) {
+    DCHECK(GetLastActiveEntryId().has_value());
+    SidePanelEntry* current_entry =
+        GetEntryForId(GetLastActiveEntryId().value());
+    DCHECK(current_entry);
+    auto current_entry_view =
+        content_wrapper->RemoveChildViewT(content_wrapper->children().front());
+    current_entry->CacheView(std::move(current_entry_view));
+  }
+  content_wrapper->AddChildView(entry->GetContent());
   if (auto* contextual_registry = GetActiveContextualRegistry())
     contextual_registry->ResetActiveEntry();
   entry->OnEntryShown();
+}
+
+void SidePanelCoordinator::ClearCachedEntryViews() {
+  global_registry_->ClearCachedEntryViews();
+  TabStripModel* model = browser_view_->browser()->tab_strip_model();
+  if (!model)
+    return;
+  for (int index = 0; index < model->count(); ++index) {
+    auto* web_contents =
+        browser_view_->browser()->tab_strip_model()->GetWebContentsAt(index);
+    if (auto* registry = SidePanelRegistry::Get(web_contents))
+      registry->ClearCachedEntryViews();
+  }
 }
 
 absl::optional<SidePanelEntry::Id> SidePanelCoordinator::GetLastActiveEntryId()
@@ -267,7 +302,7 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
       ChromeLayoutProvider::Get();
 
   // Set the interior margins of the header on the left and right sides.
-  header->SetInteriorMargin(gfx::Insets(
+  header->SetInteriorMargin(gfx::Insets::VH(
       0, chrome_layout_provider->GetDistanceMetric(
              views::DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   // Set alignments for horizontal (main) and vertical (cross) axes.
@@ -344,16 +379,15 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateBookmarksWebView(
   return bookmarks_web_view;
 }
 
-std::unique_ptr<views::View> SidePanelCoordinator::CreateReaderModeWebView(
+// TODO(1266555): Replace this with a coordinator that will own the component.
+std::unique_ptr<views::View> SidePanelCoordinator::CreateReadAnythingWebView(
     Browser* browser) {
-  return std::make_unique<SidePanelWebUIViewT<ReaderModeSidePanelUI>>(
-      browser, base::RepeatingClosure(),
-      base::BindRepeating(&SidePanelCoordinator::Close, base::Unretained(this)),
-      std::make_unique<BubbleContentsWrapperT<ReaderModeSidePanelUI>>(
-          GURL(chrome::kChromeUIReaderModeSidePanelURL), browser->profile(),
-          IDS_READER_MODE_TITLE,
-          /*webui_resizes_host=*/false,
-          /*esc_closes_ui=*/false));
+  return std::make_unique<ReadAnythingContainerView>(browser);
+}
+
+std::unique_ptr<views::View> SidePanelCoordinator::CreateUserNoteView(
+    Browser* browser) {
+  return browser_view_->user_note_ui_coordinator()->CreateUserNotesView();
 }
 
 void SidePanelCoordinator::OnEntryRegistered(SidePanelEntry* entry) {
@@ -361,10 +395,17 @@ void SidePanelCoordinator::OnEntryRegistered(SidePanelEntry* entry) {
 }
 
 void SidePanelCoordinator::OnEntryWillDeregister(SidePanelEntry* entry) {
+  combobox_model_->RemoveItem(entry->id());
   // Update the current entry to make sure we don't show an entry that is being
-  // removed.
-  if (GetContentView())
-    Show(GetLastActiveEntryId().value_or(kDefaultEntry));
+  // removed or close the panel if the entry being deregistered is the only one
+  // that has been visible.
+  if (GetContentView()) {
+    if (global_registry_->active_entry().has_value()) {
+      Show(GetLastActiveEntryId().value_or(kDefaultEntry));
+    } else {
+      Close();
+    }
+  }
 }
 
 void SidePanelCoordinator::OnTabStripModelChanged(

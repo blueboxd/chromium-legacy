@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
 #include "chrome/browser/ash/login/ui/oobe_dialog_size_utils.h"
@@ -73,18 +74,17 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIAssistantOptInHost);
 
-  auto assistant_handler =
-      std::make_unique<AssistantOptInFlowScreenHandler>(&js_calls_container_);
+  auto assistant_handler = std::make_unique<AssistantOptInFlowScreenHandler>();
   assistant_handler_ptr_ = assistant_handler.get();
   web_ui->AddMessageHandler(std::move(assistant_handler));
   assistant_handler_ptr_->set_on_initialized(base::BindOnce(
       &AssistantOptInUI::Initialize, weak_factory_.GetWeakPtr()));
   assistant_handler_ptr_->SetupAssistantConnection();
 
-  base::DictionaryValue localized_strings;
+  base::Value::Dict localized_strings;
   assistant_handler_ptr_->GetLocalizedStrings(&localized_strings);
 
-  OobeUI::AddOobeComponents(source, localized_strings);
+  OobeUI::AddOobeComponents(source);
 
   source->AddLocalizedStrings(localized_strings);
   source->UseStringsJs();
@@ -114,9 +114,7 @@ void AssistantOptInUI::OnDialogClosed() {
   }
 }
 
-void AssistantOptInUI::Initialize() {
-  js_calls_container_.ExecuteDeferredJSCalls(web_ui());
-}
+void AssistantOptInUI::Initialize() {}
 
 // AssistantOptInDialog
 

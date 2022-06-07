@@ -30,8 +30,8 @@
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
-#import "ios/chrome/browser/download/mobileconfig_tab_helper.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
+#import "ios/chrome/browser/download/safari_download_tab_helper.h"
 #import "ios/chrome/browser/download/vcard_tab_helper.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
@@ -62,7 +62,6 @@
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_query_manager.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_tab_helper.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -70,7 +69,6 @@
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
-#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -90,6 +88,7 @@
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/web_state.h"
@@ -184,11 +183,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   // Download tab helpers.
   ARQuickLookTabHelper::CreateForWebState(web_state);
   DownloadManagerTabHelper::CreateForWebState(web_state);
-  MobileConfigTabHelper::CreateForWebState(web_state);
+  SafariDownloadTabHelper::CreateForWebState(web_state);
   PassKitTabHelper::CreateForWebState(web_state);
-  if (base::FeatureList::IsEnabled(kDownloadVcard)) {
-    VcardTabHelper::CreateForWebState(web_state);
-  }
+  VcardTabHelper::CreateForWebState(web_state);
 
   PageloadForegroundDurationTabHelper::CreateForWebState(web_state);
 

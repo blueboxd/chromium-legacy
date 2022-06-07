@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "components/embedder_support/user_agent_utils.h"
@@ -147,9 +148,7 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
 void WebEngineContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
-  CdmProviderService* const provider = main_parts_->cdm_provider_service();
-  DCHECK(provider);
-  PopulateFuchsiaFrameBinders(map, provider);
+  PopulateFuchsiaFrameBinders(map);
 }
 
 void WebEngineContentBrowserClient::

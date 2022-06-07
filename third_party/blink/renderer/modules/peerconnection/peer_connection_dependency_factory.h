@@ -133,8 +133,10 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   void EnsureInitialized();
 
-  // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
-  // An rtc::Thread will have already been created.
+  // Returns the SingleThreadTaskRunner corresponding to the WebRTC worker or
+  // network threads (rtc::Thread), if they exist. These threads are ensured to
+  // exist after an RTCPeerConnectionHandler has been Initialized().
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerTaskRunner();
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcNetworkTaskRunner();
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
@@ -171,7 +173,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
       const gfx::ColorSpace& render_color_space,
       scoped_refptr<base::SequencedTaskRunner> media_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories,
-      media::DecoderFactory* media_decoder_factory,
+      base::WeakPtr<media::DecoderFactory> media_decoder_factory,
       base::WaitableEvent* event);
 
   void CreateIpcNetworkManagerOnNetworkThread(

@@ -85,8 +85,8 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   gfx::Rect surface_content_rect = content_rect();
   const FilterOperations& filters = Filters();
   if (!filters.IsEmpty()) {
-    surface_content_rect = filters.MapRect(surface_content_rect,
-                                           SkMatrix(SurfaceScale().matrix()));
+    surface_content_rect =
+        filters.MapRect(surface_content_rect, SurfaceScale().matrix().asM33());
   }
   gfx::RectF drawable_content_rect = MathUtil::MapClippedRect(
       draw_transform(), gfx::RectF(surface_content_rect));
@@ -221,8 +221,8 @@ gfx::Rect RenderSurfaceImpl::CalculateExpandedClipForFilters(
     const gfx::Transform& target_to_surface) {
   gfx::Rect clip_in_surface_space =
       MathUtil::ProjectEnclosingClippedRect(target_to_surface, clip_rect());
-  gfx::Rect expanded_clip_in_surface_space = Filters().MapRect(
-      clip_in_surface_space, SkMatrix(SurfaceScale().matrix()));
+  gfx::Rect expanded_clip_in_surface_space =
+      Filters().MapRect(clip_in_surface_space, SurfaceScale().matrix().asM33());
   gfx::Rect expanded_clip_in_target_space = MathUtil::MapEnclosingClippedRect(
       draw_transform(), expanded_clip_in_surface_space);
   return expanded_clip_in_target_space;
@@ -260,7 +260,8 @@ gfx::Rect RenderSurfaceImpl::CalculateClippedAccumulatedContentRect() {
     clipped_accumulated_rect_in_target_space = clip_rect();
   }
   if (layer_tree_impl_->settings().allow_de_jelly_effect) {
-    clipped_accumulated_rect_in_target_space.Inset(0, -viz::MaxDeJellyHeight());
+    clipped_accumulated_rect_in_target_space.Inset(
+        gfx::Insets::VH(-viz::MaxDeJellyHeight(), 0));
   }
   clipped_accumulated_rect_in_target_space.Intersect(
       accumulated_rect_in_target_space);
@@ -329,6 +330,12 @@ void RenderSurfaceImpl::AccumulateContentRectFromContributingRenderSurface(
   // Root render surface doesn't accumulate content rect, it always uses
   // viewport for content rect.
   if (render_target() == this)
+    return;
+
+  // If this surface is a shared element id then it is being used to generate an
+  // independent snapshot and won't contribute to its target surface.
+  if (contributing_surface->OwningEffectNode()
+          ->shared_element_resource_id.IsValid())
     return;
 
   // The content rect of contributing surface is in its own space. Instead, we

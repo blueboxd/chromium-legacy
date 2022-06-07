@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_url_utils.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -144,8 +145,10 @@ std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
     Browser* browser,
     const AccountInfo& account_info,
+    bool force_new_profile,
+    bool show_link_data_option,
     SkColor profile_color,
-    base::OnceCallback<void(bool)> callback) {
+    signin::SigninChoiceCallback callback) {
   std::unique_ptr<views::WebView> web_view = CreateDialogWebView(
       browser, GURL(chrome::kChromeUIEnterpriseProfileWelcomeURL),
       kSyncConfirmationDialogHeight, kSyncConfirmationDialogWidth,
@@ -160,7 +163,8 @@ SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
   web_dialog_ui->Initialize(
       browser,
       EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation,
-      account_info, profile_color, std::move(callback));
+      account_info, force_new_profile, show_link_data_option, profile_color,
+      std::move(callback));
 
   return web_view;
 }
@@ -423,11 +427,14 @@ SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateEnterpriseConfirmationDelegate(
     Browser* browser,
     const AccountInfo& account_info,
+    bool force_new_profile,
+    bool show_link_data_option,
     SkColor profile_color,
-    base::OnceCallback<void(bool)> callback) {
+    signin::SigninChoiceCallback callback) {
   return new SigninViewControllerDelegateViews(
       SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
-          browser, account_info, profile_color, std::move(callback)),
+          browser, account_info, force_new_profile, show_link_data_option,
+          profile_color, std::move(callback)),
       browser, ui::MODAL_TYPE_WINDOW, true, false);
 }
 #endif

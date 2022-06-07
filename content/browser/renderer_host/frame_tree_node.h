@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "content/browser/renderer_host/frame_tree.h"
-#include "content/browser/renderer_host/frame_tree_node_blame_context.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_host_manager.h"
@@ -33,6 +32,7 @@
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 
+#include "base/time/time.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -64,16 +64,11 @@ class CONTENT_EXPORT FrameTreeNode {
     // Invoked when a FrameTreeNode becomes focused.
     virtual void OnFrameTreeNodeFocused(FrameTreeNode* node) {}
 
-    virtual ~Observer() = default;
-  };
+    // Invoked when a FrameTreeNode moves to a different BrowsingInstance and
+    // the popups it opened should be disowned.
+    virtual void OnFrameTreeNodeDisownedOpenee(FrameTreeNode* node) {}
 
-  // Indicates whether the fenced frame url is opaque or not.
-  //
-  // TODO(https://crbug.com/1123606): Revisit where to define the mode when the
-  // 'mode' attribute is introduced.
-  enum class FencedFrameMode {
-    kOpaque,
-    kDefault,
+    virtual ~Observer() = default;
   };
 
   static const int kFrameTreeNodeInvalidId;
@@ -365,9 +360,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // FrameTreeNode.
   void BeforeUnloadCanceled();
 
-  // Returns the BlameContext associated with this node.
-  FrameTreeNodeBlameContext& blame_context() { return blame_context_; }
-
   // Updates the user activation state in the browser frame tree and in the
   // frame trees in all renderer processes except the renderer for this node
   // (which initiated the update).  Returns |false| if the update tries to
@@ -458,11 +450,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // tree.
   void SetFrameTree(FrameTree& frame_tree);
 
+  using TraceProto = perfetto::protos::pbzero::FrameTreeNodeInfo;
   // Write a representation of this object into a trace.
-  void WriteIntoTrace(perfetto::TracedValue context) const;
-  void WriteIntoTrace(
-      perfetto::TracedProto<perfetto::protos::pbzero::FrameTreeNodeInfo> proto)
-      const;
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> proto) const;
 
   // Returns true the node is navigating, i.e. it has an associated
   // NavigationRequest.
@@ -498,16 +488,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // by FrameTree::Init() or FrameTree::AddFrame().
   void SetFencedFrameNonceIfNeeded();
 
-  // Returns the fenced frame mode if `IsFencedFrameRoot()` returns true for
-  // `this`. Returns nullopt otherwise. See comments on `fenced_frame_mode_` for
-  // more details.
-  absl::optional<FencedFrameMode> fenced_frame_mode() {
-    return fenced_frame_mode_;
-  }
-
-  // If applicable, set the fenced frame mode if it's not been set yet. Invoked
-  // by `NavigationRequest::BeginNavigation()`.
-  void SetFencedFrameModeIfNeeded(FencedFrameMode fenced_frame_mode);
+  // Returns the mode attribute set on the fenced frame if this is a fenced
+  // frame root, otherwise returns `absl::nullopt`.
+  absl::optional<blink::mojom::FencedFrameMode> GetFencedFrameMode();
 
   // Helper for GetParentOrOuterDocument/GetParentOrOuterDocumentOrEmbedder.
   // Do not use directly.
@@ -544,6 +527,10 @@ class CONTENT_EXPORT FrameTreeNode {
   // the same frame).
   const scoped_refptr<BrowsingContextState>&
   GetBrowsingContextStateForSubframe() const;
+
+  // Clears the opener property of popups referencing this FrameTreeNode as
+  // their opener.
+  void ClearOpenerReferences();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessPermissionsPolicyBrowserTest,
@@ -709,11 +696,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // for details on how this state is maintained.
   blink::UserActivationState user_activation_state_;
 
-  // A helper for tracing the snapshots of this FrameTreeNode and attributing
-  // browser process activities to this node (when possible).  It is unrelated
-  // to the core logic of FrameTreeNode.
-  FrameTreeNodeBlameContext blame_context_;
-
   // Fenced Frames:
   // Nonce used in the net::IsolationInfo and blink::StorageKey for a fenced
   // frame and any iframes nested within it. Not set if this frame is not in a
@@ -729,20 +711,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // parts of the key will change and so, even with the same nonce, another
   // partition will be used.
   absl::optional<base::UnguessableToken> fenced_frame_nonce_;
-
-  // Fenced Frames:
-  // Indicates whether the fenced frame is navigated to a urn:uuid or not. Not
-  // set if this frame is not fenced frame or it is a fenced frame but before
-  // `NavigationRequest::BeginNavigation()` is called which implicitly sets the
-  // mode. The mode will stay the same across navigations to avoid privacy leak.
-  // Since each mode might have different access constraints, privacy leak might
-  // occur if the mode is mutable as a fenced frame can pass the information it
-  // learned in one mode to the other mode if mode was changed across
-  // navigations.
-  absl::optional<FencedFrameMode> fenced_frame_mode_;
-
-  const RenderFrameHostImpl::FencedFrameStatus fenced_frame_status_ =
-      RenderFrameHostImpl::FencedFrameStatus::kNotNestedInFencedFrame;
 
   // Manages creation and swapping of RenderFrameHosts for this frame.
   //

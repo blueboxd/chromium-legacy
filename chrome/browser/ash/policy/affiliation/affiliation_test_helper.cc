@@ -27,7 +27,7 @@
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -90,7 +90,7 @@ AffiliationTestHelper AffiliationTestHelper::CreateForCloud(
 // static
 AffiliationTestHelper AffiliationTestHelper::CreateForActiveDirectory(
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_authpolicy_client) {
+    ash::FakeAuthPolicyClient* fake_authpolicy_client) {
   return AffiliationTestHelper(ManagementType::kActiveDirectory,
                                fake_session_manager_client,
                                fake_authpolicy_client);
@@ -102,7 +102,7 @@ AffiliationTestHelper::AffiliationTestHelper(AffiliationTestHelper&& other) =
 AffiliationTestHelper::AffiliationTestHelper(
     ManagementType management_type,
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_authpolicy_client)
+    ash::FakeAuthPolicyClient* fake_authpolicy_client)
     : management_type_(management_type),
       fake_session_manager_client_(fake_session_manager_client),
       fake_authpolicy_client_(fake_authpolicy_client) {

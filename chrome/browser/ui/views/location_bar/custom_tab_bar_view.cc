@@ -15,6 +15,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
@@ -88,13 +89,13 @@ ui::ColorId GetSecurityChipColorId(
     security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return ui::kColorPwaSecurityChipForegroundPolicyCert;
+      return kColorPwaSecurityChipForegroundPolicyCert;
     case security_state::SECURE:
-      return ui::kColorPwaSecurityChipForegroundSecure;
+      return kColorPwaSecurityChipForegroundSecure;
     case security_state::DANGEROUS:
-      return ui::kColorPwaSecurityChipForegroundDangerous;
+      return kColorPwaSecurityChipForegroundDangerous;
     default:
-      return ui::kColorPwaSecurityChipForeground;
+      return kColorPwaSecurityChipForeground;
   }
 }
 
@@ -289,21 +290,18 @@ gfx::Size CustomTabBarView::CalculatePreferredSize() const {
 void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   views::View::OnPaintBackground(canvas);
 
-  SkColor separator_color =
-      color_utils::IsDark(background_color_) ? SK_ColorWHITE : SK_ColorBLACK;
-  constexpr float kSeparatorOpacity = 0.15f;
+  auto* color_provider = GetColorProvider();
 
   gfx::Rect bounds = GetLocalBounds();
   const gfx::Size separator_size = gfx::Size(bounds.width(), 1);
 
   // Inset the bounds by 1 on the bottom, so we draw the bottom border inside
   // the custom tab bar.
-  bounds.Inset(0, 0, 0, 1);
+  bounds.Inset(gfx::Insets::TLBR(0, 0, 1, 0));
 
   // Custom tab/content separator (bottom border).
   canvas->FillRect(gfx::Rect(bounds.bottom_left(), separator_size),
-                   color_utils::AlphaBlend(separator_color, background_color_,
-                                           kSeparatorOpacity));
+                   color_provider->GetColor(kColorPwaTabBarBottomSeparator));
 
   // Don't render the separator if there is already sufficient contrast between
   // the custom tab bar and the title bar.
@@ -315,8 +313,7 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
 
   // Frame/Custom tab separator (top border).
   canvas->FillRect(gfx::Rect(bounds.origin(), separator_size),
-                   color_utils::AlphaBlend(separator_color, title_bar_color_,
-                                           kSeparatorOpacity));
+                   color_provider->GetColor(kColorPwaTabBarTopSeparator));
 }
 
 void CustomTabBarView::ChildPreferredSizeChanged(views::View* child) {
@@ -326,24 +323,22 @@ void CustomTabBarView::ChildPreferredSizeChanged(views::View* child) {
 
 void CustomTabBarView::OnThemeChanged() {
   views::AccessiblePaneView::OnThemeChanged();
-  absl::optional<SkColor> optional_theme_color = GetThemeColor();
-
-  title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
-
   const auto* color_provider = GetColorProvider();
+
+  title_bar_color_ = color_provider->GetColor(kColorPwaTheme);
   const SkColor foreground_color =
-      color_provider->GetColor(ui::kColorPwaToolbarForeground);
+      color_provider->GetColor(kColorPwaToolbarForeground);
   SetImageFromVectorIconWithColor(
       close_button_, vector_icons::kCloseRoundedIcon,
       GetLayoutConstant(LOCATION_BAR_ICON_SIZE), foreground_color);
 
-  background_color_ = color_provider->GetColor(ui::kColorPwaToolbarBackground);
+  background_color_ = color_provider->GetColor(kColorPwaToolbarBackground);
   SetBackground(views::CreateSolidBackground(background_color_));
 
   title_origin_view_->SetColors(background_color_);
   if (web_app_menu_button_) {
-    web_app_menu_button_->SetColor(GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
+    web_app_menu_button_->SetColor(
+        color_provider->GetColor(kColorPwaMenuButtonIcon));
   }
 }
 
@@ -403,7 +398,7 @@ SkColor CustomTabBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
 }
 
 SkColor CustomTabBarView::GetIconLabelBubbleBackgroundColor() const {
-  return GetColorProvider()->GetColor(ui::kColorPwaToolbarBackground);
+  return GetColorProvider()->GetColor(kColorPwaToolbarBackground);
 }
 
 content::WebContents* CustomTabBarView::GetWebContents() {
@@ -449,20 +444,6 @@ void CustomTabBarView::GoBackToAppForTesting() {
 
 bool CustomTabBarView::IsShowingOriginForTesting() const {
   return title_origin_view_ && title_origin_view_->IsShowingOriginForTesting();
-}
-
-// TODO(tluk): Remove the use of GetDefaultFrameColor() completely here. When
-// drawing the separator the current frame color should be queried directly and
-// not assume knowledge of what the color might be.
-SkColor CustomTabBarView::GetDefaultFrameColor() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Ash system frames differ from ChromeOS browser frames.
-  return chromeos::kDefaultFrameColor;
-#else
-  return ThemeProperties::GetDefaultColor(
-      ThemeProperties::COLOR_FRAME_ACTIVE, false,
-      GetNativeTheme()->ShouldUseDarkColors());
-#endif
 }
 
 void CustomTabBarView::GoBackToApp() {
@@ -536,20 +517,10 @@ void CustomTabBarView::ShowContextMenuForViewImpl(
       views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
-absl::optional<SkColor> CustomTabBarView::GetThemeColor() const {
-  web_app::AppBrowserController* application_controller = app_controller();
-  return application_controller ? application_controller->GetThemeColor()
-                                : absl::nullopt;
-}
-
 bool CustomTabBarView::GetShowTitle() const {
   return app_controller() != nullptr;
 }
 
 BEGIN_METADATA(CustomTabBarView, views::AccessiblePaneView)
-ADD_READONLY_PROPERTY_METADATA(SkColor,
-                               DefaultFrameColor,
-                               ui::metadata::SkColorConverter)
-ADD_READONLY_PROPERTY_METADATA(absl::optional<SkColor>, ThemeColor)
 ADD_READONLY_PROPERTY_METADATA(bool, ShowTitle)
 END_METADATA

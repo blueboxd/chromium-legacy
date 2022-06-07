@@ -21,13 +21,14 @@
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/time_tray_item_view.h"
 #include "ash/system/time/time_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
-#include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/unified/camera_mic_tray_item_view.h"
 #include "ash/system/unified/current_locale_view.h"
 #include "ash/system/unified/hps_notify_view.h"
@@ -148,7 +149,9 @@ bool UnifiedSystemTray::UiDelegate::ShowMessageCenter() {
 void UnifiedSystemTray::UiDelegate::HideMessageCenter() {}
 
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
-    : TrayBackgroundView(shelf),
+    : TrayBackgroundView(
+          shelf,
+          (features::IsCalendarViewEnabled() ? kEndRounded : kAllRounded)),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
       model_(base::MakeRefCounted<UnifiedSystemTrayModel>(shelf)),
       slider_bubble_controller_(
@@ -167,15 +170,15 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           new CameraMicTrayItemView(shelf,
                                     CameraMicTrayItemView::Type::kCamera)),
       mic_view_(
-          new CameraMicTrayItemView(shelf, CameraMicTrayItemView::Type::kMic)) {
-  time_view_ = new tray::TimeTrayItemView(
-      shelf, model_,
-      base::BindRepeating(&UnifiedSystemTray::OnTimeViewActionPerformed,
-                          weak_factory_.GetWeakPtr()));
+          new CameraMicTrayItemView(shelf, CameraMicTrayItemView::Type::kMic)),
+      time_view_(new TimeTrayItemView(shelf, TimeView::Type::kTime)) {
   tray_container()->SetMargin(
       kUnifiedTrayContentPadding -
           ShelfConfig::Get()->status_area_hit_region_padding(),
       0);
+  if (features::IsCalendarViewEnabled()) {
+    AddTrayItemToContainer(time_view_);
+  }
 
   notification_icons_controller_->AddNotificationTrayItems(tray_container());
   for (TrayItemView* tray_item : notification_icons_controller_->tray_items()) {
@@ -202,16 +205,16 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
 
   if (features::IsSeparateNetworkIconsEnabled()) {
     network_tray_view_ =
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary);
+        new NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary);
     AddTrayItemToContainer(
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
+        new NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
   } else {
     network_tray_view_ =
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle);
+        new NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle);
   }
 
   AddTrayItemToContainer(network_tray_view_);
-  AddTrayItemToContainer(new tray::PowerTrayView(shelf));
+  AddTrayItemToContainer(new PowerTrayView(shelf));
 
   auto vertical_clock_padding = std::make_unique<views::View>();
   vertical_clock_padding->SetPreferredSize(
@@ -219,7 +222,9 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   vertical_clock_padding_ =
       tray_container()->AddChildView(std::move(vertical_clock_padding));
 
-  AddTrayItemToContainer(time_view_);
+  if (!features::IsCalendarViewEnabled()) {
+    AddTrayItemToContainer(time_view_);
+  }
 
   set_separator_visibility(false);
   set_use_bounce_in_animation(false);
@@ -234,10 +239,6 @@ UnifiedSystemTray::~UnifiedSystemTray() {
 
   message_center_bubble_.reset();
   bubble_.reset();
-
-  // Reset the view to remove its dependency from |model_|, since this view is
-  // destructed after |model_|.
-  time_view_->Reset();
 }
 
 bool UnifiedSystemTray::MoreThanOneVisibleTrayItem() const {
@@ -346,16 +347,8 @@ void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
   ui_delegate_->SetTrayBubbleHeight(height);
 }
 
-void UnifiedSystemTray::FocusFirstNotification() {
-  FocusMessageCenter(false /*reverse*/);
-
-  // Do not focus an individual element in quick settings if chrome vox is
-  // enabled
-  if (!ShouldEnableExtraKeyboardAccessibility())
-    message_center_bubble()->FocusFirstNotification();
-}
-
-bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
+bool UnifiedSystemTray::FocusMessageCenter(bool reverse,
+                                           bool collapse_quick_settings) {
   if (!IsMessageCenterBubbleShown())
     return false;
 
@@ -365,14 +358,17 @@ bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
 
   Shell::Get()->focus_cycler()->FocusWidget(message_center_widget);
 
+  ExpandMessageCenter();
+
+  // TODO(1225479): Only collapse if space is an issue.
+  if (collapse_quick_settings)
+    EnsureQuickSettingsCollapsed(/*animate*/ false);
+
   // Focus an individual element in the message center if chrome vox is
-  // disabled. Otherwise, ensure the message center is expanded.
-  if (!ShouldEnableExtraKeyboardAccessibility()) {
+  // disabled.
+  if (!ShouldEnableExtraKeyboardAccessibility())
     message_center_bubble_->FocusEntered(reverse);
-  } else if (message_center_bubble_->IsMessageCenterCollapsed()) {
-    ExpandMessageCenter();
-    EnsureQuickSettingsCollapsed(true /*animate*/);
-  }
+
   return true;
 }
 
@@ -386,11 +382,9 @@ bool UnifiedSystemTray::FocusQuickSettings(bool reverse) {
   Shell::Get()->focus_cycler()->FocusWidget(quick_settings_widget);
 
   // Focus an individual element in quick settings if chrome vox is
-  // disabled. Otherwise, ensure quick settings is expanded.
+  // disabled.
   if (!ShouldEnableExtraKeyboardAccessibility())
     bubble_->FocusEntered(reverse);
-  else
-    EnsureBubbleExpanded();
 
   return true;
 }
@@ -448,31 +442,17 @@ void UnifiedSystemTray::OnShelfConfigUpdated() {
       0);
 }
 
-void UnifiedSystemTray::OnTimeViewActionPerformed(const ui::Event& event) {
-  int visible_item_count = 0;
-  for (auto* item : tray_items_) {
-    if (item->GetVisible())
-      ++visible_item_count;
-  }
+void UnifiedSystemTray::OnDateTrayActionPerformed(const ui::Event& event) {
+  ShowBubble();
+  bubble_->ShowCalendarView(calendar_metrics::CalendarViewShowSource::kTimeView,
+                            calendar_metrics::GetEventType(event));
+}
 
-  // If there are >= 2 icons in front of the time view (total items >= 3 if
-  // includes time_view) and the screen size is large enough to show date in
-  // the unified system tray, show calendar bubble; otherwise show quick setting
-  // bubble.
-  if (visible_item_count < 3 || !time_view_->time_view()->show_date()) {
-    TrayBackgroundView::PerformAction(event);
-    return;
-  }
+bool UnifiedSystemTray::IsShowingCalendarView() const {
+  if (!bubble_)
+    return false;
 
-  if (GetBubbleWidget()) {
-    CloseBubble();
-  } else {
-    ShowBubble();
-
-    bubble_->ShowCalendarView(
-        calendar_metrics::CalendarViewShowSource::kTimeView,
-        calendar_metrics::GetEventType(event));
-  }
+  return bubble_->ShowingCalendarView();
 }
 
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
@@ -590,11 +570,6 @@ void UnifiedSystemTray::ShowBubbleInternal() {
 
   message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
   message_center_bubble_->ShowBubble();
-
-  // crbug/1310675 Add observers in `UnifiedSystemTrayBubble` after both bubbles
-  // have been completely created, without this the bubbles can be destroyed
-  // before their creation is complete resulting in crashes.
-  bubble_->InitializeObservers();
 
   if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled())
     ActivateBubble();

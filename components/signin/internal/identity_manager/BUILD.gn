@@ -14,6 +14,7 @@ source_set("identity_manager") {
     "account_capabilities_fetcher.cc",
     "account_capabilities_fetcher.h",
     "account_capabilities_fetcher_factory.h",
+    "account_capabilities_list.h",
     "account_fetcher_service.cc",
     "account_fetcher_service.h",
     "account_info_fetcher.cc",
@@ -36,7 +37,6 @@ source_set("identity_manager") {
     "primary_account_manager.h",
     "primary_account_mutator_impl.cc",
     "primary_account_mutator_impl.h",
-    "primary_account_policy_manager.h",
     "profile_oauth2_token_service.cc",
     "profile_oauth2_token_service.h",
     "profile_oauth2_token_service_builder.cc",
@@ -81,10 +81,7 @@ source_set("identity_manager") {
       "profile_oauth2_token_service_delegate_android.cc",
       "profile_oauth2_token_service_delegate_android.h",
     ]
-    deps += [
-      "//components/signin/internal/base",
-      "//components/signin/public/android:jni_headers",
-    ]
+    deps += [ "//components/signin/public/android:jni_headers" ]
   } else {
     sources += [
       "account_capabilities_fetcher_factory_gaia.cc",
@@ -101,7 +98,7 @@ source_set("identity_manager") {
     ]
   }
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos) {
     sources += [
       "profile_oauth2_token_service_delegate_chromeos.cc",
       "profile_oauth2_token_service_delegate_chromeos.h",
@@ -112,13 +109,6 @@ source_set("identity_manager") {
   if (is_chromeos_ash) {
     deps += [ "//ash/constants" ]
     public_deps += [ "//ash/components/account_manager" ]
-  } else {
-    sources += [
-      "primary_account_policy_manager_impl.cc",
-      "primary_account_policy_manager_impl.h",
-    ]
-
-    public_deps += [ "//components/prefs" ]
   }
 
   if (!is_android && !is_ios) {
@@ -207,8 +197,6 @@ source_set("unit_tests") {
       "//ash/constants",
       "//components/account_manager_core:test_support",
     ]
-  } else {
-    sources += [ "primary_account_policy_manager_impl_unittest.cc" ]
   }
 
   if (is_ios) {

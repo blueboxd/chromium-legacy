@@ -13,6 +13,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {HardwareVerificationStatusObserverInterface, HardwareVerificationStatusObserverReceiver, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -40,6 +41,12 @@ export class OnboardingLandingPage extends OnboardingLandingPageBase {
 
   static get properties() {
     return {
+      /**
+       * Set by shimless_rma.js.
+       * @type {boolean}
+       */
+      allButtonsDisabled: Boolean,
+
       /**
        * List of unqualified components from rmad service, not i18n.
        * @protected
@@ -102,6 +109,35 @@ export class OnboardingLandingPage extends OnboardingLandingPageBase {
     return Promise.reject(new Error('Hardware verification is not complete.'));
   }
 
+  /** @protected */
+  onGetStartedButtonClicked_(e) {
+    e.preventDefault();
+
+    executeThenTransitionState(this, () => {
+      if (!this.verificationInProgress_) {
+        return this.shimlessRmaService_.beginFinalization();
+      }
+
+      return Promise.reject(
+          new Error('Hardware verification is not complete.'));
+    });
+  }
+
+  /**
+   * @protected
+   */
+  onLandingCancelButtonClicked_(e) {
+    e.preventDefault();
+
+    this.dispatchEvent(new CustomEvent(
+        'click-cancel-button',
+        {
+          bubbles: true,
+          composed: true,
+        },
+        ));
+  }
+
   /**
    * @protected
    * @return {string}
@@ -124,11 +160,6 @@ export class OnboardingLandingPage extends OnboardingLandingPageBase {
       this.componentsList_ = errorMessage;
       this.setVerificationFailedMessage_();
     }
-
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: false},
-        ));
   }
 
   /** @private */
@@ -147,6 +178,11 @@ export class OnboardingLandingPage extends OnboardingLandingPageBase {
   /** @private */
   closeDialog_() {
     this.shadowRoot.querySelector('#unqualifiedComponentsDialog').close();
+  }
+
+  /** @protected */
+  isGetStartedButtonDisabled_() {
+    return this.verificationInProgress_ || this.allButtonsDisabled;
   }
 }
 

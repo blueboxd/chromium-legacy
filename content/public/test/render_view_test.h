@@ -40,6 +40,7 @@ class WebMouseEvent;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace content {
@@ -188,9 +189,6 @@ class RenderViewTest : public testing::Test {
   // These are all methods from RenderViewImpl that we expose to testing code.
   void OnSameDocumentNavigation(blink::WebLocalFrame* frame,
                                 bool is_new_navigation);
-
-  // Enables to use zoom for device scale.
-  void SetUseZoomForDSFEnabled(bool zoom_for_dsf);
 
   blink::WebFrameWidget* GetWebFrameWidget();
 

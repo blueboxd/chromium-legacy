@@ -22,8 +22,7 @@ namespace ui {
 class ImageModel;
 }
 
-// This controller provides data and actions for the
-// PasswordSaveUpdateWithAccountStoreView.
+// This controller provides data and actions for the PasswordSaveUpdateView.
 class SaveUpdateBubbleController : public PasswordBubbleControllerBase {
  public:
   explicit SaveUpdateBubbleController(
@@ -47,6 +46,10 @@ class SaveUpdateBubbleController : public PasswordBubbleControllerBase {
   void OnCredentialEdited(std::u16string new_username,
                           std::u16string new_password);
 
+  // Called by the view code when the "Google Password Manager" link in the
+  // bubble footer in clicked by the user.
+  void OnGooglePasswordManagerLinkClicked();
+
   // The password bubble can switch its state between "save" and "update"
   // depending on the user input. |state_| only captures the correct state on
   // creation. This method returns true iff the current state is "update".
@@ -56,11 +59,10 @@ class SaveUpdateBubbleController : public PasswordBubbleControllerBase {
   // to Google account.
   bool ShouldShowFooter() const;
 
-  // The password bubble header image can switch its state between "save" and
-  // "update" depending on the user input. |state_| only captures the correct
-  // state on creation. This method returns true iff the current state is
-  // "save" or "update" to a password in the account store.
-  bool IsCurrentStateAffectingTheAccountStore();
+  // This method returns true iff the current state is "save" or "update" to a
+  // password that is synced to the Google Account. This method covers
+  // non-syncing account-store users as well as syncing users.
+  bool IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount();
 
   // Returns true if passwords revealing is not locked or re-authentication is
   // not available on the given platform. Otherwise, the method schedules
@@ -85,7 +87,7 @@ class SaveUpdateBubbleController : public PasswordBubbleControllerBase {
 
   // Returns the email of current primary account. Returns empty string if no
   // account is signed in.
-  std::string GetPrimaryAccountEmail();
+  std::u16string GetPrimaryAccountEmail();
 
   // Returns the avatar of the primary account. Returns an empty image if no
   // account is signed in.

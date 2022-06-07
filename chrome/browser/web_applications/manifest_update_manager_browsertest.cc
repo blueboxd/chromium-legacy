@@ -36,7 +36,6 @@
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_sync_test_utils.h"
-#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -48,6 +47,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -64,7 +64,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
 #include "third_party/blink/public/mojom/manifest/handle_links.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
@@ -401,7 +400,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     GetProvider().install_manager().InstallWebAppFromManifestWithFallback(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        /*force_shortcut_app=*/false,
+        WebAppInstallManager::WebAppInstallFlow::kInstallSite,
         webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindOnce(test::TestAcceptDialogCallback),
         base::BindLambdaForTesting(
@@ -471,7 +470,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
       auto synced_specifics_data = std::make_unique<WebApp>(app_id);
       synced_specifics_data->SetStartUrl(start_url);
 
-      synced_specifics_data->AddSource(Source::kSync);
+      synced_specifics_data->AddSource(WebAppManagement::kSync);
       synced_specifics_data->SetUserDisplayMode(DisplayMode::kBrowser);
       synced_specifics_data->SetName("Name From Sync");
 
@@ -1806,44 +1805,6 @@ INSTANTIATE_TEST_SUITE_P(
                       UpdateDialogParam::kDisabled),
     ManifestUpdateManagerBrowserTest_UpdateDialog::ParamToString);
 
-class ManifestUpdateManagerCaptureLinksBrowserTest
-    : public ManifestUpdateManagerBrowserTest {
-  base::test::ScopedFeatureList scoped_feature_list_{
-      blink::features::kWebAppEnableLinkCapturing};
-};
-
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerCaptureLinksBrowserTest,
-                       CheckFindsCaptureLinksChange) {
-  constexpr char kManifestTemplate[] = R"(
-    {
-      "name": "Test app name",
-      "start_url": ".",
-      "scope": "/",
-      "display": "standalone",
-      "icons": $1,
-      "capture_links": "$2"
-    }
-  )";
-  OverrideManifest(kManifestTemplate, {kInstallableIconList, "none"});
-  AppId app_id = InstallWebApp();
-  EXPECT_EQ(GetProvider().registrar().GetAppCaptureLinks(app_id),
-            blink::mojom::CaptureLinks::kNone);
-
-  OverrideManifest(kManifestTemplate, {kInstallableIconList, "new-client"});
-  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
-            ManifestUpdateResult::kAppUpdated);
-  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
-                                      ManifestUpdateResult::kAppUpdated, 1);
-  ConfirmShortcutColors(app_id, {{{32, kAll}, kInstallableIconTopLeftColor},
-                                 {{48, kAll}, kInstallableIconTopLeftColor},
-                                 {{64, kWin}, kInstallableIconTopLeftColor},
-                                 {{96, kWin}, kInstallableIconTopLeftColor},
-                                 {{128, kAll}, kInstallableIconTopLeftColor},
-                                 {{256, kAll}, kInstallableIconTopLeftColor}});
-  EXPECT_EQ(GetProvider().registrar().GetAppCaptureLinks(app_id),
-            blink::mojom::CaptureLinks::kNewClient);
-}
-
 class ManifestUpdateManagerHandleLinksBrowserTest
     : public ManifestUpdateManagerBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_{
@@ -1900,14 +1861,19 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerLaunchHandlerBrowserTest,
       "launch_handler": $2
     }
   )";
-  OverrideManifest(kManifestTemplate, {kInstallableIconList, "null"});
-  AppId app_id = InstallWebApp();
-  EXPECT_EQ(GetProvider().registrar().GetAppById(app_id)->launch_handler(),
-            absl::nullopt);
 
+  // Deprecated launch_handler syntax.
   OverrideManifest(kManifestTemplate, {kInstallableIconList, R"({
     "route_to": "existing-client",
     "navigate_existing_client": "never"
+  })"});
+  AppId app_id = InstallWebApp();
+  EXPECT_EQ(GetProvider().registrar().GetAppById(app_id)->launch_handler(),
+            (LaunchHandler{LaunchHandler::RouteTo::kExistingClientRetain}));
+
+  // New launch_handler syntax.
+  OverrideManifest(kManifestTemplate, {kInstallableIconList, R"({
+    "route_to": "existing-client-navigate"
   })"});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
             ManifestUpdateResult::kAppUpdated);
@@ -1920,8 +1886,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerLaunchHandlerBrowserTest,
                                  {{128, kAll}, kInstallableIconTopLeftColor},
                                  {{256, kAll}, kInstallableIconTopLeftColor}});
   EXPECT_EQ(GetProvider().registrar().GetAppById(app_id)->launch_handler(),
-            (LaunchHandler{LaunchHandler::RouteTo::kExistingClient,
-                           LaunchHandler::NavigateExistingClient::kNever}));
+            (LaunchHandler{LaunchHandler::RouteTo::kExistingClientNavigate}));
 }
 
 class ManifestUpdateManagerSystemAppBrowserTest

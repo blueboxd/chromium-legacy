@@ -111,5 +111,15 @@ const base::Feature kAutofillAssistantProactiveHelp{
 const base::Feature kAutofillAssistantUrlHeuristics{
     "AutofillAssistantUrlHeuristics", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether Autofill Assistant is enabled on desktop.
+const base::Feature kAutofillAssistantDesktop{"AutofillAssistantDesktop",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Decides whether leak checks may be performed on saving a manually
+// submitted password in an automated password change flow.
+const base::Feature kAutofillAssistantAPCLeakCheckOnSaveSubmittedPassword{
+    "AutofillAssistantAPCLeakCheckOnSaveSubmittedPassword",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace autofill_assistant

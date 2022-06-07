@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_modal_dialog.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -143,8 +144,10 @@ class SigninViewController {
   // on the dialog.
   void ShowModalEnterpriseConfirmationDialog(
       const AccountInfo& account_info,
+      bool force_new_profile,
+      bool show_link_data_option,
       SkColor profile_color,
-      base::OnceCallback<void(bool)> callback);
+      signin::SigninChoiceCallback callback);
 
   // Shows the modal sign-in error dialog as a browser-modal dialog on top of
   // the |browser_|'s window.

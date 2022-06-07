@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/autofill/payments/migratable_card_view.h"
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -66,7 +67,8 @@ class AutofillMigrationHeaderView : public views::ImageView {
   METADATA_HEADER(AutofillMigrationHeaderView);
   AutofillMigrationHeaderView() {
     constexpr int kImageBorderBottom = 8;
-    SetBorder(views::CreateEmptyBorder(0, 0, kImageBorderBottom, 0));
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets::TLBR(0, 0, kImageBorderBottom, 0)));
     SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   }
@@ -100,11 +102,13 @@ class TipTextContainer : public views::View {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal,
         gfx::Insets(container_insets), container_child_space));
+    SetBackground(views::CreateThemedSolidBackground(
+        this, kColorPaymentsFeedbackTipBackground));
 
     constexpr int kTipImageSize = 16;
     auto* lightbulb_outline_image = AddChildView(
         std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-            vector_icons::kLightbulbOutlineIcon, ui::kColorAlertMediumSeverity,
+            vector_icons::kLightbulbOutlineIcon, kColorPaymentsFeedbackTipIcon,
             kTipImageSize)));
     lightbulb_outline_image->SetVerticalAlignment(
         views::ImageView::Alignment::kLeading);
@@ -123,28 +127,14 @@ class TipTextContainer : public views::View {
   // views::Label:
   void OnThemeChanged() override {
     View::OnThemeChanged();
-    const bool should_use_dark_colors = GetNativeTheme()->ShouldUseDarkColors();
 
-    // TODO(tluk): We should not be using hard coded color constants and
-    // switching colors based on the dark mode flag. We should instead
-    // systematize these into color ids and simply call GetColor() for these
-    // ids.
-    SetBackground(views::CreateSolidBackground(
-        should_use_dark_colors ? gfx::kGoogleGrey800 : gfx::kGoogleGrey050));
-
-    // Do not add the border if it is not using dark colors.
     constexpr int kTipValuePromptBorderThickness = 1;
-    SetBorder(should_use_dark_colors
-                  ? views::NullBorder()
-                  : views::CreateSolidBorder(kTipValuePromptBorderThickness,
-                                             gfx::kGoogleGrey100));
-
-    // If it is in dark mode, set the font color to GG200 since it is on a
-    // lighter shade of grey background.
+    const auto* const color_provider = GetColorProvider();
+    SetBorder(views::CreateSolidBorder(
+        kTipValuePromptBorderThickness,
+        color_provider->GetColor(kColorPaymentsFeedbackTipBorder)));
     tip_->SetEnabledColor(
-        should_use_dark_colors
-            ? gfx::kGoogleGrey200
-            : GetColorProvider()->GetColor(ui::kColorLabelForegroundSecondary));
+        color_provider->GetColor(kColorPaymentsFeedbackTipForeground));
   }
 
  private:
@@ -180,10 +170,9 @@ std::unique_ptr<views::Label> CreateTitle(
 #else
   constexpr int kMigrationDialogTitleMarginTop = 12;
 #endif
-  title->SetBorder(views::CreateEmptyBorder(
-      /*top=*/kMigrationDialogTitleMarginTop,
-      /*left=*/kMigrationDialogInsets.left(), /*bottom=*/0,
-      /*right=*/kMigrationDialogInsets.right()));
+  title->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+      kMigrationDialogTitleMarginTop, kMigrationDialogInsets.left(), 0,
+      kMigrationDialogInsets.right())));
   title->SetFontList(gfx::FontList().Derive(kMigrationDialogTitleFontSize,
                                             gfx::Font::NORMAL,
                                             gfx::Font::Weight::NORMAL));
@@ -327,8 +316,8 @@ class LocalCardMigrationOfferView : public views::View {
         provider->GetDistanceMetric(
             views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
     // Don't set bottom since there is a legal message view in the offer dialog.
-    contents_container->SetBorder(views::CreateEmptyBorder(
-        0, kMigrationDialogInsets.left(), 0, kMigrationDialogInsets.right()));
+    contents_container->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+        0, kMigrationDialogInsets.left(), 0, kMigrationDialogInsets.right())));
 
     const std::vector<MigratableCreditCard>& card_list =
         controller->GetCardList();
@@ -386,9 +375,8 @@ ADD_READONLY_PROPERTY_METADATA(std::vector<std::string>, SelectedCardGuids)
 END_METADATA
 
 LocalCardMigrationDialogView::LocalCardMigrationDialogView(
-    LocalCardMigrationDialogController* controller,
-    content::WebContents* web_contents)
-    : controller_(controller), web_contents_(web_contents->GetWeakPtr()) {
+    LocalCardMigrationDialogController* controller)
+    : controller_(controller) {
   SetButtons(controller_->AllCardsInvalid()
                  ? ui::DIALOG_BUTTON_OK
                  : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
@@ -416,17 +404,11 @@ LocalCardMigrationDialogView::~LocalCardMigrationDialogView() {
   }
 }
 
-void LocalCardMigrationDialogView::ShowDialog() {
-  if (!web_contents_) {
-    // If web_contents does not exist, delete this because at this step this
-    // View is not owned by any class.
-    delete this;
-    return;
-  }
-
+void LocalCardMigrationDialogView::ShowDialog(
+    content::WebContents& web_contents) {
   ConstructView();
   constrained_window::CreateBrowserModalDialogViews(
-      this, web_contents_->GetTopLevelNativeWindow())
+      this, web_contents.GetTopLevelNativeWindow())
       ->Show();
 }
 
@@ -542,9 +524,8 @@ std::u16string LocalCardMigrationDialogView::GetCancelButtonLabel() const {
 }
 
 LocalCardMigrationDialog* CreateLocalCardMigrationDialogView(
-    LocalCardMigrationDialogController* controller,
-    content::WebContents* web_contents) {
-  return new LocalCardMigrationDialogView(controller, web_contents);
+    LocalCardMigrationDialogController* controller) {
+  return new LocalCardMigrationDialogView(controller);
 }
 
 BEGIN_METADATA(LocalCardMigrationDialogView, views::BubbleDialogDelegateView)

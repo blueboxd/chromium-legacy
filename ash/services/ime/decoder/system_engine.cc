@@ -13,19 +13,25 @@
 namespace ash {
 namespace ime {
 
-SystemEngine::SystemEngine(ImeCrosPlatform* platform,
-                           absl::optional<ImeDecoder::EntryPoints> entry_points)
-    : platform_(platform) {
+SystemEngine::SystemEngine(
+    ImeCrosPlatform* platform,
+    absl::optional<ImeDecoder::EntryPoints> entry_points) {
   if (!entry_points) {
     LOG(WARNING) << "SystemEngine INIT INCOMPLETE.";
     return;
   }
 
   decoder_entry_points_ = *entry_points;
-  decoder_entry_points_->init_once(platform_);
+  decoder_entry_points_->init_mojo_mode(platform);
 }
 
-SystemEngine::~SystemEngine() {}
+SystemEngine::~SystemEngine() {
+  if (!decoder_entry_points_) {
+    return;
+  }
+
+  decoder_entry_points_->close_mojo_mode();
+}
 
 bool SystemEngine::BindRequest(
     const std::string& ime_spec,

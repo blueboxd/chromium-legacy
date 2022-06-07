@@ -18,13 +18,15 @@ cargo_crate("lib") {
   build_native_rust_unit_tests = false
   sources = [ "crate/src/lib.rs" ]
   edition = "2018"
+  cargo_pkg_version = "1.0.4"
+  cargo_pkg_authors = "CreepySkeleton <creepy-skeleton@yandex.ru>"
   deps = [
     "//third_party/rust/proc_macro2/v1:lib",
     "//third_party/rust/proc_macro_error_attr/v1:lib",
     "//third_party/rust/quote/v1:lib",
     "//third_party/rust/syn/v1:lib",
   ]
-  build_deps = [ "//third_party/rust/version_check/v0_9:lib" ]
+  build_deps = [ "//third_party/rust/version_check/v0_9:buildrs_support" ]
   features = [
     "syn",
     "syn-error",

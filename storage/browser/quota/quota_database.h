@@ -16,6 +16,7 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/types/id_type.h"
@@ -55,8 +56,7 @@ enum class DatabaseResetReason {
 //
 // Instances are owned by QuotaManagerImpl. There is one instance per
 // QuotaManagerImpl instance. All the methods of this class, except the
-// constructor, must called on the DB thread. QuotaDatabase should only be
-// subclassed in tests.
+// constructor, must called on the DB thread.
 class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
  public:
   struct COMPONENT_EXPORT(STORAGE_BROWSER) BucketTableEntry {
@@ -88,7 +88,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   QuotaDatabase(const QuotaDatabase&) = delete;
   QuotaDatabase& operator=(const QuotaDatabase&) = delete;
 
-  virtual ~QuotaDatabase();
+  ~QuotaDatabase();
 
   // Returns quota if entry is found. Returns QuotaError::kNotFound no entry if
   // found.
@@ -186,8 +186,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   // QuotaError if not found or the operation has failed.
   QuotaErrorOr<BucketTableEntry> GetBucketInfo(BucketId bucket_id);
 
-  // Deletes the specified bucket. This method is virtual for testing.
-  virtual QuotaError DeleteBucketInfo(BucketId bucket_id);
+  // Deletes the specified bucket.
+  QuotaError DeleteBucketInfo(BucketId bucket_id);
 
   // Returns the BucketLocator for the least recently used bucket. Will exclude
   // buckets with ids in `bucket_exceptions` and origins that have the special
@@ -233,11 +233,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
       base::OnceCallback<void(const base::FilePath&)> corrupter);
 
   // Manually disable database to test database error scenarios for testing.
-  void SetDisabledForTesting(bool disable) { is_disabled_ = disable; }
+  void SetDisabledForTesting(bool disable);
 
  private:
-  enum class EnsureOpenedMode { kCreateIfNotFound, kFailIfNotFound };
-
   struct COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTableEntry {
     std::string host;
     blink::mojom::StorageType type = blink::mojom::StorageType::kUnknown;
@@ -277,11 +275,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   void Commit();
   void ScheduleCommit();
 
-  QuotaError EnsureOpened(EnsureOpenedMode mode);
+  QuotaError EnsureOpened();
   bool OpenDatabase();
   bool EnsureDatabaseVersion();
   bool ResetSchema();
-  bool UpgradeSchema(int current_version);
 
   bool CreateSchema();
   bool CreateTable(const TableSchema& table);
@@ -302,14 +299,17 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
       base::Time last_accessed,
       base::Time last_modified);
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   const base::FilePath db_file_path_;
 
-  std::unique_ptr<sql::Database> db_;
-  std::unique_ptr<sql::MetaTable> meta_table_;
-  bool is_recreating_ = false;
-  bool is_disabled_ = false;
+  std::unique_ptr<sql::Database> db_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::unique_ptr<sql::MetaTable> meta_table_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+  bool is_recreating_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
+  bool is_disabled_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 
-  base::OneShotTimer timer_;
+  base::OneShotTimer timer_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   friend class QuotaDatabaseTest;
   friend class QuotaDatabaseMigrations;
@@ -320,8 +320,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   static const size_t kTableCount;
   static const IndexSchema kIndexes[];
   static const size_t kIndexCount;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace storage

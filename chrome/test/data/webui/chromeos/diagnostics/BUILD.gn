@@ -242,6 +242,16 @@ js_library("ip_config_info_drawer_test") {
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
+js_library("keyboard_tester_test") {
+  deps = [
+    "../..:chai_assert",
+    "../..:mock_controller",
+    "../..:test_util",
+    "//ash/webui/diagnostics_ui/resources:keyboard_tester",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
 js_library("memory_card_test") {
   deps = [
     "../..:chai_assert",

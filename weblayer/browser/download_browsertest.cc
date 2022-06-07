@@ -8,7 +8,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -287,7 +286,13 @@ IN_PROC_BROWSER_TEST_F(DownloadBrowserTest, Cancel) {
   EXPECT_EQ(download_state(), DownloadError::kCancelled);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadBrowserTest, PauseResume) {
+// TODO(crbug.com/1314060): Flaky on Windows and Linux.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+#define MAYBE_PauseResume DISABLED_PauseResume
+#else
+#define MAYBE_PauseResume PauseResume
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadBrowserTest, MAYBE_PauseResume) {
   // Add an initial navigation to avoid the tab being deleted if the first
   // navigation is a download, since we use the tab for convenience in the
   // lambda.

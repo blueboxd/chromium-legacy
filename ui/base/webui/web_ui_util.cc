@@ -19,6 +19,7 @@
 #include "build/chromeos_buildflags.h"
 #include "net/base/escape.h"
 #include "third_party/modp_b64/modp_b64.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
@@ -181,11 +182,15 @@ void ParsePathAndScale(const GURL& url,
 
 void SetLoadTimeDataDefaults(const std::string& app_locale,
                              base::Value* localized_strings) {
-  localized_strings->SetStringKey("fontfamily", GetFontFamily());
-  localized_strings->SetStringKey("fontsize", GetFontSize());
-  localized_strings->SetStringKey("language",
-                                  l10n_util::GetLanguage(app_locale));
-  localized_strings->SetStringKey("textdirection", GetTextDirection());
+  SetLoadTimeDataDefaults(app_locale, localized_strings->GetIfDict());
+}
+
+void SetLoadTimeDataDefaults(const std::string& app_locale,
+                             base::Value::Dict* localized_strings) {
+  localized_strings->Set("fontfamily", GetFontFamily());
+  localized_strings->Set("fontsize", GetFontSize());
+  localized_strings->Set("language", l10n_util::GetLanguage(app_locale));
+  localized_strings->Set("textdirection", GetTextDirection());
 }
 
 void SetLoadTimeDataDefaults(const std::string& app_locale,

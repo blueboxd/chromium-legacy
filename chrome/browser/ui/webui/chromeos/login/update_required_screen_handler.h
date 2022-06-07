@@ -73,7 +73,7 @@ class UpdateRequiredScreenHandler : public UpdateRequiredView,
  public:
   using TView = UpdateRequiredView;
 
-  explicit UpdateRequiredScreenHandler(JSCallsContainer* js_calls_container);
+  UpdateRequiredScreenHandler();
 
   UpdateRequiredScreenHandler(const UpdateRequiredScreenHandler&) = delete;
   UpdateRequiredScreenHandler& operator=(const UpdateRequiredScreenHandler&) =
@@ -102,11 +102,11 @@ class UpdateRequiredScreenHandler : public UpdateRequiredView,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   ash::UpdateRequiredScreen* screen_ = nullptr;
 
-  // If true, Initialize() will call Show().
+  // If true, InitializeDeprecated() will call Show().
   bool show_on_init_ = false;
 
   // The domain name for which update required screen is being shown.

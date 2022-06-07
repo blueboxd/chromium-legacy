@@ -66,6 +66,8 @@ extern const base::Feature kAutofillEnableAccountWalletStorage;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableAugmentedPhoneCountryCode;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillEnableCompatibilitySupportForBirthdates;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableDependentLocalityParsing;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableImportWhenMultiplePhoneNumbers;
@@ -146,6 +148,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillServerCommunication;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillSharedAutofill;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<bool> kAutofillSharedAutofillRelaxedParam;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillShowTypePredictions;
 COMPONENT_EXPORT(AUTOFILL)

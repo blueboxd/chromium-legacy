@@ -993,6 +993,8 @@ class UserDataUtilTextValueTest : public testing::Test {
 
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
+    ON_CALL(mock_action_delegate_, GetUserModel)
+        .WillByDefault(Return(&user_model_));
     ON_CALL(mock_action_delegate_, GetWebsiteLoginManager)
         .WillByDefault(Return(&mock_website_login_manager_));
   }
@@ -1261,7 +1263,7 @@ TEST_F(UserDataUtilTextValueTest, GetUsername) {
       GURL("https://www.example.com"), "username");
 
   ElementFinder::Result element;
-  element.container_frame_host = web_contents_->GetMainFrame();
+  element.SetRenderFrameHost(web_contents_->GetMainFrame());
 
   PasswordManagerValue password_manager_value;
   password_manager_value.set_credential_type(PasswordManagerValue::USERNAME);
@@ -1279,7 +1281,7 @@ TEST_F(UserDataUtilTextValueTest, GetStoredPassword) {
       GURL("https://www.example.com"), "username");
 
   ElementFinder::Result element;
-  element.container_frame_host = web_contents_->GetMainFrame();
+  element.SetRenderFrameHost(web_contents_->GetMainFrame());
 
   PasswordManagerValue password_manager_value;
   password_manager_value.set_credential_type(PasswordManagerValue::PASSWORD);
@@ -1301,7 +1303,7 @@ TEST_F(UserDataUtilTextValueTest, GetStoredPasswordFails) {
   ElementFinder::Result element;
   content::WebContentsTester::For(web_contents_.get())
       ->NavigateAndCommit(GURL("https://www.example.com"));
-  element.container_frame_host = web_contents_->GetMainFrame();
+  element.SetRenderFrameHost(web_contents_->GetMainFrame());
 
   PasswordManagerValue password_manager_value;
   password_manager_value.set_credential_type(PasswordManagerValue::PASSWORD);
@@ -1318,26 +1320,61 @@ TEST_F(UserDataUtilTextValueTest, GetStoredPasswordFails) {
                                          base::Unretained(this)));
 }
 
-TEST_F(UserDataUtilTextValueTest, ClientMemoryKey) {
+TEST_F(UserDataUtilTextValueTest, ClientMemoryKeyFromUserData) {
   user_data_.SetAdditionalValue("key", SimpleValue(std::string("Hello World")));
 
   std::string result;
-  EXPECT_TRUE(GetClientMemoryStringValue("key", &user_data_, &result).ok());
+  EXPECT_TRUE(
+      GetClientMemoryStringValue("key", &user_data_, &user_model_, &result)
+          .ok());
+  EXPECT_EQ(result, "Hello World");
+}
+
+TEST_F(UserDataUtilTextValueTest, ClientMemoryKeyFromUserModel) {
+  user_model_.SetValue("key", SimpleValue(std::string("Hello World")));
+
+  std::string result;
+  EXPECT_TRUE(
+      GetClientMemoryStringValue("key", &user_data_, &user_model_, &result)
+          .ok());
+  EXPECT_EQ(result, "Hello World");
+}
+
+TEST_F(UserDataUtilTextValueTest, ClientMemoryValueDifferentInDataAndModel) {
+  user_data_.SetAdditionalValue(
+      "key", SimpleValue(std::string("Hello from UserData")));
+  user_model_.SetValue("key", SimpleValue(std::string("Hello from UserModel")));
+
+  std::string result;
+  EXPECT_EQ(PRECONDITION_FAILED, GetClientMemoryStringValue(
+                                     "key", &user_data_, &user_model_, &result)
+                                     .proto_status());
+}
+
+TEST_F(UserDataUtilTextValueTest, ClientMemoryValueDuplicateInDataAndModel) {
+  user_data_.SetAdditionalValue("key", SimpleValue(std::string("Hello World")));
+  user_model_.SetValue("key", SimpleValue(std::string("Hello World")));
+
+  std::string result;
+  EXPECT_TRUE(
+      GetClientMemoryStringValue("key", &user_data_, &user_model_, &result)
+          .ok());
   EXPECT_EQ(result, "Hello World");
 }
 
 TEST_F(UserDataUtilTextValueTest, EmptyClientMemoryKey) {
   std::string result;
   EXPECT_EQ(INVALID_ACTION,
-            GetClientMemoryStringValue(std::string(), &user_data_, &result)
+            GetClientMemoryStringValue(std::string(), &user_data_, &user_model_,
+                                       &result)
                 .proto_status());
 }
 
 TEST_F(UserDataUtilTextValueTest, NonExistingClientMemoryKey) {
   std::string result;
-  EXPECT_EQ(
-      PRECONDITION_FAILED,
-      GetClientMemoryStringValue("key", &user_data_, &result).proto_status());
+  EXPECT_EQ(PRECONDITION_FAILED, GetClientMemoryStringValue(
+                                     "key", &user_data_, &user_model_, &result)
+                                     .proto_status());
 }
 
 TEST_F(UserDataUtilTextValueTest, TextValueText) {
@@ -1382,7 +1419,7 @@ TEST_F(UserDataUtilTextValueTest, TextValuePasswordManagerValue) {
   ElementFinder::Result element;
   content::WebContentsTester::For(web_contents_.get())
       ->NavigateAndCommit(GURL("https://www.example.com"));
-  element.container_frame_host = web_contents_->GetMainFrame();
+  element.SetRenderFrameHost(web_contents_->GetMainFrame());
 
   TextValue text_value;
   text_value.mutable_password_manager_value()->set_credential_type(

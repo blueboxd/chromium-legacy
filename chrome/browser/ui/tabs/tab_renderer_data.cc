@@ -6,11 +6,13 @@
 
 #include "base/process/kill.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/navigation_entry.h"
@@ -21,9 +23,19 @@ namespace {
 
 bool ShouldThemifyFaviconForEntryUrl(const GURL& url) {
   // Themify favicon for the default NTP and incognito NTP.
-  return url.SchemeIs(content::kChromeUIScheme) &&
-         (url.host_piece() == chrome::kChromeUINewTabPageHost ||
-          url.host_piece() == chrome::kChromeUINewTabHost);
+  if (url.SchemeIs(content::kChromeUIScheme)) {
+    return url.host_piece() == chrome::kChromeUINewTabPageHost ||
+           url.host_piece() == chrome::kChromeUINewTabHost;
+  }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Themify menu favicon for CrOS Terminal home page.
+  if (url.SchemeIs(content::kChromeUIUntrustedScheme)) {
+    return url.host_piece() == chrome::kChromeUIUntrustedTerminalHost;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  return false;
 }
 
 bool ShouldThemifyFaviconForVisibleUrl(const GURL& visible_url) {

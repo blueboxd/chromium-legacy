@@ -606,7 +606,8 @@ void GetPasswordManagerValue(
     std::move(callback).Run(ClientStatus(PRECONDITION_FAILED), std::string());
     return;
   }
-  if (!target_element.container_frame_host) {
+  auto* target_render_frame_host = target_element.render_frame_host();
+  if (!target_render_frame_host) {
     std::move(callback).Run(ClientStatus(PASSWORD_ORIGIN_MISMATCH),
                             std::string());
     return;
@@ -616,8 +617,8 @@ void GetPasswordManagerValue(
     case PasswordManagerValue::PASSWORD: {
       auto login = *user_data->selected_login_;
       // Origin check is done in PWM based on the
-      // |target_element.container_frame_host->GetLastCommittedURL()|
-      login.origin = target_element.container_frame_host->GetLastCommittedURL()
+      // |target_render_frame_host->GetLastCommittedURL()|
+      login.origin = target_render_frame_host->GetLastCommittedURL()
                          .DeprecatedGetOriginAsURL();
       website_login_manager->GetPasswordForLogin(
           login, base::BindOnce(&OnGetStoredPassword, std::move(callback)));
@@ -635,21 +636,39 @@ void GetPasswordManagerValue(
 
 ClientStatus GetClientMemoryStringValue(const std::string& client_memory_key,
                                         const UserData* user_data,
+                                        const UserModel* user_model,
                                         std::string* out_value) {
   if (client_memory_key.empty()) {
     return ClientStatus(INVALID_ACTION);
   }
-  if (!user_data->HasAdditionalValue(client_memory_key) ||
-      user_data->GetAdditionalValue(client_memory_key)
-              ->strings()
-              .values()
-              .size() != 1) {
+  bool user_data_has_value = user_data->HasAdditionalValue(client_memory_key) &&
+                             user_data->GetAdditionalValue(client_memory_key)
+                                     ->strings()
+                                     .values()
+                                     .size() == 1;
+  bool user_model_has_value =
+      user_model->GetValue(client_memory_key).has_value() &&
+      user_model->GetValue(client_memory_key)->strings().values_size() == 1;
+  if (!user_data_has_value && !user_model_has_value) {
     VLOG(1) << "Requested key '" << client_memory_key
-            << "' not available in client memory";
+            << "' not present in user data and user model";
+    return ClientStatus(PRECONDITION_FAILED);
+  } else if (user_data_has_value && user_model_has_value &&
+             user_data->GetAdditionalValue(client_memory_key)
+                     ->strings()
+                     .values(0) !=
+                 user_model->GetValue(client_memory_key)->strings().values(0)) {
+    VLOG(1) << "Requested key '" << client_memory_key
+            << "' has different values in user data and user model";
     return ClientStatus(PRECONDITION_FAILED);
   }
-  out_value->assign(
-      user_data->GetAdditionalValue(client_memory_key)->strings().values(0));
+  if (user_data_has_value) {
+    out_value->assign(
+        user_data->GetAdditionalValue(client_memory_key)->strings().values(0));
+  } else {
+    out_value->assign(
+        user_model->GetValue(client_memory_key)->strings().values(0));
+  }
   return OkClientStatus();
 }
 
@@ -677,9 +696,9 @@ void ResolveTextValue(const TextValue& text_value,
       return;
     }
     case TextValue::kClientMemoryKey: {
-      status =
-          GetClientMemoryStringValue(text_value.client_memory_key(),
-                                     action_delegate->GetUserData(), &value);
+      status = GetClientMemoryStringValue(
+          text_value.client_memory_key(), action_delegate->GetUserData(),
+          action_delegate->GetUserModel(), &value);
       break;
     }
     case TextValue::VALUE_NOT_SET:

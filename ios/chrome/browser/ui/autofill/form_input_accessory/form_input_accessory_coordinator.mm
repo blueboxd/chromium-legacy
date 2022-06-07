@@ -326,6 +326,7 @@
 #pragma mark - SecurityAlertCommands
 
 - (void)presentSecurityWarningAlertWithText:(NSString*)body {
+  [self stopChildren];
   NSString* alertTitle =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
   NSString* defaultActionTitle =
@@ -349,6 +350,7 @@
 }
 
 - (void)showSetPasscodeDialog {
+  [self stopChildren];
   UIAlertController* alertController = [UIAlertController
       alertControllerWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE)

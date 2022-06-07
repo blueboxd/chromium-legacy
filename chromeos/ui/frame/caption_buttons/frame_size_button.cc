@@ -40,7 +40,8 @@ bool HitTestButton(const views::FrameCaptionButton* button,
   gfx::Rect expanded_bounds_in_screen = button->GetBoundsInScreen();
   if (button->GetState() == views::Button::STATE_HOVERED ||
       button->GetState() == views::Button::STATE_PRESSED) {
-    expanded_bounds_in_screen.Inset(-kMaxOvershootX, -kMaxOvershootY);
+    expanded_bounds_in_screen.Inset(
+        gfx::Insets::VH(-kMaxOvershootY, -kMaxOvershootX));
   }
   return expanded_bounds_in_screen.Contains(location_in_screen);
 }
@@ -60,6 +61,7 @@ SnapDirection GetSnapDirection(const views::FrameCaptionButton* to_hover) {
       case views::CAPTION_BUTTON_ICON_RIGHT_BOTTOM_SNAPPED:
         return is_primary_snap ? SnapDirection::kSecondary
                                : SnapDirection::kPrimary;
+      case views::CAPTION_BUTTON_ICON_FLOAT:
       case views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
       case views::CAPTION_BUTTON_ICON_MINIMIZE:
       case views::CAPTION_BUTTON_ICON_CLOSE:

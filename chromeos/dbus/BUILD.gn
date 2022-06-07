@@ -12,9 +12,9 @@ component("dbus") {
   output_name = "chromeos_dbus"  # Avoid conflict with //dbus
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
   public_deps = [
-    ":common",
     "//chromeos/dbus/arc",
     "//chromeos/dbus/cicerone",
+    "//chromeos/dbus/common",
     "//chromeos/dbus/concierge",
     "//chromeos/dbus/constants",
     "//chromeos/dbus/debug_daemon",
@@ -75,31 +75,6 @@ component("dbus") {
   ]
 }
 
-component("common") {
-  output_name = "chromeos_dbus_common"
-  defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
-
-  all_dependent_configs =
-      [ "//chromeos/dbus/config:use_real_dbus_clients_config" ]
-  public_deps = [ "//chromeos/dbus/constants" ]
-
-  deps = [
-    "//base",
-    "//dbus",
-    "//net",
-  ]
-
-  sources = [
-    "blocking_method_caller.cc",
-    "blocking_method_caller.h",
-    "dbus_client.h",
-    "dbus_client_implementation_type.h",
-    "dbus_method_call_status.h",
-    "pipe_reader.cc",
-    "pipe_reader.h",
-  ]
-}
-
 source_set("test_support") {
   testonly = true
   configs += [ "//build/config/linux/dbus" ]
@@ -125,9 +100,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/dbus/audio",
-    "//chromeos/dbus/authpolicy",
-    "//chromeos/dbus/authpolicy:authpolicy_proto",
-    "//chromeos/dbus/biod:test_support",
     "//chromeos/dbus/cec_service:unit_tests",
     "//chromeos/dbus/cros_disks:unit_tests",
     "//chromeos/dbus/cryptohome",
@@ -145,7 +117,6 @@ source_set("unit_tests") {
     "//chromeos/dbus/power:test_support",
     "//chromeos/dbus/rmad:rmad_proto",
     "//chromeos/dbus/rmad:test_support",
-    "//chromeos/dbus/session_manager",
     "//chromeos/dbus/shill:test_support",
     "//chromeos/dbus/system_clock:unit_tests",
     "//chromeos/dbus/tpm_manager",
@@ -156,8 +127,6 @@ source_set("unit_tests") {
     "//chromeos/dbus/userdataauth",
     "//chromeos/dbus/userdataauth:userdataauth_proto",
     "//chromeos/dbus/util:unit_tests",
-    "//chromeos/tpm:test_support",
-    "//components/account_id",
     "//dbus",
     "//dbus:test_support",
     "//testing/gmock",
@@ -169,9 +138,6 @@ source_set("unit_tests") {
   }
   sources = [
     "audio/cras_audio_client_unittest.cc",
-    "authpolicy/fake_authpolicy_client_unittest.cc",
-    "biod/biod_client_unittest.cc",
-    "biod/fake_biod_client_unittest.cc",
     "blocking_method_caller_unittest.cc",
     "dbus_thread_manager_unittest.cc",
     "hiberman/hiberman_client_unittest.cc",

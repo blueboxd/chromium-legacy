@@ -35,6 +35,10 @@ base::StringPiece PrivateNetworkAccessCheckResultToStringPiece(Result result) {
       return "blocked-by-policy-preflight-warn";
     case Result::kBlockedByPolicyPreflightBlock:
       return "blocked-by-policy-preflight-block";
+    case Result::kAllowedByPolicyPreflightWarn:
+      return "allowed-by-policy-preflight-warn";
+    case Result::kBlockedByInconsistentIpAddressSpace:
+      return "blocked-by-inconsistent-ip-address-space";
   }
 }
 
@@ -46,6 +50,7 @@ absl::optional<CorsError> PrivateNetworkAccessCheckResultToCorsError(
     case Result::kAllowedByPolicyAllow:
     case Result::kAllowedByPolicyWarn:
     case Result::kAllowedByTargetIpAddressSpace:
+    case Result::kAllowedByPolicyPreflightWarn:
       return absl::nullopt;
     case Result::kBlockedByLoadOption:
       // TODO(https:/crbug.com/1254689): Return better error than this, which
@@ -53,6 +58,7 @@ absl::optional<CorsError> PrivateNetworkAccessCheckResultToCorsError(
     case Result::kBlockedByPolicyBlock:
       return CorsError::kInsecurePrivateNetwork;
     case Result::kBlockedByTargetIpAddressSpace:
+    case Result::kBlockedByInconsistentIpAddressSpace:
       return CorsError::kInvalidPrivateNetworkAccess;
     case Result::kBlockedByPolicyPreflightWarn:
     case Result::kBlockedByPolicyPreflightBlock:

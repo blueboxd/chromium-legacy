@@ -78,9 +78,19 @@ const base::FeatureParam<std::string> kAndroidSurfaceControlModelBlocklist{
 const base::Feature kWebViewSurfaceControl{"WebViewSurfaceControl",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Same as kWebViewSurfaceControl, but affects only Android T+, used for
+// targeting pre-release version.
+const base::Feature kWebViewSurfaceControlForT{
+    "WebViewSurfaceControlForT", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use thread-safe media path on WebView.
 const base::Feature kWebViewThreadSafeMedia{"WebViewThreadSafeMedia",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This is used as default state because it's different for webview and chrome.
+// WebView hardcodes this as enabled in AwMainDelegate.
+const base::Feature kWebViewThreadSafeMediaDefault{
+    "WebViewThreadSafeMediaDefault", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use AImageReader for MediaCodec and MediaPlyer on android.
 const base::Feature kAImageReader{"AImageReader",
@@ -319,10 +329,6 @@ bool IsDrDcEnabled() {
     return false;
   }
 
-  // Currently not supported for vulkan until crbug.com/1291298 is fixed.
-  if (IsUsingVulkan())
-    return false;
-
   // DrDc is supported on android MediaPlayer and MCVD path only when
   // AImageReader is enabled. Also DrDc requires AImageReader max size to be
   // at least 2 for each gpu thread. Hence DrDc is disabled on devices which has
@@ -349,11 +355,15 @@ bool IsUsingThreadSafeMediaForWebView() {
   if (!IsAImageReaderEnabled() || LimitAImageReaderMaxSizeToOne())
     return false;
 
-  // Not yet compatible with Vulkan.
-  if (IsUsingVulkan())
-    return false;
+  // If the feature is overridden from command line or finch we will use its
+  // value. If not we use kWebViewThreadSafeMediaDefault which is set in
+  // AwMainDelegate for WebView.
+  base::FeatureList* feature_list = base::FeatureList::GetInstance();
+  if (feature_list &&
+      feature_list->IsFeatureOverridden(kWebViewThreadSafeMedia.name))
+    return base::FeatureList::IsEnabled(kWebViewThreadSafeMedia);
 
-  return base::FeatureList::IsEnabled(kWebViewThreadSafeMedia);
+  return base::FeatureList::IsEnabled(kWebViewThreadSafeMediaDefault);
 #else
   return false;
 #endif
@@ -399,9 +409,19 @@ bool IsAndroidSurfaceControlEnabled() {
 
   // On WebView we also require zero copy or thread-safe media to use
   // SurfaceControl
-  if ((IsWebViewZeroCopyVideoEnabled() || IsUsingThreadSafeMediaForWebView()) &&
-      base::FeatureList::IsEnabled(kWebViewSurfaceControl))
-    return true;
+  if (IsWebViewZeroCopyVideoEnabled() || IsUsingThreadSafeMediaForWebView()) {
+    // If main feature is not overridden from command line and we're running T+
+    // use kWebViewSurfaceControlForT to decide feature status instead so we
+    // can target pre-release android to fish out platform side bugs.
+    base::FeatureList* feature_list = base::FeatureList::GetInstance();
+    if ((!feature_list || !feature_list->IsFeatureOverriddenFromCommandLine(
+                              features::kWebViewSurfaceControl.name)) &&
+        build_info->is_at_least_t()) {
+      return base::FeatureList::IsEnabled(kWebViewSurfaceControlForT);
+    }
+
+    return base::FeatureList::IsEnabled(kWebViewSurfaceControl);
+  }
 
   return base::FeatureList::IsEnabled(kAndroidSurfaceControl);
 }

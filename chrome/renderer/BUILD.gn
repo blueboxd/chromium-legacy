@@ -125,6 +125,7 @@ static_library("renderer") {
     "//chrome/common/net",
     "//chrome/common/search:mojo_bindings",
     "//components/autofill/content/renderer",
+    "//components/autofill/core/common:features",
     "//components/autofill_assistant/content/renderer",
     "//components/base32",
     "//components/cdm/renderer",
@@ -148,6 +149,7 @@ static_library("renderer") {
     "//components/page_image_annotation/content/renderer",
     "//components/page_load_metrics/renderer",
     "//components/paint_preview/buildflags",
+    "//components/password_manager/core/common",
     "//components/plugins/renderer",
     "//components/resources:components_resources",
     "//components/resources:components_scaled_resources",
@@ -208,10 +210,13 @@ static_library("renderer") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   if (enable_nacl) {
-    deps += [
-      "//components/nacl/loader",
-      "//components/nacl/renderer",
-    ]
+    deps += [ "//components/nacl/renderer" ]
+
+    # TODO(https://crbug.com/1299021): Implement building this NaCl target as
+    # ARM32 when Chrome is built for ARM64 (for Linux/Chrome OS).
+    if (target_cpu != "arm64") {
+      deps += [ "//components/nacl/loader" ]
+    }
   }
   if (enable_plugins) {
     sources += [
@@ -288,8 +293,6 @@ static_library("renderer") {
       "extensions/chrome_extensions_renderer_client.h",
       "extensions/extension_hooks_delegate.cc",
       "extensions/extension_hooks_delegate.h",
-      "extensions/extension_localization_peer.cc",
-      "extensions/extension_localization_peer.h",
       "extensions/media_galleries_custom_bindings.cc",
       "extensions/media_galleries_custom_bindings.h",
       "extensions/notifications_native_handler.cc",
@@ -382,6 +385,7 @@ static_library("renderer") {
       "//chrome/common/cart:mojo_bindings",
       "//components/commerce/core:commerce_heuristics_data",
       "//components/commerce/core:feature_list",
+      "//components/commerce/core:heuristics_provider",
       "//components/crx_file",
       "//components/search:search",
     ]

@@ -1,7 +1,7 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 3,
-  "time_generated": "2022-03-01T02:06:31.092Z",
+  "time_generated": "2022-03-29T16:50:39.212Z",
   "primary_language_code": "en",
   "pedal_definitions": [
     {
@@ -42,7 +42,7 @@
       "enabled": true,
       "url": "",
       "description": "Translate the current page\n\nUser-facing strings for this Pedal:\nIDS_OMNIBOX_PEDAL_TRANSLATE_HINT\nIDS_OMNIBOX_PEDAL_TRANSLATE_SUGGESTION_CONTENTS\nIDS_ACC_OMNIBOX_PEDAL_TRANSLATE_SUFFIX\nIDS_ACC_OMNIBOX_PEDAL_TRANSLATE",
-      "tags": "desktop,ios"
+      "tags": "desktop"
     },
     {
       "id": 6,
@@ -58,7 +58,7 @@
       "enabled": true,
       "url": "chrome://settings/safetyCheck?activateSafetyCheck",
       "description": "Run a Safety Check in Chrome settings\n\nUser-facing strings for this Pedal:\nIDS_OMNIBOX_PEDAL_RUN_CHROME_SAFETY_CHECK_HINT\nIDS_OMNIBOX_PEDAL_RUN_CHROME_SAFETY_CHECK_SUGGESTION_CONTENTS\nIDS_ACC_OMNIBOX_PEDAL_RUN_CHROME_SAFETY_CHECK_SUFFIX\nIDS_ACC_OMNIBOX_PEDAL_RUN_CHROME_SAFETY_CHECK",
-      "tags": "desktop,android"
+      "tags": "desktop,android,ios"
     },
     {
       "id": 8,
@@ -218,7 +218,7 @@
       "enabled": true,
       "url": "chrome://dino",
       "description": "Play the Dino Run game in Chrome\n\nUser-facing strings for this Pedal:\nIDS_OMNIBOX_PEDAL_PLAY_CHROME_DINO_GAME_HINT\nIDS_OMNIBOX_PEDAL_PLAY_CHROME_DINO_GAME_SUGGESTION_CONTENTS\nIDS_ACC_OMNIBOX_PEDAL_PLAY_CHROME_DINO_GAME_SUFFIX\nIDS_ACC_OMNIBOX_PEDAL_PLAY_CHROME_DINO_GAME",
-      "tags": "desktop,batch3,android"
+      "tags": "desktop,batch3,android,ios"
     },
     {
       "id": 28,
@@ -250,7 +250,7 @@
       "enabled": true,
       "url": "chrome://settings",
       "description": "Get to Chrome settings\n\nUser-facing strings for this Pedal:\nIDS_OMNIBOX_PEDAL_MANAGE_CHROME_SETTINGS_HINT\nIDS_OMNIBOX_PEDAL_MANAGE_CHROME_SETTINGS_SUGGESTION_CONTENTS\nIDS_ACC_OMNIBOX_PEDAL_MANAGE_CHROME_SETTINGS_SUFFIX\nIDS_ACC_OMNIBOX_PEDAL_MANAGE_CHROME_SETTINGS",
-      "tags": "desktop,batch3,android"
+      "tags": "desktop,batch3,android,ios"
     },
     {
       "id": 32,
@@ -266,7 +266,7 @@
       "enabled": true,
       "url": "chrome://history",
       "description": "See the full Chrome history page\n\nUser-facing strings for this Pedal:\nIDS_OMNIBOX_PEDAL_VIEW_CHROME_HISTORY_HINT\nIDS_OMNIBOX_PEDAL_VIEW_CHROME_HISTORY_SUGGESTION_CONTENTS\nIDS_ACC_OMNIBOX_PEDAL_VIEW_CHROME_HISTORY_SUFFIX\nIDS_ACC_OMNIBOX_PEDAL_VIEW_CHROME_HISTORY",
-      "tags": "desktop,batch3,android"
+      "tags": "desktop,batch3,android,ios"
     },
     {
       "id": 34,
@@ -306,7 +306,7 @@
       "enabled": true,
       "url": "chrome://settings/searchEngines",
       "description": "Manage search engines in Chrome\n\nUser-facing strings for this Pedal:\nIDS_OMNIBOX_PEDAL_CUSTOMIZE_SEARCH_ENGINES_HINT\nIDS_OMNIBOX_PEDAL_CUSTOMIZE_SEARCH_ENGINES_SUGGESTION_CONTENTS\nIDS_ACC_OMNIBOX_PEDAL_CUSTOMIZE_SEARCH_ENGINES_SUFFIX\nIDS_ACC_OMNIBOX_PEDAL_CUSTOMIZE_SEARCH_ENGINES",
-      "tags": "desktop,batch3,ios"
+      "tags": "desktop,batch3"
     },
     {
       "id": 39,
@@ -315,6 +315,14 @@
       "url": "chrome://os-settings/manageAccessibility",
       "description": "Manage accessibility settings in ChromeOS settings\n\nFor metrics, marketing, etc., this is the same as pedal #35 MANAGE_CHROME_ACCESSIBILITY -- #39 specifies the different UX details for ChromeOS.\n\nUser-facing strings for this Pedal:\nIDS_OMNIBOX_PEDAL_MANAGE_CHROMEOS_ACCESSIBILITY_HINT\nIDS_OMNIBOX_PEDAL_MANAGE_CHROMEOS_ACCESSIBILITY_SUGGESTION_CONTENTS\nIDS_ACC_OMNIBOX_PEDAL_MANAGE_CHROMEOS_ACCESSIBILITY_SUFFIX\nIDS_ACC_OMNIBOX_PEDAL_MANAGE_CHROMEOS_ACCESSIBILITY",
       "tags": "desktop,batch3,no_test,chromeos"
+    },
+    {
+      "id": 40,
+      "name": "SET_CHROME_AS_DEFAULT_BROWSER",
+      "enabled": true,
+      "url": "",
+      "description": "Set Chrome as the system's default browser in iOS settings\n\nUser-facing strings for this Pedal:\nIDS_OMNIBOX_PEDAL_SET_CHROME_AS_DEFAULT_BROWSER_HINT\nIDS_OMNIBOX_PEDAL_SET_CHROME_AS_DEFAULT_BROWSER_SUGGESTION_CONTENTS\nIDS_ACC_OMNIBOX_PEDAL_SET_CHROME_AS_DEFAULT_BROWSER_SUFFIX\nIDS_ACC_OMNIBOX_PEDAL_SET_CHROME_AS_DEFAULT_BROWSER",
+      "tags": "no_test,ios"
     }
   ],
   "locales": [
@@ -1268,6 +1276,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -2252,6 +2281,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -3408,6 +3458,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -4361,6 +4432,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -5413,6 +5505,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -6367,6 +6480,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -7363,6 +7497,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -8323,6 +8478,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -9303,6 +9479,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -11116,6 +11313,91 @@
             "spoken_button_focus_announcement": "Manage accessibility settings button, Enter to personalize your accessibility tools in Chrome OS settings"
           },
           "date_modified_omnibox_ui_strings": "2021-11-03T00:11:18.049Z"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "how to make chrome my default browser",
+                "set chrome as default browser",
+                "always open links in chrome",
+                "set chrome as default",
+                "open links in chrome",
+                "make chrome default",
+                "default web browser",
+                "primary web browser",
+                "always use chrome",
+                "chrome as default",
+                "standard browser",
+                "search in chrome",
+                "default browser",
+                "browser default",
+                "primary browser",
+                "no more safari",
+                "remove safari",
+                "delete safari",
+                "main browser",
+                "web browser",
+                "use chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "select",
+                "choose",
+                "change",
+                "switch",
+                "alter",
+                "make",
+                "pick",
+                "set"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "default browser",
+                "google chrome",
+                "chrome google",
+                "browser",
+                "chrome"
+              ]
+            }
+          ],
+          "cover_cases": [
+            "set chrome as default browser",
+            "set chrome as default",
+            "default browser",
+            "make chrome default",
+            "primary browser",
+            "main browser",
+            "standard browser",
+            "always use chrome",
+            "chrome as default",
+            "remove safari",
+            "delete safari",
+            "open links in chrome",
+            "always open links in chrome",
+            "search in chrome",
+            "make chrome default browser",
+            "pick chrome as default browser",
+            "make chrome my default browser",
+            "how to make chrome default browser"
+          ],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "Set Chrome as default browser",
+            "description_text": "Set Chrome as the system's default browser in iOS settings",
+            "spoken_suggestion_description_suffix": "$1, Press tab then Enter to set Chrome as the system's default browser in iOS settings",
+            "spoken_button_focus_announcement": "Set Chrome as default browser button, press Enter to set Chrome as the system's default browser in iOS settings"
+          },
+          "date_modified_omnibox_ui_strings": "2022-03-15T17:18:03.691Z"
         }
       ],
       "tokenize_each_character": false
@@ -12726,6 +13008,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -13685,6 +13988,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -14678,6 +15002,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -15631,6 +15976,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -16621,6 +16987,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -17571,6 +17958,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -18549,6 +18957,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -19613,6 +20042,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -20566,6 +21016,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -21589,6 +22060,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -22566,6 +23058,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -23525,6 +24038,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -24524,6 +25058,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -25472,6 +26027,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -26464,6 +27040,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -27491,6 +28088,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": true
@@ -28447,6 +29065,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -29431,6 +30070,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -30380,6 +31040,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -31370,6 +32051,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -32323,6 +33025,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -33315,6 +34038,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -34262,6 +35006,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -35257,6 +36022,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -36307,6 +37093,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -37267,6 +38074,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -38259,6 +39087,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -39221,6 +40070,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -40225,6 +41095,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -41203,6 +42094,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -42155,6 +43067,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -43247,6 +44180,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -44226,6 +45180,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -45177,6 +46152,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -46177,6 +47173,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -47151,6 +48168,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -48104,6 +49142,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -49120,6 +50179,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -50088,6 +51168,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,
@@ -51080,6 +52181,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": false
@@ -52054,6 +53176,27 @@
             "spoken_button_focus_announcement": ""
           },
           "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
         }
       ],
       "tokenize_each_character": true
@@ -53004,6 +54147,27 @@
         },
         {
           "id": 39,
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "一時的踏板placeholder"
+              ]
+            }
+          ],
+          "cover_cases": [],
+          "enabled": true,
+          "omnibox_ui_strings": {
+            "button_text": "",
+            "description_text": "",
+            "spoken_suggestion_description_suffix": "$1",
+            "spoken_button_focus_announcement": ""
+          },
+          "date_modified_omnibox_ui_strings": "1991-03-19T00:00:00+0000"
+        },
+        {
+          "id": 40,
           "groups": [
             {
               "required": true,

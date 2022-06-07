@@ -184,7 +184,6 @@ Kad izbrišete svoju povijest pregledavanja, bilo svu ili za određenu web-lokac
 <translation id="200114059308480249">Želite li uključiti okolni tekst u Google pretraživanja?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# datoteka}one{# datoteka}few{# datoteke}other{# datoteka}}</translation>
 <translation id="2015836039326522978">Aplikacija <ph name="APP_NAME" /> otvorit će se u Chromeu. Nastavljanjem prihvaćate <ph name="BEGIN_LINK1" />Googleove uvjete pružanja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />dodatne uvjete pružanja usluge za Google Chrome i OS Chrome<ph name="END_LINK2" />. Primjenjuju se i <ph name="BEGIN_LINK3" />pravila o privatnosti<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Ukloniti interes?</translation>
 <translation id="2020309681647789787">Vaša će povijest biti na svim vašim sinkroniziranim uređajima kako biste mogli nastaviti ono što radite</translation>
 <translation id="2021896219286479412">Kontrole web-lokacije na cijelom zaslonu</translation>
 <translation id="2038563949887743358">Uključivanje zahtjeva za prikaz klasične web-lokacije</translation>
@@ -213,6 +212,7 @@ Dodirnite bilo koju riječ da biste pokrenuli pretraživanje. Ako želite preciz
 <translation id="2141396931810938595">Na temelju vaše upotrebe</translation>
 <translation id="214888715418183969">Odaberite ono što želite dijeliti s Chromeom. Mjerni podaci koje podijelite upotrijebit će se za poboljšanje značajki, izvedbe i stabilnosti Chromea.</translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
+<translation id="2155214902713132423">Taj način potvrde nije dostupan za ovaj uređaj. Odaberite neku drugu opciju na drugom uređaju.</translation>
 <translation id="2157851137955077194">Da biste dijelili sadržaj s telefona s nekim drugim uređajem, uključite sinkronizaciju u Chromeovim postavkama na oba uređaja</translation>
 <translation id="2158408438301413340">Chrome nije uspio provjeriti sve zaporke</translation>
 <translation id="2169830938017475061">Sad</translation>
@@ -733,7 +733,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5091199029769593641">Prilikom otvaranja nove kartice uskoro će se prikazivati članci s web-lokacije <ph name="SITE_NAME" />. Web-lokacije koje pratite spremaju se na vašem Google računu. Njima možete upravljati u postavkama Discovera.</translation>
 <translation id="5091249083535528968">Prošireni podaci o upotrebi</translation>
 <translation id="509429900233858213">Došlo je do pogreške.</translation>
-<translation id="5098190077610408701">Dodati interese?</translation>
 <translation id="5102401324271069229">Ako neka web-lokacija pokuša ukrasti vašu zaporku ili ako preuzmete štetnu datoteku, Chrome može sigurnom pregledavanju poslati URL-ove, uključujući dijelove sadržaja web-stranice</translation>
 <translation id="510275257476243843">Još 1 sat</translation>
 <translation id="5115811374190515607">u <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5906513782029855931">Dopustite Google asistentu pristup URL-ovima web-lokacija kako bi vam pomogao s izvršavanjem zadataka. Asistenta možete isključiti u Chromeovim postavkama.</translation>
 <translation id="5916664084637901428">Uključi</translation>
 <translation id="5919204609460789179">Ažurirajte <ph name="PRODUCT_NAME" /> za pokretanje sinkronizacije</translation>
+<translation id="5938820472109305350">Dodaj <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Za pretraživanje se upotrebljava Google</translation>
 <translation id="5945035219773565305">Trenutačna preporuka: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Pregledavanje aktualne stranice</translation>
@@ -898,7 +898,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6033245666633565791">Uz <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> Chrome razvija nove tehnologije koje će vas štititi od praćenja na različitim web-lokacijama, a istovremeno očuvati otvorenost weba.
 
 Probe Privacy Sandboxa i dalje su u aktivnom razvoju i dostupne su u odabranim regijama. Web-lokacije trenutačno mogu isprobati Privacy Sandbox dok se istovremeno još uvijek koriste aktualnim web-tehnologijama, npr. kolačićima trećih strana.</translation>
-<translation id="6036057147555329831">Dodatni ICU</translation>
 <translation id="6039379616847168523">Preskakanje na sljedeću karticu</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="604124094241169006">Automatski</translation>
@@ -1023,6 +1022,7 @@ Oznake povjerenja poboljšavaju privatnost na webu i ne mogu se upotrebljavati d
 <translation id="663674369910034433">Više postavki koje se odnose na privatnost, sigurnost i prikupljanje podataka dostupno je u odjeljcima <ph name="BEGIN_LINK1" />Sinkronizacija<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Googleove usluge<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Radi poboljšanja aplikacije Chrome šalje Googleu podatke o upotrebi i rušenju. <ph name="BEGIN_UMA_LINK" />Upravljanje<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokiraj cijelo vrijeme</translation>
+<translation id="6641780377503683465">Ukloni <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6645629752388991326">Kontrolirajte koji se uređaji mogu prijaviti koristeći ovaj uređaj kao sigurnosni ključ.</translation>
 <translation id="6648459603387803038">Vaš administrator može daljinski promijeniti postavke preglednika. Aktivnostima na ovom uređaju može se upravljati i izvan Chromea.</translation>

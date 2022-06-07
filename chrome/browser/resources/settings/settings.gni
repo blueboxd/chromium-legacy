@@ -5,6 +5,8 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
+assert(!is_android, "Android does not use these settings")
+
 settings_closure_flags =
     default_closure_args + [
       "js_module_root=../../chrome/browser/resources/settings/",
@@ -17,7 +19,6 @@ settings_closure_flags =
 # Files holding a Polymer element definition and have an equivalent .html file.
 web_component_files = [
   "a11y_page/a11y_page.ts",
-  "a11y_page/captions_subpage.ts",
   "a11y_page/live_caption_section.ts",
   "about_page/about_page.ts",
   "appearance_page/appearance_fonts_page.ts",
@@ -40,6 +41,7 @@ web_component_files = [
   "autofill_page/password_move_to_account_dialog.ts",
   "autofill_page/password_remove_confirmation_dialog.ts",
   "autofill_page/password_remove_dialog.ts",
+  "autofill_page/password_view.ts",
   "autofill_page/passwords_device_section.ts",
   "autofill_page/passwords_export_dialog.ts",
   "autofill_page/passwords_list_handler.ts",
@@ -84,6 +86,7 @@ web_component_files = [
   "privacy_page/privacy_guide/privacy_guide_completion_link_row.ts",
   "privacy_page/privacy_guide/privacy_guide_cookies_fragment.ts",
   "privacy_page/privacy_guide/privacy_guide_description_item.ts",
+  "privacy_page/privacy_guide/privacy_guide_dialog.ts",
   "privacy_page/privacy_guide/privacy_guide_history_sync_fragment.ts",
   "privacy_page/privacy_guide/privacy_guide_msbb_fragment.ts",
   "privacy_page/privacy_guide/privacy_guide_page.ts",
@@ -164,7 +167,7 @@ if (!is_chromeos_ash) {
   ]
 }
 
-if (!is_chromeos_ash && !is_chromeos_lacros) {
+if (!is_chromeos) {
   web_component_files += [
     "default_browser_page/default_browser_page.ts",
     "people_page/import_data_dialog.ts",
@@ -173,6 +176,10 @@ if (!is_chromeos_ash && !is_chromeos_lacros) {
 
 if (!is_chromeos_ash && !is_mac) {
   web_component_files += [ "languages_page/edit_dictionary_page.ts" ]
+}
+
+if (!is_mac) {
+  web_component_files += [ "a11y_page/captions_subpage.ts" ]
 }
 
 if (is_win) {
@@ -185,7 +192,7 @@ if (is_win) {
   ]
 }
 
-if (is_chromeos_ash || is_chromeos_lacros) {
+if (is_chromeos) {
   web_component_files += [ "controls/password_prompt_dialog.ts" ]
 }
 
@@ -218,6 +225,7 @@ non_web_component_files = [
   "autofill_page/multi_store_password_ui_entry.ts",
   "autofill_page/password_check_mixin.ts",
   "autofill_page/password_manager_proxy.ts",
+  "autofill_page/password_requestor_mixin.ts",
   "autofill_page/payments_manager_proxy.ts",
   "autofill_page/show_password_mixin.ts",
   "base_mixin.ts",
@@ -269,7 +277,7 @@ non_web_component_files = [
   "site_settings/website_usage_browser_proxy.ts",
 ]
 
-if (is_chromeos_ash || is_chromeos_lacros) {
+if (is_chromeos) {
   non_web_component_files += [ "autofill_page/blocking_request_manager.ts" ]
 }
 

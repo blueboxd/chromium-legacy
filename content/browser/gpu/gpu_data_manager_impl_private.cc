@@ -299,20 +299,23 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_GL,
       gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2};
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2,
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGPU};
   const std::string kGpuBlocklistFeatureHistogramNames[] = {
       "GPU.BlocklistFeatureTestResults.Accelerated2dCanvas",
       "GPU.BlocklistFeatureTestResults.GpuCompositing",
       "GPU.BlocklistFeatureTestResults.GpuRasterization",
       "GPU.BlocklistFeatureTestResults.Webgl",
-      "GPU.BlocklistFeatureTestResults.Webgl2"};
+      "GPU.BlocklistFeatureTestResults.Webgl2",
+      "GPU.BlocklistFeatureTestResults.Webgpu"};
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
       command_line.HasSwitch(switches::kDisableGpu),
       command_line.HasSwitch(switches::kDisableGpuRasterization),
       command_line.HasSwitch(switches::kDisableWebGL),
       (command_line.HasSwitch(switches::kDisableWebGL) ||
-       command_line.HasSwitch(switches::kDisableWebGL2))};
+       command_line.HasSwitch(switches::kDisableWebGL2)),
+      !command_line.HasSwitch(switches::kEnableUnsafeWebGPU)};
   const size_t kNumFeatures =
       sizeof(kGpuFeatures) / sizeof(gpu::GpuFeatureType);
   for (size_t i = 0; i < kNumFeatures; ++i) {
@@ -912,7 +915,8 @@ void GpuDataManagerImplPrivate::RequestMojoMediaVideoCapabilities() {
 
     mojo::PendingRemote<media::mojom::VideoDecoder> pending_remote_decoder;
     media_interface_proxy->CreateVideoDecoder(
-        pending_remote_decoder.InitWithNewPipeAndPassReceiver());
+        pending_remote_decoder.InitWithNewPipeAndPassReceiver(),
+        /*dst_video_decoder=*/{});
     DCHECK(pending_remote_decoder.is_valid());
 
     mojo::Remote<media::mojom::VideoDecoder> remote_decoder(
@@ -1277,15 +1281,16 @@ void GpuDataManagerImplPrivate::UpdateGpuExtraInfo(
 
 void GpuDataManagerImplPrivate::UpdateMojoMediaVideoCapabilities(
     const media::SupportedVideoDecoderConfigs& configs) {
-  gpu_info_.video_decoder_capabilities.clear();
+  gpu_info_.video_decode_accelerator_supported_profiles.clear();
   for (const auto& config : configs) {
     gpu::VideoDecodeAcceleratorSupportedProfile profile;
     profile.profile = ToGpuVideoCodecProfile(config.profile_min);
     profile.min_resolution = config.coded_size_min;
     profile.max_resolution = config.coded_size_max;
     profile.encrypted_only = config.require_encrypted;
-    gpu_info_.video_decoder_capabilities.push_back(profile);
+    gpu_info_.video_decode_accelerator_supported_profiles.push_back(profile);
   }
+
   NotifyGpuInfoUpdate();
 }
 
@@ -1447,10 +1452,9 @@ void GpuDataManagerImplPrivate::AddLogMessage(int level,
     log_messages_.erase(log_messages_.begin());
 }
 
-void GpuDataManagerImplPrivate::ProcessCrashed(
-    base::TerminationStatus exit_code) {
-  observer_list_->Notify(
-      FROM_HERE, &GpuDataManagerObserver::OnGpuProcessCrashed, exit_code);
+void GpuDataManagerImplPrivate::ProcessCrashed() {
+  observer_list_->Notify(FROM_HERE,
+                         &GpuDataManagerObserver::OnGpuProcessCrashed);
 }
 
 std::unique_ptr<base::ListValue> GpuDataManagerImplPrivate::GetLogMessages()

@@ -36,6 +36,7 @@
 #include "content/public/common/content_features.h"
 #include "gpu/config/gpu_info.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/media_switches.h"
 #include "media/webrtc/webrtc_features.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
@@ -72,8 +73,14 @@ std::string Format(const std::string& message,
                    base::Time start_time) {
   int32_t interval_ms =
       static_cast<int32_t>((timestamp - start_time).InMilliseconds());
-  return base::StringPrintf("[%03d:%03d] %s", interval_ms / 1000,
-                            interval_ms % 1000, message.c_str());
+  // Log start time (current time). We don't use base/i18n/time_formatting.h
+  // here because we don't want the format of the current locale.
+  base::Time::Exploded now = {0};
+  base::Time::Now().LocalExplode(&now);
+  return base::StringPrintf("[%03d:%03d, %02d:%02d:%02d.%03d] %s",
+                            interval_ms / 1000, interval_ms % 1000, now.hour,
+                            now.minute, now.second, now.millisecond,
+                            message.c_str());
 }
 
 std::string FormatMetaDataAsLogMessage(const WebRtcLogMetaDataMap& meta_data) {
@@ -510,6 +517,21 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
            features::kAudioServiceLaunchOnStartup),
        ", Sandbox=",
        enabled_or_disabled_bool_string(IsAudioServiceSandboxEnabled())}));
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  if (media::IsChromeWideEchoCancellationEnabled()) {
+    LogToCircularBuffer(base::StrCat(
+        {"ChromeWideEchoCancellation : Enabled", ", processing_fifo_size = ",
+         NumberToString(
+             media::kChromeWideEchoCancellationProcessingFifoSize.Get()),
+         ", minimize_resampling = ",
+         media::kChromeWideEchoCancellationMinimizeResampling.Get()
+             ? "true"
+             : "false"}));
+  } else {
+    LogToCircularBuffer("ChromeWideEchoCancellation : Disabled");
+  }
+#endif
 
   // Audio manager
   // On some platforms, this can vary depending on build flags and failure

@@ -212,7 +212,7 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
           zero_state_new_desk_button->GetPreferredSize();
 
       const bool should_show_templates_ui =
-          desks_templates_util::AreDesksTemplatesEnabled() &&
+          desks_templates_util::IsSavedDesksEnabled() &&
           DesksTemplatesPresenter::Get()->should_show_templates_ui();
       auto* zero_state_desks_templates_button =
           bar_view_->zero_state_desks_templates_button();
@@ -372,7 +372,7 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
           base::BindRepeating(&DesksBarView::OnNewDeskButtonPressed,
                               base::Unretained(this),
                               DesksCreationRemovalSource::kButton)));
-  if (desks_templates_util::AreDesksTemplatesEnabled()) {
+  if (desks_templates_util::IsSavedDesksEnabled()) {
     expanded_state_desks_templates_button_ =
         scroll_view_contents_->AddChildView(
             std::make_unique<ExpandedDesksBarButton>(
@@ -486,7 +486,7 @@ int DesksBarView::GetMiniViewIndex(const DeskMiniView* mini_view) const {
 
 void DesksBarView::OnHoverStateMayHaveChanged() {
   for (auto* mini_view : mini_views_)
-    mini_view->UpdateCloseButtonVisibility();
+    mini_view->UpdateDeskButtonVisibility();
 }
 
 void DesksBarView::OnGestureTap(const gfx::Rect& screen_rect,
@@ -742,7 +742,7 @@ void DesksBarView::Layout() {
   gfx::Rect scroll_bounds = bounds();
   // Align with the overview grid in horizontal, so only horizontal insets are
   // needed here.
-  scroll_bounds.Inset(horizontal_padding, 0);
+  scroll_bounds.Inset(gfx::Insets::VH(0, horizontal_padding));
   scroll_view_->SetBoundsRect(scroll_bounds);
 
   // Clip the contents that are outside of the |scroll_view_|'s bounds.
@@ -808,7 +808,7 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   expanded_state_new_desk_button_->SetButtonState(/*enabled=*/true);
 
   for (auto* mini_view : mini_views_)
-    mini_view->UpdateCloseButtonVisibility();
+    mini_view->UpdateDeskButtonVisibility();
 
   // Switch to zero state, which happens if there would be one desk after
   // removal, unless we are viewing the desks templates grid.
@@ -890,32 +890,6 @@ void DesksBarView::UpdateNewMiniViews(bool initializing_bar_view,
     }
   }
 
-  // If we're not initializing the desk bar and |should_name_nudge_| is true,
-  // focus on the newly created name view to encourage users to rename their
-  // desks.
-  if (!initializing_bar_view && should_name_nudge_) {
-    auto* newly_added_name_view = mini_views_.back()->desk_name_view();
-    newly_added_name_view->RequestFocus();
-
-    // Set |newly_added_name_view|'s accessible name to the default desk name
-    // since its text is cleared.
-    newly_added_name_view->SetAccessibleName(
-        DesksController::GetDeskDefaultName(desks.size() - 1));
-
-    auto* highlight_controller = GetHighlightController();
-    if (highlight_controller->IsFocusHighlightVisible())
-      highlight_controller->MoveHighlightToView(newly_added_name_view);
-
-    // If we're in tablet mode and there are no external keyboards, open up the
-    // virtual keyboard.
-    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-        !HasExternalKeyboard()) {
-      keyboard::KeyboardUIController::Get()->ShowKeyboard(/*lock=*/false);
-    }
-
-    should_name_nudge_ = false;
-  }
-
   if (expanding_bar_view) {
     UpdateDeskButtonsVisibility();
     PerformZeroStateToExpandedStateMiniViewAnimation(this);
@@ -952,14 +926,14 @@ void DesksBarView::OnNewDeskButtonPressed(
   auto* controller = DesksController::Get();
   if (!controller->CanCreateDesks())
     return;
-  set_should_name_nudge(true);
   controller->NewDesk(desks_creation_removal_source);
   if (!controller->CanCreateDesks())
     expanded_state_new_desk_button_->SetButtonState(/*enabled=*/false);
+  NudgeDeskName(mini_views_.size() - 1);
 }
 
 void DesksBarView::UpdateButtonsForDesksTemplatesGrid() {
-  if (IsZeroState() || !desks_templates_util::AreDesksTemplatesEnabled())
+  if (IsZeroState() || !desks_templates_util::IsSavedDesksEnabled())
     return;
 
   FindMiniViewForDesk(Shell::Get()->desks_controller()->active_desk())
@@ -970,7 +944,7 @@ void DesksBarView::UpdateButtonsForDesksTemplatesGrid() {
 }
 
 void DesksBarView::UpdateDesksTemplatesButtonVisibility() {
-  if (!desks_templates_util::AreDesksTemplatesEnabled())
+  if (!desks_templates_util::IsSavedDesksEnabled())
     return;
 
   const bool should_show_ui =
@@ -981,6 +955,17 @@ void DesksBarView::UpdateDesksTemplatesButtonVisibility() {
                                                  is_zero_state);
   expanded_state_desks_templates_button_->SetVisible(should_show_ui &&
                                                      !is_zero_state);
+
+  // Removes the button from the tabbing order if it becomes invisible.
+  auto* highlight_controller = GetHighlightController();
+  if (!zero_state_desks_templates_button_->GetVisible()) {
+    highlight_controller->OnViewDestroyingOrDisabling(
+        zero_state_desks_templates_button_);
+  }
+  if (!expanded_state_desks_templates_button_->GetVisible()) {
+    highlight_controller->OnViewDestroyingOrDisabling(
+        expanded_state_desks_templates_button_->inner_button());
+  }
 
   const int begin_x = GetFirstMiniViewXOffset();
   Layout();
@@ -1247,6 +1232,24 @@ void DesksBarView::OnContentsScrollEnded() {
                                    adjusted_position);
   }
   UpdateGradientZone();
+}
+
+void DesksBarView::NudgeDeskName(int desk_index) {
+  DCHECK_LT(desk_index, static_cast<int>(mini_views_.size()));
+
+  auto* name_view = mini_views_[desk_index]->desk_name_view();
+  name_view->RequestFocus();
+
+  // Set `name_view`'s accessible name to the default desk name since its text
+  // is cleared.
+  name_view->SetAccessibleName(DesksController::GetDeskDefaultName(desk_index));
+
+  // If we're in tablet mode and there are no external keyboards, open up the
+  // virtual keyboard.
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+      !HasExternalKeyboard()) {
+    keyboard::KeyboardUIController::Get()->ShowKeyboard(/*lock=*/false);
+  }
 }
 
 }  // namespace ash

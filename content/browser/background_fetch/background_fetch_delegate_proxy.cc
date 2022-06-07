@@ -57,6 +57,7 @@ void BackgroundFetchDelegateProxy::GetIconDisplaySize(
 
 void BackgroundFetchDelegateProxy::GetPermissionForOrigin(
     const url::Origin& origin,
+    RenderProcessHost* rph,
     RenderFrameHostImpl* rfh,
     GetPermissionForOriginCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -65,13 +66,18 @@ void BackgroundFetchDelegateProxy::GetPermissionForOrigin(
   // frames. (This may be missing in unit tests.)
   if (rfh && !rfh->GetParent() &&
       rfh->GetBrowserContext()->GetDownloadManager()->GetDelegate()) {
+    WebContents::Getter web_contents_getter(base::BindRepeating(
+        [](GlobalRenderFrameHostId rfh_id) {
+          return WebContents::FromRenderFrameHost(
+              RenderFrameHost::FromID(rfh_id));
+        },
+        rfh->GetGlobalId()));
     rfh->GetBrowserContext()
         ->GetDownloadManager()
         ->GetDelegate()
         ->CheckDownloadAllowed(
-            base::BindRepeating(&WebContents::FromRenderFrameHost, rfh),
-            origin.GetURL(), "GET", absl::nullopt,
-            false /* from_download_cross_origin_redirect */,
+            std::move(web_contents_getter), origin.GetURL(), "GET",
+            absl::nullopt, false /* from_download_cross_origin_redirect */,
             true /* content_initiated */,
             base::BindOnce(&BackgroundFetchDelegateProxy::
                                DidGetPermissionFromDownloadRequestLimiter,
@@ -84,8 +90,15 @@ void BackgroundFetchDelegateProxy::GetPermissionForOrigin(
 
   if (auto* controller = GetPermissionController()) {
     blink::mojom::PermissionStatus permission_status =
-        controller->GetPermissionStatusForServiceWorker(
-            PermissionType::BACKGROUND_FETCH, origin);
+        blink::mojom::PermissionStatus::DENIED;
+    if (rfh) {
+      DCHECK(origin == rfh->GetLastCommittedOrigin());
+      permission_status = controller->GetPermissionStatusForCurrentDocument(
+          PermissionType::BACKGROUND_FETCH, rfh);
+    } else if (rph) {
+      permission_status = controller->GetPermissionStatusForWorker(
+          PermissionType::BACKGROUND_FETCH, rph, origin);
+    }
     switch (permission_status) {
       case blink::mojom::PermissionStatus::GRANTED:
         result = BackgroundFetchPermission::ALLOWED;

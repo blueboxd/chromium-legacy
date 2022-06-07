@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/common/scoped_defer_task_posting.h"
 #include "base/task/common/task_annotator.h"
@@ -672,11 +673,6 @@ MainThreadSchedulerImpl::DeprecatedDefaultTaskRunner() {
   return helper_.DeprecatedDefaultTaskRunner();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-MainThreadSchedulerImpl::VirtualTimeControlTaskRunner() {
-  return virtual_time_control_task_queue_->GetTaskRunnerWithDefaultTaskType();
-}
-
 scoped_refptr<MainThreadTaskQueue>
 MainThreadSchedulerImpl::CompositorTaskQueue() {
   helper_.CheckOnValidThread();
@@ -694,12 +690,6 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::ControlTaskQueue() {
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::DefaultTaskQueue() {
   return helper_.DefaultMainThreadTaskQueue();
-}
-
-scoped_refptr<MainThreadTaskQueue>
-MainThreadSchedulerImpl::VirtualTimeControlTaskQueue() {
-  helper_.CheckOnValidThread();
-  return virtual_time_control_task_queue_;
 }
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
@@ -1883,6 +1873,17 @@ bool MainThreadSchedulerImpl::VirtualTimeAllowedToAdvance() const {
   return !main_thread_only().virtual_time_stopped;
 }
 
+void MainThreadSchedulerImpl::GrantVirtualTimeBudget(
+    base::TimeDelta budget,
+    base::OnceClosure budget_exhausted_callback) {
+  virtual_time_control_task_queue_->GetTaskRunnerWithDefaultTaskType()
+      ->PostDelayedTask(FROM_HERE, std::move(budget_exhausted_callback),
+                        budget);
+  // This can shift time forwards if there's a pending MaybeAdvanceVirtualTime,
+  // so it's important this is called second.
+  virtual_time_domain_->SetVirtualTimeFence(NowTicks() + budget);
+}
+
 base::TimeTicks MainThreadSchedulerImpl::IncrementVirtualTimePauseCount() {
   main_thread_only().virtual_time_pause_count++;
   ApplyVirtualTimePolicy();
@@ -1951,6 +1952,13 @@ void MainThreadSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
   main_thread_only().max_virtual_time_task_starvation_count =
       max_task_starvation_count;
   ApplyVirtualTimePolicy();
+}
+
+WebScopedVirtualTimePauser
+MainThreadSchedulerImpl::CreateWebScopedVirtualTimePauser(
+    const WTF::String& name,
+    WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
+  return WebScopedVirtualTimePauser(this, duration, name);
 }
 
 void MainThreadSchedulerImpl::CreateTraceEventObjectSnapshot() const {

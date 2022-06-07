@@ -43,8 +43,10 @@ const debug_suites_list = [
   'confirmationPageTest',
   'fakeHelpContentProviderTest',
   'fakeMojoProviderTest',
+  'feedbackFlowTest',
   'helpContentTest',
   'searchPageTest',
+  'shareDataPageTest',
 ];
 
 TEST_F('OSFeedbackBrowserTest', 'All', function() {

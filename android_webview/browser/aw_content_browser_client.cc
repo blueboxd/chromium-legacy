@@ -38,10 +38,12 @@
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/mojom/render_message_filter.mojom.h"
 #include "android_webview/common/url_constants.h"
+#include "base/android/build_info.h"
 #include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -591,11 +593,8 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
       throttles.push_back(std::move(intercept_navigation_throttle));
 
     throttles.push_back(std::make_unique<PolicyBlocklistNavigationThrottle>(
-        navigation_handle,
-        AwBrowserContext::FromWebContents(navigation_handle->GetWebContents()),
-        AwBrowserProcess::GetInstance()
-            ->browser_policy_connector()
-            ->GetPolicyService()));
+        navigation_handle, AwBrowserContext::FromWebContents(
+                               navigation_handle->GetWebContents())));
 
     std::unique_ptr<AwSafeBrowsingNavigationThrottle> safe_browsing_throttle =
         AwSafeBrowsingNavigationThrottle::MaybeCreateThrottleFor(
@@ -748,6 +747,30 @@ AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
   return safe_browsing_url_checker_delegate_;
 }
 
+static bool IsEnterpriseAuthAppLinkUrl(const GURL& url) {
+  PrefService* pref_service =
+      android_webview::AwBrowserProcess::GetInstance()->local_state();
+
+  const base::Value* authentication_url_list =
+      pref_service->GetList(prefs::kEnterpriseAuthAppLinkPolicy);
+
+  if (authentication_url_list == nullptr) {
+    return false;
+  }
+
+  for (const auto& el : authentication_url_list->GetList()) {
+    const std::string* policy_url = el.FindStringKey("url");
+    GURL authentication_url = GURL(*policy_url);
+
+    // TODO(ayushsha,b/201408457): Use UrlMatcher to match authentication urls.
+    if (authentication_url.EqualsIgnoringRef(url)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool AwContentBrowserClient::ShouldOverrideUrlLoading(
     int frame_tree_node_id,
     bool browser_initiated,
@@ -793,6 +816,17 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
     return true;
 
   std::u16string url = base::UTF8ToUTF16(gurl.possibly_invalid_spec());
+
+  AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
+  if ((gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme)) &&
+      aw_settings->enterprise_authentication_app_link_policy_enabled() &&
+      IsEnterpriseAuthAppLinkUrl(gurl)) {
+    bool success = client_bridge->SendBrowseIntent(url);
+    if (success) {
+      return true;
+    }
+  }
+
   return client_bridge->ShouldOverrideUrlLoading(
       url, has_user_gesture, is_redirect, is_main_frame, ignore_navigation);
 }

@@ -10,11 +10,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -30,7 +32,20 @@
 #include "content/public/test/test_web_ui.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+
+namespace history {
+
+class MockBrowsingHistoryService : public BrowsingHistoryService {
+ public:
+  MOCK_METHOD(void,
+              QueryHistory,
+              (const std::u16string& search_text, const QueryOptions& options),
+              (override));
+};
+
+}  // namespace history
 
 namespace {
 
@@ -58,6 +73,10 @@ class BrowsingHistoryHandlerWithWebUIForTesting
     set_clock(&test_clock_);
     set_web_ui(web_ui);
     test_clock_.SetNow(PretendNow());
+    auto service = std::make_unique<
+        testing::StrictMock<history::MockBrowsingHistoryService>>();
+    mock_service_ = service.get();
+    set_browsing_history_service_for_testing(std::move(service));
   }
 
   BrowsingHistoryHandlerWithWebUIForTesting(
@@ -75,10 +94,12 @@ class BrowsingHistoryHandlerWithWebUIForTesting
   void PostponeResults() { postpone_query_results_ = true; }
 
   base::SimpleTestClock* test_clock() { return &test_clock_; }
+  history::MockBrowsingHistoryService* mock_service() { return mock_service_; }
 
  private:
   base::SimpleTestClock test_clock_;
   bool postpone_query_results_ = false;
+  raw_ptr<history::MockBrowsingHistoryService> mock_service_;
 };
 
 }  // namespace
@@ -267,6 +288,72 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
 
     // No additional WebUI calls were made.
     EXPECT_EQ(11U, web_ui()->call_data().size());
+  }
+}
+
+TEST_F(BrowsingHistoryHandlerTest, HostPrefixParameter) {
+  BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+  ASSERT_TRUE(web_ui()->call_data().empty());
+
+  std::u16string query = u"www.chromium.org";
+  EXPECT_CALL(
+      *handler.mock_service(),
+      QueryHistory(query,
+                   ::testing::Field(&history::QueryOptions::host_only, true)));
+
+  base::Value init_args(base::Value::Type::LIST);
+  init_args.Append("query-history-callback-id");
+  init_args.Append("host:www.chromium.org");
+  init_args.Append(150);
+  handler.HandleQueryHistory(&base::Value::AsListValue(init_args));
+}
+
+TEST_F(BrowsingHistoryHandlerTest, WithoutHostPrefixParameter) {
+  BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+  ASSERT_TRUE(web_ui()->call_data().empty());
+
+  std::u16string query = u"www.chromium.org";
+  EXPECT_CALL(
+      *handler.mock_service(),
+      QueryHistory(query,
+                   ::testing::Field(&history::QueryOptions::host_only, false)));
+
+  base::Value init_args(base::Value::Type::LIST);
+  init_args.Append("query-history-callback-id");
+  init_args.Append("www.chromium.org");
+  init_args.Append(150);
+  handler.HandleQueryHistory(&base::Value::AsListValue(init_args));
+}
+
+TEST_F(BrowsingHistoryHandlerTest, MisplacedHostPrefixParameter) {
+  BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+  ASSERT_TRUE(web_ui()->call_data().empty());
+  {
+    std::u16string query = u"whost:ww.chromium.org";
+    EXPECT_CALL(
+        *handler.mock_service(),
+        QueryHistory(
+            query, ::testing::Field(&history::QueryOptions::host_only, false)));
+
+    base::Value init_args(base::Value::Type::LIST);
+    init_args.Append("query-history-callback-id");
+    init_args.Append("whost:ww.chromium.org");
+    init_args.Append(150);
+    handler.HandleQueryHistory(&base::Value::AsListValue(init_args));
+  }
+
+  {
+    std::u16string query = u"www.chromium.orghost:";
+    EXPECT_CALL(
+        *handler.mock_service(),
+        QueryHistory(
+            query, ::testing::Field(&history::QueryOptions::host_only, false)));
+
+    base::Value init_args(base::Value::Type::LIST);
+    init_args.Append("query-history-callback-id");
+    init_args.Append("www.chromium.orghost:");
+    init_args.Append(150);
+    handler.HandleQueryHistory(&base::Value::AsListValue(init_args));
   }
 }
 

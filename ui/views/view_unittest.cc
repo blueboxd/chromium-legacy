@@ -1345,19 +1345,11 @@ void TestView::OnDidSchedulePaint(const gfx::Rect& rect) {
 namespace {
 
 void RotateCounterclockwise(gfx::Transform* transform) {
-  // clang-format off
-  transform->matrix().set3x3(0, -1, 0,
-                             1,  0, 0,
-                             0,  0, 1);
-  // clang-format on
+  transform->matrix().setRotateAboutZAxisSinCos(-1, 0);
 }
 
 void RotateClockwise(gfx::Transform* transform) {
-  // clang-format off
-  transform->matrix().set3x3( 0, 1, 0,  // NOLINT
-                             -1, 0, 0,
-                              0, 0, 1);
-  // clang-format on
+  transform->matrix().setRotateAboutZAxisSinCos(1, 0);
 }
 
 }  // namespace
@@ -2932,7 +2924,7 @@ TEST_F(ViewTest, ConversionsWithTransform) {
     transform.Translate(1.0, 1.0);
 
     // convert to a 3x3 matrix.
-    const SkMatrix& matrix = SkMatrix(transform.matrix());
+    SkMatrix matrix = transform.matrix().asM33();
 
     EXPECT_EQ(210, matrix.getTranslateX());
     EXPECT_EQ(-55, matrix.getTranslateY());
@@ -2953,7 +2945,7 @@ TEST_F(ViewTest, ConversionsWithTransform) {
     transform.ConcatTransform(t3);
 
     // convert to a 3x3 matrix
-    const SkMatrix& matrix = SkMatrix(transform.matrix());
+    SkMatrix matrix = transform.matrix().asM33();
 
     EXPECT_EQ(210, matrix.getTranslateX());
     EXPECT_EQ(-55, matrix.getTranslateY());
@@ -3879,13 +3871,24 @@ class TestingLayerViewObserver : public ViewObserver {
     return value;
   }
 
+  gfx::Rect GetLastClipRectAndReset() {
+    gfx::Rect value = last_clip_rect_;
+    last_clip_rect_ = gfx::Rect();
+    return value;
+  }
+
  private:
   // ViewObserver:
   void OnLayerTargetBoundsChanged(View* view) override {
     last_layer_bounds_ = view->layer()->bounds();
   }
 
+  void OnViewLayerClipRectChanged(View* view) override {
+    last_clip_rect_ = view->layer()->clip_rect();
+  }
+
   gfx::Rect last_layer_bounds_;
+  gfx::Rect last_clip_rect_;
   raw_ptr<View> view_;
 };
 
@@ -4128,6 +4131,27 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
   v2->SetBoundsRect(gfx::Rect(10, 11, 20, 30));
   EXPECT_EQ(gfx::Rect(30, 41, 20, 30), v2->layer()->bounds());
   EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
+}
+
+// Verifies the view observer is triggered when the clip rect of view's layer is
+// updated.
+TEST_F(ViewLayerTest, LayerClipRectChanged) {
+  View* content_view = widget()->SetContentsView(std::make_unique<View>());
+
+  View* v1 = content_view->AddChildView(std::make_unique<View>());
+  v1->SetPaintToLayer();
+
+  auto* v1_layer = v1->layer();
+  ASSERT_TRUE(v1_layer != nullptr);
+
+  TestingLayerViewObserver v1_observer(v1);
+  v1_layer->SetClipRect(gfx::Rect(10, 10, 20, 20));
+  EXPECT_EQ(v1_layer->clip_rect(), gfx::Rect(10, 10, 20, 20));
+  EXPECT_EQ(v1_layer->clip_rect(), v1_observer.GetLastClipRectAndReset());
+
+  v1_layer->SetClipRect(gfx::Rect(20, 20, 40, 40));
+  EXPECT_EQ(v1_layer->clip_rect(), gfx::Rect(20, 20, 40, 40));
+  EXPECT_EQ(v1_layer->clip_rect(), v1_observer.GetLastClipRectAndReset());
 }
 
 // Make sure layers are positioned correctly in RTL.

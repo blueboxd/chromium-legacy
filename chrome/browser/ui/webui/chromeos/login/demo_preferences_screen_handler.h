@@ -41,7 +41,7 @@ class DemoPreferencesScreenHandler : public BaseScreenHandler,
  public:
   using TView = DemoPreferencesScreenView;
 
-  explicit DemoPreferencesScreenHandler(JSCallsContainer* js_calls_container);
+  DemoPreferencesScreenHandler();
 
   DemoPreferencesScreenHandler(const DemoPreferencesScreenHandler&) = delete;
   DemoPreferencesScreenHandler& operator=(const DemoPreferencesScreenHandler&) =
@@ -56,7 +56,7 @@ class DemoPreferencesScreenHandler : public BaseScreenHandler,
   void SetInputMethodId(const std::string& input_method) override;
 
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
 
@@ -64,8 +64,6 @@ class DemoPreferencesScreenHandler : public BaseScreenHandler,
   void RegisterMessages() override;
 
  private:
-  void HandleSetLocaleId(const std::string& language_id);
-  void HandleSetInputMethodId(const std::string& language_id);
   void HandleSetDemoModeCountry(const std::string& country_id);
 
   ash::DemoPreferencesScreen* screen_ = nullptr;

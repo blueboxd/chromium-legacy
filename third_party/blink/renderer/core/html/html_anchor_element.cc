@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
+#include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -171,8 +172,8 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
 
   // The coordinates sent in the query string are relative to the height and
   // width of the image element, ignoring CSS transform/zoom.
-  gfx::PointF map_point = layout_object->AbsoluteToLocalPoint(
-      gfx::PointF(mouse_event->AbsoluteLocation()));
+  gfx::PointF map_point =
+      layout_object->AbsoluteToLocalPoint(mouse_event->AbsoluteLocation());
 
   // The origin (0,0) is at the upper left of the content area, inside the
   // padding and border.
@@ -462,6 +463,24 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       return;
     }
 
+    if (auto* navigation_api = NavigationApi::navigation(*window)) {
+      NavigationApi::DispatchParams params(completed_url,
+                                           NavigateEventType::kCrossDocument,
+                                           WebFrameLoadType::kStandard);
+      if (event.isTrusted())
+        params.involvement = UserNavigationInvolvement::kActivation;
+      params.download_filename = download_attr;
+      if (navigation_api->DispatchNavigateEvent(params) !=
+          NavigationApi::DispatchResult::kContinue) {
+        return;
+      }
+      // A download will never notify blink about its completion. Tell the
+      // NavigationApi that the navigation was dropped, so that it doesn't
+      // leave the frame thinking it is loading indefinitely.
+      navigation_api->InformAboutCanceledNavigation(
+          CancelNavigationReason::kDropped);
+    }
+
     request.SetSuggestedFilename(download_attr);
     request.SetRequestContext(mojom::blink::RequestContextType::DOWNLOAD);
     request.SetRequestorOrigin(window->GetSecurityOrigin());
@@ -488,7 +507,6 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
   if (HasRel(kRelationNoOpener) ||
       (EqualIgnoringASCIICase(target, "_blank") && !HasRel(kRelationOpener) &&
-       RuntimeEnabledFeatures::TargetBlankImpliesNoOpenerEnabled() &&
        frame->GetSettings()
            ->GetTargetBlankImpliesNoOpenerEnabledWillBeRemoved())) {
     frame_request.SetNoOpener();

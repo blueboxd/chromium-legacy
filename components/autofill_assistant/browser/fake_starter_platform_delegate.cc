@@ -103,8 +103,16 @@ bool FakeStarterPlatformDelegate::GetMakeSearchesAndBrowsingBetterEnabled()
   return msbb_enabled_;
 }
 
+bool FakeStarterPlatformDelegate::GetIsLoggedIn() {
+  return is_logged_in_;
+}
+
 bool FakeStarterPlatformDelegate::GetIsCustomTab() const {
   return is_custom_tab_;
+}
+
+bool FakeStarterPlatformDelegate::GetIsWebLayer() const {
+  return is_web_layer_;
 }
 
 bool FakeStarterPlatformDelegate::GetIsTabCreatedByGSA() const {
@@ -117,6 +125,15 @@ FakeStarterPlatformDelegate::CreateFieldTrialUtil() {
     return std::move(field_trial_util_);
   }
   return std::make_unique<MockAssistantFieldTrialUtil>();
+}
+
+bool FakeStarterPlatformDelegate::IsAttached() {
+  return is_attached_;
+}
+
+base::WeakPtr<StarterPlatformDelegate>
+FakeStarterPlatformDelegate::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace autofill_assistant

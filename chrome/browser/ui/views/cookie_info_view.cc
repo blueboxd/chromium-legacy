@@ -83,8 +83,8 @@ CookieInfoView::CookieInfoView() {
   const ChromeLayoutProvider* const provider = ChromeLayoutProvider::Get();
   const gfx::Insets& dialog_insets =
       provider->GetInsetsMetric(views::INSETS_DIALOG);
-  SetBorder(views::CreateEmptyBorder(0, dialog_insets.left(), 0,
-                                     dialog_insets.right()));
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(0, dialog_insets.left(), 0, dialog_insets.right())));
 
   View* const contents = SetContents(std::make_unique<views::View>());
   views::TableLayout* layout =
@@ -174,7 +174,7 @@ void CookieInfoView::SetTextfieldColors() {
 
 views::Textfield* CookieInfoView::AddTextfieldRow(views::TableLayout* layout,
                                                   int label_message_id) {
-  layout->AddRows(1, views::GridLayout::kFixedSize);
+  layout->AddRows(1, views::TableLayout::kFixedSize);
   auto* label = contents()->AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(label_message_id)));
   auto* textfield = contents()->AddChildView(

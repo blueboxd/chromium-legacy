@@ -21,18 +21,16 @@ import './passwords_shared_css.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 
-// <if expr="chromeos_ash or chromeos_lacros">
-import {BlockingRequestManager} from './blocking_request_manager.js';
-// </if>
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {getTemplate} from './password_edit_dialog.html.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
+import {PasswordRequestorMixin} from './password_requestor_mixin.js';
 
 export interface PasswordEditDialogElement {
   $: {
@@ -50,7 +48,8 @@ export interface PasswordEditDialogElement {
   };
 }
 
-const PasswordEditDialogElementBase = I18nMixin(PolymerElement);
+const PasswordEditDialogElementBase =
+    PasswordRequestorMixin(I18nMixin(PolymerElement));
 
 /**
  * When user enters more than or equal to 900 characters in the note field, a
@@ -87,18 +86,18 @@ export enum PasswordDialogMode {
  */
 export enum AddCredentialFromSettingsUserInteractions {
   // Used when the add credential dialog is opened from the settings.
-  Add_Dialog_Opened = 0,
+  ADD_DIALOG_OPENED = 0,
   // Used when the add credential dialog is closed from the settings.
-  Add_Dialog_Closed = 1,
+  ADD_DIALOG_CLOSED = 1,
   // Used when a new credential is added from the settings .
-  Credential_Added = 2,
+  CREDENTIAL_ADDED = 2,
   // Used when a new credential is being added from the add credential dialog in
   // settings and another credential exists with the same username/website
   // combination.
-  Duplicated_Credential_Entered = 3,
+  DUPLICATED_CREDENTIAL_ENTERED = 3,
   // Used when an existing credential is viewed while adding a new credential
   // from the settings.
-  Duplicate_Credential_Viewed = 4,
+  DUPLICATE_CREDENTIAL_VIEWED = 4,
   // Must be last.
   COUNT = 5,
 }
@@ -136,13 +135,6 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         type: Array,
         value: () => [],
       },
-
-      // <if expr="chromeos_ash or chromeos_lacros">
-      /**
-       * Used for authentication when switching from ADD to EDIT mode.
-       */
-      tokenRequestManager: {type: Object, value: null},
-      // </if>
 
       requestedDialogMode: {type: Object, value: null},
 
@@ -203,7 +195,11 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       /**
        * Current value in username input.
        */
-      username_: {type: String, value: ''},
+      username_: {
+        type: String,
+        value: '',
+        observer: 'usernameChanged_',
+      },
 
       /**
        * Current value in note field.
@@ -281,9 +277,6 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   readonly storeOptionAccountValue: string;
   readonly storeOptionDeviceValue: string;
   savedPasswords: Array<MultiStorePasswordUiEntry>;
-  // <if expr="chromeos_ash or chromeos_lacros">
-  tokenRequestManager: BlockingRequestManager|null;
-  // </if>
   private usernamesByOrigin_: Map<string, Set<string>>|null = null;
   requestedDialogMode: PasswordDialogMode|null;
   dialogMode: PasswordDialogMode;
@@ -347,6 +340,16 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     }
 
     return PasswordDialogMode.ADD;
+  }
+
+  /**
+   * Changing the username in the edit dialog should reset the note to empty.
+   */
+  private usernameChanged_() {
+    if (this.isPasswordNotesEnabled_ &&
+        this.dialogMode === PasswordDialogMode.EDIT) {
+      this.note_ = '';
+    }
   }
 
   private computeIsInPasswordViewMode_(): boolean {
@@ -466,7 +469,6 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         return '';
       default:
         assertNotReached();
-        return '';
     }
   }
 
@@ -625,7 +627,6 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         return this.existingEntry!.urls.shown;
       default:
         assertNotReached();
-        return '';
     }
   }
 
@@ -712,33 +713,19 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   private onViewExistingPasswordClick_() {
     chrome.metricsPrivate.recordEnumerationValue(
         'PasswordManager.AddCredentialFromSettings.UserAction',
-        AddCredentialFromSettingsUserInteractions.Duplicate_Credential_Viewed,
+        AddCredentialFromSettingsUserInteractions.DUPLICATE_CREDENTIAL_VIEWED,
         AddCredentialFromSettingsUserInteractions.COUNT);
     const existingEntry = this.savedPasswords.find(entry => {
       return entry.urls.origin === this.websiteUrls_!.origin &&
           entry.username === this.username_;
     })!;
-    this.requestPlaintextPasswordForEditing_(existingEntry.getAnyId())
+    this.requestPlaintextPassword(
+            existingEntry.getAnyId(),
+            chrome.passwordsPrivate.PlaintextReason.EDIT)
         .then(password => {
           existingEntry.password = password;
           this.switchToEditMode_(existingEntry);
         });
-  }
-
-  private requestPlaintextPasswordForEditing_(id: number): Promise<string> {
-    return new Promise(resolve => {
-      PasswordManagerImpl.getInstance()
-          .requestPlaintextPassword(
-              id, chrome.passwordsPrivate.PlaintextReason.EDIT)
-          .then(password => resolve(password), () => {
-            // <if expr="chromeos_ash or chromeos_lacros">
-            // If no password was found, refresh auth token and retry.
-            this.tokenRequestManager!.request(() => {
-              this.requestPlaintextPasswordForEditing_(id).then(resolve);
-            });
-            // </if>
-          });
-    });
   }
 
   private switchToEditMode_(existingEntry: MultiStorePasswordUiEntry) {
@@ -769,7 +756,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       chrome.metricsPrivate.recordEnumerationValue(
           'PasswordManager.AddCredentialFromSettings.UserAction',
           AddCredentialFromSettingsUserInteractions
-              .Duplicated_Credential_Entered,
+              .DUPLICATED_CREDENTIAL_ENTERED,
           AddCredentialFromSettingsUserInteractions.COUNT);
     }
 

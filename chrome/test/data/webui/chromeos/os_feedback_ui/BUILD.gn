@@ -14,10 +14,12 @@ js_type_check("closure_compile") {
   deps = [
     ":confirmation_page_test",
     ":fake_help_content_provider_test",
+    ":feedback_flow_test",
     ":help_content_test",
     ":mojo_interface_provider_test",
     ":os_feedback_unified_test",
     ":search_page_test",
+    ":share_data_page_test",
   ]
 }
 
@@ -40,6 +42,17 @@ js_library("fake_help_content_provider_test") {
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
+js_library("feedback_flow_test") {
+  deps = [
+    "../..:chai_assert",
+    "//ash/webui/os_feedback_ui/resources:confirmation_page",
+    "//ash/webui/os_feedback_ui/resources:feedback_flow",
+    "//ash/webui/os_feedback_ui/resources:search_page",
+    "//ash/webui/os_feedback_ui/resources:share_data_page",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
 js_library("help_content_test") {
   deps = [
     "../..:chai_assert",
@@ -53,6 +66,7 @@ js_library("help_content_test") {
 js_library("mojo_interface_provider_test") {
   deps = [
     "../..:chai_assert",
+    "//ash/webui/os_feedback_ui/resources:fake_feedback_service_provider",
     "//ash/webui/os_feedback_ui/resources:fake_help_content_provider",
     "//ash/webui/os_feedback_ui/resources:feedback_types",
     "//ash/webui/os_feedback_ui/resources:mojo_interface_provider",
@@ -69,8 +83,19 @@ js_library("search_page_test") {
   deps = [
     "../..:chai_assert",
     "../..:test_util",
+    "//ash/webui/os_feedback_ui/resources:feedback_flow",
     "//ash/webui/os_feedback_ui/resources:help_content",
     "//ash/webui/os_feedback_ui/resources:search_page",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("share_data_page_test") {
+  deps = [
+    "../..:chai_assert",
+    "../..:test_util",
+    "//ash/webui/os_feedback_ui/resources:fake_data",
+    "//ash/webui/os_feedback_ui/resources:share_data_page",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

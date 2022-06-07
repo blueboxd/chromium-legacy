@@ -4,16 +4,25 @@
 
 #include "chrome/browser/web_applications/web_app_translation_manager.h"
 
+#include <initializer_list>
+#include <memory>
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
-#include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
-#include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
-#include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/test/base/testing_profile.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
@@ -21,14 +30,9 @@ class WebAppTranslationManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    fake_registry_controller_ =
-        std::make_unique<FakeWebAppRegistryController>();
-    fake_registry_controller_->SetUp(profile());
-
-    file_utils_ = base::MakeRefCounted<TestFileUtils>();
-
-    controller().Init();
-    InitWebAppProvider();
+    FakeWebAppProvider* provider = FakeWebAppProvider::Get(profile());
+    provider->SetDefaultFakeSubsystems();
+    test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 
  protected:
@@ -67,52 +71,27 @@ class WebAppTranslationManagerTest : public WebAppTest {
     return result;
   }
 
-  void InitWebAppProvider() {
-    provider_ = web_app::FakeWebAppProvider::Get(profile());
-    provider_->SetOsIntegrationManager(
-        std::make_unique<FakeOsIntegrationManager>(profile(), nullptr, nullptr,
-                                                   nullptr, nullptr));
-    // FakeWebAppProvider should not wait for a test extension system, that is
-    // never started, to be ready.
-    provider_->SkipAwaitingExtensionSystem();
-    web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
-  }
-
-  FakeWebAppRegistryController& controller() {
-    return *fake_registry_controller_;
-  }
-
-  WebAppInstallManager& install_manager() { return *install_manager_; }
-
-  FakeWebAppProvider& provider() { return *provider_; }
-  WebAppRegistrar& registrar() { return controller().registrar(); }
+  WebAppProvider& provider() { return *WebAppProvider::GetForTest(profile()); }
+  WebAppRegistrar& registrar() { return provider().registrar(); }
   WebAppTranslationManager& translation_manager() {
-    return controller().translation_manager();
-  }
-  TestFileUtils& file_utils() {
-    DCHECK(file_utils_);
-    return *file_utils_;
+    return provider().translation_manager();
   }
 
  private:
-  std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
-  std::unique_ptr<WebAppInstallManager> install_manager_;
-  scoped_refptr<TestFileUtils> file_utils_;
-  web_app::FakeWebAppProvider* provider_;
   base::test::ScopedFeatureList features_{
       blink::features::kWebAppEnableTranslations};
 };
 
 TEST_F(WebAppTranslationManagerTest, WriteReadAndDelete) {
-  auto web_app1 = test::CreateWebApp(GURL("https://example.com/path"));
-  const AppId app_id1 = web_app1->app_id();
-  web_app1->SetName("App1 name");
-  controller().RegisterApp(std::move(web_app1));
+  auto app_info1 = std::make_unique<WebAppInstallInfo>();
+  app_info1->start_url = GURL("https://example.com/path");
+  app_info1->title = u"App1 name";
+  const AppId app_id1 = test::InstallWebApp(profile(), std::move(app_info1));
 
-  auto web_app2 = test::CreateWebApp(GURL("https://example.com/path2"));
-  const AppId app_id2 = web_app2->app_id();
-  web_app2->SetName("App2 name");
-  controller().RegisterApp(std::move(web_app2));
+  auto app_info2 = std::make_unique<WebAppInstallInfo>();
+  app_info2->start_url = GURL("https://example.com/path2");
+  app_info2->title = u"App2 name";
+  const AppId app_id2 = test::InstallWebApp(profile(), std::move(app_info2));
 
   g_browser_process->SetApplicationLocale("en");
 
@@ -123,21 +102,21 @@ TEST_F(WebAppTranslationManagerTest, WriteReadAndDelete) {
   item1.name = "name 1";
   item1.short_name = "short name 1";
   item1.description = "description 1";
-  translations1[u"en"] = item1;
+  translations1["en"] = item1;
 
   blink::Manifest::TranslationItem item2;
   item2.name = "name 2";
   item2.description = "description 2";
-  translations1[u"fr"] = item2;
+  translations1["fr"] = item2;
 
   blink::Manifest::TranslationItem item3;
   item3.short_name = "short name 3";
-  translations2[u"en"] = item3;
+  translations2["en"] = item3;
 
   blink::Manifest::TranslationItem item4;
   item4.short_name = "short name 4";
   item4.description = "description 4";
-  translations2[u"fr"] = item4;
+  translations2["fr"] = item4;
 
   // Write translations for both apps.
   AwaitWriteTranslations(app_id1, translations1);
@@ -190,9 +169,10 @@ TEST_F(WebAppTranslationManagerTest, WriteReadAndDelete) {
 }
 
 TEST_F(WebAppTranslationManagerTest, UpdateTranslations) {
-  auto web_app1 = test::CreateWebApp(GURL("https://example.com/path"));
-  const AppId app_id1 = web_app1->app_id();
-  controller().RegisterApp(std::move(web_app1));
+  auto app_info1 = std::make_unique<WebAppInstallInfo>();
+  app_info1->start_url = GURL("https://example.com/path");
+  app_info1->title = u"App1 name";
+  const AppId app_id1 = test::InstallWebApp(profile(), std::move(app_info1));
 
   g_browser_process->SetApplicationLocale("en");
 
@@ -203,12 +183,12 @@ TEST_F(WebAppTranslationManagerTest, UpdateTranslations) {
   item1.name = "name 1";
   item1.short_name = "short name 1";
   item1.description = "description 1";
-  translations1[u"en"] = item1;
+  translations1["en"] = item1;
 
   blink::Manifest::TranslationItem item2;
   item2.name = "name 2";
   item2.description = "description 2";
-  translations2[u"en"] = item2;
+  translations2["en"] = item2;
 
   // Write translations for the app.
   AwaitWriteTranslations(app_id1, translations1);
@@ -242,7 +222,7 @@ TEST_F(WebAppTranslationManagerTest, InstallAndUninstall) {
   item1.name = "name 1";
   item1.short_name = "short name 1";
   item1.description = "description 1";
-  translations[u"en"] = item1;
+  translations["en"] = item1;
 
   auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = GURL("https://example.com/path");

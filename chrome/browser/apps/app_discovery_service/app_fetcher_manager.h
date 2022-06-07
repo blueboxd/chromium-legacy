@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/callback_list.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/apps/app_discovery_service/app_discovery_util.h"
 
 class Profile;
@@ -19,6 +21,8 @@ class AppFetcher {
   virtual ~AppFetcher() = default;
 
   virtual void GetApps(ResultCallback callback) = 0;
+  virtual base::CallbackListSubscription RegisterForAppUpdates(
+      RepeatingResultCallback callback);
 };
 
 // Backend for app fetching requests.
@@ -30,12 +34,17 @@ class AppFetcherManager {
   ~AppFetcherManager();
 
   void GetApps(ResultType result_type, ResultCallback callback);
+  base::CallbackListSubscription RegisterForAppUpdates(
+      ResultType result_type,
+      RepeatingResultCallback callback);
 
   static void SetOverrideFetcherForTesting(AppFetcher* fetcher);
 
  private:
+  raw_ptr<Profile> profile_;
+
   std::unique_ptr<AppFetcher> recommended_arc_app_fetcher_;
-  std::unique_ptr<AppFetcher> remote_url_fetcher_;
+  std::unique_ptr<AppFetcher> game_fetcher_;
 
   static AppFetcher* g_test_fetcher_;
 };

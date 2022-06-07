@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -318,22 +319,17 @@ void Compositor::AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
       frame_sink_id_, frame_sink_id);
 
   auto result = child_frame_sinks_.insert(frame_sink_id);
-
-  // TODO(crbug.com/1196413): Remove this after some investigation.
-  CHECK(result.second);
+  DCHECK(result.second);
 }
 
 void Compositor::RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
   auto it = child_frame_sinks_.find(frame_sink_id);
-  if (it != child_frame_sinks_.end()) {
-    DCHECK(it->is_valid());
-    context_factory_->GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
-        frame_sink_id_, *it);
-    child_frame_sinks_.erase(it);
-  } else {
-    // TODO(crbug.com/1196413): Remove this after some investigation.
-    NOTREACHED();
-  }
+  DCHECK(it != child_frame_sinks_.end());
+  DCHECK(it->is_valid());
+
+  context_factory_->GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
+      frame_sink_id_, *it);
+  child_frame_sinks_.erase(it);
 }
 
 void Compositor::SetLayerTreeFrameSink(
@@ -671,6 +667,12 @@ ThroughputTracker Compositor::RequestNewThroughputTracker() {
 
 uint32_t Compositor::GetAverageThroughput() const {
   return host_->GetAverageThroughput();
+}
+
+std::unique_ptr<cc::EventsMetricsManager::ScopedMonitor>
+Compositor::GetScopedEventMetricsMonitor(
+    cc::EventsMetricsManager::ScopedMonitor::DoneCallback done_callback) {
+  return host_->GetScopedEventMetricsMonitor(std::move(done_callback));
 }
 
 void Compositor::DidUpdateLayers() {

@@ -24,6 +24,9 @@ absl::optional<std::string> ConvertMojoFeatureToPackId(FeatureId mojo_id) {
     case FeatureId::HANDWRITING_RECOGNITION:
       return kHandwritingFeatureId;
 
+    case FeatureId::TTS:
+      return kTtsFeatureId;
+
     // Catch all unknown cases here.
     default:
       return absl::nullopt;
@@ -71,8 +74,7 @@ LanguagePacksImpl& LanguagePacksImpl::GetInstance() {
 
 void LanguagePacksImpl::BindReceiver(
     mojo::PendingReceiver<language::mojom::LanguagePacks> receiver) {
-  receiver_.reset();
-  receiver_.Bind(std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void LanguagePacksImpl::GetPackInfo(FeatureId feature_id,

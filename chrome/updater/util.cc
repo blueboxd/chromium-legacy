@@ -15,6 +15,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -169,15 +170,14 @@ TagParsingResult::TagParsingResult(const TagParsingResult&) = default;
 TagParsingResult& TagParsingResult::operator=(const TagParsingResult&) =
     default;
 
-TagParsingResult GetTagArgs() {
-  static const TagParsingResult tag_args = []() -> TagParsingResult {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    std::string tag = command_line->HasSwitch(kTagSwitch)
-                          ? command_line->GetSwitchValueASCII(kTagSwitch)
-                          : command_line->GetSwitchValueASCII(kHandoffSwitch);
+TagParsingResult GetTagArgsForCommandLine(
+    const base::CommandLine& command_line) {
+  std::string tag = command_line.HasSwitch(kTagSwitch)
+                        ? command_line.GetSwitchValueASCII(kTagSwitch)
+                        : command_line.GetSwitchValueASCII(kHandoffSwitch);
 #if BUILDFLAG(IS_WIN)
     if (tag.empty())
-      tag = GetSwitchValueInLegacyFormat(::GetCommandLineW(),
+      tag = GetSwitchValueInLegacyFormat(command_line.GetCommandLineString(),
                                          base::ASCIIToWide(kHandoffSwitch));
 #endif
     if (tag.empty())
@@ -188,9 +188,10 @@ TagParsingResult GetTagArgs() {
     VLOG_IF(1, error != tagging::ErrorCode::kSuccess)
         << "Tag parsing returned " << error << ".";
     return {tag_args, error};
-  }();
+}
 
-  return tag_args;
+TagParsingResult GetTagArgs() {
+  return GetTagArgsForCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
 absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
@@ -301,5 +302,32 @@ std::wstring GetTaskDisplayName(UpdaterScope scope) {
 }
 
 #endif  // BUILDFLAG(IS_WIN)
+
+absl::optional<base::FilePath> WriteInstallerDataToTempFile(
+    const base::FilePath& directory,
+    const std::string& installer_data) {
+  VLOG(2) << __func__ << ": " << directory << ": " << installer_data;
+
+  if (!base::DirectoryExists(directory))
+    return absl::nullopt;
+
+  if (installer_data.empty())
+    return absl::nullopt;
+
+  base::FilePath path;
+  base::File file = base::CreateAndOpenTemporaryFileInDir(directory, &path);
+  if (!file.IsValid())
+    return absl::nullopt;
+
+  const std::string installer_data_utf8_bom =
+      base::StrCat({kUTF8BOM, installer_data});
+  if (file.Write(0, installer_data_utf8_bom.c_str(),
+                 installer_data_utf8_bom.length()) == -1) {
+    VLOG(2) << __func__ << " file.Write failed";
+    return absl::nullopt;
+  }
+
+  return path;
+}
 
 }  // namespace updater

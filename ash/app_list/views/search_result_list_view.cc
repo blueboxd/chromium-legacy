@@ -143,9 +143,9 @@ SearchResultListView::SearchResultListView(
       u"", CONTEXT_SEARCH_RESULT_CATEGORY_LABEL, STYLE_PRODUCTIVITY_LAUNCHER));
   title_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->SetBorder(views::CreateEmptyBorder(
+  title_label_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
       kPreferredTitleTopMargins, kPreferredTitleHorizontalMargins,
-      kPreferredTitleBottomMargins, kPreferredTitleHorizontalMargins));
+      kPreferredTitleBottomMargins, kPreferredTitleHorizontalMargins)));
   title_label_->SetVisible(false);
   title_label_->SetPaintToLayer();
   title_label_->layer()->SetFillsBoundsOpaquely(false);
@@ -244,7 +244,9 @@ void SearchResultListView::SetListType(SearchResultListType list_type) {
       break;
   }
 
-  GetViewAccessibility().OverrideName(title_label_->GetText());
+  GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
+      IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_ACCESSIBLE_NAME,
+      title_label_->GetText()));
 
 #if DCHECK_IS_ON()
   switch (list_type_.value()) {
@@ -322,6 +324,8 @@ SearchResultListView::ScheduleResultAnimations(
 
   SetVisible(true);
   last_container_start_index_ = aggregate_animation_info.total_views;
+  current_animation_info.use_short_animations =
+      aggregate_animation_info.use_short_animations;
 
   auto schedule_animation = [this, &current_animation_info,
                              &aggregate_animation_info](views::View* view) {

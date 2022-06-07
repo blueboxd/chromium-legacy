@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/software_feature.h"
 #include "ash/services/device_sync/feature_status_change.h"
 #include "ash/services/device_sync/proto/cryptauth_common.pb.h"
 #include "ash/services/device_sync/public/cpp/device_sync_client.h"
@@ -16,8 +18,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/software_feature.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -27,11 +27,11 @@ namespace base {
 class TaskRunner;
 }  // namespace base
 
-namespace chromeos {
+namespace ash {
 
 namespace multidevice {
 class ExpiringRemoteDeviceCache;
-}  // namespace multidevice
+}
 
 namespace device_sync {
 
@@ -91,7 +91,7 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
       mojom::DeviceSync::GetDevicesActivityStatusCallback callback) override;
   void GetDebugInfo(mojom::DeviceSync::GetDebugInfoCallback callback) override;
 
-  // mojom::DeviceSyncObserver:
+  // device_sync::mojom::DeviceSyncObserver:
   void OnEnrollmentFinished() override;
   void OnNewDevicesSynced() override;
 
@@ -144,13 +144,6 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
 
 }  // namespace device_sync
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-namespace device_sync {
-using ::chromeos::device_sync::DeviceSyncClientImpl;
-}
 }  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_PUBLIC_CPP_DEVICE_SYNC_CLIENT_IMPL_H_

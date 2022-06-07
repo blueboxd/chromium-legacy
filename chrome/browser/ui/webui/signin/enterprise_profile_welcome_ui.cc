@@ -4,9 +4,14 @@
 
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/callback_helpers.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_handler.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -43,6 +48,11 @@ EnterpriseProfileWelcomeUI::EnterpriseProfileWelcomeUI(content::WebUI* web_ui)
   source->AddLocalizedString("enterpriseProfileWelcomeTitle",
                              IDS_ENTERPRISE_PROFILE_WELCOME_TITLE);
   source->AddLocalizedString("cancelLabel", IDS_CANCEL);
+  source->AddLocalizedString("proceedAlternateLabel",
+                             IDS_WELCOME_SIGNIN_VIEW_SIGNIN);
+  source->AddLocalizedString("linkDataText",
+                             IDS_ENTERPRISE_PROFILE_WELCOME_LINK_DATA_CHECKBOX);
+  source->AddBoolean("showLinkDataCheckbox", false);
   source->AddBoolean("isModalDialog", false);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
@@ -54,24 +64,31 @@ void EnterpriseProfileWelcomeUI::Initialize(
     Browser* browser,
     EnterpriseProfileWelcomeUI::ScreenType type,
     const AccountInfo& account_info,
+    bool force_new_profile,
+    bool show_link_data_option,
     absl::optional<SkColor> profile_color,
-    base::OnceCallback<void(bool)> proceed_callback) {
+    signin::SigninChoiceCallback proceed_callback) {
   auto handler = std::make_unique<EnterpriseProfileWelcomeHandler>(
-      browser, type, account_info, profile_color, std::move(proceed_callback));
+      browser, type, force_new_profile, account_info, profile_color,
+      std::move(proceed_callback));
   handler_ = handler.get();
 
   if (type ==
       EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation) {
-    base::DictionaryValue update_data;
-    update_data.SetBoolKey("isModalDialog", true);
-    update_data.SetStringKey(
-        "enterpriseProfileWelcomeTitle",
-        l10n_util::GetStringUTF16(
-            IDS_ENTERPRISE_WELCOME_PROFILE_REQUIRED_TITLE));
+    base::Value::Dict update_data;
+    update_data.Set("isModalDialog", true);
+
+    int title_id = force_new_profile
+                       ? IDS_ENTERPRISE_WELCOME_PROFILE_REQUIRED_TITLE
+                       : IDS_ENTERPRISE_WELCOME_PROFILE_WILL_BE_MANAGED_TITLE;
+    update_data.Set("enterpriseProfileWelcomeTitle",
+                    l10n_util::GetStringUTF16(title_id));
+
+    update_data.Set("showLinkDataCheckbox", show_link_data_option);
+
     content::WebUIDataSource::Update(
         Profile::FromWebUI(web_ui()),
-        chrome::kChromeUIEnterpriseProfileWelcomeHost,
-        update_data.CreateDeepCopy());
+        chrome::kChromeUIEnterpriseProfileWelcomeHost, std::move(update_data));
   }
 
   web_ui()->AddMessageHandler(std::move(handler));

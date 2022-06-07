@@ -129,7 +129,6 @@ DEFINE_VARIATION_PARAM(kIPHFeatureNotificationGuideVoiceSearchHelpBubbleFeature,
 DEFINE_VARIATION_PARAM(kIPHFeedCardMenuFeature, "IPH_FeedCardMenu");
 DEFINE_VARIATION_PARAM(kIPHGenericAlwaysTriggerHelpUiFeature,
                        "IPH_GenericAlwaysTriggerHelpUiFeature");
-DEFINE_VARIATION_PARAM(kIPHHomepagePromoCardFeature, "IPH_HomepagePromoCard");
 DEFINE_VARIATION_PARAM(kIPHIdentityDiscFeature, "IPH_IdentityDisc");
 DEFINE_VARIATION_PARAM(kIPHInstanceSwitcherFeature, "IPH_InstanceSwitcher");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryAddressFillingFeature,
@@ -220,6 +219,8 @@ DEFINE_VARIATION_PARAM(kIPHBadgedTranslateManualTriggerFeature,
 DEFINE_VARIATION_PARAM(kIPHDiscoverFeedHeaderFeature,
                        "IPH_DiscoverFeedHeaderMenu");
 DEFINE_VARIATION_PARAM(kIPHDefaultSiteViewFeature, "IPH_DefaultSiteView");
+DEFINE_VARIATION_PARAM(kIPHPasswordSuggestionsFeature,
+                       "IPH_PasswordSuggestions");
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -303,7 +304,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadsAreFasterFeature),
         VARIATION_ENTRY(kIPHEphemeralTabFeature),
         VARIATION_ENTRY(kIPHFeedCardMenuFeature),
-        VARIATION_ENTRY(kIPHHomepagePromoCardFeature),
         VARIATION_ENTRY(kIPHIdentityDiscFeature),
         VARIATION_ENTRY(kIPHInstanceSwitcherFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryAddressFillingFeature),
@@ -357,6 +357,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHBadgedTranslateManualTriggerFeature),
         VARIATION_ENTRY(kIPHDiscoverFeedHeaderFeature),
         VARIATION_ENTRY(kIPHDefaultSiteViewFeature),
+        VARIATION_ENTRY(kIPHPasswordSuggestionsFeature),
 #elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
         VARIATION_ENTRY(kIPHDesktopTabGroupsNewGroupFeature),

@@ -6,10 +6,10 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/secure_message_delegate_impl.h"
 #include "ash/services/device_sync/cryptauth_enroller_impl.h"
-#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -28,4 +28,4 @@ CryptAuthEnrollerFactoryImpl::CreateInstance() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

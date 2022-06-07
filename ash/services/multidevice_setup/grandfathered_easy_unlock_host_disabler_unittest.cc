@@ -6,11 +6,11 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "ash/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,9 +19,6 @@ namespace ash {
 namespace multidevice_setup {
 
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace device_sync = chromeos::device_sync;
 
 const char kEasyUnlockHostIdToDisablePrefName[] =
     "multidevice_setup.easy_unlock_host_id_to_disable";

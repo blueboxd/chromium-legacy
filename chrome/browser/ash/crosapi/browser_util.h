@@ -257,6 +257,9 @@ base::Version GetRootfsLacrosVersionMayBlock(
 // availability.
 void CacheLacrosAvailability(const policy::PolicyMap& map);
 
+// Returns the lacros ComponentInfo for a given channel.
+ComponentInfo GetLacrosComponentInfoForChannel(version_info::Channel channel);
+
 // Returns the ComponentInfo associated with the stateful lacros instance.
 ComponentInfo GetLacrosComponentInfo();
 
@@ -272,6 +275,9 @@ LacrosAvailability GetCachedLacrosAvailabilityForTesting();
 void ClearLacrosAvailabilityCacheForTest();
 
 bool IsProfileMigrationEnabled(const AccountId& account_id);
+
+// Returns true if the profile migration can run, but not yet completed.
+bool IsProfileMigrationAvailable();
 
 // Checks if profile migration has been completed. This is reset if profile
 // migration is initiated for example due to lacros data directory being wiped.
@@ -312,6 +318,19 @@ absl::optional<LacrosAvailability> ParseLacrosAvailability(
 
 // Returns the policy value name from the given value.
 base::StringPiece GetLacrosAvailabilityPolicyName(LacrosAvailability value);
+
+// Stores that "Go to files button" on the migration error screen is clicked.
+void SetGotoFilesClicked(PrefService* local_state,
+                         const std::string& user_id_hash);
+
+// Forgets that "Go to files button" on the migration error screen was clicked.
+void ClearGotoFilesClicked(PrefService* local_state,
+                           const std::string& user_id_hash);
+
+// Returns true if "Go to files button" on the migration error screen was
+// clicked.
+bool WasGotoFilesClicked(PrefService* local_state,
+                         const std::string& user_id_hash);
 
 }  // namespace browser_util
 }  // namespace crosapi

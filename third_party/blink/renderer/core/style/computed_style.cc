@@ -33,6 +33,7 @@
 #include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
+#include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition_data.h"
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
@@ -204,8 +205,9 @@ static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
       continue;
     // Highlight pseudo styles are stored in StyleHighlightData, and compared
     // like any other inherited field, yielding Difference::kInherited.
-    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
-        IsHighlightPseudoElement(pseudo_id))
+    if ((RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+         IsHighlightPseudoElement(pseudo_id)) ||
+        pseudo_id == PseudoId::kPseudoIdHighlight)
       continue;
     const ComputedStyle* new_pseudo_style =
         new_style.GetCachedPseudoElementStyle(pseudo_id);
@@ -286,7 +288,7 @@ bool ComputedStyle::NeedsReattachLayoutTree(const Element& element,
     return false;
 
   // We use LayoutNGTextCombine only for vertical writing mode.
-  if (RuntimeEnabledFeatures::LayoutNGTextCombineEnabled() &&
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() &&
       new_style->HasTextCombine() &&
       old_style->IsHorizontalWritingMode() !=
           new_style->IsHorizontalWritingMode()) {
@@ -2118,18 +2120,10 @@ float ComputedStyle::ComputedLineHeight() const {
   if (lh.IsNegative() && GetFont().PrimaryFont())
     return GetFont().PrimaryFont()->GetFontMetrics().LineSpacing();
 
-  if (RuntimeEnabledFeatures::FractionalLineHeightEnabled()) {
-    if (lh.IsPercentOrCalc()) {
-      return MinimumValueForLength(lh, LayoutUnit(ComputedFontSize()));
-    }
+  if (lh.IsPercentOrCalc())
+    return MinimumValueForLength(lh, LayoutUnit(ComputedFontSize()));
 
-    return lh.Value();
-  } else {
-    if (lh.IsPercentOrCalc())
-      return MinimumValueForLength(lh, LayoutUnit(ComputedFontSize())).ToInt();
-
-    return static_cast<int>(std::min(lh.Value(), LayoutUnit::Max().ToFloat()));
-  }
+  return lh.Value();
 }
 
 LayoutUnit ComputedStyle::ComputedLineHeightAsFixed(const Font& font) const {
@@ -2140,20 +2134,10 @@ LayoutUnit ComputedStyle::ComputedLineHeightAsFixed(const Font& font) const {
   if (lh.IsNegative() && font.PrimaryFont())
     return font.PrimaryFont()->GetFontMetrics().FixedLineSpacing();
 
-  if (RuntimeEnabledFeatures::FractionalLineHeightEnabled()) {
-    if (lh.IsPercentOrCalc()) {
-      return MinimumValueForLength(lh, ComputedFontSizeAsFixed(font));
-    }
+  if (lh.IsPercentOrCalc())
+    return MinimumValueForLength(lh, ComputedFontSizeAsFixed(font));
 
-    return LayoutUnit::FromFloatFloor(lh.Value());
-  } else {
-    if (lh.IsPercentOrCalc()) {
-      return LayoutUnit(
-          MinimumValueForLength(lh, ComputedFontSizeAsFixed(font)).ToInt());
-    }
-
-    return LayoutUnit(floorf(lh.Value()));
-  }
+  return LayoutUnit::FromFloatFloor(lh.Value());
 }
 
 LayoutUnit ComputedStyle::ComputedLineHeightAsFixed() const {
@@ -2660,6 +2644,47 @@ bool ComputedStyle::CanMatchSizeContainerQueries(const Element& element) const {
 bool ComputedStyle::IsInterleavingRoot(const ComputedStyle* style) {
   const ComputedStyle* unensured = ComputedStyle::NullifyEnsured(style);
   return unensured && unensured->IsContainerForSizeContainerQueries();
+}
+
+void ComputedStyle::SetUsedColorScheme(
+    ColorSchemeFlags flags,
+    mojom::blink::PreferredColorScheme preferred_color_scheme,
+    bool force_dark) {
+  bool prefers_dark =
+      preferred_color_scheme == mojom::blink::PreferredColorScheme::kDark;
+  bool has_dark = flags & static_cast<ColorSchemeFlags>(ColorSchemeFlag::kDark);
+  bool has_light =
+      flags & static_cast<ColorSchemeFlags>(ColorSchemeFlag::kLight);
+  bool has_only = flags & static_cast<ColorSchemeFlags>(ColorSchemeFlag::kOnly);
+  bool dark_scheme =
+      // Dark scheme because the preferred scheme is dark and color-scheme
+      // contains dark.
+      (has_dark && prefers_dark) ||
+      // Dark scheme because the the only recognized color-scheme is dark.
+      (has_dark && !has_light) ||
+      // Dark scheme because we have a dark color-scheme override for forced
+      // darkening and no 'only' which opts out.
+      (force_dark && !has_only) ||
+      // Typically, forced darkening should be used with a dark preferred
+      // color-scheme. This is to support the FORCE_DARK_ONLY behavior from
+      // WebView where this combination is passed to the renderer.
+      (force_dark && !prefers_dark);
+
+  SetDarkColorScheme(dark_scheme);
+
+  bool forced_scheme =
+      // No dark in the color-scheme property, but we still forced it to dark.
+      (!has_dark && dark_scheme) ||
+      // Always use forced color-scheme for preferred light color-scheme with
+      // forced darkening. The combination of preferred color-scheme of light
+      // with a color-scheme property value of "light dark" chooses the light
+      // color-scheme. Typically, forced darkening should be used with a dark
+      // preferred color-scheme. This is to support the FORCE_DARK_ONLY
+      // behavior from WebView where this combination is passed to the
+      // renderer.
+      (force_dark && !prefers_dark);
+
+  SetColorSchemeForced(forced_scheme);
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,

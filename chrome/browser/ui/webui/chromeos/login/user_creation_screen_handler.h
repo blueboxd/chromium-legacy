@@ -38,7 +38,7 @@ class UserCreationScreenHandler : public UserCreationView,
  public:
   using TView = UserCreationView;
 
-  explicit UserCreationScreenHandler(JSCallsContainer* js_calls_container);
+  UserCreationScreenHandler();
 
   ~UserCreationScreenHandler() override;
 
@@ -55,7 +55,7 @@ class UserCreationScreenHandler : public UserCreationView,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   ash::UserCreationScreen* screen_ = nullptr;
 };

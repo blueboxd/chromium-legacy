@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
@@ -16,6 +17,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "ui/views/controls/label.h"
+
+class Browser;
 
 namespace content {
 class WebContents;
@@ -135,6 +138,9 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
 
   // Called by ButtonPressed() when |image_button_| is pressed.
   void ImageButtonPressed();
+
+  // Gets the browser for `web_contents()`. May return null.
+  Browser* GetBrowser() const;
 
   ZoomBubbleExtensionInfo extension_info_;
 

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 
 namespace {
 
@@ -112,6 +113,13 @@ crosapi::mojom::OptionalBool
 StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::handles_intents(
     const apps::AppPtr& r) {
   return ConvertOptionalBoolToMojomOptionalBool(r->handles_intents);
+}
+
+// static
+crosapi::mojom::OptionalBool
+StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::is_platform_app(
+    const apps::AppPtr& r) {
+  return ConvertOptionalBoolToMojomOptionalBool(r->is_platform_app);
 }
 
 bool StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::Read(
@@ -225,6 +233,14 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::Read(
   if (!data.ReadHandlesIntents(&handles_intents))
     return false;
 
+  apps::Shortcuts shortcuts;
+  if (!data.ReadShortcuts(&shortcuts))
+    return false;
+
+  crosapi::mojom::OptionalBool is_platform_app;
+  if (!data.ReadIsPlatformApp(&is_platform_app))
+    return false;
+
   auto app = std::make_unique<apps::App>(app_type, app_id);
   app->readiness = readiness;
   app->name = name;
@@ -256,6 +272,9 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::Read(
       ConvertMojomOptionalBoolToOptionalBool(allow_uninstall);
   app->handles_intents =
       ConvertMojomOptionalBoolToOptionalBool(handles_intents);
+  app->shortcuts = std::move(shortcuts);
+  app->is_platform_app =
+      ConvertMojomOptionalBoolToOptionalBool(is_platform_app);
   *out = std::move(app);
   return true;
 }
@@ -1096,7 +1115,8 @@ crosapi::mojom::PermissionValueDataView::Tag UnionTraits<
     apps::PermissionValuePtr>::GetTag(const apps::PermissionValuePtr& r) {
   if (r->bool_value.has_value()) {
     return crosapi::mojom::PermissionValueDataView::Tag::BOOL_VALUE;
-  } else if (r->tristate_value.has_value()) {
+  }
+  if (r->tristate_value.has_value()) {
     return crosapi::mojom::PermissionValueDataView::Tag::TRISTATE_VALUE;
   }
   NOTREACHED();
@@ -1162,6 +1182,22 @@ bool StructTraits<crosapi::mojom::PreferredAppChangesDataView,
   preferred_app_changes->removed_filters =
       ConvertIntentFiltersToMojomIntentFilters(removed_filters);
   *out = std::move(preferred_app_changes);
+  return true;
+}
+
+bool StructTraits<crosapi::mojom::ShortcutDataView, apps::ShortcutPtr>::Read(
+    crosapi::mojom::ShortcutDataView data,
+    apps::ShortcutPtr* out) {
+  std::string shortcut_id;
+  if (!data.ReadShortcutId(&shortcut_id))
+    return false;
+
+  std::string name;
+  if (!data.ReadName(&name))
+    return false;
+
+  *out = std::make_unique<apps::Shortcut>(shortcut_id, name, data.position());
+
   return true;
 }
 

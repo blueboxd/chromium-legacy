@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -1405,8 +1406,6 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesMPC) {
 }
 
 TEST_F(StyleResolverTest, NoCascadeLayers) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       #a { color: green; }
@@ -1447,8 +1446,6 @@ TEST_F(StyleResolverTest, NoCascadeLayers) {
 }
 
 TEST_F(StyleResolverTest, CascadeLayersInDifferentSheets) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       @layer foo, bar;
@@ -1503,8 +1500,6 @@ TEST_F(StyleResolverTest, CascadeLayersInDifferentSheets) {
 }
 
 TEST_F(StyleResolverTest, CascadeLayersInDifferentTreeScopes) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument()
       .documentElement()
       ->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
@@ -1559,11 +1554,55 @@ TEST_F(StyleResolverTest, CascadeLayersInDifferentTreeScopes) {
             &GetDocument());
 }
 
+// https://crbug.com/1313357
+TEST_F(StyleResolverTest, CascadeLayersAfterModifyingAnotherSheet) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      @layer {
+        target { color: red; }
+      }
+    </style>
+    <style id="addrule"></style>
+    <target></target>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().getElementById("addrule")->appendChild(
+      GetDocument().createTextNode("target { font-size: 10px; }"));
+
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(GetDocument().GetScopedStyleResolver()->GetCascadeLayerMap());
+
+  StyleResolverState state(GetDocument(),
+                           *GetDocument().QuerySelector("target"));
+  SelectorFilter filter;
+  MatchResult match_result;
+  ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
+                                 filter, match_result, state.Style(),
+                                 EInsideLink::kNotInsideLink);
+  MatchAllRules(state, collector);
+  const auto& properties = match_result.GetMatchedProperties();
+  ASSERT_EQ(properties.size(), 2u);
+
+  const uint16_t kImplicitOuterLayerOrder =
+      CascadeLayerMap::kImplicitOuterLayerOrder;
+
+  // @layer { target { color: red } }"
+  EXPECT_TRUE(properties[0].properties->HasProperty(CSSPropertyID::kColor));
+  EXPECT_EQ(0u, properties[0].types_.layer_order);
+  EXPECT_EQ(properties[0].types_.origin, CascadeOrigin::kAuthor);
+
+  // target { font-size: 10px }
+  EXPECT_TRUE(properties[1].properties->HasProperty(CSSPropertyID::kFontSize));
+  EXPECT_EQ(kImplicitOuterLayerOrder, properties[1].types_.layer_order);
+  EXPECT_EQ(properties[1].types_.origin, CascadeOrigin::kAuthor);
+}
+
 // TODO(crbug.com/1095765): We should have a WPT for this test case, but
 // currently Blink web test runner can't test @page rules in WPT.
 TEST_F(StyleResolverTest, CascadeLayersAndPageRules) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
     @page { margin-top: 100px; }

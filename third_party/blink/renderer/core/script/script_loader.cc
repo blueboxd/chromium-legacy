@@ -30,6 +30,7 @@
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -124,6 +125,7 @@ void ScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(prepared_pending_script_);
   visitor->Trace(resource_keep_alive_);
   visitor->Trace(script_web_bundle_);
+  visitor->Trace(speculation_rule_set_);
   PendingScriptClient::Trace(visitor);
 }
 
@@ -151,6 +153,22 @@ void ScriptLoader::HandleAsyncAttribute() {
   // flag must be unset.</spec>
   non_blocking_ = false;
   dynamic_async_ = true;
+}
+
+void ScriptLoader::Removed() {
+  // Release webbundle resources which are associated to this loader explicitly
+  // without waiting for blink-GC.
+  if (ScriptWebBundle* bundle = std::exchange(script_web_bundle_, nullptr))
+    bundle->WillReleaseBundleLoaderAndUnregister();
+
+  if (SpeculationRuleSet* rule_set =
+          std::exchange(speculation_rule_set_, nullptr)) {
+    // Speculation rules in this script no longer apply.
+    // Candidate speculations must be re-evaluated.
+    DCHECK_EQ(GetScriptType(), ScriptTypeAtPrepare::kSpeculationRules);
+    DocumentSpeculationRules::From(element_->GetDocument())
+        .RemoveRuleSet(rule_set);
+  }
 }
 
 void ScriptLoader::DetachPendingScript() {
@@ -451,10 +469,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   if (ShouldBlockSyncScriptForDocumentPolicy(element_.Get(), GetScriptType(),
                                              parser_inserted_)) {
-    element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kError,
-        "Synchronous script execution is disabled by Document Policy"));
+    context_window->ReportDocumentPolicyViolation(
+        mojom::blink::DocumentPolicyFeature::kSyncScript,
+        mojom::blink::PolicyDisposition::kEnforce,
+        "Synchronous script execution is disabled by Document Policy");
     return false;
   }
 
@@ -812,6 +830,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         String parse_error;
         if (auto* rule_set = SpeculationRuleSet::ParseInline(
                 source_text, base_url, &parse_error)) {
+          speculation_rule_set_ = rule_set;
           DocumentSpeculationRules::From(element_document).AddRuleSet(rule_set);
         }
         if (!parse_error.IsNull()) {
@@ -995,8 +1014,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // script is ready, execute the script block and then remove the element
     // from the set of scripts that will execute as soon as possible.</spec>
     pending_script_ = TakePendingScript(ScriptSchedulingType::kAsync);
-    // This is for the UKM count of async scripts in a document.
-    context_window->document()->IncrementAsyncScriptCount();
     // TODO(hiroshige): Here the context document is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
     context_window->document()->GetScriptRunner()->QueueScriptForExecution(
@@ -1193,13 +1210,6 @@ String ScriptLoader::GetScriptText() const {
   return GetStringForScriptExecution(child_text_content,
                                      element_->GetScriptElementType(),
                                      element_->GetExecutionContext());
-}
-
-void ScriptLoader::ReleaseWebBundleResource() {
-  if (!script_web_bundle_)
-    return;
-  script_web_bundle_->WillReleaseBundleLoaderAndUnregister();
-  script_web_bundle_ = nullptr;
 }
 
 }  // namespace blink

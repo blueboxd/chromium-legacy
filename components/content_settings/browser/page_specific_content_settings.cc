@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -58,6 +59,8 @@ bool WillNavigationCreateNewPageSpecificContentSettingsOnCommit(
 }
 
 }  // namespace
+
+using StorageType = mojom::ContentSettingsManager::StorageType;
 
 PageSpecificContentSettings::SiteDataObserver::SiteDataObserver(
     content::WebContents* web_contents)
@@ -309,51 +312,17 @@ PageSpecificContentSettings::GetDelegateForWebContents(
 }
 
 // static
-void PageSpecificContentSettings::WebDatabaseAccessed(int render_process_id,
-                                                      int render_frame_id,
-                                                      const GURL& url,
-                                                      bool blocked_by_policy) {
+void PageSpecificContentSettings::StorageAccessed(
+    mojom::ContentSettingsManager::StorageType storage_type,
+    int render_process_id,
+    int render_frame_id,
+    const GURL& url,
+    bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PageSpecificContentSettings* settings =
       GetForFrame(render_process_id, render_frame_id);
   if (settings)
-    settings->OnWebDatabaseAccessed(url, blocked_by_policy);
-}
-
-// static
-void PageSpecificContentSettings::IndexedDBAccessed(int render_process_id,
-                                                    int render_frame_id,
-                                                    const GURL& url,
-                                                    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PageSpecificContentSettings* settings =
-      GetForFrame(render_process_id, render_frame_id);
-  if (settings)
-    settings->OnIndexedDBAccessed(url, blocked_by_policy);
-}
-
-// static
-void PageSpecificContentSettings::CacheStorageAccessed(int render_process_id,
-                                                       int render_frame_id,
-                                                       const GURL& url,
-                                                       bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PageSpecificContentSettings* settings =
-      GetForFrame(render_process_id, render_frame_id);
-  if (settings)
-    settings->OnCacheStorageAccessed(url, blocked_by_policy);
-}
-
-// static
-void PageSpecificContentSettings::FileSystemAccessed(int render_process_id,
-                                                     int render_frame_id,
-                                                     const GURL& url,
-                                                     bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PageSpecificContentSettings* settings =
-      GetForFrame(render_process_id, render_frame_id);
-  if (settings)
-    settings->OnFileSystemAccessed(url, blocked_by_policy);
+    settings->OnStorageAccessed(storage_type, url, blocked_by_policy);
 }
 
 // static
@@ -517,34 +486,68 @@ void PageSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
   }
 }
 
-void PageSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
-                                                       bool local,
-                                                       bool blocked_by_policy) {
-  browsing_data::LocalSharedObjectsContainer& container =
-      blocked_by_policy ? blocked_local_shared_objects_
-                        : allowed_local_shared_objects_;
-  browsing_data::CannedLocalStorageHelper* helper =
-      local ? container.local_storages() : container.session_storages();
-  helper->Add(
+namespace {
+void AddToContainer(browsing_data::LocalSharedObjectsContainer& container,
+                    StorageType storage_type,
+                    const GURL& url) {
+  url::Origin origin = url::Origin::Create(url);
+  switch (storage_type) {
+    case StorageType::DATABASE:
+      container.databases()->Add(origin);
+      return;
+    case StorageType::LOCAL_STORAGE:
       // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
       // function directly.
-      blink::StorageKey(url::Origin::Create(url)));
+      container.local_storages()->Add(blink::StorageKey(origin));
+      return;
+    case StorageType::SESSION_STORAGE:
+      // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
+      // function directly.
+      container.session_storages()->Add(blink::StorageKey(origin));
+      return;
+    case StorageType::INDEXED_DB:
+      // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
+      // function directly.
+      container.indexed_dbs()->Add(blink::StorageKey(origin));
+      return;
+    case StorageType::CACHE:
+      container.cache_storages()->Add(origin);
+      return;
+    case StorageType::FILE_SYSTEM:
+      container.file_systems()->Add(origin);
+      return;
+    case StorageType::WEB_LOCKS:
+      NOTREACHED();
+      return;
+  }
+}
+}  // namespace
 
+void PageSpecificContentSettings::OnStorageAccessed(
+    StorageType storage_type,
+    const GURL& url,
+    bool blocked_by_policy,
+    content::Page* originating_page) {
+  originating_page = originating_page ? originating_page : &page();
   if (blocked_by_policy) {
+    AddToContainer(blocked_local_shared_objects_, storage_type, url);
     OnContentBlocked(ContentSettingsType::COOKIES);
   } else {
-    NotifyDelegate(&Delegate::OnDomStorageAccessAllowed,
-                   url::Origin::Create(url));
+    AddToContainer(allowed_local_shared_objects_, storage_type, url);
+    NotifyDelegate(&Delegate::OnStorageAccessAllowed, storage_type,
+                   url::Origin::Create(url), std::ref(*originating_page));
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  MaybeUpdateParent(&PageSpecificContentSettings::OnDomStorageAccessed, url,
-                    local, blocked_by_policy);
+  MaybeUpdateParent(&PageSpecificContentSettings::OnStorageAccessed,
+                    storage_type, url, blocked_by_policy, originating_page);
   MaybeNotifySiteDataObservers();
 }
 
 void PageSpecificContentSettings::OnCookiesAccessed(
-    const content::CookieAccessDetails& details) {
+    const content::CookieAccessDetails& details,
+    content::Page* originating_page) {
+  originating_page = originating_page ? originating_page : &page();
   if (details.cookie_list.empty())
     return;
   if (details.blocked_by_policy) {
@@ -553,65 +556,26 @@ void PageSpecificContentSettings::OnCookiesAccessed(
   } else {
     allowed_local_shared_objects_.cookies()->AddCookies(details);
     OnContentAllowed(ContentSettingsType::COOKIES);
-    NotifyDelegate(&Delegate::OnCookieAccessAllowed, details.cookie_list);
+    NotifyDelegate(&Delegate::OnCookieAccessAllowed, details.cookie_list,
+                   std::ref(*originating_page));
   }
 
-  MaybeUpdateParent(&PageSpecificContentSettings::OnCookiesAccessed, details);
-  MaybeNotifySiteDataObservers();
-}
-
-void PageSpecificContentSettings::OnIndexedDBAccessed(const GURL& url,
-                                                      bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
-    // function directly.
-    blocked_local_shared_objects_.indexed_dbs()->Add(
-        blink::StorageKey(url::Origin::Create(url)));
-    OnContentBlocked(ContentSettingsType::COOKIES);
-  } else {
-    // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
-    // function directly.
-    allowed_local_shared_objects_.indexed_dbs()->Add(
-        blink::StorageKey(url::Origin::Create(url)));
-    NotifyDelegate(&Delegate::OnIndexedDBAccessAllowed,
-                   url::Origin::Create(url));
-    OnContentAllowed(ContentSettingsType::COOKIES);
-  }
-
-  MaybeUpdateParent(&PageSpecificContentSettings::OnIndexedDBAccessed, url,
-                    blocked_by_policy);
-  MaybeNotifySiteDataObservers();
-}
-
-void PageSpecificContentSettings::OnCacheStorageAccessed(
-    const GURL& url,
-    bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.cache_storages()->Add(
-        url::Origin::Create(url));
-    OnContentBlocked(ContentSettingsType::COOKIES);
-  } else {
-    allowed_local_shared_objects_.cache_storages()->Add(
-        url::Origin::Create(url));
-    NotifyDelegate(&Delegate::OnCacheStorageAccessAllowed,
-                   url::Origin::Create(url));
-    OnContentAllowed(ContentSettingsType::COOKIES);
-  }
-
-  MaybeUpdateParent(&PageSpecificContentSettings::OnCacheStorageAccessed, url,
-                    blocked_by_policy);
+  MaybeUpdateParent(&PageSpecificContentSettings::OnCookiesAccessed, details,
+                    originating_page);
   MaybeNotifySiteDataObservers();
 }
 
 void PageSpecificContentSettings::OnServiceWorkerAccessed(
     const GURL& scope,
-    content::AllowServiceWorkerResult allowed) {
+    content::AllowServiceWorkerResult allowed,
+    content::Page* originating_page) {
   DCHECK(scope.is_valid());
+  originating_page = originating_page ? originating_page : &page();
   if (allowed) {
     allowed_local_shared_objects_.service_workers()->Add(
         url::Origin::Create(scope));
     NotifyDelegate(&Delegate::OnServiceWorkerAccessAllowed,
-                   url::Origin::Create(scope));
+                   url::Origin::Create(scope), std::ref(*originating_page));
   } else {
     blocked_local_shared_objects_.service_workers()->Add(
         url::Origin::Create(scope));
@@ -629,7 +593,7 @@ void PageSpecificContentSettings::OnServiceWorkerAccessed(
   }
 
   MaybeUpdateParent(&PageSpecificContentSettings::OnServiceWorkerAccessed,
-                    scope, allowed);
+                    scope, allowed, originating_page);
 }
 
 void PageSpecificContentSettings::OnSharedWorkerAccessed(
@@ -674,44 +638,6 @@ void PageSpecificContentSettings::OnTopicAccessed(
   accessed_topics_.insert(topic);
   MaybeUpdateParent(&PageSpecificContentSettings::OnTopicAccessed, api_origin,
                     blocked_by_policy, topic);
-}
-
-void PageSpecificContentSettings::OnWebDatabaseAccessed(
-    const GURL& url,
-    bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.databases()->Add(url::Origin::Create(url));
-    OnContentBlocked(ContentSettingsType::COOKIES);
-  } else {
-    allowed_local_shared_objects_.databases()->Add(url::Origin::Create(url));
-    NotifyDelegate(&Delegate::OnWebDatabaseAccessAllowed,
-                   url::Origin::Create(url));
-    OnContentAllowed(ContentSettingsType::COOKIES);
-  }
-
-  MaybeUpdateParent(&PageSpecificContentSettings::OnWebDatabaseAccessed, url,
-                    blocked_by_policy);
-  MaybeNotifySiteDataObservers();
-}
-
-void PageSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
-                                                       bool blocked_by_policy) {
-  // Note that all sandboxed file system access is recorded here as
-  // kTemporary; the distinction between temporary (default) and persistent
-  // storage is not made in the UI that presents this data.
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.file_systems()->Add(url::Origin::Create(url));
-    OnContentBlocked(ContentSettingsType::COOKIES);
-  } else {
-    allowed_local_shared_objects_.file_systems()->Add(url::Origin::Create(url));
-    NotifyDelegate(&Delegate::OnFileSystemAccessAllowed,
-                   url::Origin::Create(url));
-    OnContentAllowed(ContentSettingsType::COOKIES);
-  }
-
-  MaybeUpdateParent(&PageSpecificContentSettings::OnFileSystemAccessed, url,
-                    blocked_by_policy);
-  MaybeNotifySiteDataObservers();
 }
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)

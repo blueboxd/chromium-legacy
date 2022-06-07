@@ -14,14 +14,12 @@ crbug.com/1204176 fast/events/wheel/wheelevent-ctrl.html [ Failure ]
 crbug.com/1204176 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Timeout ]
 
 # fast/scrolling
-crbug.com/1204176 fast/scrolling/overflow-scrollability.html [ Failure ]
 crbug.com/1204176 fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure ]
 crbug.com/1204176 fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
 crbug.com/1204176 fast/scrolling/scroll-animation-on-by-default.html [ Failure ]
 crbug.com/1204176 fast/scrolling/wheel-scroll-latching-on-scrollbar.html [ Failure ]
 
 # fast/scrolling/events
-crbug.com/1204176 fast/scrolling/events/overscroll-event-fired-to-document.html [ Failure Timeout ]
 crbug.com/1204176 fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Failure Timeout ]
 crbug.com/1204176 fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Timeout ]
 crbug.com/1204176 fast/scrolling/events/overscroll-event-fired-to-window.html [ Failure Timeout ]

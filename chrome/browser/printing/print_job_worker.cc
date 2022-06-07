@@ -150,32 +150,28 @@ void PrintJobWorker::SetPrintJob(PrintJob* print_job) {
   print_job_ = print_job;
 }
 
-void PrintJobWorker::GetSettings(bool ask_user_for_settings,
-                                 uint32_t document_page_count,
-                                 bool has_selection,
-                                 mojom::MarginType margin_type,
-                                 bool is_scripted,
-                                 bool is_modifiable,
-                                 SettingsCallback callback) {
+void PrintJobWorker::GetDefaultSettings(SettingsCallback callback) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(page_number_, PageNumber::npos());
+
+  printing_context_->set_margin_type(
+      printing::mojom::MarginType::kDefaultMargins);
+
+  InvokeUseDefaultSettings(std::move(callback));
+}
+
+void PrintJobWorker::GetSettingsFromUser(uint32_t document_page_count,
+                                         bool has_selection,
+                                         mojom::MarginType margin_type,
+                                         bool is_scripted,
+                                         SettingsCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(page_number_, PageNumber::npos());
 
   printing_context_->set_margin_type(margin_type);
-  printing_context_->set_is_modifiable(is_modifiable);
 
-  // When we delegate to a destination, we don't ask the user for settings.
-  // TODO(mad): Ask the destination for settings.
-  if (ask_user_for_settings) {
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&PrintJobWorker::GetSettingsWithUI,
-                       base::Unretained(this), document_page_count,
-                       has_selection, is_scripted, std::move(callback)));
-  } else {
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&PrintJobWorker::UseDefaultSettings,
-                                  base::Unretained(this), std::move(callback)));
-  }
+  InvokeGetSettingsWithUI(document_page_count, has_selection, is_scripted,
+                          std::move(callback));
 }
 
 void PrintJobWorker::SetSettings(base::Value new_settings,
@@ -260,6 +256,23 @@ void PrintJobWorker::UpdatePrintSettingsFromPOD(
 void PrintJobWorker::GetSettingsDone(SettingsCallback callback,
                                      mojom::ResultCode result) {
   std::move(callback).Run(printing_context_->TakeAndResetSettings(), result);
+}
+
+void PrintJobWorker::InvokeUseDefaultSettings(SettingsCallback callback) {
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PrintJobWorker::UseDefaultSettings,
+                                base::Unretained(this), std::move(callback)));
+}
+
+void PrintJobWorker::InvokeGetSettingsWithUI(uint32_t document_page_count,
+                                             bool has_selection,
+                                             bool is_scripted,
+                                             SettingsCallback callback) {
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PrintJobWorker::GetSettingsWithUI, base::Unretained(this),
+                     document_page_count, has_selection, is_scripted,
+                     std::move(callback)));
 }
 
 void PrintJobWorker::GetSettingsWithUI(uint32_t document_page_count,
@@ -397,7 +410,7 @@ void PrintJobWorker::OnNewPage() {
   if (!document_)
     return;
 
-  bool do_spool_job = true;
+  bool do_spool_document = true;
 #if BUILDFLAG(IS_WIN)
   const bool source_is_pdf =
       !print_job_->document()->settings().is_modifiable();
@@ -406,16 +419,16 @@ void PrintJobWorker::OnNewPage() {
     if (!OnNewPageHelperGdi())
       return;
 
-    do_spool_job = false;
+    do_spool_document = false;
   }
 #endif  // BUILDFLAG(IS_WIN)
 
-  if (do_spool_job) {
+  if (do_spool_document) {
     if (!document_->GetMetafile()) {
       PostWaitForPage();
       return;
     }
-    SpoolJob();
+    SpoolDocument();
   }
 
   OnDocumentDone();
@@ -484,7 +497,6 @@ bool PrintJobWorker::Start() {
 void PrintJobWorker::CheckDocumentSpoolingComplete() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(page_number_, PageNumber::npos());
-  DCHECK(document_);
   // PrintJob must own this, because only PrintJob can send notifications.
   DCHECK(print_job_);
 }
@@ -502,6 +514,7 @@ void PrintJobWorker::OnDocumentDone() {
 }
 
 void PrintJobWorker::FinishDocumentDone(int job_id) {
+  DCHECK(document_);
   print_job_->PostTask(
       FROM_HERE, base::BindOnce(&DocDoneNotificationCallback,
                                 base::RetainedRef(print_job_.get()), job_id,
@@ -532,7 +545,7 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-void PrintJobWorker::SpoolJob() {
+void PrintJobWorker::SpoolDocument() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   mojom::ResultCode result =
       document_->RenderPrintedDocument(printing_context_.get());

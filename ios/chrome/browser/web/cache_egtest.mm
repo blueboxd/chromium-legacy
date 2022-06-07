@@ -180,15 +180,14 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
   [ChromeEarlGreyUI focusOmniboxAndType:@"cachetestfirstpage"];
   [[[[EarlGrey
       selectElementWithMatcher:
-          grey_allOf(grey_kindOfClassName(@"OmniboxPopupRowCell"),
+          grey_allOf(chrome_test_util::OmniboxPopupRow(),
                      grey_descendant(
                          chrome_test_util::StaticTextWithAccessibilityLabel(
                              base::SysUTF8ToNSString(
                                  cacheTestFirstPageURL.GetContent()))),
                      grey_sufficientlyVisible(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
-      onElementWithMatcher:grey_accessibilityID(
-                               @"OmniboxPopupTableViewAccessibilityIdentifier")]
+      onElementWithMatcher:chrome_test_util::OmniboxPopupList()]
       assertWithMatcher:grey_sufficientlyVisible()] performAction:grey_tap()];
 
   // Verify title and hitCount. Cache should not be used.

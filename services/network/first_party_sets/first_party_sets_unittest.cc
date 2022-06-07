@@ -8,19 +8,13 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/run_loop.h"
-#include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "net/base/features.h"
+#include "base/test/test_future.h"
 #include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
-#include "services/network/first_party_sets/first_party_set_parser.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,9 +28,6 @@ using ::testing::Value;
 
 using Type = net::SamePartyContext::Type;
 
-// Some of these tests overlap with FirstPartySetParser unittests, but
-// overlapping test coverage isn't the worst thing.
-
 namespace network {
 
 MATCHER_P(SerializesTo, want, "") {
@@ -44,57 +35,45 @@ MATCHER_P(SerializesTo, want, "") {
   return testing::ExplainMatchResult(testing::Eq(want), got, result_listener);
 }
 
-FirstPartySets::FlattenedSets ParseSetsFromStream(const std::string& sets) {
-  std::istringstream stream(sets);
-  return FirstPartySetParser::ParseSetsFromStream(stream);
-}
-
 class FirstPartySetsTest : public ::testing::Test {
  public:
   explicit FirstPartySetsTest(bool enabled) : sets_(enabled) {}
 
-  void SetComponentSets(base::StringPiece content) {
-    SetComponentSets(sets_, content);
-  }
-
-  void SetComponentSets(FirstPartySets& sets, base::StringPiece content) const {
-    base::ScopedTempDir temp_dir;
-    CHECK(temp_dir.CreateUniqueTempDir());
-    base::FilePath path =
-        temp_dir.GetPath().Append(FILE_PATH_LITERAL("sets_file.json"));
-    CHECK(base::WriteFile(path, content));
-
-    sets.ParseAndSet(
-        base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+  void SetCompleteSets(
+      const base::flat_map<net::SchemefulSite, net::SchemefulSite>& content) {
+    sets_.SetCompleteSets(content);
   }
 
   FirstPartySets::SetsByOwner SetsAndWait() {
-    net::TestOptionalCompletionCallback<FirstPartySets::SetsByOwner> callback;
-    return callback.GetResult(sets_.Sets(callback.callback())).value();
+    base::test::TestFuture<FirstPartySets::SetsByOwner> future;
+    absl::optional<FirstPartySets::SetsByOwner> result =
+        sets_.Sets(future.GetCallback());
+    return result.has_value() ? result.value() : future.Get();
   }
 
   net::FirstPartySetMetadata ComputeMetadataAndWait(
       const net::SchemefulSite& site,
       const net::SchemefulSite* top_frame_site,
       const std::set<net::SchemefulSite>& party_context) {
-    net::TestOptionalCompletionCallback<net::FirstPartySetMetadata> callback;
-    return callback
-        .GetResult(sets_.ComputeMetadata(site, top_frame_site, party_context,
-                                         callback.callback()))
-        .value();
+    base::test::TestFuture<net::FirstPartySetMetadata> future;
+    absl::optional<net::FirstPartySetMetadata> result = sets_.ComputeMetadata(
+        site, top_frame_site, party_context, future.GetCallback());
+    return result.has_value() ? std::move(result).value() : future.Take();
   }
 
   FirstPartySets::OwnerResult FindOwnerAndWait(const net::SchemefulSite& site) {
-    net::TestOptionalCompletionCallback<FirstPartySets::OwnerResult> callback;
-    return callback.GetResult(sets_.FindOwner(site, callback.callback()))
-        .value();
+    base::test::TestFuture<FirstPartySets::OwnerResult> future;
+    absl::optional<FirstPartySets::OwnerResult> result =
+        sets_.FindOwner(site, future.GetCallback());
+    return result.has_value() ? result.value() : future.Get();
   }
 
   FirstPartySets::OwnersResult FindOwnersAndWait(
       const base::flat_set<net::SchemefulSite>& site) {
-    net::TestOptionalCompletionCallback<FirstPartySets::OwnersResult> callback;
-    return callback.GetResult(sets_.FindOwners(site, callback.callback()))
-        .value();
+    base::test::TestFuture<FirstPartySets::OwnersResult> future;
+    absl::optional<FirstPartySets::OwnersResult> result =
+        sets_.FindOwners(site, future.GetCallback());
+    return result.has_value() ? result.value() : future.Get();
   }
 
   FirstPartySets& sets() { return sets_; }
@@ -102,7 +81,6 @@ class FirstPartySetsTest : public ::testing::Test {
   base::test::TaskEnvironment& env() { return env_; }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   base::test::TaskEnvironment env_;
   FirstPartySets sets_;
 };
@@ -112,18 +90,11 @@ class FirstPartySetsDisabledTest : public FirstPartySetsTest {
   FirstPartySetsDisabledTest() : FirstPartySetsTest(false) {}
 };
 
-TEST_F(FirstPartySetsDisabledTest, Parse_IgnoresValid) {
-  const std::string input =
-      "{\"owner\": \"https://example.test\",\"members\": "
-      "[\"https://aaaa.test\"]}";
-
-  SetComponentSets(input);
-
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsDisabledTest, SetsManuallySpecified_IgnoresValid) {
-  sets().SetManuallySpecifiedSet("https://example.test,https://member.test");
+TEST_F(FirstPartySetsDisabledTest, SetCompleteSets) {
+  SetCompleteSets({{net::SchemefulSite(GURL("https://aaaa.test")),
+                    net::SchemefulSite(GURL("https://example.test"))},
+                   {net::SchemefulSite(GURL("https://example.test")),
+                    net::SchemefulSite(GURL("https://example.test"))}});
   EXPECT_THAT(SetsAndWait(), IsEmpty());
 }
 
@@ -174,8 +145,10 @@ TEST_F(FirstPartySetsDisabledTest, ComputeMetadata_InfersSingletons) {
 }
 
 TEST_F(FirstPartySetsDisabledTest, FindOwner) {
-  sets().SetManuallySpecifiedSet("https://example.test,https://member.test");
-
+  SetCompleteSets({{net::SchemefulSite(GURL("https://member.test")),
+                    net::SchemefulSite(GURL("https://example.test"))},
+                   {net::SchemefulSite(GURL("https://example.test")),
+                    net::SchemefulSite(GURL("https://example.test"))}});
   EXPECT_FALSE(
       FindOwnerAndWait(net::SchemefulSite(GURL("https://example.test"))));
   EXPECT_FALSE(
@@ -192,262 +165,142 @@ class FirstPartySetsEnabledTest : public FirstPartySetsTest {
 };
 
 TEST_F(FirstPartySetsEnabledTest, Sets_IsEmpty) {
-  SetComponentSets("[]");
-  sets().SetManuallySpecifiedSet("");
+  SetCompleteSets({});
   EXPECT_THAT(SetsAndWait(), IsEmpty());
 }
 
-TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_SitesJoined) {
-  auto old_sets = FirstPartySets::FlattenedSets{
-      {net::SchemefulSite(GURL("https://example.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://member1.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://member3.test")),
-       net::SchemefulSite(GURL("https://example.test"))}};
+TEST_F(FirstPartySetsEnabledTest, SetCompleteSets) {
+  SetCompleteSets(base::flat_map<net::SchemefulSite, net::SchemefulSite>(
+      {{net::SchemefulSite(GURL("https://aaaa.test")),
+        net::SchemefulSite(GURL("https://example.test"))},
+       {net::SchemefulSite(GURL("https://example.test")),
+        net::SchemefulSite(GURL("https://example.test"))}}));
 
-  // Consistency check the reviewer-friendly format matches the input.
-  ASSERT_THAT(ParseSetsFromStream(
-                  R"({"owner": "https://example.test", "members": )"
-                  R"(["https://member1.test", "https://member3.test"]})"),
-              old_sets);
-
-  SetComponentSets(
-      R"({"owner": "https://example.test", )"
-      R"("members": ["https://member1.test", "https://member3.test"]}
-      {"owner": "https://foo.test", "members": ["https://member2.test"]})");
-  // Set required input to be able to receive the merged sets from
-  // FirstPartySetsLoader.
-  sets().SetManuallySpecifiedSet("");
-  env().RunUntilIdle();
-
-  // "https://foo.test" and "https://member2.test" joined FPSs. We don't clear
-  // site data upon joining, so the computed diff should be empty set.
-  EXPECT_THAT(sets().ComputeSetsDiff(old_sets), IsEmpty());
+  EXPECT_THAT(SetsAndWait(),
+              UnorderedElementsAre(Pair(
+                  SerializesTo("https://example.test"),
+                  UnorderedElementsAre(SerializesTo("https://example.test"),
+                                       SerializesTo("https://aaaa.test")))));
 }
 
-TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_SitesLeft) {
-  auto old_sets = FirstPartySets::FlattenedSets{
-      {net::SchemefulSite(GURL("https://example.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://member1.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://member3.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://foo.test")),
-       net::SchemefulSite(GURL("https://foo.test"))},
-      {net::SchemefulSite(GURL("https://member2.test")),
-       net::SchemefulSite(GURL("https://foo.test"))}};
+TEST_F(FirstPartySetsEnabledTest, SetCompleteSets_Idempotent) {
+  SetCompleteSets({});
+  EXPECT_THAT(SetsAndWait(), IsEmpty());
 
-  // Consistency check the reviewer-friendly format matches the input.
-  ASSERT_THAT(
-      ParseSetsFromStream(R"({"owner": "https://example.test", "members": )"
-                          R"(["https://member1.test", "https://member3.test"]}
-      { "owner": "https://foo.test", "members": ["https://member2.test"]})"),
-      old_sets);
-
-  SetComponentSets(R"({"owner": "https://example.test", )"
-                   R"("members": ["https://member1.test"]})");
-  // Set required input to be able to receive the merged sets from
-  // FirstPartySetsLoader.
-  sets().SetManuallySpecifiedSet("");
-  env().RunUntilIdle();
-  // Expected diff: "https://foo.test", "https://member2.test" and
-  // "https://member3.test" left FPSs.
-  EXPECT_THAT(sets().ComputeSetsDiff(old_sets),
-              UnorderedElementsAre(SerializesTo("https://foo.test"),
-                                   SerializesTo("https://member2.test"),
-                                   SerializesTo("https://member3.test")));
+  // The second call to SetCompleteSets should have no effect.
+  SetCompleteSets({{net::SchemefulSite(GURL("https://aaaa.test")),
+                    net::SchemefulSite(GURL("https://example.test"))},
+                   {net::SchemefulSite(GURL("https://example.test")),
+                    net::SchemefulSite(GURL("https://example.test"))}});
+  EXPECT_THAT(SetsAndWait(), IsEmpty());
 }
 
-TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerChanged) {
-  auto old_sets = FirstPartySets::FlattenedSets{
-      {net::SchemefulSite(GURL("https://example.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://member1.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://foo.test")),
-       net::SchemefulSite(GURL("https://foo.test"))},
-      {net::SchemefulSite(GURL("https://member2.test")),
-       net::SchemefulSite(GURL("https://foo.test"))},
-      {net::SchemefulSite(GURL("https://member3.test")),
-       net::SchemefulSite(GURL("https://foo.test"))}};
-
-  // Consistency check the reviewer-friendly format matches the input.
-  ASSERT_THAT(ParseSetsFromStream(
-                  R"({"owner": "https://example.test", "members": )"
-                  R"(["https://member1.test"]}
-      {"owner": "https://foo.test", "members": )"
-                  R"(["https://member2.test", "https://member3.test"]})"),
-              old_sets);
-
-  SetComponentSets(R"({"owner": "https://example.test", "members": )"
-                   R"(["https://member1.test", "https://member3.test"]}
-      {"owner": "https://foo.test", "members": ["https://member2.test"]})");
-  // Set required input to be able to receive the merged sets from
-  // FirstPartySetsLoader.
-  sets().SetManuallySpecifiedSet("");
-  env().RunUntilIdle();
-  // Expected diff: "https://member3.test" changed owner.
-  EXPECT_THAT(sets().ComputeSetsDiff(old_sets),
-              UnorderedElementsAre(SerializesTo("https://member3.test")));
-}
-
-TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerLeft) {
-  auto old_sets = FirstPartySets::FlattenedSets{
-      {net::SchemefulSite(GURL("https://example.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://foo.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://bar.test")),
-       net::SchemefulSite(GURL("https://example.test"))}};
-
-  // Consistency check the reviewer-friendly format matches the input.
-  ASSERT_THAT(
-      ParseSetsFromStream(R"({"owner": "https://example.test", "members": )"
-                          R"(["https://foo.test", "https://bar.test"]})"),
-      old_sets);
-
-  SetComponentSets(R"(
-      {"owner": "https://foo.test", "members": ["https://bar.test"]}
-  )");
-  // Set required input to be able to receive the merged sets from
-  // FirstPartySetsLoader.
-  sets().SetManuallySpecifiedSet("");
-  env().RunUntilIdle();
-  // Expected diff: "https://example.test" left FPSs, "https://foo.test" and
-  // "https://bar.test" changed owner.
-  // It would be valid to only have example.test in the diff, but our logic
-  // isn't sophisticated enough yet to know that foo.test and bar.test don't
-  // need to be included in the result.
-  EXPECT_THAT(sets().ComputeSetsDiff(old_sets),
-              UnorderedElementsAre(SerializesTo("https://example.test"),
-                                   SerializesTo("https://foo.test"),
-                                   SerializesTo("https://bar.test")));
-}
-
-TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerMemberRotate) {
-  auto old_sets = FirstPartySets::FlattenedSets{
-      {net::SchemefulSite(GURL("https://example.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://foo.test")),
-       net::SchemefulSite(GURL("https://example.test"))}};
-
-  // Consistency check the reviewer-friendly format matches the input.
-  ASSERT_THAT(
-      ParseSetsFromStream(R"({"owner": "https://example.test", "members": )"
-                          R"(["https://foo.test"]})"),
-      old_sets);
-
-  SetComponentSets(
-      R"({"owner": "https://foo.test", "members": ["https://example.test"]})");
-  // Set required input to be able to receive the merged sets from
-  // FirstPartySetsLoader.
-  sets().SetManuallySpecifiedSet("");
-  env().RunUntilIdle();
-  // Expected diff: "https://example.test" and "https://foo.test" changed owner.
-  // It would be valid to not include example.test and foo.test in the result,
-  // but our logic isn't sophisticated enough yet to know that.ß
-  EXPECT_THAT(sets().ComputeSetsDiff(old_sets),
-              UnorderedElementsAre(SerializesTo("https://example.test"),
-                                   SerializesTo("https://foo.test")));
-}
-
-TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_EmptySets) {
-  // Empty old_sets.
-  SetComponentSets(R"({"owner": "https://example.test", )"
-                   R"("members": ["https://member1.test"]})");
-  // Set required input to be able to receive the merged sets from
-  // FirstPartySetsLoader.
-  sets().SetManuallySpecifiedSet("");
-  env().RunUntilIdle();
-  EXPECT_THAT(sets().ComputeSetsDiff({}), IsEmpty());
-
-  // Empty current sets.
-  auto old_sets = FirstPartySets::FlattenedSets{
-      {net::SchemefulSite(GURL("https://example.test")),
-       net::SchemefulSite(GURL("https://example.test"))},
-      {net::SchemefulSite(GURL("https://member1.test")),
-       net::SchemefulSite(GURL("https://example.test"))}};
-  // Consistency check the reviewer-friendly format matches the input.
-  ASSERT_THAT(ParseSetsFromStream(R"({"owner": "https://example.test", )"
-                                  R"("members": ["https://member1.test"]})"),
-              old_sets);
-  FirstPartySets first_party_sets(true);
-  first_party_sets.SetManuallySpecifiedSet("");
-  SetComponentSets(first_party_sets, "[]");
-  env().RunUntilIdle();
-  EXPECT_THAT(first_party_sets.ComputeSetsDiff(old_sets),
-              UnorderedElementsAre(SerializesTo("https://example.test"),
-                                   SerializesTo("https://member1.test")));
-}
-
-TEST_F(FirstPartySetsEnabledTest, ClearSiteDataOnChangedSetsIfReady_NotReady) {
-  int callback_calls = 0;
-  auto callback = base::BindLambdaForTesting(
-      [&](const std::string& got) { callback_calls++; });
-  // component sets not ready.
-  {
-    FirstPartySets sets(true);
-    callback_calls = 0;
-    sets.SetPersistedSetsAndOnSiteDataCleared("{}", callback);
-    sets.SetManuallySpecifiedSet("");
-    EXPECT_EQ(callback_calls, 0);
-  }
-  // manual sets not ready.
-  {
-    FirstPartySets sets(true);
-    callback_calls = 0;
-    SetComponentSets(sets, "[]");
-    sets.SetPersistedSetsAndOnSiteDataCleared("{}", callback);
-    env().RunUntilIdle();
-    EXPECT_EQ(callback_calls, 0);
-  }
-  // persisted sets not ready.
-  {
-    FirstPartySets sets(true);
-    callback_calls = 0;
-    SetComponentSets(sets, "[]");
-    sets.SetManuallySpecifiedSet("");
-    env().RunUntilIdle();
-    EXPECT_EQ(callback_calls, 0);
-  }
-}
-
-// The callback only runs when `old_sets` is generated and `sets` has merged the
-// inputs from Component Updater and command line flag.
-TEST_F(FirstPartySetsEnabledTest, ClearSiteDataOnChangedSetsIfReady_Ready) {
-  int callback_calls = 0;
-  SetComponentSets(R"({"owner": "https://example.test", "members": )"
-                   R"(["https://member1.test"]})");
-  sets().SetManuallySpecifiedSet("https://example2.test,https://member2.test");
-  sets().SetPersistedSetsAndOnSiteDataCleared(
-      R"({"https://example.test":"https://example.test",
-            "https://member1.test":"https://example.test"})",
-      base::BindLambdaForTesting([&](const std::string& got) {
-        EXPECT_EQ(got, R"({"https://member1.test":"https://example.test",)"
-                       R"("https://member2.test":"https://example2.test"})");
-        callback_calls++;
-      }));
-  env().RunUntilIdle();
-  EXPECT_EQ(callback_calls, 1);
-}
-
-class PopulatedFirstPartySetsTest : public FirstPartySetsEnabledTest {
+// Test fixture that allows precise control over when the instance gets FPS
+// data. Useful for testing async flows.
+class AsyncPopulatedFirstPartySetsTest : public FirstPartySetsEnabledTest {
  public:
-  PopulatedFirstPartySetsTest() {
-    const std::string input =
-        R"({"owner": "https://example.test", "members": )"
-        R"(["https://member1.test", "https://member3.test"]}
-        {"owner": "https://foo.test", "members": ["https://member2.test"]})";
-    SetComponentSets(input);
-    // Set required input to be able to receive the merged sets from
-    // FirstPartySetsLoader.
-    sets().SetManuallySpecifiedSet("");
+  AsyncPopulatedFirstPartySetsTest() = default;
 
-    // We don't wait for the sets to be loaded before running the tests, in
-    // order to let the tests provoke raciness if any exists.
+ protected:
+  void Populate() {
+    // /*content=*/ R"(
+    //   [
+    //     {
+    //       "owner": "https://example.test",
+    //       "members": ["https://member1.test", "https://member3.test"]
+    //     },
+    //     {
+    //       "owner": "https://foo.test",
+    //       "members": ["https://member2.test"]
+    //     }
+    //   ]
+    //   )";
+
+    SetCompleteSets({
+        {net::SchemefulSite(GURL("https://member1.test")),
+         net::SchemefulSite(GURL("https://example.test"))},
+        {net::SchemefulSite(GURL("https://member3.test")),
+         net::SchemefulSite(GURL("https://example.test"))},
+        {net::SchemefulSite(GURL("https://example.test")),
+         net::SchemefulSite(GURL("https://example.test"))},
+        {net::SchemefulSite(GURL("https://member2.test")),
+         net::SchemefulSite(GURL("https://foo.test"))},
+        {net::SchemefulSite(GURL("https://foo.test")),
+         net::SchemefulSite(GURL("https://foo.test"))},
+    });
+
+    // We don't wait for the sets to be loaded before returning, in order to let
+    // the tests provoke raciness if any exists.
   }
+};
+
+TEST_F(AsyncPopulatedFirstPartySetsTest, QueryBeforeReady_ComputeMetadata) {
+  net::SchemefulSite member(GURL("https://member1.test"));
+  net::SchemefulSite owner(GURL("https://example.test"));
+
+  base::test::TestFuture<net::FirstPartySetMetadata> future;
+  EXPECT_FALSE(
+      sets().ComputeMetadata(member, &member, {member}, future.GetCallback()));
+
+  Populate();
+
+  EXPECT_EQ(future.Get(),
+            net::FirstPartySetMetadata(
+                net::SamePartyContext(Type::kSameParty), &owner, &owner,
+                net::FirstPartySetsContextType::kHomogeneous));
+}
+
+TEST_F(AsyncPopulatedFirstPartySetsTest, QueryBeforeReady_FindOwner) {
+  base::test::TestFuture<FirstPartySets::OwnerResult> future;
+  EXPECT_FALSE(sets().FindOwner(
+      net::SchemefulSite(GURL("https://member1.test")), future.GetCallback()));
+
+  Populate();
+
+  EXPECT_THAT(
+      future.Get(),
+      absl::make_optional(net::SchemefulSite(GURL("https://example.test"))));
+}
+
+TEST_F(AsyncPopulatedFirstPartySetsTest, QueryBeforeReady_FindOwners) {
+  base::test::TestFuture<FirstPartySets::OwnersResult> future;
+  EXPECT_FALSE(sets().FindOwners(
+      {
+          net::SchemefulSite(GURL("https://member1.test")),
+          net::SchemefulSite(GURL("https://member2.test")),
+      },
+      future.GetCallback()));
+
+  Populate();
+
+  EXPECT_THAT(future.Get(),
+              UnorderedElementsAre(Pair(SerializesTo("https://member1.test"),
+                                        SerializesTo("https://example.test")),
+                                   Pair(SerializesTo("https://member2.test"),
+                                        SerializesTo("https://foo.test"))));
+}
+
+TEST_F(AsyncPopulatedFirstPartySetsTest, QueryBeforeReady_Sets) {
+  base::test::TestFuture<FirstPartySets::SetsByOwner> future;
+  EXPECT_FALSE(sets().Sets(future.GetCallback()));
+
+  Populate();
+
+  EXPECT_THAT(
+      future.Get(),
+      UnorderedElementsAre(
+          Pair(SerializesTo("https://example.test"),
+               UnorderedElementsAre(SerializesTo("https://example.test"),
+                                    SerializesTo("https://member1.test"),
+                                    SerializesTo("https://member3.test"))),
+          Pair(SerializesTo("https://foo.test"),
+               UnorderedElementsAre(SerializesTo("https://foo.test"),
+                                    SerializesTo("https://member2.test")))));
+}
+
+class PopulatedFirstPartySetsTest : public AsyncPopulatedFirstPartySetsTest {
+ public:
+  PopulatedFirstPartySetsTest() { Populate(); }
 };
 
 TEST_F(PopulatedFirstPartySetsTest, ComputeMetadata_EmptyContext) {

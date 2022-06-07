@@ -9,13 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/multidevice/software_feature.h"
 #include "ash/services/device_sync/feature_status_change.h"
 #include "ash/services/device_sync/network_request_error.h"
 #include "ash/services/device_sync/software_feature_manager.h"
 #include "base/callback.h"
-#include "chromeos/components/multidevice/software_feature.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -151,6 +151,6 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_FAKE_SOFTWARE_FEATURE_MANAGER_H_

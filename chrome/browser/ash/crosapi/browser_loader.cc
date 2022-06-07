@@ -11,15 +11,21 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
+#include "chrome/common/channel_info.h"
+#include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 
 namespace crosapi {
@@ -51,17 +57,61 @@ bool CheckRegisteredMayBlock(
   return manager->IsRegisteredMayBlock(GetLacrosComponentName());
 }
 
-// Returns whether any lacros-chrome component is registered.
-bool CheckAnyRegisteredMayBlock(
-    scoped_refptr<component_updater::CrOSComponentManager> manager) {
-  for (const auto& component_info : {browser_util::kLacrosDogfoodCanaryInfo,
-                                     browser_util::kLacrosDogfoodDevInfo,
-                                     browser_util::kLacrosDogfoodBetaInfo,
-                                     browser_util::kLacrosDogfoodStableInfo}) {
-    if (manager->IsRegisteredMayBlock(component_info.name))
-      return true;
+// Checks the local disk structure to confirm whether a component is installed.
+// We intentionally avoid going through CrOSComponentManager since the latter
+// functions around the idea of "registration" -- but the timing of this method
+// is prelogin, so the component might exist but not yet be registered.
+bool IsInstalledMayBlock(const std::string& name) {
+  base::FilePath root;
+  if (!base::PathService::Get(component_updater::DIR_COMPONENT_USER, &root))
+    return false;
+
+  base::FilePath component_root =
+      root.Append(component_updater::kComponentsRootPath).Append(name);
+  if (!base::PathExists(component_root))
+    return false;
+
+  // Check for any subdirectory
+  base::FileEnumerator enumerator(component_root, /*recursive=*/false,
+                                  base::FileEnumerator::DIRECTORIES);
+  base::FilePath path = enumerator.Next();
+  return !path.empty();
+}
+
+// Called after preloading is finished.
+void DonePreloading(component_updater::CrOSComponentManager::Error error,
+                    const base::FilePath& path) {
+  LOG(WARNING) << "Done preloading stateful Lacros. " << static_cast<int>(error)
+               << " " << path;
+}
+
+// Preloads the given component, or does nothing if |component| is empty.
+// Must be called on main thread.
+void PreloadComponent(
+    scoped_refptr<component_updater::CrOSComponentManager> manager,
+    std::string component) {
+  if (!component.empty()) {
+    LOG(WARNING) << "Preloading stateful lacros. " << component;
+    manager->Load(
+        component, component_updater::CrOSComponentManager::MountPolicy::kMount,
+        component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
+        base::BindOnce(&DonePreloading));
   }
-  return false;
+}
+
+// This method is dispatched pre-login. At this time, we don't know whether
+// Lacros is enabled. This method checks to see if the Lacros stateful component
+// matching the ash channel is installed -- if it is then Lacros is enabled. At
+// which point this method will begin loading stateful lacros.
+// Returns the name of the component on success, empty string on failure.
+std::string CheckForComponentToPreloadMayBlock() {
+  browser_util::ComponentInfo info =
+      browser_util::GetLacrosComponentInfoForChannel(chrome::GetChannel());
+  bool registered = IsInstalledMayBlock(info.name);
+  if (registered) {
+    return info.name;
+  }
+  return "";
 }
 
 // Returns whether lacros-fishfood component is already installed.
@@ -88,15 +138,19 @@ BrowserLoader::BrowserLoader(
     scoped_refptr<component_updater::CrOSComponentManager> manager)
     : BrowserLoader(manager,
                     g_browser_process->component_updater(),
-                    chromeos::UpstartClient::Get()) {}
+                    ash::UpstartClient::Get()) {}
 
 BrowserLoader::BrowserLoader(
     scoped_refptr<component_updater::CrOSComponentManager> manager,
     component_updater::ComponentUpdateService* updater,
-    chromeos::UpstartClient* upstart_client)
+    ash::UpstartClient* upstart_client)
     : component_manager_(manager),
       component_update_service_(updater),
       upstart_client_(upstart_client) {
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&CheckForComponentToPreloadMayBlock),
+      base::BindOnce(&PreloadComponent, component_manager_));
   DCHECK(component_manager_);
 }
 
@@ -105,6 +159,7 @@ BrowserLoader::~BrowserLoader() = default;
 void BrowserLoader::Load(LoadCompletionCallback callback) {
   DCHECK(browser_util::IsLacrosEnabled());
 
+  lacros_start_load_time_ = base::TimeTicks::Now();
   // TODO(crbug.com/1078607): Remove non-error logging from this class.
   LOG(WARNING) << "Starting lacros component load.";
 
@@ -140,7 +195,7 @@ void BrowserLoader::Load(LoadCompletionCallback callback) {
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&CheckAnyRegisteredMayBlock, component_manager_),
+      base::BindOnce(&CheckRegisteredMayBlock, component_manager_),
       base::BindOnce(&BrowserLoader::OnLoadSelection,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -354,6 +409,11 @@ void BrowserLoader::OnLoadComplete(
     std::move(callback).Run(base::FilePath(), selection);
     return;
   }
+
+  base::UmaHistogramMediumTimes(
+      "ChromeOS.Lacros.LoadTime",
+      base::TimeTicks::Now() - lacros_start_load_time_);
+
   // Log the path on success.
   LOG(WARNING) << "Loaded lacros image at " << path.MaybeAsASCII();
   std::move(callback).Run(path, selection);

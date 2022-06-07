@@ -86,8 +86,19 @@ void ChromeSearchResult::SetDetailsTextVector(const TextVector& text_vector) {
   SetSearchResultMetadata();
 }
 
+void ChromeSearchResult::SetMultilineDetails(bool multiline_details) {
+  metadata_->multiline_details = multiline_details;
+  SetSearchResultMetadata();
+}
+
 void ChromeSearchResult::SetBigTitleTextVector(const TextVector& text_vector) {
   metadata_->big_title_vector = text_vector;
+  SetSearchResultMetadata();
+}
+
+void ChromeSearchResult::SetBigTitleSuperscriptTextVector(
+    const TextVector& text_vector) {
+  metadata_->big_title_superscript_vector = text_vector;
   SetSearchResultMetadata();
 }
 

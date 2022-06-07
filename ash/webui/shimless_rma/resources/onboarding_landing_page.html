@@ -3,6 +3,19 @@
     height: 30px;
     width: 30px;
   }
+
+  #nextButtonCaret {
+    margin-inline-start: 5px;
+  }
+
+  #navigationButtonWrapper {
+    bottom: var(--footer-height);
+    position: absolute;
+  }
+
+  #getStartedButton {
+    margin-inline-end: 8px;
+  }
 </style>
 
 <base-page>
@@ -28,6 +41,22 @@
             hidden$="[[isCompliant_]]" class="instructions">
         </span>
       </span>
+    </div>
+    <div id="navigationButtonWrapper">
+      <cr-button id="getStartedButton" class="action-button"
+          on-click="onGetStartedButtonClicked_"
+          disabled="[[isGetStartedButtonDisabled_(verificationInProgress_,
+          allButtonsDisabled)]]">
+        [[i18n('getStartedButtonLabel')]]
+        <span id="nextButtonCaret">&#62;</span>
+      </cr-button>
+      <cr-button id="landingCancel" class="pill"
+          on-click="onLandingCancelButtonClicked_"
+          disabled="[[allButtonsDisabled]]">
+        <span id="cancelButtonLabel">
+          [[i18n('cancelButtonLabel')]]
+        </span>
+      </cr-button>
     </div>
   </div>
   <div slot="right-pane">

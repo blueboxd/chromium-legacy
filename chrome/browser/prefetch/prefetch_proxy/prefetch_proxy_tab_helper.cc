@@ -993,9 +993,11 @@ void PrefetchProxyTabHelper::OnPrefetchComplete(
 
     // Verifies that the request was made using the prefetch proxy if required,
     // or made directly if the proxy was not required.
-    DCHECK(
-        !head->proxy_server.is_direct() ==
-        prefetch_container_iter->second->GetPrefetchType().IsProxyRequired());
+    DCHECK(prefetch_container_iter->second->GetPrefetchType()
+               .IsProxyBypassedForTest() ||
+           !head->proxy_server.is_direct() ==
+               prefetch_container_iter->second->GetPrefetchType()
+                   .IsProxyRequired());
 
     HandlePrefetchResponse(prefetch_container_iter->second.get(),
                            isolation_info, std::move(head), std::move(body));
@@ -1416,7 +1418,8 @@ PrefetchProxyTabHelper::CheckEligibilityOfURLSansUserData(
   // While a registry-controlled domain could still resolve to a non-publicly
   // routable IP, this allows hosts which are very unlikely to work via the
   // proxy to be discarded immediately.
-  if (prefetch_type.IsProxyRequired() &&
+  if (!prefetch_type.IsProxyBypassedForTest() &&
+      prefetch_type.IsProxyRequired() &&
       (g_host_non_unique_filter
            ? g_host_non_unique_filter(url.HostNoBracketsPiece())
            : net::IsHostnameNonUnique(url.HostNoBrackets()))) {
@@ -1577,13 +1580,6 @@ void PrefetchProxyTabHelper::OnGotEligibilityResult(
   prefetch_container->SetPrefetchStatus(
       PrefetchProxyPrefetchStatus::kPrefetchNotStarted);
 
-  // Check that we won't go above the allowable size.
-  if (prefetch_container->GetOriginalPredictionIndex() <
-      sizeof(page_->srp_metrics_->ordered_eligible_pages_bitmask_) * 8) {
-    page_->srp_metrics_->ordered_eligible_pages_bitmask_ |=
-        1 << prefetch_container->GetOriginalPredictionIndex();
-  }
-
   if (!PrefetchProxyShouldPrefetchPosition(
           prefetch_container->GetOriginalPredictionIndex())) {
     prefetch_container->SetPrefetchStatus(
@@ -1600,6 +1596,9 @@ void PrefetchProxyTabHelper::OnGotEligibilityResult(
   if (prefetch_container->GetPrefetchType()
           .IsIsolatedNetworkContextRequired()) {
     prefetch_container->RegisterCookieListener(
+        base::BindOnce(
+            &PrefetchProxyTabHelper::OnCookiesChangedAfterInitialCheck,
+            weak_factory_.GetWeakPtr()),
         profile_->GetDefaultStoragePartition()
             ->GetCookieManagerForBrowserProcess());
   }
@@ -1717,6 +1716,13 @@ bool PrefetchProxyTabHelper::HaveCookiesChanged(const GURL& url) const {
   if (prefetch_container_iter == page_->prefetch_containers_.end())
     return false;
   return prefetch_container_iter->second->HaveCookiesChanged();
+}
+
+void PrefetchProxyTabHelper::OnCookiesChangedAfterInitialCheck(
+    const GURL& url) {
+  for (auto& observer : observer_list_) {
+    observer.OnCookiesChangedForPrefetchAfterInitialCheck(url);
+  }
 }
 
 void PrefetchProxyTabHelper::CurrentPageLoad::CreateNetworkContextForUrl(

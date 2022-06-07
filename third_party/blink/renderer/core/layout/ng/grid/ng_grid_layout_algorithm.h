@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_LAYOUT_ALGORITHM_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_break_token_data.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_data.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_item.h"
@@ -82,6 +83,13 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       const GridItemContributionType contribution_type,
       GridItemData* grid_item) const;
 
+  NGGridPlacementData PlacementData() const;
+
+  std::unique_ptr<NGGridLayoutTrackCollection> LayoutTrackCollection(
+      const NGGridPlacementData& placement_data,
+      const GridTrackSizingDirection track_direction,
+      GridItems* grid_items) const;
+
   wtf_size_t ComputeAutomaticRepetitions(
       const GridTrackSizingDirection track_direction) const;
 
@@ -95,7 +103,7 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       const NGGridLayoutData& layout_data,
       const SizingConstraint sizing_constraint,
       GridItems* grid_items,
-      NGGridLayoutTrackCollection* track_collection,
+      NGGridSizingTrackCollection* track_collection,
       bool* needs_additional_pass = nullptr) const;
 
   // Initializes the given track collection, and returns the base set geometry.
@@ -147,6 +155,7 @@ class CORE_EXPORT NGGridLayoutAlgorithm
 
   const NGConstraintSpace CreateConstraintSpace(
       const GridItemData& grid_item,
+      const NGGridLayoutData& layout_data,
       const LogicalSize& containing_grid_area_size,
       NGCacheSlot cache_slot,
       absl::optional<LayoutUnit> opt_fixed_block_size,
@@ -155,8 +164,8 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       bool opt_min_block_size_should_encompass_intrinsic_size = false) const;
 
   const NGConstraintSpace CreateConstraintSpaceForLayout(
-      const NGGridLayoutData& layout_data,
       const GridItemData& grid_item,
+      const NGGridLayoutData& layout_data,
       LogicalRect* containing_grid_area,
       absl::optional<LayoutUnit> opt_fragment_relative_block_offset =
           absl::nullopt,

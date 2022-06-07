@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {Route, Router} from '../../../router.js';
-import {routes} from '../../os_route.m.js';
+import {routes} from '../../os_route.js';
 
 /**
  * Navigates to the App Detail page.
@@ -11,7 +11,7 @@ import {routes} from '../../os_route.m.js';
  * @param {string} appId
  */
 export function openAppDetailPage(appId) {
-  const params = new URLSearchParams;
+  const params = new URLSearchParams();
   params.append('id', appId);
   Router.getInstance().navigateTo(routes.APP_MANAGEMENT_DETAIL, params);
 }

@@ -129,6 +129,7 @@ CHAR_LIMIT guidelines:
     <file path="translations/android_chrome_strings_bs.xtb" lang="bs" />
     <file path="translations/android_chrome_strings_ca.xtb" lang="ca" />
     <file path="translations/android_chrome_strings_cs.xtb" lang="cs" />
+    <file path="translations/android_chrome_strings_cy.xtb" lang="cy" />
     <file path="translations/android_chrome_strings_da.xtb" lang="da" />
     <file path="translations/android_chrome_strings_de.xtb" lang="de" />
     <file path="translations/android_chrome_strings_el.xtb" lang="el" />
@@ -962,13 +963,13 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
         About ad personalization
       </message>
       <message name="IDS_PRIVACY_SANDBOX_ADD_INTEREST_BUTTON_DESCRIPTION" desc="Content description for button that adds an ad interest for the Topics API of the Privacy Sandbox.">
-        Add interest?
+        Add <ph name="INTEREST">%1$s<ex>Acting and Theater</ex></ph>
       </message>
       <message name="IDS_PRIVACY_SANDBOX_ADD_INTEREST_SNACKBAR" desc="Text on a snackbar after an ad personalization interest was added to the Topics API of the Privacy Sandbox.">
         Interest added
       </message>
       <message name="IDS_PRIVACY_SANDBOX_REMOVE_INTEREST_BUTTON_DESCRIPTION" desc="Content description for button that removes an ad interest for the Topics API of the Privacy Sandbox.">
-        Remove interest?
+        Remove <ph name="INTEREST">%1$s<ex>Acting and Theater</ex></ph>
       </message>
       <message name="IDS_PRIVACY_SANDBOX_REMOVE_INTEREST_SNACKBAR" desc="Text on a snackbar after an ad personalization interest was removed from the Topics API of the Privacy Sandbox.">
         Interest removed
@@ -1865,6 +1866,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SIGNOUT_TITLE" desc="Title for sign out of Chrome dialog [CHAR_LIMIT=40]">
         Sign out and turn off sync?
       </message>
+      <message name="IDS_TURN_OFF_SYNC_TITLE" desc="Title for turn off sync dialog [CHAR_LIMIT=40]">
+        Turn off sync?
+      </message>
       <message name="IDS_SIGNOUT_MANAGED_ACCOUNT_TITLE" desc="Title for sign out of Chrome dialog for enterprise account [CHAR_LIMIT=40]">
         Clear your Chrome data from this device?
       </message>
@@ -2224,6 +2228,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <!-- Password manager dialogs -->
       <message name="IDS_PASSWORD_GENERATION_DIALOG_TITLE" desc="Text shown in a modal dialog that displays a generated password. This dialog is triggered by the user requesting to generate a password.">
         Suggested password
+      </message>
+      <message name="IDS_PASSWORD_GENERATION_DIALOG_TITLE_UPM_BRANDED" desc="Text shown in a modal dialog that displays a generated password. This dialog is triggered by the user requesting to generate a password. Unified Password Manager version.">
+        Use strong password?
       </message>
       <message name="IDS_PASSWORD_GENERATION_DIALOG_CANCEL_BUTTON" desc="Text for the cancel button belonging to the modal dialog that displays a generated password. Can be used by the user to cancel the password generation flow.">
         Cancel
@@ -4737,13 +4744,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Stack Unwinder
       </message>
 
-      <message name="IDS_EXTRA_ICU_MODULE_TITLE"
-        desc="Text shown when the extra ICU module is referenced in install start, success,
-              failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
-              'Installing Extra ICU for Chrome…').">
-        Extra ICU
-      </message>
-
       <message name="IDS_CABLEV2_AUTHENTICATOR_MODULE_TITLE"
         desc="Text shown when the caBLEv2 module (i.e. for Phone as a Security Key) is
               referenced in install start, success, and failure UI (e.g. in
@@ -4825,6 +4825,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
       <message name="IDS_CABLEV2_ERROR_NO_SCREENLOCK" desc="The description of an error shown when the user is trying to use their phone to register or authenticate with a website on a laptop, but no screen lock is set on the phone. The term 'screen lock' refers to setting a pattern, PIN, or fingerprint that is used each time the phone is unlocked. This is needed when using the phone to authenticate because we want the owner of the phone to prove that they authorize the action. This message appears above a button that opens the phone's settings directly at the screen for configuring a screen lock.">
         To use this device as a security key, set a screen lock
+      </message>
+
+      <message name="IDS_CABLEV2_ERROR_DISCO_CRED" desc="The description of an error shown when the user is trying to use their phone to register or authenticate with a website on a laptop, but the phone doesn't support the type of sign-in requested.">
+        This verification method isn’t available for this device. Pick a different option on your other device.
       </message>
 
       <message name="IDS_CABLEV2_ERROR_GENERIC" desc="The description of an error shown when the user is trying to use their phone to sign into a website on a laptop, but some generic error occured.">

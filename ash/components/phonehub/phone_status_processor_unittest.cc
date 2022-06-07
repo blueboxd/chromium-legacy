@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/phonehub/fake_do_not_disturb_controller.h"
 #include "ash/components/phonehub/fake_feature_status_provider.h"
 #include "ash/components/phonehub/fake_find_my_device_controller.h"
@@ -28,7 +29,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 
@@ -69,8 +69,7 @@ class FakeNotificationProcessor : public NotificationProcessor {
 class PhoneStatusProcessorTest : public testing::Test {
  protected:
   PhoneStatusProcessorTest()
-      : test_remote_device_(
-            chromeos::multidevice::CreateRemoteDeviceRefForTest()) {}
+      : test_remote_device_(multidevice::CreateRemoteDeviceRefForTest()) {}
   PhoneStatusProcessorTest(const PhoneStatusProcessorTest&) = delete;
   PhoneStatusProcessorTest& operator=(const PhoneStatusProcessorTest&) = delete;
   ~PhoneStatusProcessorTest() override = default;
@@ -135,7 +134,7 @@ class PhoneStatusProcessorTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  chromeos::multidevice::RemoteDeviceRef test_remote_device_;
+  multidevice::RemoteDeviceRef test_remote_device_;
   std::unique_ptr<FakeDoNotDisturbController> fake_do_not_disturb_controller_;
   std::unique_ptr<FakeFeatureStatusProvider> fake_feature_status_provider_;
   std::unique_ptr<FakeMessageReceiver> fake_message_receiver_;
@@ -180,6 +179,9 @@ TEST_F(PhoneStatusProcessorTest, PhoneStatusSnapshotUpdate) {
   proto::CameraRollAccessState* access_state =
       expected_phone_properties->mutable_camera_roll_access_state();
   access_state->set_feature_enabled(true);
+  proto::FeatureSetupConfig* feature_setup_config =
+      expected_phone_properties->mutable_feature_setup_config();
+  feature_setup_config->set_feature_setup_request_supported(true);
 
   expected_phone_properties->add_user_states();
   proto::UserState* mutable_user_state =
@@ -215,6 +217,8 @@ TEST_F(PhoneStatusProcessorTest, PhoneStatusSnapshotUpdate) {
   EXPECT_EQ(
       MultideviceFeatureAccessManager::AccessStatus::kAccessGranted,
       fake_multidevice_feature_access_manager_->GetCameraRollAccessStatus());
+  EXPECT_TRUE(fake_multidevice_feature_access_manager_
+                  ->GetFeatureSetupRequestSupported());
   EXPECT_EQ(ScreenLockManager::LockStatus::kUnknown,
             fake_screen_lock_manager_->GetLockStatus());
 
@@ -273,6 +277,9 @@ TEST_F(PhoneStatusProcessorTest, PhoneStatusUpdate) {
   proto::CameraRollAccessState* access_state =
       expected_phone_properties->mutable_camera_roll_access_state();
   access_state->set_feature_enabled(false);
+  proto::FeatureSetupConfig* feature_setup_config =
+      expected_phone_properties->mutable_feature_setup_config();
+  feature_setup_config->set_feature_setup_request_supported(false);
 
   expected_phone_properties->add_user_states();
   proto::UserState* mutable_user_state =
@@ -307,6 +314,8 @@ TEST_F(PhoneStatusProcessorTest, PhoneStatusUpdate) {
   EXPECT_EQ(
       MultideviceFeatureAccessManager::AccessStatus::kAvailableButNotGranted,
       fake_multidevice_feature_access_manager_->GetCameraRollAccessStatus());
+  EXPECT_FALSE(fake_multidevice_feature_access_manager_
+                   ->GetFeatureSetupRequestSupported());
   EXPECT_EQ(ScreenLockManager::LockStatus::kLockedOff,
             fake_screen_lock_manager_->GetLockStatus());
 

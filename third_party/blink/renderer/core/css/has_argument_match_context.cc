@@ -25,7 +25,8 @@ inline const CSSSelector* GetCurrentRelationAndNextCompound(
 
 }  // namespace
 
-HasArgumentMatchContext::HasArgumentMatchContext(const CSSSelector* selector) {
+HasArgumentMatchContext::HasArgumentMatchContext(const CSSSelector* selector)
+    : has_argument_(selector) {
   CSSSelector::RelationType relation = CSSSelector::kSubSelector;
   depth_limit_ = 0;
   adjacent_distance_limit_ = 0;
@@ -64,10 +65,9 @@ HasArgumentMatchContext::HasArgumentMatchContext(const CSSSelector* selector) {
           sibling_combinator_between_child_or_descendant_combinator_ = true;
         }
         contains_child_or_descendant_combinator = true;
-        if (DepthFixed()) {
+        if (DepthFixed())
           depth_limit_++;
-          adjacent_distance_limit_ = 0;
-        }
+        adjacent_distance_limit_ = 0;
         break;
 
       case CSSSelector::kRelativeDirectAdjacent:
@@ -97,6 +97,41 @@ HasArgumentMatchContext::HasArgumentMatchContext(const CSSSelector* selector) {
         NOTREACHED();
         return;
     }
+  }
+  DCHECK_NE(leftmost_relation_, CSSSelector::kSubSelector);
+
+  switch (leftmost_relation_) {
+    case CSSSelector::kRelativeDescendant:
+    case CSSSelector::kRelativeChild:
+      if (DepthFixed())
+        traversal_scope_ = kFixedDepthDescendants;
+      else
+        traversal_scope_ = kSubtree;
+      break;
+    case CSSSelector::kRelativeIndirectAdjacent:
+    case CSSSelector::kRelativeDirectAdjacent:
+      if (DepthLimit() == 0) {
+        if (AdjacentDistanceFixed())
+          traversal_scope_ = kOneNextSibling;
+        else
+          traversal_scope_ = kAllNextSiblings;
+      } else {
+        if (AdjacentDistanceFixed()) {
+          if (DepthFixed())
+            traversal_scope_ = kOneNextSiblingFixedDepthDescendants;
+          else
+            traversal_scope_ = kOneNextSiblingSubtree;
+        } else {
+          if (DepthFixed())
+            traversal_scope_ = kAllNextSiblingsFixedDepthDescendants;
+          else
+            traversal_scope_ = kAllNextSiblingSubtrees;
+        }
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -193,6 +228,9 @@ AffectedByHasIterator::AffectedByHasIterator(
       depth_(iterator_at_matched_.Depth()),
       current_(iterator_at_matched_.CurrentElement()) {
   DCHECK_GE(depth_, 0);
+  // affected-by flags of the matched element were already set.
+  // So, this iterator traverses from the next of the matched element.
+  ++*this;
 }
 
 bool AffectedByHasIterator::NeedsTraverseSiblings() {

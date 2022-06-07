@@ -25,6 +25,8 @@
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/components/power/dark_resume_controller.h"
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/install_attributes.h"
+#include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
@@ -32,6 +34,7 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
+#include "ash/system/diagnostics/diagnostics_log_controller.h"
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
@@ -52,8 +55,6 @@
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/branding_buildflags.h"
-#include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
-#include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
 #include "chrome/browser/ash/accessibility/accessibility_event_rewriter_delegate_impl.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
@@ -85,18 +86,19 @@
 #include "chrome/browser/ash/dbus/machine_learning_decision_service_provider.h"
 #include "chrome/browser/ash/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/ash/dbus/mojo_connection_service_provider.h"
-#include "chrome/browser/ash/dbus/plugin_vm_service_provider.h"
 #include "chrome/browser/ash/dbus/printers_service_provider.h"
 #include "chrome/browser/ash/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/ash/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/ash/dbus/smb_fs_service_provider.h"
 #include "chrome/browser/ash/dbus/virtual_file_request_service_provider.h"
+#include "chrome/browser/ash/dbus/vm/plugin_vm_service_provider.h"
+#include "chrome/browser/ash/dbus/vm/vm_applications_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_disk_management_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_launch_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_permission_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_sk_forwarding_service_provider.h"
-#include "chrome/browser/ash/dbus/vm_applications_service_provider.h"
 #include "chrome/browser/ash/device_name/device_name_store.h"
+#include "chrome/browser/ash/diagnostics/diagnostics_browser_delegate_impl.h"
 #include "chrome/browser/ash/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/ash/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/ash/external_metrics.h"
@@ -155,7 +157,6 @@
 #include "chrome/browser/ash/startup_settings_cache.h"
 #include "chrome/browser/ash/system/breakpad_consent_watcher.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
-#include "chrome/browser/ash/system/kernel_feature_manager.h"
 #include "chrome/browser/ash/system/user_removal_manager.h"
 #include "chrome/browser/ash/system_token_cert_db_initializer.h"
 #include "chrome/browser/ash/usb/cros_usb_detector.h"
@@ -213,8 +214,6 @@
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/tpm/install_attributes.h"
-#include "chromeos/tpm/tpm_token_loader.h"
 #include "components/account_id/account_id.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/language/core/browser/pref_names.h"
@@ -257,7 +256,7 @@
 #include "ui/events/event_utils.h"
 
 #if BUILDFLAG(PLATFORM_CFM)
-#include "chrome/browser/chromeos/chromebox_for_meetings/cfm_chrome_services.h"
+#include "chrome/browser/ash/chromebox_for_meetings/cfm_chrome_services.h"
 #endif
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -741,8 +740,6 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   arc_service_launcher_ = std::make_unique<arc::ArcServiceLauncher>(
       g_browser_process->platform_part()->scheduler_configuration_manager());
 
-  g_browser_process->platform_part()->InitializeKernelFeatureManager();
-
   session_termination_manager_ = std::make_unique<SessionTerminationManager>();
 
   // This should be in PreProfileInit but it needs to be created before the
@@ -763,7 +760,7 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   }
 
 #if BUILDFLAG(PLATFORM_CFM)
-  chromeos::cfm::InitializeCfmServices();
+  cfm::InitializeCfmServices();
 #endif  // BUILDFLAG(PLATFORM_CFM)
 
   SystemProxyManager::Initialize(g_browser_process->local_state());
@@ -1331,20 +1328,15 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
   dark_resume_controller_ = std::make_unique<system::DarkResumeController>(
       std::move(wake_lock_provider));
 
-  ChromeBrowserMainPartsLinux::PostBrowserStart();
-}
-
-void ChromeBrowserMainPartsAsh::OnFirstIdle() {
-  ChromeBrowserMainPartsLinux::OnFirstIdle();
-
-  // TODO(https://crbug.com/1225848): As a short term workaround, the
-  // implementation of Chrome Apps requires Lacros to always be running.
-  if (crosapi::browser_util::IsLacrosChromeAppsEnabled()) {
-    Profile* profile = ProfileManager::GetPrimaryUserProfile();
-    apps::StandaloneBrowserExtensionApps* chrome_apps =
-        apps::StandaloneBrowserExtensionAppsFactory::GetForProfile(profile);
-    chrome_apps->RegisterKeepAlive();
+  if (features::IsLogControllerForDiagnosticsAppEnabled()) {
+    // DiagnosticsBrowserDelegate has to be initialized after ProfilerHelper and
+    // UserManager. Initializing in PostProfileInit to ensure Profile data is
+    // available and shell has been initialized.
+    diagnostics::DiagnosticsLogController::Initialize(
+        std::make_unique<diagnostics::DiagnosticsBrowserDelegateImpl>());
   }
+
+  ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
 
 // Shut down services before the browser process, etc are destroyed.
@@ -1512,7 +1504,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
 #if BUILDFLAG(PLATFORM_CFM)
   // Cleanly shutdown all Chromebox For Meetings services before DBus and other
   // critical services are destroyed
-  chromeos::cfm::ShutdownCfmServices();
+  cfm::ShutdownCfmServices();
 #endif  // BUILDFLAG(PLATFORM_CFM)
 
   // Cleans up dbus services depending on ash.
@@ -1535,8 +1527,6 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   arc_kiosk_app_manager_.reset();
   web_kiosk_app_manager_.reset();
   chrome_keyboard_controller_client_.reset();
-
-  g_browser_process->platform_part()->ShutdownKernelFeatureManager();
 
   // All ARC related modules should have been shut down by this point, so
   // destroy ARC.

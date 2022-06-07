@@ -16,7 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
-#include "base/task/post_task.h"
+#include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
@@ -859,40 +859,13 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutFromBuffer(
 
 void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
   xkb_state_.reset(xkb_state_new(keymap));
-  // Update flag map.
-  static const struct {
-    int ui_flag;
-    const char* xkb_name;
-  } flags[] = {{ui::EF_SHIFT_DOWN, XKB_MOD_NAME_SHIFT},
-               {ui::EF_CONTROL_DOWN, XKB_MOD_NAME_CTRL},
-               {ui::EF_ALT_DOWN, XKB_MOD_NAME_ALT},
-               {ui::EF_COMMAND_DOWN, XKB_MOD_NAME_LOGO},
-               {ui::EF_ALTGR_DOWN, "Mod5"},
-               {ui::EF_MOD3_DOWN, "Mod3"},
-               {ui::EF_CAPS_LOCK_ON, XKB_MOD_NAME_CAPS},
-               {ui::EF_NUM_LOCK_ON, XKB_MOD_NAME_NUM}};
-  xkb_flag_map_.clear();
-  xkb_flag_map_.reserve(std::size(flags));
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  xkb_mod_mask_t num_lock_mask = 0;
-#endif
-  for (size_t i = 0; i < std::size(flags); ++i) {
-    xkb_mod_index_t index = xkb_keymap_mod_get_index(keymap, flags[i].xkb_name);
-    if (index == XKB_MOD_INVALID) {
-      DVLOG(3) << "XKB keyboard layout does not contain " << flags[i].xkb_name;
-    } else {
-      xkb_mod_mask_t flag = static_cast<xkb_mod_mask_t>(1) << index;
-      XkbFlagMapEntry e = {flags[i].ui_flag, flag, index};
-      xkb_flag_map_.push_back(e);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      if (flags[i].ui_flag == EF_NUM_LOCK_ON)
-        num_lock_mask = flag;
-#endif
-    }
-  }
+  xkb_modifier_converter_ = XkbModifierConverter::CreateFromKeymap(keymap);
+  shift_mod_mask_ = xkb_modifier_converter_.MaskFromUiFlags(ui::EF_SHIFT_DOWN);
+  altgr_mod_mask_ = xkb_modifier_converter_.MaskFromUiFlags(ui::EF_ALTGR_DOWN);
 
   // Reconstruct keysym map.
-  xkb_keysym_map_.clear();
+  std::vector<XkbKeysymMapEntry> keysym_map;
+
   const xkb_keycode_t min_key = xkb_keymap_min_keycode(keymap);
   const xkb_keycode_t max_key = xkb_keymap_max_keycode(keymap);
   for (xkb_keycode_t keycode = min_key; keycode <= max_key; ++keycode) {
@@ -905,39 +878,46 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
         const xkb_keysym_t* keysyms;
         int num_syms = xkb_keymap_key_get_syms_by_level(keymap, keycode, layout,
                                                         level, &keysyms);
-        for (int i = 0; i < num_syms; ++i) {
-          // Ignore if there already an entry for the current keysym.
-          // Iterating keycode from min to max, so the minimum value wins.
-          xkb_keysym_map_.emplace(keysyms[i], keycode);
-        }
+        for (int i = 0; i < num_syms; ++i)
+          keysym_map.emplace_back(
+              XkbKeysymMapEntry{keysyms[i], keycode, layout});
       }
     }
   }
 
-  layout_index_ = 0;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Update num lock mask.
-  num_lock_mod_mask_ = num_lock_mask;
-#endif
-  shift_mod_mask_ = EventFlagsToXkbFlags(ui::EF_SHIFT_DOWN);
-  altgr_mod_mask_ = EventFlagsToXkbFlags(ui::EF_ALTGR_DOWN);
+  // Then sort and unique here. On tie break, smaller keycode comes first.
+  std::sort(
+      keysym_map.begin(), keysym_map.end(),
+      [](const XkbKeysymMapEntry& entry1, const XkbKeysymMapEntry& entry2) {
+        return std::tie(entry1.xkb_keysym, entry1.xkb_keycode,
+                        entry1.xkb_layout) < std::tie(entry2.xkb_keysym,
+                                                      entry2.xkb_keycode,
+                                                      entry2.xkb_layout);
+      });
+  keysym_map.erase(
+      std::unique(
+          keysym_map.begin(), keysym_map.end(),
+          [](const XkbKeysymMapEntry& entry1, const XkbKeysymMapEntry& entry2) {
+            return std::tie(entry1.xkb_keysym, entry1.xkb_keycode,
+                            entry1.xkb_layout) == std::tie(entry2.xkb_keysym,
+                                                           entry2.xkb_keycode,
+                                                           entry2.xkb_layout);
+          }),
+      keysym_map.end());
+  xkb_keysym_map_ = std::move(keysym_map);
 
+  layout_index_ = 0;
   if (keymap_init_closure_for_test_)
     std::move(keymap_init_closure_for_test_).Run();
 }
 
 xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
     int ui_flags) const {
-  xkb_mod_mask_t xkb_flags = 0;
-  for (const auto& entry : xkb_flag_map_) {
-    if (ui_flags & entry.ui_flag)
-      xkb_flags |= entry.xkb_flag;
-  }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // In ChromeOS NumLock is always on.
-  xkb_flags |= num_lock_mod_mask_;
+  ui_flags |= ui::EF_NUM_LOCK_ON;
 #endif
-  return xkb_flags;
+  return xkb_modifier_converter_.MaskFromUiFlags(ui_flags);
 }
 
 int XkbKeyboardLayoutEngine::UpdateModifiers(uint32_t depressed,
@@ -949,22 +929,65 @@ int XkbKeyboardLayoutEngine::UpdateModifiers(uint32_t depressed,
   auto component = static_cast<xkb_state_component>(XKB_STATE_MODS_DEPRESSED |
                                                     XKB_STATE_MODS_LATCHED |
                                                     XKB_STATE_MODS_LOCKED);
-  int ui_flags = 0;
-  for (const auto& entry : xkb_flag_map_) {
-    if (xkb_state_mod_index_is_active(state, entry.xkb_index, component))
-      ui_flags |= entry.ui_flag;
+  xkb_mod_index_t num_mods =
+      xkb_keymap_num_mods(xkb_state_get_keymap(xkb_state_.get()));
+  xkb_mod_mask_t mask = 0;
+  for (xkb_mod_index_t i = 0; i < num_mods; ++i) {
+    if (xkb_state_mod_index_is_active(state, i, component))
+      mask |= (1 << i);
   }
   layout_index_ = group;
-  return ui_flags;
+  return xkb_modifier_converter_.UiFlagsFromMask(mask);
 }
 
-DomCode XkbKeyboardLayoutEngine::GetDomCodeByKeysym(uint32_t keysym) const {
-  auto iter = xkb_keysym_map_.find(keysym);
-  if (iter == xkb_keysym_map_.end()) {
-    VLOG(1) << "No Keycode found for the keysym: " << keysym;
-    return DomCode::NONE;
+DomCode XkbKeyboardLayoutEngine::GetDomCodeByKeysym(
+    uint32_t keysym,
+    const absl::optional<std::vector<base::StringPiece>>& modifiers) const {
+  // Look up all candidates.
+  auto range = std::equal_range(
+      xkb_keysym_map_.begin(), xkb_keysym_map_.end(), XkbKeysymMapEntry{keysym},
+      [](const XkbKeysymMapEntry& entry1, const XkbKeysymMapEntry& entry2) {
+        return entry1.xkb_keysym < entry2.xkb_keysym;
+      });
+  if (range.first != range.second) {
+    // If modifier is not given, use the first entry, which is smallest keycode.
+    // This is just for backward compatibility.
+    if (!modifiers.has_value())
+      return KeycodeConverter::NativeKeycodeToDomCode(range.first->xkb_keycode);
+    xkb_mod_mask_t xkb_modifiers =
+        xkb_modifier_converter_.MaskFromNames(*modifiers);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // In ChromeOS NumLock is always on.
+    xkb_modifiers |=
+        xkb_modifier_converter_.MaskFromUiFlags(ui::EF_NUM_LOCK_ON);
+#endif
+    // Note: value is already in the lexicographical order, so smaller keycode
+    // comes first.
+    for (std::unique_ptr<xkb_state, XkbStateDeleter> xkb_state(
+             xkb_state_new(xkb_state_get_keymap(xkb_state_.get())));
+         range.first != range.second; ++range.first) {
+      xkb_keycode_t xkb_keycode = range.first->xkb_keycode;
+      xkb_layout_index_t xkb_layout = range.first->xkb_layout;
+      // The argument does not have any info about the layout, so we assume the
+      // current layout here.
+      if (xkb_layout != layout_index_)
+        continue;
+      xkb_state_update_mask(xkb_state.get(), xkb_modifiers, 0, 0, 0, 0,
+                            xkb_layout);
+      const xkb_keysym_t* out_keysyms;
+      int num_syms =
+          xkb_state_key_get_syms(xkb_state.get(), xkb_keycode, &out_keysyms);
+      for (int i = 0; i < num_syms; ++i) {
+        if (out_keysyms[i] == keysym)
+          return KeycodeConverter::NativeKeycodeToDomCode(xkb_keycode);
+      }
+    }
   }
-  return KeycodeConverter::NativeKeycodeToDomCode(iter->second);
+
+  VLOG(1) << "No Keycode found for the keysym: " << keysym << ", modifiers: "
+          << (modifiers.has_value() ? base::JoinString(modifiers.value(), ",")
+                                    : "(no modifiers)");
+  return DomCode::NONE;
 }
 
 bool XkbKeyboardLayoutEngine::XkbLookup(xkb_keycode_t xkb_keycode,

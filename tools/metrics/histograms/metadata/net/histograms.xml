@@ -403,7 +403,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.Cors.AccessCheckResult.NotSecureRequestor"
-    enum="CorsAccessCheckResult" expires_after="2022-07-17">
+    enum="CorsAccessCheckResult" expires_after="2022-09-18">
   <owner>carlosil@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -509,7 +509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.Nsswitch.Compatible" enum="BooleanValid"
-    expires_after="2022-06-26">
+    expires_after="2022-09-25">
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -521,7 +521,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.Nsswitch.FileChange" enum="BooleanChanged"
-    expires_after="2022-06-26">
+    expires_after="2022-09-25">
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -531,7 +531,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.Nsswitch.HostsFound" enum="BooleanFound"
-    expires_after="2022-06-26">
+    expires_after="2022-09-25">
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -553,7 +553,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.Nsswitch.IncompatibleService"
-    enum="NsswitchService" expires_after="2022-06-19">
+    enum="NsswitchService" expires_after="2022-09-25">
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -577,7 +577,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.Nsswitch.Read" enum="BooleanReceived"
-    expires_after="2022-06-19">
+    expires_after="2022-09-25">
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -589,7 +589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.Nsswitch.TooLarge" enum="BooleanExceeded"
-    expires_after="2022-06-19">
+    expires_after="2022-09-25">
   <owner>ericorth@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -1795,9 +1795,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.HttpResponseCode.CustomHttpClient" enum="HttpResponseCode"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>wenyufu@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
     Http response code accepted by the request sent from a custom HttpClient, if
@@ -1852,19 +1851,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Net.MainFrameNoStore" enum="MainFrameStorable"
-    expires_after="M87">
-  <owner>jkarlin@chromium.org</owner>
-  <summary>
-    The distribution of storable vs &quot;cache-control: no-store&quot;
-    main-frame resources.
-
-    Counted after response headers have completed and before the content has
-    completed. Redirects are counted. All HTTP cache transactions are counted,
-    not just those that require the network.
-  </summary>
-</histogram>
-
 <histogram name="Net.MediaCache.Response.EnabledOrDisabled"
     enum="MediaResponseCacheType" expires_after="2020-12-31">
   <owner>morlovich@chromium.org</owner>
@@ -1878,7 +1864,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.NeedsHWCAP2Workaround" enum="BooleanBroken"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>davidben@chromium.org</owner>
   <summary>
     Records, on startup, for ARM devices running Android, whether the kernel is
@@ -1888,13 +1874,13 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Net.NetworkChangeNotifier.GetConnectionCost"
-    enum="NetworkConnectionCost" expires_after="2022-05-11">
+<histogram name="Net.NetworkChangeNotifier.NewConnectionCost"
+    enum="NetworkConnectionCost" expires_after="2022-08-21">
   <owner>fbeaufort@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
-    Records, every time the device's active network changes, the most likely
-    cost for the default network connection.
+    The new network connection cost any time a change to the device's active
+    default network is observed.
   </summary>
 </histogram>
 
@@ -1905,19 +1891,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The new network connection type any time a change to the device's active
     default network is observed.
-  </summary>
-</histogram>
-
-<histogram name="Net.NetworkChangeNotifierMac.GetCurrentConnectionTypeWaitTime"
-    units="ms" expires_after="2022-05-01">
-  <owner>ajuma@chromium.org</owner>
-  <owner>pauljensen@chromium.org</owner>
-  <summary>
-    The amount of time (ms) spent waiting for the connection type to be
-    determined in NetworkChangeNotifierMac::GetCurrentConnectionType. This is
-    recorded the first time GetCurrentConnectionType is called, before the
-    connection type has been determined; it is not recorded again on subsequent
-    calls to this function.
   </summary>
 </histogram>
 
@@ -3429,7 +3402,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.PendingStreamsWaitTime" units="ms"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4003,7 +3976,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.WriteError" enum="NetErrorCodes"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4827,7 +4800,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SSLVersionGoogle" enum="SSLOrQUICVersion"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>davidben@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
   <summary>
@@ -5121,7 +5094,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.URLRequest.ReferrerHasInformativePath"
-    enum="BooleanPathIsInformative" expires_after="2022-07-31">
+    enum="BooleanPathIsInformative" expires_after="2022-10-04">
 <!-- Name completed by histogram_suffixes name="ReferrerPolicySameOrigin" -->
 
   <owner>davidvc@chromium.org</owner>
@@ -5135,7 +5108,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.URLRequest.ReferrerPolicyForRequest"
-    enum="URLRequestReferrerPolicy" expires_after="2022-07-31">
+    enum="URLRequestReferrerPolicy" expires_after="2022-10-04">
 <!-- Name completed by histogram_suffixes name="ReferrerPolicySameOrigin" -->
 
   <owner>davidvc@chromium.org</owner>

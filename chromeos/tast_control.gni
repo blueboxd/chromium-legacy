@@ -63,9 +63,6 @@ tast_disabled_tests_from_chrome_all = [
   # crbug.com/1239838
   "graphics.FPS",
 
-  # crbug.com/1186991
-  "launcher.SearchBuiltInApps",
-
   # crbug.com/1263233
   "security.SharedFilesystemState",
 
@@ -94,6 +91,9 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1285206
   "policy.DeveloperToolsAvailability",
 
+  # https://crbug.com/1311242
+  "policy.ImagesForURLCheck.allowlist",
+
   # https://crbug.com/1281645
   "quicksettings.LockScreen",
 
@@ -105,10 +105,16 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1282369
   "apps.LaunchHelpAppOffline",
 
-  # https://crbug.com/1282366
+  # https://crbug.com/1282366 and https://crbug.com/1311184
+  "inputs.VirtualKeyboardChangeInput.a11y",
   "inputs.VirtualKeyboardDeadKeys.french",
-  "inputs.VirtualKeyboardSystemLanguages.es",
   "inputs.VirtualKeyboardFloat.clamshell",
+  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
+  "inputs.VirtualKeyboardHandwriting.docked",
+  "inputs.VirtualKeyboardHandwriting.floating",
+  "inputs.VirtualKeyboardMultipaste",
+  "inputs.VirtualKeyboardOOBE",
+  "inputs.VirtualKeyboardSystemLanguages.es",
 
   # https://crbug.com/1282370
   "arc.Boot.vm_with_per_vcpu_core_scheduling",
@@ -146,15 +152,88 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1300941
   "ui.WebUIJSErrors",
 
-  # https://crbug.com/1306316
-  "policy.URLCheck.whitelist",  # nocheck
-  "policy.URLCheck.blacklist",  # nocheck
-  "policy.UserNativePrintersAllowed",  # nocheck
-
   # https://crbug.com/1306441
   "policy.UserAvatarImage",
+
+  # https://crbug.com/1308288
+  "policy.BasicAuthOverHTTPEnabled",
+  "policy.AllowCrossOriginAuthPrompt.lacros",
+  "policy.BlockThirdPartyCookies.lacros",
+  "policy.BookmarkBarEnabled.lacros",
+
+  # https://crbug.com/1310619
+  "policy.AutoOpenAllowedForURLs.lacros",
+
+  # https://crbug.com/1307671
+  "policy.SafeBrowsingProtectionLevel",
+
+  # https://crbug.com/1309331
+  "policy.CookiesAllowedForUrls",
+
+  # https://crbug.com/1307582
+  "policy.AccessibilityPolicies.docked_magnifier",
+
+  # https://crbug.com/1307940
+  "policy.URLCheck.blocklist",
+
+  # https://crbug.com/1309114
+  "policy.BlockThirdPartyCookies.lacros",
+
+  # https://crbug.com/1309288
+  "policy.AudioCaptureAllowed",
+  "policy.AlternateErrorPagesEnabled",
+
+  # https://crbug.com/1309289
+  "policy.AllowDeletingBrowserHistory",
+
+  # https://crbug.com/1307750
+  "dlp.DataLeakPreventionRulesListPrinting.ash_blocked",
+  "dlp.DataLeakPreventionRulesListPrinting.ash_allowed",
+
+  # https://crbug.com/1309052
+  "policy.ShowHomeButton",
+  "policy.ShowLogoutButtonInTray",
+
+  # https://crbug.com/1309075
+  "policy.AccessibilityPolicies.virtual_keyboard",
+  "policy.AccessibilityPolicies.spoken_feedback",
+
+  # https://crbug.com/1309466
+  "arc.StartStop.vm",
+
+  # https://crbug.com/1309492
+  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
+  "inputs.VirtualKeyboardChangeInput.a11y",
+  "arc.DragDrop.chrome_to_android",
+
+  # https://crbug.com/1311081
+  "policy.AutoOpenAllowedForURLs.lacros",
+
+  # https://crbug.com/1312121
+  "policy.DefaultJavaScriptSetting",
+  "policy.CookiesBlockedForUrls",
+
+  # https://crbug.com/1312965
+  "policy.AllowDinosaurEasterEggEnrolled",
+
+  # https://crbug.com/1312908
+  "policy.DefaultNotificationsSetting",
+
+  # https://crbug.com/1314935
+  "dlp.DataLeakPreventionRulesListClipboardShelf",
+
+  # https://crbug.com/1314923
+  "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
+  "dlp.DataLeakPreventionRulesListClipboardOmni",
+
+  # https://crbug.com/1315123
+  "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
 ]
 
+# To create filters to be used on specific builders add them like this:
+# tast_disabled_tests_from_lacros_example = [ "lacros.Basic" ]
+# and add the name (i.e. 'tast_disabled_tests_from_lacros_example') to the
+# test config as 'tast_expr_key'
 # To disable a specific test in lacros_all_tast_tests, add it the following
 # list and cite a bug.
 tast_disabled_tests_from_lacros_all = []

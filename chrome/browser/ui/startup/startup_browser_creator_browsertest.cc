@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
@@ -701,12 +702,16 @@ class StartupBrowserCreatorChromeAppShortcutTest
     }
   }
 
-  void ExpectBlockLaunch() {
+  void ExpectBlockLaunch(
+      const std::string& force_installed_app_id = std::string()) {
     ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-    views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
-                                         "DeprecatedAppsDialogView");
+    auto waiter = views::NamedWidgetShownWaiter(
+        views::test::AnyWidgetTestPasskey{},
+        force_installed_app_id.empty()
+            ? "DeprecatedAppsDialogView"
+            : "ForceInstalledDeprecatedAppsDialogView");
 #endif
     // Should have opened the requested homepage about:blank in 1st window.
     TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -724,8 +729,15 @@ class StartupBrowserCreatorChromeAppShortcutTest
     EXPECT_TRUE(other_browser->is_type_normal());
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-    EXPECT_EQ(GURL(chrome::kChromeUIAppsWithDeprecationDialogURL),
+
+    GURL expected_url =
+        force_installed_app_id.empty()
+            ? GURL(chrome::kChromeUIAppsWithDeprecationDialogURL)
+            : GURL(chrome::kChromeUIAppsWithForceInstalledDeprecationDialogURL +
+                   force_installed_app_id);
+    EXPECT_EQ(expected_url,
               other_tab_strip->GetWebContentsAt(0)->GetVisibleURL());
+
     // Verify that the Deprecated Apps Dialog View also shows up.
     EXPECT_TRUE(waiter.WaitIfNeededAndGet() != nullptr);
 #endif
@@ -809,6 +821,9 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
+
+  ui_test_utils::BrowserChangeObserver browser_waiter(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
       command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       {browser()->profile(), StartupProfileMode::kBrowserWindow}, {}));
@@ -817,7 +832,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
     // Pref was set to open in a window, so the app should have opened in a
     // window.  The launch should have created a new browser. Find the new
     // browser.
-    Browser* new_browser = ui_test_utils::WaitForBrowserToOpen();
+    Browser* new_browser = browser_waiter.Wait();
     ASSERT_TRUE(new_browser);
 
     // Expect an app window.
@@ -903,27 +918,33 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
       command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       {browser()->profile(), StartupProfileMode::kBrowserWindow}, {}));
-  tab_waiter.Wait();
 
-  // Policy force-installed app should be allowed regardless of Chrome App
-  // Deprecation status.
-  //
-  // No app launch pref was set, so the app should have opened in a tab in the
-  // existing window.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
-  EXPECT_EQ(2, tab_strip->count());
-  EXPECT_EQ(tab_strip->GetActiveWebContents(), tab_strip->GetWebContentsAt(1));
+  if (IsExpectedToAllowLaunch()) {
+    tab_waiter.Wait();
 
-  // It should be a standard tabbed window, not an app window.
-  EXPECT_FALSE(browser()->is_type_app());
-  EXPECT_TRUE(browser()->is_type_normal());
+    // Policy force-installed app should be allowed regardless of Chrome App
+    // Deprecation status.
+    //
+    // No app launch pref was set, so the app should have opened in a tab in the
+    // existing window.
+    ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+    EXPECT_EQ(2, tab_strip->count());
+    EXPECT_EQ(tab_strip->GetActiveWebContents(),
+              tab_strip->GetWebContentsAt(1));
 
-  // It should have loaded the requested app.
-  const std::u16string expected_title(
-      u"app_with_tab_container/empty.html title");
-  content::TitleWatcher title_watcher(tab_strip->GetActiveWebContents(),
-                                      expected_title);
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+    // It should be a standard tabbed window, not an app window.
+    EXPECT_FALSE(browser()->is_type_app());
+    EXPECT_TRUE(browser()->is_type_normal());
+
+    // It should have loaded the requested app.
+    const std::u16string expected_title(
+        u"app_with_tab_container/empty.html title");
+    content::TitleWatcher title_watcher(tab_strip->GetActiveWebContents(),
+                                        expected_title);
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  } else {
+    ExpectBlockLaunch(extension_app->id());
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2210,8 +2231,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
   web_app::WebAppInstallFinalizer& web_app_finalizer =
       provider->install_finalizer();
 
-  web_app::WebAppInstallFinalizer::FinalizeOptions options;
-  options.install_source = webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON;
+  web_app::WebAppInstallFinalizer::FinalizeOptions options(
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON);
 
   // Install web app set to open as a tab.
   {
@@ -2999,13 +3020,12 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTab) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(
-      embedded_test_server()->GetURL("/title1.html"));
-  browser_creator.AddFirstRunTab(
-      embedded_test_server()->GetURL("/title2.html"));
+  browser_creator.AddFirstRunTabs(
+      {embedded_test_server()->GetURL("/title1.html"),
+       embedded_test_server()->GetURL("/title2.html")});
 
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
@@ -3107,8 +3127,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // }
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(
-      embedded_test_server()->GetURL("/title1.html"));
+  browser_creator.AddFirstRunTabs(
+      {embedded_test_server()->GetURL("/title1.html")});
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kRestoreOnStartup, 1);
 
@@ -3534,7 +3554,7 @@ class StartupBrowserCreatorInfobarsWithoutStartupWindowTest
 
   infobars::ContentInfoBarManager* LaunchBrowserAndGetCreatedInfoBarManager() {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    Profile* profile = ProfileManager::GetActiveUserProfile();
+    Profile* profile = ProfileManager::GetLastUsedProfileIfLoaded();
 
     StartupBrowserCreatorImpl launch(base::FilePath(), command_line,
                                      chrome::startup::IsFirstRun::kNo);

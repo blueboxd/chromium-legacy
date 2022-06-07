@@ -14,10 +14,13 @@
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/test/quick_answers_test_base.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
+#include "chromeos/components/quick_answers/utils/spell_checker.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,6 +40,25 @@ TextLanguagePtr DefaultLanguage() {
   return TextLanguage::New("en", /* confidence */ 1);
 }
 
+class FakeSpellChecker : public SpellChecker {
+ public:
+  FakeSpellChecker(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : SpellChecker(url_loader_factory) {}
+  ~FakeSpellChecker() override = default;
+
+  // SpellChecker:
+  void CheckSpelling(const std::string& word,
+                     CheckSpellingCallback callback) override {
+    std::move(callback).Run(dictionary_.find(word) != dictionary_.end());
+  }
+
+  void AddWordToDictionary(std::string word) { dictionary_.insert(word); }
+
+ private:
+  std::set<std::string> dictionary_;
+};
+
 }  // namespace
 
 class IntentGeneratorTest : public QuickAnswersTestBase {
@@ -48,7 +70,14 @@ class IntentGeneratorTest : public QuickAnswersTestBase {
 
   void SetUp() override {
     QuickAnswersTestBase::SetUp();
+
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
+    spell_checker_ =
+        std::make_unique<FakeSpellChecker>(test_shared_loader_factory_);
     intent_generator_ = std::make_unique<IntentGenerator>(
+        spell_checker_->GetWeakPtr(),
         base::BindOnce(&IntentGeneratorTest::IntentGeneratorTestCallback,
                        base::Unretained(this)));
 
@@ -57,6 +86,7 @@ class IntentGeneratorTest : public QuickAnswersTestBase {
 
   void TearDown() override {
     intent_generator_.reset();
+    spell_checker_.reset();
     QuickAnswersTestBase::TearDown();
   }
 
@@ -84,7 +114,12 @@ class IntentGeneratorTest : public QuickAnswersTestBase {
     fake_service_connection_.SetOutputLanguages(languages);
   }
 
+  FakeSpellChecker* spell_checker() { return spell_checker_.get(); }
+
   base::test::TaskEnvironment task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  std::unique_ptr<FakeSpellChecker> spell_checker_;
   std::unique_ptr<IntentGenerator> intent_generator_;
   IntentInfo intent_info_;
   FakeServiceConnectionImpl fake_service_connection_;
@@ -97,8 +132,8 @@ TEST_F(IntentGeneratorTest, TranslationIntent) {
 
   QuickAnswersRequest request;
   request.selected_text = "quick answers";
-  request.context.device_properties.language = "es";
-  request.context.device_properties.preferred_languages = "es";
+  fake_quick_answers_state()->set_application_locale("es");
+  fake_quick_answers_state()->set_preferred_languages("es");
   intent_generator_->GenerateIntent(request);
 
   FlushForTesting();
@@ -117,8 +152,8 @@ TEST_F(IntentGeneratorTest, TranslationIntentSameLanguage) {
 
   QuickAnswersRequest request;
   request.selected_text = "quick answers";
-  request.context.device_properties.language = "en";
-  request.context.device_properties.preferred_languages = "en";
+  fake_quick_answers_state()->set_application_locale("en");
+  fake_quick_answers_state()->set_preferred_languages("en");
   intent_generator_->GenerateIntent(request);
 
   FlushForTesting();
@@ -136,8 +171,8 @@ TEST_F(IntentGeneratorTest, TranslationIntentPreferredLocale) {
 
   QuickAnswersRequest request;
   request.selected_text = "quick answers";
-  request.context.device_properties.language = "es";
-  request.context.device_properties.preferred_languages = "es,en,zh";
+  fake_quick_answers_state()->set_application_locale("es");
+  fake_quick_answers_state()->set_preferred_languages("es,en,zh");
   intent_generator_->GenerateIntent(request);
 
   FlushForTesting();
@@ -155,8 +190,8 @@ TEST_F(IntentGeneratorTest, TranslationIntentPreferredLanguage) {
 
   QuickAnswersRequest request;
   request.selected_text = "quick answers";
-  request.context.device_properties.language = "es";
-  request.context.device_properties.preferred_languages = "es-MX,en-US,zh-CN";
+  fake_quick_answers_state()->set_application_locale("es");
+  fake_quick_answers_state()->set_preferred_languages("es-MX,en-US,zh-CN");
   intent_generator_->GenerateIntent(request);
 
   FlushForTesting();
@@ -177,8 +212,8 @@ TEST_F(IntentGeneratorTest, TranslationIntentTextLengthAboveThreshold) {
       "Search the world's information, including webpages, images, videos and "
       "more. Google has many special features to help you find exactly what "
       "you're looking ...";
-  request.context.device_properties.language = "es";
-  request.context.device_properties.preferred_languages = "es";
+  fake_quick_answers_state()->set_application_locale("es");
+  fake_quick_answers_state()->set_preferred_languages("es");
   intent_generator_->GenerateIntent(request);
 
   FlushForTesting();
@@ -196,8 +231,8 @@ TEST_F(IntentGeneratorTest, TranslationIntentTextLengthAboveThreshold) {
 TEST_F(IntentGeneratorTest, TranslationIntentWithAnnotation) {
   QuickAnswersRequest request;
   request.selected_text = "unfathomable";
-  request.context.device_properties.language = "es";
-  request.context.device_properties.preferred_languages = "es";
+  fake_quick_answers_state()->set_application_locale("es");
+  fake_quick_answers_state()->set_preferred_languages("es");
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
@@ -494,26 +529,129 @@ TEST_F(IntentGeneratorTest, TextAnnotationIntentUnSupportedEntity) {
   EXPECT_EQ("the unfathomable reaches of space", intent_info_.intent_text);
 }
 
-TEST_F(IntentGeneratorTest, ShouldTriggerForSingleWord) {
+TEST_F(IntentGeneratorTest, ShouldTriggerForSingleWordInDictionary) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       chromeos::features::kQuickAnswersAlwaysTriggerForSingleWord);
+
+  const std::string kWord = "single";
 
   // No Annotation provided.
   std::vector<TextAnnotationPtr> annotations;
   UseFakeServiceConnection(annotations);
 
-  // Single word selected.
+  // Add word to the dictionary.
+  spell_checker()->AddWordToDictionary(kWord);
+
+  // Word selected.
   std::unique_ptr<QuickAnswersRequest> quick_answers_request =
       std::make_unique<QuickAnswersRequest>();
-  quick_answers_request->selected_text = "single";
+  quick_answers_request->selected_text = kWord;
 
   intent_generator_->GenerateIntent(*quick_answers_request);
   task_environment_.RunUntilIdle();
 
-  // Should generate dictionary intent for single word.
+  // Should generate dictionary intent.
   EXPECT_EQ(IntentType::kDictionary, intent_info_.intent_type);
-  EXPECT_EQ("single", intent_info_.intent_text);
+  EXPECT_EQ(kWord, intent_info_.intent_text);
+}
+
+TEST_F(IntentGeneratorTest,
+       ShouldFallbackToAnnotationsForWordNotInDictionaryNoAnnotation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      chromeos::features::kQuickAnswersAlwaysTriggerForSingleWord);
+
+  const std::string kWord = "single";
+
+  // No Annotation provided, and not add the word to the dictionary.
+  std::vector<TextAnnotationPtr> annotations;
+  UseFakeServiceConnection(annotations);
+
+  // Word selected.
+  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
+      std::make_unique<QuickAnswersRequest>();
+  quick_answers_request->selected_text = kWord;
+
+  intent_generator_->GenerateIntent(*quick_answers_request);
+  task_environment_.RunUntilIdle();
+
+  // Should not generate dictionary intent if the word is not in the dictionary
+  // and no annotation provided.
+  EXPECT_EQ(IntentType::kUnknown, intent_info_.intent_type);
+  EXPECT_EQ(kWord, intent_info_.intent_text);
+}
+
+TEST_F(
+    IntentGeneratorTest,
+    ShouldFallbackToAnnotationsForWordNotInDictionaryWithDictionaryAnnotation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      chromeos::features::kQuickAnswersAlwaysTriggerForSingleWord);
+
+  const std::string kWord = "unfathomable";
+
+  // Annotation provided, and not add the word to the dictionary.
+  std::vector<TextEntityPtr> entities;
+  entities.emplace_back(
+      TextEntity::New("dictionary",             // Entity name.
+                      1.0,                      // Confidence score.
+                      TextEntityData::New()));  // Data extracted.
+
+  auto dictionary_annotation = TextAnnotation::New(0,   // Start offset.
+                                                   12,  // End offset.
+                                                   std::move(entities));
+  std::vector<TextAnnotationPtr> annotations;
+  annotations.push_back(dictionary_annotation->Clone());
+  UseFakeServiceConnection(annotations);
+
+  // Word selected.
+  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
+      std::make_unique<QuickAnswersRequest>();
+  quick_answers_request->selected_text = kWord;
+
+  intent_generator_->GenerateIntent(*quick_answers_request);
+  task_environment_.RunUntilIdle();
+
+  // Should generate dictionary intent for the word.
+  EXPECT_EQ(IntentType::kDictionary, intent_info_.intent_type);
+  EXPECT_EQ(kWord, intent_info_.intent_text);
+}
+
+TEST_F(
+    IntentGeneratorTest,
+    ShouldFallbackToAnnotationsForWordNotInDictionaryWithUnitConversionAnnotation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      chromeos::features::kQuickAnswersAlwaysTriggerForSingleWord);
+
+  const std::string kText = "50kg";
+
+  // Annotation provided, and not add the text to the dictionary.
+  std::vector<TextEntityPtr> entities;
+  entities.emplace_back(
+      TextEntity::New("unit",                   // Entity name.
+                      1.0,                      // Confidence score.
+                      TextEntityData::New()));  // Data extracted.
+
+  auto dictionary_annotation = TextAnnotation::New(0,  // Start offset.
+                                                   4,  // End offset.
+                                                   std::move(entities));
+  std::vector<TextAnnotationPtr> annotations;
+  annotations.push_back(dictionary_annotation->Clone());
+  UseFakeServiceConnection(annotations);
+
+  // Text selected.
+  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
+      std::make_unique<QuickAnswersRequest>();
+  quick_answers_request->selected_text = kText;
+
+  intent_generator_->GenerateIntent(*quick_answers_request);
+  task_environment_.RunUntilIdle();
+
+  // Should generate unit conversion intent.
+  EXPECT_EQ(IntentType::kUnit, intent_info_.intent_type);
+  EXPECT_EQ(kText, intent_info_.intent_text);
 }
 
 TEST_F(IntentGeneratorTest, ShouldNotTriggerForMultipleWords) {

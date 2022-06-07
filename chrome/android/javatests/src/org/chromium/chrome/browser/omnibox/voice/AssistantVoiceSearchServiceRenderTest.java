@@ -55,7 +55,9 @@ public class AssistantVoiceSearchServiceRenderTest {
             new ChromeTabbedActivityTestRule();
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_SEARCH_VOICE)
+                    .build();
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
     @Rule
@@ -117,6 +119,7 @@ public class AssistantVoiceSearchServiceRenderTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "crbug.com/1221496")
     public void testAssistantMic() throws IOException {
         setAssistantVoiceSearchEnabled(true);
         setColorfulMicEnabled(false);
@@ -124,6 +127,8 @@ public class AssistantVoiceSearchServiceRenderTest {
         mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
 
+        // TODO(crbug.com/1291209): Add a #testAssistantMic_WithScrollableMVT test with
+        // ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID enabled when re-enabling this test.
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.ntp_content),
                 "avs__mic_unfocused_ntp");
 

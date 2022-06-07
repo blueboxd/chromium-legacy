@@ -18,6 +18,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.SHOW_SUBMIT_BUTTON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.IMAGE_DRAWABLE_ID;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.SHOW_SUBMIT_SUBTITLE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.SINGLE_CREDENTIAL;
@@ -53,6 +54,7 @@ import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderPro
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
@@ -89,6 +91,7 @@ public class TouchToFillViewTest {
     private PropertyModel mModel;
     private TouchToFillView mTouchToFillView;
     private BottomSheetController mBottomSheetController;
+    TouchToFillResourceProvider mResourceProvider;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -100,6 +103,7 @@ public class TouchToFillViewTest {
         mBottomSheetController = mActivityTestRule.getActivity()
                                          .getRootUiCoordinatorForTesting()
                                          .getBottomSheetController();
+        mResourceProvider = new TouchToFillResourceProviderImpl();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel = TouchToFillProperties.createDefaultModel(mDismissHandler);
             mTouchToFillView = new TouchToFillView(getActivity(), mBottomSheetController);
@@ -123,10 +127,10 @@ public class TouchToFillViewTest {
 
     @Test
     @MediumTest
-    public void testSingleCredentialTitleDisplayed() {
-        // TODO(crbug.com/1283004): Replace the test with
-        // |testSingleCredentialTitleDisplayedWithSubmissionEnabled| when
-        // TOUCH_TO_FILL_PASSWORD_SUBMISSION is enabled.
+    @DisableFeatures({ChromeFeatureList.TOUCH_TO_FILL_PASSWORD_SUBMISSION})
+    public void testSingleCredentialTitleDisplayedWithSubmissionDisabled() {
+        // TODO(crbug.com/1283004): Remove the test once TOUCH_TO_FILL_PASSWORD_SUBMISSION is fully
+        // launched.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.get(SHEET_ITEMS)
                     .add(new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.HEADER,
@@ -134,6 +138,8 @@ public class TouchToFillViewTest {
                                     .with(SINGLE_CREDENTIAL, true)
                                     .with(FORMATTED_URL, "www.example.org")
                                     .with(ORIGIN_SECURE, true)
+                                    .with(IMAGE_DRAWABLE_ID,
+                                            mResourceProvider.getHeaderImageDrawableId())
                                     .build()));
             mModel.set(VISIBLE, true);
         });
@@ -147,10 +153,10 @@ public class TouchToFillViewTest {
 
     @Test
     @MediumTest
-    public void testMultiCredentialTitleDisplayed() {
-        // TODO(crbug.com/1283004): Replace the test with
-        // |testMultiCredentialTitleDisplayedWithSubmissionEnabled| when
-        // TOUCH_TO_FILL_PASSWORD_SUBMISSION is enabled.
+    @DisableFeatures({ChromeFeatureList.TOUCH_TO_FILL_PASSWORD_SUBMISSION})
+    public void testMultiCredentialTitleDisplayedWithSubmissionDisabled() {
+        // TODO(crbug.com/1283004): Remove the test once TOUCH_TO_FILL_PASSWORD_SUBMISSION is fully
+        // launched.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.get(SHEET_ITEMS)
                     .add(new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.HEADER,
@@ -158,6 +164,8 @@ public class TouchToFillViewTest {
                                     .with(SINGLE_CREDENTIAL, false)
                                     .with(FORMATTED_URL, "www.example.org")
                                     .with(ORIGIN_SECURE, true)
+                                    .with(IMAGE_DRAWABLE_ID,
+                                            mResourceProvider.getHeaderImageDrawableId())
                                     .build()));
             mModel.set(VISIBLE, true);
         });
@@ -172,7 +180,7 @@ public class TouchToFillViewTest {
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.TOUCH_TO_FILL_PASSWORD_SUBMISSION})
-    public void testSingleCredentialTitleDisplayedWithSubmissionEnabled() {
+    public void testSingleCredentialTitleDisplayed() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.get(SHEET_ITEMS)
                     .add(new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.HEADER,
@@ -180,6 +188,8 @@ public class TouchToFillViewTest {
                                     .with(SINGLE_CREDENTIAL, true)
                                     .with(FORMATTED_URL, "www.example.org")
                                     .with(ORIGIN_SECURE, true)
+                                    .with(IMAGE_DRAWABLE_ID,
+                                            mResourceProvider.getHeaderImageDrawableId())
                                     .build()));
             mModel.set(VISIBLE, true);
         });
@@ -194,7 +204,7 @@ public class TouchToFillViewTest {
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.TOUCH_TO_FILL_PASSWORD_SUBMISSION})
-    public void testMultiCredentialTitleDisplayedWithSubmissionEnabled() {
+    public void testMultiCredentialTitleDisplayed() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.get(SHEET_ITEMS)
                     .add(new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.HEADER,
@@ -202,6 +212,8 @@ public class TouchToFillViewTest {
                                     .with(SINGLE_CREDENTIAL, false)
                                     .with(FORMATTED_URL, "www.example.org")
                                     .with(ORIGIN_SECURE, true)
+                                    .with(IMAGE_DRAWABLE_ID,
+                                            mResourceProvider.getHeaderImageDrawableId())
                                     .build()));
             mModel.set(VISIBLE, true);
         });
@@ -222,6 +234,8 @@ public class TouchToFillViewTest {
                             new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
                                     .with(FORMATTED_URL, "www.example.org")
                                     .with(ORIGIN_SECURE, true)
+                                    .with(IMAGE_DRAWABLE_ID,
+                                            mResourceProvider.getHeaderImageDrawableId())
                                     .build()));
             mModel.set(VISIBLE, true);
         });
@@ -241,6 +255,8 @@ public class TouchToFillViewTest {
                             new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
                                     .with(FORMATTED_URL, "m.example.org")
                                     .with(ORIGIN_SECURE, false)
+                                    .with(IMAGE_DRAWABLE_ID,
+                                            mResourceProvider.getHeaderImageDrawableId())
                                     .build()));
             mModel.set(VISIBLE, true);
         });
@@ -262,6 +278,8 @@ public class TouchToFillViewTest {
                                     .with(SHOW_SUBMIT_SUBTITLE, true)
                                     .with(FORMATTED_URL, "m.example.org")
                                     .with(ORIGIN_SECURE, true)
+                                    .with(IMAGE_DRAWABLE_ID,
+                                            mResourceProvider.getHeaderImageDrawableId())
                                     .build()));
             mModel.set(VISIBLE, true);
         });
@@ -283,6 +301,8 @@ public class TouchToFillViewTest {
                                     .with(SHOW_SUBMIT_SUBTITLE, true)
                                     .with(FORMATTED_URL, "m.example.org")
                                     .with(ORIGIN_SECURE, false)
+                                    .with(IMAGE_DRAWABLE_ID,
+                                            mResourceProvider.getHeaderImageDrawableId())
                                     .build()));
             mModel.set(VISIBLE, true);
         });

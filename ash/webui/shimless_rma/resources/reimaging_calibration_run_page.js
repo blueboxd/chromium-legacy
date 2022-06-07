@@ -14,6 +14,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 import {ComponentTypeToId} from './data.js';
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {CalibrationComponentStatus, CalibrationObserverInterface, CalibrationObserverReceiver, CalibrationOverallStatus, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -101,24 +102,13 @@ export class ReimagingCalibrationRunPage extends
         this.calibrationStatusMessage_ =
             this.i18n('runCalibrationCompleteText');
         this.calibrationComplete_ = true;
-        this.dispatchEvent(new CustomEvent(
-            'disable-next-button',
-            {bubbles: true, composed: true, detail: false},
-            ));
+        enableNextButton(this);
         break;
       case CalibrationOverallStatus.kCalibrationOverallCurrentRoundComplete:
       case CalibrationOverallStatus.kCalibrationOverallCurrentRoundFailed:
       case CalibrationOverallStatus.kCalibrationOverallInitializationFailed:
-        this.dispatchEvent(new CustomEvent(
-            'transition-state',
-            {
-              bubbles: true,
-              composed: true,
-              detail: (() => {
-                return this.shimlessRmaService_.continueCalibration();
-              })
-            },
-            ));
+        executeThenTransitionState(
+            this, () => this.shimlessRmaService_.continueCalibration());
         break;
     }
   }
@@ -131,6 +121,16 @@ export class ReimagingCalibrationRunPage extends
   getCalibrationStatusString_(status) {
     const componentType = this.i18n(ComponentTypeToId[status.component]);
     return this.i18n('runCalibrationCalibratingComponent', componentType);
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getCalibrationTitleString_() {
+    return this.i18n(
+        this.calibrationComplete_ ? 'runCalibrationCompleteTitleText' :
+                                    'runCalibrationTitleText');
   }
 }
 

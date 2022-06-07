@@ -38,9 +38,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
@@ -64,6 +64,7 @@
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/http_auth_manager_impl.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -104,6 +105,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -187,7 +189,7 @@ namespace {
 static const char kPasswordBreachEntryTrigger[] = "PASSWORD_ENTRY";
 #endif
 
-const syncer::SyncService* GetSyncService(Profile* profile) {
+const syncer::SyncService* GetSyncServiceForProfile(Profile* profile) {
   if (SyncServiceFactory::HasSyncService(profile))
     return SyncServiceFactory::GetForProfile(profile);
   return nullptr;
@@ -262,7 +264,9 @@ bool ChromePasswordManagerClient::IsSavingAndFillingEnabled(
     // page, and there is no API to access (or dismiss) UI bubbles/infobars.
     return false;
   }
-  return *saving_passwords_enabled_ && !IsIncognito() && IsFillingEnabled(url);
+  return password_manager_util::IsSavingPasswordsEnabled(GetPrefs(),
+                                                         GetSyncService()) &&
+         !IsIncognito() && IsFillingEnabled(url);
 }
 
 bool ChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
@@ -514,6 +518,39 @@ void ChromePasswordManagerClient::NotifyStorePasswordCalled() {
   was_store_ever_called_ = true;
 }
 
+#if BUILDFLAG(IS_ANDROID)
+void ChromePasswordManagerClient::StartSubmissionTrackingAfterTouchToFill(
+    const std::u16string& filled_username) {
+  username_filled_by_touch_to_fill_ =
+      std::make_pair(filled_username, base::Time::Now());
+}
+
+void ChromePasswordManagerClient::NotifyOnSuccessfulLogin(
+    const std::u16string& submitted_username) {
+  if (!username_filled_by_touch_to_fill_)
+    return;
+
+  base::TimeDelta delta =
+      base::Time::Now() - username_filled_by_touch_to_fill_->second;
+  // Filter out unrelated logins.
+  if (delta < base::Minutes(1) &&
+      username_filled_by_touch_to_fill_->first == submitted_username) {
+    UmaHistogramMediumTimes("PasswordManager.TouchToFill.TimeToSuccessfulLogin",
+                            delta);
+    ukm::builders::TouchToFill_TimeToSuccessfulLogin(GetUkmSourceId())
+        .SetTimeToSuccessfulLogin(
+            ukm::GetExponentialBucketMinForUserTiming(delta.InMilliseconds()))
+        .Record(ukm::UkmRecorder::Get());
+  }
+
+  username_filled_by_touch_to_fill_.reset();
+}
+
+void ChromePasswordManagerClient::ResetSubmissionTrackingAfterTouchToFill() {
+  username_filled_by_touch_to_fill_.reset();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 void ChromePasswordManagerClient::UpdateCredentialCache(
     const url::Origin& origin,
     const std::vector<const PasswordForm*>& best_matches,
@@ -615,6 +652,10 @@ void ChromePasswordManagerClient::TriggerSignIn(
 
 PrefService* ChromePasswordManagerClient::GetPrefs() const {
   return profile_->GetPrefs();
+}
+
+const syncer::SyncService* ChromePasswordManagerClient::GetSyncService() const {
+  return GetSyncServiceForProfile(profile_);
 }
 
 password_manager::PasswordStoreInterface*
@@ -1232,7 +1273,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       credentials_filter_(
           this,
-          base::BindRepeating(&GetSyncService, profile_),
+          base::BindRepeating(&GetSyncServiceForProfile, profile_),
           DiceWebSigninInterceptorFactory::GetForProfile(profile_)),
       account_storage_auth_helper_(
           IdentityManagerFactory::GetForProfile(profile_),
@@ -1245,7 +1286,9 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
               },
               web_contents)),
 #else
-      credentials_filter_(this, base::BindRepeating(&GetSyncService, profile_)),
+      credentials_filter_(
+          this,
+          base::BindRepeating(&GetSyncServiceForProfile, profile_)),
 #endif
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
@@ -1259,8 +1302,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           &ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability,
           base::Unretained(driver_factory_)));
 
-  saving_passwords_enabled_.Init(
-      password_manager::prefs::kCredentialsEnableService, GetPrefs());
   driver_factory_->RequestSendLoggingAvailability();
 
   auto* autofill_assistant_manager =

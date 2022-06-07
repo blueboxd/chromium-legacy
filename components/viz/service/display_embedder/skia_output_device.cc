@@ -112,15 +112,17 @@ SkiaOutputDevice::~SkiaOutputDevice() {
 }
 
 std::unique_ptr<SkiaOutputDevice::ScopedPaint>
-SkiaOutputDevice::BeginScopedPaint(bool allocate_frame_buffer) {
+SkiaOutputDevice::BeginScopedPaint() {
   std::vector<GrBackendSemaphore> end_semaphores;
-  SkSurface* sk_surface = BeginPaint(allocate_frame_buffer, &end_semaphores);
+  SkSurface* sk_surface = BeginPaint(&end_semaphores);
   if (!sk_surface) {
     return nullptr;
   }
   return std::make_unique<SkiaOutputDevice::ScopedPaint>(
       std::move(end_semaphores), this, sk_surface);
 }
+
+void SkiaOutputDevice::SetViewportSize(const gfx::Size& viewport_size) {}
 
 void SkiaOutputDevice::Submit(bool sync_cpu, base::OnceClosure callback) {
   gr_context_->submit(sync_cpu);
@@ -138,13 +140,9 @@ void SkiaOutputDevice::PostSubBuffer(const gfx::Rect& rect,
   NOTREACHED();
 }
 
-bool SkiaOutputDevice::AllocateFrameBuffers(size_t n) {
+bool SkiaOutputDevice::EnsureMinNumberOfBuffers(size_t n) {
   NOTREACHED();
   return false;
-}
-
-void SkiaOutputDevice::ReleaseOneFrameBuffer() {
-  NOTREACHED();
 }
 
 bool SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {

@@ -147,9 +147,6 @@ BuildAttributionReportingIssueType(AttributionReportingIssueType type) {
     case AttributionReportingIssueType::kAttributionSourceUntrustworthyOrigin:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           AttributionSourceUntrustworthyOrigin;
-    case AttributionReportingIssueType::kInvalidAttributionData:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          InvalidAttributionData;
     case AttributionReportingIssueType::kAttributionUntrustworthyOrigin:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           AttributionUntrustworthyOrigin;
@@ -159,15 +156,6 @@ BuildAttributionReportingIssueType(AttributionReportingIssueType type) {
     case AttributionReportingIssueType::kInvalidAttributionSourcePriority:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           InvalidAttributionSourcePriority;
-    case AttributionReportingIssueType::kInvalidEventSourceTriggerData:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          InvalidEventSourceTriggerData;
-    case AttributionReportingIssueType::kInvalidTriggerPriority:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          InvalidTriggerPriority;
-    case AttributionReportingIssueType::kInvalidTriggerDedupKey:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          InvalidTriggerDedupKey;
   }
 }
 
@@ -225,10 +213,12 @@ void AuditsIssue::ReportNavigatorUserAgentAccess(
   // Try to get only the script name quickly.
   std::unique_ptr<SourceLocation> location;
   String script_url = GetCurrentScriptUrl();
-  if (!script_url.IsEmpty())
-    location = std::make_unique<SourceLocation>(script_url, 1, 0, nullptr);
-  else
+  if (!script_url.IsEmpty()) {
+    location =
+        std::make_unique<SourceLocation>(script_url, String(), 1, 0, nullptr);
+  } else {
     location = SourceLocation::Capture(execution_context);
+  }
 
   if (location) {
     navigator_user_agent_details->setLocation(
@@ -427,14 +417,35 @@ void AuditsIssue::ReportSharedArrayBufferIssue(
 
 // static
 void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
-                                         const String& message,
-                                         const String& type) {
+                                         const DeprecationIssueType& type_enum,
+                                         const String& legacy_message,
+                                         const String& legacy_type) {
+  // We currently support two modes: untranslated with legacy message and type
+  // or translated without either.
+  protocol::Audits::DeprecationIssueType type;
+  if (type_enum == DeprecationIssueType::kUntranslated) {
+    CHECK(!legacy_message.IsEmpty() && !legacy_type.IsEmpty());
+    type = protocol::Audits::DeprecationIssueTypeEnum::Untranslated;
+  } else {
+    CHECK(legacy_message.IsEmpty() && legacy_type.IsEmpty());
+    switch (type_enum) {
+      case DeprecationIssueType::kDeprecationExample:
+        type = protocol::Audits::DeprecationIssueTypeEnum::DeprecationExample;
+        break;
+      default:
+        LOG(FATAL) << "Feature " << static_cast<int>(type_enum)
+                   << " is not translated.";
+        break;
+    }
+  }
+
   auto source_location = SourceLocation::Capture(execution_context);
   auto deprecation_issue_details =
       protocol::Audits::DeprecationIssueDetails::create()
           .setSourceCodeLocation(CreateProtocolLocation(*source_location))
-          .setMessage(message)
-          .setDeprecationType(type)
+          .setType(type)
+          .setMessage(legacy_message)
+          .setDeprecationType(legacy_type)
           .build();
   if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
     auto affected_frame =

@@ -15,9 +15,8 @@ namespace chromeos {
 // static
 constexpr StaticOobeScreenId OsTrialScreenView::kScreenId;
 
-OsTrialScreenHandler::OsTrialScreenHandler(JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.OsTrialScreen.userActed");
+OsTrialScreenHandler::OsTrialScreenHandler() : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.OsTrialScreen.userActed");
 }
 
 OsTrialScreenHandler::~OsTrialScreenHandler() {
@@ -41,20 +40,20 @@ void OsTrialScreenHandler::DeclareLocalizedValues(
   builder->Add("osTrialNextButton", IDS_OS_TRIAL_NEXT_BUTTON);
 }
 
-void OsTrialScreenHandler::Initialize() {}
+void OsTrialScreenHandler::InitializeDeprecated() {}
 
 void OsTrialScreenHandler::Show() {
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void OsTrialScreenHandler::Bind(ash::OsTrialScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void OsTrialScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 }  // namespace chromeos

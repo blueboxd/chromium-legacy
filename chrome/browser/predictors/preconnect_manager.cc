@@ -168,8 +168,11 @@ void PreconnectManager::PreconnectUrl(
     observer_->OnPreconnectUrl(url, num_sockets, allow_credentials);
 
   auto* network_context = GetNetworkContext();
+
+#if defined(UNIT_TEST)
   if (!network_context)
     return;
+#endif
 
   network_context->PreconnectSockets(num_sockets, url, allow_credentials,
                                      network_isolation_key);
@@ -183,13 +186,18 @@ std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
   DCHECK(url.SchemeIsHTTPOrHTTPS());
 
   auto* network_context = GetNetworkContext();
+
+#if defined(UNIT_TEST)
   if (!network_context) {
-    // Cannot invoke the callback right away because it would cause the
-    // use-after-free after returning from this function.
-    content::GetUIThreadTaskRunner({content::BrowserTaskType::kPreconnect})
-        ->PostTask(FROM_HERE, base::BindOnce(std::move(callback), false));
+    // Cannot invoke the callback right away because it would cause a
+    // use-after-free after returning from this method:
+    // The return value of this method is assigned to a member variable of a
+    // PreresolveJob that is destroyed when the callback executes.
+    content::GetUIThreadTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return nullptr;
   }
+#endif
 
   return std::make_unique<ResolveHostClientImpl>(
       url, network_isolation_key, std::move(callback), network_context);
@@ -203,10 +211,13 @@ std::unique_ptr<ProxyLookupClientImpl> PreconnectManager::LookupProxyForUrl(
   DCHECK(url.SchemeIsHTTPOrHTTPS());
 
   auto* network_context = GetNetworkContext();
+
+#if defined(UNIT_TEST)
   if (!network_context) {
     std::move(callback).Run(false);
     return nullptr;
   }
+#endif
 
   return std::make_unique<ProxyLookupClientImpl>(
       url, network_isolation_key, std::move(callback), network_context);
@@ -347,7 +358,10 @@ network::mojom::NetworkContext* PreconnectManager::GetNetworkContext() const {
   return nullptr;
 #endif
 
-  return browser_context_->GetDefaultStoragePartition()->GetNetworkContext();
+  auto* network_context =
+      browser_context_->GetDefaultStoragePartition()->GetNetworkContext();
+  DCHECK(network_context);
+  return network_context;
 }
 
 }  // namespace predictors

@@ -243,11 +243,25 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
   }
 
   if (EqualIgnoringASCIICase(name, "_self") ||
-      EqualIgnoringASCIICase(name, "_current") || name.IsEmpty())
+      EqualIgnoringASCIICase(name, "_current") || name.IsEmpty()) {
     return this_frame_;
+  }
 
   if (EqualIgnoringASCIICase(name, "_top"))
     return &Top(FrameTreeBoundary::kFenced);
+
+  // The target _unfencedTop should only be treated as a special name in
+  // opaque-ads mode fenced frames.
+  // TODO(crbug.com/1123606): _unfencedTop is temporarily treated as a normal
+  // target name in MPArch, as a stopgap for origin trial. (As a normal target
+  // name, it will open an auxiliary browsing context rather than navigate the
+  // top-level frame, which is an unideal but acceptable behavior.)
+  // TODO(crbug.com/1262022): Simplify check when  ShadowDOM fenced frames are
+  // eventually removed.
+  if (EqualIgnoringASCIICase(name, "_unfencedTop") &&
+      this_frame_.Get()->IsInShadowDOMOpaqueAdsFencedFrameTree()) {
+    return &Top();
+  }
 
   if (EqualIgnoringASCIICase(name, "_parent")) {
     return Parent(FrameTreeBoundary::kFenced)
@@ -277,8 +291,10 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
   if (!page)
     return nullptr;
 
-  for (Frame* frame = page->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
+  for (Frame *top = &this_frame_->Tree().Top(FrameTreeBoundary::kFenced),
+             *frame = top;
+       frame;
+       frame = frame->Tree().TraverseNext(top, FrameTreeBoundary::kFenced)) {
     // Skip descendants of this frame that were searched above to avoid
     // showing duplicate console messages if a frame is found by name
     // but access is blocked.
@@ -289,12 +305,21 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
     }
   }
 
+  // In fenced frames, only resolve target names using the above lookup methods
+  // (keywords, descendants, and the rest of the frame tree within the fence).
+  // TODO(crbug.com/1262022): Remove this early return when we get rid of
+  // ShadowDOM fenced frames, because it is unnecessary in MPArch.
+  if (this_frame_->IsInFencedFrameTree()) {
+    return nullptr;
+  }
+
   // Search the entire tree of each of the other pages in this namespace.
   for (const Page* other_page : page->RelatedPages()) {
     if (other_page == page || other_page->IsClosing())
       continue;
     for (Frame* frame = other_page->MainFrame(); frame;
-         frame = frame->Tree().TraverseNext()) {
+         frame =
+             frame->Tree().TraverseNext(nullptr, FrameTreeBoundary::kFenced)) {
       if (frame->Tree().GetName() == name &&
           To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame, url)) {
         return frame;

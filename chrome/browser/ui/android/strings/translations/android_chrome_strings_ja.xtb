@@ -184,7 +184,6 @@
 <translation id="200114059308480249">Google 検索に周辺のテキストを含めますか？</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 件のファイル}other{# 件のファイル}}</translation>
 <translation id="2015836039326522978">Chrome で <ph name="APP_NAME" /> を開きます。続行すると、<ph name="BEGIN_LINK1" />Google 利用規約<ph name="END_LINK1" />と <ph name="BEGIN_LINK2" />Google Chrome および Chrome OS 追加利用規約<ph name="END_LINK2" />に同意したことになります。また、<ph name="BEGIN_LINK3" />プライバシー ポリシー<ph name="END_LINK3" />も適用されます。</translation>
-<translation id="2019145049163614359">この興味 / 関心を削除しますか？</translation>
 <translation id="2020309681647789787">同期しているすべてのデバイスから履歴にアクセスして、作業の続きを行うことができます</translation>
 <translation id="2021896219286479412">全画面表示時のサイトの操作項目</translation>
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">使用状況を基に決定</translation>
 <translation id="214888715418183969">Chrome と共有してもよいものを選択してください。ご提供いただいた指標は、Chrome の機能、パフォーマンス、安定性の向上に利用させていただきます。</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
+<translation id="2155214902713132423">この認証方法は、このデバイスでは使用できません。他のデバイスで別の方法を選択してください。</translation>
 <translation id="2157851137955077194">お使いのスマートフォンから別のデバイスにデータを共有するには、両方のデバイスの Chrome 設定で同期をオンにしてください</translation>
 <translation id="2158408438301413340">Chrome ですべてのパスワードを確認できませんでした</translation>
 <translation id="2169830938017475061">たった今</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">まもなく、新しいタブを開くと、<ph name="SITE_NAME" /> のストーリーが表示されるようになります。フォローしたサイトは Google アカウントに保存され、Discover の設定で管理できます。</translation>
 <translation id="5091249083535528968">詳細な使用状況データ</translation>
 <translation id="509429900233858213">エラーが発生しました。</translation>
-<translation id="5098190077610408701">興味 / 関心を追加しますか？</translation>
 <translation id="5102401324271069229">サイトがパスワードを不正に取得しようとしている場合や、ユーザーが安全でないファイルをダウンロードしようとした場合は、URL とページ コンテンツの一部をセーフ ブラウジングに送信することがあります</translation>
 <translation id="510275257476243843">残り 1 時間</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> に移動</translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">サイトの URL を送信して、Google アシスタントでタスクをサポートできるようにします。アシスタントは、Chrome の設定で無効にできます。</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5919204609460789179">同期を開始するには <ph name="PRODUCT_NAME" /> を更新してください</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> を追加</translation>
 <translation id="5942872142862698679">検索に Google を使用します</translation>
 <translation id="5945035219773565305">現在の推奨設定: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">実際のページを表示しています</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791">Chrome では、<ph name="BEGIN_LINK" />プライバシー サンドボックス<ph name="END_LINK" />という取り組みを通じて、クロスサイト トラッキングからユーザーを保護しつつ、オープンウェブの理念を支える新しい技術を開発しています。
 
 プライバシー サンドボックスの試用版はまだ開発段階にあり、一部の地域でのみご利用可能です。このため、現時点では多くのサイトでサードパーティ Cookie など現行のウェブ技術を引き続き使用しつつ、プライバシー サンドボックスが試験的に導入されると考えられます。</translation>
-<translation id="6036057147555329831">その他の ICU</translation>
 <translation id="6039379616847168523">次のタブに移動する</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="604124094241169006">自動設定</translation>
@@ -1023,6 +1022,7 @@
 <translation id="663674369910034433">プライバシー、セキュリティ、データ収集に関連するその他の設定については、<ph name="BEGIN_LINK1" />同期<ph name="END_LINK1" />と <ph name="BEGIN_LINK2" />Google サービス<ph name="END_LINK2" />をご覧ください</translation>
 <translation id="6637100877383020115">アプリを改善するため、Chrome では使用状況とクラッシュに関するデータが Google に送信されます。<ph name="BEGIN_UMA_LINK" />管理<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">常にブロックする</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> を削除</translation>
 <translation id="6643016212128521049">削除</translation>
 <translation id="6645629752388991326">このデバイスをセキュリティ キーとして使用してログインできるデバイスを管理します。</translation>
 <translation id="6648459603387803038">管理者はブラウザの設定をリモートで変更できます。このデバイスでのアクティビティは、Chrome 以外でも管理されている可能性があります。</translation>

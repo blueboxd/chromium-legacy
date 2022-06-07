@@ -52,9 +52,9 @@ import org.chromium.components.browser_ui.widget.ContextMenuDialog;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentFeatures;
-import org.chromium.ui.base.DragStateTracker;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.dragdrop.DragStateTracker;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -69,7 +69,8 @@ import java.util.List;
  * Unit tests for the context menu. Use density=mdpi so the screen density is 1.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.DisableFeatures(ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE)
+@Features.DisableFeatures(
+        {ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE, ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU})
 public class ContextMenuCoordinatorTest {
     private static final int TOP_CONTENT_OFFSET_PX = 17;
     /**

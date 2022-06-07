@@ -10,7 +10,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -213,8 +212,12 @@ void ThumbnailMediaParserImpl::OnGpuVideoAcceleratorFactoriesReady(
 
 void ThumbnailMediaParserImpl::DecodeVideoFrame() {
   mojo::PendingRemote<media::mojom::VideoDecoder> video_decoder_remote;
+
+  // Out-of-process video decoding is not intended for Android, so we don't
+  // provide a valid |dst_video_decoder|.
   GetMediaInterfaceFactory()->CreateVideoDecoder(
-      video_decoder_remote.InitWithNewPipeAndPassReceiver());
+      video_decoder_remote.InitWithNewPipeAndPassReceiver(),
+      /*dst_video_decoder=*/{});
 
   // Build and config the decoder.
   DCHECK(gpu_factories_);

@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/run_loop.h"
+#include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
 #include "chromeos/dbus/media_analytics/fake_media_analytics_client.h"
 #include "chromeos/dbus/media_analytics/media_analytics_client.h"
-#include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@ namespace extensions {
 
 namespace {
 
-class TestUpstartClient : public chromeos::FakeUpstartClient {
+class TestUpstartClient : public ash::FakeUpstartClient {
  public:
   TestUpstartClient() = default;
 
@@ -62,7 +62,7 @@ class TestUpstartClient : public chromeos::FakeUpstartClient {
       return true;
     }
 
-    chromeos::FakeUpstartClient::StartMediaAnalytics({}, std::move(callback));
+    ash::FakeUpstartClient::StartMediaAnalytics({}, std::move(callback));
     return true;
   }
 

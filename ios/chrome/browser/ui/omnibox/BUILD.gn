@@ -52,6 +52,15 @@ source_set("omnibox_suggestion_icon_util") {
     "resources:omnibox_completion_default_favicon",
     "resources:omnibox_completion_history",
     "resources:omnibox_popup_recent_query",
+    "resources:pedal_clear_browsing_data",
+    "resources:pedal_default_browser",
+    "resources:pedal_dino",
+    "resources:pedal_history",
+    "resources:pedal_incognito",
+    "resources:pedal_passwords",
+    "resources:pedal_payments",
+    "resources:pedal_safety_check",
+    "resources:pedal_settings",
     "resources:search",
     "//base",
   ]
@@ -63,6 +72,8 @@ source_set("omnibox_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   sources = [
+    "omnibox_text_change_delegate.h",
+    "omnibox_text_field_delegate.h",
     "omnibox_util.h",
     "omnibox_util.mm",
   ]
@@ -106,8 +117,8 @@ source_set("omnibox_internal") {
     "omnibox_coordinator.mm",
     "omnibox_mediator.h",
     "omnibox_mediator.mm",
-    "omnibox_text_change_delegate.h",
-    "omnibox_text_field_delegate.h",
+    "omnibox_return_key_forwarding_delegate.h",
+    "omnibox_return_key_forwarding_delegate.mm",
     "omnibox_text_field_experimental.h",
     "omnibox_text_field_experimental.mm",
     "omnibox_text_field_ios.h",
@@ -152,7 +163,6 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/default_promo",
     "//ios/chrome/browser/ui/default_promo:utils",
-    "//ios/chrome/browser/ui/favicon:constants",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/gestures",
     "//ios/chrome/browser/ui/location_bar:constants",
@@ -166,7 +176,8 @@ source_set("omnibox_internal") {
     "//ios/chrome/common",
     "//ios/chrome/common/intents",
     "//ios/chrome/common/ui/colors",
-    "//ios/chrome/common/ui/favicon",
+    "//ios/chrome/common/ui/favicon:favicon",
+    "//ios/chrome/common/ui/favicon:favicon_constants",
     "//ios/chrome/common/ui/util",
     "//ios/chrome/common/ui/util:dynamic_type_util",
     "//ios/public/provider/chrome/browser",

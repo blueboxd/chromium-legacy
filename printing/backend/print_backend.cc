@@ -5,6 +5,7 @@
 #include "printing/backend/print_backend.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
@@ -94,6 +95,36 @@ bool AdvancedCapability::operator==(const AdvancedCapability& other) const {
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_WIN)
+
+PageOutputQualityAttribute::PageOutputQualityAttribute() = default;
+
+PageOutputQualityAttribute::PageOutputQualityAttribute(
+    const std::string& display_name,
+    const std::string& name)
+    : display_name(display_name), name(name) {}
+
+PageOutputQualityAttribute::~PageOutputQualityAttribute() = default;
+
+bool PageOutputQualityAttribute::operator==(
+    const PageOutputQualityAttribute& other) const {
+  return display_name == other.display_name && name == other.name;
+}
+
+PageOutputQuality::PageOutputQuality() = default;
+
+PageOutputQuality::PageOutputQuality(
+    PageOutputQualityAttributes qualities,
+    absl::optional<std::string> default_quality)
+    : qualities(std::move(qualities)),
+      default_quality(std::move(default_quality)) {}
+
+PageOutputQuality::PageOutputQuality(const PageOutputQuality& other) = default;
+
+PageOutputQuality::~PageOutputQuality() = default;
+
+#endif  // BUILDFLAG(IS_WIN)
 
 bool PrinterSemanticCapsAndDefaults::Paper::operator==(
     const PrinterSemanticCapsAndDefaults::Paper& other) const {

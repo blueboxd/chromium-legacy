@@ -100,6 +100,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/policy_container_utils.h"
@@ -1405,14 +1406,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, NavigateRemoteAfterError) {
 // TODO(creis): Make the net error page show in the correct process as well,
 // per https://crbug.com/588314.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProcessTransferAfterError) {
-  // This test doesn't yet work properly with RenderDocument for subframes,
-  // because it does not correctly identify the repeated navigation to the same
-  // URL as same-page, and fails to reuse the same NavigationEntry in this
-  // case. See https://crbug.com/1068965.
-  // TODO(fergal,alexmos): Re-enable once this is fixed.
-  if (ShouldCreateNewHostForSameSiteSubframe())
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2557,6 +2550,42 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
                    ->GetSiteInstance()
                    ->GetSiteInfo()
                    .is_sandboxed());
+}
+
+// Test to make sure that javascript: urls don't execute in a sandboxed iframe.
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       SandboxedIframeWithJSUrl) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create sandboxed child frame with a javascript: URL.
+  std::string js_url_str("javascript:\"foo\"");
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.id = 'test_frame'; "
+        "frame.sandbox = 'allow-scripts'; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        js_url_str.c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Verify parent and child frames share a SiteInstance. A sandboxed iframe
+  // with a javascript: url shouldn't get its own process.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+
+  // Verify that the javascript: url did not execute. This is expected
+  // regardless of IsolatedSandboxedIframes since sandboxed iframes get opaque
+  // origins, and javascript: urls don't execute in opaque origins.
+  EXPECT_TRUE(
+      EvalJs(child->current_frame_host(), "document.body.innerHTML == ''")
+          .ExtractBool());
 }
 
 // Test to make sure that an iframe with a data:url is appropriately sandboxed.
@@ -3768,6 +3797,98 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_EQ(named_frame_url, foo_root->current_url());
 }
 
+class SitePerProcessFencedFrameTest
+    : public SitePerProcessBrowserTestBase,
+      public testing::WithParamInterface<
+          blink::features::FencedFramesImplementationType> {
+ public:
+  SitePerProcessFencedFrameTest() {
+    if (GetParam() ==
+        blink::features::FencedFramesImplementationType::kMPArch) {
+      fenced_frame_helper_ =
+          std::make_unique<content::test::FencedFrameTestHelper>();
+    } else {
+      feature_list_.InitAndEnableFeatureWithParameters(
+          blink::features::kFencedFrames,
+          {{"implementation_type", "shadow_dom"}});
+    }
+  }
+
+ protected:
+  content::RenderFrameHost* CreateFencedFrame(content::RenderFrameHost* parent,
+                                              const GURL& url) {
+    if (fenced_frame_helper_) {
+      return fenced_frame_helper_->CreateFencedFrame(parent, url);
+    }
+
+    // FencedFrameTestHelper only supports the MPArch version of fenced frames.
+    // So need to maually create a fenced frame for the ShadowDOM version.
+    content::TestNavigationManager navigation(web_contents(), url);
+
+    constexpr char kAddFencedFrameScript[] = R"({
+        const fenced_frame = document.createElement('fencedframe');
+        fenced_frame.src = $1;
+        document.body.appendChild(fenced_frame);
+    })";
+    EXPECT_TRUE(ExecJs(parent, content::JsReplace(kAddFencedFrameScript, url)));
+    navigation.WaitForNavigationFinished();
+
+    return ChildFrameAt(parent, 0);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<content::test::FencedFrameTestHelper> fenced_frame_helper_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    SitePerProcessFencedFrameTest,
+    SitePerProcessFencedFrameTest,
+    testing::Values(blink::features::FencedFramesImplementationType::kShadowDOM,
+                    blink::features::FencedFramesImplementationType::kMPArch));
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessFencedFrameTest,
+                       PopupFromFencedFrameDoesNotCreateProxy) {
+  GURL main_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+
+  // Create a fenced frame.
+  GURL fenced_frame_url(
+      embedded_test_server()->GetURL("/fenced_frames/title1.html"));
+  RenderFrameHost* fenced_frame_host =
+      CreateFencedFrame(web_contents()->GetMainFrame(), fenced_frame_url);
+  EXPECT_NE(nullptr, fenced_frame_host);
+
+  // Open a popup named "foo" from the fenced frame.
+  Shell* popup_shell =
+      OpenPopup(fenced_frame_host, GURL(url::kAboutBlankURL), "foo", "", false);
+  EXPECT_TRUE(popup_shell);
+
+  // Check that the popup from the fenced frame didn't create a proxy.
+  // Opening popups from fenced frames forces noopener, which makes named
+  // frames not discoverable.
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(popup_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+  EXPECT_EQ(nullptr, popup_root->opener());
+
+  SiteInstanceImpl* site_instance =
+      root->current_frame_host()->GetSiteInstance();
+  EXPECT_FALSE(popup_root->current_frame_host()
+                   ->browsing_context_state()
+                   ->GetRenderFrameProxyHost(site_instance->group()));
+
+  SiteInstanceImpl* embedder_site_instance =
+      static_cast<RenderFrameHostImpl*>(fenced_frame_host)->GetSiteInstance();
+  EXPECT_FALSE(popup_root->current_frame_host()
+                   ->browsing_context_state()
+                   ->GetRenderFrameProxyHost(embedder_site_instance->group()));
+}
+
 // Similar to DiscoverNamedFrameFromAncestorOfOpener, but check that if a
 // window is created without a name and acquires window.name later, it will
 // still be discoverable from its opener's ancestors.  Also, instead of using
@@ -4749,8 +4870,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
       node->parent()
           ->frame_tree_node()
           ->render_manager()
-          ->GetRoutingIdForSiteInstance(
-              node->current_frame_host()->GetSiteInstance());
+          ->GetRoutingIdForSiteInstanceGroup(
+              node->current_frame_host()->GetSiteInstance()->group());
 
   // Have the parent frame remove the child frame from its DOM. This should
   // result in the child RenderFrame being deleted in the remote process.

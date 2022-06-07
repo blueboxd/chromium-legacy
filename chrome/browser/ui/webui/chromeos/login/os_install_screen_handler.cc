@@ -9,7 +9,6 @@
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/screens/os_install_screen.h"
-#include "chrome/browser/ui/webui/chromeos/login/js_calls_container.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
@@ -29,10 +28,9 @@ constexpr const char kSuccessStep[] = "success";
 // static
 constexpr StaticOobeScreenId OsInstallScreenView::kScreenId;
 
-OsInstallScreenHandler::OsInstallScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.OsInstallScreen.userActed");
+OsInstallScreenHandler::OsInstallScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.OsInstallScreen.userActed");
 }
 
 OsInstallScreenHandler::~OsInstallScreenHandler() {
@@ -96,20 +94,20 @@ void OsInstallScreenHandler::DeclareLocalizedValues(
                IDS_OS_INSTALL_SCREEN_SHUTDOWN_BUTTON);
 }
 
-void OsInstallScreenHandler::Initialize() {}
+void OsInstallScreenHandler::InitializeDeprecated() {}
 
 void OsInstallScreenHandler::Show() {
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void OsInstallScreenHandler::Bind(ash::OsInstallScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void OsInstallScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void OsInstallScreenHandler::ShowStep(const char* step) {

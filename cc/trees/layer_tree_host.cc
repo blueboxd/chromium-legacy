@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 #include "base/atomic_sequence_num.h"
 #include "base/auto_reset.h"
@@ -158,8 +157,6 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       (mode == CompositorMode::THREADED);
   pending_commit_state_->needs_full_tree_sync = true;
   pending_commit_state_->debug_state = settings_.initial_debug_state;
-  pending_commit_state_->priority_cutoff =
-      settings_.memory_policy.priority_cutoff_when_visible;
 
   rendering_stats_instrumentation_->set_record_rendering_stats(
       pending_commit_state_->debug_state.RecordRenderingStats());
@@ -1538,20 +1535,12 @@ void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
   layer_id_map_[layer->id()] = layer;
-  if (!IsUsingLayerLists() && layer->element_id()) {
-    mutator_host()->RegisterElementId(layer->element_id(),
-                                      ElementListType::ACTIVE);
-  }
 }
 
 void LayerTreeHost::UnregisterLayer(Layer* layer) {
   DCHECK(IsMainThread());
   DCHECK(LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
-  if (!IsUsingLayerLists() && layer->element_id()) {
-    mutator_host()->UnregisterElementId(layer->element_id(),
-                                        ElementListType::ACTIVE);
-  }
   pending_commit_state()->layers_that_should_push_properties.erase(layer);
   layer_id_map_.erase(layer->id());
 }
@@ -1654,18 +1643,6 @@ void LayerTreeHost::ResetNeedsFullTreeSyncForTesting() {
   pending_commit_state()->needs_full_tree_sync = false;
 }
 
-void LayerTreeHost::SetPriorityCutoffOverride(
-    absl::optional<gpu::MemoryAllocation::PriorityCutoff> priority_cutoff) {
-  const gpu::MemoryAllocation::PriorityCutoff actual_value =
-      priority_cutoff.has_value()
-          ? *priority_cutoff
-          : settings_.memory_policy.priority_cutoff_when_visible;
-  if (pending_commit_state()->priority_cutoff == actual_value)
-    return;
-  pending_commit_state()->priority_cutoff = actual_value;
-  SetNeedsCommit();
-}
-
 void LayerTreeHost::SetPropertyTreesNeedRebuild() {
   property_trees()->set_needs_rebuild(true);
   SetNeedsUpdateLayers();
@@ -1687,20 +1664,14 @@ void LayerTreeHost::RegisterElement(ElementId element_id,
                                     Layer* layer) {
   DCHECK(IsMainThread());
   element_layers_map_[element_id] = layer;
-  if (!IsUsingLayerLists())
-    mutator_host()->RegisterElementId(element_id, ElementListType::ACTIVE);
 }
 
 void LayerTreeHost::UnregisterElement(ElementId element_id) {
   DCHECK(IsMainThread());
-  if (!IsUsingLayerLists())
-    mutator_host()->UnregisterElementId(element_id, ElementListType::ACTIVE);
+  if (!IsUsingLayerLists()) {
+    mutator_host()->RemoveElementId(element_id);
+  }
   element_layers_map_.erase(element_id);
-}
-
-void LayerTreeHost::UpdateActiveElements() {
-  DCHECK(IsUsingLayerLists());
-  mutator_host()->UpdateRegisteredElementIds(ElementListType::ACTIVE);
 }
 
 void LayerTreeHost::SetElementIdsForTesting() {
@@ -1836,7 +1807,8 @@ void LayerTreeHost::ElementIsAnimatingChanged(
     ElementListType list_type,
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state) {
-  DCHECK_EQ(ElementListType::ACTIVE, list_type);
+  if (list_type == ElementListType::PENDING)
+    return;
   property_trees()->ElementIsAnimatingChanged(element_id_map, mask, state,
                                               true);
 }
@@ -1844,7 +1816,8 @@ void LayerTreeHost::ElementIsAnimatingChanged(
 void LayerTreeHost::MaximumScaleChanged(ElementId element_id,
                                         ElementListType list_type,
                                         float maximum_scale) {
-  DCHECK_EQ(ElementListType::ACTIVE, list_type);
+  if (list_type == ElementListType::PENDING)
+    return;
   property_trees()->MaximumAnimationScaleChanged(element_id, maximum_scale);
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/lacros/chrome_browser_main_extra_parts_lacros.h"
 
 #include "base/feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
 #include "chrome/browser/lacros/arc/arc_icon_cache.h"
 #include "chrome/browser/lacros/automation_manager_lacros.h"
@@ -92,13 +93,17 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
   }
 
   if (chromeos::LacrosService::Get()->init_params()->publish_chrome_apps) {
-    extension_apps_publisher_ =
-        std::make_unique<LacrosExtensionAppsPublisher>();
-    extension_apps_publisher_->Initialize();
-    extension_apps_controller_ =
-        std::make_unique<LacrosExtensionAppsController>();
-    extension_apps_controller_->Initialize(
-        extension_apps_publisher_->publisher());
+    chrome_apps_publisher_ = LacrosExtensionAppsPublisher::MakeForChromeApps();
+    chrome_apps_publisher_->Initialize();
+    chrome_apps_controller_ =
+        LacrosExtensionAppsController::MakeForChromeApps();
+    chrome_apps_controller_->Initialize(chrome_apps_publisher_->publisher());
+    chrome_apps_controller_->SetPublisher(chrome_apps_publisher_.get());
+
+    extensions_publisher_ = LacrosExtensionAppsPublisher::MakeForExtensions();
+    extensions_publisher_->Initialize();
+    extensions_controller_ = LacrosExtensionAppsController::MakeForExtensions();
+    extensions_controller_->Initialize(extensions_publisher_->publisher());
   }
 
   if (chromeos::LacrosService::Get()->init_params()->web_apps_enabled) {

@@ -6,19 +6,25 @@
 
 #include <utility>
 
-#include "chrome/browser/apps/app_discovery_service/app_discovery_features.h"
+#include "chrome/browser/apps/app_discovery_service/game_fetcher.h"
 #include "chrome/browser/apps/app_discovery_service/recommended_arc_app_fetcher.h"
-#include "chrome/browser/apps/app_discovery_service/remote_url_search/remote_url_fetcher.h"
 
 namespace apps {
+
+base::CallbackListSubscription AppFetcher::RegisterForAppUpdates(
+    RepeatingResultCallback callback) {
+  NOTREACHED();
+  return base::CallbackListSubscription();
+}
 
 // static
 AppFetcher* AppFetcherManager::g_test_fetcher_ = nullptr;
 
 AppFetcherManager::AppFetcherManager(Profile* profile)
-    : recommended_arc_app_fetcher_(
+    : profile_(profile),
+      recommended_arc_app_fetcher_(
           std::make_unique<RecommendedArcAppFetcher>()),
-      remote_url_fetcher_(std::make_unique<RemoteUrlFetcher>(profile)) {}
+      game_fetcher_(std::make_unique<GameFetcher>(profile_)) {}
 
 AppFetcherManager::~AppFetcherManager() = default;
 
@@ -33,10 +39,28 @@ void AppFetcherManager::GetApps(ResultType result_type,
       DCHECK(recommended_arc_app_fetcher_);
       recommended_arc_app_fetcher_->GetApps(std::move(callback));
       return;
-    case ResultType::kRemoteUrlSearch:
-      DCHECK(remote_url_fetcher_);
-      remote_url_fetcher_->GetApps(std::move(callback));
+    case ResultType::kGameSearchCatalog:
+      DCHECK(game_fetcher_);
+      game_fetcher_->GetApps(std::move(callback));
       return;
+  }
+}
+
+base::CallbackListSubscription AppFetcherManager::RegisterForAppUpdates(
+    ResultType result_type,
+    RepeatingResultCallback callback) {
+  switch (result_type) {
+    case ResultType::kRecommendedArcApps:
+      NOTREACHED();
+      // |result_type| does not support updates, return an empty
+      // CallbackListSubscription.
+      return base::CallbackListSubscription();
+    case ResultType::kTestType:
+      DCHECK(g_test_fetcher_);
+      return g_test_fetcher_->RegisterForAppUpdates(std::move(callback));
+    case ResultType::kGameSearchCatalog:
+      DCHECK(game_fetcher_);
+      return game_fetcher_->RegisterForAppUpdates(std::move(callback));
   }
 }
 

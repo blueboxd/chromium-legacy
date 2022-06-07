@@ -52,13 +52,14 @@ class TestResultsTest(unittest.TestCase):
         self.assertFalse(new_result != result)
 
     def test_results_has_stderr(self):
-        driver_output = DriverOutput(None, None, None, None, error='error')
+        driver_output = DriverOutput(None, None, None, None, error=b'error')
         failures = [test_failures.FailureCrash(driver_output, None)]
         result = TestResult('foo', failures=failures)
         self.assertTrue(result.has_stderr)
 
     def test_results_has_repaint_overlay(self):
-        driver_output = DriverOutput('"invalidations": [', None, None, None)
+        text = '"invalidations": ['.encode('utf8')
+        driver_output = DriverOutput(text, None, None, None)
         failures = [test_failures.FailureTextMismatch(driver_output, None)]
         result = TestResult('foo', failures=failures)
         self.assertTrue(result.has_repaint_overlay)

@@ -5,7 +5,6 @@
 #include "fuchsia/engine/web_instance_host/web_instance_host.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
-#include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <lib/async/default.h>
 #include <lib/fdio/directory.h>
 #include <lib/fdio/fd.h>
@@ -335,24 +334,6 @@ bool HandleKeyboardFeatureFlags(fuchsia::web::ContextFeatureFlags features,
   return true;
 }
 
-// Checks the supported ozone platform with Scenic if no arg is specified.
-void HandleOzonePlatformArgs(base::CommandLine* launch_args) {
-  if (launch_args->HasSwitch(switches::kOzonePlatform))
-    return;
-  fuchsia::ui::scenic::ScenicSyncPtr scenic;
-  zx_status_t status =
-      base::ComponentContextForProcess()->svc()->Connect(scenic.NewRequest());
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "Couldn't connect to Scenic.";
-    return;
-  }
-
-  bool scenic_uses_flatland = false;
-  scenic->UsesFlatland(&scenic_uses_flatland);
-  launch_args->AppendSwitchNative(switches::kOzonePlatform,
-                                  scenic_uses_flatland ? "flatland" : "scenic");
-}
-
 // Returns false if the config is present but has invalid contents.
 bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
                                        base::CommandLine* command_line) {
@@ -452,7 +433,7 @@ std::vector<std::string> GetRequiredServicesForConfig(
       "fuchsia.logger.LogSink",     "fuchsia.memorypressure.Provider",
       "fuchsia.process.Launcher",
       "fuchsia.settings.Display",  // Used if preferred theme is DEFAULT.
-      "fuchsia.sysmem.Allocator"};
+      "fuchsia.sysmem.Allocator",   "fuchsia.ui.scenic.Scenic"};
 
   // TODO(crbug.com/1209031): Provide these conditionally, once corresponding
   // ContextFeatureFlags have been defined.
@@ -554,9 +535,10 @@ WebInstanceHost::WebInstanceHost() {
 
 WebInstanceHost::~WebInstanceHost() = default;
 
-zx_status_t WebInstanceHost::CreateInstanceForContext(
+zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
     fuchsia::web::CreateContextParams params,
-    fidl::InterfaceRequest<fuchsia::io::Directory> services_request) {
+    fidl::InterfaceRequest<fuchsia::io::Directory> services_request,
+    base::CommandLine extra_args) {
   DCHECK(services_request);
 
   if (!params.has_service_directory()) {
@@ -572,8 +554,10 @@ zx_status_t WebInstanceHost::CreateInstanceForContext(
     return ZX_ERR_INVALID_ARGS;
   }
 
-  // Base the new Component's command-line on this process' command-line.
-  base::CommandLine launch_args(*base::CommandLine::ForCurrentProcess());
+  // Initialize with preliminary arguments.
+  base::CommandLine launch_args(std::move(extra_args));
+
+  // Remove this argument, if it's provided.
   launch_args.RemoveSwitch(switches::kContextProvider);
 
   fuchsia::sys::LaunchInfo launch_info;
@@ -786,7 +770,6 @@ zx_status_t WebInstanceHost::CreateInstanceForContext(
 
   HandleUnsafelyTreatInsecureOriginsAsSecureParam(&params, &launch_args);
   HandleCorsExemptHeadersParam(&params, &launch_args);
-  HandleOzonePlatformArgs(&launch_args);
 
   // Set the command-line flag to enable DevTools, if requested.
   if (enable_remote_debug_mode_)

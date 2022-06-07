@@ -4,6 +4,7 @@
 
 #include "services/network/public/cpp/cookie_manager_mojom_traits.h"
 
+#include "base/time/time.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
@@ -631,18 +632,6 @@ bool StructTraits<
     return false;
   *out = *cc;
   return true;
-}
-
-bool StructTraits<network::mojom::CookieInclusionStatusDataView,
-                  net::CookieInclusionStatus>::
-    Read(network::mojom::CookieInclusionStatusDataView status,
-         net::CookieInclusionStatus* out) {
-  *out = net::CookieInclusionStatus();
-  out->set_exclusion_reasons(status.exclusion_reasons());
-  out->set_warning_reasons(status.warning_reasons());
-
-  return net::CookieInclusionStatus::ValidateExclusionAndWarningFromWire(
-      status.exclusion_reasons(), status.warning_reasons());
 }
 
 bool StructTraits<network::mojom::CookieAndLineWithAccessResultDataView,

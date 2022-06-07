@@ -26,7 +26,6 @@
 #include "base/observer_list.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -559,6 +558,11 @@ void PreinstalledWebAppManager::LoadConfigs(ConsumeLoadedConfigs callback) {
           {.contents = config.Clone(), .file = file});
     }
     std::move(callback).Run(std::move(loaded_configs));
+    return;
+  }
+
+  if (PreinstalledWebAppsDisabled()) {
+    std::move(callback).Run({});
     return;
   }
 

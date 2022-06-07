@@ -16,8 +16,8 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -173,20 +173,7 @@ void WebResourceRequestSender::SendSync(
     mojo::PendingRemote<mojom::BlobRegistry> download_to_blob_registry,
     scoped_refptr<WebRequestPeer> peer,
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
-        resource_load_info_notifier_wrapper,
-    WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper) {
-  if (IsInflightNetworkRequestBackForwardCacheSupportEnabled()) {
-    // Sync fetches are triggered by script, which should not run when a
-    // document is in back-forward cache. If we somehow made it here, we should
-    // trigger a back-forward cache eviction.
-    auto* helper =
-        back_forward_cache_loader_helper.GetBackForwardCacheLoaderHelper();
-    if (helper) {
-      helper->EvictFromBackForwardCache(
-          mojom::RendererEvictionReason::kJavaScriptExecution);
-    }
-  }
-
+        resource_load_info_notifier_wrapper) {
   CheckSchemeForReferrerPolicy(*request);
 
   DCHECK(loader_options & network::mojom::kURLLoadOptionSynchronous);

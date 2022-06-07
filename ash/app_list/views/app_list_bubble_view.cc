@@ -232,6 +232,7 @@ void AppListBubbleView::InitContentsView(
   params.show_close_button_when_active = false;
   params.create_background = false;
   params.animate_changing_search_icon = false;
+  params.increase_child_view_padding = true;
   search_box_view_->Init(params);
 
   assistant_button_focus_skipper_ =
@@ -254,17 +255,18 @@ void AppListBubbleView::InitContentsView(
   // so flex the entire container.
   layout->SetFlexForView(pages_container, 1);
 
+  search_page_dialog_controller_ =
+      std::make_unique<SearchResultPageDialogController>(this);
+
   // NOTE: Passing drag and drop host from a specific shelf instance assumes
   // that the `apps_page_` will not get reused for showing the app list in
   // another root window.
   apps_page_ =
       pages_container->AddChildView(std::make_unique<AppListBubbleAppsPage>(
           view_delegate_, drag_and_drop_host, GetAppListConfig(),
-          a11y_announcer_.get(),
-          /*folder_controller=*/this));
+          a11y_announcer_.get(), search_page_dialog_controller_.get(),
+          /*folder_controller=*/this, /*search_box=*/search_box_view_));
 
-  search_page_dialog_controller_ =
-      std::make_unique<SearchResultPageDialogController>(this);
   search_page_ =
       pages_container->AddChildView(std::make_unique<AppListBubbleSearchPage>(
           view_delegate_, search_page_dialog_controller_.get(),
@@ -422,8 +424,10 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
   search_box_view_->SetVisible(page != AppListBubblePage::kAssistant);
   separator_->SetVisible(page != AppListBubblePage::kAssistant);
 
-  search_page_dialog_controller_->SetEnabled(page ==
-                                             AppListBubblePage::kSearch);
+  const bool supports_anchored_dialogs =
+      page == AppListBubblePage::kApps || page == AppListBubblePage::kSearch;
+
+  search_page_dialog_controller_->Reset(/*enabled=*/supports_anchored_dialogs);
   assistant_page_->SetVisible(page == AppListBubblePage::kAssistant);
   switch (current_page_) {
     case AppListBubblePage::kNone:
@@ -497,8 +501,26 @@ void AppListBubbleView::UpdateForNewSortingOrder(
   if (animate && showing_folder_)
     HideFolderView(/*animate=*/false, /*hide_for_reparent=*/false);
 
+  base::OnceClosure done_closure;
+  if (animate) {
+    // The search box to ignore a11y events during the reorder animation
+    // so that the announcement of app list reorder is made before that of
+    // focus change.
+    SetViewIgnoredForAccessibility(search_box_view_, true);
+
+    // Focus on the search box before starting the reorder animation to prevent
+    // focus moving through app list items as they're being hidden for order
+    // update animation.
+    search_box_view_->search_box()->RequestFocus();
+
+    done_closure =
+        base::BindOnce(&AppListBubbleView::OnAppListReorderAnimationDone,
+                       weak_factory_.GetWeakPtr());
+  }
+
   apps_page_->UpdateForNewSortingOrder(new_order, animate,
-                                       std::move(update_position_closure));
+                                       std::move(update_position_closure),
+                                       std::move(done_closure));
 }
 
 const char* AppListBubbleView::GetClassName() const {
@@ -545,7 +567,7 @@ void AppListBubbleView::Layout() {
   // grid, so the folder needs to be laid out after the root apps grid.
   if (showing_folder_) {
     gfx::Rect folder_bounding_box = GetLocalBounds();
-    folder_bounding_box.Inset(kFolderViewInset, kFolderViewInset);
+    folder_bounding_box.Inset(kFolderViewInset);
     folder_view_->SetBoundingBox(folder_bounding_box);
     folder_view_->UpdatePreferredBounds();
     // NOTE: Folder view bounds are also modified during reparent drag when the
@@ -703,6 +725,11 @@ void AppListBubbleView::HideFolderView(bool animate, bool hide_for_reparent) {
     folder_view_->HideViewImmediately();
   }
   DisableFocusForShowingActiveFolder(false);
+}
+
+void AppListBubbleView::OnAppListReorderAnimationDone() {
+  // Re-enable the search box to handle a11y events.
+  SetViewIgnoredForAccessibility(search_box_view_, false);
 }
 
 }  // namespace ash

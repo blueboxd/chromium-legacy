@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -223,7 +224,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (navigation_handle->IsInMainFrame()) {
+    if (IsInSubresourceFilterRoot(navigation_handle)) {
       navigation_handle->RegisterThrottleForTesting(
           std::make_unique<SubresourceFilterSafeBrowsingActivationThrottle>(
               navigation_handle, delegate(), test_io_task_runner_,

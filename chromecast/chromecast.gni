@@ -4,6 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/locales.gni")
+import("//components/cast_streaming/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 
@@ -11,6 +12,11 @@ import("//media/media_options.gni")
 # directory. Arguments which are used in other Chrome components should
 # be instead declared in //build/config/chromecast_build.gni.
 declare_args() {
+  # If true, IS_CAST_DEBUG_BUILD() will evaluate to 1 in version.h. Otherwise,
+  # it will evaluate to 0. Overriding this when is_debug=false is useful for
+  # doing engineering builds.
+  cast_is_debug = is_debug
+
   # The incremental build number. The Cast automated builders will set this
   # value to indicate the buildset. Note: The default value should be greater
   # than any value the builder may assign to prevent attempted automatic updates
@@ -163,7 +169,7 @@ if (is_android) {
   # Subtract out additional Android locales
   cast_locales -= extended_locales
 }
-if (!(is_ios || is_chromeos_ash || is_chromeos_lacros)) {
+if (!(is_ios || is_chromeos)) {
   # Subtract out the additional desktop locales
   cast_locales -= [
     "af",
@@ -221,3 +227,7 @@ set_defaults("cast_loadable_module") {
 set_defaults("cast_source_set") {
   configs = default_compiler_configs
 }
+
+assert(
+    !enable_cast_media_runtime || cast_streaming_enable_remoting,
+    "In order to support playback control (specifically starting playback), the cast remoting functionality is used, so this flag must be enabled. To control this feature for  the cast_core code, instead use the enable_remoting_for_cwr flag.")

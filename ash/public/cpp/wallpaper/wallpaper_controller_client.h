@@ -37,9 +37,11 @@ class ASH_PUBLIC_EXPORT WallpaperControllerClient {
                                    bool show_wallpaper) = 0;
 
   // Retrieves the current collection id from the Wallpaper Picker Chrome App
-  // for migration.
+  // for migration and returns it via |result_callback|. The string in
+  // |result_callback| will be empty if the fetch failed.
   virtual void MigrateCollectionIdFromChromeApp(
-      const AccountId& account_id) = 0;
+      const AccountId& account_id,
+      base::OnceCallback<void(const std::string&)> result_callback) = 0;
 
   // Downloads and sets a new random wallpaper from the collection of the
   // specified collection_id.
@@ -71,7 +73,8 @@ class ASH_PUBLIC_EXPORT WallpaperControllerClient {
       FetchImagesForCollectionCallback callback) = 0;
 
   using FetchGooglePhotosPhotoCallback = base::OnceCallback<void(
-      mojo::StructPtr<ash::personalization_app::mojom::GooglePhotosPhoto>)>;
+      mojo::StructPtr<ash::personalization_app::mojom::GooglePhotosPhoto>,
+      bool success)>;
   virtual void FetchGooglePhotosPhoto(
       const AccountId& account_id,
       const std::string& id,

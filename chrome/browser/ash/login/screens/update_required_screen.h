@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
@@ -74,7 +75,7 @@ class UpdateRequiredScreen : public BaseScreen,
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
   void EnsureScreenIsShown();
 

@@ -17,11 +17,13 @@
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/desks/persistent_desks_bar_controller.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_animations.h"
@@ -40,6 +42,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/wm/features.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
@@ -138,7 +141,8 @@ class BoundsSetter : public aura::LayoutManager {
                       const gfx::Rect& requested_bounds) override {}
 
   void SetBounds(aura::Window* window, const gfx::Rect& bounds) {
-    SetChildBoundsDirect(window, bounds);
+    if (window->GetTargetBounds() != bounds)
+      SetChildBoundsDirect(window, bounds);
   }
 };
 
@@ -519,6 +523,16 @@ bool WindowState::HorizontallyShrinkWindow(const gfx::Rect& work_area) {
   return true;
 }
 
+void WindowState::UpdatePipBounds() {
+  gfx::Rect new_bounds =
+      PipPositioner::GetPositionAfterMovementAreaChange(this);
+  ::wm::ConvertRectFromScreen(window()->GetRootWindow(), &new_bounds);
+  if (window()->bounds() != new_bounds) {
+    SetBoundsWMEvent event(new_bounds, /*animate=*/true);
+    OnWMEvent(&event);
+  }
+}
+
 std::unique_ptr<WindowState::State> WindowState::SetStateObject(
     std::unique_ptr<WindowState::State> new_state) {
   current_state_->DetachState(this);
@@ -620,10 +634,13 @@ void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
   }
 }
 
-void WindowState::OnDragStarted(int window_component) {
+std::unique_ptr<PresentationTimeRecorder> WindowState::OnDragStarted(
+    int window_component) {
   DCHECK(drag_details_);
   if (delegate_)
-    delegate_->OnDragStarted(window_component);
+    return delegate_->OnDragStarted(window_component);
+
+  return nullptr;
 }
 
 void WindowState::OnCompleteDrag(const gfx::PointF& location) {
@@ -825,6 +842,9 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
     gfx::Size min_size = window_->delegate()
                              ? window_->delegate()->GetMinimumSize()
                              : gfx::Size();
+    gfx::Size max_size = window_->delegate()
+                             ? window_->delegate()->GetMaximumSize()
+                             : gfx::Size();
     const display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
     min_size.SetToMin(display.work_area().size());
@@ -833,6 +853,14 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
         std::max(min_size.width(), actual_new_bounds.width()));
     actual_new_bounds.set_height(
         std::max(min_size.height(), actual_new_bounds.height()));
+    if (!max_size.IsEmpty()) {
+      DCHECK_LE(min_size.width(), max_size.width());
+      DCHECK_LE(min_size.height(), max_size.height());
+      actual_new_bounds.set_width(
+          std::min(max_size.width(), actual_new_bounds.width()));
+      actual_new_bounds.set_height(
+          std::min(max_size.height(), actual_new_bounds.height()));
+    }
 
     // Changing the size of the PIP window can detach it from one of the edges
     // of the screen, which makes the snap fraction logic fail. Ensure to snap
@@ -950,16 +978,6 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
   // when the window enters/exits PIP so the obsolete fraction won't be used.
   if (IsPip() || was_pip)
     ash::PipPositioner::ClearSnapFraction(this);
-}
-
-void WindowState::UpdatePipBounds() {
-  gfx::Rect new_bounds =
-      PipPositioner::GetPositionAfterMovementAreaChange(this);
-  ::wm::ConvertRectFromScreen(window()->GetRootWindow(), &new_bounds);
-  if (window()->bounds() != new_bounds) {
-    SetBoundsWMEvent event(new_bounds, /*animate=*/true);
-    OnWMEvent(&event);
-  }
 }
 
 void WindowState::CollectPipEnterExitMetrics(bool enter) {
@@ -1085,6 +1103,16 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
+  if (key == chromeos::kWindowFloatTypeKey) {
+    DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+    auto* const float_controller = Shell::Get()->float_controller();
+    if (window->GetProperty(chromeos::kWindowFloatTypeKey)) {
+      float_controller->Float(window);
+    } else {
+      float_controller->Unfloat(window);
+    }
+    return;
+  }
   if (key == chromeos::kWindowStateTypeKey) {
     if (!ignore_property_change_) {
       // This change came from somewhere else. Revert it.
@@ -1113,7 +1141,7 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
        old != window->GetProperty(kImmersiveIsActive));
 
   if (requires_shelf_visibility_update && !ignore_property_change_) {
-    Shell::Get()->UpdateShelfVisibility();
+    Shelf::UpdateShelfVisibility();
     return;
   }
 }
@@ -1191,7 +1219,13 @@ bool WindowState::CanUnresizableSnapOnDisplay(display::Display display) const {
   return true;
 }
 
-void WindowState::RecordAndResetWindowSnapActionSource() {
+void WindowState::RecordAndResetWindowSnapActionSource(
+    chromeos::WindowStateType current_type,
+    chromeos::WindowStateType new_type) {
+  // Do not record the metrics if the window state snap type does not change.
+  if (current_type == new_type)
+    return;
+
   base::UmaHistogramEnumeration(kWindowSnapActionSourceHistogram,
                                 snap_action_source_);
   snap_action_source_ = WindowSnapActionSource::kOthers;

@@ -78,8 +78,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
                            GbmSurfacelessWaylandCommitOverlaysCallbacksTest);
   FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
                            GbmSurfacelessWaylandGroupOnSubmissionCallbacksTest);
-  FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryCompositorV3,
-                           SurfaceDamageTest);
 
   // Holds solid color buffers.
   class SolidColorBufferHolder {

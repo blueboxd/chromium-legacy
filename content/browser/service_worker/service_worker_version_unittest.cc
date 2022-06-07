@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/guid.h"
@@ -1322,19 +1323,7 @@ TEST_F(ServiceWorkerVersionTest,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 }
 
-class ChangeServiceWorkerPriorityForClientForegroundStateChangeTest
-    : public ServiceWorkerVersionTest {
- public:
-  ChangeServiceWorkerPriorityForClientForegroundStateChangeTest() {
-    feature_list_.InitAndEnableFeature(
-        features::kChangeServiceWorkerPriorityForClientForegroundStateChange);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(ChangeServiceWorkerPriorityForClientForegroundStateChangeTest,
+TEST_F(ServiceWorkerVersionTest,
        ForegroundServiceWorkerCountUpdatedByControlleeForegroundStateChange) {
   // Start the worker before we have a controllee.
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,

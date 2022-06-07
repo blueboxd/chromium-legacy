@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -56,7 +55,7 @@ CastDialogNoSinksView::CastDialogNoSinksView(Profile* profile)
 
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(0, horizontal_padding), icon_label_spacing));
+      gfx::Insets::VH(0, horizontal_padding), icon_label_spacing));
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 

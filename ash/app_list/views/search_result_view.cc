@@ -46,7 +46,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/style/typography.h"
@@ -57,9 +56,10 @@ namespace {
 
 constexpr int kBadgeIconShadowWidth = 1;
 constexpr int kPreferredWidth = 640;
+constexpr int kMultilineLabelWidth = 544;
 constexpr int kClassicViewHeight = 48;
 constexpr int kDefaultViewHeight = 40;
-constexpr int kAnswerCardViewHeight = 80;
+constexpr int kDefaultAnswerCardViewHeight = 80;
 constexpr int kKeyboardShortcutViewHeight = 64;
 constexpr int kPreferredIconViewWidth = 56;
 constexpr int kTextTrailPadding = 16;
@@ -72,25 +72,45 @@ constexpr int kPrimaryTextHeight = 20;
 constexpr int kAnswerCardDetailsLineHeight = 18;
 
 constexpr int kAnswerCardCardBackgroundCornerRadius = 12;
-constexpr int kAnswerCardFocusBarOffset = 24;
-constexpr int kAnswerCardFocusBarHeight = 32;
+constexpr int kAnswerCardFocusBarHorizontalOffset = 12;
+constexpr int kAnswerCardFocusBarVerticalOffset = 24;
 
 // Corner radius for downloaded image icons.
 constexpr int kImageIconCornerRadius = 4;
+
+// The maximum number of lines that can be shown in the details text.
+constexpr int kMultiLineLimit = 3;
+
+// Flex layout orders detailing how container views are prioritized.
+constexpr int kSeparatorOrder = 1;
+constexpr int kRatingOrder = 1;
+constexpr int TitleDetailContainerOrder = 1;
+constexpr int kTitleDetailsLabelOrderNoElide = 1;
+constexpr int kTitleDetailsLabelOrderElide = 2;
+// Non-elidable labels are of order 1 to prioritize them.
+constexpr int kNonElideLabelOrder = 1;
+// Elidable labels are assigned monotonically increasing orders to prioritize
+// items that appear close to the front of the TextVector.
+constexpr int kElidableLabelOrderStart = 2;
 
 constexpr int kSearchRatingStarPadding = 4;
 constexpr int kSearchRatingStarSize = 16;
 constexpr int kKeyboardShortcutTopMargin = 6;
 constexpr int kAnswerCardBorderMargin = 12;
-constexpr gfx::Insets kAnswerCardBorder(kAnswerCardBorderMargin,
-                                        kAnswerCardBorderMargin,
-                                        kAnswerCardBorderMargin,
-                                        kAnswerCardBorderMargin);
-constexpr gfx::Insets kBigTitleBorder(0, 0, 0, kAnswerCardBorderMargin);
+constexpr gfx::Insets kAnswerCardBorder(kAnswerCardBorderMargin);
+// The superscript container has a 3px top margin to shift the text up so the
+// it lines up with the text in `big_title_main_text_container_`.
+constexpr auto kBigTitleSuperscriptBorder =
+    gfx::Insets::TLBR(3, 4, 0, kAnswerCardBorderMargin);
+
+// The fraction of total text space allocated to the details label when both the
+// title and the details label need to be elided.
+constexpr float kDetailsElideRatio = 0.25f;
 
 views::ImageView* SetupChildImageView(views::FlexLayoutView* parent) {
   views::ImageView* image_view =
       parent->AddChildView(std::make_unique<views::ImageView>());
+  image_view->GetViewAccessibility().OverrideIsIgnored(true);
   image_view->SetCanProcessEventsWithinSubtree(false);
   image_view->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
   image_view->SetVisible(false);
@@ -100,21 +120,59 @@ views::ImageView* SetupChildImageView(views::FlexLayoutView* parent) {
 views::Label* SetupChildLabelView(
     views::FlexLayoutView* parent,
     SearchResultView::SearchResultViewType view_type,
-    SearchResultView::LabelType label_type) {
+    SearchResultView::LabelType label_type,
+    int flex_order,
+    bool elidable,
+    bool has_keyboard_shortcut_contents,
+    bool is_multi_line) {
   // Create and setup label.
   views::Label* label = parent->AddChildView(std::make_unique<views::Label>());
+  // Ignore labels for accessibility - the result accessible name is defined on
+  // the whole result view.
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->GetViewAccessibility().OverrideIsIgnored(true);
   label->SetBackgroundColor(SK_ColorTRANSPARENT);
   label->SetVisible(false);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetElideBehavior(elidable ? gfx::ELIDE_TAIL : gfx::NO_ELIDE);
+  label->SetMultiLine(is_multi_line);
+  if (is_multi_line)
+    label->SetMaxLines(kMultiLineLimit);
+
   label->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kScaleToMaximum));
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(flex_order));
 
   // Apply label text styling.
-  label->SetTextContext(label_type == SearchResultView::LabelType::kBigTitle
-                            ? CONTEXT_SEARCH_RESULT_BIG_TITLE
-                            : CONTEXT_SEARCH_RESULT_VIEW);
+  ash::AshTextContext text_context;
+  switch (label_type) {
+    case SearchResultView::LabelType::kBigTitle:
+      text_context = CONTEXT_SEARCH_RESULT_BIG_TITLE;
+      break;
+    case SearchResultView::LabelType::kBigTitleSuperscript:
+      // kBigTitleSuperscript labels are top-aligned to support superscripting.
+      label->SetVerticalAlignment(gfx::ALIGN_TOP);
+      text_context = CONTEXT_SEARCH_RESULT_BIG_TITLE_SUPERSCRIPT;
+      break;
+    case SearchResultView::LabelType::kTitle:
+      text_context = CONTEXT_SEARCH_RESULT_VIEW;
+      break;
+    case SearchResultView::LabelType::kDetails:
+      // has_keyboard_shortcut_contents forces inline title and details text for
+      // answer cards so title and details text should use the same context.
+      if (view_type == SearchResultView::SearchResultViewType::kAnswerCard &&
+          !has_keyboard_shortcut_contents) {
+        text_context = CONTEXT_SEARCH_RESULT_VIEW_INLINE_ANSWER_DETAILS;
+      } else {
+        text_context = CONTEXT_SEARCH_RESULT_VIEW;
+      }
+      break;
+    case SearchResultView::LabelType::kKeyboardShortcut:
+      text_context = CONTEXT_SEARCH_RESULT_VIEW;
+      break;
+  }
+  label->SetTextContext(text_context);
   switch (view_type) {
     case SearchResultView::SearchResultViewType::kClassic:
       label->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
@@ -131,11 +189,12 @@ SearchResultInlineIconView* SetupChildInlineIconView(
   SearchResultInlineIconView* inline_icon_view =
       parent->AddChildView(std::make_unique<SearchResultInlineIconView>());
   inline_icon_view->SetCanProcessEventsWithinSubtree(false);
+  inline_icon_view->GetViewAccessibility().OverrideIsIgnored(true);
   inline_icon_view->SetVisible(false);
   inline_icon_view->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kScaleToMaximum));
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred));
   return inline_icon_view;
 }
 
@@ -242,65 +301,111 @@ SearchResultView::SearchResultView(
   set_actions_view(actions_view);
 
   icon_->SetCanProcessEventsWithinSubtree(false);
+  icon_->GetViewAccessibility().OverrideIsIgnored(true);
   badge_icon_->SetCanProcessEventsWithinSubtree(false);
+  badge_icon_->GetViewAccessibility().OverrideIsIgnored(true);
 
   SetNotifyEnterExitOnChild(true);
 
   text_container_ = AddChildView(std::make_unique<views::FlexLayoutView>());
-  // View contents are announced as part of the result view's accessible name.
-  text_container_->GetViewAccessibility().OverrideIsLeaf(true);
-  text_container_->GetViewAccessibility().OverrideIsIgnored(true);
   text_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   text_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
+  text_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred));
 
   big_title_container_ =
       text_container_->AddChildView(std::make_unique<views::FlexLayoutView>());
   big_title_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
-  big_title_container_->SetBorder(views::CreateEmptyBorder(kBigTitleBorder));
+  big_title_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
+
+  big_title_main_text_container_ = big_title_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  big_title_main_text_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
+  big_title_main_text_container_->SetOrientation(
+      views::LayoutOrientation::kHorizontal);
+
+  big_title_superscript_container_ = big_title_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  big_title_superscript_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
+  big_title_superscript_container_->SetOrientation(
+      views::LayoutOrientation::kHorizontal);
 
   body_text_container_ =
       text_container_->AddChildView(std::make_unique<views::FlexLayoutView>());
   body_text_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   body_text_container_->SetOrientation(views::LayoutOrientation::kVertical);
+  body_text_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred));
 
   title_and_details_container_ = body_text_container_->AddChildView(
       std::make_unique<views::FlexLayoutView>());
   title_and_details_container_->SetCrossAxisAlignment(
       views::LayoutAlignment::kStretch);
+  title_and_details_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kUnbounded,
+                               /*adjust_height_for_width=*/true));
   SetSearchResultViewType(view_type_);
-
-  keyboard_shortcut_container_ = body_text_container_->AddChildView(
-      std::make_unique<views::FlexLayoutView>());
-  keyboard_shortcut_container_->SetCrossAxisAlignment(
-      views::LayoutAlignment::kStretch);
-  keyboard_shortcut_container_->SetBorder(
-      views::CreateEmptyBorder(kKeyboardShortcutTopMargin, 0, 0, 0));
 
   title_container_ = title_and_details_container_->AddChildView(
       std::make_unique<views::FlexLayoutView>());
   title_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   title_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
+  title_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(TitleDetailContainerOrder)
+          .WithWeight(1));
+  title_container_->SetFlexAllocationOrder(
+      views::FlexAllocationOrder::kReverse);
 
-  separator_label_ = SetupChildLabelView(title_and_details_container_,
-                                         view_type_, LabelType::kDetails);
+  separator_label_ = SetupChildLabelView(
+      title_and_details_container_, view_type_, LabelType::kDetails,
+      kSeparatorOrder, /*elidable=*/false, has_keyboard_shortcut_contents_,
+      /*is_multi_line=*/false);
   separator_label_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_SEARCH_RESULT_SEPARATOR));
+  separator_label_->GetViewAccessibility().OverrideIsIgnored(true);
 
   details_container_ = title_and_details_container_->AddChildView(
       std::make_unique<views::FlexLayoutView>());
   details_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   details_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
+  details_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kUnbounded,
+                               /*adjust_height_for_width=*/true)
+          .WithOrder(TitleDetailContainerOrder)
+          .WithWeight(1));
 
-  rating_ = SetupChildLabelView(title_and_details_container_, view_type_,
-                                LabelType::kDetails);
+  rating_ = SetupChildLabelView(
+      title_and_details_container_, view_type_, LabelType::kDetails,
+      kRatingOrder, /*elidable=*/false, has_keyboard_shortcut_contents_,
+      /*is_multi_line=*/false);
 
   rating_star_ = SetupChildImageView(title_and_details_container_);
   rating_star_->SetImage(gfx::CreateVectorIcon(
       kBadgeRatingIcon, kSearchRatingStarSize,
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
           kDeprecatedSearchBoxTextDefaultColor)));
-  rating_star_->SetBorder(
-      views::CreateEmptyBorder(0, kSearchRatingStarPadding, 0, 0));
+  rating_star_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(0, kSearchRatingStarPadding, 0, 0)));
+
+  keyboard_shortcut_container_ = body_text_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  keyboard_shortcut_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
+  keyboard_shortcut_container_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(kKeyboardShortcutTopMargin, 0, 0, 0)));
 }
 
 SearchResultView::~SearchResultView() = default;
@@ -322,25 +427,16 @@ void SearchResultView::OnResultChanged() {
 
 void SearchResultView::SetSearchResultViewType(SearchResultViewType type) {
   view_type_ = type;
-
   switch (view_type_) {
     case SearchResultViewType::kDefault:
       title_and_details_container_->SetOrientation(
           views::LayoutOrientation::kHorizontal);
-      SetBorder(views::CreateEmptyBorder(gfx::Insets()));
-      big_title_container_->RemoveAllChildViews();
-      big_title_label_tags_.clear();
-      big_title_container_->SetVisible(false);
-
+      ClearBigTitleContainer();
       break;
     case SearchResultViewType::kClassic:
       title_and_details_container_->SetOrientation(
           views::LayoutOrientation::kVertical);
-      SetBorder(views::CreateEmptyBorder(gfx::Insets()));
-      big_title_container_->RemoveAllChildViews();
-      big_title_label_tags_.clear();
-      big_title_container_->SetVisible(false);
-
+      ClearBigTitleContainer();
       break;
     case SearchResultViewType::kAnswerCard:
       title_and_details_container_->SetOrientation(
@@ -348,6 +444,17 @@ void SearchResultView::SetSearchResultViewType(SearchResultViewType type) {
       SetBorder(views::CreateEmptyBorder(kAnswerCardBorder));
       break;
   }
+}
+
+void SearchResultView::ClearBigTitleContainer() {
+  SetBorder(views::CreateEmptyBorder(0));
+  big_title_main_text_container_->RemoveAllChildViews();
+  big_title_label_tags_.clear();
+  big_title_main_text_container_->SetVisible(false);
+  big_title_superscript_container_->RemoveAllChildViews();
+  big_title_superscript_label_tags_.clear();
+  big_title_superscript_container_->SetVisible(false);
+  big_title_superscript_container_->SetBorder(views::CreateEmptyBorder(0));
 }
 
 views::LayoutOrientation SearchResultView::TitleAndDetailsOrientationForTest() {
@@ -363,9 +470,17 @@ int SearchResultView::PreferredHeight() const {
         return kKeyboardShortcutViewHeight;
       return kDefaultViewHeight;
     case SearchResultViewType::kAnswerCard:
-      return kAnswerCardViewHeight;
+      if (multi_line_label_height_ > 0) {
+        // kDefaultAnswerCardViewHeight is adjusted to accommodate multi-line
+        // result's height. The assumed kAnswerCardDetailsLineHeight is replaced
+        // with the multi-line label's height.
+        return kDefaultAnswerCardViewHeight + multi_line_label_height_ -
+               kAnswerCardDetailsLineHeight;
+      }
+      return kDefaultAnswerCardViewHeight;
   }
 }
+
 int SearchResultView::PrimaryTextHeight() const {
   switch (view_type_) {
     case SearchResultViewType::kClassic:
@@ -374,7 +489,12 @@ int SearchResultView::PrimaryTextHeight() const {
       return kPrimaryTextHeight;
   }
 }
+
 int SearchResultView::SecondaryTextHeight() const {
+  if (has_keyboard_shortcut_contents_)
+    return kPrimaryTextHeight;
+  if (multi_line_label_height_ > 0)
+    return multi_line_label_height_;
   switch (view_type_) {
     case SearchResultViewType::kClassic:
     case SearchResultViewType::kAnswerCard:
@@ -400,17 +520,135 @@ bool SearchResultView::GetAndResetResultChanged() {
   return result_changed;
 }
 
+// static
+int SearchResultView::GetTargetTitleWidth(int total_width,
+                                          int separator_width,
+                                          int target_details_width) {
+  // Allocate all remaining space to the title container.
+  const int target_title_width =
+      total_width - separator_width - target_details_width;
+  DCHECK_GT(target_title_width, 0);
+  return target_title_width;
+}
+
+// static
+int SearchResultView::GetMinimumDetailsWidth(int total_width,
+                                             int details_width,
+                                             int details_no_elide_width) {
+  // Calculate the minimum width for the title and details containers
+  // assuming both will need eliding.
+  // We must allocate enough space to show the no_elide text. Otherwise
+  // show the entire details text up to total_width*kDetailsElideRatio.
+  const int target_details_width =
+      std::max(details_no_elide_width,
+               std::min(static_cast<int>(total_width * kDetailsElideRatio),
+                        details_width));
+  DCHECK_GT(target_details_width, 0);
+  return target_details_width;
+}
+
+// static
+void SearchResultView::SetFlexBehaviorForTextContents(
+    int total_width,
+    int separator_width,
+    int non_elided_details_width,
+    views::FlexLayoutView* title_container,
+    views::FlexLayoutView* details_container) {
+  const int title_width = title_container->GetPreferredSize().width();
+  const int details_width = details_container->GetPreferredSize().width();
+
+  // If the result view has enough space to accommodate text contents at their
+  // preferred size, we don't need to elide either view. Set their weights to 1
+  // and order to `kTitleDetailsLabelOrderNoElide`.
+  if (title_width + details_width + separator_width <= total_width) {
+    title_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                                 views::MaximumFlexSizeRule::kPreferred)
+            .WithOrder(kTitleDetailsLabelOrderNoElide)
+            .WithWeight(1));
+    details_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                                 views::MaximumFlexSizeRule::kPreferred)
+            .WithOrder(kTitleDetailsLabelOrderNoElide)
+            .WithWeight(1));
+    return;
+  }
+
+  const int min_details_width = GetMinimumDetailsWidth(
+      total_width, details_width, non_elided_details_width);
+
+  // If the result view has enough space to layout details to it's minimum size
+  // after laying out the title, we should only take away space from the details
+  // view. We do this by setting the details view to a lower order
+  // `kTitleDetailsLabelOrderElide`.
+  if (total_width - separator_width - title_width >= min_details_width) {
+    title_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                                 views::MaximumFlexSizeRule::kPreferred)
+            .WithOrder(kTitleDetailsLabelOrderNoElide)
+            .WithWeight(1));
+    details_container->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                                 views::MaximumFlexSizeRule::kPreferred)
+            .WithOrder(kTitleDetailsLabelOrderElide)
+            .WithWeight(1));
+    return;
+  }
+
+  // If excess space needs to be taken from both the title and details view
+  // to accommodate the minimum details view width, set flex weights to properly
+  // take away space from the title and details view.
+  const int target_title_width =
+      GetTargetTitleWidth(total_width, separator_width, min_details_width);
+
+  // Flex weights are set based on the amount of space that needs to be removed
+  // from an associated view because flex layout *takes space away* based on
+  // weight when it is unable to accommodate the view's preferred size.
+  // calculate the number of px we need to take away from the title/details
+  // text.
+  const int detail_extra_space = details_width - min_details_width;
+  const int title_extra_space = title_width - target_title_width;
+  title_container->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(kTitleDetailsLabelOrderElide)
+          .WithWeight(std::max(title_extra_space, 0)));
+  details_container->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(kTitleDetailsLabelOrderElide)
+          .WithWeight(std::max(detail_extra_space, 0)));
+}
+
 std::vector<SearchResultView::LabelAndTag>
 SearchResultView::SetupContainerViewForTextVector(
     views::FlexLayoutView* parent,
     const std::vector<SearchResult::TextItem>& text_vector,
-    LabelType label_type) {
+    LabelType label_type,
+    bool has_keyboard_shortcut_contents,
+    bool is_multi_line) {
   std::vector<LabelAndTag> label_tags;
+  int label_count = 0;
   for (auto& span : text_vector) {
     switch (span.GetType()) {
       case SearchResultTextItemType::kString: {
-        views::Label* label =
-            SetupChildLabelView(parent, view_type_, label_type);
+        const bool elidable = span.GetElidable();
+        views::Label* label = SetupChildLabelView(
+            parent, view_type_, label_type,
+            elidable ? kElidableLabelOrderStart + label_count
+                     : kNonElideLabelOrder,
+            elidable, has_keyboard_shortcut_contents,
+            /*is_multi_line=*/is_multi_line);
+        // Elidable label orders are monotonically increasing. Adjust the order
+        // of the label by the number of labels in this container.
+        if (elidable)
+          ++label_count;
         if (label_type == LabelType::kDetails) {
           // We should only show a separator label when the details container
           // has valid contents.
@@ -419,6 +657,20 @@ SearchResultView::SetupContainerViewForTextVector(
         }
         label->SetText(span.GetText());
         label->SetVisible(true);
+        if (!elidable) {
+          // Each search result can have up to one non-elided label in its
+          // details text.
+          DCHECK_EQ(label_type, LabelType::kDetails);
+          non_elided_details_label_width_ = label->GetPreferredSize().width();
+        }
+        if (is_multi_line) {
+          // Each search result can have up to one non-elided label in its
+          // details text.
+          DCHECK_EQ(label_type, LabelType::kDetails);
+          multi_line_label_height_ =
+              label->GetHeightForWidth(kMultilineLabelWidth);
+        }
+
         label_tags.push_back(LabelAndTag(label, span.GetTextTags()));
       } break;
       case SearchResultTextItemType::kIconifiedText: {
@@ -446,8 +698,8 @@ void SearchResultView::UpdateBadgeIcon() {
     return;
   }
 
-  gfx::ImageSkia badge_icon_skia = views::GetImageSkiaFromImageModel(
-      result()->badge_icon(), GetColorProvider());
+  gfx::ImageSkia badge_icon_skia =
+      result()->badge_icon().Rasterize(GetColorProvider());
 
   if (result()->use_badge_icon_background()) {
     badge_icon_skia =
@@ -474,17 +726,39 @@ void SearchResultView::UpdateBadgeIcon() {
 void SearchResultView::UpdateBigTitleContainer() {
   DCHECK_EQ(view_type_, SearchResultViewType::kAnswerCard);
   // Big title is only shown for answer card views.
-  big_title_container_->RemoveAllChildViews();
+  big_title_main_text_container_->RemoveAllChildViews();
   big_title_label_tags_.clear();
   if (!result() || result()->big_title_text_vector().empty()) {
-    big_title_container_->SetVisible(false);
+    big_title_main_text_container_->SetVisible(false);
   } else {
-    // Create title labels from text vector metadata.
+    // Create big title labels from text vector metadata.
     big_title_label_tags_ = SetupContainerViewForTextVector(
-        big_title_container_, result()->big_title_text_vector(),
-        LabelType::kBigTitle);
+        big_title_main_text_container_, result()->big_title_text_vector(),
+        LabelType::kBigTitle, has_keyboard_shortcut_contents_,
+        /*is_multi_line=*/false);
     StyleBigTitleContainer();
-    big_title_container_->SetVisible(true);
+    big_title_main_text_container_->SetVisible(true);
+  }
+}
+
+void SearchResultView::UpdateBigTitleSuperscriptContainer() {
+  DCHECK_EQ(view_type_, SearchResultViewType::kAnswerCard);
+  // Big title superscript is only shown for answer card views.
+  big_title_superscript_container_->RemoveAllChildViews();
+  big_title_superscript_label_tags_.clear();
+  if (!result() || result()->big_title_superscript_text_vector().empty()) {
+    big_title_superscript_container_->SetVisible(false);
+  } else {
+    // Create big title superscript labels from text vector metadata.
+    big_title_superscript_label_tags_ = SetupContainerViewForTextVector(
+        big_title_superscript_container_,
+        result()->big_title_superscript_text_vector(),
+        LabelType::kBigTitleSuperscript, has_keyboard_shortcut_contents_,
+        /*is_multi_line=*/false);
+    StyleBigTitleSuperscriptContainer();
+    big_title_superscript_container_->SetVisible(true);
+    big_title_superscript_container_->SetBorder(
+        views::CreateEmptyBorder(kBigTitleSuperscriptBorder));
   }
 }
 
@@ -499,7 +773,9 @@ void SearchResultView::UpdateTitleContainer() {
   } else {
     // Create title labels from text vector metadata.
     title_label_tags_ = SetupContainerViewForTextVector(
-        title_container_, result()->title_text_vector(), LabelType::kTitle);
+        title_container_, result()->title_text_vector(), LabelType::kTitle,
+        has_keyboard_shortcut_contents_,
+        /*is_multi_line=*/false);
     StyleTitleContainer();
     text_container_->SetVisible(true);
     title_and_details_container_->SetVisible(true);
@@ -509,6 +785,11 @@ void SearchResultView::UpdateTitleContainer() {
 
 void SearchResultView::UpdateDetailsContainer() {
   should_show_separator_label_ = false;
+  // Updating the details label should reset `multi_line_label_height_` and
+  // `non_elided_details_label_width_`.
+  multi_line_label_height_ = 0;
+  non_elided_details_label_width_ = 0;
+
   details_container_->RemoveAllChildViews();
   details_label_tags_.clear();
   if (!result() || result()->details_text_vector().empty()) {
@@ -518,7 +799,8 @@ void SearchResultView::UpdateDetailsContainer() {
     // Create details labels from text vector metadata.
     details_label_tags_ = SetupContainerViewForTextVector(
         details_container_, result()->details_text_vector(),
-        LabelType::kDetails);
+        LabelType::kDetails, has_keyboard_shortcut_contents_,
+        /*is_multi_line=*/result()->multiline_details());
     StyleDetailsContainer();
     details_container_->SetVisible(true);
     switch (view_type_) {
@@ -562,12 +844,13 @@ void SearchResultView::UpdateKeyboardShortcutContainer() {
         break;
     }
   } else {
+    has_keyboard_shortcut_contents_ = true;
     keyboard_shortcut_container_tags_ = SetupContainerViewForTextVector(
         keyboard_shortcut_container_, result()->keyboard_shortcut_text_vector(),
-        LabelType::kKeyboardShortcut);
+        LabelType::kKeyboardShortcut, has_keyboard_shortcut_contents_,
+        /*is_multi_line=*/false);
     StyleKeyboardShortcutContainer();
     keyboard_shortcut_container_->SetVisible(true);
-    has_keyboard_shortcut_contents_ = true;
     // Override `title_and_details_container_` orientation if the keyboard
     // shortcut text vector has valid contents.
     title_and_details_container_->SetOrientation(
@@ -661,6 +944,12 @@ void SearchResultView::StyleBigTitleContainer() {
   }
 }
 
+void SearchResultView::StyleBigTitleSuperscriptContainer() {
+  for (auto& span : big_title_superscript_label_tags_) {
+    StyleLabel(span.GetLabel(), true /*is_title_label*/, span.GetTags());
+  }
+}
+
 void SearchResultView::StyleTitleContainer() {
   for (auto& span : title_label_tags_) {
     StyleLabel(span.GetLabel(), true /*is_title_label*/, span.GetTags());
@@ -715,6 +1004,7 @@ gfx::Size SearchResultView::CalculatePreferredSize() const {
 }
 
 void SearchResultView::Layout() {
+  // TODO(crbug/1311101) add test coverage for search result view layout.
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
     return;
@@ -725,7 +1015,7 @@ void SearchResultView::Layout() {
       (kPreferredIconViewWidth - icon_->GetImage().width()) / 2;
   int top_bottom_padding = (rect.height() - icon_->GetImage().height()) / 2;
   icon_bounds.set_width(kPreferredIconViewWidth);
-  icon_bounds.Inset(left_right_padding, top_bottom_padding);
+  icon_bounds.Inset(gfx::Insets::VH(top_bottom_padding, left_right_padding));
   icon_bounds.Intersect(rect);
   icon_->SetBoundsRect(icon_bounds);
 
@@ -783,8 +1073,16 @@ void SearchResultView::Layout() {
         gfx::Rect centered_text_bounds(text_bounds);
         centered_text_bounds.ClampToCenteredSize(label_size);
         text_container_->SetBoundsRect(centered_text_bounds);
+
+        SetFlexBehaviorForTextContents(
+            centered_text_bounds.width(),
+            separator_label_->GetPreferredSize().width(),
+            non_elided_details_label_width_, title_container_,
+            details_container_);
+
         break;
       }
+
       case SearchResultViewType::kClassic:
       case SearchResultViewType::kAnswerCard: {
         gfx::Size label_size(
@@ -856,8 +1154,14 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
         canvas->DrawRoundRect(content_rect,
                               kAnswerCardCardBackgroundCornerRadius, flags);
         if (selected()) {
-          PaintFocusBar(canvas, gfx::Point(0, kAnswerCardFocusBarOffset),
-                        kAnswerCardFocusBarHeight);
+          // Dynamically calculate the height of the answer card focus bar to
+          // accommodate different heights for multi-line results.
+          PaintFocusBar(canvas,
+                        gfx::Point(kAnswerCardFocusBarHorizontalOffset,
+                                   kAnswerCardFocusBarVerticalOffset),
+                        PreferredHeight() -
+                            kAnswerCardCardBackgroundCornerRadius * 2 -
+                            kAnswerCardFocusBarVerticalOffset);
         }
       } break;
     }
@@ -930,8 +1234,10 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void SearchResultView::OnMetadataChanged() {
-  if (view_type_ == SearchResultViewType::kAnswerCard)
+  if (view_type_ == SearchResultViewType::kAnswerCard) {
     UpdateBigTitleContainer();
+    UpdateBigTitleSuperscriptContainer();
+  }
   if (view_type_ != SearchResultViewType::kClassic &&
       app_list_features::IsSearchResultInlineIconEnabled()) {
     UpdateKeyboardShortcutContainer();
@@ -1004,11 +1310,13 @@ void SearchResultView::OnSearchResultActionActivated(size_t index) {
       if (features::IsProductivityLauncherEnabled()) {
         dialog = std::make_unique<RemoveQueryConfirmationDialog>(
             base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                           weak_ptr_factory_.GetWeakPtr()));
+                           weak_ptr_factory_.GetWeakPtr()),
+            result()->title());
       } else {
         dialog = std::make_unique<LegacyRemoveQueryConfirmationDialog>(
             base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                           weak_ptr_factory_.GetWeakPtr()));
+                           weak_ptr_factory_.GetWeakPtr()),
+            result()->title());
       }
       dialog_controller_->Show(std::move(dialog));
       break;

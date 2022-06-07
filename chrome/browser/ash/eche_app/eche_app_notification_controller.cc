@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ash/eche_app/eche_app_notification_controller.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
@@ -34,9 +34,6 @@ const char kEcheAppInactivityNotifierId[] =
 const char kEcheAppFromWebWithoudButtonNotifierId[] =
     "eche_app_notification_ids.from_web_without_button";
 
-const char kEcheAppDisabledByPhoneNotifierId[] =
-    "eche_app_notification_ids.disabled_by_phone";
-
 // TODO(crbug.com/1241352): This should probably have a ?p=<FEATURE_NAME> at
 // some point.
 const char kEcheAppLearnMoreUrl[] = "https://support.google.com/chromebook";
@@ -51,7 +48,7 @@ std::unique_ptr<message_center::Notification> CreateNotification(
     const std::string& id,
     const std::u16string& title,
     const std::u16string& message,
-    const gfx::Image& icon,
+    const ui::ImageModel& icon,
     const message_center::RichNotificationData& rich_notification_data,
     message_center::NotificationDelegate* delegate) {
   return std::make_unique<message_center::Notification>(
@@ -111,7 +108,7 @@ void EcheAppNotificationController::ShowNotificationFromWebUI(
           l10n_util::GetStringUTF16(IDS_ECHE_APP_NOTIFICATION_HELP_BUTTON)));
       ShowNotification(CreateNotification(
           kEcheAppRetryConnectionNotifierId, title.value(), message.value(),
-          gfx::Image(), rich_notification_data,
+          ui::ImageModel(), rich_notification_data,
           new NotificationDelegate(kEcheAppRetryConnectionNotifierId,
                                    weak_ptr_factory_.GetWeakPtr())));
     } else if (web_type == mojom::WebNotificationType::DEVICE_IDLE) {
@@ -121,14 +118,15 @@ void EcheAppNotificationController::ShowNotificationFromWebUI(
               IDS_ECHE_APP_NOTIFICATION_OPEN_AGAIN_BUTTON)));
       ShowNotification(CreateNotification(
           kEcheAppInactivityNotifierId, title.value(), message.value(),
-          gfx::Image(), rich_notification_data,
+          ui::ImageModel(), rich_notification_data,
           new NotificationDelegate(kEcheAppInactivityNotifierId,
                                    weak_ptr_factory_.GetWeakPtr())));
     } else {
       // No need to take the action.
       ShowNotification(CreateNotification(
           kEcheAppFromWebWithoudButtonNotifierId, title.value(),
-          message.value(), gfx::Image(), message_center::RichNotificationData(),
+          message.value(), ui::ImageModel(),
+          message_center::RichNotificationData(),
           new NotificationDelegate(kEcheAppFromWebWithoudButtonNotifierId,
                                    weak_ptr_factory_.GetWeakPtr())));
     }
@@ -151,22 +149,8 @@ void EcheAppNotificationController::ShowScreenLockNotification(
       l10n_util::GetStringFUTF16(IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_TITLE,
                                  title.value()),
       l10n_util::GetStringUTF16(IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_MESSAGE),
-      gfx::Image(), rich_notification_data,
+      ui::ImageModel(), rich_notification_data,
       new NotificationDelegate(kEcheAppScreenLockNotifierId,
-                               weak_ptr_factory_.GetWeakPtr())));
-}
-
-void EcheAppNotificationController::ShowDisabledByPhoneNotification(
-    const absl::optional<std::u16string>& title) {
-  // No need to take the action.
-  ShowNotification(CreateNotification(
-      kEcheAppDisabledByPhoneNotifierId,
-      l10n_util::GetStringFUTF16(
-          IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_TITLE, title.value()),
-      l10n_util::GetStringUTF16(
-          IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_MESSAGE),
-      gfx::Image(), message_center::RichNotificationData(),
-      new NotificationDelegate(kEcheAppDisabledByPhoneNotifierId,
                                weak_ptr_factory_.GetWeakPtr())));
 }
 
@@ -193,8 +177,6 @@ void EcheAppNotificationController::
   NotificationDisplayService::GetForProfile(profile_)->Close(
       NotificationHandler::Type::TRANSIENT,
       kEcheAppFromWebWithoudButtonNotifierId);
-  NotificationDisplayService::GetForProfile(profile_)->Close(
-      NotificationHandler::Type::TRANSIENT, kEcheAppDisabledByPhoneNotifierId);
 }
 
 EcheAppNotificationController::NotificationDelegate::NotificationDelegate(

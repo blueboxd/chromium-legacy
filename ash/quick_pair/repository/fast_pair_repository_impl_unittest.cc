@@ -21,8 +21,10 @@
 #include "ash/test/ash_test_base.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/mock_callback.h"
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -40,9 +42,13 @@ constexpr char kTestModelId[] = "test_model_id";
 constexpr char kTestDeviceId[] = "test_ble_device_id";
 constexpr char kTestBLEAddress[] = "test_ble_address";
 constexpr char kTestClassicAddress[] = "test_classic_address";
+constexpr char kFirstSavedMacAddress[] = "00:11:22:33:44";
 const std::vector<uint8_t> kAccountKey1{0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
                                         0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB,
                                         0xCC, 0xDD, 0xEE, 0xFF};
+const std::vector<uint8_t> kAccountKey2{0x11, 0x11, 0x22, 0x22, 0x33, 0x33,
+                                        0x44, 0x44, 0x55, 0x55, 0x66, 0x66,
+                                        0x77, 0x77, 0x88, 0x88};
 const std::vector<uint8_t> kFilterBytes1{0x0A, 0x42, 0x88, 0x10};
 const uint8_t salt = 0xC7;
 
@@ -153,9 +159,17 @@ class FastPairRepositoryImplTest : public AshTestBase {
     std::move(on_complete).Run();
   }
 
+  void GetSavedDevicesCallback(
+      nearby::fastpair::OptInStatus status,
+      std::vector<nearby::fastpair::FastPairDevice> devices) {
+    status_ = status;
+    devices_ = devices;
+  }
+
  protected:
   std::unique_ptr<FastPairRepositoryImpl> fast_pair_repository_;
-
+  nearby::fastpair::OptInStatus status_;
+  std::vector<nearby::fastpair::FastPairDevice> devices_;
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> adapter_;
   testing::NiceMock<device::MockBluetoothDevice> ble_bluetooth_device_;
   testing::NiceMock<device::MockBluetoothDevice> classic_bluetooth_device_;
@@ -171,6 +185,8 @@ class FastPairRepositoryImplTest : public AshTestBase {
   DeviceIdMap* device_id_map_;
   DeviceImageStore* device_image_store_;
   SavedDeviceRegistry* saved_device_registry_;
+
+  base::WeakPtrFactory<FastPairRepositoryImplTest> weak_ptr_factory_{this};
 };
 
 TEST_F(FastPairRepositoryImplTest, GetDeviceMetadata) {
@@ -231,7 +247,7 @@ TEST_F(FastPairRepositoryImplTest, CheckAccountKeys_Match) {
   DeviceMetadata metadata(device, gfx::Image());
 
   // FakeFootprintsFetcher APIs are actually synchronous.
-  footprints_fetcher_->AddUserDevice(
+  footprints_fetcher_->AddUserFastPairInfo(
       BuildFastPairInfo(kValidModelId, kAccountKey1, &metadata),
       base::DoNothing());
 
@@ -277,6 +293,27 @@ TEST_F(FastPairRepositoryImplTest, DeleteAssociatedDevice_Valid) {
 
   ASSERT_TRUE(fast_pair_repository_->DeleteAssociatedDevice(
       &classic_bluetooth_device_));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(footprints_fetcher_->ContainsKey(kAccountKey1));
+}
+
+TEST_F(FastPairRepositoryImplTest, DeleteAssociatedDeviceByAccountKey_Valid) {
+  AccountKeyFilter filter(kFilterBytes1, {salt});
+  nearby::fastpair::GetObservedDeviceResponse response;
+  DeviceMetadata metadata(response, gfx::Image());
+
+  auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
+                                             Protocol::kFastPairInitial);
+  device->set_classic_address(kTestClassicAddress);
+  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
+
+  base::MockCallback<base::OnceCallback<void(bool)>> callback;
+  EXPECT_CALL(callback, Run(testing::Eq(true))).Times(1);
+  fast_pair_repository_->DeleteAssociatedDeviceByAccountKey(kAccountKey1,
+                                                            callback.Get());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(footprints_fetcher_->ContainsKey(kAccountKey1));
@@ -344,6 +381,145 @@ TEST_F(FastPairRepositoryImplTest, EvictDeviceImages) {
 
   device_id_map_->RefreshCacheForTest();
   ASSERT_FALSE(device_id_map_->GetModelIdForDeviceId(kTestDeviceId));
+}
+
+TEST_F(FastPairRepositoryImplTest, UpdateOptInStatus_OptedIn) {
+  base::MockCallback<base::OnceCallback<void(bool)>> callback1;
+  EXPECT_CALL(callback1, Run(true)).Times(1);
+  fast_pair_repository_->UpdateOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_IN, callback1.Get());
+  base::RunLoop().RunUntilIdle();
+
+  base::MockCallback<base::OnceCallback<void(nearby::fastpair::OptInStatus)>>
+      callback2;
+  EXPECT_CALL(callback2,
+              Run(testing::Eq(nearby::fastpair::OptInStatus::STATUS_OPTED_IN)))
+      .Times(1);
+  fast_pair_repository_->CheckOptInStatus(callback2.Get());
+}
+
+TEST_F(FastPairRepositoryImplTest, UpdateOptInStatus_OptedOut) {
+  base::MockCallback<base::OnceCallback<void(bool)>> callback1;
+  EXPECT_CALL(callback1, Run(true)).Times(1);
+  fast_pair_repository_->UpdateOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT, callback1.Get());
+  base::RunLoop().RunUntilIdle();
+
+  base::MockCallback<base::OnceCallback<void(nearby::fastpair::OptInStatus)>>
+      callback2;
+  EXPECT_CALL(callback2,
+              Run(testing::Eq(nearby::fastpair::OptInStatus::STATUS_OPTED_OUT)))
+      .Times(1);
+  fast_pair_repository_->CheckOptInStatus(callback2.Get());
+}
+
+TEST_F(FastPairRepositoryImplTest, UpdateOptInStatus_StatusUnknown) {
+  base::MockCallback<base::OnceCallback<void(bool)>> callback1;
+  EXPECT_CALL(callback1, Run(true)).Times(1);
+  fast_pair_repository_->UpdateOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_UNKNOWN, callback1.Get());
+  base::RunLoop().RunUntilIdle();
+
+  base::MockCallback<base::OnceCallback<void(nearby::fastpair::OptInStatus)>>
+      callback2;
+  EXPECT_CALL(callback2,
+              Run(testing::Eq(nearby::fastpair::OptInStatus::STATUS_UNKNOWN)))
+      .Times(1);
+  fast_pair_repository_->CheckOptInStatus(callback2.Get());
+}
+
+TEST_F(FastPairRepositoryImplTest, UpdateOptInStatus_NoFootprintsResponse) {
+  footprints_fetcher_->SetGetUserDevicesResponse(absl::nullopt);
+  base::MockCallback<base::OnceCallback<void(nearby::fastpair::OptInStatus)>>
+      callback;
+  EXPECT_CALL(callback,
+              Run(testing::Eq(nearby::fastpair::OptInStatus::STATUS_UNKNOWN)))
+      .Times(1);
+  fast_pair_repository_->CheckOptInStatus(callback.Get());
+}
+
+TEST_F(FastPairRepositoryImplTest, UpdateOptInStatus_OptedInUpdateFailed) {
+  footprints_fetcher_->SetAddUserFastPairInfoResult(/*add_user_result=*/false);
+  base::MockCallback<base::OnceCallback<void(bool)>> callback1;
+  EXPECT_CALL(callback1, Run(false)).Times(1);
+  fast_pair_repository_->UpdateOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_IN, callback1.Get());
+  base::RunLoop().RunUntilIdle();
+
+  base::MockCallback<base::OnceCallback<void(nearby::fastpair::OptInStatus)>>
+      callback2;
+  EXPECT_CALL(callback2,
+              Run(testing::Eq(nearby::fastpair::OptInStatus::STATUS_UNKNOWN)))
+      .Times(1);
+  fast_pair_repository_->CheckOptInStatus(callback2.Get());
+}
+
+TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptedIn) {
+  fast_pair_repository_->UpdateOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_IN, base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  AccountKeyFilter filter(kFilterBytes1, {salt});
+  nearby::fastpair::GetObservedDeviceResponse response;
+  DeviceMetadata metadata(response, gfx::Image());
+
+  auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
+                                             Protocol::kFastPairInitial);
+  device->set_classic_address(kTestClassicAddress);
+  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
+  base::RunLoop().RunUntilIdle();
+
+  fast_pair_repository_->GetSavedDevices(
+      base::BindOnce(&FastPairRepositoryImplTest::GetSavedDevicesCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(nearby::fastpair::OptInStatus::STATUS_OPTED_IN, status_);
+  EXPECT_EQ(1u, devices_.size());
+}
+
+TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptedOut) {
+  fast_pair_repository_->UpdateOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_OPTED_OUT, base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  fast_pair_repository_->GetSavedDevices(
+      base::BindOnce(&FastPairRepositoryImplTest::GetSavedDevicesCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(nearby::fastpair::OptInStatus::STATUS_OPTED_OUT, status_);
+  EXPECT_EQ(0u, devices_.size());
+}
+
+TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptStatusUnknown) {
+  fast_pair_repository_->UpdateOptInStatus(
+      nearby::fastpair::OptInStatus::STATUS_UNKNOWN, base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  fast_pair_repository_->GetSavedDevices(
+      base::BindOnce(&FastPairRepositoryImplTest::GetSavedDevicesCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(nearby::fastpair::OptInStatus::STATUS_UNKNOWN, status_);
+  EXPECT_EQ(0u, devices_.size());
+}
+
+TEST_F(FastPairRepositoryImplTest, GetSavedDevices_MissingResponse) {
+  footprints_fetcher_->SetGetUserDevicesResponse(absl::nullopt);
+  fast_pair_repository_->GetSavedDevices(
+      base::BindOnce(&FastPairRepositoryImplTest::GetSavedDevicesCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(nearby::fastpair::OptInStatus::STATUS_UNKNOWN, status_);
+  EXPECT_EQ(0u, devices_.size());
+}
+
+TEST_F(FastPairRepositoryImplTest, IsAccountKeyPairedLocally) {
+  saved_device_registry_->SaveAccountKey(kFirstSavedMacAddress, kAccountKey1);
+  EXPECT_TRUE(fast_pair_repository_->IsAccountKeyPairedLocally(kAccountKey1));
+  EXPECT_FALSE(fast_pair_repository_->IsAccountKeyPairedLocally(kAccountKey2));
 }
 
 }  // namespace quick_pair

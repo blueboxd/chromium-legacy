@@ -21,6 +21,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_io_thread.h"
 #include "content/browser/browser_thread_impl.h"
@@ -54,7 +55,7 @@ class SequenceManagerThreadDelegate : public base::Thread::Delegate {
     BrowserTaskExecutor::CreateForTesting(
         std::move(browser_ui_thread_scheduler),
         std::make_unique<BrowserIOThreadDelegate>());
-    BrowserTaskExecutor::EnableAllQueues();
+    BrowserTaskExecutor::OnStartupComplete();
   }
 
   SequenceManagerThreadDelegate(const SequenceManagerThreadDelegate&) = delete;
@@ -321,7 +322,7 @@ TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
 
   testing::Mock::VerifyAndClearExpectations(&regular_task);
 
-  BrowserTaskExecutor::EnableAllQueues();
+  BrowserTaskExecutor::OnStartupComplete();
   base::RunLoop run_loop;
   EXPECT_CALL(best_effort_task, Run).WillOnce(Invoke([&]() {
     run_loop.Quit();

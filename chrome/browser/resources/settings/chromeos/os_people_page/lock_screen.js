@@ -38,12 +38,12 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 import {loadTimeData} from '../../i18n_setup.js';
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {FingerprintAttempt, FingerprintBrowserProxy, FingerprintBrowserProxyImpl, FingerprintInfo, FingerprintResultType, FingerprintScan} from './fingerprint_browser_proxy.js';
-import {LockScreenUnlockType, LockStateBehavior, LockStateBehaviorImpl} from './lock_state_behavior.m.js';
+import {LockScreenUnlockType, LockStateBehavior, LockStateBehaviorImpl} from './lock_state_behavior.js';
 
 Polymer({
   _template: html`{__html_template__}`,

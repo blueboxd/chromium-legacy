@@ -1,14 +1,14 @@
 {
   "Linux ASan LSan Builder": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_asan": true,
       "is_component_build": false,
       "is_debug": false,
       "is_lsan": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Linux CFI": {
@@ -20,13 +20,13 @@
       "use_cfi_cast": true,
       "use_cfi_diag": true,
       "use_cfi_icall": true,
-      "use_goma": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "use_thin_lto": true
     }
   },
   "Linux Chromium OS ASan LSan Builder": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_asan": true,
       "is_component_build": false,
@@ -153,7 +153,8 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "v8_enable_verify_heap": true
     }
   }

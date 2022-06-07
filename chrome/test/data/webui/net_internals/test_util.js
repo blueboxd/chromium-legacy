@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 import {CrosView} from 'chrome://net-internals/chromeos_view.js';
 // </if>
 import {DnsView} from 'chrome://net-internals/dns_view.js';
@@ -81,7 +81,7 @@ function getTab(tabId) {
       dns: DnsView.TAB_ID,
       sockets: SocketsView.TAB_ID,
       hsts: DomainSecurityPolicyView.TAB_ID,
-      // <if expr="chromeos">
+      // <if expr="chromeos_ash">
       chromeos: CrosView.TAB_ID
       // </if>
     };
@@ -101,7 +101,7 @@ function getTab(tabId) {
     var tabId = getTabId(hash);
 
     // Make sure the tab link is visible, as we only simulate normal usage.
-    expectTrue(
+    assertTrue(
         tabLinkIsVisible(tabId), tabId + ' does not have a visible tab link.');
     var tabLinkNode = getTab(tabId).tabLink;
 

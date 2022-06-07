@@ -26,8 +26,11 @@ class ImageSkia;
 
 class Profile;
 
+namespace ash {
+namespace personalization_app {
+
 class PersonalizationAppAmbientProviderImpl
-    : public ash::PersonalizationAppAmbientProvider {
+    : public PersonalizationAppAmbientProvider {
  public:
   explicit PersonalizationAppAmbientProviderImpl(content::WebUI* web_ui);
 
@@ -55,6 +58,7 @@ class PersonalizationAppAmbientProviderImpl
   void SetAlbumSelected(const std::string& id,
                         ash::AmbientModeTopicSource topic_source,
                         bool selected) override;
+  void SetPageViewed() override;
 
   // Notify WebUI the latest values.
   void OnAmbientModeEnabledChanged();
@@ -153,6 +157,9 @@ class PersonalizationAppAmbientProviderImpl
   // Whether there are pending updates.
   bool has_pending_updates_for_backend_ = false;
 
+  // A flag to record if the user has seen the ambient mode page.
+  bool page_viewed_ = false;
+
   std::vector<gfx::ImageSkia> recent_highlights_preview_images_;
 
   base::WeakPtrFactory<PersonalizationAppAmbientProviderImpl>
@@ -164,5 +171,8 @@ class PersonalizationAppAmbientProviderImpl
   base::WeakPtrFactory<PersonalizationAppAmbientProviderImpl>
       recent_highlights_previews_weak_factory_{this};
 };
+
+}  // namespace personalization_app
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_PERSONALIZATION_APP_AMBIENT_PROVIDER_IMPL_H_

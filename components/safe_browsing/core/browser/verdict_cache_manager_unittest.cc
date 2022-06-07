@@ -10,27 +10,58 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/safe_browsing/core/browser/safe_browsing_sync_observer.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/proto/realtimeapi.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
+
+namespace {
+
+class MockSafeBrowsingSyncObserver : public SafeBrowsingSyncObserver {
+ public:
+  MockSafeBrowsingSyncObserver() : SafeBrowsingSyncObserver() {}
+
+  ~MockSafeBrowsingSyncObserver() override = default;
+
+  void ObserveSyncStateChanged(
+      SafeBrowsingSyncObserver::Callback callback) override {
+    callback_ = std::move(callback);
+  }
+
+  void OnSyncStateChanged() { callback_.Run(); }
+
+ private:
+  Callback callback_;
+};
+
+}  // namespace
 
 class VerdictCacheManagerTest : public ::testing::Test {
  public:
   VerdictCacheManagerTest() {}
 
   void SetUp() override {
+    test_pref_service_.registry()->RegisterBooleanPref(
+        prefs::kSafeBrowsingEnabled, true);
+    test_pref_service_.registry()->RegisterBooleanPref(
+        prefs::kSafeBrowsingEnhanced, false);
     HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
     content_setting_map_ = new HostContentSettingsMap(
         &test_pref_service_, false /* is_off_the_record */,
         false /* store_last_modified */, false /* restore_session */);
+    auto sync_observer = std::make_unique<MockSafeBrowsingSyncObserver>();
+    raw_sync_observer_ = sync_observer.get();
     cache_manager_ = std::make_unique<VerdictCacheManager>(
-        nullptr, content_setting_map_.get());
+        nullptr, content_setting_map_.get(), &test_pref_service_,
+        std::move(sync_observer));
   }
 
   void TearDown() override {
+    cache_manager_->Shutdown();
     cache_manager_.reset();
     content_setting_map_->ShutdownOnUIThread();
   }
@@ -84,9 +115,8 @@ class VerdictCacheManagerTest : public ::testing::Test {
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-
- private:
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
+  raw_ptr<MockSafeBrowsingSyncObserver> raw_sync_observer_ = nullptr;
 };
 
 TEST_F(VerdictCacheManagerTest, TestCanRetrieveCachedVerdict) {
@@ -798,6 +828,35 @@ TEST_F(VerdictCacheManagerTest, TestGetExpiredPageLoadToken) {
   task_environment_.FastForwardBy(base::Minutes(6));
   token = cache_manager_->GetPageLoadToken(url);
   // Token is not found because it has already expired.
+  ASSERT_FALSE(token.has_token_value());
+}
+
+TEST_F(VerdictCacheManagerTest, TestClearTokenOnSafeBrowsingStateChanged) {
+  SetSafeBrowsingState(&test_pref_service_,
+                       SafeBrowsingState::STANDARD_PROTECTION);
+  GURL url("https://www.example.com/path");
+  cache_manager_->CreatePageLoadToken(url);
+  ChromeUserPopulation::PageLoadToken token =
+      cache_manager_->GetPageLoadToken(url);
+  ASSERT_TRUE(token.has_token_value());
+
+  SetSafeBrowsingState(&test_pref_service_,
+                       SafeBrowsingState::NO_SAFE_BROWSING);
+  token = cache_manager_->GetPageLoadToken(url);
+  // Token is not found because the Safe Browsing state has changed.
+  ASSERT_FALSE(token.has_token_value());
+}
+
+TEST_F(VerdictCacheManagerTest, TestClearTokenOnSyncStateChanged) {
+  GURL url("https://www.example.com/path");
+  cache_manager_->CreatePageLoadToken(url);
+  ChromeUserPopulation::PageLoadToken token =
+      cache_manager_->GetPageLoadToken(url);
+  ASSERT_TRUE(token.has_token_value());
+
+  raw_sync_observer_->OnSyncStateChanged();
+  token = cache_manager_->GetPageLoadToken(url);
+  // Token is not found because the sync state has changed.
   ASSERT_FALSE(token.has_token_value());
 }
 

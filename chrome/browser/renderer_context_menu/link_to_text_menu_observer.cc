@@ -6,8 +6,10 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -16,6 +18,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "components/shared_highlighting/core/common/disabled_sites.h"
+#include "components/shared_highlighting/core/common/fragment_directives_constants.h"
 #include "components/shared_highlighting/core/common/fragment_directives_utils.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "content/public/browser/browser_context.h"
@@ -32,7 +35,6 @@ using shared_highlighting::LinkGenerationReadyStatus;
 using shared_highlighting::LinkGenerationStatus;
 
 namespace {
-constexpr char kTextFragmentUrlClassifier[] = "#:~:text=";
 
 // Removes the highlight from the frame.
 void RemoveHighlightsInFrame(content::RenderFrameHost* render_frame_host) {
@@ -104,9 +106,7 @@ void LinkToTextMenuObserver::InitMenu(
   open_from_new_selection_ = !params.selection_text.empty();
   raw_url_ = params.page_url;
   if (params.page_url.has_ref()) {
-    GURL::Replacements replacements;
-    replacements.ClearRef();
-    url_ = params.page_url.ReplaceComponents(replacements);
+    url_ = shared_highlighting::RemoveFragmentSelectorDirectives(raw_url_);
   } else {
     url_ = params.page_url;
   }
@@ -191,7 +191,9 @@ void LinkToTextMenuObserver::OnRequestLinkGenerationCompleted(
   }
 
   // Enable the menu option.
-  generated_link_ = url_.spec() + kTextFragmentUrlClassifier + selector;
+
+  generated_link_ =
+      shared_highlighting::AppendSelectors(url_, {selector}).spec();
   proxy_->UpdateMenuItem(
       IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, true, false,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_COPYLINKTOTEXT));

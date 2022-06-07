@@ -172,6 +172,7 @@
 <translation id="4600710005438004015">Chrome อัปเดตเป็นเวอร์ชันล่าสุดไม่ได้ คุณจึงไม่ได้รับฟีเจอร์ใหม่และการแก้ไขด้านความปลอดภัย</translation>
 <translation id="4627412468266359539">ไม่บังคับ: ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome OS Flex ด้วยการส่งข้อมูลการวินิจฉัยและการใช้งานให้ Google โดยอัตโนมัติ</translation>
 <translation id="4633000520311261472">เพื่อให้ Chrome ปลอดภัยขึ้น เราปิดส่วนขยายบางรายการที่ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
+<translation id="469553575393225953">ส่วนขยาย แอป และธีมจากแหล่งที่มาที่ไม่รู้จักอาจเป็นอันตรายต่ออุปกรณ์ของคุณ ขอแนะนำให้ติดตั้ง Chrome จาก Chrome เว็บสโตร์เท่านั้น</translation>
 <translation id="4728575227883772061">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Google Chrome ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="4747730611090640388">Chrome สามารถคาดคะเนความสนใจของคุณได้  ภายหลัง เว็บไซต์ที่คุณเข้าชมอาจขอข้อมูลความสนใจจาก Chrome เพื่อปรับการแสดงโฆษณาให้เหมาะกับคุณ</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -211,6 +212,7 @@
 <translation id="5736850870166430177">หากเว็บไซต์พยายามขโมยรหัสผ่าน หรือคุณดาวน์โหลดไฟล์ที่เป็นอันตราย Chrome อาจส่ง URL รวมถึงเนื้อหาบางส่วนในหน้าไปยัง Google Safe Browsing ด้วย</translation>
 <translation id="573759479754913123">เกี่ยวกับ Chrome OS</translation>
 <translation id="5756509061973259733">มีโปรไฟล์ Chrome ที่ใช้บัญชีนี้ในอุปกรณ์นี้อยู่แล้ว</translation>
+<translation id="5763280521700030406">Chrome บล็อกไฟล์นี้เนื่องจากใหญ่เกินไปสำหรับการตรวจสอบความปลอดภัย ลองอีกครั้งกับไฟล์ที่มีขนาดไม่เกิน 50 MB</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">เปิด Chrome ไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="5867197326698922595">Google Chrome กำลังพยายามแก้ไขรหัสผ่าน</translation>
@@ -226,6 +228,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome เบต้า</translation>
 <translation id="6235018212288296708">กฎขาเข้าสำหรับ Google Chrome เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
+<translation id="6247557882553405851">Google เครื่องมือจัดการรหัสผ่าน</translation>
 <translation id="6291089322031436445">แอป Chrome Dev</translation>
 <translation id="6291549208091401781">มีการติดตั้ง Google Chrome สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
 <translation id="6368958679917195344">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม</translation>
@@ -234,6 +237,7 @@
 <translation id="6506909944137591434">Chrome ต้องการสิทธิ์เข้าถึงกล้องเพื่อสร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณ</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">ระบบ Chrome OS</translation>
+<translation id="659498884637196217">ในเครื่องมือจัดการรหัสผ่านของ Google ในอุปกรณ์นี้</translation>
 <translation id="6632473616050862500">Chrome OS Flex เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6679975945624592337">ให้ Google Chrome ทำงานในพื้นหลัง</translation>
@@ -272,6 +276,7 @@
 สิทธิ์ที่คุณให้กับเว็บไซต์และแอปต่างๆ ไว้แล้วอาจมีผลกับบัญชีนี้ คุณจัดการบัญชี Google ใน<ph name="SETTINGS_LINK_BEGIN" />การตั้งค่า<ph name="SETTINGS_LINK_END" />ได้</translation>
 <translation id="7398801000654795464">คุณเคยลงชื่อเข้าใช้ Chrome ในชื่อ <ph name="USER_EMAIL_ADDRESS" /> โปรดใช้บัญชีเดิมเพื่อลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="7408085963519505752">ข้อกำหนดของ Chrome OS</translation>
+<translation id="7410958280246779049">Chrome บล็อกไฟล์นี้เนื่องจากเป็นอันตราย</translation>
 <translation id="7419046106786626209">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากการซิงค์ไม่พร้อมให้บริการสำหรับโดเมนของคุณ</translation>
 <translation id="7481213027396403996">รับการรักษาความปลอดภัยที่เข้มงวดที่สุดของ Chrome</translation>
 <translation id="7486227612705979895">Chrome จะเข้าถึงไดรฟ์ของคุณเพื่อแสดงคำแนะนำในแถบที่อยู่</translation>
@@ -286,7 +291,6 @@
 <translation id="7655455401911432608">ประวัติการท่องเว็บ ซึ่งเป็นบันทึกรายการเว็บไซต์ที่คุณเข้าชมโดยใช้ Chrome ในอุปกรณ์นี้</translation>
 <translation id="7665553140559834626">เปิดอีกครั้งเพื่ออัปเดต Chrome OS</translation>
 <translation id="7747138024166251722">โปรแกรมติดตั้งสร้างไดเรกทอรีชั่วคราวไม่ได้ โปรดตรวจสอบพื้นที่ดิสก์ว่างและการอนุญาตให้ติดตั้งซอฟต์แวร์</translation>
-<translation id="7748512868279796735">บัญชีต่อไปนี้ใช้ได้กับโปรไฟล์ Chrome นี้</translation>
 <translation id="7761834446675418963">คลิกชื่อของคุณเพื่อเปิด Chrome และเริ่มท่องเว็บ</translation>
 <translation id="7777080907402804672">หากรูปภาพไม่มีคำอธิบายที่เป็นประโยชน์ Chrome จะพยายามใส่คำอธิบายให้คุณ รูปภาพจะส่งมายัง Google เพื่อสร้างคำอธิบาย คุณปิดการดำเนินการนี้ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="7781002470561365167">Google Chrome เวอร์ชันใหม่มีให้ได้ลองใช้กันแล้ว</translation>
@@ -302,10 +306,12 @@
 <translation id="7951272445806340501">Chrome OS Flex ต้องรีสตาร์ทเพื่อใช้การอัปเดต</translation>
 <translation id="7962410387636238736">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดต Google Chrome อีกต่อไปเพราะระบบไม่รองรับ Windows XP และ Windows Vista แล้ว</translation>
 <translation id="79947657522496226">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม เช่นเดียวกับ<ph name="BEGIN_LINK_LINUX_OSS" />สภาพแวดล้อมในการพัฒนาซอฟต์แวร์ Linux<ph name="END_LINK_LINUX_OSS" /></translation>
+<translation id="8005666035647241369">ที่เครื่องมือจัดการรหัสผ่านของ Google ในอุปกรณ์นี้</translation>
 <translation id="8008534537613507642">ติดตั้ง Chrome ใหม่</translation>
 <translation id="8013993649590906847">หากรูปภาพไม่มีคำอธิบายที่เป็นประโยชน์ Chrome จะพยายามใส่คำอธิบายให้คุณ รูปภาพจะส่งมายัง Google เพื่อสร้างคำอธิบาย</translation>
 <translation id="8064015586118426197">Chrome OS Flex</translation>
 <translation id="8129812357326543296">เกี่ยวกับ &amp;Google Chrome</translation>
+<translation id="822971176939352383">บัญชีเหล่านี้ไม่ได้ลงชื่อเข้าใช้ในโปรไฟล์ Chrome ใดๆ เลย หากต้องการใช้บัญชีในโปรไฟล์อื่น ให้นำโปรไฟล์แรกออกก่อน</translation>
 <translation id="8255190535488645436">Google Chrome ใช้กล้องและไมโครโฟนของคุณอยู่</translation>
 <translation id="8286862437124483331">Google Chrome กำลังพยายามแสดงรหัสผ่าน พิมพ์รหัสผ่าน Windows ของคุณเพื่อแสดงรหัสผ่าน</translation>
 <translation id="828798499196665338">ผู้ปกครองได้ปิด "สิทธิ์สำหรับเว็บไซต์ แอป และส่วนขยาย" ใน Chrome ไม่อนุญาตให้เปิดใช้<ph name="EXTENSION_TYPE_PARAMETER" />นี้</translation>
@@ -317,8 +323,10 @@
 <translation id="8394720698884623075">ตรวจสอบ URL กับรายการเว็บไซต์ที่ไม่ปลอดภัยซึ่งจัดเก็บไว้ใน Chrome</translation>
 <translation id="840084489713044809">Google Chrome ต้องการส่งออกรหัสผ่านของคุณ</translation>
 <translation id="8416347857511542594">ดูข้อมูลเพิ่มเติมเกี่ยวกับการปรับโฆษณาตามโปรไฟล์ของผู้ใช้ใน Chrome</translation>
+<translation id="8421734018304082652">Chrome บล็อกไฟล์นี้เนื่องจากมีการเข้ารหัส โปรดขอให้เจ้าของไฟล์ถอดรหัส</translation>
 <translation id="8433638294851456451">หากต้องการส่งหมายเลขจากที่นี่ไปยังโทรศัพท์ Android ให้ลงชื่อเข้าใช้ Chrome ในอุปกรณ์ทั้งสองเครื่อง</translation>
 <translation id="8498858610309223613">ระบบเพิ่งนำการอัปเดตความปลอดภัยพิเศษไปใช้กับ Google Chrome รีสตาร์ทเลย แล้วเราจะคืนค่าแท็บให้คุณ</translation>
+<translation id="8504220326736535258">Chrome บล็อกไฟล์นี้เนื่องจากมีมัลแวร์</translation>
 <translation id="8516431725144212809">ความสนใจของคุณที่ได้รับการคาดคะเนโดย Chrome</translation>
 <translation id="8521348052903287641">กฎขาเข้าสำหรับ Google Chrome Dev เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -333,6 +341,7 @@
 <translation id="8649026945479135076">โดยทั่วไป เว็บไซต์ที่คุณเข้าชมจะจดจำสิ่งที่คุณสนใจเพื่อปรับประสบการณ์การใช้งานให้เหมาะกับคุณ เว็บไซต์ยังสามารถจัดเก็บข้อมูลเกี่ยวกับความสนใจไว้กับ Chrome ได้ด้วย</translation>
 <translation id="8669527147644353129">ตัวช่วยเหลือของ Google Chrome</translation>
 <translation id="8679801911857917785">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome ด้วย</translation>
+<translation id="8684875378076460854">Chrome แนะนำให้สแกนไฟล์นี้เนื่องจากอาจเป็นอันตราย</translation>
 <translation id="8686817260976772516">โปรไฟล์ Chrome ช่วยให้คุณแยกข้อมูลต่างๆ ใน Chrome ออกจากกัน สร้างโปรไฟล์สำหรับเพื่อนและครอบครัว หรือแยกการทำงานออกจากความบันเทิง</translation>
 <translation id="8712767363896337380">ใกล้จะอัปเดตเสร็จแล้ว เปิด Chrome อีกครั้งเพื่อให้การอัปเดตเสร็จสมบูรณ์</translation>
 <translation id="873133009373065397">Google Chrome ไม่สามารถกำหนดหรือตั้งค่าเบราว์เซอร์เริ่มต้น</translation>

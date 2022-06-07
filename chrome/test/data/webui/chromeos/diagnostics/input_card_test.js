@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ConnectionType, KeyboardInfo, MechanicalLayout, NumberPadPresence, PhysicalLayout} from 'chrome://diagnostics/diagnostics_types.js';
+import {ConnectionType, KeyboardInfo, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey} from 'chrome://diagnostics/diagnostics_types.js';
 import {InputCardType} from 'chrome://diagnostics/input_card.js';
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks} from '../../test_util.js';
@@ -17,6 +17,13 @@ const keyboards = [
     mechanicalLayout: MechanicalLayout.kAnsi,
     hasAssistantKey: true,
     numberPadPresent: NumberPadPresence.kPresent,
+    topRowKeys: [
+      TopRowKey.kBack, TopRowKey.kForward, TopRowKey.kRefresh,
+      TopRowKey.kFullscreen, TopRowKey.kOverview,
+      TopRowKey.kScreenBrightnessDown, TopRowKey.kScreenBrightnessUp,
+      TopRowKey.kVolumeMute, TopRowKey.kVolumeDown, TopRowKey.kVolumeUp
+    ],
+    topRightKey: TopRightKey.kLock,
   },
   {
     id: 10,
@@ -26,6 +33,8 @@ const keyboards = [
     mechanicalLayout: MechanicalLayout.kUnknown,
     hasAssistantKey: false,
     numberPadPresent: NumberPadPresence.kUnknown,
+    topRowKeys: [],
+    topRightKey: TopRightKey.kUnknown,
   },
 ];
 
@@ -58,38 +67,31 @@ export function inputCardTestSuite() {
     return flushTasks();
   }
 
-  test('KeyboardsListedCorrectly', () => {
-    return initializeInputCard(InputCardType.kKeyboard, keyboards).then(() => {
-      assertEquals(2, inputCardElement.$$('dom-repeat').items.length);
-      const elements = inputCardElement.root.querySelectorAll('.device');
-      assertEquals(
-          keyboards[0].name,
-          elements[0].querySelector('.device-name').innerText);
-      assertEquals(
-          'Internal keyboard',
-          elements[0].querySelector('.device-description').innerText);
-      assertEquals(
-          keyboards[1].name,
-          elements[1].querySelector('.device-name').innerText);
-      assertEquals(
-          'Bluetooth keyboard',
-          elements[1].querySelector('.device-description').innerText);
-    });
+  test('KeyboardsListedCorrectly', async () => {
+    await initializeInputCard(InputCardType.kKeyboard, keyboards);
+    assertEquals(2, inputCardElement.$$('dom-repeat').items.length);
+    const elements = inputCardElement.root.querySelectorAll('.device');
+    assertEquals(
+        keyboards[0].name, elements[0].querySelector('.device-name').innerText);
+    assertEquals(
+        'Internal keyboard',
+        elements[0].querySelector('.device-description').innerText);
+    assertEquals(
+        keyboards[1].name, elements[1].querySelector('.device-name').innerText);
+    assertEquals(
+        'Bluetooth keyboard',
+        elements[1].querySelector('.device-description').innerText);
   });
 
-  test('TestButtonClickEvent', () => {
+  test('TestButtonClickEvent', async () => {
+    await initializeInputCard(InputCardType.kKeyboard, keyboards);
     let listenerCalled = false;
-    return initializeInputCard(InputCardType.kKeyboard, keyboards)
-        .then(() => {
-          inputCardElement.addEventListener('test-button-click', (e) => {
-            listenerCalled = true;
-            assertEquals(10, e.detail.evdevId);
-          });
-          inputCardElement.$$('.device[data-evdev-id="10"] cr-button').click();
-          return flushTasks();
-        })
-        .then(() => {
-          assertTrue(listenerCalled);
-        });
+    inputCardElement.addEventListener('test-button-click', (e) => {
+      listenerCalled = true;
+      assertEquals(10, e.detail.evdevId);
+    });
+    inputCardElement.$$('.device[data-evdev-id="10"] cr-button').click();
+    await flushTasks();
+    assertTrue(listenerCalled);
   });
 }

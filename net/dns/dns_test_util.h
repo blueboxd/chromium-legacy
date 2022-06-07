@@ -296,7 +296,8 @@ struct MockDnsClientRule {
     // "Succeed" but with an unparsable response.
     kMalformed,
     // Immediately records a test failure if queried. Used to catch unexpected
-    // queries.
+    // queries. Alternately, if combined with `MockDnsClientRule::delay`, fails
+    // only if the query is allowed to complete without being cancelled.
     kUnexpected,
 
     // Results in the response in |Result::response| or, if null, results in a
@@ -348,7 +349,6 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
   std::unique_ptr<DnsTransaction> CreateTransaction(
       std::string hostname,
       uint16_t qtype,
-      DnsTransactionFactory::CallbackType callback,
       const NetLogWithSource&,
       bool secure,
       SecureDnsMode secure_dns_mode,
@@ -412,6 +412,7 @@ class MockDnsClient : public DnsClient {
   AddressSorter* GetAddressSorter() override;
   void IncrementInsecureFallbackFailures() override;
   void ClearInsecureFallbackFailures() override;
+  base::Value GetDnsConfigAsValueForNetLog() const override;
   absl::optional<DnsConfig> GetSystemConfigForTesting() const override;
   DnsConfigOverrides GetConfigOverridesForTesting() const override;
   void SetTransactionFactoryForTesting(

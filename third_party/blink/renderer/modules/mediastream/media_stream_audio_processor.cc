@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
@@ -103,18 +102,7 @@ void MediaStreamAudioProcessor::Stop() {
 
 const media::AudioParameters&
 MediaStreamAudioProcessor::GetInputFormatForTesting() const {
-  return audio_processor_->GetInputFormatForTesting();
-}
-
-const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
-  return audio_processor_->OutputFormat();
-}
-
-void MediaStreamAudioProcessor::SetOutputWillBeMuted(bool muted) {
-  DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kMinimizeAudioProcessingForUnusedOutput));
-  audio_processor_->SetOutputWillBeMuted(muted);
+  return audio_processor_->input_format();
 }
 
 void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {

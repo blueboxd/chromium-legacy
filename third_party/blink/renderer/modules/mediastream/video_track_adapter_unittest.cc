@@ -12,6 +12,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -454,8 +455,7 @@ class VideoTrackAdapterEncodedTest : public ::testing::Test {
         blink::WebString::FromASCII("source_id"),
         blink::WebMediaStreamSource::kTypeVideo,
         blink::WebString::FromASCII("DeliverEncodedVideoFrameSource"),
-        false /* remote */);
-    web_source_.SetPlatformSource(std::move(source));
+        false /* remote */, std::move(source));
     RunSyncOnRenderThread([&] {
       adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
           platform_support_->GetIOTaskRunner(), mock_source_->GetWeakPtr());

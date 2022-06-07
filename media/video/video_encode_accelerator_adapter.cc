@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/bitstream_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/svc_scalability_mode.h"
 #include "media/base/video_frame.h"
@@ -122,7 +123,7 @@ VideoEncodeAcceleratorAdapter::VideoEncodeAcceleratorAdapter(
     : output_pool_(base::MakeRefCounted<base::UnsafeSharedMemoryPool>()),
       input_pool_(base::MakeRefCounted<base::UnsafeSharedMemoryPool>()),
       gpu_factories_(gpu_factories),
-      media_log_(media_log->Clone()),
+      media_log_(std::move(media_log)),
       accelerator_task_runner_(gpu_factories_->GetTaskRunner()),
       callback_task_runner_(std::move(callback_task_runner)) {
   DETACH_FROM_SEQUENCE(accelerator_sequence_checker_);

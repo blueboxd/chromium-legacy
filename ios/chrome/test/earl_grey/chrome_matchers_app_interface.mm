@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_views_utils.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
@@ -54,6 +55,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -551,6 +553,20 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 
 + (id<GREYMatcher>)toolsMenuView {
   return grey_accessibilityID(kPopupMenuToolsMenuTableViewId);
+}
+
++ (id<GREYMatcher>)omniboxPopupRow {
+  if (!base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
+    return grey_kindOfClassName(@"OmniboxPopupRowCell");
+  } else {
+    return grey_allOf(
+        grey_kindOfClassName(@"SwiftUI.AccessibilityNode"),
+        grey_ancestor(grey_kindOfClassName(@"OmniboxPopupContainerView")), nil);
+  }
+}
+
++ (id<GREYMatcher>)omniboxPopupList {
+  return grey_accessibilityID(kOmniboxPopupTableViewAccessibilityIdentifier);
 }
 
 + (id<GREYMatcher>)OKButton {

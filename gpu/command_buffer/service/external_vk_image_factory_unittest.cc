@@ -21,6 +21,7 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -249,6 +250,11 @@ TEST_F(ExternalVkImageFactoryTest, DawnWrite_SkiaVulkanRead) {
       EXPECT_EQ(pixel[1], 255);
       EXPECT_EQ(pixel[2], 0);
       EXPECT_EQ(pixel[3], 255);
+    }
+
+    if (skia_scoped_access->end_state()) {
+      context_state_->gr_context()->setBackendTextureState(
+          backend_texture, *skia_scoped_access->end_state());
     }
 
     GrFlushInfo flush_info;

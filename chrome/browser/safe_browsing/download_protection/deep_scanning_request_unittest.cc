@@ -76,7 +76,8 @@ constexpr char kScanForDlpAndMalware[] = R"(
       "url_list": ["*"],
       "tags": ["dlp", "malware"]
     }
-  ]
+  ],
+  "block_until_verdict": 1
 })";
 
 constexpr char kScanForMalware[] = R"(
@@ -87,7 +88,8 @@ constexpr char kScanForMalware[] = R"(
       "url_list": ["*"],
       "tags": ["malware"]
     }
-  ]
+  ],
+  "block_until_verdict": 1
 })";
 
 constexpr char kScanForDlp[] = R"(
@@ -98,7 +100,8 @@ constexpr char kScanForDlp[] = R"(
       "url_list": ["*"],
       "tags": ["dlp"]
     }
-  ]
+  ],
+  "block_until_verdict": 1
 })";
 
 constexpr char kNoScan[] = R"({"service_provider": "google"})";
@@ -287,6 +290,8 @@ class DeepScanningRequestTest : public testing::Test {
     default_settings.tags = {"malware"};
     default_settings.analysis_url =
         GURL("https://safebrowsing.google.com/safebrowsing/uploads/scan");
+    default_settings.block_until_verdict =
+        enterprise_connectors::BlockUntilVerdict::BLOCK;
 
     ASSERT_EQ(settings.value().tags, default_settings.tags);
     ASSERT_EQ(settings.value().block_large_files,
@@ -355,6 +360,8 @@ TEST_P(DeepScanningRequestFeaturesEnabledTest, ChecksFeatureFlags) {
   auto dlp_and_malware_settings = []() {
     enterprise_connectors::AnalysisSettings settings;
     settings.tags = {"dlp", "malware"};
+    settings.block_until_verdict =
+        enterprise_connectors::BlockUntilVerdict::BLOCK;
     return settings;
   };
 
@@ -500,6 +507,9 @@ TEST_F(DeepScanningRequestAllFeaturesEnabledTest,
     SetAnalysisConnector(profile_->GetPrefs(),
                          enterprise_connectors::FILE_DOWNLOADED, kNoScan);
     EXPECT_FALSE(settings().has_value());
+    enterprise_connectors::AnalysisSettings analysis_settings;
+    analysis_settings.block_until_verdict =
+        enterprise_connectors::BlockUntilVerdict::BLOCK;
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         DownloadCheckResult::SAFE,
@@ -510,8 +520,7 @@ TEST_F(DeepScanningRequestAllFeaturesEnabledTest,
               }
             },
             run_loop.QuitClosure()),
-        &download_protection_service_,
-        enterprise_connectors::AnalysisSettings());
+        &download_protection_service_, std::move(analysis_settings));
     request.Start();
     run_loop.Run();
     EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
@@ -651,7 +660,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
     EventReportValidator validator(client_.get());
     validator.ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]'
         // '[:upper:]'
         /*sha256*/
@@ -716,7 +725,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
     EventReportValidator validator(client_.get());
     validator.ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]'
         // '[:upper:]'
         /*sha256*/
@@ -773,7 +782,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
     EventReportValidator validator(client_.get());
     validator.ExpectSensitiveDataEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -828,7 +837,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
     EventReportValidator validator(client_.get());
     validator.ExpectSensitiveDataEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -887,7 +896,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
     EventReportValidator validator(client_.get());
     validator.ExpectSensitiveDataEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -936,7 +945,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
     EventReportValidator validator(client_.get());
     validator.ExpectUnscannedFileEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -986,7 +995,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
     EventReportValidator validator(client_.get());
     validator.ExpectUnscannedFileEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -1041,7 +1050,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
     EventReportValidator validator(client_.get());
     validator.ExpectUnscannedFileEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -1169,7 +1178,7 @@ TEST_F(DeepScanningReportingTest, MultipleFiles) {
     EventReportValidator validator(client_.get());
     validator.ExpectUnscannedFileEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ secondary_files_targets_[0].AsUTF8Unsafe(),
+        /*filename*/ secondary_files_targets_[0].BaseName().AsUTF8Unsafe(),
         // printf "foo.txt" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "DDAB29FF2C393EE52855D21A240EB05F775DF88E3CE347DF759F0C4B80356C35",
@@ -1255,8 +1264,8 @@ TEST_F(DeepScanningReportingTest, MultipleFiles) {
     validator.ExpectSensitiveDataEvents(
         /*url*/ "https://example.com/download.exe",
         {
-            secondary_files_targets_[0].AsUTF8Unsafe(),
-            secondary_files_targets_[1].AsUTF8Unsafe(),
+            secondary_files_targets_[0].BaseName().AsUTF8Unsafe(),
+            secondary_files_targets_[1].BaseName().AsUTF8Unsafe(),
         },
         // printf "foo.txt" | sha256sum |  tr '[:lower:]' '[:upper:]'
         // printf "bar.txt" | sha256sum |  tr '[:lower:]' '[:upper:]'
@@ -1314,7 +1323,7 @@ TEST_F(DeepScanningReportingTest, Timeout) {
   EventReportValidator validator(client_.get());
   validator.ExpectUnscannedFileEvent(
       /*url*/ "https://example.com/download.exe",
-      /*filename*/ download_path_.AsUTF8Unsafe(),
+      /*filename*/ "download.exe",
       // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
       /*sha256*/
       "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -1421,7 +1430,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
     EventReportValidator validator(client_.get());
     validator.ExpectDangerousDownloadEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]'
         // '[:upper:]'
         /*sha256*/
@@ -1475,7 +1484,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
     EventReportValidator validator(client_.get());
     validator.ExpectDangerousDownloadEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]'
         // '[:upper:]'
         /*sha256*/
@@ -1521,7 +1530,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
     EventReportValidator validator(client_.get());
     validator.ExpectUnscannedFileEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -1573,7 +1582,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
     EventReportValidator validator(client_.get());
     validator.ExpectUnscannedFileEvent(
         /*url*/ "https://example.com/download.exe",
-        /*filename*/ download_path_.AsUTF8Unsafe(),
+        /*filename*/ "download.exe",
         // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
         /*sha256*/
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
@@ -1631,7 +1640,8 @@ TEST_F(DeepScanningRequestConnectorsFeatureTest,
                             ],
                             "disable": [
                               {"url_list": ["%s"], "tags": ["malware"]}
-                            ]
+                            ],
+                            "block_until_verdict": 1
                           })",
                            download_url_.host().c_str()));
   EXPECT_FALSE(settings().has_value());

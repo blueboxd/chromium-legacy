@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/features.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "content/common/content_navigation_policy.h"
@@ -255,6 +256,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePercentBasedScrolling, features::kPercentBasedScrolling},
     {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync},
     {wf::EnablePictureInPicture, media::kPictureInPicture},
+    {wf::EnablePictureInPictureV2, features::kPictureInPictureV2,
+     kSetOnlyIfOverridden},
     {wf::EnablePointerLockOptions, features::kPointerLockOptions},
     {wf::EnablePortals, blink::features::kPortals, kSetOnlyIfOverridden},
     {wf::EnablePrerender2, blink::features::kPrerender2, kSetOnlyIfOverridden},
@@ -333,8 +336,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"AutofillShadowDOM", blink::features::kAutofillShadowDOM},
           {"AndroidDownloadableFontsMatching",
            features::kAndroidDownloadableFontsMatching},
-          {"BiddingAndScoringDebugReportingAPI",
-           blink::features::kBiddingAndScoringDebugReportingAPI},
           {"ClipboardCustomFormats", blink::features::kClipboardCustomFormats},
           {"CSSContainerQueries", blink::features::kCSSContainerQueries},
           {"ComputePressure", blink::features::kComputePressure,
@@ -347,19 +348,15 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"DialogFocusNewSpecBehavior",
            blink::features::kDialogFocusNewSpecBehavior},
           {"EditContext", blink::features::kEditContext},
-          {"EditingNG", blink::features::kEditingNG},
           {"ElementSuperRareData", blink::features::kElementSuperRareData},
           {"FileHandling", blink::features::kFileHandlingAPI},
-          {"Fledge", blink::features::kFledge,
-           kSetOnlyIfOverridden},
+          {"Fledge", blink::features::kFledge, kSetOnlyIfOverridden},
           {"Fledge", features::kPrivacySandboxAdsAPIsOverride,
            kSetOnlyIfOverridden},
           {"FontAccess", blink::features::kFontAccess},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching},
           {"ForceSynchronousHTMLParsing",
            blink::features::kForceSynchronousHTMLParsing},
-          {"LateFormNewlineNormalization",
-           blink::features::kLateFormNewlineNormalization},
           {"LayoutNG", blink::features::kLayoutNG},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback},
@@ -378,8 +375,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"SecureContextFixForWorkers",
            blink::features::kSecureContextFixForWorkers},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI},
-          {"TargetBlankImpliesNoOpener",
-           blink::features::kTargetBlankImpliesNoOpener},
           {"ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
            blink::features::
                kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes},
@@ -392,7 +387,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"WebAppDarkMode", blink::features::kWebAppEnableDarkMode},
           {"WebAppHandleLinks", blink::features::kWebAppEnableHandleLinks},
           {"WebAppLaunchHandler", blink::features::kWebAppEnableLaunchHandler},
-          {"WebAppLinkCapturing", blink::features::kWebAppEnableLinkCapturing},
           {"WebAppTabStrip", features::kDesktopPWAsTabStrip},
           {"WebAppTranslations", blink::features::kWebAppEnableTranslations},
           {"WebAppWindowControlsOverlay",
@@ -400,7 +394,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"WebAuthenticationConditionalUI", features::kWebAuthConditionalUI},
           {"WindowOpenNewPopupBehavior",
            blink::features::kWindowOpenNewPopupBehavior},
-          {"CSSCascadeLayers", blink::features::kCSSCascadeLayers},
           // TODO(crbug.com/1185950): Remove this flag when the feature is fully
           // launched and released to stable with no issues.
           {"AutoExpandDetailsElement",
@@ -418,6 +411,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"ClientHintPartitiondCookies",
            blink::features::kClientHintsPartitionedCookies},
           {"WindowPlacement", blink::features::kWindowPlacement},
+          {"WindowPlacementFullscreenOnScreensChange",
+           blink::features::kWindowPlacementFullscreenOnScreensChange},
           {"EventPath", blink::features::kEventPath},
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
@@ -454,8 +449,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnablePresentationAPI, switches::kDisablePresentationAPI, false},
       {wrf::EnableRemotePlaybackAPI, switches::kDisableRemotePlaybackAPI,
        false},
-      {wrf::EnableTargetBlankImpliesNoOpener,
-       switches::kDisableTargetBlankImpliesNoOpener, false},
       {wrf::EnableTimerThrottlingForBackgroundTabs,
        switches::kDisableBackgroundTimerThrottling, false},
       // End of Stable Features

@@ -265,6 +265,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
                                   bool wait_for_load = true) {
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
     params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
+    params.override_url = maybe_installation_->GetAppUrl();
     params.launch_files = std::move(launch_files);
 
     return SystemWebAppBrowserTestBase::LaunchApp(std::move(params));
@@ -274,6 +275,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
       std::vector<base::FilePath> launch_files) {
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
     params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
+    params.override_url = maybe_installation_->GetAppUrl();
     params.launch_files = std::move(launch_files);
 
     return SystemWebAppBrowserTestBase::LaunchAppWithoutWaiting(
@@ -841,6 +843,7 @@ class SystemWebAppManagerFileHandlingOriginTrialsBrowserTest
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
     params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
     params.launch_files = {temp_file_path};
+    params.override_url = GetStartUrl();
 
     return SystemWebAppBrowserTestBase::LaunchApp(std::move(params));
   }
@@ -1424,7 +1427,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
                           policy::policy_prefs::kSystemFeaturesDisableList);
     base::Value* list = update.Get();
-    list->Append(policy::SystemFeature::kOsSettings);
+    list->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
   }
   WaitForTestSystemAppInstall();
   absl::optional<AppId> settings_id =
@@ -1461,7 +1464,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
                           policy::policy_prefs::kSystemFeaturesDisableList);
     base::Value* list = update.Get();
-    list->Append(policy::SystemFeature::kOsSettings);
+    list->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
   }
 
   auto* proxy = GetAppServiceProxy(browser()->profile());
@@ -1577,7 +1580,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBackgroundTaskTest, TimerFires) {
   // a hook in the background pages to detect the navigation as an event. That's
   // a little too much work for one test though, and since this is mostly tested
   // in unittests, this is probably enough.
-  base::HistogramTester histograms;
   content::TestNavigationObserver navigation_observer(
       GURL("chrome://test-system-app/page2.html"));
   navigation_observer.StartWatchingNewWebContents();
@@ -1604,10 +1606,6 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBackgroundTaskTest, TimerFires) {
   EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
             tasks[0]->get_state_for_testing());
   EXPECT_EQ(base::Days(1), timer->GetCurrentDelay());
-
-  histograms.ExpectTotalCount("Webapp.SystemApps.BackgroundTaskStartDelay", 1);
-  histograms.ExpectUniqueSample("Webapp.SystemApps.BackgroundTaskStartDelay", 0,
-                                1);
 }
 
 class SystemWebAppManagerContextMenuBrowserTest

@@ -122,11 +122,10 @@ base::Value GaiaAccountToValue(const ::account_manager::Account& account,
   return dict;
 }
 
-::account_manager::Account ValueToGaiaAccount(const base::Value& value) {
-  DCHECK(value.is_dict());
-  const std::string* id = value.FindStringKey(kAccountKeyId);
+::account_manager::Account ValueToGaiaAccount(const base::Value::Dict& dict) {
+  const std::string* id = dict.FindString(kAccountKeyId);
   DCHECK(id);
-  const std::string* email = value.FindStringKey(kAccountKeyEmail);
+  const std::string* email = dict.FindString(kAccountKeyEmail);
   DCHECK(email);
   return ::account_manager::Account{
       ::account_manager::AccountKey{*id, account_manager::AccountType::kGaia},
@@ -150,7 +149,10 @@ class EduCoexistenceChildSigninHelper : public SigninHelper {
                      account_manager_mojo_service,
                      // EduCoexistenceChildSigninHelper will not be closing the
                      // dialog. Therefore, passing a void callback.
-                     base::DoNothing(),
+                     /*close_dialog_closure=*/base::DoNothing(),
+                     // EduCoexistenceChildSigninHelper will not be blocked by
+                     // policy. Therefore, passing a void callback.
+                     /*show_signin_blocked_error=*/base::DoNothing(),
                      url_loader_factory,
                      std::move(arc_helper),
                      gaia_id,
@@ -216,7 +218,11 @@ class EduCoexistenceChildSigninHelper : public SigninHelper {
 
 InlineLoginHandlerChromeOS::InlineLoginHandlerChromeOS(
     const base::RepeatingClosure& close_dialog_closure)
-    : close_dialog_closure_(close_dialog_closure) {}
+    : close_dialog_closure_(close_dialog_closure) {
+  show_signin_blocked_error_ = base::BindRepeating(
+      &InlineLoginHandlerChromeOS::ShowSigninBlockedErrorPage,
+      weak_factory_.GetWeakPtr());
+}
 
 InlineLoginHandlerChromeOS::~InlineLoginHandlerChromeOS() = default;
 
@@ -231,12 +237,12 @@ void InlineLoginHandlerChromeOS::RegisterProfilePrefs(
 void InlineLoginHandlerChromeOS::RegisterMessages() {
   InlineLoginHandler::RegisterMessages();
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "showIncognito",
       base::BindRepeating(
           &InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getAccounts",
       base::BindRepeating(&InlineLoginHandlerChromeOS::GetAccountsInSession,
                           base::Unretained(this)));
@@ -250,7 +256,7 @@ void InlineLoginHandlerChromeOS::RegisterMessages() {
       base::BindRepeating(
           &InlineLoginHandlerChromeOS::MakeAvailableInArcAndCloseDialog,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "skipWelcomePage",
       base::BindRepeating(&InlineLoginHandlerChromeOS::HandleSkipWelcomePage,
                           base::Unretained(this)));
@@ -261,29 +267,28 @@ void InlineLoginHandlerChromeOS::RegisterMessages() {
           base::Unretained(this)));
 }
 
-void InlineLoginHandlerChromeOS::SetExtraInitParams(
-    base::DictionaryValue& params) {
+void InlineLoginHandlerChromeOS::SetExtraInitParams(base::Value::Dict& params) {
   const GaiaUrls* const gaia_urls = GaiaUrls::GetInstance();
-  params.SetKey("clientId", base::Value(gaia_urls->oauth2_chrome_client_id()));
+  params.Set("clientId", base::Value(gaia_urls->oauth2_chrome_client_id()));
 
   const GURL& url = gaia_urls->embedded_setup_chromeos_url(2U);
-  params.SetKey("gaiaPath", base::Value(url.path().substr(1)));
+  params.Set("gaiaPath", base::Value(url.path().substr(1)));
 
-  params.SetKey(
+  params.Set(
       "platformVersion",
       base::Value(version_loader::GetVersion(version_loader::VERSION_SHORT)));
-  params.SetKey("constrained", base::Value("1"));
-  params.SetKey("flow", base::Value(GetInlineLoginFlowName(
-                            Profile::FromWebUI(web_ui()),
-                            params.FindStringKey("email"))));
-  params.SetBoolKey("dontResizeNonEmbeddedPages", true);
-  params.SetBoolKey("enableGaiaActionButtons", true);
+  params.Set("constrained", base::Value("1"));
+  params.Set("flow",
+             base::Value(GetInlineLoginFlowName(Profile::FromWebUI(web_ui()),
+                                                params.FindString("email"))));
+  params.Set("dontResizeNonEmbeddedPages", true);
+  params.Set("enableGaiaActionButtons", true);
 
   // For in-session login flows, request Gaia to ignore third party SAML IdP SSO
   // redirection policies (and redirect to SAML IdPs by default), otherwise some
   // managed users will not be able to login to Chrome OS at all. Please check
   // https://crbug.com/984525 and https://crbug.com/984525#c20 for more context.
-  params.SetBoolKey("ignoreCrOSIdpSetting", true);
+  params.Set("ignoreCrOSIdpSetting", true);
 }
 
 void InlineLoginHandlerChromeOS::CompleteLogin(
@@ -364,21 +369,32 @@ void InlineLoginHandlerChromeOS::CreateSigninHelper(
   // SigninHelper deletes itself after its work is done.
   new SigninHelper(
       account_manager, account_manager_mojo_service, close_dialog_closure_,
-      profile->GetURLLoaderFactory(), std::move(arc_helper), params.gaia_id,
-      params.email, params.auth_code,
+      show_signin_blocked_error_, profile->GetURLLoaderFactory(),
+      std::move(arc_helper), params.gaia_id, params.email, params.auth_code,
       GetAccountDeviceId(GetSigninScopedDeviceIdForProfile(profile),
                          params.gaia_id));
 }
 
+void InlineLoginHandlerChromeOS::ShowSigninBlockedErrorPage(
+    const std::string& email,
+    const std::string& hosted_domain) {
+  base::Value::Dict params;
+  params.Set("email", email);
+  params.Set("hostedDomain", hosted_domain);
+
+  FireWebUIListener("show-signin-blocked-by-policy-page",
+                    base::Value(std::move(params)));
+}
+
 void InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   chrome::NewIncognitoWindow(Profile::FromWebUI(web_ui()));
   close_dialog_closure_.Run();
 }
 
 void InlineLoginHandlerChromeOS::GetAccountsInSession(
-    const base::ListValue* args) {
-  const std::string& callback_id = args->GetListDeprecated()[0].GetString();
+    const base::Value::List& args) {
+  const std::string& callback_id = args[0].GetString();
   const Profile* profile = Profile::FromWebUI(web_ui());
   ::GetAccountManagerFacade(profile->GetPath().value())
       ->GetAccounts(base::BindOnce(&InlineLoginHandlerChromeOS::OnGetAccounts,
@@ -449,8 +465,7 @@ void InlineLoginHandlerChromeOS::FinishGetAccountsNotAvailableInArc(
 void InlineLoginHandlerChromeOS::MakeAvailableInArcAndCloseDialog(
     const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
-  const base::Value& dictionary = args[0];
-  CHECK(dictionary.is_dict());
+  const base::Value::Dict& dictionary = args.front().GetDict();
   ash::AccountAppsAvailabilityFactory::GetForProfile(
       Profile::FromWebUI(web_ui()))
       ->SetIsAccountAvailableInArc(ValueToGaiaAccount(dictionary),
@@ -459,10 +474,9 @@ void InlineLoginHandlerChromeOS::MakeAvailableInArcAndCloseDialog(
 }
 
 void InlineLoginHandlerChromeOS::HandleSkipWelcomePage(
-    const base::ListValue* args) {
-  const auto& list = args->GetListDeprecated();
-  CHECK(!list.empty());
-  const bool skip = list[0].GetBool();
+    const base::Value::List& args) {
+  CHECK(!args.empty());
+  const bool skip = args.front().GetBool();
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       chromeos::prefs::kShouldSkipInlineLoginWelcomePage, skip);
 }

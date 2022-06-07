@@ -70,6 +70,21 @@ template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<AddAuthFactorReply>&);
 template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<UnmountReply>&);
+template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
+    ReplyToCryptohomeError(const absl::optional<RemoveReply>&);
+template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
+    ReplyToCryptohomeError(const absl::optional<UpdateCredentialReply>&);
+template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
+    ReplyToCryptohomeError(const absl::optional<CreatePersistentUserReply>&);
+template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
+    ReplyToCryptohomeError(const absl::optional<PrepareGuestVaultReply>&);
+template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
+    ReplyToCryptohomeError(const absl::optional<PrepareEphemeralVaultReply>&);
+template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
+    ReplyToCryptohomeError(const absl::optional<PreparePersistentVaultReply>&);
+template COMPONENT_EXPORT(ASH_COMPONENTS_CRYPTOHOME) CryptohomeErrorCode
+    ReplyToCryptohomeError(
+        const absl::optional<PrepareVaultForMigrationReply>&);
 
 std::vector<cryptohome::KeyDefinition> GetKeyDataReplyToKeyDefinitions(
     const absl::optional<GetKeyDataReply>& reply) {

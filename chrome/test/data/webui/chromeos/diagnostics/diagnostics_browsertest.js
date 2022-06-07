@@ -46,7 +46,6 @@ this.DiagnosticsAppWithNetwork = class extends PolymerTest {
     return {
       enabled: [
         'chromeos::features::kEnableNetworkingInDiagnosticsApp',
-        'chromeos::features::kDiagnosticsAppNavigation',
       ],
     };
   }
@@ -63,6 +62,8 @@ this.DiagnosticsAppWithInput = class extends PolymerTest {
     return {
       enabled: [
         'chromeos::features::kEnableInputInDiagnosticsApp',
+        'chromeos::features::kEnableTouchpadsInDiagnosticsApp',
+        'chromeos::features::kEnableTouchscreensInDiagnosticsApp',
       ],
     };
   }
@@ -90,6 +91,7 @@ const debug_suites_list = [
   'InputCard',
   'InputList',
   'IpConfigInfoDrawer',
+  'KeyboardTester',
   'MemoryCard',
   'NetworkCard',
   'NetworkInfo',
@@ -108,7 +110,16 @@ const debug_suites_list = [
   'WifiInfo',
 ];
 
-TEST_F('DiagnosticsApp', 'BrowserTest', function() {
+// TODO(crbug.com/1288529): DiagnosticsApp.BrowserTest and
+// DiagnosticsAppWithNetwork.BrowserTest and
+// DiagnosticsAppWithInput.BrowserTest are flaky on ChromeOS.
+GEN('#if BUILDFLAG(IS_CHROMEOS)');
+GEN('# define MAYBE_BrowserTest DISABLED_BrowserTest');
+GEN('#else');
+GEN('# define MAYBE_BrowserTest BrowserTest');
+GEN('#endif');
+
+TEST_F('DiagnosticsApp', 'MAYBE_BrowserTest', function() {
   assertDeepEquals(
       debug_suites_list, Object.keys(test_suites_list),
       'List of registered tests suites and debug suites do not match.\n' +
@@ -116,14 +127,6 @@ TEST_F('DiagnosticsApp', 'BrowserTest', function() {
 
   mocha.run();
 });
-
-// TODO(crbug.com/1288529): DiagnosticsAppWithNetwork.BrowserTest and
-// DiagnosticsAppWithInput.BrowserTest are flaky on ChromeOS.
-GEN('#if BUILDFLAG(IS_CHROMEOS)');
-GEN('# define MAYBE_BrowserTest DISABLED_BrowserTest');
-GEN('#else');
-GEN('# define MAYBE_BrowserTest BrowserTest');
-GEN('#endif');
 
 TEST_F('DiagnosticsAppWithNetwork', 'MAYBE_BrowserTest', function() {
   mocha.run();

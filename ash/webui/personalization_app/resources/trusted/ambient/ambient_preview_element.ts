@@ -10,15 +10,18 @@
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import '../../common/styles.js';
-
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import '../cros_button_style.js';
 
 import {isNonEmptyArray} from '../../common/utils.js';
 import {AmbientModeAlbum, TopicSource} from '../personalization_app.mojom-webui.js';
+import {Paths, PersonalizationRouter} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {getPhotoCount, getTopicSourceName} from '../utils.js';
+import {getPhotoCount, getTopicSourceName, replaceResolutionSuffix} from '../utils.js';
 
+import {setAmbientModeEnabled} from './ambient_controller.js';
+import {getAmbientProvider} from './ambient_interface_provider.js';
 import {AmbientObserver} from './ambient_observer.js';
+import {getTemplate} from './ambient_preview_element.html.js';
 
 export class AmbientPreview extends WithPersonalizationStore {
   static get is() {
@@ -26,11 +29,16 @@ export class AmbientPreview extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
     return {
+      clickable: {
+        type: Boolean,
+        value: false,
+      },
+      ambientModeEnabled_: Boolean,
       albums_: {
         type: Array,
         value: null,
@@ -47,13 +55,21 @@ export class AmbientPreview extends WithPersonalizationStore {
         type: AmbientModeAlbum,
         computed: 'computeFirstPreviewAlbum_(previewAlbums_)',
       },
+      loading_: {
+        type: Boolean,
+        computed: 'computeLoading_(ambientModeEnabled_, albums_, topicSource_)',
+      }
     };
   }
 
+  clickable: boolean;
+
+  private ambientModeEnabled_: boolean|null;
   private albums_: AmbientModeAlbum[]|null;
   private topicSource_: TopicSource|null;
   private previewAlbums_: AmbientModeAlbum[]|null;
   private firstPreviewAlbum_: AmbientModeAlbum|null;
+  private loading_: boolean;
 
   override ready() {
     super.ready();
@@ -62,9 +78,24 @@ export class AmbientPreview extends WithPersonalizationStore {
 
   override connectedCallback() {
     super.connectedCallback();
+    this.watch(
+        'ambientModeEnabled_', state => state.ambient.ambientModeEnabled);
     this.watch('albums_', state => state.ambient.albums);
     this.watch('topicSource_', state => state.ambient.topicSource);
     this.updateFromStore();
+  }
+
+  private computeLoading_(): boolean {
+    return this.ambientModeEnabled_ === null || this.albums_ === null ||
+        this.topicSource_ === null;
+  }
+
+  /** Enable ambient mode and navigates to the ambient subpage. */
+  private async onClickAmbientModeButton_(event: Event) {
+    event.stopPropagation();
+    await setAmbientModeEnabled(
+        /*ambientModeEnabled=*/ true, getAmbientProvider(), this.getStore());
+    PersonalizationRouter.instance().goToRoute(Paths.Ambient);
   }
 
   private computePreviewAlbums_(): AmbientModeAlbum[]|null {
@@ -94,7 +125,12 @@ export class AmbientPreview extends WithPersonalizationStore {
   }
 
   private getPreviewImage_(album: AmbientModeAlbum|null): string {
-    return album && album.url ? album.url.url : '';
+    // Replace the resolution suffix appended at the end of the images
+    // with a new resolution suffix of 512px. This won't impact images
+    // with no resolution suffix.
+    return album && album.url ?
+        replaceResolutionSuffix(album.url.url, '=s512') :
+        '';
   }
 
   private getAlbumTitle_(): string {
@@ -127,7 +163,7 @@ export class AmbientPreview extends WithPersonalizationStore {
       default:
         // For more than 3 selected albums, album description includes the title
         // of the second album and the number of remaining albums.
-        // For example: Sweden 2020, +2 more.
+        // For example: Sweden 2020, +2 more albums.
         return this.i18n(
             'ambientModeMultipleAlbumsDesc', this.previewAlbums_[1].title,
             this.previewAlbums_.length - 2);

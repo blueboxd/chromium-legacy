@@ -12,9 +12,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/token.h"
+#include "chrome/browser/policy/messaging_layer/util/test_request_payload.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AllOf;
 using ::testing::Not;
 
 namespace reporting {
@@ -104,10 +106,10 @@ TEST_P(RecordUploadRequestBuilderTest, AcceptEncryptedRecordsList) {
   }
   auto request_payload = builder.Build();
   ASSERT_TRUE(request_payload.has_value());
-  const auto attach_encryption_settings =
-      request_payload->FindBool(UploadEncryptedReportingRequestBuilder::
-                                    GetAttachEncryptionSettingsPath());
-  EXPECT_EQ(need_encryption_key(), attach_encryption_settings.has_value());
+  EXPECT_THAT(
+      request_payload.value(),
+      AllOf(IsDataUploadRequestValid(),
+            IsEncryptionKeyRequestUploadRequestValid(need_encryption_key())));
   base::Value::List* const record_list = request_payload->FindList(
       UploadEncryptedReportingRequestBuilder::GetEncryptedRecordListPath());
   ASSERT_TRUE(record_list);
@@ -164,17 +166,20 @@ TEST_P(RecordUploadRequestBuilderTest, DenyPoorlyFormedEncryptedRecords) {
   // Finish correctly setting encryption info - expect complete call.
   encryption_info->set_public_key_id(1234);
 
-  EXPECT_TRUE(EncryptedRecordDictionaryBuilder(record).Build().has_value());
+  const auto record_dict = EncryptedRecordDictionaryBuilder(record).Build();
+  ASSERT_TRUE(record_dict.has_value());
+  EXPECT_THAT(record_dict.value(), IsRecordValid<>());
 }
 
 TEST_P(RecordUploadRequestBuilderTest, AcceptRequestId) {
   const auto request_id = base::Token::CreateRandom().ToString();
-  UploadEncryptedReportingRequestBuilder builder;
+  UploadEncryptedReportingRequestBuilder builder(need_encryption_key());
   builder.SetRequestId(request_id);
 
   const auto request_payload = builder.Build();
   ASSERT_TRUE(request_payload.has_value());
-
+  EXPECT_THAT(request_payload.value(),
+              IsEncryptionKeyRequestUploadRequestValid(need_encryption_key()));
   auto* payload_request_id = request_payload->FindString(
       UploadEncryptedReportingRequestBuilder::kRequestId);
   EXPECT_THAT(*payload_request_id, ::testing::StrEq(request_id));
@@ -199,26 +204,29 @@ TEST_P(RecordUploadRequestBuilderTest, DenyRequestIdWhenBadRecordSet) {
 TEST_P(RecordUploadRequestBuilderTest,
        DontBuildCompressionRequestIfNoInformation) {
   EncryptedRecord compressionless_record = GenerateEncryptedRecord("TEST_INFO");
-  EXPECT_FALSE(compressionless_record.has_compression_information());
+  ASSERT_FALSE(compressionless_record.has_compression_information());
 
   absl::optional<base::Value::Dict> compressionless_payload =
       EncryptedRecordDictionaryBuilder(std::move(compressionless_record))
           .Build();
-  DCHECK(compressionless_payload.has_value());
-
+  ASSERT_TRUE(compressionless_payload.has_value());
+  EXPECT_THAT(compressionless_payload.value(), IsRecordValid<>());
   EXPECT_FALSE(compressionless_payload.value().Find(
       EncryptedRecordDictionaryBuilder::GetCompressionInformationPath()));
 
   EncryptedRecord compressed_record =
       GenerateEncryptedRecord("TEST_INFO", true);
-  EXPECT_TRUE(compressed_record.has_compression_information());
+  ASSERT_TRUE(compressed_record.has_compression_information());
 
   absl::optional<base::Value::Dict> compressed_record_payload =
       EncryptedRecordDictionaryBuilder(std::move(compressed_record)).Build();
-  DCHECK(compressed_record_payload.has_value());
-
-  EXPECT_TRUE(compressed_record_payload.value().Find(
-      EncryptedRecordDictionaryBuilder::GetCompressionInformationPath()));
+  ASSERT_TRUE(compressed_record_payload.has_value());
+  EXPECT_THAT(
+      compressed_record_payload.value(),
+      RequestValidityMatcherBuilder<>::CreateRecord()
+          .AppendMatcher(RecordMatcher::SetMode(
+              CompressionInformationMatcher(), RecordMatcher::Mode::RecordOnly))
+          .Build());
 }
 
 INSTANTIATE_TEST_SUITE_P(NeedOrNoNeedKey,

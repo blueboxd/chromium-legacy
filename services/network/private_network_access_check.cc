@@ -19,6 +19,7 @@ using Result = PrivateNetworkAccessCheckResult;
 Result PrivateNetworkAccessCheckInternal(
     const mojom::ClientSecurityState* client_security_state,
     mojom::IPAddressSpace target_address_space,
+    absl::optional<mojom::IPAddressSpace> previous_response_address_space,
     int32_t url_load_options,
     mojom::IPAddressSpace resource_address_space) {
   if (url_load_options & mojom::kURLLoadOptionBlockLocalRequest &&
@@ -28,9 +29,37 @@ Result PrivateNetworkAccessCheckInternal(
   }
 
   if (target_address_space != mojom::IPAddressSpace::kUnknown) {
-    return resource_address_space == target_address_space
-               ? Result::kAllowedByTargetIpAddressSpace
-               : Result::kBlockedByTargetIpAddressSpace;
+    if (resource_address_space == target_address_space) {
+      return Result::kAllowedByTargetIpAddressSpace;
+    }
+
+    if (client_security_state &&
+        client_security_state->private_network_request_policy ==
+            mojom::PrivateNetworkRequestPolicy::kPreflightWarn) {
+      return Result::kAllowedByPolicyPreflightWarn;
+    }
+
+    return Result::kBlockedByTargetIpAddressSpace;
+  }
+
+  if (previous_response_address_space.has_value() &&
+      resource_address_space != *previous_response_address_space) {
+    // `previous_response_address_space` behaves similarly to
+    // `target_address_space`, except `kUnknown` is also subject to checks
+    // (instead absl::nullopt indicates that no check should be performed).
+    //
+    // If the policy is `kPreflightWarn`, the request should not fail just
+    // because of this check - PNA checks are only experimentally turned on
+    // for this request. Further checks should not be run, otherwise we might
+    // return `kBlockedByPolicyPreflightWarn` and trigger a new preflight to be
+    // sent, thus causing https://crbug.com/1279376 all over again.
+    if (client_security_state &&
+        client_security_state->private_network_request_policy ==
+            mojom::PrivateNetworkRequestPolicy::kPreflightWarn) {
+      return Result::kAllowedByPolicyPreflightWarn;
+    }
+
+    return Result::kBlockedByInconsistentIpAddressSpace;
   }
 
   if (!client_security_state) {
@@ -63,10 +92,12 @@ Result PrivateNetworkAccessCheckInternal(
 Result PrivateNetworkAccessCheck(
     const mojom::ClientSecurityState* client_security_state,
     mojom::IPAddressSpace target_address_space,
+    absl::optional<mojom::IPAddressSpace> previous_response_address_space,
     int32_t url_load_options,
     mojom::IPAddressSpace resource_address_space) {
   Result result = PrivateNetworkAccessCheckInternal(
-      client_security_state, target_address_space, url_load_options,
+      client_security_state, target_address_space,
+      previous_response_address_space, url_load_options,
       resource_address_space);
   base::UmaHistogramEnumeration("Security.PrivateNetworkAccess.CheckResult",
                                 result);

@@ -290,10 +290,10 @@ void NativeThemeAura::PaintScrollbarThumb(cc::PaintCanvas* canvas,
     // The edge to which the scrollbar is attached shouldn't have a border.
     gfx::Insets edge_adjust_insets;
     if (part == NativeTheme::kScrollbarHorizontalThumb)
-      edge_adjust_insets = gfx::Insets(0, 0, -kStrokeWidth, 0);
+      edge_adjust_insets.set_bottom(-kStrokeWidth);
     else
-      edge_adjust_insets = gfx::Insets(0, 0, 0, -kStrokeWidth);
-    stroke_rect.Inset(stroke_insets + edge_adjust_insets);
+      edge_adjust_insets.set_right(-kStrokeWidth);
+    stroke_rect.Inset(stroke_insets + gfx::InsetsF(edge_adjust_insets));
     canvas->drawRect(gfx::RectFToSkRect(stroke_rect), flags);
 
     // Inset the all the edges edges so we fill-in the stroke below.
@@ -328,9 +328,9 @@ void NativeThemeAura::PaintScrollbarThumb(cc::PaintCanvas* canvas,
     const int extra_padding =
         (scrollbar_button_length() == 0) ? kThumbPadding : 0;
     if (part == NativeTheme::kScrollbarVerticalThumb)
-      thumb_rect.Inset(kThumbPadding, extra_padding);
+      thumb_rect.Inset(gfx::Insets::VH(extra_padding, kThumbPadding));
     else
-      thumb_rect.Inset(extra_padding, kThumbPadding);
+      thumb_rect.Inset(gfx::Insets::VH(kThumbPadding, extra_padding));
 
     thumb_color =
         (InForcedColorsMode() && features::IsForcedColorsEnabled())

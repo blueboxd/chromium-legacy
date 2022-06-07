@@ -242,6 +242,15 @@ void AddNativeChromeColorMixer(ui::ColorProvider* provider,
       GetCaptionForegroundColor(ui::kColorFrameActive);
   mixer[kColorCaptionForegroundInactive] =
       SetAlpha(GetCaptionForegroundColor(ui::kColorFrameInactive), 0x66);
+  mixer[kColorTryChromeBackground] = {SkColorSetRGB(0x1F, 0x1F, 0x1F)};
+  mixer[kColorTryChromeBorder] = {SkColorSetARGB(0x80, 0x80, 0x80, 0x80)};
+  mixer[kColorTryChromeButtonBackgroundAccept] = {
+      SkColorSetRGB(0x00, 0x78, 0xDA)};
+  mixer[kColorTryChromeButtonBackgroundNoThanks] = {
+      SkColorSetA(SK_ColorWHITE, 0x33)};
+  mixer[kColorTryChromeButtonForeground] = {SK_ColorWHITE};
+  mixer[kColorTryChromeForeground] = {SkColorSetA(SK_ColorWHITE, 0xAD)};
+  mixer[kColorTryChromeHeaderForeground] = {SK_ColorWHITE};
 
   if (key.color_mode == ui::ColorProviderManager::ColorMode::kLight) {
     mixer[kColorNewTabPageBackground] = {ui::kColorNativeWindow};

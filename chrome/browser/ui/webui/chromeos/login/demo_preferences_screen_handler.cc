@@ -15,10 +15,10 @@ constexpr StaticOobeScreenId DemoPreferencesScreenView::kScreenId;
 
 DemoPreferencesScreenView::~DemoPreferencesScreenView() = default;
 
-DemoPreferencesScreenHandler::DemoPreferencesScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.DemoPreferencesScreen.userActed");
+DemoPreferencesScreenHandler::DemoPreferencesScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.DemoPreferencesScreen.userActed");
 }
 
 DemoPreferencesScreenHandler::~DemoPreferencesScreenHandler() {
@@ -27,14 +27,14 @@ DemoPreferencesScreenHandler::~DemoPreferencesScreenHandler() {
 }
 
 void DemoPreferencesScreenHandler::Show() {
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void DemoPreferencesScreenHandler::Hide() {}
 
 void DemoPreferencesScreenHandler::Bind(DemoPreferencesScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void DemoPreferencesScreenHandler::SetInputMethodId(
@@ -42,7 +42,7 @@ void DemoPreferencesScreenHandler::SetInputMethodId(
   CallJS("login.DemoPreferencesScreen.setSelectedKeyboard", input_method);
 }
 
-void DemoPreferencesScreenHandler::Initialize() {}
+void DemoPreferencesScreenHandler::InitializeDeprecated() {}
 
 void DemoPreferencesScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -50,34 +50,14 @@ void DemoPreferencesScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_TITLE);
   builder->Add("demoPreferencesNextButtonLabel",
                IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_NEXT_BUTTON_LABEL);
-  builder->Add("languageDropdownTitle", IDS_LANGUAGE_DROPDOWN_TITLE);
-  builder->Add("languageDropdownLabel", IDS_LANGUAGE_DROPDOWN_LABEL);
-  builder->Add("keyboardDropdownTitle", IDS_KEYBOARD_DROPDOWN_TITLE);
-  builder->Add("keyboardDropdownLabel", IDS_KEYBOARD_DROPDOWN_LABEL);
   builder->Add("countryDropdownTitle", IDS_COUNTRY_DROPDOWN_TITLE);
   builder->Add("countryDropdownLabel", IDS_COUNTRY_DROPDOWN_LABEL);
 }
 
 void DemoPreferencesScreenHandler::RegisterMessages() {
   BaseScreenHandler::RegisterMessages();
-  AddCallback("DemoPreferencesScreen.setLocaleId",
-              &DemoPreferencesScreenHandler::HandleSetLocaleId);
-  AddCallback("DemoPreferencesScreen.setInputMethodId",
-              &DemoPreferencesScreenHandler::HandleSetInputMethodId);
   AddCallback("DemoPreferencesScreen.setDemoModeCountry",
               &DemoPreferencesScreenHandler::HandleSetDemoModeCountry);
-}
-
-void DemoPreferencesScreenHandler::HandleSetLocaleId(
-    const std::string& language_id) {
-  if (screen_)
-    screen_->SetLocale(language_id);
-}
-
-void DemoPreferencesScreenHandler::HandleSetInputMethodId(
-    const std::string& input_method_id) {
-  if (screen_)
-    screen_->SetInputMethod(input_method_id);
 }
 
 void DemoPreferencesScreenHandler::HandleSetDemoModeCountry(

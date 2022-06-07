@@ -6,8 +6,10 @@ package org.chromium.chrome.browser.suggestions.tile;
 
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -16,8 +18,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.suggestions.tile.MostVisitedListViewBinder.ViewHolder;
 import org.chromium.chrome.browser.ui.native_page.TouchEnabledDelegate;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -36,7 +37,6 @@ public class MostVisitedListCoordinator implements ConfigurationChangedObserver 
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private final MostVisitedListMediator mMediator;
     private final WindowAndroid mWindowAndroid;
-    private final MvTilesLayout mMvTilesLayout;
     private final UiConfig mUiConfig;
     private final PropertyModelChangeProcessor mModelChangeProcessor;
     private TileRenderer mRenderer;
@@ -48,36 +48,32 @@ public class MostVisitedListCoordinator implements ConfigurationChangedObserver 
      * @param activityLifecycleDispatcher Dispatcher for activity lifecycle events,
      *                                    e.g.configuration changes. We need this to adjust the
      *                                    paddings and margins of the tile views.
-     * @param mvTilesLayout The view of most visisted tiles layout.
+     * @param mvTilesContainerLayout The container view of most visited tiles layout.
      * @param windowAndroid The current {@link WindowAndroid}
-     * @param parentViewLeftAndRightPaddings The margins of the parent view. We need this to adjust
-     *                                       the paddings and margins of the tile views.
+     * @param shouldShowSkeletonUIPreNative Whether to show the background icon for pre-native
+     *         surface.
      */
     public MostVisitedListCoordinator(Activity activity,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher, MvTilesLayout mvTilesLayout,
-            WindowAndroid windowAndroid, int parentViewLeftAndRightPaddings) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher, View mvTilesContainerLayout,
+            WindowAndroid windowAndroid, boolean shouldShowSkeletonUIPreNative) {
         mActivity = activity;
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mWindowAndroid = windowAndroid;
-        mMvTilesLayout = mvTilesLayout;
-        mUiConfig = new UiConfig(mMvTilesLayout);
+        MvTilesLayout mvTilesLayout = mvTilesContainerLayout.findViewById(R.id.mv_tiles_layout);
+        mUiConfig = new UiConfig(mvTilesLayout);
 
         PropertyModel propertyModel = new PropertyModel(MostVisitedListProperties.ALL_KEYS);
-        mModelChangeProcessor = PropertyModelChangeProcessor.create(
-                propertyModel, mMvTilesLayout, MostVisitedListViewBinder::bind);
+        mModelChangeProcessor = PropertyModelChangeProcessor.create(propertyModel,
+                new ViewHolder(mvTilesContainerLayout, mvTilesLayout),
+                MostVisitedListViewBinder::bind);
 
         mRenderer =
                 new TileRenderer(mActivity, SuggestionsConfig.TileStyle.MODERN, TITLE_LINES, null);
 
-        boolean shouldShowPlaceholderPreNative =
-                ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mActivity)
-                && TabUiFeatureUtilities.supportInstantStart(
-                        DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity), mActivity);
         boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity);
-        ;
-        mMediator = new MostVisitedListMediator(activity.getResources(), mvTilesLayout, mRenderer,
-                propertyModel, shouldShowPlaceholderPreNative, parentViewLeftAndRightPaddings,
-                isTablet);
+
+        mMediator = new MostVisitedListMediator(activity.getResources(), mvTilesContainerLayout,
+                mRenderer, propertyModel, shouldShowSkeletonUIPreNative, isTablet);
     }
 
     /**
@@ -111,7 +107,6 @@ public class MostVisitedListCoordinator implements ConfigurationChangedObserver 
 
     /** Called when the TasksSurface is hidden or NewTabPageLayout is destroyed. */
     public void destroyMVTiles() {
-        if (mMvTilesLayout != null) mMvTilesLayout.destroy();
         mActivityLifecycleDispatcher.unregister(this);
 
         if (mOfflinePageBridge != null) mOfflinePageBridge = null;

@@ -29,12 +29,12 @@
 #include "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -103,6 +103,13 @@
     _dataManager.consumer = self;
   }
   return self;
+}
+
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent) {
+    [self.delegate clearBrowsingDataTableViewControllerWasRemoved:self];
+  }
 }
 
 #pragma mark - Property
@@ -435,7 +442,7 @@
     (UIPresentationController*)presentationController {
   base::RecordAction(
       base::UserMetricsAction("IOSClearBrowsingDataCloseWithSwipe"));
-  // Call prepareForDismissal to clean up state and  stop the Coordinator.
+  // Call prepareForDismissal to clean up state and stop the Coordinator.
   [self prepareForDismissal];
 }
 

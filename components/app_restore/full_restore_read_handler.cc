@@ -11,15 +11,14 @@
 #include "ash/constants/app_types.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/desk_template_read_handler.h"
 #include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_file_handler.h"
-#include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/lacros_read_handler.h"
 #include "components/app_restore/restore_data.h"
@@ -66,7 +65,7 @@ void FullRestoreReadHandler::OnWindowInitialized(aura::Window* window) {
         arc_read_handler_->HasRestoreData(window_id)) {
       observed_windows_.AddObservation(window);
       arc_read_handler_->AddArcWindowCandidate(window);
-      FullRestoreInfo::GetInstance()->OnWindowInitialized(window);
+      app_restore::AppRestoreInfo::GetInstance()->OnWindowInitialized(window);
     }
     return;
   }
@@ -87,7 +86,7 @@ void FullRestoreReadHandler::OnWindowInitialized(aura::Window* window) {
   }
 
   observed_windows_.AddObservation(window);
-  FullRestoreInfo::GetInstance()->OnWindowInitialized(window);
+  app_restore::AppRestoreInfo::GetInstance()->OnWindowInitialized(window);
 }
 
 void FullRestoreReadHandler::OnWindowAddedToRootWindow(aura::Window* window) {

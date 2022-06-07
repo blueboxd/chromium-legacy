@@ -88,7 +88,7 @@ class FeedbackHelper {
     chrome.send('dialogClose');
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   showAssistantLogsInfo() {
     chrome.send('showAssistantLogsInfo');
   }
@@ -136,11 +136,11 @@ function buildWordMatcher(words: string[]): RegExp {
 /**
  * Regular expression to check for all variants of blu[e]toot[h] with or without
  * space between the words; for BT when used as an individual word, or as two
- * individual characters, and for BLE when used as an individual word. Case
- * insensitive matching.
+ * individual characters, and for BLE, BlueZ, and Floss when used as an
+ * individual word. Case insensitive matching.
  */
-const btRegEx: RegExp =
-    new RegExp('blu[e]?[ ]?toot[h]?|\\bb[ ]?t\\b|\\bble\\b', 'i');
+const btRegEx: RegExp = new RegExp(
+    'blu[e]?[ ]?toot[h]?|\\bb[ ]?t\\b|\\bble\\b|\\bfloss\\b|\\bbluez\\b', 'i');
 
 /**
  * Regular expression to check for wifi-related keywords.
@@ -190,11 +190,24 @@ const smartLockRegEx: RegExp = new RegExp('(smart|easy)[ ]?(un)?lock', 'i');
 const nearbyShareRegEx: RegExp = new RegExp('nearby|phone', 'i');
 
 /**
+ * Regular expression to check for keywords related to Fast Pair like
+ * "fast pair".
+ * Case insensitive matching.
+ */
+const fastPairRegEx: RegExp = new RegExp('fast[ ]?pair', 'i');
+
+/**
+ * Regular expression to check for Bluetooth device specific keywords.
+ */
+const btDeviceRegEx =
+    buildWordMatcher(['apple', 'allegro', 'pixelbud', 'microsoft', 'sony']);
+
+/**
  * Reads the selected file when the user selects a file.
  * @param fileSelectedEvent The onChanged event for the file input box.
  */
 function onFileSelected(fileSelectedEvent: Event) {
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   // This is needed on CrOS. Otherwise, the feedback window will stay behind
   // the Chrome window.
   feedbackHelper.showDialog();
@@ -262,7 +275,7 @@ function setupLinkHandlers(
   };
 }
 
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 /**
  * Opens a new window with chrome://slow_trace, downloading performance data.
  */
@@ -280,7 +293,8 @@ function checkForSendBluetoothLogs(inputEvent: Event) {
   const value = (inputEvent.target as HTMLInputElement).value;
   const isRelatedToBluetooth = btRegEx.test(value) ||
       cantConnectRegEx.test(value) || tetherRegEx.test(value) ||
-      smartLockRegEx.test(value) || nearbyShareRegEx.test(value);
+      smartLockRegEx.test(value) || nearbyShareRegEx.test(value) ||
+      fastPairRegEx.test(value) || btDeviceRegEx.test(value);
   $('bluetooth-checkbox-container').hidden = !isRelatedToBluetooth;
 }
 
@@ -407,7 +421,7 @@ function sendReport(): boolean {
     useSystemInfo = true;
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   const assistantCheckbox =
       $('assistant-info-checkbox') as HTMLInputElement | null;
   if (assistantCheckbox != null && assistantCheckbox.checked &&
@@ -467,7 +481,7 @@ function cancel(e: Event) {
   }
 }
 
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 /**
  * Update the page when performance feedback state is changed.
  */
@@ -610,7 +624,7 @@ function initialize() {
       $('attach-file-note').hidden = true;
     }
 
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     if (feedbackInfo.traceId && ($('performance-info-area'))) {
       $('performance-info-area').hidden = false;
       ($('performance-info-checkbox') as HTMLInputElement).checked = true;
@@ -673,7 +687,7 @@ function initialize() {
             false /* useAppWindow */);
       }
 
-      // <if expr="chromeos">
+      // <if expr="chromeos_ash">
       const bluetoothLogsInfoLinkElement = $('bluetooth-logs-info-link');
       if (bluetoothLogsInfoLinkElement) {
         bluetoothLogsInfoLinkElement.onclick = function(e) {
@@ -720,7 +734,7 @@ function initialize() {
     $('send-report-button').onclick = sendReport;
     $('cancel-button').onclick = cancel;
     $('remove-attached-file').onclick = clearAttachedFile;
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     $('performance-info-checkbox')
         .addEventListener('change', performanceFeedbackChanged);
     // </if>

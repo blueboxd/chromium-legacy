@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -1749,7 +1750,8 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step2(
     std::string expected_response = base::StringPrintf("\"i%d\"", i);
     GetRightFrame()->ExecuteJavaScriptWithUserGestureForTests(
         base::UTF8ToUTF16(base::StringPrintf(
-            "domAutomationController.send(%s);", expected_response.c_str())));
+            "domAutomationController.send(%s);", expected_response.c_str())),
+        base::NullCallback());
 
     // Wait until our response comes back (it might be mixed with responses
     // carrying events that are sent by event_monitoring.js).
@@ -2074,5 +2076,77 @@ INSTANTIATE_TEST_SUITE_P(
     DragAndDropBrowserTest,
     ::testing::Combine(::testing::Values(true),
                        ::testing::ValuesIn(ui_scaling_factors)));
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class DragAndDropBrowserTestNoParam : public InProcessBrowserTest {
+ protected:
+  void SimulateDragFromOmniboxToWebContents(base::OnceClosure quit) {
+    chrome::FocusLocationBar(browser());
+
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
+    OmniboxViewViews* omnibox_view =
+        browser_view->toolbar()->location_bar()->omnibox_view();
+
+    // Simulate mouse move to omnibox.
+    gfx::Point point;
+    views::View::ConvertPointToScreen(omnibox_view, &point);
+    EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        point.x(), point.y(),
+        base::BindOnce(&DragAndDropBrowserTestNoParam::Step2,
+                       base::Unretained(this), std::move(quit))));
+  }
+
+  void Step2(base::OnceClosure quit) {
+    // Simulate mouse down.
+    EXPECT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
+        ui_controls::LEFT, ui_controls::DOWN,
+        base::BindOnce(&DragAndDropBrowserTestNoParam::Step3,
+                       base::Unretained(this), std::move(quit))));
+  }
+
+  void Step3(base::OnceClosure quit) {
+    // Simulate mouse move to WebContents.
+    // Keep sending mouse move until the current tab is closed.
+    // After the current tab is closed, send mouse up to end drag and drop.
+    if (browser()->tab_strip_model()->count() == 1) {
+      EXPECT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
+          ui_controls::LEFT, ui_controls::UP, std::move(quit)));
+      return;
+    }
+
+    gfx::Rect bounds = browser()
+                           ->tab_strip_model()
+                           ->GetActiveWebContents()
+                           ->GetContainerBounds();
+    EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        bounds.CenterPoint().x(), bounds.CenterPoint().y(),
+        base::BindOnce(&DragAndDropBrowserTestNoParam::Step3,
+                       base::Unretained(this), std::move(quit))));
+  }
+};
+
+// https://crbug.com/1312505
+IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTestNoParam, CloseTabDuringDrag) {
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  ui_test_utils::TabAddedWaiter wait_for_new_tab(browser());
+
+  // Create a new tab that closes itself on dragover event.
+  ASSERT_TRUE(ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      "window.open('javascript:document.addEventListener("
+      "\"dragover\", () => {window.close(); })');"));
+
+  wait_for_new_tab.Wait();
+
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  base::RunLoop loop;
+  SimulateDragFromOmniboxToWebContents(loop.QuitClosure());
+  loop.Run();
+
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace chrome

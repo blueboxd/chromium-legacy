@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_tile_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_parent_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_selection_actions.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_shortcut_tile_view.h"
@@ -127,12 +128,29 @@
       [self.whatsNewView.heightAnchor constraintEqualToConstant:size.height]
     ]];
   }
+  NSUInteger index = 0;
   if (self.mostVisitedViews) {
     self.mostVisitedStackView = [[UIStackView alloc] init];
     self.mostVisitedStackView.axis = UILayoutConstraintAxisHorizontal;
     self.mostVisitedStackView.alignment = UIStackViewAlignmentTop;
     self.mostVisitedStackView.distribution = UIStackViewDistributionFillEqually;
     self.mostVisitedStackView.spacing = horizontalSpacing;
+    for (ContentSuggestionsMostVisitedTileView* view in self.mostVisitedViews) {
+      view.accessibilityIdentifier = [NSString
+          stringWithFormat:
+              @"%@%li",
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
+      view.menuProvider = self.menuProvider;
+      UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(contentSuggestionsElementTapped:)];
+      [view addGestureRecognizer:tapRecognizer];
+      tapRecognizer.enabled = YES;
+      [self.mostVisitedTapRecognizers addObject:tapRecognizer];
+      [self.mostVisitedStackView addArrangedSubview:view];
+      index++;
+    }
     [self addUIElement:self.mostVisitedStackView
         withCustomBottomSpacing:kMostVisitedBottomMargin];
     CGFloat width =
@@ -144,7 +162,6 @@
       [self.mostVisitedStackView.heightAnchor
           constraintEqualToConstant:size.height]
     ]];
-    [self populateMostVisitedModule];
   }
   if (self.shortcutsViews) {
     self.shortcutsStackView = [[UIStackView alloc] init];
@@ -152,12 +169,12 @@
     self.shortcutsStackView.alignment = UIStackViewAlignmentTop;
     self.shortcutsStackView.distribution = UIStackViewDistributionFillEqually;
     self.shortcutsStackView.spacing = horizontalSpacing;
-    NSUInteger index = 0;
     for (ContentSuggestionsShortcutTileView* view in self.shortcutsViews) {
       view.accessibilityIdentifier = [NSString
           stringWithFormat:
               @"%@%li",
-              kContentSuggestionsShortcutsAccessibilityIdentifierPrefix, index];
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
       UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
           initWithTarget:self
                   action:@selector(contentSuggestionsElementTapped:)];
@@ -231,6 +248,14 @@
   }
 }
 
+- (void)updateReturnToRecentTabTileWithConfig:
+    (ContentSuggestionsReturnToRecentTabItem*)config {
+  if (config.icon) {
+    self.returnToRecentTabTile.iconImageView.image = config.icon;
+    self.returnToRecentTabTile.iconImageView.hidden = NO;
+  }
+}
+
 - (void)hideReturnToRecentTabTile {
   [self.returnToRecentTabTile removeFromSuperview];
   self.returnToRecentTabTile = nil;
@@ -253,14 +278,17 @@
 
 - (void)setMostVisitedTilesWithConfigs:
     (NSArray<ContentSuggestionsMostVisitedItem*>*)configs {
+  if (!self.mostVisitedViews) {
+    self.mostVisitedViews = [NSMutableArray array];
+  }
+  BOOL refreshingTiles = NO;
   if ([self.mostVisitedViews count]) {
+    refreshingTiles = YES;
     for (ContentSuggestionsMostVisitedTileView* view in self.mostVisitedViews) {
       [view removeFromSuperview];
     }
     [self.mostVisitedViews removeAllObjects];
     [self.mostVisitedTapRecognizers removeAllObjects];
-  } else {
-    self.mostVisitedViews = [NSMutableArray array];
   }
   NSInteger index = 0;
   for (ContentSuggestionsMostVisitedItem* item in configs) {
@@ -268,13 +296,23 @@
         [[ContentSuggestionsMostVisitedTileView alloc]
             initWithConfiguration:item];
     view.menuProvider = self.menuProvider;
-    view.accessibilityIdentifier = [NSString
-        stringWithFormat:
-            @"%@%li",
-            kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix, index];
     [self.mostVisitedViews addObject:view];
+    if (refreshingTiles) {
+      UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(contentSuggestionsElementTapped:)];
+      [view addGestureRecognizer:tapRecognizer];
+      tapRecognizer.enabled = YES;
+      [self.mostVisitedTapRecognizers addObject:tapRecognizer];
+      view.accessibilityIdentifier = [NSString
+          stringWithFormat:
+              @"%@%li",
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
+      [self.mostVisitedStackView addArrangedSubview:view];
+      index++;
+    }
   }
-  [self populateMostVisitedModule];
 }
 
 - (void)setShortcutTilesWithConfigs:
@@ -406,52 +444,6 @@
   [self.verticalStackView addArrangedSubview:view];
   if (spacing > 0) {
     [self.verticalStackView setCustomSpacing:spacing afterView:view];
-  }
-}
-
-// Add the elements in |mostVisitedViews| into |verticalStackView|, constructing
-// |verticalStackView| beforehand if it has not been yet.
-- (void)populateMostVisitedModule {
-  // If viewDidLoad has been called before the first valid Most Visited Tiles
-  // are available, construct |mostVisitedStackView|.
-  if (self.verticalStackView && !self.mostVisitedStackView) {
-    self.mostVisitedStackView = [[UIStackView alloc] init];
-    self.mostVisitedStackView.axis = UILayoutConstraintAxisHorizontal;
-    self.mostVisitedStackView.alignment = UIStackViewAlignmentTop;
-    self.mostVisitedStackView.distribution = UIStackViewDistributionFillEqually;
-    self.mostVisitedStackView.spacing =
-        ContentSuggestionsTilesHorizontalSpacing(self.traitCollection);
-    // Find correct insertion position in the stack.
-    int insertionIndex = 0;
-    if (self.returnToRecentTabTile) {
-      insertionIndex++;
-    }
-    if (self.whatsNewView) {
-      insertionIndex++;
-    }
-    [self.verticalStackView insertArrangedSubview:self.mostVisitedStackView
-                                          atIndex:insertionIndex];
-    [self.verticalStackView setCustomSpacing:kMostVisitedBottomMargin
-                                   afterView:self.mostVisitedStackView];
-    CGFloat width =
-        MostVisitedTilesContentHorizontalSpace(self.traitCollection);
-    CGSize size =
-        MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
-    [NSLayoutConstraint activateConstraints:@[
-      [self.mostVisitedStackView.widthAnchor constraintEqualToConstant:width],
-      [self.mostVisitedStackView.heightAnchor
-          constraintEqualToConstant:size.height]
-    ]];
-  }
-  for (ContentSuggestionsMostVisitedTileView* view in self.mostVisitedViews) {
-    view.menuProvider = self.menuProvider;
-    UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
-        initWithTarget:self
-                action:@selector(contentSuggestionsElementTapped:)];
-    [view addGestureRecognizer:tapRecognizer];
-    tapRecognizer.enabled = YES;
-    [self.mostVisitedTapRecognizers addObject:tapRecognizer];
-    [self.mostVisitedStackView addArrangedSubview:view];
   }
 }
 

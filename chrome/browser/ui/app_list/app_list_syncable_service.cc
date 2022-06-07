@@ -50,7 +50,9 @@
 #include "components/app_constants/constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -124,18 +126,25 @@ bool AppIsDefault(Profile* profile, const std::string& id) {
 }
 
 void SetAppIsDefaultForTest(Profile* profile, const std::string& id) {
-  apps::mojom::AppPtr delta = apps::mojom::App::New();
-  delta->app_type = apps::mojom::AppType::kChromeApp;
-  delta->app_id = id;
-  delta->install_reason = apps::mojom::InstallReason::kDefault;
+  apps::AppPtr delta =
+      std::make_unique<apps::App>(apps::AppType::kChromeApp, id);
+  delta->install_reason = apps::InstallReason::kDefault;
 
-  std::vector<apps::mojom::AppPtr> deltas;
-  deltas.push_back(std::move(delta));
-
-  apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->AppRegistryCache()
-      .OnApps(std::move(deltas), apps::mojom::AppType::kChromeApp,
-              false /* should_notify_initialized */);
+  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
+    std::vector<apps::AppPtr> deltas;
+    deltas.push_back(std::move(delta));
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->AppRegistryCache()
+        .OnApps(std::move(deltas), apps::AppType::kChromeApp,
+                false /* should_notify_initialized */);
+  } else {
+    std::vector<apps::mojom::AppPtr> mojom_deltas;
+    mojom_deltas.push_back(apps::ConvertAppToMojomApp(delta));
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->AppRegistryCache()
+        .OnApps(std::move(mojom_deltas), apps::mojom::AppType::kChromeApp,
+                false /* should_notify_initialized */);
+  }
 }
 
 bool IsUnRemovableDefaultApp(const std::string& id) {
@@ -180,32 +189,32 @@ void UpdateSyncItemInLocalStorage(
     dict_item = pref_update->SetKey(sync_item->item_id,
                                     base::Value(base::Value::Type::DICTIONARY));
   }
-
-  dict_item->SetKey(kNameKey, base::Value(sync_item->item_name));
-  dict_item->SetKey(kParentIdKey, base::Value(sync_item->parent_id));
-  dict_item->SetKey(kPositionKey,
-                    base::Value(sync_item->item_ordinal.IsValid()
-                                    ? sync_item->item_ordinal.ToInternalValue()
-                                    : std::string()));
-  dict_item->SetKey(
+  base::Value::Dict& dict_item_dict = dict_item->GetDict();
+  dict_item_dict.Set(kNameKey, base::Value(sync_item->item_name));
+  dict_item_dict.Set(kParentIdKey, base::Value(sync_item->parent_id));
+  dict_item_dict.Set(kPositionKey,
+                     base::Value(sync_item->item_ordinal.IsValid()
+                                     ? sync_item->item_ordinal.ToInternalValue()
+                                     : std::string()));
+  dict_item_dict.Set(
       kPinPositionKey,
       base::Value(sync_item->item_pin_ordinal.IsValid()
                       ? sync_item->item_pin_ordinal.ToInternalValue()
                       : std::string()));
-  dict_item->SetKey(kTypeKey,
-                    base::Value(static_cast<int>(sync_item->item_type)));
+  dict_item_dict.Set(kTypeKey,
+                     base::Value(static_cast<int>(sync_item->item_type)));
 
   if (ash::features::IsLauncherItemColorSyncEnabled()) {
     // Handle the item color.
     if (sync_item->item_color.IsValid()) {
-      dict_item->SetKey(kBackgroundColorKey,
-                        base::Value(sync_pb::AppListSpecifics::ColorGroup_Name(
-                            sync_item->item_color.background_color())));
-      dict_item->SetKey(kHueKey, base::Value(sync_item->item_color.hue()));
-    } else if (dict_item->FindKey(kBackgroundColorKey)) {
-      dict_item->RemoveKey(kBackgroundColorKey);
-      DCHECK(dict_item->FindKey(kHueKey));
-      dict_item->RemoveKey(kHueKey);
+      dict_item_dict.Set(kBackgroundColorKey,
+                         base::Value(sync_pb::AppListSpecifics::ColorGroup_Name(
+                             sync_item->item_color.background_color())));
+      dict_item_dict.Set(kHueKey, base::Value(sync_item->item_color.hue()));
+    } else if (dict_item_dict.Find(kBackgroundColorKey)) {
+      dict_item_dict.Remove(kBackgroundColorKey);
+      DCHECK(dict_item_dict.Find(kHueKey));
+      dict_item_dict.Remove(kHueKey);
     }
   }
 }
@@ -447,8 +456,8 @@ void AppListSyncableService::InitFromLocalStorage() {
       LOG(ERROR) << "Dictionary not found for " << item.first + ".";
       continue;
     }
-
-    absl::optional<int> type = item.second.FindIntKey(kTypeKey);
+    const base::Value::Dict& item_dict = item.second.GetDict();
+    absl::optional<int> type = item_dict.FindInt(kTypeKey);
     if (!type) {
       LOG(ERROR) << "Item type is not set in local storage for " << item.second
                  << ".";
@@ -459,17 +468,15 @@ void AppListSyncableService::InitFromLocalStorage() {
         item.first,
         static_cast<sync_pb::AppListSpecifics::AppListItemType>(*type));
 
-    const std::string* maybe_item_name = item.second.FindStringKey(kNameKey);
+    const std::string* maybe_item_name = item_dict.FindString(kNameKey);
     if (maybe_item_name)
       sync_item->item_name = *maybe_item_name;
-    const std::string* maybe_parent_id =
-        item.second.FindStringKey(kParentIdKey);
+    const std::string* maybe_parent_id = item_dict.FindString(kParentIdKey);
     if (maybe_parent_id)
       sync_item->parent_id = *maybe_parent_id;
 
-    const std::string* position = item.second.FindStringKey(kPositionKey);
-    const std::string* pin_position =
-        item.second.FindStringKey(kPinPositionKey);
+    const std::string* position = item_dict.FindString(kPositionKey);
+    const std::string* pin_position = item_dict.FindString(kPinPositionKey);
     if (position && !position->empty())
       sync_item->item_ordinal = syncer::StringOrdinal(*position);
     if (pin_position && !pin_position->empty())
@@ -480,7 +487,7 @@ void AppListSyncableService::InitFromLocalStorage() {
         item.second.FindKey(kBackgroundColorKey)) {
       // Retrieve the background color.
       const std::string* background_color_internal_string =
-          item.second.FindStringKey(kBackgroundColorKey);
+          item_dict.FindString(kBackgroundColorKey);
       sync_pb::AppListSpecifics::ColorGroup background_color;
       sync_pb::AppListSpecifics::ColorGroup_Parse(
           background_color_internal_string ? *background_color_internal_string
@@ -488,9 +495,9 @@ void AppListSyncableService::InitFromLocalStorage() {
           &background_color);
 
       // Retrieve the hue.
-      DCHECK(item.second.FindKey(kHueKey));
+      DCHECK(item_dict.Find(kHueKey));
       int hue =
-          item.second.FindIntKey(kHueKey).value_or(ash::IconColor::kHueInvalid);
+          item_dict.FindInt(kHueKey).value_or(ash::IconColor::kHueInvalid);
 
       sync_item->item_color = ash::IconColor(background_color, hue);
 

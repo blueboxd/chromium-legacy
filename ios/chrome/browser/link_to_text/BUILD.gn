@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/web/js_compile.gni")
+import("//ios/web/public/js_messaging/optimize_js.gni")
 
 source_set("link_to_text") {
   sources = [
@@ -50,6 +50,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "link_to_text_java_script_feature_unittest.mm",
     "link_to_text_tab_helper_unittest.mm",
     "link_to_text_utils_unittest.mm",
   ]
@@ -57,16 +58,18 @@ source_set("unit_tests") {
     ":internal",
     ":link_to_text",
     "//base",
+    "//base/test:test_support",
+    "//components/shared_highlighting/core/common",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//url",
   ]
 }
 
-js_compile_bundle("link_to_text_js") {
+optimize_js("link_to_text_js") {
   visibility = [ ":link_to_text" ]
-  closure_entry_point = "__crWeb.linkToText"
 
+  primary_script = "resources/link_to_text.js"
   sources = [
     "//third_party/text-fragments-polyfill/src/src/fragment-generation-utils.js",
     "//third_party/text-fragments-polyfill/src/src/text-fragment-utils.js",

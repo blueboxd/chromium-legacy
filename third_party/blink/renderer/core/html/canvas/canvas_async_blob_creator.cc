@@ -13,6 +13,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -471,7 +472,7 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
                                 base::TimeTicks::Now() - start_time_,
                                 image_->width(), image_->height());
 
-  if (IdentifiabilityStudySettings::Get()->IsTypeAllowed(
+  if (IdentifiabilityStudySettings::Get()->ShouldSampleType(
           blink::IdentifiableSurface::Type::kCanvasReadback)) {
     // Creating this ImageDataBuffer has some overhead, namely getting the
     // SkImage and computing the pixmap. We need the StaticBitmapImage to be

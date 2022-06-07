@@ -103,7 +103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.FingerprintSetupScreen.UserActions"
-    enum="FingerprintSetupScreenUserAction" expires_after="2022-04-24">
+    enum="FingerprintSetupScreenUserAction" expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -112,7 +112,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="OOBE.GaiaLoginTime" units="ms" expires_after="2022-04-01">
+<histogram name="OOBE.GaiaLoginTime" units="ms" expires_after="2022-12-01">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -221,7 +221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.PinSetupScreen.UserActions"
-    enum="PinSetupScreenUserAction" expires_after="2022-04-10">
+    enum="PinSetupScreenUserAction" expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -305,7 +305,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.StepCompletionTimeByExitReason" units="ms"
-    expires_after="2022-04-24">
+    expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>Time spent on specific OOBE screen grouped by exit reason.</summary>
@@ -323,8 +323,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.Behavior" enum="SyncConsentBehavior"
-    expires_after="2022-04-24">
-  <owner>rsorokin@chromium.org</owner>
+    expires_after="2023-04-24">
+  <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Whether the sync consent screen was shown, skipped with sync disabled, or
@@ -335,8 +335,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.IsCapabilityKnown" enum="BooleanKnown"
-    expires_after="2022-04-10">
-  <owner>yunkez@google.com</owner>
+    expires_after="2023-04-10">
+  <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Indicates whether account capability information is fetched for user when
@@ -345,8 +345,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.IsMinorUser" enum="Boolean"
-    expires_after="2022-04-10">
-  <owner>yunkez@google.com</owner>
+    expires_after="2023-04-10">
+  <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Indicates whether the current user is a minor user (impacted by AADC
@@ -356,8 +356,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.LoadingTime" units="ms"
-    expires_after="2022-04-10">
-  <owner>yunkez@google.com</owner>
+    expires_after="2023-04-10">
+  <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Records the amount of time while waiting for sync engine to be initialized,
@@ -366,7 +366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.ReviewFollowingSetup"
-    enum="BooleanChecked" expires_after="2022-04-24">
+    enum="BooleanChecked" expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -376,8 +376,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.SyncEnabled" enum="BooleanEnabled"
-    expires_after="2022-04-24">
-  <owner>rsorokin@chromium.org</owner>
+    expires_after="2023-04-24">
+  <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Final state of the sync service at the end of the sync consent OOBE step.
@@ -387,8 +387,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.SyncConsentScreen.UserChoice"
-    enum="SyncConsentUserChoice" expires_after="2022-04-10">
-  <owner>rsorokin@chromium.org</owner>
+    enum="SyncConsentUserChoice" expires_after="2023-04-10">
+  <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Which button the user clicked on the out-of-box sync consent screen.
@@ -397,7 +397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.Check" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-10-01">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -469,7 +469,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.AcceptChromeVoxHint" enum="BooleanEnabled"
-    expires_after="2022-07-01">
+    expires_after="2022-10-04">
   <owner>akihiroota@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -479,12 +479,23 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.ChromeVoxHintSpokenSuccess"
-    enum="BooleanEnabled" expires_after="2022-07-01">
+    enum="BooleanEnabled" expires_after="2022-10-04">
   <owner>akihiroota@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Whether or not the ChromeVox hint was successfully spoken. Recorded when the
     ChromeVox hint dialog is shown.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.WelcomeScreen.UserChangedLocale" enum="Boolean"
+    expires_after="2022-10-01">
+  <owner>bohdanty@google.com</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Whether or not the user changed the language on the Welcome Screen. Records
+    when the user leaves the Welcome Screen if they have changed the locale in
+    the UI.
   </summary>
 </histogram>
 

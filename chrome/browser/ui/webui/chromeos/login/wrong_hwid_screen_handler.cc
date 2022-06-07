@@ -13,10 +13,10 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId WrongHWIDScreenView::kScreenId;
 
-WrongHWIDScreenHandler::WrongHWIDScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.WrongHWIDMessageScreen.userActed");
+WrongHWIDScreenHandler::WrongHWIDScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.WrongHWIDMessageScreen.userActed");
 }
 
 WrongHWIDScreenHandler::~WrongHWIDScreenHandler() {
@@ -25,11 +25,11 @@ WrongHWIDScreenHandler::~WrongHWIDScreenHandler() {
 }
 
 void WrongHWIDScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void WrongHWIDScreenHandler::Hide() {
@@ -37,12 +37,12 @@ void WrongHWIDScreenHandler::Hide() {
 
 void WrongHWIDScreenHandler::Bind(WrongHWIDScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void WrongHWIDScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void WrongHWIDScreenHandler::DeclareLocalizedValues(
@@ -56,7 +56,7 @@ void WrongHWIDScreenHandler::DeclareLocalizedValues(
                 IDS_WRONG_HWID_SCREEN_SKIP_LINK);
 }
 
-void WrongHWIDScreenHandler::Initialize() {
+void WrongHWIDScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();

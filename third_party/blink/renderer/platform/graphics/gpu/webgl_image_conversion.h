@@ -141,16 +141,10 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     ImageExtractor(const ImageExtractor&) = delete;
     ImageExtractor& operator=(const ImageExtractor&) = delete;
 
-    const void* ImagePixelData() {
-      return image_pixel_locker_ ? image_pixel_locker_->Pixels() : nullptr;
+    const SkPixmap* GetSkPixmap() {
+      return image_pixel_locker_ ? image_pixel_locker_->GetSkPixmap() : nullptr;
     }
-    unsigned ImageWidth() { return image_width_; }
-    unsigned ImageHeight() { return image_height_; }
-    DataFormat ImageSourceFormat() { return image_source_format_; }
     AlphaOp ImageAlphaOp() { return alpha_op_; }
-    unsigned ImageSourceUnpackAlignment() {
-      return image_source_unpack_alignment_;
-    }
 
    private:
     // Extracts the image and keeps track of its status, such as width, height,
@@ -161,12 +155,11 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     Image* image_;
     absl::optional<ImagePixelLocker> image_pixel_locker_;
     ImageHtmlDomSource image_html_dom_source_;
-    unsigned image_width_;
-    unsigned image_height_;
-    DataFormat image_source_format_;
     AlphaOp alpha_op_;
-    unsigned image_source_unpack_alignment_;
   };
+
+  // Convert an SkColorType to the most appropriate DataFormat.
+  static DataFormat SkColorTypeToDataFormat(SkColorType color_type);
 
   // Computes the components per pixel and bytes per component
   // for the given format and type combination. Returns false if
@@ -211,6 +204,20 @@ class PLATFORM_EXPORT WebGLImageConversion final {
 
   // The Following functions are implemented in
   // GraphicsContext3DImagePacking.cpp.
+
+  // Packs the contents of the given SkPixmap into the passed Vector according
+  // to the given format and type, and obeying the flipY and AlphaOp flags.
+  // Returns true upon success.
+  static bool PackSkPixmap(const SkPixmap* source,
+                           GLenum format,
+                           GLenum type,
+                           bool flip_y,
+                           AlphaOp,
+                           const gfx::Rect& source_image_sub_rectangle,
+                           int depth,
+                           unsigned source_unpack_alignment,
+                           int unpack_image_height,
+                           Vector<uint8_t>& data);
 
   // Packs the contents of the given Image, which is passed in |pixels|, into
   // the passed Vector according to the given format and type, and obeying the

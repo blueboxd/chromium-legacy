@@ -64,8 +64,8 @@ struct OwnedRenderPipelineDescriptor {
   WGPURenderPipelineDescriptor dawn_desc = {};
   std::string label;
   std::string vertex_entry_point;
-  Vector<WGPUVertexBufferLayout> buffers;
-  Vector<WGPUVertexAttribute> attributes;
+  std::unique_ptr<WGPUVertexBufferLayout[]> buffers;
+  std::unique_ptr<std::unique_ptr<WGPUVertexAttribute[]>[]> attributes;
   OwnedPrimitiveState primitive;
   WGPUDepthStencilState depth_stencil;
   OwnedFragmentState fragment;
@@ -92,6 +92,12 @@ class GPURenderPipeline : public DawnObject<WGPURenderPipeline> {
   GPURenderPipeline& operator=(const GPURenderPipeline&) = delete;
 
   GPUBindGroupLayout* getBindGroupLayout(uint32_t index);
+
+ private:
+  void setLabelImpl(const String& value) override {
+    std::string utf8_label = value.Utf8();
+    GetProcs().renderPipelineSetLabel(GetHandle(), utf8_label.c_str());
+  }
 };
 
 }  // namespace blink

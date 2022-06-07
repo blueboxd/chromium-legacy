@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/heavy_ad_intervention/heavy_ad_blocklist.h"
 #include "components/heavy_ad_intervention/heavy_ad_features.h"
@@ -256,8 +257,7 @@ PageLoadMetricsObserver::ObservePolicy AdsPageLoadMetricsObserver::OnStart(
 }
 
 PageLoadMetricsObserver::ObservePolicy AdsPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    content::NavigationHandle* navigation_handle) {
   DCHECK(ad_frames_data_.empty());
 
   page_load_is_reload_ =

@@ -20,6 +20,8 @@
 #include "components/app_restore/window_info.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace desks_storage {
@@ -38,37 +40,49 @@ const std::string kValidTemplateBrowser =
     "{\"version\":1,\"uuid\":\"" + kTestUuidBrowser + "\",\"name\":\"" +
     kBrowserTemplateName +
     "\",\"created_time_usec\":\"1633535632\",\"updated_time_usec\": "
+    "\"1633535632\",\"desk_type\":\"TEMPLATE\",\"desk\":{\"apps\":[{\"window_"
+    "bound\":{\"left\":0,\"top\":1,\"height\":121,\"width\":120},\"window_"
+    "state\":\"NORMAL\",\"z_index\":1,\"app_type\":\"BROWSER\",\"tabs\":[{"
+    "\"url\":\"https://example.com/\"},{\"url\":\"https://"
+    "example.com/"
+    "2\"}],\"active_tab_index\":1,\"window_id\":0,"
+    "\"display_id\":\"100\",\"event_flag\":0,\"pre_minimized_window_state\":"
+    "\"NORMAL\"}]}}";
+const std::string kValidTemplateChromeAndProgressive =
+    "{\"version\":1,\"uuid\":\"" + kTestUuidChromeAndProgressive +
+    "\",\"name\":\"" + kChromePwaTemplateName +
+    "\",\"created_time_usec\":\"1633535632000\",\"updated_time_usec\": "
+    "\"1633535632\",\"desk_type\":\"SAVE_AND_RECALL\",\"desk\":{\"apps\":[{"
+    "\"window_"
+    "bound\":{"
+    "\"left\":200,\"top\":200,\"height\":1000,\"width\":1000},\"window_state\":"
+    "\"NORMAL\",\"z_index\":2,\"app_type\":\"CHROME_APP\",\"app_id\":\"" +
+    kChromeAppId +
+    "\",\"window_id\":0,\"display_id\":\"100\",\"event_flag\":0,\"pre_"
+    "minimized_window_state\":\"NORMAL\"},{\"window_"
+    "bound\":{\"left\":0,\"top\":0,\"height\":120,\"width\":120},\"window_"
+    "state\":\"NORMAL\",\"z_index\":1,\"app_type\":\"PWA\",\"app_id\":\"" +
+    kProgressiveAppid +
+    "\",\"window_id\":1,\"display_id\":"
+    "\"100\",\"event_flag\":0,\"pre_minimized_window_state\":\"NORMAL\"}]}}";
+const std::string kTemplateWithoutType =
+    "{\"version\":1,\"uuid\":\"" + kTestUuidBrowser + "\",\"name\":\"" +
+    kBrowserTemplateName +
+    "\",\"created_time_usec\":\"1633535632\",\"updated_time_usec\": "
     "\"1633535632\",\"desk\":{\"apps\":[{\"window_"
     "bound\":{\"left\":0,\"top\":1,\"height\":121,\"width\":120},\"window_"
     "state\":\"NORMAL\",\"z_index\":1,\"app_type\":\"BROWSER\",\"tabs\":[{"
     "\"url\":\"https://example.com/\"},{\"url\":\"https://"
     "example.com/"
     "2\"}],\"active_tab_index\":1,\"window_id\":0,"
-    "\"display_id\":\"100\",\"pre_minimized_window_state\":\"NORMAL\"}]}}";
-const std::string kValidTemplateChromeAndProgressive =
-    "{\"version\":1,\"uuid\":\"" + kTestUuidChromeAndProgressive +
-    "\",\"name\":\"" + kChromePwaTemplateName +
-    "\",\"created_time_usec\":\"1633535632000\",\"updated_time_usec\": "
-    "\"1633535632\",\"desk\":{\"apps\":[{\"window_"
-    "bound\":{"
-    "\"left\":200,\"top\":200,\"height\":1000,\"width\":1000},\"window_state\":"
-    "\"NORMAL\",\"z_index\":2,\"app_type\":\"CHROME_APP\",\"app_id\":\"" +
-    kChromeAppId +
-    "\",\"window_id\":0,\"display_id\":\"100\",\"pre_"
-    "minimized_window_state\":\"NORMAL\"},{\"window_"
-    "bound\":{\"left\":0,\"top\":0,\"height\":120,\"width\":120},\"window_"
-    "state\":\"NORMAL\",\"z_index\":1,\"app_type\":\"PWA\",\"app_id\":\"" +
-    kProgressiveAppid +
-    "\",\"window_id\":1,\"display_id\":"
-    "\"100\",\"pre_minimized_window_state\":\"NORMAL\"}]}}";
+    "\"display_id\":\"100\",\"event_flag\":0,\"pre_minimized_window_state\":"
+    "\"NORMAL\"}]}}";
 
-apps::mojom::AppPtr MakeApp(const char* app_id,
-                            const char* name,
-                            apps::mojom::AppType app_type) {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = app_type;
-  app->app_id = app_id;
-  app->readiness = apps::mojom::Readiness::kReady;
+apps::AppPtr MakeApp(const char* app_id,
+                     const char* name,
+                     apps::AppType app_type) {
+  apps::AppPtr app = std::make_unique<apps::App>(app_type, app_id);
+  app->readiness = apps::Readiness::kReady;
   app->name = name;
   return app;
 }
@@ -87,18 +101,28 @@ class DeskTemplateConversionTest : public testing::Test {
         cache_(std::make_unique<apps::AppRegistryCache>()) {}
 
   void PopulateAppRegistryCache() {
-    std::vector<apps::mojom::AppPtr> deltas;
+    std::vector<apps::AppPtr> deltas;
 
     deltas.push_back(MakeApp(kProgressiveAppid.c_str(), "Test PWA App",
-                             apps::mojom::AppType::kWeb));
+                             apps::AppType::kWeb));
     // chromeAppId returns kExtension in the real Apps cache.
     deltas.push_back(MakeApp(app_constants::kChromeAppId, "Chrome Browser",
-                             apps::mojom::AppType::kChromeApp));
+                             apps::AppType::kChromeApp));
     deltas.push_back(MakeApp(kChromeAppId.c_str(), "Test Chrome App",
-                             apps::mojom::AppType::kChromeApp));
+                             apps::AppType::kChromeApp));
 
-    cache_->OnApps(std::move(deltas), apps::mojom::AppType::kUnknown,
-                   /*should_notify_initialized=*/false);
+    if (base::FeatureList::IsEnabled(
+            apps::kAppServiceOnAppUpdateWithoutMojom)) {
+      cache_->OnApps(std::move(deltas), apps::AppType::kUnknown,
+                     /*should_notify_initialized=*/false);
+    } else {
+      std::vector<apps::mojom::AppPtr> mojom_deltas;
+      for (const auto& delta : deltas) {
+        mojom_deltas.push_back(apps::ConvertAppToMojomApp(delta));
+      }
+      cache_->OnApps(std::move(mojom_deltas), apps::mojom::AppType::kUnknown,
+                     /*should_notify_initialized=*/false);
+    }
 
     cache_->SetAccountId(account_id_);
 
@@ -271,6 +295,21 @@ TEST_F(DeskTemplateConversionTest, EmptyJsonTest) {
       desk_template_conversion::ParseDeskTemplateFromPolicy(
           parsed_json.value.value());
   EXPECT_TRUE(dt == nullptr);
+}
+
+TEST_F(DeskTemplateConversionTest, ParsesWithDefaultValueSetToTemplates) {
+  base::StringPiece raw_json = base::StringPiece(kTemplateWithoutType);
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(raw_json);
+
+  EXPECT_TRUE(parsed_json.value.has_value());
+  EXPECT_TRUE(parsed_json.value->is_dict());
+
+  std::unique_ptr<ash::DeskTemplate> dt =
+      desk_template_conversion::ParseDeskTemplateFromPolicy(
+          parsed_json.value.value());
+  EXPECT_TRUE(dt);
+  EXPECT_EQ(ash::DeskTemplateType::kTemplate, dt->type());
 }
 
 TEST_F(DeskTemplateConversionTest, DeskTemplateFromJsonBrowserTest) {

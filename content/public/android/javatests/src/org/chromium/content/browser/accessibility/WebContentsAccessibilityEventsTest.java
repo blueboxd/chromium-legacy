@@ -205,6 +205,12 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_anonymousBlockChildrenChanged() {
+        performTest("anonymous-block-children-changed.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
     public void test_ariaAtomicChanged() {
         performTest("aria-atomic-changed.html", EMPTY_EXPECTATIONS_FILE);
     }
@@ -874,6 +880,12 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_nameChangedIndirect() {
         performTest("name-change-indirect.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_navigationApi() {
+        performTest("navigation-api.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test

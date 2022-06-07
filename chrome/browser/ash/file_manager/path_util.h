@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "storage/browser/file_system/file_system_url.h"
 
 class GURL;
@@ -17,6 +18,9 @@ class Profile;
 
 namespace file_manager {
 namespace util {
+
+// Absolute path for FuseBox media mount point.
+extern const base::FilePath::CharType kFuseBoxMediaPath[];
 
 // Absolute base path for removable media on Chrome OS. Exposed here so it can
 // be used by tests.
@@ -30,6 +34,9 @@ extern const base::FilePath::CharType kSystemFontsPath[];
 
 // Absolute path for the folder containing archive mounts.
 extern const base::FilePath::CharType kArchiveMountPath[];
+
+// FuseBox as a named constant string: "fusebox".
+extern const char kFuseBox[];
 
 // Name of the mount point used to store temporary files for sharing.
 extern const char kShareCacheMountPointName[];
@@ -100,8 +107,15 @@ std::string GetAndroidFilesMountPointName();
 // The canonical mount point name for crostini "Linux files" folder.
 std::string GetCrostiniMountPointName(Profile* profile);
 
+// The canonical mount point name for the Guest OS `id`.
+std::string GetGuestOsMountPointName(Profile* profile,
+                                     crostini::ContainerId id);
+
 // The actual directory the crostini "Linux files" folder is mounted.
 base::FilePath GetCrostiniMountDirectory(Profile* profile);
+
+// The actual directory the Guest OS with `mountPointName` is mounted in.
+base::FilePath GetGuestOsMountDirectory(std::string mountPointName);
 
 // The sshfs mount options for crostini "Linux files" mount.
 std::vector<std::string> GetCrostiniMountOptions(

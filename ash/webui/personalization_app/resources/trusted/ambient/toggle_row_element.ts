@@ -6,15 +6,17 @@
  * @fileoverview This component displays a description text and a toggle button.
  */
 
+import '../../common/styles.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {WithPersonalizationStore} from '../personalization_store.js';
 
+import {getTemplate} from './toggle_row_element.html.js';
+
 export interface ToggleRow {
-  $: {toggle: CrToggleElement}
+  $: {toggle: CrToggleElement};
 }
 
 export class ToggleRow extends WithPersonalizationStore {
@@ -23,7 +25,7 @@ export class ToggleRow extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {

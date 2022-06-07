@@ -49,9 +49,13 @@ class FakeStarterPlatformDelegate : public StarterPlatformDelegate {
   bool GetProactiveHelpSettingEnabled() const override;
   void SetProactiveHelpSettingEnabled(bool enabled) override;
   bool GetMakeSearchesAndBrowsingBetterEnabled() const override;
+  bool GetIsLoggedIn() override;
   bool GetIsCustomTab() const override;
+  bool GetIsWebLayer() const override;
   bool GetIsTabCreatedByGSA() const override;
   std::unique_ptr<AssistantFieldTrialUtil> CreateFieldTrialUtil() override;
+  bool IsAttached() override;
+  base::WeakPtr<StarterPlatformDelegate> GetWeakPtr() override;
 
   // Intentionally public to give tests direct access.
   std::unique_ptr<TriggerScriptCoordinator::UiDelegate>
@@ -71,9 +75,12 @@ class FakeStarterPlatformDelegate : public StarterPlatformDelegate {
       on_show_onboarding_callback_;
   bool proactive_help_enabled_ = true;
   bool msbb_enabled_ = true;
+  bool is_logged_in_ = true;
   bool is_custom_tab_ = true;
+  bool is_web_layer_ = true;
   bool is_tab_created_by_gsa_ = true;
   std::unique_ptr<AssistantFieldTrialUtil> field_trial_util_;
+  bool is_attached_ = true;
 
   base::OnceCallback<void(
       GURL url,
@@ -85,6 +92,7 @@ class FakeStarterPlatformDelegate : public StarterPlatformDelegate {
 
   int num_install_feature_module_called_ = 0;
   int num_show_onboarding_called_ = 0;
+  base::WeakPtrFactory<FakeStarterPlatformDelegate> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill_assistant

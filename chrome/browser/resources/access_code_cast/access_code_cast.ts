@@ -31,14 +31,14 @@ enum PageState {
 
 interface AccessCodeCastElement {
   $: {
-    backButton: CrButtonElement;
-    castButton: CrButtonElement;
-    codeInputView: HTMLDivElement;
-    codeInput: PasscodeInputElement;
-    dialog: CrDialogElement;
-    errorMessage: ErrorMessageElement;
-    qrInputView: HTMLDivElement;
-  }
+    backButton: CrButtonElement,
+    castButton: CrButtonElement,
+    codeInputView: HTMLDivElement,
+    codeInput: PasscodeInputElement,
+    dialog: CrDialogElement,
+    errorMessage: ErrorMessageElement,
+    qrInputView: HTMLDivElement,
+  };
 }
 
 const AccessCodeCastElementBase =
@@ -90,10 +90,6 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
       this.qrScannerEnabled = available;
     });
 
-    window.onblur = () => {
-      this.close();
-    };
-
     document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         this.handleEnterPressed();
@@ -143,8 +139,9 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
     this.set('canCast', false);
     this.$.errorMessage.setNoError();
 
-    const method = this.state === PageState.CODE_INPUT ? 
-      CastDiscoveryMethod.INPUT_ACCESS_CODE : CastDiscoveryMethod.QR_CODE;
+    const method = this.state === PageState.CODE_INPUT ?
+        CastDiscoveryMethod.INPUT_ACCESS_CODE :
+        CastDiscoveryMethod.QR_CODE;
 
     const addResult = await this.addSink(method).catch(() => {
       return AddSinkResultCode.UNKNOWN_ERROR;

@@ -578,6 +578,9 @@ void RemoteFrame::WillEnterFullscreen(
                                     : FullscreenRequestType::kUnprefixed) |
       (request_options->is_xr_overlay ? FullscreenRequestType::kForXrOverlay
                                       : FullscreenRequestType::kNull) |
+      (request_options->prefers_status_bar
+           ? FullscreenRequestType::kForXrArWithCamera
+           : FullscreenRequestType::kNull) |
       FullscreenRequestType::kForCrossProcessDescendant;
 
   Fullscreen::RequestFullscreen(*owner_element, FullscreenOptions::Create(),
@@ -695,8 +698,12 @@ void RemoteFrame::SetEmbeddingToken(
 }
 
 void RemoteFrame::SetPageFocus(bool is_focused) {
-  To<WebViewImpl>(WebFrame::FromCoreFrame(this)->View())
-      ->SetPageFocus(is_focused);
+  WebViewImpl* web_view =
+      To<WebViewImpl>(WebFrame::FromCoreFrame(this)->View());
+  if (is_focused) {
+    web_view->SetIsActive(true);
+  }
+  web_view->SetPageFocus(is_focused);
 }
 
 void RemoteFrame::ScrollRectToVisible(

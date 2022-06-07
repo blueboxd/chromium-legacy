@@ -103,6 +103,9 @@ const char kLinkPreviewEnabled[] = "ios.link_preview_enabled";
 const char kNTPContentSuggestionsEnabled[] =
     "ios.ntp.content_suggestions_enabled";
 
+// Preference that represents the sorting order of the Following feed content.
+const char kNTPFollowingFeedSortType[] = "ios.ntp.following_feed.sort_type";
+
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
@@ -155,8 +158,8 @@ const char kIncognitoAuthenticationSetting[] =
 // in ios/chrome/browser/policy/policy_util.h.
 const char kBrowserSigninPolicy[] = "signin.browser_signin_policy";
 
-// Bool that represents whether iCloud backups are disallowed by policy.
-const char kBackupDisallowedPolicy[] = "ios.backup_disallowed_policy";
+// Bool that represents whether iCloud backups are allowed by policy.
+const char kAllowChromeDataInBackups[] = "ios.allow_chrome_data_in_backups";
 
 // Preference that holds the string value indicating the NTP URL to use for the
 // NTP Location policy.

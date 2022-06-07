@@ -9,6 +9,9 @@
 
 #include "ash/components/phonehub/feature_status_provider.h"
 #include "ash/components/phonehub/message_receiver.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -29,6 +32,7 @@ class MultideviceFeatureAccessManagerImpl
 
   explicit MultideviceFeatureAccessManagerImpl(
       PrefService* pref_service,
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       FeatureStatusProvider* feature_status_provider,
       MessageSender* message_sender,
       ConnectionScheduler* connection_scheduler);
@@ -41,13 +45,17 @@ class MultideviceFeatureAccessManagerImpl
   AccessStatus GetNotificationAccessStatus() const override;
   AccessProhibitedReason GetNotificationAccessProhibitedReason() const override;
   void SetNotificationAccessStatusInternal(
-      AccessStatus notification_access_status,
+      AccessStatus access_status,
       AccessProhibitedReason reason) override;
-  void SetCameraRollAccessStatusInternal(
-      AccessStatus camera_roll_access_status) override;
+  void SetCameraRollAccessStatusInternal(AccessStatus access_status) override;
   AccessStatus GetCameraRollAccessStatus() const override;
   AccessStatus GetAppsAccessStatus() const override;
-  void OnSetupRequested() override;
+  bool IsAccessRequestAllowed(
+      multidevice_setup::mojom::Feature feature) override;
+  bool GetFeatureSetupRequestSupported() const override;
+  void SetFeatureSetupRequestSupportedInternal(bool supported) override;
+  void OnNotificationSetupRequested() override;
+  void OnCombinedSetupRequested(bool camera_roll, bool notifications) override;
 
   bool HasMultideviceFeatureSetupUiBeenDismissed() const override;
   void DismissSetupRequiredUi() override;
@@ -55,16 +63,27 @@ class MultideviceFeatureAccessManagerImpl
   // FeatureStatusProvider::Observer:
   void OnFeatureStatusChanged() override;
 
+  void FeatureStatusChangedNotificationAccessSetup();
+  void FeatureStatusChangedCombinedAccessSetup();
+
   void SendShowNotificationAccessSetupRequest();
+  void SendShowCombinedAccessSetupRequest();
 
   bool HasAccessStatusChanged(AccessStatus access_status,
                               AccessProhibitedReason reason);
 
   FeatureStatus current_feature_status_;
   PrefService* pref_service_;
+  multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
   FeatureStatusProvider* feature_status_provider_;
   MessageSender* message_sender_;
   ConnectionScheduler* connection_scheduler_;
+
+  // Registers preference value change listeners.
+  PrefChangeRegistrar pref_change_registrar_;
+
+  bool combined_setup_notifications_pending_ = false;
+  bool combined_setup_camera_roll_pending_ = false;
 };
 
 }  // namespace phonehub

@@ -57,7 +57,7 @@ group("remoting_all") {
       }
     }
 
-    if (is_linux && !is_chromeos_lacros) {
+    if (is_linux) {
       deps += [
         "//remoting/host/linux:remoting_dev_me2me_host",
         "//remoting/host/linux:remoting_user_session",
@@ -150,7 +150,7 @@ test("remoting_unittests") {
   }
 
   # TODO(crbug.com/1052397): Change to !is_chromeos once lacros-chrome is switched to target_os=chromeos.
-  if (!is_chromeos_ash && !is_chromeos_lacros) {
+  if (!is_chromeos) {
     deps += [ "//remoting/client/display:unit_tests" ]
   }
 }

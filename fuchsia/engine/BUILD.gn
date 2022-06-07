@@ -129,7 +129,6 @@ component("web_engine_core") {
     "//gpu/command_buffer/service",
     "//media",
     "//media/fuchsia/cdm/service",
-    "//media/fuchsia/mojom:cdm_provider",
     "//media/mojo/common",
     "//media/mojo/services",
     "//mojo/public/cpp/bindings",
@@ -147,6 +146,7 @@ component("web_engine_core") {
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.settings",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.gfx",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.scenic",
     "//third_party/fuchsia-sdk/sdk/pkg/fit-promise",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
@@ -165,6 +165,12 @@ component("web_engine_core") {
   ]
 
   assert_no_deps = [
+    # Although `enable_pdf` is true for Fuchsia, PDF code should not be linked
+    # into WebEngine because it does not have the necessary infrastructure and
+    # this would unnecessarily increase the package size.
+    "//components/pdf/*",
+    "//pdf/*",
+
     # Pepper code should not be included as plugins are disabled.
     # Exclude everything except "//ppapi/buildflags/*", which is allowed.
     "//ppapi:*",
@@ -214,8 +220,6 @@ component("web_engine_core") {
     "browser/accessibility_bridge.h",
     "browser/ax_tree_converter.cc",
     "browser/ax_tree_converter.h",
-    "browser/cdm_provider_service.cc",
-    "browser/cdm_provider_service.h",
     "browser/content_directory_loader_factory.cc",
     "browser/content_directory_loader_factory.h",
     "browser/context_impl.cc",
@@ -481,6 +485,7 @@ test("web_engine_browsertests") {
     "browser/post_message_browsertest.cc",
     "browser/request_monitoring_browsertest.cc",
     "browser/theme_manager_browsertest.cc",
+    "browser/url_request_invalidation_browsertest.cc",
     "browser/virtual_keyboard_browsertest.cc",
   ]
 

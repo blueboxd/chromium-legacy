@@ -19,7 +19,6 @@ import {
 } from '../device/index.js';
 import * as dom from '../dom.js';
 import * as error from '../error.js';
-import {Flag} from '../flag.js';
 import {Point} from '../geometry.js';
 import {I18nString} from '../i18n_string.js';
 import * as metrics from '../metrics.js';
@@ -64,7 +63,7 @@ import {Dialog} from './dialog.js';
 import {PTZPanel} from './ptz_panel.js';
 import * as review from './review.js';
 import {PrimarySettings} from './settings.js';
-import {PTZPanelOptions, View} from './view.js';
+import {View} from './view.js';
 import {WarningType} from './warning.js';
 
 /**
@@ -109,14 +108,12 @@ export class Camera extends View implements CameraViewUI {
   /**
    * Event for tracking camera availability state.
    */
-  private cameraReady: WaitableEvent = new WaitableEvent();
+  private cameraReady = new WaitableEvent();
 
   /**
    * Promise for the current take of photo or recording.
    */
   private take: Promise<void>|null = null;
-
-  private readonly openPTZPanel = dom.get('#open-ptz-panel', HTMLButtonElement);
 
   private readonly modesGroup = dom.get('#modes-group', HTMLElement);
 
@@ -235,7 +232,7 @@ export class Camera extends View implements CameraViewUI {
       onCameraUnavailable: () => {
         this.cameraReady = new WaitableEvent();
       },
-      onCameraAvailble: () => {
+      onCameraAvailable: () => {
         this.cameraReady.signal();
       },
     });
@@ -256,8 +253,6 @@ export class Camera extends View implements CameraViewUI {
         }
       });
     }
-
-    this.initOpenPTZPanel();
   }
 
   /**
@@ -296,47 +291,6 @@ export class Camera extends View implements CameraViewUI {
       left: scrollLeft,
       top: 0,
       behavior: 'smooth',
-    });
-  }
-
-  private initOpenPTZPanel() {
-    this.openPTZPanel.addEventListener('click', () => {
-      nav.open(ViewName.PTZ_PANEL, new PTZPanelOptions({
-                 stream: this.cameraManager.getPreviewVideo().getStream(),
-                 vidPid: this.cameraManager.getVidPid(),
-                 resetPTZ: () => this.cameraManager.resetPTZ(),
-               }));
-      highlight(false);
-    });
-
-    // Highlight effect for PTZ button.
-    let toastShown = false;
-    const highlight = (enabled: boolean) => {
-      if (!enabled) {
-        if (toastShown) {
-          newFeatureToast.hide();
-          toastShown = false;
-        }
-        return;
-      }
-      toastShown = true;
-      newFeatureToast.show(this.openPTZPanel);
-      newFeatureToast.focus();
-    };
-
-    this.cameraManager.registerCameraUI({
-      onUpdateConfig: () => {
-        const ptzToastKey = 'isPTZToastShown';
-        if (!state.get(state.State.ENABLE_PTZ) ||
-            state.get(state.State.IS_NEW_FEATURE_TOAST_SHOWN) ||
-            localStorage.getBool(ptzToastKey)) {
-          highlight(false);
-          return;
-        }
-        localStorage.set(ptzToastKey, true);
-        state.set(state.State.IS_NEW_FEATURE_TOAST_SHOWN, true);
-        highlight(true);
-      },
     });
   }
 
@@ -412,7 +366,7 @@ export class Camera extends View implements CameraViewUI {
       }
     };
     state.addObserver(state.State.CAMERA_CONFIGURING, checkRefocus);
-    this.scanOptions.onChange = checkRefocus;
+    this.scanOptions.addOnChangeListener(() => checkRefocus());
   }
 
   override getSubViews(): View[] {
@@ -677,15 +631,6 @@ export class Camera extends View implements CameraViewUI {
   private async reviewDocument(
       originImage: ImageBlob, refCorners: Point[]|null):
       Promise<{docBlob: Blob, mimeType: MimeType}|null> {
-    const needFirstRecrop = refCorners === null;
-    const allowRecrop = loadTimeData.getChromeFlag(Flag.DOCUMENT_MANUAL_CROP);
-    if (needFirstRecrop && !allowRecrop) {
-      const message = loadTimeData.getI18nMessage(
-          I18nString.DOCUMENT_MODE_DIALOG_NOT_DETECTED_TITLE);
-      nav.open(ViewName.DOCUMENT_MODE_DIALOG, {message});
-      throw new CanceledError(`Couldn't detect a document`);
-    }
-
     nav.open(ViewName.FLASH);
     const helper = ChromeHelper.getInstance();
     let result = null;
@@ -747,7 +692,7 @@ export class Camera extends View implements CameraViewUI {
         };
 
         await this.cropDocument.setReviewPhoto(originImage.blob);
-        if (needFirstRecrop) {
+        if (refCorners === null) {
           nav.close(ViewName.FLASH);
           await doRecrop();
         } else {
@@ -782,24 +727,20 @@ export class Camera extends View implements CameraViewUI {
           ],
         });
 
-        const negOptions = [
-          new review.Option({text: I18nString.LABEL_RETAKE}, {
-            callback: () => {
-              sendEvent(metrics.DocResultType.CANCELED);
-            },
-            exitValue: null,
-          }),
-        ];
-        if (allowRecrop) {
-          negOptions.unshift(
-              new review.Option({text: I18nString.LABEL_FIX_DOCUMENT}, {
-                callback: doRecrop,
-                hasPopup: true,
-              }));
-        }
         const negative = new review.OptionGroup({
           template: review.ButtonGroupTemplate.NEGATIVE,
-          options: negOptions,
+          options: [
+            new review.Option({text: I18nString.LABEL_FIX_DOCUMENT}, {
+              callback: doRecrop,
+              hasPopup: true,
+            }),
+            new review.Option({text: I18nString.LABEL_RETAKE}, {
+              callback: () => {
+                sendEvent(metrics.DocResultType.CANCELED);
+              },
+              exitValue: null,
+            }),
+          ],
         });
 
         const mimeType = await this.review.startReview(positive, negative);

@@ -13,6 +13,7 @@
 <translation id="151962892725702025">System operacyjny Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="1524282610922162960">Udostępnij kartę Chromium</translation>
 <translation id="1553461853655228091">Aby utworzyć mapę 3D Twojego otoczenia, Chromium potrzebuje uprawnień dostępu do kamery</translation>
+<translation id="1602421994560205104">Ten plik został zablokowany przez Chromium, bo jest za duży i przez to nie można sprawdzić, czy jest bezpieczny. Spróbuj ponownie, pamiętając, że pliki nie mogą być większe niż 50 MB</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację}=1{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. Okno incognito nie otworzy się ponownie.}few{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okna incognito nie otworzą się ponownie.}many{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okien incognito nie otworzy się ponownie.}other{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okna incognito nie otworzy się ponownie.}}</translation>
 <translation id="1625909126243026060">Zapoznaj się z najważniejszymi funkcjami prywatności i bezpieczeństwa w Chromium</translation>
 <translation id="1632539827495546968">Jeśli chcesz użyć tego konta tylko raz, możesz skorzystać z <ph name="GUEST_LINK_BEGIN" />trybu gościa<ph name="GUEST_LINK_END" /> w przeglądarce Chromium. Jeśli chcesz dodać konto innej osoby, <ph name="LINK_BEGIN" />dodaj nową osobę<ph name="LINK_END" /> do urządzenia <ph name="DEVICE_TYPE" />.
@@ -116,6 +117,7 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="4264410486868823224"><ph name="MANAGER" /> wymaga, by przed korzystaniem z tego urządzenia przeczytać i zaakceptować Warunki korzystania z usługi. Nie rozszerzają, nie zmieniają ani nie ograniczają one Warunków korzystania z Chromium OS.</translation>
 <translation id="4271805377592243930">Pomoc do Chromium</translation>
 <translation id="4285930937574705105">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Chromium jest aktualnie uruchomiony, zamknij go i spróbuj ponownie.</translation>
+<translation id="4304713468139749426">Menedżer haseł</translation>
 <translation id="4407044323746248786">Zamknąć Chromium mimo to?</translation>
 <translation id="4415566066719264597">Zezwalaj Chromium na działanie w tle</translation>
 <translation id="4423735387467980091">Dostosowywanie i kontrolowanie Chromium</translation>
@@ -193,6 +195,7 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="6290827346642914212">Nadaj nazwę profilowi Chromium</translation>
 <translation id="6295779123002464101">Plik <ph name="FILE_NAME" /> może być niebezpieczny, dlatego został zablokowany przez Chromium.</translation>
 <translation id="6309712487085796862">Chromium używa Twojej kamery.</translation>
+<translation id="632355235628111698">Ten plik został zablokowany przez Chromium, bo jest niebezpieczny</translation>
 <translation id="6333502561965082103">Chromium wykonuje teraz inną operację. Spróbuj ponownie później.</translation>
 <translation id="6334986366598267305">Korzystanie z Chromium na wspólnych komputerach i przy użyciu konta Google jest teraz jeszcze łatwiejsze.</translation>
 <translation id="6373523479360886564">Czy na pewno chcesz odinstalować Chromium?</translation>
@@ -217,6 +220,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="673636774878526923">Aby mieć dostęp do danych z Chromium na wszystkich swoich urządzeniach, zaloguj się i włącz synchronizację.</translation>
 <translation id="6774082503108938489">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chromium. Włączenie elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
 <translation id="6847869444787758381">Chromium poinformuje Cię, jeśli Twoje hasła dostaną się w niepowołane ręce</translation>
+<translation id="6852530923436401894">Ten plik został zablokowany przez Chromium, bo zawiera złośliwe oprogramowanie</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (skopiowana do Chromium)</translation>
 <translation id="6873893289264747459">Przeglądarka Chromium wykryła, że rozszerzenie „<ph name="EXTENSION_NAME" />” zawiera złośliwe oprogramowanie</translation>
@@ -235,6 +239,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="7218568399872925918">Strony, na które wchodzisz, pamiętają Cię, dopóki nie zamkniesz Chromium</translation>
 <translation id="7223968959479464213">Menedżer zadań – Chromium</translation>
 <translation id="7246575524853130370">Twoje zainteresowania oszacowane przez Chromium</translation>
+<translation id="7265671031637041256">Ten plik został zablokowany przez Chromium, bo jest zaszyfrowany. Poproś jego właściciela, aby go odszyfrował</translation>
 <translation id="7309928523159922338">W ramach pomiaru skuteczności reklam odwiedzane przez Ciebie witryny mogą prosić Chromium o dostęp do potrzebnych w tym celu informacji. Pomiar skuteczności reklam ogranicza śledzenie w witrynach, ponieważ pomiędzy poszczególnymi stronami przenoszona jest możliwie najmniejsza ilość informacji.</translation>
 <translation id="731795002583552498">Aktualizuję Chromium</translation>
 <translation id="7318036098707714271">Plik ustawień jest uszkodzony lub nieprawidłowy.
@@ -270,11 +275,12 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="7857220146454061152">Aby otrzymywać w przyszłości aktualizacje Chromium, musisz mieć system OS X 10.11 lub nowszy. Na komputerze jest zainstalowany system OS X 10.10.</translation>
 <translation id="7867198900892795913">Aktualizacja Chromium do najnowszej wersji nie udała się, więc nie masz dostępu do najnowszych funkcji i poprawek zabezpieczeń.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />W jaki sposób możesz zarządzać swoimi danymi:<ph name="END_BOLD" /> żeby chronić Twoją prywatność, automatycznie usuwamy Twoje zainteresowania, które są starsze niż 4 tygodnie. Podczas dalszego przeglądania zainteresowanie może się pojawić ponownie na liście. Możesz też usunąć zainteresowania, których Chrome ma nie brać pod uwagę.</translation>
-<translation id="788352880609666695">W tym profilu Chromium dostępne są te konta</translation>
 <translation id="7898472181347242998">Aby sprawdzić, czy urządzenie jest zaktualizowane, otwórz <ph name="LINK_BEGIN" />ustawienia systemu operacyjnego Chromium<ph name="LINK_END" /></translation>
 <translation id="7937630085815544518">Byłeś zalogowany w Chromium jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="7975919845073681630">To jest druga instalacja Chromium. Nie można ustawić jej jako przeglądarki domyślnej.</translation>
+<translation id="7997934263947464652">Rozszerzenia, aplikacje i motywy z nieznanych źródeł mogą wyrządzić szkody na Twoim urządzeniu. Chromium zaleca, aby instalować je tylko ze sklepu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /></translation>
 <translation id="8013436988911883588">Gdy Chromium będzie mieć dostęp, strony będą mogły prosić Cię o dostęp.</translation>
+<translation id="8045118833343856403">Na te konta nie zalogowano się w żadnym profilu Chromium. Jeśli chcesz używać konta w innym profilu, najpierw go usuń.</translation>
 <translation id="8105840573057009683">Ta strona musi mieć w Chromium dostęp do lokalizacji</translation>
 <translation id="81770708095080097">Ten plik jest niebezpieczny, dlatego został zablokowany przez Chromium.</translation>
 <translation id="8248265253516264921">Jeśli obraz nie ma przydatnego opisu, Chromium spróbuje go dla Ciebie stworzyć. W tym celu obrazy zostaną wysłane do Google. W każdej chwili możesz wyłączyć tę funkcję w ustawieniach.</translation>

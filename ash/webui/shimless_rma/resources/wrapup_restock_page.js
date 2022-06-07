@@ -14,6 +14,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -58,38 +59,19 @@ export class WrapupRestockPage extends WrapupRestockPageBase {
   /** @override */
   ready() {
     super.ready();
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: false},
-        ));
   }
 
   /** @protected */
   onShutdownButtonClicked_() {
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.shimlessRmaService_.shutdownForRestock();
-          })
-        },
-        ));
+    executeThenTransitionState(
+        this, () => this.shimlessRmaService_.shutdownForRestock());
   }
 
   /** @protected */
   onRestockContinueButtonClicked_() {
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.shimlessRmaService_.continueFinalizationAfterRestock();
-          })
-        },
-        ));
+    executeThenTransitionState(
+        this,
+        () => this.shimlessRmaService_.continueFinalizationAfterRestock());
   }
 }
 

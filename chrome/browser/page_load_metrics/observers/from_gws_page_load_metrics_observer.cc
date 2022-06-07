@@ -432,8 +432,7 @@ FromGWSPageLoadMetricsObserver::OnStart(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 FromGWSPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
+    content::NavigationHandle* navigation_handle) {
   // If this is a side panel initiated navigation the bit determining whether
   // the navigation was initiated via link is known and has been set in
   // `SetUpLoggerForSidePanelIfNecessary()`.
@@ -452,7 +451,7 @@ FromGWSPageLoadMetricsObserver::OnCommit(
   }
 
   logger_.SetNavigationStart(navigation_handle->NavigationStart());
-  logger_.OnCommit(navigation_handle, source_id);
+  logger_.OnCommit(navigation_handle, GetDelegate().GetPageUkmSourceId());
   return CONTINUE_OBSERVING;
 }
 

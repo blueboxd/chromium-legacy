@@ -25,9 +25,12 @@
 
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
+#include <algorithm>
+
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -70,6 +73,7 @@
 #include "third_party/blink/renderer/modules/webaudio/script_processor_node.h"
 #include "third_party/blink/renderer/modules/webaudio/stereo_panner_node.h"
 #include "third_party/blink/renderer/modules/webaudio/wave_shaper_node.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
 #include "third_party/blink/renderer/platform/audio/iir_filter.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -78,8 +82,6 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
-
-#include <algorithm>
 
 namespace blink {
 

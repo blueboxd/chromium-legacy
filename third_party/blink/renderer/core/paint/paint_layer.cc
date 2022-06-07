@@ -354,12 +354,6 @@ bool PaintLayer::SticksToScroller() const {
   return AncestorScrollContainerLayer()->GetScrollableArea();
 }
 
-bool PaintLayer::FixedToViewport() const {
-  if (GetLayoutObject().StyleRef().GetPosition() != EPosition::kFixed)
-    return false;
-  return GetLayoutObject().Container() == GetLayoutObject().View();
-}
-
 void PaintLayer::UpdateTransformationMatrix() {
   if (TransformationMatrix* transform = Transform()) {
     LayoutBox* box = GetLayoutBox();
@@ -906,9 +900,10 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
 
   MarkAncestorChainForFlagsUpdate();
 
-  // TODO(wangxianzhu): Change this to the same pattern as cull rect update
-  // when removing pre-CAP code.
-  child->SetNeedsRepaint();
+  if (child->SelfNeedsRepaint())
+    MarkCompositingContainerChainForNeedsRepaint();
+  else
+    child->SetNeedsRepaint();
 
   if (child->NeedsCullRectUpdate())
     MarkCompositingContainerChainForNeedsCullRectUpdate();
@@ -1211,7 +1206,7 @@ void PaintLayer::AppendSingleFragmentForHitTesting(
                                       respect_overflow_clip);
   Clipper(GeometryMapperOption::kUseGeometryMapper)
       .CalculateRects(clip_rects_context, fragment.fragment_data,
-                      fragment.layer_bounds, fragment.background_rect,
+                      fragment.layer_offset, fragment.background_rect,
                       fragment.foreground_rect);
 
   fragments.push_back(fragment);
@@ -1249,7 +1244,7 @@ void PaintLayer::CollectFragments(
     PaintLayerFragments& fragments,
     const PaintLayer* root_layer,
     ShouldRespectOverflowClipType respect_overflow_clip,
-    const FragmentData* root_fragment) const {
+    const FragmentData* root_fragment_arg) const {
   PaintLayerFragment fragment;
   const auto& first_fragment_data = GetLayoutObject().FirstFragment();
   const auto& first_root_fragment_data =
@@ -1277,14 +1272,17 @@ void PaintLayer::CollectFragments(
   wtf_size_t physical_fragment_idx = 0u;
   for (auto* fragment_data = &first_fragment_data; fragment_data;
        fragment_data = fragment_data->NextFragment(), physical_fragment_idx++) {
-    if (root_fragment &&
-        !root_fragment->LocalBorderBoxProperties().Transform().IsAncestorOf(
-            fragment_data->LocalBorderBoxProperties().Transform())) {
-      continue;
-    }
-
-    const FragmentData* root_fragment_data;
-    if (root_layer == this) {
+    const FragmentData* root_fragment_data = nullptr;
+    if (root_fragment_arg) {
+      DCHECK(this != root_layer);
+      if (!root_fragment_arg->ContentsProperties().Transform().IsAncestorOf(
+              fragment_data->LocalBorderBoxProperties().Transform())) {
+        // We only want to collect fragments that are descendants of
+        // |root_fragment_arg|.
+        continue;
+      }
+      root_fragment_data = root_fragment_arg;
+    } else if (root_layer == this) {
       root_fragment_data = fragment_data;
     } else if (should_match_fragments) {
       for (root_fragment_data = &first_root_fragment_data; root_fragment_data;
@@ -1311,7 +1309,7 @@ void PaintLayer::CollectFragments(
 
     Clipper(GeometryMapperOption::kUseGeometryMapper)
         .CalculateRects(clip_rects_context, fragment_data,
-                        fragment.layer_bounds, fragment.background_rect,
+                        fragment.layer_offset, fragment.background_rect,
                         fragment.foreground_rect);
 
     if (cant_find_fragment) {
@@ -1321,8 +1319,6 @@ void PaintLayer::CollectFragments(
       fragment.foreground_rect.Reset();
     }
 
-    fragment.root_fragment_data = root_fragment_data;
-
     fragment.fragment_data = fragment_data;
 
     if (layout_box_with_fragments) {
@@ -1330,6 +1326,8 @@ void PaintLayer::CollectFragments(
           layout_box_with_fragments->GetPhysicalFragment(physical_fragment_idx);
       DCHECK(fragment.physical_fragment);
     }
+
+    fragment.fragment_idx = physical_fragment_idx;
 
     fragments.push_back(fragment);
   }
@@ -1665,7 +1663,7 @@ PaintLayer* PaintLayer::HitTestLayer(
     if (container_fragment_data) {
       container_fragment_for_transform_state = container_fragment_data;
       const auto& container_transform =
-          container_fragment_data->LocalBorderBoxProperties().Transform();
+          container_fragment_data->ContentsProperties().Transform();
       while (local_fragment_for_transform_state) {
         // Find the first local fragment that is a descendant of
         // container_fragment.
@@ -1884,19 +1882,23 @@ bool PaintLayer::HitTestContentsForFragments(
       continue;
 
     inside_clip_rect = true;
-    PhysicalOffset fragment_offset = fragment.layer_bounds.offset;
-    if (UNLIKELY(layer_fragments.size() > 1 &&
-                 GetLayoutObject().IsLayoutInline() &&
+    if (UNLIKELY(GetLayoutObject().IsLayoutInline() &&
                  GetLayoutObject().CanTraversePhysicalFragments())) {
-      // When hit-testing a relatively positioned inline, we'll search for it in
+      // When hit-testing an inline that has a layer, we'll search for it in
       // each fragment of the containing block. Each fragment has its own
-      // offset, and we need to do one fragment at a time.
-      HitTestLocation location_for_fragment(hit_test_location, i);
-      if (HitTestContents(result, fragment.physical_fragment, fragment_offset,
-                          location_for_fragment, hit_test_filter))
+      // offset, and we need to do one fragment at a time. If the inline uses a
+      // transform, though, we'll only have one PaintLayerFragment in the list
+      // at this point (we iterate over them further up on the stack, and pass a
+      // "list" of one fragment at a time from there instead).
+      DCHECK(fragment.fragment_idx != WTF::kNotFound);
+      HitTestLocation location_for_fragment(hit_test_location,
+                                            fragment.fragment_idx);
+      if (HitTestContents(result, fragment.physical_fragment,
+                          fragment.layer_offset, location_for_fragment,
+                          hit_test_filter))
         return true;
     } else if (HitTestContents(result, fragment.physical_fragment,
-                               fragment_offset, hit_test_location,
+                               fragment.layer_offset, hit_test_location,
                                hit_test_filter)) {
       return true;
     }
@@ -2110,7 +2112,7 @@ void PaintLayer::UpdateFilterReferenceBox() {
   if (!HasFilterThatMovesPixels())
     return;
   PhysicalRect result = LocalBoundingBox();
-  ExpandRectForSelfPaintingDescendants(*this, result);
+  ExpandRectForSelfPaintingDescendants(result);
   gfx::RectF reference_box(result);
   if (!ResourceInfo() || ResourceInfo()->FilterReferenceBox() != reference_box)
     GetLayoutObject().SetNeedsPaintPropertyUpdate();
@@ -2251,7 +2253,6 @@ PhysicalRect PaintLayer::FragmentsBoundingBox(
 }
 
 void PaintLayer::ExpandRectForSelfPaintingDescendants(
-    const PaintLayer& composited_layer,
     PhysicalRect& result) const {
   // If we're locked, then the subtree does not contribute painted output.
   // Furthermore, we might not have up-to-date sizing and position information
@@ -2272,8 +2273,34 @@ void PaintLayer::ExpandRectForSelfPaintingDescendants(
 
   PaintLayerPaintOrderIterator iterator(this, kAllChildren);
   while (PaintLayer* child_layer = iterator.Next()) {
-    result.Unite(
-        child_layer->BoundingBoxForCompositingInternal(composited_layer, this));
+    if (!child_layer->IsSelfPaintingLayer())
+      continue;
+
+    // The layer created for the LayoutFlowThread is just a helper for painting
+    // and hit-testing, and should not contribute to the bounding box. The
+    // LayoutMultiColumnSets will contribute the correct size for the layout
+    // content of the multicol container.
+    if (child_layer->GetLayoutObject().IsLayoutFlowThread())
+      continue;
+
+    PhysicalRect added_rect = child_layer->LocalBoundingBox();
+    child_layer->ExpandRectForSelfPaintingDescendants(added_rect);
+
+    // Only enlarge by the filter outsets if we know the filter is going to be
+    // rendered in software.  Accelerated filters will handle their own outsets.
+    if (child_layer->PaintsWithFilters())
+      added_rect = child_layer->MapRectForFilter(added_rect);
+
+    if (child_layer->Transform()) {
+      added_rect = PhysicalRect::EnclosingRect(
+          child_layer->Transform()->MapRect(gfx::RectF(added_rect)));
+    }
+
+    PhysicalOffset delta;
+    child_layer->ConvertToLayerCoords(this, delta);
+    added_rect.Move(delta);
+
+    result.Unite(added_rect);
   }
 }
 
@@ -2291,64 +2318,6 @@ bool PaintLayer::KnownToClipSubtree() const {
     return true;
   }
   return false;
-}
-
-PhysicalRect PaintLayer::BoundingBoxForCompositingInternal(
-    const PaintLayer& composited_layer,
-    const PaintLayer* stacking_parent) const {
-  DCHECK_GE(GetLayoutObject().GetDocument().Lifecycle().GetState(),
-            DocumentLifecycle::kInPrePaint);
-  if (!IsSelfPaintingLayer())
-    return PhysicalRect();
-
-  // FIXME: This could be improved to do a check like
-  // hasVisibleNonCompositingDescendantLayers() (bug 92580).
-  if (this != &composited_layer && !HasVisibleContent() &&
-      !HasVisibleDescendant())
-    return PhysicalRect();
-
-  if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {
-    // In root layer scrolling mode, the main GraphicsLayer is the size of the
-    // layout viewport. In non-RLS mode, it is the union of the layout viewport
-    // and the document's layout overflow rect.
-    gfx::Rect result = gfx::Rect();
-    if (LocalFrameView* frame_view = GetLayoutObject().GetFrameView())
-      result = gfx::Rect(gfx::Point(), frame_view->Size());
-    return PhysicalRect(result);
-  }
-
-  // The layer created for the LayoutFlowThread is just a helper for painting
-  // and hit-testing, and should not contribute to the bounding box. The
-  // LayoutMultiColumnSets will contribute the correct size for the layout
-  // content of the multicol container.
-  if (GetLayoutObject().IsLayoutFlowThread())
-    return PhysicalRect();
-
-  PhysicalRect result = LocalBoundingBox();
-  ExpandRectForSelfPaintingDescendants(composited_layer, result);
-
-  // Only enlarge by the filter outsets if we know the filter is going to be
-  // rendered in software.  Accelerated filters will handle their own outsets.
-  if (PaintsWithFilters())
-    result = MapRectForFilter(result);
-
-  if (Transform()) {
-    result =
-        PhysicalRect::EnclosingRect(Transform()->MapRect(gfx::RectF(result)));
-  }
-
-  if (ShouldFragmentCompositedBounds(&composited_layer)) {
-    ConvertFromFlowThreadToVisualBoundingBoxInAncestor(&composited_layer,
-                                                       result);
-    return result;
-  }
-
-  if (stacking_parent) {
-    PhysicalOffset delta;
-    ConvertToLayerCoords(stacking_parent, delta);
-    result.Move(delta);
-  }
-  return result;
 }
 
 bool PaintLayer::SupportsSubsequenceCaching() const {
@@ -2698,16 +2667,12 @@ bool PaintLayer::ComputeHasFilterThatMovesPixels() const {
 }
 
 void PaintLayer::SetNeedsRepaint() {
-  SetSelfNeedsRepaint();
-  // Do this unconditionally to ensure container chain is marked when
-  // compositing status of the layer changes.
-  MarkCompositingContainerChainForNeedsRepaint();
-}
-
-void PaintLayer::SetSelfNeedsRepaint() {
+  if (self_needs_repaint_)
+    return;
   self_needs_repaint_ = true;
   // Invalidate as a display item client.
   static_cast<DisplayItemClient*>(this)->Invalidate();
+  MarkCompositingContainerChainForNeedsRepaint();
 }
 
 void PaintLayer::SetDescendantNeedsRepaint() {
@@ -2880,8 +2845,7 @@ void ShowLayerTree(const blink::PaintLayer* layer) {
   if (blink::LocalFrame* frame = layer->GetLayoutObject().GetFrame()) {
     WTF::String output =
         ExternalRepresentation(frame,
-                               blink::kLayoutAsTextShowAllLayers |
-                                   blink::kLayoutAsTextShowLayerNesting |
+                               blink::kLayoutAsTextShowLayerNesting |
                                    blink::kLayoutAsTextShowAddresses |
                                    blink::kLayoutAsTextShowIDAndClass |
                                    blink::kLayoutAsTextDontUpdateLayout |

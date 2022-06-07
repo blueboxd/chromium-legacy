@@ -14,7 +14,7 @@ namespace chromeos {
 
 class DebugOverlayHandler : public BaseWebUIHandler {
  public:
-  explicit DebugOverlayHandler(JSCallsContainer* js_calls_container);
+  DebugOverlayHandler();
   ~DebugOverlayHandler() override;
   DebugOverlayHandler(const DebugOverlayHandler&) = delete;
   DebugOverlayHandler& operator=(const DebugOverlayHandler&) = delete;
@@ -23,7 +23,7 @@ class DebugOverlayHandler : public BaseWebUIHandler {
   void DeclareJSCallbacks() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
  private:
   // JS callbacks.

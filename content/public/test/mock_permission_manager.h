@@ -9,8 +9,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-class GURL;
-
 namespace content {
 
 enum class PermissionType;
@@ -35,6 +33,15 @@ class MockPermissionManager : public PermissionControllerDelegate {
                    PermissionType permission,
                    content::RenderFrameHost* render_frame_host,
                    const GURL& requesting_origin));
+  MOCK_METHOD2(GetPermissionStatusForCurrentDocument,
+               blink::mojom::PermissionStatus(
+                   PermissionType permission,
+                   content::RenderFrameHost* render_frame_host));
+  MOCK_METHOD3(GetPermissionStatusForWorker,
+               blink::mojom::PermissionStatus(
+                   PermissionType permission,
+                   content::RenderProcessHost* render_process_host,
+                   const GURL& worker_origin));
   void RequestPermission(
       PermissionType permission,
       RenderFrameHost* render_frame_host,
@@ -53,9 +60,10 @@ class MockPermissionManager : public PermissionControllerDelegate {
   void ResetPermission(PermissionType permission,
                        const GURL& requesting_origin,
                        const GURL& embedding_origin) override {}
-  MOCK_METHOD4(SubscribePermissionStatusChange,
+  MOCK_METHOD5(SubscribePermissionStatusChange,
                SubscriptionId(
                    PermissionType permission,
+                   RenderProcessHost* render_process_host,
                    RenderFrameHost* render_frame_host,
                    const GURL& requesting_origin,
                    base::RepeatingCallback<void(blink::mojom::PermissionStatus)>

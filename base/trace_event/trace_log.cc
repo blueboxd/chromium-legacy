@@ -21,6 +21,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/ranges/algorithm.h"
@@ -30,7 +31,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -2250,11 +2250,13 @@ void TraceLog::set_process_name(const std::string& process_name) {
     AutoLock lock(lock_);
     process_name_ = process_name;
   }
+
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   if (perfetto::Tracing::IsInitialized()) {
     auto track = perfetto::ProcessTrack::Current();
     auto desc = track.Serialize();
     desc.mutable_process()->set_process_name(process_name);
+    desc.mutable_process()->set_pid(process_id_);
     perfetto::TrackEvent::SetTrackDescriptor(track, std::move(desc));
   }
 #endif

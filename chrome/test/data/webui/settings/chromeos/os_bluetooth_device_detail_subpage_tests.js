@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
+import 'chrome://os-settings/strings.m.js';
 
-// #import 'chrome://os-settings/strings.m.js';
+import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {createDefaultBluetoothDevice, FakeBluetoothConfig} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
+import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.js';
 
-// #import {Router, Route, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {flush, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {waitBeforeNextRender, waitAfterNextRender, eventToPromise} from 'chrome://test/test_util.js';
-// #import {assertTrue, assertEquals, assertFalse, assertNotEquals} from '../../../chai_assert.js';
-// #import {createDefaultBluetoothDevice, FakeBluetoothConfig} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
-// #import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
-// clang-format on
+import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../../chai_assert.js';
 
 suite('OsBluetoothDeviceDetailPageTest', function() {
   /** @type {!FakeBluetoothConfig} */
@@ -40,7 +37,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     bluetoothDeviceDetailPage =
         document.createElement('os-settings-bluetooth-device-detail-subpage');
     document.body.appendChild(bluetoothDeviceDetailPage);
-    Polymer.dom.flush();
+    flush();
 
     propertiesObserver = {
       /**
@@ -53,18 +50,18 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
       },
     };
     bluetoothConfig.observeSystemProperties(propertiesObserver);
-    Polymer.dom.flush();
+    flush();
   }
 
   function flushAsync() {
-    Polymer.dom.flush();
+    flush();
     return new Promise((resolve) => setTimeout(resolve));
   }
 
   teardown(function() {
     bluetoothDeviceDetailPage.remove();
     bluetoothDeviceDetailPage = null;
-    settings.Router.getInstance().resetRouteForTesting();
+    Router.getInstance().resetRouteForTesting();
   });
 
 
@@ -73,8 +70,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
       async function() {
         init();
         bluetoothConfig.setBluetoothEnabledState(/*enabled=*/ true);
-        const windowPopstatePromise =
-            test_util.eventToPromise('popstate', window);
+        const windowPopstatePromise = eventToPromise('popstate', window);
 
         const getBluetoothConnectDisconnectBtn = () =>
             bluetoothDeviceDetailPage.$$('#connectDisconnectBtn');
@@ -101,8 +97,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
         let params = new URLSearchParams();
         params.append('id', id);
-        settings.Router.getInstance().navigateTo(
-            settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+        Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
 
         await flushAsync();
 
@@ -115,8 +110,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
         params = new URLSearchParams();
         params.append('id', id);
-        settings.Router.getInstance().navigateTo(
-            settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+        Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
         await flushAsync();
         assertFalse(!!getConnectionFailedText());
       });
@@ -132,8 +126,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     const navigateToDeviceDetailPage = () => {
       const params = new URLSearchParams();
       params.append('id', '12345/6789&');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+      Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
     };
 
     const device = createDefaultBluetoothDevice(
@@ -171,8 +164,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     const navigateToDeviceDetailPage = () => {
       const params = new URLSearchParams();
       params.append('id', '12345/6789&');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+      Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
     };
 
     const device = createDefaultBluetoothDevice(
@@ -210,7 +202,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     await flushAsync();
     assertTrue(!!getTrueWirelessImages());
 
-    // If detailed battery info is not available, only show True Wireless
+    // If battery info is not available, only show True Wireless
     // component if not connected.
     device.deviceProperties.batteryInfo = {};
     device.deviceProperties.connectionState =
@@ -230,6 +222,22 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     bluetoothConfig.updatePairedDevice(device);
     await flushAsync();
     assertFalse(!!getTrueWirelessImages());
+
+    // Having either default battery info or True Wireless battery info
+    // should show True Wireless component if device is connected.
+    device.deviceProperties.batteryInfo = {
+      defaultProperties: {batteryPercentage: 90}
+    };
+    bluetoothConfig.updatePairedDevice(device);
+    await flushAsync();
+    assertTrue(!!getTrueWirelessImages());
+
+    device.deviceProperties.batteryInfo = {
+      rightBudInfo: {batteryPercentage: 90}
+    };
+    bluetoothConfig.updatePairedDevice(device);
+    await flushAsync();
+    assertTrue(!!getTrueWirelessImages());
   });
 
   test('Show change settings row, and navigate to subpages', async function() {
@@ -259,8 +267,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
     const params = new URLSearchParams();
     params.append('id', '12//345&6789');
-    settings.Router.getInstance().navigateTo(
-        settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+    Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
 
     await flushAsync();
     assertTrue(bluetoothDeviceDetailPage.getIsDeviceConnectedForTest());
@@ -286,16 +293,14 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     getChangeMouseSettings().click();
     await flushAsync();
 
-    assertEquals(
-        settings.Router.getInstance().getCurrentRoute(),
-        settings.routes.POINTERS);
+    assertEquals(Router.getInstance().getCurrentRoute(), routes.POINTERS);
 
     // Navigate back to the detail page.
     assertNotEquals(
         getChangeMouseSettings(),
         bluetoothDeviceDetailPage.shadowRoot.activeElement);
-    let windowPopstatePromise = test_util.eventToPromise('popstate', window);
-    settings.Router.getInstance().navigateToPreviousRoute();
+    let windowPopstatePromise = eventToPromise('popstate', window);
+    Router.getInstance().navigateToPreviousRoute();
     await windowPopstatePromise;
     await waitBeforeNextRender(bluetoothDeviceDetailPage);
 
@@ -327,16 +332,14 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     getChangeKeyboardSettings().click();
     await flushAsync();
 
-    assertEquals(
-        settings.Router.getInstance().getCurrentRoute(),
-        settings.routes.KEYBOARD);
+    assertEquals(Router.getInstance().getCurrentRoute(), routes.KEYBOARD);
 
     // Navigate back to the detail page.
     assertNotEquals(
         getChangeKeyboardSettings(),
         bluetoothDeviceDetailPage.shadowRoot.activeElement);
-    windowPopstatePromise = test_util.eventToPromise('popstate', window);
-    settings.Router.getInstance().navigateToPreviousRoute();
+    windowPopstatePromise = eventToPromise('popstate', window);
+    Router.getInstance().navigateToPreviousRoute();
     await windowPopstatePromise;
     await waitBeforeNextRender(bluetoothDeviceDetailPage);
 
@@ -345,6 +348,13 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     assertEquals(
         getChangeKeyboardSettings(),
         bluetoothDeviceDetailPage.shadowRoot.activeElement);
+
+    device1.deviceProperties.deviceType = mojom.DeviceType.kKeyboardMouseCombo;
+    bluetoothConfig.updatePairedDevice(device1);
+
+    await flushAsync();
+    assertTrue(!!getChangeMouseSettings());
+    assertTrue(!!getChangeKeyboardSettings());
 
     // This is needed or other tests will fail.
     // TODO(gordonseto): Figure out how to remove this.
@@ -356,7 +366,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     init();
     bluetoothConfig.setBluetoothEnabledState(/*enabled=*/ true);
 
-    const windowPopstatePromise = test_util.eventToPromise('popstate', window);
+    const windowPopstatePromise = eventToPromise('popstate', window);
 
     const device1 = createDefaultBluetoothDevice(
         /*id=*/ '12345/6789&',
@@ -383,8 +393,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
     const params = new URLSearchParams();
     params.append('id', '12345/6789&');
-    settings.Router.getInstance().navigateTo(
-        settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+    Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
 
     await flushAsync();
     assertEquals('device1', bluetoothDeviceDetailPage.parentNode.pageTitle);
@@ -438,8 +447,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
     let params = new URLSearchParams();
     params.append('id', '123456789');
-    settings.Router.getInstance().navigateTo(
-        settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+    Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
     await flushAsync();
 
     assertTrue(!!getBluetoothForgetBtn());
@@ -501,14 +509,13 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     bluetoothConfig.updatePairedDevice(device1);
     // Navigate away from details subpage with while connected and navigate
     // back.
-    const windowPopstatePromise = test_util.eventToPromise('popstate', window);
-    settings.Router.getInstance().navigateToPreviousRoute();
+    const windowPopstatePromise = eventToPromise('popstate', window);
+    Router.getInstance().navigateToPreviousRoute();
     await windowPopstatePromise;
 
     params = new URLSearchParams();
     params.append('id', '123456789');
-    settings.Router.getInstance().navigateTo(
-        settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+    Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
     await flushAsync();
 
     assertTrue(!!getBluetoothStateBtn());
@@ -541,8 +548,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
         const params = new URLSearchParams();
         params.append('id', '12//345&6789');
-        settings.Router.getInstance().navigateTo(
-            settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+        Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
 
         await flushAsync();
 
@@ -584,8 +590,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
     const params = new URLSearchParams();
     params.append('id', id);
-    settings.Router.getInstance().navigateTo(
-        settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+    Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
 
     await flushAsync();
     await flushAsync();
@@ -604,7 +609,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
     init();
     bluetoothConfig.setBluetoothEnabledState(/*enabled=*/ true);
 
-    const windowPopstatePromise = test_util.eventToPromise('popstate', window);
+    const windowPopstatePromise = eventToPromise('popstate', window);
 
     const getBluetoothForgetBtn = () =>
         bluetoothDeviceDetailPage.$$('#forgetBtn');
@@ -650,8 +655,7 @@ suite('OsBluetoothDeviceDetailPageTest', function() {
 
     const params = new URLSearchParams();
     params.append('id', id);
-    settings.Router.getInstance().navigateTo(
-        settings.routes.BLUETOOTH_DEVICE_DETAIL, params);
+    Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICE_DETAIL, params);
 
     await flushAsync();
     assertTrue(!!getBluetoothConnectDisconnectBtn());

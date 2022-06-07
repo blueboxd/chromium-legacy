@@ -97,8 +97,6 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -134,6 +132,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -570,9 +569,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
   // sticks around so that the user can edit it.
   GURL abort_url(embedded_test_server()->GetURL("/nocontent"));
   {
-    content::WindowedNotificationObserver stop_observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(&web_contents->GetController()));
+    content::LoadStopObserver stop_observer(web_contents);
     browser()->OpenURL(OpenURLParams(abort_url, Referrer(),
                                      WindowOpenDisposition::CURRENT_TAB,
                                      ui::PAGE_TRANSITION_TYPED, false));
@@ -588,9 +585,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
 
   // Now navigating to a 204 URL should clear the pending entry.
   {
-    content::WindowedNotificationObserver stop_observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(&web_contents->GetController()));
+    content::LoadStopObserver stop_observer(web_contents);
     browser()->OpenURL(OpenURLParams(abort_url, Referrer(),
                                      WindowOpenDisposition::CURRENT_TAB,
                                      ui::PAGE_TRANSITION_TYPED, false));
@@ -876,7 +871,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetMainFrame()
-      ->ExecuteJavaScriptWithUserGestureForTests(kOpenNewBeforeUnloadPage);
+      ->ExecuteJavaScriptWithUserGestureForTests(kOpenNewBeforeUnloadPage,
+                                                 base::NullCallback());
 
   // Close the new window with JavaScript, which should show a single
   // beforeunload dialog.  Then show another alert, to make it easy to verify
@@ -885,7 +881,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
       ->tab_strip_model()
       ->GetWebContentsAt(0)
       ->GetMainFrame()
-      ->ExecuteJavaScriptWithUserGestureForTests(u"w.close(); alert('bar');");
+      ->ExecuteJavaScriptWithUserGestureForTests(u"w.close(); alert('bar');",
+                                                 base::NullCallback());
   AppModalDialogController* alert = ui_test_utils::WaitForAppModalDialog();
   alert->view()->AcceptAppModalDialog();
 
@@ -924,103 +921,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
 
   // Accept the navigation so we end up on a page without a beforeunload hook.
   alert->view()->AcceptAppModalDialog();
-}
-
-class BrowserTestWithTabGroupsAutoCreateEnabled : public BrowserTest {
- public:
-  BrowserTestWithTabGroupsAutoCreateEnabled() {
-    feature_list_.InitWithFeatures({features::kTabGroupsAutoCreate}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsAutoCreateEnabled,
-                       FirstNewTabFromLinkWithSameDomainDoesNotCreateGroup) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Open a tab not in a group.
-  TabStripModel* const model = browser()->tab_strip_model();
-  GURL url1("http://www.example.com/empty.html");
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url1));
-  ASSERT_FALSE(model->GetTabGroupForTab(0).has_value());
-
-  // Open a new background tab with the same domain as the active tab.
-  WebContents* const contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url2("http://www.example.com/");
-  OpenURLFromTab(
-      contents,
-      OpenURLParams(url2, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false));
-
-  // The new tab which has the same domain as the tab it originated from should
-  // not create a new group.
-  EXPECT_FALSE(model->GetTabGroupForTab(0).has_value());
-  EXPECT_FALSE(model->GetTabGroupForTab(1).has_value());
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsAutoCreateEnabled,
-                       SecondNewTabFromLinkWithSameDomainCreatesGroup) {
-  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Open a tab not in a group.
-  TabStripModel* const model = browser()->tab_strip_model();
-  GURL url1("http://www.example.com/empty.html");
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url1));
-  ASSERT_FALSE(model->GetTabGroupForTab(0).has_value());
-
-  // Open two new background tabs with the same domain as the active tab.
-  WebContents* const contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url2("http://www.example.com/");
-  OpenURLFromTab(
-      contents,
-      OpenURLParams(url2, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false));
-  OpenURLFromTab(
-      contents,
-      OpenURLParams(url2, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false));
-
-  // Opening the second tab from the source will result in the source tab and
-  // the two tabs opened from the source to be added in a new group.
-  ASSERT_EQ(model->count(), 3);
-  EXPECT_TRUE(model->GetTabGroupForTab(0).has_value());
-  EXPECT_TRUE(model->GetTabGroupForTab(1).has_value());
-  EXPECT_TRUE(model->GetTabGroupForTab(2).has_value());
-  EXPECT_EQ(model->GetTabGroupForTab(0).value(),
-            model->GetTabGroupForTab(1).value());
-  EXPECT_EQ(model->GetTabGroupForTab(0).value(),
-            model->GetTabGroupForTab(2).value());
-}
-
-// TODO(crbug.com/997344): Test this with implicitly-created links.
-IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsAutoCreateEnabled,
-                       NewTabFromLinkWithDifferentDomainDoesNotCreateGroup) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Open a tab not in a group.
-  TabStripModel* const model = browser()->tab_strip_model();
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/empty.html")));
-  ASSERT_FALSE(model->GetTabGroupForTab(0).has_value());
-
-  // Open a new background tab with a different domain from the active tab.
-  WebContents* const contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url2("http://www.example.com/");
-  OpenURLFromTab(
-      contents,
-      OpenURLParams(url2, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false));
-
-  // The new tab which has a different domain as the tab it originated from will
-  // open without creating a group.
-  EXPECT_FALSE(model->GetTabGroupForTab(0).has_value());
-  EXPECT_FALSE(model->GetTabGroupForTab(1).has_value());
 }
 
 // TODO(crbug.com/997344): Test this with implicitly-created links.
@@ -1658,23 +1558,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
                      base::FilePath(base::FilePath::kCurrentDirectory),
                      base::FilePath(kTitle1File))));
 
-  content::WindowedNotificationObserver back_nav_load_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&browser()
-                                                 ->tab_strip_model()
-                                                 ->GetActiveWebContents()
-                                                 ->GetController()));
+  content::LoadStopObserver back_nav_load_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back_nav_load_observer.Wait();
   CommandUpdater* command_updater = browser()->command_controller();
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_FORWARD));
 
-  content::WindowedNotificationObserver forward_nav_load_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&browser()
-                                                 ->tab_strip_model()
-                                                 ->GetActiveWebContents()
-                                                 ->GetController()));
+  content::LoadStopObserver forward_nav_load_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
   chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
   // This check will happen before the navigation completes, since the browser
   // won't process the renderer's response until the Wait() call below.
@@ -2070,12 +1962,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_WindowOpenClose3) {
 }
 
 // TODO(linux_aura) http://crbug.com/163931
-// Mac disabled: http://crbug.com/169820
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if !BUILDFLAG(IS_MAC) && \
-    !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 IN_PROC_BROWSER_TEST_F(BrowserTest, FullscreenBookmarkBar) {
+#if BUILDFLAG(IS_MAC)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+
   chrome::ToggleBookmarkBar(browser());
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
   chrome::ToggleFullscreenMode(browser());
@@ -2264,7 +2158,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   // Starting a browser window should work just fine.
-  CreateBrowser(ProfileManager::GetActiveUserProfile());
+  CreateBrowser(ProfileManager::GetLastUsedProfile());
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
@@ -2273,7 +2167,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
 // session state.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = ProfileManager::GetLastUsedProfileIfLoaded();
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile);
@@ -2710,7 +2604,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
   CheckDisplayModeMQ(u"browser",
                      browser()->tab_strip_model()->GetActiveWebContents());
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = browser()->profile();
   Browser* app_browser = CreateBrowserForApp("blah", profile);
   auto* app_contents = app_browser->tab_strip_model()->GetActiveWebContents();
   CheckDisplayModeMQ(u"standalone", app_contents);

@@ -491,16 +491,12 @@ void LocalPrinterAsh::GetPrinterTypeDenyList(
        deny_list_from_prefs->GetListDeprecated()) {
     const std::string& deny_list_str = deny_list_value.GetString();
     printing::mojom::PrinterType printer_type;
-    if (deny_list_str == "privet")
-      printer_type = printing::mojom::PrinterType::kPrivet;
-    else if (deny_list_str == "extension")
+    if (deny_list_str == "extension")
       printer_type = printing::mojom::PrinterType::kExtension;
     else if (deny_list_str == "pdf")
       printer_type = printing::mojom::PrinterType::kPdf;
     else if (deny_list_str == "local")
       printer_type = printing::mojom::PrinterType::kLocal;
-    else if (deny_list_str == "cloud")
-      printer_type = printing::mojom::PrinterType::kCloud;
     else
       continue;
 
@@ -521,10 +517,14 @@ void LocalPrinterAsh::AddPrintJobObserver(
     mojo::PendingRemote<mojom::PrintJobObserver> remote,
     mojom::PrintJobSource source,
     AddPrintJobObserverCallback callback) {
-  if (source == mojom::PrintJobSource::kExtension)
-    extension_print_job_remotes_.Add(std::move(remote));
-  if (source == mojom::PrintJobSource::kAny)
-    print_job_remotes_.Add(std::move(remote));
+  switch (source) {
+    case mojom::PrintJobSource::kExtension:
+      extension_print_job_remotes_.Add(std::move(remote));
+      break;
+    case mojom::PrintJobSource::kAny:
+      print_job_remotes_.Add(std::move(remote));
+      break;
+  }
   std::move(callback).Run();
 }
 

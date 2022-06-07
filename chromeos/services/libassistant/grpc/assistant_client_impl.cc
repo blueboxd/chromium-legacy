@@ -97,8 +97,6 @@ void AssistantClientImpl::StartServices(
       services_status_observer);
 
   StartGrpcServices();
-
-  AssistantClientV1::StartServices(services_status_observer);
 }
 
 bool AssistantClientImpl::StartGrpcServices() {
@@ -177,6 +175,11 @@ void AssistantClientImpl::AddDeviceStateEventObserver(
   grpc_services_.AddDeviceStateEventObserver(observer);
 }
 
+void AssistantClientImpl::AddMediaActionFallbackEventObserver(
+    GrpcServicesObserver<OnMediaActionFallbackEventRequest>* observer) {
+  grpc_services_.AddMediaActionFallbackEventObserver(observer);
+}
+
 void AssistantClientImpl::SendVoicelessInteraction(
     const ::assistant::api::Interaction& interaction,
     const std::string& description,
@@ -224,6 +227,11 @@ void AssistantClientImpl::StopAssistantInteraction(bool cancel_conversation) {
       GetLoggingCallback<::assistant::api::StopQueryResponse>(
           /*request_name=*/__func__),
       kInteractionDefaultStateConfig);
+}
+
+void AssistantClientImpl::AddConversationStateEventObserver(
+    GrpcServicesObserver<OnConversationStateEventRequest>* observer) {
+  grpc_services_.AddConversationStateEventObserver(observer);
 }
 
 void AssistantClientImpl::SetAuthenticationInfo(const AuthTokens& tokens) {

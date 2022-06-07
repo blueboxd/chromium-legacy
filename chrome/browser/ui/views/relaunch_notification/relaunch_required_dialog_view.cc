@@ -90,7 +90,7 @@ std::u16string RelaunchRequiredDialogView::GetWindowTitle() const {
 
 ui::ImageModel RelaunchRequiredDialogView::GetWindowIcon() {
   return ui::ImageModel::FromVectorIcon(
-      vector_icons::kBusinessIcon, gfx::kChromeIconGrey,
+      vector_icons::kBusinessIcon, ui::kColorIcon,
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE));
 }
@@ -144,7 +144,7 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
       2 * provider->GetInsetsMetric(views::INSETS_DIALOG_TITLE).left() +
       provider->GetDistanceMetric(DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE);
   label->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, title_offset - margins().left(), 0, 0)));
+      gfx::Insets::TLBR(0, title_offset - margins().left(), 0, 0)));
 
   AddChildView(std::move(label));
 

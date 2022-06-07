@@ -368,12 +368,11 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   ReleaseAsyncReadResultHelpers();
 }
 
-void SkiaOutputSurfaceImplOnGpu::Reshape(const gfx::Size& size,
-                                         float device_scale_factor,
-                                         const gfx::ColorSpace& color_space,
-                                         gfx::BufferFormat format,
-                                         bool use_stencil,
-                                         gfx::OverlayTransform transform) {
+void SkiaOutputSurfaceImplOnGpu::Reshape(
+    const SkSurfaceCharacterization& characterization,
+    const gfx::ColorSpace& color_space,
+    float device_scale_factor,
+    gfx::OverlayTransform transform) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Reshape");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gr_context());
@@ -381,10 +380,9 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(const gfx::Size& size,
   if (context_is_lost_)
     return;
 
-  size_ = size;
-  color_space_ = color_space;
-  if (!output_device_->Reshape(size_, device_scale_factor, color_space, format,
-                               transform)) {
+  size_ = gfx::SkISizeToSize(characterization.dimensions());
+  if (!output_device_->Reshape(characterization, color_space,
+                               device_scale_factor, transform)) {
     MarkContextLost(CONTEXT_LOST_RESHAPE_FAILED);
   }
 }
@@ -395,8 +393,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::vector<ImageContextImpl*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     base::OnceClosure on_finished,
-    absl::optional<gfx::Rect> draw_rectangle,
-    bool allocate_frame_buffer) {
+    absl::optional<gfx::Rect> draw_rectangle) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!scoped_output_device_paint_);
@@ -420,8 +417,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   // We do not reset scoped_output_device_paint_ after drawing the ddl until
   // SwapBuffers() is called, because we may need access to output_sk_surface()
   // for CopyOutput().
-  scoped_output_device_paint_ =
-      output_device_->BeginScopedPaint(allocate_frame_buffer);
+  scoped_output_device_paint_ = output_device_->BeginScopedPaint();
   if (!scoped_output_device_paint_) {
     MarkContextLost(ContextLostReason::CONTEXT_LOST_BEGIN_PAINT_FAILED);
     return;
@@ -495,28 +491,16 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
   output_surface_plane_ = output_surface_plane;
 }
 
-void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame,
-                                             bool release_frame_buffer) {
+void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (release_frame_buffer)
-    output_device_->ReleaseOneFrameBuffer();
 
   SwapBuffersInternal(std::move(frame));
 }
 
-void SkiaOutputSurfaceImplOnGpu::AllocateFrameBuffers(size_t n) {
-  MakeCurrent(/*need_framebuffer=*/false);
-  if (!output_device_->AllocateFrameBuffers(n)) {
+void SkiaOutputSurfaceImplOnGpu::EnsureMinNumberOfBuffers(int n) {
+  if (!output_device_->EnsureMinNumberOfBuffers(n)) {
     MarkContextLost(CONTEXT_LOST_ALLOCATE_FRAME_BUFFERS_FAILED);
-  }
-}
-
-void SkiaOutputSurfaceImplOnGpu::ReleaseFrameBuffers(size_t n) {
-  MakeCurrent(/*need_framebuffer=*/false);
-  for (size_t i = 0; i < n; ++i) {
-    output_device_->ReleaseOneFrameBuffer();
   }
 }
 
@@ -1143,7 +1127,7 @@ SkiaOutputSurfaceImplOnGpu::CreateDestroyCopyOutputResourcesOnGpuThreadCallback(
 
 void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     AggregatedRenderPassId id,
-    copy_output::RenderPassGeometry geometry,
+    const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request,
     const gpu::Mailbox& mailbox) {
@@ -1401,6 +1385,9 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(
     SkiaOutputSurface::OverlayList overlays,
     std::vector<ImageContextImpl*> image_contexts,
     base::OnceClosure on_finished) {
+  TRACE_EVENT1("viz", "SkiaOutputSurfaceImplOnGpu::ScheduleOverlays",
+               "num_overlays", overlays.size());
+
 #if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
   if (context_is_lost_)
     return;
@@ -1849,6 +1836,7 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
         output_surface_plane_->damage_rect = frame->sub_buffer_rect;
     }
 
+    output_device_->SetViewportSize(frame->size);
     output_device_->SchedulePrimaryPlane(output_surface_plane_);
 
     if (frame->sub_buffer_rect) {
@@ -2053,8 +2041,9 @@ SkiaOutputSurfaceImplOnGpu::GetOrCreateRenderPassOverlayBacking(
   }
 
   gfx::Size size(characterization.width(), characterization.height());
-  gfx::ColorSpace color_space(*characterization.colorSpace());
-
+  gfx::ColorSpace color_space;
+  if (characterization.colorSpace())
+    color_space = gfx::ColorSpace(*characterization.colorSpace());
   auto it = std::find_if(
       available_render_pass_overlay_backings_.begin(),
       available_render_pass_overlay_backings_.end(),

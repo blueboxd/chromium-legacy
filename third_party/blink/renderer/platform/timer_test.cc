@@ -8,9 +8,11 @@
 #include <queue>
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"

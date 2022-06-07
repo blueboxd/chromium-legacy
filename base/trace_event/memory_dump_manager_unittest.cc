@@ -10,15 +10,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/at_exit.h"
 #include "base/allocator/buildflags.h"
+#include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"

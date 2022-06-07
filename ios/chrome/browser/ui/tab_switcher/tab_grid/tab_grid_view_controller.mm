@@ -9,7 +9,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
@@ -182,6 +181,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @property(nonatomic, assign) TabGridPageConfiguration pageConfiguration;
 // If the scrim view is being presented.
 @property(nonatomic, assign) BOOL isScrimDisplayed;
+// Wether there is a search being performed in the tab grid or not.
+@property(nonatomic, assign) BOOL isPerformingSearch;
 // Pan gesture for when the search results view is scrolled during the search
 // mode.
 @property(nonatomic, strong) UIPanGestureRecognizer* searchResultPanRecognizer;
@@ -490,7 +491,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)contentWillDisappearAnimated:(BOOL)animated {
   self.undoCloseAllAvailable = NO;
-  self.tabGridMode = TabGridModeNormal;
+  if (self.tabGridMode != TabGridModeSearch || !animated) {
+    // Updating the mode reset the items on the grid, in that case of search
+    // mode the animation to show the tab will start from the tab cell after the
+    // reset instead of starting from the cell that triggered the navigation.
+    self.tabGridMode = TabGridModeNormal;
+  }
   [self.regularTabsDelegate discardSavedClosedItems];
   // When the view disappears, the toolbar alpha should be set to 0; either as
   // part of the animation, or directly with -hideToolbars.
@@ -854,18 +860,33 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                               trigger:(ViewRevealTrigger)trigger {
   [self updateNotSelectedTabCellOpacityForState:currentViewRevealState];
   self.currentState = currentViewRevealState;
+  // Update a11y visibility for browser and grid. Both should be visible
+  // when in Peeked mode, and only one visible in the other two modes.
+  BOOL updateAccessibility = NO;
   switch (currentViewRevealState) {
     case ViewRevealState::Hidden:
       [self.delegate tabGridViewControllerDidDismiss:self];
+      self.view.accessibilityViewIsModal = NO;
+      [self.delegate setBVCAccessibilityViewModal:YES];
+      updateAccessibility = YES;
       break;
     case ViewRevealState::Peeked:
-      // No-op.
+      self.view.accessibilityViewIsModal = NO;
+      [self.delegate setBVCAccessibilityViewModal:NO];
+      updateAccessibility = startViewRevealState == ViewRevealState::Hidden;
       break;
     case ViewRevealState::Revealed:
       self.scrollView.scrollEnabled = YES;
       [self setInsetForRemoteTabs];
       [self.delegate dismissBVC];
+      self.view.accessibilityViewIsModal = YES;
+      [self.delegate setBVCAccessibilityViewModal:NO];
+      updateAccessibility = startViewRevealState == ViewRevealState::Hidden;
       break;
+  }
+  if (updateAccessibility) {
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                    nil);
   }
 }
 
@@ -1499,7 +1520,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     return;
   }
 
-  [self updateSelectionModeToolbars];
+  if (self.tabGridMode == TabGridModeSelection) {
+    [self updateSelectionModeToolbars];
+  }
+
   [self configureDoneButtonBasedOnPage:self.currentPage];
   [self configureNewTabButtonBasedOnContentPermissions];
   [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
@@ -1582,11 +1606,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // gridViewController can be null if page configuration disables the
     // currentPage mode.
     if (gridViewController) {
-      if (gridViewController.fractionVisibleOfLastItem >= 0.999) {
-        // Don't show the bottom new tab button because the plus sign cell is
-        // visible.
-        return;
-      }
       self.plusSignButton.alpha =
           1 - gridViewController.fractionVisibleOfLastItem;
     }
@@ -1836,7 +1855,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)setupSearchUI {
   self.scrimView = [[UIControl alloc] init];
-  self.scrimView.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
+  self.scrimView.backgroundColor =
+      [UIColor colorNamed:kDarkerScrimBackgroundColor];
   self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrimView.accessibilityIdentifier = kTabGridScrimIdentifier;
   [self.scrimView addTarget:self
@@ -1853,13 +1873,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 // Shows scrim overlay.
 - (void)showScrim {
-  if (self.isScrimDisplayed) {
-    return;
-  }
-
   self.scrimView.alpha = 0.0f;
-  [self.scrollContentView addSubview:self.scrimView];
-  AddSameConstraints(self.scrimView, self.view.superview);
+  if (!self.scrimView.superview) {
+    [self.scrollContentView addSubview:self.scrimView];
+    AddSameConstraints(self.scrimView, self.view.superview);
+  }
   self.currentPageViewController.accessibilityElementsHidden = YES;
   __weak __typeof(self) weakSelf = self;
   [UIView animateWithDuration:0.2
@@ -1867,32 +1885,37 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         TabGridViewController* strongSelf = weakSelf;
         if (!strongSelf)
           return;
+        strongSelf.scrimView.hidden = NO;
         strongSelf.scrimView.alpha = 1.0f;
         [strongSelf.view layoutIfNeeded];
-      }
-      completion:^(BOOL finished) {
-        weakSelf.isScrimDisplayed = YES;
-      }];
-}
-
-// Hides scrim overlay.
-- (void)hideScrim {
-  if (!self.isScrimDisplayed) {
-    return;
-  }
-
-  __weak TabGridViewController* weakSelf = self;
-  [UIView animateWithDuration:0.2
-      animations:^{
-        weakSelf.scrimView.alpha = 0.0f;
       }
       completion:^(BOOL finished) {
         TabGridViewController* strongSelf = weakSelf;
         if (!strongSelf)
           return;
-        [strongSelf.scrimView removeFromSuperview];
+        strongSelf.isScrimDisplayed = (strongSelf.scrimView.alpha > 0);
+        strongSelf.currentPageViewController.accessibilityElementsHidden = YES;
+      }];
+}
+
+// Hides scrim overlay.
+- (void)hideScrim {
+  __weak TabGridViewController* weakSelf = self;
+  [UIView animateWithDuration:0.2
+      animations:^{
+        TabGridViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+
+        strongSelf.scrimView.alpha = 0.0f;
+        strongSelf.scrimView.hidden = YES;
+      }
+      completion:^(BOOL finished) {
+        TabGridViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
         strongSelf.currentPageViewController.accessibilityElementsHidden = NO;
-        strongSelf.isScrimDisplayed = NO;
+        strongSelf.isScrimDisplayed = (strongSelf.scrimView.alpha > 0);
       }];
 }
 
@@ -1924,6 +1947,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)searchBar:(UISearchBar*)searchBar textDidChange:(NSString*)searchText {
+  searchBar.searchTextField.accessibilityIdentifier =
+      [kTabGridSearchTextFieldIdentifierPrefix
+          stringByAppendingString:searchText];
   [self updateScrimVisibilityForText:searchText];
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
@@ -1956,11 +1982,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)updateScrimVisibilityForText:(NSString*)searchText {
-  if (_tabGridMode == TabGridModeSearch && searchText.length == 0) {
+  if (_tabGridMode != TabGridModeSearch)
+    return;
+  if (searchText.length == 0) {
+    self.isPerformingSearch = NO;
     [self showScrim];
-  } else {
-    // If no results have been presented yet, then hide the scrim to present the
-    // results.
+  } else if (!self.isPerformingSearch) {
+    self.isPerformingSearch = YES;
+    // If no results have been presented yet, then hide the scrim to present
+    // the results.
     [self hideScrim];
   }
 }
@@ -2066,14 +2096,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   alreadySelected = [tabsDelegate isItemWithIDSelected:itemID];
   [tabsDelegate selectItemWithID:itemID];
 
-  if (IsTabsSearchEnabled() && self.tabGridMode == TabGridModeSearch &&
-      ![tabsDelegate isItemWithIDSelected:itemID]) {
-    // That can happen when the search result that was selected is from
-    // another window. In that case don't change the active page for this
-    // window and don't close the tab grid.
-    base::RecordAction(base::UserMetricsAction(
-        "MobileTabGridOpenSearchResultInAnotherWindow"));
-    return;
+  if (IsTabsSearchEnabled() && self.tabGridMode == TabGridModeSearch) {
+    if (![tabsDelegate isItemWithIDSelected:itemID]) {
+      // That can happen when the search result that was selected is from
+      // another window. In that case don't change the active page for this
+      // window and don't close the tab grid.
+      base::RecordAction(base::UserMetricsAction(
+          "MobileTabGridOpenSearchResultInAnotherWindow"));
+      return;
+    } else {
+      // Make sure that the keyboard is dismissed before starting the transition
+      // to the selected tab.
+      [self.view endEditing:YES];
+    }
   }
   self.activePage = self.currentPage;
   // When the tab grid is peeked, selecting an item should not close the grid
@@ -2150,10 +2185,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   CGFloat lastItemVisiblity = gridViewController.fractionVisibleOfLastItem;
   self.plusSignButton.alpha = 1 - lastItemVisiblity;
+  CGFloat xDistance = UseRTLLayout() ? -kScrollThresholdForPlusSignButtonHide
+                                     : kScrollThresholdForPlusSignButtonHide;
   self.plusSignButton.plusSignImage.transform =
       lastItemVisiblity < 1
-          ? CGAffineTransformMakeTranslation(
-                lastItemVisiblity * kScrollThresholdForPlusSignButtonHide, 0)
+          ? CGAffineTransformMakeTranslation(lastItemVisiblity * xDistance, 0)
           : CGAffineTransformIdentity;
 }
 
@@ -2192,7 +2228,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self configureDoneButtonBasedOnPage:self.currentPage];
   [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
   [self configureNewTabButtonBasedOnContentPermissions];
-  [self updateSelectionModeToolbars];
+  if (self.tabGridMode == TabGridModeSelection) {
+    [self updateSelectionModeToolbars];
+  }
 }
 
 #pragma mark - Control actions

@@ -171,9 +171,7 @@ HttpNetworkSession::HttpNetworkSession(const HttpNetworkSessionParams& params,
       quic_stream_factory_(context.net_log,
                            context.host_resolver,
                            context.ssl_config_service,
-                           context.client_socket_factory
-                               ? context.client_socket_factory.get()
-                               : ClientSocketFactory::GetDefaultFactory(),
+                           context.client_socket_factory,
                            context.http_server_properties,
                            context.cert_verifier,
                            context.ct_policy_enforcer,
@@ -208,6 +206,7 @@ HttpNetworkSession::HttpNetworkSession(const HttpNetworkSessionParams& params,
   DCHECK(proxy_resolution_service_);
   DCHECK(ssl_config_service_);
   CHECK(http_server_properties_);
+  DCHECK(context_.client_socket_factory);
 
   normal_socket_pool_manager_ = std::make_unique<ClientSocketPoolManagerImpl>(
       CreateCommonConnectJobParams(false /* for_websockets */),
@@ -347,8 +346,6 @@ base::Value HttpNetworkSession::QuicInfoToValue() const {
                   quic_params->allow_server_migration);
   dict.SetBoolKey("race_stale_dns_on_connection",
                   quic_params->race_stale_dns_on_connection);
-  dict.SetBoolKey("go_away_on_path_degrading",
-                  quic_params->go_away_on_path_degrading);
   dict.SetBoolKey("estimate_initial_rtt", quic_params->estimate_initial_rtt);
   dict.SetBoolKey("server_push_cancellation",
                   params_.enable_server_push_cancellation);
@@ -402,9 +399,7 @@ CommonConnectJobParams HttpNetworkSession::CreateCommonConnectJobParams(
   // Use null websocket_endpoint_lock_manager, which is only set for WebSockets,
   // and only when not using a proxy.
   return CommonConnectJobParams(
-      context_.client_socket_factory ? context_.client_socket_factory.get()
-                                     : ClientSocketFactory::GetDefaultFactory(),
-      context_.host_resolver, &http_auth_cache_,
+      context_.client_socket_factory, context_.host_resolver, &http_auth_cache_,
       context_.http_auth_handler_factory, &spdy_session_pool_,
       &context_.quic_context->params()->supported_versions,
       &quic_stream_factory_, context_.proxy_delegate,

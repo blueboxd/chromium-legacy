@@ -97,7 +97,6 @@
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/incognito_blocker_scene_agent.h"
-#import "ios/chrome/browser/ui/main/reading_list_background_session_scene_agent.h"
 #import "ios/chrome/browser/ui/main/signin_policy_scene_agent.h"
 #import "ios/chrome/browser/ui/main/ui_blocker_scene_agent.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
@@ -294,8 +293,6 @@ bool IsSigninForcedByPolicy() {
                      initWithReauthModule:[[ReauthenticationModule alloc]
                                               init]]];
     [_sceneState addAgent:[[StartSurfaceSceneAgent alloc] init]];
-    [_sceneState
-        addAgent:[[ReadingListBackgroundSessionSceneAgent alloc] init]];
     [_sceneState addAgent:[[SessionSavingSceneAgent alloc] init]];
   }
   return self;
@@ -1633,6 +1630,10 @@ bool IsSigninForcedByPolicy() {
 }
 
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController {
+  if (!baseViewController) {
+    baseViewController = self.currentInterface.viewController;
+  }
+
   DCHECK(!self.signinCoordinator) << "self.signinCoordinator class: "
                                   << base::SysNSStringToUTF8(NSStringFromClass(
                                          self.signinCoordinator.class));
@@ -1854,14 +1855,12 @@ bool IsSigninForcedByPolicy() {
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
-- (void)showCreditCardSettingsFromViewController:
-    (UIViewController*)baseViewController {
+- (void)showCreditCardSettings {
   DCHECK(!self.signinCoordinator) << "self.signinCoordinator class: "
                                   << base::SysNSStringToUTF8(NSStringFromClass(
                                          self.signinCoordinator.class));
   if (self.settingsNavigationController) {
-    [self.settingsNavigationController
-        showCreditCardSettingsFromViewController:baseViewController];
+    [self.settingsNavigationController showCreditCardSettings];
     return;
   }
 
@@ -1869,9 +1868,10 @@ bool IsSigninForcedByPolicy() {
   self.settingsNavigationController = [SettingsNavigationController
       autofillCreditCardControllerForBrowser:browser
                                     delegate:self];
-  [baseViewController presentViewController:self.settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
+  [self.currentInterface.viewController
+      presentViewController:self.settingsNavigationController
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)showDefaultBrowserSettingsFromViewController:
@@ -1889,6 +1889,39 @@ bool IsSigninForcedByPolicy() {
   self.settingsNavigationController =
       [SettingsNavigationController defaultBrowserControllerForBrowser:browser
                                                               delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+- (void)showClearBrowsingDataSettings {
+  UIViewController* baseViewController = self.currentInterface.viewController;
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController showClearBrowsingDataSettings];
+    return;
+  }
+  Browser* browser = self.mainInterface.browser;
+
+  self.settingsNavigationController = [SettingsNavigationController
+      clearBrowsingDataControllerForBrowser:browser
+                                   delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+- (void)showSafetyCheckSettingsAndStartSafetyCheck {
+  UIViewController* baseViewController = self.currentInterface.viewController;
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
+            showSafetyCheckSettingsAndStartSafetyCheck];
+    return;
+  }
+  Browser* browser = self.mainInterface.browser;
+
+  self.settingsNavigationController =
+      [SettingsNavigationController safetyCheckControllerForBrowser:browser
+                                                           delegate:self];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];

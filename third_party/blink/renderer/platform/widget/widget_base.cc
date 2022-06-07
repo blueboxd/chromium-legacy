@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
@@ -150,7 +151,6 @@ WidgetBase::WidgetBase(
     bool is_for_child_local_root)
     : never_composited_(never_composited),
       is_for_child_local_root_(is_for_child_local_root),
-      use_zoom_for_dsf_(Platform::Current()->IsUseZoomForDSFEnabled()),
       client_(client),
       widget_host_(std::move(widget_host), task_runner),
       receiver_(this, std::move(widget), task_runner),
@@ -431,7 +431,6 @@ void WidgetBase::WasHidden() {
 }
 
 void WidgetBase::WasShown(bool was_evicted,
-                          bool in_active_window,
                           mojom::blink::RecordContentToVisibleTimeRequestPtr
                               record_tab_switch_time_request) {
   // The frame must be attached to the frame tree (which makes it no longer
@@ -442,7 +441,6 @@ void WidgetBase::WasShown(bool was_evicted,
                          TRACE_EVENT_FLAG_FLOW_IN);
 
   SetHidden(false);
-  UpdateCompositorPriorityCutoff(in_active_window);
 
   if (record_tab_switch_time_request) {
     LayerTreeHost()->RequestPresentationTimeForNextFrame(
@@ -456,10 +454,6 @@ void WidgetBase::WasShown(bool was_evicted,
   }
 
   client_->WasShown(was_evicted);
-}
-
-void WidgetBase::OnActiveWindowChanged(bool in_active_window) {
-  UpdateCompositorPriorityCutoff(in_active_window);
 }
 
 void WidgetBase::RequestPresentationTimeForNextFrame(
@@ -1053,9 +1047,9 @@ void WidgetBase::ProcessTouchAction(cc::TouchAction touch_action) {
   widget_input_handler_manager_->ProcessTouchAction(touch_action);
 }
 
-void WidgetBase::SetFocus(bool enable) {
-  has_focus_ = enable;
-  client_->FocusChanged(enable);
+void WidgetBase::SetFocus(mojom::blink::FocusState focus_state) {
+  has_focus_ = focus_state == mojom::blink::FocusState::kFocused;
+  client_->FocusChanged(focus_state);
 }
 
 void WidgetBase::BindWidgetCompositor(
@@ -1572,32 +1566,24 @@ void WidgetBase::CountDroppedPointerDownForEventTiming(unsigned count) {
 }
 
 gfx::PointF WidgetBase::DIPsToBlinkSpace(const gfx::PointF& point) {
-  if (!use_zoom_for_dsf_)
-    return point;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return gfx::ScalePoint(point, GetOriginalDeviceScaleFactor());
 }
 
 gfx::Point WidgetBase::DIPsToRoundedBlinkSpace(const gfx::Point& point) {
-  if (!use_zoom_for_dsf_)
-    return point;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return gfx::ScaleToRoundedPoint(point, GetOriginalDeviceScaleFactor());
 }
 
 gfx::PointF WidgetBase::BlinkSpaceToDIPs(const gfx::PointF& point) {
-  if (!use_zoom_for_dsf_)
-    return point;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return gfx::ScalePoint(point, 1.f / GetOriginalDeviceScaleFactor());
 }
 
 gfx::Point WidgetBase::BlinkSpaceToFlooredDIPs(const gfx::Point& point) {
-  if (!use_zoom_for_dsf_)
-    return point;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   float reverse = 1 / GetOriginalDeviceScaleFactor();
@@ -1605,60 +1591,34 @@ gfx::Point WidgetBase::BlinkSpaceToFlooredDIPs(const gfx::Point& point) {
 }
 
 gfx::Size WidgetBase::DIPsToCeiledBlinkSpace(const gfx::Size& size) {
-  if (!use_zoom_for_dsf_)
-    return size;
   return gfx::ScaleToCeiledSize(size, GetOriginalDeviceScaleFactor());
 }
 
 gfx::RectF WidgetBase::DIPsToBlinkSpace(const gfx::RectF& rect) {
-  if (!use_zoom_for_dsf_)
-    return rect;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return gfx::ScaleRect(rect, GetOriginalDeviceScaleFactor());
 }
 
 float WidgetBase::DIPsToBlinkSpace(float scalar) {
-  if (!use_zoom_for_dsf_)
-    return scalar;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return GetOriginalDeviceScaleFactor() * scalar;
 }
 
 gfx::Size WidgetBase::BlinkSpaceToFlooredDIPs(const gfx::Size& size) {
-  if (!use_zoom_for_dsf_)
-    return size;
   float reverse = 1 / GetOriginalDeviceScaleFactor();
   return gfx::ScaleToFlooredSize(size, reverse);
 }
 
 gfx::Rect WidgetBase::BlinkSpaceToEnclosedDIPs(const gfx::Rect& rect) {
-  if (!use_zoom_for_dsf_)
-    return rect;
   float reverse = 1 / GetOriginalDeviceScaleFactor();
   return gfx::ScaleToEnclosedRect(rect, reverse);
 }
 
 gfx::RectF WidgetBase::BlinkSpaceToDIPs(const gfx::RectF& rect) {
-  if (!use_zoom_for_dsf_)
-    return rect;
   float reverse = 1 / GetOriginalDeviceScaleFactor();
   return gfx::ScaleRect(rect, reverse);
-}
-
-void WidgetBase::UpdateCompositorPriorityCutoff(bool in_active_window) {
-  if (never_composited_ ||
-      !base::FeatureList::IsEnabled(
-          features::kFreeNonRequiredTileResourcesForInactiveWindows)) {
-    return;
-  }
-
-  LayerTreeHost()->SetPriorityCutoffOverride(
-      in_active_window
-          ? absl::nullopt
-          : absl::make_optional(gpu::MemoryAllocation::PriorityCutoff::
-                                    CUTOFF_ALLOW_REQUIRED_ONLY));
 }
 
 }  // namespace blink

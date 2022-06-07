@@ -15,6 +15,7 @@
 #include "chrome/browser/metrics/tab_count_metrics.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/user_education/help_bubble_factory_registry.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -23,6 +24,8 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_thumbnail_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views/user_education/help_bubble_factory_views.h"
+#include "chrome/browser/ui/views/user_education/help_bubble_view.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -73,7 +76,7 @@ void FixWidgetStackOrder(views::Widget* widget, const Browser* browser) {
   // by other secondary UI Widgets (such as the omnibox Widget, see
   // crbug.com/1226536).
   widget->StackAtTop();
-#else   // !deifned(OS_LINUX)
+#else  // !BUILDFLAG(IS_LINUX)
   // Hover card should always render above omnibox (see crbug.com/1272106).
   if (!browser || !widget)
     return;
@@ -85,10 +88,24 @@ void FixWidgetStackOrder(views::Widget* widget, const Browser* browser) {
                                ->omnibox_view()
                                ->model()
                                ->get_popup_view();
-  if (!popup_view || !popup_view->IsOpen())
+  if (popup_view && popup_view->IsOpen()) {
+    widget->StackAboveWidget(
+        static_cast<OmniboxPopupContentsView*>(popup_view)->GetWidget());
     return;
-  widget->StackAboveWidget(
-      static_cast<OmniboxPopupContentsView*>(popup_view)->GetWidget());
+  }
+
+  // Hover card should always render above help bubbles (see crbug.com/1309238).
+  if (browser_view->GetFeaturePromoController()) {
+    HelpBubbleFactoryRegistry* const registry =
+        browser_view->GetFeaturePromoController()->bubble_factory_registry();
+    auto* const help_bubble =
+        registry->GetHelpBubble(browser_view->GetElementContext());
+    if (help_bubble && help_bubble->IsA<HelpBubbleViews>()) {
+      widget->StackAboveWidget(
+          help_bubble->AsA<HelpBubbleViews>()->bubble_view()->GetWidget());
+    }
+  }
+
 #endif  // !BUILDFLAG(IS_LINUX)
 }
 
@@ -196,8 +213,8 @@ class TabHoverCardController::EventSniffer : public ui::EventObserver {
                          !controller_->tab_strip_->IsFocusInTabs();
     }
     if (close_hover_card) {
-      controller_->UpdateHoverCard(nullptr,
-                                   TabController::HoverCardUpdateType::kEvent);
+      controller_->UpdateHoverCard(
+          nullptr, TabSlotController::HoverCardUpdateType::kEvent);
     }
   }
 
@@ -252,7 +269,7 @@ bool TabHoverCardController::IsHoverCardShowingForTab(Tab* tab) const {
 
 void TabHoverCardController::UpdateHoverCard(
     Tab* tab,
-    TabController::HoverCardUpdateType update_type) {
+    TabSlotController::HoverCardUpdateType update_type) {
   // Never display a hover card for a closing tab.
   if (tab && tab->closing())
     tab = nullptr;
@@ -273,23 +290,23 @@ void TabHoverCardController::UpdateHoverCard(
     return;
 
   switch (update_type) {
-    case TabController::HoverCardUpdateType::kSelectionChanged:
+    case TabSlotController::HoverCardUpdateType::kSelectionChanged:
       metrics_->TabSelectionChanged();
       break;
-    case TabController::HoverCardUpdateType::kHover:
+    case TabSlotController::HoverCardUpdateType::kHover:
       if (!tab)
         last_mouse_exit_timestamp_ = base::TimeTicks::Now();
       break;
-    case TabController::HoverCardUpdateType::kTabDataChanged:
+    case TabSlotController::HoverCardUpdateType::kTabDataChanged:
       DCHECK(tab && IsHoverCardShowingForTab(tab));
       break;
-    case TabController::HoverCardUpdateType::kTabRemoved:
-    case TabController::HoverCardUpdateType::kAnimating:
+    case TabSlotController::HoverCardUpdateType::kTabRemoved:
+    case TabSlotController::HoverCardUpdateType::kAnimating:
       // Neither of these cases should have a tab associated.
       DCHECK(!tab);
       break;
-    case TabController::HoverCardUpdateType::kEvent:
-    case TabController::HoverCardUpdateType::kFocus:
+    case TabSlotController::HoverCardUpdateType::kEvent:
+    case TabSlotController::HoverCardUpdateType::kFocus:
       // No special action taken for this type of even (yet).
       break;
   }
@@ -310,7 +327,7 @@ void TabHoverCardController::TabSelectedViaMouse(Tab* tab) {
 
 void TabHoverCardController::UpdateOrShowCard(
     Tab* tab,
-    TabController::HoverCardUpdateType update_type) {
+    TabSlotController::HoverCardUpdateType update_type) {
   // Close is asynchronous, so make sure that if we're closing we clear out all
   // of our data *now* rather than waiting for the deletion message.
   if (hover_card_ && hover_card_->GetWidget()->IsClosed())
@@ -318,7 +335,7 @@ void TabHoverCardController::UpdateOrShowCard(
 
   // If a hover card is being updated because of a data change, the hover card
   // had better already be showing for the affected tab.
-  if (update_type == TabController::HoverCardUpdateType::kTabDataChanged) {
+  if (update_type == TabSlotController::HoverCardUpdateType::kTabDataChanged) {
     DCHECK(IsHoverCardShowingForTab(tab));
     UpdateCardContent(tab);
     slide_animator_->UpdateTargetBounds();
@@ -383,8 +400,7 @@ void TabHoverCardController::ShowHoverCard(bool is_initial,
   UpdateCardContent(target_tab_);
   slide_animator_->UpdateTargetBounds();
   MaybeStartThumbnailObservation(target_tab_, is_initial);
-  FixWidgetStackOrder(hover_card_->GetWidget(),
-                      tab_strip_->controller()->GetBrowser());
+  FixWidgetStackOrder(hover_card_->GetWidget(), tab_strip_->GetBrowser());
 
   if (!is_initial || !UseAnimations()) {
     OnCardFullyVisible();
@@ -430,7 +446,8 @@ void TabHoverCardController::OnViewIsDeleting(views::View* observed_view) {
     fade_animator_.reset();
     hover_card_ = nullptr;
   } else if (target_tab_ == observed_view) {
-    UpdateHoverCard(nullptr, TabController::HoverCardUpdateType::kTabRemoved);
+    UpdateHoverCard(nullptr,
+                    TabSlotController::HoverCardUpdateType::kTabRemoved);
     // These postconditions should always be met after calling
     // UpdateHoverCard(nullptr, ...)
     DCHECK(!target_tab_);

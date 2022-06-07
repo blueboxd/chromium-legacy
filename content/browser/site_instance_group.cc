@@ -35,6 +35,10 @@ SiteInstanceGroupId SiteInstanceGroup::GetId() const {
   return id_;
 }
 
+base::SafeRef<SiteInstanceGroup> SiteInstanceGroup::GetSafeRef() {
+  return weak_ptr_factory_.GetSafeRef();
+}
+
 void SiteInstanceGroup::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -71,12 +75,6 @@ void SiteInstanceGroup::RenderProcessHostDestroyed(RenderProcessHost* host) {
   process_->RemoveObserver(this);
   process_ = nullptr;
   agent_scheduling_group_ = nullptr;
-
-  // Protect `this` from being deleted inside of the observers.
-  scoped_refptr<SiteInstanceGroup> protect(this);
-
-  for (auto& observer : observers_)
-    observer.RenderProcessHostDestroyed();
 }
 
 void SiteInstanceGroup::RenderProcessExited(
@@ -86,22 +84,11 @@ void SiteInstanceGroup::RenderProcessExited(
     observer.RenderProcessGone(this, info);
 }
 
-void SiteInstanceGroup::WriteIntoTrace(perfetto::TracedValue context) const {
-  auto dict = std::move(context).WriteDictionary();
-  dict.Add("id", GetId().value());
-  dict.Add("active_frame_count", active_frame_count_);
-  dict.Add("process_id", process()->GetID());
-}
-
 void SiteInstanceGroup::WriteIntoTrace(
-    perfetto::TracedProto<perfetto::protos::pbzero::SiteInstanceGroup> proto)
-    const {
+    perfetto::TracedProto<TraceProto> proto) const {
   proto->set_site_instance_group_id(GetId().value());
   proto->set_active_frame_count(active_frame_count());
-  if (process()) {
-    process()->WriteIntoTrace(proto.WriteNestedMessage(
-        perfetto::protos::pbzero::SiteInstanceGroup::kProcess));
-  }
+  proto.Set(TraceProto::kProcess, process());
 }
 
 }  // namespace content

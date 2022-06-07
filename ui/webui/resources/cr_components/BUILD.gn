@@ -8,11 +8,13 @@ import("//tools/grit/preprocess_if_expr.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/webui_features.gni")
 
+assert(!is_android && !is_ios)
+
 preprocess_folder =
     "$root_gen_dir/ui/webui/resources/preprocessed/cr_components"
-preprocess_gen_manifest = "preprocessed_gen_manifest.json"
 preprocess_mojom_manifest = "preprocessed_mojom_manifest.json"
 if (is_chromeos_ash) {
+  preprocess_gen_manifest = "preprocessed_gen_manifest.json"
   preprocess_polymer2_manifest = "preprocessed_polymer2_manifest.json"
 }
 preprocess_src_manifest = "preprocessed_src_manifest.json"
@@ -62,14 +64,16 @@ generate_grd("build_grdp") {
     ]
   }
   manifest_files = [
-    "$target_gen_dir/$preprocess_gen_manifest",
     "$target_gen_dir/$preprocess_mojom_manifest",
     "$target_gen_dir/$preprocess_src_manifest",
   ]
 
   # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
   if (is_chromeos_ash) {
-    manifest_files += [ "$target_gen_dir/$preprocess_polymer2_manifest" ]
+    manifest_files += [
+      "$target_gen_dir/$preprocess_gen_manifest",
+      "$target_gen_dir/$preprocess_polymer2_manifest",
+    ]
   }
 
   resource_path_prefix = "cr_components"
@@ -77,15 +81,18 @@ generate_grd("build_grdp") {
 
 group("preprocess") {
   public_deps = [
-    ":preprocess_generated",
     ":preprocess_generated_ts",
     ":preprocess_mojom",
     ":preprocess_src",
   ]
 
-  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
   if (is_chromeos_ash) {
-    public_deps += [ ":preprocess_polymer2" ]
+    public_deps += [
+      ":preprocess_generated",
+
+      # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
+      ":preprocess_polymer2",
+    ]
   }
 }
 
@@ -99,6 +106,8 @@ preprocess_if_expr("preprocess_src") {
     "chromeos/bluetooth/bluetooth_types.js",
     "chromeos/bluetooth/bluetooth_metrics_utils.js",
     "chromeos/bluetooth/cros_bluetooth_config.js",
+    "chromeos/network_health/mojo_interface_provider.js",
+    "chromeos/network_health/network_diagnostics_types.js",
     "chromeos/smb_shares/smb_browser_proxy.js",
     "color_change_listener/browser_proxy.js",
     "color_change_listener/colors_css_updater.js",
@@ -113,18 +122,14 @@ preprocess_if_expr("preprocess_mojom") {
   in_files = [ "color_change_listener/color_change_listener.mojom-webui.js" ]
 }
 
-preprocess_if_expr("preprocess_generated") {
-  deps = [ ":polymer3_elements" ]
-  in_folder = target_gen_dir
-  out_folder = preprocess_folder
-  out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
-  in_files = [
-    "localized_link/localized_link.js",
-    "omnibox/cr_autocomplete_match_list.js",
-  ]
+if (is_chromeos_ash) {
+  preprocess_if_expr("preprocess_generated") {
+    deps = [ ":polymer3_elements" ]
+    in_folder = target_gen_dir
+    out_folder = preprocess_folder
+    out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
 
-  if (is_chromeos_ash) {
-    in_files += [
+    in_files = [
       "chromeos/bluetooth/bluetooth_base_page.js",
       "chromeos/bluetooth/bluetooth_dialog.js",
       "chromeos/bluetooth/bluetooth_icon.js",
@@ -173,14 +178,10 @@ preprocess_if_expr("preprocess_generated") {
       "chromeos/multidevice_setup/multidevice_setup_shared_css.m.js",
       "chromeos/multidevice_setup/ui_page.m.js",
       "chromeos/multidevice_setup/icons.m.js",
-      "chromeos/network_health/mojo_interface_provider.m.js",
-      "chromeos/network_health/network_health_container.m.js",
-      "chromeos/network_health/network_health_summary.m.js",
-      "chromeos/network_health/network_health_mojo.m.js",
-      "chromeos/network_health/network_diagnostics.m.js",
-      "chromeos/network_health/network_diagnostics_mojo.m.js",
-      "chromeos/network_health/network_diagnostics_types.m.js",
-      "chromeos/network_health/routine_group.m.js",
+      "chromeos/network_health/network_health_container.js",
+      "chromeos/network_health/network_health_summary.js",
+      "chromeos/network_health/network_diagnostics.js",
+      "chromeos/network_health/routine_group.js",
       "chromeos/network/cr_policy_network_behavior_mojo.m.js",
       "chromeos/network/cr_policy_network_indicator_mojo.m.js",
       "chromeos/network/mojo_interface_provider.m.js",
@@ -228,6 +229,7 @@ preprocess_if_expr("preprocess_generated_ts") {
   out_folder = preprocess_folder
   in_files = [
     "iph_bubble/iph_bubble.ts",
+    "localized_link/localized_link.ts",
     "managed_dialog/managed_dialog.ts",
     "managed_footnote/managed_footnote.ts",
   ]
@@ -348,22 +350,6 @@ if (is_chromeos_ash) {
       "chromeos/network/cr_policy_network_behavior_mojo.js",
       "chromeos/network/cr_policy_network_indicator_mojo.html",
       "chromeos/network/cr_policy_network_indicator_mojo.js",
-      "chromeos/network_health/mojo_interface_provider.html",
-      "chromeos/network_health/mojo_interface_provider.js",
-      "chromeos/network_health/network_diagnostics.html",
-      "chromeos/network_health/network_diagnostics.js",
-      "chromeos/network_health/network_diagnostics_mojo.html",
-      "chromeos/network_health/network_diagnostics_mojo.js",
-      "chromeos/network_health/network_diagnostics_types.html",
-      "chromeos/network_health/network_diagnostics_types.js",
-      "chromeos/network_health/network_health_container.html",
-      "chromeos/network_health/network_health_container.js",
-      "chromeos/network_health/network_health_summary.html",
-      "chromeos/network_health/network_health_summary.js",
-      "chromeos/network_health/network_health_mojo.html",
-      "chromeos/network_health/network_health_mojo.js",
-      "chromeos/network_health/routine_group.html",
-      "chromeos/network_health/routine_group.js",
       "chromeos/network/mojo_interface_provider.html",
       "chromeos/network/mojo_interface_provider.js",
       "chromeos/network/network_icon.html",
@@ -395,11 +381,7 @@ if (is_chromeos_ash) {
 }
 
 group("closure_compile") {
-  deps = [
-    "color_change_listener:closure_compile",
-    "localized_link:closure_compile",
-    "omnibox:closure_compile",
-  ]
+  deps = [ "color_change_listener:closure_compile" ]
 
   if (is_chromeos_ash) {
     deps += [ "chromeos:closure_compile" ]
@@ -414,7 +396,6 @@ group("polymer3_elements") {
     "managed_dialog:web_components",
     "managed_footnote:web_components",
     "most_visited:web_components",
-    "omnibox:web_components",
   ]
 
   if (is_chromeos_ash) {

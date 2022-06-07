@@ -45,7 +45,8 @@ class BorderedRowView : public views::View {
   void OnThemeChanged() override {
     View::OnThemeChanged();
     SetBorder(views::CreateSolidSidedBorder(
-        0, 0, 1, 0, GetColorProvider()->GetColor(ui::kColorSeparator)));
+        gfx::Insets::TLBR(0, 0, 1, 0),
+        GetColorProvider()->GetColor(ui::kColorSeparator)));
   }
 };
 
@@ -165,7 +166,9 @@ void SecurePaymentConfirmationDialogView::OnModelUpdated() {
   SetAccessibleTitle(model_->title());
   UpdateLabelView(DialogViewID::TITLE, model_->title());
   UpdateLabelView(DialogViewID::MERCHANT_LABEL, model_->merchant_label());
-  UpdateLabelView(DialogViewID::MERCHANT_VALUE, model_->merchant_value());
+  UpdateLabelView(
+      DialogViewID::MERCHANT_VALUE,
+      FormatMerchantLabel(model_->merchant_name(), model_->merchant_origin()));
   UpdateLabelView(DialogViewID::INSTRUMENT_LABEL, model_->instrument_label());
   UpdateLabelView(DialogViewID::INSTRUMENT_VALUE, model_->instrument_value());
 
@@ -259,9 +262,10 @@ SecurePaymentConfirmationDialogView::CreateBodyView() {
   title_text->SetID(static_cast<int>(DialogViewID::TITLE));
   body_view->AddChildView(std::move(title_text));
 
-  body_view->AddChildView(
-      CreateRowView(model_->merchant_label(), DialogViewID::MERCHANT_LABEL,
-                    model_->merchant_value(), DialogViewID::MERCHANT_VALUE));
+  body_view->AddChildView(CreateRowView(
+      model_->merchant_label(), DialogViewID::MERCHANT_LABEL,
+      FormatMerchantLabel(model_->merchant_name(), model_->merchant_origin()),
+      DialogViewID::MERCHANT_VALUE));
 
   body_view->AddChildView(
       CreateRowView(model_->instrument_label(), DialogViewID::INSTRUMENT_LABEL,
@@ -305,9 +309,10 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
   if (icon) {
     layout->AddColumn(
         views::LayoutAlignment::kStart, views::LayoutAlignment::kCenter,
-        views::TableLayout::kFixedSize, views::TableLayout::ColumnSize::kFixed,
-        kSecurePaymentConfirmationInstrumentIconWidthPx,
-        kSecurePaymentConfirmationInstrumentIconWidthPx);
+        views::TableLayout::kFixedSize,
+        views::TableLayout::ColumnSize::kUsePreferred,
+        /*fixed_width=*/0,
+        /*min_width=*/kSecurePaymentConfirmationInstrumentIconDefaultWidthPx);
     layout->AddPaddingColumn(views::TableLayout::kFixedSize,
                              ChromeLayoutProvider::Get()->GetDistanceMetric(
                                  views::DISTANCE_RELATED_LABEL_HORIZONTAL));
@@ -336,11 +341,13 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
     std::unique_ptr<views::ImageView> icon_view;
     // The instrument icon may be empty, if it couldn't be downloaded/decoded
     // and iconMustBeShown was set to false. In that case, use a default icon.
+    // The actual display color is set based on the theme in OnThemeChanged.
     if (instrument_icon_->drawsNothing()) {
       icon_view = CreateSecurePaymentConfirmationInstrumentIconView(
           gfx::CreateVectorIcon(
               kCreditCardIcon,
-              kSecurePaymentConfirmationInstrumentIconWidthPx));
+              kSecurePaymentConfirmationInstrumentIconDefaultWidthPx,
+              gfx::kPlaceholderColor));
     } else {
       icon_view = CreateSecurePaymentConfirmationInstrumentIconView(
           gfx::ImageSkia::CreateFrom1xBitmap(*model_->instrument_icon())
@@ -371,7 +378,8 @@ void SecurePaymentConfirmationDialogView::OnThemeChanged() {
     static_cast<views::ImageView*>(
         GetViewByID(static_cast<int>(DialogViewID::INSTRUMENT_ICON)))
         ->SetImage(gfx::CreateVectorIcon(
-            kCreditCardIcon, kSecurePaymentConfirmationInstrumentIconWidthPx,
+            kCreditCardIcon,
+            kSecurePaymentConfirmationInstrumentIconDefaultWidthPx,
             GetColorProvider()->GetColor(ui::kColorDialogForeground)));
   }
 }

@@ -25,7 +25,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -980,12 +979,10 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         return false;
       for (const auto& item : it.value().GetListDeprecated()) {
         std::string url;
-        // TODO(https://crbug.com/1257045): Remove urn: scheme support.
         URLPattern pattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
                            URLPattern::SCHEME_FTP | URLPattern::SCHEME_FILE |
                            URLPattern::SCHEME_EXTENSION |
                            URLPattern::SCHEME_WS | URLPattern::SCHEME_WSS |
-                           URLPattern::SCHEME_URN |
                            URLPattern::SCHEME_UUID_IN_PACKAGE);
         if (item.is_string())
           url = item.GetString();
@@ -2040,7 +2037,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
         if (access == PermissionsData::PageAccess::kWithheld) {
           DCHECK(ExtensionsAPIClient::Get());
           ExtensionsAPIClient::Get()->NotifyWebRequestWithheld(
-              request->render_process_id, request->frame_id,
+              request->render_process_id, request->frame_routing_id,
               listener->id.extension_id);
         }
         continue;

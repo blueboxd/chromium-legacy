@@ -49,7 +49,7 @@ suite('SiteListEntry', function() {
     const paperTooltip = icon.shadowRoot!.querySelector('paper-tooltip')!;
     // Never shown since site-list will show a common tooltip.
     assertEquals('none', (paperTooltip.computedStyleMap().get('display') as {
-                           value: number
+                           value: number,
                          }).value);
     assertFalse(paperTooltip._showing);
     const wait = eventToPromise('show-tooltip', document);
@@ -58,12 +58,12 @@ suite('SiteListEntry', function() {
     return wait.then(() => {
       assertTrue(paperTooltip._showing);
       assertEquals('none', (paperTooltip.computedStyleMap().get('display') as {
-                             value: number
+                             value: number,
                            }).value);
     });
   });
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   test('shows androidSms note', function() {
     testElement.model = {
       category: ContentSettingsTypes.NOTIFICATIONS,

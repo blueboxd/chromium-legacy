@@ -4,7 +4,6 @@
 """Definitions of builders in the tryserver.chromium.chromiumos builder group."""
 
 load("//lib/branches.star", "branches")
-load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
@@ -91,6 +90,12 @@ try_.builder(
 )
 
 try_.builder(
+    name = "chromeos-amd64-generic-lacros-dbg",
+    branch_selector = branches.STANDARD_MILESTONE,
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+try_.builder(
     name = "lacros-arm-generic-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
@@ -110,21 +115,11 @@ try_.builder(
 
 try_.builder(
     name = "chromeos-kevin-compile-rel",
-    mirrors = [
-        "ci/chromeos-kevin-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        include_all_triggered_testers = True,
-        is_compile_only = True,
-    ),
 )
 
 try_.builder(
     name = "chromeos-kevin-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
-    mirrors = [
-        "ci/chromeos-kevin-rel",
-    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -137,14 +132,10 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-inverse-fieldtrials-fyi-rel",
-    mirrors = builder_config.copy_from("try/linux-chromeos-rel"),
 )
 
 try_.orchestrator_builder(
     name = "linux-chromeos-rel",
-    mirrors = [
-        "ci/linux-chromeos-rel",
-    ],
     compilator = "linux-chromeos-rel-compilator",
     branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
@@ -168,10 +159,6 @@ try_.builder(
 
 try_.builder(
     name = "linux-lacros-dbg",
-    # TODO(crbug.com/1233247) Adds the CI tester when it's available.
-    mirrors = [
-        "ci/linux-lacros-dbg",
-    ],
 )
 
 try_.builder(
@@ -229,8 +216,8 @@ try_.builder(
         location_regexp = [
             ".+/[+]/chromeos/components/chromebox_for_meetings/.+",
             ".+/[+]/chromeos/dbus/chromebox_for_meetings/.+",
-            ".+/[+]/chromeos/services/chromebox_for_meetings/.+",
-            ".+/[+]/chrome/browser/chromeos/chromebox_for_meetings/.+",
+            ".+/[+]/ash/services/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/browser/ash/chromebox_for_meetings/.+",
             ".+/[+]/chrome/browser/resources/chromeos/chromebox_for_meetings/.+",
             ".+/[+]/chrome/browser/ui/webui/chromeos/chromebox_for_meetings/.+",
             ".+/[+]/chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
@@ -242,14 +229,6 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-rel-rts",
-    mirrors = [
-        "ci/linux-chromeos-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.ALWAYS,
-        ),
-    ),
     builderless = False,
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],

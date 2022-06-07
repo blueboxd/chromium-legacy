@@ -76,6 +76,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   void HandlePageSwitchAction(int page);
   // Show date and time settings. Called from the view.
   void HandleOpenDateTimeSettingsAction();
+  // Show power settings. Called from the view.
+  void HandleOpenPowerSettingsAction();
   // Show enterprise managed device info. Called from the view.
   void HandleEnterpriseInfoAction();
   // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
@@ -174,6 +176,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   bool showing_audio_detailed_view() const {
     return showing_audio_detailed_view_;
   }
+
+  bool showing_calendar_view() const { return showing_calendar_view_; }
 
  private:
   friend class SystemTrayTestApi;
@@ -279,6 +283,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   absl::optional<ui::ThroughputTracker> animation_tracker_;
 
   bool showing_audio_detailed_view_ = false;
+
+  bool showing_calendar_view_ = false;
 };
 
 }  // namespace ash

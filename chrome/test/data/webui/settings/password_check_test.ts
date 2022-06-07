@@ -15,9 +15,10 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {PasswordCheckListItemElement, SettingsPasswordCheckEditDialogElement, SettingsPasswordCheckElement, SettingsPasswordRemoveConfirmationDialogElement} from 'chrome://settings/lazy_load.js';
 import {OpenWindowProxyImpl, PasswordCheckInteraction, PasswordManagerImpl, Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 // </if>
+import {flushTasks} from 'chrome://webui-test/test_util.js';
 
 import {makeCompromisedCredential, makeInsecureCredential, makePasswordCheckStatus} from './passwords_and_autofill_fake_data.js';
 import {getSyncAllPrefs, simulateSyncStatus} from './sync_test_util.js';
@@ -147,8 +148,9 @@ function getCompromiseType(
       return loadTimeData.getString('leakedPassword');
     case chrome.passwordsPrivate.CompromiseType.PHISHED_AND_LEAKED:
       return loadTimeData.getString('phishedAndLeakedPassword');
+    default:
+      assertNotReached();
   }
-  assertNotReached();
 }
 
 /**
@@ -1844,7 +1846,7 @@ suite('PasswordsCheckSection', function() {
     // should fail.
     await passwordManager.whenCalled('getPlaintextInsecurePassword');
     // Verify that the edit dialog has not become visible.
-    flush();
+    await flushTasks();
     assertFalse(isElementVisible(checkPasswordSection.shadowRoot!.querySelector(
         'settings-password-check-edit-dialog')!));
 
@@ -1872,11 +1874,11 @@ suite('PasswordsCheckSection', function() {
     checkPasswordSection.$.menuEditPassword.click();
     const {credential, reason} =
         await passwordManager.whenCalled('getPlaintextInsecurePassword');
+    await flushTasks();
     assertEquals(passwordManager.data.leakedCredentials[0], credential);
     assertEquals(chrome.passwordsPrivate.PlaintextReason.EDIT, reason);
 
     // Verify that the edit dialog has become visible.
-    flush();
     assertTrue(isElementVisible(checkPasswordSection.shadowRoot!.querySelector(
         'settings-password-check-edit-dialog')!));
 
@@ -1964,6 +1966,7 @@ suite('PasswordsCheckSection', function() {
     assertEquals(PasswordCheckInteraction.SHOW_PASSWORD, interaction);
     const {reason} =
         await passwordManager.whenCalled('getPlaintextInsecurePassword');
+    await flushTasks();
     assertEquals(chrome.passwordsPrivate.PlaintextReason.VIEW, reason);
     assertEquals('text', node.$.insecurePassword.type);
     assertEquals('test4', node.$.insecurePassword.value);
@@ -1994,6 +1997,7 @@ suite('PasswordsCheckSection', function() {
     node.$.more.click();
     checkPasswordSection.$.menuShowPassword.click();
     await passwordManager.whenCalled('getPlaintextInsecurePassword');
+    await flushTasks();
     // Verify that password field didn't change
     assertEquals('password', node.$.insecurePassword.type);
     assertNotEquals('test4', node.$.insecurePassword.value);
@@ -2052,7 +2056,7 @@ suite('PasswordsCheckSection', function() {
     assertTrue(isElementVisible(editDisclaimerDialog));
   });
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   // Verify that getPlaintext succeeded after auth token resolved
   test('showHidePasswordMenuItemAuth', async function() {
     passwordManager.data.leakedCredentials = [makeCompromisedCredential(
@@ -2078,7 +2082,7 @@ suite('PasswordsCheckSection', function() {
     passwordManager.setPlaintextPassword('test4');
     node.tokenRequestManager.resolve();
     await passwordManager.whenCalled('getPlaintextInsecurePassword');
-
+    await flushTasks();
     assertEquals('text', node.$.insecurePassword.type);
     assertEquals('test4', node.$.insecurePassword.value);
   });

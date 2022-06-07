@@ -20,7 +20,7 @@
     user-select: none;
   }
 
-  :host([indented]) #header {
+  :host([indented]:not([is-top-visit])) #header {
     padding-inline-start: calc(var(--cluster-padding-horizontal) +
                                var(--top-visit-favicon-size) +
                                var(--favicon-margin));
@@ -51,7 +51,11 @@
   #title-and-annotations {
     align-items: center;
     display: flex;
-    line-height: 2;  /* 28px */
+    line-height: 2;  /* 32px */
+  }
+
+  :host([is-top-visit]) #title-and-annotations {
+    line-height: 1.75; /* 28px */
   }
 
   .annotation {
@@ -83,7 +87,11 @@
 
   #url {
     color: var(--url-color);
-    line-height: 1.5;  /* 21px */
+    line-height: 1.5;  /* 24px */
+  }
+
+  :host([is-top-visit]) #url {
+    line-height: 1.25;  /* 20px */
   }
 
   #debug-info {
@@ -98,13 +106,12 @@
     </page-favicon>
     <div id="page-info">
       <div id="title-and-annotations">
-        <span id="title" class="truncate">[[visit.pageTitle]]</span>
+        <span id="title" class="truncate"></span>
         <template is="dom-repeat" items="[[annotations_]]">
           <span class="annotation">[[item]]</span>
         </template>
       </div>
       <span id="url" class="truncate">
-        [[getVisibleUrl_(visit)]]
         <!-- Print the debug next to the url to keep layout the same. -->
         <span id="debug-info" hidden="[[!debugInfo_]]">[[debugInfo_]]</span>
       </span>

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -116,7 +117,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
 
     auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
-        gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
+        gfx::Insets::VH(kPaymentRequestRowVerticalInsets, 0));
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
     card_info_container->SetLayoutManager(std::move(box_layout));

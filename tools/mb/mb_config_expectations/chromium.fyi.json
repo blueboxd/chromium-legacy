@@ -312,7 +312,6 @@
   },
   "Linux Viz": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
@@ -404,12 +403,12 @@
   },
   "Win 10 Fast Ring": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Win ASan Release (reclient shadow)": {
@@ -438,27 +437,6 @@
       "use_rbe": true,
       "use_remoteexec": true,
       "v8_enable_verify_heap": true
-    }
-  },
-  "Win x64 Builder (dbg) (goma cache silo)": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "Win x64 Builder (dbg) (reclient shadow)": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_rbe": true,
-      "use_remoteexec": true
     }
   },
   "Win x64 Builder (reclient compare)": {
@@ -500,7 +478,6 @@
   },
   "android-backuprefptr-arm-fyi-rel": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
       "ffmpeg_branding": "Chrome",
@@ -518,7 +495,6 @@
   },
   "android-backuprefptr-arm64-fyi-rel": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
       "ffmpeg_branding": "Chrome",
@@ -718,6 +694,57 @@
       "use_goma": true
     }
   },
+  "ios-fieldtrial-rel": {
+    "gn_args": {
+      "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "is_component_build": false,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_goma": true
+    }
+  },
+  "ios-m1-simulator": {
+    "gn_args": {
+      "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "is_component_build": false,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_goma": true
+    }
+  },
+  "ios-m1-simulator-cronet": {
+    "gn_args": {
+      "disable_brotli_filter": false,
+      "disable_file_support": true,
+      "enable_remoting": false,
+      "enable_run_ios_unittests_with_xctest": true,
+      "enable_websockets": false,
+      "include_transport_security_state_preload_list": false,
+      "ios_deployment_target": "10.0",
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "ios_stack_profiler_enabled": false,
+      "is_component_build": false,
+      "is_cronet_build": true,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_allocator_shim": false,
+      "use_crash_key_stubs": true,
+      "use_goma": true,
+      "use_partition_alloc": false,
+      "use_platform_icu_alternatives": true
+    }
+  },
   "ios-reclient": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
@@ -833,7 +860,7 @@
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
-      "target_cpu": "arm64",
+      "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
       "use_goma": true
@@ -883,8 +910,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -897,8 +924,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
@@ -911,8 +938,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -925,8 +952,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -958,7 +985,6 @@
   },
   "linux-backuprefptr-x64-fyi-rel": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
       "is_component_build": false,
@@ -982,7 +1008,6 @@
   },
   "linux-blink-heap-concurrent-marking-tsan-rel": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
@@ -1283,20 +1308,17 @@
       "symbol_level": 1,
       "target_cpu": "x64",
       "use_allocator": "none",
-      "use_allocator_shim": false,
       "use_goma": true
     }
   },
   "mac-paeverywhere-x64-fyi-rel": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
       "target_cpu": "x64",
       "use_allocator": "none",
-      "use_allocator_shim": false,
       "use_goma": true
     }
   },
@@ -1314,50 +1336,12 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
-    }
-  },
-  "win-archive-dbg (goma cache silo)": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "win-archive-dbg (reclient shadow)": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "use_rbe": true,
-      "use_remoteexec": true
-    }
-  },
-  "win-archive-rel (goma cache silo)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "skip_archive_compression": false,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "win-archive-rel (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "skip_archive_compression": false,
-      "symbol_level": 1,
       "use_rbe": true,
       "use_remoteexec": true
     }
   },
   "win-backuprefptr-x64-fyi-rel": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
       "is_component_build": false,
@@ -1366,12 +1350,12 @@
       "target_cpu": "x64",
       "use_allocator": "partition",
       "use_backup_ref_ptr": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "win-backuprefptr-x86-fyi-rel": {
     "gn_args": {
-      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
       "is_component_build": false,
@@ -1380,7 +1364,8 @@
       "target_cpu": "x86",
       "use_allocator": "partition",
       "use_backup_ref_ptr": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "win-celab-builder-rel": {
@@ -1389,7 +1374,8 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "win-pixel-builder-rel": {
@@ -1397,7 +1383,8 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "win-upload-perfetto": {
@@ -1406,7 +1393,8 @@
       "enable_perfetto_zlib": true,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "win10-code-coverage": {
@@ -1450,7 +1438,8 @@
       "is_debug": false,
       "symbol_level": 1,
       "target_cpu": "arm64",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   }
 }

@@ -74,6 +74,7 @@ constexpr struct {
     {0x056e, 0x0141},  // Elecom EPRIM Blue LED 5 button mouse 228
     {0x056e, 0x0159},  // Elecom Blue LED Mouse 203
     {0x05e0, 0x1200},  // Zebra LS2208 barcode scanner
+    {0x0951, 0x1727},  // HyperX Pulsefire Haste Gaming Mouse
     {0x0c45, 0x7403},  // RDing FootSwitch1F1
     {0x1038, 0x1369},  // SteelSeries Sensei RAW Frost Blue
     {0x1038, 0x1824},  // SteelSeries Rival 3 Wired
@@ -85,6 +86,7 @@ constexpr struct {
     {0x17ef, 0x60e4},  // Lenovo Legion M300 RGB Gaming Mouse
                        // (which can send keystrokes as part of macros.)
     {0x17ef, 0x6123},  // Lenovo USB-C Wired Compact Mouse
+    {0x1b1c, 0x1b7a},  // Corsair Sabre Pro Champion Gaming Mouse
     {0x1b1c, 0x1b94},  // Corsair Katar Pro Wireless (USB dongle)
     {0x1bae, 0x1b1c},  // Corsair Katar Pro Wireless (Bluetooth)
     {0x1bcf, 0x08a0},  // Kensington Pro Fit Full-size

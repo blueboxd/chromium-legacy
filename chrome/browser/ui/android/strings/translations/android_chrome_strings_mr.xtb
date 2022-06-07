@@ -89,6 +89,7 @@
 <translation id="1409879593029778104">फाइल आधीपासून अस्तित्वात असल्याने <ph name="FILE_NAME" /> डाउनलोड करणे प्रतिबंधित केले.</translation>
 <translation id="1414981605391750300">Google शी संपर्क साधत आहे. याला एखादे मिनिट लागेल…</translation>
 <translation id="1416550906796893042">ॲप्लिकेशन आवृत्ती</translation>
+<translation id="1428770807407000502">सिंक बंद करायचे आहे का?</translation>
 <translation id="1430915738399379752">प्रिंट</translation>
 <translation id="1436784010935106834">काढली</translation>
 <translation id="1448440926884431741">तुमची माग ठेवलेली उत्पादने Bookmarks मध्ये व्यवस्थापित करा</translation>
@@ -184,7 +185,6 @@
 <translation id="200114059308480249">Google वर शोधताना आसपासच्या मजकुराचा समावेश करायचा आहे का?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फाइल}other{# फाइल}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> Chrome मध्ये उघडेल. पुढे सुरू ठेवून, तुम्ही <ph name="BEGIN_LINK1" />Google सेवा अटी<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />Google Chrome व Chrome OS च्या अतिरिक्त सेवा अटी<ph name="END_LINK2" /> यांना सहमती दर्शवता. <ph name="BEGIN_LINK3" />गोपनीयता धोरण<ph name="END_LINK3" /> देखील लागू होते.</translation>
-<translation id="2019145049163614359">स्वारस्य काढून टाकायचे आहे का?</translation>
 <translation id="2020309681647789787">तुमच्याकडे तुमच्या सर्व डिव्हाइसवर सिंक केलेला इतिहास असेल, जेणेकरून तुम्ही जे करत होता ते पुढे सुरू ठेवू शकता</translation>
 <translation id="2021896219286479412">फुल स्क्रीन साइट नियंत्रणे</translation>
 <translation id="2038563949887743358">डेस्कटॉप साइट विनंती सुरू करा</translation>
@@ -213,6 +213,7 @@
 <translation id="2141396931810938595">तुमच्या वापरावर आधारित</translation>
 <translation id="214888715418183969">तुम्हाला Chrome सह काय शेअर करायचे आहे ते निवडा. तुम्ही शेअर केलेली मेट्रिक Chrome ची वैशिष्ट्ये, परफॉर्मन्स आणि स्थिरता सुधारण्यात मदत करण्यासाठी वापरली जाईल.</translation>
 <translation id="2149973817440762519">बुकमार्क संपादित करा</translation>
+<translation id="2155214902713132423">ही पडताळणी पद्धत या डिव्हाइससाठी उपलब्ध नाही. तुमच्या इतर डिव्हाइसवर वेगळा पर्याय निवडा.</translation>
 <translation id="2157851137955077194">तुमच्या फोनवरून दुसऱ्या डिव्हाइसवर शेअर करण्यासाठी, दोन्ही डिव्हाइसवरील Chrome सेटिंग्जमध्ये सिंक सुरू करा</translation>
 <translation id="2158408438301413340">Chrome ला सर्व पासवर्ड तपासता आले नाहीत</translation>
 <translation id="2169830938017475061">Now</translation>
@@ -733,7 +734,6 @@
 <translation id="5091199029769593641">लवकरच, तुम्ही नवीन टॅब उघडल्यानंतर तुम्हाला <ph name="SITE_NAME" /> वरील स्टोरी दिसतील. तुम्ही फॉलो करता त्या साइट तुमच्या Google खात्यामध्ये सेव्ह केल्या जातात. तुम्ही त्या Discover सेटिंग्जमध्ये व्यवस्थापित करू शकता.</translation>
 <translation id="5091249083535528968">वाढलेला वापर डेटा</translation>
 <translation id="509429900233858213">एक एरर आली आहे.</translation>
-<translation id="5098190077610408701">स्वारस्य जोडायचे आहे का?</translation>
 <translation id="5102401324271069229">साइटने तुमचा पासवर्ड चोरण्याचा प्रयत्न केल्यास किंवा तुम्ही हानिकारक फाइल डाउनलोड केल्यास, Chrome कदाचित पेज आशयाच्या भागांसह URLs सुरक्षित ब्राउझिंग ला पाठवेल</translation>
 <translation id="510275257476243843">1 तास शिल्लक</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> वर</translation>
@@ -879,6 +879,7 @@
 <translation id="5906513782029855931">साइटच्या URLs बद्दल जाणून घेतल्याने, टास्क पूर्ण करण्यात Google Assistant ला तुम्हाला मदत करता येते. तुम्ही Chrome सेटिंग्जमध्ये Assistant बंद करू शकता.</translation>
 <translation id="5916664084637901428">सुरू</translation>
 <translation id="5919204609460789179">सिंक सुरू करण्यासाठी <ph name="PRODUCT_NAME" /> अपडेट करा</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> जोडा</translation>
 <translation id="5942872142862698679">शोध करण्‍यासाठी Google वापरत आहे</translation>
 <translation id="5945035219773565305">सध्याची शिफारस:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">लाइव्ह पेज पाहत आहे</translation>
@@ -898,7 +899,6 @@
 <translation id="6033245666633565791">खुल्या वेबचे संरक्षण करत असताना, क्रॉस-साइट ट्रॅकिंगपासून तुमचे रक्षण करण्यासाठी, <ph name="BEGIN_LINK" />प्रायव्हसी सॅंडबाॅक्स<ph name="END_LINK" /> च्या आधारे Chrome नवीन तंत्रज्ञाने विकसित करत आहे.
 
 प्रायव्हसी सॅंडबाॅक्स च्या चाचण्या अद्याप विकसित केल्या जात आहेत आणि त्या निवडक प्रदेशांमध्ये उपलब्ध आहेत. सध्यासाठी, तृतीय पक्ष कुकी यांसारख्या सध्याच्या वेब तंत्रज्ञानांचा वापर करणे सुरू ठेवून साइट प्रायव्हसी सॅंडबाॅक्स वापरून पाहू शकतात.</translation>
-<translation id="6036057147555329831">अतिरिक्त ICU</translation>
 <translation id="6039379616847168523">पुढील टॅबवर जा</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="604124094241169006">स्वयंचलित</translation>
@@ -1023,13 +1023,14 @@
 <translation id="663674369910034433">गोपनीयता, सुरक्षा आणि डेटा संग्रह यांच्याशी संबंधित आणखी सेटिंग्जसाठी, <ph name="BEGIN_LINK1" />सिंक<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />Google सेवा<ph name="END_LINK2" /> पहा</translation>
 <translation id="6637100877383020115">अ‍ॅपमध्ये सुधारणा करण्यात मदत करण्यासाठी, Chrome हे Google ला वापर आणि क्रॅश डेटा पाठवते. <ph name="BEGIN_UMA_LINK" />व्यवस्थापित करा<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">कायम ब्लॉक करणे</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> काढून टाका</translation>
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="6645629752388991326">सिक्युरिटी की म्हणून हे डिव्हाइस वापरून कोणती डिव्हाइस साइन इन करू शकतात ते नियंत्रित करा.</translation>
 <translation id="6648459603387803038">तुमचा अ‍ॅडमिनिस्ट्रेटर तुमच्या ब्राउझरचा सेटअप रिमोट पद्धतीने बदलू शकतो. या डिव्हाइसवरील अ‍ॅक्टिव्हिटी कदाचित Chrome च्या बाहेर व्यवस्थापित केलेली असू शकते.</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अधिक}other{<ph name="CONTACT_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अधिक}}</translation>
 <translation id="6649642165559792194">इमेज <ph name="BEGIN_NEW" />नवीन<ph name="END_NEW" /> चे पूर्वावलोकन करा</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
-<translation id="6659594942844771486">ब्राउझर टॅब</translation>
+<translation id="6659594942844771486">टॅब</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> मध्ये उघडा</translation>
 <translation id="6671495933530132209">इमेज कॉपी करा</translation>
 <translation id="6674044799624355221">नवीन धोके शोधण्यात मदत करण्यासाठी पेज, डाउनलोड, एक्स्टेंशन अ‍ॅक्टिव्हिटी आणि सिस्टीम माहिती यांचे लहान नमुने पाठवते</translation>

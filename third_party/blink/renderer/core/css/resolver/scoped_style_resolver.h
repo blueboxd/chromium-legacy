@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
@@ -68,6 +67,7 @@ class CORE_EXPORT ScopedStyleResolver final
   static void CounterStyleRulesChanged(TreeScope& scope);
 
   void RebuildCascadeLayerMap(const ActiveStyleSheetVector&);
+  bool HasCascadeLayerMap() const { return cascade_layer_map_.Get(); }
   const CascadeLayerMap* GetCascadeLayerMap() const {
     return cascade_layer_map_;
   }

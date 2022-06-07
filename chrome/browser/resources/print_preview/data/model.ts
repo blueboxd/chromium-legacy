@@ -14,7 +14,7 @@ import {BackgroundGraphicsModeRestriction, Policies} from '../native_layer.js';
 import {ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from '../native_layer.js';
 // </if>
 import {CapabilityWithReset, Cdd, CddCapabilities, ColorOption, DpiOption, DuplexOption, MediaSizeOption} from './cdd.js';
-import {Destination, DestinationOrigin, DestinationType, GooglePromotedDestinationId, RecentDestination} from './destination.js';
+import {Destination, DestinationOrigin, GooglePromotedDestinationId, RecentDestination} from './destination.js';
 import {getPrinterTypeForDestination, PrinterType} from './destination_match.js';
 import {DocumentSettings} from './document_info.js';
 import {CustomMarginsOrientation, Margins, MarginsSetting, MarginsType} from './margins.js';
@@ -123,7 +123,7 @@ type CloudJobTicketPrint = {
   duplex?: object,
   color?: {vendor_id?: string, type?: string},
   collate?: object,
-}
+};
 
 type CloudJobTicket = {
   version: string,
@@ -131,7 +131,8 @@ type CloudJobTicket = {
 };
 
 export type MediaSizeValue = {
-  width_microns: number; height_microns: number;
+  width_microns: number,
+  height_microns: number,
 };
 
 export type Ticket = {
@@ -156,7 +157,6 @@ export type Ticket = {
   shouldPrintSelectionOnly: boolean,
   advancedSettings?: object,
   capabilities?: string,
-  cloudPrintID?: string,
   marginsCustom?: MarginsSetting,
   openPDFInPreview?: boolean,
   pinValue?: string,
@@ -957,11 +957,6 @@ export class PrintPreviewModelElement extends PolymerElement {
             true);
       }
     } else if (
-        !this.settings.color.available &&
-        (this.destination.id === GooglePromotedDestinationId.DOCS ||
-         this.destination.type === DestinationType.MOBILE)) {
-      this.setSettingPath_('color.unavailableValue', true);
-    } else if (
         !this.settings.color.available && caps && caps.color &&
         caps.color.option && caps.color.option.length > 0) {
       this.setSettingPath_(
@@ -1065,19 +1060,18 @@ export class PrintPreviewModelElement extends PolymerElement {
       recentDestinations = [recentDestinations];
     }
 
-    // Remove unsupported privet printers from the sticky settings,
+    // Remove unsupported privet and cloud printers from the sticky settings,
     // to free up these spots for supported printers.
+    const unsupportedOrigins: DestinationOrigin[] = [
+      DestinationOrigin.COOKIES,
+      // <if expr="chromeos_ash or chromeos_lacros">
+      DestinationOrigin.DEVICE,
+      // </if>
+      DestinationOrigin.PRIVET,
+    ];
     recentDestinations = recentDestinations.filter((d: RecentDestination) => {
-      return d.origin !== DestinationOrigin.PRIVET;
+      return !unsupportedOrigins.includes(d.origin);
     });
-
-    // <if expr="chromeos_ash or chromeos_lacros">
-    // Remove Cloud Print Drive destination. The Chrome OS version will always
-    // be shown in the dropdown and is still supported.
-    recentDestinations = recentDestinations.filter((d: RecentDestination) => {
-      return d.id !== GooglePromotedDestinationId.DOCS;
-    });
-    // </if>
 
     // Initialize recent destinations early so that the destination store can
     // start trying to fetch them.
@@ -1573,11 +1567,6 @@ export class PrintPreviewModelElement extends PolymerElement {
         destination.id === GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS;
     // </if>
 
-    // Set 'cloudPrintID' only if the destination is not local.
-    if (!destination.isLocal) {
-      ticket['cloudPrintID'] = destination.id;
-    }
-
     if (openPdfInPreview) {
       ticket['openPDFInPreview'] = openPdfInPreview;
     }
@@ -1612,7 +1601,7 @@ export class PrintPreviewModelElement extends PolymerElement {
    */
   createCloudJobTicket(destination: Destination): string {
     assert(
-        !destination.isLocal || destination.isExtension,
+        destination.isExtension,
         'Trying to create a Google Cloud Print print ticket for a local ' +
             ' non-extension destination');
     assert(

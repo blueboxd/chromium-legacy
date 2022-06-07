@@ -38,10 +38,10 @@ class ProfilePickerTurnSyncOnDelegate : public TurnSyncOnHelper::Delegate,
   void ShowMergeSyncDataConfirmation(
       const std::string& previous_email,
       const std::string& new_email,
-      TurnSyncOnHelper::SigninChoiceCallback callback) override;
+      signin::SigninChoiceCallback callback) override;
   void ShowEnterpriseAccountConfirmation(
       const AccountInfo& account_info,
-      TurnSyncOnHelper::SigninChoiceCallback callback) override;
+      signin::SigninChoiceCallback callback) override;
   void ShowSyncConfirmation(
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override;
@@ -67,7 +67,7 @@ class ProfilePickerTurnSyncOnDelegate : public TurnSyncOnHelper::Delegate,
   // Shows the enterprise welcome screen.
   void ShowEnterpriseWelcome(EnterpriseProfileWelcomeUI::ScreenType type);
   void OnEnterpriseWelcomeClosed(EnterpriseProfileWelcomeUI::ScreenType type,
-                                 bool proceed);
+                                 signin::SigninChoice choice);
 
   // Reports metric with the outcome of the turn-sync-on flow.
   void LogOutcome(ProfileMetrics::ProfileSignedInFlowOutcome outcome);

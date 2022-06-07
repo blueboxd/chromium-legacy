@@ -258,7 +258,8 @@ StatusView::~StatusView() {
 }
 
 gfx::Insets StatusView::GetInsets() const {
-  return gfx::Insets(kShadowThickness, kShadowThickness + kTextHorizPadding);
+  return gfx::Insets::VH(kShadowThickness,
+                         kShadowThickness + kTextHorizPadding);
 }
 
 const std::u16string& StatusView::GetText() const {
@@ -504,7 +505,7 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
 
   const int clip_bottom = clip_left || clip_right ? shadow_thickness_pixels : 0;
   gfx::Rect clip_rect(scaled_size);
-  clip_rect.Inset(clip_left, 0, clip_right, clip_bottom);
+  clip_rect.Inset(gfx::Insets::TLBR(0, clip_left, clip_bottom, clip_right));
   canvas->ClipRect(clip_rect);
 
   gfx::RectF bubble_rect{gfx::SizeF(scaled_size)};
@@ -514,10 +515,13 @@ void StatusView::OnPaint(gfx::Canvas* canvas) {
   // bubble bounds by 1 DIP minus 1 pixel. Failing to do this results in drawing
   // further and further outside the window as the scale increases.
   const int inset = shadow_thickness_pixels - 1;
-  bubble_rect.Inset(style_ == BubbleStyle::kStandardRight ? 0 : inset, 0,
-                    style_ == BubbleStyle::kStandardRight ? inset : 0, inset);
+  bubble_rect.Inset(
+      gfx::InsetsF()
+          .set_left(style_ == BubbleStyle::kStandardRight ? 0 : inset)
+          .set_right(style_ == BubbleStyle::kStandardRight ? inset : 0)
+          .set_bottom(inset));
   // Align to pixel centers now that the layout is correct.
-  bubble_rect.Inset(0.5, 0.5);
+  bubble_rect.Inset(0.5);
 
   SkPath path;
   path.addRoundRect(gfx::RectFToSkRect(bubble_rect), rad);

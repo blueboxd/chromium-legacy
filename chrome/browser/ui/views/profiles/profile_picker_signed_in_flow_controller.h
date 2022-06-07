@@ -45,7 +45,9 @@ class ProfilePickerSignedInFlowController
   virtual void Init();
 
   // Cancels the flow explicitly.
-  virtual void Cancel() = 0;
+  // By default does not do anything, in the flow it will be as if the dialog
+  // was closed.
+  virtual void Cancel();
 
   // Finishes the creation flow by marking `profile_being_created_` as fully
   // created, opening a browser window for this profile and calling
@@ -55,13 +57,13 @@ class ProfilePickerSignedInFlowController
       ProfilePicker::BrowserOpenedCallback callback) = 0;
 
   // Finishes the sign-in process by moving to the sync confirmation screen.
-  void SwitchToSyncConfirmation();
+  virtual void SwitchToSyncConfirmation();
 
   // Finishes the sign-in process by moving to the enterprise profile welcome
   // screen.
   void SwitchToEnterpriseProfileWelcome(
       EnterpriseProfileWelcomeUI::ScreenType type,
-      base::OnceCallback<void(bool)> proceed_callback);
+      signin::SigninChoiceCallback proceed_callback);
 
   // When the sign-in flow cannot be completed because another profile at
   // `profile_path` is already syncing with a chosen account, shows the profile
@@ -94,7 +96,7 @@ class ProfilePickerSignedInFlowController
   void SwitchToSyncConfirmationFinished();
   void SwitchToEnterpriseProfileWelcomeFinished(
       EnterpriseProfileWelcomeUI::ScreenType type,
-      base::OnceCallback<void(bool)> proceed_callback);
+      signin::SigninChoiceCallback proceed_callback);
 
   // Returns whether the flow is initialized (i.e. whether `Init()` has been
   // called).

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['../../common/testing/accessibility_test_base.js']);
+
 /**
  * A TTS class implementing speak and stop methods intended only for testing.
  * @constructor
@@ -83,12 +85,16 @@ TestBraille.assertContent = function(text, opt_start, opt_end) {
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-ChromeVoxEditableTextUnitTest = class extends testing.Test {
+ChromeVoxEditableTextUnitTest = class extends AccessibilityTestBase {
   /** @override */
-  setUp() {
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModules('AbstractTts', '/chromevox/common/abstract_tts.js');
+    await importModules(
+        ['ChromeVoxEditableTextBase', 'TextChangedEvent', 'TypingEcho'],
+        '/chromevox/common/editable_text_base.js');
+
     // TODO: These tests are all assuming we used the IBeam cursor.
     // We need to add coverage for block cursor.
     ChromeVoxEditableTextBase.useIBeamCursor = true;
@@ -114,9 +120,7 @@ ChromeVoxEditableTextUnitTest = class extends testing.Test {
 ChromeVoxEditableTextUnitTest.prototype.extraLibraries = [
   '../../common/testing/assert_additions.js',
   '../../common/closure_shim.js',
-  'abstract_tts.js',
-  'chromevox.js',
-  'editable_text_base.js',
+  '../background/chromevox.js',
   'msgs.js',
   'tts_interface.js',
 ];

@@ -5,12 +5,14 @@
 #include "content/browser/webid/federated_auth_request_impl.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/webid/fake_identity_request_dialog_controller.h"
 #include "content/browser/webid/fedcm_metrics.h"
 #include "content/browser/webid/flags.h"
 #include "content/browser/webid/webid_utils.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "ui/accessibility/ax_mode.h"
@@ -114,12 +117,6 @@ std::string GetConsoleErrorMessage(FederatedAuthRequestResult status) {
       return "Provider's client metadata is missing or has an invalid privacy "
              "policy url.";
     }
-    case FederatedAuthRequestResult::kErrorFetchingSignin: {
-      return "Error attempting to reach the provider's sign-in endpoint.";
-    }
-    case FederatedAuthRequestResult::kErrorInvalidSigninResponse: {
-      return "Provider's sign-in response is invalid.";
-    }
     case FederatedAuthRequestResult::kErrorFetchingAccountsHttpNotFound: {
       return "The provider's accounts list endpoint cannot be found.";
     }
@@ -171,12 +168,6 @@ RequestIdTokenStatus FederatedAuthRequestResultToRequestIdTokenStatus(
     }
     case FederatedAuthRequestResult::kErrorTooManyRequests: {
       return RequestIdTokenStatus::kErrorTooManyRequests;
-    }
-    case FederatedAuthRequestResult::kErrorFetchingSignin: {
-      return RequestIdTokenStatus::kErrorFetchingSignin;
-    }
-    case FederatedAuthRequestResult::kErrorInvalidSigninResponse: {
-      return RequestIdTokenStatus::kErrorInvalidSigninResponse;
     }
     case FederatedAuthRequestResult::kErrorCanceled: {
       return RequestIdTokenStatus::kErrorCanceled;
@@ -639,8 +630,8 @@ void FederatedAuthRequestImpl::OnRevokeResponse(
                                                              idp_origin);
     }
     if (GetSharingPermissionContext()) {
-      GetSharingPermissionContext()->RevokeSharingPermissionForAccount(
-          idp_origin, origin_, hint_);
+      GetSharingPermissionContext()->RevokeSharingPermission(origin_,
+                                                             idp_origin, hint_);
     }
     if (GetActiveSessionPermissionContext()) {
       GetActiveSessionPermissionContext()->RevokeActiveSession(
@@ -826,8 +817,8 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
         // Consider this a sign-in if we have seen a successful sign-up for
         // this account before.
         if (GetSharingPermissionContext() &&
-            GetSharingPermissionContext()->HasSharingPermissionForAccount(
-                url::Origin::Create(provider_), origin_, account.id)) {
+            GetSharingPermissionContext()->HasSharingPermission(
+                origin_, url::Origin::Create(provider_), account.id)) {
           login_state = LoginState::kSignIn;
         }
         account.login_state = login_state;
@@ -972,8 +963,8 @@ void FederatedAuthRequestImpl::CompleteIdTokenRequest(
         // moot since we don't actually inspect the returned idtoken.
         // https://crbug.com/1199088
         CHECK(!account_id_.empty());
-        GetSharingPermissionContext()->GrantSharingPermissionForAccount(
-            url::Origin::Create(provider_), origin_, account_id_);
+        GetSharingPermissionContext()->GrantSharingPermission(
+            origin_, url::Origin::Create(provider_), account_id_);
       }
 
       if (GetActiveSessionPermissionContext()) {
@@ -1119,6 +1110,17 @@ std::unique_ptr<IdentityRequestDialogController>
 FederatedAuthRequestImpl::CreateDialogController() {
   if (mock_dialog_controller_)
     return std::move(mock_dialog_controller_);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeUIForFedCM)) {
+    std::string selected_account =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kUseFakeUIForFedCM);
+    return std::make_unique<FakeIdentityRequestDialogController>(
+        selected_account.empty()
+            ? absl::nullopt
+            : absl::optional<std::string>(selected_account));
+  }
 
   return GetContentClient()->browser()->CreateIdentityRequestDialogController();
 }

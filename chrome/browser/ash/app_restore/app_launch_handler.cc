@@ -138,8 +138,7 @@ void AppLaunchHandler::LaunchApps() {
     if (app_id == app_constants::kChromeAppId)
       continue;
 
-    auto app_type =
-        apps::ConvertMojomAppTypToAppType(cache->GetAppType(app_id));
+    auto app_type = cache->GetAppType(app_id);
 #if !defined(OFFICIAL_BUILD)
     // Make shift-click on the launch button launch apps with a delay. This
     // allows developers to simulate delayed launch behaviors with ARC apps.
@@ -192,12 +191,15 @@ void AppLaunchHandler::LaunchApp(apps::AppType app_type,
       if (ShouldLaunchSystemWebAppOrChromeApp(app_id, it->second))
         LaunchSystemWebAppOrChromeApp(app_type, app_id, it->second);
       break;
+    case apps::AppType::kStandaloneBrowser:
+      // For Lacros, we can't use the AppService launch interface to restore,
+      // but call Lacros interface to restore with session restore.
+      return;
     case apps::AppType::kBuiltIn:
     case apps::AppType::kCrostini:
     case apps::AppType::kPluginVm:
     case apps::AppType::kUnknown:
     case apps::AppType::kMacOs:
-    case apps::AppType::kStandaloneBrowser:
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
     case apps::AppType::kExtension:

@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/constants/ash_features.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
@@ -86,6 +85,7 @@ class AcceleratorControllerImpl;
 class AccessibilityControllerImpl;
 class AccessibilityDelegate;
 class AccessibilityFocusRingControllerImpl;
+class AdaptiveChargingController;
 class AmbientController;
 class AppListControllerImpl;
 class AppListFeatureUsageMetrics;
@@ -105,6 +105,7 @@ class CalendarController;
 class CaptureModeController;
 class ControlVHistogramRecorder;
 class CrosDisplayConfig;
+class DarkModeController;
 class DesksController;
 class DetachableBaseHandler;
 class DetachableBaseNotificationController;
@@ -129,6 +130,7 @@ class FloatController;
 class FocusCycler;
 class FrameThrottlingController;
 class FullscreenMagnifierController;
+class GeolocationController;
 class HighContrastController;
 class HighlighterController;
 class HoldingSpaceController;
@@ -177,6 +179,7 @@ class PowerPrefs;
 class PrivacyScreenController;
 class ProjectingObserver;
 class ProjectorControllerImpl;
+class RgbKeyboardManager;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
@@ -206,6 +209,7 @@ class ClipboardHistoryControllerImpl;
 class TouchDevicesController;
 class TrayAction;
 class TrayBluetoothHelper;
+class UserMetricsRecorder;
 class VideoActivityNotifier;
 class VideoDetector;
 class WallpaperControllerImpl;
@@ -215,6 +219,10 @@ class WindowTreeHostManager;
 class ArcInputMethodBoundsTracker;
 
 enum class LoginStatus;
+
+namespace diagnostics {
+class DiagnosticsLogController;
+}  // namespace diagnostics
 
 namespace quick_pair {
 class Mediator;
@@ -369,6 +377,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return cros_display_config_.get();
   }
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
+  DarkModeController* dark_mode_controller() {
+    return dark_mode_controller_.get();
+  }
   DesksController* desks_controller() { return desks_controller_.get(); }
   PersistentDesksBarController* persistent_desks_bar_controller() {
     return persistent_desks_bar_controller_.get();
@@ -426,6 +437,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
   FullscreenMagnifierController* fullscreen_magnifier_controller() {
     return fullscreen_magnifier_controller_.get();
+  }
+  GeolocationController* geolocation_controller() {
+    return geolocation_controller_.get();
   }
   HighlighterController* highlighter_controller() {
     return highlighter_controller_.get();
@@ -488,9 +502,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   NightLightControllerImpl* night_light_controller() {
     return night_light_controller_.get();
   }
-  PrivacyScreenController* privacy_screen_controller() {
-    return privacy_screen_controller_.get();
-  }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
   ParentAccessController* parent_access_controller() {
     return parent_access_controller_.get();
@@ -509,6 +520,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   PowerEventObserver* power_event_observer() {
     return power_event_observer_.get();
+  }
+  PrivacyScreenController* privacy_screen_controller() {
+    return privacy_screen_controller_.get();
   }
   quick_pair::Mediator* quick_pair_mediator() {
     return quick_pair_mediator_.get();
@@ -626,10 +640,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return occlusion_tracker_pauser_.get();
   }
 
-  // Force the shelf to query for it's current visibility state.
-  // TODO(jamescook): Move to Shelf.
-  void UpdateShelfVisibility();
-
   // Does the primary display have status area?
   bool HasPrimaryStatusArea();
 
@@ -742,6 +752,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<AccessibilityFocusRingControllerImpl>
       accessibility_focus_ring_controller_;
+  std::unique_ptr<AdaptiveChargingController> adaptive_charging_controller_;
   std::unique_ptr<AmbientController> ambient_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
   std::unique_ptr<AppListFeatureUsageMetrics> app_list_feature_usage_metrics_;
@@ -753,11 +764,14 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CalendarController> calendar_controller_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
+  std::unique_ptr<DarkModeController> dark_mode_controller_;
   std::unique_ptr<DesksController> desks_controller_;
   std::unique_ptr<DesksTemplatesDelegate> desks_templates_delegate_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
       detachable_base_notification_controller_;
+  std::unique_ptr<diagnostics::DiagnosticsLogController>
+      diagnostics_log_controller_;
   std::unique_ptr<DisplayHighlightController> display_highlight_controller_;
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
@@ -765,7 +779,9 @@ class ASH_EXPORT Shell : public SessionObserver,
       firmware_update_notification_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<FloatController> float_controller_;
+  std::unique_ptr<GeolocationController> geolocation_controller_;
   std::unique_ptr<HoldingSpaceController> holding_space_controller_;
+  std::unique_ptr<PowerPrefs> power_prefs_;
   std::unique_ptr<HpsNotifyController> hps_notify_controller_;
   std::unique_ptr<HpsOrientationController> hps_orientation_controller_;
   std::unique_ptr<ImeControllerImpl> ime_controller_;
@@ -794,6 +810,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       usb_peripheral_notification_controller_;
   std::unique_ptr<PersistentDesksBarController>
       persistent_desks_bar_controller_;
+  std::unique_ptr<RgbKeyboardManager> rgb_keyboard_manager_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionControllerImpl> session_controller_;
   std::unique_ptr<AshColorProvider> ash_color_provider_;
@@ -876,7 +893,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<PeripheralBatteryListener> peripheral_battery_listener_;
   std::unique_ptr<PeripheralBatteryNotifier> peripheral_battery_notifier_;
   std::unique_ptr<PowerEventObserver> power_event_observer_;
-  std::unique_ptr<PowerPrefs> power_prefs_;
   std::unique_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
   std::unique_ptr<VideoActivityNotifier> video_activity_notifier_;
   std::unique_ptr<StickyKeysController> sticky_keys_controller_;

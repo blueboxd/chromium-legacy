@@ -18,6 +18,12 @@ class AssistiveSuggesterSwitch {
     bool emoji_suggestions = false;
     bool multi_word_suggestions = false;
     bool personal_info_suggestions = false;
+
+    bool operator==(const EnabledSuggestions& rhs) const {
+      return emoji_suggestions == rhs.emoji_suggestions &&
+             multi_word_suggestions == rhs.multi_word_suggestions &&
+             personal_info_suggestions == rhs.personal_info_suggestions;
+    }
   };
 
   AssistiveSuggesterSwitch() = default;
@@ -26,27 +32,27 @@ class AssistiveSuggesterSwitch {
   // Are emoji suggestions allowed to be surfaced to the user?
   //
   // TODO(crbug/1146266): Deprecated, remove this method in favor of
-  //     GetEnabledSuggestions.
+  //     FetchEnabledSuggestionsThen.
   virtual bool IsEmojiSuggestionAllowed() = 0;
 
   // Are multi word suggestions allowed to be surfaced to the user?
   //
   // TODO(crbug/1146266): Deprecated, remove this method in favor of
-  //     GetEnabledSuggestions.
+  //     FetchEnabledSuggestionsThen.
   virtual bool IsMultiWordSuggestionAllowed() = 0;
 
   // Are personal info suggestions allowed to be surfaced to the user?
   //
   // TODO(crbug/1146266): Deprecated, remove this method in favor of
-  //     GetEnabledSuggestions.
+  //     FetchEnabledSuggestionsThen.
   virtual bool IsPersonalInfoSuggestionAllowed() = 0;
 
-  using GetEnabledSuggestionsCallback =
+  using FetchEnabledSuggestionsCallback =
       base::OnceCallback<void(const EnabledSuggestions&)>;
 
   // Gets the currently enabled suggestions given the current user context.
-  virtual void GetEnabledSuggestions(
-      GetEnabledSuggestionsCallback callback) = 0;
+  virtual void FetchEnabledSuggestionsThen(
+      FetchEnabledSuggestionsCallback callback) = 0;
 };
 
 }  // namespace input_method

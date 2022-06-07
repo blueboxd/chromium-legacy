@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/rmad/fake_rmad_client.h"
@@ -35,7 +34,7 @@ class RmadClientImpl : public RmadClient {
   void Init(dbus::Bus* bus);
 
   bool WasRmaStateDetected() override;
-  bool WasRmaStateDetectedForSessionManager(
+  void SetRmaRequiredCallbackForSessionManager(
       base::OnceClosure session_manager_callback) override;
   void GetCurrentState(
       DBusMethodCallback<rmad::GetStateReply> callback) override;
@@ -218,25 +217,25 @@ void RmadClientImpl::CalibrationProgressReceived(dbus::Signal* signal) {
 void RmadClientImpl::CalibrationOverallProgressReceived(dbus::Signal* signal) {
   DCHECK_EQ(signal->GetMember(), rmad::kCalibrationOverallSignal);
   dbus::MessageReader reader(signal);
-  uint32_t overall_progress;
-  if (!reader.PopUint32(&overall_progress)) {
-    LOG(ERROR) << "Unable to decode overall progress uint32 from "
+  int32_t overall_progress_status;
+  if (!reader.PopInt32(&overall_progress_status)) {
+    LOG(ERROR) << "Unable to decode overall progress status int32 from "
                << signal->GetMember() << " signal";
     return;
   }
   DCHECK(!reader.HasMoreData());
   for (auto& observer : observers_) {
     observer.CalibrationOverallProgress(
-        static_cast<rmad::CalibrationOverallStatus>(overall_progress));
+        static_cast<rmad::CalibrationOverallStatus>(overall_progress_status));
   }
 }
 
 void RmadClientImpl::ErrorReceived(dbus::Signal* signal) {
   DCHECK_EQ(signal->GetMember(), rmad::kErrorSignal);
   dbus::MessageReader reader(signal);
-  uint32_t error;
-  if (!reader.PopUint32(&error)) {
-    LOG(ERROR) << "Unable to decode error uint32 from " << signal->GetMember()
+  int32_t error;
+  if (!reader.PopInt32(&error)) {
+    LOG(ERROR) << "Unable to decode error int32 from " << signal->GetMember()
                << " signal";
     return;
   }
@@ -519,13 +518,13 @@ bool RmadClientImpl::WasRmaStateDetected() {
          (is_rma_required_ || rma_state_file_exists_.value_or(false));
 }
 
-bool RmadClientImpl::WasRmaStateDetectedForSessionManager(
+void RmadClientImpl::SetRmaRequiredCallbackForSessionManager(
     base::OnceClosure session_manager_callback) {
-  const bool was_rma_state_detected = WasRmaStateDetected();
-  if (!was_rma_state_detected) {
+  if (WasRmaStateDetected()) {
+    std::move(session_manager_callback).Run();
+  } else {
     session_manager_callback_ = std::move(session_manager_callback);
   }
-  return was_rma_state_detected;
 }
 
 RmadClient::RmadClient() {

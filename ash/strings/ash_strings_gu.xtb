@@ -6,6 +6,7 @@
 <translation id="1013923882670373915">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ડિવાઇસ પર આ PIN કોડ દાખલ કરો: <ph name="PINCODE" /></translation>
 <translation id="1014111206066007277">સ્ક્રીનકાસ્ટના ટૂલ</translation>
 <translation id="1024261588257374085">આંશિક સ્ક્રીનશૉટ પસંદ કર્યો</translation>
+<translation id="1024364763893396229">તમારું <ph name="NAME" /> સાચવો</translation>
 <translation id="1032891413405719768">સ્ટાઇલસની બૅટરી ઓછી છે</translation>
 <translation id="1036073649888683237">નોટિફિકેશન મેનેજ કરવા માટે, સેટિંગ પર જાઓ</translation>
 <translation id="1036672894875463507">હું તમારું Google Assistant, તમને આખા દિવસમાં સહાય કરવા માટે અહીં ઉપલબ્ધ છું!
@@ -35,6 +36,7 @@
 <translation id="1175572348579024023">સ્ક્રોલ કરો</translation>
 <translation id="1178581264944972037">થોભો</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
+<translation id="1183863904939664422">આ સૂચનમાં રુચિ નથી</translation>
 <translation id="118437560755358292">વધુ સુરક્ષા માટે પાસવર્ડ અથવા પિન દાખલ કરો</translation>
 <translation id="118532027333893379">પૂર્ણ સ્ક્રીન કૅપ્ચર કરવા માટે ગમે ત્યાં ટૅપ કરો</translation>
 <translation id="1190609913194133056">સૂચના કેન્દ્ર</translation>
@@ -148,7 +150,6 @@
 <translation id="1771761307086386028">જમણે સ્ક્રોલ કરો</translation>
 <translation id="1774796056689732716">કૅલેન્ડર, <ph name="CURRENT_MONTH_YEAR" />, હાલમાં <ph name="DATE" /> પસંદ કરેલી છે.</translation>
 <translation id="1787955149152357925">બંધ છે</translation>
-<translation id="1804572139604454141">ડિસ્કમાં અત્યંત ઓછી સ્પેસ હોવાથી રેકોર્ડિંગ સમાપ્ત થયું</translation>
 <translation id="181103072419391116">સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />, તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="1812997170047690955">મારી સ્ક્રીન પર શું છે?</translation>
 <translation id="1823873187264960516">ઇથરનેટ: <ph name="ADDRESS" /></translation>
@@ -168,6 +169,7 @@
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954252331066828794">સ્ક્રીન રેકોર્ડિંગ પૂર્ણ થયું</translation>
 <translation id="1957958912175573503">તમારી ભાષા સેટ કરો</translation>
+<translation id="1961239773406905488">કૅમેરા પ્રીવ્યૂ છુપાવેલો છે</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">સ્ક્રીન લૉક કરો</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -185,6 +187,7 @@
 <translation id="2047639699071423250">મુખ્ય વિચાર ઉમેરો</translation>
 <translation id="2049240716062114887">ડેસ્કનું નામ બદલીને <ph name="DESK_NAME" /> કરવામાં આવ્યું હતું</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
+<translation id="2064048859448024834">કૅમેરા પ્રીવ્યૂ ચાલુ છે</translation>
 <translation id="2066708475850724665">મૅગ્નિફાયર રોકો</translation>
 <translation id="2067602449040652523">કીબોર્ડનું તેજ</translation>
 <translation id="2078034614700056995">આગલી ડેસ્ક પર સ્વિચ કરવા માટે ચાર આંગળી વડે જમણી તરફ સ્વાઇપ કરો</translation>
@@ -240,6 +243,7 @@
 <translation id="2429753432712299108">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ડિવાઇસ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
 <translation id="243878895369688216">ગઈકાલે ખોલેલી</translation>
+<translation id="2441427462554639370">સ્ટોરેજ સ્પેસ અત્યંત ઓછી હોવાથી રેકોર્ડિંગ સમાપ્ત થયું</translation>
 <translation id="24452542372838207">નોટિફિકેશન વિસ્તૃત કરો</translation>
 <translation id="2450205753526923158">સ્ક્રીનશૉટ મોડ</translation>
 <translation id="2456008742792828469">કૅલેન્ડર, <ph name="CURRENT_MONTH_YEAR" /></translation>
@@ -269,6 +273,7 @@
 <translation id="2673968385134502798">ગેમ</translation>
 <translation id="2678852583403169292">સાંભળવા માટે પસંદ કરો મેનૂ</translation>
 <translation id="2689613560355655046">ડેસ્ક 8</translation>
+<translation id="2695305337569143674">વેબ</translation>
 <translation id="2700493154570097719">તમારું કીબોર્ડ સેટ કરો</translation>
 <translation id="2704781753052663061">બીજા વાઇ-ફાઇ નેટવર્ક સાથે જોડાઓ</translation>
 <translation id="2705001408393684014">માઇક્રોફોનના વિકલ્પને ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
@@ -292,6 +297,7 @@
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
 <translation id="2825224105325558319"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" />ને સપોર્ટ આપતું નથી. રિઝોલ્યુશનને <ph name="FALLBACK_RESOLUTION" /> પર બદલવામાં આવ્યું હતું.</translation>
 <translation id="2825619548187458965">શેલ્ફ</translation>
+<translation id="2831035692318564937">સૂર્યોદય સુધી ચાલુ રાખો</translation>
 <translation id="2834813915651407382">તાજેતરમાં ખોલેલી</translation>
 <translation id="2841907151129139818">ટૅબ્લેટ મોડ પર સ્વિચ થયા</translation>
 <translation id="2844169650293029770">USB-C ઉપકરણ (ડાબી બાજુનું આગળનું પોર્ટ)</translation>
@@ -374,6 +380,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> હજીએ થોડા સમય પછી સાઇન ઇન કરી શકશે.</translation>
 <translation id="3321628682574733415">માતાપિતાનો કોડ ખોટો</translation>
 <translation id="3339826665088060472">સ્ક્રીન કૅપ્ચર, સ્ક્રીનશૉટ લેવા અને સ્ક્રીન રેકોર્ડિંગ કરવા માટેના ટૂલ છે</translation>
+<translation id="3340978935015468852">સેટિંગ</translation>
 <translation id="3341303451326249809">સ્ક્રીનશૉટ કૅપ્ચર કર્યો</translation>
 <translation id="334252345105450327">સ્ક્રીનશૉટ લો</translation>
 <translation id="3351879221545518001">તમે હાલમાં સ્ક્રીનને કાસ્ટ કરી રહ્યા છો.</translation>
@@ -438,8 +445,8 @@
 <translation id="3626281679859535460">તેજ</translation>
 <translation id="3630697955794050612">બંધ</translation>
 <translation id="3631369015426612114">નીચેના પરથી સૂચનાઓને મંજૂરી આપો</translation>
+<translation id="3633097874324966332">ડિવાઇસનું જોડાણ કરવા માટે બ્લૂટૂથના સેટિંગ ખોલો</translation>
 <translation id="3638400994746983214">પ્રાઇવસી સ્ક્રીનને ટૉગલ કરો. <ph name="STATE_TEXT" />.</translation>
-<translation id="3640092422335864171"><ph name="NAME" />ને સાચવો</translation>
 <translation id="3649505501900178324">અપડેટ કરવાનું બાકી છે</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> મેનેજ કરાયેલા વપરાશકર્તા</translation>
 <translation id="3680908746918359504">બધાં માર્કર સાફ કરો</translation>
@@ -466,6 +473,7 @@
 <translation id="3798670284305777884">સ્પીકર (આંતરિક)</translation>
 <translation id="3799080171973636491">તમે પૂર્ણ-સ્ક્રીન મેગ્નિફાયર માટેનો કીબોર્ડ શૉર્ટકટ દબાવેલ છે. શું તમે તેને ચાલુ કરવા માગો છો?</translation>
 <translation id="380165613292957338">નમસ્કાર, હું કેવી રીતે સહાય કરી શકું?</translation>
+<translation id="3804737937830804242">કૅમેરાને નાનો કરો</translation>
 <translation id="3826099427150913765">પાસવર્ડ પર સ્વિચ કરો</translation>
 <translation id="383058930331066723">બૅટરી સેવર મોડ ચાલુ છે</translation>
 <translation id="3835880383832568924">અપડેટ જોવા માટે, Shortcuts ઍપ ખોલો</translation>
@@ -485,6 +493,7 @@
 <translation id="3922427723338465344">{0,plural, =1{1 મિનિટની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}one{# મિનિટની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}other{# મિનિટની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}}</translation>
 <translation id="3923494859158167397">કોઈ મોબાઇલ નેટવર્ક સેટઅપ કરેલા નથી</translation>
 <translation id="3932043219784172185">કોઈ ડિવાઇસ કનેક્ટ કરેલું નથી</translation>
+<translation id="3934456833412894880">અડૅપ્ટિવ ચાર્જિંગ ચાલુ છે. તમારી બૅટરીની આવરદા વધારવા માટે તે 80% પર રહેશે અને જ્યારે તમને જરૂર હોય, ત્યારે તે પૂરી ચાર્જ થશે.</translation>
 <translation id="3943857333388298514">પેસ્ટ કરો</translation>
 <translation id="394485226368336402">ઑડિયો સેટિંગ</translation>
 <translation id="3945319193631853098">સેટઅપ કરવાનું પૂર્ણ કરવા માટે ટૅપ કરો</translation>
@@ -528,7 +537,6 @@
 <translation id="4215497585250573029">VPN સેટિંગ</translation>
 <translation id="4217571870635786043">ડિક્ટેશન</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, ઇન્સ્ટૉલ કરેલી ઍપ, થોભાવી</translation>
-<translation id="4223947355273782392">તમારા અન્ય ડિવાઇસ સાથે ઝડપી જોડાણ માટે, <ph name="NAME" />ને <ph name="EMAIL" /> પર સાચવો</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4242533952199664413">સેટિંગ ખોલો</translation>
 <translation id="4250229828105606438">સ્ક્રીનશૉટ</translation>
@@ -583,6 +591,7 @@
 <translation id="4481530544597605423">જોડીથી અલગ કરેલા ઉપકરણો</translation>
 <translation id="4505050298327493054">સક્રિય ડેસ્ક.</translation>
 <translation id="4513946894732546136">પ્રતિસાદ</translation>
+<translation id="4516867700536986208">બધી ઍપ, બધી ઍપને ઍક્સેસ કરવા માટે, ડાબી અથવા નીચેની ઍરો કી વડે નૅવિગેટ કરો</translation>
 <translation id="4518404433291145981">તમારી Chromebook અનલૉક કરવા માટે, પહેલાં તમારો ફોન અનલૉક કરો</translation>
 <translation id="4527045527269911712">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે.</translation>
 <translation id="453661520163887813">પૂર્ણપણે ચાર્જ થવામાં <ph name="TIME" /></translation>
@@ -591,6 +600,7 @@
 <translation id="4560576029703263363">ચાલુ</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">પાસવર્ડ છુપાવો</translation>
+<translation id="4566144812051858745">કોઈપણ સૂચનમાં રુચિ ધરાવતા નથી</translation>
 <translation id="4570957409596482333">સાંભળવા માટે પસંદ કરો બટન</translation>
 <translation id="4573176682887762361">"[શબ્દ / શબ્દસમૂહ] ટાઇપ કરો"</translation>
 <translation id="4577274620589681794">સમય સમાપ્ત · <ph name="LABEL" /></translation>
@@ -641,6 +651,7 @@
 <translation id="4868492592575313542">સક્રિય કરેલું</translation>
 <translation id="4872237917498892622">Alt+Search અથવા Shift</translation>
 <translation id="4881695831933465202">ખોલો</translation>
+<translation id="4889868803215848840">સૂચનો બહેતર બનાવવા માટે, વૈકલ્પિક પ્રતિસાદ આપો:</translation>
 <translation id="4890187583552566966">તમારા વ્યવસ્થાપકે Google Assistant બંધ કરેલું છે.</translation>
 <translation id="4890408602550914571">ખાતરી કરો કે તમારો ફોન નજીકમાં હોય અને બ્લૂટૂથ ચાલુ કરેલું હોય.</translation>
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
@@ -766,6 +777,7 @@
 <translation id="5744083938413354016">ખેંચવાને ટૅપ કરો</translation>
 <translation id="5745612484876805746">સૂર્યાસ્ત વખતે રાત્રિ પ્રકાશ ઑટોમૅટિક રીતે ચાલુ થાય છે</translation>
 <translation id="5750765938512549687">બ્લૂટૂથ બંધ છે</translation>
+<translation id="5760866832697883462">તમારું <ph name="NAME" /> કનેક્ટ કરો</translation>
 <translation id="576341972084747908">જોખમી <ph name="FILENAME" /> ડાઉનલોડ કરો</translation>
 <translation id="5763928712329149804">શેલ્ફ પાર્ટી બંધ છે.</translation>
 <translation id="576453121877257266">રાત્રિ પ્રકાશ ચાલુ છે.</translation>
@@ -800,6 +812,7 @@
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> ચાલુ છે.</translation>
 <translation id="5947494881799873997">પાછા ફરો</translation>
 <translation id="595202126637698455">ભજવણી ટ્રેસિંગ સક્ષમ</translation>
+<translation id="5955304353782037793">app</translation>
 <translation id="5958529069007801266">નિરીક્ષણ કરેલ વપરાશકર્તા</translation>
 <translation id="5977415296283489383">હેડફોન</translation>
 <translation id="5978382165065462689">દૂરસ્થ સહાય વડે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
@@ -826,8 +839,10 @@
 <translation id="6054305421211936131">સ્માર્ટ કાર્ડ વડે સાઇન ઇન કરો</translation>
 <translation id="6059276912018042191">તાજેતરની Chrome ટૅબ</translation>
 <translation id="6062360702481658777">તમે ઑટોમૅટિક રીતે <ph name="LOGOUT_TIME_LEFT" /> માં સાઇન આઉટ થઈ જશો.</translation>
+<translation id="6064463340679478396">ફાઇલનો વપરાશ પૂર્ણ થયો</translation>
 <translation id="6073451960410192870">રેકોર્ડિંગ બંધ કરો</translation>
 <translation id="6099678161144790572">ગયા મહિને ફેરફાર કરવામાં આવ્યો હતો</translation>
+<translation id="6103838137565245112">સિસ્ટમ</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> સ્પીચ ફાઇલ ડાઉનલોડ કરી</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> માટે ડાઉનલોડ કરવું કન્ફર્મ કરો</translation>
@@ -904,7 +919,6 @@
 <translation id="6625718907317144388">જોવા સંબંધિત સુરક્ષા પ્રણાલી ચાલુ હોવાને કારણે <ph name="APP_1_TITLE" />, <ph name="APP_2_TITLE" /> અને અન્ય નોટિફિકેશન છુપાવેલા છે</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6629480180092995136"><ph name="APP_NAME" /> માઇક્રોફોનનો ઉપયોગ કરવા ઇચ્છે છે</translation>
-<translation id="6630773993843701741">ડિવાઇસનું મેન્યુઅલી જોડાણ કરવા માટે, બ્લૂટૂથ સેટિંગ ખોલો</translation>
 <translation id="6637729079642709226">સમય બદલો</translation>
 <translation id="6641720045729354415">લાઇવ કૅપ્શન ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
 <translation id="6650072551060208490">આ તમે જ છો, તે <ph name="ORIGIN_NAME" /> કન્ફર્મ કરવા માગે છે</translation>
@@ -945,11 +959,11 @@
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{એક અંક બાકી}one{# અંક બાકી}other{# અંક બાકી}}</translation>
 <translation id="6867938213751067702"><ph name="FILENAME" />નું ડાઉનલોડ થોભાવ્યું</translation>
 <translation id="6878400149835617132">શૉર્ટકટ બંધ કર્યો</translation>
-<translation id="6880133753431418782">તમે પહેલાં પણ આ ક્વેરી શોધી હતી. આ શોધને તમારા ઇતિહાસમાંથી ડિલીટ કરવાથી તેને તમારા બધા ડિવાઇસ પરના તમારા Google એકાઉન્ટમાંથી કાયમ માટે કાઢી નાખવામાં આવશે.</translation>
 <translation id="6884665277231944629">આજની તારીખ પર પાછા જાઓ</translation>
 <translation id="6886172995547742638">તમારા <ph name="DEVICE_TYPE" />માં નબળું કાર્યપ્રદર્શન થઈ શકે છે. પ્રમાણિત <ph name="PREFERRED_MINIMUM_POWER" />W અથવા તેથી વધુના USB-C પાવર અડૅપ્ટરનો ઉપયોગ કરો.</translation>
 <translation id="688631446150864480">વિન્ડો સ્વિચ કરવા માટે, નીચેની ઍરો કી દબાવો</translation>
 <translation id="6896758677409633944">કૉપિ કરો</translation>
+<translation id="6901883536534621389">નૅવિગેટ કરવા માટે સંકેતો અજમાવી જુઓ</translation>
 <translation id="6919251195245069855">તમારું સ્માર્ટ કાર્ડ ઓળખી શક્યાં નથી. ફરી પ્રયાસ કરો.</translation>
 <translation id="6921188888306725546">કીબોર્ડ શૉર્ટકટને બહેતર બનાવવામાં આવ્યા છે</translation>
 <translation id="6931576957638141829">આમાં સાચવો</translation>
@@ -1007,13 +1021,14 @@
 <translation id="7302889331339392448">લાઇવ કૅપ્શનની સુવિધા બંધ છે.</translation>
 <translation id="7303365578352795231">અન્ય ઉપકરણ પર જવાબ આપી રહ્યાં છે.</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7307830679306928882">તાજેતરની ઍપ, બધી તાજેતરની ઍપને ઍક્સેસ કરવા માટે, ડાબી ઍરો કી વડે નૅવિગેટ કરો</translation>
+<translation id="7313193732017069507">કૅમેરાને મોટો કરો</translation>
 <translation id="731589979057211264">શેલ્ફ પાર્ટી ચાલુ છે.</translation>
 <translation id="7319740667687257810">લૉન્ચર, આંશિક દૃશ્ય</translation>
 <translation id="7346909386216857016">બરાબર, સમજાઇ ગયું</translation>
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
 <translation id="7360036564632145207">પેરિફેરલ સેટિંગ માટે તમારી ડેટા ઍક્સેસની સુરક્ષામાં ફેરફાર કરવાથી કાર્યપ્રદર્શન ઑપ્ટિમાઇઝ થઈ શકે છે</translation>
-<translation id="7366890467478514168"><ph name="NAME" /> કનેક્ટ કરો</translation>
 <translation id="7371404428569700291">વિન્ડો રેકોર્ડ કરો</translation>
 <translation id="7377169924702866686">Caps Lock ચાલુ છે.</translation>
 <translation id="7377481913241237033">કોડ વડે કનેક્ટ કરો</translation>
@@ -1029,7 +1044,6 @@
 <translation id="742594950370306541">કૅમેરા ઉપયોગમાં છે.</translation>
 <translation id="742608627846767349">ગુડ મોર્નિંગ,</translation>
 <translation id="743058460480092004">કૅમેરા અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
-<translation id="7430878839542012341">તમારા ઇતિહાસમાંથી આ શોધ ડિલીટ કરીએ?</translation>
 <translation id="7434543979546293336">મુખ્ય વિચાર તરીકે માર્ક કર્યો</translation>
 <translation id="7452560014878697800">કોઈ ઍપ્લિકેશન તમારા કૅમેરાનો ઉપયોગ કરી રહી છે</translation>
 <translation id="7461924472993315131">પિન કરો</translation>
@@ -1109,6 +1123,7 @@
 <translation id="7886169021410746335">ગોપનીયતા સેટિંગ ગોઠવો</translation>
 <translation id="7886277072580235377">જ્યારે તમે સાઇન આઉટ કરશો, ત્યારે તમારા ઇન્ટરનેટ સત્રની માહિતી સાફ કરવામાં આવશે. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ઇમેઇલ મોકલો</translation>
+<translation id="7893503627044934815">આ ફાઇલ બતાવવા માગતા નથી</translation>
 <translation id="7895348134893321514">Tote</translation>
 <translation id="7897375687985782769">તમે સ્ક્રીનને ફેરવવા માટે કીબોર્ડ શૉર્ટકટ દબાવેલ છે. શું તમે સ્ક્રીનને ફેરવવા માગો છો?</translation>
 <translation id="7901405293566323524">ફોન હબ</translation>
@@ -1124,9 +1139,9 @@
 <translation id="7955885781510802139">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
 <translation id="7968693143708939792">ફોલ્ડર પસંદ કરો...</translation>
 <translation id="7977927628060636163">મોબાઇલ નેટવર્કની શોધ કરી રહ્યું છે...</translation>
-<translation id="7980780401175799550">Chrome OS પર નૅવિગેટ કરવાની નવી રીતો અજમાવી જુઓ</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
 <translation id="7984197416080286869">ફિંગરપ્રિન્ટ માટેના ઘણા બધા પ્રયત્નો</translation>
+<translation id="798779949890829624">આ સેટિંગને તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="7994370417837006925">બહુવિધ સાઇન-ઇન</translation>
 <translation id="7995804128062002838">સ્ક્રીન કૅપ્ચર કરવામાં નિષ્ફળ રહ્યાં</translation>
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
@@ -1154,6 +1169,7 @@
 <translation id="813913629614996137">પ્રારંભ કરી રહ્યું છે...</translation>
 <translation id="8142441511840089262">ડબલ ક્લિક કરો</translation>
 <translation id="8142699993796781067">ખાનગી નેટવર્ક</translation>
+<translation id="8144760705599030999">તમારા અન્ય ડિવાઇસ સાથે ઝડપી જોડાણ માટે, તમારા <ph name="NAME" />ને <ph name="EMAIL" /> પર સાચવો</translation>
 <translation id="8152092012181020186">બંધ કરવા માટે Ctrl + W દબાવો.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ઑટોમેટિક રીતે પૂર્ણ</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> આ સેટિંગને તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે.</translation>
@@ -1191,6 +1207,7 @@
 <translation id="8412677897383510995">ડિસ્પ્લે સેટિંગ બતાવો</translation>
 <translation id="8413272770729657668">રેકોર્ડિંગ શરૂ થવાનું છે 3, 2, 1</translation>
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" />% (કેસ)</translation>
+<translation id="8420205633584771378">આ સૂચન કાઢી નાખીએ?</translation>
 <translation id="8421270167862077762">આ ડિવાઇસ પર <ph name="UNAVAILABLE_APPS" /> ઉપલબ્ધ નથી.</translation>
 <translation id="8425213833346101688">બદલો</translation>
 <translation id="8426708595819210923">ગુડ ઇવનિંગ <ph name="GIVEN_NAME" />,</translation>
@@ -1283,6 +1300,7 @@
 <translation id="9000771174482730261">સ્ટોરેજ મેનેજ કરો</translation>
 <translation id="9017320285115481645">Family Linkનો માતાપિતા માટેનો ઍક્સેસ કોડ દાખલ કરો.</translation>
 <translation id="9024331582947483881">પૂર્ણ સ્ક્રીન</translation>
+<translation id="9030319654231318877">સૂર્યાસ્ત સુધી બંધ રાખો</translation>
 <translation id="9034924485347205037">Linux ફાઇલો</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> માટે સેટિંગ ખોલો</translation>
 <translation id="9059834730836941392">નોટિફિકેશન સંકુચિત કરો</translation>
@@ -1302,6 +1320,7 @@
 <translation id="9099154003160514616">Lacros બ્રાઉઝરની અપડેટ ઉપલબ્ધ છે</translation>
 <translation id="9100887602489003640">પ્રોફાઇલ ઉમેરી રહ્યાં છીએ. થોડીવાર રાહ જુઓ.</translation>
 <translation id="9105450214093926548">Lacros બ્રાઉઝર ચાલતું હોય, ત્યારે બીજા વપરાશકર્તા દ્વારા સાઇન ઇન કરવાને સપોર્ટ કરવામાં આવતો નથી. કૃપા કરીને તેના બદલે Lacrosમાં બીજી બ્રાઉઝર પ્રોફાઇલનો ઉપયોગ કરો કે Lacros બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
+<translation id="9121941381564890244"><ph name="SNIP" /> અથવા <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9133335900048457298">સંરક્ષિત કન્ટેન્ટ રેકોર્ડ કરી શકાતું નથી</translation>
 <translation id="9161053988251441839">સૂચવેલ ઍપ્લિકેશનો</translation>
 <translation id="9166331175924255663">નજીકના શેરની ઉચ્ચ દૃશ્યતા ટૉગલ કરો.</translation>

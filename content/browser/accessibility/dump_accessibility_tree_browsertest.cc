@@ -495,8 +495,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAOnclick) {
   RunHtmlTest(FILE_PATH_LITERAL("a-onclick.html"));
 }
 
+// TODO(https://crbug.com/1309941): This test is failing on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_AccessibilityANestedStructure \
+  DISABLED_AccessibilityANestedStructure
+#else
+#define MAYBE_AccessibilityANestedStructure AccessibilityANestedStructure
+#endif  // BUILDFLAG(IS_FUCHSIA)
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityANestedStructure) {
+                       MAYBE_AccessibilityANestedStructure) {
   RunHtmlTest(FILE_PATH_LITERAL("a-nested-structure.html"));
 }
 
@@ -1865,8 +1872,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityFieldset) {
   RunHtmlTest(FILE_PATH_LITERAL("fieldset.html"));
 }
 
-// TODO(crbug.com/1307316): failing on Linux bots.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1307316): failing on Linux bots and flaky on Fuchsia bots.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_AccessibilityFigcaption DISABLED_AccessibilityFigcaption
 #else
 #define MAYBE_AccessibilityFigcaption AccessibilityFigcaption
@@ -2104,8 +2111,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-with-invalid-children.html"));
 }
 
+// Failing under multiple platforms. crbug.com/1314860
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityIframeWithInvalidChildrenAdded) {
+                       DISABLED_AccessibilityIframeWithInvalidChildrenAdded) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-with-invalid-children-added.html"));
 }
 
@@ -2175,8 +2183,18 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDate) {
   RunHtmlTest(FILE_PATH_LITERAL("input-date.html"));
 }
 
+// TODO: date and time controls drop their children, including the popup button,
+// on Android
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_AccessibilityInputDateWithPopupOpen \
+  DISABLED_AccessibilityInputDateWithPopupOpen
+#else
+#define MAYBE_AccessibilityInputDateWithPopupOpen \
+  AccessibilityInputDateWithPopupOpen
+#endif
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityInputDateWithPopupOpen) {
+                       MAYBE_AccessibilityInputDateWithPopupOpen) {
   RunHtmlTest(FILE_PATH_LITERAL("input-date-with-popup-open.html"));
 }
 
@@ -2196,7 +2214,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 // TODO(crbug.com/1201658): Flakes heavily on Linux.
-#if BUILDFLAG(IS_LINUX)
+// TODO: date and time controls drop their children, including the popup button,
+// on Android
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
 #define MAYBE_AccessibilityInputTimeWithPopupOpen \
   DISABLED_AccessibilityInputTimeWithPopupOpen
 #else
@@ -2356,7 +2376,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 #if BUILDFLAG(IS_MAC)
 // TODO(1038813): The /blink test pass is different on Windows and Mac, versus
-// Linux.
+// Linux. Also, see https://crbug.com/1314896.
 #define MAYBE_AccessibilityInputTime DISABLED_AccessibilityInputTime
 #else
 #define MAYBE_AccessibilityInputTime AccessibilityInputTime
@@ -2447,6 +2467,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityList) {
   RunHtmlTest(FILE_PATH_LITERAL("list.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityListText) {
+  RunHtmlTest(FILE_PATH_LITERAL("list-text.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityListTextAddition) {
+  RunHtmlTest(FILE_PATH_LITERAL("list-text-addition.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -2824,7 +2853,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("selectmenu-open.html"));
 }
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+// TODO(https://crbug.com/1309941): Flaky on Fuchsia
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_AccessibilitySource DISABLED_AccessibilitySource
 #else
 #define MAYBE_AccessibilitySource AccessibilitySource
@@ -3094,15 +3124,23 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("node-changed-crash-in-editable-text.html"));
 }
 
-// TODO(crbug.com/916003): Fix race condition.
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityNoSourceVideo) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityNoSourceVideo) {
+#if BUILDFLAG(IS_MAC)
+  // The /blink test pass is different on macOS than on other platforms. See
+  // https://crbug.com/1314896.
+  if (GetParam() == ui::AXApiType::kBlink)
+    return;
+#endif
   RunHtmlTest(FILE_PATH_LITERAL("no-source-video.html"));
 }
 
-// TODO(crbug.com/916003): Fix race condition.
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityVideoControls) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityVideoControls) {
+#if BUILDFLAG(IS_MAC)
+  // The /blink test pass is different on macOS than on other platforms. See
+  // https://crbug.com/1314896.
+  if (GetParam() == ui::AXApiType::kBlink)
+    return;
+#endif
   RunHtmlTest(FILE_PATH_LITERAL("video-controls.html"));
 }
 

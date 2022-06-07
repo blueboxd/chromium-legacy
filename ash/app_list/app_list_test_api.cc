@@ -399,12 +399,11 @@ bool AppListTestApi::IsFolderViewAnimating() const {
 }
 
 views::View* AppListTestApi::GetBubbleReorderUndoButton() {
-  return GetToastContainerViewFromBubble()->GetToastDismissButtonForTest();
+  return GetToastContainerViewFromBubble()->GetToastButton();
 }
 
 views::View* AppListTestApi::GetFullscreenReorderUndoButton() {
-  return GetToastContainerViewFromFullscreenAppList()
-      ->GetToastDismissButtonForTest();
+  return GetToastContainerViewFromFullscreenAppList()->GetToastButton();
 }
 
 bool AppListTestApi::GetBubbleReorderUndoToastVisibility() const {
@@ -459,6 +458,25 @@ void AppListTestApi::ReorderItemInRootByDragAndDrop(int source_index,
                                                     int target_index) {
   test::AppsGridViewTestApi(GetTopLevelAppsGridView())
       .ReorderItemByDragAndDrop(source_index, target_index);
+}
+
+views::View* AppListTestApi::GetVisibleSearchResultView(int index) {
+  views::View* app_list =
+      ShouldUseBubbleAppList()
+          ? static_cast<views::View*>(GetAppListBubbleView())
+          : static_cast<views::View*>(GetAppListView());
+
+  views::View::Views search_results;
+  app_list->GetViewsInGroup(kSearchResultViewGroup, &search_results);
+
+  int current_visible_index = -1;
+  for (auto* view : search_results) {
+    if (view->GetVisible())
+      ++current_visible_index;
+    if (current_visible_index == index)
+      return view;
+  }
+  return nullptr;
 }
 
 }  // namespace ash

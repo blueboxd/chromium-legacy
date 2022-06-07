@@ -50,14 +50,15 @@ enum class BrowserTaskType {
   // TODO(altimin): Make this content-internal.
   kNavigationNetworkResponse,
 
+  // Tasks processing ServiceWorker's storage control's response.
+  // TODO(chikamune): Make this content-internal.
+  kServiceWorkerStorageControlResponse,
+
   // Used to validate values in Java
   kBrowserTaskType_Last
 };
 
 // TaskTraits for running tasks on the browser threads.
-//
-// These traits enable the use of the //base/task/post_task.h APIs to post tasks
-// to a BrowserThread.
 //
 // To post a task to the UI thread (analogous for IO thread):
 //     GetUIThreadTaskRunner({})->PostTask(FROM_HERE, task);

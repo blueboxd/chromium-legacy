@@ -2582,10 +2582,7 @@ absl::optional<AccessibilityTextRunInfo> PDFiumEngine::GetTextRunInfo(
     int page_index,
     int start_char_index) {
   DCHECK(PageIndexInBounds(page_index));
-  auto info = pages_[page_index]->GetTextRunInfo(start_char_index);
-  if (!client_->IsPrintPreview() && start_char_index >= 0)
-    pages_[page_index]->LogOverlappingAnnotations();
-  return info;
+  return pages_[page_index]->GetTextRunInfo(start_char_index);
 }
 
 std::vector<AccessibilityLinkInfo> PDFiumEngine::GetLinkInfo(
@@ -3103,10 +3100,11 @@ void PDFiumEngine::InsetPage(const DocumentLayout::Options& layout_options,
                              gfx::Rect& rect) const {
   draw_utils::PageInsetSizes inset_sizes =
       GetInsetSizes(layout_options, page_index, num_of_pages);
-  rect.Inset(static_cast<int>(ceil(inset_sizes.left * multiplier)),
-             static_cast<int>(ceil(inset_sizes.top * multiplier)),
-             static_cast<int>(ceil(inset_sizes.right * multiplier)),
-             static_cast<int>(ceil(inset_sizes.bottom * multiplier)));
+  rect.Inset(gfx::Insets::TLBR(
+      static_cast<int>(ceil(inset_sizes.top * multiplier)),
+      static_cast<int>(ceil(inset_sizes.left * multiplier)),
+      static_cast<int>(ceil(inset_sizes.bottom * multiplier)),
+      static_cast<int>(ceil(inset_sizes.right * multiplier))));
 }
 
 absl::optional<size_t> PDFiumEngine::GetAdjacentPageIndexForTwoUpView(
@@ -3557,7 +3555,7 @@ PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelections() const {
 void PDFiumEngine::SelectionChangeInvalidator::Invalidate(
     const gfx::Rect& selection) {
   gfx::Rect expanded_selection = selection;
-  expanded_selection.Inset(-1, -1);
+  expanded_selection.Inset(-1);
   engine_->client_->Invalidate(expanded_selection);
 }
 

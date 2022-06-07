@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
 
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -25,7 +26,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/features.h"
@@ -148,7 +148,7 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
   }
 
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
-  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
 
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;

@@ -5,9 +5,12 @@
 #import "ios/chrome/browser/ui/settings/password/password_issues_mediator.h"
 
 #include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
+#import "ios/chrome/browser/net/crurl.h"
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/password_issue_with_form.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_consumer.h"
+#import "ios/chrome/common/ui/favicon/favicon_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,14 +31,20 @@
 // of the Password Issues Screen.
 @property(nonatomic, strong, readonly) NSDate* successfulReauthTime;
 
+// FaviconLoader is a keyed service that uses LargeIconService to retrieve
+// favicon images.
+@property(nonatomic, assign) FaviconLoader* faviconLoader;
+
 @end
 
 @implementation PasswordIssuesMediator
 
 - (instancetype)initWithPasswordCheckManager:
-    (IOSChromePasswordCheckManager*)manager {
+                    (IOSChromePasswordCheckManager*)manager
+                               faviconLoader:(FaviconLoader*)faviconLoader {
   self = [super init];
   if (self) {
+    _faviconLoader = faviconLoader;
     _manager = manager;
     _passwordCheckObserver.reset(
         new PasswordCheckObserverBridge(self, manager));
@@ -107,6 +116,17 @@
 
 - (NSDate*)lastSuccessfulReauthTime {
   return [self successfulReauthTime];
+}
+
+#pragma mark - TableViewFaviconDataSource
+
+- (void)faviconForURL:(CrURL*)URL
+           completion:(void (^)(FaviconAttributes*))completion {
+  self.faviconLoader->FaviconForPageUrl(
+      URL.gurl, kDesiredMediumFaviconSizePt, kMinFaviconSizePt,
+      /*fallback_to_google_server=*/false, ^(FaviconAttributes* attributes) {
+        completion(attributes);
+      });
 }
 
 @end

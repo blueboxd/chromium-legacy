@@ -22,7 +22,6 @@
 #include "ui/base/x/x11_cursor.h"
 #include "ui/base/x/x11_os_exchange_data_provider.h"
 #include "ui/base/x/x11_pointer_grab.h"
-#include "ui/base/x/x11_topmost_window_finder.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -41,7 +40,6 @@
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_util.h"
 #include "ui/ozone/platform/x11/hit_test_x11.h"
-#include "ui/ozone/platform/x11/x11_topmost_window_finder.h"
 #include "ui/ozone/platform/x11/x11_window_manager.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
@@ -926,7 +924,7 @@ void X11Window::SetShape(std::unique_ptr<ShapeRects> native_shape,
       SkPath path_in_dip;
       if (native_region.getBoundaryPath(&path_in_dip)) {
         SkPath path_in_pixels;
-        path_in_dip.transform(SkMatrix(transform.matrix()), &path_in_pixels);
+        path_in_dip.transform(transform.matrix().asM33(), &path_in_pixels);
         xregion = x11::CreateRegionFromSkPath(path_in_pixels);
       } else {
         xregion = std::make_unique<std::vector<x11::Rectangle>>();
@@ -1152,17 +1150,6 @@ void X11Window::OnCompleteSwapAfterResize() {
 
 gfx::Rect X11Window::GetXRootWindowOuterBounds() const {
   return GetOuterBounds();
-}
-
-bool X11Window::ContainsPointInXRegion(const gfx::Point& point) const {
-  if (!shape())
-    return true;
-
-  for (const auto& rect : *shape()) {
-    if (gfx::Rect(rect.x, rect.y, rect.width, rect.height).Contains(point))
-      return true;
-  }
-  return false;
 }
 
 void X11Window::LowerXWindow() {
@@ -1469,13 +1456,9 @@ void X11Window::CancelDrag() {
   QuitDragLoop();
 }
 
-std::unique_ptr<XTopmostWindowFinder> X11Window::CreateWindowFinder() {
+absl::optional<gfx::AcceleratedWidget> X11Window::GetDragWidget() {
   DCHECK(drag_handler_delegate_);
-  std::set<gfx::AcceleratedWidget> ignore;
-  auto drag_widget = drag_handler_delegate_->GetDragWidget();
-  if (drag_widget)
-    ignore.insert(*drag_widget);
-  return std::make_unique<X11TopmostWindowFinder>(ignore);
+  return drag_handler_delegate_->GetDragWidget();
 }
 
 int X11Window::UpdateDrag(const gfx::Point& screen_point) {
@@ -2185,8 +2168,13 @@ void X11Window::OnWindowMapped() {
 
 void X11Window::OnConfigureEvent(const x11::ConfigureNotifyEvent& configure,
                                  bool send_event) {
-  DCHECK_EQ(xwindow_, configure.window);
   DCHECK_EQ(xwindow_, configure.event);
+
+  // ConfigureNotifyEvent could be received for child windows. Ignore events for
+  // child windows.
+  if (xwindow_ != configure.window) {
+    return;
+  }
 
   if (pending_counter_value_) {
     DCHECK(!configure_counter_value_);
@@ -2291,7 +2279,7 @@ void X11Window::OnFrameExtentsUpdated() {
       insets.size() == 4) {
     // |insets| are returned in the order: [left, right, top, bottom].
     native_window_frame_borders_in_pixels_ =
-        gfx::Insets(insets[2], insets[0], insets[3], insets[1]);
+        gfx::Insets::TLBR(insets[2], insets[0], insets[3], insets[1]);
   } else {
     native_window_frame_borders_in_pixels_ = gfx::Insets();
   }

@@ -77,6 +77,7 @@ struct AppState {
            apps::RunOnOsLoginMode run_on_os_login_mode,
            blink::mojom::DisplayMode effective_display_mode,
            blink::mojom::DisplayMode user_display_mode,
+           std::string manifest_launcher_icon_filename,
            bool is_installed_locally,
            bool is_shortcut_created);
   ~AppState();
@@ -90,6 +91,7 @@ struct AppState {
   apps::RunOnOsLoginMode run_on_os_login_mode;
   blink::mojom::DisplayMode effective_display_mode;
   blink::mojom::DisplayMode user_display_mode;
+  std::string manifest_launcher_icon_filename;
   bool is_installed_locally;
   bool is_shortcut_created;
 };
@@ -150,8 +152,10 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void AcceptAppIdUpdateDialog();
   void CloseCustomToolbar();
   void ClosePwa();
-  void DisableRunOnOSLogin(const std::string& site_mode);
-  void EnableRunOnOSLogin(const std::string& site_mode);
+  void DisableRunOnOsLogin(const std::string& site_mode);
+  void EnableRunOnOsLogin(const std::string& site_mode);
+  void DisableWindowControlsOverlay(const std::string& site_mode);
+  void EnableWindowControlsOverlay(const std::string& site_mode);
   void InstallCreateShortcutTabbed(const std::string& site_mode);
   void InstallCreateShortcutWindowed(const std::string& site_mode);
   void InstallMenuOption(const std::string& site_mode);
@@ -173,12 +177,16 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void OpenAppSettingsFromChromeApps(const std::string& site_mode);
   void OpenAppSettingsFromAppMenu(const std::string& site_mode);
   void NavigateBrowser(const std::string& site_mode);
+  void NavigatePwaSiteAFooTo(const std::string& site_mode);
   void NavigatePwaSiteATo(const std::string& site_mode);
   void NavigateNotfoundUrl();
   void NavigateTabbedBrowserToSite(const GURL& url);
+  void ManifestUpdateIcon(const std::string& site_mode);
   void ManifestUpdateTitle(const std::string& site_mode);
   void ManifestUpdateDisplayBrowser(const std::string& site_mode);
   void ManifestUpdateDisplayMinimal(const std::string& site_mode);
+  void ManifestUpdateDisplay(const std::string& site_mode,
+                             const std::string& display);
   void ManifestUpdateScopeSiteAFooTo(const std::string& scope_mode);
   void OpenInChrome();
   void SetOpenInTab(const std::string& site_mode);
@@ -199,8 +207,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckAppInListTabbed(const std::string& site_mode);
   void CheckAppNavigationIsStartUrl();
   void CheckBrowserNavigationIsAppSettings(const std::string& site_mode);
-  void CheckAppSettingsAppState(const std::string& site_mode);
   void CheckAppNotInList(const std::string& site_mode);
+  void CheckAppIconSiteA(const std::string& color);
   void CheckAppTitleSiteA(const std::string& title);
   void CheckAppWindowMode(const std::string& site_mode,
                           apps::WindowMode window_mode);
@@ -212,13 +220,19 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckTabCreated();
   void CheckTabNotCreated();
   void CheckCustomToolbar();
+  void CheckNoToolbar();
   void CheckPlatformShortcutAndIcon(const std::string& site_mode);
   void CheckPlatformShortcutNotExists(const std::string& site_mode);
-  void CheckRunOnOSLoginEnabled(const std::string& site_mode);
-  void CheckRunOnOSLoginDisabled(const std::string& site_mode);
+  void CheckRunOnOsLoginEnabled(const std::string& site_mode);
+  void CheckRunOnOsLoginDisabled(const std::string& site_mode);
+  void CheckUserCannotSetRunOnOsLogin(const std::string& site_mode);
   void CheckUserDisplayModeInternal(DisplayMode display_mode);
   void CheckWindowClosed();
   void CheckWindowCreated();
+  void CheckWindowControlsOverlay(const std::string& site_mode,
+                                  const std::string& is_on);
+  void CheckWindowControlsOverlayToggle(const std::string& site_mode,
+                                        const std::string& is_shown);
   void CheckWindowDisplayBrowser();
   void CheckWindowDisplayMinimal();
   void CheckWindowDisplayStandalone();
@@ -238,6 +252,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   // Must be called at the end of every state check action function.
   void AfterStateCheckAction();
 
+  AppId GetAppIdBySiteMode(const std::string& site_mode);
   GURL GetAppStartURL(const std::string& site_mode);
   absl::optional<AppState> GetAppBySiteMode(StateSnapshot* state_snapshot,
                                             Profile* profile,
@@ -284,6 +299,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
   void LaunchAppStartupBrowserCreator(const AppId& app_id);
 
+  void CheckAppSettingsAppState(Profile* profile, const AppState& app_state);
+
   Browser* browser();
   const net::EmbeddedTestServer* embedded_test_server();
   Profile* profile() {
@@ -296,6 +313,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   WebAppProvider* provider() { return WebAppProvider::GetForTest(profile()); }
   PageActionIconView* pwa_install_view();
   PageActionIconView* intent_picker_view();
+
+  base::flat_set<AppId> previous_manifest_updates_;
 
   // Variables used to facilitate waiting for manifest updates, as there isn't
   // a formal 'action' that a user can take to wait for this, as it happens

@@ -18,10 +18,10 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId SignInFatalErrorView::kScreenId;
 
-SignInFatalErrorScreenHandler::SignInFatalErrorScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.SignInFatalErrorScreen.userActed");
+SignInFatalErrorScreenHandler::SignInFatalErrorScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.SignInFatalErrorScreen.userActed");
 }
 
 SignInFatalErrorScreenHandler::~SignInFatalErrorScreenHandler() {
@@ -46,25 +46,25 @@ void SignInFatalErrorScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL);
 }
 
-void SignInFatalErrorScreenHandler::Initialize() {}
+void SignInFatalErrorScreenHandler::InitializeDeprecated() {}
 
 void SignInFatalErrorScreenHandler::Show(SignInFatalErrorScreen::Error error,
                                          const base::Value* params) {
-  base::Value screen_data =
-      params ? params->Clone() : base::Value(base::Value::Type::DICTIONARY);
-  screen_data.SetKey("errorState", base::Value(static_cast<int>(error)));
+  base::Value::Dict screen_data =
+      params ? params->GetDict().Clone() : base::Value::Dict();
+  screen_data.Set("errorState", base::Value(static_cast<int>(error)));
 
-  ShowScreenWithData(kScreenId, &base::Value::AsDictionaryValue(screen_data));
+  ShowInWebUI(std::move(screen_data));
 }
 
 void SignInFatalErrorScreenHandler::Bind(SignInFatalErrorScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void SignInFatalErrorScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 }  // namespace chromeos

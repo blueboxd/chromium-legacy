@@ -19,10 +19,12 @@
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
@@ -519,7 +521,7 @@ TEST_F(ChromeContentSettingsRedirectTest, RedirectSettingsURL) {
   EXPECT_EQ(settings_url, dest_url);
 
   base::Value list(base::Value::Type::LIST);
-  list.Append(policy::SystemFeature::kBrowserSettings);
+  list.Append(static_cast<int>(policy::SystemFeature::kBrowserSettings));
   testing_local_state_.Get()->Set(
       policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
 
@@ -537,7 +539,7 @@ TEST_F(ChromeContentSettingsRedirectTest, RedirectOSSettingsURL) {
   EXPECT_EQ(os_settings_url, dest_url);
 
   base::Value list(base::Value::Type::LIST);
-  list.Append(policy::SystemFeature::kOsSettings);
+  list.Append(static_cast<int>(policy::SystemFeature::kOsSettings));
   testing_local_state_.Get()->Set(
       policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
 
@@ -560,7 +562,7 @@ TEST_F(ChromeContentSettingsRedirectTest, RedirectScanningAppURL) {
   EXPECT_EQ(scanning_app_url, dest_url);
 
   base::Value list(base::Value::Type::LIST);
-  list.Append(policy::SystemFeature::kScanning);
+  list.Append(static_cast<int>(policy::SystemFeature::kScanning));
   testing_local_state_.Get()->Set(
       policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
 
@@ -577,7 +579,7 @@ TEST_F(ChromeContentSettingsRedirectTest, RedirectCameraAppURL) {
   EXPECT_EQ(camera_app_url, dest_url);
 
   base::Value list(base::Value::Type::LIST);
-  list.Append(policy::SystemFeature::kCamera);
+  list.Append(static_cast<int>(policy::SystemFeature::kCamera));
   testing_local_state_.Get()->Set(
       policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
 
@@ -594,7 +596,7 @@ TEST_F(ChromeContentSettingsRedirectTest, RedirectHelpURL) {
   EXPECT_EQ(GURL("chrome://settings/help"), dest_url);
 
   base::Value list(base::Value::Type::LIST);
-  list.Append(policy::SystemFeature::kBrowserSettings);
+  list.Append(static_cast<int>(policy::SystemFeature::kBrowserSettings));
   testing_local_state_.Get()->Set(
       policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
 
@@ -882,4 +884,30 @@ TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLAccessEnabled) {
                                          true);
   client_.AppendExtraCommandLineSwitches(&command_line_, kFakeChildProcessId);
   EXPECT_TRUE(command_line_.HasSwitch(blink::switches::kWebSQLAccess));
+}
+
+class ChromeContentBrowserGetFirstPartySetsOverridesTest
+    : public testing::Test {
+ public:
+  ChromeContentBrowserGetFirstPartySetsOverridesTest()
+      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
+
+ protected:
+  ScopedTestingLocalState testing_local_state_;
+  ChromeContentBrowserClient client_;
+};
+
+TEST_F(ChromeContentBrowserGetFirstPartySetsOverridesTest, PrefUnset) {
+  EXPECT_EQ(client_.GetFirstPartySetsOverrides(), base::Value::Dict());
+}
+
+TEST_F(ChromeContentBrowserGetFirstPartySetsOverridesTest,
+       PrefSetWithValidDict) {
+  base::Value::Dict valid_dict;
+  valid_dict.Set("additions", base::Value(base::Value::List()));
+  base::Value expected_value(std::move(valid_dict));
+  testing_local_state_.Get()->Set(first_party_sets::kFirstPartySetsOverrides,
+                                  expected_value.Clone());
+  EXPECT_EQ(client_.GetFirstPartySetsOverrides(),
+            expected_value.Clone().GetDict());
 }

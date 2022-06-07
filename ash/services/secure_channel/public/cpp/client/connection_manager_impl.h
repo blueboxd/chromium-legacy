@@ -7,12 +7,11 @@
 
 #include <memory>
 
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/secure_channel/public/cpp/client/client_channel.h"
 #include "ash/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "ash/services/secure_channel/public/cpp/client/connection_manager.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 
 namespace base {
 class Clock;
@@ -20,6 +19,10 @@ class OneShotTimer;
 }  // namespace base
 
 namespace ash {
+
+namespace device_sync {
+class DeviceSyncClient;
+}
 
 namespace multidevice_setup {
 class MultiDeviceSetupClient;

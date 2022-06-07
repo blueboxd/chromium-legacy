@@ -332,7 +332,7 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   // otherwise within the bounds of this view, the point is considered to be
   // within the client area.
   gfx::Rect bounds_from_toolbar_top = browser_view_->bounds();
-  bounds_from_toolbar_top.Inset(0, GetClientAreaTop(), 0, 0);
+  bounds_from_toolbar_top.Inset(gfx::Insets::TLBR(GetClientAreaTop(), 0, 0, 0));
   if (bounds_from_toolbar_top.Contains(point))
     return HTCLIENT;
 
@@ -558,8 +558,8 @@ void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
   if (webui_tab_strip_ && webui_tab_strip_->GetVisible()) {
     // The WebUI tab strip container should "push" the tab contents down without
     // resizing it.
-    contents_container_bounds.Inset(0, 0, 0,
-                                    -webui_tab_strip_->size().height());
+    contents_container_bounds.Inset(
+        gfx::Insets().set_bottom(-webui_tab_strip_->size().height()));
   }
 
   // TODO(pbos): Note that this code implicitly relies on at most one of

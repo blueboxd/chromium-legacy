@@ -156,7 +156,6 @@ bool MoveCurrentTabToReadLater(Browser* browser);
 bool MoveTabToReadLater(Browser* browser, content::WebContents* web_contents);
 bool MarkCurrentTabAsReadInReadLater(Browser* browser);
 bool IsCurrentTabUnreadInReadLater(Browser* browser);
-void MaybeShowBookmarkBarForReadLater(Browser* browser);
 void ShowOffersAndRewardsForPage(Browser* browser);
 void SaveCreditCard(Browser* browser);
 void MigrateLocalCards(Browser* browser);
@@ -247,8 +246,10 @@ bool ShouldInterceptChromeURLNavigationInIncognito(Browser* browser,
 void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
                                                       const GURL& url);
 
-// Follows a web feed associated with the main frame of specified web contents.
-void FollowSite(Browser* browser, content::WebContents* web_contents);
+// Follows/unfollows a web feed associated with the main frame of specified web
+// contents.
+void FollowSite(content::WebContents* web_contents);
+void UnfollowSite(content::WebContents* web_contents);
 
 #if BUILDFLAG(IS_LINUX)
 // Triggers the Screen AI to be run once on the |browser|.

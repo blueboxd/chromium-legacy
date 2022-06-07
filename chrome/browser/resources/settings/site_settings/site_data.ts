@@ -19,10 +19,11 @@ import '../settings_shared_css.js';
 import './site_data_entry.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/js/list_property_update_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {DomRepeatEvent, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
@@ -42,10 +43,11 @@ type SelectedItem = {
   index: number,
 };
 
-interface SiteDataElement {
+export interface SiteDataElement {
   $: {
     confirmDeleteDialog: CrDialogElement,
     confirmDeleteThirdPartyDialog: CrDialogElement,
+    list: IronListElement,
     removeShowingSites: HTMLElement,
     removeAllThirdPartyCookies: HTMLElement,
   };
@@ -54,7 +56,7 @@ interface SiteDataElement {
 const SiteDataElementBase = ListPropertyUpdateMixin(
     GlobalScrollTargetMixin(WebUIListenerMixin(BaseMixin(PolymerElement))));
 
-class SiteDataElement extends SiteDataElementBase {
+export class SiteDataElement extends SiteDataElementBase {
   static get is() {
     return 'site-data';
   }
@@ -191,8 +193,9 @@ class SiteDataElement extends SiteDataElementBase {
     const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
     const button =
         this.$$(`#siteItem_${siteToSelect}`)!.shadowRoot!.querySelector(
-            '.subpage-arrow')!;
-    focusWithoutInk(assert(button));
+            '.subpage-arrow');
+    assert(button);
+    focusWithoutInk(button);
   }
 
   private onFilterChanged_(_current: string, previous?: string) {
@@ -239,11 +242,11 @@ class SiteDataElement extends SiteDataElementBase {
   }
 
   private onConfirmDeleteDialogClosed_() {
-    focusWithoutInk(assert(this.$.removeShowingSites));
+    focusWithoutInk(this.$.removeShowingSites);
   }
 
   private onConfirmDeleteThirdPartyDialogClosed_() {
-    focusWithoutInk(assert(this.$.removeAllThirdPartyCookies));
+    focusWithoutInk(this.$.removeAllThirdPartyCookies);
   }
 
   /**
@@ -308,6 +311,12 @@ class SiteDataElement extends SiteDataElementBase {
   private showRemoveThirdPartyCookies_(): boolean {
     return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
         this.sites.length > 0 && this.filter.length === 0;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'site-data': SiteDataElement;
   }
 }
 

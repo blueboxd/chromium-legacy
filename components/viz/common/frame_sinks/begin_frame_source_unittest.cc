@@ -28,11 +28,6 @@ base::TimeTicks TicksFromMicroseconds(int64_t micros) {
   return base::TimeTicks() + base::Microseconds(micros);
 }
 
-class MockBeginFrameSourceObserver : public BeginFrameSourceObserver {
- public:
-  MOCK_METHOD1(BeginFrameRequestedChanged, void(bool));
-};
-
 // BeginFrameSource testing ----------------------------------------------------
 TEST(BeginFrameSourceTest, SourceIdsAreUnique) {
   StubBeginFrameSource source1;
@@ -360,31 +355,6 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversAtOnce) {
   source_->RemoveObserver(&obs2);
 }
 
-TEST_F(BackToBackBeginFrameSourceTest, BeginFrameRequestedChanged) {
-  std::unique_ptr<MockBeginFrameSourceObserver> source_obs_ =
-      std::make_unique<::testing::NiceMock<MockBeginFrameSourceObserver>>();
-  source_->AddStateObserver(source_obs_.get());
-
-  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
-  EXPECT_CALL((*source_obs_), BeginFrameRequestedChanged(true)).Times(1);
-  source_->AddObserver(obs_.get());
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 1, 1000,
-                          1000 + kDeadline, kInterval);
-  task_runner_->RunUntilIdle();
-
-  EXPECT_CALL((*source_obs_), BeginFrameRequestedChanged(false)).Times(1);
-  source_->RemoveObserver(obs_.get());
-  source_->DidFinishFrame(obs_.get());
-
-  // Verify no BeginFrame is sent to |obs_|. There is a pending task in the
-  // task_runner_ as a BeginFrame was posted, but it gets aborted since |obs_|
-  // is removed.
-  task_runner_->RunUntilIdle();
-  EXPECT_FALSE(task_runner_->HasPendingTask());
-
-  source_->RemoveStateObserver(source_obs_.get());
-}
-
 // DelayBasedBeginFrameSource testing
 // ------------------------------------------
 class DelayBasedBeginFrameSourceTest : public ::testing::Test {
@@ -567,6 +537,28 @@ TEST_F(DelayBasedBeginFrameSourceTest, VSyncChangeTimebaseBetweenTicks) {
   task_runner_->FastForwardTo(TicksFromMicroseconds(70000));
 }
 
+TEST_F(DelayBasedBeginFrameSourceTest, VSyncSkipped) {
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
+  EXPECT_BEGIN_FRAME_USED_MISSED(*obs_, source_->source_id(), 1, 0, 10000,
+                                 10000);
+  source_->AddObserver(obs_.get());
+
+  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 2, 10000, 20000, 10000);
+  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 3, 20000, 30000, 10000);
+  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 4, 30000, 40000, 10000);
+  task_runner_->FastForwardTo(TicksFromMicroseconds(30000));
+
+  // Advancing tick time without creating begin frames.
+  task_runner_->AdvanceMockTickClock(base::Microseconds(40000));
+  source_->OnUpdateVSyncParameters(TicksFromMicroseconds(40000),
+                                   base::Microseconds(11000));
+  // By advancing tick time to 40000, we would be skipping sequence_number 5 at
+  // 40000 and sequence_number 6 at 51000.
+  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 7, 62000, 73000, 11000);
+  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 8, 73000, 84000, 11000);
+  task_runner_->FastForwardTo(TicksFromMicroseconds(75000));
+}
+
 TEST_F(DelayBasedBeginFrameSourceTest, MultipleObservers) {
   NiceMock<MockBeginFrameObserver> obs1, obs2;
 
@@ -699,25 +691,6 @@ TEST_F(DelayBasedBeginFrameSourceTest, ConsecutiveArgsDelayedByMultipleVsyncs) {
                                  10000);
   task_runner_->AdvanceMockTickClock(base::Microseconds(80000));
   source_->AddObserver(&obs);
-}
-
-TEST_F(DelayBasedBeginFrameSourceTest, BeginFrameRequestedChanged) {
-  std::unique_ptr<MockBeginFrameSourceObserver> source_obs_ =
-      std::make_unique<::testing::NiceMock<MockBeginFrameSourceObserver>>();
-  source_->AddStateObserver(source_obs_.get());
-
-  EXPECT_CALL((*source_obs_), BeginFrameRequestedChanged(true)).Times(1);
-  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
-  EXPECT_BEGIN_FRAME_USED_MISSED(*obs_, source_->source_id(), 1, 0, 10000,
-                                 10000);
-  source_->AddObserver(obs_.get());
-
-  EXPECT_CALL((*source_obs_), BeginFrameRequestedChanged(false)).Times(1);
-  source_->RemoveObserver(obs_.get());
-  // No new frames....
-  task_runner_->FastForwardTo(TicksFromMicroseconds(60000));
-
-  source_->RemoveStateObserver(source_obs_.get());
 }
 
 // ExternalBeginFrameSource testing
@@ -870,23 +843,6 @@ TEST_F(ExternalBeginFrameSourceTest, RootsNotifiedLast) {
 
   source_->RemoveObserver(&obs1);
   source_->RemoveObserver(&obs2);
-}
-
-TEST_F(ExternalBeginFrameSourceTest, BeginFrameRequestedChanged) {
-  std::unique_ptr<MockBeginFrameSourceObserver> source_obs_ =
-      std::make_unique<::testing::NiceMock<MockBeginFrameSourceObserver>>();
-  source_->AddStateObserver(source_obs_.get());
-
-  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
-  EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
-  EXPECT_CALL((*source_obs_), BeginFrameRequestedChanged(true)).Times(1);
-  source_->AddObserver(obs_.get());
-
-  EXPECT_CALL((*client_), OnNeedsBeginFrames(false)).Times(1);
-  EXPECT_CALL((*source_obs_), BeginFrameRequestedChanged(false)).Times(1);
-  source_->RemoveObserver(obs_.get());
-
-  source_->RemoveStateObserver(source_obs_.get());
 }
 
 }  // namespace

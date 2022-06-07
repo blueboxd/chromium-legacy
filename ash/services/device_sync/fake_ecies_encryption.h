@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -39,6 +39,6 @@ std::string DecryptFakeEncryptedString(
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_FAKE_ECIES_ENCRYPTION_H_

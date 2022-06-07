@@ -58,12 +58,39 @@ void TestPrintingContext::AskUserForSettings(int max_pages,
                                              bool has_selection,
                                              bool is_scripted,
                                              PrintSettingsCallback callback) {
-  NOTIMPLEMENTED();
+  // Do not actually ask the user with a dialog, just pretend like user
+  // made some kind of interaction.
+  if (ask_user_for_settings_cancel_) {
+    // Pretend the user hit the Cancel button.
+    std::move(callback).Run(mojom::ResultCode::kCanceled);
+    return;
+  }
+
+  // Pretend the user selected the default printer and used the default
+  // settings for it.
+  scoped_refptr<PrintBackend> print_backend =
+      PrintBackend::CreateInstance(/*locale=*/std::string());
+  std::string printer_name;
+  if (print_backend->GetDefaultPrinterName(printer_name) !=
+      mojom::ResultCode::kSuccess) {
+    std::move(callback).Run(mojom::ResultCode::kFailed);
+    return;
+  }
+  auto found = device_settings_.find(printer_name);
+  if (found == device_settings_.end()) {
+    std::move(callback).Run(mojom::ResultCode::kFailed);
+    return;
+  }
+  settings_ = std::make_unique<PrintSettings>(*found->second);
+  std::move(callback).Run(mojom::ResultCode::kSuccess);
 }
 
 mojom::ResultCode TestPrintingContext::UseDefaultSettings() {
   scoped_refptr<PrintBackend> print_backend =
       PrintBackend::CreateInstance(/*locale=*/std::string());
+  if (use_default_settings_fails_)
+    return mojom::ResultCode::kFailed;
+
   std::string printer_name;
   mojom::ResultCode result = print_backend->GetDefaultPrinterName(printer_name);
   if (result != mojom::ResultCode::kSuccess)
@@ -150,6 +177,9 @@ mojom::ResultCode TestPrintingContext::PrintDocument(
     return mojom::ResultCode::kCanceled;
   DCHECK(in_print_job_);
   DVLOG(1) << "Print document";
+
+  if (render_document_blocked_by_permissions_)
+    return mojom::ResultCode::kAccessDenied;
 
   // No-op.
   return mojom::ResultCode::kSuccess;

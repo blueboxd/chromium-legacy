@@ -26,6 +26,8 @@
 #include "components/desks_storage/core/desk_template_conversion.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/in_memory_metadata_change_list.h"
 #include "components/sync/model/metadata_batch.h"
@@ -47,6 +49,8 @@ using BrowserAppWindow = sync_pb::WorkspaceDeskSpecifics_BrowserAppWindow;
 using ChromeApp = sync_pb::WorkspaceDeskSpecifics_ChromeApp;
 using Desk = sync_pb::WorkspaceDeskSpecifics_Desk;
 using ProgressiveWebApp = sync_pb::WorkspaceDeskSpecifics_ProgressiveWebApp;
+using SyncDeskType = sync_pb::WorkspaceDeskSpecifics_DeskType;
+using DeskType = ash::DeskTemplateType;
 using WindowBound = sync_pb::WorkspaceDeskSpecifics_WindowBound;
 using WindowState = sync_pb::WorkspaceDeskSpecifics_WindowState;
 using WorkspaceDeskSpecifics_App = sync_pb::WorkspaceDeskSpecifics_App;
@@ -76,6 +80,7 @@ using testing::StrEq;
 constexpr char kTestPwaAppId[] = "test_pwa_app_id";
 constexpr char kTestChromeAppId[] = "test_chrome_app_id";
 constexpr char kTestArcAppId[] = "test_arc_app_id";
+constexpr char kTestArcAppTitle[] = "test_arc_app_title";
 constexpr char kUuidFormat[] = "9e186d5a-502e-49ce-9ee1-00000000000%d";
 constexpr char kAdminTemplateUuidFormat[] =
     "59dbe2b8-671f-4fd0-92ec-11111111100%d";
@@ -107,7 +112,7 @@ const std::string kPolicyWithTwoTemplates =
     "\",\"name\":\""
     "Example Template"
     "\",\"created_time_usec\":\"1633535632\",\"updated_time_usec\": "
-    "\"1633535632\",\"desk\":{\"apps\":[{\"window_"
+    "\"1633535632\",\"desk_type\":\"TEMPLATE\",\"desk\":{\"apps\":[{\"window_"
     "bound\":{\"left\":0,\"top\":1,\"height\":121,\"width\":120},\"window_"
     "state\":\"NORMAL\",\"z_index\":1,\"app_type\":\"BROWSER\",\"tabs\":[{"
     "\"url\":\"https://example.com\",\"title\":\"Example\"},{\"url\":\"https://"
@@ -119,7 +124,7 @@ const std::string kPolicyWithTwoTemplates =
     "\",\"name\":\""
     "Example Template 2"
     "\",\"created_time_usec\":\"1633535632\",\"updated_time_usec\": "
-    "\"1633535632\",\"desk\":{\"apps\":[{\"window_"
+    "\"1633535632\",\"desk_type\":\"TEMPLATE\",\"desk\":{\"apps\":[{\"window_"
     "bound\":{\"left\":0,\"top\":1,\"height\":121,\"width\":120},\"window_"
     "state\":\"NORMAL\",\"z_index\":1,\"app_type\":\"BROWSER\",\"tabs\":[{"
     "\"url\":\"https://google.com\",\"title\":\"Example "
@@ -226,13 +231,17 @@ void FillExampleArcAppWindow(WorkspaceDeskSpecifics_App* app) {
   app->set_display_id(99887766l);
   app->set_z_index(233);
   app->set_window_id(2555);
+
+  app_window->set_title(kTestArcAppTitle);
 }
 
 WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
     const std::string uuid,
     const std::string template_name,
     base::Time created_time = base::Time::Now(),
-    int number_of_tabs = 2) {
+    int number_of_tabs = 2,
+    SyncDeskType desk_type =
+        SyncDeskType::WorkspaceDeskSpecifics_DeskType_SAVE_AND_RECALL) {
   WorkspaceDeskSpecifics specifics;
   specifics.set_uuid(uuid);
   specifics.set_name(template_name);
@@ -242,6 +251,7 @@ WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
       (created_time + base::Minutes(5))
           .ToDeltaSinceWindowsEpoch()
           .InMicroseconds());
+  specifics.set_desk_type(desk_type);
   Desk* desk = specifics.mutable_desk();
   FillExampleBrowserAppWindow(desk->add_apps(), number_of_tabs);
   FillExampleArcAppWindow(desk->add_apps());
@@ -256,6 +266,14 @@ WorkspaceDeskSpecifics CreateWorkspaceDeskSpecifics(
   return ExampleWorkspaceDeskSpecifics(
       base::StringPrintf(kUuidFormat, templateIndex),
       base::StringPrintf(kNameFormat, templateIndex), created_time);
+}
+
+WorkspaceDeskSpecifics CreateUnkownDeskType() {
+  return ExampleWorkspaceDeskSpecifics(
+      kTestUuid1.AsLowercaseString(), base::StringPrintf(kNameFormat, 1),
+      base::Time::Now(),
+      /*number_of_tabs=*/2,
+      SyncDeskType::WorkspaceDeskSpecifics_DeskType_UNKNOWN_TYPE);
 }
 
 std::unique_ptr<ash::DeskTemplate> CreateTemplateWithBrowserFromScratch(
@@ -290,6 +308,8 @@ WorkspaceDeskSpecifics CreateBrowserTemplateExpectedValue(
       base::StringPrintf(kNameFormat, template_index));
   expected_desk_specifics.set_created_time_windows_epoch_micros(
       created_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  expected_desk_specifics.set_desk_type(
+      SyncDeskType::WorkspaceDeskSpecifics_DeskType_TEMPLATE);
   Desk* expected_desk = expected_desk_specifics.mutable_desk();
   WorkspaceDeskSpecifics_App* app = expected_desk->add_apps();
   app->set_window_id(kBrowserWindowId);
@@ -310,13 +330,11 @@ ModelTypeState StateWithEncryption(const std::string& encryption_key_name) {
   return state;
 }
 
-apps::mojom::AppPtr MakeApp(const char* app_id,
-                            const char* name,
-                            apps::mojom::AppType app_type) {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = app_type;
-  app->app_id = app_id;
-  app->readiness = apps::mojom::Readiness::kReady;
+apps::AppPtr MakeApp(const char* app_id,
+                     const char* name,
+                     apps::AppType app_type) {
+  apps::AppPtr app = std::make_unique<apps::App>(app_type, app_id);
+  app->readiness = apps::Readiness::kReady;
   app->name = name;
   return app;
 }
@@ -388,20 +406,29 @@ class DeskSyncBridgeTest : public testing::Test {
   }
 
   void PopulateAppRegistryCache() {
-    std::vector<apps::mojom::AppPtr> deltas;
+    std::vector<apps::AppPtr> deltas;
 
     deltas.push_back(
-        MakeApp(kTestPwaAppId, "Test PWA App", apps::mojom::AppType::kWeb));
+        MakeApp(kTestPwaAppId, "Test PWA App", apps::AppType::kWeb));
     // chromeAppId returns kExtension in the real Apps cache.
     deltas.push_back(MakeApp(app_constants::kChromeAppId, "Chrome Browser",
-                             apps::mojom::AppType::kChromeApp));
+                             apps::AppType::kChromeApp));
     deltas.push_back(MakeApp(kTestChromeAppId, "Test Chrome App",
-                             apps::mojom::AppType::kChromeApp));
-    deltas.push_back(
-        MakeApp(kTestArcAppId, "Arc app", apps::mojom::AppType::kArc));
+                             apps::AppType::kChromeApp));
+    deltas.push_back(MakeApp(kTestArcAppId, "Arc app", apps::AppType::kArc));
 
-    cache_->OnApps(std::move(deltas), apps::mojom::AppType::kUnknown,
-                   false /* should_notify_initialized */);
+    if (base::FeatureList::IsEnabled(
+            apps::kAppServiceOnAppUpdateWithoutMojom)) {
+      cache_->OnApps(std::move(deltas), apps::AppType::kUnknown,
+                     /*should_notify_initialized=*/false);
+    } else {
+      std::vector<apps::mojom::AppPtr> mojom_deltas;
+      for (const auto& delta : deltas) {
+        mojom_deltas.push_back(apps::ConvertAppToMojomApp(delta));
+      }
+      cache_->OnApps(std::move(mojom_deltas), apps::mojom::AppType::kUnknown,
+                     /*should_notify_initialized=*/false);
+    }
 
     cache_->SetAccountId(account_id_);
 
@@ -589,6 +616,31 @@ TEST_F(DeskSyncBridgeTest, DeskTemplateConversionShouldBeLossless) {
   EXPECT_THAT(converted_desk_proto, EqualsSpecifics(desk_proto));
 }
 
+TEST_F(DeskSyncBridgeTest, DeskTemplateJsonConversionShouldBeLossless) {
+  CreateBridge();
+
+  WorkspaceDeskSpecifics desk_proto = ExampleWorkspaceDeskSpecifics(
+      kTestUuid1.AsLowercaseString(), "template 1");
+
+  std::unique_ptr<DeskTemplate> desk_template =
+      DeskSyncBridge::FromSyncProto(desk_proto);
+
+  base::Value template_value =
+      desk_template_conversion::SerializeDeskTemplateAsPolicy(
+          desk_template.get(), app_cache());
+
+  std::unique_ptr<ash::DeskTemplate> converted_desk_template =
+      desk_template_conversion::ParseDeskTemplateFromPolicy(template_value);
+
+  EXPECT_EQ(desk_template->desk_restore_data()->ConvertToValue(),
+            converted_desk_template->desk_restore_data()->ConvertToValue());
+
+  WorkspaceDeskSpecifics converted_desk_proto =
+      bridge()->ToSyncProto(converted_desk_template.get());
+
+  EXPECT_THAT(converted_desk_proto, EqualsSpecifics(desk_proto));
+}
+
 TEST_F(DeskSyncBridgeTest, AppNameConversionShouldBeLossless) {
   CreateBridge();
 
@@ -705,6 +757,16 @@ TEST_F(DeskSyncBridgeTest, EnsureBrowserWindowsSavedProperly) {
       CreateBrowserTemplateExpectedValue(kDefaultTemplateIndex, created_time);
 
   EXPECT_THAT(converted_desk_proto, EqualsSpecifics(expected_desk_proto));
+}
+
+// Tests that the sync bridge appropriately handles all unknown desks as
+// templates by default.
+TEST_F(DeskSyncBridgeTest, EnsureGracefulHandlingOfUnkownDeskTypes) {
+  WorkspaceDeskSpecifics unknown_desk = CreateUnkownDeskType();
+  std::unique_ptr<DeskTemplate> desk_template =
+      DeskSyncBridge::FromSyncProto(unknown_desk);
+
+  EXPECT_EQ(desk_template->type(), DeskType::kTemplate);
 }
 
 TEST_F(DeskSyncBridgeTest, IsBridgeReady) {

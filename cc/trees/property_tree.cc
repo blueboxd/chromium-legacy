@@ -152,6 +152,10 @@ bool TransformTree::OnTransformAnimated(ElementId element_id,
                                         const gfx::Transform& transform) {
   TransformNode* node = FindNodeFromElementId(element_id);
   DCHECK(node);
+  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // non-existent nodes.
+  if (!node)
+    return false;
   if (node->local == transform)
     return false;
   node->local = transform;
@@ -261,8 +265,6 @@ void TransformTree::CombineTransformsBetween(int source_id,
     // loop below.
     DCHECK(IsDescendant(dest_id, current->id));
     CombineInversesBetween(current->id, dest_id, &combined_transform);
-    DCHECK(combined_transform.IsApproximatelyIdentityOrTranslation(
-        SkDoubleToScalar(1e-4)));
   }
 
   size_t source_to_destination_size = source_to_destination.size();
@@ -453,7 +455,7 @@ gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
 }
 
 bool TransformTree::ShouldUndoOverscroll(const TransformNode* node) const {
-  return fixed_elements_dont_overscroll_ && node && node->is_fixed_position;
+  return fixed_elements_dont_overscroll_ && node && node->is_fixed_to_viewport;
 }
 
 void TransformTree::UpdateFixedNodeTransformAndClip(
@@ -472,8 +474,8 @@ void TransformTree::UpdateFixedNodeTransformAndClip(
   fixed_position_adjustment +=
       gfx::ScaleVector2d(overscroll_offset, 1.f / page_scale_factor());
 
-  ClipNode* clip_node = property_trees()->clip_tree_mutable().Node(
-      property_trees()->clip_tree_mutable().overscroll_node_id());
+  ClipTree& clip_tree = property_trees()->clip_tree_mutable();
+  ClipNode* clip_node = clip_tree.Node(clip_tree.overscroll_node_id());
 
   if (clip_node) {
     // Inflate the clip rect based on the overscroll direction.
@@ -486,7 +488,7 @@ void TransformTree::UpdateFixedNodeTransformAndClip(
         : outsets.set_bottom(fixed_position_adjustment.y());
 
     clip_node->clip.Outset(outsets);
-    property_trees()->clip_tree_mutable().set_needs_update(true);
+    clip_tree.set_needs_update(true);
   }
 }
 
@@ -849,7 +851,8 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
 void EffectTree::UpdateOnlyDrawsVisibleContent(EffectNode* node,
                                                EffectNode* parent_node) {
   node->only_draws_visible_content =
-      !node->has_copy_request && !node->subtree_capture_id.is_valid();
+      !node->has_copy_request && !node->subtree_capture_id.is_valid() &&
+      !node->shared_element_resource_id.IsValid();
   if (parent_node)
     node->only_draws_visible_content &= parent_node->only_draws_visible_content;
   if (!node->backdrop_filters.IsEmpty()) {
@@ -887,6 +890,10 @@ void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
 bool EffectTree::OnOpacityAnimated(ElementId id, float opacity) {
   EffectNode* node = FindNodeFromElementId(id);
   DCHECK(node);
+  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // non-existent nodes.
+  if (!node)
+    return false;
   if (node->opacity == opacity)
     return false;
   node->opacity = opacity;
@@ -900,6 +907,10 @@ bool EffectTree::OnFilterAnimated(ElementId id,
                                   const FilterOperations& filters) {
   EffectNode* node = FindNodeFromElementId(id);
   DCHECK(node);
+  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // non-existent nodes.
+  if (!node)
+    return false;
   if (node->filters == filters)
     return false;
   node->filters = filters;
@@ -914,6 +925,10 @@ bool EffectTree::OnBackdropFilterAnimated(
     const FilterOperations& backdrop_filters) {
   EffectNode* node = FindNodeFromElementId(id);
   DCHECK(node);
+  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // non-existent nodes.
+  if (!node)
+    return false;
   if (node->backdrop_filters == backdrop_filters)
     return false;
   node->backdrop_filters = backdrop_filters;
@@ -935,7 +950,18 @@ void EffectTree::UpdateEffects(int id) {
   UpdateBackfaceVisibility(node, parent_node);
   UpdateHasMaskingChild(node, parent_node);
   UpdateOnlyDrawsVisibleContent(node, parent_node);
+  UpdateClosestAncestorSharedElement(node, parent_node);
   UpdateSurfaceContentsScale(node);
+}
+
+void EffectTree::UpdateClosestAncestorSharedElement(EffectNode* node,
+                                                    EffectNode* parent_node) {
+  if (node->shared_element_resource_id.IsValid()) {
+    node->closest_ancestor_with_shared_element_id = node->id;
+  } else if (parent_node) {
+    node->closest_ancestor_with_shared_element_id =
+        parent_node->closest_ancestor_with_shared_element_id;
+  }
 }
 
 void EffectTree::AddCopyRequest(

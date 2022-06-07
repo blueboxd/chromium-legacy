@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
@@ -72,7 +73,6 @@ class SigninScreenHandler
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   SigninScreenHandler(
-      JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen,
       GaiaScreenHandler* gaia_screen_handler);
@@ -118,7 +118,7 @@ class SigninScreenHandler
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;

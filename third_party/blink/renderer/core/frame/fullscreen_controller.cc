@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/frame/screen.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen_request_type.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
@@ -73,6 +74,8 @@ mojom::blink::FullscreenOptionsPtr ToMojoOptions(
       request_type & FullscreenRequestType::kPrefixed;
   fullscreen_options->is_xr_overlay =
       request_type & FullscreenRequestType::kForXrOverlay;
+  fullscreen_options->prefers_status_bar =
+      request_type & FullscreenRequestType::kForXrArWithCamera;
 
   return fullscreen_options;
 }
@@ -153,12 +156,6 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
       options->screen()->DisplayId() != screen_info.display_id;
   bool requesting_fullscreen_screen_change =
       state_ == State::kFullscreen && requesting_other_screen;
-#if BUILDFLAG(IS_MAC)
-  // Moving a fullscreen window from one screen to another is gated by the
-  // Window Placement V2 feature state on Mac. See crbug.com/1303048
-  requesting_fullscreen_screen_change &=
-      RuntimeEnabledFeatures::WindowPlacementV2Enabled(frame.DomWindow());
-#endif  // BUILDFLAG(IS_MAC)
 
   // TODO(dtapuska): If we are already in fullscreen. If the options are
   // different than the currently requested one we may wish to request
@@ -192,11 +189,18 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
   DCHECK(state_ == State::kInitial || requesting_fullscreen_screen_change);
   auto fullscreen_options = ToMojoOptions(&frame, options, request_type);
 
+  // We want to disallow entering fullscreen with status and navigation bars
+  // both visible, as this would translate into "no fullscreen at all".
+  DCHECK(!(fullscreen_options->prefers_status_bar &&
+           fullscreen_options->prefers_navigation_bar));
+
 #if DCHECK_IS_ON()
   DVLOG(2) << __func__ << ": request_type="
            << FullscreenRequestTypeToDebugString(request_type)
            << " fullscreen_options={display_id="
-           << fullscreen_options->display_id
+           << fullscreen_options->display_id << ", prefers_navigation_bar="
+           << fullscreen_options->prefers_navigation_bar
+           << ", prefers_status_bar=" << fullscreen_options->prefers_status_bar
            << ", is_prefixed=" << fullscreen_options->is_prefixed
            << ", is_xr_overlay=" << fullscreen_options->is_xr_overlay << "}";
 #endif

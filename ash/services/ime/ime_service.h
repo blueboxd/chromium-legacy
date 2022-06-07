@@ -12,9 +12,10 @@
 
 #include "ash/services/ime/connection_factory.h"
 #include "ash/services/ime/decoder/decoder_engine.h"
-#include "ash/services/ime/input_engine.h"
+#include "ash/services/ime/decoder/system_engine.h"
 #include "ash/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "ash/services/ime/public/mojom/ime_service.mojom.h"
+#include "ash/services/ime/rule_based_engine.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial_params.h"
@@ -110,22 +111,31 @@ class ImeService : public mojom::ImeService,
                                 const base::FilePath& file);
   const MojoSystemThunks* GetMojoSystemThunks() override;
 
+  // To be called before attempting to initialise a new backend connection, to
+  // ensure there is one and only one such connection at any point in time.
+  void ResetAllBackendConnections();
+
   mojo::Receiver<mojom::ImeService> receiver_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
-  // For the duration of this service lifetime, there should be only one
-  // decoder engine or input engine instance.
+  // For the duration of this ImeService's lifetime, there should be one and
+  // only one of these backend connections (represented as "engine" or "factory"
+  // instances) at any point in time.
+  // TODO(b/214153032): Rename to better reflect what these represent:
+  //     decoder_engine_     --> proto_mode_shared_lib_engine_
+  //     system_engine_      --> mojo_mode_shared_lib_engine_
+  //     connection_factory_ --> rule_based_engine_mojo_connection_factory_
   std::unique_ptr<DecoderEngine> decoder_engine_;
-  std::unique_ptr<InputEngine> input_engine_;
-
-  // Used to support connections to the RuleBasedEngine implemented in the
-  // ime service itself.
+  std::unique_ptr<SystemEngine> system_engine_;
+  std::unique_ptr<RuleBasedEngine> rule_based_engine_;
   std::unique_ptr<ConnectionFactory> connection_factory_;
 
   // Platform delegate for access to privilege resources.
   mojo::Remote<mojom::PlatformAccessProvider> platform_access_;
   mojo::ReceiverSet<mojom::InputEngineManager> manager_receivers_;
 
+  // TODO(b/214153032): Rename to better reflect what this represents:
+  //     ime_decoder_ --> ime_shared_lib_
   ImeDecoder* ime_decoder_ = nullptr;
 
   std::unique_ptr<FieldTrialParamsRetriever> field_trial_params_retriever_;

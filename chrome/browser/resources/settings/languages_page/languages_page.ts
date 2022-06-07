@@ -34,7 +34,7 @@ import '../settings_vars_css.js';
 import './edit_dictionary_page.js';
 
 // </if>
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -103,7 +103,7 @@ export class SettingsLanguagesPageElement extends
         type: Boolean,
         value() {
           let enabled = false;
-          // <if expr="not lacros">
+          // <if expr="not chromeos_lacros">
           enabled = loadTimeData.getBoolean(
               'enableDesktopRestructuredLanguageSettings');
           // </if>
@@ -135,7 +135,7 @@ export class SettingsLanguagesPageElement extends
             map.set(routes.EDIT_DICTIONARY.path, '#spellCheckSubpageTrigger');
           }
           // </if>
-          // <if expr="not lacros">
+          // <if expr="not chromeos_lacros">
           if (loadTimeData.getBoolean(
                   'enableDesktopRestructuredLanguageSettings')) {
             if (routes.LANGUAGE_SETTINGS) {
@@ -359,7 +359,7 @@ export class SettingsLanguagesPageElement extends
     }
   }
 
-  // <if expr="not lacros">
+  // <if expr="not chromeos_lacros">
   /**
    * Opens the Language Settings page.
    */

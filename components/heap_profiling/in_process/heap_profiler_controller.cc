@@ -17,7 +17,6 @@
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -52,8 +51,16 @@ constexpr int kDefaultCollectionIntervalInMinutes = 24 * 60;
 // Sets the chance that this client will report heap samples through a metrics
 // provider if it's on the stable channel.
 constexpr base::FeatureParam<double> kStableProbability{
-    &HeapProfilerController::kHeapProfilerReporting, "stable-probability",
-    0.01};
+  &HeapProfilerController::kHeapProfilerReporting, "stable-probability",
+#if BUILDFLAG(IS_ANDROID)
+      // With stable-probability 0.01 we get about 4x as many records as before
+      // https://crrev.com/c/3309878 landed in 98.0.4742.0, even with ARM64
+      // disabled. This is too high a volume to process.
+      0.0025
+#else
+      0.01
+#endif
+};
 
 // Sets the chance that this client will report heap samples through a metrics
 // provider if it's on a non-stable channel.

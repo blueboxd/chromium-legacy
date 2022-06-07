@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/tpm/buildflags.h"
+#include "ash/components/tpm/tpm_token_loader.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -23,14 +25,12 @@
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/login/startup_utils.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
-#include "chromeos/tpm/buildflags.h"
-#include "chromeos/tpm/tpm_token_loader.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util_internal.h"

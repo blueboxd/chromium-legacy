@@ -83,9 +83,8 @@ ToolbarActionsBarBubbleViews::CreateExtraInfoView() {
   std::unique_ptr<views::ImageView> icon;
   if (extra_view_info->resource) {
     icon = std::make_unique<views::ImageView>();
-    icon->SetImage(gfx::CreateVectorIcon(*extra_view_info->resource,
-                                         kBubbleExtraIconSize,
-                                         gfx::kChromeIconGrey));
+    icon->SetImage(ui::ImageModel::FromVectorIcon(
+        *extra_view_info->resource, ui::kColorIcon, kBubbleExtraIconSize));
   }
 
   std::unique_ptr<views::View> extra_view;
@@ -182,10 +181,10 @@ void ToolbarActionsBarBubbleViews::Init() {
 
   if (!item_list.empty()) {
     item_list_ = new views::Label(item_list);
-    item_list_->SetBorder(views::CreateEmptyBorder(
+    item_list_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
         0,
         provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL),
-        0, 0));
+        0, 0)));
     item_list_->SetMultiLine(true);
     item_list_->SizeToFit(width);
     item_list_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -192,7 +192,7 @@ void CheckClientDownloadRequestBase::OnUrlAllowlistCheckDone(
   if (is_allowlisted) {
     DVLOG(2) << source_url_ << " is on the download allowlist.";
     if (ShouldSampleAllowlistedDownload()) {
-      skipped_url_whitelist_ = true;
+      skipped_url_allowlist_ = true;
     } else {
       // TODO(grt): Continue processing without uploading so that
       // ClientDownloadRequest callbacks can be run even for this type of safe
@@ -324,9 +324,9 @@ void CheckClientDownloadRequestBase::SendRequest() {
     return;
   }
 
-  client_download_request_->set_skipped_url_whitelist(skipped_url_whitelist_);
-  client_download_request_->set_skipped_certificate_whitelist(
-      skipped_certificate_whitelist_);
+  client_download_request_->set_skipped_url_allowlist(skipped_url_allowlist_);
+  client_download_request_->set_skipped_certificate_allowlist(
+      skipped_certificate_allowlist_);
 
   if (!client_download_request_->SerializeToString(
           &client_download_request_data_)) {
@@ -527,6 +527,33 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
 
   // We don't need the loader anymore.
   loader_.reset();
+
+  DownloadFileType::InspectionType inspection_type =
+      FileTypePolicies::GetInstance()
+          ->PolicyForFile(target_file_path_, GURL{}, nullptr)
+          .inspection_type();
+  switch (inspection_type) {
+    case DownloadFileType::NONE:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.None",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+    case DownloadFileType::ZIP:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.Zip",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+    case DownloadFileType::RAR:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.Rar",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+    case DownloadFileType::DMG:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.Dmg",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+    case DownloadFileType::OFFICE_DOCUMENT:
+      UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration.Document",
+                          base::TimeTicks::Now() - start_time_);
+      break;
+  }
   UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration",
                       base::TimeTicks::Now() - start_time_);
   UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestNetworkDuration",

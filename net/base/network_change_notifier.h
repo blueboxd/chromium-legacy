@@ -107,13 +107,16 @@ class NET_EXPORT NetworkChangeNotifier {
     SUBTYPE_LAST = SUBTYPE_WIFI_AD
   };
 
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+  //
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum ConnectionCost {
     CONNECTION_COST_UNKNOWN = 0,
     CONNECTION_COST_UNMETERED,
     CONNECTION_COST_METERED,
-    CONNECTION_COST_LAST = CONNECTION_COST_METERED
+    CONNECTION_COST_LAST
   };
 
   // DEPRECATED. Please use NetworkChangeObserver instead. crbug.com/754695.

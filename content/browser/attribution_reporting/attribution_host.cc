@@ -11,19 +11,19 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
-#include "content/browser/attribution_reporting/attribution_host_utils.h"
+#include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_provider.h"
 #include "content/browser/attribution_reporting/attribution_metrics.h"
 #include "content/browser/attribution_reporting/attribution_page_metrics.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
-#include "content/browser/attribution_reporting/attribution_trigger.h"
+#include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/common/url_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
@@ -33,6 +33,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/common/navigation/impression.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -85,11 +86,6 @@ void AttributionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
       !attribution_manager_provider_->GetManager(web_contents())) {
     return;
   }
-
-  // There's no initiator frame for App-initiated origins, and so no work is
-  // required at navigation start time.
-  if (IsAndroidAppOrigin(navigation_handle->GetInitiatorOrigin()))
-    return;
 
   RenderFrameHostImpl* initiator_frame_host =
       navigation_handle->GetInitiatorFrameToken().has_value()
@@ -149,7 +145,6 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
       attribution_manager_provider_->GetManager(web_contents());
   if (!attribution_manager) {
     DCHECK(navigation_impression_origins_.empty());
-    DCHECK(!pending_attribution_);
     if (navigation_handle->GetImpression())
       RecordRegisterImpressionAllowed(false);
     return;
@@ -158,10 +153,6 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   ScopedMapDeleter<NavigationImpressionOriginMap>
       navigation_impression_origin_it(&navigation_impression_origins_,
                                       navigation_handle->GetNavigationId());
-
-  absl::optional<PendingAttribution> pending_attribution =
-      std::move(pending_attribution_);
-  pending_attribution_ = absl::nullopt;
 
   // Separate from above because we need to clear the navigation related state
   if (!navigation_handle->HasCommitted()) {
@@ -173,37 +164,22 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   // error pages.
   if (navigation_handle->IsErrorPage()) {
     MaybeNotifyFailedSourceNavigation(navigation_handle);
-    last_navigation_allows_attribution_ = false;
     return;
   }
 
-  // We have a new cross-document navigation.
-  last_navigation_allows_attribution_ = true;
-
   conversion_page_metrics_ = std::make_unique<AttributionPageMetrics>();
-  bool is_android_app_origin =
-      IsAndroidAppOrigin(navigation_handle->GetInitiatorOrigin()) ||
-      (pending_attribution &&
-       IsAndroidAppOrigin(pending_attribution->initiator_origin));
 
   // If we were not able to access the impression origin, ignore the
   // navigation.
-  if (!navigation_impression_origin_it && !pending_attribution &&
-      !is_android_app_origin) {
+  if (!navigation_impression_origin_it) {
     MaybeNotifyFailedSourceNavigation(navigation_handle);
     return;
   }
   const url::Origin& impression_origin =
-      pending_attribution
-          ? pending_attribution->initiator_origin
-          : (is_android_app_origin
-                 ? *navigation_handle->GetInitiatorOrigin()
-                 : (*navigation_impression_origin_it.get())->second);
+      (*navigation_impression_origin_it.get())->second;
 
-  DCHECK(navigation_handle->GetImpression() || pending_attribution);
-  const blink::Impression& impression =
-      pending_attribution ? pending_attribution->impression
-                          : *(navigation_handle->GetImpression());
+  DCHECK(navigation_handle->GetImpression());
+  const blink::Impression& impression = *(navigation_handle->GetImpression());
 
   if (impression.attribution_src_token) {
     auto* data_host_manager = attribution_manager->GetDataHostManager();
@@ -227,9 +203,35 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   }
 
-  attribution_host_utils::VerifyAndStoreImpression(
-      AttributionSourceType::kNavigation, impression_origin, impression,
-      *attribution_manager, base::Time::Now());
+  // Convert |impression| into a StorableImpression that can be forwarded to
+  // storage. If a reporting origin was not provided, default to the impression
+  // origin for reporting.
+  const url::Origin& reporting_origin = !impression.reporting_origin
+                                            ? impression_origin
+                                            : *impression.reporting_origin;
+
+  // Conversion measurement is only allowed in secure contexts.
+  if (!network::IsOriginPotentiallyTrustworthy(impression_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(reporting_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(
+          impression.conversion_destination)) {
+    return;
+  }
+
+  const AttributionSourceType source_type = AttributionSourceType::kNavigation;
+  const base::Time impression_time = base::Time::Now();
+
+  StorableSource storable_impression(
+      // Impression data doesn't need to be sanitized.
+      CommonSourceInfo(
+          impression.impression_data, impression_origin,
+          impression.conversion_destination, reporting_origin, impression_time,
+          CommonSourceInfo::GetExpiryTime(impression.expiry, impression_time,
+                                          source_type),
+          source_type, impression.priority, AttributionFilterData(),
+          /*debug_key=*/absl::nullopt, AttributionAggregatableSource()));
+
+  attribution_manager->HandleSource(std::move(storable_impression));
 }
 
 void AttributionHost::MaybeNotifyFailedSourceNavigation(
@@ -251,63 +253,6 @@ void AttributionHost::MaybeNotifyFailedSourceNavigation(
 
   data_host_manager->NotifyNavigationFailure(
       *impression->attribution_src_token);
-}
-
-void AttributionHost::RegisterConversion(
-    blink::mojom::ConversionPtr conversion) {
-  content::RenderFrameHost* render_frame_host =
-      receivers_.GetCurrentTargetFrame();
-
-  // AttributionHost calls are delayed in blink if pre-rendering.
-  DCHECK_NE(content::RenderFrameHost::LifecycleState::kPrerendering,
-            render_frame_host->GetLifecycleState());
-
-  // If there is no conversion manager available, ignore any conversion
-  // registrations.
-  AttributionManager* attribution_manager =
-      attribution_manager_provider_->GetManager(web_contents());
-  if (!attribution_manager) {
-    RecordRegisterConversionAllowed(false);
-    return;
-  }
-
-  const url::Origin& conversion_origin =
-      render_frame_host->GetLastCommittedOrigin();
-  const url::Origin& main_frame_origin =
-      render_frame_host->GetMainFrame()->GetLastCommittedOrigin();
-
-  // Only allow conversion registration on secure pages with a secure conversion
-  // redirects.
-  if (!network::IsOriginPotentiallyTrustworthy(conversion_origin)) {
-    mojo::ReportBadMessage(
-        "blink.mojom.ConversionHost can only be used in secure contexts.");
-        return;
-  }
-  if (!network::IsOriginPotentiallyTrustworthy(conversion->reporting_origin)) {
-    mojo::ReportBadMessage("blink.mojom.ConversionHost can only be used with "
-        "a secure conversion registration origin.");
-        return;
-  }
-  if (!network::IsOriginPotentiallyTrustworthy(main_frame_origin)) {
-    mojo::ReportBadMessage(
-        "blink.mojom.ConversionHost can only be used with a secure top-level "
-        "frame.");
-    return;
-  }
-
-  AttributionTrigger storable_conversion(
-      conversion->conversion_data, /*destination_origin=*/main_frame_origin,
-      conversion->reporting_origin, conversion->event_source_trigger_data,
-      conversion->priority,
-      conversion->dedup_key.is_null()
-          ? absl::nullopt
-          : absl::make_optional(conversion->dedup_key->value),
-      /*debug_key=*/absl::nullopt, AttributionAggregatableTrigger());
-
-  if (conversion_page_metrics_)
-    conversion_page_metrics_->OnConversion(conversion->reporting_origin);
-
-  attribution_manager->HandleTrigger(std::move(storable_conversion));
 }
 
 void AttributionHost::NotifyImpressionInitiatedByPage(
@@ -395,42 +340,6 @@ void AttributionHost::RegisterNavigationDataHost(
       std::move(data_host), attribution_src_token);
 }
 
-void AttributionHost::ReportAttributionForCurrentNavigation(
-    const url::Origin& impression_origin,
-    const blink::Impression& impression) {
-  AttributionManager* attribution_manager =
-      attribution_manager_provider_->GetManager(web_contents());
-  if (!attribution_manager)
-    return;
-  // If a navigation is ongoing, add the attribution to that navigation.
-  if (web_contents()->GetController().GetPendingEntry()) {
-    pending_attribution_ = {impression_origin, impression};
-    return;
-  }
-
-  // The navigation has already committed, so add the attribution to the last
-  // committed navigation.
-
-  if (!last_navigation_allows_attribution_)
-    return;
-  // Prevent multiple attributions using the same navigation.
-  last_navigation_allows_attribution_ = false;
-
-  // Ensure the committed origin matches the destination for the conversion,
-  // but allow subdomains to differ.
-  if (net::SchemefulSite(
-          web_contents()->GetMainFrame()->GetLastCommittedOrigin()) !=
-      net::SchemefulSite(impression.conversion_destination)) {
-    return;
-  }
-
-  // No navigation in progress and we've already committed the destination for
-  // the conversion, so just store the impression.
-  attribution_host_utils::VerifyAndStoreImpression(
-      AttributionSourceType::kNavigation, impression_origin, impression,
-      *attribution_manager, base::Time::Now());
-}
-
 // static
 void AttributionHost::BindReceiver(
     mojo::PendingAssociatedReceiver<blink::mojom::ConversionHost> receiver,
@@ -442,15 +351,6 @@ void AttributionHost::BindReceiver(
   if (!conversion_host)
     return;
   conversion_host->receivers_.Bind(rfh, std::move(receiver));
-}
-
-// static
-blink::mojom::ImpressionPtr AttributionHost::MojoImpressionFromImpression(
-    const blink::Impression& impression) {
-  return blink::mojom::Impression::New(
-      impression.conversion_destination, impression.reporting_origin,
-      impression.impression_data, impression.expiry, impression.priority,
-      impression.attribution_src_token);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AttributionHost);

@@ -361,12 +361,6 @@ class PortTestCase(LoggingTestCase):
     def test_path_to_apache_config_file(self):
         # Specific behavior may vary by port, so unit test sub-classes may override this.
         port = self.make_port()
-        # Many unit tests in this class won't pass when run individually. The
-        # class variables e.g. os_name will remain uninitialized in such case.
-        # The port above appears to be LinuxPort previously(but why?). And the
-        # test was able to pass. Set is_linux to return False to mimic BSD's
-        # case, to make the test pass.
-        port.host.platform.is_linux = lambda: False
 
         port.host.environ[
             'WEBKIT_HTTP_SERVER_CONF_PATH'] = '/path/to/httpd.conf'
@@ -404,5 +398,6 @@ class PortTestCase(LoggingTestCase):
         # use a real SystemHost(). We don't care what virtual_test_suites() returns as long
         # as it is iterable.
         port = self.make_port(host=SystemHost(), port_name=self.full_port_name)
+        port.operating_system = lambda: 'linux'
         self.assertTrue(
             isinstance(port.virtual_test_suites(), collections.Iterable))

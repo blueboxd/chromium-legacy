@@ -4,8 +4,8 @@
 
 #include "ash/components/phonehub/fake_camera_roll_manager.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/phonehub/proto/phonehub_api.pb.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace ash {
 namespace phonehub {
@@ -22,6 +22,7 @@ void FakeCameraRollManager::DownloadItem(
   } else {
     PA_LOG(VERBOSE) << "Fake Camera Roll Download: Success";
   }
+  download_request_count_++;
 }
 
 void FakeCameraRollManager::SetIsCameraRollAvailableToBeEnabled(
@@ -47,6 +48,10 @@ void FakeCameraRollManager::SetSimulatedDownloadError(bool has_error) {
 void FakeCameraRollManager::SetSimulatedErrorType(
     Observer::DownloadErrorType error_type) {
   simulated_error_type_ = error_type;
+}
+
+int FakeCameraRollManager::GetDownloadRequestCount() {
+  return download_request_count_;
 }
 
 void FakeCameraRollManager::ComputeAndUpdateUiState() {

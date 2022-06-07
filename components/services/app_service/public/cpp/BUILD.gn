@@ -54,6 +54,8 @@ component("app_types") {
     "macros.h",
     "permission.cc",
     "permission.h",
+    "shortcut.cc",
+    "shortcut.h",
   ]
 
   defines = [ "IS_APP_TYPES_IMPL" ]
@@ -202,8 +204,6 @@ source_set("intents") {
   sources = [
     "intent.cc",
     "intent.h",
-    "intent_constants.cc",
-    "intent_constants.h",
     "intent_filter_util.cc",
     "intent_filter_util.h",
     "intent_util.cc",
@@ -230,6 +230,8 @@ source_set("protocol_handling") {
 
 source_set("preferred_apps") {
   sources = [
+    "preferred_apps.cc",
+    "preferred_apps.h",
     "preferred_apps_converter.cc",
     "preferred_apps_converter.h",
     "preferred_apps_list.cc",
@@ -239,9 +241,11 @@ source_set("preferred_apps") {
   ]
 
   deps = [
+    ":app_types",
     ":intents",
     "//base",
     "//components/services/app_service/public/mojom",
+    "//content/public/browser",
     "//url",
   ]
 }

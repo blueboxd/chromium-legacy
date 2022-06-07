@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.history_clusters;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -16,22 +17,39 @@ import java.util.List;
 
 @JNINamespace("history_clusters")
 /** JNI bridge that provides access to HistoryClusters data. */
-public class HistoryClustersBridge {
+class HistoryClustersBridge {
     private long mNativeBridge;
 
-    /* Construct a new HistoryClustersBridge. */
-    public HistoryClustersBridge(Profile profile) {
-        mNativeBridge = HistoryClustersBridgeJni.get().init(profile);
+    /** Access the instance of HistoryClustersBridge associated with the given profile. */
+    public static HistoryClustersBridge getForProfile(Profile profile) {
+        return HistoryClustersBridgeJni.get().getForProfile(profile);
     }
 
     /* Start a new query for clusters, fetching the first page of results. */
-    void queryClusters(String query, Callback<HistoryClustersResult> callback) {
-        HistoryClustersBridgeJni.get().queryClusters(mNativeBridge, this, query, callback);
+    Promise<HistoryClustersResult> queryClusters(String query) {
+        Promise<HistoryClustersResult> returnedPromise = new Promise<>();
+        HistoryClustersBridgeJni.get().queryClusters(
+                mNativeBridge, this, query, returnedPromise::fulfill);
+        return returnedPromise;
     }
 
     /* Continue the current query for clusters, fetching the next page of results. */
-    void loadMoreClusters(String query, Callback<HistoryClustersResult> callback) {
-        HistoryClustersBridgeJni.get().loadMoreClusters(mNativeBridge, this, query, callback);
+    Promise<HistoryClustersResult> loadMoreClusters(
+            String query, Callback<HistoryClustersResult> callback) {
+        Promise<HistoryClustersResult> returnedPromise = new Promise<>();
+        HistoryClustersBridgeJni.get().loadMoreClusters(
+                mNativeBridge, this, query, returnedPromise::fulfill);
+        return returnedPromise;
+    }
+
+    /* Constructs a new HistoryClustersBridge. */
+    private HistoryClustersBridge(long nativeBridgePointer) {
+        mNativeBridge = nativeBridgePointer;
+    }
+
+    @CalledByNative
+    private static HistoryClustersBridge create(long nativeBridgePointer) {
+        return new HistoryClustersBridge(nativeBridgePointer);
     }
 
     @CalledByNative
@@ -55,7 +73,7 @@ public class HistoryClustersBridge {
 
     @NativeMethods
     interface Natives {
-        long init(Profile profile);
+        HistoryClustersBridge getForProfile(Profile profile);
         void queryClusters(long nativeHistoryClustersBridge, HistoryClustersBridge caller,
                 String query, Callback<HistoryClustersResult> callback);
         void loadMoreClusters(long nativeHistoryClustersBridge, HistoryClustersBridge caller,

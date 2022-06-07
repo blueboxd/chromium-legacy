@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_xrandr_interval_only_vsync_provider.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11_window_event_manager.h"
@@ -39,9 +40,6 @@ std::unique_ptr<VulkanSurfaceX11> VulkanSurfaceX11::Create(
     LOG(ERROR) << "Failed to create or map window.";
     return nullptr;
   }
-  // Flush the connection, otherwise other Vulkan WSI calls may fail with some
-  // drivers.
-  connection->Flush();
 
   VkSurfaceKHR vk_surface;
   const VkXcbSurfaceCreateInfoKHR surface_create_info = {
@@ -72,11 +70,13 @@ VulkanSurfaceX11::VulkanSurfaceX11(VkInstance vk_instance,
                                    VkSurfaceKHR vk_surface,
                                    x11::Window parent_window,
                                    x11::Window window)
-    : gpu::VulkanSurface(vk_instance,
-                         static_cast<gfx::AcceleratedWidget>(window),
-                         vk_surface,
-                         base::Time::kNanosecondsPerSecond *
-                             2 /* acquire_next_image_timeout_ns */),
+    : gpu::VulkanSurface(
+          vk_instance,
+          static_cast<gfx::AcceleratedWidget>(window),
+          vk_surface,
+          /*acquire_next_image_timeout_ns=*/base::Time::kNanosecondsPerSecond *
+              2,
+          std::make_unique<ui::XrandrIntervalOnlyVSyncProvider>()),
       parent_window_(parent_window),
       window_(window),
       event_selector_(std::make_unique<x11::XScopedEventSelector>(

@@ -203,10 +203,6 @@ bool RenderWidgetHostViewBase::IsInVR() const {
   return false;
 }
 
-bool RenderWidgetHostViewBase::IsInActiveWindow() const {
-  return true;
-}
-
 viz::FrameSinkId RenderWidgetHostViewBase::GetRootFrameSinkId() {
   return viz::FrameSinkId();
 }
@@ -564,6 +560,16 @@ void RenderWidgetHostViewBase::UpdateScreenInfo() {
     OnSynchronizedDisplayPropertiesChanged(has_rotation_changed);
     host()->NotifyScreenInfoChanged();
   }
+}
+
+void RenderWidgetHostViewBase::UpdateActiveState(bool active) {
+  // Send active state through the delegate if there is one to make sure
+  // it stays consistent across all widgets in the tab. Not every
+  // RenderWidgetHost has a delegate (for example, drop-down widgets).
+  if (host()->delegate())
+    host()->delegate()->SendActiveState(active);
+  else
+    host()->SetActive(active);
 }
 
 void RenderWidgetHostViewBase::DidUnregisterFromTextInputManager(

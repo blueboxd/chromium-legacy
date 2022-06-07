@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -28,6 +29,15 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+namespace {
+
+void RecordDialogEvent(
+    SigninInterceptFirstRunExperienceDialog::DialogEvent event) {
+  base::UmaHistogramEnumeration("Signin.Intercept.FRE.Event", event);
+}
+
+}  // namespace
+
 // Delegate class for TurnSyncOnHelper. Determines what will be the next
 // step for the first run based on Sync availabitily.
 class SigninInterceptFirstRunExperienceDialog::InterceptTurnSyncOnHelperDelegate
@@ -43,10 +53,10 @@ class SigninInterceptFirstRunExperienceDialog::InterceptTurnSyncOnHelperDelegate
   void ShowMergeSyncDataConfirmation(
       const std::string& previous_email,
       const std::string& new_email,
-      TurnSyncOnHelper::SigninChoiceCallback callback) override;
+      signin::SigninChoiceCallback callback) override;
   void ShowEnterpriseAccountConfirmation(
       const AccountInfo& account_info,
-      TurnSyncOnHelper::SigninChoiceCallback callback) override;
+      signin::SigninChoiceCallback callback) override;
   void ShowSyncConfirmation(
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override;
@@ -92,7 +102,7 @@ void SigninInterceptFirstRunExperienceDialog::
     InterceptTurnSyncOnHelperDelegate::ShowMergeSyncDataConfirmation(
         const std::string& previous_email,
         const std::string& new_email,
-        TurnSyncOnHelper::SigninChoiceCallback callback) {
+        signin::SigninChoiceCallback callback) {
   NOTREACHED() << "Sign-in intercept shouldn't create a profile for an "
                   "account known to Chrome";
 }
@@ -100,12 +110,12 @@ void SigninInterceptFirstRunExperienceDialog::
 void SigninInterceptFirstRunExperienceDialog::
     InterceptTurnSyncOnHelperDelegate::ShowEnterpriseAccountConfirmation(
         const AccountInfo& account_info,
-        TurnSyncOnHelper::SigninChoiceCallback callback) {
+        signin::SigninChoiceCallback callback) {
   // This is a brand new profile. Skip the enterprise confirmation.
   // TODO(crbug.com/1282157): Do not show the sync promo if either
   // - PromotionalTabsEnabled policy is set to False, or
   // - the user went through the Profile Separation dialog.
-  std::move(callback).Run(TurnSyncOnHelper::SIGNIN_CHOICE_CONTINUE);
+  std::move(callback).Run(signin::SIGNIN_CHOICE_CONTINUE);
 }
 
 void SigninInterceptFirstRunExperienceDialog::
@@ -162,13 +172,17 @@ void SigninInterceptFirstRunExperienceDialog::
   Step next_step;
   switch (result) {
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS:
+      RecordDialogEvent(DialogEvent::kSyncConfirmationClickConfirm);
       next_step = Step::kWaitForSyncedTheme;
       break;
     case LoginUIService::ABORT_SYNC:
+      RecordDialogEvent(DialogEvent::kSyncConfirmationClickCancel);
       next_step = Step::kProfileCustomization;
       break;
-    case LoginUIService::UI_CLOSED:
     case LoginUIService::CONFIGURE_SYNC_FIRST:
+      RecordDialogEvent(DialogEvent::kSyncConfirmationClickSettings);
+      [[fallthrough]];
+    case LoginUIService::UI_CLOSED:
       next_step = Step::kProfileSwitchIPHAndCloseModal;
       break;
   }
@@ -199,6 +213,7 @@ SigninInterceptFirstRunExperienceDialog::
       is_forced_intercept_(is_forced_intercept) {}
 
 void SigninInterceptFirstRunExperienceDialog::Show() {
+  RecordDialogEvent(DialogEvent::kStart);
   // Don't show the sync promo to the users who went through the forced
   // interception.
   Step first_step =
@@ -267,20 +282,26 @@ void SigninInterceptFirstRunExperienceDialog::DoNextStep(
 }
 
 void SigninInterceptFirstRunExperienceDialog::DoTurnOnSync() {
+  const signin_metrics::AccessPoint access_point = signin_metrics::AccessPoint::
+      ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE;
+  const signin_metrics::PromoAction promo_action =
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
+  signin_metrics::LogSigninAccessPointStarted(access_point, promo_action);
+  signin_metrics::RecordSigninUserActionForAccessPoint(access_point,
+                                                       promo_action);
+
   // TurnSyncOnHelper deletes itself once done.
-  new TurnSyncOnHelper(
-      browser_->profile(),
-      signin_metrics::AccessPoint::
-          ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE,
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
-      signin_metrics::Reason::kSigninPrimaryAccount, account_id_,
-      TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
-      std::make_unique<InterceptTurnSyncOnHelperDelegate>(
-          weak_ptr_factory_.GetWeakPtr()),
-      base::OnceClosure());
+  new TurnSyncOnHelper(browser_->profile(), access_point, promo_action,
+                       signin_metrics::Reason::kSigninPrimaryAccount,
+                       account_id_,
+                       TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
+                       std::make_unique<InterceptTurnSyncOnHelperDelegate>(
+                           weak_ptr_factory_.GetWeakPtr()),
+                       base::OnceClosure());
 }
 
 void SigninInterceptFirstRunExperienceDialog::DoSyncConfirmation() {
+  RecordDialogEvent(DialogEvent::kShowSyncConfirmation);
   SetDialogDelegate(
       SigninViewControllerDelegate::CreateSyncConfirmationDelegate(browser_));
   PreloadProfileCustomizationUI();
@@ -309,6 +330,7 @@ void SigninInterceptFirstRunExperienceDialog::DoProfileCustomization() {
     return;
   }
 
+  RecordDialogEvent(DialogEvent::kShowProfileCustomization);
   if (!dialog_delegate_) {
     // Modal dialog doesn't exist yet, create a new one.
     SetDialogDelegate(
@@ -377,5 +399,6 @@ void SigninInterceptFirstRunExperienceDialog::OnSyncedThemeReady(
 
 void SigninInterceptFirstRunExperienceDialog::
     OnProfileCustomizationDoneButtonClicked() {
+  RecordDialogEvent(DialogEvent::kProfileCustomizationClickDone);
   DoNextStep(Step::kProfileCustomization, Step::kProfileSwitchIPHAndCloseModal);
 }

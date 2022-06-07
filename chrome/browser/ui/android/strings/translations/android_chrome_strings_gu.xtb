@@ -184,7 +184,6 @@
 <translation id="200114059308480249">શું Google Searchમાં શોધવા માટે આજુબાજુની ટેક્સ્ટ શામેલ કરીએ?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ફાઇલ}one{# ફાઇલ}other{# ફાઇલ}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> Chromeમાં ખુલશે. આગળ વધીને, તમે <ph name="BEGIN_LINK1" />Googleની સેવાની શરતો<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />Google Chrome તથા Chrome OSની વધારાની સેવાની શરતો<ph name="END_LINK2" /> સાથે સંમત થાઓ છો. <ph name="BEGIN_LINK3" />પ્રાઇવસી પૉલિસી<ph name="END_LINK3" /> પણ લાગુ થાય છે.</translation>
-<translation id="2019145049163614359">રુચિ કાઢી નાખીએ?</translation>
 <translation id="2020309681647789787">તમને તમારા સિંક કરેલા તમામ ડિવાઇસ પર તમારો ઇતિહાસ મળશે, જેથી તમે જે કરતા હતા તે ચાલુ રાખી શકો</translation>
 <translation id="2021896219286479412">પૂર્ણ સ્ક્રીન સાઇટ નિયંત્રણો</translation>
 <translation id="2038563949887743358">વિનંતી ડેસ્કટૉપ સાઇટ ચાલુ કરો</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">તમારા વપરાશ પર આધારિત</translation>
 <translation id="214888715418183969">Chrome સાથે શું શેર કરવાનું તમને માફક આવશે તે પસંદ કરો. તમે શેર કરેલા મેટ્રિકનો ઉપયોગ Chromeની સુવિધાઓ, કાર્યપ્રદર્શન અને સ્થિરતાને બહેતર બનાવવામાં સહાય કરવા માટે થશે.</translation>
 <translation id="2149973817440762519">બુકમાર્કમાં ફેરફાર કરો</translation>
+<translation id="2155214902713132423">આ ડિવાઇસ માટે ચકાસણીની આ પદ્ધતિ ઉપલબ્ધ નથી. તમારા અન્ય ડિવાઇસ પર કોઈ અલગ વિકલ્પ પસંદ કરો.</translation>
 <translation id="2157851137955077194">તમારા ફોનથી કોઈ અન્ય ડિવાઇસ પર કંઈક શેર કરવા માટે, બન્ને ડિવાઇસ પરના Chrome સેટિંગમાં સિંકની સુવિધા ચાલુ કરો</translation>
 <translation id="2158408438301413340">Chrome બધા પાસવર્ડ ચેક કરી શક્યું નથી</translation>
 <translation id="2169830938017475061">હમણાં</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">ટૂંક સમયમાં, જ્યારે તમે નવી ટૅબ ખોલશો ત્યારે તમને <ph name="SITE_NAME" /> પરથી સ્ટોરી દેખાશે. તમે જે સાઇટ ફૉલો કરો છો તેને તમારા Google એકાઉન્ટમાં સાચવવામાં આવે છે. તમે તેમને Discoverના સેટિંગમાં મેનેજ કરી શકો છો.</translation>
 <translation id="5091249083535528968">વપરાશનો વધારાનો ડેટા</translation>
 <translation id="509429900233858213">કોઈ ભૂલ આવી છે.</translation>
-<translation id="5098190077610408701">રુચિ ઉમેરીએ?</translation>
 <translation id="5102401324271069229">જો કોઈ સાઇટ તમારો પાસવર્ડ ચોરી કરવાનો પ્રયાસ કરે અથવા તમે કોઈ નુકસાનકારક ફાઇલ ડાઉનલોડ કરો, ત્યારે Chrome પેજ કન્ટેન્ટના બિટ સહિત URLs 'Safe Browsing'ને મોકલી શકે છે</translation>
 <translation id="510275257476243843">1 કલાક બાકી</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> પર</translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">જો Google Assistant URLs જાણતું હોય, તો તે કાર્યો પૂર્ણ કરવામાં સહાય કરી શકે છે. તમે Assistantને Chromeના સેટિંગમાં બંધ કરી શકો છો.</translation>
 <translation id="5916664084637901428">ચાલુ</translation>
 <translation id="5919204609460789179">સમન્વયન પ્રારંભ કરવા માટે <ph name="PRODUCT_NAME" /> અપડેટ કરો</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> ઉમેરો</translation>
 <translation id="5942872142862698679">શોધવા માટે Googleનો ઉપયોગ કરી રહ્યાં છે</translation>
 <translation id="5945035219773565305">હાલનો સુઝાવ:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">લાઇવ પેજ જોઈ રહ્યાં છીએ</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791"><ph name="BEGIN_LINK" />પ્રાઇવસી સૅન્ડબૉક્સ<ph name="END_LINK" /> વડે, Chrome નવી ટેક્નોલોજીનો વિકાસ કરી રહ્યું છે, જે ખુલ્લી વેબ પર સુરક્ષિત રાખીને, ક્રોસ-સાઇટ ટ્રૅકિંગ સામે તમારું સંરક્ષણ કરે છે.
 
 પ્રાઇવસી સૅન્ડબૉક્સની અજમાયશો હજુ પણ સક્રિય વિકાસ હેઠળ છે અને અમુક પ્રદેશોમાં ઉપલબ્ધ છે. હાલ પૂરતું, સાઇટ ત્રીજા પક્ષની કુકી જેવી વર્તમાન વેબ ટેક્નોલોજીનો ઉપયોગ કરવાનું ચાલુ રાખીને પ્રાઇવસી સૅન્ડબૉક્સને અજમાવી શકે છે.</translation>
-<translation id="6036057147555329831">અતિરિક્ત ICU</translation>
 <translation id="6039379616847168523">આગલા ટૅબ પર જાઓ</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="604124094241169006">સ્વચલિત</translation>
@@ -1023,13 +1022,14 @@
 <translation id="663674369910034433">પ્રાઇવસી, સુરક્ષા અને ડેટા સંગ્રહથી સંબંધિત વધુ સેટિંગ માટે, <ph name="BEGIN_LINK1" />સિંક<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />Googleની સેવાઓ<ph name="END_LINK2" /> જુઓ</translation>
 <translation id="6637100877383020115">ઍપને બહેતર બનાવવામાં સહાય કરવા માટે, Chrome વપરાશ અને ક્રૅશ થવા સંબંધિત ડેટા Googleને મોકલે છે. <ph name="BEGIN_UMA_LINK" />મેનેજ કરો<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">હંમેશાં બ્લૉક કરો</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" />ને કાઢી નાખો</translation>
 <translation id="6643016212128521049">સાફ કરો</translation>
 <translation id="6645629752388991326">કયા ડિવાઇસ સિક્યુરિટી કી તરીકે આ ડિવાઇસનો ઉપયોગ કરીને સાઇન ઇન કરી શકે તે નિયંત્રિત કરો.</translation>
 <translation id="6648459603387803038">તમારા વ્યવસ્થાપક તમારા બ્રાઉઝર સેટઅપને રિમોટલી બદલી શકે છે. આ ડિવાઇસ પરની પ્રવૃત્તિ Chromeની બહારથી પણ મેનેજ કરી શકાય છે.</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6649642165559792194">છબીને પ્રીવ્યૂ કરો <ph name="BEGIN_NEW" />નવું<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
-<translation id="6659594942844771486">બ્રાઉઝર ટૅબ</translation>
+<translation id="6659594942844771486">ટૅબ</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> માં ખોલો</translation>
 <translation id="6671495933530132209">છબી કૉપિ કરો</translation>
 <translation id="6674044799624355221">નવા જોખમો શોધવામાં સહાય કરવા માટે પેજનો નાનો નમૂનો, ડાઉનલોડ, એક્સ્ટેન્શનની પ્રવૃત્તિ અને સિસ્ટમની માહિતી મોકલે છે</translation>

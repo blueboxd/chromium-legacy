@@ -6,15 +6,16 @@
 
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/secure_message_delegate.h"
+#include "ash/components/multidevice/secure_message_delegate_impl.h"
 #include "ash/services/device_sync/value_string_encoding.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "third_party/securemessage/proto/securemessage.pb.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -233,4 +234,4 @@ void CryptAuthEciesEncryptorImpl::OnSecureMessageUnwrapped(
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

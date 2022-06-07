@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -79,7 +80,7 @@ void InputMethodBase::SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) {
     text_input_client_->EnsureCaretNotInRect(keyboard_bounds_);
 }
 
-void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
+void InputMethodBase::OnTextInputTypeChanged(TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
   NotifyTextInputStateChanged(client);

@@ -248,6 +248,9 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-compact-maps");
   SetV8FlagsIfOverridden(features::kV8UseMapSpace, "--use-map-space",
                          "--no-use-map-space");
+  SetV8FlagsIfOverridden(features::kV8CrashOnEvacuationFailure,
+                         "--crash-on-aborted-evacuation",
+                         "--no-crash-on-aborted-evacuation");
   SetV8FlagsIfOverridden(features::kV8OptimizeJavascript, "--opt", "--no-opt");
   SetV8FlagsIfOverridden(features::kV8FlushBytecode, "--flush-bytecode",
                          "--no-flush-bytecode");
@@ -348,12 +351,22 @@ void SetFlags(IsolateHolder::ScriptMode mode,
 
 // static
 void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
-                               const std::string js_command_line_flags) {
+                               const std::string js_command_line_flags,
+                               v8::OOMErrorCallback oom_error_callback) {
   static bool v8_is_initialized = false;
   if (v8_is_initialized)
     return;
 
+  // Flags need to be set before InitializePlatform as they are used for
+  // system instrumentation initialization.
+  // See https://crbug.com/v8/11043
+  SetFlags(mode, js_command_line_flags);
+
   v8::V8::InitializePlatform(V8Platform::Get());
+
+  // Set this as early as possible in order to ensure OOM errors are reported
+  // correctly.
+  v8::V8::SetFatalMemoryErrorCallback(oom_error_callback);
 
   // Set this early on as some initialization steps, such as the initialization
   // of the virtual memory cage, already use V8's random number generator.
@@ -393,8 +406,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     base::UmaHistogramSparse("V8.VirtualMemoryCageSizeGB", sizeInGB);
   }
 #endif  // V8_SANDBOX
-
-  SetFlags(mode, js_command_line_flags);
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (g_mapped_snapshot) {

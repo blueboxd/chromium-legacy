@@ -63,7 +63,9 @@ ProjectorClientImpl::ProjectorClientImpl(ash::ProjectorController* controller)
 ProjectorClientImpl::ProjectorClientImpl()
     : ProjectorClientImpl(ash::ProjectorController::Get()) {}
 
-ProjectorClientImpl::~ProjectorClientImpl() = default;
+ProjectorClientImpl::~ProjectorClientImpl() {
+  controller_->SetClient(nullptr);
+}
 
 void ProjectorClientImpl::StartSpeechRecognition() {
   // ProjectorController should only request for speech recognition after it
@@ -155,8 +157,9 @@ void ProjectorClientImpl::MinimizeProjectorApp() const {
 
 void ProjectorClientImpl::OnNewScreencastPreconditionChanged(
     const ash::NewScreencastPrecondition& precondition) const {
-  ash::ProjectorAppClient::Get()->OnNewScreencastPreconditionChanged(
-      precondition);
+  ash::ProjectorAppClient* app_client = ash::ProjectorAppClient::Get();
+  if (app_client)
+    app_client->OnNewScreencastPreconditionChanged(precondition);
 }
 
 void ProjectorClientImpl::SetAnnotatorMessageHandler(

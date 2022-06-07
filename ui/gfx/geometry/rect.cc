@@ -115,19 +115,9 @@ void Rect::AdjustForSaturatedBottom(int bottom) {
 }
 
 void Rect::Inset(const Insets& insets) {
-  Inset(insets.left(), insets.top(), insets.right(), insets.bottom());
-}
-
-void Rect::Inset(int left, int top, int right, int bottom) {
-  origin_ += Vector2d(left, top);
-  // left+right might overflow/underflow, but width() - (left+right) might
-  // overflow as well.
-  set_width(base::ClampSub(width(), base::ClampAdd(left, right)));
-  set_height(base::ClampSub(height(), base::ClampAdd(top, bottom)));
-}
-
-void Rect::Outset(const Outsets& outsets) {
-  Outset(outsets.left(), outsets.top(), outsets.right(), outsets.bottom());
+  origin_ += Vector2d(insets.left(), insets.top());
+  set_width(base::ClampSub(width(), insets.width()));
+  set_height(base::ClampSub(height(), insets.height()));
 }
 
 void Rect::Offset(const Vector2d& distance) {
@@ -138,10 +128,8 @@ void Rect::Offset(const Vector2d& distance) {
 }
 
 Insets Rect::InsetsFrom(const Rect& inner) const {
-  return Insets(inner.y() - y(),
-                inner.x() - x(),
-                bottom() - inner.bottom(),
-                right() - inner.right());
+  return Insets::TLBR(inner.y() - y(), inner.x() - x(),
+                      bottom() - inner.bottom(), right() - inner.right());
 }
 
 bool Rect::operator<(const Rect& other) const {

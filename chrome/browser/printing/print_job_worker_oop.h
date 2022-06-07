@@ -42,18 +42,33 @@ class PrintJobWorkerOop : public PrintJobWorker {
  protected:
   // Local callback wrappers for Print Backend Service mojom call.  Virtual to
   // support testing.
+  virtual void OnDidUseDefaultSettings(
+      SettingsCallback callback,
+      mojom::PrintSettingsResultPtr print_settings);
+#if BUILDFLAG(IS_WIN)
+  virtual void OnDidAskUserForSettings(
+      SettingsCallback callback,
+      mojom::PrintSettingsResultPtr print_settings);
+#endif
   virtual void OnDidStartPrinting(mojom::ResultCode result);
 #if BUILDFLAG(IS_WIN)
   virtual void OnDidRenderPrintedPage(uint32_t page_index,
                                       mojom::ResultCode result);
 #endif
+  virtual void OnDidRenderPrintedDocument(mojom::ResultCode result);
   virtual void OnDidDocumentDone(int job_id, mojom::ResultCode result);
 
   // `PrintJobWorker` overrides.
 #if BUILDFLAG(IS_WIN)
   void SpoolPage(PrintedPage* page) override;
 #endif
+  void SpoolDocument() override;
   void OnDocumentDone() override;
+  void InvokeUseDefaultSettings(SettingsCallback callback) override;
+  void InvokeGetSettingsWithUI(uint32_t document_page_count,
+                               bool has_selection,
+                               bool is_scripted,
+                               SettingsCallback callback) override;
   void UpdatePrintSettings(base::Value new_settings,
                            SettingsCallback callback) override;
   void OnFailure() override;
@@ -78,6 +93,13 @@ class PrintJobWorkerOop : public PrintJobWorker {
                                 mojom::PrintSettingsResultPtr print_settings);
 
   // Mojo support to send messages from UI thread.
+  void SendUseDefaultSettings(SettingsCallback callback);
+#if BUILDFLAG(IS_WIN)
+  void SendAskUserForSettings(uint32_t document_page_count,
+                              bool has_selection,
+                              bool is_scripted,
+                              SettingsCallback callback);
+#endif
   void SendStartPrinting(const std::string& device_name,
                          const std::u16string& document_name);
 #if BUILDFLAG(IS_WIN)
@@ -86,6 +108,9 @@ class PrintJobWorkerOop : public PrintJobWorker {
       mojom::MetafileDataType page_data_type,
       base::ReadOnlySharedMemoryRegion serialized_page_data);
 #endif  // BUILDFLAG(IS_WIN)
+  void SendRenderPrintedDocument(
+      mojom::MetafileDataType data_type,
+      base::ReadOnlySharedMemoryRegion serialized_data);
   void SendDocumentDone();
 
   // Client ID with the print backend service manager for this print job.

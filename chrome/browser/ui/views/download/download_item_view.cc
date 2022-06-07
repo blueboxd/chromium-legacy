@@ -66,6 +66,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/base/themed_vector_icon.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
@@ -84,7 +85,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -263,7 +263,7 @@ class DownloadItemView::ContextMenuButton : public views::ImageButton {
     views::ConfigureVectorImageButton(this);
     SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
+    SetBorder(views::CreateEmptyBorder(10));
     SetHasInkDropActionOnClick(false);
   }
 
@@ -609,7 +609,7 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
   // Draw the separator as part of the background. It will be covered by the
   // focus ring when the view has focus.
   gfx::Rect rect(width() - 1, 0, 1, height());
-  rect.Inset(0, kTopBottomPadding);
+  rect.Inset(gfx::Insets::VH(kTopBottomPadding, 0));
   canvas->FillRect(GetMirroredRect(rect),
                    GetColorProvider()->GetColor(kColorToolbarSeparator));
 }
@@ -1061,8 +1061,6 @@ void DownloadItemView::PaintDownloadProgress(
     const gfx::RectF& bounds,
     const base::TimeDelta& indeterminate_progress_time,
     int percent_done) const {
-  const SkColor color = GetColorProvider()->GetColor(ui::kColorThrobber);
-
   // Calculate progress.
   SkScalar start_pos = SkIntToScalar(270);  // 12 o'clock
   SkScalar sweep_angle = SkDoubleToScalar(360 * percent_done / 100.0);
@@ -1074,9 +1072,12 @@ void DownloadItemView::PaintDownloadProgress(
     sweep_angle = SkIntToScalar(50);
   }
 
-  views::DrawProgressRing(canvas, gfx::RectFToSkRect(bounds),
-                          SkColorSetA(color, 0x33), color,
-                          /*stroke_width=*/1.7f, start_pos, sweep_angle);
+  const auto* color_provider = GetColorProvider();
+  views::DrawProgressRing(
+      canvas, gfx::RectFToSkRect(bounds),
+      color_provider->GetColor(kColorDownloadItemProgressRingBackground),
+      color_provider->GetColor(kColorDownloadItemProgressRingForeground),
+      /*stroke_width=*/1.7f, start_pos, sweep_angle);
 }
 
 ui::ImageModel DownloadItemView::GetIcon() const {

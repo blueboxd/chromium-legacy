@@ -108,6 +108,7 @@ const struct AcceleratorMapping {
     {IDC_FEEDBACK, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
      ui::VKEY_I},
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    {IDC_TAB_SEARCH, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, ui::VKEY_A},
 };
 
 ui::Accelerator enterFullscreenAccelerator() {
@@ -138,7 +139,7 @@ AcceleratorsCocoa::AcceleratorsCocoa() {
 
   if (commander::IsEnabled()) {
     result = accelerators_.insert(
-        std::make_pair(IDC_TOGGLE_COMMANDER,
+        std::make_pair(IDC_TOGGLE_QUICK_COMMANDS,
                        ui::Accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN)));
     DCHECK(result.second);
   }

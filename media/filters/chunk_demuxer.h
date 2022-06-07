@@ -19,6 +19,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "base/time/time.h"
 #include "media/base/byte_queue.h"
 #include "media/base/demuxer.h"
 #include "media/base/demuxer_stream.h"
@@ -129,7 +130,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // DemuxerStream methods.
   void Read(ReadCB read_cb) override;
   Type type() const override;
-  Liveness liveness() const override;
+  StreamLiveness liveness() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   bool SupportsConfigChanges() override;
@@ -144,7 +145,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // Sets the memory limit, in bytes, on the SourceBufferStream.
   void SetStreamMemoryLimit(size_t memory_limit);
 
-  void SetLiveness(Liveness liveness);
+  void SetLiveness(StreamLiveness liveness);
 
   MediaTrack::Id media_track_id() const { return media_track_id_; }
 
@@ -178,7 +179,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // Specifies the type of the stream.
   const Type type_;
 
-  Liveness liveness_ GUARDED_BY(lock_);
+  StreamLiveness liveness_ GUARDED_BY(lock_);
 
   std::unique_ptr<SourceBufferStream> stream_ GUARDED_BY(lock_);
 
@@ -546,7 +547,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   double user_specified_duration_;
 
   base::Time timeline_offset_;
-  DemuxerStream::Liveness liveness_;
+  StreamLiveness liveness_ = StreamLiveness::kUnknown;
 
   std::map<std::string, std::unique_ptr<SourceBufferState>> source_state_map_;
 

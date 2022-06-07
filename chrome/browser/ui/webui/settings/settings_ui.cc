@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/managed_ui.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -72,6 +72,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -235,6 +236,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<SystemHandler>());
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   html_source->AddBoolean("isSecondaryUser", !profile->IsMainProfile());
+  html_source->AddBoolean(
+      "nonSyncingProfilesEnabled",
+      base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles));
 #endif
 
 #endif
@@ -313,6 +317,13 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "privacyGuideEnabled",
       !chrome::ShouldDisplayManagedUi(profile) &&
           base::FeatureList::IsEnabled(features::kPrivacyGuide));
+
+  html_source->AddBoolean(
+      "privacyGuide2Enabled",
+      !chrome::ShouldDisplayManagedUi(profile) &&
+          // #privacy-guide-2 only has effect if #privacy-guide is enabled too.
+          base::FeatureList::IsEnabled(features::kPrivacyGuide) &&
+          base::FeatureList::IsEnabled(features::kPrivacyGuide2));
 
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));

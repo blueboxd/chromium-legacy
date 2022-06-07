@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
 #include "components/password_manager/core/browser/old_google_credentials_cleaner.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
@@ -68,6 +69,60 @@ bool IsBetterMatch(const PasswordForm* lhs, const PasswordForm* rhs) {
 }
 
 }  // namespace
+
+bool IsSavingPasswordsEnabled(const PrefService* pref_service,
+                              const syncer::SyncService* sync_service) {
+  DCHECK(pref_service);
+  const PrefService::Preference* save_passwords_pref =
+      pref_service->FindPreference(
+          password_manager::prefs::kCredentialsEnableService);
+  DCHECK(save_passwords_pref);
+#if BUILDFLAG(IS_ANDROID)
+  if (!password_bubble_experiment::HasChosenToSyncPasswords(sync_service)) {
+    return save_passwords_pref->GetValue()->GetBool();
+  }
+
+  if (!password_manager::features::UsesUnifiedPasswordManagerUi()) {
+    return save_passwords_pref->GetValue()->GetBool();
+  }
+
+  if (save_passwords_pref->IsManaged()) {
+    return save_passwords_pref->GetValue()->GetBool();
+  }
+
+  return pref_service->GetBoolean(
+      password_manager::prefs::kOfferToSavePasswordsEnabledGMS);
+#else
+  return save_passwords_pref->GetValue()->GetBool();
+#endif
+}
+
+bool IsAutoSignInEnabled(const PrefService* pref_service,
+                         const syncer::SyncService* sync_service) {
+  DCHECK(pref_service);
+  const PrefService::Preference* auto_sign_in_pref =
+      pref_service->FindPreference(
+          password_manager::prefs::kCredentialsEnableAutosignin);
+  DCHECK(auto_sign_in_pref);
+#if BUILDFLAG(IS_ANDROID)
+  if (!password_bubble_experiment::HasChosenToSyncPasswords(sync_service)) {
+    return auto_sign_in_pref->GetValue()->GetBool();
+  }
+
+  if (!password_manager::features::UsesUnifiedPasswordManagerUi()) {
+    return auto_sign_in_pref->GetValue()->GetBool();
+  }
+
+  if (auto_sign_in_pref->IsManaged()) {
+    return auto_sign_in_pref->GetValue()->GetBool();
+  }
+
+  return pref_service->GetBoolean(
+      password_manager::prefs::kAutoSignInEnabledGMS);
+#else
+  return auto_sign_in_pref->GetValue()->GetBool();
+#endif
+}
 
 // Update |credential| to reflect usage.
 void UpdateMetadataForUsage(PasswordForm* credential) {
@@ -312,7 +367,8 @@ const PasswordForm* FindFormByUsername(
 
 const PasswordForm* GetMatchForUpdating(
     const PasswordForm& submitted_form,
-    const std::vector<const PasswordForm*>& credentials) {
+    const std::vector<const PasswordForm*>& credentials,
+    bool username_updated_in_bubble) {
   // This is the case for the credential management API. It should not depend on
   // form managers. Once that's the case, this should be turned into a DCHECK.
   // TODO(crbug/947030): turn it into a DCHECK.
@@ -353,6 +409,12 @@ const PasswordForm* GetMatchForUpdating(
     if (stored_match->password_value == submitted_form.password_value)
       return stored_match;
   }
+
+  // If the user manually changed the username value: consider this at this
+  // point of the heuristic a new credential (didn't match other
+  // passwords/usernames).
+  if (username_updated_in_bubble)
+    return nullptr;
 
   // Last try. The submitted form had no username but a password. Assume that
   // it's an existing credential.

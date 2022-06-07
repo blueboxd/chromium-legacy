@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/version/version_handler_win.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/ui/webui/version/version_util_win.h"
@@ -16,7 +15,7 @@ VersionHandlerWindows::VersionHandlerWindows() {}
 VersionHandlerWindows::~VersionHandlerWindows() {}
 
 void VersionHandlerWindows::HandleRequestVersionInfo(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   VersionHandler::HandleRequestVersionInfo(args);
 
   // Start the asynchronous load of the versions.

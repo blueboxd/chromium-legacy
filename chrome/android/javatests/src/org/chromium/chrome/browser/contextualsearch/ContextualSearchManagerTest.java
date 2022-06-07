@@ -57,6 +57,7 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.Manual;
 import org.chromium.base.test.util.MaxAndroidSdkLevel;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -1422,7 +1423,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "https://crbug.com/1075895")
+    @DisabledTest(message = "https://crbug.com/1140413")
     public void testLivePrefetchFailoverRequestMadeAfterOpen(@EnabledFeature int enabledFeature)
             throws Exception {
         // Test fails with out-of-process network service. crbug.com/1071721
@@ -1700,10 +1701,9 @@ public class ContextualSearchManagerTest {
                 new GURL("intent://test/#Intent;scheme=test;package=com.chrome.test;end"),
                 GURL.emptyGURL() /* referrerUrl */, GURL.emptyGURL() /* baseUrlForDataUrl */,
                 true /* isInPrimaryMainFrame */, false /* isSameDocument*/,
-                true /* isRendererInitiated */, null /* initiatorOrigin */,
-                null /* impressionData */, PageTransition.LINK, false /* isPost */,
-                true /* hasUserGesture */, false /* isRedirect */, true /* isExternalProtocol */,
-                0 /* navigationId */, false /* isPageActivation */);
+                true /* isRendererInitiated */, null /* initiatorOrigin */, PageTransition.LINK,
+                false /* isPost */, true /* hasUserGesture */, false /* isRedirect */,
+                true /* isExternalProtocol */, 0 /* navigationId */, false /* isPageActivation */);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -1739,9 +1739,9 @@ public class ContextualSearchManagerTest {
                 0 /* nativeNavigationHandleProxy*/, initialUrl, GURL.emptyGURL() /* referrerUrl */,
                 GURL.emptyGURL() /* baseUrlForDataUrl */, true /* isInPrimaryMainFrame */,
                 false /* isSameDocument*/, true /* isRendererInitiated */,
-                null /* initiatorOrigin */, null /* impressionData */, PageTransition.LINK,
-                false /* isPost */, true /* hasUserGesture */, false /* isRedirect */,
-                false /* isExternalProtocol */, 0 /* navigationId */, false /* isPageActivation */);
+                null /* initiatorOrigin */, PageTransition.LINK, false /* isPost */,
+                true /* hasUserGesture */, false /* isRedirect */, false /* isExternalProtocol */,
+                0 /* navigationId */, false /* isPageActivation */);
 
         GURL redirectUrl =
                 new GURL("intent://test/#Intent;scheme=test;package=com.chrome.test;end");
@@ -1749,9 +1749,9 @@ public class ContextualSearchManagerTest {
                 0 /* nativeNavigationHandleProxy*/, redirectUrl, GURL.emptyGURL() /* referrerUrl */,
                 GURL.emptyGURL() /* baseUrlForDataUrl */, true /* isInPrimaryMainFrame */,
                 false /* isSameDocument*/, true /* isRendererInitiated */,
-                null /* initiatorOrigin */, null /* impressionData */, PageTransition.LINK,
-                false /* isPost */, false /* hasUserGesture */, true /* isRedirect */,
-                true /* isExternalProtocol */, 0 /* navigationId */, false /* isPageActivation */);
+                null /* initiatorOrigin */, PageTransition.LINK, false /* isPost */,
+                false /* hasUserGesture */, true /* isRedirect */, true /* isExternalProtocol */,
+                0 /* navigationId */, false /* isPageActivation */);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -1788,9 +1788,9 @@ public class ContextualSearchManagerTest {
                 0 /* nativeNavigationHandleProxy*/, url, GURL.emptyGURL() /* referrerUrl */,
                 GURL.emptyGURL() /* baseUrlForDataUrl */, true /* isInPrimaryMainFrame */,
                 false /* isSameDocument*/, true /* isRendererInitiated */,
-                null /* initiatorOrigin */, null /* impressionData */, PageTransition.LINK,
-                false /* isPost */, false /* hasUserGesture */, false /* isRedirect */,
-                true /* isExternalProtocol */, 0 /* navigationId */, false /* isPageActivation */);
+                null /* initiatorOrigin */, PageTransition.LINK, false /* isPost */,
+                false /* hasUserGesture */, false /* isRedirect */, true /* isExternalProtocol */,
+                0 /* navigationId */, false /* isPageActivation */);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -1869,7 +1869,7 @@ public class ContextualSearchManagerTest {
      * TODO(donnd) Load a fake SERP into the panel to trigger SERP-translation and similar
      * features.
      */
-    @DisabledTest(message = "Useful for manual testing when a network is connected.")
+    @Manual(message = "Useful for manual testing when a network is connected.")
     @Test
     @LargeTest
     @Feature({"ContextualSearch"})

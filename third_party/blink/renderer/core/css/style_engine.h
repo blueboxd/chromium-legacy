@@ -40,6 +40,7 @@
 #include "third_party/blink/public/web/web_css_origin.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
+#include "third_party/blink/renderer/core/css/color_scheme_flags.h"
 #include "third_party/blink/renderer/core/css/css_global_rule_set.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
@@ -262,20 +263,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool UsesWindowInactiveSelector() const {
     return GetRuleFeatureSet().UsesWindowInactiveSelector();
   }
-  bool UsesContainerQueries() const {
-    return GetRuleFeatureSet().UsesContainerQueries() ||
-           uses_container_relative_units_ || skipped_container_recalc_;
-  }
 
-  void SetUsesContainerRelativeUnits() {
-    uses_container_relative_units_ = true;
-  }
-
+  // Set when we recalc the style of any element that depends on layout.
   void SetStyleAffectedByLayout() { style_affected_by_layout_ = true; }
+  bool StyleAffectedByLayout() { return style_affected_by_layout_; }
 
-  bool StyleMayRequireLayout() const {
-    return style_affected_by_layout_ || skipped_container_recalc_;
-  }
+  bool SkippedContainerRecalc() const { return skipped_container_recalc_ != 0; }
+  void IncrementSkippedContainerRecalc() { ++skipped_container_recalc_; }
+  void DecrementSkippedContainerRecalc() { --skipped_container_recalc_; }
 
   bool UsesRemUnits() const { return uses_rem_units_; }
   void SetUsesRemUnit(bool uses_rem_units) { uses_rem_units_ = uses_rem_units; }
@@ -526,7 +521,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       return To<Element>(style_recalc_root_.GetRootNode());
     return nullptr;
   }
-  void SkipStyleRecalcForContainer() { skipped_container_recalc_ = true; }
   void ChangeRenderingForHTMLSelect(HTMLSelectElement& select);
   void DetachedFromParent(LayoutObject* parent) {
     // This method will be called for every LayoutObject while detaching a
@@ -543,8 +537,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       parent_for_detached_subtree_ = parent;
   }
 
-  void SetColorSchemeFromMeta(const CSSValue* color_scheme);
-  const CSSValue* GetMetaColorSchemeValue() const { return meta_color_scheme_; }
+  void SetPageColorSchemes(const CSSValue* color_scheme);
+  ColorSchemeFlags GetPageColorSchemes() const { return page_color_schemes_; }
   mojom::PreferredColorScheme GetPreferredColorScheme() const {
     return preferred_color_scheme_;
   }
@@ -761,17 +755,19 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   String preferred_stylesheet_set_name_;
 
   bool uses_rem_units_{false};
-  bool uses_container_relative_units_{false};
   // True if we have performed style recalc for at least one element that
   // depends on container queries.
   bool style_affected_by_layout_{false};
-  // True if the previous UpdateStyleAndLayoutTree skipped style recalc for a
-  // subtree for a container to have the follow layout update the size of the
-  // container before continuing with interleaved style and layout with the
-  // correct container size for container queries. This being true is a signal
-  // to EnsureComputedStyle that we need to update layout to have up-to-date
-  // ComputedStyles.
-  bool skipped_container_recalc_{false};
+  // The number of elements currently in a skipped style recalc state.
+  //
+  // Style recalc can be skipped for an element [1] if its style depends on
+  // the size, which can be the case for container queries. This number is
+  // used to understand whether or not we need to upgrade [2] a call to
+  // UpdateStyleAndLayoutTree* to also include layout.
+  //
+  // [1] Element::SkipStyleRecalcForContainer.
+  // [2] LayoutUpgrade
+  int64_t skipped_container_recalc_{0};
   bool in_layout_tree_rebuild_{false};
   bool in_container_query_style_recalc_{false};
   bool in_dom_removal_{false};
@@ -856,10 +852,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   scoped_refptr<StyleInitialData> initial_data_;
 
-  // Color schemes explicitly supported by the author through the viewport meta
-  // tag. E.g. <meta name="color-scheme" content="light dark">. A dark color-
-  // scheme is used to opt-out of forced darkening.
-  Member<const CSSValue> meta_color_scheme_;
+  // Page color schemes set by the viewport meta tag. E.g.
+  // <meta name="color-scheme" content="light dark">.
+  ColorSchemeFlags page_color_schemes_ =
+      static_cast<ColorSchemeFlags>(ColorSchemeFlag::kNormal);
 
   // The preferred color scheme is set in settings, but may be overridden by the
   // ForceDarkMode setting where the preferred_color_scheme_ will be set to

@@ -90,7 +90,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
     // Fill with a non-solid color so that the compositor will exercise its
     // texture upload path.
     while (!r.IsEmpty()) {
-      r.Inset(2, 2);
+      r.Inset(2);
       recorder.canvas()->FillRect(r, color_, SkBlendMode::kXor);
     }
   }
@@ -188,7 +188,7 @@ int DemoMain() {
   host_frame_sink_manager.SetLocalManager(&frame_sink_manager);
   frame_sink_manager.SetLocalClient(&host_frame_sink_manager);
   auto context_factory = std::make_unique<ui::InProcessContextFactory>(
-      &host_frame_sink_manager, &frame_sink_manager);
+      &host_frame_sink_manager, &frame_sink_manager, /*output_to_window=*/true);
 
   base::PowerMonitor::Initialize(
       std::make_unique<base::PowerMonitorDeviceSource>());

@@ -114,11 +114,11 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   EXPECT_EQ("idle.queryState", last_params().name);
   EXPECT_EQ(extension->url(), last_params().source_url);
   EXPECT_TRUE(last_params().has_callback);
-  EXPECT_EQ(last_params().arguments, *ListValueFromString("[30]"));
+  EXPECT_EQ(last_params().arguments, *DeprecatedListValueFromString("[30]"));
 
   // Respond and validate.
   bindings_system()->HandleResponse(last_params().request_id, true,
-                                    *ListValueFromString("['active']"),
+                                    ListValueFromString("['active']"),
                                     std::string());
 
   std::unique_ptr<base::Value> result_value = GetBaseValuePropertyFromObject(
@@ -180,8 +180,8 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
   {
     TestJSRunner::AllowErrors allow_errors;
     bindings_system()->DispatchEventInContext(
-        "idle.onStateChanged", ListValueFromString("['idle']").get(), nullptr,
-        script_context);
+        "idle.onStateChanged", DeprecatedListValueFromString("['idle']").get(),
+        nullptr, script_context);
   }
 
   EXPECT_EQ("\"idle\"", GetStringPropertyFromObject(context->Global(), context,
@@ -352,7 +352,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
   EXPECT_EQ("idle.setDetectionInterval", last_params().name);
   EXPECT_EQ(extension->url(), last_params().source_url);
   EXPECT_FALSE(last_params().has_callback);
-  EXPECT_EQ(last_params().arguments, *ListValueFromString("[50]"));
+  EXPECT_EQ(last_params().arguments, *DeprecatedListValueFromString("[50]"));
 }
 
 TEST_F(NativeExtensionBindingsSystemUnittest, TestSendRequestHook) {
@@ -395,7 +395,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestSendRequestHook) {
   EXPECT_EQ("idle.queryState", last_params().name);
   EXPECT_EQ(extension->url(), last_params().source_url);
   EXPECT_TRUE(last_params().has_callback);
-  EXPECT_EQ(last_params().arguments, *ListValueFromString("[30]"));
+  EXPECT_EQ(last_params().arguments, *DeprecatedListValueFromString("[30]"));
 }
 
 // Tests that we can notify the browser as event listeners are added or removed.
@@ -564,7 +564,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestLastError) {
   int first_request_id = last_params().request_id;
   // Respond with an error.
   bindings_system()->HandleResponse(last_params().request_id, false,
-                                    base::ListValue(), "Some API Error");
+                                    base::Value::List(), "Some API Error");
   EXPECT_EQ("\"Some API Error\"",
             GetStringPropertyFromObject(context->Global(), context,
                                         "lastErrorMessage"));
@@ -576,7 +576,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestLastError) {
   EXPECT_NE(first_request_id, last_params().request_id);
 
   bindings_system()->HandleResponse(last_params().request_id, false,
-                                    base::ListValue(), std::string());
+                                    base::Value::List(), std::string());
   EXPECT_EQ("\"Unknown error.\"",
             GetStringPropertyFromObject(context->Global(), context,
                                         "lastErrorMessage"));
@@ -1212,7 +1212,7 @@ TEST_P(ResponseValidationNativeExtensionBindingsSystemUnittest,
   // Respond with a valid value. Validation should not fail.
   ASSERT_TRUE(has_last_params());
   bindings_system()->HandleResponse(last_params().request_id, true,
-                                    *ListValueFromString("['active']"),
+                                    ListValueFromString("['active']"),
                                     std::string());
 
   EXPECT_FALSE(validation_failure_method_name);
@@ -1222,7 +1222,7 @@ TEST_P(ResponseValidationNativeExtensionBindingsSystemUnittest,
   RunFunctionOnGlobal(call_idle_query_state, context, 0, nullptr);
   ASSERT_TRUE(has_last_params());
   bindings_system()->HandleResponse(last_params().request_id, true,
-                                    *ListValueFromString("['bad enum']"),
+                                    ListValueFromString("['bad enum']"),
                                     std::string());
 
   // Validation should fail iff response validation is enabled.

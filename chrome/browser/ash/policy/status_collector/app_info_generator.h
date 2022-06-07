@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/ash/policy/status_collector/activity_storage.h"
@@ -118,6 +119,8 @@ class AppInfoGenerator : public apps::InstanceRegistry::Observer,
   std::unique_ptr<AppInfoProvider> provider_;
 
   bool should_report_ = false;
+
+  bool device_locked_ = false;
 
   std::map<std::string, std::unique_ptr<AppInstances>> app_instances_by_id_;
 

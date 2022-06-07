@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_H_
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
@@ -146,7 +147,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
     return static_cast<SlotAssignmentMode>(slot_assignment_mode_);
   }
   String slotAssignment() const {
-    return IsManualSlotting() ? "manual" : "auto";
+    return IsManualSlotting() ? "manual" : "named";
   }
 
   void SetIsDeclarativeShadowRoot(bool flag) {

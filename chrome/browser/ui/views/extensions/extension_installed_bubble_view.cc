@@ -37,7 +37,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/layout/box_layout.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -220,9 +219,9 @@ void ExtensionInstalledBubbleView::Init() {
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   layout->set_minimum_cross_axis_size(kRightColumnWidth);
   // Indent by the size of the icon.
-  layout->set_inside_border_insets(gfx::Insets(
+  layout->set_inside_border_insets(gfx::Insets::TLBR(
       0,
-      views::GetImageSkiaFromImageModel(GetWindowIcon(), nullptr).width() +
+      GetWindowIcon().Size().width() +
           provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL),
       0, 0));
   layout->set_cross_axis_alignment(

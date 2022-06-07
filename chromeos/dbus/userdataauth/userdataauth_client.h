@@ -8,9 +8,9 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace dbus {
 class Bus;
@@ -69,6 +69,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       DBusMethodCallback<::user_data_auth::AuthenticateAuthSessionReply>;
   using AddCredentialsCallback =
       DBusMethodCallback<::user_data_auth::AddCredentialsReply>;
+  using UpdateCredentialCallback =
+      DBusMethodCallback<::user_data_auth::UpdateCredentialReply>;
+
   using PrepareGuestVaultCallback =
       DBusMethodCallback<::user_data_auth::PrepareGuestVaultReply>;
   using PrepareEphemeralVaultCallback =
@@ -77,6 +80,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       DBusMethodCallback<::user_data_auth::CreatePersistentUserReply>;
   using PreparePersistentVaultCallback =
       DBusMethodCallback<::user_data_auth::PreparePersistentVaultReply>;
+  using PrepareVaultForMigrationCallback =
+      DBusMethodCallback<::user_data_auth::PrepareVaultForMigrationReply>;
   using InvalidateAuthSessionCallback =
       DBusMethodCallback<::user_data_auth::InvalidateAuthSessionReply>;
   using ExtendAuthSessionCallback =
@@ -210,6 +215,12 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
       const ::user_data_auth::AddCredentialsRequest& request,
       AddCredentialsCallback callback) = 0;
 
+  // Attempts to update credentials in the vault identified/authorized by auth
+  // session.
+  virtual void UpdateCredential(
+      const ::user_data_auth::UpdateCredentialRequest& request,
+      UpdateCredentialCallback callback) = 0;
+
   // This request is intended to happen when a user wants
   // to login to ChromeOS as a guest.
   virtual void PrepareGuestVault(
@@ -234,6 +245,11 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) UserDataAuthClient {
   virtual void PreparePersistentVault(
       const ::user_data_auth::PreparePersistentVaultRequest& request,
       PreparePersistentVaultCallback callback) = 0;
+
+  // Makes user directory available for migration.
+  virtual void PrepareVaultForMigration(
+      const ::user_data_auth::PrepareVaultForMigrationRequest& request,
+      PrepareVaultForMigrationCallback callback) = 0;
 
   // This call is used to invalidate an AuthSession
   // once the need for one no longer exists.

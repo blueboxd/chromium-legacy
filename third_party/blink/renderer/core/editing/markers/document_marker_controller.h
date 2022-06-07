@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -180,6 +179,7 @@ class CORE_EXPORT DocumentMarkerController final
       const Text&,
       DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All()) const;
   DocumentMarkerVector Markers() const;
+  DocumentMarkerVector CustomHighlightMarkersNotOverlapping(const Text&) const;
   DocumentMarkerVector ComputeMarkersToPaint(const Text&) const;
 
   bool PossiblyHasTextMatchMarkers() const;

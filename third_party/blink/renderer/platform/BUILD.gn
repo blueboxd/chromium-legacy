@@ -597,6 +597,8 @@ component("platform") {
     "fonts/font_performance.h",
     "fonts/font_platform_data.cc",
     "fonts/font_platform_data.h",
+    "fonts/font_platform_data_cache.cc",
+    "fonts/font_platform_data_cache.h",
     "fonts/font_selection_algorithm.cc",
     "fonts/font_selection_algorithm.h",
     "fonts/font_selection_types.cc",
@@ -716,8 +718,6 @@ component("platform") {
     "geometry/calculation_expression_node.h",
     "geometry/calculation_value.cc",
     "geometry/calculation_value.h",
-    "geometry/double_point.cc",
-    "geometry/double_point.h",
     "geometry/float_polygon.cc",
     "geometry/float_polygon.h",
     "geometry/float_rounded_rect.cc",
@@ -751,6 +751,7 @@ component("platform") {
     "graphics/apply_viewport_changes.h",
     "graphics/begin_frame_provider.cc",
     "graphics/begin_frame_provider.h",
+    "graphics/begin_frame_provider_params.h",
     "graphics/bitmap_image.cc",
     "graphics/bitmap_image.h",
     "graphics/bitmap_image_metrics.cc",
@@ -1161,6 +1162,8 @@ component("platform") {
     "media_capabilities/web_video_configuration.h",
     "mediastream/aec_dump_agent_impl.cc",
     "mediastream/aec_dump_agent_impl.h",
+    "mediastream/audio_service_audio_processor_proxy.cc",
+    "mediastream/audio_service_audio_processor_proxy.h",
     "mediastream/media_constraints.cc",
     "mediastream/media_constraints.h",
     "mediastream/media_stream_audio_deliverer.h",
@@ -1216,6 +1219,8 @@ component("platform") {
     "mojo/mojo_binding_context.h",
     "mojo/mojo_helper.h",
     "mojo/security_origin_mojom_traits.h",
+    "mojo/shared_storage_mojom_traits.cc",
+    "mojo/shared_storage_mojom_traits.h",
     "mojo/string16_mojom_traits.cc",
     "mojo/string16_mojom_traits.h",
     "p2p/empty_network_manager.cc",
@@ -1830,6 +1835,8 @@ static_library("test_support") {
     "testing/fake_display_item_client.h",
     "testing/find_cc_layer.cc",
     "testing/find_cc_layer.h",
+    "testing/font_test_base.cc",
+    "testing/font_test_base.h",
     "testing/font_test_helpers.cc",
     "testing/font_test_helpers.h",
     "testing/histogram_tester.cc",
@@ -1927,9 +1934,13 @@ test("blink_platform_unittests") {
   if (is_fuchsia) {
     # Oilpan reuses V8's v8::PageAllocator which generally requires JIT
     # permissions.
+    # TODO(https://crbug.com/1287051): Requires fuchsia.sys.Launcher.
     use_cfv2 = false
     additional_manifest_fragments =
         [ "//build/config/fuchsia/test/jit_capabilities.test-cmx" ]
+
+    # Use the following when switching to CFv2:
+    # test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
   }
 
   if (is_android) {
@@ -1998,7 +2009,6 @@ source_set("blink_platform_unittests_sources") {
     "fonts/typesetting_features_test.cc",
     "fonts/unicode_range_set_test.cc",
     "fonts/utf16_ragel_iterator_test.cc",
-    "geometry/double_point_test.cc",
     "geometry/float_polygon_test.cc",
     "geometry/float_rounded_rect_test.cc",
     "geometry/layout_rect_test.cc",
@@ -2071,6 +2081,7 @@ source_set("blink_platform_unittests_sources") {
     "json/json_parser_test.cc",
     "json/json_values_test.cc",
     "media/webaudiosourceprovider_impl_test.cc",
+    "mediastream/audio_service_audio_processor_proxy_test.cc",
     "mediastream/media_stream_audio_processor_options_test.cc",
     "mediastream/media_stream_audio_test.cc",
     "mediastream/media_stream_source_test.cc",

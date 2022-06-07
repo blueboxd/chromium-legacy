@@ -34,7 +34,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -63,7 +63,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -92,7 +92,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -121,7 +121,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -150,7 +150,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -179,7 +179,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -208,7 +208,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -219,6 +219,21 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       }
+    ]
+  },
+  "android-builder-perf-pgo": {
+    "additional_compile_targets": [
+      "microdump_stackwalk",
+      "chrome_apk",
+      "system_webview_google_apk",
+      "android_tools",
+      "cc_perftests",
+      "chrome_public_apk",
+      "chromium_builder_perf",
+      "dump_syms",
+      "push_apps_to_background_apk",
+      "system_webview_apk",
+      "system_webview_shell_apk"
     ]
   },
   "android-go-perf": {
@@ -733,7 +748,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -762,7 +777,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -791,7 +806,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -820,7 +835,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -849,7 +864,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -878,7 +893,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -907,7 +922,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -936,7 +951,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -947,6 +962,21 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       }
+    ]
+  },
+  "android_arm64-builder-perf-pgo": {
+    "additional_compile_targets": [
+      "microdump_stackwalk",
+      "chrome_apk",
+      "system_webview_google_apk",
+      "android_tools",
+      "cc_perftests",
+      "chrome_public_apk",
+      "chromium_builder_perf",
+      "push_apps_to_background_apk",
+      "system_webview_apk",
+      "system_webview_shell_apk",
+      "telemetry_weblayer_apks"
     ]
   },
   "chromecast-linux-builder-perf": {
@@ -972,7 +1002,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1009,7 +1039,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1096,7 +1126,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1107,6 +1137,11 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       }
+    ]
+  },
+  "linux-builder-perf-pgo": {
+    "additional_compile_targets": [
+      "chromium_builder_perf"
     ]
   },
   "linux-builder-perf-rel": {
@@ -1261,6 +1296,11 @@
       }
     ]
   },
+  "mac-arm-builder-perf-pgo": {
+    "additional_compile_targets": [
+      "chromium_builder_perf"
+    ]
+  },
   "mac-builder-perf": {
     "additional_compile_targets": [
       "chromedriver",
@@ -1296,6 +1336,11 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       }
+    ]
+  },
+  "mac-builder-perf-pgo": {
+    "additional_compile_targets": [
+      "chromium_builder_perf"
     ]
   },
   "mac-laptop_high_end-perf": {
@@ -1532,55 +1577,6 @@
       "script": "//tools/perf/process_perf_results.py"
     }
   },
-  "win-10_amd-perf": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "-v",
-          "--browser=release_x64",
-          "--upload-results",
-          "--test-shard-map-filename=win-10_amd-perf_map.json",
-          "--assert-gpu-compositing"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:15d8-27.20.1034.6",
-              "os": "Windows-10-18363.476",
-              "pool": "chrome.tests.perf",
-              "synthetic_product_name": "11A5S4L300 [ThinkCentre M75q-1] (LENOVO)"
-            }
-          ],
-          "expiration": 7200,
-          "hard_timeout": 21600,
-          "ignore_task_failure": false,
-          "io_timeout": 21600,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 1
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "requires_simultaneous_shard_dispatch": true,
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      }
-    ]
-  },
   "win-10_amd_laptop-perf": {
     "isolated_scripts": [
       {
@@ -1727,6 +1723,11 @@
       }
     ]
   },
+  "win32-builder-perf-pgo": {
+    "additional_compile_targets": [
+      "chromium_builder_perf"
+    ]
+  },
   "win64-builder-perf": {
     "additional_compile_targets": [
       "chromedriver",
@@ -1762,6 +1763,11 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       }
+    ]
+  },
+  "win64-builder-perf-pgo": {
+    "additional_compile_targets": [
+      "chromium_builder_perf"
     ]
   }
 }

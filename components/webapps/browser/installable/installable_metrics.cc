@@ -7,8 +7,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/webapps/browser/webapps_client.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/web_contents.h"
 
 namespace webapps {
@@ -30,6 +32,7 @@ bool InstallableMetrics::IsReportableInstallSource(WebappInstallSource source) {
     case WebappInstallSource::ARC:
     case WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
     case WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
+    case WebappInstallSource::CHROME_SERVICE:
     case WebappInstallSource::DEVTOOLS:
     case WebappInstallSource::EXTERNAL_DEFAULT:
     case WebappInstallSource::EXTERNAL_POLICY:
@@ -63,6 +66,7 @@ bool InstallableMetrics::IsUserInitiatedInstallSource(
     case WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
     case WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
     case WebappInstallSource::ARC:
+    case WebappInstallSource::CHROME_SERVICE:
     case WebappInstallSource::OMNIBOX_INSTALL_ICON:
     case WebappInstallSource::MENU_CREATE_SHORTCUT:
       return true;

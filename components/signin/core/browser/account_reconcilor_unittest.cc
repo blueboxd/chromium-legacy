@@ -48,7 +48,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/tpm/stub_install_attributes.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
 #endif
 
@@ -1428,10 +1428,9 @@ class AccountReconcilorTestActiveDirectory : public AccountReconcilorTestTable {
   }
 
  private:
-  chromeos::ScopedStubInstallAttributes install_attributes_{
-      chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
-          "realm.com",
-          "device_id")};
+  ash::ScopedStubInstallAttributes install_attributes_{
+      ash::StubInstallAttributes::CreateActiveDirectoryManaged("realm.com",
+                                                               "device_id")};
 };
 
 // clang-format off

@@ -19,8 +19,7 @@
  * will show up in the options page.
  * 2. Add the command's logic to UserCommands inside of our switch-based
  * dispatch method (doCommand_).
- * 3. Add a key binding in chromevox/background/keymaps/classic_keymap.json and
- * chromevox/background/keymaps/flat_keymap.json.
+ * 3. Add a key binding.
  *
  * Class description:
  * This class is entirely static and holds a JSON structure that stores
@@ -30,8 +29,7 @@
  * categories.
  */
 
-
-goog.provide('CommandStore');
+export const CommandStore = {};
 
 /**
  * Returns all of the categories in the store as an array.
@@ -450,7 +448,7 @@ CommandStore.CMD_ALLOWLIST = {
     denyOOBE: true,
     category: 'help_commands'
   },
-  'showKbExplorerPage': {
+  'showLearnModePage': {
     announce: false,
     denyContinuation: true,
     msgId: 'show_kb_explorer_page',

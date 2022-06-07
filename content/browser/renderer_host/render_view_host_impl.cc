@@ -27,7 +27,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/typed_macros.h"
@@ -37,6 +36,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
+#include "content/browser/fenced_frame/fenced_frame.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -302,6 +302,9 @@ RenderViewHostImpl::RenderViewHostImpl(
       main_browsing_context_state_(std::move(main_browsing_context_state)) {
   TRACE_EVENT("navigation", "RenderViewHostImpl::RenderViewHostImpl",
               ChromeTrackEvent::kRenderViewHost, *this);
+  TRACE_EVENT_BEGIN("navigation", "RenderViewHost",
+                    perfetto::Track::FromPointer(this),
+                    "render_view_host_when_created", this);
   DCHECK(delegate_);
   DCHECK_NE(GetRoutingID(), render_widget_host_->GetRoutingID());
 
@@ -346,6 +349,7 @@ RenderViewHostImpl::RenderViewHostImpl(
 RenderViewHostImpl::~RenderViewHostImpl() {
   TRACE_EVENT_INSTANT("navigation", "~RenderViewHostImpl()",
                       ChromeTrackEvent::kRenderViewHost, *this);
+
   // TODO(https://crbug.com/1234634): Remove this.
   // If the view is destroyed while we were are still waiting for an ack,
   // then log how long we have been waiting.
@@ -382,6 +386,9 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   // the FrameTree at the time it entered the BackForwardCache.
   if (!is_in_back_forward_cache_)
     frame_tree_->UnregisterRenderViewHost(render_view_host_map_id_, this);
+
+  // Corresponds to the TRACE_EVENT_BEGIN in RenderViewHostImpl's constructor.
+  TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
 }
 
 RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
@@ -498,6 +505,9 @@ bool RenderViewHostImpl::CreateRenderView(
 
   if (is_fenced_frame) {
     params->type = mojom::ViewWidgetType::kFencedFrame;
+
+    params->fenced_frame_mode =
+        frame_tree_->root()->GetFencedFrameMode().value();
   } else if (is_portal) {
     DCHECK(!is_guest_view);
     params->type = mojom::ViewWidgetType::kPortal;
@@ -507,7 +517,7 @@ bool RenderViewHostImpl::CreateRenderView(
     params->type = mojom::ViewWidgetType::kTopLevel;
   }
 
-  // RenderViweHostImpls is reused after a crash, so reset any endpoint that
+  // RenderViewHostImpl is reused after a crash, so reset any endpoint that
   // might be a leftover from a crash.
   page_broadcast_.reset();
   params->blink_page_broadcast =
@@ -628,6 +638,7 @@ void RenderViewHostImpl::MaybeEvictFromBackForwardCache() {
       if (rvh == this) {
         RenderFrameHostImpl* rfh = entry->render_frame_host();
         rfh->MaybeEvictFromBackForwardCache();
+        break;
       }
     }
   }
@@ -641,7 +652,7 @@ bool RenderViewHostImpl::DidReceiveBackForwardCacheAck() {
   return GetPageLifecycleStateManager()->DidReceiveBackForwardCacheAck();
 }
 
-bool RenderViewHostImpl::IsRenderViewLive() {
+bool RenderViewHostImpl::IsRenderViewLive() const {
   return GetProcess()->IsInitializedAndNotDead() && renderer_view_created_;
 }
 
@@ -763,19 +774,19 @@ void RenderViewHostImpl::RenderProcessExited(
   // |this| might have been deleted. Do not add code here.
 }
 
-RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() {
+RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() const {
   return render_widget_host_.get();
 }
 
-AgentSchedulingGroupHost& RenderViewHostImpl::GetAgentSchedulingGroup() {
+AgentSchedulingGroupHost& RenderViewHostImpl::GetAgentSchedulingGroup() const {
   return render_widget_host_->agent_scheduling_group();
 }
 
-RenderProcessHost* RenderViewHostImpl::GetProcess() {
+RenderProcessHost* RenderViewHostImpl::GetProcess() const {
   return GetAgentSchedulingGroup().GetProcess();
 }
 
-int RenderViewHostImpl::GetRoutingID() {
+int RenderViewHostImpl::GetRoutingID() const {
   return routing_id_;
 }
 
@@ -956,17 +967,11 @@ void RenderViewHostImpl::SetWillSendRendererPreferencesCallbackForTesting(
   will_send_renderer_preferences_callback_for_testing_ = callback;
 }
 
-void RenderViewHostImpl::WriteIntoTrace(perfetto::TracedValue context) {
-  auto dict = std::move(context).WriteDictionary();
-  dict.Add("routing_id", GetRoutingID());
-  dict.Add("process", GetProcess());
-}
-
 void RenderViewHostImpl::WriteIntoTrace(
-    perfetto::TracedProto<perfetto::protos::pbzero::RenderViewHost> proto) {
+    perfetto::TracedProto<TraceProto> proto) const {
   proto->set_rvh_map_id(render_view_host_map_id_.value());
   proto->set_routing_id(GetRoutingID());
-  proto->set_process_id(GetProcess()->GetID());
+  proto.Set(TraceProto::kProcess, GetProcess());
   proto->set_is_in_back_forward_cache(is_in_back_forward_cache_);
   proto->set_renderer_view_created(renderer_view_created_);
 }

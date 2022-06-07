@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
@@ -243,7 +244,7 @@ TEST_P(SurfaceTest, Damage) {
 
   // Adjust damage for DSF filtering and verify it below.
   if (device_scale_factor() > 1.f)
-    buffer_damage.Inset(-1.f, -1.f);
+    buffer_damage.Inset(-1.f);
 
   {
     const viz::CompositorFrame& frame =

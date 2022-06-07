@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -17,7 +18,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -37,7 +37,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -45,10 +44,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
+
 namespace {
 
-// TODO(https://crbug.com/1164001): remove after moving to ash::
-using ::chromeos::InstallAttributes;
 using ErrorCode = DemoSetupController::DemoSetupError::ErrorCode;
 using RecoveryMethod = DemoSetupController::DemoSetupError::RecoveryMethod;
 
@@ -642,7 +640,8 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
   config.management_domain = policy::kDemoModeDomain;
 
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-      this, nullptr, config, policy::kDemoModeDomain);
+      this, nullptr, config, policy::kDemoModeDomain,
+      policy::LicenseType::kEnterprise);
   enrollment_helper_->EnrollUsingAttestation();
 }
 
@@ -675,7 +674,8 @@ void DemoSetupController::EnrollOffline() {
   config.offline_policy_path =
       policy_dir.AppendASCII(kOfflineDevicePolicyFileName);
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-      this, nullptr /* ad_join_delegate */, config, policy::kDemoModeDomain);
+      this, nullptr /* ad_join_delegate */, config, policy::kDemoModeDomain,
+      policy::LicenseType::kEnterprise);
   enrollment_helper_->EnrollForOfflineDemo();
 }
 

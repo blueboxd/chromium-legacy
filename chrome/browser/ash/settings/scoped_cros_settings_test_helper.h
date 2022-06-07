@@ -9,9 +9,9 @@
 #include <string>
 
 #include "ash/components/settings/cros_settings_provider.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 
 class Profile;
 
@@ -86,11 +86,10 @@ class ScopedCrosSettingsTestHelper {
 
   // Get the scoped install attributes to change them as needed for the
   // current test.
-  chromeos::StubInstallAttributes* InstallAttributes();
+  StubInstallAttributes* InstallAttributes();
 
  private:
-  std::unique_ptr<chromeos::ScopedStubInstallAttributes>
-      test_install_attributes_;
+  std::unique_ptr<ScopedStubInstallAttributes> test_install_attributes_;
   std::unique_ptr<ScopedTestDeviceSettingsService>
       test_device_settings_service_;
   std::unique_ptr<ScopedTestCrosSettings> test_cros_settings_;

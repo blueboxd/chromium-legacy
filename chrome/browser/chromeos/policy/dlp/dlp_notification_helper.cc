@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_notification_helper.h"
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_bubble_constants.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,7 +69,7 @@ void ShowDlpNotification(const std::string& id,
                          const std::u16string& message) {
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id, title, message,
-      /*icon=*/gfx::Image(), /*display_source=*/std::u16string(),
+      /*icon=*/ui::ImageModel(), /*display_source=*/std::u16string(),
       /*origin_url=*/GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kDlpPolicyNotifierId),

@@ -36,9 +36,16 @@ assert(is_linux || is_chromeos)
 packaging_files_executables = [
   "$root_out_dir/chrome",
   "$root_out_dir/chrome_crashpad_handler",
+  "$root_out_dir/chrome_management_service",
   "$root_out_dir/chrome_sandbox",
 ]
 packaging_files_shlibs = []
+
+# TODO(https://crbug.com/1299021): Implement building these NaCl targets as
+# ARM32 when Chrome is built for ARM64 (for Linux/Chrome OS).
+if (target_cpu == "arm64") {
+  enable_nacl = false
+}
 
 if (enable_nacl) {
   packaging_files_executables += [
@@ -73,11 +80,7 @@ if (use_egl) {
 }
 
 if (enable_swiftshader) {
-  packaging_files_shlibs += [
-    "$root_out_dir/swiftshader_libEGL.so",
-    "$root_out_dir/swiftshader_libGLESv2.so",
-    "$root_out_dir/libvk_swiftshader.so",
-  ]
+  packaging_files_shlibs += [ "$root_out_dir/libvk_swiftshader.so" ]
 }
 
 if (build_with_internal_optimization_guide) {
@@ -86,18 +89,6 @@ if (build_with_internal_optimization_guide) {
 }
 
 packaging_files_binaries = packaging_files_executables + packaging_files_shlibs
-
-copy("swiftshader_libs") {
-  sources = [
-    "$root_out_dir/swiftshader/libEGL.so",
-    "$root_out_dir/swiftshader/libGLESv2.so",
-  ]
-  outputs = [ "$root_out_dir/swiftshader_{{source_file_part}}" ]
-  public_deps = [
-    "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
-    "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
-  ]
-}
 
 # TODO(mmoss) Any convenient way to get all the relevant build files?
 # (e.g. all locales, resources, etc.)
@@ -192,6 +183,11 @@ strip_binary("strip_chrome_crashpad_handler") {
   deps = [ "//components/crash/core/app:chrome_crashpad_handler" ]
 }
 
+strip_binary("strip_chrome_management_service") {
+  binary_input = "$root_out_dir/chrome_management_service"
+  deps = [ "//chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service:chrome_management_service" ]
+}
+
 strip_binary("strip_chrome_sandbox") {
   binary_input = "$root_out_dir/chrome_sandbox"
   deps = [ "//sandbox/linux:chrome_sandbox" ]
@@ -210,17 +206,6 @@ strip_binary("strip_libGLESv2_shlib") {
 strip_binary("strip_libvulkan_shlib") {
   binary_input = "$root_out_dir/libvulkan.so.1"
   deps = [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
-}
-
-strip_binary("strip_swiftshader_libEGL_shlib") {
-  binary_input = "$root_out_dir/swiftshader/libEGL.so"
-  deps = [ "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL" ]
-}
-
-strip_binary("strip_swiftshader_libGLESv2_shlib") {
-  binary_input = "$root_out_dir/swiftshader/libGLESv2.so"
-  deps =
-      [ "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2" ]
 }
 
 strip_binary("strip_libvk_swiftshader.shlib") {
@@ -275,6 +260,7 @@ copy("common_packaging_files") {
     "common/postinst.include",
     "common/prerm.include",
     "common/repo.cron",
+    "common/repo_variables.include",
     "common/rpm.include",
     "common/rpmrepo.cron",
     "common/symlinks.include",
@@ -385,10 +371,12 @@ group("installer_deps") {
     ":save_build_info",
     ":strip_chrome_binary",
     ":strip_chrome_crashpad_handler",
+    ":strip_chrome_management_service",
     ":strip_chrome_sandbox",
     ":theme_files",
     "//chrome",
     "//chrome:packed_resources",
+    "//chrome/browser/enterprise/connectors/device_trust/key_management/installer/management_service:chrome_management_service",
     "//chrome/browser/resources/media/mei_preload:component",
     "//components/crash/core/app:chrome_crashpad_handler",
     "//sandbox/linux:chrome_sandbox",
@@ -425,9 +413,6 @@ group("installer_deps") {
   if (enable_swiftshader) {
     public_deps += [
       ":strip_libvk_swiftshader.shlib",
-      ":strip_swiftshader_libEGL_shlib",
-      ":strip_swiftshader_libGLESv2_shlib",
-      ":swiftshader_libs",
       "//third_party/swiftshader/src/Vulkan:icd_file",
       "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
     ]

@@ -104,6 +104,7 @@ public class ManageSyncSettingsTest {
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
                     .setRevision(RENDER_TEST_REVISION)
+                    .setBugComponent(ChromeRenderTestRule.Component.SERVICES_SYNC)
                     .build();
 
     @Test
@@ -247,6 +248,27 @@ public class ManageSyncSettingsTest {
                 fragment.findPreference(ManageSyncSettings.PREF_TURN_OFF_SYNC);
         Assert.assertFalse("Sign out and turn off sync button should not be shown",
                 turnOffSyncPreference.isVisible());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
+    public void testPressingTurnOffSyncForChildUser() {
+        mSyncTestRule.setUpChildAccountAndEnableSyncForTesting();
+        ManageSyncSettings fragment = startManageSyncPreferences();
+
+        assertSyncOnState(fragment);
+        Preference turnOffSyncPreference =
+                fragment.findPreference(ManageSyncSettings.PREF_TURN_OFF_SYNC);
+        Assert.assertTrue(
+                "Turn off sync button should be shown", turnOffSyncPreference.isVisible());
+        TestThreadUtils.runOnUiThreadBlocking(
+                fragment.findPreference(ManageSyncSettings.PREF_TURN_OFF_SYNC)::performClick);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        onView(withText(R.string.turn_off_sync_title))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
     }
 
     @Test

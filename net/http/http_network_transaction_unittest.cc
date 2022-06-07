@@ -36,6 +36,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -575,7 +576,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
     // The total number of sent bytes should not have changed.
     EXPECT_EQ(out.total_sent_bytes, trans.GetTotalSentBytes());
 
-    trans.GetConnectionAttempts(&out.connection_attempts);
+    out.connection_attempts = trans.GetConnectionAttempts();
     return out;
   }
 
@@ -978,6 +979,57 @@ TEST_F(HttpNetworkTransactionTest, ConnectedCallbackFailure) {
 
   EXPECT_THAT(connected_handler.transports(),
               ElementsAre(EmbeddedHttpServerTransportInfo()));
+}
+
+// This test verifies that if the ConnectedCallback returns an error, the
+// underlying socket is not closed and can be reused by the next transaction.
+TEST_F(HttpNetworkTransactionTest, ConnectedCallbackFailureAllowsSocketReuse) {
+  ConnectedHandler connected_handler;
+  connected_handler.set_result(ERR_NOT_IMPLEMENTED);
+
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  auto request = DefaultRequestInfo();
+
+  // A single socket should be opened and used for both transactions. Data
+  // providers are matched to sockets at most once.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead("X-Test-Header: foo\r\n\r\n"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  {
+    HttpNetworkTransaction transaction(DEFAULT_PRIORITY, session.get());
+    transaction.SetConnectedCallback(connected_handler.Callback());
+
+    TestCompletionCallback callback;
+    EXPECT_THAT(
+        transaction.Start(&request, callback.callback(), NetLogWithSource()),
+        IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NOT_IMPLEMENTED));
+  }
+
+  // The data provider should still be linked to a socket.
+  EXPECT_TRUE(data.socket());
+  auto* socket = data.socket();
+
+  {
+    HttpNetworkTransaction transaction(DEFAULT_PRIORITY, session.get());
+
+    TestCompletionCallback callback;
+    EXPECT_THAT(
+        transaction.Start(&request, callback.callback(), NetLogWithSource()),
+        IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+    EXPECT_TRUE(transaction.GetResponseInfo()->headers->HasHeaderValue(
+        "X-Test-Header", "foo"));
+
+    // Still linked to the same socket.
+    EXPECT_EQ(data.socket(), socket);
+  }
 }
 
 // This test verifies that the ConnectedCallback is called once in the case of
@@ -18543,8 +18595,7 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncConnectError) {
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 
-  ConnectionAttempts attempts;
-  trans.GetConnectionAttempts(&attempts);
+  ConnectionAttempts attempts = trans.GetConnectionAttempts();
   ASSERT_EQ(1u, attempts.size());
   EXPECT_THAT(attempts[0].result, IsError(ERR_NAME_NOT_RESOLVED));
 
@@ -18576,8 +18627,7 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncConnectError) {
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 
-  ConnectionAttempts attempts;
-  trans.GetConnectionAttempts(&attempts);
+  ConnectionAttempts attempts = trans.GetConnectionAttempts();
   ASSERT_EQ(1u, attempts.size());
   EXPECT_THAT(attempts[0].result, IsError(ERR_NAME_NOT_RESOLVED));
 

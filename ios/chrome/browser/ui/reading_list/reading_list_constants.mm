@@ -10,9 +10,6 @@
 
 NSString* const kReadingListViewID = @"ReadingListTableView";
 
-NSString* const kTableViewURLCellFaviconBadgeViewID =
-    @"TableViewURLCellFaviconBadgeView";
-
 NSString* const kReadingListToolbarEditButtonID =
     @"ReadingListToolbarEditButtonID";
 NSString* const kReadingListToolbarDeleteButtonID =
@@ -24,15 +21,5 @@ NSString* const kReadingListToolbarCancelButtonID =
 NSString* const kReadingListToolbarMarkButtonID =
     @"ReadingListToolbarMarkButton";
 
-NSString* const kLastTimeUserShownReadingListMessages =
-    @"LastTimeUserShownReadingListMessages";
 NSString* const kLastReadingListEntryAddedFromMessages =
     @"LastReadingListEntryAddedFromMessages";
-NSString* const kShouldAnimateReadingListNTPUnreadCountBadge =
-    @"ShouldAnimateReadingListNTPUnreadCountBadge";
-NSString* const kShouldAnimateReadingListOverflowMenuUnreadCountBadge =
-    @"ShouldAnimateReadingListOverflowMenuUnreadCountBadge";
-CGFloat const kReadingListUnreadCountBadgeAnimationDuration = 0.3;
-
-const char kPrefReadingListMessagesNeverShow[] =
-    "reading_list_message_never_show";

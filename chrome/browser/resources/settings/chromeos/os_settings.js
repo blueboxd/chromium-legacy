@@ -108,9 +108,9 @@ export {PageStatus, StatusAction, SyncBrowserProxyImpl} from '../people_page/syn
 export {CrSettingsPrefs} from '../prefs/prefs_types.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from '../privacy_page/privacy_page_browser_proxy.js';
 export {Route, Router} from '../router.js';
-export {getContactManager, observeContactManager, setContactManagerForTesting} from '../shared/nearby_contact_manager.m.js';
-export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '../shared/nearby_share_settings.m.js';
-export {NearbySettings, NearbyShareSettingsBehavior} from '../shared/nearby_share_settings_behavior.m.js';
+export {getContactManager, observeContactManager, setContactManagerForTesting} from '../shared/nearby_contact_manager.js';
+export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '../shared/nearby_share_settings.js';
+export {NearbySettings, NearbyShareSettingsBehavior} from '../shared/nearby_share_settings_behavior.js';
 export {AmbientModeBrowserProxyImpl} from './ambient_mode_page/ambient_mode_browser_proxy.js';
 export {AmbientModeTemperatureUnit, AmbientModeTopicSource} from './ambient_mode_page/constants.js';
 export {bluetoothApis} from './bluetooth_page/bluetooth_page.js';
@@ -120,7 +120,7 @@ export {GoogleAssistantBrowserProxyImpl} from './google_assistant_page/google_as
 export {ConsentStatus, DspHotwordState} from './google_assistant_page/google_assistant_page.js';
 export {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page/internet_page_browser_proxy.js';
 export {KerberosAccountsBrowserProxyImpl, KerberosConfigErrorCode, KerberosErrorType} from './kerberos_page/kerberos_accounts_browser_proxy.js';
-export {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from './metrics_recorder.m.js';
+export {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from './metrics_recorder.js';
 export {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_page/multidevice_browser_proxy.js';
 export {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubFeatureAccessProhibitedReason, PhoneHubFeatureAccessStatus, PhoneHubPermissionsSetupMode, SmartLockSignInEnabledState} from './multidevice_page/multidevice_constants.js';
 export {NotificationAccessSetupOperationStatus} from './multidevice_page/multidevice_notification_access_setup_dialog.js';
@@ -147,12 +147,12 @@ export {setAppNotificationProviderForTesting} from './os_apps_page/app_notificat
 export {osPageVisibility} from './os_page_visibility.js';
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './os_people_page/account_manager_browser_proxy.js';
 export {FingerprintBrowserProxyImpl, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.js';
-export {OsSyncBrowserProxyImpl} from './os_people_page/os_sync_browser_proxy.m.js';
+export {OsSyncBrowserProxyImpl} from './os_people_page/os_sync_browser_proxy.js';
 export {FingerprintLocation, FingerprintSetupStep} from './os_people_page/setup_fingerprint_dialog.js';
 export {MetricsConsentBrowserProxy, MetricsConsentBrowserProxyImpl, MetricsConsentState} from './os_privacy_page/metrics_consent_browser_proxy.js';
 export {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './os_privacy_page/peripheral_data_access_browser_proxy.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';
-export {routes} from './os_route.m.js';
+export {routes} from './os_route.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './os_search_page/search_engines_browser_proxy.js';
 export {ParentalControlsBrowserProxy, ParentalControlsBrowserProxyImpl} from './parental_controls_page/parental_controls_browser_proxy.js';
 export {ChangePictureBrowserProxy, ChangePictureBrowserProxyImpl} from './personalization_page/change_picture_browser_proxy.js';

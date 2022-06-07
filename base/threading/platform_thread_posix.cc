@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/notreached.h"
 #include "base/threading/platform_thread.h"
 
 #include <errno.h>
@@ -269,10 +270,12 @@ PlatformThreadHandle PlatformThread::CurrentHandle() {
   return PlatformThreadHandle(pthread_self());
 }
 
+#if !BUILDFLAG(IS_APPLE)
 // static
 void PlatformThread::YieldCurrentThread() {
   sched_yield();
 }
+#endif  // !BUILDFLAG(IS_APPLE)
 
 // static
 void PlatformThread::Sleep(TimeDelta duration) {

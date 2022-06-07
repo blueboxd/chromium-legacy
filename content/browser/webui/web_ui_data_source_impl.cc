@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -56,7 +58,7 @@ void WebUIDataSource::Add(BrowserContext* browser_context,
 // static
 void WebUIDataSource::Update(BrowserContext* browser_context,
                              const std::string& source_name,
-                             std::unique_ptr<base::DictionaryValue> update) {
+                             const base::Value::Dict& update) {
   URLDataManager::UpdateWebUIDataSource(browser_context, source_name,
                                         std::move(update));
 }
@@ -168,20 +170,20 @@ WebUIDataSourceImpl::~WebUIDataSourceImpl() = default;
 void WebUIDataSourceImpl::AddString(base::StringPiece name,
                                     const std::u16string& value) {
   // TODO(dschuyler): Share only one copy of these strings.
-  localized_strings_.SetKey(name, base::Value(value));
+  localized_strings_.GetDict().Set(name, base::Value(value));
   replacements_[std::string(name)] = base::UTF16ToUTF8(value);
 }
 
 void WebUIDataSourceImpl::AddString(base::StringPiece name,
                                     const std::string& value) {
-  localized_strings_.SetKey(name, base::Value(value));
+  localized_strings_.GetDict().Set(name, base::Value(value));
   replacements_[std::string(name)] = value;
 }
 
 void WebUIDataSourceImpl::AddLocalizedString(base::StringPiece name, int ids) {
   std::string utf8_str =
       base::UTF16ToUTF8(GetContentClient()->GetLocalizedString(ids));
-  localized_strings_.SetKey(name, base::Value(utf8_str));
+  localized_strings_.GetDict().Set(name, base::Value(utf8_str));
   replacements_[std::string(name)] = utf8_str;
 }
 
@@ -192,14 +194,14 @@ void WebUIDataSourceImpl::AddLocalizedStrings(
 }
 
 void WebUIDataSourceImpl::AddLocalizedStrings(
-    const base::DictionaryValue& localized_strings) {
-  localized_strings_.MergeDictionary(&localized_strings);
+    const base::Value::Dict& localized_strings) {
+  localized_strings_.GetDict().Merge(localized_strings);
   ui::TemplateReplacementsFromDictionaryValue(localized_strings,
                                               &replacements_);
 }
 
 void WebUIDataSourceImpl::AddBoolean(base::StringPiece name, bool value) {
-  localized_strings_.SetBoolean(name, value);
+  localized_strings_.GetDict().Set(name, value);
   // TODO(dschuyler): Change name of |localized_strings_| to |load_time_data_|
   // or similar. These values haven't been found as strings for
   // localization. The boolean values are not added to |replacements_|
@@ -208,11 +210,11 @@ void WebUIDataSourceImpl::AddBoolean(base::StringPiece name, bool value) {
 }
 
 void WebUIDataSourceImpl::AddInteger(base::StringPiece name, int32_t value) {
-  localized_strings_.SetInteger(name, value);
+  localized_strings_.GetDict().Set(name, value);
 }
 
 void WebUIDataSourceImpl::AddDouble(base::StringPiece name, double value) {
-  localized_strings_.SetDouble(name, value);
+  localized_strings_.GetDict().Set(name, value);
 }
 
 void WebUIDataSourceImpl::UseStringsJs() {
@@ -308,7 +310,7 @@ void WebUIDataSourceImpl::EnsureLoadTimeDataDefaultsAdded() {
 
   add_load_time_data_defaults_ = false;
   std::string locale = GetContentClient()->browser()->GetApplicationLocale();
-  base::DictionaryValue defaults;
+  base::Value::Dict defaults;
   webui::SetLoadTimeDataDefaults(locale, &defaults);
   AddLocalizedStrings(defaults);
 }
@@ -392,8 +394,8 @@ void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
   std::move(callback).Run(base::RefCountedString::TakeString(&template_data));
 }
 
-const base::DictionaryValue* WebUIDataSourceImpl::GetLocalizedStrings() const {
-  return &localized_strings_;
+const base::Value::Dict* WebUIDataSourceImpl::GetLocalizedStrings() const {
+  return &localized_strings_.GetDict();
 }
 
 bool WebUIDataSourceImpl::ShouldReplaceI18nInJS() const {

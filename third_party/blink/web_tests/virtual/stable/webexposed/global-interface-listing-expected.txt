@@ -900,6 +900,10 @@ interface CanvasRenderingContext2D
     setter textBaseline
     setter textRendering
     setter wordSpacing
+interface CaptureHandleChangeEvent : Event
+    attribute @@toStringTag
+    method captureHandle
+    method constructor
 interface ChannelMergerNode : AudioNode
     attribute @@toStringTag
     method constructor
@@ -1415,6 +1419,7 @@ interface Document : Node
     getter onauxclick
     getter onbeforecopy
     getter onbeforecut
+    getter onbeforematch
     getter onbeforepaste
     getter onbeforexrselect
     getter onblur
@@ -1616,6 +1621,7 @@ interface Document : Node
     setter onauxclick
     setter onbeforecopy
     setter onbeforecut
+    setter onbeforematch
     setter onbeforepaste
     setter onbeforexrselect
     setter onblur
@@ -1781,6 +1787,7 @@ interface Element : Node
     getter ariaExpanded
     getter ariaHasPopup
     getter ariaHidden
+    getter ariaInvalid
     getter ariaKeyShortcuts
     getter ariaLabel
     getter ariaLevel
@@ -1911,6 +1918,7 @@ interface Element : Node
     setter ariaExpanded
     setter ariaHasPopup
     setter ariaHidden
+    setter ariaInvalid
     setter ariaKeyShortcuts
     setter ariaLabel
     setter ariaLevel
@@ -1969,6 +1977,7 @@ interface ElementInternals
     getter ariaExpanded
     getter ariaHasPopup
     getter ariaHidden
+    getter ariaInvalid
     getter ariaKeyShortcuts
     getter ariaLabel
     getter ariaLevel
@@ -2019,6 +2028,7 @@ interface ElementInternals
     setter ariaExpanded
     setter ariaHasPopup
     setter ariaHidden
+    setter ariaInvalid
     setter ariaKeyShortcuts
     setter ariaLabel
     setter ariaLevel
@@ -2665,6 +2675,7 @@ interface HTMLElement : Element
     getter draggable
     getter enterKeyHint
     getter hidden
+    getter inert
     getter innerText
     getter inputMode
     getter isContentEditable
@@ -2680,6 +2691,7 @@ interface HTMLElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforematch
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -2792,6 +2804,7 @@ interface HTMLElement : Element
     setter draggable
     setter enterKeyHint
     setter hidden
+    setter inert
     setter innerText
     setter inputMode
     setter lang
@@ -2801,6 +2814,7 @@ interface HTMLElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforematch
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -4475,6 +4489,7 @@ interface MediaDevices : EventTarget
     method getDisplayMedia
     method getSupportedConstraints
     method getUserMedia
+    method setCaptureHandleConfig
     setter ondevicechange
 interface MediaElementAudioSourceNode : AudioNode
     attribute @@toStringTag
@@ -4672,6 +4687,7 @@ interface MediaStreamTrack : EventTarget
     getter kind
     getter label
     getter muted
+    getter oncapturehandlechange
     getter onended
     getter onmute
     getter onunmute
@@ -4680,11 +4696,13 @@ interface MediaStreamTrack : EventTarget
     method clone
     method constructor
     method getCapabilities
+    method getCaptureHandle
     method getConstraints
     method getSettings
     method stop
     setter contentHint
     setter enabled
+    setter oncapturehandlechange
     setter onended
     setter onmute
     setter onunmute
@@ -6232,6 +6250,7 @@ interface SVGElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforematch
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -6338,6 +6357,7 @@ interface SVGElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforematch
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -10177,6 +10197,7 @@ namespace CSS
     getter onappinstalled
     getter onauxclick
     getter onbeforeinstallprompt
+    getter onbeforematch
     getter onbeforeprint
     getter onbeforeunload
     getter onbeforexrselect
@@ -10388,6 +10409,7 @@ namespace CSS
     setter onappinstalled
     setter onauxclick
     setter onbeforeinstallprompt
+    setter onbeforematch
     setter onbeforeprint
     setter onbeforeunload
     setter onbeforexrselect

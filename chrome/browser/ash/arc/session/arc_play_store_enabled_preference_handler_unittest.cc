@@ -28,10 +28,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -69,7 +69,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
     chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     chromeos::SessionManagerClient::InitializeFakeInMemory();
-    chromeos::UpstartClient::InitializeFake();
+    ash::UpstartClient::InitializeFake();
 
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
@@ -112,7 +112,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     identity_test_env_profile_adaptor_.reset();
     profile_.reset();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
-    chromeos::UpstartClient::Shutdown();
+    ash::UpstartClient::Shutdown();
     chromeos::SessionManagerClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();

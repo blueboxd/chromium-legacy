@@ -20,6 +20,7 @@ source_set("quick_answers") {
     "//chromeos/components/quick_answers",
     "//chromeos/components/quick_answers/public/cpp:cpp",
     "//chromeos/components/quick_answers/public/cpp:prefs",
+    "//content/public/browser",
     "//ui/views/controls/webview",
   ]
 
@@ -28,8 +29,8 @@ source_set("quick_answers") {
     sources += [
       "quick_answers_controller_impl.cc",
       "quick_answers_controller_impl.h",
-      "quick_answers_state_controller.cc",
-      "quick_answers_state_controller.h",
+      "quick_answers_state_ash.cc",
+      "quick_answers_state_ash.h",
       "quick_answers_ui_controller.cc",
       "quick_answers_ui_controller.h",
       "ui/quick_answers_view.cc",
@@ -39,7 +40,17 @@ source_set("quick_answers") {
     ]
     deps += [
       "//ash",
-      "//chrome/browser/chromeos",
+      "//chrome/browser/ui/color:color_headers",
+      "//chromeos/strings:strings_grit",
+      "//components/language/core/browser:browser",
+      "//components/prefs:prefs",
+    ]
+  }
+
+  if (is_chromeos_lacros) {
+    sources += [
+      "lacros/quick_answers_state_lacros.cc",
+      "lacros/quick_answers_state_lacros.h",
     ]
   }
 }

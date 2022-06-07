@@ -190,7 +190,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
         private void updateScrimVisibility(boolean visibility) {
             if (!isGridTabSwitcherNonPolishEnabled()) return;
 
-            if (mScrimFadeAnimation != null && mScrimFadeAnimation.isRunning()) {
+            if (mScrimFadeAnimation != null) {
                 mScrimFadeAnimation.cancel();
             }
 
@@ -260,7 +260,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
                 res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_standard),
                 res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_incognito));
 
-        mStripScrim = new StripScrim(res, mWidth, mHeight);
+        mStripScrim = new StripScrim(context, mWidth, mHeight);
         mStripScrim.setVisible(false);
 
         onContextChanged(context);
@@ -277,9 +277,6 @@ public class StripLayoutHelperManager implements SceneOverlay {
      * Cleans up internal state.
      */
     public void destroy() {
-        if (mScrimFadeAnimation != null) {
-            mScrimFadeAnimation.cancel();
-        }
         mTabStripTreeProvider.destroy();
         mTabStripTreeProvider = null;
         mIncognitoHelper.destroy();
@@ -520,6 +517,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
                 if (mLayerTitleCacheSupplier.hasValue()) {
                     mLayerTitleCacheSupplier.get().remove(tab.getId());
                 }
+                getStripLayoutHelper(tab.isIncognito()).tabClosureCommited();
             }
 
             @Override
@@ -532,6 +530,11 @@ public class StripLayoutHelperManager implements SceneOverlay {
             public void didCloseTab(Tab tab) {
                 getStripLayoutHelper(tab.isIncognito()).tabClosed(time(), tab.getId());
                 updateModelSwitcherButton();
+            }
+
+            @Override
+            public void willCloseTab(Tab tab, boolean animate) {
+                getStripLayoutHelper(tab.isIncognito()).willCloseTab(tab.getId());
             }
 
             @Override

@@ -11,7 +11,7 @@ mojom("mojom") {
   sources = [ "device_sync.mojom" ]
 
   public_deps = [
-    "//chromeos/components/multidevice/mojom",
+    "//ash/components/multidevice/mojom",
     "//mojo/public/mojom/base",
   ]
 
@@ -19,15 +19,15 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "chromeos.device_sync.mojom.ConnectivityStatus"
+          mojom = "ash.device_sync.mojom.ConnectivityStatus"
           cpp = "cryptauthv2::ConnectivityStatus"
         },
         {
-          mojom = "chromeos.device_sync.mojom.FeatureStatusChange"
-          cpp = "chromeos::device_sync::FeatureStatusChange"
+          mojom = "ash.device_sync.mojom.FeatureStatusChange"
+          cpp = "ash::device_sync::FeatureStatusChange"
         },
         {
-          mojom = "chromeos.device_sync.mojom.CryptAuthService"
+          mojom = "ash.device_sync.mojom.CryptAuthService"
           cpp = "cryptauthv2::TargetService"
         },
       ]

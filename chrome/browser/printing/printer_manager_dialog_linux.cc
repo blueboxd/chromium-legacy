@@ -13,7 +13,6 @@
 #include "base/nix/xdg_util.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 
@@ -77,6 +76,7 @@ void DetectAndOpenPrinterConfigDialog() {
       break;
     case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
+    case base::nix::DESKTOP_ENVIRONMENT_UKUI:
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
       opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand) ||
                OpenPrinterConfigDialog(kGnomeControlCenterPrintersCommand);

@@ -170,18 +170,20 @@ void OverviewSession::Init(const WindowList& windows,
                            const WindowList& hide_windows) {
   Shell::Get()->AddShellObserver(this);
 
-  if (desks_templates_util::AreDesksTemplatesEnabled())
+  if (desks_templates_util::IsSavedDesksEnabled())
     tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
 
   hide_overview_windows_ = std::make_unique<ScopedOverviewHideWindows>(
       std::move(hide_windows), /*force_hidden=*/false);
 
   active_window_before_overview_ = window_util::GetActiveWindow();
-  if (active_window_before_overview_)
-    active_window_before_overview_->AddObserver(this);
+  if (active_window_before_overview_) {
+    active_window_before_overview_observation_.Observe(
+        active_window_before_overview_);
+  }
 
   // Create this before the desks bar widget.
-  if (desks_templates_util::AreDesksTemplatesEnabled() &&
+  if (desks_templates_util::IsSavedDesksEnabled() &&
       !desks_templates_presenter_) {
     desks_templates_presenter_ =
         std::make_unique<DesksTemplatesPresenter>(this);
@@ -529,13 +531,15 @@ void OverviewSession::AppendItem(aura::Window* window,
 void OverviewSession::AddItemInMruOrder(aura::Window* window,
                                         bool reposition,
                                         bool animate,
-                                        bool restack) {
+                                        bool restack,
+                                        bool use_spawn_animation) {
   // Early exit if a grid already contains |window|.
   OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
   if (!grid || grid->GetOverviewItemContaining(window))
     return;
 
-  grid->AddItemInMruOrder(window, reposition, animate, restack);
+  grid->AddItemInMruOrder(window, reposition, animate, restack,
+                          use_spawn_animation);
   OnItemAdded(window);
 }
 
@@ -547,7 +551,7 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item,
                                  bool item_destroying,
                                  bool reposition) {
   if (overview_item->GetWindow() == active_window_before_overview_) {
-    active_window_before_overview_->RemoveObserver(this);
+    active_window_before_overview_observation_.Reset();
     active_window_before_overview_ = nullptr;
   }
 
@@ -582,7 +586,7 @@ void OverviewSession::InitiateDrag(OverviewItem* item,
 
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->OnSelectorItemDragStarted(item);
-    grid->UpdateSaveDeskAsTemplateButton();
+    grid->UpdateSaveDeskButtons();
   }
 
   // Fire a haptic event if necessary.
@@ -612,7 +616,7 @@ void OverviewSession::CompleteDrag(OverviewItem* item,
                     OverviewWindowDragController::DragResult::kSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->OnSelectorItemDragEnded(snap);
-    grid->UpdateSaveDeskAsTemplateButton();
+    grid->UpdateSaveDeskButtons();
   }
 }
 
@@ -635,7 +639,7 @@ void OverviewSession::Fling(OverviewItem* item,
                     OverviewWindowDragController::DragResult::kSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->OnSelectorItemDragEnded(snap);
-    grid->UpdateSaveDeskAsTemplateButton();
+    grid->UpdateSaveDeskButtons();
   }
 }
 
@@ -647,7 +651,7 @@ void OverviewSession::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->OnSelectorItemDragEnded(/*snap=*/false);
-    grid->UpdateSaveDeskAsTemplateButton();
+    grid->UpdateSaveDeskButtons();
   }
 }
 
@@ -791,7 +795,7 @@ void OverviewSession::OnWindowActivating(
 
   // Activating or deactivating one of the confirmation dialogs associated with
   // desks templates should not end overview.
-  if (gained_active && desks_templates_util::AreDesksTemplatesEnabled()) {
+  if (gained_active && desks_templates_util::IsSavedDesksEnabled()) {
     if (ShouldKeepOverviewOpenForDesksTemplatesDialog(gained_active,
                                                       lost_active)) {
       return;
@@ -885,7 +889,7 @@ void OverviewSession::OnWindowActivating(
 }
 
 bool OverviewSession::IsTemplatesUiLosingActivation(aura::Window* lost_active) {
-  if (!desks_templates_util::AreDesksTemplatesEnabled() || !lost_active)
+  if (!desks_templates_util::IsSavedDesksEnabled() || !lost_active)
     return false;
 
   for (auto& grid : grid_list_) {
@@ -947,8 +951,7 @@ void OverviewSession::RestoreWindowActivation(bool restore) {
     base::AutoReset<bool> restoring_focus(&ignore_activations_, true);
     wm::ActivateWindow(active_window_before_overview_);
   }
-
-  active_window_before_overview_->RemoveObserver(this);
+  active_window_before_overview_observation_.Reset();
   active_window_before_overview_ = nullptr;
 }
 
@@ -1088,8 +1091,8 @@ void OverviewSession::UpdateAccessibilityFocus() {
     if (grid->desks_widget())
       a11y_widgets.push_back(const_cast<views::Widget*>(grid->desks_widget()));
 
-    if (grid->IsSaveDeskAsTemplateButtonVisible())
-      a11y_widgets.push_back(grid->save_desk_as_template_widget());
+    if (grid->IsSaveDeskButtonContainerVisible())
+      a11y_widgets.push_back(grid->save_desk_button_container_widget());
 
     auto* no_windows_widget = grid->no_windows_widget();
     if (no_windows_widget) {
@@ -1171,7 +1174,7 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
 
 void OverviewSession::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(active_window_before_overview_, window);
-  active_window_before_overview_->RemoveObserver(this);
+  active_window_before_overview_observation_.Reset();
   active_window_before_overview_ = nullptr;
 }
 
@@ -1191,7 +1194,14 @@ void OverviewSession::OnWindowAdded(aura::Window* new_window) {
     return;
   }
 
-  AppendItem(new_window, /*reposition=*/true, /*animate*/ true);
+  AddItemInMruOrder(new_window, /*reposition=*/true, /*animate=*/true,
+                    /*restack=*/false, /*use_spawn_animation=*/true);
+
+  // If a window is added from desk templates, we no longer want to go back to
+  // the previous active window we had before entering overview, otherwise we
+  // may activate a window and break the stacking order that the saved desk had.
+  active_window_before_overview_observation_.Reset();
+  active_window_before_overview_ = nullptr;
 }
 
 void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
@@ -1288,7 +1298,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
         // templates grid slightly quicker.
         // TODO(crbug.com/1281685): Remove before feature launch.
 #if !defined(OFFICIAL_BUILD)
-      if (!desks_templates_util::AreDesksTemplatesEnabled())
+      if (!desks_templates_util::IsSavedDesksEnabled())
         return;
 
       // There are no templates to be viewed.
@@ -1411,7 +1421,7 @@ void OverviewSession::OnTabletModeEnded() {
 }
 
 void OverviewSession::OnTabletModeChanged() {
-  DCHECK(desks_templates_util::AreDesksTemplatesEnabled());
+  DCHECK(desks_templates_util::IsSavedDesksEnabled());
   DCHECK(desks_templates_presenter_);
   desks_templates_presenter_->UpdateDesksTemplatesUI();
 }
@@ -1465,8 +1475,7 @@ bool OverviewSession::ProcessForScrolling(const ui::KeyEvent& event) {
 
 void OverviewSession::RemoveAllObservers() {
   display_observer_.reset();
-  if (active_window_before_overview_)
-    active_window_before_overview_->RemoveObserver(this);
+  active_window_before_overview_observation_.Reset();
   active_window_before_overview_ = nullptr;
 }
 
@@ -1511,7 +1520,7 @@ void OverviewSession::OnItemAdded(aura::Window* window) {
 bool OverviewSession::ShouldKeepOverviewOpenForDesksTemplatesDialog(
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  DCHECK(desks_templates_util::AreDesksTemplatesEnabled());
+  DCHECK(desks_templates_util::IsSavedDesksEnabled());
   const views::Widget* dialog_widget =
       desks_templates_dialog_controller_->dialog_widget();
   if (!dialog_widget)

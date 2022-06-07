@@ -53,26 +53,17 @@ void DownloadManagerTabHelper::Download(
 
 void DownloadManagerTabHelper::SetDelegate(
     id<DownloadManagerTabHelperDelegate> delegate) {
-  if (delegate == delegate_)
-    return;
-
-  if (delegate_ && task_ && delegate_started_)
-    [delegate_ downloadManagerTabHelper:this didHideDownload:task_.get()];
-
-  delegate_started_ = false;
   delegate_ = delegate;
 }
 
 void DownloadManagerTabHelper::WasShown(web::WebState* web_state) {
-  if (task_ && delegate_) {
-    delegate_started_ = true;
+  if (task_) {
     [delegate_ downloadManagerTabHelper:this didShowDownload:task_.get()];
   }
 }
 
 void DownloadManagerTabHelper::WasHidden(web::WebState* web_state) {
-  if (task_ && delegate_) {
-    delegate_started_ = false;
+  if (task_) {
     [delegate_ downloadManagerTabHelper:this didHideDownload:task_.get()];
   }
 }
@@ -113,12 +104,9 @@ void DownloadManagerTabHelper::DidCreateDownload(
   }
   task_ = std::move(task);
   task_->AddObserver(this);
-  if (web_state_->IsVisible() && delegate_) {
-    delegate_started_ = true;
-    [delegate_ downloadManagerTabHelper:this
-                      didCreateDownload:task_.get()
-                      webStateIsVisible:true];
-  }
+  [delegate_ downloadManagerTabHelper:this
+                    didCreateDownload:task_.get()
+                    webStateIsVisible:web_state_->IsVisible()];
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(DownloadManagerTabHelper)

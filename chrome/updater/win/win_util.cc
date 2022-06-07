@@ -591,10 +591,12 @@ REGSAM Wow6432(REGSAM access) {
   return KEY_WOW64_32KEY | access;
 }
 
-HRESULT RunElevated(const base::FilePath& file_path,
-                    const std::wstring& parameters,
-                    DWORD* exit_code) {
-  VLOG(1) << "RunElevated:" << file_path << ":" << parameters;
+HRESULT ShellExecuteAndWait(const base::FilePath& file_path,
+                            const std::wstring& parameters,
+                            const std::wstring& verb,
+                            DWORD* exit_code) {
+  VLOG(1) << __func__ << ": path: " << file_path
+          << ", parameters:" << parameters << ", verb:" << verb;
   DCHECK(!file_path.empty());
   DCHECK(exit_code);
 
@@ -612,15 +614,18 @@ HRESULT RunElevated(const base::FilePath& file_path,
                              SEE_MASK_NOZONECHECKS | SEE_MASK_NOASYNC;
   shell_execute_info.hProcess = NULL;
   shell_execute_info.hwnd = hwnd;
-  shell_execute_info.lpVerb = L"runas";
+  shell_execute_info.lpVerb = verb.c_str();
   shell_execute_info.lpFile = file_path.value().c_str();
   shell_execute_info.lpParameters = parameters.c_str();
   shell_execute_info.lpDirectory = NULL;
   shell_execute_info.nShow = SW_SHOW;
   shell_execute_info.hInstApp = NULL;
 
-  if (!::ShellExecuteEx(&shell_execute_info))
-    return HRESULTFromLastError();
+  if (!::ShellExecuteEx(&shell_execute_info)) {
+    HRESULT hr = HRESULTFromLastError();
+    VLOG(1) << "::ShellExecuteEx failed: " << std::hex << hr;
+    return hr;
+  }
 
   base::win::ScopedHandle process(shell_execute_info.hProcess);
 
@@ -633,6 +638,12 @@ HRESULT RunElevated(const base::FilePath& file_path,
 
   *exit_code = ret_val;
   return S_OK;
+}
+
+HRESULT RunElevated(const base::FilePath& file_path,
+                    const std::wstring& parameters,
+                    DWORD* exit_code) {
+  return ShellExecuteAndWait(file_path, parameters, L"runas", exit_code);
 }
 
 absl::optional<base::FilePath> GetGoogleUpdateExePath(UpdaterScope scope) {
@@ -666,15 +677,45 @@ HRESULT DisableCOMExceptionHandling() {
                            COMGLB_EXCEPTION_DONOT_HANDLE);
 }
 
-std::wstring BuildMsiCommandLine(const std::wstring& arguments,
-                                 const base::FilePath& msi_installer) {
+std::wstring BuildMsiCommandLine(
+    const std::wstring& arguments,
+    const absl::optional<base::FilePath>& installer_data_file,
+    const base::FilePath& msi_installer) {
   if (!msi_installer.MatchesExtension(L".msi")) {
     return std::wstring();
   }
 
   return base::StrCat(
-      {L"msiexec ", arguments, L" REBOOT=ReallySuppress /qn /i \"",
-       msi_installer.value(), L"\" /log \"", msi_installer.value(), L".log\""});
+      {L"msiexec ", arguments,
+       installer_data_file
+           ? base::StrCat(
+                 {L" ",
+                  base::UTF8ToWide(base::ToUpperASCII(kInstallerDataSwitch)),
+                  L"=\"", installer_data_file->value(), L"\""})
+           : L"",
+       L" REBOOT=ReallySuppress /qn /i \"", msi_installer.value(),
+       L"\" /log \"", msi_installer.value(), L".log\""});
+}
+
+std::wstring BuildExeCommandLine(
+    const std::wstring& arguments,
+    const absl::optional<base::FilePath>& installer_data_file,
+    const base::FilePath& exe_installer) {
+  if (!exe_installer.MatchesExtension(L".exe")) {
+    return std::wstring();
+  }
+
+  return base::StrCat({base::CommandLine(exe_installer).GetCommandLineString(),
+                       L" ", arguments, [&installer_data_file]() {
+                         if (!installer_data_file)
+                           return std::wstring();
+
+                         base::CommandLine installer_data_args(
+                             base::CommandLine::NO_PROGRAM);
+                         installer_data_args.AppendSwitchPath(
+                             kInstallerDataSwitch, *installer_data_file);
+                         return installer_data_args.GetCommandLineString();
+                       }()});
 }
 
 bool IsServiceRunning(const std::wstring& service_name) {
@@ -704,6 +745,11 @@ bool IsServiceRunning(const std::wstring& service_name) {
           << ", status: " << std::hex << status.dwCurrentState;
   return status.dwCurrentState == SERVICE_RUNNING ||
          status.dwCurrentState == SERVICE_START_PENDING;
+}
+
+HKEY UpdaterScopeToHKeyRoot(UpdaterScope scope) {
+  return scope == UpdaterScope::kSystem ? HKEY_LOCAL_MACHINE
+                                        : HKEY_CURRENT_USER;
 }
 
 }  // namespace updater

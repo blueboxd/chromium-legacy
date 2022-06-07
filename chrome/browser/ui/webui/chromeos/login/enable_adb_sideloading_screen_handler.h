@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENABLE_ADB_SIDELOADING_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENABLE_ADB_SIDELOADING_SCREEN_HANDLER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
@@ -14,9 +15,11 @@ class EnableAdbSideloadingScreen;
 namespace chromeos {
 
 // Interface between enable adb sideloading screen and its representation.
-class EnableAdbSideloadingScreenView {
+class EnableAdbSideloadingScreenView
+    : public base::SupportsWeakPtr<EnableAdbSideloadingScreenView> {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"adb-sideloading"};
+  inline constexpr static StaticOobeScreenId kScreenId{
+      "adb-sideloading", "EnableAdbSideloadingScreen"};
 
   // The constants need to be synced with oobe_adb_sideloading_screen.js.
   enum class UIState {
@@ -24,7 +27,7 @@ class EnableAdbSideloadingScreenView {
     UI_STATE_SETUP = 2,
   };
 
-  virtual ~EnableAdbSideloadingScreenView() {}
+  virtual ~EnableAdbSideloadingScreenView() = default;
 
   virtual void Show() = 0;
   virtual void Hide() = 0;
@@ -39,8 +42,7 @@ class EnableAdbSideloadingScreenHandler : public EnableAdbSideloadingScreenView,
  public:
   using TView = EnableAdbSideloadingScreenView;
 
-  explicit EnableAdbSideloadingScreenHandler(
-      JSCallsContainer* js_calls_container);
+  EnableAdbSideloadingScreenHandler();
 
   EnableAdbSideloadingScreenHandler(const EnableAdbSideloadingScreenHandler&) =
       delete;
@@ -59,11 +61,9 @@ class EnableAdbSideloadingScreenHandler : public EnableAdbSideloadingScreenView,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
  private:
-  ash::EnableAdbSideloadingScreen* screen_ = nullptr;
-
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
 };

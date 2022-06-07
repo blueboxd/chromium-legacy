@@ -61,7 +61,7 @@ export class PostMessageAPIClient {
      * Map of methods awaiting a response.
      * @private {!Map<number, !NativeResolver>}
      */
-    this.methodsAwaitingResponse_ = new Map;
+    this.methodsAwaitingResponse_ = new Map();
 
     /**
      * The parent window.
@@ -175,7 +175,7 @@ export class PostMessageAPIClient {
     }
 
     if (!this.methodsAwaitingResponse_.has(event.data.methodId)) {
-      console.log('discarding event method is not waiting for a response');
+      console.info('discarding event method is not waiting for a response');
       return;
     }
 

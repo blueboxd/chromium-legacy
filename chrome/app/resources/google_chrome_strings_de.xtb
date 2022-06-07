@@ -173,6 +173,7 @@
 <translation id="4600710005438004015">Chrome konnte nicht auf die neueste Version aktualisiert werden. In deiner Version fehlen daher einige neue Funktionen und Sicherheitspatches.</translation>
 <translation id="4627412468266359539">Optional: Lasse Diagnose- und Nutzungsdaten automatisch an Google senden, um die Funktionen und die Leistung von Chrome OS Flex zu verbessern.</translation>
 <translation id="4633000520311261472">Um Chrome sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne dein Wissen hinzugefügt wurden.</translation>
+<translation id="469553575393225953">Erweiterungen, Apps und Designs aus unbekannten Quellen können Schäden auf deinem Gerät verursachen. Chrome empfiehlt, sie nur über den Chrome Web Store zu installieren.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließe es und versuche es noch einmal.</translation>
 <translation id="4747730611090640388">Chrome kann deine Interessen schätzen.  Wenn du eine Website besuchst, kann diese von Chrome dann deine Interessen anfordern, um die dir gezeigte Werbung zu personalisieren.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -212,6 +213,7 @@
 <translation id="5736850870166430177">Wenn eine Website versucht, dein Passwort zu stehlen, oder wenn du eine schädliche Datei herunterlädst, kann Chrome auch URLs, einschließlich Teile von Seiteninhalten, an Safe Browsing senden</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5756509061973259733">Ein Chrome-Profil mit diesem Konto ist auf diesem Gerät bereits vorhanden</translation>
+<translation id="5763280521700030406">Chrome hat diese Datei blockiert, weil sie zu groß für den Sicherheitscheck ist. Du kannst Dateien mit einer Größe von bis zu 50 MB hochladen.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome konnte nicht gestartet werden. Versuche es noch einmal.</translation>
 <translation id="5867197326698922595">Google Chrome versucht, Passwörter zu bearbeiten.</translation>
@@ -227,6 +229,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Beta</translation>
 <translation id="6235018212288296708">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome</translation>
+<translation id="6247557882553405851">Google Passwortmanager</translation>
 <translation id="6291089322031436445">Chrome Dev-Apps</translation>
 <translation id="6291549208091401781">Google Chrome ist bereits für alle Nutzer auf deinem Computer installiert.</translation>
 <translation id="6368958679917195344">Chrome OS wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> ermöglicht.</translation>
@@ -235,6 +238,7 @@
 <translation id="6506909944137591434">Chrome benötigt die Kameraberechtigung, um eine 3D-Karte deiner Umgebung zu erstellen</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS-System</translation>
+<translation id="659498884637196217">Im Passwortmanager von Google auf diesem Gerät</translation>
 <translation id="6632473616050862500">Chrome OS Flex wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> ermöglicht.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>
 <translation id="6679975945624592337">Google Chrome im Hintergrund ausführen</translation>
@@ -273,6 +277,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten möglicherweise für dieses Konto. Du kannst deine Google-Konten in den <ph name="SETTINGS_LINK_BEGIN" />Einstellungen<ph name="SETTINGS_LINK_END" /> verwalten.</translation>
 <translation id="7398801000654795464">Du warst in Chrome als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Melde dich bitte wieder mit demselben Konto an.</translation>
 <translation id="7408085963519505752">Chrome OS-Nutzungsbedingungen</translation>
+<translation id="7410958280246779049">Chrome hat diese Datei blockiert, weil sie gefährlich ist</translation>
 <translation id="7419046106786626209">Chrome OS konnte deine Daten nicht synchronisieren, da die Synchronisierung für deine Domain nicht verfügbar ist.</translation>
 <translation id="7481213027396403996">Höchste Sicherheit in Chrome erhalten</translation>
 <translation id="7486227612705979895">Chrome greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
@@ -287,7 +292,6 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="7655455401911432608">Dein Browserverlauf, das heißt eine Liste der von dir auf diesem Gerät in Chrome besuchten Websites.</translation>
 <translation id="7665553140559834626">Neu starten, um &amp;Chrome OS zu aktualisieren</translation>
 <translation id="7747138024166251722">Das Installationsprogramm konnte kein temporäres Verzeichnis erstellen. Überprüfe, ob freier Speicherplatz und die Rechte zum Installieren von Software vorhanden sind.</translation>
-<translation id="7748512868279796735">Die folgenden Konten sind für dieses Chrome-Profil verfügbar</translation>
 <translation id="7761834446675418963">Klicke auf deinen Namen, um Chrome zu öffnen und im Web zu surfen.</translation>
 <translation id="7777080907402804672">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für dich zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Du kannst dies jederzeit in den Einstellungen deaktivieren.</translation>
 <translation id="7781002470561365167">Eine neue Version von Google Chrome ist verfügbar.</translation>
@@ -303,10 +307,12 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="7951272445806340501">Chrome OS Flex muss neu gestartet werden, um das Update zu übernehmen.</translation>
 <translation id="7962410387636238736">Dieser Computer erhält keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden</translation>
 <translation id="79947657522496226">Chrome OS und die <ph name="BEGIN_LINK_LINUX_OSS" />Linux-Entwicklungsumgebung<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> ermöglicht.</translation>
+<translation id="8005666035647241369">Im Passwortmanager von Google auf diesem Gerät</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="8013993649590906847">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für dich zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet.</translation>
 <translation id="8064015586118426197">Chrome OS Flex</translation>
 <translation id="8129812357326543296">Über &amp;Google Chrome</translation>
+<translation id="822971176939352383">Folgende Konten sind nicht in einem Chrome-Profil angemeldet. Wenn du ein Konto in einem anderen Profil verwenden möchtest, entferne zuerst dieses Profil.</translation>
 <translation id="8255190535488645436">Google Chrome verwendet deine Kamera und dein Mikrofon.</translation>
 <translation id="8286862437124483331">Google Chrome möchte Passwörter anzeigen. Gib dein Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="828798499196665338">Dein Elternteil hat "Berechtigungen für Websites, Apps und Erweiterungen" für Chrome deaktiviert. Das Aktivieren dieser <ph name="EXTENSION_TYPE_PARAMETER" /> ist nicht zulässig.</translation>
@@ -318,8 +324,10 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="8394720698884623075">Prüft URLs anhand einer Liste unsicherer Websites, die in Chrome gespeichert ist</translation>
 <translation id="840084489713044809">Google Chrome möchte deine Passwörter exportieren.</translation>
 <translation id="8416347857511542594">Weitere Informationen zur Personalisierung von Werbung in Chrome</translation>
+<translation id="8421734018304082652">Chrome hat diese Datei blockiert, weil sie verschlüsselt ist. Bitte den Inhaber der Datei, sie zu entschlüsseln.</translation>
 <translation id="8433638294851456451">Wenn du eine Nummer von diesem Gerät an dein Android-Smartphone senden möchtest, musst du dich auf beiden Geräten in Chrome anmelden.</translation>
 <translation id="8498858610309223613">Da soeben ein kritisches Sicherheitsupdate für Google Chrome installiert wurde, solltest du jetzt einen Neustart durchführen. Deine Tabs werden dann automatisch wiederhergestellt.</translation>
+<translation id="8504220326736535258">Chrome hat diese Datei blockiert, weil sie Malware enthält</translation>
 <translation id="8516431725144212809">Deine von Chrome geschätzten Interessen</translation>
 <translation id="8521348052903287641">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Dev.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -334,6 +342,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="8649026945479135076">Von dir besuchte Websites können deine Interessen speichern und zur Personalisierung verwenden. Websites können außerdem Daten zu deinen Interessen bei Chrome speichern.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Die Erweiterung legt auch die Seite fest, die beim Start von Chrome angezeigt wird.</translation>
+<translation id="8684875378076460854">Chrome empfiehlt, diese Datei zu scannen, da sie gefährlich sein könnte</translation>
 <translation id="8686817260976772516">Mit Chrome-Profilen kannst du deine Chrome-Inhalte voneinander trennen. Erstelle Profile für Freunde und Familie oder teile deine Inhalte in Arbeit und Freizeit ein.</translation>
 <translation id="8712767363896337380">Fast geschafft! Starte Chrome zum Abschluss der Aktualisierung neu.</translation>
 <translation id="873133009373065397">Google Chrome kann den Standardbrowser nicht bestimmen oder festlegen</translation>

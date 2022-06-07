@@ -871,10 +871,6 @@ HRESULT VideoCaptureDeviceMFWin::FillCapabilities(
   // This is observed but undocumented behavior, which might change.
   // |maybe_fake| is used as a tie breaker between otherwise identical
   // formats.
-  // TODO(crbug.com/1323677): Do a less minimal fix and add unit tests.
-  if (capabilities->empty()) {
-    return hr;
-  }
   auto prev_capability = capabilities->begin();
   auto cur_capability = prev_capability;
   ++cur_capability;
@@ -1551,7 +1547,6 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
 }
 
 void VideoCaptureDeviceMFWin::OnUtilizationReport(
-    int frame_feedback_id,
     media::VideoCaptureFeedback feedback) {
   base::AutoLock lock(lock_);
   last_feedback_ = feedback;

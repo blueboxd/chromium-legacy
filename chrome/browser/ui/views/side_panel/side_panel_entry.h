@@ -20,7 +20,16 @@ class SidePanelEntryObserver;
 class SidePanelEntry final {
  public:
   // Note this order matches that of the combobox options in the side panel.
-  enum class Id { kReadingList, kBookmarks, kReaderMode, kSideSearch, kLens };
+  enum class Id {
+    // Global Entries
+    kReadingList,
+    kBookmarks,
+    kReadAnything,
+    kUserNote,
+    // Contextual Entries
+    kSideSearch,
+    kLens
+  };
 
   // TODO(pbos): Add an icon ImageModel here.
   SidePanelEntry(Id id,
@@ -34,7 +43,10 @@ class SidePanelEntry final {
 
   // Creates the content to be shown inside the side panel when this entry is
   // shown.
-  std::unique_ptr<views::View> CreateContent();
+  std::unique_ptr<views::View> GetContent();
+  void CacheView(std::unique_ptr<views::View> view);
+  void ClearCachedView();
+
   // Called when the entry has been shown in the side panel.
   void OnEntryShown();
 
@@ -49,6 +61,7 @@ class SidePanelEntry final {
   const Id id_;
   const std::u16string name_;
   const ui::ImageModel icon_;
+  std::unique_ptr<views::View> content_view_;
 
   base::RepeatingCallback<std::unique_ptr<views::View>()>
       create_content_callback_;

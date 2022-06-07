@@ -39,7 +39,17 @@ void CloneStrings(const std::vector<std::string>& clone_from,
   }
 }
 
-void CloneIntentFilters(
+std::vector<apps::IntentFilterPtr> ConvertMojomIntentFiltersToIntentFilters(
+    const std::vector<apps::mojom::IntentFilterPtr>& mojom_intent_filters) {
+  std::vector<apps::IntentFilterPtr> intent_filters;
+  for (const auto& mojom_intent_filter : mojom_intent_filters) {
+    intent_filters.push_back(
+        apps::ConvertMojomIntentFilterToIntentFilter(mojom_intent_filter));
+  }
+  return intent_filters;
+}
+
+void CloneMojomIntentFilters(
     const std::vector<apps::mojom::IntentFilterPtr>& clone_from,
     std::vector<apps::mojom::IntentFilterPtr>* clone_to) {
   for (const auto& intent_filter : clone_from) {
@@ -156,7 +166,7 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   }
   if (!delta->intent_filters.empty()) {
     state->intent_filters.clear();
-    ::CloneIntentFilters(delta->intent_filters, &state->intent_filters);
+    ::CloneMojomIntentFilters(delta->intent_filters, &state->intent_filters);
   }
   if (delta->resize_locked != apps::mojom::OptionalBool::kUnknown) {
     state->resize_locked = delta->resize_locked;
@@ -238,6 +248,11 @@ void AppUpdate::Merge(App* state, const App* delta) {
 
   if (delta->run_on_os_login.has_value()) {
     state->run_on_os_login = CloneRunOnOsLogin(delta->run_on_os_login.value());
+  }
+
+  if (!delta->shortcuts.empty()) {
+    state->shortcuts.clear();
+    state->shortcuts = CloneShortcuts(delta->shortcuts);
   }
 
   // When adding new fields to the App type, this function should also be
@@ -855,28 +870,25 @@ bool AppUpdate::PausedChanged() const {
          (!mojom_state_ || (mojom_delta_->paused != mojom_state_->paused));
 }
 
-std::vector<apps::mojom::IntentFilterPtr> AppUpdate::IntentFilters() const {
-  std::vector<apps::mojom::IntentFilterPtr> intent_filters;
+apps::IntentFilters AppUpdate::IntentFilters() const {
+  if (ShouldUseNonMojom()) {
+    if (delta_ && !delta_->intent_filters.empty()) {
+      return CloneIntentFilters(delta_->intent_filters);
+    }
+    if (state_ && !state_->intent_filters.empty()) {
+      return CloneIntentFilters(state_->intent_filters);
+    }
+    return std::vector<IntentFilterPtr>{};
+  }
 
   if (mojom_delta_ && !mojom_delta_->intent_filters.empty()) {
-    ::CloneIntentFilters(mojom_delta_->intent_filters, &intent_filters);
+    return ::ConvertMojomIntentFiltersToIntentFilters(
+        mojom_delta_->intent_filters);
   } else if (mojom_state_ && !mojom_state_->intent_filters.empty()) {
-    ::CloneIntentFilters(mojom_state_->intent_filters, &intent_filters);
+    return ::ConvertMojomIntentFiltersToIntentFilters(
+        mojom_state_->intent_filters);
   }
-
-  return intent_filters;
-}
-
-apps::IntentFilters AppUpdate::GetIntentFilters() const {
-  apps::IntentFilters intent_filters;
-
-  if (delta_ && !delta_->intent_filters.empty()) {
-    intent_filters = CloneIntentFilters(delta_->intent_filters);
-  } else if (state_ && !state_->intent_filters.empty()) {
-    intent_filters = CloneIntentFilters(state_->intent_filters);
-  }
-
-  return intent_filters;
+  return std::vector<IntentFilterPtr>{};
 }
 
 bool AppUpdate::IntentFiltersChanged() const {
@@ -966,6 +978,27 @@ bool AppUpdate::RunOnOsLoginChanged() const {
           !mojom_delta_->run_on_os_login.Equals(mojom_state_->run_on_os_login));
 }
 
+apps::Shortcuts AppUpdate::Shortcuts() const {
+  if (ShouldUseNonMojom()) {
+    if (delta_ && !delta_->shortcuts.empty()) {
+      return CloneShortcuts(delta_->shortcuts);
+    } else if (state_ && !state_->shortcuts.empty()) {
+      return CloneShortcuts(state_->shortcuts);
+    }
+  }
+  return std::vector<ShortcutPtr>{};
+}
+
+bool AppUpdate::ShortcutsChanged() const {
+  if (ShouldUseNonMojom()) {
+    return delta_ && !delta_->shortcuts.empty() &&
+           (!state_ || !IsEqual(delta_->shortcuts, state_->shortcuts));
+  }
+
+  // Shortcuts are not implemented in the Mojo interface of the app service.
+  return false;
+}
+
 const ::AccountId& AppUpdate::AccountId() const {
   return account_id_;
 }
@@ -1019,9 +1052,10 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
       << std::endl;
   out << "HasBadge: " << PRINT_OPTIONAL_VALUE(HasBadge) << std::endl;
   out << "Paused: " << PRINT_OPTIONAL_VALUE(Paused) << std::endl;
+
   out << "IntentFilters: " << std::endl;
   for (const auto& filter : app.IntentFilters()) {
-    out << filter << std::endl;
+    out << filter->ToString() << std::endl;
   }
 
   out << "ResizeLocked: " << PRINT_OPTIONAL_VALUE(ResizeLocked) << std::endl;
@@ -1029,6 +1063,11 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
   if (app.RunOnOsLogin().has_value()) {
     out << "RunOnOsLoginMode: "
         << EnumToString(app.RunOnOsLogin().value().login_mode) << std::endl;
+  }
+
+  out << "Shortcuts: " << std::endl;
+  for (const auto& shortcut : app.Shortcuts()) {
+    out << shortcut->ToString() << std::endl;
   }
 
   return out;

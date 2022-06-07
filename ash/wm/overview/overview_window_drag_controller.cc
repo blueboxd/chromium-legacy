@@ -188,7 +188,8 @@ class OverviewItemMoveHelper : public aura::WindowObserver {
       // will soon handle them both anyway.
       OverviewSession* session = overview_controller->overview_session();
       session->AddItemInMruOrder(window, /*reposition=*/false,
-                                 /*animate=*/false, /*restack=*/false);
+                                 /*animate=*/false, /*restack=*/false,
+                                 /*use_spawn_animation=*/false);
       OverviewItem* item = session->GetOverviewItemForWindow(window);
       DCHECK(item);
       item->SetBounds(target_item_bounds_, OVERVIEW_ANIMATION_NONE);
@@ -358,8 +359,8 @@ void OverviewWindowDragController::StartNormalDragMode(
           DesksBarView::GetExpandedBarHeight(grid->root_window());
       grid_desks_bar_data.desks_bar_bounds.set_height(expanded_height);
       grid_desks_bar_data.shrink_bounds.set_height(expanded_height);
-      grid_desks_bar_data.shrink_bounds.Inset(
-          -item_no_header_size.width() / 2, -item_no_header_size.height() / 2);
+      grid_desks_bar_data.shrink_bounds.Inset(gfx::InsetsF::VH(
+          -item_no_header_size.height() / 2, -item_no_header_size.width() / 2));
       grid_desks_bar_data.shrink_region_distance =
           grid_desks_bar_data.desks_bar_bounds.origin() -
           grid_desks_bar_data.shrink_bounds.origin();

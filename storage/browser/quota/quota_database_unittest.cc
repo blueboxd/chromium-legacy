@@ -15,14 +15,16 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/sequence_checker.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
 #include "sql/database.h"
-#include "sql/error_metrics.h"
 #include "sql/meta_table.h"
+#include "sql/sqlite_result_code.h"
+#include "sql/sqlite_result_code_values.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
@@ -56,9 +58,7 @@ bool ContainsBucket(const std::set<BucketLocator>& buckets,
 // mode. True will create the database in memory.
 class QuotaDatabaseTest : public testing::TestWithParam<bool> {
  protected:
-  using QuotaTableEntry = QuotaDatabase::QuotaTableEntry;
   using BucketTableEntry = QuotaDatabase::BucketTableEntry;
-  using EnsureOpenedMode = QuotaDatabase::EnsureOpenedMode;
 
   void SetUp() override { ASSERT_TRUE(temp_directory_.CreateUniqueTempDir()); }
 
@@ -70,8 +70,8 @@ class QuotaDatabaseTest : public testing::TestWithParam<bool> {
     return temp_directory_.GetPath().AppendASCII("quota_manager.db");
   }
 
-  bool EnsureOpened(QuotaDatabase* db, EnsureOpenedMode mode) {
-    return db->EnsureOpened(mode) == QuotaError::kNone;
+  bool EnsureOpened(QuotaDatabase* db) {
+    return db->EnsureOpened() == QuotaError::kNone;
   }
 
   template <typename EntryType>
@@ -123,7 +123,8 @@ class QuotaDatabaseTest : public testing::TestWithParam<bool> {
 
   template <typename Container>
   void AssignBucketTable(QuotaDatabase* quota_database, Container&& entries) {
-    ASSERT_NE(quota_database->db_.get(), (sql::Database*)nullptr);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(quota_database->sequence_checker_);
+    ASSERT_TRUE(quota_database->db_);
     for (const auto& entry : entries) {
       const char* kSql =
           // clang-format off
@@ -165,8 +166,7 @@ class QuotaDatabaseTest : public testing::TestWithParam<bool> {
 
 TEST_P(QuotaDatabaseTest, EnsureOpened) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_FALSE(EnsureOpened(&db, EnsureOpenedMode::kFailIfNotFound));
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   if (GetParam()) {
     // Path should not exist for incognito mode.
@@ -179,7 +179,6 @@ TEST_P(QuotaDatabaseTest, EnsureOpened) {
 TEST_P(QuotaDatabaseTest, RazeAndReopenWithNoDb) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
   // RazeAndReopen() with no db tries to create the db one last time.
-  EXPECT_FALSE(EnsureOpened(&db, EnsureOpenedMode::kFailIfNotFound));
   EXPECT_EQ(db.RazeAndReopen(), QuotaError::kNone);
 
   if (GetParam()) {
@@ -192,7 +191,7 @@ TEST_P(QuotaDatabaseTest, RazeAndReopenWithNoDb) {
 
 TEST_P(QuotaDatabaseTest, HostQuota) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   const char* kHost = "foo.com";
   const int kQuota1 = 13579;
@@ -237,7 +236,7 @@ TEST_P(QuotaDatabaseTest, HostQuota) {
 
 TEST_P(QuotaDatabaseTest, GetOrCreateBucket) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
   StorageKey storage_key =
       StorageKey::CreateFromStringForTesting("http://google/");
   std::string bucket_name = "google_bucket";
@@ -265,7 +264,7 @@ TEST_P(QuotaDatabaseTest, GetOrCreateBucket) {
 
 TEST_P(QuotaDatabaseTest, GetOrCreateBucketDeprecated) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
   StorageKey storage_key =
       StorageKey::CreateFromStringForTesting("http://google/");
   std::string bucket_name = "google_bucket";
@@ -293,7 +292,7 @@ TEST_P(QuotaDatabaseTest, GetOrCreateBucketDeprecated) {
 
 TEST_P(QuotaDatabaseTest, GetBucket) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   // Add a bucket entry into the bucket table.
   StorageKey storage_key =
@@ -331,7 +330,7 @@ TEST_P(QuotaDatabaseTest, GetBucket) {
 
 TEST_P(QuotaDatabaseTest, GetBucketById) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   // Add a bucket entry into the bucket table.
   StorageKey storage_key =
@@ -361,7 +360,7 @@ TEST_P(QuotaDatabaseTest, GetBucketById) {
 
 TEST_P(QuotaDatabaseTest, GetBucketsForType) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   const StorageKey storage_key1 =
       StorageKey::CreateFromStringForTesting("http://example-a/");
@@ -404,7 +403,7 @@ TEST_P(QuotaDatabaseTest, GetBucketsForType) {
 
 TEST_P(QuotaDatabaseTest, GetBucketsForHost) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   QuotaErrorOr<BucketInfo> temp_example_bucket1 = db.CreateBucketForTesting(
       StorageKey::CreateFromStringForTesting("https://example.com/"), "default",
@@ -443,7 +442,7 @@ TEST_P(QuotaDatabaseTest, GetBucketsForHost) {
 
 TEST_P(QuotaDatabaseTest, GetBucketsForStorageKey) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   const StorageKey storage_key1 =
       StorageKey::CreateFromStringForTesting("http://example-a/");
@@ -482,19 +481,6 @@ TEST_P(QuotaDatabaseTest, GetBucketsForStorageKey) {
   EXPECT_TRUE(ContainsBucket(buckets, perm_bucket2));
 }
 
-TEST_P(QuotaDatabaseTest, GetBucketWithNoDb) {
-  QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_FALSE(EnsureOpened(&db, EnsureOpenedMode::kFailIfNotFound));
-
-  StorageKey storage_key =
-      StorageKey::CreateFromStringForTesting("http://google/");
-  std::string bucket_name = "google_bucket";
-  QuotaErrorOr<BucketInfo> result =
-      db.GetBucket(storage_key, bucket_name, kTemp);
-  ASSERT_FALSE(result.ok());
-  EXPECT_EQ(result.error(), QuotaError::kNotFound);
-}
-
 // TODO(crbug.com/1216094): Update test to have its behavior on Fuchsia/Win
 // match with other platforms, and enable test on all platforms.
 #if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_WIN)
@@ -528,7 +514,7 @@ TEST_F(QuotaDatabaseTest, MAYBE_GetBucketWithOpenDatabaseError) {
 
 TEST_P(QuotaDatabaseTest, BucketLastAccessTimeLRU) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   std::set<BucketId> bucket_exceptions;
   QuotaErrorOr<BucketLocator> result =
@@ -565,10 +551,15 @@ TEST_P(QuotaDatabaseTest, BucketLastAccessTimeLRU) {
                                        base::Time::FromJavaTime(30)),
             QuotaError::kNone);
 
-  // one persistent.
+  // One persistent.
   EXPECT_EQ(db.SetBucketLastAccessTime(bucket4.bucket_id,
                                        base::Time::FromJavaTime(40)),
             QuotaError::kNone);
+
+  // One non-existent.
+  EXPECT_EQ(
+      db.SetBucketLastAccessTime(BucketId(777), base::Time::FromJavaTime(40)),
+      QuotaError::kNone);
 
   result = db.GetLRUBucket(kTemp, bucket_exceptions, nullptr);
   EXPECT_TRUE(result.ok());
@@ -626,15 +617,15 @@ TEST_P(QuotaDatabaseTest, BucketLastAccessTimeLRU) {
 
 TEST_P(QuotaDatabaseTest, SetStorageKeyLastAccessTime) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   const StorageKey storage_key =
       StorageKey::CreateFromStringForTesting("http://example/");
   base::Time now = base::Time::Now();
 
-  // Should error if bucket doesn't exist.
+  // Doesn't error if bucket doesn't exist.
   EXPECT_EQ(db.SetStorageKeyLastAccessTime(storage_key, kTemp, now),
-            QuotaError::kNotFound);
+            QuotaError::kNone);
 
   QuotaErrorOr<BucketInfo> bucket =
       db.CreateBucketForTesting(storage_key, kDefaultBucketName, kTemp);
@@ -651,7 +642,7 @@ TEST_P(QuotaDatabaseTest, SetStorageKeyLastAccessTime) {
 
 TEST_P(QuotaDatabaseTest, GetStorageKeysForType) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   const StorageKey storage_key1 =
       StorageKey::CreateFromStringForTesting("http://example-a/");
@@ -680,7 +671,7 @@ TEST_P(QuotaDatabaseTest, GetStorageKeysForType) {
 
 TEST_P(QuotaDatabaseTest, BucketLastModifiedBetween) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
 
   QuotaErrorOr<std::set<BucketLocator>> result =
       db.GetBucketsModifiedBetween(kTemp, base::Time(), base::Time::Max());
@@ -721,6 +712,11 @@ TEST_P(QuotaDatabaseTest, BucketLastModifiedBetween) {
       QuotaError::kNone);
   EXPECT_EQ(
       db.SetBucketLastModifiedTime(bucket4.id, base::Time::FromJavaTime(30)),
+      QuotaError::kNone);
+
+  // Non-existent bucket.
+  EXPECT_EQ(
+      db.SetBucketLastModifiedTime(BucketId(777), base::Time::FromJavaTime(0)),
       QuotaError::kNone);
 
   result = db.GetBucketsModifiedBetween(kTemp, base::Time(), base::Time::Max());
@@ -832,25 +828,6 @@ TEST_P(QuotaDatabaseTest, RegisterInitialStorageKeyInfo) {
   EXPECT_EQ(1, info->use_count);
 }
 
-TEST_P(QuotaDatabaseTest, DumpQuotaTable) {
-  QuotaTableEntry kTableEntries[] = {
-      {.host = "http://go/", .type = kTemp, .quota = 1},
-      {.host = "http://oo/", .type = kTemp, .quota = 2},
-      {.host = "http://gle/", .type = kPerm, .quota = 3}};
-
-  QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
-  AssignQuotaTable(&db, kTableEntries);
-
-  using Verifier = EntryVerifier<QuotaTableEntry>;
-  Verifier verifier(kTableEntries, std::end(kTableEntries));
-  EXPECT_EQ(
-      DumpQuotaTable(&db, base::BindRepeating(&Verifier::Run,
-                                              base::Unretained(&verifier))),
-      QuotaError::kNone);
-  EXPECT_TRUE(verifier.table.empty());
-}
-
 TEST_P(QuotaDatabaseTest, DumpBucketTable) {
   base::Time now = base::Time::Now();
   using Entry = QuotaDatabase::BucketTableEntry;
@@ -864,7 +841,7 @@ TEST_P(QuotaDatabaseTest, DumpBucketTable) {
   };
 
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
   AssignBucketTable(&db, kTableEntries);
 
   using Verifier = EntryVerifier<Entry>;
@@ -883,7 +860,7 @@ TEST_P(QuotaDatabaseTest, GetBucketInfo) {
             kTemp, "test_bucket", 100, base::Time(), base::Time())};
 
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+  EXPECT_TRUE(EnsureOpened(&db));
   AssignBucketTable(&db, kTableEntries);
 
   {
@@ -923,7 +900,7 @@ TEST_F(QuotaDatabaseTest, OpenCorruptedDatabase) {
   // Create database, force corruption and close db by leaving scope.
   {
     QuotaDatabase db(DbPath());
-    ASSERT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+    ASSERT_TRUE(EnsureOpened(&db));
     ASSERT_TRUE(sql::test::CorruptSizeInHeader(DbPath()));
   }
   // Reopen database and verify schema reset on reopen.
@@ -931,7 +908,7 @@ TEST_F(QuotaDatabaseTest, OpenCorruptedDatabase) {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
     QuotaDatabase db(DbPath());
-    ASSERT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kFailIfNotFound));
+    ASSERT_TRUE(EnsureOpened(&db));
     EXPECT_TRUE(expecter.SawExpectedErrors());
   }
 

@@ -285,11 +285,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
           AppState* strongSelf = weakSelf;
           if (strongSelf)
             strongSelf->_savingCookies = NO;
-        }));
+        }),
+        /*is_immediate=*/true);
     web::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(^{
-          net::CookieStoreIOS* store = static_cast<net::CookieStoreIOS*>(
-              getter->GetURLRequestContext()->cookie_store());
+          net::CookieStore* store =
+              getter->GetURLRequestContext()->cookie_store();
           // FlushStore() runs its callback on any thread. Jump back to UI.
           store->FlushStore(
               base::BindOnce(&PostTaskOnUIThread, std::move(criticalClosure)));

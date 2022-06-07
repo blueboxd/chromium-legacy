@@ -26,20 +26,18 @@ namespace test {
 
 std::unique_ptr<WebApp> CreateWebApp(
     const GURL& start_url = GURL("https://example.com/path"),
-    Source::Type source_type = Source::kSync);
+    WebAppManagement::Type source_type = WebAppManagement::kSync);
 
 std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url, uint32_t seed);
 
 void TestAcceptDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
-    ForInstallableSite for_installable_site,
     WebAppInstallationAcceptanceCallback acceptance_callback);
 
 void TestDeclineDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
-    ForInstallableSite for_installable_site,
     WebAppInstallationAcceptanceCallback acceptance_callback);
 
 AppId InstallPwaForCurrentUrl(Browser* browser);
@@ -48,7 +46,7 @@ void CheckServiceWorkerStatus(const GURL& url,
                               content::StoragePartition* storage_partition,
                               content::ServiceWorkerCapability status);
 
-void SetWebAppSettingsDictPref(Profile* profile, base::StringPiece pref);
+void SetWebAppSettingsListPref(Profile* profile, base::StringPiece pref);
 
 }  // namespace test
 }  // namespace web_app

@@ -10,7 +10,10 @@
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/types/strong_alias.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
+#include "components/password_manager/core/browser/password_store_change.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 
@@ -21,10 +24,10 @@ namespace password_manager {
 // while the shadow backend is only queried to record shadow traffic.
 class PasswordStoreProxyBackend : public PasswordStoreBackend {
  public:
-  // `main_backend` and `shadow_backend` must not be null and must outlive this
-  // object as long as Shutdown() is not called.
-  PasswordStoreProxyBackend(PasswordStoreBackend* main_backend,
-                            PasswordStoreBackend* shadow_backend,
+  // `built_in_backend` and `android_backend` must not be null and must outlive
+  // this object as long as Shutdown() is not called.
+  PasswordStoreProxyBackend(PasswordStoreBackend* built_in_backend,
+                            PasswordStoreBackend* android_backend,
                             PrefService* prefs,
                             SyncDelegate* sync_delegate);
   PasswordStoreProxyBackend(const PasswordStoreProxyBackend&) = delete;
@@ -35,6 +38,9 @@ class PasswordStoreProxyBackend : public PasswordStoreBackend {
   ~PasswordStoreProxyBackend() override;
 
  private:
+  using CallbackOriginatesFromAndroidBackend =
+      base::StrongAlias<struct CallbackOriginatesFromAndroidBackendTag, bool>;
+
   // Implements PasswordStoreBackend interface.
   void InitBackend(RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
@@ -72,10 +78,27 @@ class PasswordStoreProxyBackend : public PasswordStoreBackend {
   void ClearAllLocalPasswords() override;
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
 
-  const raw_ptr<PasswordStoreBackend> main_backend_;
-  const raw_ptr<PasswordStoreBackend> shadow_backend_;
+  // Forwards the (possible) forms changes caused by a remote event to the
+  // main backend.
+  void OnRemoteFormChangesReceived(
+      CallbackOriginatesFromAndroidBackend originatesFromAndroid,
+      RemoteChangesReceived remote_form_changes_received,
+      absl::optional<PasswordStoreChangeList> changes);
+
+  // Forwards sync status changes by the backend facilitating them.
+  void OnSyncEnabledOrDisabled(
+      CallbackOriginatesFromAndroidBackend originatesFromAndroid,
+      base::RepeatingClosure sync_enabled_or_disabled_cb);
+
+  PasswordStoreBackend* main_backend();
+  PasswordStoreBackend* shadow_backend();
+
+  const raw_ptr<PasswordStoreBackend> built_in_backend_;
+  const raw_ptr<PasswordStoreBackend> android_backend_;
   raw_ptr<PrefService> const prefs_ = nullptr;
   const raw_ptr<SyncDelegate> sync_delegate_;
+
+  base::WeakPtrFactory<PasswordStoreProxyBackend> weak_ptr_factory_{this};
 };
 
 }  // namespace password_manager

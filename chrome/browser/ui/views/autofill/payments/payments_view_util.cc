@@ -47,8 +47,6 @@ constexpr int kIconHeight = 16;
 
 constexpr int kSeparatorHeight = 12;
 
-constexpr SkColor kTitleSeparatorColor = SkColorSetRGB(0x9E, 0x9E, 0x9E);
-
 class IconView : public views::ImageView {
  public:
   METADATA_HEADER(IconView);
@@ -71,7 +69,7 @@ class IconView : public views::ImageView {
         image = gfx::ImageSkiaOperations::CreateTiledImage(
             gfx::CreateVectorIcon(
                 kGooglePayLogoIcon,
-                GetColorProvider()->GetColor(kColorGooglePayLogo)),
+                GetColorProvider()->GetColor(kColorPaymentsGooglePayLogo)),
             /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kIconHeight);
         break;
       case TitleWithIconAndSeparatorView::Icon::GOOGLE_G:
@@ -115,7 +113,6 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
   auto* icon_view_ptr = AddChildView(std::make_unique<IconView>(icon_to_show));
 
   auto separator = std::make_unique<views::Separator>();
-  separator->SetColor(kTitleSeparatorColor);
   separator->SetPreferredHeight(kSeparatorHeight);
   auto* separator_ptr = AddChildView(std::move(separator));
 
@@ -130,18 +127,16 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
   // title label, so that we can use its preferred size.
   const int title_label_height = title_label_ptr->GetPreferredSize().height();
   icon_view_ptr->SetBorder(views::CreateEmptyBorder(
-      /*top=*/(title_label_height - kIconHeight) / 2,
-      /*left=*/0, /*bottom=*/0, /*right=*/0));
+      gfx::Insets::TLBR((title_label_height - kIconHeight) / 2, 0, 0, 0)));
   // TODO(crbug.com/873140): DISTANCE_RELATED_BUTTON_HORIZONTAL isn't the right
   //                         choice here, but INSETS_DIALOG_TITLE gives too much
   //                         padding. Create a new Harmony DistanceMetric?
   const int separator_horizontal_padding =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
-  separator_ptr->SetBorder(views::CreateEmptyBorder(
-      /*top=*/(title_label_height - kSeparatorHeight) / 2,
-      /*left=*/separator_horizontal_padding, /*bottom=*/0,
-      /*right=*/separator_horizontal_padding));
+  separator_ptr->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+      (title_label_height - kSeparatorHeight) / 2, separator_horizontal_padding,
+      0, separator_horizontal_padding)));
 }
 
 TitleWithIconAndSeparatorView::~TitleWithIconAndSeparatorView() {}

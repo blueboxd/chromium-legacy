@@ -43,17 +43,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_chromeos_version_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -337,7 +336,7 @@ class ArcVmClientAdapterTest : public testing::Test,
     chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
         std::make_unique<TestDebugDaemonClient>());
     TestConciergeClient::Initialize();
-    chromeos::UpstartClient::InitializeFake();
+    ash::UpstartClient::InitializeFake();
   }
 
   ArcVmClientAdapterTest(const ArcVmClientAdapterTest&) = delete;
@@ -523,7 +522,7 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
 
   void InjectUpstartStartJobFailure(const std::string& job_name_to_fail) {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(base::BindLambdaForTesting(
         [job_name_to_fail](const std::string& job_name,
                            const std::vector<std::string>& env) {
@@ -533,7 +532,7 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
 
   void InjectUpstartStopJobFailure(const std::string& job_name_to_fail) {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_stop_job_cb(base::BindLambdaForTesting(
         [job_name_to_fail](const std::string& job_name,
                            const std::vector<std::string>& env) {
@@ -543,7 +542,7 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
 
   void StartRecordingUpstartOperations() {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(
         base::BindLambdaForTesting([this](const std::string& job_name,
                                           const std::vector<std::string>& env) {
@@ -561,11 +560,11 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
 
   void RemoveUpstartStartStopJobFailures() {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(
-        chromeos::FakeUpstartClient::StartStopJobCallback());
+        ash::FakeUpstartClient::StartStopJobCallback());
     upstart_client->set_stop_job_cb(
-        chromeos::FakeUpstartClient::StartStopJobCallback());
+        ash::FakeUpstartClient::StartStopJobCallback());
   }
 
   // Calls ArcVmClientAdapter::StopArcInstance().
@@ -1990,6 +1989,34 @@ TEST_F(ArcVmClientAdapterTest, DisableDownloadProviderEnforced) {
                      "androidboot.disable_download_provider=1"));
 }
 
+TEST_F(ArcVmClientAdapterTest, GmsCoreLowMemoryKillerProtection_FlagDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(arc::kVmGmsCoreLowMemoryKillerProtection,
+                                    false);
+
+  SetValidUserInfo();
+  StartMiniArc();
+
+  auto req = GetTestConciergeClient()->start_arc_vm_request();
+  for (const auto& param : req.params()) {
+    EXPECT_EQ(std::string::npos,
+              param.find("arc_enable_gmscore_lmk_protection"));
+  }
+}
+
+TEST_F(ArcVmClientAdapterTest, GmsCoreLowMemoryKillerProtection_FlagEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(arc::kVmGmsCoreLowMemoryKillerProtection,
+                                    true);
+
+  SetValidUserInfo();
+  StartMiniArc();
+
+  auto req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(base::Contains(
+      req.params(), "androidboot.arc_enable_gmscore_lmk_protection=1"));
+}
+
 TEST_F(ArcVmClientAdapterTest, TrimVmMemory_Success) {
   SetValidUserInfo();
 
@@ -2285,7 +2312,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmNoBlockApexDisk) {
                               [](const auto& p) { return p.path(); }));
 }
 
-// Tests that OnConnectionReady() calls the MakeRtVcpu call D-Bus method.
+// Tests that OnConnectionReady() calls the ArcVmCompleteBoot call D-Bus method.
 TEST_F(ArcVmClientAdapterTest, OnConnectionReady) {
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
@@ -2296,45 +2323,46 @@ TEST_F(ArcVmClientAdapterTest, OnConnectionReady) {
   arc_bridge_service()->app()->SetInstance(app_instance());
   WaitForInstanceReady(arc_bridge_service()->app());
 
-  EXPECT_EQ(1, GetTestConciergeClient()->make_rt_vcpu_call_count());
+  EXPECT_EQ(1, GetTestConciergeClient()->arcvm_complete_boot_call_count());
 }
 
-// Tests that MakeRtVcpu failure won't crash the adapter.
-TEST_F(ArcVmClientAdapterTest, OnConnectionReady_MakeRtVcpuFailure) {
+// Tests that ArcVmCompleteBoot failure won't crash the adapter.
+TEST_F(ArcVmClientAdapterTest, OnConnectionReady_ArcVmCompleteBootFailure) {
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   UpgradeArc(true);
 
   // Inject the failure.
-  absl::optional<vm_tools::concierge::MakeRtVcpuResponse> response;
+  absl::optional<vm_tools::concierge::ArcVmCompleteBootResponse> response;
   response.emplace();
-  response->set_success(false);
-  response->set_failure_reason("unknown failure");
-  GetTestConciergeClient()->set_make_rt_vcpu_response(response);
+  response->set_result(
+      vm_tools::concierge::ArcVmCompleteBootResult::BAD_REQUEST);
+  GetTestConciergeClient()->set_arcvm_complete_boot_response(response);
 
   // This calls ArcVmClientAdapter::OnConnectionReady().
   arc_bridge_service()->app()->SetInstance(app_instance());
   WaitForInstanceReady(arc_bridge_service()->app());
 
-  EXPECT_EQ(1, GetTestConciergeClient()->make_rt_vcpu_call_count());
+  EXPECT_EQ(1, GetTestConciergeClient()->arcvm_complete_boot_call_count());
 }
 
-// Tests that null MakeRtVcpu reply won't crash the adapter.
-TEST_F(ArcVmClientAdapterTest, OnConnectionReady_MakeRtVcpuFailureNullReply) {
+// Tests that null ArcVmCompleteBoot reply won't crash the adapter.
+TEST_F(ArcVmClientAdapterTest,
+       OnConnectionReady_ArcVmCompleteBootFailureNullReply) {
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   UpgradeArc(true);
 
   // Inject the failure.
-  GetTestConciergeClient()->set_make_rt_vcpu_response(absl::nullopt);
+  GetTestConciergeClient()->set_arcvm_complete_boot_response(absl::nullopt);
 
   // This calls ArcVmClientAdapter::OnConnectionReady().
   arc_bridge_service()->app()->SetInstance(app_instance());
   WaitForInstanceReady(arc_bridge_service()->app());
 
-  EXPECT_EQ(1, GetTestConciergeClient()->make_rt_vcpu_call_count());
+  EXPECT_EQ(1, GetTestConciergeClient()->arcvm_complete_boot_call_count());
 }
 
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_EnableArcNearbyShare_Default) {

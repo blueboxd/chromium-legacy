@@ -8,10 +8,11 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -289,4 +290,4 @@ TEST_F(DeviceSyncSyncSchedulerImplTest, StartWithNegativeElapsedTime) {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

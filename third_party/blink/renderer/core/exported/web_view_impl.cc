@@ -39,6 +39,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
@@ -158,6 +159,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/generic_font_family_settings.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
@@ -448,7 +450,7 @@ WebView* WebView::Create(
     bool is_hidden,
     bool is_prerendering,
     bool is_inside_portal,
-    bool is_fenced_frame,
+    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
     bool compositing_enabled,
     bool widgets_never_composited,
     WebView* opener,
@@ -461,7 +463,7 @@ WebView* WebView::Create(
       client,
       is_hidden ? mojom::blink::PageVisibilityState::kHidden
                 : mojom::blink::PageVisibilityState::kVisible,
-      is_prerendering, is_inside_portal, is_fenced_frame, compositing_enabled,
+      is_prerendering, is_inside_portal, fenced_frame_mode, compositing_enabled,
       widgets_never_composited, To<WebViewImpl>(opener), std::move(page_handle),
       agent_group_scheduler, session_storage_namespace_id,
       std::move(page_base_background_color));
@@ -472,7 +474,7 @@ WebViewImpl* WebViewImpl::Create(
     mojom::blink::PageVisibilityState visibility,
     bool is_prerendering,
     bool is_inside_portal,
-    bool is_fenced_frame,
+    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
     bool compositing_enabled,
     bool widgets_never_composited,
     WebViewImpl* opener,
@@ -483,7 +485,7 @@ WebViewImpl* WebViewImpl::Create(
   // Take a self-reference for WebViewImpl that is released by calling Close(),
   // then return a raw pointer to the caller.
   auto web_view = base::AdoptRef(new WebViewImpl(
-      client, visibility, is_prerendering, is_inside_portal, is_fenced_frame,
+      client, visibility, is_prerendering, is_inside_portal, fenced_frame_mode,
       compositing_enabled, widgets_never_composited, opener,
       std::move(page_handle), agent_group_scheduler,
       session_storage_namespace_id, std::move(page_base_background_color)));
@@ -546,7 +548,7 @@ WebViewImpl::WebViewImpl(
     mojom::blink::PageVisibilityState visibility,
     bool is_prerendering,
     bool is_inside_portal,
-    bool is_fenced_frame,
+    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
     bool does_composite,
     bool widgets_never_composited,
     WebViewImpl* opener,
@@ -582,9 +584,14 @@ WebViewImpl::WebViewImpl(
   // page.
   SetInsidePortal(is_inside_portal);
 
-  if (is_fenced_frame && features::IsFencedFramesEnabled() &&
+  if (fenced_frame_mode && features::IsFencedFramesEnabled() &&
       features::IsFencedFramesMPArchBased()) {
     page_->SetIsMainFrameFencedFrameRoot();
+    page_->SetFencedFrameMode(*fenced_frame_mode);
+  } else {
+    // `fenced_frame_mode` should only be set if creating an MPArch
+    // fenced frame.
+    DCHECK(!fenced_frame_mode);
   }
 
   // When not compositing, keep the Page in the loop so that it will paint all
@@ -1194,7 +1201,7 @@ void WebViewImpl::DidUpdateBrowserControls() {
   // restored by the first commit, since the state is checked in every call to
   // ApplyScrollAndScale().
   WebLocalFrameImpl* main_frame = MainFrameImpl();
-  if (!main_frame)
+  if (!main_frame || main_frame->IsInFencedFrameTree())
     return;
 
   WebFrameWidgetImpl* widget = main_frame->LocalRootFrameWidget();
@@ -1693,9 +1700,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
       GetVideoSurfaceLayerMode() !=
           blink::WebMediaPlayer::SurfaceLayerMode::kNever);
 
-  settings->SetDataSaverHoldbackWebApi(
-      prefs.data_saver_holdback_web_api_enabled);
-
   settings->SetLazyLoadEnabled(prefs.lazy_load_enabled);
   settings->SetPreferredColorScheme(prefs.preferred_color_scheme);
   settings->SetPreferredContrast(prefs.preferred_contrast);
@@ -1781,6 +1785,30 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   RuntimeEnabledFeatures::SetTranslateServiceEnabled(
       prefs.translate_service_available);
+
+#if BUILDFLAG(IS_WIN)
+  if (web_view_impl->GetPage() &&
+      base::FeatureList::IsEnabled(features::kPrewarmDefaultFontFamilies)) {
+    if (auto* prewarmer = WebFontRendering::GetFontPrewarmer()) {
+      GenericFontFamilySettings& font_settings =
+          web_view_impl->GetPage()
+              ->GetSettings()
+              .GetGenericFontFamilySettings();
+      if (features::kPrewarmStandard.Get())
+        prewarmer->PrewarmFamily(font_settings.Standard());
+      if (features::kPrewarmFixed.Get())
+        prewarmer->PrewarmFamily(font_settings.Fixed());
+      if (features::kPrewarmSerif.Get())
+        prewarmer->PrewarmFamily(font_settings.Serif());
+      if (features::kPrewarmSansSerif.Get())
+        prewarmer->PrewarmFamily(font_settings.SansSerif());
+      if (features::kPrewarmCursive.Get())
+        prewarmer->PrewarmFamily(font_settings.Cursive());
+      if (features::kPrewarmFantasy.Get())
+        prewarmer->PrewarmFamily(font_settings.Fantasy());
+    }
+  }
+#endif
 }
 
 void WebViewImpl::ThemeChanged() {
@@ -1818,8 +1846,6 @@ bool WebViewImpl::HasVerticalScrollbar() {
 }
 
 void WebViewImpl::SetPageFocus(bool enable) {
-  if (enable)
-    page_->GetFocusController().SetActive(true);
   page_->GetFocusController().SetFocused(enable);
   if (enable) {
     LocalFrame* focused_frame = page_->GetFocusController().FocusedFrame();
@@ -2198,14 +2224,13 @@ double WebViewImpl::SetZoomLevel(double zoom_level) {
           : static_cast<float>(PageZoomLevelToZoomFactor(zoom_level_));
   if (zoom_factor_for_device_scale_factor_) {
     if (compositor_device_scale_factor_override_) {
-      // Adjust the page's DSF so that DevicePixelRatio becomes
-      // |zoom_factor_for_device_scale_factor_|.
-      page_->SetDeviceScaleFactorDeprecated(
+      page_->SetInspectorDeviceScaleFactorOverride(
           zoom_factor_for_device_scale_factor_ /
           compositor_device_scale_factor_override_);
+
       zoom_factor *= compositor_device_scale_factor_override_;
     } else {
-      page_->SetDeviceScaleFactorDeprecated(1.f);
+      page_->SetInspectorDeviceScaleFactorOverride(1.0f);
       zoom_factor *= zoom_factor_for_device_scale_factor_;
     }
   }
@@ -2262,16 +2287,6 @@ void WebViewImpl::SetPageScaleFactor(float scale_factor) {
   DCHECK(MainFrameImpl());
 
   MainFrameImpl()->GetFrame()->SetScaleFactor(scale_factor);
-}
-
-void WebViewImpl::SetDeviceScaleFactor(float scale_factor) {
-  if (!GetPage())
-    return;
-
-  if (GetPage()->DeviceScaleFactorDeprecated() == scale_factor)
-    return;
-
-  GetPage()->SetDeviceScaleFactorDeprecated(scale_factor);
 }
 
 void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
@@ -2696,9 +2711,7 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
 
   if (SettingsImpl()->ClobberUserAgentInitialScaleQuirk() &&
       GetPageScaleConstraintsSet().UserAgentConstraints().initial_scale != -1 &&
-      GetPageScaleConstraintsSet().UserAgentConstraints().initial_scale *
-              DeviceScaleFactor() <=
-          1) {
+      GetPageScaleConstraintsSet().UserAgentConstraints().initial_scale <= 1) {
     if (description.max_width == Length::DeviceWidth() ||
         (description.max_width.IsAuto() &&
          GetPageScaleConstraintsSet().PageDefinedConstraints().initial_scale ==
@@ -2708,7 +2721,7 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
 
   Settings& page_settings = GetPage()->GetSettings();
   GetPageScaleConstraintsSet().AdjustForAndroidWebViewQuirks(
-      description, default_min_width.IntValue(), DeviceScaleFactor(),
+      description, default_min_width.IntValue(),
       SettingsImpl()->SupportDeprecatedTargetDensityDPI(),
       page_settings.GetWideViewportQuirkEnabled(),
       page_settings.GetUseWideViewport(),
@@ -3330,13 +3343,23 @@ void WebViewImpl::UpdateWebPreferences(
     // The main frame of a fenced frame should not behave like a top level
     // frame in terms of viewport behavior. i.e. It shouldn't allow zooming,
     // either explicitly or to fit content, and it should not interpret the
-    // viewport <meta> tag.
+    // viewport <meta> tag. Text autosizing is disabled since it is only
+    // determined by the outermost page and having the outermost page pass
+    // it into the fenced frame can create a communication channel.
     web_preferences_.viewport_enabled = false;
     web_preferences_.viewport_meta_enabled = false;
     web_preferences_.default_minimum_page_scale_factor = 1.f;
     web_preferences_.default_maximum_page_scale_factor = 1.f;
     web_preferences_.shrinks_viewport_contents_to_fit = false;
     web_preferences_.main_frame_resizes_are_orientation_changes = false;
+    web_preferences_.text_autosizing_enabled = false;
+
+#if BUILDFLAG(IS_ANDROID)
+    // Reusing the global for unowned main frame is only used for
+    // Android WebView. Since this is a fenced frame it is not the
+    // outermost main frame so we can safely disable this feature.
+    web_preferences_.reuse_global_for_unowned_main_frame = false;
+#endif
   }
 
   if (MainFrameImpl()) {
@@ -3682,16 +3705,6 @@ void WebViewImpl::SetVisibilityState(
 mojom::blink::PageVisibilityState WebViewImpl::GetVisibilityState() {
   DCHECK(GetPage());
   return GetPage()->GetVisibilityState();
-}
-
-float WebViewImpl::DeviceScaleFactor() const {
-  // TODO(oshima): Investigate if this should return the ScreenInfo's scale
-  // factor rather than page's scale factor, which can be 1 in use-zoom-for-dsf
-  // mode.
-  if (!GetPage())
-    return 1;
-
-  return GetPage()->DeviceScaleFactorDeprecated();
 }
 
 LocalFrame* WebViewImpl::FocusedLocalFrameInWidget() const {

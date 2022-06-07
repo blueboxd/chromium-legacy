@@ -7,7 +7,10 @@
 #include <memory>
 
 #include "ash/frame/non_client_frame_view_ash.h"
+#include "ash/shell.h"
 #include "base/bind.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/edit_mode_exit_view.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/error_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/input_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/exo/shell_surface_base.h"
@@ -27,6 +30,8 @@ namespace {
 // UI specs.
 constexpr int kMenuEntrySize = 56;
 constexpr int kMenuEntrySideMargin = 24;
+constexpr int kEditModeExitWidth = 140;
+constexpr int kEditModeExitHeight = 184;
 constexpr SkColor kMenuEntryBgColor = SkColorSetA(SK_ColorWHITE, 0x99);
 constexpr int kCornerRadius = 8;
 
@@ -41,10 +46,12 @@ DisplayOverlayController::DisplayOverlayController(
   // launching and showing the educational dialog. Redo the logic here when the
   // educational dialog is ready.
   SetDisplayMode(DisplayMode::kView);
+  ash::Shell::Get()->AddPreTargetHandler(this);
 }
 
 DisplayOverlayController::~DisplayOverlayController() {
   RemoveOverlayIfAny();
+  ash::Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void DisplayOverlayController::OnWindowBoundsChanged() {
@@ -126,6 +133,18 @@ void DisplayOverlayController::AddMenuEntryView(views::Widget* overlay_widget) {
   menu_entry_ = parent_view->AddChildView(std::move(menu_entry));
 }
 
+void DisplayOverlayController::AddEditModeExitView(
+    views::Widget* overlay_widget) {
+  DCHECK(overlay_widget);
+  auto* parent_view = overlay_widget->GetContentsView();
+  DCHECK(parent_view);
+
+  // TODO(djacobo): Undefined vertical position, reusing whatever |entry_menu_|
+  // uses for now.
+  edit_mode_view_ = parent_view->AddChildView(
+      EditModeExitView::BuildView(this, CalculateEditModeExitPosition()));
+}
+
 void DisplayOverlayController::OnMenuEntryPressed() {
   auto* overlay_widget = GetOverlayWidget();
   DCHECK(overlay_widget);
@@ -159,6 +178,13 @@ void DisplayOverlayController::RemoveMenuEntryView() {
   menu_entry_ = nullptr;
 }
 
+void DisplayOverlayController::RemoveEditModeExitView() {
+  if (!edit_mode_view_)
+    return;
+  edit_mode_view_->parent()->RemoveChildViewT(edit_mode_view_);
+  edit_mode_view_ = nullptr;
+}
+
 views::Widget* DisplayOverlayController::GetOverlayWidget() {
   auto* shell_surface_base =
       exo::GetShellSurfaceBaseForWindow(touch_injector_->target_window());
@@ -182,6 +208,19 @@ gfx::Point DisplayOverlayController::CalculateMenuEntryPosition() {
       std::max(0, view->height() / 2 - kMenuEntrySize / 2));
 }
 
+gfx::Point DisplayOverlayController::CalculateEditModeExitPosition() {
+  auto* overlay_widget = GetOverlayWidget();
+  if (!overlay_widget)
+    return gfx::Point();
+  auto* view = overlay_widget->GetContentsView();
+  if (!view || view->bounds().IsEmpty())
+    return gfx::Point();
+
+  return gfx::Point(
+      std::max(0, view->width() - kEditModeExitWidth - kMenuEntrySideMargin),
+      std::max(0, view->height() / 2 - kEditModeExitHeight / 2));
+}
+
 void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
   if (display_mode_ == mode)
     return;
@@ -195,6 +234,7 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
     case DisplayMode::kNone:
       RemoveMenuEntryView();
       RemoveInputMappingView();
+      RemoveEditModeExitView();
       break;
     case DisplayMode::kEducation:
       // TODO(cuicuiruan): Add educational dialog.
@@ -203,6 +243,7 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
       break;
     case DisplayMode::kView:
       RemoveInputMenuView();
+      RemoveEditModeExitView();
       AddInputMappingView(overlay_widget);
       AddMenuEntryView(overlay_widget);
       overlay_widget->GetNativeWindow()->SetEventTargetingPolicy(
@@ -211,6 +252,7 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
     case DisplayMode::kEdit:
       RemoveInputMenuView();
       RemoveMenuEntryView();
+      AddEditModeExitView(overlay_widget);
       overlay_widget->GetNativeWindow()->SetEventTargetingPolicy(
           aura::EventTargetingPolicy::kTargetAndDescendants);
       break;
@@ -241,8 +283,8 @@ DisplayOverlayController::GetOverlayMenuEntryBounds() {
   return absl::optional<gfx::Rect>(menu_entry_->bounds());
 }
 
-void DisplayOverlayController::AddActionEditMenu(ActionView* anchor) {
-  RemoveActionEditMenu();
+void DisplayOverlayController::AddActionEditMenu(ActionView* anchor,
+                                                 ActionType action_type) {
   auto* overlay_widget = GetOverlayWidget();
   DCHECK(overlay_widget);
   if (!overlay_widget)
@@ -251,7 +293,8 @@ void DisplayOverlayController::AddActionEditMenu(ActionView* anchor) {
   DCHECK(parent_view);
   if (!parent_view)
     return;
-  auto action_edit_menu = ActionEditMenu::BuildActionTapEditMenu(this, anchor);
+  auto action_edit_menu =
+      ActionEditMenu::BuildActionEditMenu(this, anchor, action_type);
   if (action_edit_menu)
     action_edit_menu_ = parent_view->AddChildView(std::move(action_edit_menu));
 }
@@ -261,6 +304,55 @@ void DisplayOverlayController::RemoveActionEditMenu() {
     return;
   action_edit_menu_->parent()->RemoveChildViewT(action_edit_menu_);
   action_edit_menu_ = nullptr;
+}
+
+void DisplayOverlayController::AddEditErrorMsg(ActionView* action_view,
+                                               base::StringPiece error_msg) {
+  auto* overlay_widget = GetOverlayWidget();
+  DCHECK(overlay_widget);
+  if (!overlay_widget)
+    return;
+  auto* parent_view = overlay_widget->GetContentsView();
+  DCHECK(parent_view);
+  if (!parent_view)
+    return;
+  auto error = std::make_unique<ErrorView>(this, action_view, error_msg);
+  error_ = parent_view->AddChildView(std::move(error));
+}
+
+void DisplayOverlayController::RemoveEditErrorMsg() {
+  if (!error_)
+    return;
+  error_->parent()->RemoveChildViewT(error_);
+  error_ = nullptr;
+}
+
+void DisplayOverlayController::OnBindingChange(
+    Action* action,
+    std::unique_ptr<InputElement> input_element) {
+  touch_injector_->OnBindingChange(action, std::move(input_element));
+}
+
+void DisplayOverlayController::OnCustomizeSave() {
+  touch_injector_->OnBindingSave();
+}
+
+void DisplayOverlayController::OnCustomizeCancel() {
+  touch_injector_->OnBindingCancel();
+}
+
+void DisplayOverlayController::OnCustomizeRestore() {
+  touch_injector_->OnBindingRestore();
+}
+
+void DisplayOverlayController::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ProcessPressedEvent(*event);
+}
+
+void DisplayOverlayController::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    ProcessPressedEvent(*event);
 }
 
 bool DisplayOverlayController::HasMenuView() const {
@@ -295,6 +387,26 @@ bool DisplayOverlayController::GetTouchInjectorEnable() {
   if (!touch_injector_)
     return false;
   return touch_injector_->touch_injector_enable();
+}
+
+void DisplayOverlayController::ProcessPressedEvent(
+    const ui::LocatedEvent& event) {
+  if (!action_edit_menu_ && !error_)
+    return;
+
+  if (action_edit_menu_) {
+    auto bounds = action_edit_menu_->GetBoundsInScreen();
+    auto root_location = event.root_location();
+    if (!bounds.Contains(root_location))
+      RemoveActionEditMenu();
+  }
+
+  if (error_) {
+    auto bounds = error_->GetBoundsInScreen();
+    auto root_location = event.root_location();
+    if (!bounds.Contains(root_location))
+      RemoveEditErrorMsg();
+  }
 }
 
 }  // namespace input_overlay

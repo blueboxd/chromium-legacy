@@ -5,22 +5,23 @@
 // https://github.com/WICG/direct-sockets/blob/main/docs/explainer.md#tcp
 
 dictionary SocketOptions {
-  DOMString localAddress;
-  unsigned short localPort;
-
-  DOMString remoteAddress;
-  unsigned short remotePort;
-
   unsigned long sendBufferSize;
   unsigned long receiveBufferSize;
 };
 
 dictionary TCPSocketOptions : SocketOptions {
+  DOMString localAddress;
+  unsigned short localPort;
+
   boolean noDelay;
   boolean keepAlive;
   [EnforceRange] unsigned long keepAliveDelay;
 };
 
 dictionary UDPSocketOptions : SocketOptions {
+  [EnforceRange] unsigned short readableStreamBufferSize;
+};
 
+dictionary SocketCloseOptions {
+  boolean force;
 };

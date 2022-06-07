@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/time/time.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -196,6 +197,10 @@ class MockQuotaManager : public QuotaManager {
       blink::mojom::StorageType storage_type);
   void DidDeleteBucketData(StatusCallback callback,
                            blink::mojom::QuotaStatusCode status);
+
+  base::FilePath profile_path() { return profile_path_; }
+
+  const base::FilePath profile_path_;
 
   BucketId::Generator bucket_id_generator_;
 

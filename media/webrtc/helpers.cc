@@ -11,8 +11,6 @@
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "media/webrtc/webrtc_features.h"
-#include "third_party/webrtc/api/audio/echo_canceller3_config.h"
-#include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 
@@ -208,14 +206,6 @@ webrtc::StreamConfig CreateStreamConfig(const AudioParameters& parameters) {
   return webrtc::StreamConfig(rate, channels);
 }
 
-bool LeftAndRightChannelsAreSymmetric(const AudioBus& audio) {
-  if (audio.channels() <= 1) {
-    return true;
-  }
-  return std::equal(audio.channel(0), audio.channel(0) + audio.frames(),
-                    audio.channel(1));
-}
-
 void StartEchoCancellationDump(webrtc::AudioProcessing* audio_processing,
                                base::File aec_dump_file,
                                rtc::TaskQueue* worker_queue) {
@@ -246,10 +236,6 @@ rtc::scoped_refptr<webrtc::AudioProcessing> CreateWebRtcAudioProcessingModule(
     return nullptr;
 
   webrtc::AudioProcessingBuilder ap_builder;
-  if (settings.echo_cancellation) {
-    ap_builder.SetEchoControlFactory(
-        std::make_unique<webrtc::EchoCanceller3Factory>());
-  }
 
   webrtc::AudioProcessing::Config apm_config;
   apm_config.pipeline.multi_channel_render = true;
@@ -265,8 +251,6 @@ rtc::scoped_refptr<webrtc::AudioProcessing> CreateWebRtcAudioProcessingModule(
 #else
   apm_config.echo_canceller.mobile_mode = false;
 #endif
-  apm_config.residual_echo_detector.enabled = false;
-
 #if !(BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS))
   apm_config.transient_suppression.enabled =
       settings.transient_noise_suppression;

@@ -102,9 +102,9 @@ void PhantomWindowController::Show(const gfx::Rect& window_bounds_in_screen) {
   int start_height = std::max(kMinHeightWithShadow,
                               static_cast<int>(start_bounds_in_screen.height() *
                                                kScrimStartBoundsRatio));
-  start_bounds_in_screen.Inset(
-      floor((start_bounds_in_screen.width() - start_width) / 2.0f),
-      floor((start_bounds_in_screen.height() - start_height) / 2.0f));
+  start_bounds_in_screen.Inset(gfx::Insets::VH(
+      floor((start_bounds_in_screen.height() - start_height) / 2.0f),
+      floor((start_bounds_in_screen.width() - start_width) / 2.0f)));
 
   // Create a phantom widget with starting size so `ShowPhantomWidget()` can
   // animate from that current size to |target_bounds_in_screen|.
@@ -272,7 +272,8 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreateMaximizeCue(
   // Set layout of cue view and add a label to the view.
   maximize_cue->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(kMaximizeCueVerticalInsets, kMaximizeCueHorizontalInsets)));
+      gfx::Insets::VH(kMaximizeCueVerticalInsets,
+                      kMaximizeCueHorizontalInsets)));
   views::Label* maximize_cue_label =
       maximize_cue->AddChildView(std::make_unique<views::Label>(
           l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_HOLD_TO_MAXIMIZE)));

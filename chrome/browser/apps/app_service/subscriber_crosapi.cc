@@ -14,23 +14,25 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace {
 
-bool Accepts(apps::mojom::AppType app_type) {
-  return app_type == apps::mojom::AppType::kUnknown ||
-         app_type == apps::mojom::AppType::kArc ||
-         app_type == apps::mojom::AppType::kWeb ||
-         app_type == apps::mojom::AppType::kSystemWeb ||
-         app_type == apps::mojom::AppType::kStandaloneBrowserChromeApp;
+bool Accepts(apps::AppType app_type) {
+  return app_type == apps::AppType::kUnknown ||
+         app_type == apps::AppType::kArc || app_type == apps::AppType::kWeb ||
+         app_type == apps::AppType::kSystemWeb ||
+         app_type == apps::AppType::kStandaloneBrowserChromeApp;
 }
 
 bool Accepts(const std::vector<apps::mojom::AppPtr>& deltas) {
   for (const auto& delta : deltas) {
-    if (!Accepts(delta->app_type)) {
+    if (!Accepts(apps::ConvertMojomAppTypToAppType(delta->app_type))) {
       return false;
     }
   }
@@ -41,7 +43,11 @@ bool Accepts(const std::vector<apps::mojom::AppPtr>& deltas) {
 
 namespace apps {
 
-SubscriberCrosapi::SubscriberCrosapi(Profile* profile) : profile_(profile) {}
+class AppUpdate;
+
+SubscriberCrosapi::SubscriberCrosapi(Profile* profile)
+    : profile_(profile),
+      proxy_(apps::AppServiceProxyFactory::GetForProfile(profile)) {}
 
 SubscriberCrosapi::~SubscriberCrosapi() = default;
 
@@ -58,9 +64,32 @@ void SubscriberCrosapi::RegisterAppServiceProxyFromCrosapi(
       &SubscriberCrosapi::OnCrosapiDisconnected, base::Unretained(this)));
 }
 
+void SubscriberCrosapi::OnApps(const std::vector<apps::AppPtr>& deltas) {
+  if (!subscriber_.is_bound()) {
+    return;
+  }
+
+  std::vector<AppPtr> apps;
+  for (const auto& delta : deltas) {
+    if (Accepts(delta->app_type)) {
+      apps.push_back(delta->Clone());
+    }
+  }
+
+  // Apps are sent to Lacros side for preferred apps only, so we don't need to
+  // set initialized status.
+  subscriber_->OnApps(std::move(apps), AppType::kUnknown,
+                      /*should_notify_initialized=*/false);
+}
+
 void SubscriberCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas,
-                               apps::mojom::AppType app_type,
+                               apps::mojom::AppType mojom_app_type,
                                bool should_notify_initialized) {
+  if (base::FeatureList::IsEnabled(AppServiceCrosApiOnAppsWithoutMojom)) {
+    return;
+  }
+
+  auto app_type = ConvertMojomAppTypToAppType(mojom_app_type);
   if (Accepts(app_type) && Accepts(deltas) && subscriber_.is_bound()) {
     std::vector<AppPtr> apps;
     for (const auto& mojom_app : deltas) {
@@ -68,8 +97,7 @@ void SubscriberCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas,
         apps.push_back(ConvertMojomAppToApp(mojom_app));
       }
     }
-    subscriber_->OnApps(std::move(apps), ConvertMojomAppTypToAppType(app_type),
-                        should_notify_initialized);
+    subscriber_->OnApps(std::move(apps), app_type, should_notify_initialized);
   }
 }
 
@@ -116,18 +144,18 @@ void SubscriberCrosapi::RegisterAppServiceSubscriber(
   subscriber_.set_disconnect_handler(base::BindOnce(
       &SubscriberCrosapi::OnSubscriberDisconnected, base::Unretained(this)));
 
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
-  mojo::Remote<apps::mojom::AppService>& app_service = proxy->AppService();
+  mojo::Remote<apps::mojom::AppService>& app_service = proxy_->AppService();
   DCHECK(app_service.is_bound());
   mojo::PendingRemote<apps::mojom::Subscriber> app_service_subscriber;
   receivers_.Add(this, app_service_subscriber.InitWithNewPipeAndPassReceiver());
   app_service->RegisterSubscriber(std::move(app_service_subscriber), nullptr);
+
+  proxy_->RegisterCrosApiSubScriber(this);
 }
 
 void SubscriberCrosapi::Launch(crosapi::mojom::LaunchParamsPtr launch_params) {
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
   // TODO(crbug.com/1244506): Link up the return callback.
-  proxy->LaunchAppWithParams(
+  proxy_->LaunchAppWithParams(
       ConvertCrosapiToLaunchParams(launch_params, profile_), base::DoNothing());
 }
 
@@ -141,16 +169,15 @@ void SubscriberCrosapi::LoadIcon(const std::string& app_id,
     return;
   }
 
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
-  apps::mojom::AppType app_type = proxy->AppRegistryCache().GetAppType(app_id);
+  auto app_type = proxy_->AppRegistryCache().GetAppType(app_id);
   if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
-    proxy->LoadIconFromIconKey(ConvertMojomAppTypToAppType(app_type), app_id,
-                               *icon_key, icon_type, size_hint_in_dip,
-                               /*allow_placeholder_icon=*/false,
-                               std::move(callback));
+    proxy_->LoadIconFromIconKey(
+        app_type, app_id, *icon_key, icon_type, size_hint_in_dip,
+        /*allow_placeholder_icon=*/false, std::move(callback));
   } else {
-    proxy->LoadIconFromIconKey(
-        app_type, app_id, ConvertIconKeyToMojomIconKey(*icon_key),
+    proxy_->LoadIconFromIconKey(
+        ConvertAppTypeToMojomAppType(app_type), app_id,
+        ConvertIconKeyToMojomIconKey(*icon_key),
         ConvertIconTypeToMojomIconType(icon_type), size_hint_in_dip,
         /*allow_placeholder_icon=*/false,
         MojomIconValueToIconValueCallback(std::move(callback)));
@@ -159,9 +186,22 @@ void SubscriberCrosapi::LoadIcon(const std::string& app_id,
 
 void SubscriberCrosapi::AddPreferredApp(const std::string& app_id,
                                         crosapi::mojom::IntentPtr intent) {
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
-  proxy->AddPreferredApp(
+  proxy_->AddPreferredApp(
       app_id, apps_util::ConvertCrosapiToAppServiceIntent(intent, profile_));
+}
+
+void SubscriberCrosapi::ShowAppManagementPage(const std::string& app_id) {
+  if (!proxy_->AppRegistryCache().ForOneApp(app_id,
+                                            [](const apps::AppUpdate&) {})) {
+    LOG(WARNING) << "Unknown app: " << app_id;
+    return;
+  }
+  chrome::ShowAppManagementPage(
+      profile_, app_id, ash::settings::AppManagementEntryPoint::kPageInfoView);
+}
+
+void SubscriberCrosapi::SetSupportedLinksPreference(const std::string& app_id) {
+  proxy_->SetSupportedLinksPreference(app_id);
 }
 
 void SubscriberCrosapi::OnSubscriberDisconnected() {

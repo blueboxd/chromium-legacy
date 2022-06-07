@@ -51,9 +51,9 @@ source_set("follow_management") {
     ":follow_management_ui",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/net:crurl",
-    "//ios/chrome/browser/ui/favicon:constants",
     "//ios/chrome/browser/ui/follow",
     "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/common/ui/favicon:favicon_constants",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/follow",
   ]
@@ -77,5 +77,23 @@ source_set("follow_management_ui") {
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/common/ui/favicon",
     "//ui/base",
+  ]
+}
+
+source_set("eg2_tests") {
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [ "feed_management_egtest.mm" ]
+  deps = [
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/ntp:feature_flags",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
   ]
 }

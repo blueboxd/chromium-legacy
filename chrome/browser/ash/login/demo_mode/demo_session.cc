@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
 #include "base/bind.h"
@@ -20,7 +21,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -42,7 +42,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"

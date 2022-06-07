@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -138,6 +139,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
   config.features_enabled.push_back(kDiscoverFeedInNtp);
+  config.features_enabled.push_back(kSingleCellContentSuggestions);
+  config.features_enabled.push_back(kContentSuggestionsHeaderMigration);
   return config;
 }
 
@@ -235,6 +238,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                             @"found on the keyboard.");
   }
 #endif  // !TARGET_IPHONE_SIMULATOR
+
+  // TODO(crbug.com/1315304): Reenable.
+  if ([ChromeEarlGrey isNewOmniboxPopupEnabled]) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for new popup");
+  }
+
   NSString* URL = @"app-settings://test/";
 
   // The URL needs to be typed to trigger the bug.
@@ -246,14 +255,20 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       performAction:grey_typeText(URL)];
 
   // The first suggestion is a search, the second suggestion is the URL.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(
-              grey_accessibilityID(@"omnibox suggestion 1"),
-              grey_kindOfClassName(@"OmniboxPopupRowCell"),
-              grey_descendant(
-                  chrome_test_util::StaticTextWithAccessibilityLabel(URL)),
-              grey_sufficientlyVisible(), nil)] performAction:grey_tap()];
+  id<GREYMatcher> rowMatcher =
+      [ChromeEarlGrey isNewOmniboxPopupEnabled]
+          ? grey_allOf(
+                grey_ancestor(grey_accessibilityID(@"omnibox suggestion 0 1")),
+                chrome_test_util::OmniboxPopupRow(),
+                grey_accessibilityValue(URL), grey_sufficientlyVisible(), nil)
+          : grey_allOf(
+                grey_accessibilityID(@"omnibox suggestion 0 1"),
+                chrome_test_util::OmniboxPopupRow(),
+                grey_descendant(
+                    chrome_test_util::StaticTextWithAccessibilityLabel(URL)),
+                grey_sufficientlyVisible(), nil);
+
+  [[EarlGrey selectElementWithMatcher:rowMatcher] performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -465,13 +480,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the position of the collection view is restored when navigating
 // back to the NTP.
-- (void)testPositionRestored {
-#if !TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/1299362): Test consistently fail on iPhone Device.
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test consistently fail on iPhone Device.");
-  }
-#endif
+// TODO(crbug.com/1299362): Re-enable test after fixing flakiness.
+- (void)DISABLED_testPositionRestored {
   [self addMostVisitedTile];
 
   // Add suggestions to be able to scroll on iPad.
@@ -544,6 +554,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
+
+  // TODO(crbug.com/1315304): Reenable.
+  if ([ChromeEarlGrey isNewOmniboxPopupEnabled]) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for new popup");
+  }
+
   // Setup the server.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));
@@ -666,22 +682,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 }
 
 - (void)testFavicons {
-  for (NSInteger index = 0; index < 4; index++) {
+  for (NSInteger index = 0; index < 8; index++) {
     [[EarlGrey
         selectElementWithMatcher:
             grey_accessibilityID([NSString
                 stringWithFormat:
                     @"%@%li",
                     kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
-                    index])] assertWithMatcher:grey_sufficientlyVisible()];
-  }
-  for (NSInteger index = 0; index < 4; index++) {
-    [[EarlGrey
-        selectElementWithMatcher:
-            grey_accessibilityID([NSString
-                stringWithFormat:
-                    @"%@%li",
-                    kContentSuggestionsShortcutsAccessibilityIdentifierPrefix,
                     index])] assertWithMatcher:grey_sufficientlyVisible()];
   }
 
@@ -698,22 +705,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       performAction:grey_tap()];
 
   // Check again the favicons.
-  for (NSInteger index = 0; index < 4; index++) {
+  for (NSInteger index = 0; index < 8; index++) {
     [[EarlGrey
         selectElementWithMatcher:
             grey_accessibilityID([NSString
                 stringWithFormat:
                     @"%@%li",
                     kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
-                    index])] assertWithMatcher:grey_sufficientlyVisible()];
-  }
-  for (NSInteger index = 0; index < 4; index++) {
-    [[EarlGrey
-        selectElementWithMatcher:
-            grey_accessibilityID([NSString
-                stringWithFormat:
-                    @"%@%li",
-                    kContentSuggestionsShortcutsAccessibilityIdentifierPrefix,
                     index])] assertWithMatcher:grey_sufficientlyVisible()];
   }
 
@@ -744,22 +742,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // Ensures that tiles are still all visible with feed turned off after
   // scrolling.
-  for (NSInteger index = 0; index < 4; index++) {
+  for (NSInteger index = 0; index < 8; index++) {
     [[EarlGrey
         selectElementWithMatcher:
             grey_accessibilityID([NSString
                 stringWithFormat:
                     @"%@%li",
                     kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
-                    index])] assertWithMatcher:grey_sufficientlyVisible()];
-  }
-  for (NSInteger index = 0; index < 4; index++) {
-    [[EarlGrey
-        selectElementWithMatcher:
-            grey_accessibilityID([NSString
-                stringWithFormat:
-                    @"%@%li",
-                    kContentSuggestionsShortcutsAccessibilityIdentifierPrefix,
                     index])] assertWithMatcher:grey_sufficientlyVisible()];
   }
   // Ensures that fake omnibox visibility is correct.
@@ -797,7 +786,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Test to ensure that feed can be collapsed/shown and that feed header changes
 // accordingly.
-- (void)testToggleFeedVisible {
+// TODO(crbug.com/1311947): Failing simulator.
+- (void)DISABLED_testToggleFeedVisible {
   [self
       testNTPInitialPositionAndContent:[NewTabPageAppInterface collectionView]];
 
@@ -1035,7 +1025,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   // Usually a fast swipe scrolls back up, but in case it doesn't, make sure
-  // by slowly scrolling to the top.
+  // by scrolling again, then slowly scrolling to the top.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
 }
@@ -1082,6 +1074,80 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   feed_visible =
       [ChromeEarlGrey userBooleanPref:feed::prefs::kArticlesListVisible];
   GREYAssertFalse(feed_visible, @"Expect feed to be hidden!");
+}
+
+@end
+
+// Test case for the NTP home UI, except the new omnibox popup flag is enabled.
+@interface NewOmniboxPopupNTPHomeTestCase : NTPHomeTestCase {
+  // Which variant of the new popup flag to use.
+  std::string _variant;
+}
+@end
+
+@implementation NewOmniboxPopupNTPHomeTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config = [super appConfigurationForTestCase];
+
+  config.additional_args.push_back(
+      "--enable-features=" + std::string(kIOSOmniboxUpdatedPopupUI.name) + "<" +
+      std::string(kIOSOmniboxUpdatedPopupUI.name));
+
+  config.additional_args.push_back(
+      "--force-fieldtrials=" + std::string(kIOSOmniboxUpdatedPopupUI.name) +
+      "/Test");
+
+  config.additional_args.push_back(
+      "--force-fieldtrial-params=" +
+      std::string(kIOSOmniboxUpdatedPopupUI.name) + ".Test:" +
+      std::string(kIOSOmniboxUpdatedPopupUIVariationName) + "/" + _variant);
+
+  return config;
+}
+
+@end
+
+// Test case for the NTP home UI, except the new omnibox popup flag is enabled
+// with variant 1.
+@interface NewOmniboxPopupNTPHomeVariant1TestCase
+    : NewOmniboxPopupNTPHomeTestCase
+@end
+
+@implementation NewOmniboxPopupNTPHomeVariant1TestCase
+
+- (void)setUp {
+  _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation1);
+
+  // |appConfigurationForTestCase| is called during [super setUp], and
+  // depends on _variant.
+  [super setUp];
+}
+
+// This is currently needed to prevent this test case from being ignored.
+- (void)testEmpty {
+}
+
+@end
+
+// Test case for the NTP home UI, except the new omnibox popup flag is enabled
+// with variant 2.
+@interface NewOmniboxPopupNTPHomeVariant2TestCase
+    : NewOmniboxPopupNTPHomeTestCase
+@end
+
+@implementation NewOmniboxPopupNTPHomeVariant2TestCase
+
+- (void)setUp {
+  _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation2);
+
+  // |appConfigurationForTestCase| is called during [super setUp], and
+  // depends on _variant.
+  [super setUp];
+}
+
+// This is currently needed to prevent this test case from being ignored.
+- (void)testEmpty {
 }
 
 @end

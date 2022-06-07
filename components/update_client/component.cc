@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -442,7 +441,7 @@ base::TimeDelta Component::GetUpdateDuration() const {
 
 base::Value Component::MakeEventUpdateComplete() const {
   base::Value event(base::Value::Type::DICTIONARY);
-  event.SetKey("eventtype", base::Value(3));
+  event.SetKey("eventtype", base::Value(update_context_.is_install ? 2 : 3));
   event.SetKey(
       "eventresult",
       base::Value(static_cast<int>(state() == ComponentState::kUpdated)));

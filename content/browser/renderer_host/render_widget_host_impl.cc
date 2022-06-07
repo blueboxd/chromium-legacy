@@ -27,6 +27,7 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
@@ -34,7 +35,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -103,7 +103,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -178,15 +177,6 @@ bool g_check_for_pending_visual_properties_ack = true;
 bool ShouldDisableHangMonitor() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHangMonitor);
-}
-
-// Returns the cached result of IsUseZoomForDSFEnabled().
-// IsUseZoomForDSFEnabled() calls base::CommandLine::HasSwitch() which
-// is relatively heavyweight when invoked repeatedly (some functions that
-// check this setting can be called frequently). https://crbug.com/1220717 .
-bool ShouldUseZoomForDSF() {
-  static bool is_use_zoom_for_DSF_enabled = IsUseZoomForDSFEnabled();
-  return is_use_zoom_for_DSF_enabled;
 }
 
 // <process id, routing id>
@@ -285,7 +275,7 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
 
 class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {
  public:
-  void SetFocus(bool focused) override {
+  void SetFocus(blink::mojom::FocusState focus_state) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void MouseCaptureLost() override {
@@ -395,27 +385,29 @@ base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
 std::unique_ptr<RenderWidgetHostImpl> RenderWidgetHostImpl::Create(
     FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
-    AgentSchedulingGroupHost& agent_scheduling_host,
+    base::SafeRef<SiteInstanceGroup> site_instance_group,
     int32_t routing_id,
     bool hidden,
     bool renderer_initiated_creation,
     std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue) {
   return base::WrapUnique(new RenderWidgetHostImpl(
       frame_tree,
-      /*self_owned=*/false, delegate, agent_scheduling_host, routing_id, hidden,
-      renderer_initiated_creation, std::move(frame_token_message_queue)));
+      /*self_owned=*/false, delegate, std::move(site_instance_group),
+      routing_id, hidden, renderer_initiated_creation,
+      std::move(frame_token_message_queue)));
 }
 
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::CreateSelfOwned(
     FrameTree* frame_tree,
     RenderWidgetHostDelegate* delegate,
-    AgentSchedulingGroupHost& agent_scheduling_host,
+    base::SafeRef<SiteInstanceGroup> site_instance_group,
     int32_t routing_id,
     bool hidden,
     std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue) {
   return new RenderWidgetHostImpl(frame_tree, /*self_owned=*/true, delegate,
-                                  agent_scheduling_host, routing_id, hidden,
+                                  std::move(site_instance_group), routing_id,
+                                  hidden,
                                   /*renderer_initiated_creation=*/true,
                                   std::move(frame_token_message_queue));
 }
@@ -424,7 +416,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
     FrameTree* frame_tree,
     bool self_owned,
     RenderWidgetHostDelegate* delegate,
-    AgentSchedulingGroupHost& agent_scheduling_group,
+    base::SafeRef<SiteInstanceGroup> site_instance_group,
     int32_t routing_id,
     bool hidden,
     bool renderer_initiated_creation,
@@ -433,7 +425,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       self_owned_(self_owned),
       waiting_for_init_(renderer_initiated_creation),
       delegate_(delegate),
-      agent_scheduling_group_(agent_scheduling_group),
+      agent_scheduling_group_(site_instance_group->agent_scheduling_group()),
+      site_instance_group_(std::move(site_instance_group)),
       routing_id_(routing_id),
       is_hidden_(hidden),
       last_view_screen_rect_(kInvalidScreenRect),
@@ -450,7 +443,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
 #endif
           frame_token_message_queue_.get()),
       frame_sink_id_(base::checked_cast<uint32_t>(
-                         agent_scheduling_group.GetProcess()->GetID()),
+                         agent_scheduling_group_.GetProcess()->GetID()),
                      base::checked_cast<uint32_t>(routing_id_)),
       power_mode_input_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
@@ -470,12 +463,11 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
 #endif
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  DCHECK(base::ThreadPoolInstance::Get())
-      << "Ref. Prerequisite section of post_task.h";
+  DCHECK(base::ThreadPoolInstance::Get());
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(
-          RenderWidgetHostID(agent_scheduling_group.GetProcess()->GetID(),
+          RenderWidgetHostID(agent_scheduling_group_.GetProcess()->GetID(),
                              routing_id_),
           this));
   CHECK(result.second) << "Inserting a duplicate item!";
@@ -484,14 +476,14 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
   // To avoid leaking any instance. They self-delete when their renderer process
   // is gone.
   if (self_owned_)
-    agent_scheduling_group.GetProcess()->AddObserver(this);
+    agent_scheduling_group_.GetProcess()->AddObserver(this);
 
   render_process_blocked_state_changed_subscription_ =
-      agent_scheduling_group.GetProcess()->RegisterBlockStateChangedCallback(
+      agent_scheduling_group_.GetProcess()->RegisterBlockStateChangedCallback(
           base::BindRepeating(
               &RenderWidgetHostImpl::RenderProcessBlockedStateChanged,
               base::Unretained(this)));
-  agent_scheduling_group.GetProcess()->AddPriorityClient(this);
+  agent_scheduling_group_.GetProcess()->AddPriorityClient(this);
 
   SetupInputRouter();
 
@@ -787,7 +779,7 @@ void RenderWidgetHostImpl::Init() {
   if (pending_show_params_) {
     DCHECK(blink_widget_.is_bound());
     blink_widget_->WasShown(
-        pending_show_params_->is_evicted, view_ && view_->IsInActiveWindow(),
+        pending_show_params_->is_evicted,
         std::move(pending_show_params_->visible_time_request));
     pending_show_params_.reset();
   }
@@ -877,7 +869,7 @@ void RenderWidgetHostImpl::WasShown(
 
   DCHECK(!pending_show_params_);
   if (!waiting_for_init_) {
-    blink_widget_->WasShown(view_->is_evicted(), view_->IsInActiveWindow(),
+    blink_widget_->WasShown(view_->is_evicted(),
                             std::move(record_tab_switch_time_request));
   } else {
     // Delay the WasShown message until Init is called.
@@ -913,11 +905,6 @@ void RenderWidgetHostImpl::WasShown(
   // resize from SynchronizeVisualProperties is usually processed before the
   // renderer is painted.
   SynchronizeVisualProperties();
-}
-
-void RenderWidgetHostImpl::OnActiveWindowChanged(bool in_active_window) {
-  if (!waiting_for_init_)
-    blink_widget_->OnActiveWindowChanged(in_active_window);
 }
 
 void RenderWidgetHostImpl::RequestPresentationTimeForNextFrame(
@@ -1043,11 +1030,6 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   float bottom_controls_min_height =
       rvh_delegate_view->GetBottomControlsMinHeight();
   float browser_controls_dsf_multiplier = 1.f;
-  // The top and bottom control sizes are physical pixels but the IPC wants
-  // DIPs *when not using page zoom for DSF* because blink layout is working
-  // in DIPs then.
-  if (!ShouldUseZoomForDSF())
-    browser_controls_dsf_multiplier = current_screen_info.device_scale_factor;
   visual_properties.browser_controls_params.top_controls_height =
       top_controls_height / browser_controls_dsf_multiplier;
   visual_properties.browser_controls_params.top_controls_min_height =
@@ -1108,14 +1090,6 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   } else {
     visual_properties.compositor_viewport_pixel_rect =
         properties_from_parent_local_root_.compositor_viewport;
-    if (!ShouldUseZoomForDSF()) {
-      // If UseZoomForDSF is not used, the coordinates were not scaled by DSF
-      // when coming from the renderer.
-      visual_properties.compositor_viewport_pixel_rect =
-          gfx::ScaleToEnclosingRect(
-              visual_properties.compositor_viewport_pixel_rect,
-              current_screen_info.device_scale_factor);
-    }
   }
 
   // These properties come from the top-level main frame's renderer. The
@@ -1280,10 +1254,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
       delegate_->DidChangeScreenOrientation();
   }
 
-  if (ShouldUseZoomForDSF()) {
-    input_router_->SetDeviceScaleFactor(
-        visual_properties->screen_infos.current().device_scale_factor);
-  }
+  input_router_->SetDeviceScaleFactor(
+      visual_properties->screen_infos.current().device_scale_factor);
 
   // If we do not have a valid viz::LocalSurfaceId then we are a child frame
   // waiting on the id to be propagated from our parent. We cannot create a hash
@@ -1357,6 +1329,12 @@ void RenderWidgetHostImpl::SetPageFocus(bool focused) {
                         "is_focused", focused);
   is_focused_ = focused;
 
+  // If focused state is being set is_active must be true. Android does
+  // not call SetActive so if we are trying to focus ensure `is_active`
+  // is true.
+  if (focused)
+    is_active_ = true;
+
   // Portals should never get page focus.
   DCHECK(!delegate_ || !delegate_->IsPortal() || !focused);
 
@@ -1376,7 +1354,14 @@ void RenderWidgetHostImpl::SetPageFocus(bool focused) {
     LockKeyboard();
   }
 
-  GetWidgetInputHandler()->SetFocus(focused);
+  blink::mojom::FocusState focus_state =
+      blink::mojom::FocusState::kNotFocusedAndNotActive;
+  if (focused)
+    focus_state = blink::mojom::FocusState::kFocused;
+  else if (is_active_)
+    focus_state = blink::mojom::FocusState::kNotFocusedAndActive;
+
+  GetWidgetInputHandler()->SetFocus(focus_state);
 
   // Also send page-level focus state to other SiteInstances involved in
   // rendering the current FrameTree, if this widget is for a main frame.
@@ -1398,8 +1383,8 @@ void RenderWidgetHostImpl::LostCapture() {
 }
 
 void RenderWidgetHostImpl::SetActive(bool active) {
-  const bool is_frame_widget = owner_delegate_;
-  if (is_frame_widget)
+  is_active_ = active;
+  if (blink_frame_widget_)
     blink_frame_widget_->SetActive(active);
 }
 
@@ -2630,6 +2615,10 @@ void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
   }
 }
 
+SiteInstanceGroup* RenderWidgetHostImpl::GetSiteInstanceGroup() {
+  return &*site_instance_group_;
+}
+
 // static
 bool RenderWidgetHostImpl::DidVisualPropertiesSizeChange(
     const blink::VisualProperties& old_visual_properties,
@@ -3571,10 +3560,7 @@ void RenderWidgetHostImpl::SetupInputRouter() {
 
   // input_router_ recreated, need to update the force_enable_zoom_ state.
   input_router_->SetForceEnableZoom(force_enable_zoom_);
-
-  if (ShouldUseZoomForDSF()) {
-    input_router_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
-  }
+  input_router_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
 }
 
 void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
@@ -3783,8 +3769,7 @@ gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
 gfx::PointF RenderWidgetHostImpl::ConvertWindowPointToViewport(
     const gfx::PointF& window_point) {
   gfx::PointF viewport_point = window_point;
-  if (ShouldUseZoomForDSF())
-    viewport_point.Scale(GetScaleFactorForView(GetView()));
+  viewport_point.Scale(GetScaleFactorForView(GetView()));
   return viewport_point;
 }
 

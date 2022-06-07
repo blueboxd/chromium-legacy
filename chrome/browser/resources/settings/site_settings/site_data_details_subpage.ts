@@ -41,10 +41,11 @@ const categoryLabels: {[key: string]: string} = {
 const SiteDataDetailsSubpageElementBase =
     RouteObserverMixin(WebUIListenerMixin(PolymerElement)) as {
       new (): PolymerElement & WebUIListenerMixinInterface &
-      RouteObserverMixinInterface
+          RouteObserverMixinInterface,
     };
 
-class SiteDataDetailsSubpageElement extends SiteDataDetailsSubpageElementBase {
+export class SiteDataDetailsSubpageElement extends
+    SiteDataDetailsSubpageElementBase {
   static get is() {
     return 'site-data-details-subpage';
   }

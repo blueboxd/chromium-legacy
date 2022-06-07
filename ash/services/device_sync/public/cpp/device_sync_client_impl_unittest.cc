@@ -10,6 +10,9 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device_test_util.h"
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/services/device_sync/attestation_certificates_syncer.h"
 #include "ash/services/device_sync/device_sync_impl.h"
 #include "ash/services/device_sync/fake_device_sync.h"
 #include "ash/services/device_sync/feature_status_change.h"
@@ -26,8 +29,6 @@
 #include "base/test/null_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/multidevice/software_feature.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -35,7 +36,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -71,7 +72,9 @@ class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
       const GcmDeviceInfoProvider* gcm_device_info_provider,
       ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::unique_ptr<base::OneShotTimer> timer) override {
+      std::unique_ptr<base::OneShotTimer> timer,
+      AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+          get_attestation_certificates_function) override {
     EXPECT_TRUE(fake_device_sync_);
     return std::move(fake_device_sync_);
   }
@@ -188,7 +191,10 @@ class DeviceSyncClientImplTest : public testing::Test {
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
         test_pref_service_.get(), fake_gcm_device_info_provider_.get(),
         fake_client_app_metadata_provider_.get(), shared_url_loader_factory,
-        std::make_unique<base::OneShotTimer>());
+        std::make_unique<base::OneShotTimer>(),
+        base::BindRepeating(
+            [](AttestationCertificatesSyncer::NotifyCallback notifyCallback,
+               const std::string&) {}));
 
     test_observer_ = std::make_unique<TestDeviceSyncClientObserver>();
 
@@ -877,4 +883,4 @@ TEST_F(DeviceSyncClientImplTest, TestGetDebugInfo) {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

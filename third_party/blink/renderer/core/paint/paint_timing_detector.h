@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "base/time/time.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/performance/largest_contentful_paint_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -23,14 +24,15 @@ namespace blink {
 
 class Image;
 class ImagePaintTimingDetector;
+class ImageRecord;
 class ImageResourceContent;
 class LargestContentfulPaintCalculator;
 class LayoutObject;
 class LocalFrameView;
 class PropertyTreeStateOrAlias;
+class MediaTiming;
 class StyleFetchedImage;
 class TextPaintTimingDetector;
-class ImageRecord;
 
 // |PaintTimingCallbackManager| is an interface between
 // |ImagePaintTimingDetector|/|TextPaintTimingDetector| and |ChromeClient|.
@@ -129,12 +131,12 @@ class CORE_EXPORT PaintTimingDetector
   static void NotifyImagePaint(
       const LayoutObject&,
       const gfx::Size& intrinsic_size,
-      const ImageResourceContent& cached_image,
+      const MediaTiming& media_timing,
       const PropertyTreeStateOrAlias& current_paint_chunk_properties,
       const gfx::Rect& image_border);
   inline static void NotifyTextPaint(const gfx::Rect& text_visual_rect);
 
-  void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
+  void NotifyImageFinished(const LayoutObject&, const MediaTiming*);
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
   void NotifyImageRemoved(const LayoutObject&, const ImageResourceContent*);
   void NotifyPaintFinished();

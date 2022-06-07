@@ -856,11 +856,6 @@ if (is_win) {
       "$root_out_dir/chrome_crashpad_handler",
     ]
 
-    if (is_chrome_branded) {
-      sources +=
-          [ "installer/mac/internal/developer_id_certificate_reauthorize" ]
-    }
-
     outputs = [ "{{bundle_contents_dir}}/Helpers/{{source_file_part}}" ]
 
     public_deps = [
@@ -974,16 +969,11 @@ if (is_win) {
     # Add the SwiftShader .dylibs in the MODULE_DIR of Chromium.app
     bundle_data("swiftshader_binaries") {
       sources = [
-        "$root_out_dir/egl_intermediates/libswiftshader_libEGL.dylib",
-        "$root_out_dir/egl_intermediates/libswiftshader_libGLESv2.dylib",
         "$root_out_dir/vk_intermediates/libvk_swiftshader.dylib",
         "$root_out_dir/vk_intermediates/vk_swiftshader_icd.json",
       ]
       outputs = [ "{{bundle_contents_dir}}/Libraries/{{source_file_part}}" ]
-      public_deps = [
-        "//ui/gl:swiftshader_egl_library_copy",
-        "//ui/gl:swiftshader_vk_library_copy",
-      ]
+      public_deps = [ "//ui/gl:swiftshader_vk_library_copy" ]
     }
   }
 
@@ -1279,8 +1269,6 @@ if (is_win) {
       "$root_out_dir/chrome_crashpad_handler",
       "$root_out_dir/libEGL.dylib",
       "$root_out_dir/libGLESv2.dylib",
-      "$root_out_dir/libswiftshader_libEGL.dylib",
-      "$root_out_dir/libswiftshader_libGLESv2.dylib",
       "$root_out_dir/libvk_swiftshader.dylib",
       _framework_binary_path,
     ]
@@ -1301,16 +1289,15 @@ if (is_win) {
       outputs =
           [ "$root_out_dir/{{source_file_part}}-$chrome_version_full.breakpad" ]
 
-      args = rebase_path(outputs, root_out_dir) + [
-               rebase_path(
-                   get_label_info(
-                           "//third_party/breakpad:dump_syms($host_toolchain)",
-                           "root_out_dir") + "/dump_syms",
-                   root_out_dir),
+      dump_syms = "//third_party/breakpad:dump_syms($host_toolchain)"
+      args = rebase_path(outputs, root_build_dir) + [
+               rebase_path(get_label_info(dump_syms, "root_out_dir") + "/" +
+                               get_label_info(dump_syms, "name"),
+                           root_build_dir),
                "-g",
                rebase_path(
                    "$root_out_dir/{{source_file_part}}.dSYM/Contents/Resources/DWARF/{{source_file_part}}",
-                   root_out_dir),
+                   root_build_dir),
                "{{source}}",
              ]
 
@@ -1320,10 +1307,8 @@ if (is_win) {
         "//components/crash/core/app:chrome_crashpad_handler",
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
-        "//third_party/breakpad:dump_syms($host_toolchain)",
-        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
-        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
         "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
+        dump_syms,
       ]
       if (build_with_internal_optimization_guide) {
         deps += [ "//components/optimization_guide/internal:optimization_guide_internal" ]
@@ -1347,8 +1332,6 @@ if (is_win) {
         "$root_out_dir/chrome_crashpad_handler.dSYM",
         "$root_out_dir/libEGL.dylib.dSYM",
         "$root_out_dir/libGLESv2.dylib.dSYM",
-        "$root_out_dir/libswiftshader_libEGL.dylib.dSYM",
-        "$root_out_dir/libswiftshader_libGLESv2.dylib.dSYM",
         "$root_out_dir/libvk_swiftshader.dylib.dSYM",
       ]
       if (build_with_internal_optimization_guide) {
@@ -1361,8 +1344,6 @@ if (is_win) {
         "//components/crash/core/app:chrome_crashpad_handler",
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
-        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
-        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
         "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
       ]
       if (build_with_internal_optimization_guide) {
@@ -1437,7 +1418,7 @@ group("dependencies") {
     ]
   }
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos) {
     public_deps += [ "//chromeos/dbus/constants" ]
   }
 
@@ -1565,6 +1546,7 @@ if (!is_android) {
       copy_data_to_bundle = true
     } else {
       output_dir = root_out_dir
+      mark_as_data = true
     }
 
     if (enable_resource_allowlist_generation) {
@@ -1632,6 +1614,7 @@ if (is_android) {
 
   java_cpp_enum("download_enum_javagen") {
     sources = [
+      "browser/download/android/download_open_source.h",
       "browser/download/download_dialog_types.h",
       "browser/download/download_prompt_status.h",
     ]
@@ -1734,8 +1717,6 @@ if (is_linux || is_chromeos) {
         ":angle_gles_symbols",
         ":chrome_crashpad_symbols",
         ":chrome_symbols",
-        ":swiftshader_egl_symbols",
-        ":swiftshader_gles_symbols",
       ]
       if (is_linux) {
         deps += [ ":swiftshader_vk_symbols" ]
@@ -1770,33 +1751,6 @@ if (is_linux || is_chromeos) {
       }
 
       deps = [ "//components/crash/core/app:chrome_crashpad_handler" ]
-    }
-    extract_symbols("swiftshader_egl_symbols") {
-      binary = "$root_out_dir/swiftshader/libEGL.so"
-
-      if (current_cpu == "x86") {
-        # GYP used "ia32" so keep that naming for back-compat.
-        symbol_file = "$root_out_dir/swiftshader_libegl.breakpad.ia32"
-      } else {
-        symbol_file = "$root_out_dir/swiftshader_libegl.breakpad.$current_cpu"
-      }
-
-      deps =
-          [ "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL" ]
-    }
-    extract_symbols("swiftshader_gles_symbols") {
-      binary = "$root_out_dir/swiftshader/libGLESv2.so"
-
-      if (current_cpu == "x86") {
-        # GYP used "ia32" so keep that naming for back-compat.
-        symbol_file = "$root_out_dir/swiftshader_libgles.breakpad.ia32"
-      } else {
-        symbol_file = "$root_out_dir/swiftshader_libgles.breakpad.$current_cpu"
-      }
-
-      deps = [
-        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
-      ]
     }
     extract_symbols("swiftshader_vk_symbols") {
       binary = "$root_out_dir/libvk_swiftshader.so"

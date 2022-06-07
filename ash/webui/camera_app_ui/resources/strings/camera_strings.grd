@@ -17,6 +17,7 @@
     <output filename="ash_camera_app_strings_bs.pak" type="data_package" lang="bs" />
     <output filename="ash_camera_app_strings_ca.pak" type="data_package" lang="ca" />
     <output filename="ash_camera_app_strings_cs.pak" type="data_package" lang="cs" />
+    <output filename="ash_camera_app_strings_cy.pak" type="data_package" lang="cy" />
     <output filename="ash_camera_app_strings_da.pak" type="data_package" lang="da" />
     <output filename="ash_camera_app_strings_de.pak" type="data_package" lang="de" />
     <output filename="ash_camera_app_strings_el.pak" type="data_package" lang="el" />
@@ -105,6 +106,7 @@
     <file path="camera_strings_bs.xtb" lang="bs" />
     <file path="camera_strings_ca.xtb" lang="ca" />
     <file path="camera_strings_cs.xtb" lang="cs" />
+    <file path="camera_strings_cy.xtb" lang="cy" />
     <file path="camera_strings_da.xtb" lang="da" />
     <file path="camera_strings_de.xtb" lang="de" />
     <file path="camera_strings_el.xtb" lang="el" />
@@ -524,9 +526,6 @@ If your feedback is about image or video quality, please attach a sample photo o
       </message>
       <message desc="Title of dialog introducing document mode." name="IDS_DOCUMENT_MODE_DIALOG_INTRO_TITLE">
         Scan your document
-      </message>
-      <message desc="Title of dialog notify user no document is detected from camera and reintroducing document mode." name="IDS_DOCUMENT_MODE_DIALOG_NOT_DETECTED_TITLE">
-        Couldn't detect a document
       </message>
       <message desc="Detail description introducing document mode." name="IDS_DOCUMENT_MODE_DIALOG_MSG">
         Place all edges of the document within the frame. Scanning works best if the document and background are different colors.

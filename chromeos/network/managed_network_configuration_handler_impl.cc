@@ -619,7 +619,7 @@ bool ManagedNetworkConfigurationHandlerImpl::ApplyOrQueuePolicies(
   auto policy_applicator = std::make_unique<PolicyApplicator>(
       *profile, CloneGuidToPolicyMap(policies->per_network_config),
       policies->global_network_config.Clone(), this, cellular_policy_handler_,
-      modified_policies);
+      managed_cellular_pref_handler_, modified_policies);
   auto* policy_applicator_unowned = policy_applicator.get();
   policy_applicators_[userhash] = std::move(policy_applicator);
   policy_applicator_unowned->Run();
@@ -736,6 +736,9 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
           AllowOnlyPolicyCellularNetworks());
     }
 
+    if (features::IsSimLockPolicyEnabled())
+      network_device_handler_->SetAllowCellularSimLock(AllowCellularSimLock());
+
     if (device_policy_applied_ && user_policy_applied_) {
       network_state_handler_->UpdateBlockedWifiNetworks(
           AllowOnlyPolicyWiFiToConnect(),
@@ -837,6 +840,22 @@ bool ManagedNetworkConfigurationHandlerImpl::CanRemoveNetworkConfig(
     const std::string& guid,
     const std::string& profile_path) const {
   return !IsNetworkConfiguredByPolicy(guid, profile_path);
+}
+
+bool ManagedNetworkConfigurationHandlerImpl::AllowCellularSimLock() const {
+  const base::Value* global_network_config = GetGlobalConfigFromPolicy(
+      std::string() /* no username hash, device policy */);
+
+  // If |global_network_config| does not exist, default to allowing PIN Locking
+  // SIMs.
+  if (!global_network_config)
+    return true;
+
+  const base::Value* managed_only_value = global_network_config->FindKeyOfType(
+      ::onc::global_network_config::kAllowCellularSimLock,
+      base::Value::Type::BOOLEAN);
+  return !managed_only_value ||
+         (managed_only_value && managed_only_value->GetBool());
 }
 
 bool ManagedNetworkConfigurationHandlerImpl::AllowOnlyPolicyCellularNetworks()
@@ -944,12 +963,14 @@ ManagedNetworkConfigurationHandlerImpl::
 
 void ManagedNetworkConfigurationHandlerImpl::Init(
     CellularPolicyHandler* cellular_policy_handler,
+    ManagedCellularPrefHandler* managed_cellular_pref_handler,
     NetworkStateHandler* network_state_handler,
     NetworkProfileHandler* network_profile_handler,
     NetworkConfigurationHandler* network_configuration_handler,
     NetworkDeviceHandler* network_device_handler,
     ProhibitedTechnologiesHandler* prohibited_technologies_handler) {
   cellular_policy_handler_ = cellular_policy_handler;
+  managed_cellular_pref_handler_ = managed_cellular_pref_handler;
   network_state_handler_ = network_state_handler;
   network_profile_handler_ = network_profile_handler;
   network_configuration_handler_ = network_configuration_handler;

@@ -19,7 +19,6 @@
 #include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -648,7 +647,7 @@ media::VideoCaptureFormats MediaDevicesManager::GetVideoInputFormats(
 }
 
 blink::WebMediaDeviceInfoArray MediaDevicesManager::GetCachedDeviceInfo(
-    MediaDeviceType type) {
+    MediaDeviceType type) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return current_snapshot_[static_cast<size_t>(type)];
 }

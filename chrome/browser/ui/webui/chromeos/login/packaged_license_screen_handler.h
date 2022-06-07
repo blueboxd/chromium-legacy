@@ -40,7 +40,7 @@ class PackagedLicenseScreenHandler : public BaseScreenHandler,
                                      public PackagedLicenseView {
  public:
   using TView = PackagedLicenseView;
-  explicit PackagedLicenseScreenHandler(JSCallsContainer* js_calls_container);
+  PackagedLicenseScreenHandler();
   PackagedLicenseScreenHandler(const PackagedLicenseScreenHandler&) = delete;
   PackagedLicenseScreenHandler& operator=(const PackagedLicenseScreenHandler&) =
       delete;
@@ -56,7 +56,7 @@ class PackagedLicenseScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;

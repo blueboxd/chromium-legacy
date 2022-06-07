@@ -14,9 +14,11 @@ export type EnterpriseProfileInfo = {
   backgroundColor: string,
   pictureUrl: string,
   showEnterpriseBadge: boolean,
-  enterpriseTitle: string,
+  title: string,
+  subtitle: string,
   enterpriseInfo: string,
   proceedLabel: string,
+  showCancelButton: boolean,
 };
 
 export interface EnterpriseProfileWelcomeBrowserProxy {
@@ -28,7 +30,7 @@ export interface EnterpriseProfileWelcomeBrowserProxy {
   /**
    * Called when the user clicks the proceed button.
    */
-  proceed(): void;
+  proceed(linkData: boolean): void;
 
   /**
    * Called when the user clicks the cancel button.
@@ -46,8 +48,8 @@ export class EnterpriseProfileWelcomeBrowserProxyImpl implements
     chrome.send('initializedWithSize', [height]);
   }
 
-  proceed() {
-    chrome.send('proceed');
+  proceed(linkData: boolean) {
+    chrome.send('proceed', [linkData]);
   }
 
   cancel() {

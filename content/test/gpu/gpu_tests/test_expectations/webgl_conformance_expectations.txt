@@ -54,7 +54,9 @@
 # tags: [ display-server-wayland display-server-x ]
 # OOP-Canvas
 # tags: [ oop-c no-oop-c ]
-# results: [ Failure RetryOnFailure Skip ]
+# WebGPU Backend Validation
+# tags: [ dawn-backend-validation dawn-no-backend-validation ]
+# results: [ Failure RetryOnFailure Skip Slow ]
 # END TAG HEADER
 
 ###############################
@@ -245,6 +247,7 @@ crbug.com/1143424 [ fuchsia ] deqp/data/gles2/shaders/conversions.html [ Skip ]
 crbug.com/478572 [ fuchsia ] deqp/data/gles2/shaders/functions.html [ Skip ]
 crbug.com/angleproject/3111 [ fuchsia ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 crbug.com/1218708 [ fuchsia ] conformance/rendering/many-draw-calls.html [ Skip ]
+crbug.com/1145858 [ fuchsia ] conformance/extensions/ext-disjoint-timer-query.html [ Skip ]
 
 # Fails when dcheck_always_on set to true
 [ fuchsia ] deqp/data/gles2/shaders/preprocessor.html [ Skip ]
@@ -406,8 +409,6 @@ crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] confor
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 
-crbug.com/1145858 [ fuchsia ] conformance/extensions/ext-disjoint-timer-query.html [ Failure ]
-
 ####################
 # Win failures     #
 ####################
@@ -462,8 +463,8 @@ crbug.com/1259977 [ win nvidia-0x2184 angle-vulkan passthrough ] conformance/gls
 
 crbug.com/1291276 [ win nvidia angle-vulkan passthrough ] conformance/ogles/GL/mod/mod_001_to_008.html [ Failure ]
 
-# Vulkan / Win / Intel flaky
-crbug.com/1307924 [ win intel angle-vulkan passthrough ] conformance/rendering/out-of-bounds-array-buffers.html [ Failure ]
+# Flaky on Win / Passthrough command decoder (both GL and D3D11 backends)
+crbug.com/1307905 [ win passthrough ] conformance/attribs/gl-vertexattribpointer.html [ RetryOnFailure ]
 
 ####################
 # Mac failures     #

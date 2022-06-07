@@ -9,17 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/software_feature.h"
 #include "ash/services/device_sync/feature_status_change.h"
 #include "ash/services/device_sync/proto/cryptauth_common.pb.h"
 #include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/software_feature.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -199,14 +199,6 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-namespace device_sync {
-using ::chromeos::device_sync::FakeDeviceSyncClient;
-}
 }  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_PUBLIC_CPP_FAKE_DEVICE_SYNC_CLIENT_H_

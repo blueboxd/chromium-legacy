@@ -644,6 +644,9 @@ UIWindow* GetAnyKeyWindow();
 // with custom WebKit frameworks.
 - (BOOL)isCustomWebKitLoadedIfRequested [[nodiscard]];
 
+// Returns YES if error pages are displayed using loadSimulatedRequest.
+- (BOOL)isLoadSimulatedRequestAPIEnabled;
+
 // Returns whether the mobile version of the websites are requested by default.
 - (BOOL)isMobileModeByDefault [[nodiscard]];
 
@@ -656,6 +659,9 @@ UIWindow* GetAnyKeyWindow();
 
 // Returns whether the NewOverflowMenu feature is enabled.
 - (BOOL)isNewOverflowMenuEnabled;
+
+// Returns whether the OmniboxUpdatedPopupUI feature is enabled.
+- (BOOL)isNewOmniboxPopupEnabled;
 
 // Returns whether the Thumbstrip feature is enabled for window with given
 // number.

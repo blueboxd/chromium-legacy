@@ -5,6 +5,7 @@
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -27,6 +28,7 @@
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate.h"
+#include "components/viz/service/display/overlay_combination_cache.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -38,6 +40,28 @@
 
 namespace viz {
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Used by UMA histogram that tells us if we're attempting multiple overlays,
+// or why we aren't.
+enum class AttemptingMultipleOverlays {
+  kYes = 0,
+  kNoTooFewMaxOverlaysConsidered = 1,
+  kNoRequiredOverlay = 2,
+  kNoUnsupportedStrategy = 3,
+  kMaxValue = kNoUnsupportedStrategy,
+};
+
+constexpr char kShouldAttemptMultipleOverlaysHistogramName[] =
+    "Compositing.Display.OverlayProcessorUsingStrategy."
+    "ShouldAttemptMultipleOverlays";
+constexpr char kNumOverlaysAttemptedHistogramName[] =
+    "Compositing.Display.OverlayProcessorUsingStrategy.NumOverlaysAttempted";
+constexpr char kNumOverlaysPromotedHistogramName[] =
+    "Compositing.Display.OverlayProcessorUsingStrategy.NumOverlaysPromoted";
+constexpr char kNumOverlaysFailedHistogramName[] =
+    "Compositing.Display.OverlayProcessorUsingStrategy.NumOverlaysFailed";
 
 // Gets the minimum scaling amount used by either dimension for the src relative
 // to the dst.
@@ -198,6 +222,10 @@ void OverlayProcessorUsingStrategy::CheckOverlaySupport(
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportUs",
       time, kMinTime, kMaxTime, kTimeBuckets);
+}
+
+void OverlayProcessorUsingStrategy::ClearOverlayCombinationCache() {
+  overlay_combination_cache_.ClearCache();
 }
 
 // This local function simply recomputes the root damage from
@@ -651,6 +679,9 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
 bool OverlayProcessorUsingStrategy::ShouldAttemptMultipleOverlays(
     const std::vector<OverlayProposedCandidate>& sorted_candidates) {
   if (max_overlays_considered_ <= 1) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kShouldAttemptMultipleOverlaysHistogramName,
+        AttemptingMultipleOverlays::kNoTooFewMaxOverlaysConsidered);
     return false;
   }
 
@@ -659,6 +690,8 @@ bool OverlayProcessorUsingStrategy::ShouldAttemptMultipleOverlays(
     // different scale factors. This becomes complicated when using multiple
     // overlays at once so we won't attempt multiple in that case.
     if (proposed.candidate.requires_overlay) {
+      UMA_HISTOGRAM_ENUMERATION(kShouldAttemptMultipleOverlaysHistogramName,
+                                AttemptingMultipleOverlays::kNoRequiredOverlay);
       return false;
     }
     // Using multiple overlays only makes sense with SingleOnTop and Underlay
@@ -666,10 +699,15 @@ bool OverlayProcessorUsingStrategy::ShouldAttemptMultipleOverlays(
     OverlayStrategy type = proposed.strategy->GetUMAEnum();
     if (type != OverlayStrategy::kSingleOnTop &&
         type != OverlayStrategy::kUnderlay) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kShouldAttemptMultipleOverlaysHistogramName,
+          AttemptingMultipleOverlays::kNoUnsupportedStrategy);
       return false;
     }
   }
 
+  UMA_HISTOGRAM_ENUMERATION(kShouldAttemptMultipleOverlaysHistogramName,
+                            AttemptingMultipleOverlays::kYes);
   return true;
 }
 
@@ -678,45 +716,40 @@ bool OverlayProcessorUsingStrategy::AttemptMultipleOverlays(
     OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
     AggregatedRenderPass* render_pass,
     OverlayCandidateList& candidates) {
-  int max_overlays_possible = std::min(
-      max_overlays_considered_, static_cast<int>(sorted_candidates.size()));
+  if (sorted_candidates.empty()) {
+    UMA_HISTOGRAM_COUNTS_100(kNumOverlaysAttemptedHistogramName, 0);
+    return false;
+  }
 
-  std::vector<OverlayProposedCandidate> test_candidates;
-  // Reserve max possible overlays so iterators remain stable while we insert
-  // candidates.
-  test_candidates.reserve(max_overlays_possible);
+  OverlayCombinationToTest result =
+      overlay_combination_cache_.GetOverlayCombinationToTest(
+          sorted_candidates, max_overlays_considered_);
+  std::vector<OverlayProposedCandidate> test_candidates =
+      result.candidates_to_test;
+  UMA_HISTOGRAM_BOOLEAN(
+      "Compositing.Display.OverlayProcessorUsingStrategy."
+      "CandidateCombinationPreviouslySucceeded",
+      result.previously_succeeded);
+
   bool testing_underlay = false;
   // We'll keep track of the underlays that we're testing so we can assign their
   // `plane_z_order`s based on their order in the QuadList.
   std::vector<std::vector<OverlayProposedCandidate>::iterator> underlay_iters;
-  // Used to prevent testing multiple candidates representing the same DrawQuad.
-  std::set<size_t> used_quad_indices;
 
-  for (auto& cand : sorted_candidates) {
-    // Skip candidates whose quads have already been added to the test list. A
-    // quad could have an on top and an underlay candidate.
-    bool inserted = used_quad_indices.insert(cand.quad_iter.index()).second;
-    if (!inserted) {
-      continue;
-    }
-    test_candidates.push_back(cand);
-
-    switch (cand.strategy->GetUMAEnum()) {
+  for (auto it = test_candidates.begin(); it != test_candidates.end(); ++it) {
+    switch (it->strategy->GetUMAEnum()) {
       case OverlayStrategy::kSingleOnTop:
         // Ordering of on top candidates doesn't matter (they can't overlap), so
         // they can all have z = 1.
-        test_candidates.back().candidate.plane_z_order = 1;
+        it->candidate.plane_z_order = 1;
         break;
       case OverlayStrategy::kUnderlay:
         testing_underlay = true;
-        underlay_iters.push_back(test_candidates.end() - 1);
+        underlay_iters.push_back(it);
         break;
       default:
         // Unsupported strategy type.
         NOTREACHED();
-    }
-    if (test_candidates.size() == static_cast<size_t>(max_overlays_possible)) {
-      break;
     }
   }
 
@@ -737,12 +770,14 @@ bool OverlayProcessorUsingStrategy::AttemptMultipleOverlays(
     // Check for support.
     CheckOverlaySupport(&new_plane_candidate, &candidates);
   }
+  const int num_overlays_attempted = candidates.size();
 
   bool underlay_used = false;
   auto cand_it = candidates.begin();
   auto test_it = test_candidates.begin();
   while (cand_it != candidates.end()) {
-    // Update the test candidates so we can use EraseIf below.
+    // Update the test candidates so we can use EraseIf below, and so we can
+    // tell the OverlayCombinationCache which ones succeeded/failed.
     test_it->candidate.overlay_handled = cand_it->overlay_handled;
     if (cand_it->overlay_handled && cand_it->plane_z_order < 0) {
       underlay_used = true;
@@ -750,11 +785,21 @@ bool OverlayProcessorUsingStrategy::AttemptMultipleOverlays(
     cand_it++;
     test_it++;
   }
+  overlay_combination_cache_.DeclarePromotedCandidates(test_candidates);
+
   // Remove failed candidates
   base::EraseIf(candidates, [](auto& cand) { return !cand.overlay_handled; });
   base::EraseIf(test_candidates, [](auto& proposed) -> bool {
     return !proposed.candidate.overlay_handled;
   });
+  const int num_overlays_promoted = candidates.size();
+
+  UMA_HISTOGRAM_COUNTS_100(kNumOverlaysAttemptedHistogramName,
+                           num_overlays_attempted);
+  UMA_HISTOGRAM_COUNTS_100(kNumOverlaysPromotedHistogramName,
+                           num_overlays_promoted);
+  UMA_HISTOGRAM_COUNTS_100(kNumOverlaysFailedHistogramName,
+                           num_overlays_attempted - num_overlays_promoted);
 
   if (candidates.empty()) {
     return false;
@@ -840,6 +885,15 @@ void OverlayProcessorUsingStrategy::UpdateDownscalingCapabilities(
   // minimum.
   if (max_failed_scale_ > min_working_scale_)
     min_working_scale_ = 1.0f;
+  // This is the worst case scale factor we should ever run into. In reality
+  // it's actually more like 0.68, but I'm making it larger to be safe and we
+  // also always add 0.05 to this value when we make use of it so we are
+  // effectively bounding it at 0.75. We can end up getting incorrect signals
+  // about scaling capabilities when displays power off and overlay promotion
+  // doesn't work, so for that reason so we can't assume all failures are
+  // legitimate.
+  constexpr float kMaxFailedScaleMin = 0.70f;
+  max_failed_scale_ = std::min(max_failed_scale_, kMaxFailedScaleMin);
 }
 
 void OverlayProcessorUsingStrategy::LogCheckOverlaySupportMetrics() {

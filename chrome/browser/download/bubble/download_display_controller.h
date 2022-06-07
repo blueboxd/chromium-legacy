@@ -70,13 +70,14 @@ class DownloadDisplayController
 
   // Common methods for new downloads or new offline items.
   // Called from bubble controller when new item(s) are added, with
-  // |in_progress| as argument for if any was in progress.
+  // |show_details| as argument if the partial view should be shown.
   // These methods are virtual so that they can be overridden for fake
   // controllers in testing.
-  virtual void OnNewItem(bool in_progress);
+  virtual void OnNewItem(bool show_details);
   // Called from bubble controller when an item is updated, with |is_done|
-  // indicating if it was marked done.
-  virtual void OnUpdatedItem(bool is_done);
+  // indicating if it was marked done, and with
+  // |show_details_if_done| as argument if the partial view should be shown.
+  virtual void OnUpdatedItem(bool is_done, bool show_details_if_done);
   // Called from bubble controller when an item is deleted.
   virtual void OnRemovedItem();
 

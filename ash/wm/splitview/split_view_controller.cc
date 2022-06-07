@@ -64,6 +64,7 @@
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/display/types/display_constants.h"
@@ -2574,7 +2575,8 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window,
   if (!window || !GetOverviewSession())
     return;
   GetOverviewSession()->AddItemInMruOrder(window, /*reposition=*/true, animate,
-                                          /*restack=*/true);
+                                          /*restack=*/true,
+                                          /*use_spawn_animation=*/false);
 }
 
 void SplitViewController::FinishWindowResizing(aura::Window* window) {

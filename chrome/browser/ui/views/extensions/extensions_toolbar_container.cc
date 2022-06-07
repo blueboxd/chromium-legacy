@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
+#include "chrome/browser/ui/views/extensions/extensions_request_access_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
@@ -87,7 +88,8 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
                     std::make_unique<ExtensionsToolbarButton>(
                         browser,
                         this,
-                        ExtensionsToolbarButton::ButtonType::kSiteAccess))
+                        ExtensionsToolbarButton::ButtonType::kSiteAccess),
+                    std::make_unique<ExtensionsRequestAccessButton>())
               : nullptr),
       display_mode_(display_mode) {
   // The container shouldn't show unless / until we have extensions available.
@@ -697,17 +699,6 @@ void ExtensionsToolbarContainer::OnDragExited() {
   DragDropCleanup(dragged_extension_id);
 }
 
-DragOperation ExtensionsToolbarContainer::OnPerformDrop(
-    const ui::DropTargetEvent& event) {
-  auto drop_callback = GetDropCallback(event);
-  if (!drop_callback)
-    return DragOperation::kNone;
-
-  DragOperation output_drag_op = DragOperation::kNone;
-  std::move(drop_callback).Run(event, output_drag_op);
-  return output_drag_op;
-}
-
 views::View::DropCallback ExtensionsToolbarContainer::GetDropCallback(
     const ui::DropTargetEvent& event) {
   BrowserActionDragData data;
@@ -857,9 +848,22 @@ void ExtensionsToolbarContainer::UpdateControlsVisibility() {
   if (!extensions_controls_)
     return;
 
+  content::WebContents* web_contents = GetCurrentWebContents();
+
   extensions_controls_->UpdateSiteAccessButtonVisibility(
       ExtensionActionViewController::AnyActionHasCurrentSiteAccess(
-          actions_, GetCurrentWebContents()));
+          actions_, web_contents));
+
+  // TODO(crbug.com/1239772): The request access button should only include
+  // extensions that are requesting access to a restricted site.
+  // `SiteInteraction::kPending` includes extensions with activeTab, that can
+  // request access to restricted or non-restricted sites. Need to update the
+  // method to not take into account activeTab extensions.
+  int count_requesting_extensions = std::count_if(
+      actions_.begin(), actions_.end(), [web_contents](const auto& action) {
+        return action->IsRequestingSiteAccess(web_contents);
+      });
+  extensions_controls_->UpdateRequestAccessButton(count_requesting_extensions);
 }
 
 BEGIN_METADATA(ExtensionsToolbarContainer, ToolbarIconContainerView)

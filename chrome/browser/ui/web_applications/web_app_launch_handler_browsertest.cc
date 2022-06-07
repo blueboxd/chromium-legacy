@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,7 +30,6 @@
 namespace web_app {
 
 using RouteTo = LaunchHandler::RouteTo;
-using NavigateExistingClient = LaunchHandler::NavigateExistingClient;
 
 class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
  public:
@@ -109,6 +109,95 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
         .ExtractString();
   }
 
+  void ExpectExistingClientNavigateBehaviour(const AppId& app_id,
+                                             const GURL& start_url) {
+    EXPECT_EQ(GetLaunchHandler(app_id),
+              (LaunchHandler{RouteTo::kExistingClientNavigate}));
+
+    Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    content::WebContents* web_contents =
+        browser_1->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url.spec());
+
+    // Navigate window away from start_url to check that the next launch navs to
+    // start_url again.
+    GURL alt_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+    NavigateToURLAndWait(browser_1, alt_url);
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), alt_url);
+
+    Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    EXPECT_EQ(browser_1, browser_2);
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url.spec());
+  }
+
+  void ExpectExistingClientRetainBehaviour(const AppId& app_id,
+                                           const GURL& start_url) {
+    EXPECT_EQ(GetLaunchHandler(app_id),
+              (LaunchHandler{RouteTo::kExistingClientRetain}));
+
+    Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
+    content::WebContents* web_contents =
+        browser_1->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url.spec());
+
+    // Navigate window away from start_url to an in scope URL, check that the
+    // next launch doesn't navigate to start_url.
+    {
+      GURL in_scope_url =
+          embedded_test_server()->GetURL("/web_apps/basic.html");
+      NavigateToURLAndWait(browser_1, in_scope_url);
+      EXPECT_EQ(web_contents->GetLastCommittedURL(), in_scope_url);
+
+      ASSERT_TRUE(SetUpNextLaunchParamsTargetUrlPromise(browser_1));
+      Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
+      EXPECT_EQ(browser_1, browser_2);
+      EXPECT_EQ(AwaitNextLaunchParamsTargetUrlPromise(browser_2),
+                start_url.spec());
+      EXPECT_EQ(web_contents->GetLastCommittedURL(), in_scope_url);
+    }
+
+    // Navigate window away from start_url to an out of scope URL, check that
+    // the next launch does navigate to start_url.
+    {
+      GURL out_of_scope_url = embedded_test_server()->GetURL("/empty.html");
+      NavigateToURLAndWait(browser_1, out_of_scope_url);
+      EXPECT_EQ(web_contents->GetLastCommittedURL(), out_of_scope_url);
+
+      Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
+      EXPECT_EQ(browser_1, browser_2);
+      EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url.spec());
+      EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+    }
+
+    // Trigger launch during navigation, check that the navigation gets
+    // cancelled.
+    {
+      ASSERT_TRUE(EvalJs(web_contents, "window.thisIsTheSamePage = true")
+                      .ExtractBool());
+
+      GURL hanging_url = embedded_test_server()->GetURL("/hang");
+      NavigateParams params(browser_1, hanging_url, ui::PAGE_TRANSITION_LINK);
+      Navigate(&params);
+      EXPECT_EQ(web_contents->GetVisibleURL(), hanging_url);
+      EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+
+      ASSERT_TRUE(SetUpNextLaunchParamsTargetUrlPromise(browser_1));
+      Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
+      EXPECT_EQ(browser_1, browser_2);
+      EXPECT_EQ(AwaitNextLaunchParamsTargetUrlPromise(browser_2),
+                start_url.spec());
+      EXPECT_EQ(web_contents->GetVisibleURL(), start_url);
+      EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
+
+      // Check that we never left the current page.
+      EXPECT_TRUE(
+          EvalJs(web_contents, "window.thisIsTheSamePage").ExtractBool());
+    }
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_{
       blink::features::kWebAppEnableLaunchHandler};
@@ -128,8 +217,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToEmpty) {
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToAuto) {
   AppId app_id =
       InstallTestWebApp("/web_apps/get_manifest.html?route_to_auto.json");
-  EXPECT_EQ(GetLaunchHandler(app_id),
-            (LaunchHandler{RouteTo::kAuto, NavigateExistingClient::kAlways}));
+  EXPECT_EQ(GetLaunchHandler(app_id), (LaunchHandler{RouteTo::kAuto}));
 
   std::string start_url = GetWebApp(app_id)->start_url().spec();
 
@@ -145,9 +233,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToAuto) {
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToNewClient) {
   AppId app_id =
       InstallTestWebApp("/web_apps/get_manifest.html?route_to_new_client.json");
-  EXPECT_EQ(
-      GetLaunchHandler(app_id),
-      (LaunchHandler{RouteTo::kNewClient, NavigateExistingClient::kAlways}));
+  EXPECT_EQ(GetLaunchHandler(app_id), (LaunchHandler{RouteTo::kNewClient}));
 
   std::string start_url = GetWebApp(app_id)->start_url().spec();
 
@@ -166,9 +252,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        RouteToNewClientNavigateNever) {
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?route_to_new_client_navigate_never.json");
-  EXPECT_EQ(
-      GetLaunchHandler(app_id),
-      (LaunchHandler{RouteTo::kNewClient, NavigateExistingClient::kNever}));
+  EXPECT_EQ(GetLaunchHandler(app_id), (LaunchHandler{RouteTo::kNewClient}));
 
   std::string start_url = GetWebApp(app_id)->start_url().spec();
 
@@ -181,101 +265,161 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
   EXPECT_NE(browser_1, browser_2);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, RouteToExistingClient) {
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
+                       RouteToDeprecatedExistingClient) {
   AppId app_id = InstallTestWebApp(
-      "/web_apps/"
-      "get_manifest.html?route_to_existing_client_navigate_empty.json");
-  EXPECT_EQ(GetLaunchHandler(app_id),
-            (LaunchHandler{RouteTo::kExistingClient,
-                           NavigateExistingClient::kAlways}));
-
-  Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  content::WebContents* web_contents =
-      browser_1->tab_strip_model()->GetActiveWebContents();
-  GURL start_url = embedded_test_server()->GetURL(
-      "/web_apps/basic.html?route_to=existing-client&navigate=empty");
-  EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url.spec());
-
-  // Navigate window away from start_url to check that the next launch navs to
-  // start_url again.
-  GURL alt_url = embedded_test_server()->GetURL("/web_apps/basic.html");
-  NavigateToURLAndWait(browser_1, alt_url);
-  EXPECT_EQ(web_contents->GetLastCommittedURL(), alt_url);
-
-  Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-  EXPECT_EQ(browser_1, browser_2);
-  EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url.spec());
+      "/web_apps/get_manifest.html?"
+      "route_to_deprecated_existing_client_navigate_empty.json");
+  ExpectExistingClientNavigateBehaviour(
+      app_id,
+      embedded_test_server()->GetURL(
+          "/web_apps/basic.html?route_to=existing-client&navigate=empty"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
-                       RouteToExistingClientNavigateNever) {
+                       RouteToExistingClientNavigate) {
+  // This JSON includes the deprecated "existing_client_navigate": "never" to
+  // verify it has no effect when using the new "route_to":
+  // "existing-client-navigate" syntax.
+  AppId app_id = InstallTestWebApp(
+      "/web_apps/get_manifest.html?"
+      "route_to_existing_client_navigate_deprecated_navigate_never.json");
+  ExpectExistingClientNavigateBehaviour(
+      app_id,
+      embedded_test_server()->GetURL(
+          "/web_apps/"
+          "basic.html?route_to=existing-client-navigate&navigate=never"));
+}
+
+// TODO(crbug.com/1308334): Fix flakiness.
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
+                       DISABLED_RouteToDeprecatedExistingClientNavigateNever) {
+  AppId app_id = InstallTestWebApp(
+      "/web_apps/get_manifest.html?"
+      "route_to_deprecated_existing_client_navigate_never.json");
+  ExpectExistingClientRetainBehaviour(
+      app_id,
+      embedded_test_server()->GetURL(
+          "/web_apps/basic.html?route_to=existing-client&navigate=never"));
+}
+
+// TODO(crbug.com/1308334): Fix flakiness.
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
+                       DISABLED_RouteToExistingClientRetain) {
+  // This JSON includes the deprecated "existing_client_navigate": "always" to
+  // verify it has no effect when using the new "route_to":
+  // "existing-client-retain" syntax.
+  AppId app_id = InstallTestWebApp(
+      "/web_apps/get_manifest.html?"
+      "route_to_existing_client_retain_deprecated_navigate_always.json");
+  ExpectExistingClientRetainBehaviour(
+      app_id,
+      embedded_test_server()->GetURL(
+          "/web_apps/"
+          "basic.html?route_to=existing-client-navigate&navigate=always"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
+                       RouteToExistingClientNavigateNeverMultipleLaunches) {
   AppId app_id = InstallTestWebApp(
       "/web_apps/"
-      "get_manifest.html?route_to_existing_client_navigate_never.json");
+      "get_manifest.html?route_to_existing_client_retain.json");
   EXPECT_EQ(GetLaunchHandler(app_id),
-            (LaunchHandler{RouteTo::kExistingClient,
-                           NavigateExistingClient::kNever}));
+            (LaunchHandler{RouteTo::kExistingClientRetain}));
 
-  Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
+  // Launch the app three times in quick succession.
+  Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
+  Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
+  Browser* browser_3 = LaunchWebAppBrowserAndWait(profile(), app_id);
+  EXPECT_EQ(browser_1, browser_2);
+  EXPECT_EQ(browser_2, browser_3);
+
+  // Check that all 3 LaunchParams got enqueued.
   content::WebContents* web_contents =
       browser_1->tab_strip_model()->GetActiveWebContents();
   GURL start_url = embedded_test_server()->GetURL(
-      "/web_apps/basic.html?route_to=existing-client&navigate=never");
-  EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-  EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url.spec());
+      "/web_apps/basic.html?route_to=existing-client-retain");
+  const char* script = R"(
+      new Promise(resolve => {
+        let remaining = 3;
+        let targetURLs = [];
+        window.launchQueue.setConsumer(launchParams => {
+          targetURLs.push(launchParams.targetURL);
+          if (--remaining == 0) {
+            resolve(targetURLs.join('|'));
+          }
+        });
+      });
+    )";
+  EXPECT_EQ(EvalJs(web_contents, script).ExtractString(),
+            base::StrCat({start_url.spec(), "|", start_url.spec(), "|",
+                          start_url.spec()}));
+}
 
-  // Navigate window away from start_url to an in scope URL, check that the next
-  // launch doesn't navigate to start_url.
-  {
-    GURL in_scope_url = embedded_test_server()->GetURL("/web_apps/basic.html");
-    NavigateToURLAndWait(browser_1, in_scope_url);
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), in_scope_url);
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
+                       RouteToExistingClientNavigateAlwaysMultipleLaunches) {
+  AppId app_id = InstallTestWebApp(
+      "/web_apps/"
+      "get_manifest.html?route_to_existing_client_navigate.json");
+  EXPECT_EQ(GetLaunchHandler(app_id),
+            (LaunchHandler{RouteTo::kExistingClientNavigate}));
 
-    ASSERT_TRUE(SetUpNextLaunchParamsTargetUrlPromise(browser_1));
-    Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
-    EXPECT_EQ(browser_1, browser_2);
-    EXPECT_EQ(AwaitNextLaunchParamsTargetUrlPromise(browser_2),
-              start_url.spec());
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), in_scope_url);
-  }
+  // Launch the app three times in quick succession.
+  Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
+  Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
+  Browser* browser_3 = LaunchWebAppBrowserAndWait(profile(), app_id);
+  EXPECT_EQ(browser_1, browser_2);
+  EXPECT_EQ(browser_2, browser_3);
 
-  // Navigate window away from start_url to an out of scope URL, check that the
-  // next launch does navigate to start_url.
-  {
-    GURL out_of_scope_url = embedded_test_server()->GetURL("/empty.html");
-    NavigateToURLAndWait(browser_1, out_of_scope_url);
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), out_of_scope_url);
+  // Check that only the last LaunchParams made it through.
+  content::WebContents* web_contents =
+      browser_1->tab_strip_model()->GetActiveWebContents();
+  GURL start_url = embedded_test_server()->GetURL(
+      "/web_apps/basic.html?route_to=existing-client-navigate");
+  const char* script = R"(
+      new Promise(resolve => {
+        let targetURLs = [];
+        window.launchQueue.setConsumer(launchParams => {
+          targetURLs.push(launchParams.targetURL);
+          // Wait a tick to let any additional erroneous launchParams get added.
+          requestAnimationFrame(() => {
+            resolve(targetURLs.join('|'));
+          });
+        });
+      });
+    )";
+  EXPECT_EQ(EvalJs(web_contents, script).ExtractString(), start_url.spec());
+}
 
-    Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-    EXPECT_EQ(browser_1, browser_2);
-    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url.spec());
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-  }
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
+                       LaunchNavigationInterruptedByOutOfScopeNavigation) {
+  AppId app_id =
+      InstallTestWebApp("/web_apps/get_manifest.html?route_to_new_client.json");
+  EXPECT_EQ(GetLaunchHandler(app_id), (LaunchHandler{RouteTo::kNewClient}));
 
-  // Trigger launch during navigation, check that the navigation gets cancelled.
-  {
-    ASSERT_TRUE(
-        EvalJs(web_contents, "window.thisIsTheSamePage = true").ExtractBool());
+  // Launch the web app and immediately navigate it out of scope during its
+  // initial navigation.
+  Browser* app_browser = LaunchWebAppBrowser(profile(), app_id);
+  GURL out_of_scope_url = embedded_test_server()->GetURL("/empty.html");
+  NavigateToURLAndWait(app_browser, out_of_scope_url);
+  content::WebContents* web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), out_of_scope_url);
 
-    GURL hanging_url = embedded_test_server()->GetURL("/hang");
-    NavigateParams params(browser_1, hanging_url, ui::PAGE_TRANSITION_LINK);
-    Navigate(&params);
-    EXPECT_EQ(web_contents->GetVisibleURL(), hanging_url);
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-
-    ASSERT_TRUE(SetUpNextLaunchParamsTargetUrlPromise(browser_1));
-    Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
-    EXPECT_EQ(browser_1, browser_2);
-    EXPECT_EQ(AwaitNextLaunchParamsTargetUrlPromise(browser_2),
-              start_url.spec());
-    EXPECT_EQ(web_contents->GetVisibleURL(), start_url);
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-
-    // Check that we never left the current page.
-    EXPECT_TRUE(EvalJs(web_contents, "window.thisIsTheSamePage").ExtractBool());
-  }
+  // Check that the launch params are not enqueued in the out of scope document.
+  const char* script = R"(
+      new Promise(resolve => {
+        let targetURLs = [];
+        window.launchQueue.setConsumer(launchParams => {
+          targetURLs.push(launchParams.targetURL);
+        });
+        // Wait a tick to let any erroneous launch params get added.
+        requestAnimationFrame(() => {
+          resolve(targetURLs.join('|'));
+        });
+      });
+    )";
+  EXPECT_EQ(EvalJs(web_contents, script).ExtractString(), "");
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, GlobalLaunchQueue) {
@@ -436,8 +580,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerOriginTrialBrowserTest, OriginTrial) {
   // Origin trial should grant the app access.
   WebAppProvider& provider = *WebAppProvider::GetForTest(browser()->profile());
   EXPECT_EQ(provider.registrar().GetAppById(app_id)->launch_handler(),
-            (LaunchHandler{LaunchHandler::RouteTo::kExistingClient,
-                           LaunchHandler::NavigateExistingClient::kNever}));
+            (LaunchHandler{RouteTo::kExistingClientRetain}));
 
   // Open the page again with the token missing.
   {

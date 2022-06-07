@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -38,6 +39,7 @@ class ExtensionSignalProcessor;
 class ExtensionTelemetryReportRequest;
 class ExtensionTelemetryReportRequest_ExtensionInfo;
 class ExtensionTelemetryUploader;
+class ExtensionTelemetryPersister;
 
 // This class process extension signals and reports telemetry for a given
 // profile (regular profile only). It is used exclusively on the UI thread.
@@ -86,7 +88,11 @@ class ExtensionTelemetryService : public KeyedService {
   // Creates and uploads telemetry reports.
   void CreateAndUploadReport();
 
-  void OnUploadComplete(ExtensionTelemetryReportRequest* report, bool success);
+  void OnUploadComplete(bool success);
+
+  // Returns a bool that represents if there is any signal processor
+  // information to report.
+  bool SignalDataPresent();
 
   // Creates telemetry report protobuf for all extension store extensions
   // and currently installed extensions along with signal data retrieved from
@@ -98,6 +104,10 @@ class ExtensionTelemetryService : public KeyedService {
   // Collects extension information for reporting.
   std::unique_ptr<ExtensionTelemetryReportRequest_ExtensionInfo>
   GetExtensionInfoForReport(const extensions::Extension& extension);
+
+  void UploadPersistedFile(std::string report, bool success);
+
+  std::unique_ptr<safe_browsing::ExtensionTelemetryPersister> persister_;
 
   // The profile with which this instance of the service is associated.
   const raw_ptr<Profile> profile_;

@@ -31,31 +31,25 @@ bool SetFieldAndAdvanceCursor(AutofillScanner* scanner, AutofillField** field) {
 // Removes the |attribute| from all |patterns|.
 // TODO(crbug/1142936): This is necessary for
 // AddressField::ParseNameAndLabelSeparately().
-MatchParams WithoutAttribute(MatchParams match_type, MatchAttribute attribute) {
-  match_type.attributes.erase(attribute);
-  return match_type;
+MatchingPattern WithoutAttribute(MatchingPattern p, MatchAttribute attribute) {
+  p.match_field_attributes.erase(attribute);
+  return p;
 }
 
 // Removes the |attribute| from all |patterns|.
 // TODO(crbug/1142936): This is necessary for
 // AddressField::ParseNameAndLabelSeparately().
-std::vector<MatchingPattern> WithoutAttribute(
-    std::vector<MatchingPattern> patterns,
-    MatchAttribute attribute) {
-  for (MatchingPattern& p : patterns)
-    p.match_field_attributes.erase(attribute);
-  return patterns;
+MatchParams WithoutAttribute(MatchParams match_type, MatchAttribute attribute) {
+  match_type.attributes.erase(attribute);
+  return match_type;
 }
 
 // Adds the |field_type| to all |patterns|.
 // TODO(crbug/1142936): This is necessary for AddressField::ParseAddressLines()
 // and AddressField::Parse().
-std::vector<MatchingPattern> WithFieldType(
-    std::vector<MatchingPattern> patterns,
-    MatchFieldType field_type) {
-  for (MatchingPattern& p : patterns)
-    p.match_field_input_types.insert(field_type);
-  return patterns;
+MatchingPattern WithFieldType(MatchingPattern p, MatchFieldType field_type) {
+  p.match_field_input_types.insert(field_type);
+  return p;
 }
 
 // Some sites use type="tel" for zip fields (to get a numerical input).
@@ -122,8 +116,10 @@ std::unique_ptr<FormField> AddressField::Parse(
     } else if (ParseFieldSpecifics(
                    scanner, kEmailRe,
                    kDefaultMatchParamsWith<MatchFieldType::kTextArea>,
-                   WithFieldType(email_patterns, MatchFieldType::kTextArea),
-                   nullptr, {log_manager, "kEmailRe"})) {
+                   email_patterns, nullptr, {log_manager, "kEmailRe"},
+                   [](const MatchingPattern& p) {
+                     return WithFieldType(p, MatchFieldType::kTextArea);
+                   })) {
       continue;
     } else if (address_field->ParseAddress(scanner, page_language) ||
                address_field->ParseDependentLocalityCityStateCountryZipCode(
@@ -309,8 +305,11 @@ bool AddressField::ParseAddress(AutofillScanner* scanner,
   if (street_name_ && house_number_) {
     return false;
   }
-  return ParseAddressFieldSequence(scanner, page_language) ||
-         ParseAddressLines(scanner, page_language);
+  // Do not inline these calls: After passing an address field sequence, there
+  // might be an additional address line 2 to parse afterwards.
+  bool has_field_sequence = ParseAddressFieldSequence(scanner, page_language);
+  bool has_address_lines = ParseAddressLines(scanner, page_language);
+  return has_field_sequence || has_address_lines;
 }
 
 bool AddressField::ParseAddressLines(AutofillScanner* scanner,
@@ -337,7 +336,10 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
   // AutofillParsingPatternProvider. The old code calls ParseFieldSpecifics()
   // for two different patterns, |pattern| and |label_pattern|. The new code
   // handles both patterns at once in the |address_line1_patterns|.
-  if (!ParseFieldSpecifics(scanner, pattern,
+  // Address line 1 is skipped if a |street_name_|, |house_number_| combination
+  // is present.
+  if (!(street_name_ && house_number_) &&
+      !ParseFieldSpecifics(scanner, pattern,
                            kDefaultMatchParamsWith<MatchFieldType::kSearch>,
                            address_line1_patterns, &address1_,
                            {log_manager_, "kAddressLine1Re"}) &&
@@ -347,18 +349,22 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
                       {MatchFieldType::kSearch, MatchFieldType::kText}),
           address_line1_patterns, &address1_,
           {log_manager_, "kAddressLine1LabelRe"}) &&
-      !ParseFieldSpecifics(
-          scanner, pattern,
-          kDefaultMatchParamsWith<MatchFieldType::kSearch,
-                                  MatchFieldType::kTextArea>,
-          WithFieldType(address_line1_patterns, MatchFieldType::kTextArea),
-          &street_address_, {log_manager_, "kAddressLine1Re"}) &&
+      !ParseFieldSpecifics(scanner, pattern,
+                           kDefaultMatchParamsWith<MatchFieldType::kSearch,
+                                                   MatchFieldType::kTextArea>,
+                           address_line1_patterns, &street_address_,
+                           {log_manager_, "kAddressLine1Re"},
+                           [](const MatchingPattern& p) {
+                             return WithFieldType(p, MatchFieldType::kTextArea);
+                           }) &&
       !ParseFieldSpecifics(
           scanner, label_pattern,
           MatchParams({MatchAttribute::kLabel},
                       {MatchFieldType::kSearch, MatchFieldType::kTextArea}),
-          WithFieldType(address_line1_patterns, MatchFieldType::kTextArea),
-          &street_address_, {log_manager_, "kAddressLine1LabelRe"})) {
+          address_line1_patterns, &street_address_,
+          {log_manager_, "kAddressLine1LabelRe"}, [](const MatchingPattern& p) {
+            return WithFieldType(p, MatchFieldType::kTextArea);
+          })) {
     return false;
   }
 
@@ -523,11 +529,15 @@ AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelSeparately(
   size_t saved_cursor = scanner->SaveCursor();
   bool parsed_name = ParseFieldSpecifics(
       scanner, pattern, WithoutAttribute(match_type, MatchAttribute::kLabel),
-      WithoutAttribute(patterns, MatchAttribute::kLabel), &cur_match, logging);
+      patterns, &cur_match, logging, [](const MatchingPattern& p) {
+        return WithoutAttribute(p, MatchAttribute::kLabel);
+      });
   scanner->RewindTo(saved_cursor);
   bool parsed_label = ParseFieldSpecifics(
       scanner, pattern, WithoutAttribute(match_type, MatchAttribute::kName),
-      WithoutAttribute(patterns, MatchAttribute::kName), &cur_match, logging);
+      patterns, &cur_match, logging, [](const MatchingPattern& p) {
+        return WithoutAttribute(p, MatchAttribute::kName);
+      });
   if (parsed_name && parsed_label) {
     if (match)
       *match = cur_match;

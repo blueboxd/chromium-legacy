@@ -33,7 +33,7 @@ void FakeFastPairRepository::ClearFakeMetadata(
 
 void FakeFastPairRepository::SetCheckAccountKeysResult(
     absl::optional<PairingMetadata> result) {
-  check_account_key_result_ = result;
+  check_account_keys_result_ = result;
 }
 
 bool FakeFastPairRepository::HasKeyForDevice(const std::string& mac_address) {
@@ -61,7 +61,7 @@ void FakeFastPairRepository::GetDeviceMetadata(
 void FakeFastPairRepository::CheckAccountKeys(
     const AccountKeyFilter& account_key_filter,
     CheckAccountKeysCallback callback) {
-  std::move(callback).Run(check_account_key_result_);
+  std::move(callback).Run(check_account_keys_result_);
 }
 
 void FakeFastPairRepository::AssociateAccountKey(
@@ -75,9 +75,35 @@ bool FakeFastPairRepository::DeleteAssociatedDevice(
   return saved_account_keys_.erase(device->GetAddress()) == 1;
 }
 
+void FakeFastPairRepository::SetOptInStatus(
+    nearby::fastpair::OptInStatus status) {
+  status_ = status;
+}
+
+// Unimplemented.
+void FakeFastPairRepository::CheckOptInStatus(
+    CheckOptInStatusCallback callback) {
+  std::move(callback).Run(status_);
+}
+
+// Unimplemented.
+void FakeFastPairRepository::DeleteAssociatedDeviceByAccountKey(
+    const std::vector<uint8_t>& account_key,
+    DeleteAssociatedDeviceByAccountKeyCallback callback) {}
+
+// Unimplemented.
+void FakeFastPairRepository::UpdateOptInStatus(
+    nearby::fastpair::OptInStatus opt_in_status,
+    UpdateOptInStatusCallback callback) {}
+
 // Unimplemented.
 void FakeFastPairRepository::FetchDeviceImages(scoped_refptr<Device> device) {
   return;
+}
+
+bool FakeFastPairRepository::IsAccountKeyPairedLocally(
+    const std::vector<uint8_t>& account_key) {
+  return is_account_key_paired_locally_;
 }
 
 // Unimplemented.
@@ -95,6 +121,11 @@ bool FakeFastPairRepository::EvictDeviceImages(
 absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
 FakeFastPairRepository::GetImagesForDevice(const std::string& device_id) {
   return absl::nullopt;
+}
+
+// Unimplemented.
+void FakeFastPairRepository::GetSavedDevices(GetSavedDevicesCallback callback) {
+
 }
 
 }  // namespace quick_pair

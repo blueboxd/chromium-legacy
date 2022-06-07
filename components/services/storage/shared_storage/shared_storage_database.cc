@@ -13,11 +13,11 @@
 
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
 #include "components/services/storage/shared_storage/shared_storage_options.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "sql/error_delegate_util.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -105,8 +105,11 @@ SharedStorageDatabase::SharedStorageDatabase(
   DCHECK_GT(max_entries_per_origin_, 0);
   DCHECK_GT(options->max_init_tries, 0);
   DCHECK_GT(options->max_string_length, 0);
+  DCHECK_GT(options->max_iterator_batch_size, 0);
   max_string_length_ = static_cast<size_t>(options->max_string_length);
   max_init_tries_ = static_cast<size_t>(options->max_init_tries);
+  max_iterator_batch_size_ =
+      static_cast<size_t>(options->max_iterator_batch_size);
   db_file_status_ = db_path_.empty() ? DBFileStatus::kNoPreexistingFile
                                      : DBFileStatus::kNotChecked;
 }
@@ -357,48 +360,175 @@ int64_t SharedStorageDatabase::Length(url::Origin context_origin) {
   return length;
 }
 
-SharedStorageDatabase::GetResult SharedStorageDatabase::Key(
-    url::Origin context_origin,
-    uint64_t index) {
+SharedStorageDatabase::OperationResult SharedStorageDatabase::Keys(
+    const url::Origin& context_origin,
+    mojo::PendingRemote<
+        shared_storage_worklet::mojom::SharedStorageEntriesListener>
+        pending_listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetResult result;
+
+  mojo::Remote<shared_storage_worklet::mojom::SharedStorageEntriesListener>
+      keys_listener(std::move(pending_listener));
 
   if (LazyInit(DBCreationPolicy::kIgnoreIfAbsent) != InitStatus::kSuccess) {
     // We do not return an error if the database doesn't exist, but only if it
     // pre-exists on disk and yet fails to initialize.
-    if (db_status_ == InitStatus::kUnattempted)
-      result.result = OperationResult::kSuccess;
-    else
-      result.result = OperationResult::kInitFailure;
-    return result;
+    if (db_status_ == InitStatus::kUnattempted) {
+      keys_listener->DidReadEntries(
+          /*success=*/true,
+          /*error_message=*/"", /*entries=*/{}, /*has_more_entries=*/false);
+      return OperationResult::kSuccess;
+    } else {
+      keys_listener->DidReadEntries(
+          /*success=*/false, "SQL database had initialization failure.",
+          /*entries=*/{}, /*has_more_entries=*/false);
+      return OperationResult::kInitFailure;
+    }
   }
 
   static constexpr char kSelectSql[] =
-      "SELECT key FROM values_mapping "
-      "WHERE context_origin=? "
+      "SELECT key FROM values_mapping WHERE context_origin=? ORDER BY key";
+
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
+  std::string origin_str(SerializeOrigin(context_origin));
+  statement.BindString(0, origin_str);
+
+  bool has_more_entries = true;
+  absl::optional<std::u16string> saved_first_key_for_next_batch;
+
+  while (has_more_entries) {
+    has_more_entries = false;
+    std::vector<shared_storage_worklet::mojom::SharedStorageKeyAndOrValuePtr>
+        keys;
+
+    if (saved_first_key_for_next_batch) {
+      keys.push_back(
+          shared_storage_worklet::mojom::SharedStorageKeyAndOrValue::New(
+              saved_first_key_for_next_batch.value(), u""));
+      saved_first_key_for_next_batch.reset();
+    }
+
+    while (statement.Step()) {
+      if (keys.size() < max_iterator_batch_size_) {
+        keys.push_back(
+            shared_storage_worklet::mojom::SharedStorageKeyAndOrValue::New(
+                statement.ColumnString16(0), u""));
+      } else {
+        // Cache the current key to use as the start of the next batch, as we're
+        // already passing through this step and the next iteration of
+        // `statement.Step()`, if there is one, during the next iteration of the
+        // outer while loop, will give us the subsequent key.
+        saved_first_key_for_next_batch = statement.ColumnString16(0);
+        has_more_entries = true;
+        break;
+      }
+    }
+
+    if (!statement.Succeeded()) {
+      keys_listener->DidReadEntries(
+          /*success=*/false,
+          "SQL database encountered an error while retrieving keys.",
+          /*entries=*/{}, /*has_more_entries=*/false);
+      return OperationResult::kSqlError;
+    }
+
+    keys_listener->DidReadEntries(/*success=*/true, /*error_message=*/"",
+                                  std::move(keys), has_more_entries);
+  }
+
+  if (!UpdateLastUsedTime(origin_str))
+    return OperationResult::kSqlError;
+
+  return OperationResult::kSuccess;
+}
+
+SharedStorageDatabase::OperationResult SharedStorageDatabase::Entries(
+    const url::Origin& context_origin,
+    mojo::PendingRemote<
+        shared_storage_worklet::mojom::SharedStorageEntriesListener>
+        pending_listener) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  mojo::Remote<shared_storage_worklet::mojom::SharedStorageEntriesListener>
+      entries_listener(std::move(pending_listener));
+
+  if (LazyInit(DBCreationPolicy::kIgnoreIfAbsent) != InitStatus::kSuccess) {
+    // We do not return an error if the database doesn't exist, but only if it
+    // pre-exists on disk and yet fails to initialize.
+    if (db_status_ == InitStatus::kUnattempted) {
+      entries_listener->DidReadEntries(
+          /*success=*/true,
+          /*error_message=*/"", /*entries=*/{}, /*has_more_entries=*/false);
+      return OperationResult::kSuccess;
+    } else {
+      entries_listener->DidReadEntries(
+          /*success=*/false, "SQL database had initialization failure.",
+          /*entries=*/{}, /*has_more_entries=*/false);
+      return OperationResult::kInitFailure;
+    }
+  }
+
+  static constexpr char kSelectSql[] =
+      "SELECT key,value FROM values_mapping WHERE context_origin=? "
       "ORDER BY key";
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
   std::string origin_str(SerializeOrigin(context_origin));
   statement.BindString(0, origin_str);
 
-  uint64_t current_index = 0UL;
+  bool has_more_entries = true;
+  absl::optional<std::u16string> saved_first_key_for_next_batch;
+  absl::optional<std::u16string> saved_first_value_for_next_batch;
 
-  while (statement.Step()) {
-    if (!statement.Succeeded())
-      return result;
-    if (current_index == index) {
-      result.data = statement.ColumnString16(0);
-      break;
+  while (has_more_entries) {
+    has_more_entries = false;
+    std::vector<shared_storage_worklet::mojom::SharedStorageKeyAndOrValuePtr>
+        entries;
+
+    if (saved_first_key_for_next_batch) {
+      DCHECK(saved_first_value_for_next_batch);
+      entries.push_back(
+          shared_storage_worklet::mojom::SharedStorageKeyAndOrValue::New(
+              saved_first_key_for_next_batch.value(),
+              saved_first_value_for_next_batch.value()));
+      saved_first_key_for_next_batch.reset();
+      saved_first_value_for_next_batch.reset();
     }
 
-    current_index++;
+    while (statement.Step()) {
+      if (entries.size() < max_iterator_batch_size_) {
+        entries.push_back(
+            shared_storage_worklet::mojom::SharedStorageKeyAndOrValue::New(
+                statement.ColumnString16(0), statement.ColumnString16(1)));
+      } else {
+        // Cache the current key and value to use as the start of the next
+        // batch, as we're already passing through this step and the next
+        // iteration of `statement.Step()`, if there is one, during the next
+        // iteration of the outer while loop, will give us the subsequent
+        // key-value pair.
+        saved_first_key_for_next_batch = statement.ColumnString16(0);
+        saved_first_value_for_next_batch = statement.ColumnString16(1);
+        has_more_entries = true;
+        break;
+      }
+    }
+
+    if (!statement.Succeeded()) {
+      entries_listener->DidReadEntries(
+          /*success=*/false,
+          "SQL database encountered an error while retrieving entries.",
+          /*entries=*/{}, /*has_more_entries=*/false);
+      return OperationResult::kSqlError;
+    }
+
+    entries_listener->DidReadEntries(/*success=*/true, /*error_message=*/"",
+                                     std::move(entries), has_more_entries);
   }
 
-  if (UpdateLastUsedTime(origin_str))
-    result.result = OperationResult::kSuccess;
+  if (!UpdateLastUsedTime(origin_str))
+    return OperationResult::kSqlError;
 
-  return result;
+  return OperationResult::kSuccess;
 }
 
 SharedStorageDatabase::OperationResult
@@ -549,14 +679,13 @@ SharedStorageDatabase::InitStatus SharedStorageDatabase::DBStatusForTesting()
 
 bool SharedStorageDatabase::OverrideLastUsedTimeForTesting(
     url::Origin context_origin,
-    base::Time override_last_used_time) {
+    base::Time new_last_used_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (LazyInit(DBCreationPolicy::kIgnoreIfAbsent) != InitStatus::kSuccess)
     return false;
 
-  return SetLastUsedTime(SerializeOrigin(context_origin),
-                         override_last_used_time);
+  return SetLastUsedTime(SerializeOrigin(context_origin), new_last_used_time);
 }
 
 void SharedStorageDatabase::OverrideClockForTesting(base::Clock* clock) {
@@ -565,10 +694,42 @@ void SharedStorageDatabase::OverrideClockForTesting(base::Clock* clock) {
   clock_ = clock;
 }
 
-bool SharedStorageDatabase::OverrideSpecialStoragePolicyForTesting(
+void SharedStorageDatabase::OverrideSpecialStoragePolicyForTesting(
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   special_storage_policy_ = std::move(special_storage_policy);
+}
+
+bool SharedStorageDatabase::PopulateDatabaseForTesting(url::Origin origin1,
+                                                       url::Origin origin2,
+                                                       url::Origin origin3) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // We use `CHECK_EQ()` and `CHECK()` macros instead of early returns because
+  // the latter made the test coverage delta too low.
+  CHECK_EQ(OperationResult::kSet,
+           Set(origin1, u"key1", u"value1", SetBehavior::kDefault));
+
+  CHECK_EQ(OperationResult::kSet,
+           Set(origin1, u"key2", u"value1", SetBehavior::kDefault));
+
+  CHECK_EQ(OperationResult::kSet,
+           Set(origin2, u"key1", u"value2", SetBehavior::kDefault));
+
+  CHECK(OverrideLastUsedTimeForTesting(  // IN-TEST
+      origin2, clock_->Now() - base::Days(1)));
+
+  CHECK_EQ(OperationResult::kSet,
+           Set(origin3, u"key1", u"value1", SetBehavior::kDefault));
+
+  CHECK_EQ(OperationResult::kSet,
+           Set(origin3, u"key2", u"value2", SetBehavior::kDefault));
+
+  CHECK(OverrideLastUsedTimeForTesting(  // IN-TEST
+      origin3, clock_->Now() - base::Days(60)));
+
+  // We return a bool in order to facilitate use of `base::test::TestFuture`
+  // with this method.
   return true;
 }
 
@@ -663,8 +824,8 @@ void SharedStorageDatabase::DatabaseErrorCallback(int extended_error,
 
   if (sql::IsErrorCatastrophic(extended_error)) {
     bool success = Destroy();
-    UMA_HISTOGRAM_BOOLEAN("Storage.SharedStorage.Database.Destruction",
-                          success);
+    base::UmaHistogramBoolean("Storage.SharedStorage.Database.Destruction",
+                              success);
     if (!success) {
       DLOG(FATAL) << "Database destruction failed after catastrophic error:\n"
                   << db_.GetErrorMessage();

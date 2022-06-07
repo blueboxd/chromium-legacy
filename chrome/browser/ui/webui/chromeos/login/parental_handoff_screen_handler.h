@@ -18,7 +18,6 @@ class LocalizedValuesBuilder;
 }  // namespace login
 
 namespace chromeos {
-class JSCallsContainer;
 
 // Interface for dependency injection between ParentalHandoffScreen and its
 // WebUI representation.
@@ -43,7 +42,7 @@ class ParentalHandoffScreenHandler : public BaseScreenHandler,
  public:
   using TView = ParentalHandoffScreenView;
 
-  explicit ParentalHandoffScreenHandler(JSCallsContainer* js_calls_container);
+  ParentalHandoffScreenHandler();
   ParentalHandoffScreenHandler(const ParentalHandoffScreenHandler&) = delete;
   ParentalHandoffScreenHandler& operator=(const ParentalHandoffScreenHandler&) =
       delete;
@@ -53,7 +52,7 @@ class ParentalHandoffScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // Shows the contents of the screen.
   void Show(const std::u16string& username) override;

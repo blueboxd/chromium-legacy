@@ -34,6 +34,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -273,6 +274,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                       std::unique_ptr<IDBValue>);
   void HandleResponse(std::unique_ptr<IDBValue>);
   void HandleResponse(Vector<std::unique_ptr<IDBValue>>);
+  void HandleResponse(Vector<Vector<std::unique_ptr<IDBValue>>>);
   void HandleResponse(int64_t);
   void HandleResponse();
   void HandleResponse(
@@ -386,6 +388,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                        std::unique_ptr<IDBValue>);
   void EnqueueResponse(std::unique_ptr<IDBValue>);
   void EnqueueResponse(Vector<std::unique_ptr<IDBValue>>);
+  void EnqueueResponse(Vector<Vector<std::unique_ptr<IDBValue>>>);
   void EnqueueResponse();
 
   void ClearPutOperationBlobs() { transit_blob_handles_.clear(); }

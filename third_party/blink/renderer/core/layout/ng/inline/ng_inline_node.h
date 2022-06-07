@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class NGBreakToken;
 class NGConstraintSpace;
 class NGInlineChildLayoutContext;
 class NGLayoutResult;
@@ -96,6 +97,12 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   bool HasRuby() const { return Data().has_ruby_; }
 
   bool IsBlockLevel() { return EnsureData().is_block_level_; }
+
+  // This returns true if Deferred Shaping was applied to this IFC, and
+  // it's unlocked and should be reshaped.
+  bool ShouldBeReshaped() const;
+  DisplayLockContext* GetDisplayLockContext() const;
+  bool IsDisplayLocked() const;
 
   // @return if this node can contain the "first formatted line".
   // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line

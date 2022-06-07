@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.Over
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -622,7 +623,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     exploreIconProvider,
                     new UserEducationHelper(mActivity, mHandler),
                     merchantTrustSignalsCoordinatorSupplier,
-                    omniboxPedalDelegate, mControlsVisibilityDelegate);
+                    omniboxPedalDelegate, mControlsVisibilityDelegate,
+                    ChromePureJavaExceptionReporter::postReportJavaException);
             // clang-format on
             toolbarLayout.setLocationBarCoordinator(locationBarCoordinator);
             toolbarLayout.setBrowserControlsVisibilityDelegate(mControlsVisibilityDelegate);
@@ -666,7 +668,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
             @Override
             public void onPageLoadFinished(Tab tab, GURL url) {
-                maybeTriggerCacheRefreshForZeroSuggest(tab, url);
+                // Part of scroll jank investigation http://crbug.com/1311003. Will remove
+                // TraceEvent after the investigation is complete.
+                try (TraceEvent te = TraceEvent.scoped("ToolbarManager::onPageLoadFinished")) {
+                    maybeTriggerCacheRefreshForZeroSuggest(tab, url);
+                }
             }
 
             /**

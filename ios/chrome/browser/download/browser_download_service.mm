@@ -11,8 +11,8 @@
 #include "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/download/mime_type_util.h"
-#import "ios/chrome/browser/download/mobileconfig_tab_helper.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
+#import "ios/chrome/browser/download/safari_download_tab_helper.h"
 #import "ios/chrome/browser/download/vcard_tab_helper.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
@@ -46,7 +46,7 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
     return DownloadMimeTypeResult::VirtualContactFile;
 
   if (mime_type == kCalendarMimeType)
-    return DownloadMimeTypeResult::iCalendar;
+    return DownloadMimeTypeResult::Calendar;
 
   if (mime_type == kLegacyUsdzMimeType)
     return DownloadMimeTypeResult::LegacyUniversalSceneDescription;
@@ -132,7 +132,8 @@ void BrowserDownloadService::OnDownloadCreated(
     if (tab_helper)
       tab_helper->Download(std::move(task));
   } else if (IsUsdzFileFormat(task->GetMimeType(),
-                              task->GetSuggestedFilename())) {
+                              task->GetSuggestedFilename()) &&
+             !base::FeatureList::IsEnabled(kARKillSwitch)) {
     ARQuickLookTabHelper* tab_helper =
         ARQuickLookTabHelper::FromWebState(web_state);
     if (tab_helper)
@@ -141,12 +142,20 @@ void BrowserDownloadService::OnDownloadCreated(
   } else if (task->GetMimeType() == kMobileConfigurationType &&
              task->GetOriginalUrl().SchemeIsHTTPOrHTTPS()) {
     // SFSafariViewController can only open http and https URLs.
-    MobileConfigTabHelper* tab_helper =
-        MobileConfigTabHelper::FromWebState(web_state);
+    SafariDownloadTabHelper* tab_helper =
+        SafariDownloadTabHelper::FromWebState(web_state);
     if (tab_helper)
-      tab_helper->Download(std::move(task));
+      tab_helper->DownloadMobileConfig(std::move(task));
+  } else if (task->GetMimeType() == kCalendarMimeType &&
+             base::FeatureList::IsEnabled(kDownloadCalendar) &&
+             task->GetOriginalUrl().SchemeIsHTTPOrHTTPS()) {
+    // SFSafariViewController can only open http and https URLs.
+    SafariDownloadTabHelper* tab_helper =
+        SafariDownloadTabHelper::FromWebState(web_state);
+    if (tab_helper)
+      tab_helper->DownloadCalendar(std::move(task));
   } else if (task->GetMimeType() == kVcardMimeType &&
-             base::FeatureList::IsEnabled(kDownloadVcard)) {
+             !base::FeatureList::IsEnabled(kVCardKillSwitch)) {
     VcardTabHelper* tab_helper = VcardTabHelper::FromWebState(web_state);
     if (tab_helper)
       tab_helper->Download(std::move(task));

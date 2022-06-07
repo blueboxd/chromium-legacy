@@ -4,7 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 
-assert(is_chromeos_ash || is_chromeos_lacros,
+assert(is_chromeos,
        "Non-Chrome-OS or Lacros builds must not depend on //chromeos")
 
 # C++ headers and sources that can be used by both ash and lacros builds.
@@ -16,11 +16,14 @@ source_set("wm") {
     "desks/desks_helper.h",
     "features.cc",
     "features.h",
+    "window_util.cc",
+    "window_util.h",
   ]
 
   deps = [
     "//base",
     "//build:chromeos_buildflags",
+    "//chromeos/ui/base",
     "//ui/aura",
     "//ui/base",
   ]

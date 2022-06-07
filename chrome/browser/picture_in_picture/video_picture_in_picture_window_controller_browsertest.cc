@@ -1280,8 +1280,14 @@ IN_PROC_BROWSER_TEST_F(VideoPictureInPictureWindowControllerBrowserTest,
 // changing source willproperly update the associated media player id. This is
 // checked by closing the window because the test it at a too high level to be
 // able to check the actual media player id being used.
+// TODO(crbug.com/1311308) Fix flakiness on ChromeOS and reenable this test.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_PreloadNoneSrcChangeThenLoad DISABLED_PreloadNoneSrcChangeThenLoad
+#else
+#define MAYBE_PreloadNoneSrcChangeThenLoad PreloadNoneSrcChangeThenLoad
+#endif
 IN_PROC_BROWSER_TEST_F(VideoPictureInPictureWindowControllerBrowserTest,
-                       PreloadNoneSrcChangeThenLoad) {
+                       MAYBE_PreloadNoneSrcChangeThenLoad) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL(
@@ -2233,8 +2239,17 @@ IN_PROC_BROWSER_TEST_F(WebAppVideoPictureInPictureWindowControllerBrowserTest,
   EXPECT_EQ(false, EvalJs(web_contents(), "isInPictureInPicture();"));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppVideoPictureInPictureWindowControllerBrowserTest,
-                       AutoPictureInPictureAppliesAfterUnsetOnAnotherVideo) {
+// TODO(crbug.com/1314591): Re-enable this test
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_AutoPictureInPictureAppliesAfterUnsetOnAnotherVideo \
+  DISABLED_AutoPictureInPictureAppliesAfterUnsetOnAnotherVideo
+#else
+#define MAYBE_AutoPictureInPictureAppliesAfterUnsetOnAnotherVideo \
+  AutoPictureInPictureAppliesAfterUnsetOnAnotherVideo
+#endif
+IN_PROC_BROWSER_TEST_F(
+    WebAppVideoPictureInPictureWindowControllerBrowserTest,
+    MAYBE_AutoPictureInPictureAppliesAfterUnsetOnAnotherVideo) {
   InstallAndLaunchPWA(main_url());
   ASSERT_TRUE(ExecJs(web_contents(),
                      "video.autoPictureInPicture = true;"
@@ -2383,9 +2398,10 @@ class VideoConferencingVideoPictureInPictureWindowControllerBrowserTest
 };
 
 // Test that video conferencing action buttons function correctly.
+// TODO(crbug.com/1312401): Test is flaky.
 IN_PROC_BROWSER_TEST_F(
     VideoConferencingVideoPictureInPictureWindowControllerBrowserTest,
-    VideoConferencingActions) {
+    DISABLED_VideoConferencingActions) {
   // Enter PiP.
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(kPictureInPictureVideoConferencingPage));

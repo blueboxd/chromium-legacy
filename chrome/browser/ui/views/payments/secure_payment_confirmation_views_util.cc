@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/secure_payment_confirmation_views_util.h"
 
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -123,7 +124,8 @@ std::unique_ptr<views::Label> CreateSecurePaymentConfirmationTitleLabel(
       title, views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
   title_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_label->SetLineHeight(kTitleLineHeight);
-  title_label->SetBorder(views::CreateEmptyBorder(0, 0, kBodyInsets, 0));
+  title_label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, kBodyInsets, 0)));
 
   return title_label;
 }
@@ -133,13 +135,36 @@ CreateSecurePaymentConfirmationInstrumentIconView(const gfx::ImageSkia& image) {
   std::unique_ptr<views::ImageView> icon_view =
       std::make_unique<views::ImageView>();
   icon_view->SetImage(image);
+
+  gfx::Size image_size = image.size();
+  // Resize to a constant height, with a variable width in the acceptable range
+  // based on the aspect ratio.
+  float aspect_ratio =
+      static_cast<float>(image_size.width()) / image_size.height();
+  int preferred_width = static_cast<int>(
+      kSecurePaymentConfirmationInstrumentIconHeightPx * aspect_ratio);
+  int icon_width =
+      std::max(std::min(preferred_width,
+                        kSecurePaymentConfirmationInstrumentIconMaximumWidthPx),
+               kSecurePaymentConfirmationInstrumentIconDefaultWidthPx);
   icon_view->SetImageSize(
-      gfx::Size(kSecurePaymentConfirmationInstrumentIconWidthPx,
-                kSecurePaymentConfirmationInstrumentIconHeightPx));
+      gfx::Size(icon_width, kSecurePaymentConfirmationInstrumentIconHeightPx));
   icon_view->SetPaintToLayer();
   icon_view->layer()->SetFillsBoundsOpaquely(false);
 
   return icon_view;
+}
+
+std::u16string FormatMerchantLabel(
+    const absl::optional<std::u16string>& merchant_name,
+    const absl::optional<std::u16string>& merchant_origin) {
+  DCHECK(merchant_name.has_value() || merchant_origin.has_value());
+
+  if (merchant_name.has_value() && merchant_origin.has_value()) {
+    return base::StrCat(
+        {merchant_name.value(), u" (", merchant_origin.value(), u")"});
+  }
+  return merchant_name.value_or(merchant_origin.value_or(u""));
 }
 
 }  // namespace payments

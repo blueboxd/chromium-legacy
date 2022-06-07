@@ -194,6 +194,7 @@ struct FormData {
   std::u16string name;
 
   // Titles of form's buttons.
+  // Only populated in Password Manager.
   ButtonTitleList button_titles;
 
   // The URL (minus query parameters and fragment) containing the form.
@@ -215,6 +216,9 @@ struct FormData {
 
   // The URL of main frame containing this form.
   // This value should not be sent via mojo.
+  // |main_frame_origin| represents the main frame (not necessarily primary
+  // main frame) of the form's frame tree as described by MPArch nested frame
+  // trees. For details, see RenderFrameHost::GetMainFrame().
   url::Origin main_frame_origin;
 
   // True if this form is a form tag.

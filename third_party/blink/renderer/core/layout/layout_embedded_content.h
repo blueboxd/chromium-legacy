@@ -57,6 +57,13 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   WebPluginContainerImpl* Plugin() const;
   EmbeddedContentView* GetEmbeddedContentView() const;
 
+  // Subtracts border/padding, and other offsets if they exist.
+  PhysicalOffset EmbeddedContentFromBorderBox(const PhysicalOffset&) const;
+  gfx::PointF EmbeddedContentFromBorderBox(const gfx::PointF&) const;
+  // Adds border/padding, and other offsets if they exist.
+  PhysicalOffset BorderBoxFromEmbeddedContent(const PhysicalOffset&) const;
+  gfx::Rect BorderBoxFromEmbeddedContent(const gfx::Rect&) const;
+
   PhysicalRect ReplacedContentRect() const final;
 
   void UpdateOnEmbeddedContentViewChange();
@@ -70,6 +77,12 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   bool IsThrottledFrameView() const;
 
  protected:
+  // The size of the child frame when it should be "frozen"; i.e., it should not
+  // change even when the size of |this| changes.
+  virtual const absl::optional<PhysicalSize> FrozenFrameSize() const;
+  ObjectFit EmbeddedContentTransform() const;
+  ObjectFit EmbeddedContentTransform(const PhysicalRect& content_rect) const;
+
   PaintLayerType LayerTypeRequired() const override;
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;

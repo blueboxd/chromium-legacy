@@ -9,10 +9,12 @@ import {OptionalBool, RunOnOsLoginMode, WindowMode} from 'chrome://resources/cr_
 export class FakePageHandler implements PageHandlerInterface {
   private app_: App;
   private page_: PageRemote;
+  private defaultAppAssociationsShown_: boolean;
 
   constructor(page: PageRemote, app: App) {
     this.page_ = page;
     this.app_ = app;
+    this.defaultAppAssociationsShown_ = false;
   }
 
   setApp(app: App) {
@@ -65,6 +67,15 @@ export class FakePageHandler implements PageHandlerInterface {
     this.app_.fileHandlingState!.enabled = fileHandlingEnabled;
     this.page_.onAppChanged(this.app_);
   }
+
+  showDefaultAppAssociationsUi() {
+    this.defaultAppAssociationsShown_ = true;
+  }
+  defaultAppAssociationsUiWasShown() {
+    return this.defaultAppAssociationsShown_;
+  }
+
+  openStorePage(_appId: string) {}
 }
 
 export class TestAppManagementBrowserProxy implements BrowserProxy {

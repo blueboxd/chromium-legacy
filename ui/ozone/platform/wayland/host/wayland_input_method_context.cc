@@ -388,12 +388,15 @@ void WaylandInputMethodContext::SetSurroundingText(
 }
 
 void WaylandInputMethodContext::SetContentType(TextInputType input_type,
-                                               int input_flags) {
+                                               int input_flags,
+                                               bool should_do_learning) {
   if (!text_input_)
     return;
 
   uint32_t content_purpose = InputTypeToContentPurpose(input_type);
   uint32_t content_hint = InputFlagsToContentHint(input_flags);
+  if (!should_do_learning)
+    content_hint |= ZWP_TEXT_INPUT_V1_CONTENT_HINT_SENSITIVE_DATA;
   text_input_->SetContentType(content_hint, content_purpose);
 }
 
@@ -519,15 +522,34 @@ void WaylandInputMethodContext::OnDeleteSurroundingText(int32_t index,
 
 void WaylandInputMethodContext::OnKeysym(uint32_t keysym,
                                          uint32_t state,
-                                         uint32_t modifiers) {
+                                         uint32_t modifiers_bits) {
 #if BUILDFLAG(USE_XKBCOMMON)
   auto* layout_engine = KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
   if (!layout_engine)
     return;
 
-  // TODO(crbug.com/1079353): Handle modifiers.
+  // TODO(crbug.com/1289236): This is for the backward compatibility with older
+  // ash-chrome (M101 and earlier). In that version of ash-chrome didn't send
+  // CapsLock so that we hit an issue on using it.
+  // Because newer ash-chrome always sends CapsLock modifier map, as short term
+  // workaround, check the condition to identify whether Lacros is running
+  // on top of enough newer ash-chrome.
+  // To avoid accident, we also check text_input_extension, which is available
+  // only on ash-chrome.
+  // We can remove this workaround check in M104 or later.
+  absl::optional<std::vector<base::StringPiece>> modifiers;
+  if (!connection_->text_input_extension_v1() ||
+      base::Contains(modifiers_map_, XKB_MOD_NAME_CAPS)) {
+    std::vector<base::StringPiece> modifier_content;
+    for (size_t i = 0; i < modifiers_map_.size(); ++i) {
+      if (modifiers_bits & (1 << i))
+        modifier_content.emplace_back(modifiers_map_[i]);
+    }
+    modifiers = std::move(modifier_content);
+  }
+
   DomCode dom_code = static_cast<XkbKeyboardLayoutEngine*>(layout_engine)
-                         ->GetDomCodeByKeysym(keysym);
+                         ->GetDomCodeByKeysym(keysym, modifiers);
   if (dom_code == DomCode::NONE)
     return;
 
@@ -613,6 +635,11 @@ void WaylandInputMethodContext::OnInputPanelState(uint32_t state) {
   // In the future, we may need to support it. Specifically,
   // RenderWidgetHostViewAura would like to know the VirtualKeyboard's
   // region somehow.
+}
+
+void WaylandInputMethodContext::OnModifiersMap(
+    std::vector<std::string> modifiers_map) {
+  modifiers_map_ = std::move(modifiers_map);
 }
 
 void WaylandInputMethodContext::OnKeyboardFocusedWindowChanged() {

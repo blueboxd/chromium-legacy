@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
@@ -84,6 +85,8 @@ class DebugConnector : public auction_worklet::mojom::BidderWorklet {
       const std::string& seller_signals_json,
       const GURL& browser_signal_render_url,
       double browser_signal_bid,
+      double browser_signal_highest_scoring_other_bid,
+      bool browser_signal_made_highest_scoring_other_bid,
       const url::Origin& browser_signal_seller_origin,
       const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
       uint32_t bidding_data_version,

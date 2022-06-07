@@ -1,6 +1,7 @@
 /*
  * The default style sheet used to render <popup> elements
- * (HTMLPopupElement enabled).
+ * (HTMLPopupElement enabled) and elements with a `popup`
+ * content attribute (HTMLPopupAttribute enabled).
  *
  * Copyright 2021 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
@@ -9,11 +10,23 @@
 
 @namespace "http://www.w3.org/1999/xhtml";
 
-popup:not(:-internal-popup-open) {
+/* HTMLPopupElement - deprecated */
+popup:not(:popup-open) {
   display: none !important;
 }
 
-popup {
+/* 'popup' attribute */
+[popup=popup i]:not(:popup-open),
+[popup=hint i]:not(:popup-open),
+[popup=async i]:not(:popup-open) {
+  display: none;
+}
+
+/* Same styling for <popup> and 'popup' attribute */
+popup,
+[popup=popup i],
+[popup=hint i],
+[popup=async i] {
   display: block;
   position: fixed;
   top: 0;

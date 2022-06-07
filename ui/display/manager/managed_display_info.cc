@@ -41,7 +41,7 @@ const float kDpi96 = 96.0;
 
 // Check the content of |spec| and fill |bounds| and |device_scale_factor|.
 // Returns true when |bounds| is found.
-bool GetDisplayBounds(const std::string& spec,
+void GetDisplayBounds(const std::string& spec,
                       gfx::Rect* bounds,
                       float* device_scale_factor) {
   int width = 0;
@@ -59,14 +59,16 @@ bool GetDisplayBounds(const std::string& spec,
     };
     if (equals_within_epsilon(1.77f)) {
       *device_scale_factor = kDsf_1_777;
+    } else if (equals_within_epsilon(1.8f)) {
+      *device_scale_factor = kDsf_1_8;
     } else if (equals_within_epsilon(2.25f)) {
       *device_scale_factor = kDsf_2_252;
-    } else if (equals_within_epsilon(2.66)) {
+    } else if (equals_within_epsilon(2.66f)) {
       *device_scale_factor = kDsf_2_666;
     }
-    return true;
+    return;
   }
-  return false;
+  LOG(FATAL) << "Invalid format:" << spec;
 }
 
 // Display mode list is sorted by:
@@ -211,28 +213,32 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
   }
 
   float device_scale_factor = 1.0f;
-  GetDisplayBounds(main_spec, &bounds_in_native, &device_scale_factor);
-
   ManagedDisplayModeList display_modes;
-  parts = base::SplitString(main_spec, "#", base::KEEP_WHITESPACE,
-                            base::SPLIT_WANT_NONEMPTY);
-  if (parts.size() == 2) {
-    size_t native_mode = 0;
-    int largest_area = -1;
-    float highest_refresh_rate = -1.0f;
-    main_spec = parts[0];
-    std::string resolution_list = parts[1];
-    parts = base::SplitString(resolution_list, "|", base::KEEP_WHITESPACE,
-                              base::SPLIT_WANT_NONEMPTY);
-    for (size_t i = 0; i < parts.size(); ++i) {
-      gfx::Size size;
-      float refresh_rate = 60.0f;
-      bool is_interlaced = false;
 
-      gfx::Rect mode_bounds;
-      std::vector<std::string> resolution = base::SplitString(
-          parts[i], "%", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-      if (GetDisplayBounds(resolution[0], &mode_bounds, &device_scale_factor)) {
+  if (!main_spec.empty()) {
+    GetDisplayBounds(main_spec, &bounds_in_native, &device_scale_factor);
+
+    parts = base::SplitString(main_spec, "#", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY);
+    if (parts.size() == 2) {
+      size_t native_mode = 0;
+      int largest_area = -1;
+      float highest_refresh_rate = -1.0f;
+      main_spec = parts[0];
+      std::string resolution_list = parts[1];
+      parts = base::SplitString(resolution_list, "|", base::KEEP_WHITESPACE,
+                                base::SPLIT_WANT_NONEMPTY);
+      for (size_t i = 0; i < parts.size(); ++i) {
+        gfx::Size size;
+        float refresh_rate = 60.0f;
+        bool is_interlaced = false;
+
+        gfx::Rect mode_bounds;
+        std::vector<std::string> resolution = base::SplitString(
+            parts[i], "%", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        float device_scale_factor_for_mode = device_scale_factor;
+        GetDisplayBounds(resolution[0], &mode_bounds,
+                         &device_scale_factor_for_mode);
         size = mode_bounds.size();
         if (resolution.size() > 1)
           sscanf(resolution[1].c_str(), "%f", &refresh_rate);
@@ -243,14 +249,15 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
           highest_refresh_rate = refresh_rate;
           native_mode = i;
         }
-        display_modes.push_back(ManagedDisplayMode(
-            size, refresh_rate, is_interlaced, false, device_scale_factor));
+        display_modes.push_back(
+            ManagedDisplayMode(size, refresh_rate, is_interlaced, false,
+                               device_scale_factor_for_mode));
       }
+      ManagedDisplayMode dm = display_modes[native_mode];
+      display_modes[native_mode] =
+          ManagedDisplayMode(dm.size(), dm.refresh_rate(), dm.is_interlaced(),
+                             true, dm.device_scale_factor());
     }
-    ManagedDisplayMode dm = display_modes[native_mode];
-    display_modes[native_mode] =
-        ManagedDisplayMode(dm.size(), dm.refresh_rate(), dm.is_interlaced(),
-                           true, dm.device_scale_factor());
   }
 
   if (id == kInvalidDisplayId) {
@@ -277,7 +284,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
   if (has_overscan) {
     int width = bounds_in_native.width() / device_scale_factor / 40;
     int height = bounds_in_native.height() / device_scale_factor / 40;
-    display_info.SetOverscanInsets(gfx::Insets(height, width, height, width));
+    display_info.SetOverscanInsets(gfx::Insets::VH(height, width));
     display_info.UpdateDisplaySize();
   }
 
@@ -301,7 +308,6 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       panel_orientation_(display::PanelOrientation::kNormal),
-      overscan_insets_in_dip_(0, 0, 0, 0),
       zoom_factor_(1.f),
       refresh_rate_(60.f),
       is_interlaced_(false),
@@ -323,7 +329,6 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       panel_orientation_(display::PanelOrientation::kNormal),
-      overscan_insets_in_dip_(0, 0, 0, 0),
       zoom_factor_(1.f),
       refresh_rate_(60.f),
       is_interlaced_(false),
@@ -394,7 +399,7 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   // Update the overscan_insets_in_dip_ either if the inset should be
   // cleared, or has non empty insts.
   if (native_info.clear_overscan_insets())
-    overscan_insets_in_dip_.Set(0, 0, 0, 0);
+    overscan_insets_in_dip_ = gfx::Insets();
   else if (!native_info.overscan_insets_in_dip_.IsEmpty())
     overscan_insets_in_dip_ = native_info.overscan_insets_in_dip_;
 
@@ -435,7 +440,7 @@ void ManagedDisplayInfo::UpdateDisplaySize() {
     gfx::Insets insets_in_pixel = GetOverscanInsetsInPixel();
     size_in_pixel_.Enlarge(-insets_in_pixel.width(), -insets_in_pixel.height());
   } else {
-    overscan_insets_in_dip_.Set(0, 0, 0, 0);
+    overscan_insets_in_dip_ = gfx::Insets();
   }
 
   if (GetActiveRotation() == Display::ROTATE_90 ||

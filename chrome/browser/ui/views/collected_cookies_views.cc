@@ -241,8 +241,8 @@ class InfobarView : public views::View {
   METADATA_HEADER(InfobarView);
   InfobarView() {
     info_image_ = AddChildView(std::make_unique<views::ImageView>());
-    info_image_->SetImage(gfx::CreateVectorIcon(vector_icons::kInfoOutlineIcon,
-                                                16, gfx::kChromeIconGrey));
+    info_image_->SetImage(ui::ImageModel::FromVectorIcon(
+        vector_icons::kInfoOutlineIcon, ui::kColorIcon, 16));
     label_ = AddChildView(std::make_unique<views::Label>());
 
     const int vertical_distance =
@@ -385,13 +385,13 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetInteriorMargin(
-          gfx::Insets(provider->GetDistanceMetric(
-                          views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT),
-                      0,
-                      provider->GetDistanceMetric(
-                          views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
-                      0));
+      .SetInteriorMargin(gfx::Insets::TLBR(
+          provider->GetDistanceMetric(
+              views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT),
+          0,
+          provider->GetDistanceMetric(
+              views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
+          0));
 
   SetAcceptCallback(base::BindOnce(&CollectedCookiesViews::OnDialogClosed,
                                    base::Unretained(this)));

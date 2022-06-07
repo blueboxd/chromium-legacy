@@ -25,6 +25,7 @@ class PlatformSensorFusionAlgorithm {
   virtual ~PlatformSensorFusionAlgorithm();
 
   void set_threshold(double threshold) { threshold_ = threshold; }
+  double threshold() const { return threshold_; }
 
   void set_fusion_sensor(PlatformSensorFusion* fusion_sensor) {
     fusion_sensor_ = fusion_sensor;
@@ -35,9 +36,6 @@ class PlatformSensorFusionAlgorithm {
   }
 
   mojom::SensorType fused_type() const { return fused_type_; }
-
-  bool IsReadingSignificantlyDifferent(const SensorReading& reading1,
-                                       const SensorReading& reading2);
 
   bool GetFusedData(mojom::SensorType which_sensor_changed,
                     SensorReading* fused_reading);

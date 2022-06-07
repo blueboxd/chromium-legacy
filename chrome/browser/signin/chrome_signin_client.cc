@@ -79,6 +79,9 @@
 namespace {
 
 // List of sources for which sign out is always allowed.
+// TODO(crbug.com/1161966): core product logic should not rely on metric
+// sources/callsites.  Consider removing such logic, potentially as part of
+// introducing a cross-platform SigninManager.
 signin_metrics::ProfileSignout kAlwaysAllowedSignoutSources[] = {
     // Allowed, because data has not been synced yet.
     signin_metrics::ProfileSignout::ABORT_SIGNIN,
@@ -88,7 +91,10 @@ signin_metrics::ProfileSignout kAlwaysAllowedSignoutSources[] = {
     // Allowed to force finish the account id migration.
     signin_metrics::ACCOUNT_ID_MIGRATION,
     // Allowed, for tests.
-    signin_metrics::ProfileSignout::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST};
+    signin_metrics::ProfileSignout::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
+    // Allowed, because access to this entry point is controlled to only be
+    // enabled if the user may turn off sync.
+    signin_metrics::ProfileSignout::USER_CLICKED_REVOKE_SYNC_CONSENT_SETTINGS};
 
 SigninClient::SignoutDecision IsSignoutAllowed(
     Profile* profile,
@@ -328,6 +334,18 @@ absl::optional<bool> ChromeSigninClient::IsInitialPrimaryAccountChild() const {
       chromeos::LacrosService::Get()->init_params()->session_type ==
       crosapi::mojom::SessionType::kChildSession;
   return is_child_session;
+}
+
+void ChromeSigninClient::RemoveAllAccounts() {
+  if (GetInitialPrimaryAccount().has_value()) {
+    DLOG(ERROR) << "It is not allowed to remove the initial primary account.";
+    return;
+  }
+
+  DCHECK(!profile_->IsMainProfile());
+  g_browser_process->profile_manager()
+      ->GetAccountProfileMapper()
+      ->RemoveAllAccounts(profile_->GetPath());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 

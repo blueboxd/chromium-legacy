@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
-<translation id="1096883626080133124">Faça mais com um Google Chrome simples, seguro e mais rápido do que nunca</translation>
 <translation id="1143896152279775643">A palavra-passe será guardada no Gestor de palavras-passe da Google para <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Ajudar a melhorar as funcionalidades e o desempenho do Chrome</translation>
 <translation id="1479202195792305274">O Chrome pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Utilizar o Chrome em todas as plataformas</translation>
 <translation id="3522659714780527202">Para ver os seus separadores onde quer que esteja a utilizar o Chrome, ative a sincronização.</translation>
 <translation id="3533694711092285624">Não existem palavras-passe guardadas. O Chrome consegue verificar as suas palavras-passe quando as guarda.</translation>
-<translation id="3634910711516114487">Para tirar o máximo partido do Chrome, inicie sessão no mesmo com a sua Conta Google</translation>
 <translation id="3655656110921623717">Isto significa que o Chrome irá pedir sempre o site para dispositivos móveis.</translation>
 <translation id="3706101708757577809">Agora, pode utilizar o Chrome sempre que tocar em links de mensagens, documentos e outras apps.</translation>
 <translation id="3720541637541300822">Bloquear os separadores de navegação anónima quando fecha o Chrome</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">A sua palavra-passe foi exposta numa violação de dados. O Gestor de palavras-passe da Google recomenda que a altere agora.</translation>
 <translation id="6822673484890854830">O Chrome não conseguiu verificar todas as palavras-passe. Tente novamente mais tarde.</translation>
 <translation id="6964931465519938134">Agora, pode utilizar o Chrome sempre que tocar em links de mensagens, documentos e outras apps.</translation>
-<translation id="7046845777663074840">Quando a opção está ativada:
-<ph name="BEGIN_INDENT" />  • Ajude a melhorar o Chrome para as pessoas que o utilizam de forma semelhante à sua.<ph name="END_INDENT" />
-
-Aspetos a considerar:
-<ph name="BEGIN_INDENT" />  • São enviadas à Google informações sobre a sua utilização do Chrome, mas estas não são associadas a si.
-
-  • Se o Chrome falhar, os detalhes sobre a falha podem incluir algumas informações pessoais.
-
-  • Se ativar a sincronização, as métricas também podem incluir informações sobre os URLs que visita.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Personalize o Chrome</translation>
 <translation id="7124339256045485976">Mantenha o Chrome atualizado.</translation>
 <translation id="7161390184744336561">O Google Chrome está desatualizado.</translation>
 <translation id="7165736900384873061">Começar a utilizar o leitor de QR do Google Chrome</translation>
 <translation id="7172660552945675509">Sugestão: <ph name="BEGIN_LINK" />mova o Chrome para a Dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">O Chrome utiliza o Face ID para assegurar o acesso autorizado às suas palavras-passe.</translation>
+<translation id="7187993566681480880">Mantém a sua segurança no Chrome e pode ser utilizada para melhorar a sua segurança noutras apps Google quando tem sessão iniciada.</translation>
 <translation id="72119412072970160">Pode utilizar as palavras-passe que guardou no Gestor de palavras-passe da Google noutras apps no seu iPad.</translation>
 <translation id="7261678641327190792">O Chrome não consegue verificar as suas palavras-passe.</translation>
 <translation id="7272930098487145294">Para guardar imagens, toque em Definições para permitir que o Chrome as adicione às suas fotos.</translation>
@@ -110,6 +100,7 @@ Aspetos a considerar:
 <translation id="766361182512894255">A sua palavra-passe foi exposta numa violação de dados. O Chrome recomenda a alteração da palavra-passe agora.</translation>
 <translation id="7693590760643069321">Agora, pode utilizar o Chrome sempre que tocar em links de mensagens, documentos e outras apps.</translation>
 <translation id="7698568245838009292">O Chrome pretende aceder à câmara</translation>
+<translation id="7780154209050837198">Para tirar o máximo partido do Chrome, inicie sessão no mesmo com a sua Conta Google.</translation>
 <translation id="7855730255114109580">O Google Chrome está atualizado</translation>
 <translation id="8022947259858476807">Utilize o Chrome por predefinição para abrir links, pesquisar a partir de widgets e preencher automaticamente palavras-passe noutras apps</translation>
 <translation id="8160472928944011082">Não é possível atualizar o Chrome.</translation>

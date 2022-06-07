@@ -17,6 +17,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_base.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/apps/app_service/publisher_host.h"
+#include "chrome/browser/apps/app_service/subscriber_crosapi.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
@@ -74,10 +75,19 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   apps::BrowserAppInstanceTracker* BrowserAppInstanceTracker();
   apps::BrowserAppInstanceRegistry* BrowserAppInstanceRegistry();
 
+  // Registers `crosapi_subscriber_`.
+  void RegisterCrosApiSubScriber(SubscriberCrosapi* subscriber);
+
   // apps::AppServiceProxyBase overrides:
   void Uninstall(const std::string& app_id,
                  apps::mojom::UninstallSource uninstall_source,
                  gfx::NativeWindow parent_window) override;
+  void OnApps(std::vector<AppPtr> deltas,
+              AppType app_type,
+              bool should_notify_initialized) override;
+  void OnApps(std::vector<apps::mojom::AppPtr> deltas,
+              apps::mojom::AppType app_type,
+              bool should_notify_initialized) override;
 
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
   // is the time limit setting for the app, which is shown in the pause app
@@ -202,6 +212,12 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void OnInstanceRegistryWillBeDestroyed(
       apps::InstanceRegistry* cache) override;
 
+  // Checks if all instance IDs correspond to existing windows.
+  bool CanRunLaunchCallback(
+      const std::vector<base::UnguessableToken>& instance_ids);
+
+  SubscriberCrosapi* crosapi_subscriber_ = nullptr;
+
   std::unique_ptr<PublisherHost> publisher_host_;
 
   bool arc_is_registered_ = false;
@@ -235,10 +251,12 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                           apps::InstanceRegistry::Observer>
       instance_registry_observer_{this};
 
-  // A map to record the launch callbacks for an app instance. Note it is
-  // possible to have multiple launches to launch the same app instance for
-  // web apps, so we record a list of launch callbacks for each instance.
-  std::map<base::UnguessableToken, std::vector<LaunchCallback>> callback_list_;
+  // A list to record outstanding launch callbacks. When the first member
+  // returns true, the second member should be run and the pair can be removed
+  // from the outstanding callback queue.
+  std::list<std::pair<base::RepeatingCallback<bool(void)>, base::OnceClosure>>
+      callback_list_;
+
   base::WeakPtrFactory<AppServiceProxyAsh> weak_ptr_factory_{this};
 };
 

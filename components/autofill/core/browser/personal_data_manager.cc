@@ -126,8 +126,8 @@ bool FindByContents(const C& container, const T& needle) {
 
 // Receives the loaded profiles from the web data service and stores them in
 // |*dest|. The pending handle is the address of the pending handle
-// corresponding to this request type. This function is used to save bShouldoth
-// server and local profiles and credit cards.
+// corresponding to this request type. This function is used to save both server
+// and local profiles and credit cards.
 template <typename ValueType>
 void ReceiveLoadedDbValues(WebDataServiceBase::Handle h,
                            WDTypedResult* result,
@@ -1103,12 +1103,6 @@ std::vector<CreditCard*> PersonalDataManager::GetServerCreditCards() const {
 
   result.reserve(server_credit_cards_.size());
   for (const auto& card : server_credit_cards_) {
-    // Do not add Google issued credit card if experiment is disabled.
-    if (card.get()->IsGoogleIssuedCard() &&
-        !base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableGoogleIssuedCard)) {
-      continue;
-    }
     result.push_back(card.get());
   }
   return result;
@@ -1122,12 +1116,6 @@ std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
     result.push_back(card.get());
   if (IsAutofillWalletImportEnabled()) {
     for (const auto& card : server_credit_cards_) {
-      // Do not add Google issued credit card if experiment is disabled.
-      if (card.get()->IsGoogleIssuedCard() &&
-          !base::FeatureList::IsEnabled(
-              autofill::features::kAutofillEnableGoogleIssuedCard)) {
-        continue;
-      }
       result.push_back(card.get());
     }
   }
@@ -2236,8 +2224,8 @@ bool PersonalDataManager::ProfileChangesAreOngoing(const std::string& guid) {
 }
 
 bool PersonalDataManager::ProfileChangesAreOngoing() {
-  for (const auto& task : ongoing_profile_changes_) {
-    if (ProfileChangesAreOngoing(task.first)) {
+  for (const auto& [guid, change] : ongoing_profile_changes_) {
+    if (ProfileChangesAreOngoing(guid)) {
       return true;
     }
   }

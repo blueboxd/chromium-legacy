@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="1096883626080133124">Realiza más tareas con una versión de Google Chrome más simple, segura y rápida que nunca</translation>
 <translation id="1143896152279775643">La contraseña se guardará en el Administrador de contraseñas de Google de <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Ayuda a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="1479202195792305274">Chrome puede revisar las contraseñas solo cuando accedes con tu Cuenta de Google.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Usar Chrome en todas partes</translation>
 <translation id="3522659714780527202">Para ver tus pestañas donde sea que uses Chrome, activa la sincronización</translation>
 <translation id="3533694711092285624">No hay contraseñas guardadas. Chrome puede revisar las contraseñas cuando las guardas.</translation>
-<translation id="3634910711516114487">Para aprovechar Chrome al máximo, accede al navegador con tu Cuenta de Google.</translation>
 <translation id="3655656110921623717">Esto significa que Chrome solicitará el sitio móvil cada vez.</translation>
 <translation id="3706101708757577809">Ahora puedes usar Chrome cada vez que presionas vínculos que aparecen en mensajes, documentos u otras apps.</translation>
 <translation id="3720541637541300822">Bloquear las pestañas de incógnito cuando cierras Chrome</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Tu contraseña quedó expuesta en una violación de la seguridad de los datos. El Administrador de contraseñas de Google te recomienda cambiarla ahora.</translation>
 <translation id="6822673484890854830">Chrome no pudo verificar todas las contraseñas. Vuelve a intentarlo más tarde.</translation>
 <translation id="6964931465519938134">Ahora puedes usar Chrome cada vez que presionas vínculos que aparecen en mensajes, documentos u otras apps.</translation>
-<translation id="7046845777663074840">Cuando se activa:
-<ph name="BEGIN_INDENT" />  • Ayuda a mejorar Chrome para las personas que lo usan de la misma forma que tú.<ph name="END_INDENT" />
-
-Aspectos para tener en cuenta:
-<ph name="BEGIN_INDENT" />  • Se envía información sobre tu uso de Chrome a Google, pero no está vinculada a ti.
-
-  • Si Chrome falla, los detalles sobre lo ocurrido pueden incluir información personal.
-
-  • Si desactivas la sincronización, las métricas también pueden incluir información sobre las URLs que visitas.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Personaliza Chrome a tu medida</translation>
 <translation id="7124339256045485976">Mantén Chrome actualizado</translation>
 <translation id="7161390184744336561">Google Chrome está desactualizado</translation>
 <translation id="7165736900384873061">Usar el escáner QR en Google Chrome</translation>
 <translation id="7172660552945675509">Sugerencia: <ph name="BEGIN_LINK" />Lleva Chrome a tu Dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome usa Face ID para garantizar el acceso autorizado a tus contraseñas.</translation>
+<translation id="7187993566681480880">Te protege en Chrome y puede usarse para mejorar tu seguridad en otras apps de Google cuando accedes a tu cuenta.</translation>
 <translation id="72119412072970160">Puedes usar las contraseñas que guardaste en el Administrador de contraseñas de Google en otras apps de tu iPad.</translation>
 <translation id="7261678641327190792">Chrome no puede revisar las contraseñas</translation>
 <translation id="7272930098487145294">Para guardar imágenes, presiona en la Configuración a fin de permitir que Chrome agregue tus fotos</translation>
@@ -110,6 +100,7 @@ Aspectos para tener en cuenta:
 <translation id="766361182512894255">Tu contraseña quedó expuesta en una violación de la seguridad de los datos. Chrome te recomienda cambiarla ahora.</translation>
 <translation id="7693590760643069321">Ahora puedes usar Chrome cada vez que presionas vínculos que aparecen en mensajes, documentos u otras apps.</translation>
 <translation id="7698568245838009292">Chrome quiere acceder a la cámara</translation>
+<translation id="7780154209050837198">Para aprovechar Chrome al máximo, accede al navegador con tu Cuenta de Google.</translation>
 <translation id="7855730255114109580">Google Chrome está actualizado</translation>
 <translation id="8022947259858476807">Usa Chrome como tu navegador predeterminado para abrir vínculos, realizar búsquedas desde widgets y autocompletar contraseñas en otras apps</translation>
 <translation id="8160472928944011082">No se puede actualizar Chrome</translation>

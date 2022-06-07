@@ -16,6 +16,7 @@
 #include "ash/components/arc/mojom/file_system.mojom.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/file_system/watcher_manager.h"
@@ -84,10 +85,10 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
     // Content URL of a file.
     std::string url;
 
-    // The content of a file, which can be read by OpenFileToRead().
+    // The content of a file, which can be read by OpenFileSessionToRead().
     // When Seekable.NO is specified and OpenFileSessionToWrite() is called,
     // this |content| will be ignored and bytes written to FD from
-    // OpenFileSessionToWrite() will be read by OpenFileToRead().
+    // OpenFileSessionToWrite() will be read by OpenFileSessionToRead().
     std::string content;
 
     // The MIME type of a file.
@@ -346,13 +347,6 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                     MoveDocumentCallback callback) override;
   void Init(mojo::PendingRemote<mojom::FileSystemHost> host,
             InitCallback callback) override;
-  void DEPRECATED_OpenFileToRead(
-      const std::string& url,
-      DEPRECATED_OpenFileToReadCallback callback) override;
-  // TODO(b/220547241): Remove DEPRECATED function from file_system.mojom.
-  void DEPRECATED_OpenFileToWrite(
-      const std::string& url,
-      DEPRECATED_OpenFileToWriteCallback callback) override;
   void CloseFileSession(const std::string& url_id,
                         const std::string& error_message) override;
   void OpenFileSessionToWrite(const GURL& url,

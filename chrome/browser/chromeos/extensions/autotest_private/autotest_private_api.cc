@@ -56,7 +56,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -192,6 +191,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/compositor/throughput_tracker_host.h"
 #include "ui/display/display.h"
@@ -820,6 +820,10 @@ int GetMouseEventFlags(api::autotest_private::MouseButton button) {
       return ui::EF_RIGHT_MOUSE_BUTTON;
     case api::autotest_private::MOUSE_BUTTON_MIDDLE:
       return ui::EF_MIDDLE_MOUSE_BUTTON;
+    case api::autotest_private::MOUSE_BUTTON_BACK:
+      return ui::EF_BACK_MOUSE_BUTTON;
+    case api::autotest_private::MOUSE_BUTTON_FORWARD:
+      return ui::EF_FORWARD_MOUSE_BUTTON;
     default:
       NOTREACHED();
   }
@@ -1141,6 +1145,14 @@ class EventGenerator {
         }
         if (task->flags & ui::EF_RIGHT_MOUSE_BUTTON) {
           input_injector_->InjectMouseButton(ui::EF_RIGHT_MOUSE_BUTTON,
+                                             pressed);
+        }
+        if (task->flags & ui::EF_BACK_MOUSE_BUTTON) {
+          input_injector_->InjectMouseButton(ui::EF_BACK_MOUSE_BUTTON,
+                                             pressed);
+        }
+        if (task->flags & ui::EF_FORWARD_MOUSE_BUTTON) {
+          input_injector_->InjectMouseButton(ui::EF_FORWARD_MOUSE_BUTTON,
                                              pressed);
         }
         break;
@@ -1893,6 +1905,24 @@ AutotestPrivateIsLacrosPrimaryBrowserFunction::Run() {
   DVLOG(1) << "AutotestPrivateIsLacrosPrimaryBrowserFunction";
   return RespondNow(OneArgument(
       base::Value(crosapi::browser_util::IsLacrosPrimaryBrowser())));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetLacrosInfoFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetLacrosInfoFunction::~AutotestPrivateGetLacrosInfoFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetLacrosInfoFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetLacrosInfoFunction";
+  auto* browser_manager = crosapi::BrowserManager::Get();
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetBoolKey("isRunning", browser_manager->IsRunning());
+  result->SetStringKey("lacrosPath",
+                       browser_manager->lacros_path().MaybeAsASCII());
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -40,6 +40,6 @@ class SyncedBluetoothAddressTracker {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_SYNCED_BLUETOOTH_ADDRESS_TRACKER_H_

@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">Pokud chcete ukládat obrázky, klepněte na Nastavení a povolte prohlížeči Chromium přidávat obrázky do vašich fotek</translation>
 <translation id="1289216811211435351">Přepnout na Chromium</translation>
 <translation id="1361748954329991663">Prohlížeč Chromium je zastaralý. Pokud v obchodě <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> není k dispozici žádná aktualizace, je možné, že vaše zařízení již nové verze prohlížeče Chromium nepodporuje.</translation>
-<translation id="1370204544543370355">Pokud z prohlížeče Chromium chcete získat maximum, přihlaste se do něj pomocí účtu Google</translation>
 <translation id="1431818719585918472">Nechat prohlížeč Chromium zamykat vaše anonymní karty.</translation>
 <translation id="1472013873724362412">Váš účet v prohlížeči Chromium nefunguje. Kontaktujte administrátora domény nebo se přihlaste pomocí běžného účtu Google.</translation>
 <translation id="1507010443238049608">Pomozte zlepšit funkce a výkon prohlížeče Chromium</translation>
@@ -30,7 +29,6 @@
 <translation id="2426113998523353159">Vaše organizace vyžaduje, abyste se k používání prohlížeče Chromium přihlásili.</translation>
 <translation id="2450140762465183767">Nyní můžete Chromium použít pokaždé, když klepnete na odkazy ve zprávách, dokumentech a ostatních aplikacích.</translation>
 <translation id="2478931088402984578">Vyberte <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="2567507405773541360">S prohlížečem Chromium toho stihnete víc – je jednoduchý, bezpečný a rychlejší než kdy dřív</translation>
 <translation id="2590893390871230428">Synchronizovat data prohlížeče Chromium</translation>
 <translation id="2650312721222849884">Chcete-li mít své karty k dispozici všude, kde používáte Chromium, zapněte synchronizaci</translation>
 <translation id="2684230048001240293">Nastavte si Chromium jako výchozí prohlížeč a karty, hesla a platební údaje se budou synchronizovat na všechna vaše zařízení</translation>
@@ -42,6 +40,7 @@
 <translation id="3256316712990552818">Zkopírováno do prohlížeče Chromium</translation>
 <translation id="3344973607274501920">Chromiu se nepodařilo zkontrolovat hesla. Zkuste zkontrolovat připojení k internetu.</translation>
 <translation id="3472200483164753384">V Chromium Canary není podporováno</translation>
+<translation id="3567399274263440288">Pokud z prohlížeče Chromium chcete získat maximum, přihlaste se do něj pomocí účtu Google.</translation>
 <translation id="3639997914391704523">Když se přihlásíte pomocí účtu Google, může vám Chromium kontrolovat hesla.</translation>
 <translation id="3650632991272923014">Uživatel <ph name="USER_EMAIL1" /> používal Chromium a ponechal v tomto zařízení záložky, hesla a další nastavení.</translation>
 <translation id="3805899903892079518">Chromium nemá přístup k vašim fotkám nebo videím. Povolte přístup v systému iOS v Nastavení &gt; Soukromí &gt; Fotky.</translation>
@@ -55,15 +54,6 @@
 <translation id="4828317641996116749">Chromiu se nepodařilo zkontrolovat všechna hesla. Zkuste to později.</translation>
 <translation id="4985291216379576555">Chrome nemůže vyhledat dostupné aktualizace, protože jste offline</translation>
 <translation id="4999538639245140991">Protože se odhlašujete z účtu spravovaného doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaše data prohlížeče Chromium z tohoto zařízení budou smazána. V účtu Google vám zůstanou.</translation>
-<translation id="5039881550736388123">Když je tato funkce zapnutá:
-<ph name="BEGIN_INDENT" />  • Pomáháte s vylepšováním prohlížeče Chromium pro lidi, kteří jej používají stejně jako vy.<ph name="END_INDENT" />
-
-Co je třeba zvážit:
-<ph name="BEGIN_INDENT" />  • Informace o vašem používání prohlížeče Chromium se odesílají do Googlu, ale nejsou spojeny s vámi.
-
-  • Pokud Chromium spadne, podrobnosti o selhání mohou zahrnovat některé osobní údaje.
-
-  • Pokud zapnete synchronizaci, mohou metriky zahrnovat také informace o navštívených adresách URL.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Přihlásit se do prohlížeče Chromium</translation>
 <translation id="5224391634244552924">Nemáte žádná uložená hesla. Chromium může hesla zkontrolovat, pouze když si je uložíte.</translation>
 <translation id="5308226104666789935">Chromium nemůže vyhledat dostupné aktualizace</translation>

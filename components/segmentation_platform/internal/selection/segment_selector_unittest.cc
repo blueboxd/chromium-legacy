@@ -308,7 +308,7 @@ TEST_F(SegmentSelectorTest,
   // Construct a segment selector. It should read result from last session.
   segment_selector_ = std::make_unique<SegmentSelectorImpl>(
       segment_database_.get(), &signal_storage_config_, prefs_.get(), &config_,
-      &clock_, PlatformOptions::CreateDefault(), nullptr);
+      &clock_, PlatformOptions::CreateDefault(), default_manager_.get());
   segment_selector_->OnPlatformInitialized(nullptr);
 
   SegmentSelectionResult result;

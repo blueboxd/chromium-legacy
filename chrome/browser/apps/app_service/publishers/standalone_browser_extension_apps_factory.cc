@@ -8,43 +8,92 @@
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 
 namespace apps {
 
+/******** StandaloneBrowserExtensionAppsFactoryForApp ********/
+
 // static
 StandaloneBrowserExtensionApps*
-StandaloneBrowserExtensionAppsFactory::GetForProfile(Profile* profile) {
+StandaloneBrowserExtensionAppsFactoryForApp::GetForProfile(Profile* profile) {
   return static_cast<StandaloneBrowserExtensionApps*>(
-      StandaloneBrowserExtensionAppsFactory::GetInstance()
+      StandaloneBrowserExtensionAppsFactoryForApp::GetInstance()
           ->GetServiceForBrowserContext(profile, true /* create */));
 }
 
 // static
-StandaloneBrowserExtensionAppsFactory*
-StandaloneBrowserExtensionAppsFactory::GetInstance() {
-  return base::Singleton<StandaloneBrowserExtensionAppsFactory>::get();
+StandaloneBrowserExtensionAppsFactoryForApp*
+StandaloneBrowserExtensionAppsFactoryForApp::GetInstance() {
+  return base::Singleton<StandaloneBrowserExtensionAppsFactoryForApp>::get();
 }
 
 // static
-void StandaloneBrowserExtensionAppsFactory::ShutDownForTesting(
+void StandaloneBrowserExtensionAppsFactoryForApp::ShutDownForTesting(
     content::BrowserContext* context) {
   auto* factory = GetInstance();
   factory->BrowserContextShutdown(context);
   factory->BrowserContextDestroyed(context);
 }
 
-StandaloneBrowserExtensionAppsFactory::StandaloneBrowserExtensionAppsFactory()
+StandaloneBrowserExtensionAppsFactoryForApp::
+    StandaloneBrowserExtensionAppsFactoryForApp()
     : BrowserContextKeyedServiceFactory(
-          "StandaloneBrowserExtensionApps",
+          "StandaloneBrowserExtensionAppsForApp",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(apps::AppServiceProxyFactory::GetInstance());
 }
 
-KeyedService* StandaloneBrowserExtensionAppsFactory::BuildServiceInstanceFor(
+KeyedService*
+StandaloneBrowserExtensionAppsFactoryForApp::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new StandaloneBrowserExtensionApps(
       AppServiceProxyFactory::GetForProfile(
-          Profile::FromBrowserContext(context)));
+          Profile::FromBrowserContext(context)),
+      AppType::kStandaloneBrowserChromeApp);
+}
+
+/******** StandaloneBrowserExtensionAppsFactoryForExtension ********/
+
+// static
+StandaloneBrowserExtensionApps*
+StandaloneBrowserExtensionAppsFactoryForExtension::GetForProfile(
+    Profile* profile) {
+  return static_cast<StandaloneBrowserExtensionApps*>(
+      StandaloneBrowserExtensionAppsFactoryForExtension::GetInstance()
+          ->GetServiceForBrowserContext(profile, true /* create */));
+}
+
+// static
+StandaloneBrowserExtensionAppsFactoryForExtension*
+StandaloneBrowserExtensionAppsFactoryForExtension::GetInstance() {
+  return base::Singleton<
+      StandaloneBrowserExtensionAppsFactoryForExtension>::get();
+}
+
+// static
+void StandaloneBrowserExtensionAppsFactoryForExtension::ShutDownForTesting(
+    content::BrowserContext* context) {
+  auto* factory = GetInstance();
+  factory->BrowserContextShutdown(context);
+  factory->BrowserContextDestroyed(context);
+}
+
+StandaloneBrowserExtensionAppsFactoryForExtension::
+    StandaloneBrowserExtensionAppsFactoryForExtension()
+    : BrowserContextKeyedServiceFactory(
+          "StandaloneBrowserExtensionAppsForExtension",
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(apps::AppServiceProxyFactory::GetInstance());
+}
+
+KeyedService*
+StandaloneBrowserExtensionAppsFactoryForExtension::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return new StandaloneBrowserExtensionApps(
+      AppServiceProxyFactory::GetForProfile(
+          Profile::FromBrowserContext(context)),
+      AppType::kStandaloneBrowserExtension);
 }
 
 }  // namespace apps

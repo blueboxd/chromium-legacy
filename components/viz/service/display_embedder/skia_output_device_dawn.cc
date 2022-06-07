@@ -8,6 +8,7 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "components/viz/common/gpu/dawn_context_provider.h"
 #include "third_party/dawn/include/dawn/native/D3D12Backend.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -63,15 +64,16 @@ gpu::SurfaceHandle SkiaOutputDeviceDawn::GetChildSurfaceHandle() const {
   return child_window_.window();
 }
 
-bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
-                                   float device_scale_factor,
-                                   const gfx::ColorSpace& color_space,
-                                   gfx::BufferFormat format,
-                                   gfx::OverlayTransform transform) {
+bool SkiaOutputDeviceDawn::Reshape(
+    const SkSurfaceCharacterization& characterization,
+    const gfx::ColorSpace& color_space,
+    float device_scale_factor,
+    gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 
-  size_ = size;
-  sk_color_space_ = color_space.ToSkColorSpace();
+  size_ = gfx::SkISizeToSize(characterization.dimensions());
+  sk_color_space_ = characterization.refColorSpace();
+  sample_count_ = characterization.sampleCount();
 
   CreateSwapChainImplementation();
   wgpu::SwapChainDescriptor desc;
@@ -112,15 +114,13 @@ void SkiaOutputDeviceDawn::SwapBuffers(BufferPresentedCallback feedback,
 }
 
 SkSurface* SkiaOutputDeviceDawn::BeginPaint(
-    bool allocate_frame_buffer,
     std::vector<GrBackendSemaphore>* end_semaphores) {
-  DCHECK(!allocate_frame_buffer);
   GrDawnRenderTargetInfo info;
   info.fTextureView = swap_chain_.GetCurrentTextureView();
   info.fFormat = kSwapChainFormat;
   info.fLevelCount = 1;
-  GrBackendRenderTarget backend_target(
-      size_.width(), size_.height(), /*sampleCnt=*/0, /*stencilBits=*/0, info);
+  GrBackendRenderTarget backend_target(size_.width(), size_.height(),
+                                       sample_count_, /*stencilBits=*/0, info);
   DCHECK(backend_target.isValid());
   SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(

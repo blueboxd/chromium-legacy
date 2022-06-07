@@ -147,7 +147,7 @@ class MODULES_EXPORT UserMediaProcessor
   class RequestInfo;
   using LocalStreamSources = HeapVector<Member<MediaStreamSource>>;
 
-  void OnStreamGenerated(int request_id,
+  void OnStreamGenerated(int32_t request_id,
                          blink::mojom::blink::MediaStreamRequestResult result,
                          const String& label,
                          const Vector<blink::MediaStreamDevice>& audio_devices,
@@ -163,17 +163,17 @@ class MODULES_EXPORT UserMediaProcessor
   gfx::Size GetScreenSize();
 
   void OnStreamGenerationFailed(
-      int request_id,
+      int32_t request_id,
       blink::mojom::blink::MediaStreamRequestResult result);
 
-  bool IsCurrentRequestInfo(int request_id) const;
+  bool IsCurrentRequestInfo(int32_t request_id) const;
   bool IsCurrentRequestInfo(UserMediaRequest* user_media_request) const;
   void DelayedGetUserMediaRequestSucceeded(
-      int request_id,
+      int32_t request_id,
       MediaStreamDescriptor* descriptor,
       UserMediaRequest* user_media_request);
   void DelayedGetUserMediaRequestFailed(
-      int request_id,
+      int32_t request_id,
       UserMediaRequest* user_media_request,
       blink::mojom::blink::MediaStreamRequestResult result,
       const String& constraint_name);
@@ -242,10 +242,9 @@ class MODULES_EXPORT UserMediaProcessor
       const LocalStreamSources& sources,
       const blink::MediaStreamDevice& device) const;
 
-  // Looks up a local source and returns it if found. If not found, prepares
-  // a new MediaStreamSource with a nullptr extraData pointer.
-  MediaStreamSource* FindOrInitializeSourceObject(
-      const MediaStreamDevice& device);
+  MediaStreamSource* InitializeSourceObject(
+      const MediaStreamDevice& device,
+      std::unique_ptr<WebPlatformMediaStreamSource> platform_source);
 
   // Returns true if we do find and remove the |source|.
   // Otherwise returns false.

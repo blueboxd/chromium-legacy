@@ -104,10 +104,8 @@ class PLATFORM_EXPORT FloatRoundedRect {
     friend class FloatRoundedRect;
     void Scale(float factor);
     void Outset(const gfx::OutsetsF& outsets);
-
-    // Inflates the corners based on the algorithm in
-    // https://drafts.csswg.org/css-backgrounds-3/#shadow-shape.
     void OutsetForMarginOrShadow(float outset);
+    void OutsetForShapeMargin(float outset);
 
     gfx::SizeF top_left_;
     gfx::SizeF top_right_;
@@ -138,8 +136,6 @@ class PLATFORM_EXPORT FloatRoundedRect {
   void SetRadii(const Radii& radii) { radii_ = radii; }
 
   void Move(const gfx::Vector2dF& offset) { rect_.Offset(offset); }
-  // TODO(wangxianzhu): Consider merging this into Outset().
-  void InflateWithRadii(int size);
 
   // Inflates/shrinks the rounded rect by the specified amount on each side and
   // corner. Zero widths and heights of radii are kept zero so that sharp
@@ -161,8 +157,13 @@ class PLATFORM_EXPORT FloatRoundedRect {
   // (https://github.com/w3c/csswg-drafts/issues/7103).
   void OutsetForMarginOrShadow(float outset);
 
-  // Returns a quickly computed rect enclosed by the rounded rect.
-  gfx::RectF RadiusCenterRect() const;
+  // Inflates the rounded rect by the specified amount on each side and corner
+  // for shape-margin. |outset| must be non-negative. This is different from
+  // other outset methods in that it always expands by radial distance (always
+  // produces rounding) rather than following rules for sharp corner
+  // preservation and cubic reduction of the radius. See
+  // https://drafts.csswg.org/css-shapes/#shape-margin-property.
+  void OutsetForShapeMargin(float outset);
 
   constexpr gfx::RectF TopLeftCorner() const {
     return gfx::RectF(rect_.x(), rect_.y(), radii_.TopLeft().width(),

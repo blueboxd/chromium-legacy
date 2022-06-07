@@ -23,7 +23,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -936,6 +935,9 @@ URLLoader::~URLLoader() {
   TRACE_EVENT("loading", "URLLoader::~URLLoader",
               perfetto::TerminatingFlow::FromPointer(this));
   RecordBodyReadFromNetBeforePausedIfNeeded();
+  base::UmaHistogramBoolean(
+      "Security.PrivateNetworkAccess.MismatchedAddressSpacesDuringRequest",
+      has_connected_to_mismatched_ip_address_spaces_);
   if (keepalive_ && keepalive_statistics_recorder_) {
     keepalive_statistics_recorder_->OnLoadFinished(
         *factory_params_.top_frame_id, keepalive_request_size_);
@@ -958,6 +960,10 @@ void URLLoader::FollowRedirect(
   // Set seen_raw_request_headers_ to false in order to make sure this redirect
   // also calls the devtools observer.
   seen_raw_request_headers_ = false;
+
+  // Reset the response IP address space, so that we don't mistakenly compare
+  // it against the IP address space of the next connection's remote endpoint.
+  response_ip_address_space_ = absl::nullopt;
 
   // Removing headers can't make the set of pre-existing headers unsafe, but
   // adding headers can.
@@ -1042,15 +1048,33 @@ const mojom::ClientSecurityState* URLLoader::GetClientSecurityState() const {
 
 PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
     const net::TransportInfo& transport_info) {
-  response_ip_address_space_ = TransportInfoToIPAddressSpace(transport_info);
+  const mojom::IPAddressSpace transport_ip_address_space =
+      TransportInfoToIPAddressSpace(transport_info);
+
+  if (response_ip_address_space_.has_value() &&
+      transport_ip_address_space != *response_ip_address_space_) {
+    // Record this so we can increment a histogram later.
+    //
+    // NOTE(titouan): The above condition is already checked in
+    // `network::PrivateNetworkAccessCheck()`. It would be good to deduplicate
+    // this code.
+    has_connected_to_mismatched_ip_address_spaces_ = true;
+  }
 
   const mojom::ClientSecurityState* security_state = GetClientSecurityState();
 
   // Fully-qualify function name to disambiguate it, otherwise it resolves to
   // `URLLoader::PrivateNetworkAccessCheck()` and fails to compile.
   PrivateNetworkAccessCheckResult result = network::PrivateNetworkAccessCheck(
-      security_state, target_ip_address_space_, options_,
-      response_ip_address_space_);
+      security_state, target_ip_address_space_, response_ip_address_space_,
+      options_, transport_ip_address_space);
+
+  if (transport_info.type == net::TransportType::kCached) {
+    base::UmaHistogramEnumeration(
+        "Security.PrivateNetworkAccess.CachedResourceCheckResult", result);
+  }
+
+  response_ip_address_space_ = transport_ip_address_space;
 
   url_request_->net_log().AddEvent(
       net::NetLogEventType::PRIVATE_NETWORK_ACCESS_CHECK, [&] {
@@ -1064,7 +1088,7 @@ PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
                           IPAddressSpaceToStringPiece(client_address_space));
         dict.SetStringKey(
             "resource_address_space",
-            IPAddressSpaceToStringPiece(response_ip_address_space_));
+            IPAddressSpaceToStringPiece(transport_ip_address_space));
         dict.SetStringKey("result",
                           PrivateNetworkAccessCheckResultToStringPiece(result));
         return dict;
@@ -1090,7 +1114,7 @@ PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
   if (devtools_observer_) {
     devtools_observer_->OnPrivateNetworkRequest(
         devtools_request_id(), url_request_->url(), is_warning,
-        response_ip_address_space_, security_state->Clone());
+        transport_ip_address_space, security_state->Clone());
   }
 
   return result;
@@ -1106,20 +1130,26 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
 
   // Now that the request endpoint's address has been resolved, check if
   // this request should be blocked per Private Network Access.
+  PrivateNetworkAccessCheckResult result = PrivateNetworkAccessCheck(info);
   absl::optional<mojom::CorsError> cors_error =
-      PrivateNetworkAccessCheckResultToCorsError(
-          PrivateNetworkAccessCheck(info));
+      PrivateNetworkAccessCheckResultToCorsError(result);
+  DCHECK(response_ip_address_space_.has_value());
   if (cors_error.has_value()) {
     // Remember the CORS error so we can annotate the URLLoaderCompletionStatus
     // with it later, then fail the request with the same net error code as
     // other CORS errors.
     cors_error_status_ = CorsErrorStatus(*cors_error, target_ip_address_space_,
-                                         response_ip_address_space_);
+                                         *response_ip_address_space_);
+    if (result == PrivateNetworkAccessCheckResult::
+                      kBlockedByInconsistentIpAddressSpace ||
+        result ==
+            PrivateNetworkAccessCheckResult::kBlockedByTargetIpAddressSpace) {
+      return net::ERR_INCONSISTENT_IP_ADDRESS_SPACE;
+    }
     return net::ERR_FAILED;
   }
 
-  if (!accept_ch_frame_observer_ || info.accept_ch_frame.empty() ||
-      !base::FeatureList::IsEnabled(features::kAcceptCHFrame)) {
+  if (!accept_ch_frame_observer_ || info.accept_ch_frame.empty()) {
     return net::OK;
   }
 
@@ -1214,7 +1244,8 @@ mojom::URLResponseHeadPtr URLLoader::BuildResponseHead() const {
   // 13. Set response’s request-includes-credentials to includeCredentials.
   response->request_include_credentials = url_request_->allow_credentials();
 
-  response->response_address_space = response_ip_address_space_;
+  response->response_address_space =
+      response_ip_address_space_.value_or(mojom::IPAddressSpace::kUnknown);
 
   const mojom::ClientSecurityState* state = GetClientSecurityState();
   response->client_address_space =
@@ -1948,6 +1979,10 @@ void URLLoader::NotifyCompleted(int error_code) {
       net::NetErrorDetails details;
       url_request_->PopulateNetErrorDetails(&details);
       status.extended_error_code = details.quic_connection_error;
+    } else if (error_code == net::ERR_INCONSISTENT_IP_ADDRESS_SPACE) {
+      // The error code is only used internally, translate it into a CORS error.
+      DCHECK(cors_error_status_.has_value());
+      status.error_code = net::ERR_FAILED;
     }
     status.exists_in_cache = url_request_->response_info().was_cached;
     status.completion_time = base::TimeTicks::Now();
@@ -2183,7 +2218,8 @@ bool URLLoader::DispatchOnRawResponse() {
   emitted_devtools_raw_response_ = true;
   devtools_observer_->OnRawResponse(
       devtools_request_id().value(), url_request_->maybe_stored_cookies(),
-      std::move(header_array), raw_response_headers, response_ip_address_space_,
+      std::move(header_array), raw_response_headers,
+      response_ip_address_space_.value_or(mojom::IPAddressSpace::kUnknown),
       response_headers->response_code());
 
   return true;

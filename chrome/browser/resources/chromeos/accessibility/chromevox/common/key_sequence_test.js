@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['../../common/testing/accessibility_test_base.js']);
+
 /**
  * Test fixture.
  */
-ChromeVoxKeySequenceUnitTest = class extends testing.Test {
+ChromeVoxKeySequenceUnitTest = class extends AccessibilityTestBase {
   /**
    * Create mock event object.
    * @param {number} keyCode The event key code (i.e. 13 for Enter).
@@ -65,8 +67,9 @@ ChromeVoxKeySequenceUnitTest = class extends testing.Test {
 
   /** @override */
   setUp() {
+    super.setUp();
     // Set up mock ChromeVox modifier
-    ChromeVox.modKeyStr = 'Alt';
+    KeySequence.modKeyStr = 'Alt';
 
     // Use these mock events in the tests:
 
@@ -149,8 +152,8 @@ ChromeVoxKeySequenceUnitTest.prototype.extraLibraries = [
   '../../common/testing/assert_additions.js',
   '../../common/closure_shim.js',
   '../../common/key_code.js',
+  '../background/chromevox.js',
   '../testing/fake_dom.js',
-  '../common/chromevox.js',
   'key_sequence.js',
 ];
 
@@ -464,7 +467,7 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'Deserialize', function() {
 
 TEST_F(
     'ChromeVoxKeySequenceUnitTest', 'DeserializeAltShiftCvoxMod', function() {
-      ChromeVox.modKeyStr = 'Alt+Shift';
+      KeySequence.modKeyStr = 'Alt+Shift';
 
       // Build a key sequence that does not strip modifiers when deserializing.
       // This feature is important for sequences that contain part or all of the
@@ -488,7 +491,7 @@ TEST_F('ChromeVoxKeySequenceUnitTest', 'DeserializeSearchCvoxMod', function() {
   // runtime both contain the bare cvox modifier as a key code such as in the
   // case of the Search sticky key and Search cvox modifier. Stripping happens
   // by default for key events at runtime.
-  ChromeVox.modKeyStr = 'Search';
+  KeySequence.modKeyStr = 'Search';
 
   // First, assert that unstripped seqs imply various modifier fields get set.
   let stickySeq = KeySequence.deserialize({keys: {keyCode: [KeyCode.SEARCH]}});

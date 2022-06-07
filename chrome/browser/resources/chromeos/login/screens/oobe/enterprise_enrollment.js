@@ -49,6 +49,22 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
       },
 
       /**
+       * Type of license used for enrollment.
+       */
+      licenseType_: {
+        type: Number,
+        value: OobeTypes.LicenseType.ENTERPRISE,
+      },
+
+      /**
+       * Type of bottom buttons in the GAIA dialog.
+       */
+      gaiaDialogButtonsType_: {
+        type: String,
+        value: OobeTypes.GaiaDialogButtonsType.DEFAULT,
+      },
+
+      /**
        * Text on the error screen.
        */
       errorText_: {
@@ -119,6 +135,14 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
        */
       authFlow_: {
         type: Number,
+      },
+
+      /**
+       * Email for enrollment.
+       * @private
+       */
+      email_: {
+        type: String,
       },
 
       isMeet_: {
@@ -236,7 +260,7 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
       this.authView_.addContentScripts([{
         name: 'injectedTabHandler',
         matches: ['http://*/*', 'https://*/*'],
-        js: {code: INJECTED_WEBVIEW_SCRIPT},
+        js: {code: KEYBOARD_UTILS_FOR_INJECTION},
         run_at: 'document_start'
       }]);
     }
@@ -259,7 +283,8 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
     gaiaParams.enableGaiaActionButtons = true;
     this.authenticator_.load(
         cr.login.Authenticator.AuthMode.DEFAULT, gaiaParams);
-
+    if (data.gaia_buttons_type)
+      this.gaiaDialogButtonsType_ = data.gaia_buttons_type;
     this.isManualEnrollment_ = 'enrollment_mode' in data ?
         data.enrollment_mode === 'manual' :
         undefined;
@@ -423,6 +448,16 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
     chrome.send('oauthEnrollClose', [result]);
   }
 
+  onCancelKiosk_() {
+    this.doReload();
+    this.showStep(OobeTypes.EnrollmentStep.SIGNIN);
+  }
+
+  onEnrollKiosk_() {
+    chrome.send(
+        'oauthEnrollCompleteLogin', [this.email_, OobeTypes.LicenseType.KIOSK]);
+  }
+
   /**
    * Notifies chrome that enrollment have finished.
    */
@@ -448,7 +483,14 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
       this.showError(loadTimeData.getString('fatalEnrollmentError'), false);
       return;
     }
-    chrome.send('oauthEnrollCompleteLogin', [detail.email]);
+    if (this.licenseType_ == OobeTypes.LicenseType.ENTERPRISE) {
+      chrome.send(
+          'oauthEnrollCompleteLogin',
+          [detail.email, OobeTypes.LicenseType.ENTERPRISE]);
+    } else {
+      this.email_ = detail.email;
+      this.showStep(OobeTypes.EnrollmentStep.KIOSK_ENROLLMENT);
+    }
   }
 
   onReady() {
@@ -456,6 +498,10 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
       return;
     this.isCancelDisabled = false;
     chrome.send('frameLoadingCompleted');
+  }
+
+  onLicenseTypeSelected(e) {
+    this.licenseType_ = e.detail;
   }
 
   /**
@@ -515,6 +561,30 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
     } else {
       return 'oauthEnrollSkip';
     }
+  }
+
+  /**
+   * Return title for enrollment in progress screen.
+   * @param {string} licenseType
+   * @returns {string}
+   * @private
+   */
+  getWorkingTitleKey_(licenseType) {
+    if (licenseType == OobeTypes.LicenseType.ENTERPRISE)
+      return 'oauthEnrollScreenTitle';
+    return 'oauthEnrollKioskEnrollmentWorkingTitle';
+  }
+
+  /**
+   * Return title for success enrollment screen.
+   * @param {string} licenseType
+   * @returns {string}
+   * @private
+   */
+  getSuccessTitle_(locale, licenseType) {
+    if (licenseType == OobeTypes.LicenseType.ENTERPRISE)
+      return this.i18n('oauthEnrollSuccessTitle');
+    return this.i18n('oauthEnrollKioskEnrollmentSuccessTitle');
   }
 
   /**

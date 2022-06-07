@@ -18,11 +18,13 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -155,6 +157,49 @@ void DocumentTransitionStyleTracker::RemoveSharedElement(Element* element) {
   }
 
   pending_shared_element_tags_.erase(element);
+}
+
+void DocumentTransitionStyleTracker::AddSharedElementsFromCSS() {
+  DCHECK(document_ && document_->View());
+
+  // We need our paint layers, and z-order lists which is done during
+  // compositing inputs update.
+  document_->View()->UpdateLifecycleToCompositingInputsClean(
+      DocumentUpdateReason::kDocumentTransition);
+
+  AddSharedElementsFromCSSRecursive(
+      document_->GetLayoutView()->PaintingLayer());
+}
+
+void DocumentTransitionStyleTracker::AddSharedElementsFromCSSRecursive(
+    PaintLayer* root) {
+  // We want to call AddSharedElements in the order in which
+  // PaintLayerPaintOrderIterator would cause us to paint the elements.
+  // Specifically, parents are added before their children, and lower z-index
+  // children are added before higher z-index children. Given that, what we
+  // need to do is to first add `root`'s element, and then recurse using the
+  // PaintLayerPaintOrderIterator which will return values in the correct
+  // z-index order.
+  //
+  // Note that the order of calls to AddSharedElement determines the DOM order
+  // of pseudo-elements constructed to represent the shared elements, which by
+  // default will also represent the paint order of the pseudo-elements (unless
+  // changed by something like z-index on the pseudo-elements).
+  //
+  // TODO(vmpstr): If root object is the layout view, we shouldn't append it as
+  // a shared element. It's unlikely to work correctly here.
+  auto& root_object = root->GetLayoutObject();
+  auto& root_style = root_object.StyleRef();
+  if (root_style.PageTransitionTag()) {
+    DCHECK(root_object.GetNode()->IsElementNode());
+    AddSharedElement(DynamicTo<Element>(root_object.GetNode()),
+                     root_style.PageTransitionTag());
+  }
+
+  PaintLayerPaintOrderIterator child_iterator(root, kAllChildren);
+  while (auto* child = child_iterator.Next()) {
+    AddSharedElementsFromCSSRecursive(child);
+  }
 }
 
 bool DocumentTransitionStyleTracker::FlattenAndVerifyElements(
@@ -291,6 +336,7 @@ void DocumentTransitionStyleTracker::CaptureResolved() {
     element_data->target_element = nullptr;
     element_data->cached_border_box_size = element_data->border_box_size;
     element_data->cached_viewport_matrix = element_data->viewport_matrix;
+    element_data->cached_device_pixel_ratio = element_data->device_pixel_ratio;
     element_data->effect_node = nullptr;
   }
   root_effect_node_ = nullptr;
@@ -340,9 +386,19 @@ bool DocumentTransitionStyleTracker::Start() {
   }
 
   if (found_new_tags) {
-    VectorOf<AtomicString> new_tags;
-    new_tags.push_back(RootTag());
+    VectorOf<std::pair<AtomicString, int>> new_tag_pairs;
+    new_tag_pairs.push_back(std::make_pair(RootTag(), root_index));
     for (auto& [tag, data] : element_data_map_)
+      new_tag_pairs.push_back(std::make_pair(tag, data->element_index));
+
+    std::sort(new_tag_pairs.begin(), new_tag_pairs.end(),
+              [](const std::pair<AtomicString, int>& left,
+                 const std::pair<AtomicString, int>& right) {
+                return left.second < right.second;
+              });
+
+    VectorOf<AtomicString> new_tags;
+    for (auto& [tag, index] : new_tag_pairs)
       new_tags.push_back(tag);
 
     document_->GetStyleEngine().SetDocumentTransitionTags(new_tags);
@@ -367,13 +423,15 @@ void DocumentTransitionStyleTracker::Abort() {
 void DocumentTransitionStyleTracker::EndTransition() {
   state_ = State::kFinished;
 
+  // We need a style invalidation to remove the pseudo element tree. This needs
+  // to be done before we clear the data, since we need to invalidate the shared
+  // elements stored in `element_data_map_`.
+  InvalidateStyle();
+
   element_data_map_.clear();
   pending_shared_element_tags_.clear();
   set_element_sequence_id_ = 0;
   document_->GetStyleEngine().SetDocumentTransitionTags({});
-
-  // We need a style invalidation to remove the pseudo element tree.
-  InvalidateStyle();
 }
 
 void DocumentTransitionStyleTracker::UpdateElementIndicesAndSnapshotId(
@@ -436,10 +494,10 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
             document_->GetLayoutView()->GetLayoutSize(kIncludeScrollbars));
         snapshot_id = old_root_snapshot_id_;
       } else {
-        // If live data is tracking new elements then use the cached size for
+        // If live data is tracking new elements then use the cached data for
         // the pseudo element displaying snapshot of old element.
-        size = HasLiveNewContent() ? element_data->border_box_size
-                                   : element_data->cached_border_box_size;
+        bool use_cached_data = HasLiveNewContent();
+        size = element_data->GetIntrinsicSize(use_cached_data);
         snapshot_id = element_data->old_snapshot_id;
       }
       // Note that we say that this layer is not a live content
@@ -466,7 +524,8 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
             document_->GetLayoutView()->GetLayoutSize(kIncludeScrollbars));
         snapshot_id = new_root_snapshot_id_;
       } else {
-        size = element_data->border_box_size;
+        bool use_cached_data = false;
+        size = element_data->GetIntrinsicSize(use_cached_data);
         snapshot_id = element_data->new_snapshot_id;
       }
       auto* pseudo_element =
@@ -483,11 +542,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
   return nullptr;
 }
 
-void DocumentTransitionStyleTracker::RunPostLayoutSteps() {
-  // TODO(khushalsagar) : This callback needs to be switched to PostPrepaint or
-  // PostPaint since we need to paint the pseudo elements in the same order in
-  // which they appear in the DOM. See crbug.com/1275740.
-
+void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
   bool needs_style_invalidation = false;
 
   for (auto& entry : element_data_map_) {
@@ -512,7 +567,10 @@ void DocumentTransitionStyleTracker::RunPostLayoutSteps() {
       continue;
     }
 
-    const auto& viewport_matrix = layout_object->LocalToAbsoluteTransform();
+    float device_pixel_ratio = document_->DevicePixelRatio();
+    TransformationMatrix viewport_matrix =
+        layout_object->LocalToAbsoluteTransform();
+    viewport_matrix.Zoom(1.0 / device_pixel_ratio);
 
     // ResizeObserverEntry is created to reuse the logic for parsing object size
     // for different types of LayoutObjects.
@@ -527,12 +585,14 @@ void DocumentTransitionStyleTracker::RunPostLayoutSteps() {
                          LayoutUnit(entry_size->inlineSize()));
 
     if (viewport_matrix == element_data->viewport_matrix &&
-        border_box_size == element_data->border_box_size) {
+        border_box_size == element_data->border_box_size &&
+        device_pixel_ratio == element_data->device_pixel_ratio) {
       continue;
     }
 
     element_data->viewport_matrix = viewport_matrix;
     element_data->border_box_size = border_box_size;
+    element_data->device_pixel_ratio = device_pixel_ratio;
 
     PseudoId live_content_element = HasLiveNewContent()
                                         ? kPseudoIdPageTransitionIncomingImage
@@ -542,8 +602,10 @@ void DocumentTransitionStyleTracker::RunPostLayoutSteps() {
                 live_content_element, entry.key)) {
       // A pseudo element of type |tansition*content| must be created using
       // DocumentTransitionContentElement.
+      bool use_cached_data = false;
+      LayoutSize size = element_data->GetIntrinsicSize(use_cached_data);
       static_cast<DocumentTransitionContentElement*>(pseudo_element)
-          ->SetIntrinsicSize(border_box_size);
+          ->SetIntrinsicSize(size);
     }
 
     needs_style_invalidation = true;
@@ -814,6 +876,17 @@ void DocumentTransitionStyleTracker::Trace(Visitor* visitor) const {
 void DocumentTransitionStyleTracker::ElementData::Trace(
     Visitor* visitor) const {
   visitor->Trace(target_element);
+}
+
+LayoutSize DocumentTransitionStyleTracker::ElementData::GetIntrinsicSize(
+    bool use_cached_data) {
+  LayoutSize box_size =
+      use_cached_data ? cached_border_box_size : border_box_size;
+  float ratio =
+      use_cached_data ? cached_device_pixel_ratio : device_pixel_ratio;
+
+  box_size.Scale(ratio);
+  return box_size;
 }
 
 }  // namespace blink

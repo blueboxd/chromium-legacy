@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/browser_process.h"
@@ -20,10 +21,10 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId EnableDebuggingScreenView::kScreenId;
 
-EnableDebuggingScreenHandler::EnableDebuggingScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.EnableDebuggingScreen.userActed");
+EnableDebuggingScreenHandler::EnableDebuggingScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.EnableDebuggingScreen.userActed");
 }
 
 EnableDebuggingScreenHandler::~EnableDebuggingScreenHandler() {
@@ -32,22 +33,22 @@ EnableDebuggingScreenHandler::~EnableDebuggingScreenHandler() {
 }
 
 void EnableDebuggingScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
 
   DVLOG(1) << "Showing enable debugging screen.";
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void EnableDebuggingScreenHandler::Hide() {}
 
 void EnableDebuggingScreenHandler::SetDelegate(EnableDebuggingScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
-  if (page_is_ready())
-    Initialize();
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
+  if (IsJavascriptAllowed())
+    InitializeDeprecated();
 }
 
 void EnableDebuggingScreenHandler::DeclareLocalizedValues(
@@ -92,8 +93,8 @@ void EnableDebuggingScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDebuggingFeaturesRequested, false);
 }
 
-void EnableDebuggingScreenHandler::Initialize() {
-  if (!page_is_ready() || !screen_)
+void EnableDebuggingScreenHandler::InitializeDeprecated() {
+  if (!IsJavascriptAllowed() || !screen_)
     return;
 
   if (show_on_init_) {

@@ -158,6 +158,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       TextDirection inline_container_direction);
 
   void AddOutOfFlowFragmentainerDescendant(
+      const NGLogicalOOFNodeForFragmentation& descendant);
+  void AddOutOfFlowFragmentainerDescendant(
       const NGLogicalOutOfFlowPositionedNode& descendant);
 
   void AddOutOfFlowDescendant(
@@ -185,7 +187,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates);
 
   void SwapOutOfFlowFragmentainerDescendants(
-      HeapVector<NGLogicalOutOfFlowPositionedNode>* descendants);
+      HeapVector<NGLogicalOOFNodeForFragmentation>* descendants);
 
   void SwapMulticolsWithPendingOOFs(
       MulticolCollection* multicols_with_pending_oofs);
@@ -245,6 +247,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       const NGInlineContainer<LogicalOffset>* inline_container = nullptr,
       LayoutUnit containing_block_adjustment = LayoutUnit(),
       const NGContainingBlock<LogicalOffset>* fixedpos_containing_block =
+          nullptr,
+      const NGInlineContainer<LogicalOffset>* fixedpos_inline_container =
           nullptr,
       LogicalOffset additional_fixedpos_offset = LogicalOffset());
 
@@ -358,6 +362,13 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   void AddChildInternal(const NGPhysicalFragment*, const LogicalOffset&);
 
+  // Set the fixedpos inline container and containing block based on the current
+  // |box_fragment|.
+  void AdjustFixedposContainerInfo(
+      const NGPhysicalFragment* box_fragment,
+      NGInlineContainer<LogicalOffset>* fixedpos_inline_container,
+      const NGPhysicalFragment** fixedpos_containing_block_fragment) const;
+
   NGLayoutInputNode node_;
   const NGConstraintSpace* space_;
 
@@ -368,7 +379,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   absl::optional<int> lines_until_clamp_;
 
   HeapVector<NGLogicalOutOfFlowPositionedNode> oof_positioned_candidates_;
-  HeapVector<NGLogicalOutOfFlowPositionedNode>
+  HeapVector<NGLogicalOOFNodeForFragmentation>
       oof_positioned_fragmentainer_descendants_;
   HeapVector<NGLogicalOutOfFlowPositionedNode> oof_positioned_descendants_;
 

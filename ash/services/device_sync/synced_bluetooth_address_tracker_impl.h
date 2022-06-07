@@ -20,7 +20,7 @@ namespace device {
 class BluetoothAdapter;
 }  // namespace device
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -84,6 +84,6 @@ class SyncedBluetoothAddressTrackerImpl
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_SYNCED_BLUETOOTH_ADDRESS_TRACKER_IMPL_H_

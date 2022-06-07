@@ -30,6 +30,8 @@
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/flags_state.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/settings/about_flags.h"
@@ -47,7 +49,7 @@ enum class ChromeLabsSelectedLab {
   // kReadLaterSelected = 1,
   // kTabSearchSelected = 2,
   kTabScrollingSelected = 3,
-  kSidePanelSelected = 4,
+  // kSidePanelSelected = 4,
   // kLensRegionSearchSelected = 5,
   kWebUITabStripSelected = 6,
   kTabSearchMediaTabsSelected = 7,
@@ -75,8 +77,6 @@ void EmitToHistogram(const std::u16string& selected_lab_state,
   const auto get_enum = [](const std::string& internal_name) {
     if (internal_name == flag_descriptions::kScrollableTabStripFlagId)
       return ChromeLabsSelectedLab::kTabScrollingSelected;
-    if (internal_name == flag_descriptions::kSidePanelFlagId)
-      return ChromeLabsSelectedLab::kSidePanelSelected;
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && \
     (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH))
     if (internal_name == flag_descriptions::kWebUITabStripFlagId)
@@ -180,7 +180,13 @@ void ChromeLabsViewController::RestartToApplyFlags() {
       *flags_storage_, browser_->profile()->GetOriginalProfile()->GetPrefs())
       .UpdateSessionManager();
 #endif
-  chrome::AttemptRestart();
+  // During the restart process some situations may cause previously active
+  // bubbles to deactivate. Since the restart action itself is not binded to any
+  // state, run the restart asynchronously. See crbug.com/1310212 where
+  // deactivation of bubbles is caused by the modal for downloads in progress
+  // being shown.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&chrome::AttemptRestart));
 }
 
 void ChromeLabsViewController::SetRestartCallback() {

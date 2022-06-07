@@ -932,6 +932,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kContain ||
              value_id == CSSValueID::kCover || value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kScaleDown;
+    case CSSPropertyID::kObjectOverflow:
+      return value_id == CSSValueID::kClip || value_id == CSSValueID::kVisible;
     case CSSPropertyID::kOutlineStyle:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
              (value_id >= CSSValueID::kInset &&
@@ -1311,6 +1313,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kMathShift:
     case CSSPropertyID::kMathStyle:
     case CSSPropertyID::kObjectFit:
+    case CSSPropertyID::kObjectOverflow:
     case CSSPropertyID::kOutlineStyle:
     case CSSPropertyID::kOverflowAnchor:
     case CSSPropertyID::kOverflowBlock:
@@ -1412,8 +1415,7 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
         !EqualIgnoringASCIICase(string, "inherit") &&
         !EqualIgnoringASCIICase(string, "unset") &&
         !EqualIgnoringASCIICase(string, "revert") &&
-        (!RuntimeEnabledFeatures::CSSCascadeLayersEnabled() ||
-         !EqualIgnoringASCIICase(string, "revert-layer")))
+        !EqualIgnoringASCIICase(string, "revert-layer"))
       return nullptr;
 
     // Parse CSS-wide keyword shorthands using the CSSPropertyParser.
@@ -1438,8 +1440,7 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
     return cssvalue::CSSUnsetValue::Create();
   if (value_id == CSSValueID::kRevert)
     return cssvalue::CSSRevertValue::Create();
-  if (RuntimeEnabledFeatures::CSSCascadeLayersEnabled() &&
-      value_id == CSSValueID::kRevertLayer)
+  if (value_id == CSSValueID::kRevertLayer)
     return cssvalue::CSSRevertLayerValue::Create();
   if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(property_id, value_id,
                                                          parser_mode))
@@ -1487,8 +1488,14 @@ static bool ParseTransformRotateArgument(CharType*& pos,
   double number;
   if (!ParseSimpleAngle(pos, argument_length, unit, number))
     return false;
-  if (unit == CSSPrimitiveValue::UnitType::kNumber && number != 0.0)
-    return false;
+  if (unit == CSSPrimitiveValue::UnitType::kNumber) {
+    if (number != 0.0) {
+      return false;
+    } else {
+      // Matches ConsumeNumericLiteralAngle().
+      unit = CSSPrimitiveValue::UnitType::kDegrees;
+    }
+  }
   transform_value->Append(*CSSNumericLiteralValue::Create(number, unit));
   pos += argument_length + 1;
   return true;

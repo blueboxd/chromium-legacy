@@ -121,7 +121,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
         port = self.make_port()
         port.host.executive = MockExecutive(run_command_fn=run_command_fake)
         port.host.environ['HOME'] = '/home/user'
-        port.host.filesystem.files['/home/user/.Xauthority'] = ''
+        port.host.filesystem.write_text_file('/home/user/.Xauthority', '')
 
         # Set up the test run; the temporary home directory should be set up.
         port.setup_test_run()
@@ -139,10 +139,10 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
 
     def test_xvfb_flags(self):
         port = self.make_port()
-        port.default_child_processes = lambda: 60
+        port._xvfb_supports_maxclients = False
         self.assertEqual(port.xvfb_flags(),
                          ['-screen', '0', '1280x800x24', '-ac', '-dpi', '96'])
-        port.default_child_processes = lambda: 61
+        port._xvfb_supports_maxclients = True
         self.assertEqual(port.xvfb_flags(), [
             '-screen', '0', '1280x800x24', '-ac', '-dpi', '96', '-maxclients',
             '512'
@@ -195,7 +195,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             return 0
 
         port = self.make_port()
-        port.host.filesystem.files['/tmp/.X99-lock'] = ''
+        port.host.filesystem.write_text_file('/tmp/.X99-lock', '')
         port.host.executive = MockExecutive(run_command_fn=run_command_fake)
 
         self.assertIsNone(port.setup_test_run())

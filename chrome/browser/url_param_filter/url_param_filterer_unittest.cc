@@ -162,6 +162,81 @@ TEST_F(UrlParamFiltererTest, FilterUrlSourceAndDestinationBlocked) {
   ASSERT_EQ(result.filtered_param_count, 2);
 }
 
+TEST_F(UrlParamFiltererTest, FilterUrlSourceAndDestinationAsIPBlocked) {
+  GURL source = GURL{"https://127.0.0.1"};
+  GURL destination =
+      GURL{"https://123.0.0.1?plzblock=123&plzblock1=321&nochange=asdf"};
+  ClassificationMap source_classification_map =
+      CreateClassificationMapForTesting(
+          {{"127.0.0.1", {"plzblock"}}},
+          FilterClassification_SiteRole::FilterClassification_SiteRole_SOURCE);
+  ClassificationMap destination_classification_map =
+      CreateClassificationMapForTesting(
+          {{"123.0.0.1", {"plzblock1"}}},
+          FilterClassification_SiteRole::
+              FilterClassification_SiteRole_DESTINATION);
+
+  // Both source and destination have associated URL param filtering rules. Only
+  // nochange should remain.
+  GURL expected = GURL{"https://123.0.0.1?nochange=asdf"};
+  FilterResult result =
+      FilterUrl(source, destination, source_classification_map,
+                destination_classification_map);
+  ASSERT_EQ(result.filtered_url, expected);
+  ASSERT_EQ(result.filtered_param_count, 2);
+}
+
+TEST_F(UrlParamFiltererTest, FilterUrlSourceAndDestinationAsIPv6Blocked) {
+  GURL source = GURL{"https://[::1]"};
+  GURL destination = GURL{
+      "https://"
+      "[2001:db8:ac10:fe01::]?plzblock=123&plzblock1=321&nochange=asdf"};
+  ClassificationMap source_classification_map =
+      CreateClassificationMapForTesting(
+          {{"[::1]", {"plzblock"}}},
+          FilterClassification_SiteRole::FilterClassification_SiteRole_SOURCE);
+  ClassificationMap destination_classification_map =
+      CreateClassificationMapForTesting(
+          {{"[2001:db8:ac10:fe01::]", {"plzblock1"}}},
+          FilterClassification_SiteRole::
+              FilterClassification_SiteRole_DESTINATION);
+
+  // Both source and destination have associated URL param filtering rules. Only
+  // nochange should remain.
+  GURL expected = GURL{"https://[2001:db8:ac10:fe01::]?nochange=asdf"};
+  FilterResult result =
+      FilterUrl(source, destination, source_classification_map,
+                destination_classification_map);
+  ASSERT_EQ(result.filtered_url, expected);
+  ASSERT_EQ(result.filtered_param_count, 2);
+}
+
+TEST_F(UrlParamFiltererTest,
+       FilterUrlSourceAndDestinationMixedIPv6AndIPv4Blocked) {
+  GURL source = GURL{"https://127.0.0.1"};
+  GURL destination = GURL{
+      "https://"
+      "[2001:db8:ac10:fe01::]?plzblock=123&plzblock1=321&nochange=asdf"};
+  ClassificationMap source_classification_map =
+      CreateClassificationMapForTesting(
+          {{"127.0.0.1", {"plzblock"}}},
+          FilterClassification_SiteRole::FilterClassification_SiteRole_SOURCE);
+  ClassificationMap destination_classification_map =
+      CreateClassificationMapForTesting(
+          {{"[2001:db8:ac10:fe01::]", {"plzblock1"}}},
+          FilterClassification_SiteRole::
+              FilterClassification_SiteRole_DESTINATION);
+
+  // Both source and destination have associated URL param filtering rules. Only
+  // nochange should remain.
+  GURL expected = GURL{"https://[2001:db8:ac10:fe01::]?nochange=asdf"};
+  FilterResult result =
+      FilterUrl(source, destination, source_classification_map,
+                destination_classification_map);
+  ASSERT_EQ(result.filtered_url, expected);
+  ASSERT_EQ(result.filtered_param_count, 2);
+}
+
 TEST_F(UrlParamFiltererTest,
        FilterUrlSourceAndDestinationBlockedCheckOrderingPreserved) {
   GURL source = GURL{"https://source.xyz"};
@@ -333,9 +408,52 @@ TEST_F(UrlParamFiltererTest, FeatureDeactivated) {
   GURL expected = GURL{"https://destination.xyz?nochange=asdf"};
   // When the feature is not explicitly activated, the 2-parameter version of
   // the function should be inert.
-  GURL result = FilterUrl(source, expected);
+  GURL result = FilterUrl(source, expected).filtered_url;
 
   ASSERT_EQ(result, expected);
+}
+
+TEST_F(UrlParamFiltererTest, FeatureActivatedNoQueryString) {
+  GURL source = GURL{"http://source.xyz"};
+  GURL destination = GURL{"https://destination.xyz"};
+
+  std::string encoded_classification =
+      CreateBase64EncodedFilterParamClassificationForTesting(
+          {{"source.xyz", {"plzblock"}}}, {{"destination.xyz", {"plzblock1"}}});
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  // With the flag set, the URL should be filtered.
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kIncognitoParamFilterEnabled,
+      {{"classifications", encoded_classification}});
+
+  GURL expected = GURL{"https://destination.xyz"};
+  FilterResult result = FilterUrl(source, destination);
+
+  ASSERT_EQ(result.filtered_url, expected);
+  ASSERT_EQ(result.filtered_param_count, 0);
+}
+
+TEST_F(UrlParamFiltererTest, FeatureActivatedAllRemoved) {
+  GURL source = GURL{"http://source.xyz"};
+  GURL destination =
+      GURL{"https://destination.xyz?plzblock=adf&plzblock1=asdffdsa"};
+
+  std::string encoded_classification =
+      CreateBase64EncodedFilterParamClassificationForTesting(
+          {{"source.xyz", {"plzblock"}}}, {{"destination.xyz", {"plzblock1"}}});
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  // With the flag set, the URL should be filtered.
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kIncognitoParamFilterEnabled,
+      {{"classifications", encoded_classification}});
+
+  GURL expected = GURL{"https://destination.xyz"};
+  FilterResult result = FilterUrl(source, destination);
+
+  ASSERT_EQ(result.filtered_url, expected);
+  ASSERT_EQ(result.filtered_param_count, 2);
 }
 
 TEST_F(UrlParamFiltererTest, FeatureActivatedSourceAndDestinationRemoval) {
@@ -354,48 +472,10 @@ TEST_F(UrlParamFiltererTest, FeatureActivatedSourceAndDestinationRemoval) {
       {{"classifications", encoded_classification}});
 
   GURL expected = GURL{"https://destination.xyz?nochange=asdf"};
-  GURL result = FilterUrl(source, destination);
+  FilterResult result = FilterUrl(source, destination);
 
-  ASSERT_EQ(result, expected);
-}
-
-TEST_F(UrlParamFiltererTest, FeatureActivatedMetricsWritten) {
-  base::HistogramTester histograms;
-  const std::string histogram_name =
-      "Navigation.UrlParamFilter.FilteredParamCountExperimental";
-  std::string encoded_classification =
-      CreateBase64EncodedFilterParamClassificationForTesting(
-          {{"source.xyz", {"plzblock"}}}, {{"destination.xyz", {"plzblock1"}}});
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  // With the flag set, the URL should be filtered.
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kIncognitoParamFilterEnabled,
-      {{"classifications", encoded_classification}});
-
-  GURL source = GURL{"http://source.xyz"};
-  GURL destination =
-      GURL{"https://destination.xyz?plzblock=1&plzblock1=2&nochange=asdf"};
-
-  // The histogram should start off empty.
-  histograms.ExpectTotalCount(histogram_name, 0);
-  FilterUrl(source, destination);
-  // We filtered two parameters.
-  ASSERT_EQ(histograms.GetTotalSum(histogram_name), 2);
-  FilterUrl(source, destination);
-  // We filtered two more.
-  ASSERT_EQ(histograms.GetTotalSum(histogram_name), 4);
-  destination = GURL{"https://destination.xyz?plzblock=1&nochange=asdf"};
-  FilterUrl(source, destination);
-
-  // This time just one more.
-  ASSERT_EQ(histograms.GetTotalSum(histogram_name), 5);
-  destination = GURL{"https://destination.xyz?nochange=asdf"};
-  FilterUrl(source, destination);
-  // This time we didn't filter any.
-  ASSERT_EQ(histograms.GetTotalSum(histogram_name), 5);
-  // The number of samples should be 4 (four calls to FilterUrl).
-  histograms.ExpectTotalCount(histogram_name, 4);
+  ASSERT_EQ(result.filtered_url, expected);
+  ASSERT_EQ(result.filtered_param_count, 2);
 }
 
 }  // namespace

@@ -224,8 +224,17 @@ void V8MetricsRecorder::AddMainThreadEvent(
   UMA_HISTOGRAM_TIMES_ALL_GC_PHASES("V8.GC.Cycle.MainThread.Full.Atomic", "",
                                     event.main_thread_atomic);
 
+  // Report incremental marking/sweeping metrics:
+  UMA_HISTOGRAM_TIMES(
+      "V8.GC.Cycle.MainThread.Full.Incremental.Mark",
+      base::Microseconds(
+          event.main_thread_incremental.mark_wall_clock_duration_in_us));
+  UMA_HISTOGRAM_TIMES(
+      "V8.GC.Cycle.MainThread.Full.Incremental.Sweep",
+      base::Microseconds(
+          event.main_thread_incremental.sweep_wall_clock_duration_in_us));
+
   // TODO(chromium:1154636): emit the following when they are populated:
-  // - event.main_thread_incremental
   // - event.objects
   // - event.memory
 
@@ -259,6 +268,16 @@ void V8MetricsRecorder::AddMainThreadEvent(
     // Report atomic pause metrics:
     UMA_HISTOGRAM_TIMES_ALL_GC_PHASES("V8.GC.Cycle.MainThread.Full.Atomic",
                                       ".Cpp", event.main_thread_atomic_cpp);
+
+    // Report incremental marking/sweeping metrics:
+    UMA_HISTOGRAM_TIMES(
+        "V8.GC.Cycle.MainThread.Full.Incremental.Mark.Cpp",
+        base::Microseconds(
+            event.main_thread_incremental_cpp.mark_wall_clock_duration_in_us));
+    UMA_HISTOGRAM_TIMES(
+        "V8.GC.Cycle.MainThread.Full.Incremental.Sweep.Cpp",
+        base::Microseconds(
+            event.main_thread_incremental_cpp.sweep_wall_clock_duration_in_us));
 
     // Report size metrics:
     DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
@@ -313,55 +332,48 @@ void V8MetricsRecorder::AddMainThreadEvent(
 #undef UMA_HISTOGRAM_TIMES_ALL_GC_PHASES
 }
 
-namespace {
-
-void ReportCppIncrementalLatencyEvent(int64_t duration_us) {
-  UMA_HISTOGRAM_TIMES("V8.GC.Event.MainThread.Full.Incremental.Cpp",
-                      base::Microseconds(duration_us));
-}
-
-}  // namespace
-
 void V8MetricsRecorder::AddMainThreadEvent(
     const v8::metrics::GarbageCollectionFullMainThreadIncrementalMark& event,
     ContextId context_id) {
+  if (event.wall_clock_duration_in_us != -1) {
+    UMA_HISTOGRAM_TIMES("V8.GC.Event.MainThread.Full.Incremental.Mark",
+                        base::Microseconds(event.wall_clock_duration_in_us));
+  }
   if (event.cpp_wall_clock_duration_in_us != -1) {
     // This is only a latency event.
     UMA_HISTOGRAM_TIMES(
         "V8.GC.Event.MainThread.Full.Incremental.Mark.Cpp",
         base::Microseconds(event.cpp_wall_clock_duration_in_us));
-    ReportCppIncrementalLatencyEvent(event.cpp_wall_clock_duration_in_us);
-  }
-}
-
-void V8MetricsRecorder::AddMainThreadEvent(
-    const v8::metrics::GarbageCollectionFullMainThreadBatchedIncrementalMark&
-        batched_events,
-    ContextId context_id) {
-  for (auto event : batched_events.events) {
-    AddMainThreadEvent(event, context_id);
   }
 }
 
 void V8MetricsRecorder::AddMainThreadEvent(
     const v8::metrics::GarbageCollectionFullMainThreadIncrementalSweep& event,
     ContextId context_id) {
+  if (event.wall_clock_duration_in_us != -1) {
+    UMA_HISTOGRAM_TIMES("V8.GC.Event.MainThread.Full.Incremental.Sweep",
+                        base::Microseconds(event.wall_clock_duration_in_us));
+  }
   if (event.cpp_wall_clock_duration_in_us != -1) {
     // This is only a latency event.
     UMA_HISTOGRAM_TIMES(
         "V8.GC.Event.MainThread.Full.Incremental.Sweep.Cpp",
         base::Microseconds(event.cpp_wall_clock_duration_in_us));
-    ReportCppIncrementalLatencyEvent(event.cpp_wall_clock_duration_in_us);
   }
 }
 
 void V8MetricsRecorder::AddMainThreadEvent(
-    const v8::metrics::GarbageCollectionFullMainThreadBatchedIncrementalSweep&
-        batched_events,
+    const v8::metrics::GarbageCollectionFullMainThreadBatchedIncrementalMark&
+        event,
     ContextId context_id) {
-  for (auto event : batched_events.events) {
-    AddMainThreadEvent(event, context_id);
-  }
+  AddMainThreadBatchedEvents(event, context_id);
+}
+
+void V8MetricsRecorder::AddMainThreadEvent(
+    const v8::metrics::GarbageCollectionFullMainThreadBatchedIncrementalSweep&
+        event,
+    ContextId context_id) {
+  AddMainThreadBatchedEvents(event, context_id);
 }
 
 void V8MetricsRecorder::AddMainThreadEvent(

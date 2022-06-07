@@ -6,12 +6,42 @@ source_set("follow") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "follow_block_types.h",
-    "follow_site_info.h",
-    "follow_site_info.mm",
+    "follow_web_page_urls.h",
+    "follow_web_page_urls.mm",
     "followed_web_channel.h",
     "followed_web_channel.mm",
   ]
   deps = []
+}
+
+source_set("first_follow") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "first_follow_coordinator.h",
+    "first_follow_coordinator.mm",
+  ]
+  deps = [
+    ":first_follow_ui",
+    "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+  ]
+}
+
+source_set("first_follow_ui") {
+  sources = [
+    "first_follow_view_controller.h",
+    "first_follow_view_controller.mm",
+    "first_follow_view_delegate.h",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    ":follow",
+    "//base",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/common/ui/colors",
+    "//ui/base",
+  ]
 }
 
 source_set("utils") {

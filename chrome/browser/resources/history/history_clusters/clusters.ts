@@ -33,7 +33,7 @@ import {Cluster, PageCallbackRouter, PageHandlerRemote, QueryResult, URLVisit} f
 
 declare global {
   interface HTMLElementTagNameMap {
-    'history-clusters': HistoryClustersElement,
+    'history-clusters': HistoryClustersElement;
   }
 
   interface Window {
@@ -69,14 +69,6 @@ class HistoryClustersElement extends PolymerElement {
         type: String,
         observer: 'onQueryChanged_',
         value: '',
-      },
-
-      /**
-       * The header text to show when the query and the results are non-empty.
-       */
-      headerText_: {
-        type: String,
-        computed: `computeHeaderText_(result_.*)`,
       },
 
       /**
@@ -118,9 +110,11 @@ class HistoryClustersElement extends PolymerElement {
 
   query: string;
   private callbackRouter_: PageCallbackRouter;
+  private headerText_: string;
   private onClustersQueryResultListenerId_: number|null = null;
   private onVisitsRemovedListenerId_: number|null = null;
   private pageHandler_: PageHandlerRemote;
+  private placeholderText_: string;
   private result_: QueryResult;
   private showSpinner_: boolean;
   private visitsToBeRemoved_: Array<URLVisit>;
@@ -257,12 +251,6 @@ class HistoryClustersElement extends PolymerElement {
   // Helper methods
   //============================================================================
 
-  private computeHeaderText_(): string {
-    return this.result_ && this.result_.query && this.result_.clusters.length ?
-        loadTimeData.getStringF('headerText', this.result_.query) :
-        '';
-  }
-
   private computePlaceholderText_(): string {
     if (!this.result_) {
       return '';
@@ -280,8 +268,8 @@ class HistoryClustersElement extends PolymerElement {
    * loaded before the user ever gets a chance to see this button.
    */
   private getLoadMoreButtonHidden_(
-      _result: QueryResult, _result_clusters: Array<Cluster>,
-      _result_can_load_more: Time): boolean {
+      _result: QueryResult, _resultClusters: Array<Cluster>,
+      _resultCanLoadMore: Time): boolean {
     return !this.result_ || this.result_.clusters.length === 0 ||
         !this.result_.canLoadMore;
   }

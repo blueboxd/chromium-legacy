@@ -9,7 +9,7 @@
 
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
-#include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
+#include "chromeos/ash/components/dbus/authpolicy/active_directory_info.pb.h"
 
 class GoogleServiceAuthError;
 
@@ -31,6 +31,7 @@ class EnrollmentScreenView {
     virtual ~Controller() {}
 
     virtual void OnLoginDone(const std::string& user,
+                             int license_type,
                              const std::string& auth_code) = 0;
     virtual void OnRetry() = 0;
     virtual void OnCancel() = 0;
@@ -52,6 +53,11 @@ class EnrollmentScreenView {
   virtual ~EnrollmentScreenView() {}
 
   enum class FlowType { kEnterprise, kCFM, kEnterpriseLicense };
+  enum class GaiaButtonsType {
+    kDefault,
+    kEnterprisePreffered,
+    kKioskPreffered
+  };
   enum class UserErrorType { kConsumerDomain, kBusinessDomain };
 
   // Initializes the view with parameters.
@@ -64,6 +70,9 @@ class EnrollmentScreenView {
 
   // Sets which flow should GAIA show.
   virtual void SetFlowType(FlowType flow_type) = 0;
+
+  // Sets which buttons should GAIA screen show.
+  virtual void SetGaiaButtonsType(GaiaButtonsType buttons_type) = 0;
 
   // Shows the contents of the screen.
   virtual void Show() = 0;

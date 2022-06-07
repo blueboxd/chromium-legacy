@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
+#include "components/password_manager/core/browser/password_store_backend_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 
 namespace syncer {
@@ -41,20 +42,31 @@ class LoginDatabaseAsyncHelper : private PasswordStoreSync {
       base::RepeatingClosure sync_enabled_or_disabled_cb);
 
   // Synchronous implementation of PasswordStoreBackend interface.
-  LoginsResult GetAllLogins();
-  LoginsResult GetAutofillableLogins();
+  LoginsResult GetAllLogins(
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
+  LoginsResult GetAutofillableLogins(
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
   LoginsResult FillMatchingLogins(const std::vector<PasswordFormDigest>& forms,
                                   bool include_psl);
-  PasswordStoreChangeList AddLogin(const PasswordForm& form);
-  PasswordStoreChangeList UpdateLogin(const PasswordForm& form);
-  PasswordStoreChangeList RemoveLogin(const PasswordForm& form);
-  PasswordStoreChangeList RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                                     base::Time delete_end);
+  PasswordStoreChangeList AddLogin(
+      const PasswordForm& form,
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
+  PasswordStoreChangeList UpdateLogin(
+      const PasswordForm& form,
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
+  PasswordStoreChangeList RemoveLogin(
+      const PasswordForm& form,
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
+  PasswordStoreChangeList RemoveLoginsCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
   PasswordStoreChangeList RemoveLoginsByURLAndTime(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      base::OnceCallback<void(bool)> sync_completion);
+      base::OnceCallback<void(bool)> sync_completion,
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
   PasswordStoreChangeList DisableAutoSignInForOrigins(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
 

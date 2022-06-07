@@ -6,8 +6,7 @@
 #define ASH_COMPONENTS_TETHER_KEEP_ALIVE_OPERATION_H_
 
 #include "ash/components/tether/message_transfer_operation.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "ash/services/device_sync/public/cpp/device_sync_client.h"
+#include "base/time/time.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
 #include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/gtest_prod_util.h"
@@ -15,6 +14,10 @@
 #include "base/time/clock.h"
 
 namespace ash {
+
+namespace device_sync {
+class DeviceSyncClient;
+}
 
 namespace tether {
 

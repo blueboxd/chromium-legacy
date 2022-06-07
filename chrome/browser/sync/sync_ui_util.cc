@@ -251,14 +251,9 @@ SyncStatusMessageType GetSyncStatusMessageType(Profile* profile) {
 }
 
 absl::optional<AvatarSyncErrorType> GetAvatarSyncErrorType(Profile* profile) {
-  if (!SyncServiceFactory::IsSyncAllowed(profile)) {
-    return absl::nullopt;
-  }
-
   const syncer::SyncService* service =
       SyncServiceFactory::GetForProfile(profile);
   if (!service) {
-    // This can happen in incognito, where IsSyncAllowed() returns true.
     return absl::nullopt;
   }
 
@@ -436,11 +431,6 @@ void OpenTabForSyncKeyRetrieval(
                                               continue_url.spec());
   }
   OpenTabForSyncTrustedVaultUserAction(browser, retrieval_url);
-}
-
-void OpenTabForSyncTrustedVaultUserActionForTesting(Browser* browser,
-                                                    const GURL& url) {
-  OpenTabForSyncTrustedVaultUserAction(browser, url);
 }
 
 void OpenTabForSyncKeyRecoverabilityDegraded(

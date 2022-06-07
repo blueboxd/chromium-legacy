@@ -219,8 +219,10 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
     return;
   }
 
-  void OnDragStarted(int component) override {
+  std::unique_ptr<ash::PresentationTimeRecorder> OnDragStarted(
+      int component) override {
     shell_surface_->OnDragStarted(component);
+    return nullptr;
   }
 
   void OnDragFinished(bool canceled, const gfx::PointF& location) override {
@@ -1388,6 +1390,23 @@ void ClientControlledShellSurface::UpdateFrameType() {
     UpdateSurfaceBounds();
 }
 
+bool ClientControlledShellSurface::GetCanResizeFromSizeConstraints() const {
+  // Both min and max bounds of unresizable, maximized ARC windows are empty
+  // because Ash requires maximizable apps have empty max bounds.
+  // This assumes that ARC sets non-empty min sizes to all resizable apps.
+  //
+  // Example values of size constraints:
+  // ----------------------------------------------------------------------
+  // |           |          resizable           |      non-resizable      |
+  // ----------------------------------------------------------------------
+  // | freeform  | min: (400, 400), max: (0, 0) | min = max = window size |
+  // ----------------------------------------------------------------------
+  // | maximized | min: (400, 400), max: (0, 0) |   min = max = (0, 0)    |
+  // ----------------------------------------------------------------------
+
+  return minimum_size_ != maximum_size_;
+}
+
 void ClientControlledShellSurface::
     EnsureCompositorIsLockedForOrientationChange() {
   if (!orientation_compositor_lock_) {
@@ -1464,8 +1483,8 @@ ClientControlledShellSurface::GetClientBoundsForWindowBoundsAndWindowState(
     // Until the next commit, the frame view is in immersive mode, and the above
     // GetClientBoundsForWindowBounds doesn't return bounds taking the caption
     // height into account.
-    client_bounds.Inset(0, GetFrameView()->NonClientTopBorderPreferredHeight(),
-                        0, 0);
+    client_bounds.Inset(gfx::Insets().set_top(
+        GetFrameView()->NonClientTopBorderPreferredHeight()));
   }
   return client_bounds;
 }

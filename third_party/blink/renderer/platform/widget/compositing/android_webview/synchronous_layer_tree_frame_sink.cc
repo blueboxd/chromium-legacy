@@ -381,7 +381,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     root_support_->SubmitCompositorFrame(root_local_surface_id_,
                                          std::move(embed_frame));
     base::TimeTicks now = base::TimeTicks::Now();
-    display_->DrawAndSwap(now, now);
+    display_->DrawAndSwap({now, now});
 
     // We don't track metrics for frames submitted to |display_| but it still
     // expects that every frame will receive a swap ack and presentation
@@ -481,8 +481,8 @@ void SynchronousLayerTreeFrameSink::DemandDrawSw(SkCanvas* canvas) {
   SkIRect canvas_clip = canvas->getDeviceClipBounds();
   gfx::Rect viewport = gfx::SkIRectToRect(canvas_clip);
 
-  gfx::Transform transform(gfx::Transform::kSkipInitialization);
-  transform.matrix() = canvas->getTotalMatrix();  // Converts 3x3 matrix to 4x4.
+  // Converts 3x3 matrix to 4x4.
+  gfx::Transform transform(canvas->getTotalMatrix());
 
   // We will resize the Display to ensure it covers the entire |viewport|, so
   // save it for later.

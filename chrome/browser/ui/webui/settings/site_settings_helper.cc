@@ -119,7 +119,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
      kBluetoothChooserDataGroupType},
     {ContentSettingsType::WINDOW_PLACEMENT, "window-placement"},
-    {ContentSettingsType::FONT_ACCESS, "font-access"},
+    {ContentSettingsType::LOCAL_FONTS, "local-fonts"},
     {ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA,
      "file-system-access-handles-data"},
 
@@ -168,6 +168,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::FEDERATED_IDENTITY_API, nullptr},
     {ContentSettingsType::AUTO_DARK_WEB_CONTENT, nullptr},
     {ContentSettingsType::REQUEST_DESKTOP_SITE, nullptr},
+    {ContentSettingsType::GET_DISPLAY_MEDIA_SET_SELECT_ALL_SCREENS, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -426,12 +427,12 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
       ContentSettingsType::BACKGROUND_SYNC,
       ContentSettingsType::CLIPBOARD_READ_WRITE,
       ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
-      ContentSettingsType::FONT_ACCESS,
       ContentSettingsType::GEOLOCATION,
       ContentSettingsType::HID_GUARD,
       ContentSettingsType::IDLE_DETECTION,
       ContentSettingsType::IMAGES,
       ContentSettingsType::JAVASCRIPT,
+      ContentSettingsType::LOCAL_FONTS,
       ContentSettingsType::MEDIASTREAM_CAMERA,
       ContentSettingsType::MEDIASTREAM_MIC,
       ContentSettingsType::MIDI_SYSEX,
@@ -766,8 +767,8 @@ ContentSetting GetContentSettingForOrigin(
       permissions::PermissionStatusSource::UNSPECIFIED);
   if (permissions::PermissionUtil::IsPermission(content_type)) {
     result =
-        PermissionManagerFactory::GetForProfile(profile)->GetPermissionStatus(
-            content_type, origin, origin);
+        PermissionManagerFactory::GetForProfile(profile)
+            ->GetPermissionStatusForDisplayOnSettingsUI(content_type, origin);
   } else {
     DCHECK_EQ(base::Value::Type::INTEGER, value.type());
     result.content_setting = content_settings::ValueToContentSetting(value);

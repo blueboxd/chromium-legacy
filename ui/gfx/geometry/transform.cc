@@ -37,6 +37,7 @@ inline bool ApproximatelyOne(SkScalar x, SkScalar tolerance) {
 
 }  // namespace
 
+// clang-format off
 Transform::Transform(SkScalar col1row1,
                      SkScalar col2row1,
                      SkScalar col3row1,
@@ -53,11 +54,10 @@ Transform::Transform(SkScalar col1row1,
                      SkScalar col2row4,
                      SkScalar col3row4,
                      SkScalar col4row4)
-    : matrix_(Matrix44::kUninitialized_Constructor) {
-  matrix_.set4x4(col1row1, col1row2, col1row3, col1row4, col2row1, col2row2,
-                 col2row3, col2row4, col3row1, col3row2, col3row3, col3row4,
-                 col4row1, col4row2, col4row3, col4row4);
-}
+    : matrix_(col1row1, col2row1, col3row1, col4row1,
+              col1row2, col2row2, col3row2, col4row2,
+              col1row3, col2row3, col3row3, col4row3,
+              col1row4, col2row4, col3row4, col4row4) {}
 
 Transform::Transform(SkScalar col1row1,
                      SkScalar col2row1,
@@ -65,10 +65,11 @@ Transform::Transform(SkScalar col1row1,
                      SkScalar col2row2,
                      SkScalar x_translation,
                      SkScalar y_translation)
-    : matrix_(Matrix44::kUninitialized_Constructor) {
-  matrix_.set4x4(col1row1, col1row2, 0, 0, col2row1, col2row2, 0, 0, 0, 0, 1, 0,
-                 x_translation, y_translation, 0, 1);
-}
+    : matrix_(col1row1, col2row1, 0, x_translation,
+              col1row2, col2row2, 0, y_translation,
+              0, 0, 1, 0,
+              0, 0, 0, 1) {}
+// clang-format on
 
 // TODO(crbug.com/1167153): This implementation is temporary before we change
 // matrix_ to SkM44 type.
@@ -78,74 +79,90 @@ Transform::Transform(const SkM44& matrix) {
   matrix_.setRowMajor(data);
 }
 
+// clang-format off
 Transform::Transform(const Quaternion& q)
-    : matrix_(Matrix44::kUninitialized_Constructor) {
-  double x = q.x();
-  double y = q.y();
-  double z = q.z();
-  double w = q.w();
-
-  // Implicitly calls matrix.setIdentity()
-  matrix_.set3x3(SkDoubleToScalar(1.0 - 2.0 * (y * y + z * z)),
-                 SkDoubleToScalar(2.0 * (x * y + z * w)),
-                 SkDoubleToScalar(2.0 * (x * z - y * w)),
-                 SkDoubleToScalar(2.0 * (x * y - z * w)),
-                 SkDoubleToScalar(1.0 - 2.0 * (x * x + z * z)),
-                 SkDoubleToScalar(2.0 * (y * z + x * w)),
-                 SkDoubleToScalar(2.0 * (x * z + y * w)),
-                 SkDoubleToScalar(2.0 * (y * z - x * w)),
-                 SkDoubleToScalar(1.0 - 2.0 * (x * x + y * y)));
-}
+    : matrix_(
+        // Row 1.
+        SkDoubleToScalar(1.0 - 2.0 * (q.y() * q.y() + q.z() * q.z())),
+        SkDoubleToScalar(2.0 * (q.x() * q.y() - q.z() * q.w())),
+        SkDoubleToScalar(2.0 * (q.x() * q.z() + q.y() * q.w())),
+        0,
+        // Row 2.
+        SkDoubleToScalar(2.0 * (q.x() * q.y() + q.z() * q.w())),
+        SkDoubleToScalar(1.0 - 2.0 * (q.x() * q.x() + q.z() * q.z())),
+        SkDoubleToScalar(2.0 * (q.y() * q.z() - q.x() * q.w())),
+        0,
+        // Row 3.
+        SkDoubleToScalar(2.0 * (q.x() * q.z() - q.y() * q.w())),
+        SkDoubleToScalar(2.0 * (q.y() * q.z() + q.x() * q.w())),
+        SkDoubleToScalar(1.0 - 2.0 * (q.x() * q.x() + q.y() * q.y())),
+        0,
+        // row 4.
+        0, 0, 0, 1) {}
+// clang-format on
 
 void Transform::RotateAboutXAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  SkScalar cosTheta = SkDoubleToScalar(std::cos(radians));
-  SkScalar sinTheta = SkDoubleToScalar(std::sin(radians));
+  SkScalar sin_theta = SkDoubleToScalar(std::sin(radians));
+  SkScalar cos_theta = SkDoubleToScalar(std::cos(radians));
   if (matrix_.isIdentity()) {
-    matrix_.set3x3(1, 0, 0, 0, cosTheta, sinTheta, 0, -sinTheta, cosTheta);
+    matrix_.setRotateAboutXAxisSinCos(sin_theta, cos_theta);
   } else {
     Matrix44 rot(Matrix44::kUninitialized_Constructor);
-    rot.set3x3(1, 0, 0, 0, cosTheta, sinTheta, 0, -sinTheta, cosTheta);
+    rot.setRotateAboutXAxisSinCos(sin_theta, cos_theta);
     matrix_.preConcat(rot);
   }
 }
 
 void Transform::RotateAboutYAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  SkScalar cosTheta = SkDoubleToScalar(std::cos(radians));
-  SkScalar sinTheta = SkDoubleToScalar(std::sin(radians));
+  SkScalar sin_theta = SkDoubleToScalar(std::sin(radians));
+  SkScalar cos_theta = SkDoubleToScalar(std::cos(radians));
   if (matrix_.isIdentity()) {
-    // Note carefully the placement of the -sinTheta for rotation about
-    // y-axis is different than rotation about x-axis or z-axis.
-    matrix_.set3x3(cosTheta, 0, -sinTheta, 0, 1, 0, sinTheta, 0, cosTheta);
+    matrix_.setRotateAboutYAxisSinCos(sin_theta, cos_theta);
   } else {
     Matrix44 rot(Matrix44::kUninitialized_Constructor);
-    rot.set3x3(cosTheta, 0, -sinTheta, 0, 1, 0, sinTheta, 0, cosTheta);
+    rot.setRotateAboutYAxisSinCos(sin_theta, cos_theta);
     matrix_.preConcat(rot);
   }
 }
 
 void Transform::RotateAboutZAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  SkScalar cosTheta = SkDoubleToScalar(std::cos(radians));
-  SkScalar sinTheta = SkDoubleToScalar(std::sin(radians));
+  SkScalar sin_theta = SkDoubleToScalar(std::sin(radians));
+  SkScalar cos_theta = SkDoubleToScalar(std::cos(radians));
   if (matrix_.isIdentity()) {
-    matrix_.set3x3(cosTheta, sinTheta, 0, -sinTheta, cosTheta, 0, 0, 0, 1);
+    matrix_.setRotateAboutZAxisSinCos(sin_theta, cos_theta);
   } else {
     Matrix44 rot(Matrix44::kUninitialized_Constructor);
-    rot.set3x3(cosTheta, sinTheta, 0, -sinTheta, cosTheta, 0, 0, 0, 1);
+    rot.setRotateAboutZAxisSinCos(sin_theta, cos_theta);
     matrix_.preConcat(rot);
   }
 }
 
 void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
+  double x = axis.x();
+  double y = axis.y();
+  double z = axis.z();
+  double square_length = x * x + y * y + z * z;
+  if (square_length == 0)
+    return;
+  if (square_length != 1) {
+    double scale = 1 / sqrt(square_length);
+    x *= scale;
+    y *= scale;
+    z *= scale;
+  }
+  double radians = gfx::DegToRad(degrees);
+  SkScalar sin_theta = SkDoubleToScalar(std::sin(radians));
+  SkScalar cos_theta = SkDoubleToScalar(std::cos(radians));
   if (matrix_.isIdentity()) {
-    matrix_.setRotateDegreesAbout(axis.x(), axis.y(), axis.z(),
-                                  SkDoubleToScalar(degrees));
+    matrix_.setRotateUnitSinCos(SkDoubleToScalar(x), SkDoubleToScalar(y),
+                                SkDoubleToScalar(z), sin_theta, cos_theta);
   } else {
     Matrix44 rot(Matrix44::kUninitialized_Constructor);
-    rot.setRotateDegreesAbout(axis.x(), axis.y(), axis.z(),
-                              SkDoubleToScalar(degrees));
+    rot.setRotateUnitSinCos(SkDoubleToScalar(x), SkDoubleToScalar(y),
+                            SkDoubleToScalar(z), sin_theta, cos_theta);
     matrix_.preConcat(rot);
   }
 }
@@ -191,7 +208,7 @@ void Transform::Skew(double angle_x, double angle_y) {
     matrix_.setRC(0, 1, TanDegrees(angle_x));
     matrix_.setRC(1, 0, TanDegrees(angle_y));
   } else {
-    Matrix44 skew(Matrix44::kIdentity_Constructor);
+    Matrix44 skew;
     skew.setRC(0, 1, TanDegrees(angle_x));
     skew.setRC(1, 0, TanDegrees(angle_y));
     matrix_.preConcat(skew);
@@ -204,7 +221,7 @@ void Transform::ApplyPerspectiveDepth(SkScalar depth) {
   if (matrix_.isIdentity()) {
     matrix_.setRC(3, 2, -SK_Scalar1 / depth);
   } else {
-    Matrix44 m(Matrix44::kIdentity_Constructor);
+    Matrix44 m;
     m.setRC(3, 2, -SK_Scalar1 / depth);
     matrix_.preConcat(m);
   }
@@ -399,16 +416,8 @@ void Transform::Transpose() {
 }
 
 void Transform::FlattenTo2d() {
-  float tmp[16];
-  matrix_.asColMajorf(tmp);
-  tmp[2] = 0.0;
-  tmp[6] = 0.0;
-  tmp[8] = 0.0;
-  tmp[9] = 0.0;
-  tmp[10] = 1.0;
-  tmp[11] = 0.0;
-  tmp[14] = 0.0;
-  matrix_.setColMajorf(tmp);
+  matrix_.FlattenTo2d();
+  DCHECK(IsFlat());
 }
 
 bool Transform::IsFlat() const {
@@ -477,7 +486,7 @@ void Transform::TransformRect(RectF* rect) const {
     return;
 
   SkRect src = RectFToSkRect(*rect);
-  SkMatrix(matrix_).mapRect(&src);
+  matrix_.asM33().mapRect(&src);
   *rect = SkRectToRectF(src);
 }
 
@@ -490,7 +499,7 @@ bool Transform::TransformRectReverse(RectF* rect) const {
     return false;
 
   SkRect src = RectFToSkRect(*rect);
-  SkMatrix(inverse).mapRect(&src);
+  inverse.asM33().mapRect(&src);
   *rect = SkRectToRectF(src);
   return true;
 }
@@ -501,7 +510,7 @@ bool Transform::TransformRRectF(RRectF* rrect) const {
   // SkMatrix::preservesAxisAlignment is stricter (it lacks the kEpsilon
   // test).  So after converting our Matrix44 to SkMatrix, round
   // relevant values less than kEpsilon to zero.
-  SkMatrix rounded_matrix(matrix_);
+  SkMatrix rounded_matrix = matrix_.asM33();
   if (std::abs(rounded_matrix.get(SkMatrix::kMScaleX)) < kEpsilon)
     rounded_matrix.set(SkMatrix::kMScaleX, 0.0f);
   if (std::abs(rounded_matrix.get(SkMatrix::kMSkewX)) < kEpsilon)

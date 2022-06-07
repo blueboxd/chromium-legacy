@@ -9,6 +9,7 @@
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -23,6 +24,27 @@ namespace x11 {
 class Event;
 class KeyboardState;
 class WriteBuffer;
+
+// On the wire, sequence IDs are 16 bits.  In xcb, they're usually extended to
+// 32 and sometimes 64 bits.  In Xlib, they're extended to unsigned long, which
+// may be 32 or 64 bits depending on the platform.  This function is intended to
+// prevent bugs caused by comparing two differently sized sequences.  Also
+// handles rollover.  To use, compare the result of this function with 0.  For
+// example, to compare seq1 <= seq2, use CompareSequenceIds(seq1, seq2) <= 0.
+template <typename T, typename U>
+auto CompareSequenceIds(T t, U u) {
+  static_assert(std::is_unsigned<T>::value, "");
+  static_assert(std::is_unsigned<U>::value, "");
+  // Cast to the smaller of the two types so that comparisons will always work.
+  // If we casted to the larger type, then the smaller type will be zero-padded
+  // and may incorrectly compare less than the other value.
+  using SmallerType =
+      typename std::conditional<sizeof(T) <= sizeof(U), T, U>::type;
+  SmallerType t0 = static_cast<SmallerType>(t);
+  SmallerType u0 = static_cast<SmallerType>(u);
+  using SignedType = typename std::make_signed<SmallerType>::type;
+  return static_cast<SignedType>(t0 - u0);
+}
 
 // This interface is used by classes wanting to receive
 // Events directly.  For input events (mouse, keyboard, touch), a
@@ -216,6 +238,10 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
                const char* request_name_for_tracing);
 
     void Wait();
+
+    void DispatchNow();
+
+    bool AfterEvent(const Event& event) const;
 
     void Sync(RawReply* raw_reply, std::unique_ptr<Error>* error);
 

@@ -4,18 +4,16 @@
 
 #include "ash/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
+#include "base/time/time.h"
 
 namespace ash {
 
 namespace multidevice_setup {
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace device_sync = ::chromeos::device_sync;
 
 // static
 constexpr base::TimeDelta

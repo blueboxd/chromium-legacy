@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_METRICS_METRICS_PREF_NAMES_H_
 #define COMPONENTS_METRICS_METRICS_PREF_NAMES_H_
 
+#include "build/build_config.h"
+
 namespace metrics {
 namespace prefs {
 
@@ -45,16 +47,15 @@ extern const char kStabilityCrashCount[];
 extern const char kStabilityCrashCountDueToGmsCoreUpdate[];
 extern const char kStabilityExitedCleanly[];
 extern const char kStabilityExtensionRendererCrashCount[];
-extern const char kStabilityExtensionRendererFailedLaunchCount[];
-extern const char kStabilityExtensionRendererLaunchCount[];
 extern const char kStabilityFileMetricsUnsentSamplesCount[];
 extern const char kStabilityFileMetricsUnsentFilesCount[];
 extern const char kStabilityGmsCoreVersion[];
 extern const char kStabilityGpuCrashCount[];
+#if BUILDFLAG(IS_ANDROID)
 extern const char kStabilityLaunchCount[];
+#endif
 extern const char kStabilityPageLoadCount[];
 extern const char kStabilityRendererCrashCount[];
-extern const char kStabilityRendererFailedLaunchCount[];
 extern const char kStabilityRendererLaunchCount[];
 extern const char kStabilitySavedSystemProfile[];
 extern const char kStabilitySavedSystemProfileHash[];

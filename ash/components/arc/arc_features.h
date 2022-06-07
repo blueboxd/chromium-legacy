@@ -31,7 +31,6 @@ extern const base::FeatureParam<int> kGuestZramSize;
 extern const base::Feature kLogdConfig;
 extern const base::FeatureParam<int> kLogdConfigSize;
 extern const base::Feature kKeyboardShortcutHelperIntegrationFeature;
-extern const base::Feature kMouseWheelSmoothScroll;
 extern const base::Feature kNativeBridge64BitSupportExperimentFeature;
 extern const base::Feature kNativeBridgeToggleFeature;
 extern const base::Feature kOutOfProcessVideoDecoding;
@@ -54,6 +53,7 @@ extern const base::Feature kVmBalloonPolicy;
 extern const base::FeatureParam<int> kVmBalloonPolicyModerateKiB;
 extern const base::FeatureParam<int> kVmBalloonPolicyCriticalKiB;
 extern const base::FeatureParam<int> kVmBalloonPolicyReclaimKiB;
+extern const base::Feature kVmGmsCoreLowMemoryKillerProtection;
 
 }  // namespace arc
 

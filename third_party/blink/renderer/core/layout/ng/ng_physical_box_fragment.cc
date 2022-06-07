@@ -96,11 +96,11 @@ NGContainingBlock<PhysicalOffset> PhysicalContainingBlock(
     PhysicalSize inner_size,
     const NGContainingBlock<LogicalOffset>& containing_block) {
   return NGContainingBlock<PhysicalOffset>(
-      containing_block.offset.ConvertToPhysical(
+      containing_block.Offset().ConvertToPhysical(
           builder->Style().GetWritingDirection(), outer_size, inner_size),
-      containing_block.relative_offset.ConvertToPhysical(
+      containing_block.RelativeOffset().ConvertToPhysical(
           builder->Style().GetWritingDirection(), outer_size, inner_size),
-      containing_block.fragment, containing_block.is_inside_column_spanner);
+      containing_block.Fragment(), containing_block.IsInsideColumnSpanner());
 }
 
 NGContainingBlock<PhysicalOffset> PhysicalContainingBlock(
@@ -108,7 +108,7 @@ NGContainingBlock<PhysicalOffset> PhysicalContainingBlock(
     PhysicalSize size,
     const NGContainingBlock<LogicalOffset>& containing_block) {
   PhysicalSize containing_block_size =
-      containing_block.fragment ? containing_block.fragment->Size() : size;
+      containing_block.Fragment() ? containing_block.Fragment()->Size() : size;
   return PhysicalContainingBlock(builder, size, containing_block_size,
                                  containing_block);
 }
@@ -139,8 +139,7 @@ const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Create(
 
 #if DCHECK_IS_ON()
   if (builder->needs_inflow_bounds_explicitly_set_ && builder->node_ &&
-      builder->node_.IsScrollContainer() &&
-      builder->box_type_ != NGBoxType::kColumnBox)
+      builder->node_.IsScrollContainer() && !builder->IsFragmentainerBoxType())
     DCHECK(builder->is_inflow_bounds_explicitly_set_);
   if (builder->needs_may_have_descendant_above_block_start_explicitly_set_)
     DCHECK(builder->is_may_have_descendant_above_block_start_explicitly_set_);
@@ -153,8 +152,8 @@ const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Create(
             writing_direction);
     NGLayoutOverflowCalculator calculator(
         To<NGBlockNode>(builder->node_),
-        /* is_css_box */ builder->box_type_ != NGBoxType::kColumnBox, borders,
-        scrollbar, padding, physical_size, writing_direction);
+        /* is_css_box */ !builder->IsFragmentainerBoxType(), borders, scrollbar,
+        padding, physical_size, writing_direction);
 
     if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
       calculator.AddItems(builder->GetLayoutObject(),
@@ -472,19 +471,24 @@ NGPhysicalFragment::FragmentedOutOfFlowDataFromBuilder(
   fragmented_data->oof_positioned_fragmentainer_descendants.ReserveCapacity(
       builder->oof_positioned_fragmentainer_descendants_.size());
   const PhysicalSize& size = Size();
+  WritingDirectionMode writing_direction = builder->GetWritingDirection();
+  const WritingModeConverter converter(writing_direction, size);
   for (const auto& descendant :
        builder->oof_positioned_fragmentainer_descendants_) {
-    WritingDirectionMode writing_direction = builder->GetWritingDirection();
-    const WritingModeConverter converter(writing_direction, size);
     NGInlineContainer<PhysicalOffset> inline_container(
         descendant.inline_container.container,
         converter.ToPhysical(descendant.inline_container.relative_offset,
                              PhysicalSize()));
+    NGInlineContainer<PhysicalOffset> fixedpos_inline_container(
+        descendant.fixedpos_inline_container.container,
+        converter.ToPhysical(
+            descendant.fixedpos_inline_container.relative_offset,
+            PhysicalSize()));
 
     // The static position should remain relative to the containing block.
     PhysicalSize containing_block_size =
-        descendant.containing_block.fragment
-            ? descendant.containing_block.fragment->Size()
+        descendant.containing_block.Fragment()
+            ? descendant.containing_block.Fragment()->Size()
             : size;
     const WritingModeConverter containing_block_converter(
         writing_direction, containing_block_size);
@@ -497,17 +501,23 @@ NGPhysicalFragment::FragmentedOutOfFlowDataFromBuilder(
         PhysicalContainingBlock(builder, size, containing_block_size,
                                 descendant.containing_block),
         PhysicalContainingBlock(builder, size,
-                                descendant.fixedpos_containing_block));
+                                descendant.fixedpos_containing_block),
+        fixedpos_inline_container);
   }
   for (const auto& multicol : builder->multicols_with_pending_oofs_) {
     auto& value = multicol.value;
+    NGInlineContainer<PhysicalOffset> fixedpos_inline_container(
+        value->fixedpos_inline_container.container,
+        converter.ToPhysical(value->fixedpos_inline_container.relative_offset,
+                             PhysicalSize()));
     fragmented_data->multicols_with_pending_oofs.insert(
         multicol.key,
         MakeGarbageCollected<NGMulticolWithPendingOOFs<PhysicalOffset>>(
             value->multicol_offset.ConvertToPhysical(
                 builder->Style().GetWritingDirection(), size, PhysicalSize()),
             PhysicalContainingBlock(builder, size,
-                                    value->fixedpos_containing_block)));
+                                    value->fixedpos_containing_block),
+            fixedpos_inline_container));
   }
   return fragmented_data;
 }

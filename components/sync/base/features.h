@@ -28,6 +28,9 @@ inline constexpr base::Feature kDecoupleSendTabToSelfAndSyncSettings{
 inline constexpr base::Feature kCacheBaseEntitySpecificsInMetadata{
     "CacheBaseEntitySpecificsInMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
 
+inline constexpr base::Feature kEnableSyncImmediatelyInFRE{
+    "EnableSyncImmediatelyInFRE", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Causes Sync to ignore updates encrypted with keys that have been missing for
 // too long from this client; Sync will proceed normally as if those updates
 // didn't exist.
@@ -55,7 +58,7 @@ inline constexpr base::Feature kSyncAndroidPromosWithSingleButton{
 // nudge delay is applied to that data type. As a result, more changes are
 // likely to get combined into one commit message.
 inline constexpr base::Feature kSyncExtensionTypesThrottling{
-    "SyncExtensionTypesThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncExtensionTypesThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Sync requires policies to be loaded before starting.
 inline constexpr base::Feature kSyncRequiresPoliciesLoaded{

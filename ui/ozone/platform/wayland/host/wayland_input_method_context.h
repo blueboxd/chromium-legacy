@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
@@ -49,7 +48,9 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
   void SetCursorLocation(const gfx::Rect& rect) override;
   void SetSurroundingText(const std::u16string& text,
                           const gfx::Range& selection_range) override;
-  void SetContentType(TextInputType input_type, int input_flags) override;
+  void SetContentType(TextInputType input_type,
+                      int input_flags,
+                      bool should_do_learning) override;
   void Reset() override;
   void Focus() override;
   void Blur() override;
@@ -76,6 +77,7 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
                           uint32_t length,
                           const std::vector<SpanStyle>& spans) override;
   void OnInputPanelState(uint32_t state) override;
+  void OnModifiersMap(std::vector<std::string> modifiers_map) override;
 
  private:
   void UpdatePreeditText(const std::u16string& preedit_text);
@@ -113,6 +115,9 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
 
   // Caches VirtualKeyboard visibility.
   bool virtual_keyboard_visible_ = false;
+
+  // Keeps modifiers_map sent from the wayland compositor.
+  std::vector<std::string> modifiers_map_;
 };
 
 }  // namespace ui

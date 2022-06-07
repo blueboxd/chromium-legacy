@@ -15,7 +15,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents_delegate.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
@@ -356,9 +355,6 @@ void NoStatePrefetchContents::DidStopLoading() {
 
 void NoStatePrefetchContents::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
@@ -377,9 +373,6 @@ void NoStatePrefetchContents::DidStartNavigation(
 
 void NoStatePrefetchContents::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
@@ -398,9 +391,6 @@ void NoStatePrefetchContents::DidFinishLoad(
 
 void NoStatePrefetchContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted()) {
     return;

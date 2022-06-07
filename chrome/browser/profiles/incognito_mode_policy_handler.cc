@@ -26,8 +26,10 @@ IncognitoModePolicyHandler::~IncognitoModePolicyHandler() {}
 
 bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                      PolicyErrorMap* errors) {
+  // It is safe to use `GetValueUnsafe()` because type checking is performed
+  // before the value is used.
   const base::Value* availability =
-      policies.GetValue(key::kIncognitoModeAvailability);
+      policies.GetValueUnsafe(key::kIncognitoModeAvailability);
   if (availability) {
     if (!availability->is_int()) {
       errors->AddError(key::kIncognitoModeAvailability, IDS_POLICY_TYPE_ERROR,
@@ -45,8 +47,10 @@ bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     return true;
   }
 
+  // It is safe to use `GetValueUnsafe()` because type checking is performed
+  // before the value is used.
   const base::Value* deprecated_enabled =
-      policies.GetValue(key::kIncognitoEnabled);
+      policies.GetValueUnsafe(key::kIncognitoEnabled);
   if (deprecated_enabled && !deprecated_enabled->is_bool()) {
     errors->AddError(key::kIncognitoEnabled, IDS_POLICY_TYPE_ERROR,
                      base::Value::GetTypeName(base::Value::Type::BOOLEAN));
@@ -68,32 +72,25 @@ void IncognitoModePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
 #endif
 
-  const base::Value* availability =
-      policies.GetValue(key::kIncognitoModeAvailability);
+  const base::Value* availability = policies.GetValue(
+      key::kIncognitoModeAvailability, base::Value::Type::INTEGER);
   const base::Value* deprecated_enabled =
-      policies.GetValue(key::kIncognitoEnabled);
+      policies.GetValue(key::kIncognitoEnabled, base::Value::Type::BOOLEAN);
   if (availability) {
     IncognitoModePrefs::Availability availability_enum_value;
-    if (availability->is_int() &&
-        IncognitoModePrefs::IntToAvailability(availability->GetInt(),
+    if (IncognitoModePrefs::IntToAvailability(availability->GetInt(),
                                               &availability_enum_value)) {
       prefs->SetInteger(prefs::kIncognitoModeAvailability,
                         static_cast<int>(availability_enum_value));
-    } else {
-      NOTREACHED();
     }
   } else if (deprecated_enabled) {
     // If kIncognitoModeAvailability is not specified, check the obsolete
     // kIncognitoEnabled.
-    if (deprecated_enabled->is_bool()) {
-      prefs->SetInteger(
-          prefs::kIncognitoModeAvailability,
-          static_cast<int>(deprecated_enabled->GetBool()
-                               ? IncognitoModePrefs::Availability::kEnabled
-                               : IncognitoModePrefs::Availability::kDisabled));
-    } else {
-      NOTREACHED();
-    }
+    prefs->SetInteger(
+        prefs::kIncognitoModeAvailability,
+        static_cast<int>(deprecated_enabled->GetBool()
+                             ? IncognitoModePrefs::Availability::kEnabled
+                             : IncognitoModePrefs::Availability::kDisabled));
   }
 }
 

@@ -18,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
@@ -27,6 +26,8 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -38,11 +39,14 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/data_url.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -69,7 +73,14 @@ ChangePictureHandler::ChangePictureHandler()
                       bundle.GetRawDataResource(IDR_SOUND_CAMERA_SNAP_WAV));
 }
 
-ChangePictureHandler::~ChangePictureHandler() = default;
+ChangePictureHandler::~ChangePictureHandler() {
+  if (IsJavascriptAllowed()) {
+    ::ash::personalization_app::PersonalizationAppManagerFactory::
+        GetForBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
+            ->MaybeStartHatsTimer(
+                ::ash::personalization_app::HatsSurveyType::kAvatar);
+  }
+}
 
 void ChangePictureHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(

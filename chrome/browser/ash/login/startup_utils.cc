@@ -7,13 +7,14 @@
 #include <utility>
 
 #include "ash/components/arc/arc_prefs.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -102,6 +103,9 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kDisableHIDDetectionScreenForTests, false);
   registry->RegisterBooleanPref(prefs::kOobeGuestMetricsEnabled, false);
   registry->RegisterBooleanPref(prefs::kOobeGuestAcceptedTos, false);
+  if (switches::IsRevenBranding()) {
+    registry->RegisterBooleanPref(prefs::kOobeRevenUpdatedToFlex, false);
+  }
 }
 
 // static
@@ -120,6 +124,11 @@ void StartupUtils::RegisterOobeProfilePrefs(PrefRegistrySimple* registry) {
   // initialized along with `kOobeOnboardingTime`.
   registry->RegisterBooleanPref(
       arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded, false);
+  if (switches::IsRevenBranding() &&
+      features::IsOobeConsolidatedConsentEnabled()) {
+    registry->RegisterBooleanPref(prefs::kRevenOobeConsolidatedConsentAccepted,
+                                  false);
+  }
   OnboardingUserActivityCounter::RegisterProfilePrefs(registry);
 }
 

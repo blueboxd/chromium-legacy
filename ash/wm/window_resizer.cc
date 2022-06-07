@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_resizer.h"
 
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -84,10 +85,6 @@ const int WindowResizer::kBoundsChangeDirection_Vertical = 2;
 
 WindowResizer::WindowResizer(WindowState* window_state)
     : window_state_(window_state) {
-  recorder_ = CreatePresentationTimeHistogramRecorder(
-      GetTarget()->layer()->GetCompositor(),
-      "Ash.InteractiveWindowResize.TimeToPresent",
-      "Ash.InteractiveWindowResize.TimeToPresent.MaxLatency");
   DCHECK(window_state_->drag_details());
 }
 
@@ -213,7 +210,8 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
         // Update bottom edge to stay in the work area when we are resizing
         // by dragging the bottom edge or corners.
         if (new_bounds.bottom() > work_area.bottom())
-          new_bounds.Inset(0, 0, 0, new_bounds.bottom() - work_area.bottom());
+          new_bounds.Inset(gfx::Insets::TLBR(
+              0, 0, new_bounds.bottom() - work_area.bottom(), 0));
       }
     }
     if (details().bounds_change & kBoundsChange_Repositions &&
@@ -238,7 +236,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     const display::Display& display =
         display::Screen::GetScreen()->GetDisplayMatching(near_passed_location);
     gfx::Rect screen_work_area = display.work_area();
-    screen_work_area.Inset(kMinimumOnScreenArea, 0);
+    screen_work_area.Inset(gfx::Insets::VH(0, kMinimumOnScreenArea));
     gfx::Rect new_bounds_in_screen(new_bounds);
     ::wm::ConvertRectToScreen(parent, &new_bounds_in_screen);
     if (!screen_work_area.Intersects(new_bounds_in_screen)) {
@@ -263,8 +261,14 @@ bool WindowResizer::IsBottomEdge(int window_component) {
 void WindowResizer::SetBoundsDuringResize(const gfx::Rect& bounds) {
   aura::Window* window = GetTarget();
   DCHECK(window);
+
   auto ptr = weak_ptr_factory_.GetWeakPtr();
-  const gfx::Rect original_bounds = window->bounds();
+  const gfx::Size original_size = window->bounds().size();
+
+  // Prepare to record presentation time (e.g. tracking Configure).
+  if (recorder_)
+    recorder_->PrepareToRecord();
+
   window->SetBounds(bounds);
 
   // Resizer can be destroyed when a window is attached during tab dragging.
@@ -272,9 +276,19 @@ void WindowResizer::SetBoundsDuringResize(const gfx::Rect& bounds) {
   if (!ptr)
     return;
 
-  if (bounds.size() == original_bounds.size())
+  // Using `window->bounds()` instead of `bounds` to check size change because
+  // whether "window->SetBounds()" could reject a bounds change. And when that
+  // happens, there might be no new frames presented on screen.
+  if (window->bounds().size() == original_size)
     return;
-  recorder_->RequestNext();
+
+  if (recorder_)
+    recorder_->RequestNext();
+}
+
+void WindowResizer::SetPresentationTimeRecorder(
+    std::unique_ptr<PresentationTimeRecorder> recorder) {
+  recorder_ = std::move(recorder);
 }
 
 void WindowResizer::AdjustDeltaForTouchResize(int* delta_x, int* delta_y) {

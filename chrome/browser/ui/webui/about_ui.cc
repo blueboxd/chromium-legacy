@@ -25,7 +25,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
@@ -265,7 +264,8 @@ class ChromeOSTermsHandler
           ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceString(
               IDS_TERMS_HTML);
     }
-    std::move(callback_).Run(base::RefCountedString::TakeString(&contents_));
+    std::move(callback_).Run(
+        base::RefCountedString::TakeString(std::move(contents_)));
   }
 
   // Path in the URL.
@@ -336,7 +336,8 @@ class ChromeOSCreditsHandler
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
               IDR_OS_CREDITS_HTML);
     }
-    std::move(callback_).Run(base::RefCountedString::TakeString(&contents_));
+    std::move(callback_).Run(
+        base::RefCountedString::TakeString(std::move(contents_)));
   }
 
   // Path in the URL.
@@ -354,7 +355,8 @@ void OnBorealisCreditsLoaded(content::URLDataSource::GotDataCallback callback,
   if (credits_html.empty()) {
     credits_html = l10n_util::GetStringUTF8(IDS_BOREALIS_CREDITS_PLACEHOLDER);
   }
-  std::move(callback).Run(base::RefCountedString::TakeString(&credits_html));
+  std::move(callback).Run(
+      base::RefCountedString::TakeString(std::move(credits_html)));
 }
 
 void HandleBorealisCredits(Profile* profile,
@@ -438,7 +440,8 @@ class CrostiniCreditsHandler
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
       contents_ = l10n_util::GetStringUTF8(IDS_CROSTINI_CREDITS_PLACEHOLDER);
     }
-    std::move(callback_).Run(base::RefCountedString::TakeString(&contents_));
+    std::move(callback_).Run(
+        base::RefCountedString::TakeString(std::move(contents_)));
   }
 
   // Path in the URL.
@@ -713,7 +716,8 @@ void AboutUIHTMLSource::FinishDataRequest(
     const std::string& html,
     content::URLDataSource::GotDataCallback callback) {
   std::string html_copy(html);
-  std::move(callback).Run(base::RefCountedString::TakeString(&html_copy));
+  std::move(callback).Run(
+      base::RefCountedString::TakeString(std::move(html_copy)));
 }
 
 std::string AboutUIHTMLSource::GetMimeType(const std::string& path) {

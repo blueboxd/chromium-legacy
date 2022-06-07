@@ -17,7 +17,6 @@
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/updater/browser_updater_client_util.h"
 #import "chrome/updater/app/server/mac/update_service_wrappers.h"
 #import "chrome/updater/mac/xpc_service_names.h"
@@ -131,6 +130,7 @@ NSString* GetAppIdForUpdaterAsNSString() {
 // Checks for update of a given app, with specified priority. Sends repeated
 // updates of progress and returns the result in the reply block.
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
+               installDataIndex:(NSString* _Nullable)installDataIndex
                        priority:(CRUPriorityWrapper* _Nonnull)priority
         policySameVersionUpdate:
             (CRUPolicySameVersionUpdateWrapper* _Nonnull)policySameVersionUpdate
@@ -145,6 +145,7 @@ NSString* GetAppIdForUpdaterAsNSString() {
 
   [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
       checkForUpdateWithAppID:appID
+             installDataIndex:installDataIndex
                      priority:priority
       policySameVersionUpdate:policySameVersionUpdate
                   updateState:updateState
@@ -244,6 +245,7 @@ void BrowserUpdaterClientMac::BeginUpdateCheck(
           initWithPolicySameVersionUpdate:
               updater::UpdateService::PolicySameVersionUpdate::kNotAllowed]);
   [client_ checkForUpdateWithAppID:GetAppIdForUpdaterAsNSString()
+                  installDataIndex:nil
                           priority:priority_wrapper.get()
            policySameVersionUpdate:policySameVersionUpdateWrapper.get()
                        updateState:state_observer.get()

@@ -43,8 +43,7 @@ class ActiveDirectoryPasswordChangeScreenHandler
  public:
   using TView = ActiveDirectoryPasswordChangeView;
 
-  explicit ActiveDirectoryPasswordChangeScreenHandler(
-      JSCallsContainer* js_calls_container);
+  ActiveDirectoryPasswordChangeScreenHandler();
 
   ActiveDirectoryPasswordChangeScreenHandler(
       const ActiveDirectoryPasswordChangeScreenHandler&) = delete;
@@ -56,7 +55,7 @@ class ActiveDirectoryPasswordChangeScreenHandler
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
@@ -32,15 +33,16 @@ namespace {
 constexpr const char* usage_msg =
     R"(usage: video_decode_accelerator_perf_tests
            [-v=<level>] [--vmodule=<config>] [--output_folder]
-           ([--use-legacy]|[--use_vd]|[--use_vd_vda]) [--linear_output]
+           ([--use-legacy]|[--use_vd_vda]) [--linear_output]
            [--disable_vaapi_lock]
            [--gtest_help] [--help]
            [<video path>] [<video metadata path>]
 )";
 
 // Video decoder perf tests help message.
-constexpr const char* help_msg =
-    R"""(Run the video decode accelerator performance tests on the video
+const std::string help_msg =
+    std::string(
+        R"""(Run the video decode accelerator performance tests on the video
 specified by <video path>. If no <video path> is given the default
 "test-25fps.h264" video will be used.
 
@@ -57,8 +59,6 @@ The following arguments are supported:
                         performance metrics, if not specified results
                         will be stored in the current working directory.
   --use-legacy          use the legacy VDA-based video decoders.
-  --use_vd              use the new VD-based video decoders.
-                        (enabled by default)
   --use_vd_vda          use the new VD-based video decoders with a
                         wrapper that translates to the VDA interface,
                         used to test interaction with older components
@@ -73,8 +73,16 @@ The following arguments are supported:
                         backend that's known to be thread-safe and only in
                         portions of the Chrome stack that should be able to
                         deal with the absence of the lock
-                        (not the VaapiVideoDecodeAccelerator).
-
+                        (not the VaapiVideoDecodeAccelerator).)""") +
+#if defined(ARCH_CPU_ARM_FAMILY)
+    R"""(
+  --disable-libyuv      use hw format conversion instead of libYUV.
+                        libYUV will be used by default, unless the
+                        video decoder format is not supported;
+                        in that case the code will try to use the
+                        v4l2 image processor.)""" +
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
+    R"""(
   --gtest_help          display the gtest help and exit.
   --help                display this help and exit.
 )""";
@@ -460,10 +468,15 @@ int main(int argc, char** argv) {
   // Parse command line arguments.
   base::FilePath::StringType output_folder = media::test::kDefaultOutputFolder;
   bool use_legacy = false;
-  bool use_vd = false;
   bool use_vd_vda = false;
   bool linear_output = false;
   std::vector<base::Feature> disabled_features;
+  std::vector<base::Feature> enabled_features;
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+  enabled_features.push_back(media::kPreferLibYuvImageProcessor);
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
+
   media::test::DecoderImplementation implementation =
       media::test::DecoderImplementation::kVD;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
@@ -479,9 +492,6 @@ int main(int argc, char** argv) {
     } else if (it->first == "use-legacy") {
       use_legacy = true;
       implementation = media::test::DecoderImplementation::kVDA;
-    } else if (it->first == "use_vd") {
-      use_vd = true;
-      implementation = media::test::DecoderImplementation::kVD;
     } else if (it->first == "use_vd_vda") {
       use_vd_vda = true;
       implementation = media::test::DecoderImplementation::kVDVDA;
@@ -489,6 +499,10 @@ int main(int argc, char** argv) {
       linear_output = true;
     } else if (it->first == "disable_vaapi_lock") {
       disabled_features.push_back(media::kGlobalVaapiLock);
+#if defined(ARCH_CPU_ARM_FAMILY)
+    } else if (it->first == "disable-libyuv") {
+      enabled_features.clear();
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -496,18 +510,8 @@ int main(int argc, char** argv) {
     }
   }
 
-  if (use_legacy && use_vd) {
-    std::cout << "--use-legacy and --use_vd cannot be enabled together.\n"
-              << media::test::usage_msg;
-    return EXIT_FAILURE;
-  }
   if (use_legacy && use_vd_vda) {
     std::cout << "--use-legacy and --use_vd_vda cannot be enabled together.\n"
-              << media::test::usage_msg;
-    return EXIT_FAILURE;
-  }
-  if (use_vd && use_vd_vda) {
-    std::cout << "--use_vd and --use_vd_vda cannot be enabled together.\n"
               << media::test::usage_msg;
     return EXIT_FAILURE;
   }
@@ -530,8 +534,8 @@ int main(int argc, char** argv) {
           video_path, video_metadata_path, /*validator_type=*/
           media::test::VideoPlayerTestEnvironment::ValidatorType::kNone,
           implementation, linear_output, base::FilePath(output_folder),
-          media::test::FrameOutputConfig(),
-          /*enabled_features=*/{}, disabled_features);
+          media::test::FrameOutputConfig(), enabled_features,
+          disabled_features);
   if (!test_environment)
     return EXIT_FAILURE;
 

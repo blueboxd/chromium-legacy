@@ -14,6 +14,21 @@
       "use_thin_lto": true
     }
   },
+  "chromeos-arm64-generic-cfi-thin-lto-chrome": {
+    "args_file": "//build/args/chromeos/arm64-generic.gni",
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_cfi": true,
+      "is_chrome_branded": true,
+      "is_chromeos_device": true,
+      "is_official_build": true,
+      "ozone_platform_headless": true,
+      "symbol_level": 2,
+      "use_cfi_cast": true,
+      "use_goma": true,
+      "use_thin_lto": true
+    }
+  },
   "chromeos-betty-arc-r-chrome": {
     "args_file": "//build/args/chromeos/betty-arc-r.gni",
     "gn_args": {
@@ -180,8 +195,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_cfi": true,
       "is_chrome_branded": true,
@@ -198,8 +213,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_cfi": true,
       "is_chrome_branded": true,
@@ -217,8 +232,8 @@
     "args_file": "//build/args/chromeos/arm-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_i386-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_i386-sysroot",
       "dcheck_always_on": false,
       "is_cfi": true,
       "is_chrome_branded": true,
@@ -235,8 +250,8 @@
     "args_file": "//build/args/chromeos/arm-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_i386-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_i386-sysroot",
       "dcheck_always_on": false,
       "is_cfi": true,
       "is_chrome_branded": true,

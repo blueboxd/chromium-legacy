@@ -178,7 +178,7 @@ def EncodeStackPointerUpdate(offset: int) -> bytes:
         instruction_code | ((min(abs_offset, 0x100) - 4) >> 2)
     ]
     # For vsp increments of 0x104-0x200 we use 00xxxxxx twice.
-    if abs_offset > 0x104:
+    if abs_offset >= 0x104:
       instructions.append(instruction_code | ((abs_offset - 0x100 - 4) >> 2))
     try:
       return EncodeAsBytes(*instructions)
@@ -698,7 +698,7 @@ def EncodeFunctionOffsetTable(
 ) -> Tuple[bytes, Dict[Tuple[EncodedAddressUnwind, ...], int]]:
   """Encodes the function offset table.
 
-  The function offset table maps local address_offset from function
+  The function offset table maps local instruction offset from function
   start to the location in the unwind instruction table.
 
   Args:
@@ -723,8 +723,13 @@ def EncodeFunctionOffsetTable(
 
     offsets[sequence] = len(function_offset_table)
     for address_offset, complete_instruction_sequence in sequence:
-      function_offset_table += Uleb128Encode(address_offset) + Uleb128Encode(
-          unwind_instruction_table_offsets[complete_instruction_sequence])
+      # Note: address_offset is the number of bytes from one address to another,
+      # while the instruction_offset is the number of 2-byte instructions
+      # from one address to another.
+      instruction_offset = address_offset >> 1
+      function_offset_table += (
+          Uleb128Encode(instruction_offset) + Uleb128Encode(
+              unwind_instruction_table_offsets[complete_instruction_sequence]))
 
   return bytes(function_offset_table), offsets
 

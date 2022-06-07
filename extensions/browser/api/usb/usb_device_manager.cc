@@ -10,6 +10,7 @@
 
 #include "base/containers/contains.h"
 #include "base/lazy_instance.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
@@ -85,6 +86,15 @@ bool WillDispatchDeviceEvent(
       DevicePermissionsManager::Get(browser_context)
           ->GetForExtension(extension->id());
   if (device_permissions->FindUsbDeviceEntry(device_info).get()) {
+    return true;
+  }
+
+  // Check against WebUsbAllowDevicesForUrls.
+  ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
+  DCHECK(client);
+  if (client->IsUsbDeviceAllowedByPolicy(browser_context, extension->id(),
+                                         device_info.vendor_id,
+                                         device_info.product_id)) {
     return true;
   }
 

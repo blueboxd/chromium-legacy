@@ -40,6 +40,7 @@
 #include "components/services/storage/public/mojom/filesystem/directory.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
+#include "components/services/storage/shared_storage/shared_storage_manager.h"
 #include "components/services/storage/storage_service_impl.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/browser/aggregation_service/aggregation_service_features.h"
@@ -59,11 +60,12 @@
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/compute_pressure/compute_pressure_manager.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
-#include "content/browser/font_access/font_access_manager_impl.h"
+#include "content/browser/font_access/font_access_manager.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
@@ -71,6 +73,7 @@
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/native_io/native_io_context_impl.h"
+#include "content/browser/navigation_or_document_handle.h"
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
@@ -78,6 +81,7 @@
 #include "content/browser/push_messaging/push_messaging_context.h"
 #include "content/browser/quota/quota_context.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/shared_storage/shared_storage_worklet_host_manager.h"
@@ -85,6 +89,7 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl_private_key_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -202,10 +207,9 @@ mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
     const bool single_process_mode =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSingleProcess);
-    const bool oop_storage_enabled =
-        base::FeatureList::IsEnabled(features::kStorageServiceOutOfProcess) &&
-        !sandboxed_data_dir.empty() && !single_process_mode &&
-        !g_force_in_process_storage_service;
+    const bool oop_storage_enabled = !sandboxed_data_dir.empty() &&
+                                     !single_process_mode &&
+                                     !g_force_in_process_storage_service;
     if (oop_storage_enabled) {
       DCHECK(sandboxed_data_dir.IsAbsolute())
           << "Storage Service data directory must be an absolute path, but \""
@@ -432,16 +436,9 @@ BrowserContext* GetBrowserContextFromStoragePartition(
 // Returns the WebContents corresponding to `context`.
 WebContents* GetWebContents(
     StoragePartitionImpl::URLLoaderNetworkContext context) {
-  switch (context.type()) {
-    case Type::kRenderFrameHostContext: {
-      return WebContents::FromRenderFrameHost(
-          RenderFrameHostImpl::FromID(context.render_frame_host_id()));
-    }
-    case Type::kNavigationRequestContext:
-      return WebContents::FromFrameTreeNodeId(context.frame_tree_node_id());
-  }
-  NOTREACHED();
-  return nullptr;
+  if (!context.navigation_or_document())
+    return nullptr;
+  return context.navigation_or_document()->GetWebContents();
 }
 
 // LoginHandlerDelegate manages HTTP auth. It is self-owning and deletes itself
@@ -566,16 +563,11 @@ void OnAuthRequiredContinuation(
 
 // Returns true if the request is the primary main frame navigation.
 bool IsPrimaryMainFrameRequest(
-    StoragePartitionImpl::URLLoaderNetworkContext context) {
+    const StoragePartitionImpl::URLLoaderNetworkContext& context) {
   if (!context.IsNavigationRequestContext())
     return false;
 
-  auto* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(context.frame_tree_node_id());
-  // TODO(1254377): Consider replacing FrameTree::Type with the type on the
-  // FrameTreeNode.
-  return frame_tree_node && frame_tree_node->IsMainFrame() &&
-         frame_tree_node->frame_tree()->type() == FrameTree::Type::kPrimary;
+  return context.navigation_or_document()->IsInPrimaryMainFrame();
 }
 
 // This class lives on the UI thread. It is self-owned and will delete itself
@@ -653,27 +645,26 @@ void CallCancelRequest(
   client_cert_responder->CancelRequest();
 }
 
-// Cancels prerendering if `frame_tree_node_id` is in a prerendered frame tree,
-// using `final_status` as the cancellation reason. Returns true if cancelled.
-bool CancelIfPrerendering(int frame_tree_node_id,
-                          PrerenderHost::FinalStatus final_status) {
-  auto* frame_tree_node = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (!frame_tree_node)
-    return false;
-  auto* web_contents = WebContentsImpl::FromFrameTreeNode(frame_tree_node);
-  return web_contents->CancelPrerendering(frame_tree_node, final_status);
-}
-
-// Cancels prerendering if `render_frame_host_id` is in a prerendered frame
+// Cancels prerendering if `navigation_or_document` is in a prerendered frame
 // tree, using `final_status` as the cancellation reason. Returns true if
 // cancelled.
-bool CancelIfPrerendering(GlobalRenderFrameHostId render_frame_host_id,
+bool CancelIfPrerendering(NavigationOrDocumentHandle* navigation_or_document,
                           PrerenderHost::FinalStatus final_status) {
-  auto* render_frame_host_impl =
-      RenderFrameHostImpl::FromID(render_frame_host_id);
-  if (!render_frame_host_impl)
+  FrameTreeNode* frame_tree_node = nullptr;
+  // `navigation_or_document` can be null for `kServiceWorkerContext`.
+  if (!navigation_or_document)
     return false;
-  return render_frame_host_impl->CancelPrerendering(final_status);
+  auto* navigation_request = navigation_or_document->GetNavigationRequest();
+  if (navigation_request)
+    frame_tree_node = navigation_request->frame_tree_node();
+  auto* render_frame_host = navigation_or_document->GetDocument();
+  if (render_frame_host)
+    frame_tree_node = FrameTreeNode::From(render_frame_host);
+  if (!frame_tree_node)
+    return false;
+
+  auto* web_contents = WebContentsImpl::FromFrameTreeNode(frame_tree_node);
+  return web_contents->CancelPrerendering(frame_tree_node, final_status);
 }
 
 void OnCertificateRequestedContinuation(
@@ -853,6 +844,8 @@ storage::QuotaClientTypes StoragePartitionImpl::GenerateQuotaClientTypes(
     quota_client_types.insert(storage::QuotaClientType::kServiceWorkerCache);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_BACKGROUND_FETCH)
     quota_client_types.insert(storage::QuotaClientType::kBackgroundFetch);
+  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA)
+    quota_client_types.insert(storage::QuotaClientType::kMediaLicense);
   return quota_client_types;
 }
 
@@ -965,6 +958,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       InterestGroupManagerImpl* interest_group_manager,
       AttributionManagerImpl* attribution_manager,
       AggregationServiceImpl* aggregation_service,
+      storage::SharedStorageManager* shared_storage_manager,
       bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end);
@@ -994,10 +988,12 @@ class StoragePartitionImpl::DataDeletionHelper {
     kPluginPrivate = 7,
     kConversions = 8,
     kAggregationService = 9,
-    kMaxValue = kAggregationService,
+    kSharedStorage = 10,
+    kMaxValue = kSharedStorage,
   };
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
+
   void OnTaskComplete(TracingDataType data_type,
                       int tracing_id);  // Callable on any thread.
   void RecordUnfinishedSubTasks();
@@ -1287,11 +1283,13 @@ void StoragePartitionImpl::Initialize(
                                 browser_context_->GetSpecialStoragePolicy(),
                                 blob_context.get());
 
-  BlobRegistryWrapper* fallback_blob_registry =
-      fallback_for_blob_urls ? fallback_for_blob_urls->GetBlobRegistry()
-                             : nullptr;
+  blob_url_registry_ = std::make_unique<storage::BlobUrlRegistry>(
+      fallback_for_blob_urls
+          ? fallback_for_blob_urls->GetBlobUrlRegistry()->AsWeakPtr()
+          : nullptr);
+
   blob_registry_ = BlobRegistryWrapper::Create(
-      blob_context, filesystem_context_, fallback_blob_registry);
+      blob_context, filesystem_context_, blob_url_registry_->AsWeakPtr());
 
   prefetch_url_loader_service_ =
       std::make_unique<PrefetchURLLoaderService>(browser_context_);
@@ -1351,7 +1349,7 @@ void StoragePartitionImpl::Initialize(
                                                settings.size_in_bytes());
   }
 
-  font_access_manager_ = FontAccessManagerImpl::Create();
+  font_access_manager_ = FontAccessManager::Create();
   compute_pressure_manager_ = ComputePressureManager::Create();
 
   if (base::FeatureList::IsEnabled(kPrivacySandboxAggregationService)) {
@@ -1361,9 +1359,17 @@ void StoragePartitionImpl::Initialize(
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   media_license_manager_ = std::make_unique<MediaLicenseManager>(
-      GetBucketBasePath(), browser_context_->GetSpecialStoragePolicy(),
-      quota_manager_proxy);
+      filesystem_context_, is_in_memory(),
+      browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
+    base::FilePath shared_storage_path =
+        is_in_memory() ? base::FilePath()
+                       : path.Append(storage::kSharedStoragePath);
+    shared_storage_manager_ = std::make_unique<storage::SharedStorageManager>(
+        shared_storage_path, special_storage_policy_);
+  }
 }
 
 void StoragePartitionImpl::OnStorageServiceDisconnected() {
@@ -1539,7 +1545,7 @@ DedicatedWorkerServiceImpl* StoragePartitionImpl::GetDedicatedWorkerService() {
   return dedicated_worker_service_.get();
 }
 
-SharedWorkerServiceImpl* StoragePartitionImpl::GetSharedWorkerService() {
+SharedWorkerService* StoragePartitionImpl::GetSharedWorkerService() {
   DCHECK(initialized_);
   return shared_worker_service_.get();
 }
@@ -1593,6 +1599,11 @@ BlobRegistryWrapper* StoragePartitionImpl::GetBlobRegistry() {
   return blob_registry_.get();
 }
 
+storage::BlobUrlRegistry* StoragePartitionImpl::GetBlobUrlRegistry() {
+  DCHECK(initialized_);
+  return blob_url_registry_.get();
+}
+
 PrefetchURLLoaderService* StoragePartitionImpl::GetPrefetchURLLoaderService() {
   DCHECK(initialized_);
   return prefetch_url_loader_service_.get();
@@ -1614,7 +1625,7 @@ StoragePartitionImpl::GetGeneratedCodeCacheContext() {
   return generated_code_cache_context_.get();
 }
 
-DevToolsBackgroundServicesContextImpl*
+DevToolsBackgroundServicesContext*
 StoragePartitionImpl::GetDevToolsBackgroundServicesContext() {
   DCHECK(initialized_);
   return devtools_background_services_context_.get();
@@ -1631,13 +1642,13 @@ AttributionManagerImpl* StoragePartitionImpl::GetAttributionManager() {
   return attribution_manager_.get();
 }
 
-FontAccessManagerImpl* StoragePartitionImpl::GetFontAccessManager() {
+FontAccessManager* StoragePartitionImpl::GetFontAccessManager() {
   DCHECK(initialized_);
   return font_access_manager_.get();
 }
 
 void StoragePartitionImpl::SetFontAccessManagerForTesting(
-    std::unique_ptr<FontAccessManagerImpl> font_access_manager) {
+    std::unique_ptr<FontAccessManager> font_access_manager) {
   DCHECK(initialized_);
   DCHECK(font_access_manager);
   font_access_manager_ = std::move(font_access_manager);
@@ -1700,6 +1711,10 @@ void StoragePartitionImpl::SetProtoDatabaseProvider(
 leveldb_proto::ProtoDatabaseProvider*
 StoragePartitionImpl::GetProtoDatabaseProviderForTesting() {
   return proto_database_provider_.get();
+}
+
+storage::SharedStorageManager* StoragePartitionImpl::GetSharedStorageManager() {
+  return shared_storage_manager_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(
@@ -1781,13 +1796,14 @@ void StoragePartitionImpl::OnAuthRequired(
                 render_frame_host_impl->IsInPrimaryMainFrame();
           }
         } else {
-          // Overwrite the context; set `type` to kNavigationRequestContext
-          // which indicates that `frame_tree_node_id` is actually a
-          // FrameTreeNode ID.
+          // Overwrite the context; set `type` to kNavigationRequestContext.
           // TODO(https://crbug.com/1239554): Optimize locating logic.
-          context = URLLoaderNetworkContext::CreateForNavigation(
+          int frame_tree_node_id =
               container_host->GetFrameTreeNodeIdForOngoingNavigation(
-                  base::PassKey<StoragePartitionImpl>()));
+                  base::PassKey<StoragePartitionImpl>());
+          context = URLLoaderNetworkContext::CreateForNavigation(
+              *(FrameTreeNode::GloballyFindByID(frame_tree_node_id)
+                    ->navigation_request()));
         }
       }
     }
@@ -1796,31 +1812,27 @@ void StoragePartitionImpl::OnAuthRequired(
   // If the request is for a prerendering page, prerendering should be cancelled
   // because the embedder may show UI for auth requests, and it's unsuitable for
   // a hidden page.
-  if (context.IsNavigationRequestContext()) {
-    if (CancelIfPrerendering(context.frame_tree_node_id(),
-                             PrerenderHost::FinalStatus::kLoginAuthRequested)) {
-      return;
-    }
-  } else if (CancelIfPrerendering(
-                 context.render_frame_host_id(),
-                 PrerenderHost::FinalStatus::kLoginAuthRequested)) {
+  if (CancelIfPrerendering(context.navigation_or_document(),
+                           PrerenderHost::FinalStatus::kLoginAuthRequested)) {
     return;
   }
 
   if (!is_primary_main_frame.has_value())
     is_primary_main_frame = IsPrimaryMainFrameRequest(context);
   auto web_contents_getter = base::BindRepeating(GetWebContents, context);
-  int process_id;
-  switch (context.type()) {
-    case URLLoaderNetworkContext::Type::kRenderFrameHostContext:
-      process_id = context.render_frame_host_id().child_id;
-      break;
-    case URLLoaderNetworkContext::Type::kNavigationRequestContext:
-      process_id = network::mojom::kBrowserProcessId;
-      break;
-    default:
-      NOTREACHED();
-      break;
+  int process_id = network::mojom::kBrowserProcessId;
+  if (context.type() ==
+      URLLoaderNetworkContext::Type::kRenderFrameHostContext) {
+    // Set `process_id` to `kInvalidProcessId` considering `render_frame_host`
+    // can be null when it's destroyed already. `process_id` is updated only if
+    // `render_frame_host` is not null. If `render_frame_host` is null,
+    // OnAuthRequiredContinuation() fails to get the web contents and calls
+    // OnAuthCredentials() with a nullopt that triggers CancelAuth().
+    process_id = network::mojom::kInvalidProcessId;
+
+    auto* render_frame_host = context.navigation_or_document()->GetDocument();
+    if (render_frame_host)
+      process_id = render_frame_host->GetGlobalId().child_id;
   }
   OnAuthRequiredContinuation(
       process_id, request_id, url, *is_primary_main_frame, first_auth_attempt,
@@ -1856,14 +1868,14 @@ void StoragePartitionImpl::OnCertificateRequested(
           context = URLLoaderNetworkContext::CreateForRenderFrameHost(
               render_frame_host_id);
         } else {
-          // Overwrite the render_frame_host_id; set
-          // `render_frame_host_id.child_id` to kBrowserProcessId which
-          // indicates that `render_frame_host_id.frame_routing_id` is actually
-          // a FrameTreeNode ID.
+          // Overwrite the context; set `type` to kNavigationRequestContext.
           // TODO(https://crbug.com/1239554): Optimize locating logic.
-          context = URLLoaderNetworkContext::CreateForNavigation(
+          int frame_tree_node_id =
               container_host->GetFrameTreeNodeIdForOngoingNavigation(
-                  base::PassKey<StoragePartitionImpl>()));
+                  base::PassKey<StoragePartitionImpl>());
+          context = URLLoaderNetworkContext::CreateForNavigation(
+              *(FrameTreeNode::GloballyFindByID(frame_tree_node_id)
+                    ->navigation_request()));
         }
       }
     }
@@ -1872,16 +1884,8 @@ void StoragePartitionImpl::OnCertificateRequested(
   // If the request is for a prerendering page, prerendering should be cancelled
   // because the embedder may show a dialog and ask users to select client
   // certificates, and it's unsuitable for a hidden page.
-  if (context.IsNavigationRequestContext()) {
-    if (CancelIfPrerendering(
-            context.frame_tree_node_id(),
-            PrerenderHost::FinalStatus::kClientCertRequested)) {
-      CallCancelRequest(std::move(cert_responder));
-      return;
-    }
-  } else if (CancelIfPrerendering(
-                 context.render_frame_host_id(),
-                 PrerenderHost::FinalStatus::kClientCertRequested)) {
+  if (CancelIfPrerendering(context.navigation_or_document(),
+                           PrerenderHost::FinalStatus::kClientCertRequested)) {
     CallCancelRequest(std::move(cert_responder));
     return;
   }
@@ -1900,33 +1904,13 @@ void StoragePartitionImpl::OnSSLCertificateError(
   URLLoaderNetworkContext context =
       url_loader_network_observers_.current_context();
 
-  if (context.IsNavigationRequestContext()) {
-    // The remote end of this URLLoaderNetworkServiceObserver pipe was created
-    // for NavigationRequest, see
-    // `CreateURLLoaderNetworkObserverForNavigationRequest`.
-
-    // Cancel this request and the prerendering if the request is for a
-    // prerendering page, because prerendering pages are invisble and browser
-    // cannot show errors on invisible pages.
-    if (CancelIfPrerendering(
-            context.frame_tree_node_id(),
-            PrerenderHost::FinalStatus::kSslCertificateError)) {
-      std::move(response).Run(net_error);
-      return;
-    }
-  } else {
-    // The remote end of this URLLoaderNetworkServiceObserver pipe was created
-    // for Frame, see `CreateURLLoaderNetworkObserverForFrame`.
-
-    // Cancel this request and the prerendering if the request is for a
-    // prerendering page, because prerendering pages are invisble and browser
-    // cannot show errors on invisible pages.
-    if (CancelIfPrerendering(
-            context.render_frame_host_id(),
-            PrerenderHost::FinalStatus::kSslCertificateError)) {
-      std::move(response).Run(net_error);
-      return;
-    }
+  // Cancel this request and the prerendering if the request is for a
+  // prerendering page, because prerendering pages are invisible and browser
+  // cannot show errors on invisible pages.
+  if (CancelIfPrerendering(context.navigation_or_document(),
+                           PrerenderHost::FinalStatus::kSslCertificateError)) {
+    std::move(response).Run(net_error);
+    return;
   }
 
   SSLErrorDelegate* delegate =
@@ -1934,7 +1918,7 @@ void StoragePartitionImpl::OnSSLCertificateError(
   bool is_primary_main_frame_request = IsPrimaryMainFrameRequest(context);
   SSLManager::OnSSLCertificateError(
       delegate->GetWeakPtr(), is_primary_main_frame_request, url,
-      GetWebContents(context), net_error, ssl_info, fatal);
+      context.navigation_or_document(), net_error, ssl_info, fatal);
 }
 
 void StoragePartitionImpl::OnLoadingStateUpdate(
@@ -1955,11 +1939,19 @@ void StoragePartitionImpl::OnDataUseUpdate(
     int64_t sent_bytes) {
   URLLoaderNetworkContext context =
       url_loader_network_observers_.current_context();
+  // `navigation_or_document()` can be null for `kServiceWorkerContext`.
+  auto* render_frame_host =
+      context.navigation_or_document()
+          ? context.navigation_or_document()->GetDocument()
+          : nullptr;
   // It can pass empty GlobalRenderFrameHostId() when the context type is
-  // `kNavigationRequestContext`.
+  // not `kRenderFrameHostContext`.
+  GlobalRenderFrameHostId render_frame_host_id =
+      render_frame_host ? render_frame_host->GetGlobalId()
+                        : GlobalRenderFrameHostId();
   GetContentClient()->browser()->OnNetworkServiceDataUseUpdate(
-      context.render_frame_host_id(), network_traffic_annotation_id_hash,
-      recv_bytes, sent_bytes);
+      render_frame_host_id, network_traffic_annotation_id_hash, recv_bytes,
+      sent_bytes);
 }
 
 void StoragePartitionImpl::Clone(
@@ -1983,11 +1975,11 @@ StoragePartitionImpl::CreateURLLoaderNetworkObserverForFrame(int process_id,
 
 mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
 StoragePartitionImpl::CreateURLLoaderNetworkObserverForNavigationRequest(
-    int frame_tree_id) {
+    NavigationRequest& navigation_request) {
   mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver> remote;
   url_loader_network_observers_.Add(
       this, remote.InitWithNewPipeAndPassReceiver(),
-      URLLoaderNetworkContext::CreateForNavigation(frame_tree_id));
+      URLLoaderNetworkContext::CreateForNavigation(navigation_request));
   return remote;
 }
 
@@ -1996,8 +1988,7 @@ StoragePartitionImpl::CreateAuthCertObserverForServiceWorker() {
   mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver> remote;
   url_loader_network_observers_.Add(
       this, remote.InitWithNewPipeAndPassReceiver(),
-      URLLoaderNetworkContext::CreateForNavigation(
-          RenderFrameHost::kNoFrameTreeNodeId));
+      URLLoaderNetworkContext::CreateForServiceWorker());
   return remote;
 }
 
@@ -2020,9 +2011,10 @@ void StoragePartitionImpl::OnCanSendReportingReports(
 
   std::vector<url::Origin> origins_out;
   for (auto& origin : origins) {
-    bool allowed = permission_controller->GetPermissionStatusForServiceWorker(
-                       PermissionType::BACKGROUND_SYNC, origin) ==
-                   blink::mojom::PermissionStatus::GRANTED;
+    bool allowed =
+        permission_controller->GetPermissionStatusForOriginWithoutContext(
+            PermissionType::BACKGROUND_SYNC, origin) ==
+        blink::mojom::PermissionStatus::GRANTED;
     if (allowed)
       origins_out.push_back(origin);
   }
@@ -2037,7 +2029,7 @@ void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
   PermissionController* permission_controller =
       browser_context_->GetPermissionController();
   std::move(callback).Run(
-      permission_controller->GetPermissionStatusForServiceWorker(
+      permission_controller->GetPermissionStatusForOriginWithoutContext(
           content::PermissionType::BACKGROUND_SYNC,
           url::Origin::Create(origin)) ==
       blink::mojom::PermissionStatus::GRANTED);
@@ -2181,7 +2173,8 @@ void StoragePartitionImpl::ClearDataImpl(
       quota_manager_.get(), special_storage_policy_.get(),
       filesystem_context_.get(), GetCookieManagerForBrowserProcess(),
       interest_group_manager_.get(), attribution_manager_.get(),
-      aggregation_service_.get(), perform_storage_cleanup, begin, end);
+      aggregation_service_.get(), shared_storage_manager_.get(),
+      perform_storage_cleanup, begin, end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -2383,6 +2376,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     InterestGroupManagerImpl* interest_group_manager,
     AttributionManagerImpl* attribution_manager,
     AggregationServiceImpl* aggregation_service,
+    storage::SharedStorageManager* shared_storage_manager,
     bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end) {
@@ -2439,7 +2433,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       remove_mask_ & REMOVE_DATA_MASK_WEBSQL ||
       remove_mask_ & REMOVE_DATA_MASK_FILE_SYSTEMS ||
       remove_mask_ & REMOVE_DATA_MASK_SERVICE_WORKERS ||
-      remove_mask_ & REMOVE_DATA_MASK_CACHE_STORAGE) {
+      remove_mask_ & REMOVE_DATA_MASK_CACHE_STORAGE ||
+      remove_mask_ & REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA) {
     GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
@@ -2518,6 +2513,25 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
             CreateTaskCompletionClosure(TracingDataType::kPluginPrivate)));
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+  if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI) &&
+      shared_storage_manager &&
+      (remove_mask_ & REMOVE_DATA_MASK_SHARED_STORAGE)) {
+    auto shared_storage_purge_callback = base::BindOnce(
+        [](base::WeakPtr<storage::SharedStorageManager> manager,
+           base::OnceClosure callback,
+           storage::SharedStorageDatabase::OperationResult result) {
+          if (manager)
+            manager->OnOperationResult(result);
+          std::move(callback).Run();
+        },
+        shared_storage_manager->GetWeakPtr(),
+        CreateTaskCompletionClosure(TracingDataType::kSharedStorage));
+
+    shared_storage_manager->PurgeMatchingOrigins(
+        origin_matcher, begin, end, std::move(shared_storage_purge_callback),
+        perform_storage_cleanup);
+  }
 }
 
 void StoragePartitionImpl::ClearDataForOrigin(
@@ -2963,11 +2977,30 @@ void StoragePartitionImpl::
 
 StoragePartitionImpl::URLLoaderNetworkContext::URLLoaderNetworkContext(
     URLLoaderNetworkContext::Type type,
-    GlobalRenderFrameHostId render_frame_host_id,
-    int frame_tree_node_id)
-    : type_(type),
-      render_frame_host_id_(render_frame_host_id),
-      frame_tree_node_id_(frame_tree_node_id) {}
+    GlobalRenderFrameHostId render_frame_host_id)
+    : type_(type) {
+  // `render_frame_host_id` can be invalid for `kServiceWorkerContext`.
+  if (!render_frame_host_id)
+    return;
+  auto* render_frame_host = RenderFrameHostImpl::FromID(render_frame_host_id);
+  if (!render_frame_host)
+    return;
+
+  navigation_or_document_ = render_frame_host->GetNavigationOrDocumentHandle();
+}
+
+StoragePartitionImpl::URLLoaderNetworkContext::URLLoaderNetworkContext(
+    NavigationRequest& navigation_request)
+    : type_(Type::kNavigationRequestContext) {
+  navigation_or_document_ = navigation_request.navigation_or_document_handle();
+}
+
+StoragePartitionImpl::URLLoaderNetworkContext::URLLoaderNetworkContext(
+    const URLLoaderNetworkContext& other) = default;
+
+StoragePartitionImpl::URLLoaderNetworkContext&
+StoragePartitionImpl::URLLoaderNetworkContext::operator=(
+    const URLLoaderNetworkContext& other) = default;
 
 StoragePartitionImpl::URLLoaderNetworkContext::~URLLoaderNetworkContext() =
     default;
@@ -2975,21 +3008,26 @@ StoragePartitionImpl::URLLoaderNetworkContext::~URLLoaderNetworkContext() =
 StoragePartitionImpl::URLLoaderNetworkContext
 StoragePartitionImpl::URLLoaderNetworkContext::CreateForRenderFrameHost(
     GlobalRenderFrameHostId render_frame_host_id) {
-  return URLLoaderNetworkContext(
+  return StoragePartitionImpl::URLLoaderNetworkContext(
       URLLoaderNetworkContext::Type::kRenderFrameHostContext,
-      render_frame_host_id, MSG_ROUTING_NONE);
+      render_frame_host_id);
 }
 
 StoragePartitionImpl::URLLoaderNetworkContext
 StoragePartitionImpl::URLLoaderNetworkContext::CreateForNavigation(
-    int frame_tree_node_id) {
-  return URLLoaderNetworkContext(
-      URLLoaderNetworkContext::Type::kNavigationRequestContext,
-      GlobalRenderFrameHostId(), frame_tree_node_id);
+    NavigationRequest& navigation_request) {
+  return StoragePartitionImpl::URLLoaderNetworkContext(navigation_request);
 }
 
-bool StoragePartitionImpl::URLLoaderNetworkContext::
-    IsNavigationRequestContext() {
+StoragePartitionImpl::URLLoaderNetworkContext
+StoragePartitionImpl::URLLoaderNetworkContext::CreateForServiceWorker() {
+  return StoragePartitionImpl::URLLoaderNetworkContext(
+      URLLoaderNetworkContext::Type::kServiceWorkerContext,
+      GlobalRenderFrameHostId());
+}
+
+bool StoragePartitionImpl::URLLoaderNetworkContext::IsNavigationRequestContext()
+    const {
   return type_ == URLLoaderNetworkContext::Type::kNavigationRequestContext;
 }
 

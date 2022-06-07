@@ -23,7 +23,7 @@ using OfflineContentAggregator =
     ::offline_items_collection::OfflineContentAggregator;
 using OfflineItem = ::offline_items_collection::OfflineItem;
 using UpdateDelta = ::offline_items_collection::UpdateDelta;
-using DownloadUIModelPtr = ::OfflineItemModel::DownloadUIModelPtr;
+using DownloadUIModelPtr = ::DownloadUIModel::DownloadUIModelPtr;
 using OfflineItemList =
     ::offline_items_collection::OfflineContentAggregator::OfflineItemList;
 
@@ -31,7 +31,7 @@ class DownloadBubbleUIController
     : public OfflineContentProvider::Observer,
       public download::AllDownloadItemNotifier::Observer {
  public:
-  explicit DownloadBubbleUIController(Profile* profile);
+  explicit DownloadBubbleUIController(Browser* browser);
   DownloadBubbleUIController(const DownloadBubbleUIController&) = delete;
   DownloadBubbleUIController& operator=(const DownloadBubbleUIController&) =
       delete;
@@ -61,6 +61,27 @@ class DownloadBubbleUIController
   // Remove the entry from Partial view candidates.
   void RemoveContentIdFromPartialView(const ContentId& id);
 
+  // Submits download to download feedback service if the user has approved and
+  // the download is suitable for submission, then applies |command|.
+  // If user hasn't seen SBER opt-in text before, show SBER opt-in dialog first.
+  void MaybeSubmitDownloadToFeedbackService(DownloadUIModel* model,
+                                            DownloadCommands::Command command);
+
+  // Submits the downloaded file to the safebrowsing download feedback service.
+  // Applies |command| if submission succeeds. Returns whether submission was
+  // successful.
+  bool SubmitDownloadToFeedbackService(DownloadUIModel* model,
+                                       DownloadCommands::Command command) const;
+
+  // Process Warning keep or discard button press on the bubble. Submit
+  // download to feedback service for non-mixed content downloads.
+  void ProcessDownloadWarningButtonPress(DownloadUIModel* model,
+                                         DownloadCommands::Command command);
+
+  // Notify when a new download is ready to be shown on UI, and if the window
+  // this controller belongs to should show the partial view.
+  void OnNewItem(download::DownloadItem* item, bool show_details);
+
   download::AllDownloadItemNotifier& get_download_notifier_for_testing() {
     return download_notifier_;
   }
@@ -72,8 +93,6 @@ class DownloadBubbleUIController
  private:
   friend class DownloadBubbleUIControllerTest;
   // AllDownloadItemNotifier::Observer
-  void OnDownloadCreated(content::DownloadManager* manager,
-                         download::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
   void OnDownloadRemoved(content::DownloadManager* manager,
@@ -103,6 +122,7 @@ class DownloadBubbleUIController
   // Common method for getting main and partial views.
   std::vector<DownloadUIModelPtr> GetDownloadUIModels(bool is_main_view);
 
+  raw_ptr<Browser> browser_;
   raw_ptr<Profile> profile_;
   raw_ptr<content::DownloadManager> download_manager_;
   download::AllDownloadItemNotifier download_notifier_;

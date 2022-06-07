@@ -88,7 +88,7 @@ class FakeEasyUnlockService : public ash::EasyUnlockServiceRegular {
  public:
   FakeEasyUnlockService(
       Profile* profile,
-      chromeos::device_sync::FakeDeviceSyncClient* fake_device_sync_client,
+      ash::device_sync::FakeDeviceSyncClient* fake_device_sync_client,
       ash::secure_channel::FakeSecureChannelClient* fake_secure_channel_client,
       ash::multidevice_setup::FakeMultiDeviceSetupClient*
           fake_multidevice_setup_client)
@@ -109,7 +109,7 @@ class FakeEasyUnlockService : public ash::EasyUnlockServiceRegular {
 
 std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     content::BrowserContext* context) {
-  static base::NoDestructor<chromeos::device_sync::FakeDeviceSyncClient>
+  static base::NoDestructor<ash::device_sync::FakeDeviceSyncClient>
       fake_device_sync_client;
   static base::NoDestructor<ash::secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client;
@@ -178,9 +178,11 @@ class QuickUnlockPrivateUnitTest
     ash::CryptohomeMiscClient::InitializeFake();
     ash::UserDataAuthClient::InitializeFake();
     if (std::get<0>(param) == TestType::kCryptohome) {
-      auto* cryptohome_client = ash::FakeUserDataAuthClient::Get();
-      cryptohome_client->set_supports_low_entropy_credentials(true);
-      cryptohome_client->set_enable_auth_check(true);
+      auto* fake_userdataauth_client_testapi =
+          chromeos::FakeUserDataAuthClient::TestApi::Get();
+      fake_userdataauth_client_testapi->set_supports_low_entropy_credentials(
+          true);
+      fake_userdataauth_client_testapi->set_enable_auth_check(true);
     }
     ash::SystemSaltGetter::Initialize();
 

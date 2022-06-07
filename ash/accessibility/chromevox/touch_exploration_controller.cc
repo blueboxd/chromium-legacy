@@ -1037,7 +1037,7 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
 int TouchExplorationController::FindEdgesWithinInset(gfx::Point point_dip,
                                                      float inset) {
   gfx::RectF inner_bounds_dip(root_window_->bounds());
-  inner_bounds_dip.Inset(inset, inset);
+  inner_bounds_dip.Inset(inset);
 
   // Bitwise manipulation in order to determine where on the screen the point
   // lies. If more than one bit is turned on, then it is a corner where the two
@@ -1069,20 +1069,6 @@ void TouchExplorationController::DispatchKeyWithFlags(
             << "\nKey up: key code : " << key_up.key_code()
             << ", flags: " << key_up.flags();
   }
-}
-
-std::unique_ptr<ui::MouseEvent>
-TouchExplorationController::CreateMouseMoveEvent(const gfx::PointF& location,
-                                                 int flags) {
-  // The "synthesized" flag should be set on all events that don't have a
-  // backing native event.
-  flags |= ui::EF_IS_SYNTHESIZED;
-
-  std::unique_ptr<ui::MouseEvent> event(new ui::MouseEvent(
-      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), Now(), flags, 0));
-  event->set_location_f(location);
-  event->set_root_location_f(location);
-  return event;
 }
 
 void TouchExplorationController::EnterTouchToMouseMode() {

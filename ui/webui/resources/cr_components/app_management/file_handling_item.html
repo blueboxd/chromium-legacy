@@ -22,7 +22,8 @@
      id="toggle-row"
      label="[[i18n('appManagementFileHandlingHeader')]]"
      managed="[[isManaged_(app)]]"
-     value="[[getValue_(app)]]">
+     value="[[getValue_(app)]]"
+     class="header-text">
   </app-management-toggle-row>
   <p>
     <localized-link id="type-list"
@@ -30,8 +31,10 @@
       on-link-clicked="launchDialog_">
     </localized-link>
   </p>
-  <localized-link localized-string="[[i18nAdvanced('fileHandlingSetDefaults')]]"
-    link-url="[[getLearnMoreLinkUrl_(app)]]">
+  <localized-link id="learn-more"
+    localized-string="[[i18nAdvanced('fileHandlingSetDefaults')]]"
+    link-url="[[getLearnMoreLinkUrl_(app)]]"
+    on-link-clicked="onLearnMoreLinkClicked_">
   </localized-link>
 </div>
 <template is="dom-if" if="[[showOverflowDialog]]" restamp>

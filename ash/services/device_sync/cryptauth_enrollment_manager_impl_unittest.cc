@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/multidevice/fake_secure_message_delegate.h"
+#include "ash/components/multidevice/secure_message_delegate.h"
 #include "ash/services/device_sync/cryptauth_enroller.h"
 #include "ash/services/device_sync/fake_cryptauth_gcm_manager.h"
 #include "ash/services/device_sync/mock_sync_scheduler.h"
@@ -18,7 +20,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,7 @@ using ::testing::_;
 using ::testing::NiceMock;
 using ::testing::Return;
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -474,4 +475,4 @@ TEST_F(DeviceSyncCryptAuthEnrollmentManagerImplTest, ReenrollOnGCMPushMessage) {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

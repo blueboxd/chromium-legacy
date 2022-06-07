@@ -27,6 +27,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
@@ -570,7 +571,7 @@ TEST_F(WorkspaceControllerTest, MoveOnSwitch) {
   // completely out of the display work area.
   gfx::Insets insets =
       display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
-  insets.Set(0, 0, insets.bottom() + 30, 0);
+  insets = gfx::Insets::TLBR(0, 0, insets.bottom() + 30, 0);
   Shell::Get()->SetDisplayWorkAreaInsets(w1.get(), insets);
 
   // Switch to w1. The window should have moved.

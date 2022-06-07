@@ -22,7 +22,7 @@
 class PrefService;
 class PrefRegistrySimple;
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -169,6 +169,6 @@ class CryptAuthV2EnrollmentManagerImpl
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_V2_ENROLLMENT_MANAGER_IMPL_H_

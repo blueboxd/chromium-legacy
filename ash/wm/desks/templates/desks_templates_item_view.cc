@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/desk_template.h"
+#include "ash/public/cpp/view_shadow.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -15,6 +16,7 @@
 #include "ash/style/close_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
+#include "ash/style/system_shadow.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_textfield.h"
 #include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
@@ -30,6 +32,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -47,6 +50,7 @@
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 namespace {
@@ -54,11 +58,6 @@ namespace {
 // The padding values of the DesksTemplatesItemView.
 constexpr int kHorizontalPaddingDp = 24;
 constexpr int kVerticalPaddingDp = 16;
-
-// Shift the name view by 2dp so that the text is aligned with the date view.
-// The name view itself has a background, which shows on hover or focus, is not
-// aligned with the date view.
-constexpr gfx::Insets kNameExtraInsets(0, -2, 0, 0);
 
 // The preferred size of the whole DesksTemplatesItemView.
 constexpr gfx::Size kPreferredSize(220, 120);
@@ -83,6 +82,10 @@ constexpr int kTimeViewHeight = 24;
 // The spacing between the textfield and the managed status icon.
 constexpr int kManagedStatusIndicatorSpacing = 8;
 constexpr int kManagedStatusIndicatorSize = 20;
+
+// There is a gap between the background of the name view and the name view's
+// actual text.
+constexpr auto kTemplateNameInsets = gfx::Insets::VH(0, 2);
 
 std::u16string GetTimeStr(base::Time timestamp) {
   std::u16string date, time, time_str;
@@ -120,6 +123,7 @@ DesksTemplatesItemView::DesksTemplatesItemView(
                           weak_ptr_factory_.GetWeakPtr());
 
   const std::u16string template_name = desk_template_->template_name();
+  DCHECK(!template_name.empty());
   auto* color_provider = AshColorProvider::Get();
   const bool is_admin_managed =
       desk_template_->source() == DeskTemplateSource::kPolicy;
@@ -137,7 +141,7 @@ DesksTemplatesItemView::DesksTemplatesItemView(
           views::Builder<views::FlexLayoutView>()
               .SetOrientation(views::LayoutOrientation::kVertical)
               .SetInteriorMargin(
-                  gfx::Insets(kVerticalPaddingDp, kHorizontalPaddingDp))
+                  gfx::Insets::VH(kVerticalPaddingDp, kHorizontalPaddingDp))
               // TODO(richui): Consider splitting some of the children into
               // different files and/or classes.
               .AddChildren(
@@ -148,14 +152,19 @@ DesksTemplatesItemView::DesksTemplatesItemView(
                       .SetPreferredSize(gfx::Size(
                           kTemplateNameAndTimePreferredWidth,
                           DesksTemplatesNameView::kTemplateNameViewHeight))
-                      .SetProperty(views::kMarginsKey, kNameExtraInsets)
                       .AddChildren(
                           views::Builder<DesksTemplatesNameView>()
                               .CopyAddressTo(&name_view_)
                               .SetController(this)
                               .SetText(template_name)
                               .SetAccessibleName(template_name)
-                              .SetReadOnly(!desk_template_->IsModifiable()),
+                              .SetReadOnly(!desk_template_->IsModifiable())
+                              // Use the focus behavior specified by the
+                              // subclass of `DesksTemplatesNameView` unless the
+                              // template is not modifiable.
+                              .SetFocusBehavior(desk_template_->IsModifiable()
+                                                    ? GetFocusBehavior()
+                                                    : FocusBehavior::NEVER),
                           views::Builder<views::ImageView>()
                               .SetPreferredSize(
                                   gfx::Size(kManagedStatusIndicatorSize,
@@ -204,17 +213,35 @@ DesksTemplatesItemView::DesksTemplatesItemView(
       l10n_util::GetStringUTF16(IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON),
       PillButton::Type::kIconless, /*icon=*/nullptr));
 
-  delete_button_ = hover_container_->AddChildView(std::make_unique<CloseButton>(
-      base::BindRepeating(&DesksTemplatesItemView::OnDeleteButtonPressed,
-                          weak_ptr_factory_.GetWeakPtr()),
-      CloseButton::Type::kMedium));
-  delete_button_->SetVectorIcon(kDeleteIcon);
-  delete_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_CONFIRM_BUTTON));
-  delete_button_->SetBackgroundColor(color_provider->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
+  // Users cannot delete admin templates.
+  if (!is_admin_managed) {
+    delete_button_ =
+        hover_container_->AddChildView(std::make_unique<CloseButton>(
+            base::BindRepeating(&DesksTemplatesItemView::OnDeleteButtonPressed,
+                                weak_ptr_factory_.GetWeakPtr()),
+            CloseButton::Type::kMedium));
+    delete_button_->SetVectorIcon(kDeleteIcon);
+    delete_button_->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_CONFIRM_BUTTON));
+    delete_button_->SetBackgroundColor(color_provider->GetControlsLayerColor(
+        AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
+  }
 
+  // Use a border to create spacing between `name_view_`s background (set in
+  // `DesksTextfield`) and the actual text. Shift the parent by the same amount
+  // so that the text stays aligned with the text in `time_view`. We shift the
+  // parent here and not `name_view_` itself otherwise its bounds will be
+  // outside the parent bounds and the background will get clipped.
+  name_view_->SetBorder(views::CreateEmptyBorder(kTemplateNameInsets));
+  name_view_->parent()->SetProperty(views::kMarginsKey, -kTemplateNameInsets);
   name_view_observation_.Observe(name_view_);
+
+  // Add a shadow with system UI shadow type.
+  shadow_ = std::make_unique<ViewShadow>(
+      this,
+      SystemShadow::GetElevationFromType(SystemShadow::Type::kElevation12));
+  shadow_->shadow()->SetShadowStyle(gfx::ShadowStyle::kChromeOSSystemUI);
+  shadow_->SetRoundedCornerRadius(kCornerRadius);
 
   StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
                                    /*highlight_on_hover=*/false,
@@ -298,6 +325,7 @@ void DesksTemplatesItemView::UpdateTemplate(
   icon_container_view_->SetVisible(true);
 
   auto new_name = desk_template_->template_name();
+  DCHECK(!new_name.empty());
   name_view_->SetText(new_name);
   name_view_->SetAccessibleName(new_name);
   SetAccessibleName(new_name);
@@ -316,12 +344,14 @@ void DesksTemplatesItemView::Layout() {
   if (previous_name_view_width != name_view_->width())
     OnTemplateNameChanged(desk_template_->template_name());
 
-  const gfx::Size delete_button_size = delete_button_->GetPreferredSize();
-  DCHECK_EQ(delete_button_size.width(), delete_button_size.height());
-  delete_button_->SetBoundsRect(
-      gfx::Rect(width() - delete_button_size.width() - kDeleteButtonMargin,
-                kDeleteButtonMargin, delete_button_size.width(),
-                delete_button_size.height()));
+  if (delete_button_) {
+    const gfx::Size delete_button_size = delete_button_->GetPreferredSize();
+    DCHECK_EQ(delete_button_size.width(), delete_button_size.height());
+    delete_button_->SetBoundsRect(
+        gfx::Rect(width() - delete_button_size.width() - kDeleteButtonMargin,
+                  kDeleteButtonMargin, delete_button_size.width(),
+                  delete_button_size.height()));
+  }
 
   const gfx::Size launch_button_preferred_size =
       launch_button_->CalculatePreferredSize();
@@ -415,6 +445,18 @@ void DesksTemplatesItemView::OnViewBlurred(views::View* observed_view) {
   if (!should_commit_name_changes_ || user_entered_name.empty() ||
       desk_template_->template_name() == user_entered_name) {
     OnTemplateNameChanged(desk_template_->template_name());
+    // Saving a desk template always puts it in the top left corner of the desk
+    // templates grid. This may mean that the grid is no longer sorted
+    // alphabetically by template name. Ensure that the grid is sorted.
+    for (auto& overview_grid : overview_session->grid_list()) {
+      if (views::Widget* grid_widget =
+              overview_grid->desks_templates_grid_widget()) {
+        auto* grid_view = static_cast<DesksTemplatesGridView*>(
+            grid_widget->GetContentsView());
+        grid_view->SortTemplateGridItems(
+            /*last_saved_template_uuid=*/base::GUID());
+      }
+    }
     return;
   }
 
@@ -583,7 +625,10 @@ DesksTemplatesItemView* DesksTemplatesItemView::FindOtherTemplateWithName(
   auto iter = std::find_if(
       templates_grid_view_items.begin(), templates_grid_view_items.end(),
       [this, name](const DesksTemplatesItemView* d) {
-        return (d != this && d->desk_template()->template_name() == name);
+        // Name duplication is allowed if one of the templates is an admin
+        // template.
+        return (d != this && d->desk_template()->template_name() == name &&
+                d->desk_template()->source() != DeskTemplateSource::kPolicy);
       });
   return iter == templates_grid_view_items.end() ? nullptr : *iter;
 }
@@ -632,6 +677,7 @@ void DesksTemplatesItemView::OnTemplateNameChanged(
   if (is_template_name_being_modified_)
     return;
 
+  DCHECK(!new_name.empty());
   name_view_->SetText(new_name);
   name_view_->SetAccessibleName(new_name);
   name_view_->ResetTemporaryName();

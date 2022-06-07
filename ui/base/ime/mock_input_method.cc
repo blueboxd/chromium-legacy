@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
@@ -84,7 +85,7 @@ bool MockInputMethod::IsInputLocaleCJK() const {
 }
 #endif
 
-void MockInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
+void MockInputMethod::OnTextInputTypeChanged(TextInputClient* client) {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnTextInputStateChanged(client);
 }

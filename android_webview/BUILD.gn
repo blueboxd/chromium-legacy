@@ -448,7 +448,7 @@ if (defined(android_secondary_abi_toolchain)) {
 java_group("android_webview_no_weblayer_java") {
   deps = [
     ":browser_java",
-    ":js_sandbox_service_java",
+    "//android_webview/js_sandbox:js_sandbox_service_java",
 
     # This includes AwResource, which may be called via JNI. We're including it
     # here because there's currently no good way to enforce that it gets included
@@ -732,59 +732,6 @@ android_library("common_platform_services_java") {
   jar_excluded_patterns = [ "*/PlatformServiceBridgeImpl.class" ]
 }
 
-generate_jni("js_sandbox_jni_headers") {
-  sources = [ "java/src/org/chromium/android_webview/js_sandbox/service/JsSandboxIsolate.java" ]
-}
-
-android_aidl("js_sandbox_aidl") {
-  import_include = [ "java/src" ]
-  sources = [
-    "java/src/org/chromium/android_webview/js_sandbox/common/IJsSandboxIsolate.aidl",
-    "java/src/org/chromium/android_webview/js_sandbox/common/IJsSandboxIsolateCallback.aidl",
-    "java/src/org/chromium/android_webview/js_sandbox/common/IJsSandboxService.aidl",
-  ]
-}
-
-android_library("js_sandbox_aidl_java") {
-  srcjar_deps = [ ":js_sandbox_aidl" ]
-}
-
-android_library("js_sandbox_service_java") {
-  sources = [
-    "java/src/org/chromium/android_webview/js_sandbox/service/JsSandboxIsolate.java",
-    "java/src/org/chromium/android_webview/js_sandbox/service/JsSandboxService.java",
-    "java/src/org/chromium/android_webview/js_sandbox/service/JsSandboxService0.java",
-  ]
-
-  deps = [
-    ":js_sandbox_aidl_java",
-    ":js_sandbox_jni_headers",
-    "//base:base_java",
-    "//base:jni_java",
-    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
-  ]
-
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-}
-
-android_library("js_sandbox_java") {
-  sources = [
-    "java/src/org/chromium/android_webview/js_sandbox/client/AwJsIsolate.java",
-    "java/src/org/chromium/android_webview/js_sandbox/client/AwJsSandbox.java",
-    "java/src/org/chromium/android_webview/js_sandbox/common/ExecutionErrorTypes.java",
-  ]
-
-  deps = [
-    ":js_sandbox_aidl_java",
-    ":js_sandbox_service_java",
-    "//android_webview/glue:glue_java",
-    "//base:base_java",
-    "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
-  ]
-}
-
 # This target compiles the implementation of PlatformServiceBridge for AOSP targets.
 android_library("platform_service_bridge_upstream_implementation_java") {
   sources = [ "java/src/org/chromium/android_webview/common/PlatformServiceBridgeImpl.java" ]
@@ -842,7 +789,7 @@ android_library("common_java") {
     "//components/feature_engagement/public:public_java",
     "//components/metrics:metrics_java",
     "//components/network_session_configurator/android:network_session_configurator_java",
-    "//components/power_scheduler:power_scheduler_java",
+    "//components/variations:variations_java",
     "//components/viz:viz_java",
     "//components/webrtc:components_webrtc_java",
     "//content/public/android:content_java",

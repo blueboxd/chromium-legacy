@@ -14,15 +14,15 @@ inline constexpr char kDisableSync[] = "disable-sync";
 inline constexpr char kSyncDeferredStartupTimeoutSeconds[] =
     "sync-deferred-startup-timeout-seconds";
 
-// Enables deferring sync backend initialization until user initiated changes
-// occur.
-inline constexpr char kSyncDisableDeferredStartup[] =
-    "sync-disable-deferred-startup";
-
 // Controls whether the initial state of the "Capture Specifics" flag on
 // chrome://sync-internals is enabled.
 inline constexpr char kSyncIncludeSpecificsInProtocolLog[] =
     "sync-include-specifics";
+
+// Controls the number of ProtocolEvents that are buffered, and thus can be
+// displayed on newly-opened chrome://sync-internals tabs.
+inline constexpr char kSyncProtocolLogBufferSize[] =
+    "sync-protocol-log-buffer-size";
 
 // Overrides the default server used for profile sync.
 inline constexpr char kSyncServiceURL[] = "sync-url";

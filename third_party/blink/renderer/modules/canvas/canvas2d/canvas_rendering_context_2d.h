@@ -27,7 +27,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
 
-#include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_formatted_text.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -36,7 +35,6 @@
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
-#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_formatted_text.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -55,6 +53,7 @@ class Layer;
 
 namespace blink {
 
+class CanvasFormattedText;
 class CanvasImageSource;
 class Element;
 class ExceptionState;
@@ -139,7 +138,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void fillFormattedText(CanvasFormattedText* formatted_text,
                          double x,
                          double y,
-                         double wrap_width);
+                         double wrap_width,
+                         double height = kIndefiniteSize);
 
   void drawFocusIfNeeded(Element*);
   void drawFocusIfNeeded(Path2D*, Element*);
@@ -184,6 +184,9 @@ class MODULES_EXPORT CanvasRenderingContext2D final
       const SkIRect& dirty_rect,
       CanvasPerformanceMonitor::DrawType) final;
 
+  SkColorInfo CanvasRenderingContextSkColorInfo() const override {
+    return color_params_.GetSkColorInfo();
+  }
   scoped_refptr<StaticBitmapImage> GetImage() final;
 
   sk_sp<PaintFilter> StateGetFilter() final;
@@ -232,9 +235,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   }
 
  protected:
-  CanvasColorParams CanvasRenderingContextColorParams() const override {
-    return color_params_;
-  }
   PredefinedColorSpace GetDefaultImageDataColorSpace() const final {
     return color_params_.ColorSpace();
   }

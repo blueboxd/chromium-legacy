@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -458,6 +459,12 @@
   // Finally, the launch mask view should be removed.
   ProceduralBlock extendedCompletion = ^{
     [self.delegate tabGridDismissTransitionDidEnd:self];
+    if (self.baseViewController.tabGridMode == TabGridModeSearch) {
+      // In search mode, the tabgrid mode is not reset before the animation so
+      // the animation can start from the correct cell. Once the animation is
+      // complete, reset the tab grid mode.
+      self.baseViewController.tabGridMode = TabGridModeNormal;
+    }
     if (!GetFirstResponder()) {
       // It is possible to already have a first responder (for example the
       // omnibox). In that case, we don't want to mark BVC as first responder.
@@ -549,7 +556,6 @@
     [self.baseViewController addChildViewController:self.bvcContainer];
     self.bvcContainer.view.frame = self.baseViewController.view.bounds;
     [self.baseViewController.view addSubview:self.bvcContainer.view];
-    self.bvcContainer.view.accessibilityViewIsModal = YES;
     [self.bvcContainer didMoveToParentViewController:self.baseViewController];
   }
 
@@ -934,6 +940,10 @@
                     incognito:NO
            shouldCloseTabGrid:NO
                    completion:nil];
+}
+
+- (void)setBVCAccessibilityViewModal:(BOOL)modal {
+  self.bvcContainer.view.accessibilityViewIsModal = modal;
 }
 
 - (void)openSearchResultsPageForSearchText:(NSString*)searchText {

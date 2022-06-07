@@ -24,6 +24,10 @@ class PrefService;
 
 namespace ash {
 
+// ScheduledFeature represents a feature that can be automatically scheduled to
+// be on and off at a specific time. By default, it supports no scheduler and
+// auto scheduler (enable during sunset to sunrise). Optionally it may support
+// a custom scheduler with a custom start and end time.
 class ASH_EXPORT ScheduledFeature
     : public GeolocationController::Observer,
       public aura::EnvObserver,
@@ -48,6 +52,9 @@ class ASH_EXPORT ScheduledFeature
     kMaxValue = kCustom,
   };
 
+  // `prefs_path_custom_start_time` and `prefs_path_custom_end_time` can be
+  // empty strings. Supplying only one of the custom time prefs is invalid,
+  // while supplying both of them enables the custom scheduling support.
   ScheduledFeature(const std::string prefs_path_enabled,
                    const std::string prefs_path_schedule_type,
                    const std::string prefs_path_custom_start_time,
@@ -109,8 +116,11 @@ class ASH_EXPORT ScheduledFeature
   // changed.
   void OnEnabledPrefChanged();
 
-  // Called when the user pref for the schedule type is changed.
-  void OnScheduleTypePrefChanged();
+  // Called when the user pref for the schedule type is changed or initialized.
+  // During initialization, `keep_manual_toggles_during_schedules` is set to
+  // true, so the load user pref override any user current toggled setting. For
+  // more detail about `keep_manual_toggles_during_schedules`, see `Refresh()`.
+  void OnScheduleTypePrefChanged(bool keep_manual_toggles_during_schedules);
 
   // Called when either of the custom schedule prefs (custom start or end times)
   // are changed.

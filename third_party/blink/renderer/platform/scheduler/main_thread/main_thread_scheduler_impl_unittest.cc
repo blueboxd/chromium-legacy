@@ -15,7 +15,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/task/common/task_annotator.h"
-#include "base/task/post_task.h"
 #include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/single_thread_task_runner.h"
@@ -340,7 +339,6 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   using MainThreadSchedulerImpl::OnPendingTasksChanged;
   using MainThreadSchedulerImpl::SetHaveSeenABlockingGestureForTesting;
   using MainThreadSchedulerImpl::V8TaskQueue;
-  using MainThreadSchedulerImpl::VirtualTimeControlTaskQueue;
 
   explicit MainThreadSchedulerImplForTest(
       std::unique_ptr<base::sequence_manager::SequenceManager> manager)
@@ -3086,13 +3084,12 @@ TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
   scheduler_->EnableVirtualTime(base::Time());
   scheduler_->DisableVirtualTimeForTesting();
   EXPECT_FALSE(scheduler_->IsVirtualTimeEnabled());
-  EXPECT_FALSE(scheduler_->VirtualTimeControlTaskQueue());
 }
 
 TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
   scheduler_->EnableVirtualTime(base::Time());
   scheduler_->SetVirtualTimePolicy(
-      PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
+      VirtualTimeController::VirtualTimePolicy::kDeterministicLoading);
 
   WebScopedVirtualTimePauser pauser(
       scheduler_.get(),
@@ -3112,7 +3109,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
 TEST_F(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
   scheduler_->EnableVirtualTime(base::Time());
   scheduler_->SetVirtualTimePolicy(
-      PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
+      VirtualTimeController::VirtualTimePolicy::kDeterministicLoading);
 
   WebScopedVirtualTimePauser pauser(
       scheduler_.get(),
@@ -3131,7 +3128,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
   // DoNotUseVirtualTime trait.
   scheduler_->EnableVirtualTime(base::Time());
   scheduler_->SetVirtualTimePolicy(
-      PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
+      VirtualTimeController::VirtualTimePolicy::kDeterministicLoading);
 
   WebScopedVirtualTimePauser pauser(
       scheduler_.get(),
@@ -3391,14 +3388,14 @@ class MainThreadSchedulerImplWithInitalVirtualTimeTest
     main_thread_scheduler->EnableVirtualTime(
         /* initial_time= */ base::Time::FromJsTime(1000000.0));
     main_thread_scheduler->SetVirtualTimePolicy(
-        PageScheduler::VirtualTimePolicy::kPause);
+        VirtualTimeController::VirtualTimePolicy::kPause);
     Initialize(std::move(main_thread_scheduler));
   }
 };
 
 TEST_F(MainThreadSchedulerImplWithInitalVirtualTimeTest, VirtualTimeOverride) {
   EXPECT_TRUE(scheduler_->IsVirtualTimeEnabled());
-  EXPECT_EQ(PageSchedulerImpl::VirtualTimePolicy::kPause,
+  EXPECT_EQ(VirtualTimeController::VirtualTimePolicy::kPause,
             scheduler_->virtual_time_policy());
   EXPECT_EQ(base::Time::Now(), base::Time::FromJsTime(1000000.0));
 }

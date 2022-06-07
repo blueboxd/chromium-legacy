@@ -49,6 +49,9 @@ class MediaRoute {
              const std::string& description,
              bool is_local);
   MediaRoute(const MediaRoute& other);
+
+  // TODO(crbug.com/1311341): Delete the default constructor and
+  // disallow passing in an empty string into the MediaSource ctor.
   MediaRoute();
 
   ~MediaRoute();
@@ -143,6 +146,7 @@ class MediaRoute {
 
   // |true| if the presentation associated with this route is a local
   // presentation.
+  // TODO(crbug.com/1309770): Remove |is_local_presentation_|.
   bool is_local_presentation_ = false;
 
   // |true| if the route is created by the MRP but is waiting for receivers'

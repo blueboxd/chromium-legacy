@@ -40,7 +40,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -1585,20 +1584,14 @@ void BrowserAutofillManager::UploadFormData(const FormStructure& submitted_form,
     return;
 
   // Check if the form is among the forms that were recently auto-filled.
-  bool was_autofilled = false;
-  std::string form_signature = submitted_form.FormSignatureAsStr();
-  for (const std::string& cur_sig : autofilled_form_signatures_) {
-    if (cur_sig == form_signature) {
-      was_autofilled = true;
-      break;
-    }
-  }
+  bool was_autofilled = base::Contains(autofilled_form_signatures_,
+                                       submitted_form.FormSignatureAsStr());
 
   ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
   // AS CVC is not stored, treat it separately.
   if (!last_unlocked_credit_card_cvc_.empty() ||
-      non_empty_types.find(CREDIT_CARD_NUMBER) != non_empty_types.end()) {
+      non_empty_types.contains(CREDIT_CARD_NUMBER)) {
     non_empty_types.insert(CREDIT_CARD_VERIFICATION_CODE);
   }
 
@@ -2589,17 +2582,13 @@ void BrowserAutofillManager::TriggerRefill(const FormData& form) {
   FormFieldData field = *autofill_field;
   if (absl::holds_alternative<std::pair<CreditCard, std::u16string>>(
           filling_context->profile_or_credit_card_with_cvc)) {
-    FillOrPreviewDataModelForm(
-        mojom::RendererFormDataAction::kFill,
-        /*query_id=*/-1, form, field,
-        &absl::get<std::pair<CreditCard, std::u16string>>(
-             filling_context->profile_or_credit_card_with_cvc)
-             .first,
-        &absl::get<std::pair<CreditCard, std::u16string>>(
-             filling_context->profile_or_credit_card_with_cvc)
-             .second,
-        form_structure, autofill_field,
-        /*is_refill=*/true);
+    const auto& [credit_card, cvc] =
+        absl::get<std::pair<CreditCard, std::u16string>>(
+            filling_context->profile_or_credit_card_with_cvc);
+    FillOrPreviewDataModelForm(mojom::RendererFormDataAction::kFill,
+                               /*query_id=*/-1, form, field, &credit_card, &cvc,
+                               form_structure, autofill_field,
+                               /*is_refill=*/true);
   } else if (absl::holds_alternative<AutofillProfile>(
                  filling_context->profile_or_credit_card_with_cvc)) {
     FillOrPreviewDataModelForm(

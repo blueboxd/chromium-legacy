@@ -70,6 +70,7 @@ locale.  The strings in this file are specific to iOS.
     <file path="resources/ios_strings_bs.xtb" lang="bs" />
     <file path="resources/ios_strings_ca.xtb" lang="ca" />
     <file path="resources/ios_strings_cs.xtb" lang="cs" />
+    <file path="resources/ios_strings_cy.xtb" lang="cy" />
     <file path="resources/ios_strings_da.xtb" lang="da" />
     <file path="resources/ios_strings_de.xtb" lang="de" />
     <file path="resources/ios_strings_el.xtb" lang="el" />
@@ -167,7 +168,7 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON" desc="Title of the button to skip the selection of an account. [Length: 20em] [iOS only]">
         Cancel
       </message>
-      <message name="IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_ADD_ACCOUNT" desc="Title of the button to add a new account, the user will be able to use the added account to sign-in [Length: 16em] [iOS only]">
+      <message name="IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_ADD_ACCOUNT" desc="In Title Case: Button is displayed in the account picker dialog. Users can click it to add another account to the device, which can be used to sign in to Chrome. [iOS only]">
         Add Account…
       </message>
       <message name="IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_CHOOSE_ACCOUNT" desc="Label at the top an account list. The user has to select one of the accounts to sign-in. [Length: 20em] [iOS only]">
@@ -800,6 +801,12 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_DISCOVER_FEED_MENU_ACCESSIBILITY_LABEL" desc="The accessibility label for the Discover feed header's menu button.">
         Options for Discover
       </message>
+      <message name="IDS_IOS_DOWNLOAD_CALENDAR_FILE_WARNING_MESSAGE" desc="Warning message displayed inside an alert before downloading a calendar file.[iOS only]">
+          This website is trying to download a calendar file.
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_CALENDAR_FILE_WARNING_TITLE" desc="Title of the alert displaying a warning message before downloading a calendar file.[iOS only]">
+          Calendar file Available
+      </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_CANNOT_DETERMINE_FILE_SIZE" desc="Message displayed when the size of the file to be downloaded is unknown. [Length: 30em] [iOS only]">
         Cannot determine file size.
       </message>
@@ -890,6 +897,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_FACETIME_BUTTON" desc="Text in the confirmation dialog button that will initiate a FaceTime call for the presented number. [Length: 10em] [iOS only]">
         FaceTime
       </message>
+      <message name="IDS_IOS_FEED_CUSTOM_SEARCH_ENGINE_LABEL" desc="Message informing users with custom search engines that the feed is provided by Google.">
+        Provided by Google
+      </message>
       <message name="IDS_IOS_FEED_MANAGEMENT_ACTIVITY_DETAIL" desc="The explanation of the 'Activity' row in the feed management UI.">
         Control your Google Account data
       </message>
@@ -923,6 +933,27 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_FEED_SORT_PUBLISHER" desc="Sort by publisher label text in feed sort menu.">
         Sort by Publisher
       </message>
+      <message name="IDS_IOS_FIRST_FOLLOW_TITLE" desc="The title of the first follow surface.">
+        You're following <ph name="CHANNEL_NAME">$1<ex>ESPN</ex></ph>
+      </message>
+      <message name="IDS_IOS_FIRST_FOLLOW_SUBTITLE" desc="The subtitle of the first follow surface.">
+        You'll now see stories from it when you open a new tab.
+      </message>
+      <message name="IDS_IOS_FIRST_FOLLOW_BODY" desc="The body of the first follow surface.">
+        Sites you follow are saved in your Google account. You can Manage them in Discover Settings.
+      </message>
+      <message name="IDS_IOS_FIRST_FOLLOW_GO_TO_FEED" desc="The action button to see the feed in the first follow surface.">
+        Go To Feed
+      </message>
+      <message name="IDS_IOS_FIRST_FOLLOW_GOT_IT" desc="The action button to dismiss the first follow surface.">
+        Got It
+      </message>
+      <message name="IDS_IOS_FOLLOW_MANAGEMENT_EMPTY_TEXT" desc="The text of an empty following list.">
+        Visit a site and click Follow in the Chrome menu
+      </message>
+      <message name="IDS_IOS_FOLLOW_MANAGEMENT_EMPTY_TITLE" desc="The title of an empty following list.">
+        You'll find your followed sites here
+      </message>
       <message name="IDS_IOS_FOLLOW_MANAGEMENT_TITLE" desc="The title of the following feed management UI.">
         Following
       </message>
@@ -953,13 +984,16 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_FIRST_RUN_SCREEN_READ_MORE" desc="The label on the primary button of some screens in the first run experience if the content requires scrolling to the end [iOS only]">
         Read More
       </message>
-      <message name="IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE_AS" desc="Label of the button which the user can tap to continue the process using the selected account (referred by the first name of the account owner)">
+      <message name="IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE" desc="In Title Case: Button on the very first screen of Chrome to continue into Chrome. [iOS only]">
+        Continue
+      </message>
+      <message name="IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE_AS" desc="In Title Case: Button to sign into Chrome with the displayed account and without having to reenter a password. Jessica is replaced with the user’s given name, or the user’s full name if the given name is not available. Ensure consistency with related OneGoogle sign-in buttons (TC ID 5569230012177947065). [iOS only]">
         Continue as <ph name="FIRST_RUN_ACCOUNT_NAME">$1<ex>Jessica</ex></ph>
       </message>
-      <message name="IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN" desc="Label of the button which can be used to not sign in and go to the next screen">
-        Don't Sign In
+      <message name="IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN" desc="In Title Case: Button on the very first screen of Chrome to continue without signing into Chrome. [iOS only]">
+        Don’t Sign In
       </message>
-      <message name="IDS_IOS_FIRST_RUN_SIGNIN_SIGN_IN_ACTION" desc="Label of the button suggesting to the user to sign in if they don't have any account on the device">
+      <message name="IDS_IOS_FIRST_RUN_SIGNIN_SIGN_IN_ACTION" desc="In Title Case: Button on the very first screen of Chrome for users to sign in when there is no Google Account on the device. [iOS only]">
         Sign In…
       </message>
       <message name="IDS_IOS_FIRST_RUN_SYNC_SCREEN_CONTENT" desc="Content string on the sync screen presented to the user on First Run [iOS only]">
@@ -983,8 +1017,11 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_ACCEPT_BUTTON" desc="The label on the continue button of the welcome screen presented to the user on First Run [iOS only]">
         Accept and Continue
       </message>
-      <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TERMS_OF_SERVICE" desc="The terms of service disclaimer of the welcome screen presented to the user on First Run [iOS only]">
-        By continuing, you agree to the <ph name="BEGIN_LINK">BEGIN_LINK</ph>Terms of Service<ph name="END_LINK">END_LINK</ph>
+      <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_BROWSER_MANAGED" desc="Text to indicate that Chrome is managed by the user’s organization. [iOS only]">
+        Your browser is managed by your organization.
+      </message>
+      <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TERMS_OF_SERVICE" desc="The text is displayed in a footer on the very first screen of Chrome. The link ‘Terms of Service’ opens the Google Terms of Service. [iOS only]">
+        By continuing, you agree to the <ph name="BEGIN_LINK">BEGIN_LINK</ph>Terms of Service<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_IPAD" desc="The title of the welcome screen presented to the user on First Run when on iPad [iOS only]">
         Built for Your iPad
@@ -1252,7 +1289,7 @@ See your search engine’s instructions for deleting your search history, if app
         Control how your browsing history is used to personalize Search and more
       </message>
       <message name="IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION" desc="Subtitle for the cell to open 'Data from Chromium sync' web page where the user can control all their data data from sync.">
-        Manage synced data on Google Dashboard
+        Review your synced data
       </message>
       <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY" desc="Label on the button to proceed with signout and clear all Chrome data.[Length: 30em].">
         Clear
@@ -1401,6 +1438,31 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_OMNIBOX_POPUP_SWITCH_TO_OPEN_TAB" desc="Label for the accessibility action for the address and search bar autocomplete suggestion. Using this will switch to the already opened tab corresponding to the suggestion. [Read by Text-to-Speech]">
         Switch to existing tab
       </message>
+      <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_DEFAULT_BROWSER" desc="Subtitle for the Set Default Browser acceleration pedal in the omnibox that should correspond to the path to the Default Browser dialog in Settings">
+       Menu → Settings → Default Browser
+      </message>
+      <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_CLEAR_BROWSING_DATA" desc="Subtitle for the Clear Browsing Data acceleration pedal in the omnibox that should correspond to the path to the Clear Browsing Data dialog in History">
+       Menu → History → Clear Browsing Data
+      </message>
+      <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_MANAGE_PASSWORDS" desc="Subtitle for the Manage Passwords acceleration pedal in the omnibox that should correspond to the path to the Passwords Settings dialog in Settings">
+       Menu → Settings → Passwords
+      </message>
+      <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_UPDATE_CREDIT_CARD" desc="Subtitle for the Manage Payment Methods acceleration pedal in the omnibox that should correspond to the path to the Payment Methods dialog in Settings">
+       Menu → Settings → Payment Methods
+      </message>
+      <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_LAUNCH_INCOGNITO" desc="Subtitle for the Open Incognito Tab acceleration pedal in the omnibox that should correspond to the path to the New Incognito Tab button">
+       Menu → New Incognito Tab
+      </message>
+      <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_RUN_CHROME_SAFETY_CHECK" desc="Subtitle for the Run Chrome Safety Check acceleration pedal in the omnibox that should correspond to the path to the Safety Check dialog in Settings">
+       Menu → Settings → Safety Check
+      </message>
+      <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_MANAGE_CHROME_SETTINGS" desc="Subtitle for the Manage Settings acceleration pedal in the omnibox that should correspond to the path to Settings">
+       Menu → Settings
+      </message>
+      <message name="IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_VIEW_CHROME_HISTORY" desc="Subtitle for the View Your Chrome History acceleration pedal in the omnibox that should correspond to the path to History">
+       Menu → History
+      </message>
+
       <message name="IDS_IOS_OPEN_TABS_LAST_USED" desc="Last used timestamp label [Length: 20em] [iOS only]">
         Last synced: <ph name="LAST_USED_TIME">$1<ex>3 mins ago</ex></ph>
       </message>
@@ -1522,6 +1584,27 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER" desc="Footer to invite the user to open the Sync and Google Services settings.">
         For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">BEGIN_LINK</ph>Sync and Google Services<ph name="END_LINK">END_LINK</ph>.
       </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_ENHANCED_PROTECTION_SUMMARY" desc="Summary for Privacy Safe Browsing enhanced protection mode.">
+        Faster, proactive protection against dangerous websites, downloads, and extensions. Warns you about password breaches. Requires browsing data to be sent to Google
+      </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_ENHANCED_PROTECTION_TITLE" desc="Title for Privacy Safe Browsing enhanced protection mode.">
+        Enhanced Protection
+      </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_STANDARD_PROTECTION_SUMMARY" desc="Summary for Privacy Safe Browsing standard protection mode.">
+        Standard protection against websites, downloads, and extensions that are known to be dangerous.
+      </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_STANDARD_PROTECTION_TITLE" desc="Title for Privacy Safe Browsing standard protection mode.">
+        Standard Protection
+      </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_NO_PROTECTION_SUMMARY" desc="Summary for Privacy Safe Browsing no protection mode.">
+        Does not protect you against dangerous websites, downloads, and extensions. You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.
+      </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_NO_PROTECTION_TITLE" desc="Title for Privacy Safe Browsing no protection mode.">
+        No Protection (not recommended)
+      </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_TITLE" desc="Title for Privacy Safe Browsing table view.">
+        Safe Browsing
+      </message>
       <message name="IDS_IOS_PRIVACY_SYNC_AND_GOOGLE_SERVICES_FOOTER" desc="Footer to invite the user to open the Sync Settings and Google Services settings.">
         For more settings that relate to privacy, security, and data collection, see both <ph name="BEGIN_LINK">BEGIN_LINK</ph>Sync<ph name="END_LINK">END_LINK</ph> and <ph name="BEGIN_LINK">BEGIN_LINK</ph>Google Services<ph name="END_LINK">END_LINK</ph>.
       </message>
@@ -1633,6 +1716,17 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         <message name="IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD_TITLE" desc="Infobar title to update a password. [Length: 70em]">
         Update password
       </message>
+      <message name="IDS_IOS_SAFE_BROWSING_NO_PROTECTION_CONFIRMATION_DIALOG_TITLE" desc="Title for Safe Browsing no protection confirmation dialog.">
+        Turn Off Safe Browsing?
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_NO_PROTECTION_CONFIRMATION_DIALOG_MESSAGE" desc="Message for Safe Browsing no protection confirmation dialog.">
+        Safe Browsing protects you against attackers who may trick you into doing something dangerous like installing malicious software or revealing personal information like passwords, phone numbers, or credit cards. If you turn it off, be careful when browsing unfamiliar or unreputable sites.        </message>
+      <message name="IDS_IOS_SAFE_BROWSING_NO_PROTECTION_CONFIRMATION_DIALOG_CONFIRM" desc="Message for Safe Browsing no protection confirmation button.">
+        Turn Off
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_TITLE" desc="Title for Safe Browsing enhanced protection mode.">
+        Enhanced Protection
+      </message>
       <message name="IDS_SAVE_PASSWORD_FOOTER" desc="The footer text of the infobar that offers user to save/update a password to Chrome.">
         Passwords are saved in your Google Account so you can use them on any device.
       </message>
@@ -1729,6 +1823,18 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_QR_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_TITLE" desc="Title of a modal dialog shown when the user tries to open the QR scanner in a Split View mode. [Length: 40em] [iOS only]" meaning="Title of a Split View error dialog in QR Scanner.">
         Split View
       </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_ONE" desc="First bullet point under the Safe Browsing enhanced protection mode">
+         Predicts and warns you about dangerous events before they happen.
+       </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_THREE" desc="Third bullet point under the Safe Browsing enhanced protection mode">
+        Improves security for you and everyone on the web.
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_FOUR" desc="Fourth bullet point under the Safe Browsing enhanced protection mode">
+        Warns you if passwords are exposed in a data breach.
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_FIVE" desc="Fifth bullet point under the Safe Browsing enhanced protection mode">
+        Sends URLs to Safe Browsing to check them. Also sends a small sample of pages, downloads, extension activity, and system information to help discover new threats. Temporarily links this data to your Google Account when you’re signed in, to protect you across Google apps.
+      </message>
       <message name="IDS_IOS_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL" desc="Accessibility label for the button to turn torch on and off in the Scanner. The current state of the button is communicated using the accessibility value. [Length: unlimited] [iOS only]"  meaning="The button to turn on and off the torch. [20em] [Read by Text-to-Speech]">
         Torch
       </message>
@@ -1806,6 +1912,30 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_TITLE" desc="Title of a modal dialog shown when the user tries to open the scanner in a Split View mode. [Length: 40em] [iOS only]" meaning="Title of a Split View error dialog in Scanner.">
         Split View
+      </message>
+      <message name="IDS_IOS_SNACKBAR_ACTION_GO_TO_FEED" desc="The iOS snackbar action when successfuly following a web content. [iOS only]">
+        GO TO FEED
+      </message>
+      <message name="IDS_IOS_SNACKBAR_ACTION_TRY_AGAIN" desc="The iOS snackbar message when failed to follow/unfollow a web content. [iOS only]">
+        TRY AGAIN
+      </message>
+      <message name="IDS_IOS_SNACKBAR_ACTION_UNDO" desc="The iOS snackbar action when succeed to unfollow a web content. [iOS only]">
+        UNDO
+      </message>
+      <message name="IDS_IOS_SNACKBAR_MESSAGE_FOLLOW_FAILED" desc="The iOS snackbar message when failed to follow a web content. [iOS only]">
+        Can't follow. Something went wrong.
+      </message>
+      <message name="IDS_IOS_SNACKBAR_MESSAGE_FOLLOW_SUCCEED" desc="The iOS snackbar message when ssucceed to follow a web content. [iOS only]">
+        Following <ph name="CHANNEL_NAME">$1<ex>CNN</ex></ph>
+      </message>
+      <message name="IDS_IOS_SNACKBAR_MESSAGE_OFFLINE" desc="The iOS snackbar message when failed to follow/unfollow a web content because of offline. [iOS only]">
+        You're offline. Check your internet connection and try again.
+      </message>
+      <message name="IDS_IOS_SNACKBAR_MESSAGE_UNFOLLOW_FAILED" desc="The iOS snackbar message when failed to unfollow a web content. [iOS only]">
+        Can't unfollow. Something went wrong.
+      </message>
+      <message name="IDS_IOS_SNACKBAR_MESSAGE_UNFOLLOW_SUCCEED" desc="The iOS snackbar message when succeed to unfollow a web content. [iOS only]">
+        Unfollowed <ph name="CHANNEL_NAME">$1<ex>CNN</ex></ph>
       </message>
       <message name="IDS_IOS_SNACKBAR_MESSAGE_ICOGNITO_DISABLED" desc="The material toast message when incogonito mode is disabled by policy [iOS only].">
         Your organization turned off Incognito mode
@@ -1994,7 +2124,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Your password will be saved to your device.
       </message>
       <message name="IDS_IOS_LEAK_CHECK_SWITCH" desc="Title for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
-        Warn you if passwords are exposed in a data breach
+        Warn You if Passwords Are Exposed in a Data Breach
       </message>
       <message name="IDS_IOS_LEAK_CHECK_SIGNED_OUT_ENABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have not disabled the feature.">
         When you sign in to your Google Account, this feature is turned on.
@@ -2953,7 +3083,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Learn More
       </message>
       <message name="IDS_IOS_TOOLS_MENU_FOLLOW" desc="The iOS menu item for following web content. [iOS only]">
-        Follow
+        Follow <ph name="DOMAIN_NAME">$1<ex>google.com</ex></ph>
       </message>
       <message name="IDS_IOS_TOOLS_MENU_UNFOLLOW" desc="The iOS menu item for unfollowing web content. [iOS only]">
         Unfollow

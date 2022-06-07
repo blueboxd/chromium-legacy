@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shadow_root_init.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/css/css_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/cascade_layer.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -1277,9 +1279,8 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
-TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
+TEST_F(StyleEngineTest, ViewportDescription) {
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform;
-  platform->SetUseZoomForDSF(true);
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize();
   web_view_impl->MainFrameWidget()->SetDeviceScaleFactorForTesting(1.f);
@@ -4066,39 +4067,6 @@ TEST_F(StyleEngineContainerQueryTest, MarkStyleDirtyFromContainerRecalc) {
   EXPECT_NE(old_inner_style, new_inner_style);
 }
 
-TEST_F(StyleEngineContainerQueryTest, UsesContainerQueries) {
-  GetDocument().documentElement()->setInnerHTML(R"HTML(
-      <style>
-        #a { z-index:2; }
-      </style>
-      <style id=late>
-      </style>
-      <div id=a></div>
-    )HTML");
-  UpdateAllLifecyclePhases();
-  auto* a = GetDocument().getElementById("a");
-  ASSERT_TRUE(a);
-  EXPECT_EQ(2, a->ComputedStyleRef().ZIndex());
-  EXPECT_FALSE(GetStyleEngine().UsesContainerQueries());
-
-  auto* late_style = GetDocument().getElementById("late");
-  ASSERT_TRUE(late_style);
-
-  late_style->setTextContent(R"CSS(
-      @container (min-width: 1px) {
-        #a { color: green; }
-      }
-    )CSS");
-  GetStyleEngine().UpdateActiveStyle();
-  // Note the @container query does not match anything (it's not inside a
-  // container), but UsesContainerQueries should still be true.
-  EXPECT_TRUE(GetStyleEngine().UsesContainerQueries());
-
-  late_style->setTextContent("");
-  GetStyleEngine().UpdateActiveStyle();
-  EXPECT_FALSE(GetStyleEngine().UsesContainerQueries());
-}
-
 TEST_F(StyleEngineContainerQueryTest,
        UpdateStyleAndLayoutTreeWithoutLayoutDependency) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
@@ -4514,8 +4482,6 @@ TEST_F(StyleEngineTest, SystemFontsObeyDefaultFontSize) {
 }
 
 TEST_F(StyleEngineTest, CascadeLayersInOriginsAndTreeScopes) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   // Verifies that user layers and author layers in each tree scope are managed
   // separately. Each have their own layer ordering.
 
@@ -4613,8 +4579,6 @@ TEST_F(StyleEngineTest, CascadeLayersInOriginsAndTreeScopes) {
 }
 
 TEST_F(StyleEngineTest, CascadeLayersFromMultipleSheets) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   // The layer ordering in sheet2 is different from the final ordering.
   GetDocument().body()->setInnerHTML(R"HTML(
     <style id="sheet1">
@@ -4683,8 +4647,6 @@ TEST_F(StyleEngineTest, CascadeLayersFromMultipleSheets) {
 }
 
 TEST_F(StyleEngineTest, CascadeLayersNotExplicitlyDeclared) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #no-layers { }
@@ -4700,8 +4662,6 @@ TEST_F(StyleEngineTest, CascadeLayersNotExplicitlyDeclared) {
 }
 
 TEST_F(StyleEngineTest, CascadeLayersSheetsRemoved) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   GetDocument().body()->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
     <style>
       @layer bar, foo;
@@ -4783,8 +4743,6 @@ TEST_F(StyleEngineTest, NonSlottedStyleDirty) {
 }
 
 TEST_F(StyleEngineTest, CascadeLayerUseCount) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   {
     ASSERT_FALSE(IsUseCounted(WebFeature::kCSSCascadeLayers));
     GetDocument().body()->setInnerHTML("<style>@layer foo;</style>");
@@ -4809,8 +4767,6 @@ TEST_F(StyleEngineTest, CascadeLayerUseCount) {
 }
 
 TEST_F(StyleEngineTest, UserKeyframesOverrideWithCascadeLayers) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   user_sheet->ParseString(R"CSS(
@@ -4845,8 +4801,6 @@ TEST_F(StyleEngineTest, UserKeyframesOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineTest, UserCounterStyleOverrideWithCascadeLayers) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   PageTestBase::LoadAhem(*GetDocument().GetFrame());
 
   auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
@@ -4889,8 +4843,6 @@ TEST_F(StyleEngineTest, UserCounterStyleOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineTest, UserPropertyOverrideWithCascadeLayers) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   user_sheet->ParseString(R"CSS(
@@ -4929,8 +4881,6 @@ TEST_F(StyleEngineTest, UserPropertyOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineTest, UserAndAuthorPropertyOverrideWithCascadeLayers) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   user_sheet->ParseString(R"CSS(
@@ -4971,7 +4921,6 @@ TEST_F(StyleEngineTest, UserAndAuthorPropertyOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineTest, UserScrollTimelineOverrideWithCascadeLayers) {
-  ScopedCSSCascadeLayersForTest layer_enabled(true);
   ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
 
   auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
@@ -5032,7 +4981,6 @@ TEST_F(StyleEngineTest, UserScrollTimelineOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
-  ScopedCSSCascadeLayersForTest layer_enabled(true);
   ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
 
   auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
@@ -5095,7 +5043,6 @@ TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineSimTest, UserFontFaceOverrideWithCascadeLayers) {
-  ScopedCSSCascadeLayersForTest layer_enabled_scope(true);
   ScopedCSSFontFaceSizeAdjustForTest size_adjust_enabled_scope(true);
 
   SimRequest main_resource("https://example.com", "text/html");
@@ -5152,7 +5099,6 @@ TEST_F(StyleEngineSimTest, UserFontFaceOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineSimTest, UserAndAuthorFontFaceOverrideWithCascadeLayers) {
-  ScopedCSSCascadeLayersForTest layer_enabled_scope(true);
   ScopedCSSFontFaceSizeAdjustForTest size_adjust_enabled_scope(true);
 
   SimRequest main_resource("https://example.com", "text/html");
@@ -5211,8 +5157,6 @@ TEST_F(StyleEngineSimTest, UserAndAuthorFontFaceOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineTest, CascadeLayerActiveStyleSheetVectorNullRuleSetCrash) {
-  ScopedCSSCascadeLayersForTest enabled_scope(true);
-
   // This creates an ActiveStyleSheetVector where the first entry has no
   // RuleSet, and the second entry has a layer rule difference.
   GetDocument().documentElement()->setInnerHTML(
@@ -5782,6 +5726,48 @@ TEST_F(StyleEngineTest, RemovedBodyToHTMLPropagation) {
       << "body to html propagation does not affect computed value";
   EXPECT_TRUE(root->GetLayoutObject()->StyleRef().IsHorizontalWritingMode())
       << "No propagation from removed body";
+}
+
+TEST_F(StyleEngineTest, RevertWithPresentationalHints) {
+  ScopedCustomElementDefaultStyleForTest disabled_scope(false);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      img {
+        width: revert;
+        height: revert;
+      }
+    </style>
+    <img id="img" width="44" height="33"></img>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  // For the purpose of the 'revert' keyword, presentational hints are
+  // considered part of the author origin.
+  Element* img = GetElementById("img");
+  EXPECT_NE(44, img->OffsetWidth());
+  EXPECT_NE(33, img->OffsetHeight());
+}
+
+TEST_F(StyleEngineTest, RevertLayerWithPresentationalHints) {
+  ScopedCustomElementDefaultStyleForTest disabled_scope(false);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      img {
+        width: revert-layer;
+        height: revert-layer;
+      }
+    </style>
+    <img id="img" width="44" height="33"></img>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  // 'revert-layer' from the lowest author layer should revert to the
+  // presentational hints.
+  Element* img = GetElementById("img");
+  EXPECT_EQ(44, img->OffsetWidth());
+  EXPECT_EQ(33, img->OffsetHeight());
 }
 
 }  // namespace blink

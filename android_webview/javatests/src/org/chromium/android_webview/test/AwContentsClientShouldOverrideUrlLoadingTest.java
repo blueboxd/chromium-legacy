@@ -8,6 +8,7 @@ import static org.chromium.android_webview.test.AwActivityTestRule.SCALED_WAIT_T
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.util.Pair;
 
@@ -23,7 +24,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
-import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedError2Helper;
+import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.policy.AwPolicyProvider;
+import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedErrorHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -31,16 +34,22 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.components.policy.AbstractAppRestrictionsProvider;
+import org.chromium.components.policy.CombinedPolicyProvider;
+import org.chromium.components.policy.test.PolicyData;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +66,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     private static final String REDIRECT_TARGET_PATH = "/redirect_target.html";
     private static final String TITLE = "TITLE";
     private static final String TAG = "AwContentsClientShouldOverrideUrlLoadingTest";
+    private static final String sEnterpriseAuthAppLinkPolicy =
+            "com.android.browser:EnterpriseAuthenticationAppLinkPolicy";
 
     private TestWebServer mWebServer;
     private TestAwContentsClient mContentsClient;
@@ -260,8 +271,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     @Feature({"AndroidWebView", "Navigation"})
     public void testDoesNotCauseOnReceivedError() throws Throwable {
         standardSetup();
-        OnReceivedError2Helper onReceivedError2Helper = mContentsClient.getOnReceivedError2Helper();
-        final int onReceivedError2Count = onReceivedError2Helper.getCallCount();
+        OnReceivedErrorHelper onReceivedErrorHelper = mContentsClient.getOnReceivedErrorHelper();
+        final int onReceivedErrorCount = onReceivedErrorHelper.getCallCount();
 
         mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 CommonResources.makeHtmlPageWithSimpleLinkTo(
@@ -280,7 +291,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), DATA_URL);
 
-        Assert.assertEquals(onReceivedError2Count, onReceivedError2Helper.getCallCount());
+        Assert.assertEquals(onReceivedErrorCount, onReceivedErrorHelper.getCallCount());
     }
 
     @Test
@@ -814,8 +825,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         setupWithProvidedContentsClient(new DestroyInCallbackClient());
         mShouldOverrideUrlLoadingHelper = mContentsClient.getShouldOverrideUrlLoadingHelper();
 
-        OnReceivedError2Helper onReceivedError2Helper = mContentsClient.getOnReceivedError2Helper();
-        int onReceivedError2Count = onReceivedError2Helper.getCallCount();
+        OnReceivedErrorHelper onReceivedErrorHelper = mContentsClient.getOnReceivedErrorHelper();
+        int onReceivedErrorCount = onReceivedErrorHelper.getCallCount();
 
         mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 CommonResources.makeHtmlPageWithSimpleLinkTo(
@@ -1066,6 +1077,76 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         }
     }
 
+    private void setAppLinkPolicy(final AwPolicyProvider testProvider, String url) {
+        final PolicyData[] policies = {
+                new PolicyData.Str(sEnterpriseAuthAppLinkPolicy, "[{ \"url\": \"" + url + "\"}]")};
+
+        AbstractAppRestrictionsProvider.setTestRestrictions(
+                PolicyData.asBundle(Arrays.asList(policies)));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> testProvider.refresh());
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.R)
+    @Feature({"AndroidWebView"})
+    public void testForAuthenticationUrlIntentSent() throws Throwable {
+        try {
+            standardSetup();
+            mActivityTestRule.getActivity().setIgnoreStartActivity(true);
+            AwSettings contentSettings = mActivityTestRule.getAwSettingsOnUiThread(mAwContents);
+
+            final AwPolicyProvider testProvider =
+                    new AwPolicyProvider(mActivityTestRule.getActivity().getApplicationContext());
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> CombinedPolicyProvider.get().registerProvider(testProvider));
+
+            final String authenticationUrl = addPageToTestServer("/redirect" + REDIRECT_TARGET_PATH,
+                    makeHtmlPageFrom("", "<div>This is the end of the redirect chain</div>"));
+            final String loginUrl = mWebServer.setRedirect("/login.html", authenticationUrl);
+            // Set the policy for authentication url.
+            setAppLinkPolicy(testProvider, authenticationUrl);
+
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), loginUrl);
+
+            mActivityTestRule.pollUiThread(
+                    () -> mActivityTestRule.getActivity().getLastSentIntent() != null);
+            Assert.assertEquals(authenticationUrl,
+                    mActivityTestRule.getActivity().getLastSentIntent().getData().toString());
+        } finally {
+            mActivityTestRule.getActivity().setIgnoreStartActivity(false);
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testWithoutPolicyForAuthenticationUrlIntentNotSent() throws Throwable {
+        try {
+            standardSetup();
+            mActivityTestRule.getActivity().setIgnoreStartActivity(true);
+            AwSettings contentSettings = mActivityTestRule.getAwSettingsOnUiThread(mAwContents);
+            final AwPolicyProvider testProvider =
+                    new AwPolicyProvider(mActivityTestRule.getActivity().getApplicationContext());
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> CombinedPolicyProvider.get().registerProvider(testProvider));
+            final String authenticationUrl = addPageToTestServer("/redirect" + REDIRECT_TARGET_PATH,
+                    makeHtmlPageFrom("", "<div>This is the end of the redirect chain</div>"));
+            final String loginUrl = mWebServer.setRedirect("/login.html", authenticationUrl);
+
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), loginUrl);
+
+            Assert.assertNull(mActivityTestRule.getActivity().getLastSentIntent());
+        } finally {
+            mActivityTestRule.getActivity().setIgnoreStartActivity(false);
+        }
+    }
+
     // Verify popups can open about:blank but no shouldoverrideurloading is received for about:blank
     @Test
     @SmallTest
@@ -1118,8 +1199,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         }
 
         @Override
-        public void onReceivedError2(AwWebResourceRequest request, AwWebResourceError error) {
-            super.onReceivedError2(request, error);
+        public void onReceivedError(AwWebResourceRequest request, AwWebResourceError error) {
+            super.onReceivedError(request, error);
             throw new RuntimeException("we should not receive an error code! " + request.url);
         }
 

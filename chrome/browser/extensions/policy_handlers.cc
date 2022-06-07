@@ -210,7 +210,8 @@ void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
     PrefValueMap* prefs) {
   if (!pref_path_)
     return;
-  const base::Value* value = policies.GetValue(policy_name());
+  // It is safe to use `GetValueUnsafe()` as multiple policy types are handled.
+  const base::Value* value = policies.GetValueUnsafe(policy_name());
   if (value)
     prefs->SetValue(pref_path_, value->Clone());
 }

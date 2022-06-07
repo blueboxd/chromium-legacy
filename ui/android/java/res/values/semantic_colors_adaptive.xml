@@ -8,8 +8,6 @@
     <!-- TODO(huayinz): remove tools:ignore once these colors are used in ui/android -->
     <!-- Common text colors -->
     <color name="default_text_color_baseline">@color/default_text_color_dark</color>
-    <!-- Text color used on dark background on light theme, and light background on dark theme. -->
-    <color name="default_text_color_inverse">@color/default_text_color_light</color>
     <color name="default_text_color_secondary_baseline">@color/default_text_color_secondary_dark</color>
     <!-- Text color for non-clickable blue text. -->
     <color name="default_text_color_blue_baseline" tools:ignore="UnusedResources">@color/default_text_color_blue_dark</color>
@@ -33,8 +31,6 @@
     <color name="default_icon_color_disabled_inverse_baseline" tools:ignore="UnusedResources">@color/default_icon_color_disabled_light</color>
 
     <!-- Common background and branding color. -->
-    <!-- TODO(https://crbug.com/1272001): Remove @color/default_bg_color. -->
-    <color name="default_bg_color">@color/default_bg_color_baseline</color>
     <color name="default_bg_color_baseline">@color/default_bg_color_light</color>
     <color name="default_bg_color_secondary" tools:ignore="UnusedResources">@color/default_bg_color_secondary_light</color>
 
@@ -106,7 +102,7 @@
     <color name="filled_button_bg_color">@color/filled_button_bg_color_dark</color>
     <color name="filled_button_bg_color_disabled">@color/filled_button_bg_color_disabled_dark</color>
     <color name="divider_line_bg_color_baseline" tools:ignore="UnusedResources">@color/divider_line_bg_color_dark</color>
-    <color name="drag_handlebar_color">@color/divider_line_bg_color_baseline</color>
+    <color name="drag_handlebar_color_baseline">@color/divider_line_bg_color_baseline</color>
     <color name="omnibox_bg_color" tools:ignore="UnusedResources">@color/omnibox_bg_color_light</color>
     <color name="feed_header_active_tab_bg_color_baseline">@color/default_bg_color_baseline</color>
     <color name="feed_header_section_bg_color_baseline">@color/default_bg_color_light_elev_2_baseline</color>

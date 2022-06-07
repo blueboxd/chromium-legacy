@@ -10,6 +10,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
@@ -48,6 +49,25 @@ using testing::Eq;
 using testing::Not;
 using testing::Property;
 
+class CanonicalCookieWithClampingTest
+    : public testing::Test,
+      public testing::WithParamInterface<bool> {
+ public:
+  CanonicalCookieWithClampingTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kClampCookieExpiryTo400Days,
+        IsClampCookieExpiryTo400DaysEnabled());
+  }
+  bool IsClampCookieExpiryTo400DaysEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no label */,
+                         CanonicalCookieWithClampingTest,
+                         testing::Bool());
+
 TEST(CanonicalCookieTest, Constructor) {
   base::Time current_time = base::Time::Now();
 
@@ -74,8 +94,7 @@ TEST(CanonicalCookieTest, Constructor) {
       "A", "2", ".www.example.com", "/", current_time, base::Time(),
       base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
       COOKIE_PRIORITY_DEFAULT, true,
-      absl::make_optional(
-          CookiePartitionKey::FromURLForTesting(GURL("https://foo.com"))),
+      CookiePartitionKey::FromURLForTesting(GURL("https://foo.com")),
       CookieSourceScheme::kNonSecure, 65536);
   EXPECT_EQ("A", cookie2->Name());
   EXPECT_EQ("2", cookie2->Value());
@@ -89,9 +108,9 @@ TEST(CanonicalCookieTest, Constructor) {
   EXPECT_TRUE(cookie2->IsPartitioned());
   EXPECT_EQ(cookie2->SourceScheme(), CookieSourceScheme::kNonSecure);
   // Because the port can be set explicitly in the constructor its value can be
-  // independent of the other parameters. In this case, test that an invalid
-  // port value is interpreted as such.
-  EXPECT_EQ(cookie2->SourcePort(), url::PORT_INVALID);
+  // independent of the other parameters. In this case, test that an out of
+  // range port is kept out of range.
+  EXPECT_EQ(cookie2->SourcePort(), 65536);
 
   // Set Secure to true but don't specify source_scheme or port.
   auto cookie3 = CanonicalCookie::CreateUnsafeCookieForTesting(
@@ -640,7 +659,7 @@ TEST(CanonicalCookieTest, CreateWithPartitioned) {
   EXPECT_EQ(partition_key_with_nonce, cookie->PartitionKey());
 }
 
-TEST(CanonicalCookieTest, CreateWithMaxAge) {
+TEST_P(CanonicalCookieWithClampingTest, CreateWithMaxAge) {
   GURL url("http://www.example.com/test/foo.html");
   base::Time creation_time = base::Time::Now();
   absl::optional<base::Time> server_time = absl::nullopt;
@@ -711,7 +730,11 @@ TEST(CanonicalCookieTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie.get());
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
-  EXPECT_EQ(base::Time::Max(), cookie->ExpiryDate());
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    EXPECT_EQ(creation_time + base::Days(400), cookie->ExpiryDate());
+  } else {
+    EXPECT_EQ(base::Time::Max(), cookie->ExpiryDate());
+  }
 
   // Underflow max-age should be clipped.
   cookie = CanonicalCookie::Create(url,
@@ -725,6 +748,74 @@ TEST(CanonicalCookieTest, CreateWithMaxAge) {
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_TRUE(cookie->IsExpired(creation_time));
   EXPECT_EQ(base::Time::Min(), cookie->ExpiryDate());
+}
+
+TEST_P(CanonicalCookieWithClampingTest, CreateWithExpires) {
+  GURL url("http://www.example.com/test/foo.html");
+  base::Time creation_time = base::Time::Now();
+  absl::optional<base::Time> server_time = absl::nullopt;
+
+  // Expires in the past
+  base::Time past_date = base::Time::Now() - base::Days(10);
+  std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
+      url, "A=1; expires=" + base::TimeFormatHTTP(past_date), creation_time,
+      server_time, absl::nullopt /* cookie_partition_key */);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_TRUE(cookie->IsPersistent());
+  EXPECT_TRUE(cookie->IsExpired(creation_time));
+  EXPECT_TRUE((past_date - cookie->ExpiryDate()).magnitude() <
+              base::Seconds(1));
+
+  // Expires in the future
+  base::Time future_date = base::Time::Now() + base::Days(10);
+  cookie = CanonicalCookie::Create(
+      url, "A=1; expires=" + base::TimeFormatHTTP(future_date), creation_time,
+      server_time, absl::nullopt /* cookie_partition_key */);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_TRUE(cookie->IsPersistent());
+  EXPECT_FALSE(cookie->IsExpired(creation_time));
+  EXPECT_TRUE((future_date - cookie->ExpiryDate()).magnitude() <
+              base::Seconds(1));
+
+  // Expires in the far future
+  future_date = base::Time::Now() + base::Days(800);
+  cookie = CanonicalCookie::Create(
+      url, "A=1; expires=" + base::TimeFormatHTTP(future_date), creation_time,
+      server_time, absl::nullopt /* cookie_partition_key */);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_TRUE(cookie->IsPersistent());
+  EXPECT_FALSE(cookie->IsExpired(creation_time));
+  if (IsClampCookieExpiryTo400DaysEnabled()) {
+    EXPECT_TRUE(
+        (cookie->ExpiryDate() - creation_time - base::Days(400)).magnitude() <
+        base::Seconds(1));
+  } else {
+    EXPECT_TRUE((future_date - cookie->ExpiryDate()).magnitude() <
+                base::Seconds(1));
+  }
+
+  // Expires in the far future using CreateUnsafeCookieForTesting.
+  cookie = CanonicalCookie::CreateUnsafeCookieForTesting(
+      "A", "1", url.host(), url.path(), creation_time, base::Time::Max(),
+      base::Time(), true, false, CookieSameSite::UNSPECIFIED,
+      COOKIE_PRIORITY_HIGH, false, absl::nullopt /* cookie_partition_key */,
+      CookieSourceScheme::kSecure, 443);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_TRUE(cookie->IsPersistent());
+  EXPECT_FALSE(cookie->IsExpired(creation_time));
+  EXPECT_EQ(base::Time::Max(), cookie->ExpiryDate());
+
+  // Expires in the far future using FromStorage.
+  cookie = CanonicalCookie::FromStorage(
+      "A", "B", "www.foo.com", "/bar", creation_time, base::Time::Max(),
+      base::Time(), false /*secure*/, false /*httponly*/,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+      false /*same_party*/, absl::nullopt /*partition_key*/,
+      CookieSourceScheme::kSecure, 443);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_TRUE(cookie->IsPersistent());
+  EXPECT_FALSE(cookie->IsExpired(creation_time));
+  EXPECT_EQ(base::Time::Max(), cookie->ExpiryDate());
 }
 
 TEST(CanonicalCookieTest, EmptyExpiry) {
@@ -900,8 +991,7 @@ TEST(CanonicalCookieTest, IsEquivalent) {
       cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
       expiration_time, base::Time(), secure, httponly, same_site,
       COOKIE_PRIORITY_MEDIUM, same_party,
-      absl::make_optional(
-          CookiePartitionKey::FromURLForTesting(GURL("https://foo.com"))));
+      CookiePartitionKey::FromURLForTesting(GURL("https://foo.com")));
   EXPECT_FALSE(cookie->IsEquivalent(*other_cookie));
   EXPECT_FALSE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
 
@@ -910,8 +1000,7 @@ TEST(CanonicalCookieTest, IsEquivalent) {
       cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
       expiration_time, base::Time(), secure, httponly, same_site,
       COOKIE_PRIORITY_MEDIUM, same_party,
-      absl::make_optional(
-          CookiePartitionKey::FromURLForTesting(GURL("https://foo.com"))));
+      CookiePartitionKey::FromURLForTesting(GURL("https://foo.com")));
   EXPECT_TRUE(paritioned_cookie->IsEquivalent(*other_cookie));
   EXPECT_TRUE(
       paritioned_cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
@@ -921,8 +1010,7 @@ TEST(CanonicalCookieTest, IsEquivalent) {
       cookie_name, cookie_value, cookie_domain, cookie_path, creation_time,
       expiration_time, base::Time(), secure, httponly, same_site,
       COOKIE_PRIORITY_MEDIUM, same_party,
-      absl::make_optional(
-          CookiePartitionKey::FromURLForTesting(GURL("https://bar.com"))));
+      CookiePartitionKey::FromURLForTesting(GURL("https://bar.com")));
   EXPECT_FALSE(paritioned_cookie->IsEquivalent(*other_cookie));
   EXPECT_FALSE(
       paritioned_cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
@@ -962,27 +1050,22 @@ TEST(CanonicalCookieTest, IsEquivalentForSecureCookieMatching) {
       // Partitioned cookies are not equivalent to unpartitioned cookies.
       {{"A", ".a.foo.com", "/"},
        {"A", ".a.foo.com", "/",
-        absl::make_optional(
-            CookiePartitionKey::FromURLForTesting(GURL("https://bar.com")))},
+        CookiePartitionKey::FromURLForTesting(GURL("https://bar.com"))},
        false,
        true},
       // Partitioned cookies are equivalent if they have the same partition key.
       {{"A", "a.foo.com", "/",
-        absl::make_optional(
-            CookiePartitionKey::FromURLForTesting(GURL("https://bar.com")))},
+        CookiePartitionKey::FromURLForTesting(GURL("https://bar.com"))},
        {"A", "a.foo.com", "/",
-        absl::make_optional(
-            CookiePartitionKey::FromURLForTesting(GURL("https://bar.com")))},
+        CookiePartitionKey::FromURLForTesting(GURL("https://bar.com"))},
        true,
        true},
       // Partitioned cookies are *not* equivalent if they have the different
       // partition keys.
       {{"A", "a.foo.com", "/",
-        absl::make_optional(
-            CookiePartitionKey::FromURLForTesting(GURL("https://bar.com")))},
+        CookiePartitionKey::FromURLForTesting(GURL("https://bar.com"))},
        {"A", "a.foo.com", "/",
-        absl::make_optional(
-            CookiePartitionKey::FromURLForTesting(GURL("https://baz.com")))},
+        CookiePartitionKey::FromURLForTesting(GURL("https://baz.com"))},
        false,
        true},
   };
@@ -2727,8 +2810,8 @@ TEST(CanonicalCookieTest, IsCanonical) {
                   base::Time(), /*secure=*/true, /*httponly=*/false,
                   CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_LOW,
                   /*same_party=*/false,
-                  absl::make_optional(CookiePartitionKey::FromURLForTesting(
-                      GURL("https://toplevelsite.com"))))
+                  CookiePartitionKey::FromURLForTesting(
+                      GURL("https://toplevelsite.com")))
                   ->IsCanonical());
 
   // Partitioned attribute with no __Host- prefix is still valid if it has
@@ -2738,8 +2821,8 @@ TEST(CanonicalCookieTest, IsCanonical) {
                   base::Time(), /*secure=*/true, /*httponly=*/false,
                   CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_LOW,
                   /*same_party=*/false,
-                  absl::make_optional(CookiePartitionKey::FromURLForTesting(
-                      GURL("https://toplevelsite.com"))))
+                  CookiePartitionKey::FromURLForTesting(
+                      GURL("https://toplevelsite.com")))
                   ->IsCanonical());
 
   // Partitioned attribute invalid, not Secure.
@@ -2748,8 +2831,8 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    base::Time(), /*secure=*/false, /*httponly=*/false,
                    CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_LOW,
                    /*same_party=*/false,
-                   absl::make_optional(CookiePartitionKey::FromURLForTesting(
-                       GURL("https://toplevelsite.com"))))
+                   CookiePartitionKey::FromURLForTesting(
+                       GURL("https://toplevelsite.com")))
                    ->IsCanonical());
 
   // Partitioned attribute invalid, no Path.
@@ -2758,8 +2841,8 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    base::Time(), /*secure=*/true, /*httponly=*/false,
                    CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_LOW,
                    /*same_party=*/false,
-                   absl::make_optional(CookiePartitionKey::FromURLForTesting(
-                       GURL("https://toplevelsite.com"))))
+                   CookiePartitionKey::FromURLForTesting(
+                       GURL("https://toplevelsite.com")))
                    ->IsCanonical());
 
   // Partitioned attribute invalid, invalid Path.
@@ -2768,8 +2851,8 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    base::Time(), /*secure=*/true, /*httponly=*/false,
                    CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_LOW,
                    /*same_party=*/false,
-                   absl::make_optional(CookiePartitionKey::FromURLForTesting(
-                       GURL("https://toplevelsite.com"))))
+                   CookiePartitionKey::FromURLForTesting(
+                       GURL("https://toplevelsite.com")))
                    ->IsCanonical());
 
   // Partitioned attribute invalid, Domain attribute also included.
@@ -2778,8 +2861,8 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    base::Time(), /*secure=*/true, /*httponly=*/false,
                    CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_LOW,
                    /*same_party=*/false,
-                   absl::make_optional(CookiePartitionKey::FromURLForTesting(
-                       GURL("https://toplevelsite.com"))))
+                   CookiePartitionKey::FromURLForTesting(
+                       GURL("https://toplevelsite.com")))
                    ->IsCanonical());
 
   // Partitioned attribute invalid, SameParty attribute also included.
@@ -2788,8 +2871,8 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    base::Time(), /*secure=*/true, /*httponly=*/false,
                    CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_LOW,
                    /*same_party=*/true,
-                   absl::make_optional(CookiePartitionKey::FromURLForTesting(
-                       GURL("https://toplevelsite.com"))))
+                   CookiePartitionKey::FromURLForTesting(
+                       GURL("https://toplevelsite.com")))
                    ->IsCanonical());
 }
 
@@ -3016,8 +3099,7 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Inputs) {
       base::Time(), base::Time(), base::Time(), true /*secure*/,
       false /*httponly*/, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW,
       false /*same_party*/,
-      absl::make_optional(CookiePartitionKey::FromURLForTesting(
-          GURL("https://toplevelsite.com"))),
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com")),
       &status);
   EXPECT_TRUE(cc);
   EXPECT_TRUE(cc->IsPartitioned());

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/traits_bag.h"
 #include "build/build_config.h"
@@ -387,6 +388,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   BIND_EXTENSION(GenBuffers, GenBuffersARB);
   BIND(GetBufferParameteriv);
   BIND(GetError);
+  BIND(GetFloatv);
   BIND(GetIntegerv);
   BIND(GetMultisamplefv);
   BIND(GetQueryObjectiv);
@@ -448,6 +450,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
 
   BIND(ReadBuffer);
   BIND(ReadPixels);
+  BIND(SamplerParameterf);
   BIND(SamplerParameteri);
   BIND(SamplerParameteriv);
   BIND(Scissor);

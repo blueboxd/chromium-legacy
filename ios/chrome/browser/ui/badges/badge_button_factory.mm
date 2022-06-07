@@ -179,6 +179,7 @@ const CGFloat kSymbolImagePointSize = 18;
       [weakSelf.delegate showModalForBadgeType:badgeType];
     };
     void (^buttonTapHandler)(UIAction*) = ^(UIAction* action) {
+      [weakSelf.delegate overflowBadgeButtonTapped:weakButton];
       weakButton.menu = GetOverflowMenuFromBadgeTypes(
           weakSelf.delegate.badgeTypesForOverflowMenu, showModalFunction);
     };

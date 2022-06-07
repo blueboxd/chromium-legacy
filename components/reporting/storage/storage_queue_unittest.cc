@@ -354,8 +354,7 @@ class StorageQueueTest
         : uploader_id_(next_uploader_id.fetch_add(1)),
           last_record_digest_map_(&self->last_record_digest_map_),
           mock_upload_(&self->mock_upload_),
-          sequence_bound_upload_(self->main_thread_task_runner_,
-                                 &self->mock_upload_) {
+          sequence_bound_upload_(self->main_task_runner_, &self->mock_upload_) {
       DETACH_FROM_SEQUENCE(test_uploader_checker_);
     }
 
@@ -590,7 +589,7 @@ class StorageQueueTest
   void AsyncStartMockUploader(
       UploaderInterface::UploadReason reason,
       UploaderInterface::UploaderInterfaceResultCb start_uploader_cb) {
-    main_thread_task_runner_->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](UploaderInterface::UploadReason reason,
@@ -649,9 +648,9 @@ class StorageQueueTest
   std::string dm_token_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  // Single task runner where all EXPECTs will happen - main thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_{
-      base::ThreadTaskRunnerHandle::Get()};
+  // Sequenced task runner where all EXPECTs will happen.
+  const scoped_refptr<base::SequencedTaskRunner> main_task_runner_{
+      base::SequencedTaskRunnerHandle::Get()};
 
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir location_;
@@ -1025,7 +1024,8 @@ TEST_P(StorageQueueTest, WriteIntoNewStorageQueueReopenWriteMoreAndFlush) {
   storage_queue_->Flush();
 }
 
-TEST_P(StorageQueueTest, ValidateVariousRecordSizes) {
+// Test flaky: crbug.com/1312731
+TEST_P(StorageQueueTest, DISABLED_ValidateVariousRecordSizes) {
   std::vector<std::string> data;
   for (size_t i = 16; i < 16 + 16; ++i) {
     data.emplace_back(i, 'R');

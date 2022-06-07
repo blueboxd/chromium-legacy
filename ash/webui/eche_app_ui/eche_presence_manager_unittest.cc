@@ -4,6 +4,7 @@
 
 #include "ash/webui/eche_app_ui/eche_presence_manager.h"
 
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
@@ -14,7 +15,6 @@
 #include "ash/webui/eche_app_ui/proto/exo_messages.pb.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,10 +50,8 @@ class EchePresenceManagerTest : public testing::Test {
  protected:
   EchePresenceManagerTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        test_remote_device_(
-            chromeos::multidevice::CreateRemoteDeviceRefForTest()),
-        test_devices_(
-            chromeos::multidevice::CreateRemoteDeviceRefListForTest(1)) {}
+        test_remote_device_(multidevice::CreateRemoteDeviceRefForTest()),
+        test_devices_(multidevice::CreateRemoteDeviceRefListForTest(1)) {}
   EchePresenceManagerTest(const EchePresenceManagerTest&) = delete;
   EchePresenceManagerTest& operator=(const EchePresenceManagerTest&) = delete;
   ~EchePresenceManagerTest() override = default;
@@ -112,7 +110,7 @@ class EchePresenceManagerTest : public testing::Test {
   std::unique_ptr<FakeEcheConnector> fake_eche_connector_;
   std::unique_ptr<FakeEcheMessageReceiver> fake_eche_message_receiver_;
   std::unique_ptr<FakeFeatureStatusProvider> fake_feature_status_provider_;
-  const chromeos::multidevice::RemoteDeviceRef test_remote_device_;
+  const multidevice::RemoteDeviceRef test_remote_device_;
   multidevice_setup::FakeMultiDeviceSetupClient fake_multidevice_setup_client_;
   device_sync::FakeDeviceSyncClient fake_device_sync_client_;
   const multidevice::RemoteDeviceRefList test_devices_;
@@ -121,13 +119,6 @@ class EchePresenceManagerTest : public testing::Test {
 };
 
 TEST_F(EchePresenceManagerTest, StopMonitoring) {
-  // Test feature status change to kNotEnabledByPhone
-  Reset();
-  SetFeatureStatus(FeatureStatus::kConnected);
-  SetStreamStatus(proto::StatusChangeType::TYPE_STREAM_START);
-  SetFeatureStatus(FeatureStatus::kNotEnabledByPhone);
-  EXPECT_EQ(1u, num_stop_monitor_calls_);
-
   // Test feature status change to kIneligible
   Reset();
   SetFeatureStatus(FeatureStatus::kConnected);

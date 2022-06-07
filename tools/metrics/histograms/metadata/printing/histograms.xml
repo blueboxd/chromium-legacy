@@ -105,7 +105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributesSuccess" enum="BooleanSuccess"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>bmgordon@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -162,7 +162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.MigratedMakeAndModel" enum="BooleanMigrated"
-    expires_after="2022-04-10">
+    expires_after="2022-10-10">
   <owner>luum@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -238,8 +238,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterSetupResult.PrintPreview"
-    enum="PrinterSetupResult" expires_after="2022-04-21">
-  <owner>batrapranav@chromium.org</owner>
+    enum="PrinterSetupResult" expires_after="2022-10-21">
+  <owner>bmgordon@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
     The success or error code for the setup of a CUPS printer. Recorded when
@@ -259,7 +259,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterStatusReasons"
-    enum="PrinterStatusReasons" expires_after="2022-06-15">
+    enum="PrinterStatusReasons" expires_after="2022-10-04">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -317,7 +317,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.UsbSetupSource" enum="UsbPrinterSetupSource"
-    expires_after="2022-06-15">
+    expires_after="2022-10-04">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -342,8 +342,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.ZeroconfPrinterSetupResult.PrintPreview"
-    enum="PrinterSetupResult" expires_after="2022-04-21">
-  <owner>batrapranav@chromium.org</owner>
+    enum="PrinterSetupResult" expires_after="2022-10-21">
+  <owner>bmgordon@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
     The success or error code for the setup of a Zeroconf printer. Recorded when

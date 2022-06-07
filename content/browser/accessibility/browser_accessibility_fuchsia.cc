@@ -149,6 +149,12 @@ BrowserAccessibilityFuchsia::GetFuchsiaRole() const {
       return FuchsiaRole::IMAGE;
     case AXRole::kLink:
       return FuchsiaRole::LINK;
+    case AXRole::kList:
+      return FuchsiaRole::LIST;
+    case AXRole::kListItem:
+      return FuchsiaRole::LIST_ELEMENT;
+    case AXRole::kListMarker:
+      return FuchsiaRole::LIST_ELEMENT_MARKER;
     case AXRole::kParagraph:
       return FuchsiaRole::PARAGRAPH;
     case AXRole::kRadioButton:
@@ -322,6 +328,25 @@ BrowserAccessibilityFuchsia::GetFuchsiaAttributes() const {
       attributes.set_table_cell_attributes(std::move(table_cell_attributes));
   }
 
+  if (IsList()) {
+    absl::optional<int> size = GetSetSize();
+    if (size) {
+      fuchsia::accessibility::semantics::SetAttributes list_attributes;
+      list_attributes.set_size(*size);
+      attributes.set_list_attributes(std::move(list_attributes));
+    }
+  }
+
+  if (IsListElement()) {
+    absl::optional<int> index = GetPosInSet();
+    if (index) {
+      fuchsia::accessibility::semantics::SetAttributes list_element_attributes;
+      list_element_attributes.set_index(*index);
+      attributes.set_list_element_attributes(
+          std::move(list_element_attributes));
+    }
+  }
+
   return attributes;
 }
 
@@ -353,7 +378,7 @@ fuchsia::ui::gfx::mat4 BrowserAccessibilityFuchsia::GetFuchsiaTransform()
 
   // Convert to fuchsia's transform type.
   std::array<float, 16> mat = {};
-  transform.matrix().asColMajorf(mat.data());
+  transform.matrix().getColMajor(mat.data());
   fuchsia::ui::gfx::Matrix4Value fuchsia_transform =
       scenic::NewMatrix4Value(mat);
   return fuchsia_transform.value;
@@ -385,6 +410,14 @@ void BrowserAccessibilityFuchsia::DeleteNode() {
     return;
 
   GetAccessibilityBridge()->DeleteNode(GetFuchsiaNodeID());
+}
+
+bool BrowserAccessibilityFuchsia::IsList() const {
+  return GetRole() == AXRole::kList;
+}
+
+bool BrowserAccessibilityFuchsia::IsListElement() const {
+  return GetRole() == AXRole::kListItem;
 }
 
 bool BrowserAccessibilityFuchsia::AccessibilityPerformAction(

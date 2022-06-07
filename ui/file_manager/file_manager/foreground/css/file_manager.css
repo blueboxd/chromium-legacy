@@ -126,7 +126,7 @@ html.breadcrumb-elider-expanded #directory-tree {
 
 #directory-tree .tree-row > .file-row {
   align-items: center;
-  border: 1px solid transparent;
+  border: 2px solid transparent;
   border-inline-start-width: 0 !important;
   border-radius: 0 20px 20px 0;
   box-sizing: border-box;
@@ -274,7 +274,7 @@ html.drag-drop-active #directory-tree .tree-item.accepts > .tree-row > .file-row
 }
 
 html.focus-outline-visible #directory-tree:focus .tree-row[selected] > .file-row {
-  border: 1px solid var(--cros-focus-ring-color);
+  border: 2px solid var(--cros-focus-ring-color);
 }
 
 #directory-tree .tree-row[active] > .file-row {
@@ -435,7 +435,7 @@ html.pointer-active div.splitter:not(.splitter-active) .splitter-button:not(:act
   flex: none;
   flex-direction: row;
   font-size: 14px;
-  height: 56px;
+  height: 57px;
   overflow: hidden;
   transition: background 220ms ease;
 }
@@ -463,7 +463,7 @@ body[type='open-multi-file'].check-select .dialog-header {
   --ink-color: var(--cros-ripple-color);
   --ripple-opacity: 100%;
   --text-color: currentColor;
-  border: 1px solid transparent;
+  border: 2px solid transparent;
   border-radius: 18px;
   box-sizing: border-box;
   color: var(--cros-text-color-primary);
@@ -508,7 +508,7 @@ html.pointer-active .dialog-header.files-ng button:not([menu-shown]):not(:active
 
 html.focus-outline-visible .dialog-header.files-ng cr-button:not(:active):focus,
 html.focus-outline-visible .dialog-header.files-ng button:not(:active):focus {
-  border: 1px solid var(--cros-focus-ring-color);
+  border: 2px solid var(--cros-focus-ring-color);
 }
 
 .dialog-header files-ripple,
@@ -579,17 +579,14 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
 .dialog-header cr-button.icon-button > .icon {
   background-position: center;
   background-repeat: no-repeat;
-  height: 100%;
+  height: 48px;
   left: 0;
+  margin-inline-end: -8px;
+  margin-inline-start: -8px;
+  margin-top: -8px;
   position: absolute;
   top: 0;
-  width: 32px;
-}
-
-.dialog-header.files-ng cr-button > .icon {
-  height: 20px;
-  padding: calc(8px - 1px);
-  width: 20px;
+  width: 48px;
 }
 
 .dialog-header.files-ng #tasks {
@@ -684,12 +681,6 @@ body.check-select #view-button.thumbnail {
 
 .dialog-header.files-ng #sort-button > .icon {
   -webkit-mask-image: url(../images/files/ui/sorting_ng.svg);
-  height: 48px;
-  margin-inline-end: -7px;
-  margin-inline-start: -7px;
-  margin-top: -7px;
-  position: absolute;
-  width: 48px;
 }
 
 body.check-select #sort-button {
@@ -698,12 +689,6 @@ body.check-select #sort-button {
 
 .dialog-header.files-ng #gear-button > .icon {
   -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
-  height: 48px;
-  margin-inline-end: -7px;
-  margin-inline-start: -7px;
-  margin-top: -7px;
-  position: absolute;
-  width: 48px;
 }
 body.check-select #gear-button {
   display: none;
@@ -711,12 +696,6 @@ body.check-select #gear-button {
 
 .dialog-header.files-ng #selection-menu-button > .icon {
   -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
-  height: 48px;
-  margin-inline-end: -7px;
-  margin-inline-start: -7px;
-  margin-top: -7px;
-  position: absolute;
-  width: 48px;
 }
 
 body:not(.check-select) #selection-menu-button {
@@ -908,13 +887,13 @@ body.check-select #files-selected-label {
 
 /* TODO(adanilo) document the calc() reason. */
 body.files-ng #cancel-selection-button {
-  border: 1px solid transparent;
+  border: 2px solid transparent;
   margin-inline-start: calc(10px + 1px);
   width: 36px;
 }
 
 html.focus-outline-visible body.files-ng #cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
-  border: 1px solid var(--cros-icon-color-prominent);
+  border: 2px solid var(--cros-icon-color-prominent);
 }
 
 body.files-ng #cancel-selection-button > span#cancel-selection-label {
@@ -2525,12 +2504,12 @@ files-toast {
 #file-type-filter-container {
   display: flex;
   font-size: 13px;
-  padding: 12px 0 16px 12px;
+  padding: 12px 0 12px 12px;
 }
 
 .file-type-filter-button {
   --border-color: var(--cros-button-stroke-color-secondary);
-  --cr-button-height: 28px;
+  --cr-button-height: 32px;
   --hover-bg-color: var(--cros-ripple-color);
   --hover-border-color: var(--cros-button-stroke-color-secondary);
   --ink-color: var(--cros-ripple-color);
@@ -2538,19 +2517,14 @@ files-toast {
   --text-color: var(--cros-text-color-secondary);
   border-radius: 20px;
   margin-inline: 4px;
+  min-width: auto;
   outline: none;
 }
 
-/* Prevent unexpected ripple when ".active" gets removed (e.g. clicking an
-   ".active" filter button make it inactive.) */
-.file-type-filter-button:not(:active) {
-  --ink-color: transparent;
-}
-
 .file-type-filter-button.active {
-  /* Intentionally no hover color and ripple effect for active state. */
+  /* Intentionally no hover color for active state. */
   --hover-bg-color: none;
-  --ink-color: transparent;
+  --ink-color: var(--cros-ripple-color-prominent);
   --text-color: var(--cros-text-color-selection);
   background-color: var(--cros-highlight-color);
   border-color: transparent;

@@ -28,11 +28,13 @@
 
 #include <libxml/tree.h>
 #include <memory>
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/dom/parser_content_policy.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/script/xml_parser_script_runner.h"
 #include "third_party/blink/renderer/core/script/xml_parser_script_runner_host.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_errors.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/text/segmented_string.h"

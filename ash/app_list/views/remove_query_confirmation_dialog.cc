@@ -7,17 +7,21 @@
 #include <memory>
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/view_shadow.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/highlight_border.h"
 #include "ash/style/pill_button.h"
 #include "base/bind.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -31,7 +35,7 @@ namespace {
 
 constexpr int kDialogWidth = 360;
 
-constexpr gfx::Insets kDialogContentInsets = gfx::Insets(20, 24);
+constexpr gfx::Insets kDialogContentInsets = gfx::Insets::VH(20, 24);
 constexpr float kDialogRoundedCornerRadius = 16.0f;
 constexpr int kDialogShadowElevation = 3;
 
@@ -42,7 +46,8 @@ constexpr int kMarginBetweenButtons = 8;
 }  // namespace
 
 RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
-    RemovalConfirmationCallback confirm_callback)
+    RemovalConfirmationCallback confirm_callback,
+    const std::u16string& result_title)
     : confirm_callback_(std::move(confirm_callback)) {
   SetModalType(ui::MODAL_TYPE_WINDOW);
 
@@ -66,13 +71,17 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
   // Needs to paint to layer so it's stacked above `this` view.
   title_->SetPaintToLayer();
   title_->layer()->SetFillsBoundsOpaquely(false);
+  // Ignore labels for accessibility - the accessible name is defined for the
+  // whole dialog view.
+  title_->GetViewAccessibility().OverrideIsIgnored(true);
 
   // Add dialog body.
-  body_ = AddChildView(std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS)));
+  body_ =
+      AddChildView(std::make_unique<views::Label>(l10n_util::GetStringFUTF16(
+          IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS, result_title)));
   body_->SetProperty(views::kMarginsKey,
-                     gfx::Insets(kMarginBetweenTitleAndBody, 0,
-                                 kMarginBetweenBodyAndButtons, 0));
+                     gfx::Insets::TLBR(kMarginBetweenTitleAndBody, 0,
+                                       kMarginBetweenBodyAndButtons, 0));
   body_->SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT);
   body_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   body_->SetMultiLine(true);
@@ -81,10 +90,20 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
   // Needs to paint to layer so it's stacked above `this` view.
   body_->SetPaintToLayer();
   body_->layer()->SetFillsBoundsOpaquely(false);
+  // Ignore labels for accessibility - the accessible name is defined for the
+  // whole dialog view.
+  body_->GetViewAccessibility().OverrideIsIgnored(true);
 
   auto run_callback = [](RemoveQueryConfirmationDialog* dialog, bool accept) {
     if (!dialog->confirm_callback_)
       return;
+
+    if (accept) {
+      Shell::Get()
+          ->accessibility_controller()
+          ->TriggerAccessibilityAlertWithMessage(
+              l10n_util::GetStringUTF8(IDS_REMOVE_SUGGESTION_ANNOUNCEMENT));
+    }
 
     std::move(dialog->confirm_callback_).Run(accept);
 
@@ -138,6 +157,18 @@ void RemoveQueryConfirmationDialog::OnThemeChanged() {
       AshColorProvider::ContentLayerType::kTextColorPrimary));
   body_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorPrimary));
+}
+
+void RemoveQueryConfirmationDialog::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  if (!GetVisible())
+    return;
+  node_data->role = ax::mojom::Role::kAlertDialog;
+  node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
+  node_data->SetName(base::JoinString(
+      {l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE),
+       l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS)},
+      u", "));
 }
 
 }  // namespace ash

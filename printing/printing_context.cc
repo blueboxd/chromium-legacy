@@ -27,8 +27,7 @@ namespace {
 
 PrintingContextFactoryForTest* g_printing_context_factory_for_test = nullptr;
 
-const float kCloudPrintMarginInch = 0.25;
-}
+}  // namespace
 
 PrintingContext::PrintingContext(Delegate* delegate)
     : settings_(std::make_unique<PrintSettings>()),
@@ -123,7 +122,7 @@ mojom::ResultCode PrintingContext::UpdatePrintSettings(
   ResetSettings();
   {
     std::unique_ptr<PrintSettings> settings =
-        PrintSettingsFromJobSettings(job_settings);
+        PrintSettingsFromJobSettings(job_settings.GetDict());
     if (!settings) {
       NOTREACHED();
       return OnError();
@@ -133,15 +132,17 @@ mojom::ResultCode PrintingContext::UpdatePrintSettings(
 
   mojom::PrinterType printer_type = static_cast<mojom::PrinterType>(
       job_settings.FindIntKey(kSettingPrinterType).value());
-  bool print_with_privet = printer_type == mojom::PrinterType::kPrivet;
-  bool print_to_cloud = !!job_settings.FindKey(kSettingCloudPrintId);
+  if (printer_type == mojom::PrinterType::kPrivetDeprecated ||
+      printer_type == mojom::PrinterType::kCloudDeprecated) {
+    NOTREACHED();
+    return OnError();
+  }
+
   bool open_in_external_preview =
       !!job_settings.FindKey(kSettingOpenPDFInPreview);
 
   if (!open_in_external_preview &&
-      (print_to_cloud || print_with_privet ||
-       printer_type == mojom::PrinterType::kPdf ||
-       printer_type == mojom::PrinterType::kCloud ||
+      (printer_type == mojom::PrinterType::kPdf ||
        printer_type == mojom::PrinterType::kExtension)) {
     settings_->set_dpi(kDefaultPdfDpi);
     gfx::Size paper_size(GetPdfPaperSizeDeviceUnits());
@@ -156,11 +157,6 @@ mojom::ResultCode PrintingContext::UpdatePrintSettings(
                         device_microns_per_device_unit);
     }
     gfx::Rect paper_rect(0, 0, paper_size.width(), paper_size.height());
-    if (print_to_cloud || print_with_privet) {
-      paper_rect.Inset(
-          kCloudPrintMarginInch * settings_->device_units_per_inch(),
-          kCloudPrintMarginInch * settings_->device_units_per_inch());
-    }
     settings_->SetPrinterPrintableArea(paper_size, paper_rect, true);
     return mojom::ResultCode::kSuccess;
   }

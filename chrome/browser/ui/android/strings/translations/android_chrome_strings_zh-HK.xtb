@@ -184,7 +184,6 @@
 <translation id="200114059308480249">要加入上下文來執行 Google 搜尋嗎？</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 個檔案}other{# 個檔案}}</translation>
 <translation id="2015836039326522978">「<ph name="APP_NAME" />」將在 Chrome 中開啟。繼續即表示您同意《<ph name="BEGIN_LINK1" />Google 服務條款<ph name="END_LINK1" />》以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome OS 的《附加服務條款》<ph name="END_LINK2" />。須同時受《<ph name="BEGIN_LINK3" />私隱權政策<ph name="END_LINK3" />》約束。</translation>
-<translation id="2019145049163614359">要移除興趣嗎？</translation>
 <translation id="2020309681647789787">您可在所有已同步的裝置上查看記錄，繼續執行先前的任何工作</translation>
 <translation id="2021896219286479412">全螢幕網站控制</translation>
 <translation id="2038563949887743358">開啟「切換為電腦版網站」</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">根據使用情況</translation>
 <translation id="214888715418183969">選擇您想與 Chrome 分享的資料。您分享的數據將有助我們改善 Chrome 的功能、效能和穩定性。</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
+<translation id="2155214902713132423">此裝置不支援此驗證方法。請在另一部裝置上採用其他選項。</translation>
 <translation id="2157851137955077194">如要將手機上的內容分享至另一部裝置，請同時在這兩部裝置的 Chrome 設定中開啟同步功能</translation>
 <translation id="2158408438301413340">Chrome 無法檢查所有密碼</translation>
 <translation id="2169830938017475061">現在</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">不久後，您將會在開啟新分頁時看到 <ph name="SITE_NAME" /> 的內容。您追蹤的網站會儲存在 Google 帳戶中。您可在「探索」設定中管理已儲存的網站。</translation>
 <translation id="5091249083535528968">延伸使用情況資料</translation>
 <translation id="509429900233858213">發生錯誤。</translation>
-<translation id="5098190077610408701">要新增興趣嗎？</translation>
 <translation id="5102401324271069229">如果有網站試圖盜取您的密碼，或當您下載有害檔案時，Chrome 可能將網址 (包括部分網頁內容) 傳送至「安全瀏覽」功能</translation>
 <translation id="510275257476243843">尚餘 1 小時</translation>
 <translation id="5115811374190515607">移至<ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">如果「Google 助理」知道網站的網址，便能夠助您完成工作。您可在 Chrome 設定中關閉「Google 助理」。</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5919204609460789179">更新 <ph name="PRODUCT_NAME" /> 即可開始同步處理</translation>
+<translation id="5938820472109305350">新增<ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">使用 Google 搜尋內容</translation>
 <translation id="5945035219773565305">目前的建議：<ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">正在查看實際網頁</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791">Chrome 透過「<ph name="BEGIN_LINK" />私隱沙箱<ph name="END_LINK" />」開發新的技術，防止有心人士透過跨網站追蹤機制取得您的資料，同時保護開放網絡。
 
 「私隱沙箱」的試用功能仍在開發階段，目前開放地區有限。現在網站可以嘗試使用「私隱沙箱」，亦能繼續使用第三方 Cookie 等現有的網絡技術。</translation>
-<translation id="6036057147555329831">其他 ICU</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="604124094241169006">自動</translation>
@@ -1023,6 +1022,7 @@
 <translation id="663674369910034433">如需更多與私隱權、安全性和資料收集相關的設定，請參閱<ph name="BEGIN_LINK1" />同步處理<ph name="END_LINK1" />和 <ph name="BEGIN_LINK2" />Google 服務<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Chrome 會向 Google 傳送使用情況和當機資料，以協助改善應用程式。<ph name="BEGIN_UMA_LINK" />管理<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">一律封鎖</translation>
+<translation id="6641780377503683465">移除<ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6645629752388991326">透過使用此裝置作為安全密鑰，控制可以登入的裝置。</translation>
 <translation id="6648459603387803038">您的管理員可遠端變更瀏覽器設定。此裝置上的活動也可透過 Chrome 以外的服務管理。</translation>

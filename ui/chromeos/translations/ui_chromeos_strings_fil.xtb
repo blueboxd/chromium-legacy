@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Bina-back up ang <ph name="FILE_COUNT" /></translation>
 <translation id="4218274196133425560">Alisin ang exception para sa <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Presentation ng Google</translation>
+<translation id="4277536868133419688">Naka-on ang filter na <ph name="FILTER_NAME" />.</translation>
 <translation id="4290535918735525311">1 folder ang naibahagi sa Linux</translation>
 <translation id="4299729908419173967">Brazilian</translation>
 <translation id="4302605047395093221">Kakailanganin ng sinumang gumagamit ng device na ito na ilagay ang PIN para makakonekta sa mobile network na ito</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">Higit pa...</translation>
 <translation id="4579744207439506346">Idinagdag ang <ph name="ENTRY_NAME" /> sa pagpipilian.</translation>
 <translation id="4594543368593301662">Ipinapakita ang mga resulta para sa <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">Na-reset ang filter.</translation>
 <translation id="4603392156942865207">Kinokopya ang <ph name="FILE_NAME" /> sa <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4642769377300286600">Ini-install ang profile ng mobile, Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -530,6 +532,7 @@
 <translation id="5469868506864199649">Italyano</translation>
 <translation id="5473333559083690127">Muling ilagay ang bagong PIN</translation>
 <translation id="5489067830765222292">Latvian</translation>
+<translation id="5489965683297092283">Naka-off ang filter na <ph name="FILTER_NAME" />.</translation>
 <translation id="5494920125229734069">Piliin ang lahat</translation>
 <translation id="5500122897333236901">Icelandic</translation>
 <translation id="5508696409934741614">Mga Dot</translation>
@@ -596,6 +599,7 @@
 <translation id="6082256976217156453">LZMA compressed archive</translation>
 <translation id="6096979789310008754">Na-clear ang text para sa paghahanap, ipinapakita ang lahat ng file at folder.</translation>
 <translation id="610101264611565198">Inililipat ang <ph name="FILE_NAME" /> sa <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">CSV text</translation>
 <translation id="6129953537138746214">Puwang</translation>
 <translation id="6133173853026656527">Inililipat ang <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">Japanese na may US keyboard</translation>
@@ -846,6 +850,7 @@
 <translation id="8208580316430297579">Artwork</translation>
 <translation id="8223479393428528563">Upang i-save ang mga file na ito para sa offline na paggamit, mag-online muli, i-right click ang mga file at piliin ang opsyong <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">I-abort</translation>
+<translation id="8250920743982581267">Mga Dokumento</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8261561378965667560">Chinese Array</translation>
 <translation id="8269755669432358899">I-collapse ang mga panel ng feedback ng mga file</translation>

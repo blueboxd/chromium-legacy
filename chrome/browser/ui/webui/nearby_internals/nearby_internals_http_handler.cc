@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_http_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/time/time.h"
@@ -57,12 +59,12 @@ const char kHttpMessageDirectionKey[] = "direction";
 base::Value HttpMessageToDictionary(const base::Value& message,
                                     Direction dir,
                                     Rpc rpc) {
-  base::Value dictionary(base::Value::Type::DICTIONARY);
-  dictionary.SetStringKey(kHttpMessageBodyKey, FormatAsJSON(message));
-  dictionary.SetKey(kHttpMessageTimeKey, GetJavascriptTimestamp());
-  dictionary.SetIntKey(kHttpMessageRpcKey, static_cast<int>(rpc));
-  dictionary.SetIntKey(kHttpMessageDirectionKey, static_cast<int>(dir));
-  return dictionary;
+  base::Value::Dict dictionary;
+  dictionary.Set(kHttpMessageBodyKey, FormatAsJSON(message));
+  dictionary.Set(kHttpMessageTimeKey, GetJavascriptTimestamp());
+  dictionary.Set(kHttpMessageRpcKey, static_cast<int>(rpc));
+  dictionary.Set(kHttpMessageDirectionKey, static_cast<int>(dir));
+  return base::Value(std::move(dictionary));
 }
 
 }  // namespace
@@ -74,19 +76,19 @@ NearbyInternalsHttpHandler::NearbyInternalsHttpHandler(
 NearbyInternalsHttpHandler::~NearbyInternalsHttpHandler() = default;
 
 void NearbyInternalsHttpHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "initializeHttp",
       base::BindRepeating(&NearbyInternalsHttpHandler::InitializeContents,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "updateDevice",
       base::BindRepeating(&NearbyInternalsHttpHandler::UpdateDevice,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "listContactPeople",
       base::BindRepeating(&NearbyInternalsHttpHandler::ListContactPeople,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "listPublicCertificates",
       base::BindRepeating(&NearbyInternalsHttpHandler::ListPublicCertificates,
                           base::Unretained(this)));
@@ -107,11 +109,11 @@ void NearbyInternalsHttpHandler::OnJavascriptDisallowed() {
 }
 
 void NearbyInternalsHttpHandler::InitializeContents(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
 }
 
-void NearbyInternalsHttpHandler::UpdateDevice(const base::ListValue* args) {
+void NearbyInternalsHttpHandler::UpdateDevice(const base::Value::List& args) {
   NearbySharingService* service_ =
       NearbySharingServiceFactory::GetForBrowserContext(context_);
   if (service_) {
@@ -122,7 +124,7 @@ void NearbyInternalsHttpHandler::UpdateDevice(const base::ListValue* args) {
 }
 
 void NearbyInternalsHttpHandler::ListPublicCertificates(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   NearbySharingService* service_ =
       NearbySharingServiceFactory::GetForBrowserContext(context_);
   if (service_) {
@@ -133,7 +135,7 @@ void NearbyInternalsHttpHandler::ListPublicCertificates(
 }
 
 void NearbyInternalsHttpHandler::ListContactPeople(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   NearbySharingService* service_ =
       NearbySharingServiceFactory::GetForBrowserContext(context_);
   if (service_) {

@@ -744,10 +744,12 @@ class TestPort(Port):
         if not actual_contents or not expected_contents:
             return (True, None)
         if diffed:
-            return (
-                ('< %s\n---\n> %s\n' %
-                 (expected_contents, actual_contents)),  #.encode('utf8'),
-                None)
+            mock_diff = '\n'.join([
+                '< %s' % base64.b64encode(expected_contents).decode('utf-8'),
+                '---',
+                '> %s' % base64.b64encode(actual_contents).decode('utf-8'),
+            ])
+            return (mock_diff, None)
         return (None, None)
 
     def web_tests_dir(self):
@@ -819,25 +821,32 @@ class TestPort(Port):
     def virtual_test_suites(self):
         return [
             VirtualTestSuite(prefix='virtual_passes',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['passes', 'passes_two'],
                              args=['--virtual-arg']),
             VirtualTestSuite(prefix='skipped',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['failures/expected'],
                              args=['--virtual-arg-skipped']),
-            VirtualTestSuite(
-                prefix='virtual_failures',
-                bases=['failures/expected', 'failures/unexpected'],
-                args=['--virtual-arg-failures']),
+            VirtualTestSuite(prefix='virtual_failures',
+                             platforms=['Linux', 'Mac', 'Win'],
+                             bases=['failures/expected',
+                                    'failures/unexpected'],
+                             args=['--virtual-arg-failures']),
             VirtualTestSuite(prefix='virtual_wpt',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['external/wpt'],
                              args=['--virtual-arg-wpt']),
             VirtualTestSuite(prefix='virtual_wpt_dom',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['external/wpt/dom', 'wpt_internal/dom'],
                              args=['--virtual-arg-wpt-dom']),
             VirtualTestSuite(prefix='virtual_empty_bases',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=[],
                              args=['--virtual-arg-empty-bases']),
             VirtualTestSuite(prefix='mixed_wpt',
+                             platforms=['Linux', 'Mac', 'Win'],
                              bases=['http', 'external/wpt/dom'],
                              args=['--virtual-arg']),
         ]

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -21,7 +22,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -78,9 +78,8 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
   user_manager::ScopedUserManager user_manager_enabler_;
 
   // Set up fake install attributes to pretend the machine is enrolled.
-  chromeos::ScopedStubInstallAttributes test_install_attributes_{
-      chromeos::StubInstallAttributes::CreateCloudManaged("example.com",
-                                                          "fake-id")};
+  ash::ScopedStubInstallAttributes test_install_attributes_{
+      ash::StubInstallAttributes::CreateCloudManaged("example.com", "fake-id")};
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
   base::WeakPtrFactory<TPMAutoUpdateModePolicyHandlerTest> weak_factory_{this};

@@ -87,11 +87,11 @@ source_set("onc") {
   if (is_chromeos_ash) {
     deps += [
       "//ash/components/settings:settings",
+      "//ash/components/tpm",
       "//ash/constants:constants",
       "//base",
       "//chromeos/network:network",
       "//chromeos/system:system",
-      "//chromeos/tpm:tpm",
       "//components/policy/core/common:common_constants",
       "//components/user_manager:user_manager",
       "//dbus",
@@ -174,9 +174,11 @@ source_set("policy_specific_browser_tests") {
   sources = [
     "site_isolation_policy_browsertest.cc",
     "test/certificate_transparency_policy_browsertest.cc",
+    "test/network_prediction_policy_browsertest.cc",
     "test/network_time_policy_browsertest.cc",
     "test/safe_browsing_policy_browsertest.cc",
     "test/ssl_error_overriding_allowed_policy_browsertest.cc",
+    "test/web_rtc_udp_port_range_policy_browsertest.cc",
   ]
   if (is_chromeos) {
     sources += [ "test/policy_certs_browsertest.cc" ]

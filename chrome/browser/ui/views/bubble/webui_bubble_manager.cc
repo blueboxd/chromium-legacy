@@ -6,6 +6,9 @@
 
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "ui/base/interaction/element_identifier.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -23,13 +26,14 @@ WebUIBubbleManager::WebUIBubbleManager()
 
 WebUIBubbleManager::~WebUIBubbleManager() = default;
 
-bool WebUIBubbleManager::ShowBubble() {
+bool WebUIBubbleManager::ShowBubble(const absl::optional<gfx::Rect>& anchor,
+                                    ui::ElementIdentifier identifier) {
   if (bubble_view_)
     return false;
 
   cache_timer_->Stop();
 
-  bubble_view_ = CreateWebUIBubbleDialog();
+  bubble_view_ = CreateWebUIBubbleDialog(anchor);
 
   bubble_widget_observation_.Observe(bubble_view_->GetWidget());
   // Some bubbles can be triggered when there is no active browser (e.g. emoji
@@ -40,6 +44,10 @@ bool WebUIBubbleManager::ShowBubble() {
     close_bubble_helper_ = std::make_unique<CloseBubbleOnTabActivationHelper>(
         bubble_view_.get(), BrowserList::GetInstance()->GetLastActive());
   }
+
+  if (identifier)
+    bubble_view_->SetProperty(views::kElementIdentifierKey, identifier);
+
   return true;
 }
 

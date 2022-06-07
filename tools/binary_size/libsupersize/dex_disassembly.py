@@ -8,9 +8,11 @@ import difflib
 import json
 import logging
 import os
+import pathlib
 import re
 import subprocess
 import sys
+import tempfile
 import zipfile
 
 import archive
@@ -52,11 +54,27 @@ class _Class:
 
 def _DisassembleApk(mapping, apk_path):
   r8_path = path_util.GetR8Path()
-  cmd = [
-      'java', '-cp', r8_path, 'com.android.tools.r8.Disassemble', '--pg-map',
-      mapping, apk_path
-  ]
-  return subprocess.check_output(cmd, encoding='utf8')
+  r8_output = None
+  # Temporary hack until next R8 roll:
+  # Prevents R8 failing due to assets/webapk7.dex.
+  with tempfile.NamedTemporaryFile(mode='wb', suffix='.apk') as tmp_file:
+    with zipfile.ZipFile(tmp_file, 'w') as dst_zip:
+      with zipfile.ZipFile(apk_path) as src_zip:
+        for info in src_zip.infolist():
+          if info.filename.startswith('classes'):
+            dst_zip.writestr(info, src_zip.read(info))
+    tmp_file.flush()
+
+    cmd = [
+        'java', '-cp', r8_path, 'com.android.tools.r8.Disassemble', '--pg-map',
+        mapping, tmp_file.name
+    ]
+    try:
+      r8_output = subprocess.check_output(cmd, encoding='utf8')
+    except subprocess.CalledProcessError:
+      logging.debug('Running R8 failed on APK: %s', apk_path)
+
+  return r8_output
 
 
 def _ParseDisassembly(disassembly):
@@ -141,7 +159,7 @@ def _ComputeDisassemblyForSymbol(deobfuscated_disassembly, symbol_full_name):
   return bytecode
 
 
-def _CaptureDisassemblyForSymbol(symbol, apk_to_disassembly, apk_dir,
+def _CaptureDisassemblyForSymbol(symbol, apk_to_disassembly, path_resolver,
                                  deobfuscation_map):
   logging.debug('Attempting to capture disassembly for symbol %s',
                 symbol.full_name)
@@ -149,25 +167,28 @@ def _CaptureDisassemblyForSymbol(symbol, apk_to_disassembly, apk_dir,
   proguard_mapping_file_name = container.metadata.get(
       'proguard_mapping_file_name')
   if proguard_mapping_file_name is None:
-    logging.debug('Mapping file does not exist in container metadata.')
-    return None
-  proguard_mapping_file_path = os.path.join(apk_dir, proguard_mapping_file_name)
-  apk_file_name = container.metadata.get('apk_file_name')
-  apk_file_path = os.path.join(apk_dir, apk_file_name)
+    raise Exception('Mapping file does not exist in container metadata.')
+
+  proguard_mapping_file_path = path_resolver(proguard_mapping_file_name)
+  apk_file_name = container.metadata['apk_file_name']
+  apk_file_path = path_resolver(apk_file_name)
   split_name = container.metadata.get('apk_split_name')
   cache_key = (apk_file_path, split_name)
   disassembly = apk_to_disassembly.get(cache_key)
   if disassembly is None:
+    r8_output = None
     if split_name:
-      logging.debug('Running R8 on APK: %s', split_name)
-      with zip_util.UnzipToTemp(apk_file_path,
-                                f'splits/{split_name}.apk') as split_path:
+      logging.info('Creating disassmebly for APK split: %s', split_name)
+      with zip_util.UnzipToTemp(
+          apk_file_path, f'splits/{split_name}-master.apk') as split_path:
         r8_output = _DisassembleApk(proguard_mapping_file_path, split_path)
-    else:
-      logging.debug('Running R8 on APK: %s', apk_file_name)
+    elif apk_file_path.endswith('.apk'):
+      logging.info('Creating disassmebly for APK: %s', apk_file_name)
       r8_output = _DisassembleApk(proguard_mapping_file_path, apk_file_path)
     obfuscated_to_deobfuscated_class_names = deobfuscation_map.get(
         proguard_mapping_file_path)
+    if r8_output is None:
+      return None
     if obfuscated_to_deobfuscated_class_names is None:
       logging.debug('Parsing mapping file %s', proguard_mapping_file_path)
       with open(proguard_mapping_file_path, 'r') as fh:
@@ -194,7 +215,8 @@ def _CreateUnifiedDiff(name, before, after):
   return ''.join(unified_diff)
 
 
-def _AddUnifiedDiff(top_changed_symbols, before_directory, after_directory):
+def _AddUnifiedDiff(top_changed_symbols, before_path_resolver,
+                    after_path_resolver):
   # Counter used to skip over symbols where we couldn't find the disassembly.
   counter = 10
   before = None
@@ -206,48 +228,60 @@ def _AddUnifiedDiff(top_changed_symbols, before_directory, after_directory):
     logging.debug('Symbols to go: %d', counter)
     after = _CaptureDisassemblyForSymbol(symbol.after_symbol,
                                          after_apk_to_disassembly,
-                                         after_directory, deobfuscation_map)
+                                         after_path_resolver, deobfuscation_map)
     if after is None:
       continue
     if symbol.before_symbol:
       before = _CaptureDisassemblyForSymbol(symbol.before_symbol,
                                             before_apk_to_disassembly,
-                                            before_directory, deobfuscation_map)
+                                            before_path_resolver,
+                                            deobfuscation_map)
     else:
       before = None
-    logging.debug('Adding disassembly for symbol: %s ', symbol.full_name)
-    symbol.disassembly = _CreateUnifiedDiff(symbol.full_name, before or [],
-                                            after)
+    logging.info('Adding disassembly for: %s', symbol.full_name)
+    symbol.after_symbol.disassembly = _CreateUnifiedDiff(
+        symbol.full_name, before or [], after)
     counter -= 1
     if counter == 0:
       break
 
 
 def _GetTopChangedSymbols(delta_size_info):
-  # Currently we are restricting symbols to dex methods.
-  sorted_symbols = [
-      symbol for symbol in delta_size_info.raw_symbols
-      if symbol.section_name.endswith('dex.method') and symbol.after_symbol
-  ]
-  sorted_symbols.sort(key=lambda x: -abs(x.size))
+  def filter_symbol(symbol):
+    # We are only looking for symbols where the after_symbol exists, as
+    # if it does not exist it does not provide much value in a side
+    # by side code breakdown.
+    if not symbol.after_symbol:
+      return False
+    # Currently restricting the symbols to .dex.method symbols only.
+    if not symbol.section_name.endswith('dex.method'):
+      return False
+    # Symbols which have changed under 10 bytes do not add much value.
+    if abs(symbol.pss) < 10:
+      return False
+    return True
+
+  sorted_symbols = delta_size_info.raw_symbols.Filter(filter_symbol).Sorted(
+      reverse=True)
   return sorted_symbols
 
 
-def AddDisassembly(delta_size_info, before_directory, after_directory):
-  """Adds disassembly diffs to top changed symbols.
+def AddDisassembly(delta_size_info, before_path_resolver, after_path_resolver):
+  """Adds disassembly diffs to top changed dex symbols.
 
     Adds the unified diff on the "before" and "after" disassembly to the
     top 10 changed symbols.
 
     Args:
       delta_size_info: DeltaSizeInfo Object we are adding disassembly to.
-      before_directory: Directory of the "before" APK.
-      after_directory: Directory of the "after" APK.
+      before_path_resolver: Callable to compute paths for "before" artifacts.
+      after_path_resolver: Callable to compute paths for "after" artifacts.
   """
-  logging.debug('Computing top changed symbols')
+  logging.info('Computing top changed symbols')
   top_changed_symbols = _GetTopChangedSymbols(delta_size_info)
-  logging.debug('Adding disassembly to top 10 changed symbols')
-  _AddUnifiedDiff(top_changed_symbols, before_directory, after_directory)
+  logging.info('Adding disassembly to top 10 changed dex symbols')
+  _AddUnifiedDiff(top_changed_symbols, before_path_resolver,
+                  after_path_resolver)
 
 
 def main():
@@ -256,6 +290,7 @@ def main():
   symbol_full_name = sys.argv[2]
   mapping_file_name = sys.argv[3]
   apk_dir = sys.argv[4]
+  path_resolver = lambda x: os.path.join(apk_dir, x)
   size_info = archive.LoadAndPostProcessSizeInfo(size_file_path)
   matched_symbols = [
       sym for sym in size_info.raw_symbols if sym.full_name == symbol_full_name
@@ -268,7 +303,7 @@ def main():
       print('-' * 80)
     sym.container.metadata[
         models.METADATA_PROGUARD_MAPPING_FILENAME] = mapping_file_name
-    bytecode = _CaptureDisassemblyForSymbol(sym, {}, apk_dir, {})
+    bytecode = _CaptureDisassemblyForSymbol(sym, {}, path_resolver, {})
     for line in bytecode:
       print(line, end='')
   return

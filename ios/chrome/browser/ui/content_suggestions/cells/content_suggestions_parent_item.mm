@@ -109,13 +109,13 @@
       [whatsNewView.heightAnchor constraintEqualToConstant:size.height]
     ]];
   }
+  NSUInteger index = 0;
   if (self.mostVisitedItems) {
     UIStackView* stackView = [[UIStackView alloc] init];
     stackView.axis = UILayoutConstraintAxisHorizontal;
     stackView.alignment = UIStackViewAlignmentTop;
     stackView.distribution = UIStackViewDistributionFillEqually;
     stackView.spacing = horizontalSpacing;
-    NSUInteger index = 0;
     for (ContentSuggestionsMostVisitedItem* item in self.mostVisitedItems) {
       ContentSuggestionsMostVisitedTileView* view =
           [[ContentSuggestionsMostVisitedTileView alloc]
@@ -151,7 +151,6 @@
     stackView.alignment = UIStackViewAlignmentTop;
     stackView.distribution = UIStackViewDistributionFillEqually;
     stackView.spacing = horizontalSpacing;
-    NSUInteger index = 0;
     for (ContentSuggestionsMostVisitedActionItem* item in self.shortcutsItems) {
       ContentSuggestionsShortcutTileView* view =
           [[ContentSuggestionsShortcutTileView alloc]
@@ -159,7 +158,8 @@
       view.accessibilityIdentifier = [NSString
           stringWithFormat:
               @"%@%li",
-              kContentSuggestionsShortcutsAccessibilityIdentifierPrefix, index];
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
       UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
           initWithTarget:self.tapTarget
                   action:@selector(contentSuggestionsElementTapped:)];

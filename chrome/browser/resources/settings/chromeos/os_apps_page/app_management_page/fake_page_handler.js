@@ -323,6 +323,10 @@ export class FakePageHandler {
     assertNotReached();
   }
 
+  showDefaultAppAssociationsUi() {
+    assertNotReached();
+  }
+
   /**
    * @param {string} appId
    * @return {!Promise<{ appIds: !Array<!string> }>}
@@ -334,6 +338,11 @@ export class FakePageHandler {
     }
     return {appIds: this.overlappingAppIds};
   }
+
+  /**
+   * @param {string} appId
+   */
+  openStorePage(appId) {}
 
   /**
    * @param {string} optId

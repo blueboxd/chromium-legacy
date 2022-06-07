@@ -8,6 +8,7 @@
 // Defines all the command-line switches used by ui/gl.
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
@@ -17,8 +18,6 @@ GL_EXPORT extern const char kGLImplementationDesktopName[];
 GL_EXPORT extern const char kGLImplementationAppleName[];
 GL_EXPORT extern const char kGLImplementationEGLName[];
 GL_EXPORT extern const char kGLImplementationANGLEName[];
-GL_EXPORT extern const char kGLImplementationSwiftShaderName[];
-GL_EXPORT extern const char kGLImplementationSwiftShaderForWebGLName[];
 GL_EXPORT extern const char kGLImplementationMockName[];
 GL_EXPORT extern const char kGLImplementationStubName[];
 GL_EXPORT extern const char kGLImplementationDisabledName[];
@@ -98,6 +97,9 @@ GL_EXPORT extern const base::Feature kDCompTripleBufferVideoSwapChain;
 GL_EXPORT extern const base::Feature kDirectCompositionForceFullDamage;
 GL_EXPORT extern const base::Feature kDirectCompositionGpuVSync;
 GL_EXPORT extern const base::Feature kDirectCompositionLowLatencyPresentation;
+GL_EXPORT extern const base::Feature kDirectCompositionVerifyDrawOffset;
+GL_EXPORT extern const base::FeatureParam<int> kVerifyDrawOffsetX;
+GL_EXPORT extern const base::FeatureParam<int> kVerifyDrawOffsetY;
 GL_EXPORT extern const base::Feature kDirectCompositionSoftwareOverlays;
 GL_EXPORT extern const base::Feature kDefaultANGLEOpenGL;
 GL_EXPORT extern const base::Feature kDefaultANGLEMetal;

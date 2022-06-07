@@ -12,32 +12,32 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId PackagedLicenseView::kScreenId;
 
-PackagedLicenseScreenHandler::PackagedLicenseScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.PackagedLicenseScreen.userActed");
+PackagedLicenseScreenHandler::PackagedLicenseScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.PackagedLicenseScreen.userActed");
 }
 
 PackagedLicenseScreenHandler::~PackagedLicenseScreenHandler() {}
 
 void PackagedLicenseScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void PackagedLicenseScreenHandler::Hide() {}
 
 void PackagedLicenseScreenHandler::Bind(PackagedLicenseScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void PackagedLicenseScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void PackagedLicenseScreenHandler::DeclareLocalizedValues(
@@ -53,7 +53,7 @@ void PackagedLicenseScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_PACKAGED_LICENSE_DONT_ENROLL_BUTTON_LABEL);
 }
 
-void PackagedLicenseScreenHandler::Initialize() {
+void PackagedLicenseScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;

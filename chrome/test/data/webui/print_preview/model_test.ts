@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, DuplexMode, MarginsType, PrinterType, PrintPreviewModelElement, PrintTicket, ScalingType, Size} from 'chrome://print/print_preview.js';
-// <if expr="chromeos_ash or chromeos_lacros">
-import {GooglePromotedDestinationId} from 'chrome://print/print_preview.js';
-// </if>
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DuplexMode, GooglePromotedDestinationId, makeRecentDestination, MarginsType, PrinterType, PrintPreviewModelElement, PrintTicket, RecentDestination, ScalingType, Size} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -25,6 +22,7 @@ const model_test = {
     GetPrintTicket: 'get print ticket',
     GetCloudPrintTicket: 'get cloud print ticket',
     ChangeDestination: 'change destination',
+    RemoveUnsupportedDestinations: 'remove unsupported destinations',
     PrintToGoogleDriveCros: 'print to google drive cros',
     CddResetToDefault: 'CDD reset_to_default property',
   },
@@ -270,12 +268,11 @@ suite(model_test.suiteName, function() {
     // <if expr="chromeos_ash or chromeos_lacros">
     const origin = DestinationOrigin.CROS;
     // </if>
-    // <if expr="not chromeos and not lacros">
+    // <if expr="not chromeos_ash and not chromeos_lacros">
     const origin = DestinationOrigin.LOCAL;
     // </if>
     const testDestination = new Destination(
-        'FooDevice', DestinationType.LOCAL, origin, 'FooName',
-        DestinationConnectionStatus.ONLINE);
+        'FooDevice', origin, 'FooName', DestinationConnectionStatus.ONLINE);
     testDestination.capabilities =
         getCddTemplateWithAdvancedSettings(2, 'FooDevice').capabilities;
 
@@ -377,10 +374,10 @@ suite(model_test.suiteName, function() {
   test(assert(model_test.TestNames.GetCloudPrintTicket), function() {
     initializeModel();
 
-    // Create a test cloud destination.
+    // Create a test extension destination.
     const testDestination = new Destination(
-        'FooCloudDevice', DestinationType.GOOGLE, DestinationOrigin.COOKIES,
-        'FooCloudName', DestinationConnectionStatus.ONLINE);
+        'FooDevice', DestinationOrigin.EXTENSION, 'FooName',
+        DestinationConnectionStatus.ONLINE);
     testDestination.capabilities =
         getCddTemplateWithAdvancedSettings(2, 'FooDevice').capabilities;
     model.destination = testDestination;
@@ -442,9 +439,50 @@ suite(model_test.suiteName, function() {
     assertEquals(expectedNewTicket, newTicket);
   });
 
+  test(assert(model_test.TestNames.RemoveUnsupportedDestinations), function() {
+    const unsupportedPrivet = new Destination(
+        'PrivetDevice', DestinationOrigin.PRIVET, 'PrivetName',
+        DestinationConnectionStatus.ONLINE);
+    const unsupportedCloud = new Destination(
+        GooglePromotedDestinationId.DOCS, DestinationOrigin.COOKIES,
+        'Save to Google Drive', DestinationConnectionStatus.ONLINE);
+    const supportedLocal = new Destination(
+        'FooDevice', DestinationOrigin.LOCAL, 'FooName',
+        DestinationConnectionStatus.ONLINE);
+    const stickySettings: {[key: string]: any} = {
+      version: 2,
+      recentDestinations: [
+        makeRecentDestination(unsupportedPrivet),
+        makeRecentDestination(unsupportedCloud),
+        makeRecentDestination(supportedLocal),
+      ],
+    };
+
+    initializeModel();
+    model.setStickySettings(JSON.stringify(stickySettings));
+
+    // Make sure recent destinations are filtered correctly.
+    let recentDestinations =
+        model.getSettingValue('recentDestinations') as RecentDestination[];
+    assertEquals(1, recentDestinations.length);
+    assertEquals('FooDevice', recentDestinations[0]!.id);
+
+    // Setting this destination based on the recent printers is done by the
+    // destination store in the production code.
+    model.destination = supportedLocal;
+    model.applyStickySettings();
+    model.applyDestinationSpecificPolicies();
+
+    // Make sure nothing changed.
+    recentDestinations =
+        model.getSettingValue('recentDestinations') as RecentDestination[];
+    assertEquals(1, recentDestinations.length);
+    assertEquals('FooDevice', recentDestinations[0]!.id);
+  });
+
   test(assert(model_test.TestNames.ChangeDestination), function() {
     const testDestination = new Destination(
-        'FooDevice', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'FooName',
+        'FooDevice', DestinationOrigin.LOCAL, 'FooName',
         DestinationConnectionStatus.ONLINE);
     testDestination.capabilities =
         getCddTemplateWithAdvancedSettings(2, 'FooDevice').capabilities;
@@ -457,7 +495,7 @@ suite(model_test.suiteName, function() {
     };
 
     const testDestination2 = new Destination(
-        'BarDevice', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'BarName',
+        'BarDevice', DestinationOrigin.LOCAL, 'BarName',
         DestinationConnectionStatus.ONLINE);
     testDestination2.capabilities =
         Object.assign({}, testDestination.capabilities);
@@ -499,7 +537,7 @@ suite(model_test.suiteName, function() {
 
     // Create a printer with different capabilities.
     const testDestination3 = new Destination(
-        'Device1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
+        'Device1', DestinationOrigin.LOCAL, 'One',
         DestinationConnectionStatus.ONLINE);
     testDestination3.capabilities =
         Object.assign({}, testDestination.capabilities);
@@ -548,9 +586,8 @@ suite(model_test.suiteName, function() {
   // to Drive CrOS.
   test(assert(model_test.TestNames.PrintToGoogleDriveCros), function() {
     const driveDestination = new Destination(
-        GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS, DestinationType.LOCAL,
-        DestinationOrigin.LOCAL, 'Save to Google Drive',
-        DestinationConnectionStatus.ONLINE);
+        GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS, DestinationOrigin.LOCAL,
+        'Save to Google Drive', DestinationConnectionStatus.ONLINE);
     initializeModel();
     model.destination = driveDestination;
     const ticket = model.createPrintTicket(driveDestination, false, false);
@@ -649,8 +686,8 @@ suite(model_test.suiteName, function() {
     };
 
     const testDestination = new Destination(
-        'FooDevice', DestinationType.LOCAL, DestinationOrigin.EXTENSION,
-        'FooName', DestinationConnectionStatus.ONLINE);
+        'FooDevice', DestinationOrigin.EXTENSION, 'FooName',
+        DestinationConnectionStatus.ONLINE);
     testDestination.capabilities =
         getTestCapabilities(/*resetToDefault=*/ true);
     initializeModel();
@@ -677,8 +714,8 @@ suite(model_test.suiteName, function() {
         stickyMediaSizeDisplayName);
 
     const testDestination2 = new Destination(
-        'FooDevice2', DestinationType.LOCAL, DestinationOrigin.EXTENSION,
-        'FooName2', DestinationConnectionStatus.ONLINE);
+        'FooDevice2', DestinationOrigin.EXTENSION, 'FooName2',
+        DestinationConnectionStatus.ONLINE);
     testDestination2.capabilities =
         getTestCapabilities(/*resetToDefault=*/ true);
     // Remove the `is_default` attribute from all the settings.

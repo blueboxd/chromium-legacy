@@ -50,15 +50,16 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
 
 SkiaOutputDeviceWebView::~SkiaOutputDeviceWebView() = default;
 
-bool SkiaOutputDeviceWebView::Reshape(const gfx::Size& size,
-                                      float device_scale_factor,
-                                      const gfx::ColorSpace& color_space,
-                                      gfx::BufferFormat format,
-                                      gfx::OverlayTransform transform) {
+bool SkiaOutputDeviceWebView::Reshape(
+    const SkSurfaceCharacterization& characterization,
+    const gfx::ColorSpace& color_space,
+    float device_scale_factor,
+    gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 
+  gfx::Size size = gfx::SkISizeToSize(characterization.dimensions());
   if (!gl_surface_->Resize(size, device_scale_factor, color_space,
-                           gfx::AlphaBitsForBufferFormat(format))) {
+                           /*has_alpha=*/true)) {
     DLOG(ERROR) << "Failed to resize.";
     return false;
   }
@@ -82,9 +83,7 @@ void SkiaOutputDeviceWebView::SwapBuffers(BufferPresentedCallback feedback,
 }
 
 SkSurface* SkiaOutputDeviceWebView::BeginPaint(
-    bool allocate_frame_buffer,
     std::vector<GrBackendSemaphore>* end_semaphores) {
-  DCHECK(!allocate_frame_buffer);
   DCHECK(sk_surface_);
 
   unsigned int fbo = gl_surface_->GetBackingFramebufferObject();

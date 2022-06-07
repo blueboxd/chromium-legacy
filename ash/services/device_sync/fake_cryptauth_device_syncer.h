@@ -15,7 +15,7 @@
 
 class PrefService;
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -90,6 +90,7 @@ class FakeCryptAuthDeviceSyncerFactory
       CryptAuthKeyRegistry* key_registry,
       CryptAuthClientFactory* client_factory,
       SyncedBluetoothAddressTracker* synced_bluetooth_address_tracker,
+      AttestationCertificatesSyncer* attestation_certificates_syncer,
       PrefService* pref_service,
       std::unique_ptr<base::OneShotTimer> timer) override;
 
@@ -104,6 +105,6 @@ class FakeCryptAuthDeviceSyncerFactory
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_DEVICE_SYNCER_H_

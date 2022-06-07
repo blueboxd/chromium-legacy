@@ -8,6 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -177,7 +178,7 @@ std::u16string CvcUnmaskViewController::GetSheetTitle() {
 void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   const int vertical_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
-  const gfx::Insets content_insets = gfx::Insets(
+  const gfx::Insets content_insets = gfx::Insets::VH(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets);
   content_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, content_insets,

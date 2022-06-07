@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/browsing_context_state.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -30,21 +31,44 @@ BrowsingContextStateImplementationType GetBrowsingContextMode() {
 
 namespace content {
 
+using perfetto::protos::pbzero::ChromeTrackEvent;
+
 BrowsingContextState::BrowsingContextState(
     blink::mojom::FrameReplicationStatePtr replication_state,
     raw_ptr<RenderFrameHostImpl> parent,
     absl::optional<BrowsingInstanceId> browsing_instance_id)
     : replication_state_(std::move(replication_state)),
       parent_(parent),
-      browsing_instance_id_(browsing_instance_id) {}
+      browsing_instance_id_(browsing_instance_id) {
+  TRACE_EVENT_BEGIN("navigation", "BrowsingContextState",
+                    perfetto::Track::FromPointer(this),
+                    "browsing_context_state_when_created", this);
+}
 
-BrowsingContextState::~BrowsingContextState() = default;
+BrowsingContextState::~BrowsingContextState() {
+  TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
+}
 
 RenderFrameProxyHost* BrowsingContextState::GetRenderFrameProxyHost(
-    SiteInstanceGroup* site_instance_group) const {
+    SiteInstanceGroup* site_instance_group,
+    ProxyAccessMode proxy_access_mode) const {
+  TRACE_EVENT_BEGIN("navigation",
+                    "BrowsingContextState::GetRenderFrameProxyHost",
+                    ChromeTrackEvent::kBrowsingContextState, this,
+                    ChromeTrackEvent::kSiteInstanceGroup, site_instance_group);
+  auto* proxy =
+      GetRenderFrameProxyHostImpl(site_instance_group, proxy_access_mode);
+  TRACE_EVENT_END("navigation", ChromeTrackEvent::kRenderFrameProxyHost, proxy);
+  return proxy;
+}
+
+RenderFrameProxyHost* BrowsingContextState::GetRenderFrameProxyHostImpl(
+    SiteInstanceGroup* site_instance_group,
+    ProxyAccessMode proxy_access_mode) const {
   if (features::GetBrowsingContextMode() ==
-      features::BrowsingContextStateImplementationType::
-          kSwapForCrossBrowsingInstanceNavigations) {
+          features::BrowsingContextStateImplementationType::
+              kSwapForCrossBrowsingInstanceNavigations &&
+      proxy_access_mode == ProxyAccessMode::kRegular) {
     // CHECK to verify that the proxy is being accessed from the correct
     // BrowsingContextState. As both BrowsingContextState (in non-legacy mode)
     // and RenderFrameProxyHost (via SiteInstance) are tied to a given
@@ -60,25 +84,30 @@ RenderFrameProxyHost* BrowsingContextState::GetRenderFrameProxyHost(
     // only cases of a proxy associated with a SiteInstanceGroup from another
     // BrowsingInstance. Meanwhile, for openers the opener and openee have to be
     // in the same BrowsingInstance as well.
-    // TODO(crbug.com/1270671): Add exception here for outer delegate proxies.
     CHECK_EQ(browsing_instance_id_.value(),
              site_instance_group->browsing_instance_id());
   }
   auto it = proxy_hosts_.find(site_instance_group->GetId());
-  if (it != proxy_hosts_.end())
+  if (it != proxy_hosts_.end()) {
     return it->second.get();
+  }
   return nullptr;
 }
 
 void BrowsingContextState::DeleteRenderFrameProxyHost(
-    SiteInstanceGroup* site_instance_group) {
+    SiteInstanceGroup* site_instance_group,
+    ProxyAccessMode proxy_access_mode) {
   if (features::GetBrowsingContextMode() ==
-      features::BrowsingContextStateImplementationType::
-          kSwapForCrossBrowsingInstanceNavigations) {
+          features::BrowsingContextStateImplementationType::
+              kSwapForCrossBrowsingInstanceNavigations &&
+      proxy_access_mode == ProxyAccessMode::kRegular) {
     // See comments in GetRenderFrameProxyHost for why this check is needed.
     CHECK_EQ(browsing_instance_id_.value(),
              site_instance_group->browsing_instance_id());
   }
+  TRACE_EVENT("navigation", "BrowsingContextState::DeleteRenderFrameProxyHost",
+              ChromeTrackEvent::kBrowsingContextState, this,
+              ChromeTrackEvent::kSiteInstanceGroup, site_instance_group);
   site_instance_group->RemoveObserver(this);
   proxy_hosts_.erase(site_instance_group->GetId());
 }
@@ -86,7 +115,16 @@ void BrowsingContextState::DeleteRenderFrameProxyHost(
 RenderFrameProxyHost* BrowsingContextState::CreateRenderFrameProxyHost(
     SiteInstance* site_instance,
     const scoped_refptr<RenderViewHostImpl>& rvh,
-    FrameTreeNode* frame_tree_node) {
+    FrameTreeNode* frame_tree_node,
+    ProxyAccessMode proxy_access_mode) {
+  TRACE_EVENT_BEGIN(
+      "navigation", "BrowsingContextState::CreateRenderFrameProxyHost",
+      ChromeTrackEvent::kBrowsingContextState, this,
+      ChromeTrackEvent::kSiteInstanceGroup,
+      static_cast<SiteInstanceImpl*>(site_instance)->group(),
+      ChromeTrackEvent::kRenderViewHost, rvh ? rvh.get() : nullptr,
+      ChromeTrackEvent::kFrameTreeNodeInfo, frame_tree_node);
+
   if (features::GetBrowsingContextMode() ==
       features::BrowsingContextStateImplementationType::
           kLegacyOneToOneWithFrameTreeNode) {
@@ -95,8 +133,9 @@ RenderFrameProxyHost* BrowsingContextState::CreateRenderFrameProxyHost(
   }
 
   if (features::GetBrowsingContextMode() ==
-      features::BrowsingContextStateImplementationType::
-          kSwapForCrossBrowsingInstanceNavigations) {
+          features::BrowsingContextStateImplementationType::
+              kSwapForCrossBrowsingInstanceNavigations &&
+      proxy_access_mode == ProxyAccessMode::kRegular) {
     // See comments in GetRenderFrameProxyHost for why this check is needed.
     CHECK_EQ(browsing_instance_id_.value(),
              site_instance->GetBrowsingInstanceId());
@@ -111,11 +150,25 @@ RenderFrameProxyHost* BrowsingContextState::CreateRenderFrameProxyHost(
   proxy_hosts_[site_instance_group_id] = base::WrapUnique(proxy_host);
   static_cast<SiteInstanceImpl*>(site_instance)->group()->AddObserver(this);
 
-  TRACE_EVENT_INSTANT(
-      "navigation", "BrowsingContextState::CreateRenderFrameProxyHost",
-      perfetto::protos::pbzero::ChromeTrackEvent::kRenderFrameProxyHost,
-      *proxy_host);
+  TRACE_EVENT_END("navigation", ChromeTrackEvent::kRenderFrameProxyHost,
+                  proxy_host);
   return proxy_host;
+}
+
+RenderFrameProxyHost* BrowsingContextState::CreateOuterDelegateProxy(
+    SiteInstance* outer_contents_site_instance,
+    FrameTreeNode* frame_tree_node) {
+  // We only get here when Delegate for this manager is an inner delegate.
+  return CreateRenderFrameProxyHost(outer_contents_site_instance,
+                                    /*rvh=*/nullptr, frame_tree_node,
+                                    ProxyAccessMode::kAllowOuterDelegate);
+}
+
+void BrowsingContextState::DeleteOuterDelegateProxy(
+    SiteInstanceGroup* outer_contents_site_instance_group) {
+  DeleteRenderFrameProxyHost(
+      outer_contents_site_instance_group,
+      BrowsingContextState::ProxyAccessMode::kAllowOuterDelegate);
 }
 
 size_t BrowsingContextState::GetProxyCount() {
@@ -167,6 +220,8 @@ bool BrowsingContextState::CommitFramePolicy(
       replication_state_->frame_policy.required_document_policy;
   DCHECK_EQ(new_frame_policy.is_fenced,
             replication_state_->frame_policy.is_fenced);
+  DCHECK_EQ(new_frame_policy.fenced_frame_mode,
+            replication_state_->frame_policy.fenced_frame_mode);
 
   if (did_change_flags) {
     replication_state_->frame_policy.sandbox_flags =
@@ -283,23 +338,29 @@ void BrowsingContextState::ActiveFrameCountIsZero(
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(site_instance_group);
   CHECK(proxy);
 
+  TRACE_EVENT_INSTANT("navigation",
+                      "BrowsingContextState::ActiveFrameCountIsZero",
+                      ChromeTrackEvent::kBrowsingContextState, this,
+                      ChromeTrackEvent::kRenderFrameProxyHost, proxy);
+
   DeleteRenderFrameProxyHost(site_instance_group);
 }
 
 void BrowsingContextState::RenderProcessGone(
     SiteInstanceGroup* site_instance_group,
     const ChildProcessTerminationInfo& info) {
-  GetRenderFrameProxyHost(site_instance_group)
+  GetRenderFrameProxyHost(site_instance_group,
+                          ProxyAccessMode::kAllowOuterDelegate)
       ->SetRenderFrameProxyCreated(false);
 }
 
 void BrowsingContextState::SendFramePolicyUpdatesToProxies(
-    SiteInstance* parent_site_instance,
+    SiteInstanceGroup* parent_group,
     const blink::FramePolicy& frame_policy) {
   // Notify all of the frame's proxies about updated policies, excluding
   // the parent process since it already knows the latest state.
   for (const auto& pair : proxy_hosts_) {
-    if (pair.second->GetSiteInstance() != parent_site_instance) {
+    if (pair.second->site_instance_group() != parent_group) {
       pair.second->GetAssociatedRemoteFrame()->DidUpdateFramePolicy(
           frame_policy);
     }
@@ -323,9 +384,10 @@ void BrowsingContextState::ResetProxyHosts() {
   proxy_hosts_.clear();
 }
 
-void BrowsingContextState::UpdateOpener(SiteInstance* source_site_instance) {
+void BrowsingContextState::UpdateOpener(
+    SiteInstanceGroup* source_site_instance_group) {
   for (const auto& pair : proxy_hosts_) {
-    if (pair.second->GetSiteInstance() == source_site_instance)
+    if (pair.second->site_instance_group() == source_site_instance_group)
       continue;
     pair.second->UpdateOpener();
   }
@@ -365,17 +427,13 @@ void BrowsingContextState::ExecuteRemoteFramesBroadcastMethod(
   }
 }
 
-void BrowsingContextState::WriteIntoTrace(perfetto::TracedValue ctx) const {
-  perfetto::TracedDictionary dict = std::move(ctx).WriteDictionary();
-  dict.Add("this", static_cast<const void*>(this));
-  dict.Add("browsing_instance_id", browsing_instance_id_);
-}
-
 void BrowsingContextState::WriteIntoTrace(
-    perfetto::TracedProto<perfetto::protos::pbzero::BrowsingContextState> proto)
-    const {
+    perfetto::TracedProto<TraceProto> proto) const {
   if (browsing_instance_id_.has_value())
     proto->set_browsing_instance_id(browsing_instance_id_.value().value());
+
+  perfetto::TracedDictionary dict = std::move(proto).AddDebugAnnotations();
+  dict.Add("this", static_cast<const void*>(this));
 }
 
 }  // namespace content

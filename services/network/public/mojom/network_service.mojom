@@ -27,6 +27,7 @@ import "services/network/public/mojom/network_interface.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
 import "services/network/public/mojom/network_service_test.mojom";
+import "services/network/public/mojom/schemeful_site.mojom";
 import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/parsed_headers.mojom";
 import "services/network/public/mojom/url_loader_network_service_observer.mojom";
@@ -44,11 +45,6 @@ import "services/network/public/mojom/ct_log_info.mojom";
 
 // Values for configuring HTTP authentication that can only be set once.
 struct HttpAuthStaticParams {
-  // List of allowed auth schemes. Unrecognized schemes are ignored.
-  // The default value of this field (an empty list) does not match default
-  // behavior of NetworkService when no HttpAuthStaticParams is specified.
-  array<string> allowed_schemes;
-
   // File name the GSSAPI library to load. Only supported on platforms where an
   // external GSSAPI library is necessary for Kerberos/SPNEGO support. See the
   // |use_external_gssapi| variable definition in //net/BUILD.gn for details on
@@ -337,15 +333,16 @@ interface NetworkService {
   // order to ensure that CT is not enforced if the log list is too out of
   // date.
   [EnableIf=is_ct_supported]
-  UpdateCtLogList(array<CTLogInfo> log_list, mojo_base.mojom.Time update_time);
+  UpdateCtLogList(array<CTLogInfo> log_list,
+                  mojo_base.mojom.Time update_time) => ();
 
   // Updates the list of popular SCTs queried during CT hashdance auditing.
   [EnableIf=is_ct_supported]
-  UpdateCtKnownPopularSCTs(array<array<uint8>> sct_hashes);
+  UpdateCtKnownPopularSCTs(array<array<uint8>> sct_hashes) => ();
 
   // Disables or enables CT Enforcement.
   [EnableIf=is_ct_supported]
-  SetCtEnforcementEnabled(bool enabled);
+  SetCtEnforcementEnabled(bool enabled) => ();
 
   // Updates the key pinnning pin list. `update_time` should contain the
   // timestamp that the pins list was considered fresh/current, in order to
@@ -362,27 +359,16 @@ interface NetworkService {
   // environments.
   BindTestInterface(pending_receiver<NetworkServiceTest> receiver);
 
-  // Sets the First-Party Sets data. |sets_file| is the file containing a
-  // collection of set declarations according to the format specified in this
-  // document: https://github.com/privacycg/first-party-sets. The collection may
-  // either be a single JSON array of such records, or a sequence of
-  // newline-delimited JSON objects (one per line). Note that only the first
-  // invocation will have any effect. On any kind of error, this method has no
-  // effect.
+  // Sets the First-Party Sets data. First-Party Sets are a collection of set
+  // declarations defined in the document:
+  // https://github.com/privacycg/first-party-sets. Each set is indicated by
+  // the owner site, and member sites. |sets| contains the mapping of
+  // site -> site, where keys are members of sets, and values are owners of
+  // the sets. Owners are explicitly represented as members of the set.
   //
-  // |sets_file| may be invalid ("nullopt"), if no such file exists on the
-  // client's device (i.e. if the First-Party Sets component has not been
-  // installed yet).  Such a case is considered the same as if the file's
-  // contents were empty.
-  SetFirstPartySets(mojo_base.mojom.ReadOnlyFile? sets_file);
-
-  // Sets the First-Party Sets data that was persisted to compare it with the
-  // current First-Party Sets data set by `SetFirstPartySets()`, which is
-  // considered more up-to-date, and returns a serialized version of the current
-  // one. Both input and output are in format of the JSON-encoded string
-  // representation of a map of site -> site.
-  SetPersistedFirstPartySetsAndGetCurrentSets(string persisted_sets)
-      => (string up_to_date_sets);
+  // Only the first call can have any effect, subsequent invocations are
+  // ignored.
+  SetFirstPartySets(map<SchemefulSite, SchemefulSite> sets);
 
   // Sets the list of ports which will be permitted even if they normally would
   // be restricted.

@@ -31,6 +31,7 @@
 #include "base/callback_forward.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink-forward.h"
@@ -505,6 +506,7 @@ class CORE_EXPORT LocalFrameView final
     allow_deferred_shaping_ = value;
   }
   void RequestToLockDeferred(Element& element);
+  bool LockDeferredRequested(Element& element) const;
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
@@ -562,7 +564,6 @@ class CORE_EXPORT LocalFrameView final
   gfx::PointF RootFrameToDocument(const gfx::PointF&);
   gfx::Point DocumentToFrame(const gfx::Point&) const;
   gfx::PointF DocumentToFrame(const gfx::PointF&) const;
-  DoublePoint DocumentToFrame(const DoublePoint&) const;
   PhysicalOffset DocumentToFrame(const PhysicalOffset&) const;
   gfx::Rect DocumentToFrame(const gfx::Rect&) const;
   PhysicalRect DocumentToFrame(const PhysicalRect&) const;
@@ -947,8 +948,6 @@ class CORE_EXPORT LocalFrameView final
       const PhysicalOffset&) const;
   gfx::PointF ConvertFromContainingEmbeddedContentView(
       const gfx::PointF&) const;
-  DoublePoint ConvertFromContainingEmbeddedContentView(
-      const DoublePoint&) const;
 
   void UpdateGeometriesIfNeeded();
 

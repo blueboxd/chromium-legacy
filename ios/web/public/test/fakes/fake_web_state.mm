@@ -80,6 +80,26 @@ base::WeakPtr<WebState> FakeWebState::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void FakeWebState::LoadSimulatedRequest(const GURL& url,
+                                        NSString* response_html_string) {
+  SetCurrentURL(url);
+  mime_type_ = base::SysNSStringToUTF8(@"text/html");
+  last_loaded_data_ =
+      [response_html_string dataUsingEncoding:NSUTF8StringEncoding];
+  // LoadSimulatedRequest is always a success. Send the event accordingly.
+  OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+}
+
+void FakeWebState::LoadSimulatedRequest(const GURL& url,
+                                        NSData* response_data,
+                                        NSString* mime_type) {
+  SetCurrentURL(url);
+  mime_type_ = base::SysNSStringToUTF8(mime_type);
+  last_loaded_data_ = response_data;
+  // LoadSimulatedRequest is always a success. Send the event accordingly.
+  OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+}
+
 bool FakeWebState::IsWebUsageEnabled() const {
   return web_usage_enabled_;
 }
@@ -533,13 +553,25 @@ PermissionState FakeWebState::GetStateForPermission(
 
 void FakeWebState::SetStateForPermission(PermissionState state,
                                          Permission permission) {
+  bool should_notify_observers = false;
   switch (permission) {
     case PermissionCamera:
+      if (camera_permission_state_ != state) {
+        should_notify_observers = true;
+      }
       camera_permission_state_ = state;
-      return;
+      break;
     case PermissionMicrophone:
+      if (microphone_permission_state_ != state) {
+        should_notify_observers = true;
+      }
       microphone_permission_state_ = state;
-      return;
+      break;
+  }
+  if (should_notify_observers) {
+    for (auto& observer : observers_) {
+      observer.PermissionStateChanged(this, permission);
+    }
   }
 }
 

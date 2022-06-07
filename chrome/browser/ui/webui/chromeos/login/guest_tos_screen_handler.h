@@ -32,7 +32,7 @@ class GuestTosScreenHandler : public GuestTosScreenView,
  public:
   using TView = GuestTosScreenView;
 
-  explicit GuestTosScreenHandler(JSCallsContainer* js_calls_container);
+  GuestTosScreenHandler();
   ~GuestTosScreenHandler() override;
   GuestTosScreenHandler(const GuestTosScreenHandler&) = delete;
   GuestTosScreenHandler& operator=(const GuestTosScreenHandler&) = delete;
@@ -47,7 +47,7 @@ class GuestTosScreenHandler : public GuestTosScreenView,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
   void RegisterMessages() override;
 
   void HandleAccept(bool enable_usage_stats);

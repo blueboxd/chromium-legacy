@@ -126,6 +126,10 @@ class PredictionManager : public PredictionModelDownloadObserver {
 
   // PredictionModelDownloadObserver:
   void OnModelReady(const proto::PredictionModel& model) override;
+  void OnModelDownloadStarted(
+      proto::OptimizationTarget optimization_target) override;
+  void OnModelDownloadFailed(
+      proto::OptimizationTarget optimization_target) override;
 
  protected:
   // Process |prediction_models| to be stored in the in memory optimization
@@ -153,7 +157,8 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // the response and stores them for use. The metadata entry containing the
   // time that updates should be fetched from the remote Optimization Guide
   // Service is updated, even when the response is empty.
-  void OnModelsFetched(absl::optional<std::unique_ptr<proto::GetModelsResponse>>
+  void OnModelsFetched(const std::vector<proto::ModelInfo> models_request_info,
+                       absl::optional<std::unique_ptr<proto::GetModelsResponse>>
                            get_models_response_data);
 
   // Callback run after the model and host model features store is fully
@@ -213,8 +218,8 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // |last_success_time|.
   void SetLastModelFetchSuccessTime(base::Time last_success_time);
 
-  // Fetch models if enabled for this profile.
-  void MaybeFetchModels();
+  // Schedule first fetch for models if enabled for this profile.
+  void MaybeScheduleFirstModelFetch();
 
   // Schedule |fetch_timer_| to fire based on:
   // 1. The update time for models in the store and
@@ -224,7 +229,7 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // Notifies observers of |optimization_target| that the model has been
   // updated.
   void NotifyObserversOfNewModel(proto::OptimizationTarget optimization_target,
-                                 const ModelInfo& model_info) const;
+                                 const ModelInfo& model_info);
 
   // A map of optimization target to the model file containing the model for the
   // target.
@@ -272,6 +277,9 @@ class PredictionManager : public PredictionModelDownloadObserver {
 
   // A reference to the PrefService for this profile. Not owned.
   raw_ptr<PrefService> pref_service_ = nullptr;
+
+  // Time the prediction manager got initialized.
+  base::TimeTicks init_time_;
 
   // The timer used to schedule fetching prediction models and host model
   // features from the remote Optimization Guide Service.

@@ -30,7 +30,7 @@
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/favicon/favicon_utils.h"
-#include "chrome/browser/feed/web_feed_follow_util.h"
+#include "chrome/browser/feed/web_feed_ui_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -1167,7 +1167,6 @@ bool MoveTabToReadLater(Browser* browser, content::WebContents* web_contents) {
   }
   model->AddEntry(url, base::UTF16ToUTF8(title),
                   reading_list::EntrySource::ADDED_VIA_CURRENT_APP);
-  MaybeShowBookmarkBarForReadLater(browser);
   browser->window()->MaybeShowFeaturePromo(
       feature_engagement::kIPHReadingListDiscoveryFeature);
   base::UmaHistogramEnumeration(
@@ -1201,26 +1200,6 @@ bool IsCurrentTabUnreadInReadLater(Browser* browser) {
     return false;
   const ReadingListEntry* entry = model->GetEntryByURL(url);
   return entry && !entry->IsRead();
-}
-
-void MaybeShowBookmarkBarForReadLater(Browser* browser) {
-#if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kSidePanel))
-    return;
-  PrefService* pref_service = browser->profile()->GetPrefs();
-  if (pref_service &&
-      !pref_service->GetBoolean(
-          reading_list::prefs::kReadingListDesktopFirstUseExperienceShown)) {
-    pref_service->SetBoolean(
-        reading_list::prefs::kReadingListDesktopFirstUseExperienceShown, true);
-    base::UmaHistogramEnumeration(
-        "ReadingList.BookmarkBarState.OnFirstAddToReadingList",
-        browser->bookmark_bar_state());
-
-    if (browser->bookmark_bar_state() == BookmarkBar::HIDDEN)
-      ToggleBookmarkBar(browser);
-  }
-#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void ShowOffersAndRewardsForPage(Browser* browser) {
@@ -1868,9 +1847,16 @@ void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
   }
 }
 
-void FollowSite(Browser* browser, content::WebContents* web_contents) {
-  DCHECK(browser && !browser->profile()->IsIncognitoProfile());
+void FollowSite(content::WebContents* web_contents) {
+  DCHECK(!Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->IsIncognitoProfile());
   feed::FollowSite(web_contents);
+}
+
+void UnfollowSite(content::WebContents* web_contents) {
+  DCHECK(!Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->IsIncognitoProfile());
+  feed::UnfollowSite(web_contents);
 }
 
 #if BUILDFLAG(IS_LINUX)

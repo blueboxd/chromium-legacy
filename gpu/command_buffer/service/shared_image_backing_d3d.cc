@@ -580,12 +580,22 @@ bool SharedImageBackingD3D::ProduceLegacyMailbox(
   return true;
 }
 
-uint32_t SharedImageBackingD3D::GetAllowedDawnUsages() const {
+WGPUTextureUsageFlags SharedImageBackingD3D::GetAllowedDawnUsages(
+    const WGPUTextureFormat wgpu_format) const {
   // TODO(crbug.com/2709243): Figure out other SI flags, if any.
   DCHECK(usage() & gpu::SHARED_IMAGE_USAGE_WEBGPU);
-  return static_cast<uint32_t>(
+  const WGPUTextureUsageFlags kBasicUsage =
       WGPUTextureUsage_CopySrc | WGPUTextureUsage_CopyDst |
-      WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment);
+      WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment;
+  switch (wgpu_format) {
+    case WGPUTextureFormat_BGRA8Unorm:
+      return kBasicUsage;
+    case WGPUTextureFormat_RGBA8Unorm:
+    case WGPUTextureFormat_RGBA16Float:
+      return kBasicUsage | WGPUTextureUsage_StorageBinding;
+    default:
+      return WGPUTextureUsage_None;
+  }
 }
 
 std::unique_ptr<SharedImageRepresentationDawn>
@@ -594,31 +604,34 @@ SharedImageBackingD3D::ProduceDawn(SharedImageManager* manager,
                                    WGPUDevice device,
                                    WGPUBackendType backend_type) {
 #if BUILDFLAG(USE_DAWN)
+#if BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+  if (backend_type == WGPUBackendType_OpenGLES) {
+    return std::make_unique<SharedImageRepresentationDawnEGLImage>(
+        ProduceGLTexturePassthrough(manager, tracker), manager, this, tracker,
+        device);
+  }
+#endif
   const viz::ResourceFormat viz_resource_format = format();
   const WGPUTextureFormat wgpu_format = viz::ToWGPUFormat(viz_resource_format);
   if (wgpu_format == WGPUTextureFormat_Undefined) {
     DLOG(ERROR) << "Unsupported viz format found: " << viz_resource_format;
     return nullptr;
   }
+  const WGPUTextureUsageFlags usage = GetAllowedDawnUsages(wgpu_format);
+  if (usage == WGPUTextureUsage_None) {
+    DLOG(ERROR) << "WGPUTextureUsage is unknown for viz format: "
+                << viz_resource_format;
+    return nullptr;
+  }
 
   WGPUTextureDescriptor texture_descriptor = {};
   texture_descriptor.format = wgpu_format;
-  texture_descriptor.usage = GetAllowedDawnUsages();
+  texture_descriptor.usage = static_cast<uint32_t>(usage);
   texture_descriptor.dimension = WGPUTextureDimension_2D;
   texture_descriptor.size = {static_cast<uint32_t>(size().width()),
                              static_cast<uint32_t>(size().height()), 1};
   texture_descriptor.mipLevelCount = 1;
   texture_descriptor.sampleCount = 1;
-
-#if BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
-  if (backend_type == WGPUBackendType_OpenGLES) {
-    // EGLImage textures do not support sampling, at the moment.
-    texture_descriptor.usage &= ~WGPUTextureUsage_TextureBinding;
-    return std::make_unique<SharedImageRepresentationDawnEGLImage>(
-        ProduceGLTexturePassthrough(manager, tracker), manager, this, tracker,
-        device, texture_descriptor);
-  }
-#endif
 
   // We need to have internal usages of CopySrc for copies and
   // RenderAttachment for clears.

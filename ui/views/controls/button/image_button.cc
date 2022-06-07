@@ -16,7 +16,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/background.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
@@ -42,7 +41,7 @@ ImageButton::ImageButton(PressedCallback callback)
 ImageButton::~ImageButton() = default;
 
 gfx::ImageSkia ImageButton::GetImage(ButtonState state) const {
-  return GetImageSkiaFromImageModel(images_[state], GetColorProvider());
+  return images_[state].Rasterize(GetColorProvider());
 }
 
 void ImageButton::SetImage(ButtonState for_state, const gfx::ImageSkia* image) {
@@ -175,17 +174,13 @@ gfx::ImageSkia ImageButton::GetImageToPaint() {
   const auto* const color_provider = GetColorProvider();
   if (!images_[STATE_HOVERED].IsEmpty() && hover_animation().is_animating()) {
     return gfx::ImageSkiaOperations::CreateBlendedImage(
-        GetImageSkiaFromImageModel(images_[STATE_NORMAL], color_provider),
-        GetImageSkiaFromImageModel(images_[STATE_HOVERED], color_provider),
+        images_[STATE_NORMAL].Rasterize(color_provider),
+        images_[STATE_HOVERED].Rasterize(color_provider),
         hover_animation().GetCurrentValue());
   }
 
-  const auto img =
-      GetImageSkiaFromImageModel(images_[GetState()], color_provider);
-  return
-      !img.isNull()
-          ? img
-          : GetImageSkiaFromImageModel(images_[STATE_NORMAL], color_provider);
+  const auto img = images_[GetState()].Rasterize(color_provider);
+  return !img.isNull() ? img : images_[STATE_NORMAL].Rasterize(color_provider);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -293,11 +288,9 @@ void ToggleImageButton::SetToggledAccessibleName(const std::u16string& name) {
 // ToggleImageButton, ImageButton overrides:
 
 gfx::ImageSkia ToggleImageButton::GetImage(ButtonState image_state) const {
-  if (toggled_) {
-    return GetImageSkiaFromImageModel(alternate_images_[image_state],
-                                      GetColorProvider());
-  }
-  return GetImageSkiaFromImageModel(images_[image_state], GetColorProvider());
+  if (toggled_)
+    return alternate_images_[image_state].Rasterize(GetColorProvider());
+  return images_[image_state].Rasterize(GetColorProvider());
 }
 
 void ToggleImageButton::SetImageModel(ButtonState image_state,

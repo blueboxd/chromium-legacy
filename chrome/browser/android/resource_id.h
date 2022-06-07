@@ -33,8 +33,6 @@ LINK_RESOURCE_ID(IDR_INFOBAR_AUTOFILL_CC, R.drawable.infobar_autofill_cc)
 // Android only infobars.
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_FROZEN_TAB, R.drawable.infobar_restore)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_LITE_MODE, R.drawable.preview_pin_round)
-DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MEDIA_STREAM_SCREEN,
-                    R.drawable.infobar_screen_share)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_NOTIFICATIONS_OFF,
                     R.drawable.permission_push_notification_off)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PREVIEWS, R.drawable.infobar_chrome)
@@ -83,7 +81,6 @@ LINK_RESOURCE_ID(IDR_AUTOFILL_CC_MIR, R.drawable.mir_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_TROY, R.drawable.troy_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_UNIONPAY, R.drawable.unionpay_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_VISA, R.drawable.visa_card)
-LINK_RESOURCE_ID(IDR_AUTOFILL_GOOGLE_ISSUED_CARD, R.drawable.google_pay_plex)
 LINK_RESOURCE_ID(IDR_AUTOFILL_GOOGLE_PAY, R.drawable.google_pay)
 // Use DECLARE_RESOURCE_ID here as these resources are used for android only.
 DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_CC_SCAN_NEW,

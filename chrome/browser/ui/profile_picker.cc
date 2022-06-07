@@ -51,7 +51,7 @@ ProfilePicker::Params::~Params() {
 
   if (first_run_exited_callback_) {
     std::move(first_run_exited_callback_)
-        .Run(/*finished=*/false, BrowserOpenedCallback());
+        .Run(FirstRunExitStatus::kQuitEarly, base::OnceClosure());
   }
 #endif
 }
@@ -104,11 +104,12 @@ void ProfilePicker::Params::NotifyAccountSelected(const std::string& gaia_id) {
     std::move(account_selected_callback_).Run(gaia_id);
 }
 
-void ProfilePicker::Params::NotifyFirstRunFinished(
-    BrowserOpenedCallback maybe_callback) {
+void ProfilePicker::Params::NotifyFirstRunExited(
+    FirstRunExitStatus exit_status,
+    base::OnceClosure maybe_callback) {
   if (first_run_exited_callback_)
     std::move(first_run_exited_callback_)
-        .Run(/*finished=*/true, std::move(maybe_callback));
+        .Run(exit_status, std::move(maybe_callback));
 }
 #endif
 
@@ -161,6 +162,16 @@ bool ProfilePicker::ShouldShowAtLaunch() {
   // specified in command line.
   if (availability_on_startup == AvailabilityOnStartup::kForced)
     return true;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Don't show the profile picker if secondary profiles are not allowed.
+  bool lacros_secondary_profiles_allowed =
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kLacrosSecondaryProfilesAllowed);
+
+  if (!lacros_secondary_profiles_allowed)
+    return false;
+#endif
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 

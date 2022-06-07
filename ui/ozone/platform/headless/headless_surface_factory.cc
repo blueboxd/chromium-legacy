@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "skia/ext/legacy_display_globals.h"
@@ -165,6 +164,7 @@ class TestPixmap : public gfx::NativePixmap {
   size_t GetNumberOfPlanes() const override {
     return gfx::NumberOfPlanesForLinearBufferFormat(format_);
   }
+  bool SupportsZeroCopyWebGPUImport() const override { return false; }
   gfx::Size GetBufferSize() const override { return gfx::Size(); }
   uint32_t GetUniqueId() const override { return 0; }
   bool ScheduleOverlayPlane(
@@ -235,7 +235,6 @@ HeadlessSurfaceFactory::~HeadlessSurfaceFactory() = default;
 std::vector<gl::GLImplementationParts>
 HeadlessSurfaceFactory::GetAllowedGLImplementations() {
   return std::vector<gl::GLImplementationParts>{
-      gl::GLImplementationParts(gl::kGLImplementationSwiftShaderGL),
       gl::GLImplementationParts(gl::kGLImplementationEGLGLES2),
       gl::GLImplementationParts(gl::ANGLEImplementation::kSwiftShader),
       gl::GLImplementationParts(gl::ANGLEImplementation::kDefault),
@@ -246,7 +245,6 @@ GLOzone* HeadlessSurfaceFactory::GetGLOzone(
     const gl::GLImplementationParts& implementation) {
   switch (implementation.gl) {
     case gl::kGLImplementationEGLGLES2:
-    case gl::kGLImplementationSwiftShaderGL:
     case gl::kGLImplementationEGLANGLE:
       return swiftshader_implementation_.get();
 

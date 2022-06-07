@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/lazy_instance.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bad_message.h"
@@ -106,8 +107,12 @@ bool PrintViewManager::PrintForSystemDialogNow(
     return false;
   }
 
-  // TODO(crbug.com/809738)  Register with `PrintBackendServiceManager` when
-  // system print is enabled out-of-process.
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  // Register this worker so that the service persists as long as the user
+  // keeps the system print dialog UI displayed.
+  if (!RegisterSystemPrintClient())
+    return false;
+#endif
 
   SetPrintingRFH(print_preview_rfh_);
   GetPrintRenderFrame(print_preview_rfh_)->PrintForSystemDialog();

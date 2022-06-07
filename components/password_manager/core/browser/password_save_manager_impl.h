@@ -81,7 +81,10 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 
   bool IsNewLogin() const override;
   bool IsPasswordUpdate() const override;
+  bool IsSamePassword() const override;
   bool HasGeneratedPassword() const override;
+
+  void UsernameUpdatedInBubble() override;
 
   std::unique_ptr<PasswordSaveManager> Clone() override;
 
@@ -149,7 +152,8 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   };
   static PendingCredentialsStates ComputePendingCredentialsStates(
       const PasswordForm& parsed_submitted_form,
-      const std::vector<const PasswordForm*>& matches);
+      const std::vector<const PasswordForm*>& matches,
+      bool username_updated_in_bubble = false);
 
   std::u16string GetOldPassword(
       const PasswordForm& parsed_submitted_form) const;
@@ -178,6 +182,9 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 
   // Can be nullptr.
   raw_ptr<VotesUploader> votes_uploader_;
+
+  // True if the user edited the username field during the save prompt.
+  bool username_updated_in_bubble_ = false;
 };
 
 }  // namespace password_manager

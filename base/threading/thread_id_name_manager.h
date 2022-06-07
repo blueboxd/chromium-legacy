@@ -12,7 +12,6 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 
@@ -60,6 +59,10 @@ class BASE_EXPORT ThreadIdNameManager {
 
   // Remove the name for the given id.
   void RemoveName(PlatformThreadHandle::Handle handle, PlatformThreadId id);
+
+  // Return all registered thread ids (note that this doesn't include the main
+  // thread id).
+  std::vector<PlatformThreadId> GetIds();
 
  private:
   friend struct DefaultSingletonTraits<ThreadIdNameManager>;

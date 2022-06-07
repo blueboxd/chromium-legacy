@@ -1048,6 +1048,7 @@ interface CanvasFilter
 interface CanvasFormattedText
     attribute @@toStringTag
     getter length
+    getter styleMap
     method @@iterator
     method appendRun
     method constructor
@@ -1057,6 +1058,7 @@ interface CanvasFormattedText
     method setRun
 interface CanvasFormattedTextRun
     attribute @@toStringTag
+    getter styleMap
     getter text
     method constructor
     setter text
@@ -1251,10 +1253,13 @@ interface CompressionStream
     getter writable
     method constructor
 interface ComputePressureObserver
+    static getter supportedSources
     attribute @@toStringTag
     method constructor
+    method disconnect
     method observe
-    method stop
+    method takeRecords
+    method unobserve
 interface ComputedAccessibleNode
     attribute @@toStringTag
     getter atomic
@@ -1775,6 +1780,7 @@ interface Document : Node
     getter onauxclick
     getter onbeforecopy
     getter onbeforecut
+    getter onbeforematch
     getter onbeforepaste
     getter onbeforexrselect
     getter onblur
@@ -1980,6 +1986,7 @@ interface Document : Node
     setter onauxclick
     setter onbeforecopy
     setter onbeforecut
+    setter onbeforematch
     setter onbeforepaste
     setter onbeforexrselect
     setter onblur
@@ -2187,6 +2194,7 @@ interface Element : Node
     getter ariaFlowToElements
     getter ariaHasPopup
     getter ariaHidden
+    getter ariaInvalid
     getter ariaKeyShortcuts
     getter ariaLabel
     getter ariaLabelledByElements
@@ -2228,10 +2236,10 @@ interface Element : Node
     getter clientWidth
     getter computedName
     getter computedRole
-    getter editContext
     getter elementTiming
     getter firstElementChild
     getter id
+    getter initiallyOpen
     getter innerHTML
     getter lastElementChild
     getter localName
@@ -2239,7 +2247,6 @@ interface Element : Node
     getter nextElementSibling
     getter onbeforecopy
     getter onbeforecut
-    getter onbeforematch
     getter onbeforepaste
     getter onfullscreenchange
     getter onfullscreenerror
@@ -2248,6 +2255,7 @@ interface Element : Node
     getter onwebkitfullscreenerror
     getter outerHTML
     getter part
+    getter popup
     getter prefix
     getter previousElementSibling
     getter role
@@ -2282,6 +2290,7 @@ interface Element : Node
     method hasAttributeNS
     method hasAttributes
     method hasPointerCapture
+    method hidePopup
     method insertAdjacentElement
     method insertAdjacentHTML
     method insertAdjacentText
@@ -2309,6 +2318,7 @@ interface Element : Node
     method setAttributeNodeNS
     method setHTML
     method setPointerCapture
+    method showPopup
     method toggleAttribute
     method webkitMatchesSelector
     method webkitRequestFullScreen
@@ -2332,6 +2342,7 @@ interface Element : Node
     setter ariaFlowToElements
     setter ariaHasPopup
     setter ariaHidden
+    setter ariaInvalid
     setter ariaKeyShortcuts
     setter ariaLabel
     setter ariaLabelledByElements
@@ -2362,13 +2373,12 @@ interface Element : Node
     setter ariaVirtualContent
     setter classList
     setter className
-    setter editContext
     setter elementTiming
     setter id
+    setter initiallyOpen
     setter innerHTML
     setter onbeforecopy
     setter onbeforecut
-    setter onbeforematch
     setter onbeforepaste
     setter onfullscreenchange
     setter onfullscreenerror
@@ -2377,6 +2387,7 @@ interface Element : Node
     setter onwebkitfullscreenerror
     setter outerHTML
     setter part
+    setter popup
     setter role
     setter scrollLeft
     setter scrollTop
@@ -2402,6 +2413,7 @@ interface ElementInternals
     getter ariaFlowToElements
     getter ariaHasPopup
     getter ariaHidden
+    getter ariaInvalid
     getter ariaKeyShortcuts
     getter ariaLabel
     getter ariaLabelledByElements
@@ -2462,6 +2474,7 @@ interface ElementInternals
     setter ariaFlowToElements
     setter ariaHasPopup
     setter ariaHidden
+    setter ariaInvalid
     setter ariaKeyShortcuts
     setter ariaLabel
     setter ariaLabelledByElements
@@ -3152,6 +3165,7 @@ interface HTMLElement : Element
     getter dataset
     getter dir
     getter draggable
+    getter editContext
     getter enterKeyHint
     getter hidden
     getter inert
@@ -3170,6 +3184,7 @@ interface HTMLElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforematch
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -3282,6 +3297,7 @@ interface HTMLElement : Element
     setter contentEditable
     setter dir
     setter draggable
+    setter editContext
     setter enterKeyHint
     setter hidden
     setter inert
@@ -3294,6 +3310,7 @@ interface HTMLElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforematch
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -3807,9 +3824,7 @@ interface HTMLLinkElement : HTMLElement
     getter referrerPolicy
     getter rel
     getter relList
-    getter resources
     getter rev
-    getter scopes
     getter sheet
     getter sizes
     getter target
@@ -3830,9 +3845,7 @@ interface HTMLLinkElement : HTMLElement
     setter referrerPolicy
     setter rel
     setter relList
-    setter resources
     setter rev
-    setter scopes
     setter sizes
     setter target
     setter type
@@ -4118,7 +4131,6 @@ interface HTMLPictureElement : HTMLElement
     method constructor
 interface HTMLPopupElement : HTMLElement
     attribute @@toStringTag
-    getter anchor
     getter initiallyOpen
     getter open
     method constructor
@@ -4640,6 +4652,7 @@ interface IDBIndex
     getter name
     getter objectStore
     getter unique
+    method batchGetAll
     method constructor
     method count
     method get
@@ -4669,6 +4682,7 @@ interface IDBObjectStore
     getter name
     getter transaction
     method add
+    method batchGetAll
     method clear
     method constructor
     method count
@@ -5055,6 +5069,17 @@ interface MIDIPort : EventTarget
     method constructor
     method open
     setter onstatechange
+interface ML
+    attribute @@toStringTag
+    method constructor
+    method createContext
+interface MLContext
+    attribute @@toStringTag
+    method constructor
+interface MLModelLoader
+    attribute @@toStringTag
+    method constructor
+    method load
 interface Magnetometer : Sensor
     attribute @@toStringTag
     getter x
@@ -5071,6 +5096,7 @@ interface MathMLElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforematch
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -5177,6 +5203,7 @@ interface MathMLElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforematch
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -5292,6 +5319,7 @@ interface MediaDevices : EventTarget
     method constructor
     method enumerateDevices
     method getDisplayMedia
+    method getDisplayMediaSet
     method getSupportedConstraints
     method getUserMedia
     method produceCropId
@@ -5745,6 +5773,7 @@ interface NavigateEvent : Event
     attribute @@toStringTag
     getter canTransition
     getter destination
+    getter downloadRequest
     getter formData
     getter hashChange
     getter info
@@ -5752,6 +5781,7 @@ interface NavigateEvent : Event
     getter signal
     getter userInitiated
     method constructor
+    method restoreScroll
     method transitionWhile
 interface Navigation : EventTarget
     attribute @@toStringTag
@@ -5840,6 +5870,7 @@ interface Navigator
     getter mediaDevices
     getter mediaSession
     getter mimeTypes
+    getter ml
     getter onLine
     getter pdfViewerEnabled
     getter permissions
@@ -7271,6 +7302,7 @@ interface SVGElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
+    getter onbeforematch
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -7379,6 +7411,7 @@ interface SVGElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
+    setter onbeforematch
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -8675,6 +8708,7 @@ interface SubApps
     method add
     method constructor
     method list
+    method remove
 interface SubmitEvent : Event
     attribute @@toStringTag
     getter submitter
@@ -9903,9 +9937,11 @@ interface WebGL2RenderingContext
     attribute WAIT_FAILED
     attribute ZERO
     getter canvas
+    getter drawingBufferColorSpace
     getter drawingBufferFormat
     getter drawingBufferHeight
     getter drawingBufferWidth
+    getter unpackColorSpace
     method activeTexture
     method attachShader
     method beginQuery
@@ -10134,6 +10170,8 @@ interface WebGL2RenderingContext
     method vertexAttribPointer
     method viewport
     method waitSync
+    setter drawingBufferColorSpace
+    setter unpackColorSpace
 interface WebGLActiveInfo
     attribute @@toStringTag
     getter name
@@ -10458,9 +10496,11 @@ interface WebGLRenderingContext
     attribute VIEWPORT
     attribute ZERO
     getter canvas
+    getter drawingBufferColorSpace
     getter drawingBufferFormat
     getter drawingBufferHeight
     getter drawingBufferWidth
+    getter unpackColorSpace
     method activeTexture
     method attachShader
     method bindAttribLocation
@@ -10601,6 +10641,8 @@ interface WebGLRenderingContext
     method vertexAttrib4fv
     method vertexAttribPointer
     method viewport
+    setter drawingBufferColorSpace
+    setter unpackColorSpace
 interface WebGLSampler
     attribute @@toStringTag
     method constructor
@@ -11516,6 +11558,7 @@ namespace CSS
     getter onappinstalled
     getter onauxclick
     getter onbeforeinstallprompt
+    getter onbeforematch
     getter onbeforeprint
     getter onbeforeunload
     getter onbeforexrselect
@@ -11737,6 +11780,7 @@ namespace CSS
     setter onappinstalled
     setter onauxclick
     setter onbeforeinstallprompt
+    setter onbeforematch
     setter onbeforeprint
     setter onbeforeunload
     setter onbeforexrselect

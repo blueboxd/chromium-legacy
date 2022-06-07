@@ -10,21 +10,26 @@
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './album_list_element.js';
 import './art_album_dialog_element.js';
+import '../../common/styles.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isNonEmptyArray} from '../../common/utils.js';
+import {getNumberOfGridItemsPerRow, isNonEmptyArray} from '../../common/utils.js';
 import {AmbientModeAlbum, TopicSource} from '../personalization_app.mojom-webui.js';
-import {Paths, PersonalizationRouter} from '../personalization_router_element.js';
+import {PersonalizationRouter} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
+import {getZerosArray} from '../utils.js';
 
 import {AlbumSelectedChangedEvent} from './album_list_element.js';
+import {getTemplate} from './albums_subpage_element.html.js';
 import {setAlbumSelected} from './ambient_controller.js';
 import {getAmbientProvider} from './ambient_interface_provider.js';
+import {AmbientObserver} from './ambient_observer.js';
+
+/** Height in pixels of a tile. */
+const kTileHeightPx = 136;
 
 export class AlbumsSubpage extends WithPersonalizationStore {
   static get is() {
@@ -32,7 +37,7 @@ export class AlbumsSubpage extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -43,29 +48,40 @@ export class AlbumsSubpage extends WithPersonalizationStore {
         // Set to null to differentiate from an empty album.
         value: null,
       },
-      disabled: {
+      ambientModeEnabled_: {
         type: Boolean,
-        observer: 'onDisabledChanged_',
+        observer: 'onAmbientModeEnabledChanged_',
       },
-      path: Paths,
       showArtAlbumDialog_: {
         type: Boolean,
         value: false,
-      }
+      },
     };
   }
 
   topicSource: TopicSource;
   albums: AmbientModeAlbum[]|null = null;
-  disabled: boolean;
-  path: Paths;
+  loadingAlbums: boolean;
 
+  private ambientModeEnabled_: boolean|null;
   private showArtAlbumDialog_: boolean;
 
   override ready() {
     super.ready();
     this.addEventListener(
         'album_selected_changed', this.onAlbumSelectedChanged_.bind(this));
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    AmbientObserver.initAmbientObserverIfNeeded();
+    this.watch<AlbumsSubpage['ambientModeEnabled_']>(
+        'ambientModeEnabled_', state => state.ambient.ambientModeEnabled);
+    this.updateFromStore();
+  }
+
+  private shouldShowContent_(): boolean {
+    return this.ambientModeEnabled_ !== null && this.ambientModeEnabled_;
   }
 
   private getTitleInnerHtml_(): string {
@@ -76,8 +92,17 @@ export class AlbumsSubpage extends WithPersonalizationStore {
     }
   }
 
+  /**
+   * List of loading tiles to be displayed to the user when albums are loading.
+   */
+  private getLoadingTiles_(): number[] {
+    const x = getNumberOfGridItemsPerRow();
+    const y = Math.floor(this.offsetHeight / kTileHeightPx);
+    return getZerosArray(x * y);
+  }
+
   private loadingAlbums_(): boolean {
-    return this.albums === null;
+    return this.albums === null || this.topicSource === null;
   }
 
   private showNoGoogleAlbums_(): boolean {
@@ -109,8 +134,8 @@ export class AlbumsSubpage extends WithPersonalizationStore {
     this.showArtAlbumDialog_ = false;
   }
 
-  private onDisabledChanged_(disabled: boolean) {
-    if (disabled) {
+  private onAmbientModeEnabledChanged_(ambientModeEnabled: boolean|null) {
+    if (ambientModeEnabled !== null && !ambientModeEnabled) {
       PersonalizationRouter.reloadAtAmbient();
     }
   }

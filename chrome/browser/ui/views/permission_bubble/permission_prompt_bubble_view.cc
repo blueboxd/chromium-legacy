@@ -206,8 +206,8 @@ void PermissionPromptBubbleView::AddRequestLine(
   auto* line_container = AddChildView(std::make_unique<views::View>());
   line_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(0, provider->GetDistanceMetric(
-                         DISTANCE_SUBSECTION_HORIZONTAL_INDENT)),
+      gfx::Insets::VH(0, provider->GetDistanceMetric(
+                             DISTANCE_SUBSECTION_HORIZONTAL_INDENT)),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
 
   constexpr int kPermissionIconSize = 18;
@@ -246,10 +246,6 @@ void PermissionPromptBubbleView::SetPromptStyle(
     DialogDelegate::SetCloseCallback(
         base::BindOnce(&PermissionPromptBubbleView::ClosingPermission,
                        base::Unretained(this)));
-  } else if (prompt_style_ == PermissionPromptStyle::kChip ||
-             prompt_style_ == PermissionPromptStyle::kQuietChip) {
-    // Override the `CloseCallback` if it was set previously.
-    DialogDelegate::SetCloseCallback(base::DoNothing());
   }
 }
 

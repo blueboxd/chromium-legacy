@@ -62,7 +62,9 @@ Element* NearestLockedExclusiveAncestor(const Node& node) {
     if (!ancestor_element)
       continue;
     if (auto* context = ancestor_element->GetDisplayLockContext()) {
-      if (context->IsLocked())
+      if (context->IsLocked() &&
+          (!ancestor_element->GetLayoutObject() ||
+           !ancestor_element->GetLayoutObject()->IsShapingDeferred()))
         return ancestor_element;
     }
   }
@@ -81,7 +83,9 @@ const Element* NearestLockedInclusiveAncestor(const Node& node) {
     return nullptr;
   }
   if (auto* context = element->GetDisplayLockContext()) {
-    if (context->IsLocked())
+    if (context->IsLocked() &&
+        (!element->GetLayoutObject() ||
+         !element->GetLayoutObject()->IsShapingDeferred()))
       return element;
   }
   return NearestLockedExclusiveAncestor(node);
@@ -813,7 +817,7 @@ bool DisplayLockUtilities::RevealHiddenUntilFoundAncestors(const Node& node) {
   // elements to open and then open them all.
   HeapVector<Member<HTMLElement>> elements_to_reveal;
 
-  for (Node& parent : FlatTreeTraversal::AncestorsOf(node)) {
+  for (Node& parent : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
     if (HTMLElement* element = DynamicTo<HTMLElement>(parent)) {
       if (EqualIgnoringASCIICase(
               element->FastGetAttribute(html_names::kHiddenAttr),

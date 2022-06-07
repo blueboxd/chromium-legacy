@@ -979,9 +979,17 @@
     "label": "//chrome/test:interactive_ui_tests",
     "type": "windowed_test_launcher",
   },
+  "ios/chrome/app:chrome": {
+    "label": "//ios/chrome/app:chrome",
+    "type": "additional_compile_target",
+  },
   "ios_chrome_bookmarks_egtests": {
     "label": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests",
     "type": "generated_script",
+  },
+  "ios_chrome_clusterfuzz_asan_build": {
+    "label": "//ios/chrome/test/wpt:ios_chrome_clusterfuzz_asan_build",
+    "type": "additional_compile_target",
   },
   "ios_chrome_integration_egtests": {
     "label": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests",
@@ -1685,9 +1693,7 @@
   },
   "system_webview_shell_layout_test_apk": {
     "args": [
-      "--replace-system-package",
-      "org.chromium.webview_shell,apks/SystemWebViewShell.apk",
-      "--use-apk-under-test-flags-file",
+      "--replace-system-package=apks/SystemWebViewShell.apk",
     ],
     "label": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
     "type": "console_test_launcher",
@@ -2094,8 +2100,7 @@
   },
   "weblayer_skew_tests_with_chrome": {
     "args":  [
-      "--replace-system-package",
-      "org.chromium.weblayer.shell,apks/WebLayerShellSystemWebView.apk"
+      "--replace-system-package=apks/WebLayerShellSystemWebView.apk"
     ],
     "label": "//weblayer/browser/android/javatests:weblayer_skew_tests_with_chrome",
     "type": "console_test_launcher",

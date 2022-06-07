@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/safe_ref.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -94,12 +95,12 @@ class ClipboardFormatType;
 }
 
 namespace content {
-class AgentSchedulingGroupHost;
 class FrameTreeNode;
 class PrerenderHostRegistry;
 class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class SessionStorageNamespace;
+class SiteInstanceGroup;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
@@ -151,7 +152,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                const GURL& url) {}
 
   // Notifies that the manifest URL is updated.
-  virtual void OnManifestUrlChanged(const PageImpl& page) {}
+  virtual void OnManifestUrlChanged(PageImpl& page) {}
 
   // A message was added to to the console. |source_id| is a URL.
   // |untrusted_stack_trace| is not present for most messages; only when
@@ -561,10 +562,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // The page is trying to open a new widget (e.g. a select popup). The
   // widget should be created associated with the given
-  // |agent_scheduling_group|, but it should not be shown yet. That should
+  // |site_instance_group|, but it should not be shown yet. That should
   // happen in response to ShowCreatedWidget.
   virtual RenderWidgetHostImpl* CreateNewPopupWidget(
-      AgentSchedulingGroupHost& agent_scheduling_group,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t route_id,
       mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
           blink_popup_widget_host,

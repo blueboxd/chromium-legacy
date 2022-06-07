@@ -30,6 +30,7 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_mount_provider.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/smb_client/smb_service.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
@@ -86,6 +87,11 @@ constexpr base::FilePath::CharType kArcExternalFilesRoot[] =
 // Sync with the volume provider in ARC++ side.
 constexpr char kArcRemovableMediaContentUrlPrefix[] =
     "content://org.chromium.arc.volumeprovider/";
+// A predefined removable media UUID for testing. Defined in
+// ash/components/arc/volume_mounter/arc_volume_mounter_bridge.cc.
+// TODO(crbug.com/1274481): Move ash-wide constants to a common place.
+constexpr char kArcRemovableMediaUuidForTesting[] =
+    "00000000000000000000000000000000DEADBEEF";
 // The dummy UUID of the MyFiles volume is taken from
 // ash/components/arc/volume_mounter/arc_volume_mounter_bridge.cc.
 // TODO(crbug.com/929031): Move MyFiles constants to a common place.
@@ -204,6 +210,9 @@ bool AppendRelativePath(const base::FilePath& parent,
 
 }  // namespace
 
+const base::FilePath::CharType kFuseBoxMediaPath[] =
+    FILE_PATH_LITERAL("/media/fuse/fusebox");
+
 const base::FilePath::CharType kRemovableMediaPath[] =
     FILE_PATH_LITERAL("/media/removable");
 
@@ -215,6 +224,8 @@ const base::FilePath::CharType kSystemFontsPath[] =
 
 const base::FilePath::CharType kArchiveMountPath[] =
     FILE_PATH_LITERAL("/media/archive");
+
+const char kFuseBox[] = "fusebox";
 
 const char kShareCacheMountPointName[] = "ShareCache";
 
@@ -343,8 +354,21 @@ std::string GetCrostiniMountPointName(Profile* profile) {
       "_");
 }
 
+std::string GetGuestOsMountPointName(Profile* profile,
+                                     crostini::ContainerId id) {
+  return base::JoinString(
+      {"guestos", ash::ProfileHelper::GetUserIdHashFromProfile(profile),
+       net::EscapeAllExceptUnreserved(id.vm_name),
+       net::EscapeAllExceptUnreserved(id.container_name)},
+      "+");
+}
+
 base::FilePath GetCrostiniMountDirectory(Profile* profile) {
   return base::FilePath("/media/fuse/" + GetCrostiniMountPointName(profile));
+}
+
+base::FilePath GetGuestOsMountDirectory(std::string mountPointName) {
+  return base::FilePath("/media/fuse/" + mountPointName);
 }
 
 std::vector<std::string> GetCrostiniMountOptions(
@@ -617,10 +641,10 @@ bool ConvertPathToArcUrl(const base::FilePath& path,
     if (volume_name.empty())
       return false;
     const std::string fs_uuid = GetFsUuidForRemovableMedia(volume_name);
-    if (fs_uuid.empty())
-      return false;
     // Replace the volume name in the relative path with the UUID.
-    base::FilePath relative_path_with_uuid = base::FilePath(fs_uuid);
+    // When no UUID is found for the volume, use the predefined one for testing.
+    base::FilePath relative_path_with_uuid = base::FilePath(
+        fs_uuid.empty() ? kArcRemovableMediaUuidForTesting : fs_uuid);
     if (!base::FilePath(volume_name)
              .AppendRelativePath(relative_path, &relative_path_with_uuid)) {
       LOG(WARNING) << "Failed to replace volume name \"" << volume_name

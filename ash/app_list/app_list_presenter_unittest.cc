@@ -410,7 +410,8 @@ class AppListBubbleAndTabletTestBase : public AshTestBase {
               ->UpdateForNewSortingOrder(
                   order,
                   /*animate=*/true,
-                  /*update_position_closure=*/base::DoNothing())
+                  /*update_position_closure=*/base::DoNothing(),
+                  /*animation_done_closure=*/base::DoNothing())
         : GetAppListTestHelper()->GetBubbleView()->UpdateForNewSortingOrder(
               order,
               /*animate=*/true, /*update_position_closure=*/base::DoNothing());
@@ -4775,7 +4776,7 @@ TEST_F(AppListPresenterNonBubbleTest, SearchBoxShownOnSmallWorkArea) {
   // Update the work area to a small size.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   ASSERT_TRUE(display_manager()->UpdateWorkAreaOfDisplay(
-      GetPrimaryDisplayId(), gfx::Insets(400, 0, 0, 0)));
+      GetPrimaryDisplayId(), gfx::Insets::TLBR(400, 0, 0, 0)));
 
   // Animate to Half.
   PressAndReleaseKey(ui::KeyboardCode::VKEY_0);

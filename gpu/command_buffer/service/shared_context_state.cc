@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_context_state.h"
 
+#include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -700,7 +701,7 @@ void SharedContextState::StoreVkPipelineCacheIfNeeded() {
   // main thread. Hence using |created_on_compositor_gpu_thread_| to avoid
   // calling it for CompositorGpuThread when DrDc is enabled. See
   // GrShaderCache::StoreVkPipelineCacheIfNeeded for more details.
-  if (gr_context_ && GrContextIsVulkan() &&
+  if (gr_context_ && gr_shader_cache_ && GrContextIsVulkan() &&
       !created_on_compositor_gpu_thread_) {
     gpu::raster::GrShaderCache::ScopedCacheUse use(gr_shader_cache_,
                                                    kDisplayCompositorClientId);

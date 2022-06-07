@@ -13,7 +13,8 @@ import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_be
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
-import {PowerCableStateObserverInterface, PowerCableStateObserverReceiver, ShimlessRmaServiceInterface} from './shimless_rma_types.js';
+import {PowerCableStateObserverInterface, PowerCableStateObserverReceiver, ShimlessRmaServiceInterface, ShutdownMethod} from './shimless_rma_types.js';
+import {executeThenTransitionState} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -28,6 +29,15 @@ import {PowerCableStateObserverInterface, PowerCableStateObserverReceiver, Shiml
  */
 const WrapupRepairCompletePageBase =
     mixinBehaviors([I18nBehavior], PolymerElement);
+
+/**
+ * Supported options for finishing RMA.
+ * @enum {string}
+ */
+const FinishRmaOption = {
+  SHUTDOWN: 'shutdown',
+  REBOOT: 'reboot',
+};
 
 /** @polymer */
 export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
@@ -61,7 +71,13 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
         reflectToAttribute: true,
         type: Boolean,
         value: true,
-      }
+      },
+
+      /** @protected */
+      selectedFinishRmaOption_: {
+        type: String,
+        value: '',
+      },
     };
   }
 
@@ -86,31 +102,78 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
   /** @protected */
   onShutDownButtonClick_(e) {
     e.preventDefault();
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.shimlessRmaService_.endRmaAndShutdown();
-          })
-        },
-        ));
+    this.selectedFinishRmaOption_ = FinishRmaOption.SHUTDOWN;
+    this.shimlessRmaService_.getPowerwashRequired().then((result) => {
+      this.handlePowerwash_(result.powerwashRequired);
+    });
+  }
+
+  /**
+   * Handles the response to getPowerwashRequired from the backend.
+   * @private
+   */
+  handlePowerwash_(powerwashRequired) {
+    if (powerwashRequired) {
+      const dialog = /** @type {!CrDialogElement} */ (
+          this.shadowRoot.querySelector('#powerwashDialog'));
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+    } else {
+      this.shutDownOrReboot_();
+    }
+  }
+
+  /** @private */
+  shutDownOrReboot_() {
+    if (this.selectedFinishRmaOption_ === FinishRmaOption.SHUTDOWN) {
+      this.endRmaAndShutdown_();
+    } else {
+      this.endRmaAndReboot_();
+    }
+  }
+
+  /**
+   * Sends a shutdown request to the backend.
+   * @private
+   */
+  endRmaAndShutdown_() {
+    executeThenTransitionState(
+        this, () => this.shimlessRmaService_.endRma(ShutdownMethod.kShutdown));
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getPowerwashDescriptionString_() {
+    return this.selectedFinishRmaOption_ === FinishRmaOption.SHUTDOWN ?
+        this.i18n('repairCompletedPowerwashShutdownDescription') :
+        this.i18n('repairCompletedPowerwashRebootDescription');
+  }
+
+  /** @protected */
+  onPowerwashButtonClick_(e) {
+    e.preventDefault();
+    this.shutDownOrReboot_();
   }
 
   /** @protected */
   onRebootButtonClick_(e) {
     e.preventDefault();
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.shimlessRmaService_.endRmaAndReboot();
-          })
-        },
-        ));
+    this.selectedFinishRmaOption_ = FinishRmaOption.REBOOT;
+    this.shimlessRmaService_.getPowerwashRequired().then((result) => {
+      this.handlePowerwash_(result.powerwashRequired);
+    });
+  }
+
+  /**
+   * Sends a reboot request to the backend.
+   * @private
+   */
+  endRmaAndReboot_() {
+    executeThenTransitionState(
+        this, () => this.shimlessRmaService_.endRma(ShutdownMethod.kReboot));
   }
 
   /** @protected */
@@ -125,16 +188,9 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
 
   /** @protected */
   onBatteryCutButtonClick_() {
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.shimlessRmaService_.endRmaAndCutoffBattery();
-          })
-        },
-        ));
+    executeThenTransitionState(
+        this,
+        () => this.shimlessRmaService_.endRma(ShutdownMethod.kBatteryCutoff));
   }
 
   /** @protected */

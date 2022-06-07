@@ -112,18 +112,15 @@ class ASH_EXPORT CalendarViewController {
   void set_today_row(int row) { today_row_ = row; }
   int row_height() const { return row_height_; }
   void set_row_height(int height) { row_height_ = height; }
-  int expanded_area_available_height() const {
-    return expanded_area_available_height_;
-  }
-  void set_expanded_area_available_height(int height) {
-    expanded_area_available_height_ = height;
-  }
 
   int time_difference_minutes() { return time_difference_minutes_; }
 
   // Getters of the today's row position, top and bottom.
   int GetTodayRowTopHeight() const;
   int GetTodayRowBottomHeight() const;
+
+  // Performs the initial fetch when the calendar is first opened.
+  void InitialFetchEvents();
 
   // Requests more events as needed.
   void FetchEvents();
@@ -157,6 +154,7 @@ class ASH_EXPORT CalendarViewController {
   friend class CalendarMonthViewTest;
   friend class CalendarViewEventListViewTest;
   friend class CalendarViewTest;
+  friend class CalendarViewAnimationTest;
 
   // The currently shown date, which can be today or the first day of the
   // current month if current month is not today's month.
@@ -176,10 +174,6 @@ class ASH_EXPORT CalendarViewController {
   // Each row's height. Every row should have the same height, so this height is
   // only updated once with today's row.
   int row_height_ = 0;
-
-  // The expanded area available height, which will be used to set the expanded
-  // event list min height.
-  int expanded_area_available_height_ = 0;
 
   // If the event list is expanded.
   bool is_event_list_showing_ = false;

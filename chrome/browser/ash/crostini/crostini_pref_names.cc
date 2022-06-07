@@ -65,6 +65,10 @@ const char kCrostiniDefaultContainerConfigured[] =
 // port forwarding into Crostini.
 const char kCrostiniPortForwardingAllowedByPolicy[] =
     "crostini.port_forwarding_allowed_by_policy";
+// A boolean preference representing a user level enterprise policy to allow
+// SSH in Terminal System App.
+const char kTerminalSshAllowedByPolicy[] =
+    "crostini.terminal_ssh_allowed_by_policy";
 
 // A boolean preference controlling Crostini usage reporting.
 const char kReportCrostiniUsageEnabled[] = "crostini.usage_reporting_enabled";
@@ -98,21 +102,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kCrostiniPortForwarding);
   registry->RegisterListPref(kCrostiniSharedUsbDevices);
   registry->RegisterBooleanPref(kCrostiniMicAllowed, false);
-
-  // Set a default value for crostini.containers to ensure that we track the
-  // default container even if its creation predates this preference. This
-  // preference should not be accessed unless crostini is installed
-  // (i.e. kCrostiniEnabled is true).
-  base::Value default_container(base::Value::Type::DICTIONARY);
-  default_container.SetKey(kVmKey, base::Value(kCrostiniDefaultVmName));
-  default_container.SetKey(kContainerKey,
-                           base::Value(kCrostiniDefaultContainerName));
-
-  base::Value::ListStorage default_containers_list;
-  default_containers_list.push_back(std::move(default_container));
-  registry->RegisterListPref(kCrostiniContainers,
-                             base::Value(std::move(default_containers_list)));
-
+  registry->RegisterBooleanPref(kTerminalSshAllowedByPolicy, true);
+  registry->RegisterListPref(kCrostiniContainers);
   registry->RegisterBooleanPref(crostini::prefs::kReportCrostiniUsageEnabled,
                                 false);
   registry->RegisterStringPref(kCrostiniLastLaunchTerminaComponentVersion,

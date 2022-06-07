@@ -93,10 +93,6 @@ public final class ChromePreferenceKeys {
     /** Assistant voice search keys. */
     public static final String ASSISTANT_VOICE_SEARCH_ENABLED = "Chrome.Assistant.Enabled";
 
-    /** The last time the browser was started for the Attribution Provider. */
-    public static final String ATTRIBUTION_PROVIDER_LAST_BROWSER_START =
-            "Chrome.Attribution.LastBrowserStart";
-
     public static final String BACKUP_FIRST_BACKUP_DONE = "first_backup_done";
 
     public static final String BOOKMARKS_LAST_MODIFIED_FOLDER_ID = "last_bookmark_folder_id";
@@ -311,6 +307,8 @@ public final class ChromePreferenceKeys {
     public static final String DOWNLOAD_FOREGROUND_SERVICE_OBSERVERS = "ForegroundServiceObservers";
     public static final String DOWNLOAD_IS_DOWNLOAD_HOME_ENABLED =
             "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
+    public static final String DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL =
+            "Chrome.DownloadInterstitial.PendingRemoval";
     public static final String DOWNLOAD_NEXT_DOWNLOAD_NOTIFICATION_ID =
             "NextDownloadNotificationId";
     public static final String DOWNLOAD_PENDING_DOWNLOAD_NOTIFICATIONS =
@@ -1017,7 +1015,6 @@ public final class ChromePreferenceKeys {
                 ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS,
                 ASSISTANT_VOICE_CONSENT_OUTSIDE_TAPS,
                 ASSISTANT_VOICE_SEARCH_ENABLED,
-                ATTRIBUTION_PROVIDER_LAST_BROWSER_START,
                 APP_LAUNCH_LAST_KNOWN_ACTIVE_TAB_STATE,
                 APP_LAUNCH_SEARCH_ENGINE_HAD_LOGO,
                 APPLICATION_OVERRIDE_LANGUAGE,
@@ -1043,6 +1040,7 @@ public final class ChromePreferenceKeys {
                 DEFAULT_BROWSER_PROMO_PROMOED_BY_SYSTEM_SETTINGS,
                 DEFAULT_BROWSER_PROMO_PROMOED_COUNT,
                 DEFAULT_BROWSER_PROMO_SESSION_COUNT,
+                DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 FEED_ARTICLES_LIST_VISIBLE,
                 FIRST_RUN_FIELD_TRIAL_GROUP,

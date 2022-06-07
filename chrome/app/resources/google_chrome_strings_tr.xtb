@@ -173,6 +173,7 @@
 <translation id="4600710005438004015">Chrome en son sürüme güncellenemediği için yeni özellikler ve güvenlik düzeltmeleri cihazınızda bulunmuyor.</translation>
 <translation id="4627412468266359539">İsteğe bağlı: Teşhis ve kullanım verilerini otomatik olarak Google'a göndererek ChromeOS Flex özellikleri ile performansını iyileştirmeye yardımcı olun.</translation>
 <translation id="4633000520311261472">Chrome'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
+<translation id="469553575393225953">Bilinmeyen kaynaklardan gelen uzantılar, uygulamalar ve temalar cihazınıza zarar verebilir. Chrome bunların yalnızca Chrome Web Mağazası'ndan indirilmesini önerir.</translation>
 <translation id="4728575227883772061">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Google Chrome şu anda çalışır durumdaysa, kapatıp yeniden deneyin.</translation>
 <translation id="4747730611090640388">Chrome, ilgi alanlarınızı tahmin edebilir.  Daha sonra ziyaret ettiğiniz bir site, gördüğünüz reklamları kişiselleştirmek için Chrome'dan ilgi alanlarınızı göstermesini isteyebilir.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -214,6 +215,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="5736850870166430177">Chrome, bir sitenin şifrenizi çalmaya çalışması veya zararlı bir dosya indirmeniz halinde de Güvenli Tarama'ya sayfa içeriğinden parçalarla birlikte URL'ler gönderebilir</translation>
 <translation id="573759479754913123">Chrome OS hakkında</translation>
 <translation id="5756509061973259733">Cihazda bu hesaba sahip bir Chrome profili zaten var</translation>
+<translation id="5763280521700030406">Güvenlik kontrolü için fazla büyük olması nedeniyle bu dosya Chrome tarafından engellendi. 50 MB'a kadar dosyalarla tekrar deneyin.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome başlatılamadı. Tekrar deneyin.</translation>
 <translation id="5867197326698922595">Google Chrome şifreleri düzenlemeyi deniyor.</translation>
@@ -229,6 +231,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="6235018212288296708">Google Chrome'un mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
+<translation id="6247557882553405851">Google Şifre Yöneticisi</translation>
 <translation id="6291089322031436445">Chrome Dev Uygulamaları</translation>
 <translation id="6291549208091401781">Google Chrome zaten bilgisayarınızdaki tüm kullanıcılar için yüklendi.</translation>
 <translation id="6368958679917195344">Chrome OS, ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
@@ -237,6 +240,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6506909944137591434">Çevrenizin 3D haritasını oluşturmak için Chrome'un kamera iznine ihtiyacı var</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS sistemi</translation>
+<translation id="659498884637196217">Bu cihazdaki Google Şifre Yöneticisi'nde</translation>
 <translation id="6632473616050862500">ChromeOS Flex, ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
 <translation id="6676384891291319759">İnternet'e erişin</translation>
 <translation id="6679975945624592337">Google Chrome'un Arka Planda Çalışmasına İzin Ver</translation>
@@ -276,6 +280,7 @@ Web sitelerine ve uygulamalara verdiğiniz izinler, bu hesap için geçerli olab
 Web sitelerine ve uygulamalara verdiğiniz izinler, bu hesap için geçerli olabilir. Google Hesaplarınızı <ph name="SETTINGS_LINK_BEGIN" />Ayarlar<ph name="SETTINGS_LINK_END" /> bölümünden yönetebilirsiniz.</translation>
 <translation id="7398801000654795464">Chrome'da <ph name="USER_EMAIL_ADDRESS" /> olarak oturum açtınız. Tekrar oturum açmak için lütfen aynı hesabı kullanın.</translation>
 <translation id="7408085963519505752">Chrome OS Şartları</translation>
+<translation id="7410958280246779049">Chrome bu dosyayı tehlikeli olduğu için engelledi</translation>
 <translation id="7419046106786626209">Senkronizasyon, alan adınızda kullanılamadığından Chrome OS, verilerinizi senkronize edemedi.</translation>
 <translation id="7481213027396403996">Chrome’un en güçlü güvenlik özelliklerinden faydalanın</translation>
 <translation id="7486227612705979895">Chrome, adres çubuğunda öneriler göstermek için Drive'ınıza erişecektir</translation>
@@ -290,7 +295,6 @@ Web sitelerine ve uygulamalara verdiğiniz izinler, bu hesap için geçerli olab
 <translation id="7655455401911432608">Tarama geçmişiniz, bu cihazda Chrome'u kullanarak ziyaret ettiğiniz sitelerin kaydı.</translation>
 <translation id="7665553140559834626">&amp;Chrome OS'i güncellemek için yeniden başlat</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>
-<translation id="7748512868279796735">Bu Chrome profili için aşağıdaki hesaplar kullanılabilir</translation>
 <translation id="7761834446675418963">Chrome'u açmak ve göz atmaya başlamak için adınızı tıklayın.</translation>
 <translation id="7777080907402804672">Bir resmin işe yarar bir açıklaması yoksa, Chrome sizin için bir açıklama sağlamaya çalışır. Açıklama oluşturmak için resimler Google'a gönderilir. Bu özelliği istediğiniz zaman ayarlardan kapatabilirsiniz.</translation>
 <translation id="7781002470561365167">Google Chrome'un yeni bir sürümü çıktı.</translation>
@@ -306,10 +310,12 @@ Web sitelerine ve uygulamalara verdiğiniz izinler, bu hesap için geçerli olab
 <translation id="7951272445806340501">Güncellemenin uygulanması için ChromeOS Flex yeniden başlatılmalıdır.</translation>
 <translation id="7962410387636238736">Windows XP ve Windows Vista artık desteklenmediğinden, bu bilgisayar bundan böyle Google Chrome güncellemelerini almayacaktır</translation>
 <translation id="79947657522496226">Chrome OS, <ph name="BEGIN_LINK_LINUX_OSS" />Linux geliştirme ortamında<ph name="END_LINK_LINUX_OSS" /> olduğu gibi ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
+<translation id="8005666035647241369">Bu cihazdaki Google Şifre Yöneticisi'ne</translation>
 <translation id="8008534537613507642">Chrome'u yeniden yükle</translation>
 <translation id="8013993649590906847">Bir resmin işe yarar bir açıklaması yoksa, Chrome sizin için bir açıklama sağlamaya çalışır. Açıklama oluşturmak için resimler Google'a gönderilir.</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">&amp;Google Chrome hakkında</translation>
+<translation id="822971176939352383">Aşağıdaki hesaplar hiçbir Chrome profilinde oturum açmamış. Başka profildeki bir hesabı kullanmak istiyorsanız önce bu profili kaldırın.</translation>
 <translation id="8255190535488645436">Google Chrome kameranızı ve mikrofonunuzu kullanıyor.</translation>
 <translation id="8286862437124483331">Google Chrome şifreleri göstermeye çalışıyor. Buna izin vermek için Windows şifrenizi yazın.</translation>
 <translation id="828798499196665338">Ebeveyniniz, Chrome'a yönelik "Siteler, uygulamalar ve uzantılar için izinler"i kapattı. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> uzantısının etkinleştirilmesine izin verilmiyor.</translation>
@@ -321,8 +327,10 @@ Web sitelerine ve uygulamalara verdiğiniz izinler, bu hesap için geçerli olab
 <translation id="8394720698884623075">URL'leri, Chrome'da kayıtlı güvenli olmayan siteler listesine göre kontrol eder</translation>
 <translation id="840084489713044809">Google Chrome, şifrelerinizi dışa aktarmak istiyor.</translation>
 <translation id="8416347857511542594">Chrome'da reklam kişiselleştirme hakkında daha fazla bilgi edinin</translation>
+<translation id="8421734018304082652">Şifrelenmiş olması nedeniyle bu dosya Chrome tarafından engellendi. Dosyanın sahibinden şifresini çözmesini isteyin.</translation>
 <translation id="8433638294851456451">Buradan Android telefonunuza numara göndermek için iki cihazdan da Chrome'da oturum açın.</translation>
 <translation id="8498858610309223613">Google Chrome için özel bir güvenlik güncellemesi uygulandı. Uygulamayı hemen yeniden başlatın; açık sekmeleriniz geri yüklenir.</translation>
+<translation id="8504220326736535258">Kötü amaçlı yazılım içermesi nedeniyle bu dosya Chrome tarafından engellendi</translation>
 <translation id="8516431725144212809">Chrome'un tahmin ettiği ilgi alanlarınız</translation>
 <translation id="8521348052903287641">Google Chrome Dev'in mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

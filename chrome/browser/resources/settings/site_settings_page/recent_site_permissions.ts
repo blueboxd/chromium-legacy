@@ -9,7 +9,7 @@ import '../settings_shared_css.js';
 import '../i18n_setup.js';
 
 import {CrTooltipIconElement} from 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
@@ -35,9 +35,9 @@ export interface SettingsRecentSitePermissionsElement {
 const SettingsRecentSitePermissionsElementBase =
     RouteObserverMixin(
         SiteSettingsMixin(WebUIListenerMixin(I18nMixin(PolymerElement)))) as {
-      new ():
-          PolymerElement & I18nMixinInterface & WebUIListenerMixinInterface &
-      SiteSettingsMixinInterface & RouteObserverMixinInterface
+      new (): PolymerElement & I18nMixinInterface &
+          WebUIListenerMixinInterface & SiteSettingsMixinInterface &
+          RouteObserverMixinInterface,
     };
 
 export class SettingsRecentSitePermissionsElement extends
@@ -191,7 +191,7 @@ export class SettingsRecentSitePermissionsElement extends
         return this.i18n('siteSettingsVrMidSentence');
       case ContentSettingsTypes.WINDOW_PLACEMENT:
         return this.i18n('siteSettingsWindowPlacementMidSentence');
-      case ContentSettingsTypes.FONT_ACCESS:
+      case ContentSettingsTypes.LOCAL_FONTS:
         return this.i18n('siteSettingsFontAccessMidSentence');
       case ContentSettingsTypes.IDLE_DETECTION:
         return this.i18n('siteSettingsIdleDetectionMidSentence');
@@ -372,13 +372,17 @@ export class SettingsRecentSitePermissionsElement extends
     const index = currentIndex > -1 ? currentIndex : fallbackIndex;
 
     if (this.recentSitePermissionsList_[index].incognito) {
-      focusWithoutInk(assert(
-          (this.shadowRoot!.querySelector(`#incognitoInfoIcon_${index}`) as
-           CrTooltipIconElement)
-              .getFocusableElement()));
+      const icon = this.shadowRoot!.querySelector<CrTooltipIconElement>(
+          `#incognitoInfoIcon_${index}`);
+      assert(!!icon);
+      const toFocus = icon.getFocusableElement();
+      assert(!!toFocus);
+      focusWithoutInk(toFocus);
     } else {
-      focusWithoutInk(
-          assert(this.shadowRoot!.querySelector(`#siteEntryButton_${index}`)!));
+      const toFocus =
+          this.shadowRoot!.querySelector(`#siteEntryButton_${index}`);
+      assert(!!toFocus);
+      focusWithoutInk(toFocus);
     }
   }
 

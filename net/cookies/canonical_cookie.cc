@@ -333,6 +333,18 @@ CookieSameSiteForMetrics CookieSameSiteToCookieSameSiteForMetrics(
   return static_cast<CookieSameSiteForMetrics>((static_cast<int>(enum_in) + 1));
 }
 
+// Checks if `port` is within [0,65535] or url::PORT_UNSPECIFIED. Returns `port`
+// if so and url::PORT_INVALID otherwise.
+int ValidateAndAdjustSourcePort(int port) {
+  if ((port >= 0 && port <= 65535) || port == url::PORT_UNSPECIFIED) {
+    // 0 would be really weird as it has a special meaning, but it's still
+    // technically a valid tcp/ip port so we're going to accept it here.
+    return port;
+  }
+
+  return url::PORT_INVALID;
+}
+
 // Tests that a cookie has the attributes for a valid __Host- prefix without
 // testing that the prefix is in the cookie name. This is used to verify the
 // Partitioned attribute.
@@ -343,6 +355,27 @@ bool HasValidHostPrefixAttributes(const GURL& url,
   if (!secure || !url.SchemeIsCryptographic() || path != "/")
     return false;
   return domain.empty() || (url.HostIsIPAddress() && url.host() == domain);
+}
+
+// Per rfc6265bis the maximum expiry date is no further than 400 days in the
+// future. Clamping only occurs when kClampCookieExpiryTo400Days is enabled.
+base::Time ValidateAndAdjustExpiryDate(const base::Time& expiry_date,
+                                       const base::Time& creation_date) {
+  if (expiry_date.is_null())
+    return expiry_date;
+  base::Time fixed_creation_date = creation_date;
+  if (fixed_creation_date.is_null()) {
+    // TODO(crbug.com/1264458): This shouldn't be necessary, let's examine
+    // where creation_date is null but expiry_date isn't and figure out
+    // what's happening. This blocks the launch until resolved.
+    fixed_creation_date = base::Time::Now();
+  }
+  if (base::FeatureList::IsEnabled(features::kClampCookieExpiryTo400Days)) {
+    base::Time maximum_expiry_date = fixed_creation_date + base::Days(400);
+    if (expiry_date > maximum_expiry_date)
+      return maximum_expiry_date;
+  }
+  return expiry_date;
 }
 
 }  // namespace
@@ -394,9 +427,8 @@ CanonicalCookie::CanonicalCookie(
       priority_(priority),
       same_party_(same_party),
       partition_key_(std::move(partition_key)),
-      source_scheme_(source_scheme) {
-  SetSourcePort(source_port);
-}
+      source_scheme_(source_scheme),
+      source_port_(source_port) {}
 
 CanonicalCookie::~CanonicalCookie() = default;
 
@@ -427,7 +459,7 @@ std::string CanonicalCookie::CanonPathWithString(
 }
 
 // static
-Time CanonicalCookie::CanonExpiration(const ParsedCookie& pc,
+Time CanonicalCookie::ParseExpiration(const ParsedCookie& pc,
                                       const Time& current,
                                       const Time& server_time) {
   // First, try the Max-Age attribute.
@@ -519,8 +551,9 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     cookie_server_time = server_time.value();
 
   DCHECK(!creation_time.is_null());
-  Time cookie_expires = CanonicalCookie::CanonExpiration(
+  Time cookie_expires = CanonicalCookie::ParseExpiration(
       parsed_cookie, creation_time, cookie_server_time);
+  cookie_expires = ValidateAndAdjustExpiryDate(cookie_expires, creation_time);
 
   CookiePrefix prefix = GetCookiePrefix(parsed_cookie.Name());
   bool is_cookie_prefix_valid = IsCookiePrefixValid(prefix, url, parsed_cookie);
@@ -552,7 +585,8 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   // Collect metrics on whether usage of the Partitioned attribute is correct.
   // Do not include implicit nonce-based partitioned cookies in these metrics.
   if (parsed_cookie.IsPartitioned()) {
-    UMA_HISTOGRAM_BOOLEAN("Cookie.IsPartitionedValid", is_partitioned_valid);
+    if (!partition_has_nonce)
+      UMA_HISTOGRAM_BOOLEAN("Cookie.IsPartitionedValid", is_partitioned_valid);
   } else if (!partition_has_nonce) {
     cookie_partition_key = absl::nullopt;
   }
@@ -567,7 +601,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
                                          ? CookieSourceScheme::kSecure
                                          : CookieSourceScheme::kNonSecure;
   // Get the port, this will get a default value if a port isn't provided.
-  int source_port = url.EffectiveIntPort();
+  int source_port = ValidateAndAdjustSourcePort(url.EffectiveIntPort());
 
   std::unique_ptr<CanonicalCookie> cc = base::WrapUnique(new CanonicalCookie(
       parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain, cookie_path,
@@ -698,7 +732,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   }
 
   // Get the port, this will get a default value if a port isn't provided.
-  int source_port = url.EffectiveIntPort();
+  int source_port = ValidateAndAdjustSourcePort(url.EffectiveIntPort());
 
   std::string cookie_path = CanonicalCookie::CanonPathWithString(url, path);
   // Canonicalize path again to make sure it escapes characters as needed.
@@ -751,6 +785,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
     status->AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE);
   }
+  expiration_time = ValidateAndAdjustExpiryDate(expiration_time, creation_time);
 
   if (!status->IsInclude())
     return nullptr;
@@ -781,10 +816,18 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::FromStorage(
     absl::optional<CookiePartitionKey> partition_key,
     CookieSourceScheme source_scheme,
     int source_port) {
+  // We check source_port here because it could have concievably been
+  // corrupted and changed to out of range. Eventually this would be caught by
+  // IsCanonical*() but since the source_port is only used by metrics so far
+  // nothing else checks it. So let's normalize it here and then update this
+  // method when origin-bound cookies is implemented.
+  // TODO(crbug.com/1170548)
+  int validated_port = ValidateAndAdjustSourcePort(source_port);
+
   std::unique_ptr<CanonicalCookie> cc = base::WrapUnique(new CanonicalCookie(
       std::move(name), std::move(value), std::move(domain), std::move(path),
       creation, expiration, last_access, secure, httponly, same_site, priority,
-      same_party, partition_key, source_scheme, source_port));
+      same_party, partition_key, source_scheme, validated_port));
 
   if (cc->IsCanonicalForFromStorage()) {
     // This will help capture the number of times a cookie is canonical but does
@@ -827,13 +870,7 @@ std::string CanonicalCookie::DomainWithoutDot() const {
 }
 
 void CanonicalCookie::SetSourcePort(int port) {
-  if ((port >= 0 && port <= 65535) || port == url::PORT_UNSPECIFIED) {
-    // 0 would be really weird as it has a special meaning, but it's still
-    // technically a valid tcp/ip port so we're going to accept it here.
-    source_port_ = port;
-  } else {
-    source_port_ = url::PORT_INVALID;
-  }
+  source_port_ = ValidateAndAdjustSourcePort(port);
 }
 
 bool CanonicalCookie::IsEquivalentForSecureCookieMatching(

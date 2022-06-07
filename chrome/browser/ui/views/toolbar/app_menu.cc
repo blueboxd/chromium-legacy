@@ -57,6 +57,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/themed_vector_icon.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
@@ -66,7 +67,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -164,8 +164,8 @@ class InMenuButtonBackground : public views::Background {
           canvas->sk_canvas(), view->GetColorProvider(),
           ui::NativeTheme::kMenuPopupSeparator, ui::NativeTheme::kNormal,
           separator_bounds, params);
-      bounds.Inset(
-          gfx::Insets(0, MenuConfig::instance().separator_thickness, 0, 0));
+      bounds.Inset(gfx::Insets::TLBR(
+          0, MenuConfig::instance().separator_thickness, 0, 0));
     }
 
     // Fill in background for state.
@@ -233,8 +233,8 @@ class InMenuButton : public LabelButton {
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
     SetBackground(std::make_unique<InMenuButtonBackground>(type));
-    SetBorder(
-        views::CreateEmptyBorder(0, kHorizontalPadding, 0, kHorizontalPadding));
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets::TLBR(0, kHorizontalPadding, 0, kHorizontalPadding)));
     label()->SetFontList(MenuConfig::instance().font_list);
   }
 
@@ -493,8 +493,8 @@ class AppMenu::ZoomView : public AppMenuView {
     zoom_label_ = new Label(base::FormatPercent(100));
     zoom_label_->SetAutoColorReadabilityEnabled(false);
     zoom_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    zoom_label_->SetBorder(views::CreateEmptyBorder(
-        0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding));
+    zoom_label_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+        0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding)));
     zoom_label_->SetBackground(std::make_unique<InMenuButtonBackground>(
         InMenuButtonBackground::NO_BORDER));
 

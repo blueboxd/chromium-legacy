@@ -65,8 +65,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kAddNewProfileButton = 15,
     kSyncSettingsButton = 16,
     kEditProfileButton = 17,
-    kCreateIncognitoShortcutButton = 18,
-    kMaxValue = kCreateIncognitoShortcutButton,
+    // DEPRECATED: kCreateIncognitoShortcutButton = 18,
+    kMaxValue = kEditProfileButton,
   };
 
   struct EditButtonParams {
@@ -152,7 +152,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                                          base::RepeatingClosure action);
 
   gfx::ImageSkia ColoredImageForMenu(const gfx::VectorIcon& icon,
-                                     SkColor color) const;
+                                     ui::ColorId color) const;
   // Should be called inside each button/link action.
   void RecordClick(ActionableItem item);
 

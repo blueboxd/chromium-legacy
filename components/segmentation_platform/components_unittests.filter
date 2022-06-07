@@ -1,13 +1,12 @@
+CustomInputProcessorTest.*
 DatabaseMaintenanceImplTest.*
 DefaultModelManagerTest.*
-DummyModelExecutionManagerTest.*
 DummySegmentationPlatformServiceTest.*
 FeatureAggregatorImplTest.*
 FeatureListQueryProcessorTest.*
 HistogramSignalHandlerTest.*
 HistoryDelegateImplTest.*
 MetadataUtilsTest.*
-ModelExecutionManagerFactoryTest.*
 ModelExecutionManagerTest.*
 ModelExecutionSchedulerTest.*
 OptimizationGuideSegmentationModelProviderTest.*
@@ -29,9 +28,10 @@ SignalKeyInternalTest.*
 SignalKeyTest.*
 SignalStorageConfigTest.*
 StatsTest.*
-TrainingDataCollectorTest.*
+TrainingDataCollectorImplTest.*
 UkmConfigTest.*
 UkmDatabaseBackendTest.*
+UkmDataManagerImplTest.*
 UkmMetricsTableTest.*
 UkmObserverTest.*
 UkmUrlTableTest.*

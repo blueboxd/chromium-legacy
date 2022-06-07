@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AmbientModeAlbum, AmbientObserverInterface, AmbientObserverRemote, AmbientProviderInterface, AnimationTheme, TemperatureUnit, TopicSource} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
+import {AmbientModeAlbum, AmbientObserverInterface, AmbientObserverRemote, AmbientProviderInterface, AnimationTheme, TemperatureUnit, TopicSource} from 'chrome://personalization/trusted/personalization_app.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestAmbientProvider extends TestBrowserProxy implements
@@ -44,7 +44,7 @@ export class TestAmbientProvider extends TestBrowserProxy implements
       topicSource: TopicSource.kGooglePhotos,
       url: {url: 'http://test_url3'}
     }
-  ]
+  ];
 
   constructor() {
     super([
@@ -52,6 +52,7 @@ export class TestAmbientProvider extends TestBrowserProxy implements
       'setAmbientObserver',
       'setAmbientModeEnabled',
       'setAnimationTheme',
+      'setPageViewed',
       'setTopicSource',
       'setTemperatureUnit',
       'setAlbumSelected',
@@ -101,5 +102,9 @@ export class TestAmbientProvider extends TestBrowserProxy implements
 
   setAlbumSelected(id: string, topic_source: TopicSource, selected: boolean) {
     this.methodCalled('setAlbumSelected', id, topic_source, selected);
+  }
+
+  setPageViewed() {
+    this.methodCalled('setPageViewed');
   }
 }

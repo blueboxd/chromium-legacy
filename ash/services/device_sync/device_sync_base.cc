@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -54,4 +54,4 @@ void DeviceSyncBase::OnDisconnection() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

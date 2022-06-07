@@ -142,6 +142,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -862,6 +863,11 @@ bool WebLocalFrameImpl::IsAdSubframe() const {
   return GetFrame()->IsAdSubframe();
 }
 
+bool WebLocalFrameImpl::IsAdScriptInStack() const {
+  DCHECK(GetFrame());
+  return GetFrame()->IsAdScriptInStack();
+}
+
 void WebLocalFrameImpl::SetAdEvidence(
     const blink::FrameAdEvidence& ad_evidence) {
   DCHECK(GetFrame());
@@ -927,7 +933,8 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
   return ClassicScript::CreateUnspecifiedScript(
              source_in, SanitizeScriptErrors::kDoNotSanitize)
       ->RunScriptInIsolatedWorldAndReturnValue(GetFrame()->DomWindow(),
-                                               world_id);
+                                               world_id)
+      .GetSuccessValueOrEmpty();
 }
 
 void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
@@ -994,7 +1001,8 @@ v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
     const WebScriptSource& source) {
   DCHECK(GetFrame());
   return ClassicScript::CreateUnspecifiedScript(source)
-      ->RunScriptAndReturnValue(GetFrame()->DomWindow());
+      ->RunScriptAndReturnValue(GetFrame()->DomWindow())
+      .GetSuccessValueOrEmpty();
 }
 
 void WebLocalFrameImpl::RequestExecuteV8Function(
@@ -2204,9 +2212,10 @@ RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
 RemoteFrame* WebLocalFrameImpl::CreateFencedFrame(
     HTMLFencedFrameElement* fenced_frame,
     mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>
-        receiver) {
+        receiver,
+    mojom::blink::FencedFrameMode mode) {
   WebRemoteFrame* frame =
-      client_->CreateFencedFrame(fenced_frame, std::move(receiver));
+      client_->CreateFencedFrame(fenced_frame, std::move(receiver), mode);
   return To<WebRemoteFrameImpl>(frame)->GetFrame();
 }
 

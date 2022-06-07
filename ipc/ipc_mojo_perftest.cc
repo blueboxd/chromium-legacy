@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/process/process_metrics.h"
@@ -18,6 +19,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_perftest_messages.h"

@@ -69,9 +69,25 @@ HeadlessPermissionManager::GetPermissionStatusForFrame(
   return blink::mojom::PermissionStatus::ASK;
 }
 
+blink::mojom::PermissionStatus
+HeadlessPermissionManager::GetPermissionStatusForCurrentDocument(
+    content::PermissionType permission,
+    content::RenderFrameHost* render_frame_host) {
+  return blink::mojom::PermissionStatus::ASK;
+}
+
+blink::mojom::PermissionStatus
+HeadlessPermissionManager::GetPermissionStatusForWorker(
+    content::PermissionType permission,
+    content::RenderProcessHost* render_process_host,
+    const GURL& worker_origin) {
+  return blink::mojom::PermissionStatus::ASK;
+}
+
 HeadlessPermissionManager::SubscriptionId
 HeadlessPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
+    content::RenderProcessHost* render_process_host,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) {

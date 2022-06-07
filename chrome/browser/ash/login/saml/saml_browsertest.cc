@@ -12,6 +12,7 @@
 #include "ash/components/login/auth/key.h"
 #include "ash/components/login/auth/saml_password_attributes.h"
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -24,7 +25,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -80,7 +80,6 @@
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -1713,7 +1712,7 @@ class SAMLDeviceAttestationTest
 
   attestation::MockMachineCertificateUploader mock_cert_uploader_;
   NiceMock<attestation::MockAttestationFlow> mock_attestation_flow_;
-  chromeos::ScopedStubInstallAttributes stub_install_attributes_;
+  ScopedStubInstallAttributes stub_install_attributes_;
 };
 
 void SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture() {

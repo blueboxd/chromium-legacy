@@ -8,19 +8,19 @@
 #include <map>
 #include <string>
 
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/services/device_sync/cryptauth_device_sync_result.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
-#include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 
 namespace cryptauthv2 {
 class RequestContext;
 }  // namespace cryptauthv2
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -90,6 +90,6 @@ class CryptAuthFeatureStatusGetter {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  //  ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_FEATURE_STATUS_GETTER_H_

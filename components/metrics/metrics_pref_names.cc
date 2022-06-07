@@ -127,16 +127,6 @@ const char kStabilityExitedCleanly[] =
 const char kStabilityExtensionRendererCrashCount[] =
     "user_experience_metrics.stability.extension_renderer_crash_count";
 
-// Number of times an extension renderer process failed to launch since the last
-// report.
-const char kStabilityExtensionRendererFailedLaunchCount[] =
-    "user_experience_metrics.stability.extension_renderer_failed_launch_count";
-
-// Number of times an extension renderer process successfully launched since the
-// last report.
-const char kStabilityExtensionRendererLaunchCount[] =
-    "user_experience_metrics.stability.extension_renderer_launch_count";
-
 // The total number of samples that will be lost if ASSOCIATE_INTERNAL_PROFILE
 // isn't enabled since the previous stability recorded, this is different than
 // the previous browser run, because one file was just uploaded before the
@@ -157,9 +147,11 @@ const char kStabilityGmsCoreVersion[] =
 const char kStabilityGpuCrashCount[] =
     "user_experience_metrics.stability.gpu_crash_count";
 
+#if BUILDFLAG(IS_ANDROID)
 // Number of times the application was launched since last report.
 const char kStabilityLaunchCount[] =
     "user_experience_metrics.stability.launch_count";
+#endif
 
 // Number of times a page load event occurred since the last report.
 const char kStabilityPageLoadCount[] =
@@ -168,10 +160,6 @@ const char kStabilityPageLoadCount[] =
 // Number of times a renderer process crashed since the last report.
 const char kStabilityRendererCrashCount[] =
     "user_experience_metrics.stability.renderer_crash_count";
-
-// Number of times a renderer process failed to launch since the last report.
-const char kStabilityRendererFailedLaunchCount[] =
-    "user_experience_metrics.stability.renderer_failed_launch_count";
 
 // Number of times a renderer process successfully launched since the last
 // report.

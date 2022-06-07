@@ -20,7 +20,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
-#include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/media/media_web_contents_observer.h"
@@ -925,7 +924,7 @@ void WebContentsAndroid::SetDisplayCutoutSafeArea(
     int bottom,
     int right) {
   web_contents()->SetDisplayCutoutSafeArea(
-      gfx::Insets(top, left, bottom, right));
+      gfx::Insets::TLBR(top, left, bottom, right));
 }
 
 void WebContentsAndroid::NotifyRendererPreferenceUpdate(

@@ -15,10 +15,9 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId OfflineLoginView::kScreenId;
 
-OfflineLoginScreenHandler::OfflineLoginScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.OfflineLoginScreen.userActed");
+OfflineLoginScreenHandler::OfflineLoginScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.OfflineLoginScreen.userActed");
 }
 
 OfflineLoginScreenHandler::~OfflineLoginScreenHandler() {
@@ -52,7 +51,7 @@ void OfflineLoginScreenHandler::DeclareLocalizedValues(
   builder->Add("offlineLoginOkBtn", IDS_OFFLINE_LOGIN_OK_BUTTON_TEXT);
 }
 
-void OfflineLoginScreenHandler::Initialize() {
+void OfflineLoginScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
@@ -60,11 +59,11 @@ void OfflineLoginScreenHandler::Initialize() {
 }
 
 void OfflineLoginScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OfflineLoginView::kScreenId);
+  ShowInWebUI();
 }
 
 void OfflineLoginScreenHandler::Hide() {
@@ -73,12 +72,12 @@ void OfflineLoginScreenHandler::Hide() {
 
 void OfflineLoginScreenHandler::Bind(OfflineLoginScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void OfflineLoginScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void OfflineLoginScreenHandler::Reset() {
@@ -96,8 +95,8 @@ void OfflineLoginScreenHandler::HandleEmailSubmitted(
   screen_->HandleEmailSubmitted(username);
 }
 
-void OfflineLoginScreenHandler::LoadParams(base::DictionaryValue& params) {
-  CallJS("login.OfflineLoginScreen.loadParams", params);
+void OfflineLoginScreenHandler::LoadParams(base::DictionaryValue params) {
+  CallJS("login.OfflineLoginScreen.loadParams", std::move(params));
 }
 
 void OfflineLoginScreenHandler::ShowPasswordPage() {

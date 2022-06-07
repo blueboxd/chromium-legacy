@@ -36,10 +36,6 @@ const base::Feature kAllowWithholdingExtensionPermissionsOnInstall{
 const base::Feature kContentScriptsMatchOriginAsFallback{
     "ContentScriptsMatchOriginAsFallback", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether Manifest Version 3-based extensions are supported.
-const base::Feature kMv3ExtensionsSupported{"Mv3ExtensionsSupported",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Reports Extensions.WebRequest.KeepaliveRequestFinished when enabled.
 const base::Feature kReportKeepaliveUkm{"ReportKeepaliveUkm",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -56,15 +52,6 @@ const base::Feature kAllowSharedArrayBuffersUnconditionally{
 // TODO(1224886): Delete together with CryptoToken code.
 const base::Feature kU2FSecurityKeyAPI{"U2FSecurityKeyAPI",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Allows Manifest V3 (and greater) extensions to use web assembly. Note that
-// this allows extensions to use remotely hosted web assembly which we don't
-// want. This feature is intended for local development (by extension
-// developers) only, and should never be flipped to ENABLED. This should be
-// removed once web assembly support for manifest V3 is added. See
-// crbug.com/1173354.
-const base::Feature kAllowWasmInMV3{"AllowWasmInMV3",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, causes Manifest V3 (and greater) extensions to use structured
 // cloning (instead of JSON serialization) for extension messaging, except when
@@ -95,5 +82,9 @@ const base::Feature kCheckingUnexpectedExtensionIdInContentScriptIpcs{
 extern const base::Feature kCheckingNoExtensionIdInExtensionIpcs{
     "EMF_NO_EXTENSION_ID_FOR_EXTENSION_SOURCE",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether extensions can use the new favicon fetching in Manifest V3.
+const base::Feature kNewExtensionFaviconHandling{
+    "ExtensionsNewFaviconHandling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace extensions_features

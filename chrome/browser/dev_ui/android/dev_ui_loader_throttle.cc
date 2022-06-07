@@ -29,6 +29,7 @@ bool IsWebUiHostInDevUiDfm(const std::string& host) {
   // Each WebUI host (including synonyms) in the DevUI DFM must have an entry.
   // Assume linear search is fast enough. Can optimize later if needed.
   return host == chrome::kChromeUIAccessibilityHost ||
+         host == chrome::kChromeUIAPCInternalsHost ||
          host == chrome::kChromeUIAutofillInternalsHost ||
          host == chrome::kChromeUIBluetoothInternalsHost ||
          host == chrome::kChromeUIComponentsHost ||
@@ -90,7 +91,7 @@ std::unique_ptr<content::NavigationThrottle>
 DevUiLoaderThrottle::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(handle);
-  if (!handle->IsInMainFrame())
+  if (!handle->IsInPrimaryMainFrame())
     return nullptr;
 
   if (!ShouldInstallDevUiDfm(handle->GetURL()))

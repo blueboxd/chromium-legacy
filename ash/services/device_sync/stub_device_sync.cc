@@ -7,18 +7,18 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device.h"
+#include "ash/components/multidevice/stub_multidevice_util.h"
 #include "ash/services/device_sync/device_sync_base.h"
 #include "ash/services/device_sync/device_sync_impl.h"
 #include "ash/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
-#include "chromeos/components/multidevice/remote_device.h"
-#include "chromeos/components/multidevice/stub_multidevice_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -190,23 +190,22 @@ class StubDeviceSync : public DeviceSyncBase {
   absl::optional<multidevice::RemoteDevice> local_device_metadata_;
 };
 
-class StubDeviceSyncImplFactory
-    : public chromeos::device_sync::DeviceSyncImpl::Factory {
+class StubDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
  public:
   StubDeviceSyncImplFactory() = default;
   ~StubDeviceSyncImplFactory() override = default;
 
-  // chromeos::device_sync::DeviceSyncImpl::Factory:
-  std::unique_ptr<chromeos::device_sync::DeviceSyncBase> CreateInstance(
+  // device_sync::DeviceSyncImpl::Factory:
+  std::unique_ptr<DeviceSyncBase> CreateInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       PrefService* profile_prefs,
-      const chromeos::device_sync::GcmDeviceInfoProvider*
-          gcm_device_info_provider,
-      chromeos::device_sync::ClientAppMetadataProvider*
-          client_app_metadata_provider,
+      const GcmDeviceInfoProvider* gcm_device_info_provider,
+      ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::unique_ptr<base::OneShotTimer> timer) override {
+      std::unique_ptr<base::OneShotTimer> timer,
+      AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+          get_attestation_certificates_function) override {
     return std::make_unique<StubDeviceSync>();
   }
 };
@@ -220,4 +219,4 @@ void SetStubDeviceSyncFactory() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

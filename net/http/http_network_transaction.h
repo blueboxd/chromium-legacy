@@ -124,7 +124,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                          SSLCertRequestInfo* cert_info) override;
 
   void OnQuicBroken() override;
-  void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  ConnectionAttempts GetConnectionAttempts() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest, ResetStateForRestart);
@@ -145,6 +145,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
     STATE_CREATE_STREAM_COMPLETE,
     STATE_INIT_STREAM,
     STATE_INIT_STREAM_COMPLETE,
+    STATE_CONNECTED_CALLBACK,
     STATE_CONNECTED_CALLBACK_COMPLETE,
     STATE_GENERATE_PROXY_AUTH_TOKEN,
     STATE_GENERATE_PROXY_AUTH_TOKEN_COMPLETE,
@@ -186,7 +187,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int DoCreateStreamComplete(int result);
   int DoInitStream();
   int DoInitStreamComplete(int result);
-  int DoConnectedCallbackComplete(int results);
+  int DoConnectedCallback();
+  int DoConnectedCallbackComplete(int result);
   int DoGenerateProxyAuthToken();
   int DoGenerateProxyAuthTokenComplete(int result);
   int DoGenerateServerAuthToken();
@@ -395,7 +397,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int64_t total_sent_bytes_;
 
   // When the transaction started / finished sending the request, including
-  // the body, if present.
+  // the body, if present. |send_start_time_| is set to |base::TimeTicks()|
+  // until |SendRequest()| is called on |stream_|, and reset for auth restarts.
   base::TimeTicks send_start_time_;
   base::TimeTicks send_end_time_;
 

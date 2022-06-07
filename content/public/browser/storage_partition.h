@@ -49,9 +49,6 @@ namespace storage {
 class QuotaManager;
 class SpecialStoragePolicy;
 struct QuotaSettings;
-}
-
-namespace storage {
 class DatabaseTracker;
 }
 
@@ -78,6 +75,7 @@ class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
 class ZoomLevelDelegate;
+class NavigationRequest;
 
 // Defines what persistent state a child process can access.
 //
@@ -132,7 +130,7 @@ class CONTENT_EXPORT StoragePartition {
 
   virtual mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
   CreateURLLoaderNetworkObserverForNavigationRequest(
-      int frame_tree_node_id) = 0;
+      NavigationRequest& navigation_request) = 0;
 
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
@@ -175,6 +173,9 @@ class CONTENT_EXPORT StoragePartition {
     REMOVE_DATA_MASK_WEBSQL = 1 << 6,
     REMOVE_DATA_MASK_SERVICE_WORKERS = 1 << 7,
     REMOVE_DATA_MASK_CACHE_STORAGE = 1 << 8,
+    // TODO(crbug.com/1231162): Rename this to something like
+    // REMOVE_DATA_MASK_MEDIA_LICENSES once CDM data is moved off of the Plugin
+    // Private File System.
     REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA = 1 << 9,
     REMOVE_DATA_MASK_BACKGROUND_FETCH = 1 << 10,
     REMOVE_DATA_MASK_CONVERSIONS = 1 << 11,
@@ -183,6 +184,9 @@ class CONTENT_EXPORT StoragePartition {
     // https://github.com/WICG/turtledove/blob/main/FLEDGE.md
     REMOVE_DATA_MASK_INTEREST_GROUPS = 1 << 12,
     REMOVE_DATA_MASK_AGGREGATION_SERVICE = 1 << 13,
+    // Shared storage data as part of the Shared Storage API.
+    // Public explainer: https://github.com/pythagoraskitty/shared-storage
+    REMOVE_DATA_MASK_SHARED_STORAGE = 1 << 14,
     REMOVE_DATA_MASK_ALL = 0xFFFFFFFF,
 
     // Corresponds to storage::kStorageTypeTemporary.

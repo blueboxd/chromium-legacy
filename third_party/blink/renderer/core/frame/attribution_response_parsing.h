@@ -7,9 +7,6 @@
 
 #include <stdint.h>
 
-#include <utility>
-#include <vector>
-
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -71,7 +68,7 @@ CORE_EXPORT bool ParseEventTriggerData(
 // }
 //
 // Returns whether parsing was successful.
-CORE_EXPORT bool ParseFilters(const AtomicString& json_string,
+CORE_EXPORT bool ParseFilters(const String& json_string,
                               mojom::blink::AttributionFilterData& filter_data);
 
 // Example JSON schema:

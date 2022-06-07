@@ -10,13 +10,14 @@ option java_multiple_files = true;
 
 package autofill_assistant;
 
-import "action_strategy.proto";
-import "action_value.proto";
-import "cud_condition.proto";
-import "dom_action.proto";
-import "generic_ui.proto";
-import "model.proto";
-import "view_layout.proto";
+import "browser/action_strategy.proto";
+import "browser/action_value.proto";
+import "browser/cud_condition.proto";
+import "browser/dom_action.proto";
+import "browser/generic_ui.proto";
+import "browser/model.proto";
+import "browser/view_layout.proto";
+import "content/common/proto/semantic_feature_overrides.proto";
 
 // A field trial containing the name of the trial and the name of the
 // randomly selected trial group.
@@ -168,6 +169,9 @@ message SupportsScriptResponseProto {
 
   // The ScriptStoreConfig to use with the initial GetActions request.
   optional ScriptStoreConfig script_store_config = 6;
+
+  // Semantic selector related policy configuration.
+  optional SemanticSelectorPolicy semantic_selector_policy = 7;
 
   reserved 4, 5;
 }
@@ -641,6 +645,27 @@ message RoundtripTimingStats {
   optional int64 client_time_ms = 2;
 }
 
+message RoundtripNetworkStats {
+  message ActionNetworkStats {
+    // The action type.
+    optional int32 action_info_case = 1;
+    // The size of this action after decoding, in bytes.
+    optional int64 decoded_size_bytes = 2;
+  }
+  // The total size of the received HTTP response body in bytes, before
+  // decoding. This is essentially the network footprint of the received
+  // response, modulo HTTP headers.
+  optional int64 roundtrip_encoded_body_size_bytes = 1;
+  // The total size of the received HTTP response body in bytes, after
+  // decoding. This is essentially the memory footprint of the received proto,
+  // and a baseline to compare the footprint of individual actions with.
+  optional int64 roundtrip_decoded_body_size_bytes = 2;
+  // The network stats for ALL received actions. Note that this may include
+  // actions that were not executed, so this list can be longer than
+  // |processed_actions|.
+  repeated ActionNetworkStats action_stats = 3;
+}
+
 // Next request to get a script's actions.
 message NextScriptActionsRequestProto {
   // The result of processing each ActionProto from the previous response. This
@@ -652,6 +677,8 @@ message NextScriptActionsRequestProto {
   // Tracks whether the last roundtrip triggered a slow connection warning and
   // whether it was shown to the user.
   optional SlowWarningStatus slow_connection_warning = 34;
+  // Roundtrip network stats for this RPC.
+  optional RoundtripNetworkStats network_stats = 3;
 }
 
 message CUPResponseData {
@@ -1096,6 +1123,8 @@ message ProcessedActionProto {
     SendKeystrokeEventsProto.Result send_key_stroke_events_result = 36;
     // Should be set as a result of JsFlowProto.
     JsFlowProto.Result js_flow_result = 37;
+    // Should be set as a result of SaveSubmittedPassword.
+    SaveSubmittedPasswordProto.Result save_submitted_password_result = 38;
   }
 
   // Reports information about navigation that happened while
@@ -1407,6 +1436,10 @@ message ElementFinderInfoProto {
   message PredictedElement {
     // Whether the inference returned the expectation.
     optional bool matches_css_element = 1;
+    // The predicted objective and predicted role of this element.
+    optional SelectorProto.SemanticInformation semantic_information = 2;
+    // The element's backend node id.
+    optional int32 backend_node_id = 3;
   }
   message SemanticInferenceResult {
     // If this is empty, the model inference did not find any results.
@@ -1662,6 +1695,12 @@ message SelectorProto {
     // Timeout, defaults to 5s.
     // TODO(b/218482826): Consider moving this to settings.
     optional int32 model_timeout_ms = 3 [default = 5000];
+    // If true, ignore the objective and treat it as a wildcard '*' when
+    // matching.
+    optional bool ignore_objective = 4;
+    // If true, executes CSS alongside, comparing the results at the end. Uses
+    // the CSS result going forward.
+    optional bool check_matches_css_element = 5;
   }
   optional SemanticInformation semantic_information = 11;
 
@@ -2447,8 +2486,14 @@ message LoginDetailsProto {
 
 // A section showing a simple text message.
 message StaticTextSectionProto {
-  // The text to display. Can contain markup tags like <b>.
-  optional string text = 1;
+  oneof value {
+    // The text to display. Can contain markup tags like <b>.
+    string text = 1;
+    // Key to read the display string value from client memory.
+    // Note: Corresponding action will fail if we do not find
+    // a non-empty single display string value.
+    string client_memory_key = 2;
+  }
 }
 
 // A single text input.
@@ -2676,15 +2721,11 @@ message CollectUserDataProto {
   repeated RequiredDataPiece required_credit_card_data_piece = 35;
   repeated RequiredDataPiece required_billing_address_data_piece = 36;
 
-  // TODO(b/218838411): This way of getting data is about to be deprecated. It
-  // is left in place until the backend has been adapted. Reserve after.
-  optional GetUserDataResponseProto user_data = 37;
-
   // If set, will request data from the GetUserData remote backend, rather than
   // Chrome Autofill. Takes precedence over |user_data|.
   optional DataSource data_source = 38;
 
-  reserved 7, 10, 14, 15, 17, 26;
+  reserved 7, 10, 14, 15, 17, 26, 37;
 }
 
 // Stop Autofill Assistant.
@@ -2864,7 +2905,24 @@ message ResetPendingCredentialsProto {}
 
 // Saves the current submitted password to the password store. The action
 // fails if the password manager has no record of a submitted password.
-message SaveSubmittedPasswordProto {}
+message SaveSubmittedPasswordProto {
+  // If leak_detection_timeout_ms is specified, the action performs a
+  // leak check for the submitted credential. If leak_detection_timeout_ms is
+  // specified, but zero, the default value in SaveSubmittedPasswordAction
+  // is used.
+  optional int32 leak_detection_timeout_ms = 1;
+  message Result {
+    // If the same password was used and therefore the credential is still
+    // insecure, the action succeeds to avoid script termination.
+    // Instead it returns a result flagging the re-use of the
+    // password so that the Autobot flow can try again.
+    optional bool used_same_password = 1;
+    // If the new credential is still leaked, return a result flag that states
+    // this. The flow can choose to react to this, e.g. prompting the user
+    // to user another password.
+    optional bool used_leaked_credential = 2;
+  }
+}
 
 // Configures the UI of the autofill assistant client.
 message ConfigureUiStateProto {

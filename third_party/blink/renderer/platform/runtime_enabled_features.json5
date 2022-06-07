@@ -26,7 +26,7 @@
     //   name: "ExampleFeature",
     //   status: {"Android": "stable", "Win": "experimental"},
     // }
-    // "ExampleFeature" will be stable on Android, experimental on ChromeOS
+    // "ExampleFeature" will be stable on Android, experimental on Windows
     // and not enabled on any other platform
     //
     // "stable" features listed here should be rare, as anything which we've
@@ -196,11 +196,6 @@
       status: "experimental",
     },
     {
-      name: "AppHistory",
-      origin_trial_feature_name: "AppHistory",
-      status: "experimental",
-    },
-    {
       name: "AriaTouchPassthrough",
       status: "experimental",
     },
@@ -292,12 +287,7 @@
       // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
       name: "BeforeMatchEvent",
       origin_trial_feature_name: "BeforeMatchEvent",
-      status: "experimental",
-    },
-    {
-      name: "BiddingAndScoringDebugReportingAPI",
-      origin_trial_feature_name: "BiddingAndScoringDebugReportingAPI",
-      implied_by: ["Fledge", "Parakeet"],
+      status: "stable",
     },
     {
       name: "BidiCaretAffinity",
@@ -350,10 +340,6 @@
       status: "experimental",
     },
     {
-      name: "Canvas2dStaysGPUOnReadback",
-      status: "experimental",
-    },
-    {
       name: "CanvasColorManagement",
       status: "stable",
     },
@@ -363,6 +349,7 @@
     },
     {
       name: "CanvasFormattedText",
+      depends_on: ["LayoutNG"],
       status: "experimental",
     },
     {
@@ -385,9 +372,8 @@
     },
     {
       name: "CaptureHandle",
-      origin_trial_feature_name: "CaptureHandle",
       depends_on: ["GetDisplayMedia"],
-      status: {"Android": "", "default": "experimental"},
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "CaptureTimeInCsrc",
@@ -550,11 +536,6 @@
       name: "CSSCalcSimplificationAndSerialization"
     },
     {
-      // https://drafts.csswg.org/css-cascade-5/#layering
-      name: "CSSCascadeLayers",
-      status: "stable",
-    },
-    {
       // Support case-sensitive attribute selector modifier
       // https://drafts.csswg.org/selectors-4/#attribute-case
       name: "CSSCaseSensitiveSelector",
@@ -715,6 +696,11 @@
     {
       name: "CSSModules",
       status: "stable",
+    },
+    {
+      name: "CSSObjectViewBoxAndOverflow",
+      status: "experimental",
+      implied_by: ["DocumentTransition"],
     },
     {
       name: "CSSOffsetPathRay",
@@ -902,6 +888,12 @@
       },
     },
     {
+      name: "DigitalGoodsV2_1",
+      // crbug.com/1143079: Web tests cannot differentiate ChromeOS and Linux,
+      // so enable the API on all platforms for testing.
+      status: "test",
+    },
+    {
       name: "DirectSockets",
       status: "test",
     },
@@ -976,11 +968,6 @@
       status: "experimental",
     },
     {
-      // http://crbug.com/707656 content editable in LayoutNG.
-      name: "EditingNG",
-      status: "stable",
-    },
-    {
       name: "ElementSuperRareData",
       status: "experimental",
     },
@@ -991,6 +978,11 @@
     {
       name: "EnterKeyHintAttribute",
       status: "stable",
+    },
+    {
+      // Making MouseEvent#layerX, layerY interoperable
+      name: "EventLayerInterop",
+      status: "stable"
     },
     {
       // Non-standard API Event.path. Should be replaced by Event.composedPath.
@@ -1135,7 +1127,6 @@
     },
     {
       name: "FixedElementsDontOverscroll",
-      status: "experimental",
     },
     {
       name: "Fledge",
@@ -1198,10 +1189,6 @@
       status: {"ChromeOS_Ash": "stable", "ChromeOS_Lacros": "stable"},
     },
     {
-      name: "FractionalLineHeight",
-      status: "stable",
-    },
-    {
       name: "FractionalScrollOffsets",
       status: "experimental",
     },
@@ -1224,6 +1211,16 @@
       // Enables the getDisplayMediaSet API for multi surface capture.
       name: "GetDisplayMediaSet",
       depends_on: ["GetDisplayMedia"],
+      status: "test",
+    },
+    {
+      name: "GetDisplayMediaSetAutoSelectAllScreens",
+      depends_on: ["GetDisplayMediaSet"],
+      status: {
+        "ChromeOS_Ash": "test",
+        "ChromeOS_Lacros": "test",
+        "default": "",
+      }
     },
     {
       name: "GravitySensor",
@@ -1246,6 +1243,8 @@
       depends_on: ["WebHID"],
       status: {"Android": "", "default": "stable"},
     },
+    // HighlightAPI's custom highlights use HighlightInheritance's behavior even
+    // if the HighlightInheritance feature is not enabled.
     {
       name: "HighlightAPI",
       status: "experimental",
@@ -1267,6 +1266,10 @@
       status: "stable",
     },
     {
+      name: "HTMLPopupAttribute",
+      status: "experimental",
+    },
+    {
       name: "HTMLPopupElement",
       status: "experimental",
       implied_by: ["HTMLSelectMenuElement"],
@@ -1274,6 +1277,10 @@
     {
       name: "HTMLSelectMenuElement",
       status: "experimental",
+    },
+    {
+      name: "IDBBatchGetAll",
+      status:"experimental",
     },
     {
       name: "IdleDetection",
@@ -1286,7 +1293,7 @@
     },
     {
       name: "InertAttribute",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "InputMultipleFieldsUI",
@@ -1314,10 +1321,6 @@
       settable_from_internals: true,
     },
     {
-      name: "LateFormNewlineNormalization",
-      status: "stable"
-    },
-    {
       // LayoutNG has been enabled in M76, but we still keep this flag for
       // testing. See web_tests/FlagExpectations/disable-layout-ng for more
       // details about running web tests with LayoutNG disabled. This flag also
@@ -1330,7 +1333,7 @@
     {
       name: "LayoutNGBlockFragmentation",
       implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting", "LayoutNGTableFragmentation"],
-      status: "test",
+      status: "stable",
     },
     {
       name: "LayoutNGBlockInInline",
@@ -1342,20 +1345,7 @@
       // https://drafts.csswg.org/css-flexbox-1/#pagination
       name: "LayoutNGFlexFragmentation",
       depends_on: ["LayoutNG"],
-    },
-    {
-      // Traverse the fragment tree when painting and hit-testing, instead of
-      // the layout object tree.
-      name: "LayoutNGFragmentTraversal",
-      implied_by: ["LayoutNGBlockFragmentation"],
-      status: "stable",
-    },
-    {
-      // Full support for PositionForPoint in NGPhysicalFragment. Without this
-      // enabled, we'll typically fall back to legacy code for block children.
-      name: "LayoutNGFullPositionForPoint",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFragmentTraversal"],
-      status: "stable",
+      status: "test",
     },
     {
       // Block fragmentation support in the grid layout algorithm.
@@ -1377,16 +1367,6 @@
       // https://drafts.csswg.org/css-tables-3/#fragmentation
       name: "LayoutNGTableFragmentation",
       depends_on: ["LayoutNG"],
-    },
-    {
-      name: "LayoutNGTextCombine",
-      depends_on: ["LayoutNG"],
-      status: "stable"
-    },
-    {
-      name: "LayoutNGTextControl",
-      depends_on: ["EditingNG"],
-      status: "stable",
     },
     {
       name: "LayoutNGView",
@@ -1417,6 +1397,10 @@
     {
       name: "LegacyWindowsDWriteFontFallback",
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
+    },
+    {
+      name: "MachineLearningModelLoader",
+      status: "experimental",
     },
     {
       name: "ManagedConfiguration",
@@ -1584,6 +1568,10 @@
       status: "stable",
     },
     {
+      name: "NavigationApi",
+      status: "experimental",
+    },
+    {
       name: "NavigationId",
       status: "experimental",
     },
@@ -1653,7 +1641,7 @@
       // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the
       // feature is in stable with no issues.
       name: "OffsetParentNewSpecBehavior",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "OnDeviceChange",
@@ -1695,6 +1683,12 @@
       origin_trial_feature_name: "FrobulateDeprecation",
       origin_trial_type: "deprecation",
       origin_trial_allows_insecure: true,
+    },
+    // As above. Do not change this flag to stable, as it exists solely to
+    // generate code used by the origin trials sample API implementation.
+    {
+      name: "OriginTrialsSampleAPIExpiryGracePeriod",
+      origin_trial_feature_name: "FrobulateExpiryGracePeriod",
     },
     // As above. Do not change this flag to stable, as it exists solely to
     // generate code used by the origin trials sample API implementation.
@@ -1757,6 +1751,11 @@
       origin_trial_feature_name: "Parakeet",
     },
     {
+      name: "ParallelTextShaping",
+      depends_on: ["LayoutNG"],
+      // http://crbug.com/1264280
+    },
+    {
       name: "PartitionedCookies",
       origin_trial_feature_name: "PartitionedCookies",
       status: "experimental",
@@ -1798,6 +1797,7 @@
     },
     {
       name: "PaymentRequestRequiresUserActivation",
+      status: "stable",
     },
     {
       name: "PaymentRetry",
@@ -1996,13 +1996,6 @@
       name: "RtcAudioJitterBufferRtxHandling",
       origin_trial_feature_name: "RtcAudioJitterBufferRtxHandling",
       status: "experimental",
-    },
-    // Reverse Origin Trial for Plan B. When enabled through the Origin Trial,
-    // Plan B is available beyond the initial removal date of Plan B (M93).
-    {
-      name: "RTCExtendDeadlineForPlanBRemoval",
-      origin_trial_feature_name: "RTCExtendDeadlineForPlanBRemoval",
-      status: "test",
     },
     // Enables the use of the RTCIceTransport with extensions.
     {
@@ -2259,11 +2252,6 @@
       name: "SystemWakeLock",
       status: "experimental",
     },
-    {
-      // TODO(crbug.com/898942): Remove this in Chrome 95.
-      name: "TargetBlankImpliesNoOpener",
-      status: "stable",
-    },
     // For unit tests.
     {
       name: "TestFeature",
@@ -2383,6 +2371,9 @@
     {
       name: "UnderlineOffsetThickness",
       status: "stable",
+    },
+    {
+      name: "UnexposedTaskIds",
     },
     // This is a reverse OT used for a phased deprecation, on desktop
     // https://crbug.com/1071424
@@ -2514,9 +2505,6 @@
       // required for using the "implied_by" behaviour.
       origin_trial_feature_name: "WebAppLaunchQueue",
       implied_by: ["WebAppLaunchHandler", "FileHandling"],
-    },
-    {
-      name: "WebAppLinkCapturing",
     },
     {
       // This flag enables the Manifest parser to handle id field.
@@ -2651,6 +2639,10 @@
       status: {"Android": "", "default": "stable"},
     },
     {
+      name: "WebHIDExclusionFiltersOption",
+      status: "stable",
+    },
+    {
       name: "WebNFC",
       status: {"Android": "stable", "default": "test"},
     },
@@ -2779,13 +2771,12 @@
     // exposes requisite information about displays connected to the device.
     {
       name: "WindowPlacement",
-      origin_trial_feature_name: "WindowPlacementOT2",
-      implied_by: ["WindowPlacementV2"],
       status: "stable",
     },
-    // Further extends window placement functionality for multi-screen devices.
+    // Allows sites to request fullscreen when the set of screens change.
     {
-      name: "WindowPlacementV2",
+      name: "WindowPlacementFullscreenOnScreensChange",
+      depends_on: ["WindowPlacement"],
       status: "experimental",
     },
     {

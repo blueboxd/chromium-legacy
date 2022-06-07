@@ -280,6 +280,7 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
   }
   void ExitFullscreen() override { fullscreen_ = false; }
   bool IsToolbarShowing() const override { return toolbar_showing_; }
+  bool IsLocationBarVisible() const override { return true; }
 
   ExclusiveAccessContext* GetExclusiveAccessContext() override { return this; }
 
@@ -372,8 +373,6 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_ABOUT,                   true,     false,     false,     false    },
     { IDC_SHOW_APP_MENU,           true,     false,     false,     false    },
     { IDC_SEND_TAB_TO_SELF,        true,     false,     false,     false    },
-    { IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
-                                   true,     false,     false,     false    },
     { IDC_FULLSCREEN,              true,     false,     true,      true     },
     { IDC_CLOSE_TAB,               true,     true,      true,      false    },
     { IDC_CLOSE_WINDOW,            true,     true,      true,      false    },

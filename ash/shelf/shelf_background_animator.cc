@@ -17,6 +17,7 @@
 #include "ash/style/default_color_constants.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/time/time.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
@@ -244,6 +245,11 @@ SkColor ShelfBackgroundAnimator::GetBackgroundColor(
       break;
   }
   return shelf_target_color;
+}
+
+void ShelfBackgroundAnimator::CompleteAnimationForTesting() {
+  if (animator_)
+    animator_->End();
 }
 
 void ShelfBackgroundAnimator::SetAnimationValues(double t) {

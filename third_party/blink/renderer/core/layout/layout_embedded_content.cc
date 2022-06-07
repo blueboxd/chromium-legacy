@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -88,6 +89,51 @@ EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
   if (auto* frame_owner = GetFrameOwnerElement())
     return frame_owner->OwnedEmbeddedContentView();
   return nullptr;
+}
+
+const absl::optional<PhysicalSize> LayoutEmbeddedContent::FrozenFrameSize()
+    const {
+  // The `<fencedframe>` element can freeze the child frame size when navigated.
+  if (const auto* fenced_frame = DynamicTo<HTMLFencedFrameElement>(GetNode()))
+    return fenced_frame->FrozenFrameSize();
+
+  return absl::nullopt;
+}
+
+LayoutReplaced::ObjectFit LayoutEmbeddedContent::EmbeddedContentTransform(
+    const PhysicalRect& content_rect) const {
+  if (const absl::optional<PhysicalSize> size = FrozenFrameSize()) {
+    // When frozen, place the child frame content at the top-left corner.
+    // TODO(kojii): The `object-fit` behaviors is not implemented yet.
+    return ObjectFit({content_rect.offset, *size});
+  }
+
+  return ObjectFit(content_rect);
+}
+
+LayoutReplaced::ObjectFit LayoutEmbeddedContent::EmbeddedContentTransform()
+    const {
+  return EmbeddedContentTransform(PhysicalContentBoxRect());
+}
+
+PhysicalOffset LayoutEmbeddedContent::EmbeddedContentFromBorderBox(
+    const PhysicalOffset& offset) const {
+  return EmbeddedContentTransform().ApplyInverse(offset);
+}
+
+gfx::PointF LayoutEmbeddedContent::EmbeddedContentFromBorderBox(
+    const gfx::PointF& point) const {
+  return EmbeddedContentTransform().ApplyInverse(point);
+}
+
+PhysicalOffset LayoutEmbeddedContent::BorderBoxFromEmbeddedContent(
+    const PhysicalOffset& offset) const {
+  return EmbeddedContentTransform().Apply(offset);
+}
+
+gfx::Rect LayoutEmbeddedContent::BorderBoxFromEmbeddedContent(
+    const gfx::Rect& rect) const {
+  return EmbeddedContentTransform().Apply(rect);
 }
 
 PaintLayerType LayoutEmbeddedContent::LayerTypeRequired() const {
@@ -275,10 +321,20 @@ CursorDirective LayoutEmbeddedContent::GetCursor(const PhysicalOffset& point,
 PhysicalRect LayoutEmbeddedContent::ReplacedContentRect() const {
   NOT_DESTROYED();
   PhysicalRect content_rect = PhysicalContentBoxRect();
+
   // IFrames set as the root scroller should get their size from their parent.
+  // When scrolling starts so as to hide the URL bar, IFRAME wouldn't resize to
+  // match the now expanded size of the viewport until the scrolling stops. This
+  // makes sure the |ReplacedContentRect| matches the expanded viewport even
+  // before IFRAME resizes, for clipping to work correctly.
   if (ChildFrameView() && View() && IsEffectiveRootScroller()) {
     content_rect.offset = PhysicalOffset();
     content_rect.size = View()->ViewRect().size;
+  }
+
+  if (FrozenFrameSize()) {
+    // When the size is frozen, return the scaled/offset final rect.
+    content_rect = EmbeddedContentTransform(content_rect).FinalRect();
   }
 
   // We don't propagate sub-pixel into sub-frame layout, in other words, the

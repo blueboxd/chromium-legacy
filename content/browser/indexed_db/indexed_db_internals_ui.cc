@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
@@ -101,12 +100,13 @@ void IndexedDBInternalsHandler::GetAllStorageKeys(
             control.GetAllStorageKeysDetails(base::BindOnce(
                 [](base::WeakPtr<IndexedDBInternalsHandler> handler,
                    base::FilePath partition_path, bool incognito,
-                   base::Value info_list) {
+                   base::Value::List info_list) {
                   if (!handler)
                     return;
 
                   handler->OnStorageKeysReady(
-                      info_list, incognito ? base::FilePath() : partition_path);
+                      base::Value(std::move(info_list)),
+                      incognito ? base::FilePath() : partition_path);
                 },
                 handler, partition->GetPath()));
           },

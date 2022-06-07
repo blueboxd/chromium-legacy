@@ -19,6 +19,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/media_switches.h"
 #include "media/capture/video_capture_types.h"
 #include "media/webrtc/constants.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -339,7 +340,7 @@ class UserMediaProcessor::RequestInfo final
                             const String& result_name);
 
   UserMediaRequest* request() { return request_; }
-  int request_id() const { return request_->request_id(); }
+  int32_t request_id() const { return request_->request_id(); }
 
   State state() const { return state_; }
   void set_state(State state) { state_ = state; }
@@ -969,7 +970,7 @@ UserMediaProcessor::GetMediaStreamDeviceObserver() {
 }
 
 void UserMediaProcessor::OnStreamGenerated(
-    int request_id,
+    int32_t request_id,
     MediaStreamRequestResult result,
     const String& label,
     const Vector<MediaStreamDevice>& audio_devices,
@@ -1144,7 +1145,7 @@ void UserMediaProcessor::NotifyCurrentRequestInfoOfAudioSourceStarted(
 }
 
 void UserMediaProcessor::OnStreamGenerationFailed(
-    int request_id,
+    int32_t request_id,
     MediaStreamRequestResult result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsCurrentRequestInfo(request_id)) {
@@ -1289,23 +1290,28 @@ MediaStreamSource* UserMediaProcessor::InitializeVideoSourceObject(
       "name: %s]})",
       current_request_info_->request_id(), device.id.c_str(),
       device.name.c_str()));
-  MediaStreamSource* source = FindOrInitializeSourceObject(device);
-  if (!source->GetPlatformSource()) {
-    auto video_source = CreateVideoSource(
-        device, WTF::Bind(&UserMediaProcessor::OnLocalSourceStopped,
-                          WrapWeakPersistent(this)));
-    source->SetPlatformSource(std::move(video_source));
-
-    String device_id(device.id.data());
-    source->SetCapabilities(ComputeCapabilitiesForVideoSource(
-        // TODO(crbug.com/704136): Change ComputeCapabilitiesForVideoSource to
-        // operate over WTF::Vector.
-        String::FromUTF8(device.id),
-        ToStdVector(*current_request_info_->GetNativeVideoFormats(device_id)),
-        static_cast<mojom::blink::FacingMode>(device.video_facing),
-        current_request_info_->is_video_device_capture(), device.group_id));
-    local_sources_.push_back(source);
+  MediaStreamSource* existing_source = FindLocalSource(device);
+  if (existing_source) {
+    DVLOG(1) << "Source already exists. Reusing source with id "
+             << existing_source->Id().Utf8();
+    return existing_source;
   }
+
+  auto video_source = CreateVideoSource(
+      device, WTF::Bind(&UserMediaProcessor::OnLocalSourceStopped,
+                        WrapWeakPersistent(this)));
+  MediaStreamSource* source =
+      InitializeSourceObject(device, std::move(video_source));
+
+  String device_id(device.id.data());
+  source->SetCapabilities(ComputeCapabilitiesForVideoSource(
+      // TODO(crbug.com/704136): Change ComputeCapabilitiesForVideoSource to
+      // operate over WTF::Vector.
+      String::FromUTF8(device.id),
+      ToStdVector(*current_request_info_->GetNativeVideoFormats(device_id)),
+      static_cast<mojom::blink::FacingMode>(device.video_facing),
+      current_request_info_->is_video_device_capture(), device.group_id));
+  local_sources_.push_back(source);
   return source;
 }
 
@@ -1325,17 +1331,14 @@ MediaStreamSource* UserMediaProcessor::InitializeAudioSourceObject(
   if (pending)
     return pending;
 
-  MediaStreamSource* source = FindOrInitializeSourceObject(device);
-  if (source->GetPlatformSource()) {
+  MediaStreamSource* existing_source = FindLocalSource(device);
+  if (existing_source) {
+    DVLOG(1) << "Source already exists. Reusing source with id "
+             << existing_source->Id().Utf8();
     // The only return point for non-pending sources.
     *is_pending = false;
-    return source;
+    return existing_source;
   }
-
-  // While sources are being initialized, keep them in a separate array.
-  // Once they've finished initialized, they'll be moved over to local_sources_.
-  // See OnAudioSourceStarted for more details.
-  pending_local_sources_.push_back(source);
 
   blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback
       source_ready = ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
@@ -1406,9 +1409,27 @@ MediaStreamSource* UserMediaProcessor::InitializeAudioSourceObject(
   if (device.group_id)
     capabilities.group_id = blink::WebString::FromUTF8(*device.group_id);
 
-  source->SetPlatformSource(std::move(audio_source));
+  MediaStreamSource* source =
+      InitializeSourceObject(device, std::move(audio_source));
   source->SetCapabilities(capabilities);
+
+  // While sources are being initialized, keep them in a separate array.
+  // Once they've finished initialized, they'll be moved over to local_sources_.
+  // See OnAudioSourceStarted for more details.
+  pending_local_sources_.push_back(source);
+
   return source;
+}
+
+// TODO(crbug.com/1313841): Remove this after M107 branch point, and simply
+// call IsScreenCaptureMediaType as before.
+bool IsScreenCaptureMediaTypeOrDisplayAudioIfEnabled(
+    mojom::blink::MediaStreamType type) {
+  if (type == mojom::blink::MediaStreamType::DISPLAY_AUDIO_CAPTURE) {
+    return base::FeatureList::IsEnabled(
+        media::kDisplayAudioUseLocalAudioSource);
+  }
+  return blink::IsScreenCaptureMediaType(type);
 }
 
 std::unique_ptr<blink::MediaStreamAudioSource>
@@ -1426,7 +1447,7 @@ UserMediaProcessor::CreateAudioSource(
   blink::AudioProcessingProperties audio_processing_properties =
       current_request_info_->audio_capture_settings()
           .audio_processing_properties();
-  if (blink::IsScreenCaptureMediaType(device.type) ||
+  if (blink::IsScreenCaptureMediaTypeOrDisplayAudioIfEnabled(device.type) ||
       !blink::MediaStreamAudioProcessor::WouldModifyAudio(
           audio_processing_properties)) {
     SendLogMessage(
@@ -1562,7 +1583,7 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
     const String& constraint_name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SendLogMessage(base::StringPrintf(
-      "UMP::OnCreateNativeTracksCompleted({request_id = %d}, {label=%s})",
+      "UMP::OnCreateNativeTracksCompleted({request_id=%d}, {label=%s})",
       request_info->request_id(), label.Utf8().c_str()));
   if (result == MediaStreamRequestResult::OK) {
     GetUserMediaRequestSucceeded(request_info->descriptor(),
@@ -1611,7 +1632,7 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
-    int request_id,
+    int32_t request_id,
     MediaStreamDescriptor* component,
     UserMediaRequest* user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1646,7 +1667,7 @@ void UserMediaProcessor::GetUserMediaRequestFailed(
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestFailed(
-    int request_id,
+    int32_t request_id,
     UserMediaRequest* user_media_request,
     MediaStreamRequestResult result,
     const String& constraint_name) {
@@ -1741,22 +1762,16 @@ MediaStreamSource* UserMediaProcessor::FindLocalSource(
   return nullptr;
 }
 
-MediaStreamSource* UserMediaProcessor::FindOrInitializeSourceObject(
-    const MediaStreamDevice& device) {
-  MediaStreamSource* existing_source = FindLocalSource(device);
-  if (existing_source) {
-    DVLOG(1) << "Source already exists. Reusing source with id "
-             << existing_source->Id().Utf8();
-    return existing_source;
-  }
-
+MediaStreamSource* UserMediaProcessor::InitializeSourceObject(
+    const MediaStreamDevice& device,
+    std::unique_ptr<WebPlatformMediaStreamSource> platform_source) {
   MediaStreamSource::StreamType type = IsAudioInputMediaType(device.type)
                                            ? MediaStreamSource::kTypeAudio
                                            : MediaStreamSource::kTypeVideo;
 
   auto* source = MakeGarbageCollected<MediaStreamSource>(
       String::FromUTF8(device.id), type, String::FromUTF8(device.name),
-      false /* remote */);
+      false /* remote */, std::move(platform_source));
   if (device.group_id)
     source->SetGroupId(String::FromUTF8(*device.group_id));
   return source;
@@ -1815,7 +1830,7 @@ bool UserMediaProcessor::RemoveLocalSource(MediaStreamSource* source) {
   return false;
 }
 
-bool UserMediaProcessor::IsCurrentRequestInfo(int request_id) const {
+bool UserMediaProcessor::IsCurrentRequestInfo(int32_t request_id) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return current_request_info_ &&
          current_request_info_->request_id() == request_id;

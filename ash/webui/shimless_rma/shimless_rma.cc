@@ -130,6 +130,7 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_CURRENT_VERSION_UP_TO_DATE},
       {"updateVersionRestartLabel",
        IDS_SHIMLESS_RMA_UPDATE_VERSION_AND_RESTART},
+      {"updatingOsVersionText", IDS_SHIMLESS_RMA_UPDATING_OS_VERSION},
       // Choose WP disable method page
       {"chooseWpDisableMethodPageTitleText",
        IDS_SHIMLESS_RMA_CHOOSE_WP_DISABLE_METHOD_PAGE_TITLE},
@@ -187,13 +188,16 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_FINALIZE_FAILED_RETRY_BUTTON_LABEL},
       // Run calibration page
       {"runCalibrationTitleText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_PAGE_TITLE},
+      {"runCalibrationCompleteTitleText",
+       IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE_TITLE},
       {"runCalibrationCompleteText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE},
       {"runCalibrationStartingText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_STARTING},
       {"runCalibrationCalibratingComponent",
        IDS_SHIMLESS_RMA_RUN_CALIBRATING_COMPONENT},
       // Device provisioning page
       {"provisioningPageTitleText", IDS_SHIMLESS_RMA_PROVISIONING_TITLE},
-      {"provisioningPageProgressText", IDS_SHIMLESS_RMA_PROVISIONING_PROGRESS},
+      {"provisioningPageInProgressText",
+       IDS_SHIMLESS_RMA_PROVISIONING_IN_PROGRESS},
       {"provisioningPageCompleteText", IDS_SHIMLESS_RMA_PROVISIONING_COMPLETE},
       {"provisioningPageFailedBlockingText",
        IDS_SHIMLESS_RMA_PROVISIONING_FAILED_BLOCKING},
@@ -227,6 +231,14 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"rmaLogsCancelButtonText", IDS_SHIMLESS_RMA_LOGS_CANCEL_BUTTON},
       {"rmaLogsSaveToUsbButtonText", IDS_SHIMLESS_RMA_LOGS_SAVE_BUTTON},
       {"batteryShutoffTooltipText", IDS_SHIMLESS_BATTERY_SHUTOFF_TOOLTIP_TEXT},
+      {"repairCompletedPowerwashTitle",
+       IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_TITLE},
+      {"repairCompletedPowerwashShutdownDescription",
+       IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_SHUTDOWN_DESCRIPTION},
+      {"repairCompletedPowerwashRebootDescription",
+       IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_REBOOT_DESCRIPTION},
+      {"repairCompletedPowerwashButton",
+       IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_BUTTON},
 
       // Manual disable wp page
       {"manuallyDisableWpTitleText",

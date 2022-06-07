@@ -16,6 +16,7 @@ include_rules = [
   "+components/translate/content/android",
   "+services/content/public",
   "+services/device/public/mojom",
+  "+components/user_notes",
 ]
 
 specific_include_rules = {

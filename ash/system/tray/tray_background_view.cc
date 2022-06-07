@@ -96,8 +96,8 @@ constexpr char kHideAnimationSmoothnessHistogramName[] =
 // Switches left and right insets if RTL mode is active.
 void MirrorInsetsIfNecessary(gfx::Insets* insets) {
   if (base::i18n::IsRTL()) {
-    insets->Set(insets->top(), insets->right(), insets->bottom(),
-                insets->left());
+    *insets = gfx::Insets::TLBR(insets->top(), insets->right(),
+                                insets->bottom(), insets->left());
   }
 }
 
@@ -111,11 +111,13 @@ gfx::Insets GetMirroredBackgroundInsets(bool is_shelf_horizontal) {
       -ash::ShelfConfig::Get()->status_area_hit_region_padding();
 
   if (is_shelf_horizontal) {
-    insets.Set(secondary_padding, primary_padding, secondary_padding,
-               primary_padding + ash::kTraySeparatorWidth);
+    insets =
+        gfx::Insets::TLBR(secondary_padding, primary_padding, secondary_padding,
+                          primary_padding + ash::kTraySeparatorWidth);
   } else {
-    insets.Set(primary_padding, secondary_padding,
-               primary_padding + ash::kTraySeparatorWidth, secondary_padding);
+    insets = gfx::Insets::TLBR(primary_padding, secondary_padding,
+                               primary_padding + ash::kTraySeparatorWidth,
+                               secondary_padding);
   }
   MirrorInsetsIfNecessary(&insets);
   return insets;
@@ -136,7 +138,7 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   // HighlightPathGenerator:
   absl::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     gfx::RectF bounds(tray_background_view_->GetBackgroundBounds());
-    bounds.Inset(insets_);
+    bounds.Inset(gfx::InsetsF(insets_));
     return gfx::RRectF(bounds, ShelfConfig::Get()->control_border_radius());
   }
 
@@ -211,7 +213,8 @@ class TrayBackgroundView::TrayBackgroundViewSessionChangeHandler
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
-TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
+TrayBackgroundView::TrayBackgroundView(Shelf* shelf,
+                                       RoundedCornerBehavior corner_behavior)
     // Note the ink drop style is ignored.
     : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
       shelf_(shelf),
@@ -221,6 +224,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
       visible_preferred_(false),
       show_with_virtual_keyboard_(false),
       show_when_collapsed_(true),
+      corner_behavior_(corner_behavior),
       widget_observer_(new TrayWidgetObserver(this)),
       handler_(new TrayBackgroundViewSessionChangeHandler(this)) {
   DCHECK(shelf_);
@@ -497,7 +501,41 @@ void TrayBackgroundView::BubbleResized(const TrayBubbleView* bubble_view) {}
 
 void TrayBackgroundView::UpdateBackground() {
   const float radius = ShelfConfig::Get()->control_border_radius();
-  gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
+  gfx::RoundedCornersF rounded_corners;
+  if (shelf_->IsHorizontalAlignment()) {
+    gfx::RoundedCornersF start_rounded = {
+        radius, kUnifiedTrayNonRoundedSideRadius,
+        kUnifiedTrayNonRoundedSideRadius, radius};
+    gfx::RoundedCornersF end_rounded = {kUnifiedTrayNonRoundedSideRadius,
+                                        radius, radius,
+                                        kUnifiedTrayNonRoundedSideRadius};
+    switch (corner_behavior_) {
+      case kAllRounded:
+        rounded_corners = {radius, radius, radius, radius};
+        break;
+      case kStartRounded:
+        rounded_corners = base::i18n::IsRTL() ? end_rounded : start_rounded;
+        break;
+      case kEndRounded:
+        rounded_corners = base::i18n::IsRTL() ? start_rounded : end_rounded;
+        break;
+    }
+  } else {
+    switch (corner_behavior_) {
+      case kAllRounded:
+        rounded_corners = {radius, radius, radius, radius};
+        break;
+      case kStartRounded:
+        rounded_corners = {radius, radius, kUnifiedTrayNonRoundedSideRadius,
+                           kUnifiedTrayNonRoundedSideRadius};
+        break;
+      case kEndRounded:
+        rounded_corners = {kUnifiedTrayNonRoundedSideRadius,
+                           kUnifiedTrayNonRoundedSideRadius, radius, radius};
+        break;
+    }
+  }
+
   layer()->SetRoundedCornerRadius(rounded_corners);
   layer()->SetIsFastRoundedCorner(true);
   layer()->SetBackgroundBlur(
@@ -689,11 +727,11 @@ gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
   gfx::Insets tray_bg_insets = GetInsets();
   if (shelf_->alignment() == ShelfAlignment::kBottom ||
       shelf_->alignment() == ShelfAlignment::kBottomLocked) {
-    return gfx::Insets(-tray_bg_insets.top(), anchor_insets.left(),
-                       -tray_bg_insets.bottom(), anchor_insets.right());
+    return gfx::Insets::TLBR(-tray_bg_insets.top(), anchor_insets.left(),
+                             -tray_bg_insets.bottom(), anchor_insets.right());
   } else {
-    return gfx::Insets(anchor_insets.top(), -tray_bg_insets.left(),
-                       anchor_insets.bottom(), -tray_bg_insets.right());
+    return gfx::Insets::TLBR(anchor_insets.top(), -tray_bg_insets.left(),
+                             anchor_insets.bottom(), -tray_bg_insets.right());
   }
 }
 
@@ -759,7 +797,7 @@ gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
   insets += local_contents_insets;
 
   if (Shell::Get()->IsInTabletMode() && ShelfConfig::Get()->is_in_app()) {
-    insets += gfx::Insets(
+    insets += gfx::Insets::VH(
         ShelfConfig::Get()->in_app_control_button_height_inset(), 0);
   }
 

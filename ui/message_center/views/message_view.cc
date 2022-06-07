@@ -5,6 +5,7 @@
 #include "ui/message_center/views/message_view.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -506,15 +507,6 @@ void MessageView::UpdateBackgroundPainter() {
   SkColor background_color = color_provider->GetColor(
       is_active_ ? ui::kColorNotificationBackgroundActive
                  : ui::kColorNotificationBackgroundInactive);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::features::IsNotificationsRefreshEnabled()) {
-    // These are the same colors provided by AshColorProvider.
-    // See ash/style/ash_color_provider.cc
-    background_color = is_active_ ? SkColorSetA(SK_ColorBLACK, 0x0D)
-                                  : SkColorSetA(SK_ColorWHITE, 0x1A);
-  }
-#endif
 
   SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(

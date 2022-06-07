@@ -919,24 +919,6 @@ TEST_F(UserAgentUtilsTest, GetProductAndVersion) {
   EXPECT_EQ(major_version, "99");
   EXPECT_EQ(minor_version, version_info::GetMajorVersionNumber());
 
-  // Ensure the build version FeatureParam is used when set.
-  scoped_feature_list.Reset();
-  scoped_feature_list.InitWithFeaturesAndParameters(
-      /*enabled_features=*/{{blink::features::kReduceUserAgentMinorVersion,
-                             {{{"build_version", "5555"}}}}},
-      /*disabled_features=*/{
-          blink::features::kForceMajorVersionInMinorPositionInUserAgent});
-  product = GetProductAndVersion();
-  std::string build_version;
-  std::string patch_version;
-  EXPECT_TRUE(re2::RE2::FullMatch(product, kChromeProductVersionRegex,
-                                  &major_version, &minor_version,
-                                  &build_version, &patch_version));
-  EXPECT_EQ(major_version, version_info::GetMajorVersionNumber());
-  EXPECT_EQ(minor_version, "0");
-  EXPECT_EQ(build_version, "5555");
-  EXPECT_EQ(patch_version, "0");
-
   // Ensure policy is respected if ForcemajorToMinor is force disabled, even if
   // the respective Blink feature is enabled.
   scoped_feature_list.Reset();
@@ -944,13 +926,14 @@ TEST_F(UserAgentUtilsTest, GetProductAndVersion) {
       /*enabled_features=*/{blink::features::
                                 kForceMajorVersionInMinorPositionInUserAgent},
       /*disabled_features=*/{blink::features::kReduceUserAgentMinorVersion});
+  std::string build_version;
   product = GetProductAndVersion(/*force_major_to_minor=*/kForceDisabled);
   EXPECT_TRUE(re2::RE2::FullMatch(product, kChromeProductVersionRegex,
                                   &major_version, &minor_version,
                                   &build_version));
   EXPECT_EQ(major_version, version_info::GetMajorVersionNumber());
   EXPECT_EQ(minor_version, "0");
-  EXPECT_NE(build_version, "9999");
+  EXPECT_NE(build_version, "0");
 
   product = GetProductAndVersion();
   EXPECT_TRUE(re2::RE2::FullMatch(product, kChromeProductVersionRegex,
@@ -966,6 +949,7 @@ TEST_F(UserAgentUtilsTest, GetProductAndVersion) {
       /*disabled_features=*/{
           blink::features::kForceMajorVersionInMinorPositionInUserAgent});
   product = GetProductAndVersion();
+  std::string patch_version;
   EXPECT_TRUE(re2::RE2::FullMatch(product, kChromeProductVersionRegex,
                                   &major_version, &minor_version,
                                   &build_version, &patch_version));

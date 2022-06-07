@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/search/ntp_features.h"
 #include "url/gurl.h"
@@ -92,6 +93,57 @@ constexpr base::FeatureParam<base::TimeDelta> kDiscountFetchDelayParam(
 // Interval that controls the frequency of showing coupons in infobar bubbles.
 constexpr base::FeatureParam<base::TimeDelta> kCouponDisplayInterval{
     &commerce::kRetailCoupons, "coupon_display_interval", base::Hours(18)};
+
+// The heuristics of cart pages are from top 100 US shopping domains.
+// https://colab.corp.google.com/drive/1fTGE_SQw_8OG4ubzQvWcBuyHEhlQ-pwQ?usp=sharing
+constexpr base::FeatureParam<std::string> kCartPattern{
+    &ntp_features::kNtpChromeCartModule, "cart-pattern",
+    // clang-format off
+    "(^https?://cart\\.)"
+    "|"
+    "(/("
+      "(((my|co|shopping|view)[-_]?)?(cart|bag)(view|display)?)"
+      "|"
+      "(checkout/([^/]+/)?(basket|bag))"
+      "|"
+      "(checkoutcart(display)?view)"
+      "|"
+      "(bundles/shop)"
+      "|"
+      "((ajax)?orderitemdisplay(view)?)"
+      "|"
+      "(cart-show)"
+    ")(/|\\.|$))"
+    // clang-format on
+};
+
+constexpr base::FeatureParam<std::string> kCartPatternMapping{
+    &ntp_features::kNtpChromeCartModule, "cart-pattern-mapping",
+    // Empty JSON string.
+    ""};
+
+constexpr base::FeatureParam<std::string> kCheckoutPattern{
+    &ntp_features::kNtpChromeCartModule, "checkout-pattern",
+    // clang-format off
+    "/("
+    "("
+      "("
+        "(begin|billing|cart|payment|start|review|final|order|secure|new)"
+        "[-_]?"
+      ")?"
+      "(checkout|chkout)(s)?"
+      "([-_]?(begin|billing|cart|payment|start|review))?"
+    ")"
+    "|"
+    "(\\w+(checkout|chkout)(s)?)"
+    ")(/|\\.|$|\\?)"
+    // clang-format on
+};
+
+constexpr base::FeatureParam<std::string> kCheckoutPatternMapping{
+    &ntp_features::kNtpChromeCartModule, "checkout-pattern-mapping",
+    // Empty JSON string.
+    ""};
 
 // The following are Feature params for Discount user consent v2.
 // This indicates the Discount Consent v2 variation on the NTP Cart module.
@@ -179,6 +231,15 @@ extern const char
     kNtpChromeCartModuleDiscountConsentNtpDialogContentTitleParam[];
 extern const base::FeatureParam<std::string>
     kNtpChromeCartModuleDiscountConsentNtpDialogContentTitle;
+// Feature params for showing the contextual discount consent on the cart and
+// checkout page.
+extern const char kContextualConsentShowOnCartAndCheckoutPageParam[];
+extern const base::FeatureParam<bool>
+    kContextualConsentShowOnCartAndCheckoutPage;
+// Feature params for showing the contextual discount consent on the search
+// result page.
+extern const char kContextualConsentShowOnSRPParam[];
+extern const base::FeatureParam<bool> kContextualConsentShowOnSRP;
 
 // Check if a URL belongs to a partner merchant of any type of discount.
 bool IsPartnerMerchant(const GURL& url);
@@ -192,6 +253,8 @@ bool IsCartDiscountFeatureEnabled();
 bool IsCouponWithCodeEnabled();
 // Check if the variation with fake data is enabled.
 bool IsFakeDataEnabled();
+// Check if the contextual consent for discount is enabled.
+bool isContextualConsentEnabled();
 }  // namespace commerce
 
 #endif  // COMPONENTS_COMMERCE_CORE_COMMERCE_FEATURE_LIST_H_

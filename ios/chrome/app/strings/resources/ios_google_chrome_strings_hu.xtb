@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="1096883626080133124">Még több mindent elvégezhet az egyszerű, biztonságos és minden eddiginél gyorsabb Google Chrome segítségével</translation>
 <translation id="1143896152279775643">Jelszavát elmenti a rendszer a fiókhoz (<ph name="EMAIL" />) kapcsolt Google Jelszókezelőbe.</translation>
 <translation id="1282031177488366470">Hozzájárulás a Chrome funkcióinak és teljesítményének javításához</translation>
 <translation id="1479202195792305274">A Chrome ellenőrizni tudja a mentett jelszavakat, ha Ön bejelentkezik Google-fiókjával.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">A Chrome használata mindenhol</translation>
 <translation id="3522659714780527202">Kapcsolja be a szinkronizálást, hogy bárhol hozzáférhessen a lapjaihoz, ahol a Chrome-ot használja.</translation>
 <translation id="3533694711092285624">Nincsenek mentett jelszavak. A Chrome képes a jelszavak ellenőrzésére, amikor Ön menti őket.</translation>
-<translation id="3634910711516114487">Annak érdekében, hogy a legtöbbet hozhassa ki a Chrome-ból, jelentkezzen be Google-fiókjával a böngészőbe</translation>
 <translation id="3655656110921623717">Ez azt jelenti, hogy a Chrome mindig a mobilwebhelyet kéri majd.</translation>
 <translation id="3706101708757577809">Mostantól bármikor használhatja a Chrome-ot, amikor üzenetekben, dokumentumokban és más alkalmazásokban linkekre kattint.</translation>
 <translation id="3720541637541300822">Inkognitó lapok zárolása a Chrome bezárásakor</translation>
@@ -83,20 +81,13 @@
 <translation id="6709398533399187136">Jelszava adatvédelmi incidens során nyilvánosságra került. A Google Jelszókezelő a jelszó haladéktalan módosítását javasolja.</translation>
 <translation id="6822673484890854830">A Chrome nem tudta ellenőrizni az összes jelszót. Próbálja újra később.</translation>
 <translation id="6964931465519938134">Mostantól bármikor használhatja a Chrome-ot, amikor üzenetekben, dokumentumokban és más alkalmazásokban lévő linkekre koppint.</translation>
-<translation id="7046845777663074840">Ha be van kapcsolva:
-<ph name="BEGIN_INDENT" />  • Segíthet, hogy továbbfejlesszük a Chrome-ot azok számára, akik Önhöz hasonló módon használják.<ph name="END_INDENT" />
-
-Fontos tudnivalók:
-<ph name="BEGIN_INDENT" />  • A rendszer az Ön Chrome-használatáról küld információt a Google-nak, ez az információ azonban nem köthető Önhöz.
-  • Ha a Chrome összeomlik, az összeomlással kapcsolatos adatok között szerepelhetnek bizonyos személyes információk.
-
-  • Ha bekapcsolja a szinkronizálást, a mutatók tartalmazhatnak az Ön által felkeresett URL-címekkel kapcsolatos adatokat is.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Tegye személyessé a Chrome-ot</translation>
 <translation id="7124339256045485976">Chrome böngészője legyen mindig naprakész</translation>
 <translation id="7161390184744336561">A Google Chrome elavult</translation>
 <translation id="7165736900384873061">A Google Chrome QR-olvasójának használata</translation>
 <translation id="7172660552945675509">Tipp: <ph name="BEGIN_LINK" />Helyezze át a Chrome-ot a Dockra<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">A Chrome a Face ID segítségével ellenőrzi a jogosultságot a jelszavakhoz való hozzáféréshez.</translation>
+<translation id="7187993566681480880">Gondoskodik a biztonságáról a Chrome-ban, és használható a biztonság növelésére más Google-alkalmazásokban olyankor, amikor Ön be van jelentkezve.</translation>
 <translation id="72119412072970160">A Google Jelszókezelőbe mentett jelszavakat használhatja más alkalmazásokban iPad eszközén.</translation>
 <translation id="7261678641327190792">A Chrome nem tudja ellenőrizni a jelszavakat</translation>
 <translation id="7272930098487145294">A képek mentéséhez koppintson a Beállítások lehetőségre, hogy a Chrome hozzáadhassa őket a fotóihoz.</translation>
@@ -109,6 +100,7 @@ Fontos tudnivalók:
 <translation id="766361182512894255">Jelszava adatvédelmi incidens során nyilvánosságra került. A Chrome a jelszó azonnali módosítását javasolja.</translation>
 <translation id="7693590760643069321">Mostantól bármikor használhatja a Chrome-ot, amikor üzenetekben, dokumentumokban és más alkalmazásokban linkekre kattint.</translation>
 <translation id="7698568245838009292">A Chrome hozzá szeretne férni a kamerához</translation>
+<translation id="7780154209050837198">Annak érdekében, hogy a legtöbbet hozhassa ki a Chrome-ból, jelentkezzen be Google-fiókjával a Chrome-ba.</translation>
 <translation id="7855730255114109580">A Google Chrome naprakész</translation>
 <translation id="8022947259858476807">A Chrome-ot alapértelmezett böngészőként használva linkek nyithatók meg, modulokban lehet keresni, és jelszavak tölthetők be automatikusan az egyéb alkalmazásokban</translation>
 <translation id="8160472928944011082">Nem lehet frissíteni a Chrome-ot</translation>

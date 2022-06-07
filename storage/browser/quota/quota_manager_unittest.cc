@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -135,8 +136,6 @@ MATCHER_P3(MatchesBucketTableEntry, storage_key, type, use_count, "") {
 
 class QuotaManagerImplTest : public testing::Test {
  protected:
-  using QuotaTableEntry = QuotaManagerImpl::QuotaTableEntry;
-  using QuotaTableEntries = QuotaManagerImpl::QuotaTableEntries;
   using BucketTableEntries = QuotaManagerImpl::BucketTableEntries;
 
  public:
@@ -436,13 +435,6 @@ class QuotaManagerImplTest : public testing::Test {
     return future.Get<0>();
   }
 
-  QuotaTableEntries DumpQuotaTable() {
-    base::test::TestFuture<QuotaTableEntries> future;
-    quota_manager_impl_->DumpQuotaTable(
-        future.GetCallback<const QuotaTableEntries&>());
-    return future.Get();
-  }
-
   BucketTableEntries DumpBucketTable() {
     base::test::TestFuture<BucketTableEntries> future;
     quota_manager_impl_->DumpBucketTable(
@@ -556,8 +548,16 @@ class QuotaManagerImplTest : public testing::Test {
     return quota_manager_impl_->is_db_disabled_for_testing();
   }
 
-  void disable_quota_database(bool disable) {
-    quota_manager_impl_->database_->SetDisabledForTesting(disable);
+  void DisableQuotaDatabase() {
+    base::RunLoop run_loop;
+    quota_manager_impl_->PostTaskAndReplyWithResultForDBThread(
+        base::BindLambdaForTesting([&](QuotaDatabase* db) {
+          db->SetDisabledForTesting(true);
+          return QuotaError::kNone;
+        }),
+        base::BindLambdaForTesting([&](QuotaError error) { run_loop.Quit(); }),
+        FROM_HERE, /*is_bootstrap_task=*/false);
+    run_loop.Run();
   }
 
   void disable_database_bootstrap(bool disable) {
@@ -754,7 +754,7 @@ TEST_F(QuotaManagerImplTest, DatabaseDisabledAfterThreshold) {
   OpenDatabase();
 
   // Disable quota database for database error behavior.
-  disable_quota_database(true);
+  DisableQuotaDatabase();
 
   ASSERT_FALSE(is_db_disabled());
 
@@ -787,6 +787,32 @@ TEST_F(QuotaManagerImplTest, GetOrCreateBucket) {
   bucket = GetOrCreateBucket(storage_key, bucket_name);
   EXPECT_TRUE(bucket.ok());
   EXPECT_EQ(bucket.value().id, created_bucket_id);
+}
+
+TEST_F(QuotaManagerImplTest, GetOrCreateBucketSync) {
+  base::RunLoop loop;
+  // Post the function call on a different thread to ensure that the
+  // production DCHECK in GetOrCreateBucketSync passes.
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::WithBaseSyncPrimitives()},
+      base::BindLambdaForTesting([&]() {
+        StorageKey storage_key = ToStorageKey("http://b.com");
+        std::string bucket_name = "bucket_b";
+        // Ensure that the synchronous function returns a bucket.
+        auto bucket = quota_manager_impl_->proxy()->GetOrCreateBucketSync(
+            storage_key, bucket_name);
+        ASSERT_TRUE(bucket.ok());
+        BucketId created_bucket_id = bucket.value().id;
+
+        // Ensure that the synchronous function does not create a new bucket
+        // each time.
+        bucket = quota_manager_impl_->proxy()->GetOrCreateBucketSync(
+            storage_key, bucket_name);
+        EXPECT_TRUE(bucket.ok());
+        EXPECT_EQ(bucket.value().id, created_bucket_id);
+        loop.Quit();
+      }));
+  loop.Run();
 }
 
 TEST_F(QuotaManagerImplTest, GetBucket) {
@@ -838,7 +864,7 @@ TEST_F(QuotaManagerImplTest, GetStorageKeysForTypeWithDatabaseError) {
   OpenDatabase();
 
   // Disable quota database for database error behavior.
-  disable_quota_database(true);
+  DisableQuotaDatabase();
 
   // Return empty set when error is encountered.
   std::set<StorageKey> storage_keys = GetStorageKeysForType(kTemp);
@@ -2745,7 +2771,7 @@ TEST_F(QuotaManagerImplTest, GetBucketsModifiedBetweenWithDatabaseError) {
   OpenDatabase();
 
   // Disable quota database for database error behavior.
-  disable_quota_database(true);
+  DisableQuotaDatabase();
 
   auto buckets =
       GetBucketsModifiedBetween(kTemp, base::Time(), base::Time::Max());
@@ -2754,23 +2780,11 @@ TEST_F(QuotaManagerImplTest, GetBucketsModifiedBetweenWithDatabaseError) {
   EXPECT_TRUE(buckets.empty());
 }
 
-TEST_F(QuotaManagerImplTest, DumpQuotaTable) {
-  SetPersistentHostQuota("example1.com", 1);
-  SetPersistentHostQuota("example2.com", 20);
-  SetPersistentHostQuota("example3.com", 300);
-  task_environment_.RunUntilIdle();
-
-  const QuotaTableEntries& entries = DumpQuotaTable();
-  EXPECT_THAT(
-      entries,
-      testing::UnorderedElementsAre(
-          QuotaTableEntry{.host = "example1.com", .type = kPerm, .quota = 1},
-          QuotaTableEntry{.host = "example2.com", .type = kPerm, .quota = 20},
-          QuotaTableEntry{
-              .host = "example3.com", .type = kPerm, .quota = 300}));
-}
-
 TEST_F(QuotaManagerImplTest, DumpBucketTable) {
+  // Dumping an unpopulated bucket table returns an empty vector.
+  const BucketTableEntries& initial_entries = DumpBucketTable();
+  EXPECT_TRUE(initial_entries.empty());
+
   const StorageKey kStorageKey = ToStorageKey("http://example.com/");
   CreateBucketForTesting(kStorageKey, kDefaultBucketName, kTemp);
   CreateBucketForTesting(kStorageKey, kDefaultBucketName, kPerm);

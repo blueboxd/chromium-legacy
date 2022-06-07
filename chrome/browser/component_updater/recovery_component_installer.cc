@@ -26,7 +26,6 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -201,7 +200,8 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
 
   base::LaunchOptions options;
   options.start_hidden = true;
-  base::Process process = base::LaunchElevatedProcess(cmdline, options);
+  options.elevated = true;
+  base::Process process = base::LaunchProcess(cmdline, options);
 #elif BUILDFLAG(IS_MAC)
   base::mac::ScopedAuthorizationRef authRef(
       base::mac::AuthorizationCreateToRunAsRoot(nullptr));

@@ -22,6 +22,7 @@ chrome.fileManagerPrivate.VolumeType = {
   TESTING: 'testing',
   SMB: 'smb',
   SYSTEM_INTERNAL: 'system_internal',
+  GUEST_OS: 'guest_os',
 };
 
 /** @enum {string} */
@@ -277,6 +278,7 @@ chrome.fileManagerPrivate.RecentFileType = {
   AUDIO: 'audio',
   IMAGE: 'image',
   VIDEO: 'video',
+  DOCUMENT: 'document',
 };
 
 /** @enum {string} */

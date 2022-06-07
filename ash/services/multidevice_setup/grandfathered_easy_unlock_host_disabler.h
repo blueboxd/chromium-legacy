@@ -7,8 +7,6 @@
 
 #include <memory>
 
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "ash/services/multidevice_setup/host_backend_delegate.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +19,10 @@ class OneShotTimer;
 }  // namespace base
 
 namespace ash {
+
+namespace device_sync {
+class DeviceSyncClient;
+}
 
 namespace multidevice_setup {
 
@@ -86,7 +88,7 @@ class GrandfatheredEasyUnlockHostDisabler
   void DisableEasyUnlockHostIfNecessary();
   void OnDisableEasyUnlockHostResult(
       multidevice::RemoteDeviceRef device,
-      chromeos::device_sync::mojom::NetworkRequestResult result_code);
+      device_sync::mojom::NetworkRequestResult result_code);
   void SetPotentialEasyUnlockHostToDisable(
       absl::optional<multidevice::RemoteDeviceRef> device);
   absl::optional<multidevice::RemoteDeviceRef> GetEasyUnlockHostToDisable();

@@ -112,10 +112,6 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor {
                      int sample_rate,
                      base::TimeDelta audio_delay);
 
-  // The format of the processed capture output audio from the processor;
-  // constant throughout AudioProcessor lifetime.
-  const media::AudioParameters& OutputFormat() const;
-
   // Accessor to check if WebRTC audio processing is enabled or not.
   bool has_webrtc_audio_processing() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
@@ -146,13 +142,20 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor {
     return absl::nullopt;
   }
 
-  // Format of input to ProcessCapturedAudio().
-  const media::AudioParameters& GetInputFormatForTesting() const {
-    return input_format_;
-  }
+  // The format of audio input to and output from the processor; constant
+  // throughout AudioProcessor lifetime.
+  const media::AudioParameters& input_format() const { return input_format_; }
+  const media::AudioParameters& output_format() const { return output_format_; }
 
-  // Returns an output format that minimizes delay and resampling for a given
-  // input format.
+  // Returns an input format compatible with the specified audio processing
+  // settings and device parameters. Returns nullopt if no compatible format can
+  // be produced.
+  static absl::optional<AudioParameters> ComputeInputFormat(
+      const AudioParameters& device_format,
+      const AudioProcessingSettings& settings);
+
+  // Returns an output format that minimizes delay and resampling for given
+  // input format and audio processing settings.
   static AudioParameters GetDefaultOutputFormat(
       const AudioParameters& input_format,
       const AudioProcessingSettings& settings);
@@ -251,10 +254,6 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor {
 
   // The sample rate of incoming playout audio.
   absl::optional<int> playout_sample_rate_hz_ = absl::nullopt;
-
-  // Indicates whether the audio processor playout signal has ever had
-  // asymmetric left and right channel content.
-  bool assume_upmixed_mono_playout_ = true;
 
   // Counters to avoid excessively logging errors on a real-time thread.
   size_t apm_playout_error_code_log_count_ = 0;

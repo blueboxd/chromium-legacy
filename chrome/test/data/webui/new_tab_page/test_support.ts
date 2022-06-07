@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {DomIf} from 'chrome://new-tab-page/new_tab_page.js';
 import {BackgroundImage, Theme} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
@@ -95,6 +96,7 @@ export function createTheme(): Theme {
   const searchBox = {
     bg: {value: 0xff000000},
     bgHovered: {value: 0xff00000e},
+    borderColor: {value: 0xff00000e},
     icon: {value: 0xff000001},
     iconSelected: {value: 0xff000002},
     isDark: false,
@@ -134,4 +136,16 @@ export async function initNullModule(): Promise<null> {
 
 export function createElement(): HTMLElement {
   return document.createElement('div');
+}
+
+export function render(element: HTMLElement) {
+  element.shadowRoot!.querySelectorAll<DomIf>('dom-if').forEach(
+      tmpl => tmpl.render());
+}
+
+export function capture(
+    target: HTMLElement, event: string): {received: boolean} {
+  const capture = {received: false};
+  target.addEventListener(event, () => capture.received = true);
+  return capture;
 }

@@ -5,11 +5,11 @@
 #ifndef ASH_SERVICES_MULTIDEVICE_SETUP_HOST_BACKEND_DELEGATE_IMPL_H_
 #define ASH_SERVICES_MULTIDEVICE_SETUP_HOST_BACKEND_DELEGATE_IMPL_H_
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/multidevice_setup/host_backend_delegate.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefRegistrySimple;
@@ -93,7 +93,7 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
   void OnSetHostNetworkRequestFinished(
       multidevice::RemoteDeviceRef device_for_request,
       bool attempted_to_enable,
-      chromeos::device_sync::mojom::NetworkRequestResult result_code);
+      device_sync::mojom::NetworkRequestResult result_code);
 
   EligibleHostDevicesProvider* eligible_host_devices_provider_;
   PrefService* pref_service_;

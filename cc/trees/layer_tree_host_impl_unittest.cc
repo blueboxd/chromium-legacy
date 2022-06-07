@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/base/features.h"
@@ -3269,8 +3270,13 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
   CopyProperties(root, child);
   CreateTransformNode(child);
 
-  AddAnimatedTransformToElementWithAnimation(child->element_id(), timeline(),
-                                             10.0, 3, 0);
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
+  timeline()->AttachAnimation(animation);
+  animation->AttachElement(child->element_id());
+  AddAnimatedTransformToAnimation(animation.get(), 10.0, 3, 0);
+  animation->GetKeyframeModel(TargetProperty::TRANSFORM)
+      ->set_affects_active_elements(false);
   UpdateDrawProperties(host_impl_->pending_tree());
 
   EXPECT_FALSE(did_request_next_frame_);
@@ -3418,8 +3424,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   start.AppendTranslate(6, 7, 0);
   gfx::TransformOperations end;
   end.AppendTranslate(8, 9, 0);
-  AddAnimatedTransformToElementWithAnimation(child->element_id(), timeline(),
-                                             4.0, start, end);
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
+  timeline()->AttachAnimation(animation);
+  animation->AttachElement(child->element_id());
+  int keyframe_model_id =
+      AddAnimatedTransformToAnimation(animation.get(), 4.0, start, end);
   UpdateDrawProperties(host_impl_->active_tree());
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -3441,24 +3451,24 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   EXPECT_TRUE(did_request_next_frame_);
   did_request_next_frame_ = false;
 
+  // In the real code, animations are removed at the same time as their property
+  // tree nodes are.
+  animation->RemoveKeyframeModel(keyframe_model_id);
+  host_impl_->ActivateAnimations();
+  EXPECT_FALSE(did_request_next_frame_);
+
   // In the real code, you cannot remove a child on LayerImpl, but a child
   // removed on Layer will force a full tree sync which will rebuild property
   // trees without that child's property tree nodes. Clear active_tree (which
   // also clears property trees) to simulate the rebuild that would happen
   // before/during the commit.
   host_impl_->active_tree()->property_trees()->clear();
-  host_impl_->UpdateElements(ElementListType::ACTIVE);
 
-  // On updating state, we will send an animation event and request one last
-  // frame.
+  // Updating state requires no animation update.
   host_impl_->UpdateAnimationState(true);
-  EXPECT_TRUE(did_request_next_frame_);
-  did_request_next_frame_ = false;
-
-  // Doing Animate() doesn't request another frame after the current one.
-  host_impl_->Animate();
   EXPECT_FALSE(did_request_next_frame_);
 
+  // Doing Animate() doesn't request any frames after the animation is removed.
   host_impl_->Animate();
   EXPECT_FALSE(did_request_next_frame_);
 }
@@ -11680,22 +11690,11 @@ class FrameSinkClient : public TestLayerTreeFrameSinkClient {
   scoped_refptr<viz::ContextProvider> display_context_provider_;
 };
 
-enum RendererType { RENDERER_GL, RENDERER_SKIA };
+using LayerTreeHostImplTestWithRenderer = LayerTreeHostImplTest;
 
-class LayerTreeHostImplTestWithRenderer
-    : public LayerTreeHostImplTest,
-      public ::testing::WithParamInterface<RendererType> {
- protected:
-  RendererType renderer_type() const { return GetParam(); }
+TEST_F(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
+  viz::DebugRendererSettings debug_settings;
 
-  viz::DebugRendererSettings debug_settings_;
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         LayerTreeHostImplTestWithRenderer,
-                         ::testing::Values(RENDERER_GL, RENDERER_SKIA));
-
-TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
   scoped_refptr<viz::TestContextProvider> context_provider =
       viz::TestContextProvider::Create();
   FrameSinkClient test_client(context_provider);
@@ -11703,13 +11702,11 @@ TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
   constexpr bool synchronous_composite = true;
   constexpr bool disable_display_vsync = false;
   constexpr double refresh_rate = 60.0;
-  viz::RendererSettings renderer_settings = viz::RendererSettings();
-  renderer_settings.use_skia_renderer = renderer_type() == RENDERER_SKIA;
   std::unique_ptr<TaskRunnerProvider> task_runner_provider =
       TaskRunnerProvider::Create(base::ThreadTaskRunnerHandle::Get(), nullptr);
   auto layer_tree_frame_sink = std::make_unique<TestLayerTreeFrameSink>(
       context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
-      renderer_settings, &debug_settings_, task_runner_provider.get(),
+      viz::RendererSettings(), &debug_settings, task_runner_provider.get(),
       synchronous_composite, disable_display_vsync, refresh_rate);
   layer_tree_frame_sink->SetClient(&test_client);
 
@@ -15691,9 +15688,12 @@ class MsaaIsSlowLayerTreeHostImplTest : public LayerTreeHostImplTest {
     auto frame_sink =
         FakeLayerTreeFrameSink::Builder()
             .AllContexts(&viz::TestGLES2Interface::set_msaa_is_slow,
+                         &viz::TestRasterInterface::set_msaa_is_slow,
                          msaa_is_slow)
-            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
+            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization,
+                         &viz::TestRasterInterface::set_gpu_rasterization, true)
             .AllContexts(&viz::TestGLES2Interface::set_avoid_stencil_buffers,
+                         &viz::TestRasterInterface::set_avoid_stencil_buffers,
                          avoid_stencil_buffers)
             .Build();
     EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
@@ -15739,8 +15739,10 @@ class MsaaCompatibilityLayerTreeHostImplTest : public LayerTreeHostImplTest {
         FakeLayerTreeFrameSink::Builder()
             .AllContexts(
                 &viz::TestGLES2Interface::set_support_multisample_compatibility,
+                &viz::TestRasterInterface::set_multisample_compatibility,
                 support_multisample_compatibility)
-            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
+            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization,
+                         &viz::TestRasterInterface::set_gpu_rasterization, true)
             .Build();
     EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
   }
@@ -17401,7 +17403,6 @@ TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, PercentBasedScrollbarDeltasDSF3) {
   LayerTreeSettings settings = DefaultSettings();
   settings.percent_based_scrolling = true;
-  settings.use_zoom_for_dsf = true;
   settings.use_painted_device_scale_factor = true;
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
 

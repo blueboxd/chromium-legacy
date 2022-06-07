@@ -19,13 +19,12 @@
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
-#import "ios/chrome/browser/ui/favicon/favicon_constants.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/saved_passwords_presenter_observer.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
@@ -115,9 +114,7 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
     _passwordsPresenterObserver =
         std::make_unique<SavedPasswordsPresenterObserverBridge>(
             self, _savedPasswordsPresenter);
-    if (base::FeatureList::IsEnabled(kCredentialProviderExtensionPromo)) {
-      [[PasswordAutoFillStatusManager sharedManager] addObserver:self];
-    }
+    [[PasswordAutoFillStatusManager sharedManager] addObserver:self];
   }
   return self;
 }
@@ -129,9 +126,7 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
   if (_passwordCheckObserver) {
     _passwordCheckManager->RemoveObserver(_passwordCheckObserver.get());
   }
-  if (base::FeatureList::IsEnabled(kCredentialProviderExtensionPromo)) {
-    [[PasswordAutoFillStatusManager sharedManager] removeObserver:self];
-  }
+  [[PasswordAutoFillStatusManager sharedManager] removeObserver:self];
 }
 
 - (void)setConsumer:(id<PasswordsConsumer>)consumer {

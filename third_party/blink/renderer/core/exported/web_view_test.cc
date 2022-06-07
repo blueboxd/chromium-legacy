@@ -487,7 +487,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
                       /*is_hidden=*/false,
                       /*is_prerendering=*/false,
                       /*is_inside_portal=*/false,
-                      /*is_fenced_frame=*/false,
+                      /*fenced_frame_mode=*/absl::nullopt,
                       /*compositing_enabled=*/true,
                       /*widgets_never_composited=*/false,
                       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
@@ -2744,7 +2744,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   WebViewImpl* web_view = To<WebViewImpl>(WebView::Create(
       /*client=*/nullptr, /*is_hidden=*/false, /*is_prerendering=*/false,
       /*is_inside_portal=*/false,
-      /*is_fenced_frame=*/false,
+      /*fenced_frame_mode=*/absl::nullopt,
       /*compositing_enabled=*/false,
       /*widgets_never_composited=*/false,
       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
@@ -3214,6 +3214,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
 
   WebString target = WebString::FromUTF8("target");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  web_view->SetIsActive(true);
   web_view->SetPageFocus(true);
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();

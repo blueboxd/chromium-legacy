@@ -89,11 +89,13 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/no_alloc_direct_call_host.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
@@ -314,7 +316,7 @@ void HTMLCanvasElement::RecordIdentifiabilityMetric(
 
 void HTMLCanvasElement::IdentifiabilityReportWithDigest(
     IdentifiableToken canvas_contents_token) const {
-  if (IdentifiabilityStudySettings::Get()->ShouldSample(
+  if (IdentifiabilityStudySettings::Get()->ShouldSampleType(
           blink::IdentifiableSurface::Type::kCanvasReadback)) {
     RecordIdentifiabilityMetric(
         blink::IdentifiableSurface::FromTypeAndToken(
@@ -331,7 +333,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   auto* result = GetCanvasRenderingContextInternal(type, attributes);
 
   Document& doc = GetDocument();
-  if (IdentifiabilityStudySettings::Get()->ShouldSample(
+  if (IdentifiabilityStudySettings::Get()->ShouldSampleType(
           IdentifiableSurface::Type::kCanvasRenderingContext)) {
     IdentifiabilityMetricBuilder(doc.UkmSourceID())
         .Add(IdentifiableSurface::FromTypeAndToken(
@@ -491,8 +493,7 @@ void HTMLCanvasElement::DidDraw(const SkIRect& rect) {
   canvas_is_clear_ = false;
   if (GetLayoutObject() && !LowLatencyEnabled())
     GetLayoutObject()->SetShouldCheckForPaintInvalidation();
-  if (IsRenderingContext2D() && context_->ShouldAntialias() && GetPage() &&
-      GetPage()->DeviceScaleFactorDeprecated() > 1.0f) {
+  if (IsRenderingContext2D() && context_->ShouldAntialias() && GetPage()) {
     gfx::RectF inflated_rect(gfx::SkIRectToRect(rect));
     inflated_rect.Outset(1);
     dirty_rect_.Union(inflated_rect);
@@ -764,7 +765,8 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
 }
 
 // Returns an image and the image's resolution scale factor.
-static std::pair<blink::Image*, float> BrokenCanvas(float device_scale_factor) {
+std::pair<blink::Image*, float> HTMLCanvasElement::BrokenCanvas(
+    float device_scale_factor) {
   if (device_scale_factor >= 2) {
     DEFINE_STATIC_REF(blink::Image, broken_canvas_hi_res,
                       (blink::Image::LoadPlatformResource(IDR_BROKENCANVAS,
@@ -800,10 +802,8 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
                               bool flatten_composited_layers) {
   if (context_creation_was_blocked_ ||
       (context_ && context_->isContextLost())) {
-    float device_scale_factor =
-        blink::DeviceScaleFactorDeprecated(GetDocument().GetFrame());
     std::pair<Image*, float> broken_canvas_and_image_scale_factor =
-        BrokenCanvas(device_scale_factor);
+        BrokenCanvas(GetDocument().DevicePixelRatio());
     Image* broken_canvas = broken_canvas_and_image_scale_factor.first;
     context.Save();
     context.FillRect(
@@ -818,11 +818,9 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     gfx::PointF upper_left =
         gfx::PointF(r.PixelSnappedOffset()) +
         gfx::Vector2dF(icon_size.width(), icon_size.height());
-    context.DrawImage(
-        broken_canvas, Image::kSyncDecode,
-        PaintAutoDarkMode(ComputedStyleRef(),
-                          DarkModeFilter::ElementRole::kBackground),
-        gfx::RectF(upper_left, icon_size));
+    context.DrawImage(broken_canvas, Image::kSyncDecode,
+                      ImageAutoDarkMode::Disabled(),
+                      gfx::RectF(upper_left, icon_size));
     context.Restore();
     return;
   }
@@ -843,11 +841,9 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     DCHECK(GetDocument().Printing());
     scoped_refptr<StaticBitmapImage> image_for_printing =
         OffscreenCanvasFrame()->Bitmap()->MakeUnaccelerated();
-    context.DrawImage(
-        image_for_printing.get(), Image::kSyncDecode,
-        PaintAutoDarkMode(ComputedStyleRef(),
-                          DarkModeFilter::ElementRole::kBackground),
-        gfx::RectF(ToPixelSnappedRect(r)));
+    context.DrawImage(image_for_printing.get(), Image::kSyncDecode,
+                      ImageAutoDarkMode::Disabled(),
+                      gfx::RectF(ToPixelSnappedRect(r)));
     return;
   }
 
@@ -899,9 +895,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
       snapshot = snapshot->MakeUnaccelerated();
       DCHECK(!snapshot->IsTextureBacked());
       context.DrawImage(
-          snapshot.get(), Image::kSyncDecode,
-          PaintAutoDarkMode(ComputedStyleRef(),
-                            DarkModeFilter::ElementRole::kBackground),
+          snapshot.get(), Image::kSyncDecode, ImageAutoDarkMode::Disabled(),
           gfx::RectF(ToPixelSnappedRect(r)), &src_rect, composite_operator);
     }
   } else {
@@ -1105,7 +1099,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
         image_bitmap, options,
         CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
         GetExecutionContext(),
-        IdentifiabilityStudySettings::Get()->IsTypeAllowed(
+        IdentifiabilityStudySettings::Get()->ShouldSampleType(
             IdentifiableSurface::Type::kCanvasReadback)
             ? IdentifiabilityInputDigest(context_)
             : 0);

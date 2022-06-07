@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -277,7 +276,6 @@ void RemoteCopyMessageHandler::ShowNotification(const std::u16string& title,
                                                 const SkBitmap& image) {
   TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::ShowNotification");
 
-  gfx::Image icon;
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &kSendTabToSelfIcon;
   rich_notification_data.renotify = true;
@@ -289,7 +287,7 @@ void RemoteCopyMessageHandler::ShowNotification(const std::u16string& title,
       l10n_util::GetStringFUTF16(
           IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION,
           paste_accelerator.GetShortcutText()),
-      icon,
+      ui::ImageModel(),
       /*display_source=*/std::u16string(),
       /*origin_url=*/GURL(), message_center::NotifierId(),
       rich_notification_data,

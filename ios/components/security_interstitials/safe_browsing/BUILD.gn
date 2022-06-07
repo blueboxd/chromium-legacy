@@ -1,0 +1,70 @@
+# Copyright 2022 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//ios/build/config.gni")
+
+source_set("safe_browsing") {
+  sources = [
+    "pending_unsafe_resource_storage.h",
+    "pending_unsafe_resource_storage.mm",
+    "safe_browsing_client.h",
+    "safe_browsing_client_factory.h",
+    "safe_browsing_error.h",
+    "safe_browsing_error.mm",
+    "safe_browsing_unsafe_resource_container.h",
+    "safe_browsing_unsafe_resource_container.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//components/safe_browsing/ios/browser:allow_list",
+    "//components/safe_browsing/ios/browser/password_protection",
+    "//components/security_interstitials/core:unsafe_resource",
+    "//ios/components/security_interstitials/safe_browsing:util",
+    "//ios/web/public",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("util") {
+  sources = [
+    "unsafe_resource_util.h",
+    "unsafe_resource_util.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//components/safe_browsing/core/browser/db:v4_protocol_manager_util",
+    "//components/safe_browsing/ios/browser:allow_list",
+    "//components/security_interstitials/core",
+    "//components/security_interstitials/core:unsafe_resource",
+    "//ios/web/public",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "pending_unsafe_resource_storage_unittest.mm",
+    "safe_browsing_unsafe_resource_container_unittest.mm",
+  ]
+
+  deps = [
+    ":safe_browsing",
+    "//base",
+    "//base/test:test_support",
+    "//components/safe_browsing/ios/browser:allow_list",
+    "//ios/web/public",
+    "//ios/web/public/test",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

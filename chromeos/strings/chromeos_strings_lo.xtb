@@ -114,7 +114,6 @@
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: ລອງໃໝ່</translation>
 <translation id="2161394479394250669">ຍົກເລີກວຽກພິມ</translation>
 <translation id="2180197493692062006">ມີບາງຢ່າງຜິດພາດເກີດຂຶ້ນ. ກະລຸນາລອງເປີດແອັບຄືນໃໝ່.</translation>
-<translation id="2201770616342964496">ຂໍ້ມູນປະຈຳຕົວໃນເຄື່ອງ</translation>
 <translation id="2209788852729124853">ຣີເຊັດຕົວນັບທຣາບຟິກ</translation>
 <translation id="2212733584906323460">ການຈຳແນກຊື່</translation>
 <translation id="2217935453350629363">ຄວາມໄວປັດຈຸບັນ</translation>
@@ -130,6 +129,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">ເປີດ Bluetooth ເພື່ອຊອກຫາອຸປະກອນທີ່ຢູ່ໃກ້ຄຽງ</translation>
 <translation id="2346474577291266260">ດີເລີດ (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2363636958541445404">ເປີດຄຸນສົມບັດເພື່ອເລືອກຕົວເລືອກພາບພັກໜ້າຈໍ</translation>
 <translation id="2364498172489649528">ຜ່ານແລ້ວ</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">ສົ່ງລາຍງານຄຳຕິຊົມ</translation>
@@ -216,6 +216,7 @@
 <translation id="3595596368722241419">ແບັດເຕີຣີເຕັມ</translation>
 <translation id="3600339377155080675">ສະທ້ອນໜ້າຈໍ</translation>
 <translation id="3603829704940252505">ຮູບແທນຕົວ</translation>
+<translation id="3604713164406837697">ປ່ຽນພາບພື້ນຫຼັງ</translation>
 <translation id="360565022852130722">ເຄືອຂ່າຍ WiFi ມີການຮັກສາຄວາມປອດໄພດ້ວຍໂປຣໂຕຄໍ WEP 802.1x ທີ່ບໍ່ຮັດກຸມ</translation>
 <translation id="3606583719724308068">ເວລາຕອບສະໜອງຫາເວັບໄຊ HTTPS ສູງ</translation>
 <translation id="3632579075709132555">ສະຫຼັບໜ້າຈໍຄວາມເປັນສ່ວນຕົວ</translation>
@@ -226,6 +227,7 @@
 <translation id="3748026146096797577">ບໍ່​ໄດ້​ເຊື່ອມ​ຕໍ່</translation>
 <translation id="3749289110408117711">ຊື່​ໄຟລ​໌</translation>
 <translation id="3771294271822695279">ໄຟລ​໌​ວິ​ດີ​ໂອ</translation>
+<translation id="3784455785234192852">ລັອກ</translation>
 <translation id="38114475217616659">ລຶບລ້າງປະຫວັດທັງໝົດ</translation>
 <translation id="3820172043799983114">PIN ບໍ່ຖືກຕ້ອງ.</translation>
 <translation id="3838338534323494292">ລະຫັດຜ່ານໃໝ່</translation>
@@ -260,6 +262,7 @@
 <translation id="4170180284036919717">ຖ່າຍຮູບ</translation>
 <translation id="4170700058716978431">ບໍ່ສຳເລັດ</translation>
 <translation id="4176463684765177261">ປິດໃຊ້ງານແລ້ວ</translation>
+<translation id="4176659219503619100">ແຜງຄວບຄຸມ</translation>
 <translation id="4213104098953699324">ແປ້ນພິມ USB</translation>
 <translation id="4227825898293920515">ລະຫັດຜ່ານໝົດອາຍຸໃນ <ph name="TIME" /></translation>
 <translation id="4238516577297848345">ບໍ່ມີວຽກການພິມທີ່ພວມດຳເນີນຢູ່</translation>
@@ -303,7 +306,6 @@
 <translation id="4593212453765072419">ຈຳເປັນຕ້ອງພິສູດຢືນຢັນພຣັອກຊີ</translation>
 <translation id="4609350030397390689">ແປ້ນພິມຫຼຸດຄວາມສະຫວ່າງ</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> ຈາກທັງໝົດ <ph name="TOTAL_PAGE_NUMBER" />. ກົດ Enter ເພື່ອຍົກເລີກວຽກພິມ.</translation>
-<translation id="4627645661474370390">ຂໍ້ມູນປະຈຳຕົວໄລຍະໄກ</translation>
 <translation id="463791356324567266">ກຳລັງຍົກເລີກການສະແກນ...</translation>
 <translation id="4646949265910132906">ການເຊື່ອມຕໍ່ WiFi ທີ່ປອດໄພ</translation>
 <translation id="4650608062294027130">Shift ຂວາ</translation>
@@ -320,6 +322,7 @@
 <translation id="4773299976671772492">ຢຸດ​ແລ້ວ</translation>
 <translation id="4782311465517282004">ຮັບຄຳນິຍາມ, ການແປພາສາ ຫຼື ການປ່ຽນແປງຫົວໜ່ວຍເມື່ອທ່ານຄລິກຂວາ ຫຼື ແຕະໃສ່ຂໍ້ຄວາມຄ້າງໄວ້</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> ຮູບ</translation>
+<translation id="4793710386569335688">ສຳລັບການຊ່ວຍເຫຼືອເພີ່ມເຕີມ, ກະລຸນາເຂົ້າໄປ <ph name="BEGIN_LINK" />ສູນຊ່ວຍເຫຼືອ<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">ອະກໍຣິທຶມ​ການ​ບີບ​ອັດ​ຂໍ້​ມູນ</translation>
 <translation id="4794140124556169553">ການທົດສອບ CPU ອາດກະທົບກັບປະສິດທິພາບລະບົບຂອງທ່ານໄດ້</translation>
 <translation id="4808449224298348341">ຍົກເລີກວຽກພິມ <ph name="DOCUMENT_TITLE" /> ແລ້ວ</translation>
@@ -412,6 +415,7 @@
 <translation id="5669267381087807207">ກຳລັງເປີດນຳໃຊ້</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">ຄອບຄົວ</translation>
+<translation id="5695599963893094957">ພິມປຸ່ມໃດກໍໄດ້ຢູ່ແປ້ນພິມຂອງທ່ານ. ທ່ານສາມາດກົດໄດ້ສູງສຸດ 4 ປຸ່ມພ້ອມກັນ.</translation>
 <translation id="5701381305118179107">ໃຈກາງ</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> ຈາກທັງໝົດ <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">ອັບເດດ <ph name="DEVICE_NAME" /></translation>
@@ -424,9 +428,11 @@
 <translation id="5843706793424741864">ຟາເຣນຮາຍ</translation>
 <translation id="5849570051105887917">ລະຫັດຜູ້ໃຫ້ບໍລິການ Home</translation>
 <translation id="5860033963881614850">ປິດ</translation>
+<translation id="5860491529813859533">ເປີດ</translation>
 <translation id="5866840822086176774">ແຮງທີ່ສຸດ</translation>
 <translation id="588258955323874662">ເຕັມໜ້າຈໍ</translation>
 <translation id="5895138241574237353">ເລີ່ມຕົ້ນໃໝ່</translation>
+<translation id="5903200662178656908">ອຸປະກອນແມ່ນຊຸດແປ້ນພິມ ແລະ ເມົ້າ.</translation>
 <translation id="5916084858004523819">ຫ້າມໃຊ້</translation>
 <translation id="5916664084637901428">ເປີດ</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{ສະແກນ ແລະ ບັນທຶກໄຟລ໌ຂອງທ່ານໄວ້ໃນ <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> ແລ້ວ.}other{ສະແກນ ແລະ ບັນທຶກໄຟລ໌ຂອງທ່ານໄວ້ໃນ <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> ແລ້ວ.}}</translation>
@@ -447,6 +453,7 @@
 <translation id="6104112872696127344">ຍົກເລີກການສະແກນແລ້ວ</translation>
 <translation id="6106186594183574873">ເພື່ອສຳເລັດ, ກະລຸນາປ້ອນລະຫັດຜ່ານເກົ່າຂອງທ່ານ</translation>
 <translation id="6108689792487843350">ບໍ່ສາມາດຕິດຕໍ່ເກດເວໄດ້</translation>
+<translation id="6112878310391905610">ການຕັ້ງຄ່ານີ້ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ</translation>
 <translation id="6113701710518389813">ລູກສອນຂຶ້ນ</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> ອະ​ລະ​ບ້ຳ​ເພີ່ມ​ເຕີມ</translation>
 <translation id="6122191549521593678">ອອນ​ລາຍ</translation>
@@ -472,6 +479,7 @@
 <translation id="6348738456043757611">ຊື່ຜູ້ໃຊ້ ແລະ ລະຫັດຜ່ານ</translation>
 <translation id="636850387210749493">ການລົງທະບຽນວິສາຫະກິດ</translation>
 <translation id="6379086450106841622">ໜ້າຈໍສຳຜັດ</translation>
+<translation id="6381741036071372448">ທົດສອບແປ້ນພິມຂອງທ່ານ</translation>
 <translation id="6388847657025262518">ຕົວປ້ອນເອກະສານຂອງເຄື່ອງສະແກນຕິດຂັດ. ກະລຸນາກວດສອບຕົວປ້ອນເອກະສານແລ້ວລອງໃໝ່.</translation>
 <translation id="6410257289063177456">ໄຟລ​໌​ຮູບ​</translation>
 <translation id="641081527798843608">ຫົວຂໍ້ກົງກັນ</translation>
@@ -568,7 +576,7 @@
 <translation id="7481312909269577407">ສົ່ງຕໍ່</translation>
 <translation id="7487067081878637334">​ເທັກ​ໂນ​ໂລ​ຢີ</translation>
 <translation id="7490813197707563893">ທີ່ຢູ່ MAC</translation>
-<translation id="7497215489070763236">ໃບຮັບຮອງ CA ຂອງເຊີບເວີ</translation>
+<translation id="7497215489070763236">ໃບຢັ້ງຢືນ CA ຂອງເຊີບເວີ</translation>
 <translation id="7502658306369382406">ທີ່ຢູ່ IPv6</translation>
 <translation id="7515998400212163428">Android</translation>
 <translation id="7550715992156305117">ການວິນິໄສທີ່ເຮັດປະຈຳ</translation>

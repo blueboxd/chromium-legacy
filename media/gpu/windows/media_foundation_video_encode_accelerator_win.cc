@@ -23,15 +23,17 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/dxgi_helpers.h"
+#include "media/base/bitstream_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/base/media_util.h"
+#include "media/base/video_frame.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
@@ -332,10 +334,6 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
   DVLOG(3) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // NullMediaLog silently and safely does nothing.
-  if (!media_log)
-    media_log = std::make_unique<media::NullMediaLog>();
-
   if (PIXEL_FORMAT_I420 != config.input_format &&
       PIXEL_FORMAT_NV12 != config.input_format) {
     MEDIA_LOG(ERROR, media_log.get())
@@ -438,7 +436,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
   RETURN_ON_HR_FAILURE(hr, "Failed to create sample", false);
 
   if (config.input_format == PIXEL_FORMAT_NV12 &&
-      base::FeatureList::IsEnabled(kMediaFoundationD3D11VideoCapture)) {
+      media::IsMediaFoundationD3D11VideoCaptureEnabled()) {
     dxgi_device_manager_ = DXGIDeviceManager::Create();
     if (!dxgi_device_manager_) {
       MEDIA_LOG(ERROR, media_log.get()) << "Failed to create DXGIDeviceManager";

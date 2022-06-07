@@ -71,13 +71,27 @@ void SearchResult::SetDetailsTags(const Tags& tags) {
 }
 
 void SearchResult::SetDetailsTextVector(const TextVector& vector) {
+  DCHECK(vector.size() <= 1 || !metadata_->multiline_details);
   metadata_->details_vector = vector;
+  for (auto& observer : observers_)
+    observer.OnMetadataChanged();
+}
+
+void SearchResult::SetMultilineDetails(bool multiline_details) {
+  DCHECK(metadata_->details_vector.size() <= 1 || !multiline_details);
+  metadata_->multiline_details = multiline_details;
   for (auto& observer : observers_)
     observer.OnMetadataChanged();
 }
 
 void SearchResult::SetBigTitleTextVector(const TextVector& vector) {
   metadata_->big_title_vector = vector;
+  for (auto& observer : observers_)
+    observer.OnMetadataChanged();
+}
+
+void SearchResult::SetBigTitleSuperscriptTextVector(const TextVector& vector) {
+  metadata_->big_title_superscript_vector = vector;
   for (auto& observer : observers_)
     observer.OnMetadataChanged();
 }

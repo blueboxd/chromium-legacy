@@ -15,10 +15,41 @@ namespace blink {
 
 namespace {
 
+// IntNode defines a node class inheriting GridLinkedListNodeBase, with a member
+// of value (int). It can be applied for NodeType in the GridLinkedList.
+class IntNode : public GridLinkedListNodeBase<IntNode> {
+ public:
+  explicit IntNode(int value) : value_(value) {}
+  ~IntNode() override {
+    destructor_calls.fetch_add(1, std::memory_order_relaxed);
+  }
+
+  int Value() const { return value_; }
+
+  static int Compare(IntNode* a, IntNode* b);
+
+  static std::atomic_int destructor_calls;
+
+ private:
+  int value_ = -1;
+};
+
+int IntNode::Compare(IntNode* a, IntNode* b) {
+  DCHECK(a);
+  DCHECK(b);
+  return a->Value() - b->Value();
+}
+
+std::atomic_int IntNode::destructor_calls{0};
+
 class GridLinkedListTest : public testing::Test {
  public:
   template <typename NodeType>
   static NodeType* NthElement(GridLinkedList<NodeType>* gll, int n);
+
+  template <typename NodeType, typename CompareFunc>
+  static bool IsSorted(GridLinkedList<NodeType>* gll,
+                       const CompareFunc& compare_func);
 };
 
 // Helper function for obtaining the nth element (starting from 0) of
@@ -34,22 +65,17 @@ NodeType* GridLinkedListTest::NthElement(GridLinkedList<NodeType>* gll, int n) {
   return node;
 }
 
-// IntNode defines a node class inheriting GridLinkedListNodeBase, with a member
-// of value (int). It can be applied for NodeType in the GridLinkedList.
-class IntNode : public GridLinkedListNodeBase<IntNode> {
- public:
-  explicit IntNode(int value) : value_(value) {}
-  ~IntNode() { destructor_calls.fetch_add(1, std::memory_order_relaxed); }
-
-  int Value() const { return value_; }
-
-  static std::atomic_int destructor_calls;
-
- private:
-  int value_ = -1;
-};
-
-std::atomic_int IntNode::destructor_calls{0};
+template <typename NodeType, typename CompareFunc>
+bool GridLinkedListTest::IsSorted(GridLinkedList<NodeType>* gll,
+                                  const CompareFunc& compare_func) {
+  DCHECK(gll);
+  for (NodeType* node = gll->Head(); node && node->Next();
+       node = node->Next()) {
+    if (compare_func(node, node->Next()) >= 0)
+      return false;
+  }
+  return true;
+}
 
 }  // namespace
 
@@ -58,38 +84,39 @@ TEST_F(GridLinkedListTest, IntNodeBasic) {
   IntNode* num2 = MakeGarbageCollected<IntNode>(2);
   IntNode* num3 = MakeGarbageCollected<IntNode>(3);
 
-  Persistent<GridLinkedList<IntNode>> gll =
+  Persistent<GridLinkedList<IntNode>> gll_persistent =
       MakeGarbageCollected<GridLinkedList<IntNode>>();
+  GridLinkedList<IntNode>* gll = gll_persistent;
 
   EXPECT_EQ(gll->Size(), 0);
   EXPECT_TRUE(gll->IsEmpty());
 
   gll->Append(num1);
   EXPECT_EQ(gll->Size(), 1);
-  EXPECT_EQ(NthElement<IntNode>(gll, 0)->Value(), 1);
+  EXPECT_EQ(NthElement(gll, 0)->Value(), 1);
 
   gll->Append(num2);
   EXPECT_EQ(gll->Size(), 2);
-  EXPECT_EQ(NthElement<IntNode>(gll, 0)->Value(), 1);
-  EXPECT_EQ(NthElement<IntNode>(gll, 1)->Value(), 2);
+  EXPECT_EQ(NthElement(gll, 0)->Value(), 1);
+  EXPECT_EQ(NthElement(gll, 1)->Value(), 2);
 
   gll->Push(num3);
   EXPECT_EQ(gll->Size(), 3);
-  EXPECT_EQ(NthElement<IntNode>(gll, 0)->Value(), 3);
-  EXPECT_EQ(NthElement<IntNode>(gll, 1)->Value(), 1);
-  EXPECT_EQ(NthElement<IntNode>(gll, 2)->Value(), 2);
+  EXPECT_EQ(NthElement(gll, 0)->Value(), 3);
+  EXPECT_EQ(NthElement(gll, 1)->Value(), 1);
+  EXPECT_EQ(NthElement(gll, 2)->Value(), 2);
 
   gll->Remove(num1);
   EXPECT_EQ(gll->Size(), 2);
-  EXPECT_EQ(NthElement<IntNode>(gll, 0)->Value(), 3);
-  EXPECT_EQ(NthElement<IntNode>(gll, 1)->Value(), 2);
+  EXPECT_EQ(NthElement(gll, 0)->Value(), 3);
+  EXPECT_EQ(NthElement(gll, 1)->Value(), 2);
 
   ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1, IntNode::destructor_calls);
 
   gll->Remove(num3);
   EXPECT_EQ(gll->Size(), 1);
-  EXPECT_EQ(NthElement<IntNode>(gll, 0)->Value(), 2);
+  EXPECT_EQ(NthElement(gll, 0)->Value(), 2);
 
   ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(2, IntNode::destructor_calls);
@@ -100,6 +127,36 @@ TEST_F(GridLinkedListTest, IntNodeBasic) {
 
   ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(3, IntNode::destructor_calls);
+}
+
+TEST_F(GridLinkedListTest, Insert) {
+  IntNode* num1 = MakeGarbageCollected<IntNode>(1);
+  IntNode* num2 = MakeGarbageCollected<IntNode>(2);
+  IntNode* num3 = MakeGarbageCollected<IntNode>(3);
+  IntNode* num2_again = MakeGarbageCollected<IntNode>(2);
+
+  Persistent<GridLinkedList<IntNode>> gll_persistent =
+      MakeGarbageCollected<GridLinkedList<IntNode>>();
+  GridLinkedList<IntNode>* gll = gll_persistent;
+  EXPECT_TRUE(IsSorted(gll, IntNode::Compare));
+
+  EXPECT_TRUE(gll->Insert(num2, IntNode::Compare));
+  EXPECT_TRUE(IsSorted(gll, IntNode::Compare));
+
+  EXPECT_TRUE(gll->Insert(num1, IntNode::Compare));
+  EXPECT_TRUE(IsSorted(gll, IntNode::Compare));
+
+  EXPECT_TRUE(gll->Insert(num3, IntNode::Compare));
+  EXPECT_TRUE(IsSorted(gll, IntNode::Compare));
+
+  EXPECT_FALSE(gll->Insert(num2_again, IntNode::Compare));
+  EXPECT_EQ(gll->Insert(num2_again, IntNode::Compare).node, num2);
+  EXPECT_TRUE(IsSorted(gll, IntNode::Compare));
+
+  gll->Clear();
+  DCHECK(gll->IsEmpty());
+  ThreadState::Current()->CollectAllGarbageForTesting();
+  EXPECT_EQ(4, IntNode::destructor_calls);
 }
 
 }  // namespace blink

@@ -7,10 +7,8 @@ export {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_c
 export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 export {PluralStringProxyImpl as PrintPreviewPluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 export {IronMeta} from 'chrome://resources/polymer/v3_0/iron-meta/iron-meta.js';
-export {CloudPrintInterface, CloudPrintInterfaceEventType} from './cloud_print_interface.js';
-export {CloudPrintInterfaceImpl} from './cloud_print_interface_impl.js';
 export {Cdd, MediaSizeCapability, MediaSizeOption, VendorCapabilityValueType} from './data/cdd.js';
-export {ColorMode, createDestinationKey, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationType, GooglePromotedDestinationId, makeRecentDestination, RecentDestination} from './data/destination.js';
+export {ColorMode, createDestinationKey, Destination, DestinationConnectionStatus, DestinationOrigin, GooglePromotedDestinationId, makeRecentDestination, PDF_DESTINATION_KEY, RecentDestination} from './data/destination.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 export {SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from './data/destination.js';
 // </if>
@@ -30,7 +28,6 @@ export {PrinterState, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity}
 export {ScalingType} from './data/scaling.js';
 export {Size} from './data/size.js';
 export {Error, State} from './data/state.js';
-export {PrintPreviewUserManagerElement} from './data/user_manager.js';
 export {BackgroundGraphicsModeRestriction, CapabilitiesResponse, ColorModeRestriction, DuplexModeRestriction, NativeInitialSettings, NativeLayer, NativeLayerImpl} from './native_layer.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 export {PinModeRestriction} from './native_layer.js';
@@ -43,7 +40,7 @@ export {PrintPreviewAppElement} from './ui/app.js';
 export {PrintPreviewButtonStripElement} from './ui/button_strip.js';
 export {PrintPreviewColorSettingsElement} from './ui/color_settings.js';
 export {DEFAULT_MAX_COPIES, PrintPreviewCopiesSettingsElement} from './ui/copies_settings.js';
-// <if expr="not chromeos and not lacros">
+// <if expr="not chromeos_ash and not chromeos_lacros">
 export {PrintPreviewDestinationDialogElement} from './ui/destination_dialog.js';
 // </if>
 // <if expr="chromeos_ash or chromeos_lacros">
@@ -52,7 +49,7 @@ export {PrintPreviewDestinationDropdownCrosElement} from './ui/destination_dropd
 // </if>
 export {PrintPreviewDestinationListElement} from './ui/destination_list.js';
 export {PrintPreviewDestinationListItemElement} from './ui/destination_list_item.js';
-// <if expr="not chromeos and not lacros">
+// <if expr="not chromeos_ash and not chromeos_lacros">
 export {PrintPreviewDestinationSelectElement} from './ui/destination_select.js';
 // </if>
 // <if expr="chromeos_ash or chromeos_lacros">
@@ -63,7 +60,7 @@ export {LabelledDpiCapability, PrintPreviewDpiSettingsElement} from './ui/dpi_se
 export {PrintPreviewDuplexSettingsElement} from './ui/duplex_settings.js';
 export {PrintPreviewHeaderElement} from './ui/header.js';
 export {PrintPreviewLayoutSettingsElement} from './ui/layout_settings.js';
-// <if expr="not chromeos and not lacros">
+// <if expr="not chromeos_ash and not chromeos_lacros">
 export {PrintPreviewLinkContainerElement} from './ui/link_container.js';
 // </if>
 export {PrintPreviewMarginControlElement} from './ui/margin_control.js';

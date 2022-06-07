@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">Til að vista myndir og láta Chromium bæta við myndirnar þínar skaltu ýta á Stillingar</translation>
 <translation id="1289216811211435351">Skipta yfir í Chromium</translation>
 <translation id="1361748954329991663">Chromium er úrelt. Ef engin uppfærsla er til staðar í <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> getur verið að tækið þitt styðji ekki lengur nýjar útgáfur af Chromium.</translation>
-<translation id="1370204544543370355">Skráðu þig inn í Chromium með Google reikningnum þínum svo að Chromium nýtist þér sem best</translation>
 <translation id="1431818719585918472">Leyfa Chromium að læsa huliðsflipunum þínum.</translation>
 <translation id="1472013873724362412">Reikningurinn þinn virkar ekki í Chromium. Hafðu samband við stjórnanda lénsins eða notaðu venjulegan Google reikning til að skrá þig inn.</translation>
 <translation id="1507010443238049608">Hjálpa til við að bæta eiginleika og afköst Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="2426113998523353159">Fyrirtækið þitt krefst þess að þú skráir þig inn til að nota Chromium.</translation>
 <translation id="2450140762465183767">Núna getur þú notað Chromium hvenær sem þú ýtir á tengil í skilaboðum, skjölum og öðrum forritum.</translation>
 <translation id="2478931088402984578">Veldu <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="2567507405773541360">Komdu meiru í verk með einfaldari, öruggari og hraðari Chromium</translation>
 <translation id="2590893390871230428">Samstilla gögnin þín í Chromium</translation>
 <translation id="2650312721222849884">Kveiktu á samstillingu til að sjá flipana þína hvar sem þú notar Chromium</translation>
 <translation id="2684230048001240293">Notaðu Chromium sem sjálfgefinn kost til að samstilla flipa, aðgangsorð og greiðsluupplýsingar í öllum tækjunum þínum</translation>
@@ -43,6 +41,7 @@
 <translation id="3256316712990552818">Afritað í Chromium</translation>
 <translation id="3344973607274501920">Chromium gat ekki athugað aðgangsorðin þín. Athugaðu nettenginguna þína.</translation>
 <translation id="3472200483164753384">Ekki stutt í Chromium Canary</translation>
+<translation id="3567399274263440288">Skráðu þig inn í Chromium með Google reikningnum þínum svo að Chromium nýtist þér sem best.</translation>
 <translation id="3639997914391704523">Chromium getur athugað aðgangsorðin þín þegar þú skráir þig inn með Google reikningnum þínum</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> notaði Chromium og skildi eftir bókamerki, aðgangsorð og aðrar stillingar í þessu tæki.</translation>
 <translation id="3805899903892079518">Chromium hefur ekki aðgang að myndunum þínum eða myndskeiðum. Veittu aðgang í iOS Settings &gt; Privacy &gt; Photos.</translation>
@@ -56,13 +55,6 @@
 <translation id="4828317641996116749">Chromium gat ekki athugað öll aðgangsorð. Reyndu aftur síðar.</translation>
 <translation id="4985291216379576555">Ótengt, Chromium getur ekki leitað að uppfærslum.</translation>
 <translation id="4999538639245140991">Vegna þess að þú ert að skrá þig út af reikningi sem stýrt er af <ph name="SIGNOUT_MANAGED_DOMAIN" /> verður Chromium gögnum þínum eytt úr þessu tæki. Gögnin verða áfram geymd á Google reikningnum þínum.</translation>
-<translation id="5039881550736388123">Þegar kveikt er á þessu:
-<ph name="BEGIN_INDENT" />  • Hjálpaðu til við að bæta Chromium fyrir fólk sem notar það eins og þú.<ph name="END_INDENT" />
-
-Hafðu í huga:
-<ph name="BEGIN_INDENT" />  • Upplýsingar um notkun þína á Chromium eru sendar til Google en eru ekki tengdar við þig.
-  • Ef Chromium hrynur gætu tilteknar persónuupplýsingar komið fram í upplýsingum um hrunið.
-  • Ef þú kveikir að samstillingu gætu mæligildi innihaldið upplýsingar um vefslóðir sem þú ferð á.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Skráðu þig inn á Chromium</translation>
 <translation id="5224391634244552924">Engin vistuð aðgangsorð. Chromium getur athugað aðgangsorðin þín þegar þú vistar þau.</translation>
 <translation id="5308226104666789935">Chromium getur ekki leitað að uppfærslum</translation>

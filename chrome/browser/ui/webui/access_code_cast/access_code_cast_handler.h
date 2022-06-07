@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_ACCESS_CODE_CAST_ACCESS_CODE_CAST_HANDLER_H_
 
 #include "base/scoped_observation.h"
-#include "chrome/browser/media/router/discovery/access_code/access_code_cast_discovery_interface.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_sink_service.h"
 #include "chrome/browser/media/router/discovery/access_code/discovery_resources.pb.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/media_router/media_router_ui.h"
 #include "chrome/browser/ui/media_router/media_router_ui_helper.h"
+#include "chrome/browser/ui/media_router/media_sink_with_cast_modes_observer.h"
 #include "chrome/browser/ui/media_router/query_result_manager.h"
 #include "chrome/browser/ui/webui/access_code_cast/access_code_cast.mojom.h"
 #include "components/media_router/browser/presentation/start_presentation_context.h"
@@ -42,7 +42,7 @@ class MediaRouter;
 namespace media_router {
 
 class AccessCodeCastHandler : public access_code_cast::mojom::PageHandler,
-                              public QueryResultManager::Observer,
+                              public MediaSinkWithCastModesObserver,
                               public WebContentsPresentationManager::Observer {
  public:
   using DiscoveryDevice = chrome_browser_media::proto::DiscoveryDevice;
@@ -79,19 +79,11 @@ class AccessCodeCastHandler : public access_code_cast::mojom::PageHandler,
 
  private:
   friend class AccessCodeCastHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest,
-                           DiscoveryDeviceMissingWithOk);
-  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest,
-                           ValidDiscoveryDeviceAndCode);
-  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest, InvalidDiscoveryDevice);
-  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest, NonOKResultCode);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest, DiscoveredDeviceAdded);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest, OtherDevicesIgnored);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest, DesktopMirroring);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest, DesktopMirroringError);
-  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest, OnChannelOpened);
-  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest,
-                           OnChannelOpenedExistingSink);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastHandlerTest, OnSinkAddedResult);
 
   // Returns true if the specified cast mode is among the cast modes specified
   // for the dialog to use when it was initialized.
@@ -107,14 +99,12 @@ class AccessCodeCastHandler : public access_code_cast::mojom::PageHandler,
   // requisite mirroring casting mode is available.
   void InitMirroringSources();
 
-  void OnAccessCodeValidated(
-      absl::optional<DiscoveryDevice> discovery_device,
-      access_code_cast::mojom::AddSinkResultCode result_code);
+  void OnSinkAddedResult(
+      access_code_cast::mojom::AddSinkResultCode add_sink_result,
+      absl::optional<MediaSink::Id> sink_id);
 
-  void OnChannelOpenedResult(bool channel_opened);
-
-  // QueryResultManager::Observer:
-  void OnResultsUpdated(
+  // MediaSinkWithCastModesObserver:
+  void OnSinksUpdated(
       const std::vector<MediaSinkWithCastModes>& sinks) override;
 
   // WebContentsPresentationManager::Observer
@@ -150,8 +140,6 @@ class AccessCodeCastHandler : public access_code_cast::mojom::PageHandler,
   mojo::Remote<access_code_cast::mojom::Page> page_;
   mojo::Receiver<access_code_cast::mojom::PageHandler> receiver_;
 
-  std::unique_ptr<AccessCodeCastDiscoveryInterface> discovery_server_interface_;
-
   // Used to fetch OAuth2 access tokens.
   raw_ptr<Profile> const profile_;
 
@@ -163,8 +151,6 @@ class AccessCodeCastHandler : public access_code_cast::mojom::PageHandler,
 
   // The id of the media sink discovered from the access code;
   absl::optional<MediaSink::Id> sink_id_;
-  // Set of cast modes supported by the discovered sink;
-  media_router::CastModeSet supported_cast_modes_;
 
   // Monitors and reports sink availability.
   std::unique_ptr<QueryResultManager> query_result_manager_;

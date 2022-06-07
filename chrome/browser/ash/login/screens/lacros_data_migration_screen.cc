@@ -12,10 +12,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -23,7 +25,9 @@
 namespace ash {
 namespace {
 constexpr char kUserActionSkip[] = "skip";
-constexpr base::TimeDelta kShowSkipButtonDuration = base::Seconds(20);
+constexpr char kUserActionCancel[] = "cancel";
+constexpr char kUserActionGotoFiles[] = "gotoFiles";
+constexpr base::TimeDelta kShowSkipButtonDuration = base::Seconds(10);
 
 // If the battery percent is lower than this ratio, and the charger is not
 // connected, then the low-battery warning will be displayed.
@@ -34,7 +38,8 @@ LacrosDataMigrationScreen::LacrosDataMigrationScreen(
     LacrosDataMigrationScreenView* view)
     : BaseScreen(LacrosDataMigrationScreenView::kScreenId,
                  OobeScreenPriority::SCREEN_DEVICE_DEVELOPER_MODIFICATION),
-      view_(view) {
+      view_(view),
+      attempt_restart_(base::BindRepeating(&chrome::AttemptRestart)) {
   DCHECK(view_);
   if (view_)
     view_->Bind(this);
@@ -43,6 +48,20 @@ LacrosDataMigrationScreen::LacrosDataMigrationScreen(
 LacrosDataMigrationScreen::~LacrosDataMigrationScreen() {
   if (view_)
     view_->Unbind();
+}
+
+void LacrosDataMigrationScreen::OnViewVisible() {
+  // If set, do not post `ShowSkipButton()`.
+  if (skip_post_show_button_for_testing_)
+    return;
+
+  // Post a delayed task to show the skip button after
+  // `kShowSkipButtonDuration`.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&LacrosDataMigrationScreen::ShowSkipButton,
+                     weak_factory_.GetWeakPtr()),
+      kShowSkipButtonDuration);
 }
 
 void LacrosDataMigrationScreen::OnViewDestroyed(
@@ -69,7 +88,8 @@ void LacrosDataMigrationScreen::ShowImpl() {
                  << switches::kBrowserDataMigrationForUser
                  << ". Aborting migration.";
 
-      chrome::AttemptRestart();
+      attempt_restart_.Run();
+      return;
     }
     DCHECK(!user_id_hash.empty()) << "user_id_hash should not be empty.";
 
@@ -77,7 +97,7 @@ void LacrosDataMigrationScreen::ShowImpl() {
     if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
       LOG(ERROR) << "Could not get the original user data dir path. Aborting "
                     "migration.";
-      chrome::AttemptRestart();
+      attempt_restart_.Run();
       return;
     }
 
@@ -93,30 +113,16 @@ void LacrosDataMigrationScreen::ShowImpl() {
     migrator_ = std::make_unique<BrowserDataMigratorImpl>(
         profile_data_dir, user_id_hash, progress_callback,
         g_browser_process->local_state());
-
-    migrator_->Migrate(base::BindOnce([](BrowserDataMigrator::Result result) {
-      // TODO(crbug.com/1296174): support page transition on failure.
-      chrome::AttemptRestart();
-    }));
   }
+
+  migrator_->Migrate(base::BindOnce(&LacrosDataMigrationScreen::OnMigrated,
+                                    weak_factory_.GetWeakPtr()));
 
   // Show the screen.
   view_->Show();
 
   GetWakeLock()->RequestWakeLock();
   UpdateLowBatteryStatus();
-
-  // If set, do not post `ShowSkipButton()`.
-  if (skip_post_show_button_for_testing_)
-    return;
-
-  // Post a delayed task to show the skip button after
-  // `kShowSkipButtonDuration`.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&LacrosDataMigrationScreen::ShowSkipButton,
-                     weak_factory_.GetWeakPtr()),
-      kShowSkipButtonDuration);
 }
 
 void LacrosDataMigrationScreen::OnProgressUpdate(int progress) {
@@ -127,7 +133,8 @@ void LacrosDataMigrationScreen::ShowSkipButton() {
   view_->ShowSkipButton();
 }
 
-void LacrosDataMigrationScreen::OnUserAction(const std::string& action_id) {
+void LacrosDataMigrationScreen::OnUserActionDeprecated(
+    const std::string& action_id) {
   if (action_id == kUserActionSkip) {
     LOG(WARNING) << "User has skipped the migration.";
     if (migrator_) {
@@ -136,9 +143,46 @@ void LacrosDataMigrationScreen::OnUserAction(const std::string& action_id) {
       // which triggers Chrome to restart.
       migrator_->Cancel();
     }
+  } else if (action_id == kUserActionCancel) {
+    attempt_restart_.Run();
+  } else if (action_id == kUserActionGotoFiles) {
+    // Persistent that "Go to files" button is clicked.
+    // BrowserManager will take a look at the value on the next session
+    // starting (i.e. after Chrome's restart), and if necessary launches
+    // Files.app.
+    const std::string user_id_hash =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kBrowserDataMigrationForUser);
+    auto* local_state = g_browser_process->local_state();
+    crosapi::browser_util::SetGotoFilesClicked(local_state, user_id_hash);
+    local_state->CommitPendingWrite(
+        base::BindOnce(&LacrosDataMigrationScreen::OnLocalStateCommited,
+                       weak_factory_.GetWeakPtr()));
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
+}
+
+void LacrosDataMigrationScreen::OnMigrated(BrowserDataMigrator::Result result) {
+  switch (result.kind) {
+    case BrowserDataMigrator::ResultKind::kSkipped:
+    case BrowserDataMigrator::ResultKind::kSucceeded:
+    case BrowserDataMigrator::ResultKind::kCancelled:
+      attempt_restart_.Run();
+      return;
+    case BrowserDataMigrator::ResultKind::kFailed:
+      if (view_) {
+        // Goto Files button should be displayed on migration failure caused by
+        // out of disk space.
+        const bool show_goto_files = result.required_size.has_value();
+        view_->SetFailureStatus(result.required_size, show_goto_files);
+      }
+      break;
+  }
+}
+
+void LacrosDataMigrationScreen::OnLocalStateCommited() {
+  attempt_restart_.Run();
 }
 
 void LacrosDataMigrationScreen::HideImpl() {
@@ -189,6 +233,12 @@ void LacrosDataMigrationScreen::SetSkipPostShowButtonForTesting(bool value) {
 void LacrosDataMigrationScreen::SetMigratorForTesting(
     std::unique_ptr<BrowserDataMigrator> migrator) {
   migrator_ = std::move(migrator);
+}
+
+void LacrosDataMigrationScreen::SetAttemptRestartForTesting(
+    const base::RepeatingClosure& attempt_restart) {
+  DCHECK(!attempt_restart.is_null());
+  attempt_restart_ = attempt_restart;
 }
 
 }  // namespace ash

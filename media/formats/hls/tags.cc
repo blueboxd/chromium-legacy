@@ -10,6 +10,7 @@
 #include "base/notreached.h"
 #include "media/formats/hls/items.h"
 #include "media/formats/hls/parse_status.h"
+#include "media/formats/hls/variable_dictionary.h"
 
 namespace media::hls {
 
@@ -23,26 +24,6 @@ ParseStatus::Or<T> ParseEmptyTag(TagItem tag) {
   }
 
   return T{};
-}
-
-// Quoted strings in EXT-X-DEFINE tags are unique in that they aren't subject to
-// variable substitution. To simplify things, we define a special quoted-string
-// extraction function here.
-ParseStatus::Or<SourceString> ParseXDefineTagQuotedString(
-    SourceString source_str) {
-  if (source_str.Str().size() < 2) {
-    return ParseStatusCode::kMalformedTag;
-  }
-
-  if (*source_str.Str().begin() != '"') {
-    return ParseStatusCode::kMalformedTag;
-  }
-
-  if (*source_str.Str().rbegin() != '"') {
-    return ParseStatusCode::kMalformedTag;
-  }
-
-  return source_str.Substr(1, source_str.Str().size() - 2);
 }
 
 // Attributes expected in `EXT-X-DEFINE` tag contents.
@@ -62,6 +43,35 @@ constexpr base::StringPiece GetAttributeName(XDefineTagAttribute attribute) {
       return "NAME";
     case XDefineTagAttribute::kValue:
       return "VALUE";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
+// Attributes expected in `EXT-X-STREAM-INF` tag contents.
+// These must remain sorted alphabetically.
+enum class XStreamInfTagAttribute {
+  kAverageBandwidth,
+  kBandwidth,
+  kCodecs,
+  kProgramId,  // Ignored for backwards compatibility
+  kScore,
+  kMaxValue = kScore,
+};
+
+constexpr base::StringPiece GetAttributeName(XStreamInfTagAttribute attribute) {
+  switch (attribute) {
+    case XStreamInfTagAttribute::kAverageBandwidth:
+      return "AVERAGE-BANDWIDTH";
+    case XStreamInfTagAttribute::kBandwidth:
+      return "BANDWIDTH";
+    case XStreamInfTagAttribute::kCodecs:
+      return "CODECS";
+    case XStreamInfTagAttribute::kProgramId:
+      return "PROGRAM-ID";
+    case XStreamInfTagAttribute::kScore:
+      return "SCORE";
   }
 
   NOTREACHED();
@@ -210,7 +220,12 @@ XDefineTag XDefineTag::CreateImport(types::VariableName name) {
 }
 
 ParseStatus::Or<XDefineTag> XDefineTag::Parse(TagItem tag) {
-  // Parse the attribute-list
+  DCHECK(tag.name == ToTagName(XDefineTag::kName));
+
+  // Parse the attribute-list.
+  // Quoted strings in EXT-X-DEFINE tags are unique in that they aren't subject
+  // to variable substitution. For that reason, we use the
+  // `ParseQuotedStringWithoutSubstitution` function here.
   TypedAttributeMap<XDefineTagAttribute> map;
   types::AttributeListIterator iter(tag.content);
   auto result = map.FillUntilError(&iter);
@@ -227,9 +242,9 @@ ParseStatus::Or<XDefineTag> XDefineTag::Parse(TagItem tag) {
   }
 
   if (map.HasValue(XDefineTagAttribute::kName)) {
-    auto var_name =
-        ParseXDefineTagQuotedString(map.GetValue(XDefineTagAttribute::kName))
-            .MapValue(types::ParseVariableName);
+    auto var_name = types::ParseQuotedStringWithoutSubstitution(
+                        map.GetValue(XDefineTagAttribute::kName))
+                        .MapValue(types::VariableName::Parse);
     if (var_name.has_error()) {
       return ParseStatus(ParseStatusCode::kMalformedTag)
           .AddCause(std::move(var_name).error());
@@ -240,8 +255,8 @@ ParseStatus::Or<XDefineTag> XDefineTag::Parse(TagItem tag) {
       return ParseStatusCode::kMalformedTag;
     }
 
-    auto value =
-        ParseXDefineTagQuotedString(map.GetValue(XDefineTagAttribute::kValue));
+    auto value = types::ParseQuotedStringWithoutSubstitution(
+        map.GetValue(XDefineTagAttribute::kValue));
     if (value.has_error()) {
       return ParseStatus(ParseStatusCode::kMalformedTag);
     }
@@ -251,9 +266,9 @@ ParseStatus::Or<XDefineTag> XDefineTag::Parse(TagItem tag) {
   }
 
   if (map.HasValue(XDefineTagAttribute::kImport)) {
-    auto var_name =
-        ParseXDefineTagQuotedString(map.GetValue(XDefineTagAttribute::kImport))
-            .MapValue(types::ParseVariableName);
+    auto var_name = types::ParseQuotedStringWithoutSubstitution(
+                        map.GetValue(XDefineTagAttribute::kImport))
+                        .MapValue(types::VariableName::Parse);
     if (var_name.has_error()) {
       return ParseStatus(ParseStatusCode::kMalformedTag)
           .AddCause(std::move(var_name).error());
@@ -267,6 +282,106 @@ ParseStatus::Or<XDefineTag> XDefineTag::Parse(TagItem tag) {
 
   // Without "NAME" or "IMPORT", the tag is malformed
   return ParseStatusCode::kMalformedTag;
+}
+
+ParseStatus::Or<XPlaylistTypeTag> XPlaylistTypeTag::Parse(TagItem tag) {
+  DCHECK(tag.name == ToTagName(XPlaylistTypeTag::kName));
+
+  // This tag requires content
+  if (tag.content.Empty()) {
+    return ParseStatusCode::kMalformedTag;
+  }
+
+  if (tag.content.Str() == "EVENT") {
+    return XPlaylistTypeTag{.type = PlaylistType::kEvent};
+  }
+  if (tag.content.Str() == "VOD") {
+    return XPlaylistTypeTag{.type = PlaylistType::kVOD};
+  }
+
+  return ParseStatusCode::kUnknownPlaylistType;
+}
+
+XStreamInfTag::XStreamInfTag() = default;
+
+XStreamInfTag::~XStreamInfTag() = default;
+
+XStreamInfTag::XStreamInfTag(const XStreamInfTag&) = default;
+
+XStreamInfTag::XStreamInfTag(XStreamInfTag&&) = default;
+
+XStreamInfTag& XStreamInfTag::operator=(const XStreamInfTag&) = default;
+
+XStreamInfTag& XStreamInfTag::operator=(XStreamInfTag&&) = default;
+
+ParseStatus::Or<XStreamInfTag> XStreamInfTag::Parse(
+    TagItem tag,
+    const VariableDictionary& variable_dict,
+    VariableDictionary::SubstitutionBuffer& sub_buffer) {
+  DCHECK(tag.name == ToTagName(XStreamInfTag::kName));
+  XStreamInfTag out;
+
+  // Parse the attribute-list
+  TypedAttributeMap<XStreamInfTagAttribute> map;
+  types::AttributeListIterator iter(tag.content);
+  auto map_result = map.FillUntilError(&iter);
+
+  if (map_result.code() != ParseStatusCode::kReachedEOF) {
+    return ParseStatus(ParseStatusCode::kMalformedTag)
+        .AddCause(std::move(map_result));
+  }
+
+  // Extract the 'BANDWIDTH' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kBandwidth)) {
+    auto bandwidth = types::ParseDecimalInteger(
+        map.GetValue(XStreamInfTagAttribute::kBandwidth));
+    if (bandwidth.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(bandwidth).error());
+    }
+
+    out.bandwidth = std::move(bandwidth).value();
+  } else {
+    return ParseStatusCode::kMalformedTag;
+  }
+
+  // Extract the 'AVERAGE-BANDWIDTH' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kAverageBandwidth)) {
+    auto average_bandwidth = types::ParseDecimalInteger(
+        map.GetValue(XStreamInfTagAttribute::kAverageBandwidth));
+    if (average_bandwidth.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(average_bandwidth).error());
+    }
+
+    out.average_bandwidth = std::move(average_bandwidth).value();
+  }
+
+  // Extract the 'SCORE' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kScore)) {
+    auto score = types::ParseDecimalFloatingPoint(
+        map.GetValue(XStreamInfTagAttribute::kScore));
+    if (score.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(score).error());
+    }
+
+    out.score = std::move(score).value();
+  }
+
+  // Extract the 'CODECS' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kCodecs)) {
+    auto codecs =
+        types::ParseQuotedString(map.GetValue(XStreamInfTagAttribute::kCodecs),
+                                 variable_dict, sub_buffer);
+    if (codecs.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(codecs).error());
+    }
+    out.codecs = std::string{std::move(codecs).value()};
+  }
+
+  return out;
 }
 
 }  // namespace media::hls

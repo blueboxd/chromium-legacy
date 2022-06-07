@@ -9,7 +9,7 @@
 
 #include "ash/services/device_sync/device_sync_base.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -58,7 +58,7 @@ class FakeDeviceSync : public DeviceSyncBase {
   void InvokePendingGetDebugInfoCallback(mojom::DebugInfoPtr debug_info_ptr);
 
  protected:
-  // mojom::DeviceSync:
+  // device_sync::mojom::DeviceSync:
   void ForceEnrollmentNow(ForceEnrollmentNowCallback callback) override;
   void ForceSyncNow(ForceSyncNowCallback callback) override;
   void GetLocalDeviceMetadata(GetLocalDeviceMetadataCallback callback) override;
@@ -102,6 +102,6 @@ class FakeDeviceSync : public DeviceSyncBase {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_FAKE_DEVICE_SYNC_H_

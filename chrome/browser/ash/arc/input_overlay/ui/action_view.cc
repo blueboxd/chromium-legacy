@@ -5,13 +5,19 @@
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
 
 #include "base/bind.h"
-#include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
 
 namespace arc {
 namespace input_overlay {
 namespace {
 constexpr int kMenuEntryOffset = 4;
-}
+
+// UI strings.
+// TODO(cuicuiruan): move the strings to chrome/app/generated_resources.grd
+// after UX/UI strings are confirmed.
+constexpr base::StringPiece kEditErrorUnsupportedKey("Unsupported key");
+constexpr base::StringPiece kEditErrorDuplicatedKey(
+    "Duplicated key in the same action");
+}  // namespace
 
 ActionView::ActionView(Action* action,
                        DisplayOverlayController* display_overlay_controller)
@@ -25,18 +31,19 @@ void ActionView::SetDisplayMode(DisplayMode mode) {
     return;
   if (mode == DisplayMode::kView) {
     RemoveEditButton();
-    if (menu_entry_) {
-      RemoveChildViewT(menu_entry_);
-      menu_entry_ = nullptr;
-    }
+    if (!IsBound(*action_->current_binding()))
+      SetVisible(false);
   }
   if (mode == DisplayMode::kEdit) {
     AddEditButton();
-    if (circle_)
-      circle_->SetDisplayMode(mode);
-    for (auto* label : labels_)
-      label->SetDisplayMode(mode);
+    if (!IsBound(*action_->current_binding()))
+      SetVisible(true);
   }
+
+  if (circle_)
+    circle_->SetDisplayMode(mode);
+  for (auto* tag : tags_)
+    tag->SetDisplayMode(mode);
 }
 
 void ActionView::SetPositionFromCenterPosition(gfx::PointF& center_position) {
@@ -44,14 +51,6 @@ void ActionView::SetPositionFromCenterPosition(gfx::PointF& center_position) {
   int top = std::max(0, (int)(center_position.y() - center_.y()));
   // SetPosition function needs the top-left position.
   SetPosition(gfx::Point(left, top));
-}
-
-void ActionView::OnMenuEntryPressed() {
-  display_overlay_controller_->AddActionEditMenu(this);
-  DCHECK(menu_entry_);
-  if (!menu_entry_)
-    return;
-  menu_entry_->RequestFocus();
 }
 
 gfx::Point ActionView::GetEditMenuPosition(gfx::Size menu_size) {
@@ -69,6 +68,22 @@ gfx::Point ActionView::GetEditMenuPosition(gfx::Size menu_size) {
 
 void ActionView::RemoveEditMenu() {
   display_overlay_controller_->RemoveActionEditMenu();
+}
+
+void ActionView::ShowErrorMsg(base::StringPiece error_msg) {
+  display_overlay_controller_->AddEditErrorMsg(this, error_msg);
+  SetDisplayMode(DisplayMode::kEdited);
+}
+
+void ActionView::OnResetBinding() {
+  const auto& binding = action_->GetCurrentDisplayedBinding();
+  if (!IsBound(binding) || binding == *action_->current_binding())
+    return;
+
+  auto input_element =
+      std::make_unique<InputElement>(*(action_->current_binding()));
+  display_overlay_controller_->OnBindingChange(action_,
+                                               std::move(input_element));
 }
 
 void ActionView::AddEditButton() {
@@ -91,6 +106,29 @@ void ActionView::RemoveEditButton() {
     return;
   RemoveChildViewT(menu_entry_);
   menu_entry_ = nullptr;
+}
+
+bool ActionView::ShouldShowErrorMsg(ui::DomCode code) {
+  // Check if |code| is duplicated with the keys in its action. For example,
+  // there are four keys involved in the key-bound |ActionMove|.
+  auto& binding = action_->GetCurrentDisplayedBinding();
+  if (IsKeyboardBound(binding)) {
+    for (const auto& key : binding.keys()) {
+      if (key != code)
+        continue;
+      display_overlay_controller_->AddEditErrorMsg(this,
+                                                   kEditErrorDuplicatedKey);
+      return true;
+    }
+  }
+
+  if (!action_->support_modifier_key() &&
+      ModifierDomCodeToEventFlag(code) != ui::EF_NONE) {
+    display_overlay_controller_->AddEditErrorMsg(this,
+                                                 kEditErrorUnsupportedKey);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace input_overlay

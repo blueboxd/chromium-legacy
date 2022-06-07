@@ -22,6 +22,8 @@ static_library("internal") {
     "data_collection/dummy_training_data_collector.h",
     "data_collection/training_data_collector.cc",
     "data_collection/training_data_collector.h",
+    "data_collection/training_data_collector_impl.cc",
+    "data_collection/training_data_collector_impl.h",
     "database/database_maintenance.h",
     "database/database_maintenance_impl.cc",
     "database/database_maintenance_impl.h",
@@ -55,8 +57,6 @@ static_library("internal") {
     "execution/custom_input_processor.h",
     "execution/default_model_manager.cc",
     "execution/default_model_manager.h",
-    "execution/dummy_model_execution_manager.cc",
-    "execution/dummy_model_execution_manager.h",
     "execution/feature_aggregator.h",
     "execution/feature_aggregator_impl.cc",
     "execution/feature_aggregator_impl.h",
@@ -65,8 +65,8 @@ static_library("internal") {
     "execution/feature_processor_state.cc",
     "execution/feature_processor_state.h",
     "execution/model_execution_manager.h",
-    "execution/model_execution_manager_factory.cc",
-    "execution/model_execution_manager_factory.h",
+    "execution/model_execution_manager_impl.cc",
+    "execution/model_execution_manager_impl.h",
     "execution/model_execution_status.h",
     "execution/query_processor.h",
     "execution/sql_feature_processor.cc",
@@ -75,6 +75,8 @@ static_library("internal") {
     "execution/uma_feature_processor.h",
     "platform_options.cc",
     "platform_options.h",
+    "scheduler/execution_service.cc",
+    "scheduler/execution_service.h",
     "scheduler/model_execution_scheduler.h",
     "scheduler/model_execution_scheduler_impl.cc",
     "scheduler/model_execution_scheduler_impl.h",
@@ -101,6 +103,8 @@ static_library("internal") {
     "signals/history_service_observer.h",
     "signals/signal_filter_processor.cc",
     "signals/signal_filter_processor.h",
+    "signals/signal_handler.cc",
+    "signals/signal_handler.h",
     "signals/ukm_config.cc",
     "signals/ukm_config.h",
     "signals/ukm_observer.cc",
@@ -122,7 +126,6 @@ static_library("internal") {
     "//components/history/core/browser:browser",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
-    "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//components/prefs",
     "//components/segmentation_platform/internal/proto",
     "//components/segmentation_platform/public",
@@ -135,14 +138,6 @@ static_library("internal") {
 
   public_deps =
       [ "//components/optimization_guide/proto:optimization_guide_proto" ]
-
-  if (build_with_tflite_lib) {
-    sources += [
-      "execution/model_execution_manager_impl.cc",
-      "execution/model_execution_manager_impl.h",
-    ]
-    deps += [ "//third_party/tflite:tflite_public_headers" ]
-  }
 
   if (is_android) {
     sources += [
@@ -182,7 +177,7 @@ source_set("unit_tests") {
   # IMPORTANT NOTE: When adding new tests, also remember to update the list of
   # tests in //components/segmentation_platform/components_unittests.filter
   sources = [
-    "data_collection/training_data_collector_unittest.cc",
+    "data_collection/training_data_collector_impl_unittest.cc",
     "database/database_maintenance_impl_unittest.cc",
     "database/metadata_utils_unittest.cc",
     "database/mock_signal_database.cc",
@@ -204,8 +199,8 @@ source_set("unit_tests") {
     "database/ukm_metrics_table_unittest.cc",
     "database/ukm_url_table_unittest.cc",
     "dummy_segmentation_platform_service_unittest.cc",
+    "execution/custom_input_processor_unittest.cc",
     "execution/default_model_manager_unittest.cc",
-    "execution/dummy_model_execution_manager_unittest.cc",
     "execution/feature_aggregator_impl_unittest.cc",
     "execution/feature_list_query_processor_unittest.cc",
     "execution/mock_feature_aggregator.cc",
@@ -214,12 +209,14 @@ source_set("unit_tests") {
     "execution/mock_feature_list_query_processor.h",
     "execution/mock_model_provider.cc",
     "execution/mock_model_provider.h",
-    "execution/model_execution_manager_factory_unittest.cc",
+    "execution/model_execution_manager_impl_unittest.cc",
     "execution/query_processor.h",
     "mock_ukm_data_manager.cc",
     "mock_ukm_data_manager.h",
     "scheduler/model_execution_scheduler_unittest.cc",
     "segmentation_platform_service_impl_unittest.cc",
+    "segmentation_platform_service_test_base.cc",
+    "segmentation_platform_service_test_base.h",
     "segmentation_ukm_helper_unittest.cc",
     "selection/segment_result_provider_unittest.cc",
     "selection/segment_score_provider_unittest.cc",
@@ -236,6 +233,7 @@ source_set("unit_tests") {
     "signals/url_signal_handler_unittest.cc",
     "signals/user_action_signal_handler_unittest.cc",
     "stats_unittest.cc",
+    "ukm_data_manager_impl_unittest.cc",
   ]
 
   deps = [
@@ -243,6 +241,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/history/core/browser:browser",
+    "//components/history/core/test",
     "//components/leveldb_proto:test_support",
     "//components/optimization_guide/core",
     "//components/optimization_guide/core:test_support",
@@ -264,7 +263,6 @@ source_set("unit_tests") {
     # IMPORTANT NOTE: When adding new tests, also remember to update the list of
     # tests in //components/segmentation_platform/components_unittests.filter
     sources += [
-      "execution/model_execution_manager_impl_unittest.cc",
       "execution/optimization_guide/optimization_guide_segmentation_model_provider_unittest.cc",
       "execution/optimization_guide/segmentation_model_executor_unittest.cc",
     ]

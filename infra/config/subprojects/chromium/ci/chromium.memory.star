@@ -50,6 +50,9 @@ linux_memory_builder(
     cq_mirrors_console_view = "mirrors",
     os = os.LINUX_BIONIC,
     ssd = True,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 linux_memory_builder(
@@ -97,7 +100,9 @@ linux_memory_builder(
     cores = 32,
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 5 * time.hour,
-    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 linux_memory_builder(
@@ -250,7 +255,7 @@ ci.builder(
         category = "android",
         short_name = "asn",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
     goma_backend = None,
@@ -280,6 +285,12 @@ ci.builder(
         short_name = "asn",
     ),
     cores = 32,
+    # This builder is normally using 2.5 hours to run with a cached builder. And
+    # 1.5 hours additional setup time without cache, https://crbug.com/1311134.
+    execution_timeout = 5 * time.hour,
     builderless = True,
     os = os.WINDOWS_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )

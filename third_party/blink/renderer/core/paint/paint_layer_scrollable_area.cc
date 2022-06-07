@@ -541,7 +541,12 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   auto* frame_view = box->GetFrameView();
   frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll(*box);
 
+  // The feature |kOptimizeViewportConstrainedPaintInvalidation| is for testing
+  // the performance of removing the paint invalidation of viewport constrained
+  // objects after scrolling.
   if (IsA<LayoutView>(box) && frame_view->HasViewportConstrainedObjects() &&
+      !base::FeatureList::IsEnabled(
+          features::kOptimizeViewportConstrainedPaintInvalidation) &&
       !frame_view->InvalidateViewportConstrainedObjects()) {
     box->SetShouldDoFullPaintInvalidation();
     box->SetSubtreeShouldCheckForPaintInvalidation();
@@ -2044,8 +2049,7 @@ bool PaintLayerScrollableArea::HitTestResizerInFragments(
     const PaintLayerFragment& fragment = layer_fragments.at(i);
     if (fragment.background_rect.Intersects(hit_test_location)) {
       gfx::Rect resizer_corner_rect = ResizerCornerRect(kResizerForPointer);
-      resizer_corner_rect.Offset(
-          ToRoundedVector2d(fragment.layer_bounds.offset));
+      resizer_corner_rect.Offset(ToRoundedVector2d(fragment.layer_offset));
       if (resizer_corner_rect.Contains(hit_test_location.RoundedPoint()))
         return true;
     }

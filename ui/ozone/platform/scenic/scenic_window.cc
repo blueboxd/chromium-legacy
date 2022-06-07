@@ -35,10 +35,11 @@ namespace {
 gfx::Insets ConvertInsets(
     float device_pixel_ratio,
     const fuchsia::ui::gfx::ViewProperties& view_properties) {
-  return gfx::Insets(device_pixel_ratio * view_properties.inset_from_min.y,
-                     device_pixel_ratio * view_properties.inset_from_min.x,
-                     device_pixel_ratio * view_properties.inset_from_max.y,
-                     device_pixel_ratio * view_properties.inset_from_max.x);
+  return gfx::Insets::TLBR(
+      device_pixel_ratio * view_properties.inset_from_min.y,
+      device_pixel_ratio * view_properties.inset_from_min.x,
+      device_pixel_ratio * view_properties.inset_from_max.y,
+      device_pixel_ratio * view_properties.inset_from_max.x);
 }
 
 }  // namespace
@@ -206,7 +207,11 @@ PlatformWindowState ScenicWindow::GetPlatformWindowState() const {
     return PlatformWindowState::kFullScreen;
   if (!is_view_attached_)
     return PlatformWindowState::kMinimized;
-  return PlatformWindowState::kNormal;
+
+  // TODO(crbug.com/1241868): We cannot tell what portion of the screen is
+  // occupied by the View, so report is as maximized to reduce the space used
+  // by any browser chrome.
+  return PlatformWindowState::kMaximized;
 }
 
 void ScenicWindow::Activate() {

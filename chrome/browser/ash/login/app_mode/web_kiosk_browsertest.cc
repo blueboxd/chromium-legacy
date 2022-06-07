@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_test_api.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
@@ -88,11 +89,10 @@ class WebKioskTest : public OobeBaseTest {
   }
 
   void MakeAppAlreadyInstalled() {
-    auto info = std::make_unique<WebAppInstallInfo>();
-    info->start_url = GURL(kAppLaunchUrl);
-    info->title = kAppTitle;
-    WebKioskAppManager::Get()->UpdateAppByAccountId(account_id(),
-                                                    std::move(info));
+    WebAppInstallInfo info;
+    info.start_url = GURL(kAppLaunchUrl);
+    info.title = kAppTitle;
+    WebKioskAppManager::Get()->UpdateAppByAccountId(account_id(), info);
   }
 
   bool LaunchApp() {

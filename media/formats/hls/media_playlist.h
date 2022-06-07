@@ -8,32 +8,21 @@
 #include <vector>
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "media/formats/hls/playlist.h"
+#include "media/formats/hls/tags.h"
 #include "media/formats/hls/types.h"
-#include "url/gurl.h"
 
 namespace media::hls {
 
 class MediaSegment;
 
-class MEDIA_EXPORT MediaPlaylist {
+class MEDIA_EXPORT MediaPlaylist final : public Playlist {
  public:
-  MediaPlaylist(const MediaPlaylist&);
+  MediaPlaylist(const MediaPlaylist&) = delete;
   MediaPlaylist(MediaPlaylist&&);
-  MediaPlaylist& operator=(const MediaPlaylist&);
+  MediaPlaylist& operator=(const MediaPlaylist&) = delete;
   MediaPlaylist& operator=(MediaPlaylist&&);
   ~MediaPlaylist();
-
-  // Returns the resolved URI of this playlist.
-  const GURL& Uri() const { return uri_; }
-
-  // Returns the HLS version number defined by the playlist. The default version
-  // is `1`.
-  types::DecimalInteger GetVersion() const { return version_; }
-
-  // Indicates that all media samples in a Segment can be decoded without
-  // information from other segments. It applies to every Media Segment in the
-  // Playlist.
-  bool AreSegmentsIndependent() const { return independent_segments_; }
 
   // Returns all segments in this playlist, in chronological order. This vector
   // may be copied independently of this Playlist.
@@ -43,6 +32,16 @@ class MEDIA_EXPORT MediaPlaylist {
   // Computed via the 'EXTINF' attribute, so may be slightly longer than the
   // actual duration.
   base::TimeDelta GetComputedDuration() const { return computed_duration_; }
+
+  // Returns the type of this playlist (as specified by the
+  // 'EXT-X-PLAYLIST-TYPE' tag). If this is present, then the server must follow
+  // the constraints detailed on `PlaylistType` when the playlist is reloaded.
+  // If this property is absent, that implies that the server may append new
+  // segments to the end or remove old segments from the beginning of this
+  // playlist upon reloading.
+  absl::optional<PlaylistType> GetPlaylistType() const {
+    return playlist_type_;
+  }
 
   // Attempts to parse the playlist represented by `source`. `uri` must be a
   // valid, non-empty GURL referring to the URI of this playlist. If the
@@ -55,13 +54,12 @@ class MEDIA_EXPORT MediaPlaylist {
   MediaPlaylist(GURL uri,
                 types::DecimalInteger version,
                 bool independent_segments,
-                std::vector<MediaSegment> segments);
+                std::vector<MediaSegment> segments,
+                absl::optional<PlaylistType> playlist_type);
 
-  GURL uri_;
-  types::DecimalInteger version_;
-  bool independent_segments_;
   std::vector<MediaSegment> segments_;
   base::TimeDelta computed_duration_;
+  absl::optional<PlaylistType> playlist_type_;
 };
 
 }  // namespace media::hls

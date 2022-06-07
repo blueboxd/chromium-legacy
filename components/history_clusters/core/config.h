@@ -51,8 +51,14 @@ struct Config {
   double min_score_to_always_show_above_the_fold = 0.5;
 
   // If enabled, this is the number of non-zero scored visits to always show
-  // above the fold regardless of score.
-  int num_visits_to_always_show_above_the_fold = 3;
+  // above the fold regardless of score. Note, this value includes the
+  // "top visit". In the unlabeled "top visit" UI configuration, that means the
+  // one "top visit" and three subordinate looking visits will be always shown.
+  size_t num_visits_to_always_show_above_the_fold = 4;
+
+  // If enabled, hidden visits are dropped entirely, instead of being gated
+  // behind a "Show More" UI control.
+  bool drop_hidden_visits = false;
 
   // If enabled, when there is a Journeys search query, the backend re-scores
   // visits within a cluster to account for whether or not that visit matches.
@@ -63,13 +69,13 @@ struct Config {
   // reverse chronologically, but the clusters within batches will be resorted.
   bool sort_clusters_within_batch_for_query = false;
 
-  // If enabled, changes the History Clusters omnibox action text to be:
-  // "Resume your research" instead of "Resume your journey".
-  bool alternate_omnibox_action_text = true;
-
   // Enables the Journeys Omnibox Action chip. `kJourneys` must also be enabled
   // for this to take effect.
   bool omnibox_action = false;
+
+  // If enabled, allows the Omnibox Action chip to also appear on URLs. This
+  // does nothing if `omnibox_action` is disabled.
+  bool omnibox_action_on_urls = false;
 
   // Enables debug info in non-user-visible surfaces, like Chrome Inspector.
   // Does nothing if `kJourneys` is disabled.
@@ -105,7 +111,7 @@ struct Config {
 
   // Returns whether content clustering is enabled and
   // should be performed by the clustering backend.
-  bool content_clustering_enabled = true;
+  bool content_clustering_enabled = false;
 
   // Returns the weight that should be placed on entity similarity for
   // determining if two clusters are similar enough to be combined into one.
@@ -191,6 +197,16 @@ struct Config {
   // Whether to assign labels to clusters. If the label exists, it will be shown
   // in the UI. If the label doesn't exist, the UI will emphasize the top visit.
   bool should_label_clusters = false;
+
+  // Whether to assign labels to clusters from the hostnames of the cluster.
+  // Does nothing if `should_label_clusters` is false. Note that since every
+  // cluster has a hostname, this flag in conjunction with
+  // `should_label_clusters` will give every cluster a label.
+  bool labels_from_hostnames = true;
+
+  // Whether to assign labels to clusters from the Entities of the cluster.
+  // Does nothing if `should_label_clusters` is false.
+  bool labels_from_entities = false;
 
   // The set of hosts for which all visits belonging to that host will not be in
   // any cluster.

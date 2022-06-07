@@ -47,9 +47,10 @@ static bool IsCSS(const Element& element, const AtomicString& type) {
 }
 
 StyleElement::StyleElement(Document* document, bool created_by_parser)
-    : created_by_parser_(created_by_parser),
+    : has_finished_parsing_children_(!created_by_parser),
       loading_(false),
       registered_as_candidate_(false),
+      created_by_parser_(created_by_parser),
       start_position_(TextPosition::BelowRangePosition()),
       pending_sheet_type_(PendingSheetType::kNone) {
   if (created_by_parser && document &&
@@ -70,7 +71,7 @@ StyleElement::ProcessingResult StyleElement::ProcessStyleSheet(
 
   registered_as_candidate_ = true;
   document.GetStyleEngine().AddStyleSheetCandidateNode(element);
-  if (created_by_parser_)
+  if (!has_finished_parsing_children_)
     return kProcessingSuccessful;
 
   return Process(element);
@@ -93,7 +94,7 @@ void StyleElement::RemovedFrom(Element& element,
 }
 
 StyleElement::ProcessingResult StyleElement::ChildrenChanged(Element& element) {
-  if (created_by_parser_)
+  if (!has_finished_parsing_children_)
     return kProcessingSuccessful;
   probe::WillChangeStyleElement(&element);
   return Process(element);
@@ -102,7 +103,7 @@ StyleElement::ProcessingResult StyleElement::ChildrenChanged(Element& element) {
 StyleElement::ProcessingResult StyleElement::FinishParsingChildren(
     Element& element) {
   ProcessingResult result = Process(element);
-  created_by_parser_ = false;
+  has_finished_parsing_children_ = true;
   return result;
 }
 
@@ -169,11 +170,13 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
         media_query_matches = evaluator.Eval(*media_queries);
       }
     }
-    // TODO(crbug.com/1271296): Should be blocking only when created by parser
-    // or has `blocking="render"`, but created_by_parser_ flag is flipped to
-    // false in FinishParsingChildren(), which causes test failures.
-    pending_sheet_type_ = media_query_matches ? PendingSheetType::kBlocking
-                                              : PendingSheetType::kNonBlocking;
+    pending_sheet_type_ =
+        media_query_matches &&
+                (created_by_parser_ ||
+                 (RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
+                  blocking() && blocking()->IsRenderBlocking()))
+            ? PendingSheetType::kBlocking
+            : PendingSheetType::kNonBlocking;
     loading_ = true;
     TextPosition start_position =
         start_position_ == TextPosition::BelowRangePosition()

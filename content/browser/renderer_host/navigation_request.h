@@ -188,11 +188,19 @@ class CONTENT_EXPORT NavigationRequest
   // This enum is used in UMA histograms, so existing values should neither be
   // reordered or removed.
   enum class OriginAgentClusterEndResult {
+    // The first four enums are for use when OAC-by-default is disabled.
     kNotRequestedAndNotOriginKeyed,
     kNotRequestedButOriginKeyed,
     kRequestedButNotOriginKeyed,
     kRequestedAndOriginKeyed,
-    kMaxValue = kRequestedAndOriginKeyed
+    // The remaining enums are for use when OAC-by-default is enabled.
+    kExplicitlyNotRequestedAndNotOriginKeyed,
+    kExplicitlyNotRequestedButOriginKeyed,
+    kExplicitlyRequestedButNotOriginKeyed,
+    kExplicitlyRequestedAndOriginKeyed,
+    kNotExplicitlyRequestedButNotOriginKeyed,
+    kNotExplicitlyRequestedAndOriginKeyed,
+    kMaxValue = kNotExplicitlyRequestedAndOriginKeyed
   };
 
   // Creates a request for a browser-initiated navigation.
@@ -214,7 +222,8 @@ class CONTENT_EXPORT NavigationRequest
       const scoped_refptr<network::ResourceRequestBody>& post_body,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       const absl::optional<blink::Impression>& impression,
-      bool is_pdf);
+      bool is_pdf,
+      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
 
   // Creates a request for a renderer-initiated navigation.
   static std::unique_ptr<NavigationRequest> CreateRendererInitiated(
@@ -312,10 +321,10 @@ class CONTENT_EXPORT NavigationRequest
   NavigationUIData* GetNavigationUIData() override;
   bool IsExternalProtocol() override;
   net::Error GetNetErrorCode() override;
-  RenderFrameHostImpl* GetRenderFrameHost() override;
+  RenderFrameHostImpl* GetRenderFrameHost() const override;
   bool IsSameDocument() override;
-  bool HasCommitted() override;
-  bool IsErrorPage() override;
+  bool HasCommitted() const override;
+  bool IsErrorPage() const override;
   bool HasSubframeNavigationEntryCommitted() override;
   bool DidReplaceEntry() override;
   bool ShouldUpdateHistory() override;
@@ -373,7 +382,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsWaitingToCommit() override;
   bool WasResourceHintsReceived() override;
   bool IsPdf() override;
-  void WriteIntoTrace(perfetto::TracedValue context) override;
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
   PrerenderTriggerType GetPrerenderTriggerType() override;
   std::string GetPrerenderEmbedderHistogramSuffix() override;
@@ -686,6 +695,10 @@ class CONTENT_EXPORT NavigationRequest
 
   bool anonymous() const { return anonymous_; }
 
+  bool is_fenced_frame_opaque_url() const {
+    return is_fenced_frame_opaque_url_;
+  }
+
   // Returns a pointer to the policies copied from the navigation initiator.
   // Returns nullptr if this navigation had no initiator.
   const PolicyContainerPolicies* GetInitiatorPolicyContainerPolicies() const;
@@ -932,6 +945,11 @@ class CONTENT_EXPORT NavigationRequest
   // BrowsingInstance swap. Used only in tests.
   bool force_new_browsing_instance() { return force_new_browsing_instance_; }
 
+  const scoped_refptr<NavigationOrDocumentHandle>&
+  navigation_or_document_handle() {
+    return navigation_or_document_handle_;
+  }
+
  private:
   friend class NavigationRequestTest;
 
@@ -959,7 +977,8 @@ class CONTENT_EXPORT NavigationRequest
       base::WeakPtr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache,
       int initiator_process_id,
       bool was_opener_suppressed,
-      bool is_pdf);
+      bool is_pdf,
+      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
 
   // Checks if this navigation may activate a prerendered page. If it's
   // possible, schedules to start running CommitDeferringConditions for
@@ -985,7 +1004,8 @@ class CONTENT_EXPORT NavigationRequest
       absl::optional<GURL> mapped_url,
       absl::optional<AdAuctionData> ad_auction_data,
       absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-          pending_ad_components_map) override;
+          pending_ad_components_map,
+      ReportingMetadata& reporting_metadata) override;
 
   // Called from BeginNavigation(), OnPrerenderingActivationChecksComplete(),
   // or OnFencedFrameURLMappingComplete().
@@ -1006,6 +1026,10 @@ class CONTENT_EXPORT NavigationRequest
   // Returns whether this navigation request is requesting opt-in
   // origin-isolation.
   bool IsOptInIsolationRequested();
+
+  // Returns whether defaulting to origin-keyed agent cluster (without
+  // necessarily an origin-keyed process) is enabled.
+  bool AreOriginAgentClustersEnabledByDefault() const;
 
   // Returns whether this navigation request should use an origin-keyed
   // agent cluster (but not an origin-keyed process).
@@ -1486,6 +1510,18 @@ class CONTENT_EXPORT NavigationRequest
   // which may be called at any point after BeginNavigation(), will assume that
   // 'prerender_frame_tree_node_id_' has an value assigned.
   void MaybeAssignInvalidPrerenderFrameTreeNodeId();
+
+  // Check if the current navigation request is to an isolated app and injects
+  // the appropriate Cross-Origin-Opener-Policy, Cross-Origin-Embedder-Policy,
+  // Cross-Origin-Resource-Policy, and X-Frame-Options headers to enforce the
+  // security requirements for isolated apps.
+  //
+  // This is a temporary method to make sure that these policies are enforced
+  // for isolated apps. Longer term, it would be better to validate that these
+  // headers are included for isolated apps by developers.
+  // TODO(https://crbug.com/1311061): Remove or replace this method with the
+  // header validation logic for isolated apps.
+  void MaybeInjectIsolatedAppHeaders();
 
   // Never null. The pointee node owns this navigation request instance.
   FrameTreeNode* const frame_tree_node_;
@@ -1972,6 +2008,13 @@ class CONTENT_EXPORT NavigationRequest
   // Indicates that this navigation is for PDF content in a renderer.
   bool is_pdf_ = false;
 
+  // Indicates whether the fenced frame is navigated to an opaque url. This flag
+  // can only change when the embedder navigates the fenced frame. Any
+  // subsequent navigation from within the fenced frame tree will keep the same
+  // flag. Note that this flag is only relevant for fenced frames based on
+  // MPArch.
+  const bool is_fenced_frame_opaque_url_ = false;
+
   // If this navigation is a load in a fenced frame of a URN URL that resulted
   // from an interest group auction, this contains the ad component URLs
   // associated with that auction's winning bid, and the corresponding URNs that
@@ -1994,6 +2037,8 @@ class CONTENT_EXPORT NavigationRequest
   // This navigation request should swap browsing instances as part of a test
   // reset.
   bool force_new_browsing_instance_ = false;
+
+  scoped_refptr<NavigationOrDocumentHandle> navigation_or_document_handle_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

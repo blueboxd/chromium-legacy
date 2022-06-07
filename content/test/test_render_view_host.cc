@@ -301,7 +301,9 @@ ui::Compositor* TestRenderWidgetHostView::GetCompositor() {
 
 TestRenderWidgetHostViewChildFrame::TestRenderWidgetHostViewChildFrame(
     RenderWidgetHost* rwh)
-    : RenderWidgetHostViewChildFrame(rwh, display::ScreenInfos()) {
+    : RenderWidgetHostViewChildFrame(
+          rwh,
+          display::ScreenInfos(display::ScreenInfo())) {
   Init();
 }
 
@@ -428,7 +430,7 @@ bool TestRenderViewHost::CreateRenderView(
   return true;
 }
 
-MockRenderProcessHost* TestRenderViewHost::GetProcess() {
+MockRenderProcessHost* TestRenderViewHost::GetProcess() const {
   return static_cast<MockRenderProcessHost*>(RenderViewHostImpl::GetProcess());
 }
 

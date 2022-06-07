@@ -7,7 +7,7 @@ load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os", "sheriff_rotations")
-load("//lib/ci.star", "ci")
+load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
@@ -51,6 +51,9 @@ ci.builder(
     ),
     cores = 32,
     os = os.WINDOWS_ANY,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -62,6 +65,9 @@ ci.builder(
     ),
     cores = 32,
     os = os.WINDOWS_ANY,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -94,6 +100,19 @@ ci.builder(
     ),
     os = os.WINDOWS_10,
     triggered_by = ["Win Builder"],
+)
+
+ci.builder(
+    name = "Win7 Tests (dbg)(1)",
+    builderless = True,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|tester",
+        short_name = "7",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    os = os.WINDOWS_10,
+    triggered_by = ["ci/Win Builder (dbg)"],
 )
 
 ci.builder(
@@ -135,6 +154,9 @@ ci.builder(
     cores = 32,
     cq_mirrors_console_view = "mirrors",
     os = os.WINDOWS_ANY,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -165,6 +187,9 @@ ci.builder(
     cores = 32,
     cq_mirrors_console_view = "mirrors",
     os = os.WINDOWS_ANY,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(

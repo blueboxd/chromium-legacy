@@ -14,6 +14,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ash {
 
@@ -23,6 +24,8 @@ struct ASH_PUBLIC_EXPORT AmbientModeTopic {
   AmbientModeTopic();
   AmbientModeTopic(const AmbientModeTopic&);
   AmbientModeTopic& operator=(const AmbientModeTopic&);
+  AmbientModeTopic(AmbientModeTopic&&);
+  AmbientModeTopic& operator=(AmbientModeTopic&&);
   ~AmbientModeTopic();
 
   // Details, i.e. the attribution, to be displayed for the current photo on
@@ -112,12 +115,13 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   virtual ~AmbientBackendController();
 
   // Sends request to retrieve |num_topics| of |ScreenUpdate| from the backdrop
-  // server.
+  // server with the specified |screen_size|.
   // Upon completion, |callback| is run with the parsed |ScreenUpdate|. If any
   // errors happened during the process, e.g. failed to fetch access token, a
   // default instance will be returned.
   virtual void FetchScreenUpdateInfo(
       int num_topics,
+      const gfx::Size& screen_size,
       OnScreenUpdateInfoFetchedCallback callback) = 0;
 
   // Get ambient mode Settings from server.

@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
@@ -271,7 +270,7 @@ void LocationBarView::Init() {
         views::style::STYLE_LINK);
     omnibox_additional_text_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     omnibox_additional_text_view->SetBorder(
-        views::CreateEmptyBorder(0, 10, 0, 0));
+        views::CreateEmptyBorder(gfx::Insets::TLBR(0, 10, 0, 0)));
     omnibox_additional_text_view->SetVisible(false);
     omnibox_additional_text_view_ =
         AddChildView(std::move(omnibox_additional_text_view));
@@ -968,7 +967,7 @@ int LocationBarView::GetMinimumTrailingWidth() const {
 gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
   const int border_radius = height() / 2;
   gfx::Rect bounds_without_endcaps(GetLocalBounds());
-  bounds_without_endcaps.Inset(border_radius, 0);
+  bounds_without_endcaps.Inset(gfx::Insets::VH(0, border_radius));
   return bounds_without_endcaps;
 }
 

@@ -73,6 +73,14 @@ class LinuxPort(base.Port):
         self._xvfb_stdout = None
         self._xvfb_stderr = None
 
+        # See //testing/xvfb.py for an explanation of parsing -help output.
+        try:
+            output = self.host.executive.run_command(['Xvfb', '-help'])
+            self._xvfb_supports_maxclients = (type(output) is str
+                                              and '-maxclients' in output)
+        except Exception:
+            self._xvfb_supports_maxclients = False
+
     def additional_driver_flags(self):
         flags = super(LinuxPort, self).additional_driver_flags()
         if not self.get_option('disable_breakpad'):
@@ -119,12 +127,6 @@ class LinuxPort(base.Port):
                 return path
         _log.error('Could not find apache. Not installed or unknown path.')
         return None
-
-    def path_to_apache_config_file(self):
-        if self.host.platform.is_linux():
-            config_file_basename = 'apache2-httpd-%s-php7.conf' % (self._apache_version(),)
-            return self._filesystem.join(self.apache_config_directory(), config_file_basename)
-        return super(LinuxPort, self).path_to_apache_config_file()
 
     def setup_test_run(self):
         super(LinuxPort, self).setup_test_run()
@@ -251,9 +253,7 @@ class LinuxPort(base.Port):
         flags = ['-screen', '0', '1280x800x24', '-ac', '-dpi', '96']
         # Raise the Xvfb connection limit if the default limit (256 connections)
         # is in danger of being exceeded by 4 connections per test.
-        # This is conditional since the linux-trusty-rel build bot uses a very
-        # old version of Xvfb which does not recognise the flag.
-        if self.default_child_processes() > 60:
+        if self._xvfb_supports_maxclients:
             flags += ['-maxclients', '512']
         return flags
 

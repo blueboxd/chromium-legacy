@@ -116,6 +116,10 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [1320],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/arc_account_picker/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1330],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/assistant_optin/assistant_optin_resources.grd": {
     "META": {"sizes": {"includes": [80]}},
     "includes": [1340],
@@ -243,13 +247,13 @@
     "META": {"sizes": {"includes": [20],}},
     "includes": [1910],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/read_later/read_later_resources.grd": {
-    "META": {"sizes": {"includes": [10],}},
-    "includes": [1920],
-  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/segmentation_internals/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [1930],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/side_panel_resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1935],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/os_settings_resources.grd": {
     "META": {"sizes": {"includes": [1000],}},
@@ -268,7 +272,7 @@
     "includes": [2000],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/support_tool/resources.grd": {
-    "META": {"sizes": {"includes": [10]}},
+    "META": {"sizes": {"includes": [20]}},
     "includes": [2010],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/tab_search/tab_search_resources.grd": {
@@ -821,11 +825,6 @@
   },
   "chromecast/renderer/resources/extensions_renderer_resources.grd": {
     "includes": [4180],
-  },
-
-  "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "includes": [4200],
-    "messages": [4220],
   },
 
   "device/bluetooth/bluetooth_strings.grd": {

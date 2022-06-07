@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/time/time.h"
@@ -106,7 +107,7 @@ void RecordCreateReportStatus(CreateReportResult result) {
   base::UmaHistogramEnumeration("Conversions.CreateReportStatus",
                                 result.event_level_status());
   base::UmaHistogramEnumeration(
-      "Conversions.AggregatableReport.CreateReportStatus",
+      "Conversions.AggregatableReport.CreateReportStatus2",
       result.aggregatable_status());
 }
 
@@ -289,8 +290,7 @@ AttributionManagerImpl::AttributionManagerImpl(
       data_host_manager_(std::move(data_host_manager)),
       special_storage_policy_(std::move(special_storage_policy)),
       cookie_checker_(std::move(cookie_checker)),
-      report_sender_(std::move(report_sender)),
-      weak_factory_(this) {
+      report_sender_(std::move(report_sender)) {
   DCHECK(storage_partition_);
   DCHECK(cookie_checker_);
   DCHECK(report_sender_);
@@ -326,11 +326,7 @@ AttributionDataHostManager* AttributionManagerImpl::GetDataHostManager() {
 }
 
 void AttributionManagerImpl::HandleSource(StorableSource source) {
-  // Process attributions in the order in which they were received, processing
-  // the new one after any background attributions are flushed.
-  GetContentClient()->browser()->FlushBackgroundAttributions(
-      base::BindOnce(&AttributionManagerImpl::MaybeEnqueueEvent,
-                     weak_factory_.GetWeakPtr(), std::move(source)));
+  MaybeEnqueueEvent(std::move(source));
 }
 
 void AttributionManagerImpl::StoreSource(StorableSource source) {
@@ -365,16 +361,14 @@ void AttributionManagerImpl::StoreSource(StorableSource source) {
 }
 
 void AttributionManagerImpl::HandleTrigger(AttributionTrigger trigger) {
-  GetContentClient()->browser()->FlushBackgroundAttributions(
-      base::BindOnce(&AttributionManagerImpl::MaybeEnqueueEvent,
-                     weak_factory_.GetWeakPtr(), std::move(trigger)));
+  MaybeEnqueueEvent(std::move(trigger));
 }
 
 void AttributionManagerImpl::StoreTrigger(AttributionTrigger trigger) {
   attribution_storage_.AsyncCall(&AttributionStorage::MaybeCreateAndStoreReport)
-      .WithArgs(std::move(trigger))
+      .WithArgs(trigger)
       .Then(base::BindOnce(&AttributionManagerImpl::OnReportStored,
-                           weak_factory_.GetWeakPtr()));
+                           weak_factory_.GetWeakPtr(), std::move(trigger)));
 }
 
 void AttributionManagerImpl::MaybeEnqueueEvent(SourceOrTrigger event) {
@@ -455,6 +449,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
           &common_info.impression_origin(),
           /*destination_origin=*/nullptr, &common_info.reporting_origin());
       RecordRegisterImpressionAllowed(allowed);
+      // TODO(apaseltiner): Notify observers when the source is prohibited.
       if (!allowed)
         return;
 
@@ -471,6 +466,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
           /*source_origin=*/nullptr, &trigger.destination_origin(),
           &trigger.reporting_origin());
       RecordRegisterConversionAllowed(allowed);
+      // TODO(apaseltiner): Notify observers when the trigger is prohibited.
       if (!allowed)
         return;
 
@@ -489,7 +485,8 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
       std::move(event));
 }
 
-void AttributionManagerImpl::OnReportStored(CreateReportResult result) {
+void AttributionManagerImpl::OnReportStored(const AttributionTrigger trigger,
+                                            CreateReportResult result) {
   RecordCreateReportStatus(result);
 
   if (std::vector<AttributionReport>& new_reports = result.new_reports();
@@ -519,7 +516,7 @@ void AttributionManagerImpl::OnReportStored(CreateReportResult result) {
   }
 
   for (auto& observer : observers_)
-    observer.OnTriggerHandled(result);
+    observer.OnTriggerHandled(trigger, result);
 }
 
 void AttributionManagerImpl::MaybeSendDebugReport(AttributionReport&& report) {
@@ -820,7 +817,7 @@ void AttributionManagerImpl::AssembleAggregatableReport(
               std::move(contributions),
               AggregationServicePayloadContents::AggregationMode::kDefault),
           AggregatableReportSharedInfo(
-              report.report_time(), report.PrivacyBudgetKey(),
+              aggregate_data->initial_report_time, report.PrivacyBudgetKey(),
               report.external_report_id(),
               attribution_info.source.common_info().reporting_origin(),
               debug_mode));

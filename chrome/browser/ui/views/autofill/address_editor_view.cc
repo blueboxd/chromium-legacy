@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/address_editor_view.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/address_editor_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -60,7 +61,7 @@ void AddressEditorView::CreateEditorView() {
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(kBetweenChildSpacing / 2, 0), kBetweenChildSpacing));
+      gfx::Insets::VH(kBetweenChildSpacing / 2, 0), kBetweenChildSpacing));
 
   for (const auto& field : controller_->editor_fields()) {
     CreateInputField(field);

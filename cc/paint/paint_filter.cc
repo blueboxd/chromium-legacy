@@ -10,6 +10,7 @@
 
 #include "base/memory/values_equivalent.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "cc/paint/draw_image.h"
@@ -20,6 +21,7 @@
 #include "cc/paint/paint_record.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkMath.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/effects/SkImageFilters.h"

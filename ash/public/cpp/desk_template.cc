@@ -32,14 +32,11 @@ bool DeskTemplate::IsAppTypeSupported(aura::Window* window) {
   switch (app_type) {
     case AppType::NON_APP:
     case AppType::CROSTINI_APP:
-    case AppType::LACROS:
       return false;
     case AppType::ARC_APP:
-      if (!features::AreDesksTemplatesEnabled())
-        return false;
-      break;
     case AppType::BROWSER:
     case AppType::CHROME_APP:
+    case AppType::LACROS:
     case AppType::SYSTEM_APP:
       break;
   }
@@ -48,11 +45,6 @@ bool DeskTemplate::IsAppTypeSupported(aura::Window* window) {
 }
 
 constexpr char DeskTemplate::kIncognitoWindowIdentifier[];
-
-DeskTemplate::DeskTemplate()
-    : uuid_(base::GUID::GenerateRandomV4()),
-      source_(DeskTemplateSource::kUnknownSource),
-      created_time_(base::Time::Now()) {}
 
 std::unique_ptr<DeskTemplate> DeskTemplate::Clone() const {
   std::unique_ptr<DeskTemplate> desk_template = std::make_unique<DeskTemplate>(
@@ -63,6 +55,7 @@ std::unique_ptr<DeskTemplate> DeskTemplate::Clone() const {
   if (desk_restore_data_)
     desk_template->set_desk_restore_data(desk_restore_data_->Clone());
   desk_template->set_launch_id(launch_id_);
+  desk_template->set_type(type_);
   return desk_template;
 }
 
@@ -84,6 +77,15 @@ std::string DeskTemplate::ToString() const {
       break;
     case DeskTemplateSource::kPolicy:
       result += "policy\n";
+      break;
+  }
+  result += "Type: ";
+  switch (type_) {
+    case DeskTemplateType::kTemplate:
+      result += "template\n";
+      break;
+    case DeskTemplateType::kSaveAndRecall:
+      result += "save and recall\n";
       break;
   }
 

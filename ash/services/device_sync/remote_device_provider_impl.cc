@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/secure_message_delegate_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/remote_device_loader.h"
 #include "ash/services/device_sync/remote_device_v2_loader_impl.h"
@@ -13,10 +15,8 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -255,4 +255,4 @@ RemoteDeviceProviderImpl::GetSyncedDevices() const {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

@@ -268,8 +268,9 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
   bool has_shift_modifier =
       (event.GetModifiers() & blink::WebInputEvent::kShiftKey);
-  bool has_non_shift_modifier =
-      (event.GetModifiers() & ~blink::WebInputEvent::kShiftKey);
+  bool has_non_shift_key_modifier =
+      (event.GetModifiers() & blink::WebInputEvent::kKeyModifiers &
+       ~blink::WebInputEvent::kShiftKey);
   switch (event.windows_key_code) {
     case ui::VKEY_UP:
       SelectPreviousLine();
@@ -300,8 +301,13 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
       // change the cursor location.
       // We don't want to handle Mod+TAB for other modifiers because this may
       // have other purposes (e.g., change the tab).
-      if (!has_non_shift_modifier)
+      // Also want tab to only trigger selecting the line for events that fill
+      // a text field.
+      if (!has_non_shift_key_modifier && selected_line_ &&
+          CanAcceptForTabKeyPressEvent(
+              suggestions_[*selected_line_].frontend_id)) {
         AcceptSelectedLine();
+      }
       return false;
     case ui::VKEY_RETURN:
       return AcceptSelectedLine();
@@ -541,16 +547,17 @@ bool AutofillPopupControllerImpl::CanAccept(int id) {
          id != POPUP_ITEM_ID_MIXED_FORM_MESSAGE && id != POPUP_ITEM_ID_TITLE;
 }
 
+bool AutofillPopupControllerImpl::CanAcceptForTabKeyPressEvent(int id) {
+  // Only items that fill a field when selected are eligible for acceptance
+  // via the tab key.
+  return id > 0 || base::Contains(kItemsTriggeringFieldFilling, id);
+}
+
 bool AutofillPopupControllerImpl::HasSuggestions() {
   if (suggestions_.empty())
     return false;
   int id = suggestions_[0].frontend_id;
-  return id > 0 || id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
-         id == POPUP_ITEM_ID_PASSWORD_ENTRY ||
-         id == POPUP_ITEM_ID_USERNAME_ENTRY ||
-         id == POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY ||
-         id == POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY ||
-         id == POPUP_ITEM_ID_DATALIST_ENTRY ||
+  return id > 0 || base::Contains(kItemsTriggeringFieldFilling, id) ||
          id == POPUP_ITEM_ID_SCAN_CREDIT_CARD;
 }
 

@@ -151,7 +151,9 @@ class PixelTestPages():
                       test_rect=[0, 0, 100, 300]),
         PixelTestPage('pixel_canvas2d.html',
                       base_name + '_Canvas2DRedBox',
-                      test_rect=[0, 0, 300, 300]),
+                      test_rect=[0, 0, 300, 300],
+                      matching_algorithm=algo.FuzzyMatchingAlgorithm(
+                          max_different_pixels=130, pixel_delta_threshold=3)),
         PixelTestPage('pixel_canvas2d_untagged.html',
                       base_name + '_Canvas2DUntagged',
                       test_rect=[0, 0, 257, 257]),
@@ -663,7 +665,7 @@ class PixelTestPages():
     # This disables the Core Animation compositor, falling back to the
     # old GLRenderer path, but continuing to allocate IOSurfaces for
     # WebGL's back buffer.
-    no_overlays_args = ['--disable-mac-overlays']
+    no_overlays_args = ['--disable-features=CoreAnimationRenderer']
 
     # The filter effect tests produce images with lots of gradients and blurs
     # which don't play nicely with Sobel filters, so a fuzzy algorithm instead
@@ -722,6 +724,42 @@ class PixelTestPages():
                       base_name + '_WebGL_PremultipliedAlpha_False_NoOverlays',
                       test_rect=[0, 0, 150, 150],
                       browser_args=no_overlays_args),
+
+        # Test GpuBenchmarking::AddCoreAnimationStatusEventListener.
+        # Error code is 0 (gfx::kCALayerSuccess) when it succeeds.
+        # --enable-gpu-benchmarking is added by default and it's required to run
+        # this test.
+        PixelTestPage('core_animation_status_api.html?error=0',
+                      base_name + '_CoreAnimationStatusApiNoError',
+                      test_rect=[0, 0, 300, 300]),
+        # Test GpuBenchmarking::AddCoreAnimationStatusEventListener.
+        # Error code is 32 (gfx::kCALayerFailedOverlayDisabled) when
+        # CoreAnimationRenderer is disabled.
+        # --enable-gpu-benchmarking is added by default and it's required to run
+        # this test.
+        PixelTestPage('core_animation_status_api.html?error=32',
+                      base_name + '_CoreAnimationStatusApiWithError',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=no_overlays_args),
+
+        # --enable-gpu-benchmarking is required to run this test. it's added to
+        # the pixel tests by default.
+        PixelTestPage('canvas_uses_overlay.html',
+                      base_name + '_CanvasUsesOverlay',
+                      test_rect=[0, 0, 200, 200]),
+
+        # --enable-gpu-benchmarking is required to run this test. it's added to
+        # the pixel tests by default.
+        PixelTestPage(
+            'offscreencanvas_imagebitmap_from_worker_uses_overlay.html',
+            base_name + '_OffscreenCanvasImageBitmapWorkerUsesOverlay',
+            test_rect=[0, 0, 100, 100]),
+
+        # --enable-gpu-benchmarking is required to run this test. it's added to
+        # the pixel tests by default.
+        PixelTestPage('offscreencanvas_imagebitmap_uses_overlay.html',
+                      base_name + '_OffscreenCanvasImageBitmapUsesOverlay',
+                      test_rect=[0, 0, 100, 100]),
     ]
 
   # Pages that should be run only on dual-GPU MacBook Pros (at the

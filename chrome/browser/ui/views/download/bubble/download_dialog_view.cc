@@ -34,7 +34,7 @@
 #include "ui/views/window/vector_icons/vector_icons.h"
 
 void DownloadDialogView::CloseBubble() {
-  GetWidget()->CloseWithReason(
+  navigation_handler_->CloseDialog(
       views::Widget::ClosedReason::kCloseButtonClicked);
 }
 
@@ -68,11 +68,8 @@ void DownloadDialogView::AddHeader() {
                               base::Unretained(this)),
           vector_icons::kCloseRoundedIcon,
           GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
-  close_button->SetProperty(views::kMarginsKey, GetLayoutInsets(DOWNLOAD_ICON));
-  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
-  close_button->SizeToPreferredSize();
   InstallCircleHighlightPathGenerator(close_button);
-  close_button->SetVisible(true);
+  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SetProperty(views::kCrossAxisAlignmentKey,
                             views::LayoutAlignment::kStart);
 }
@@ -84,15 +81,15 @@ void DownloadDialogView::OnThemeChanged() {
 }
 
 void DownloadDialogView::AddFooter() {
-  auto* header = AddChildView(std::make_unique<views::View>());
-  header->SetLayoutManager(std::make_unique<views::FlexLayout>())
+  auto* footer = AddChildView(std::make_unique<views::View>());
+  footer->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kHorizontal);
-  header->SetProperty(
+  footer->SetProperty(
       views::kMarginsKey,
       gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  footer_link_ = header->AddChildView(std::make_unique<views::Link>(
+  footer_link_ = footer->AddChildView(std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_FOOTER_LINK),
       views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_PRIMARY));
   footer_link_->SetProperty(
@@ -106,7 +103,7 @@ void DownloadDialogView::AddFooter() {
       &DownloadDialogView::ShowAllDownloads, base::Unretained(this)));
   footer_link_->SetForceUnderline(false);
 
-  auto* icon = header->AddChildView(std::make_unique<NonAccessibleImageView>());
+  auto* icon = footer->AddChildView(std::make_unique<NonAccessibleImageView>());
   icon->SetImage(
       ui::ImageModel::FromVectorIcon(kDownloadToolbarButtonIcon, ui::kColorIcon,
                                      GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
@@ -117,12 +114,13 @@ void DownloadDialogView::AddFooter() {
 
 DownloadDialogView::DownloadDialogView(
     raw_ptr<Browser> browser,
-    std::unique_ptr<DownloadBubbleRowListView> row_list_view)
-    : browser_(browser) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
+    std::unique_ptr<views::View> row_list_scroll_view,
+    DownloadBubbleNavigationHandler* navigation_handler)
+    : navigation_handler_(navigation_handler), browser_(browser) {
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
   AddHeader();
-  AddChildView(std::move(row_list_view));
+  AddChildView(std::move(row_list_scroll_view));
   AddFooter();
 }
 

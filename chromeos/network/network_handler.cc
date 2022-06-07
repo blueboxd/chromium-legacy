@@ -16,6 +16,7 @@
 #include "chromeos/network/cellular_policy_handler.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/geolocation_handler.h"
+#include "chromeos/network/managed_cellular_pref_handler.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/metrics/connection_info_metrics_logger.h"
 #include "chromeos/network/metrics/esim_policy_login_metrics_logger.h"
@@ -59,6 +60,7 @@ NetworkHandler::NetworkHandler()
   if (features::IsESimPolicyEnabled()) {
     cellular_policy_handler_.reset(new CellularPolicyHandler());
     esim_policy_login_metrics_logger_.reset(new ESimPolicyLoginMetricsLogger());
+    managed_cellular_pref_handler_.reset(new ManagedCellularPrefHandler());
   }
   cellular_metrics_logger_.reset(new CellularMetricsLogger());
   connection_info_metrics_logger_.reset(new ConnectionInfoMetricsLogger());
@@ -87,7 +89,8 @@ void NetworkHandler::Init() {
   cellular_esim_profile_handler_->Init(network_state_handler_.get(),
                                        cellular_inhibitor_.get());
   stub_cellular_networks_provider_->Init(network_state_handler_.get(),
-                                         cellular_esim_profile_handler_.get());
+                                         cellular_esim_profile_handler_.get(),
+                                         managed_cellular_pref_handler_.get());
   cellular_connection_handler_->Init(network_state_handler_.get(),
                                      cellular_inhibitor_.get(),
                                      cellular_esim_profile_handler_.get());
@@ -95,9 +98,10 @@ void NetworkHandler::Init() {
   network_configuration_handler_->Init(network_state_handler_.get(),
                                        network_device_handler_.get());
   managed_network_configuration_handler_->Init(
-      cellular_policy_handler_.get(), network_state_handler_.get(),
-      network_profile_handler_.get(), network_configuration_handler_.get(),
-      network_device_handler_.get(), prohibited_technologies_handler_.get());
+      cellular_policy_handler_.get(), managed_cellular_pref_handler_.get(),
+      network_state_handler_.get(), network_profile_handler_.get(),
+      network_configuration_handler_.get(), network_device_handler_.get(),
+      prohibited_technologies_handler_.get());
   network_connection_handler_->Init(
       network_state_handler_.get(), network_configuration_handler_.get(),
       managed_network_configuration_handler_.get(),
@@ -108,13 +112,16 @@ void NetworkHandler::Init() {
       network_state_handler_.get());
   cellular_esim_uninstall_handler_->Init(
       cellular_inhibitor_.get(), cellular_esim_profile_handler_.get(),
+      managed_cellular_pref_handler_.get(),
       network_configuration_handler_.get(), network_connection_handler_.get(),
       network_state_handler_.get());
   if (features::IsESimPolicyEnabled()) {
     cellular_policy_handler_->Init(
         cellular_esim_profile_handler_.get(), cellular_esim_installer_.get(),
         network_profile_handler_.get(), network_state_handler_.get(),
+        managed_cellular_pref_handler_.get(),
         managed_network_configuration_handler_.get());
+    managed_cellular_pref_handler_->Init(network_state_handler_.get());
     esim_policy_login_metrics_logger_->Init(
         network_state_handler_.get(),
         managed_network_configuration_handler_.get());
@@ -174,6 +181,9 @@ void NetworkHandler::InitializePrefServices(
     PrefService* logged_in_profile_prefs,
     PrefService* device_prefs) {
   cellular_esim_profile_handler_->SetDevicePrefs(device_prefs);
+  if (features::IsESimPolicyEnabled()) {
+    managed_cellular_pref_handler_->SetDevicePrefs(device_prefs);
+  }
   ui_proxy_config_service_.reset(new UIProxyConfigService(
       logged_in_profile_prefs, device_prefs, network_state_handler_.get(),
       network_profile_handler_.get()));
@@ -187,6 +197,9 @@ void NetworkHandler::InitializePrefServices(
 
 void NetworkHandler::ShutdownPrefServices() {
   cellular_esim_profile_handler_->SetDevicePrefs(nullptr);
+  if (features::IsESimPolicyEnabled()) {
+    managed_cellular_pref_handler_->SetDevicePrefs(nullptr);
+  }
   ui_proxy_config_service_.reset();
   network_metadata_store_.reset();
 }
@@ -231,6 +244,10 @@ CellularInhibitor* NetworkHandler::cellular_inhibitor() {
 
 CellularPolicyHandler* NetworkHandler::cellular_policy_handler() {
   return cellular_policy_handler_.get();
+}
+
+ManagedCellularPrefHandler* NetworkHandler::managed_cellular_pref_handler() {
+  return managed_cellular_pref_handler_.get();
 }
 
 NetworkDeviceHandler* NetworkHandler::network_device_handler() {

@@ -42,11 +42,11 @@ import {StatusAction, SyncBrowserProxyImpl} from '../../people_page/sync_browser
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {OSPageVisibility, osPageVisibility} from '../os_page_visibility.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {Account, AccountManagerBrowserProxyImpl} from './account_manager_browser_proxy.js';
-import {LockStateBehavior} from './lock_state_behavior.m.js';
+import {LockStateBehavior} from './lock_state_behavior.js';
 
 Polymer({
   _template: html`{__html_template__}`,

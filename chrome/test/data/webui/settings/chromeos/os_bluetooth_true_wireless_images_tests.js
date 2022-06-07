@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
-// #import 'chrome://os-settings/strings.m.js';
+import 'chrome://os-settings/chromeos/os_settings.js';
+import 'chrome://os-settings/strings.m.js';
 
-// #import {BatteryType} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_types.js';
-// #import {flush, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {createDefaultBluetoothDevice} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
+import {BatteryType} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_types.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {createDefaultBluetoothDevice} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 
-// #import {assertEquals, assertFalse, assertTrue} from '../../../chai_assert.js';
-
-// clang-format on
+import {assertEquals, assertFalse, assertTrue} from '../../../chai_assert.js';
 
 suite('OsBluetoothTrueWirelessImagesElementTest', function() {
   /** @type {SettingsBluetoothTrueWirelessImagesElement} */
@@ -45,7 +42,11 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     if (!bluetoothTrueWirelessImages.device.batteryInfo) {
       bluetoothTrueWirelessImages.device.batteryInfo = {};
     }
-    if (batteryType === BatteryType.LEFT_BUD) {
+    if (batteryType === BatteryType.DEFAULT) {
+      bluetoothTrueWirelessImages.device.batteryInfo.defaultProperties = {
+        batteryPercentage: batteryPercentage
+      };
+    } else if (batteryType === BatteryType.LEFT_BUD) {
       bluetoothTrueWirelessImages.device.batteryInfo.leftBudInfo = {
         batteryPercentage: batteryPercentage
       };
@@ -96,6 +97,7 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     setTrueWirelessImages();
 
     const batteryPercentage = 100;
+    await setBatteryTypePercentage(BatteryType.DEFAULT, batteryPercentage);
     await setBatteryTypePercentage(BatteryType.LEFT_BUD, batteryPercentage);
     await setBatteryTypePercentage(BatteryType.CASE, batteryPercentage);
     await setBatteryTypePercentage(BatteryType.RIGHT_BUD, batteryPercentage);
@@ -107,7 +109,7 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     assertTrue(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
         '#rightBudContainer'));
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
-        '#notConnectedContainer'));
+        '#defaultContainer'));
 
     assertEquals(
         bluetoothTrueWirelessImages.i18n('bluetoothTrueWirelessLeftBudLabel'),
@@ -138,7 +140,31 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
         '#rightBudContainer'));
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
-        '#notConnectedContainer'));
+        '#defaultContainer'));
+  });
+
+  test('Connected and only default battery info', async function() {
+    const device = createDefaultBluetoothDevice(
+        /* id= */ '123456789', /* publicName= */ 'BeatsX',
+        /* connectionState= */
+        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected);
+    bluetoothTrueWirelessImages.device = device.deviceProperties;
+    setTrueWirelessImages();
+
+    const batteryPercentage = 100;
+    await setBatteryTypePercentage(BatteryType.DEFAULT, batteryPercentage);
+
+    assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
+        '#leftBudContainer'));
+    assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
+        '#caseContainer'));
+    assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
+        '#rightBudContainer'));
+    assertTrue(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
+        '#defaultContainer'));
+
+    assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
+        '#notConnectedLabel'));
   });
 
   test('Connected and only left bud info', async function() {
@@ -159,7 +185,7 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
         '#rightBudContainer'));
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
-        '#notConnectedContainer'));
+        '#defaultContainer'));
   });
 
   test('Connected and only case info', async function() {
@@ -180,7 +206,7 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
         '#rightBudContainer'));
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
-        '#notConnectedContainer'));
+        '#defaultContainer'));
   });
 
   test('Connected and only right bud info', async function() {
@@ -201,7 +227,7 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     assertTrue(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
         '#rightBudContainer'));
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
-        '#notConnectedContainer'));
+        '#defaultContainer'));
   });
 
   test('Connected and no True Wireless Images', async function() {
@@ -212,6 +238,7 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     bluetoothTrueWirelessImages.device = device.deviceProperties;
 
     const batteryPercentage = 100;
+    await setBatteryTypePercentage(BatteryType.DEFAULT, batteryPercentage);
     await setBatteryTypePercentage(BatteryType.LEFT_BUD, batteryPercentage);
     await setBatteryTypePercentage(BatteryType.CASE, batteryPercentage);
     await setBatteryTypePercentage(BatteryType.RIGHT_BUD, batteryPercentage);
@@ -223,7 +250,7 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
         '#rightBudContainer'));
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
-        '#notConnectedContainer'));
+        '#defaultContainer'));
   });
 
   test('Not connected state', async function() {
@@ -241,7 +268,7 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
         '#rightBudContainer'));
     assertTrue(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
-        '#notConnectedContainer'));
+        '#defaultContainer'));
 
     assertEquals(
         bluetoothTrueWirelessImages.i18n('bluetoothDeviceDetailDisconnected'),
@@ -269,6 +296,6 @@ suite('OsBluetoothTrueWirelessImagesElementTest', function() {
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
         '#rightBudContainer'));
     assertFalse(!!bluetoothTrueWirelessImages.shadowRoot.querySelector(
-        '#notConnectedContainer'));
+        '#defaultContainer'));
   });
 });

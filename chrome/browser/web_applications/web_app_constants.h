@@ -5,38 +5,55 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_CONSTANTS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_CONSTANTS_H_
 
+#include <stddef.h>
+
 #include <iosfwd>
 #include <vector>
 
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
-// Install sources are listed in the order of priority (from top to bottom).
+// Installations of Web Apps have different sources of management. Apps can be
+// installed by different management systems - for example an app can be both
+// installed by the user and by policy. Keeping track of the which installation
+// managers have installed a web app allows for them to be installed by multiple
+// at the same time, and uninstalls from one manager doesn't affect another -
+// the app will stay installed as long as at least one management source has it
+// installed.
 //
+// This enum is also used to rank installation sources, so the ordering matters.
 // This enum should be zero based: values are used as index in a bitset.
 // We don't use this enum values in prefs or metrics: enumerators can be
 // reordered. This enum is not strongly typed enum class: it supports implicit
 // conversion to int and <> comparison operators.
-namespace Source {
+namespace WebAppManagement {
 enum Type {
   kMinValue = 0,
   kSystem = kMinValue,
   kPolicy,
   kSubApp,
   kWebAppStore,
-  // We sync only regular user-installed apps from the open web. For
+  // User-installed web apps are managed by the sync system.or
   // user-installed apps without overlaps this is the only source that will be
   // set.
   kSync,
+  // This value is used by both the PreinstalledWebAppManager AND the
+  // AndroidSmsAppSetupControllerImpl, which is a potential conflict in the
+  // future.
+  // TODO(dmurph): Add a new source here so that the
+  // AndroidSmsAppSetupControllerImpl has it's own source, and migrate those
+  // installations to have the new source.
+  // https://crbug.com/1314055
   kDefault,
   kMaxValue = kDefault,
 };
-}  // namespace Source
+}  // namespace WebAppManagement
 
-std::ostream& operator<<(std::ostream& os, Source::Type type);
+std::ostream& operator<<(std::ostream& os, WebAppManagement::Type type);
 
 // Type of OS hook.
 //
@@ -84,6 +101,9 @@ enum Type {
 // In practice, every kExternalXxx enum definition should correspond to
 // exactly one place in the code where
 // ExternallyManagedAppManager::SynchronizeInstalledApps is called.
+// TODO(dmurph): Remove this and merge it into WebAppManagement after it has a
+// new source for the  AndroidSmsAppSetupControllerImpl.
+// https://crbug.com/1314055
 enum class ExternalInstallSource {
   // Do not remove or re-order the names, only append to the end. Their
   // integer values are persisted in the preferences.
@@ -123,6 +143,9 @@ enum class ExternalInstallSource {
 // Small icons are used in confirmation dialogs and app windows.
 constexpr int kWebAppIconSmall = 32;
 
+// Limit on the number of jump list entries per web app.
+constexpr size_t kMaxApplicationDockMenuItems = 10;
+
 using DisplayMode = blink::mojom::DisplayMode;
 
 // When user_display_mode indicates a user preference for opening in
@@ -131,10 +154,14 @@ using DisplayMode = blink::mojom::DisplayMode;
 // attempt honor those preferences. Otherwise, we open in a standalone
 // window (for app_display_mode 'standalone' or 'fullscreen'), or a minimal-ui
 // window (for app_display_mode 'browser' or 'minimal-ui').
+//
+// |is_isolated| overrides browser display mode for isolated apps because they
+// can't be open as a tab.
 DisplayMode ResolveEffectiveDisplayMode(
     DisplayMode app_display_mode,
     const std::vector<DisplayMode>& app_display_mode_overrides,
-    DisplayMode user_display_mode);
+    UserDisplayMode user_display_mode,
+    bool is_isolated);
 
 apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
     DisplayMode display_mode);

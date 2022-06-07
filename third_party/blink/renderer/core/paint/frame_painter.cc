@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/frame_painter.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -16,7 +17,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
 namespace blink {
@@ -76,7 +76,6 @@ void FramePainter::Paint(GraphicsContext& context, PaintFlags paint_flags) {
   in_paint_contents_ = true;
 
   FontCachePurgePreventer font_cache_purge_preventer;
-  ScopedDisplayItemFragment display_item_fragment(context, 0u);
 
   PaintLayer* root_layer = layout_view->Layer();
 
@@ -87,10 +86,6 @@ void FramePainter::Paint(GraphicsContext& context, PaintFlags paint_flags) {
 #endif
 
   PaintLayerPainter layer_painter(*root_layer);
-
-  float device_scale_factor = blink::DeviceScaleFactorDeprecated(
-      root_layer->GetLayoutObject().GetFrame());
-  context.SetDeviceScaleFactor(device_scale_factor);
 
   layer_painter.Paint(context, paint_flags);
 

@@ -337,7 +337,8 @@
       "031E5E4A54C39E4F46E11CE643584E9187915908",  // https://crbug.com/882461 SecureConnect
       "349E89FE0296161007623C0B4096B617D7CECD54",  // https://crbug.com/882461 SecureConnect
       "18B761AA5B58FA89E596EB7996B4C92C86775C7F",  // https://crbug.com/882461 SecureConnect
-      "2012C0122892D332325339998251D1CC3CAE396A"   // https://crbug.com/882461 SecureConnect
+      "2012C0122892D332325339998251D1CC3CAE396A",  // https://crbug.com/882461 SecureConnect
+      "C8F4673FC69965390BC376C0761EC341492F9D87"   // Contact Center Insights
     ]
   },
   "experimental": {
@@ -629,6 +630,12 @@
   {
     "channel": "stable",
     "extension_types": ["platform_app"]
+  },
+  {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "platforms": ["chromeos", "lacros"],
+    "session_types": ["kiosk"]
   }],
   "notifications": [{
     // The chrome.notifications functionality listed in notifications.idl is
@@ -908,7 +915,8 @@
   "webAuthenticationProxy": {
     "channel": "trunk",
     "extension_types": ["extension"],
-    "min_manifest_version": 3
+    "min_manifest_version": 3,
+    "platforms": ["win", "linux", "mac"]
   },
   "webNavigation": {
     "channel": "stable",
@@ -989,7 +997,8 @@
       "74801F84D31D23D08BEA48AB82C6A6120EDB4D45",
       "6A4D7AEC6414492BD25219C7A479265BF1177D42",  // http://crbug.com/1206836
       "F80B163C896D50A685E0B683BEEEA94217F253D6",  // http://crbug.com/1206836
-      "454738352012A22901C55B348E5E530BDE1AF2B0"   // http://crbug.com/1259253
+      "454738352012A22901C55B348E5E530BDE1AF2B0",  // http://crbug.com/1259253
+      "7D5A66C88A25019F997E548DEC5E0011E2855591"   // http://crbug.com/1206836
     ]
   }
 }

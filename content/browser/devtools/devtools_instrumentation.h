@@ -59,7 +59,6 @@ class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
-class RenderFrameHost;
 class RenderFrameHostImpl;
 class RenderProcessHost;
 class SharedWorkerHost;
@@ -160,6 +159,8 @@ void BackForwardCacheNotUsed(
     const BackForwardCacheCanStoreDocumentResult* result,
     const BackForwardCacheCanStoreTreeResult* tree_result);
 
+void DidActivatePrerender(const NavigationRequest& nav_request);
+
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
     absl::optional<const base::UnguessableToken> devtools_navigation_token,
@@ -247,17 +248,6 @@ void ReportCookieIssue(
     const net::SiteForCookies& site_for_cookies,
     blink::mojom::CookieOperation operation,
     const absl::optional<std::string>& devtools_request_id);
-
-enum class AttributionReportingIssueType {
-  kAttributionTriggerDataTooLarge,
-  kAttributionEventSourceTriggerDataTooLarge,
-};
-
-void ReportAttributionReportingIssue(
-    RenderFrameHost* render_frame_host,
-    AttributionReportingIssueType issue_type,
-    const absl::optional<std::string>& request_id,
-    const absl::optional<std::string>& invalid_parameter);
 
 // This function works similar to RenderFrameHostImpl::AddInspectorIssue, in
 // that it reports an InspectorIssue to DevTools clients. The difference is that

@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/software_feature.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/proto/cryptauth_common.pb.h"
 #include "base/bind.h"
@@ -13,8 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/software_feature.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -23,9 +24,6 @@ namespace ash {
 namespace multidevice_setup {
 
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace device_sync = ::chromeos::device_sync;
 
 // Software features which, when enabled, represent a verified host.
 constexpr const multidevice::SoftwareFeature kPotentialHostFeatures[] = {

@@ -19,7 +19,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -3427,17 +3426,19 @@ class SubresourceWebBundlesWebRequestApiTest
     bool success = false;
     std::string script = base::StringPrintf(R"(
           (() => {
-            const link = document.createElement('link');
-            link.rel = 'webbundle';
-            link.addEventListener('load', () => {
+            const script = document.createElement('script');
+            script.type = 'webbundle';
+            script.addEventListener('load', () => {
               window.domAutomationController.send(true);
             });
-            link.addEventListener('error', () => {
+            script.addEventListener('error', () => {
               window.domAutomationController.send(false);
             });
-            link.href = '%s';
-            link.resources = '%s';
-            document.body.appendChild(link);
+            script.textContent = JSON.stringify({
+              'source': '%s',
+              'resources': ['%s']
+            });
+            document.body.appendChild(script);
           })();
         )",
                                             href.c_str(), resources.c_str());
@@ -3491,107 +3492,6 @@ class SubresourceWebBundlesWebRequestApiTest
         }));
   }
 
-  // Ensure web request API can change the response headers of urn:uuid: /
-  // uuid-in-package: URL subresources inside the web bundle.
-  // Note: Currently we can't directly check the response headers of urn:uuid /
-  // uuid-in-package: URL resources, because CORS requests are not allowed for
-  // such URLs. So we change the content-type header of a JavaScript file and
-  // monitor the error handler. Subresources in web bundles should be treated as
-  // if an artificial `X-Content-Type-Options: nosniff` header field is set. So
-  // when the content-type is not suitable for script execution, the script
-  // should fail to load.
-  void TestChangeHeaderOfUuidUrlResource(const std::string& uuid_url) {
-    // Create an extension that changes the header of the subresources inside
-    // the web bundle.
-    TestExtensionDir test_dir;
-    test_dir.WriteManifest(R"({
-        "name": "Web Request Subresource Web Bundles Test",
-        "manifest_version": 2,
-        "version": "0.1",
-        "background": { "scripts": ["background.js"] },
-        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
-      })");
-    std::string opt_extra_info_spec = "'blocking', 'responseHeaders'";
-    if (GetExtraInfoSpec() == ExtraInfoSpec::kExtraHeaders)
-      opt_extra_info_spec += ", 'extraHeaders'";
-    static constexpr char kJsTemplate[] = R"(
-        chrome.webRequest.onHeadersReceived.addListener(function(details) {
-          if (details.url != '%s') {
-            return;
-          }
-          const headers = details.responseHeaders;
-          for (let i = 0; i < headers.length; i++) {
-            if (headers[i].name.toLowerCase() == 'content-type') {
-              headers[i].value = 'unknown/type';
-            }
-          }
-          return {responseHeaders: headers};
-        }, {urls: ['<all_urls>']}, [%s]);
-
-        chrome.test.sendMessage('ready');
-      )";
-    test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
-                       base::StringPrintf(kJsTemplate, uuid_url.c_str(),
-                                          opt_extra_info_spec.c_str()));
-    const Extension* extension = nullptr;
-    {
-      ExtensionTestMessageListener listener("ready", false);
-      extension = LoadExtension(test_dir.UnpackedPath());
-      ASSERT_TRUE(extension);
-      EXPECT_TRUE(listener.WaitUntilSatisfied());
-    }
-    static constexpr char kHtmlTemplate[] = R"(
-        <title>Loaded</title>
-        <body>
-        <script>
-        (async () => {
-          const wbn_url = new URL('./web_bundle.wbn', location.href).toString();
-          const uuid_url = '%s';
-          const link = document.createElement('link');
-          link.rel = 'webbundle';
-          link.href = wbn_url;
-          link.resources = uuid_url;
-          document.body.appendChild(link);
-          const script = document.createElement('script');
-          script.src = uuid_url;
-          script.addEventListener('error', () => {
-            document.title = 'failed to load';
-          });
-          document.body.appendChild(script);
-        })();
-        </script>
-        </body>
-      )";
-    std::string page_html = base::StringPrintf(kHtmlTemplate, uuid_url.c_str());
-
-    std::string web_bundle;
-    RegisterWebBundleRequestHandler("/web_bundle.wbn", &web_bundle);
-    RegisterRequestHandler("/test.html", "text/html", page_html);
-    ASSERT_TRUE(StartEmbeddedTestServer());
-
-    // Create a web bundle.
-    web_package::WebBundleBuilder builder(uuid_url, "");
-    auto uuid_script = builder.AddResponse(
-        {{":status", "200"}, {"content-type", "application/javascript"}},
-        "document.title = 'loaded';");
-    builder.AddIndexEntry(uuid_url, "", {uuid_script});
-    std::vector<uint8_t> bundle = builder.CreateBundle();
-    web_bundle = std::string(bundle.begin(), bundle.end());
-
-    GURL page_url = embedded_test_server()->GetURL("/test.html");
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-
-    std::u16string expected_title = u"failed to load";
-    content::TitleWatcher title_watcher(
-        browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
-
-    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
-
-    EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
-
  private:
   base::test::ScopedFeatureList feature_list_;
 };
@@ -3605,8 +3505,6 @@ INSTANTIATE_TEST_SUITE_P(All,
 // TODO(https://crbug.com/1264982): Fix flane and re-enable test.
 IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
                        DISABLED_RequestIntercepted) {
-  const std::string urn_uuid_script_url =
-      "urn:uuid:6a059ece-62f4-4c79-a9e2-1c641cbdbaaf";
   const std::string uuid_in_package_script_url =
       "uuid-in-package:6a059ece-62f4-4c79-a9e2-1c641cbdbaaf";
   // Create an extension that intercepts requests.
@@ -3627,7 +3525,6 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
         window.numMainResourceRequests = 0;
         window.numWebBundleRequests = 0;
         window.numScriptRequests = 0;
-        window.numUrnUUIDScriptRequests = 0;
         window.numUUIDInPackageScriptRequests = 0;
         chrome.webRequest.onBeforeRequest.addListener(function(details) {
           if (details.url.includes('test.html'))
@@ -3637,14 +3534,11 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
           else if (details.url.includes('test.js'))
             window.numScriptRequests++;
           else if (details.url === '%s')
-            window.numUrnUUIDScriptRequests++;
-          else if (details.url === '%s')
             window.numUUIDInPackageScriptRequests++;
         }, {urls: ['<all_urls>']}, [%s]);
 
         chrome.test.sendMessage('ready');
       )",
-                                        urn_uuid_script_url.c_str(),
                                         uuid_in_package_script_url.c_str(),
                                         opt_extra_info_spec.c_str()));
   const Extension* extension = nullptr;
@@ -3664,20 +3558,18 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
             const wbn_url =
                 new URL('./web_bundle.wbn', location.href).toString();
             const script_url = new URL('./test.js', location.href).toString();
-            const urn_uuid_script_url = '%s';
             const uuid_in_package_script_url = '%s';
-            const link = document.createElement('link');
-            link.rel = 'webbundle';
-            link.href = wbn_url;
-            link.resources.add(
-                script_url, urn_uuid_script_url, uuid_in_package_script_url);
-            document.body.appendChild(link);
+
+            const script_web_bundle = document.createElement('script');
+            script_web_bundle.type = 'webbundle';
+            script_web_bundle.textContent = JSON.stringify({
+              'source': wbn_url,
+              'resources': [script_url, uuid_in_package_script_url]
+            });
+            document.body.appendChild(script);
             const script = document.createElement('script');
             script.src = script_url;
             script.addEventListener('load', () => {
-              const urn_uuid_script = document.createElement('script');
-              urn_uuid_script.src = urn_uuid_script_url;
-              document.body.appendChild(urn_uuid_script);
               const uuid_in_package_script = document.createElement('script');
               uuid_in_package_script.src = uuid_in_package_script_url;
               document.body.appendChild(uuid_in_package_script);
@@ -3687,7 +3579,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
         </script>
         </body>
       )",
-      urn_uuid_script_url.c_str(), uuid_in_package_script_url.c_str());
+      uuid_in_package_script_url.c_str());
   std::string web_bundle;
   RegisterWebBundleRequestHandler("/web_bundle.wbn", &web_bundle);
   RegisterRequestHandler("/test.html", "text/html", page_html);
@@ -3696,28 +3588,22 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
   // Create a web bundle.
   std::string script_url_str =
       embedded_test_server()->GetURL("/test.js").spec();
-  web_package::WebBundleBuilder builder("", "");
-  auto script_location = builder.AddResponse(
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(
+      script_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'ScriptDone';");
-  auto urn_uuid_script_location = builder.AddResponse(
-      {{":status", "200"}, {"content-type", "application/javascript"}},
-      "document.title += ':UrnUUIDScriptDone';");
-  auto uuid_in_package_script_location = builder.AddResponse(
+  builder.AddExchange(
+      uuid_in_package_script_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title += ':UUIDInPackageScriptDone';");
-  builder.AddIndexEntry(script_url_str, "", {script_location});
-  builder.AddIndexEntry(urn_uuid_script_url, "", {urn_uuid_script_location});
-  builder.AddIndexEntry(uuid_in_package_script_url, "",
-                        {uuid_in_package_script_location});
   std::vector<uint8_t> bundle = builder.CreateBundle();
   web_bundle = std::string(bundle.begin(), bundle.end());
 
   GURL page_url = embedded_test_server()->GetURL("/test.html");
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  std::u16string expected_title =
-      u"ScriptDone:UrnUUIDScriptDone:UUIDInPackageScriptDone";
+  std::u16string expected_title = u"ScriptDone:UUIDInPackageScriptDone";
   content::TitleWatcher title_watcher(web_contents, expected_title);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
   EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
@@ -3731,8 +3617,6 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
                                           "window.numWebBundleRequests"));
   EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
                                           "window.numScriptRequests"));
-  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
-                                          "window.numUrnUUIDScriptRequests"));
   EXPECT_EQ(
       1, GetCountFromBackgroundPage(extension, profile(),
                                     "window.numUUIDInPackageScriptRequests"));
@@ -3751,10 +3635,6 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
         "background": { "scripts": ["background.js"] },
         "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
       })");
-  std::string pass_urn_uuid_js_url =
-      "urn:uuid:bf50ad1f-899e-42ca-95ac-ca592aa2ecb5";
-  std::string cancel_urn_uuid_js_url =
-      "urn:uuid:9cc02e52-05b6-466a-8c0e-f22ee86825a8";
   std::string pass_uuid_in_package_js_url =
       "uuid-in-package:bf50ad1f-899e-42ca-95ac-ca592aa2ecb5";
   std::string cancel_uuid_in_package_js_url =
@@ -3766,8 +3646,6 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
                      base::StringPrintf(R"(
         window.numPassScriptRequests = 0;
         window.numCancelScriptRequests = 0;
-        window.numUrnUUIDPassScriptRequests = 0;
-        window.numUrnUUIDCancelScriptRequests = 0;
         window.numUUIDInPackagePassScriptRequests = 0;
         window.numUUIDInPackageCancelScriptRequests = 0;
         chrome.webRequest.onBeforeRequest.addListener(function(details) {
@@ -3776,12 +3654,6 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
             return {cancel: false};
           } else if (details.url.includes('cancel.js')) {
             window.numCancelScriptRequests++;
-            return {cancel: true};
-          } else if (details.url === '%s') {
-            window.numUrnUUIDPassScriptRequests++;
-            return {cancel: false};
-          } else if (details.url === '%s') {
-            window.numUrnUUIDCancelScriptRequests++;
             return {cancel: true};
           } else if (details.url === '%s') {
             window.numUUIDInPackagePassScriptRequests++;
@@ -3794,8 +3666,6 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
 
         chrome.test.sendMessage('ready');
       )",
-                                        pass_urn_uuid_js_url.c_str(),
-                                        cancel_urn_uuid_js_url.c_str(),
                                         pass_uuid_in_package_js_url.c_str(),
                                         cancel_uuid_in_package_js_url.c_str(),
                                         opt_extra_info_spec.c_str()));
@@ -3816,25 +3686,21 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
           const pass_js_url = new URL('./pass.js', location.href).toString();
           const cancel_js_url =
               new URL('./cancel.js', location.href).toString();
-          const pass_urn_uuid_js_url = '%s';
-          const cancel_urn_uuid_js_url = '%s';
           const pass_uuid_in_package_js_url = '%s';
           const cancel_uuid_in_package_js_url = '%s';
-          const link = document.createElement('link');
-          link.rel = 'webbundle';
-          link.href = wbn_url;
-          link.resources.add(pass_js_url,
-                             cancel_js_url,
-                             pass_urn_uuid_js_url,
-                             cancel_urn_uuid_js_url,
-                             pass_uuid_in_package_js_url,
-                             cancel_uuid_in_package_js_url);
-          document.body.appendChild(link);
+          const script = document.createElement('script');
+          script.type = 'webbundle';
+          script.textContent = JSON.stringify({
+            'source': wbn_url,
+            'resources': [pass_js_url, cancel_js_url,
+                          pass_uuid_in_package_js_url,
+                          cancel_uuid_in_package_js_url]
+          });
+          document.body.appendChild(script);
         })();
         </script>
         </body>
       )",
-      pass_urn_uuid_js_url.c_str(), cancel_urn_uuid_js_url.c_str(),
       pass_uuid_in_package_js_url.c_str(),
       cancel_uuid_in_package_js_url.c_str());
 
@@ -3848,31 +3714,21 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
       embedded_test_server()->GetURL("/pass.js").spec();
   std::string cancel_js_url_str =
       embedded_test_server()->GetURL("/cancel.js").spec();
-  web_package::WebBundleBuilder builder(pass_js_url_str, "");
-  auto pass_js_location = builder.AddResponse(
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(
+      pass_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'script loaded';");
-  auto cancel_js_location = builder.AddResponse(
+  builder.AddExchange(
+      cancel_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}}, "");
-  auto urn_uuid_pass_js_location = builder.AddResponse(
-      {{":status", "200"}, {"content-type", "application/javascript"}},
-      "document.title = 'urn uuid script loaded';");
-  auto urn_uuid_cancel_js_location = builder.AddResponse(
-      {{":status", "200"}, {"content-type", "application/javascript"}}, "");
-  auto uuid_in_package_pass_js_location = builder.AddResponse(
+  builder.AddExchange(
+      pass_uuid_in_package_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'uuid-in-package script loaded';");
-  auto uuid_in_package_cancel_js_location = builder.AddResponse(
+  builder.AddExchange(
+      cancel_uuid_in_package_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}}, "");
-  builder.AddIndexEntry(pass_js_url_str, "", {pass_js_location});
-  builder.AddIndexEntry(cancel_js_url_str, "", {cancel_js_location});
-  builder.AddIndexEntry(pass_urn_uuid_js_url, "", {urn_uuid_pass_js_location});
-  builder.AddIndexEntry(cancel_urn_uuid_js_url, "",
-                        {urn_uuid_cancel_js_location});
-  builder.AddIndexEntry(pass_uuid_in_package_js_url, "",
-                        {uuid_in_package_pass_js_location});
-  builder.AddIndexEntry(cancel_uuid_in_package_js_url, "",
-                        {uuid_in_package_cancel_js_location});
   std::vector<uint8_t> bundle = builder.CreateBundle();
   web_bundle = std::string(bundle.begin(), bundle.end());
 
@@ -3891,21 +3747,12 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
 
   EXPECT_FALSE(TryLoadScript("cancel.js"));
 
-  std::u16string expected_title2 = u"urn uuid script loaded";
+  std::u16string expected_title2 = u"uuid-in-package script loaded";
   content::TitleWatcher title_watcher2(web_contents, expected_title2);
-  EXPECT_TRUE(TryLoadScript(pass_urn_uuid_js_url));
-  // Check that the urn UUID script in the web bundle is correctly loaded even
-  // when the extension with blocking handler intercepted the request.
-  EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
-
-  EXPECT_FALSE(TryLoadScript(cancel_urn_uuid_js_url));
-
-  std::u16string expected_title3 = u"uuid-in-package script loaded";
-  content::TitleWatcher title_watcher3(web_contents, expected_title3);
   EXPECT_TRUE(TryLoadScript(pass_uuid_in_package_js_url));
   // Check that the uuid-in-package script in the web bundle is correctly loaded
   // even when the extension with blocking handler intercepted the request.
-  EXPECT_EQ(expected_title3, title_watcher3.WaitAndGetTitle());
+  EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
 
   EXPECT_FALSE(TryLoadScript(cancel_uuid_in_package_js_url));
 
@@ -3913,12 +3760,6 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
                                           "window.numPassScriptRequests"));
   EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
                                           "window.numCancelScriptRequests"));
-  EXPECT_EQ(1,
-            GetCountFromBackgroundPage(extension, profile(),
-                                       "window.numUrnUUIDPassScriptRequests"));
-  EXPECT_EQ(
-      1, GetCountFromBackgroundPage(extension, profile(),
-                                    "window.numUrnUUIDCancelScriptRequests"));
   EXPECT_EQ(1, GetCountFromBackgroundPage(
                    extension, profile(),
                    "window.numUUIDInPackagePassScriptRequests"));
@@ -3976,11 +3817,13 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest, ChangeHeader) {
         (async () => {
           const wbn_url = new URL('./web_bundle.wbn', location.href).toString();
           const target_url = new URL('./target.txt', location.href).toString();
-          const link = document.createElement('link');
-          link.rel = 'webbundle';
-          link.href = wbn_url;
-          link.resources = target_url;
-          document.body.appendChild(link);
+          const script = document.createElement('script');
+          script.type = 'webbundle';
+          script.textContent = JSON.stringify({
+            'source': wbn_url,
+            'resources': [target_url]
+          });
+          document.body.appendChild(script);
           const res = await fetch(target_url);
           document.title = res.status + ':' + res.headers.get('foo');
         })();
@@ -3996,11 +3839,11 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest, ChangeHeader) {
   // Create a web bundle.
   std::string target_txt_url_str =
       embedded_test_server()->GetURL("/target.txt").spec();
-  web_package::WebBundleBuilder builder(target_txt_url_str, "");
-  auto target_txt_location = builder.AddResponse(
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(
+      target_txt_url_str,
       {{":status", "200"}, {"content-type", "text/plain"}, {"foo", "bar"}},
       "Hello world");
-  builder.AddIndexEntry(target_txt_url_str, "", {target_txt_location});
   std::vector<uint8_t> bundle = builder.CreateBundle();
   web_bundle = std::string(bundle.begin(), bundle.end());
 
@@ -4018,16 +3861,108 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest, ChangeHeader) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
-                       ChangeHeaderUrnUuidUrlResource) {
-  TestChangeHeaderOfUuidUrlResource(
-      "urn:uuid:71940cde-d20b-4fb5-b920-38a58a92c516");
-}
-
+// Ensure web request API can change the response headers of uuid-in-package:
+// URL subresources inside the web bundle.
+// Note: Currently we can't directly check the response headers of
+// uuid-in-package: URL resources, because CORS requests are not allowed for
+// such URLs. So we change the content-type header of a JavaScript file and
+// monitor the error handler. Subresources in web bundles should be treated as
+// if an artificial `X-Content-Type-Options: nosniff` header field is set. So
+// when the content-type is not suitable for script execution, the script
+// should fail to load.
 IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
                        ChangeHeaderUuidInPackageUrlResource) {
-  TestChangeHeaderOfUuidUrlResource(
-      "uuid-in-package:71940cde-d20b-4fb5-b920-38a58a92c516");
+  std::string uuid_url = "uuid-in-package:71940cde-d20b-4fb5-b920-38a58a92c516";
+  // Create an extension that changes the header of the subresources inside
+  // the web bundle.
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request Subresource Web Bundles Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+  std::string opt_extra_info_spec = "'blocking', 'responseHeaders'";
+  if (GetExtraInfoSpec() == ExtraInfoSpec::kExtraHeaders)
+    opt_extra_info_spec += ", 'extraHeaders'";
+  static constexpr char kJsTemplate[] = R"(
+        chrome.webRequest.onHeadersReceived.addListener(function(details) {
+          if (details.url != '%s') {
+            return;
+          }
+          const headers = details.responseHeaders;
+          for (let i = 0; i < headers.length; i++) {
+            if (headers[i].name.toLowerCase() == 'content-type') {
+              headers[i].value = 'unknown/type';
+            }
+          }
+          return {responseHeaders: headers};
+        }, {urls: ['<all_urls>']}, [%s]);
+
+        chrome.test.sendMessage('ready');
+      )";
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     base::StringPrintf(kJsTemplate, uuid_url.c_str(),
+                                        opt_extra_info_spec.c_str()));
+  const Extension* extension = nullptr;
+  {
+    ExtensionTestMessageListener listener("ready", false);
+    extension = LoadExtension(test_dir.UnpackedPath());
+    ASSERT_TRUE(extension);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+  static constexpr char kHtmlTemplate[] = R"(
+        <title>Loaded</title>
+        <body>
+        <script>
+        (async () => {
+          const wbn_url = new URL('./web_bundle.wbn', location.href).toString();
+          const uuid_url = '%s';
+          const script_web_bundle = document.createElement('script');
+          script_web_bundle.type = 'webbundle';
+          script_web_bundle.textContent = JSON.stringify({
+            'source': wbn_url,
+            'resources': [uuid_url]
+          });
+          const script = document.createElement('script');
+          script.src = uuid_url;
+          script.addEventListener('error', () => {
+            document.title = 'failed to load';
+          });
+          document.body.appendChild(script);
+        })();
+        </script>
+        </body>
+      )";
+  std::string page_html = base::StringPrintf(kHtmlTemplate, uuid_url.c_str());
+
+  std::string web_bundle;
+  RegisterWebBundleRequestHandler("/web_bundle.wbn", &web_bundle);
+  RegisterRequestHandler("/test.html", "text/html", page_html);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Create a web bundle.
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(
+      uuid_url,
+      {{":status", "200"}, {"content-type", "application/javascript"}},
+      "document.title = 'loaded';");
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  web_bundle = std::string(bundle.begin(), bundle.end());
+
+  GURL page_url = embedded_test_server()->GetURL("/test.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::u16string expected_title = u"failed to load";
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
+
+  EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 // Ensure web request API can redirect the requests for the subresources inside
@@ -4090,13 +4025,15 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
               new URL('./redirect_to_unlisted.js', location.href).toString();
           const redirect_to_server =
               new URL('./redirect_to_server.js', location.href).toString();
-          const link = document.createElement('link');
-          link.rel = 'webbundle';
-          link.href = wbn_url;
-          link.resources = redirect_js_url + ' ' + redirected_js_url + ' ' +
-                           redirect_to_unlisted_js_url + ' ' +
-                           redirect_to_server;
-          document.body.appendChild(link);
+          const script = document.createElement('script');
+          script.type = 'webbundle';
+          script.textContent = JSON.stringify({
+            'source': wbn_url,
+            'resources': [redirect_js_url, redirected_js_url,
+                          redirect_to_unlisted_js_url, redirect_to_server]
+          });
+          document.body.appendChild(script);
+
         })();
         </script>
         </body>
@@ -4120,30 +4057,27 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
       embedded_test_server()->GetURL("/redirected_to_unlisted.js").spec();
   std::string redirect_to_server_js_url_str =
       embedded_test_server()->GetURL("/redirect_to_server.js").spec();
-  web_package::WebBundleBuilder builder(redirect_js_url_str, "");
-  auto redirect_js_location = builder.AddResponse(
+  web_package::WebBundleBuilder builder;
+  builder.AddExchange(
+      redirect_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect';");
-  auto redirected_js_location = builder.AddResponse(
+  builder.AddExchange(
+      redirected_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirected';");
-  auto redirect_to_unlisted_location = builder.AddResponse(
+  builder.AddExchange(
+      redirect_to_unlisted_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect_to_unlisted';");
-  auto redirected_to_unlisted_js_location = builder.AddResponse(
+  builder.AddExchange(
+      redirected_to_unlisted_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirected_to_unlisted';");
-  auto redirect_to_server_js_location = builder.AddResponse(
+  builder.AddExchange(
+      redirect_to_server_js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect_to_server';");
-  builder.AddIndexEntry(redirect_js_url_str, "", {redirect_js_location});
-  builder.AddIndexEntry(redirected_js_url_str, "", {redirected_js_location});
-  builder.AddIndexEntry(redirect_to_unlisted_js_url_str, "",
-                        {redirect_to_unlisted_location});
-  builder.AddIndexEntry(redirected_to_unlisted_js_url_str, "",
-                        {redirected_to_unlisted_js_location});
-  builder.AddIndexEntry(redirect_to_server_js_url_str, "",
-                        {redirect_to_server_js_location});
   std::vector<uint8_t> bundle = builder.CreateBundle();
   web_bundle = std::string(bundle.begin(), bundle.end());
 
@@ -4216,7 +4150,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
 
   // Create a web bundle.
   std::string js_url_str = embedded_test_server()->GetURL("/script.js").spec();
-  web_package::WebBundleBuilder builder(js_url_str, "");
+  web_package::WebBundleBuilder builder;
   builder.AddExchange(
       js_url_str,
       {{":status", "200"}, {"content-type", "application/javascript"}},

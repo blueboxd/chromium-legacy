@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -120,30 +121,37 @@ class CORE_EXPORT NGTableTypes {
     LayoutUnit min_block_size;
     NGBoxStrut borders;
     wtf_size_t column_index;
-    wtf_size_t rowspan;
+    wtf_size_t effective_rowspan;
     bool is_constrained;  // True if this cell has a specified block-size.
-    CellBlockConstraint(LayoutUnit min_block_size,
-                        NGBoxStrut borders,
-                        wtf_size_t column_index,
-                        wtf_size_t rowspan,
-                        bool is_constrained)
+    bool has_descendant_that_depends_on_percentage_block_size;
+    CellBlockConstraint(
+        LayoutUnit min_block_size,
+        NGBoxStrut borders,
+        wtf_size_t column_index,
+        wtf_size_t effective_rowspan,
+        bool is_constrained,
+        bool has_descendant_that_depends_on_percentage_block_size)
         : min_block_size(min_block_size),
           borders(borders),
           column_index(column_index),
-          rowspan(rowspan),
-          is_constrained(is_constrained) {}
+          effective_rowspan(effective_rowspan),
+          is_constrained(is_constrained),
+          has_descendant_that_depends_on_percentage_block_size(
+              has_descendant_that_depends_on_percentage_block_size) {}
   };
 
   // RowspanCells span multiple rows.
   struct RowspanCell {
     DISALLOW_NEW();
     wtf_size_t start_row;
-    wtf_size_t span;
+    wtf_size_t effective_rowspan;
     LayoutUnit min_block_size;
     RowspanCell(wtf_size_t start_row,
-                wtf_size_t span,
+                wtf_size_t effective_rowspan,
                 LayoutUnit min_block_size)
-        : start_row(start_row), span(span), min_block_size(min_block_size) {}
+        : start_row(start_row),
+          effective_rowspan(effective_rowspan),
+          min_block_size(min_block_size) {}
 
     // Original Legacy sorting criteria from
     // CompareRowspanCellsInHeightDistributionOrder
@@ -153,12 +161,15 @@ class CORE_EXPORT NGTableTypes {
       auto IsEnclosed = [](const NGTableTypes::RowspanCell& c1,
                            const NGTableTypes::RowspanCell& c2) {
         return (c1.start_row >= c2.start_row) &&
-               (c1.start_row + c1.span) <= (c2.start_row + c2.span);
+               (c1.start_row + c1.effective_rowspan) <=
+                   (c2.start_row + c2.effective_rowspan);
       };
 
       // If cells span the same rows, the bigger cell is distributed first.
-      if (start_row == rhs.start_row && span == rhs.span)
+      if (start_row == rhs.start_row &&
+          effective_rowspan == rhs.effective_rowspan) {
         return min_block_size > rhs.min_block_size;
+      }
 
       // If one cell is fully enclosed by another, the inner cell wins.
       if (IsEnclosed(*this, rhs))
@@ -173,14 +184,13 @@ class CORE_EXPORT NGTableTypes {
   struct Row {
     DISALLOW_NEW();
     LayoutUnit block_size;
-    LayoutUnit baseline;
-    absl::optional<float> percent;  // 100% is stored as 100.0f
     wtf_size_t start_cell_index;
     wtf_size_t cell_count;
+    absl::optional<LayoutUnit> baseline;
+    absl::optional<float> percent;  // 100% is stored as 100.0f
     // |is_constrained| is true if row has specified block-size, or contains
     // constrained cells.
     bool is_constrained;
-    bool has_baseline_aligned_percentage_block_size_descendants;
     bool has_rowspan_start;  // True if row originates a TD with rowspan > 1
     bool is_collapsed;
   };

@@ -33,6 +33,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
@@ -42,6 +43,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/metrics/accept_language_and_content_language_usage.h"
 #include "third_party/blink/public/common/scheme_registry.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -67,6 +69,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -1336,17 +1339,19 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
   mojom::blink::SameDocumentNavigationType same_document_navigation_type =
       mojom::blink::SameDocumentNavigationType::kFragment;
   if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow())) {
-    UserNavigationInvolvement involvement = UserNavigationInvolvement::kNone;
+    NavigationApi::DispatchParams params(url, NavigateEventType::kFragment,
+                                         frame_load_type);
     if (is_browser_initiated) {
-      involvement = UserNavigationInvolvement::kBrowserUI;
+      params.involvement = UserNavigationInvolvement::kBrowserUI;
     } else if (triggering_event_info ==
                mojom::blink::TriggeringEventInfo::kFromTrustedEvent) {
-      involvement = UserNavigationInvolvement::kActivation;
+      params.involvement = UserNavigationInvolvement::kActivation;
     }
-    auto dispatch_result = navigation_api->DispatchNavigateEvent(
-        url, nullptr, NavigateEventType::kFragment, frame_load_type,
-        involvement, nullptr, history_item, is_browser_initiated,
-        is_synchronously_committed);
+    params.destination_item = history_item;
+    params.is_browser_initiated = is_browser_initiated;
+    params.is_synchronously_committed_same_document =
+        is_synchronously_committed;
+    auto dispatch_result = navigation_api->DispatchNavigateEvent(params);
     if (dispatch_result == NavigationApi::DispatchResult::kAbort)
       return mojom::blink::CommitResult::Aborted;
     if (dispatch_result == NavigationApi::DispatchResult::kTransitionWhile)
@@ -1956,10 +1961,9 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     // origin, but for opaque origins, it creates an origin with the
     // initiator origin as the precursor.
     scoped_refptr<const SecurityOrigin> precursor = requestor_origin_;
-    // For urn: / uuid-in-package: resources served from WebBundles, use the
-    // Bundle's origin as the precursor.
-    // TODO(https://crbug.com/1257045): Remove urn: scheme support.
-    if ((url_.ProtocolIs("urn") || url_.ProtocolIs("uuid-in-package")) &&
+    // For uuid-in-package: resources served from WebBundles, use the Bundle's
+    // origin as the precursor.
+    if (url_.ProtocolIs("uuid-in-package") &&
         response_.WebBundleURL().IsValid())
       precursor = SecurityOrigin::Create(response_.WebBundleURL());
     origin = SecurityOrigin::CreateWithReferenceOrigin(url_, precursor.get());
@@ -2351,9 +2355,7 @@ void DocumentLoader::CommitNavigation() {
   RecordConsoleMessagesForCommit();
 
   // Clear the user activation state.
-  // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
-  if (frame_->IsMainFrame())
-    frame_->ClearUserActivation();
+  frame_->ClearUserActivation();
 
   // The DocumentLoader was flagged as activated if it needs to notify the frame
   // that it was activated before navigation. Update the frame state based on
@@ -2421,6 +2423,13 @@ void DocumentLoader::CommitNavigation() {
   // This must be called before the document is opened, otherwise HTML parser
   // will use stale values from HTMLParserOption.
   DidCommitNavigation();
+
+  // This must be called after DidInstallNewDocument which sets the content
+  // language for the document.
+  if (url_.ProtocolIsInHTTPFamily()) {
+    RecordAcceptLanguageAndContentLanguageMetric();
+    RecordParentAndChildContentLanguageMetric();
+  }
 
   bool is_same_origin_initiator = false;
   if (requestor_origin_) {
@@ -2624,6 +2633,77 @@ void DocumentLoader::CountUse(mojom::WebFeature feature) {
 
 void DocumentLoader::CountDeprecation(mojom::WebFeature feature) {
   return use_counter_.Count(feature, GetFrame());
+}
+
+void DocumentLoader::RecordAcceptLanguageAndContentLanguageMetric() {
+  // Get document Content-Language value, which has been set as the top-most
+  // content language value from http head.
+  constexpr const char language_histogram_name[] =
+      "LanguageUsage.AcceptLanguageAndContentLanguageUsage";
+
+  const AtomicString& content_language =
+      frame_->GetDocument()->ContentLanguage();
+  if (!content_language) {
+    base::UmaHistogramEnumeration(
+        language_histogram_name,
+        AcceptLanguageAndContentLanguageUsage::kContentLanguageEmpty);
+    return;
+  }
+
+  if (content_language == "*") {
+    base::UmaHistogramEnumeration(
+        language_histogram_name,
+        AcceptLanguageAndContentLanguageUsage::kContentLanguageWildcard);
+    return;
+  }
+
+  // Get Accept-Language header value from Prefs
+  bool is_accept_language_dirty =
+      frame_->DomWindow()->navigator()->IsLanguagesDirty();
+  const Vector<String>& accept_languages =
+      frame_->DomWindow()->navigator()->languages();
+
+  // Match content languages and accept languages list:
+  // 1. If any value in content languages matches the top-most accept languages
+  // 2. If there are any overlap between content languages and accept languages
+  if (accept_languages.front() == content_language) {
+    base::UmaHistogramEnumeration(
+        language_histogram_name,
+        AcceptLanguageAndContentLanguageUsage::
+            kContentLanguageMatchesPrimaryAcceptLanguage);
+  }
+
+  if (base::Contains(accept_languages, content_language)) {
+    base::UmaHistogramEnumeration(language_histogram_name,
+                                  AcceptLanguageAndContentLanguageUsage::
+                                      kContentLanguageMatchesAnyAcceptLanguage);
+  }
+
+  // navigator()->languages() is a potential update operation, it could set
+  // |is_dirty_language| to false which causes future override operations
+  // can't update the accep_language list. We should reset the language to
+  // dirty if accept language is dirty before we read from Prefs.
+  if (is_accept_language_dirty) {
+    frame_->DomWindow()->navigator()->SetLanguagesDirty();
+  }
+}
+
+void DocumentLoader::RecordParentAndChildContentLanguageMetric() {
+  // Check child frame and parent frame content language value.
+  if (auto* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent())) {
+    const AtomicString& content_language =
+        frame_->GetDocument()->ContentLanguage();
+
+    const AtomicString& parent_content_language =
+        parent->GetDocument()->ContentLanguage();
+
+    if (parent_content_language != content_language) {
+      base::UmaHistogramEnumeration(
+          "LanguageUsage.AcceptLanguageAndContentLanguageUsage",
+          AcceptLanguageAndContentLanguageUsage::
+              kContentLanguageSubframeDiffers);
+    }
+  }
 }
 
 void DocumentLoader::RecordUseCountersForCommit() {

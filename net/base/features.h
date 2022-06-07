@@ -129,20 +129,42 @@ NET_EXPORT extern const base::FeatureParam<bool>
 NET_EXPORT extern const base::FeatureParam<bool> kUseDnsHttpsSvcbEnableInsecure;
 
 // If we are still waiting for an HTTPS transaction after all the
-// other transactions in a DnsTask have completed, we will compute a timeout for
-// the remaining transaction. The timeout will be the min of:
-//   (a) `kUseDnsHttpsSvcbExtraTimeAbsolute.Get()`
-//   (b) `kUseDnsHttpsSvcbExtraTimePercent.Get() / 100 * t`, where `t` is
-//   the
-//       time delta since the first query began.
+// other transactions in an insecure DnsTask have completed, we will compute a
+// timeout for the remaining transaction. The timeout will be
+// `kUseDnsHttpsSvcbInsecureExtraTimePercent.Get() / 100 * t`, where `t` is the
+// time delta since the first query began. And the timeout will additionally be
+// clamped by:
+//   (a) `kUseDnsHttpsSvcbInsecureExtraTimeMin.Get()`
+//   (b) `kUseDnsHttpsSvcbInsecureExtraTimeMax.Get()`
 //
-// Either param is ignored if zero. If both are zero, there is no timeout
-// specific to HTTPS transactions, only the regular DNS query timeout and server
-// fallback.
+// Any param is ignored if zero, and if one of min/max is non-zero with a zero
+// percent param it will be used as an absolute timeout. If all are zero, there
+// is no timeout specific to HTTPS transactions, only the regular DNS query
+// timeout and server fallback.
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kUseDnsHttpsSvcbInsecureExtraTimeMax;
+NET_EXPORT extern const base::FeatureParam<int>
+    kUseDnsHttpsSvcbInsecureExtraTimePercent;
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kUseDnsHttpsSvcbInsecureExtraTimeMin;
+
+// Same as `kUseDnsHttpsSvcbInsecureExtraTime...` except for secure DnsTasks.
 //
 // If `kUseDnsHttpsSvcbEnforceSecureResponse` is enabled, the timeouts will not
-// be used for secure requests because there is no sense killing a transaction
-// early if that will just kill the entire request.
+// be used because there is no sense killing a transaction early if that will
+// just kill the entire request.
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kUseDnsHttpsSvcbSecureExtraTimeMax;
+NET_EXPORT extern const base::FeatureParam<int>
+    kUseDnsHttpsSvcbSecureExtraTimePercent;
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kUseDnsHttpsSvcbSecureExtraTimeMin;
+
+// Deprecated in favor of `kUseDnsHttpsSvcbInsecureExtraTime...` and
+// `kUseDnsHttpsSvcbSecureExtraTime...` params. Ignored for insecure DnsTasks if
+// any `kUseDnsHttpsSvcbInsecureExtraTime...` params are non-zero, and ignored
+// for secure DnsTasks if any `kUseDnsHttpsSvcbSecureExtraTime...` params are
+// non-zero.
 NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kUseDnsHttpsSvcbExtraTimeAbsolute;
 NET_EXPORT extern const base::FeatureParam<int>
@@ -153,9 +175,6 @@ NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 
 // Enables the TLS Encrypted ClientHello feature.
 // https://datatracker.ietf.org/doc/html/draft-ietf-tls-esni-13
-//
-// TODO(https://crbug.com/1091403): This flag does not currently do much yet.
-// ECH is still in development.
 NET_EXPORT extern const base::Feature kEncryptedClientHello;
 
 // Enables optimizing the network quality estimation algorithms in network
@@ -387,6 +406,12 @@ NET_EXPORT extern const base::Feature kPartitionedCookies;
 // TODO(crbug.com/1296161): Remove this feature when the CHIPS OT ends.
 NET_EXPORT extern const base::Feature kPartitionedCookiesBypassOriginTrial;
 
+// When enabled, then we allow partitioned cookies even if kPartitionedCookies
+// is disabled only if the cookie partition key contains a nonce. So far, this
+// is used to create temporary cookie jar partitions for fenced and anonymous
+// frames.
+NET_EXPORT extern const base::Feature kNoncedPartitionedCookies;
+
 // When enabled, additional cookie-related APIs will perform cookie field size
 // and character set validation to enforce stricter conformance with RFC6265bis.
 // TODO(crbug.com/1243852) Eventually enable this permanently and remove the
@@ -400,6 +425,10 @@ NET_EXPORT extern const base::Feature kRecordRadioWakeupTrigger;
 // When enabled, certain operations in the HTTP cache are brokered to allow
 // the network process to be sandboxed.
 NET_EXPORT extern const base::Feature kSandboxHttpCache;
+
+// When enabled, cookies cannot have an expiry date further than 400 days in the
+// future.
+NET_EXPORT extern const base::Feature kClampCookieExpiryTo400Days;
 
 }  // namespace features
 }  // namespace net

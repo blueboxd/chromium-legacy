@@ -122,10 +122,10 @@ export class PrintPreviewButtonStripElement extends PolymerElement {
         // <if expr="chromeos_ash or chromeos_lacros">
         this.printButtonEnabled_ = !this.printButtonDisabled_();
         // </if>
-        // <if expr="not chromeos and not lacros">
+        // <if expr="not chromeos_ash and not chromeos_lacros">
         this.printButtonEnabled_ = true;
         // </if>
-        if (this.firstLoad) {
+        if (this.firstLoad || this.lastState_ === State.PRINTING) {
           this.shadowRoot!
               .querySelector<CrButtonElement>(
                   'cr-button.action-button')!.focus();

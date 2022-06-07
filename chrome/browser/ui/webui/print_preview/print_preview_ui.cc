@@ -190,8 +190,6 @@ base::LazyInstance<base::IDMap<PrintPreviewUI*>>::DestructorAtExit
 
 void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-    {"accountSelectTitle", IDS_PRINT_PREVIEW_ACCOUNT_SELECT_TITLE},
-    {"addAccountTitle", IDS_PRINT_PREVIEW_ADD_ACCOUNT_TITLE},
     {"advancedSettingsDialogConfirm",
      IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM},
     {"advancedSettingsDialogTitle",
@@ -216,7 +214,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"goBackButton", IDS_PRINT_PREVIEW_BUTTON_GO_BACK},
     {"invalidPrinterSettings", IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS},
     {"layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL},
-    {"learnMore", IDS_LEARN_MORE},
     {"left", IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL},
     {"loading", IDS_PRINT_PREVIEW_LOADING},
     {"manage", IDS_PRINT_PREVIEW_MANAGE},
@@ -229,16 +226,10 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"noAdvancedSettingsMatchSearchHint",
      IDS_PRINT_PREVIEW_NO_ADVANCED_SETTINGS_MATCH_SEARCH_HINT},
     {"noDestinationsMessage", IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE},
-    {"noLongerSupported", IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED},
-    {"noLongerSupportedFragment",
-     IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED_FRAGMENT},
     {"noMargins", IDS_PRINT_PREVIEW_NO_MARGINS},
     {"nonIsotropicDpiItemLabel",
      IDS_PRINT_PREVIEW_NON_ISOTROPIC_DPI_ITEM_LABEL},
     {"offline", IDS_PRINT_PREVIEW_OFFLINE},
-    {"offlineForMonth", IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH},
-    {"offlineForWeek", IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK},
-    {"offlineForYear", IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR},
     {"optionAllPages", IDS_PRINT_PREVIEW_OPTION_ALL_PAGES},
     {"optionBackgroundColorsAndImages",
      IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES},
@@ -278,13 +269,14 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
 #endif
     {"printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF},
     {"printing", IDS_PRINT_PREVIEW_PRINTING},
-    {"recentDestinationsTitle", IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE},
+#if BUILDFLAG(IS_CHROMEOS)
     {"resolveExtensionUSBDialogTitle",
      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_DIALOG_TITLE},
     {"resolveExtensionUSBErrorMessage",
      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_ERROR_MESSAGE},
     {"resolveExtensionUSBPermissionMessage",
      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_PERMISSION_MESSAGE},
+#endif
     {"right", IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL},
     {"saveButton", IDS_PRINT_PREVIEW_SAVE_BUTTON},
     {"saving", IDS_PRINT_PREVIEW_SAVING},
@@ -302,7 +294,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
 #endif
     {"title", IDS_PRINT_PREVIEW_TITLE},
     {"top", IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL},
-    {"unsupportedCloudPrinter", IDS_PRINT_PREVIEW_UNSUPPORTED_CLOUD_PRINTER},
 #if BUILDFLAG(IS_CHROMEOS)
     {"configuringFailedText", IDS_PRINT_CONFIGURING_FAILED_TEXT},
     {"configuringInProgressText", IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT},
@@ -335,9 +326,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 
-  source->AddString("gcpCertificateErrorLearnMoreURL",
-                    chrome::kCloudPrintCertificateErrorLearnMoreURL);
-
 #if !BUILDFLAG(IS_CHROMEOS)
   const std::u16string shortcut_text(kBasicPrintShortcut);
   source->AddString("systemDialogOption",
@@ -351,7 +339,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
       pdf_extension_util::PdfViewerContext::kPrintPreview, &pdf_strings);
   pdf_extension_util::AddAdditionalData(/*enable_annotations=*/false,
                                         &pdf_strings);
-  source->AddLocalizedStrings(base::Value::AsDictionaryValue(pdf_strings));
+  source->AddLocalizedStrings(pdf_strings.GetDict());
 }
 
 void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
@@ -737,7 +725,9 @@ void PrintPreviewUI::SetInitialParams(
     return;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       print_preview_dialog->GetWebUI()->GetController());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   print_preview_ui->source_is_arc_ = params.is_from_arc;
+#endif
   print_preview_ui->source_is_modifiable_ = params.is_modifiable;
   print_preview_ui->source_has_selection_ = params.has_selection;
   print_preview_ui->print_selection_only_ = params.selection_only;

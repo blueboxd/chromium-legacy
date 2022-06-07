@@ -144,26 +144,25 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
 
     for (const auto& visit : cluster.visits) {
       mojom::URLVisitPtr visit_mojom = VisitToMojom(profile, visit);
-      if (!cluster_mojom->visit) {
-        // The first visit is always the top visit.
-        cluster_mojom->visit = std::move(visit_mojom);
-      } else {
-        const auto& top_visit = cluster.visits.front();
-        DCHECK(visit.score <= top_visit.score);
-        // After the experiment-controlled max related visits are attached to
-        // the top visit, any subsequent visits scored below the
-        // experiment-controlled threshold are considered below the fold.
-        // 0-scored (duplicate) visits are always considered below the fold.
-        const auto& top_visit_mojom = cluster_mojom->visit;
-        visit_mojom->below_the_fold =
-            (top_visit_mojom->related_visits.size() >=
-                 static_cast<size_t>(
-                     GetConfig().num_visits_to_always_show_above_the_fold) &&
-             visit.score <
-                 GetConfig().min_score_to_always_show_above_the_fold) ||
-            visit.score == 0.0;
-        top_visit_mojom->related_visits.push_back(std::move(visit_mojom));
+
+      // Even a 0.0 visit shouldn't be hidden if this is the first visit we
+      // encounter. The assumption is that the visits are always ranked by score
+      // in a descending order.
+      // TODO(crbug.com/1313631): Simplify this after removing "Show More" UI.
+      if ((visit.score == 0.0 && !cluster_mojom->visits.empty()) ||
+          (visit.score < GetConfig().min_score_to_always_show_above_the_fold &&
+           cluster_mojom->visits.size() >=
+               GetConfig().num_visits_to_always_show_above_the_fold)) {
+        // If the visit is dropped entirely, also skip coalescing its related
+        // searches by continuing the loop.
+        if (GetConfig().drop_hidden_visits) {
+          continue;
+        }
+
+        visit_mojom->hidden = true;
       }
+
+      cluster_mojom->visits.push_back(std::move(visit_mojom));
 
       // Coalesce the unique related searches of this visit into the cluster
       // until the cap is reached.

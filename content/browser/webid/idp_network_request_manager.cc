@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/escape.h"
 #include "net/base/isolation_info.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -37,6 +38,12 @@ using LoginState = IdentityRequestAccount::LoginState;
 
 // TODO(kenrb): These need to be defined in the explainer or draft spec and
 // referenced here.
+
+// Path to find the manifest list on the eTLD+1 host.
+constexpr char kManifestListPath[] = "/.well-known/fedcm.json";
+
+// manifest list JSON keys
+constexpr char kProviderUrlListKey[] = "provider_urls";
 
 // fedcm.json configuration keys.
 constexpr char kTokenEndpointKey[] = "id_token_endpoint";
@@ -69,10 +76,6 @@ constexpr char kAccountApprovedClientsKey[] = "approved_clients";
 constexpr char kIdpBrandingIconUrl[] = "url";
 constexpr char kIdpBrandingIconSize[] = "size";
 
-// Sign-in request response keys.
-// TODO(majidvp): For consistency rename to signin_endpoint and move into the
-// fedcm manifest.
-constexpr char kSigninUrlKey[] = "signin_url";
 constexpr char kIdTokenKey[] = "id_token";
 
 // Token request body keys
@@ -378,6 +381,25 @@ IdpNetworkRequestManager::IdpNetworkRequestManager(
 
 IdpNetworkRequestManager::~IdpNetworkRequestManager() = default;
 
+void IdpNetworkRequestManager::FetchManifestList(
+    FetchManifestListCallback callback) {
+  DCHECK(!manifest_list_url_loader_);
+  DCHECK(!manifest_list_callback_);
+
+  manifest_list_callback_ = std::move(callback);
+
+  std::string etld_plus_one = GetDomainAndRegistry(
+      provider_, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  GURL url(provider_.scheme() + "://" + etld_plus_one + kManifestListPath);
+  manifest_list_url_loader_ = CreateUncredentialedUrlLoader(
+      url, /* send_referrer= */ false, /* follow_redirects= */ true);
+  manifest_list_url_loader_->DownloadToString(
+      loader_factory_.get(),
+      base::BindOnce(&IdpNetworkRequestManager::OnManifestListLoaded,
+                     weak_ptr_factory_.GetWeakPtr()),
+      maxResponseSizeInKiB * 1024);
+}
+
 void IdpNetworkRequestManager::FetchManifest(
     absl::optional<int> idp_brand_icon_ideal_size,
     absl::optional<int> idp_brand_icon_minimum_size,
@@ -410,27 +432,6 @@ void IdpNetworkRequestManager::FetchManifest(
       base::BindOnce(&IdpNetworkRequestManager::OnManifestLoaded,
                      weak_ptr_factory_.GetWeakPtr(), idp_brand_icon_ideal_size,
                      idp_brand_icon_minimum_size),
-      maxResponseSizeInKiB * 1024);
-}
-
-void IdpNetworkRequestManager::SendSigninRequest(
-    const GURL& signin_url,
-    const std::string& request,
-    SigninRequestCallback callback) {
-  DCHECK(!url_loader_);
-  DCHECK(!signin_request_callback_);
-
-  signin_request_callback_ = std::move(callback);
-
-  std::string escaped_request = net::EscapeUrlEncodedData(request, true);
-
-  GURL target_url = GURL(signin_url.spec() + "?" + escaped_request);
-  url_loader_ =
-      CreateCredentialedUrlLoader(target_url, /* send_referrer= */ true);
-  url_loader_->DownloadToString(
-      loader_factory_.get(),
-      base::BindOnce(&IdpNetworkRequestManager::OnSigninRequestResponse,
-                     weak_ptr_factory_.GetWeakPtr()),
       maxResponseSizeInKiB * 1024);
 }
 
@@ -580,6 +581,24 @@ void IdpNetworkRequestManager::SendLogout(const GURL& logout_url,
       maxResponseSizeInKiB * 1024);
 }
 
+void IdpNetworkRequestManager::OnManifestListLoaded(
+    std::unique_ptr<std::string> response_body) {
+  FetchStatus response_error =
+      GetResponseError(manifest_list_url_loader_.get(), response_body.get());
+  manifest_list_url_loader_.reset();
+
+  if (response_error != FetchStatus::kSuccess) {
+    std::move(manifest_list_callback_)
+        .Run(response_error, std::vector<std::string>());
+    return;
+  }
+
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *response_body,
+      base::BindOnce(&IdpNetworkRequestManager::OnManifestListParsed,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void IdpNetworkRequestManager::OnManifestLoaded(
     absl::optional<int> idp_brand_icon_ideal_size,
     absl::optional<int> idp_brand_icon_minimum_size,
@@ -599,6 +618,43 @@ void IdpNetworkRequestManager::OnManifestLoaded(
       base::BindOnce(&IdpNetworkRequestManager::OnManifestParsed,
                      weak_ptr_factory_.GetWeakPtr(), idp_brand_icon_ideal_size,
                      idp_brand_icon_minimum_size));
+}
+
+void IdpNetworkRequestManager::OnManifestListParsed(
+    data_decoder::DataDecoder::ValueOrError result) {
+  std::vector<std::string> urls;
+
+  if (GetParsingError(result) == FetchStatus::kInvalidResponseError) {
+    std::move(manifest_list_callback_)
+        .Run(FetchStatus::kInvalidResponseError, urls);
+    return;
+  }
+
+  const base::Value::Dict* dict = result.value->GetIfDict();
+  if (!dict) {
+    std::move(manifest_list_callback_)
+        .Run(FetchStatus::kInvalidResponseError, urls);
+    return;
+  }
+
+  const base::Value::List* list = dict->FindList(kProviderUrlListKey);
+  if (!list) {
+    std::move(manifest_list_callback_)
+        .Run(FetchStatus::kInvalidResponseError, urls);
+    return;
+  }
+
+  for (const auto& value : *list) {
+    const std::string* url = value.GetIfString();
+    if (!url) {
+      std::move(manifest_list_callback_)
+          .Run(FetchStatus::kInvalidResponseError, std::vector<std::string>());
+      return;
+    }
+    urls.push_back(*url);
+  }
+
+  std::move(manifest_list_callback_).Run(FetchStatus::kSuccess, urls);
 }
 
 void IdpNetworkRequestManager::OnManifestParsed(
@@ -637,64 +693,6 @@ void IdpNetworkRequestManager::OnManifestParsed(
 
   std::move(idp_manifest_callback_)
       .Run(FetchStatus::kSuccess, endpoints, std::move(idp_metadata));
-}
-
-void IdpNetworkRequestManager::OnSigninRequestResponse(
-    std::unique_ptr<std::string> response_body) {
-  url_loader_.reset();
-
-  if (!response_body) {
-    std::move(signin_request_callback_)
-        .Run(SigninResponse::kSigninError, std::string());
-    return;
-  }
-
-  data_decoder::DataDecoder::ParseJsonIsolated(
-      *response_body,
-      base::BindOnce(&IdpNetworkRequestManager::OnSigninRequestParsed,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void IdpNetworkRequestManager::OnSigninRequestParsed(
-    data_decoder::DataDecoder::ValueOrError result) {
-  if (!result.value) {
-    std::move(signin_request_callback_)
-        .Run(SigninResponse::kInvalidResponseError, std::string());
-    return;
-  }
-
-  auto& response = *result.value;
-
-  if (!response.is_dict()) {
-    std::move(signin_request_callback_)
-        .Run(SigninResponse::kInvalidResponseError, std::string());
-    return;
-  }
-
-  // TODO(kenrb): This possibly should be part of the fedcm manifest, unless
-  // IDPs ever have a reason to serve different URLs for sign-in pages.
-  // https://crbug.com/1141125.
-  const base::Value* signin_url = response.FindKey(kSigninUrlKey);
-  const base::Value* id_token = response.FindKey(kIdTokenKey);
-
-  // Only one of the fields should be present.
-  bool signin_url_present = signin_url && signin_url->is_string();
-  bool token_present = id_token && id_token->is_string();
-  bool all_present = signin_url_present && token_present;
-  if (!(signin_url_present || token_present) || all_present) {
-    std::move(signin_request_callback_)
-        .Run(SigninResponse::kInvalidResponseError, std::string());
-    return;
-  }
-
-  if (signin_url) {
-    std::move(signin_request_callback_)
-        .Run(SigninResponse::kLoadIdp, signin_url->GetString());
-    return;
-  }
-
-  std::move(signin_request_callback_)
-      .Run(SigninResponse::kTokenGranted, id_token->GetString());
 }
 
 void IdpNetworkRequestManager::OnAccountsRequestResponse(
@@ -865,7 +863,8 @@ void IdpNetworkRequestManager::OnClientMetadataParsed(
 std::unique_ptr<network::SimpleURLLoader>
 IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
     const GURL& target_url,
-    bool send_referrer) const {
+    bool send_referrer,
+    bool follow_redirects) const {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       CreateTrafficAnnotation();
 
@@ -878,13 +877,19 @@ IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
   AddCsrfHeader(resource_request.get());
   if (send_referrer) {
     resource_request->referrer = relying_party_origin_.GetURL();
-    // Since referrer_policy only affects redirects and we disable redirects
-    // below, we don't need to set referrer_policy here.
+    // Since referrer_policy only affects redirects and we never send a
+    // referrer when we follow redirects, we don't need to set referrer_policy
+    // here.
+    DCHECK(!follow_redirects);
   }
-  // TODO(cbiesinger): Not following redirects is important for security because
-  // this bypasses CORB. Ensure there is a test added.
-  // https://crbug.com/1155312.
-  resource_request->redirect_mode = network::mojom::RedirectMode::kError;
+  if (follow_redirects) {
+    resource_request->redirect_mode = network::mojom::RedirectMode::kFollow;
+  } else {
+    // TODO(cbiesinger): Not following redirects is important for security
+    // because this bypasses CORB. Ensure there is a test added.
+    // https://crbug.com/1155312.
+    resource_request->redirect_mode = network::mojom::RedirectMode::kError;
+  }
   resource_request->request_initiator = relying_party_origin_;
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->isolation_info =

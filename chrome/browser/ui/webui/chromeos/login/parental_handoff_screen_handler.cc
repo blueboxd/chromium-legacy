@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/parental_handoff_screen_handler.h"
 
 #include "chrome/browser/ash/login/screens/parental_handoff_screen.h"
-#include "chrome/browser/ui/webui/chromeos/login/js_calls_container.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
@@ -22,10 +21,10 @@ constexpr char kUsername[] = "username";
 // static
 constexpr StaticOobeScreenId ParentalHandoffScreenView::kScreenId;
 
-ParentalHandoffScreenHandler::ParentalHandoffScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.ParentalHandoffScreen.userActed");
+ParentalHandoffScreenHandler::ParentalHandoffScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.ParentalHandoffScreen.userActed");
 }
 
 ParentalHandoffScreenHandler::~ParentalHandoffScreenHandler() {
@@ -43,23 +42,23 @@ void ParentalHandoffScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_PARENTAL_HANDOFF_SCREEN_SUBTITLE);
 }
 
-void ParentalHandoffScreenHandler::Initialize() {}
+void ParentalHandoffScreenHandler::InitializeDeprecated() {}
 
 void ParentalHandoffScreenHandler::Show(const std::u16string& username) {
-  base::DictionaryValue data;
-  data.SetStringKey(kUsername, username);
+  base::Value::Dict data;
+  data.Set(kUsername, username);
 
-  ShowScreenWithData(kScreenId, &data);
+  ShowInWebUI(std::move(data));
 }
 
 void ParentalHandoffScreenHandler::Bind(ParentalHandoffScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void ParentalHandoffScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 }  // namespace chromeos

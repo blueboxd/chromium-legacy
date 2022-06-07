@@ -125,9 +125,15 @@ MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kBresenhamCadence;
 MEDIA_EXPORT extern const base::Feature kCdmHostVerification;
 MEDIA_EXPORT extern const base::Feature kCdmProcessSiteIsolation;
-MEDIA_EXPORT extern const base::Feature kChromeWideEchoCancellationEnabled;
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+MEDIA_EXPORT extern const base::Feature kChromeWideEchoCancellation;
+MEDIA_EXPORT extern const base::FeatureParam<int>
+    kChromeWideEchoCancellationProcessingFifoSize;
+MEDIA_EXPORT extern const base::FeatureParam<bool>
+    kChromeWideEchoCancellationMinimizeResampling;
+#endif
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderUseSharedHandle;
-MEDIA_EXPORT extern const base::Feature kEnableMediaInternals;
+MEDIA_EXPORT extern const base::Feature kDisplayAudioUseLocalAudioSource;
 MEDIA_EXPORT extern const base::Feature kEnableTabMuting;
 MEDIA_EXPORT extern const base::Feature kExposeSwDecodersToWebRTC;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
@@ -144,6 +150,7 @@ MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsModernUI;
 MEDIA_EXPORT extern const base::Feature kHardwareMediaKeyHandling;
 MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryption;
 MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryptionExperiment;
+MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryptionFallback;
 MEDIA_EXPORT extern const base::Feature kInternalMediaSession;
 MEDIA_EXPORT extern const base::Feature kKeepRvfcFrameAlive;
 MEDIA_EXPORT extern const base::Feature kKeyPressMonitoring;
@@ -177,6 +184,8 @@ MEDIA_EXPORT extern const base::Feature kReuseMediaPlayer;
 MEDIA_EXPORT extern const base::Feature kRevokeMediaSourceObjectURLOnAttach;
 MEDIA_EXPORT extern const base::Feature
     kShareThisTabInsteadButtonGetDisplayMedia;
+MEDIA_EXPORT extern const base::Feature
+    kShareThisTabInsteadButtonGetDisplayMediaAudio;
 MEDIA_EXPORT extern const base::Feature kSpeakerChangeDetection;
 MEDIA_EXPORT extern const base::Feature kSpecCompliantCanPlayThrough;
 MEDIA_EXPORT extern const base::Feature kSurfaceLayerForMediaStreams;
@@ -228,7 +237,9 @@ MEDIA_EXPORT extern const base::Feature kUseRealColorSpaceForAndroidVideo;
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 MEDIA_EXPORT extern const base::Feature kUseChromeOSDirectVideoDecoder;
-
+#if defined(ARCH_CPU_ARM_FAMILY)
+MEDIA_EXPORT extern const base::Feature kPreferLibYuvImageProcessor;
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
 #if BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT extern const base::Feature kUseAlternateVideoDecoderImplementation;
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -246,10 +257,18 @@ MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;
 MEDIA_EXPORT extern const base::Feature kDirectShowGetPhotoState;
 MEDIA_EXPORT extern const base::Feature kIncludeIRCamerasInDeviceEnumeration;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationAV1Encoding;
+
+// For feature check of kMediaFoundationH264CbpEncoding at runtime,
+// please use IsMediaFoundationH264CbpEncodingEnabled() instead.
 MEDIA_EXPORT extern const base::Feature kMediaFoundationH264CbpEncoding;
+
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVideoCapture;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationVP8Decoding;
+
+// For feature check of kMediaFoundationD3D11VideoCapture at runtime,
+// please use IsMediaFoundationD3D11VideoCaptureEnabled() instead.
 MEDIA_EXPORT extern const base::Feature kMediaFoundationD3D11VideoCapture;
+
 MEDIA_EXPORT extern const base::Feature kMediaFoundationClearPlayback;
 MEDIA_EXPORT extern const base::Feature kWasapiRawAudioCapture;
 MEDIA_EXPORT extern const base::Feature kD3D11HEVCDecoding;
@@ -259,6 +278,10 @@ MEDIA_EXPORT extern const base::Feature kD3D11Vp9kSVCHWDecoding;
 #if BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT extern const base::Feature kDeprecateLowUsageCodecs;
 #endif
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+MEDIA_EXPORT extern const base::Feature kUseOutOfProcessVideoDecoding;
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 // Based on a |command_line| and the current platform, returns the effective
 // autoplay policy. In other words, it will take into account the default policy
@@ -272,6 +295,11 @@ MEDIA_EXPORT bool IsChromeWideEchoCancellationEnabled();
 MEDIA_EXPORT bool IsHardwareSecureDecryptionEnabled();
 MEDIA_EXPORT bool IsLiveCaptionFeatureEnabled();
 MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
+
+#if BUILDFLAG(IS_WIN)
+MEDIA_EXPORT bool IsMediaFoundationH264CbpEncodingEnabled();
+MEDIA_EXPORT bool IsMediaFoundationD3D11VideoCaptureEnabled();
+#endif
 
 enum class kCrosGlobalMediaControlsPinOptions {
   kPin,

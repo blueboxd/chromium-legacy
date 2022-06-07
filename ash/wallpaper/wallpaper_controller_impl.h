@@ -111,6 +111,11 @@ class ASH_EXPORT WallpaperControllerImpl
   static const char kOnlineWallpaperTypeNodeName[];
   static const char kOnlineWallpaperUrlNodeName[];
 
+  static std::unique_ptr<WallpaperControllerImpl> Create(
+      PrefService* local_state);
+
+  // Prefer to use to obtain an new instance unless injecting non-production
+  // members i.e. in tests.
   explicit WallpaperControllerImpl(PrefService* local_state);
 
   WallpaperControllerImpl(const WallpaperControllerImpl&) = delete;
@@ -136,17 +141,6 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Returns custom wallpaper directory by appending corresponding |sub_dir|.
   static base::FilePath GetCustomWallpaperDir(const std::string& sub_dir);
-
-  // Gets |account_id|'s custom wallpaper at |wallpaper_path|. Falls back to the
-  // original custom wallpaper. When |show_wallpaper| is true, shows the
-  // wallpaper immediately. Must run on wallpaper sequenced worker thread.
-  static void SetWallpaperFromPath(
-      const AccountId& account_id,
-      const WallpaperInfo& info,
-      const base::FilePath& wallpaper_path,
-      bool show_wallpaper,
-      const scoped_refptr<base::SingleThreadTaskRunner>& reply_task_runner,
-      base::WeakPtr<WallpaperControllerImpl> weak_ptr);
 
   // Returns the prominent color based on |color_profile|.
   SkColor GetProminentColor(color_utils::ColorProfile color_profile) const;
@@ -242,9 +236,9 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // A wrapper of |ReadAndDecodeWallpaper| used in |SetWallpaperFromPath|.
   void StartDecodeFromPath(const AccountId& account_id,
-                           const base::FilePath& wallpaper_path,
                            const WallpaperInfo& info,
-                           bool show_wallpaper);
+                           bool show_wallpaper,
+                           const base::FilePath& wallpaper_path);
 
   // WallpaperController:
   void SetClient(WallpaperControllerClient* client) override;
@@ -377,7 +371,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Exposed for testing.
   void UpdateDailyRefreshWallpaperForTesting();
-  base::WallClockTimer& GetDailyRefreshTimerForTesting();
+  base::WallClockTimer& GetUpdateWallpaperTimerForTesting();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
@@ -475,7 +469,8 @@ class ASH_EXPORT WallpaperControllerImpl
   void OnGooglePhotosPhotoFetched(
       const GooglePhotosWallpaperParams& params,
       SetWallpaperCallback callback,
-      ash::personalization_app::mojom::GooglePhotosPhotoPtr photo);
+      ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
+      bool success);
 
   void GetGooglePhotosWallpaperFromCacheOrDownload(
       const GooglePhotosWallpaperParams& params,
@@ -484,7 +479,8 @@ class ASH_EXPORT WallpaperControllerImpl
       const base::FilePath& cached_path,
       bool cached_path_exists);
 
-  void OnGooglePhotosWallpaperDecoded(const GooglePhotosWallpaperParams& params,
+  void OnGooglePhotosWallpaperDecoded(const WallpaperInfo& info,
+                                      const AccountId& account_id,
                                       const base::FilePath& path,
                                       SetWallpaperCallback callback,
                                       const gfx::ImageSkia& image);
@@ -670,13 +666,15 @@ class ASH_EXPORT WallpaperControllerImpl
   // If daily refresh wallpapers is enabled by the user.
   bool IsDailyRefreshEnabled() const;
 
+  // If the user has a Google Photos wallpaper set.
+  bool IsGooglePhotosWallpaperSet() const;
+
   // Callback from the client providing a url to a wallpaper from the user
   // specified collection when daily refresh is enabled. If |success| is
   // false, fetching the |image| failed, and should be tried again soon.
   void SetDailyWallpaper(const AccountId& account_id,
                          const std::string& collection_id,
                          WallpaperLayout layout,
-                         bool preview_mode,
                          RefreshWallpaperCallback callback,
                          bool success,
                          const backdrop::Image& image);
@@ -689,15 +687,32 @@ class ASH_EXPORT WallpaperControllerImpl
   // wallpaper was set.
   void StartDailyRefreshTimer();
 
+  // Starts a wall clock timer, to confirm that the current Google Photos
+  // photo set as the wallpaper still exists in the user's library.
+  void StartGooglePhotosStalenessTimer();
+
   // Starts a wall clock timer to retry fetching a daily refresh wallpaper.
   void OnFetchDailyWallpaperFailed();
 
   // Starts a wall clock timer with the specified |delay|.
-  void StartDailyRefreshTimer(base::TimeDelta delay);
+  void StartUpdateWallpaperTimer(base::TimeDelta delay);
 
   // Time to next wallpaper update for daily refresh; 24 hours since last
   // wallpaper set.
   base::TimeDelta GetTimeToNextDailyRefreshUpdate() const;
+
+  // Called when `update_wallpaper_timer_` expires to take the appropriate
+  // action for whatever type of wallpaper is currently set.
+  void OnUpdateWallpaperTimerExpired();
+
+  // Checks to make sure the currently selected Google Photos wallpaper still
+  // exists in the user's Google Photos library.
+  void CheckGooglePhotosStaleness(const AccountId& account_id,
+                                  const WallpaperInfo& info);
+  void HandleGooglePhotosStalenessCheck(
+      const AccountId& account_id,
+      ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
+      bool success);
 
   void SaveWallpaperToDriveFsAndSyncInfo(const AccountId& account_id,
                                          const base::FilePath& origin_path);
@@ -849,7 +864,7 @@ class ASH_EXPORT WallpaperControllerImpl
   // May be null in tests.
   PrefService* local_state_ = nullptr;
 
-  base::WallClockTimer daily_refresh_timer_;
+  base::WallClockTimer update_wallpaper_timer_;
 
   base::WeakPtrFactory<WallpaperControllerImpl> weak_factory_{this};
 

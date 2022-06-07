@@ -194,6 +194,9 @@ void MarketingOptInScreenTest::SetUpOnMainThread() {
   GetScreen()->set_ingore_pref_sync_for_testing(true);
 
   OobeBaseTest::SetUpOnMainThread();
+  auto* wizard_context = LoginDisplayHost::default_host()->GetWizardContext();
+  wizard_context->is_branded_build = true;
+  wizard_context->defer_oobe_flow_finished_for_tests = true;
 }
 
 MarketingOptInScreen* MarketingOptInScreenTest::GetScreen() {
@@ -617,6 +620,24 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTestChildUser, DisabledForChild) {
       "OOBE.StepCompletionTimeByExitReason.Marketing-opt-in.Next", 0);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Marketing-opt-in",
                                      0);
+}
+
+class MarketingOptInScreenTestNotBrandedChrome
+    : public MarketingOptInScreenTest {
+ protected:
+  void SetUpOnMainThread() override {
+    MarketingOptInScreenTest::SetUpOnMainThread();
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        false;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTestNotBrandedChrome,
+                       SkippedNotBrandedBuild) {
+  ShowMarketingOptInScreen();
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            MarketingOptInScreen::Result::NOT_APPLICABLE);
 }
 
 }  // namespace

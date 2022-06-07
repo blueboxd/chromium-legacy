@@ -15,7 +15,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/escape.h"
 #include "net/http/http_util.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 
 class ContextMenuIncognitoFilterBrowserTest : public InProcessBrowserTest {
  public:
@@ -23,6 +25,8 @@ class ContextMenuIncognitoFilterBrowserTest : public InProcessBrowserTest {
       "Navigation.CrossOtr.ContextMenu.ResponseCodeExperimental";
   constexpr static const char kCrossOtrRefreshCountMetricName[] =
       "Navigation.CrossOtr.ContextMenu.RefreshCountExperimental";
+  constexpr static const char kFilteredParamCountMetricName[] =
+      "Navigation.UrlParamFilter.FilteredParamCountExperimental";
 
   void SetUpInProcessBrowserTestFixture() override {
     // Enable open in incognito param filtering, with rules for:
@@ -31,7 +35,8 @@ class ContextMenuIncognitoFilterBrowserTest : public InProcessBrowserTest {
     // or a source of: foo.com with outgoing param plzblock1
     std::string encoded_classification = url_param_filter::
         CreateBase64EncodedFilterParamClassificationForTesting(
-            {{"foo.com", {"plzblock1"}}}, {{"", {"plzblock"}}});
+            {{"foo.com", {"plzblock1"}}, {"127.0.0.1", {"plzblockredirect"}}},
+            {{"127.0.0.1", {"plzblock"}}});
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kIncognitoParamFilterEnabled,
         {{"classifications", encoded_classification}});
@@ -80,9 +85,304 @@ IN_PROC_BROWSER_TEST_F(ContextMenuIncognitoFilterBrowserTest,
   ASSERT_EQ(expected, tab->GetLastCommittedURL());
 
   // The response was a 200, and the navigation went from normal-->OTR browsing.
-  histogram_tester.ExpectUniqueSample(
+  // Because we intervened, an artificial redirect was injected, so we also
+  // expect a 307.
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(307), 1);
+  histogram_tester.ExpectBucketCount(
       kCrossOtrResponseMetricName,
       net::HttpUtil::MapStatusCodeForHistogram(200), 1);
+}
+
+// Enable "Open Link in Incognito Window" URL parameter filtering, and ensure
+// that it filters only main frame navigations.
+IN_PROC_BROWSER_TEST_F(ContextMenuIncognitoFilterBrowserTest,
+                       OpenIncognitoUrlParamFilterSubresources) {
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_root(embedded_test_server()->GetURL(
+      "/url_param_filter/test.html?plzblock=1&nochanges=2&plzblock1=2"));
+
+  // Go to a |page| with a link to a URL that has associated filtering rules.
+  GURL page("data:text/html,<a href='" + test_root.spec() + "'>link</a>");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
+
+  // Set up the source URL to an eTLD+1 that also has a filtering rule.
+  const GURL kSource("http://foo.com/test");
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.page_url = kSource;
+  context_menu_params.link_url = test_root;
+
+  // Select "Open Link in Incognito Window" and wait for window to be added.
+  TestRenderViewContextMenu menu(
+      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 0);
+
+  content::WebContents* tab = add_tab.Wait();
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+
+  // Verify that it loaded the filtered URL.
+  GURL expected(embedded_test_server()->GetURL(
+      "/url_param_filter/test.html?nochanges=2"));
+  ASSERT_EQ(expected, tab->GetLastCommittedURL());
+
+  // Ensure that we don't apply filters to subresource requests, even when
+  // there's a destination rule for the domain/param pair.
+  EXPECT_EQ(
+      true,
+      content::EvalJs(
+          tab,
+          "document.getElementById('dummy-frame').src.endsWith('plzblock=1')"));
+  EXPECT_EQ(true, content::EvalJs(tab,
+                                  "document.getElementById('dummy-script').src."
+                                  "endsWith('plzblock=1')"));
+
+  // The response was a 200, and the navigation went from normal-->OTR browsing.
+  // Because we intervened, an artificial redirect was injected, so we also
+  // expect a 307.
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(307), 1);
+  // Ensure we only see the two params on the main navigation being filtered;
+  // the other plzblock instances are on js or subframe requests, so should not
+  // be filtered.
+  EXPECT_EQ(histogram_tester.GetTotalSum(kFilteredParamCountMetricName), 2);
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(200), 1);
+}
+
+// Enable "Open Link in Incognito Window" URL parameter filtering, and ensure
+// that it filters as expected.
+IN_PROC_BROWSER_TEST_F(
+    ContextMenuIncognitoFilterBrowserTest,
+    OpenIncognitoUrlParamFilterClientRedirectAfterActivation) {
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_root(embedded_test_server()->GetURL(
+      "/empty.html?plzblock=1&nochanges=2&plzblock1=2"));
+
+  // Go to a |page| with a link to a URL that has associated filtering rules.
+  GURL page("data:text/html,<a href='" + test_root.spec() + "'>link</a>");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
+
+  // Set up the source URL to an eTLD+1 that also has a filtering rule.
+  const GURL kSource("http://foo.com/test");
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.page_url = kSource;
+  context_menu_params.link_url = test_root;
+
+  // Select "Open Link in Incognito Window" and wait for window to be added.
+  TestRenderViewContextMenu menu(
+      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 0);
+
+  content::WebContents* tab = add_tab.Wait();
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+
+  // Verify that it loaded the filtered URL.
+  GURL expected(embedded_test_server()->GetURL("/empty.html?nochanges=2"));
+  ASSERT_EQ(expected, tab->GetLastCommittedURL());
+
+  // Trigger user activation, at which point client redirects are no longer
+  // protected.
+  content::SimulateMouseClick(tab, 0, blink::WebMouseEvent::Button::kLeft);
+  content::LoadStopObserver client_redirect_load_observer(tab);
+  std::string script = "document.location.href=\"" + test_root.spec() + "\"";
+  ASSERT_TRUE(content::ExecJs(tab, script));
+  client_redirect_load_observer.Wait();
+  ASSERT_EQ(test_root, tab->GetLastCommittedURL());
+}
+
+// Enable "Open Link in Incognito Window" URL parameter filtering, and ensure
+// that it filters as expected when server redirects are encountered.
+IN_PROC_BROWSER_TEST_F(ContextMenuIncognitoFilterBrowserTest,
+                       OpenIncognitoUrlParamFilterServerRedirect) {
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // `plzblockredirect` is blocked on navigations from IP source domains;
+  // `plzblock` is blocked when an IP is the destination domain.
+  GURL test_root(embedded_test_server()->GetURL(
+      "/empty.html?plzblock=1&nochanges=2&plzblockredirect=2"));
+  GURL redirect_page(embedded_test_server()->GetURL(
+      "/server-redirect?" +
+      net::EscapeQueryParamValue(test_root.spec(), false)));
+
+  // Go to a |page| with a link to a URL that has associated filtering rules.
+  GURL page("data:text/html,<a href='" + test_root.spec() + "'>link</a>");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
+
+  // Set up the source URL to an eTLD+1 that also has a filtering rule.
+  const GURL kSource("http://foo.com/test");
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.page_url = kSource;
+  context_menu_params.link_url = redirect_page;
+
+  // Select "Open Link in Incognito Window" and wait for window to be added.
+  TestRenderViewContextMenu menu(
+      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 0);
+
+  content::WebContents* tab = add_tab.Wait();
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+
+  // Verify that it loaded the filtered URL.
+  GURL expected(embedded_test_server()->GetURL("/empty.html?nochanges=2"));
+  ASSERT_EQ(expected, tab->GetLastCommittedURL());
+
+  // The response was a 301-->200, and the navigation went from normal-->OTR
+  // browsing. Because we intervened, an artificial redirect was injected, so we
+  // also expect a 307.
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(301), 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(307), 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(200), 1);
+}
+
+// Enable "Open Link in Incognito Window" URL parameter filtering, and ensure
+// that it filters as expected when client redirects are encountered.
+IN_PROC_BROWSER_TEST_F(ContextMenuIncognitoFilterBrowserTest,
+                       OpenIncognitoUrlParamFilterClientRedirect) {
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // `plzblock1` is blocked only on navs from foo.com. Because analysis will see
+  // this as a separate navigation, the source domain of the client redirect
+  // will be localhost.
+  GURL test_root(
+      embedded_test_server()->GetURL("/empty.html?plzblock=1&nochanges=2"));
+  GURL redirect_page(embedded_test_server()->GetURL(
+      "/client-redirect?" +
+      net::EscapeQueryParamValue(test_root.spec(), false)));
+
+  // Go to a |page| with a link to a URL that has associated filtering rules.
+  GURL page("data:text/html,<a href='" + test_root.spec() + "'>link</a>");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
+
+  // Set up the source URL to an eTLD+1 that also has a filtering rule.
+  const GURL kSource("http://foo.com/test");
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.page_url = kSource;
+  context_menu_params.link_url = redirect_page;
+
+  // Select "Open Link in Incognito Window" and wait for window to be added.
+  TestRenderViewContextMenu menu(
+      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 0);
+
+  content::WebContents* tab = add_tab.Wait();
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+  // The prior load stop succeeds for the initial response; we now wait for the
+  // client redirect to occur.
+  content::LoadStopObserver client_redirect_load_observer(tab);
+  client_redirect_load_observer.Wait();
+  // Verify that it loaded the filtered URL.
+  GURL expected(embedded_test_server()->GetURL("/empty.html?nochanges=2"));
+  ASSERT_EQ(expected, tab->GetLastCommittedURL());
+
+  // The response was a 200-->client redirect-->200, and the navigation went
+  // from normal-->OTR browsing. Because we intervened, an artificial redirect
+  // was injected, so we also expect a 307.
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(307), 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(200), 2);
+}
+
+// Enable "Open Link in Incognito Window" URL parameter filtering, and ensure
+// that it filters as expected when client redirects are encountered.
+IN_PROC_BROWSER_TEST_F(ContextMenuIncognitoFilterBrowserTest,
+                       OpenIncognitoUrlParamFilterClientRedirectThenRefresh) {
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_root(
+      embedded_test_server()->GetURL("/empty.html?plzblock=1&nochanges=2"));
+  GURL redirect_page(embedded_test_server()->GetURL(
+      "/client-redirect?" +
+      net::EscapeQueryParamValue(test_root.spec(), false)));
+
+  // Go to a |page| with a link to a URL that has associated filtering rules.
+  GURL page("data:text/html,<a href='" + test_root.spec() + "'>link</a>");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
+
+  // Set up the source URL to an eTLD+1 that also has a filtering rule.
+  const GURL kSource("http://foo.com/test");
+
+  // Set up menu with link URL.
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.page_url = kSource;
+  context_menu_params.link_url = redirect_page;
+
+  // Select "Open Link in Incognito Window" and wait for window to be added.
+  TestRenderViewContextMenu menu(
+      *browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 0);
+
+  content::WebContents* tab = add_tab.Wait();
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+  // The prior load stop succeeds for the initial response; we now wait for the
+  // client redirect to occur.
+  content::LoadStopObserver client_redirect_load_observer(tab);
+  client_redirect_load_observer.Wait();
+  // Verify that it loaded the filtered URL.
+  GURL expected(embedded_test_server()->GetURL("/empty.html?nochanges=2"));
+  ASSERT_EQ(expected, tab->GetLastCommittedURL());
+
+  tab->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+  tab->Close();
+
+  // The response was a 200-->client redirect-->200, and the navigation went
+  // from normal-->OTR browsing. Because we intervened, an artificial redirect
+  // was injected, so we also expect a 307.
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(307), 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOtrResponseMetricName,
+      net::HttpUtil::MapStatusCodeForHistogram(200), 2);
+  histogram_tester.ExpectTotalCount(kCrossOtrRefreshCountMetricName, 1);
+  ASSERT_EQ(histogram_tester.GetTotalSum(kCrossOtrRefreshCountMetricName), 1);
 }
 
 // Verify that appropriate metrics are written when redirects are encountered.

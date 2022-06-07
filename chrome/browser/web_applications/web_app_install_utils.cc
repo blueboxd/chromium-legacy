@@ -10,10 +10,12 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
@@ -110,6 +112,11 @@ std::vector<WebAppShortcutsMenuItemInfo> ToWebAppShortcutsMenuItemInfos(
   web_app_shortcut_infos.reserve(shortcuts.size());
   int num_shortcut_icons = 0;
   for (const auto& shortcut : shortcuts) {
+    if (web_app_shortcut_infos.size() >= kMaxApplicationDockMenuItems) {
+      DLOG(ERROR) << "Too many shortcuts";
+      break;
+    }
+
     WebAppShortcutsMenuItemInfo shortcut_info;
     shortcut_info.name = shortcut.name;
     shortcut_info.url = shortcut.url;
@@ -327,6 +334,20 @@ apps::FileHandler::LaunchType ToFileHandlerLaunchType(
   }
 }
 
+base::flat_map<std::string, blink::Manifest::TranslationItem>
+ToWebAppTranslations(
+    const base::flat_map<std::u16string, blink::Manifest::TranslationItem>&
+        manifest_translations) {
+  std::vector<std::pair<std::string, blink::Manifest::TranslationItem>>
+      translations_vector;
+  translations_vector.reserve(manifest_translations.size());
+  for (const auto& it : manifest_translations) {
+    translations_vector.emplace_back(base::UTF16ToUTF8(it.first), it.second);
+  }
+  return base::flat_map<std::string, blink::Manifest::TranslationItem>(
+      std::move(translations_vector));
+}
+
 }  // namespace
 
 apps::FileHandlers CreateFileHandlersFromManifest(
@@ -502,7 +523,7 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
     web_app_info->description = manifest.description.value();
   }
 
-  web_app_info->translations = manifest.translations;
+  web_app_info->translations = ToWebAppTranslations(manifest.translations);
 
   web_app_info->permissions_policy.clear();
   for (const auto& decl : manifest.permissions_policy) {
@@ -677,6 +698,12 @@ void RecordDownloadedIconHttpStatusCodes(
     counter->Add(net::HttpUtil::MapStatusCodeForHistogram(http_status_code));
 }
 
+WebAppManagement::Type ConvertExternalInstallSourceToSource(
+    ExternalInstallSource external_install_source) {
+  return ConvertInstallSurfaceToWebAppSource(
+      ConvertExternalInstallSourceToInstallSource(external_install_source));
+}
+
 webapps::WebappInstallSource ConvertExternalInstallSourceToInstallSource(
     ExternalInstallSource external_install_source) {
   webapps::WebappInstallSource install_source;
@@ -725,9 +752,7 @@ webapps::WebappUninstallSource ConvertExternalInstallSourceToUninstallSource(
   return uninstall_source;
 }
 
-// TODO(loyso): Call sites should specify Source explicitly as a part of
-// AppTraits parameter object.
-Source::Type InferSourceFromMetricsInstallSource(
+WebAppManagement::Type ConvertInstallSurfaceToWebAppSource(
     webapps::WebappInstallSource install_source) {
   switch (install_source) {
     case webapps::WebappInstallSource::MENU_BROWSER_TAB:
@@ -743,27 +768,28 @@ Source::Type InferSourceFromMetricsInstallSource(
     case webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON:
     case webapps::WebappInstallSource::SYNC:
     case webapps::WebappInstallSource::MENU_CREATE_SHORTCUT:
-      return Source::kSync;
+    case webapps::WebappInstallSource::CHROME_SERVICE:
+      return WebAppManagement::kSync;
 
     case webapps::WebappInstallSource::INTERNAL_DEFAULT:
     case webapps::WebappInstallSource::EXTERNAL_DEFAULT:
-      return Source::kDefault;
+      return WebAppManagement::kDefault;
 
     case webapps::WebappInstallSource::EXTERNAL_POLICY:
-      return Source::kPolicy;
+      return WebAppManagement::kPolicy;
 
     case webapps::WebappInstallSource::SYSTEM_DEFAULT:
-      return Source::kSystem;
+      return WebAppManagement::kSystem;
 
     case webapps::WebappInstallSource::ARC:
-      return Source::kWebAppStore;
+      return WebAppManagement::kWebAppStore;
 
     case webapps::WebappInstallSource::SUB_APP:
-      return Source::kSubApp;
+      return WebAppManagement::kSubApp;
 
     case webapps::WebappInstallSource::COUNT:
       NOTREACHED();
-      return Source::kSync;
+      return WebAppManagement::kSync;
   }
 }
 
@@ -777,7 +803,7 @@ void CreateWebAppInstallTabHelpers(content::WebContents* web_contents) {
 }
 
 void MaybeRegisterOsUninstall(const WebApp* web_app,
-                              Source::Type source_uninstalling,
+                              WebAppManagement::Type source_uninstalling,
                               OsIntegrationManager& os_integration_manager,
                               InstallOsHooksCallback callback) {
 #if BUILDFLAG(IS_WIN)
@@ -802,7 +828,7 @@ void MaybeRegisterOsUninstall(const WebApp* web_app,
 }
 
 void MaybeUnregisterOsUninstall(const WebApp* web_app,
-                                Source::Type source_installing,
+                                WebAppManagement::Type source_installing,
                                 OsIntegrationManager& os_integration_manager) {
 #if BUILDFLAG(IS_WIN)
   // |web_app| object will add target |source_installing| type.

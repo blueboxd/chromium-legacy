@@ -9,6 +9,7 @@ if (is_android) {
 }
 
 proto_library("proto") {
+  proto_in_dir = "//components/autofill_assistant/"
   sources = [
     "action_strategy.proto",
     "action_value.proto",
@@ -19,6 +20,7 @@ proto_library("proto") {
     "service.proto",
     "view_layout.proto",
   ]
+  link_deps = [ "//components/autofill_assistant/content/common/proto:proto" ]
 }
 
 proto_library("test_proto") {
@@ -153,6 +155,8 @@ static_library("browser") {
     "controller.h",
     "controller_observer.cc",
     "controller_observer.h",
+    "desktop/starter_delegate_desktop.cc",
+    "desktop/starter_delegate_desktop.h",
     "details.cc",
     "details.h",
     "device_context.cc",
@@ -163,6 +167,8 @@ static_library("browser") {
     "display_strings_util.h",
     "element_area.cc",
     "element_area.h",
+    "empty_website_login_manager_impl.cc",
+    "empty_website_login_manager_impl.h",
     "event_handler.cc",
     "event_handler.h",
     "execution_delegate.h",
@@ -175,6 +181,8 @@ static_library("browser") {
     "generic_ui_java_generated_enums.h",
     "generic_ui_replace_placeholders.cc",
     "generic_ui_replace_placeholders.h",
+    "headless/client_headless.cc",
+    "headless/client_headless.h",
     "info_box.cc",
     "info_box.h",
     "intent_strings.cc",
@@ -198,6 +206,8 @@ static_library("browser") {
     "rectf.h",
     "retry_timer.cc",
     "retry_timer.h",
+    "save_password_leak_detection_delegate.cc",
+    "save_password_leak_detection_delegate.h",
     "script.cc",
     "script.h",
     "script_executor.cc",
@@ -249,6 +259,8 @@ static_library("browser") {
     "suppress_keyboard_raii.h",
     "switches.cc",
     "switches.h",
+    "tab_helper.cc",
+    "tab_helper.h",
     "top_padding.cc",
     "top_padding.h",
     "trigger_context.cc",
@@ -341,6 +353,7 @@ static_library("browser") {
     "//components/password_manager/content/browser:browser",
     "//components/password_manager/core/browser:browser",
     "//components/password_manager/core/browser/form_parsing:form_parsing",
+    "//components/password_manager/core/browser/leak_detection:leak_detection",
     "//components/signin/public/identity_manager",
     "//components/strings:components_strings_grit",
     "//components/ukm/content:content",
@@ -447,6 +460,7 @@ source_set("unit_tests") {
     "actions/show_generic_ui_action_unittest.cc",
     "actions/show_info_box_action_unittest.cc",
     "actions/show_progress_bar_action_unittest.cc",
+    "actions/stop_action_unittest.cc",
     "actions/stopwatch_unittest.cc",
     "actions/tell_action_unittest.cc",
     "actions/update_client_settings_action_unittest.cc",
@@ -478,6 +492,7 @@ source_set("unit_tests") {
     "protocol_utils_unittest.cc",
     "radio_button_controller_unittest.cc",
     "retry_timer_unittest.cc",
+    "save_password_leak_detection_delegate_unittest.cc",
     "script_executor_unittest.cc",
     "script_parameters_unittest.cc",
     "script_precondition_unittest.cc",
@@ -542,7 +557,12 @@ source_set("unit_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/autofill_assistant/browser/public:unit_test_support",
     "//components/password_manager/core/browser:test_support",
+    "//components/password_manager/core/browser/leak_detection:test_support",
     "//components/password_manager/core/common",
+    "//components/prefs:prefs",
+    "//components/prefs:test_support",
+    "//components/safe_browsing/core/common:common",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/strings:components_strings_grit",
     "//components/ukm:test_support",
     "//components/ukm/content:content",
@@ -556,32 +576,20 @@ source_set("unit_tests") {
   ]
 }
 
-static_library("extensions_test_support") {
-  testonly = true
-  deps = [
-    ":browser",
-    ":proto",
-    ":unit_test_support",
-    "//base",
-    "//base/test:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-}
-
 if (is_android) {
   proto_java_library("proto_java") {
-    proto_path = "//components/autofill_assistant/browser/"
+    proto_path = "//components/autofill_assistant/"
     sources = [
-      "$proto_path/action_strategy.proto",
-      "$proto_path/action_value.proto",
-      "$proto_path/cud_condition.proto",
-      "$proto_path/dom_action.proto",
-      "$proto_path/generic_ui.proto",
-      "$proto_path/model.proto",
-      "$proto_path/service.proto",
-      "$proto_path/view_layout.proto",
+      "action_strategy.proto",
+      "action_value.proto",
+      "cud_condition.proto",
+      "dom_action.proto",
+      "generic_ui.proto",
+      "model.proto",
+      "service.proto",
+      "view_layout.proto",
     ]
+    deps = [ "//components/autofill_assistant/content/common/proto:proto_java" ]
   }
 
   java_cpp_enum("autofill_assistant_enums_java") {

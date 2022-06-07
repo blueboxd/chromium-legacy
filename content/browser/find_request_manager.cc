@@ -12,6 +12,7 @@
 #include "base/containers/queue.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/find_in_page_client.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -245,6 +246,14 @@ class FindRequestManager::FrameObserver : public WebContentsObserver {
   const raw_ptr<FindRequestManager> manager_;
 };
 
+bool FindRequestManager::RunDelayedFindTaskForTesting() {
+  if (!delayed_find_task_.IsCancelled()) {
+    delayed_find_task_.callback().Run();
+    return true;
+  }
+  return false;
+}
+
 FindRequestManager::FindRequest::FindRequest() = default;
 
 FindRequestManager::FindRequest::FindRequest(
@@ -385,6 +394,9 @@ void FindRequestManager::ForEachAddedFindInPageRenderFrameHost(
 }
 
 void FindRequestManager::StopFinding(StopFindAction action) {
+  // Cancel any delayed find-in-page requests
+  delayed_find_task_.Cancel();
+
   ForEachAddedFindInPageRenderFrameHost(base::BindRepeating(
       [](StopFindAction action, RenderFrameHostImpl* rfh) {
         rfh->GetFindInPage()->StopFinding(

@@ -12,8 +12,10 @@ GEN_INCLUDE(['mock_feedback.js']);
  * necessary setup to run ChromeVox Next.
  */
 ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
-  constructor() {
+  /** @param {boolean=} opt_isCommonClass Disables ChromeVox specific code */
+  constructor(opt_isCommonClass) {
     super();
+    this.isCommonClass = opt_isCommonClass || false;
 
     if (this.runtimeDeps.length > 0) {
       chrome.extension.getViews().forEach(function(w) {
@@ -24,9 +26,6 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
         }.bind(this));
       }.bind(this));
     }
-
-    // For tests, enable announcement of events we trigger via automation.
-    BaseAutomationHandler.announceActions = true;
 
     this.originalOutputContextValues_ = {};
     for (const role in OutputRoleInfo) {
@@ -49,8 +48,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
 
   /** @return {!MockFeedback} */
   createMockFeedback() {
-    const mockFeedback =
-        new MockFeedback(this.newCallback(), this.newCallback.bind(this));
+    const mockFeedback = new MockFeedback(this.newCallback());
     mockFeedback.install();
     return mockFeedback;
   }
@@ -115,22 +113,28 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
-    await importModule(
-        'CommandHandler', '/chromevox/background/command_handler.js');
-    await importModule(
-        'GestureCommandHandler',
-        '/chromevox/background/gesture_command_handler.js');
+    if (!this.isCommonClass) {
+      await importModule(
+          'BaseAutomationHandler',
+          '/chromevox/background/base_automation_handler.js');
+      await importModule(
+          'CommandHandler', '/chromevox/background/command_handler.js');
+      await importModule(
+          'GestureCommandHandler',
+          '/chromevox/background/gesture_command_handler.js');
+
+      // For tests, enable announcement of events we trigger via automation.
+      BaseAutomationHandler.announceActions = true;
+    }
   }
 
   /** @override */
-  runWithLoadedTree(doc, callback, opt_params = {}) {
-    callback = this.newCallback(callback);
-    const wrappedCallback = (node) => {
+  async runWithLoadedTree(doc, opt_params = {}) {
+    const rootWebArea = await super.runWithLoadedTree(doc, opt_params);
+    if (!this.isCommonClass) {
       CommandHandlerInterface.instance.onCommand('nextObject');
-      callback(node);
-    };
-
-    super.runWithLoadedTree(doc, wrappedCallback, opt_params);
+    }
+    return rootWebArea;
   }
 
   /**

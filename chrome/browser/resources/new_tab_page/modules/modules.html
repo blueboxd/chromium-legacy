@@ -5,16 +5,22 @@
     --ntp-module-container-padding-top: 16px;
   }
 
-  :host([show-fre_]) #freAndModulesContainer {
+  @media (min-width: 672px) {
+    #firstRunExperience {
+      background-image: url(./modules/chromefetti.svg);
+      background-position: top center;
+      background-repeat: no-repeat;
+    }
+  }
+
+  :host([modules-fre-shown]) #freAndModulesContainer {
+    background-color: var(--ntp-background-override-color);
     border: 1px solid var(--ntp-border-color);
     border-radius: 4px;
     padding: 20px;
   }
 
   #firstRunExperience {
-    background-image: url(./modules/chromefetti.svg);
-    background-position: top center;
-    background-repeat: no-repeat;
     box-sizing: border-box;
     padding-bottom: 24px;
     padding-top: 32px;
@@ -38,13 +44,19 @@
     font-size: 10px;
     height: 12px;
     padding: 2px 6px;
-    vertical-align: top;
+    vertical-align: 5px;
   }
 
   .first-run-experience-body {
     color: var(--cr-primary-text-color);
     font-size: 12px;
     line-height: 20px;
+  }
+
+  #customizeChromeLink {
+    color: var(--cr-link-color);
+    cursor: pointer;
+    font-weight: 700;
   }
 
   .action-button {
@@ -80,6 +92,10 @@
     flex-grow: 1;
   }
 
+  #removeModuleFreToastMessage {
+    flex-grow: 1;
+  }
+
   :host([drag-enabled_]) ntp-module-wrapper {
     cursor: grab;
   }
@@ -91,23 +107,23 @@
   }
 </style>
 <div id="freAndModulesContainer">
-  <template is="dom-if" if="[[showFre_]]">
+  <template is="dom-if" if="[[modulesFreShown]]">
     <div id="firstRunExperience">
-      <div id="firstRunExperienceTitle">
+      <header id="firstRunExperienceTitle">
         $i18n{modulesFirstRunExperienceTitle}
-      </div>
+      </header>
       <div id="newTag">$i18n{modulesNewTagLabel}</div>
       <div class="first-run-experience-body">
         $i18n{modulesFirstRunExperienceBodyLine1}
       </div>
       <div class="first-run-experience-body">
-        $i18n{modulesFirstRunExperienceBodyLine2}
+        $i18nRaw{modulesFirstRunExperienceBodyLine2}
       </div>
-      <cr-button class="action-button">
-        $i18n{modulesFirstRunOptInButton}
+      <cr-button class="action-button" on-click="onModulesFreOptIn_">
+        $i18n{modulesFirstRunExperienceOptIn}
       </cr-button>
-      <cr-button class="cancel-button">
-        $i18n{modulesFirstRunOptOutButton}
+      <cr-button class="cancel-button" on-click="onModulesFreOptOut_">
+        $i18n{modulesFirstRunExperienceOptOut}
       </cr-button>
     </div>
   </template>
@@ -118,6 +134,16 @@
   <cr-button id="undoRemoveModuleButton"
       aria-label="$i18n{undoDescription}"
       on-click="onUndoRemoveModuleButtonClick_">
+    $i18n{undo}
+  </cr-button>
+</cr-toast>
+<cr-toast id="removeModuleFreToast" duration="10000">
+  <div id="removeModuleFreToastMessage">
+    $i18n{modulesFirstRunExperienceOptOutToast}
+  </div>
+  <cr-button id="undoRemoveModuleFreButton"
+      aria-label="$i18n{undoDescription}"
+      on-click="onUndoRemoveModuleFreButtonClick_">
     $i18n{undo}
   </cr-button>
 </cr-toast>

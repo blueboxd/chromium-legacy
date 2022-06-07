@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/components/arc/arc_features.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -15,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,7 +35,6 @@
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/device_management_service.h"

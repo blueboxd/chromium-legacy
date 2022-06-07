@@ -1092,6 +1092,10 @@ NSString* SerializedValue(const base::Value* value) {
   return IsCustomWebKitLoadedIfRequested();
 }
 
++ (BOOL)isLoadSimulatedRequestAPIEnabled {
+  return web::features::IsLoadSimulatedRequestAPIEnabled();
+}
+
 + (BOOL)isMobileModeByDefault {
   web::UserAgentType webClientUserAgent =
       web::GetWebClient()->GetDefaultUserAgent(
@@ -1111,6 +1115,10 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (BOOL)isNewOverflowMenuEnabled {
   return IsNewOverflowMenuEnabled();
+}
+
++ (BOOL)isNewOmniboxPopupEnabled {
+  return base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI);
 }
 
 + (BOOL)isThumbstripEnabledForWindowWithNumber:(int)windowNumber {

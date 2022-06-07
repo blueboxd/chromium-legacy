@@ -15,6 +15,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="151962892725702025">Chromium OS gat ekki samstillt gögnin þín vegna þess að samstilling er ekki í boði fyrir lénið þitt.</translation>
 <translation id="1524282610922162960">Deila Chromium flipa</translation>
 <translation id="1553461853655228091">Chromium þarf leyfi til að nota myndavélina til að búa til þrívíddarkort af umhverfinu</translation>
+<translation id="1602421994560205104">Chromium setti þessa skrá á bannlista því að hún er of stór fyrir öryggisathugun. Reyndu aftur með skrám sem eru allt að 50 MB</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Kerfisstjórinn þinn gerir kröfu um að þú endurræsir Chromium til að setja upp uppfærslu}=1{Kerfisstjórinn þinn gerir kröfu um að þú endurræsir Chromium til að setja upp uppfærslu. Huliðsglugginn enduropnast ekki.}one{Kerfisstjórinn þinn gerir kröfu um að þú endurræsir Chromium til að setja upp uppfærslu. # huliðsgluggi enduropnast ekki.}other{Kerfisstjórinn þinn gerir kröfu um að þú endurræsir Chromium til að setja upp uppfærslu. # huliðsgluggar enduropnast ekki.}}</translation>
 <translation id="1625909126243026060">Farðu yfir helstu öryggis- og persónuverndarstýringar í Chromium</translation>
 <translation id="1632539827495546968">Ef þú vilt aðeins nota þennan reikning einu sinni geturðu notað <ph name="GUEST_LINK_BEGIN" />gestastillingu<ph name="GUEST_LINK_END" /> í Chromium vafra. Ef þú vilt bæta við reikningi fyrir einhvern annan skaltu <ph name="LINK_BEGIN" />bæta við nýjum einstaklingi<ph name="LINK_END" /> í <ph name="DEVICE_TYPE" />.
@@ -120,6 +121,7 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="4264410486868823224"><ph name="MANAGER" /> krefst þess að þú lesir og samþykkir eftirfarandi þjónustuskilmála áður en þú notar þetta tæki. Þessir skilmálar auka ekki við, breyta eða takmarka skilmála Chromium OS.</translation>
 <translation id="4271805377592243930">Fá hjálp með Chromium</translation>
 <translation id="4285930937574705105">Uppsetning mistókst vegna ótilgreindrar villu. Ef Chromium er í gangi eins og er skaltu loka því og reyna aftur.</translation>
+<translation id="4304713468139749426">Aðgangsorðastjórnun</translation>
 <translation id="4407044323746248786">Viltu samt loka Chromium?</translation>
 <translation id="4415566066719264597">Leyfa Chromium að keyra í bakgrunni</translation>
 <translation id="4423735387467980091">Sérsníða og stjórna Chromium</translation>
@@ -197,6 +199,7 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="6290827346642914212">Gefðu Chromium prófílnum þínum heiti</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> gæti verið skaðleg skrá og Chromium útilokaði hana.</translation>
 <translation id="6309712487085796862">Chromium er að nota myndavélina þína.</translation>
+<translation id="632355235628111698">Chromium setti þessa skrá á bannlista því hún er hættuleg</translation>
 <translation id="6333502561965082103">Önnur aðgerð er í gangi í Chromium. Reyndu aftur síðar.</translation>
 <translation id="6334986366598267305">Nú er auðveldara að nota Chromium með Google reikningnum þínum og í samnýttum tölvum.</translation>
 <translation id="6373523479360886564">Viltu örugglega fjarlægja Chromium?</translation>
@@ -221,6 +224,7 @@ Sumir eiginleikar kunna að verða óaðgengilegir. Tilgreindu aðra prófílam�
 <translation id="673636774878526923">Til að fá aðgang að Chromium efninu þínu í öllum tækjunum þínum skaltu skrá þig inn og kveikja á samstillingu.</translation>
 <translation id="6774082503108938489">Foreldrar þínir hafa slökkt á „Heimildum fyrir vefsvæði, forrit og viðbætur" fyrir Chromium. Ekki er leyfilegt að kveikja á þessu <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6847869444787758381">Chromium lætur þig vita ef aðgangsorðin þín eru einhvern tímann í hættu</translation>
+<translation id="6852530923436401894">Chromium setti þessa skrá á bannlista því að hún inniheldur spilliforrit</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (afritað í Chromium)</translation>
 <translation id="6873893289264747459">Chromium komst að því að „<ph name="EXTENSION_NAME" />“ inniheldur spilliforrit</translation>
@@ -240,6 +244,7 @@ Sumir eiginleikar kunna að verða óaðgengilegir. Tilgreindu aðra prófílam�
 <translation id="7218568399872925918">Vefsvæðin sem þú opnar muna upplýsingarnar þínar þar til þú lokar Chromium</translation>
 <translation id="7223968959479464213">Verkstjórn – Chromium</translation>
 <translation id="7246575524853130370">Áhugasvið þín samkvæmt mati Chromium</translation>
+<translation id="7265671031637041256">Chromium setti þessa skrá á bannlista vegna þess að hún er dulkóðuð. Biddu eiganda hennar að afkóða hana</translation>
 <translation id="7309928523159922338">Auglýsingamælingar heimila vefsvæðum sem þú opnar að biðja Chromium um upplýsingar sem hjálpa vefsvæðinu að mæla afköst auglýsinga þess. Auglýsingamælingar takmarka rakningu á milli vefsvæða með því að flytja eins lítið magn upplýsinga á milli vefsvæða og mögulegt er.</translation>
 <translation id="731795002583552498">Uppfærir Chromium</translation>
 <translation id="7318036098707714271">Kjörstillingaskráin þín er skemmd eða ógild.
@@ -276,11 +281,12 @@ Chromium getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="7857220146454061152">Til að fá frekari uppfærslur á Chromium þarftu stýrikerfi X 10.11 eða nýrra. Þessi tölva notar stýrikerfi X 10.10.</translation>
 <translation id="7867198900892795913">Ekki var hægt að uppfæra Chromium í nýjustu útgáfu og þú ferð því á mis við nýja eiginleika og öryggislagfæringar.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Svona geturðu stjórnað gögnunum þínum:<ph name="END_BOLD" /> Til að gæta persónuverndar þinnar eyðum við áhugasviðunum þínum sem eru eldri en 4 vikna sjálfkrafa. Áhugasvið kann að birtast aftur á listanum þegar þú heldur áfram að vafra. Þú getur einnig fjarlægt áhugasvið sem þú vilt ekki að Chromium taki tillit til.</translation>
-<translation id="788352880609666695">Eftirfarandi reikningar eru tiltækir fyrir þennan Chromium prófíl</translation>
 <translation id="7898472181347242998">Opnaðu <ph name="LINK_BEGIN" />stillingar Chromium OS<ph name="LINK_END" /> til að athuga hvort tækið sé uppfært</translation>
 <translation id="7937630085815544518">Þú varst skráð(ur) inn í Chromium sem <ph name="USER_EMAIL_ADDRESS" />. Notaðu sama reikning til að skrá þig inn aftur.</translation>
 <translation id="7975919845073681630">Þetta er aukaleg uppsetning á Chromium sem ekki er hægt að gera að sjálfgefnum vafra.</translation>
+<translation id="7997934263947464652">Viðbætur, forrit og þemu frá óþekktum uppruna geta skaðað tækið þitt. Chromium mælir með að sækja slíkar skrár aðeins í <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /></translation>
 <translation id="8013436988911883588">Þegar Chromium hefur aðgang munu vefsvæði geta beðið þig um aðgang.</translation>
+<translation id="8045118833343856403">Eftirfarandi reikningar eru ekki skráðir inn á Chromium prófíla. Ef þú vilt nota reikning á öðrum prófíl skaltu byrja á að fjarlægja viðkomandi prófíl.</translation>
 <translation id="8105840573057009683">Chromium verður að fá staðsetningarheimild fyrir þetta vefsvæði</translation>
 <translation id="81770708095080097">Þessi skrá er hættuleg og þess vegna útilokaði Chromium hana.</translation>
 <translation id="8248265253516264921">Ef gagnlega lýsingu vantar við mynd reynir Chromium að útvega þér lýsingu. Til að búa til lýsingar eru myndir sendar til Google. Þú getur slökkt á þessu hvenær sem er í stillingunum.</translation>

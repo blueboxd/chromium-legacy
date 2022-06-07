@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/api_test/feed_api_test.h"
@@ -2991,6 +2992,17 @@ TEST_F(FeedApiTest, NoticeOpenAndDismissActions) {
   // NoticeAcknowledged UMA is only reported once.
   histograms.ExpectUniqueSample(
       "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true, 1);
+}
+
+TEST_F(FeedApiTest, FollowedFromWebPageMenuCount) {
+  // Arrange.
+  TestWebFeedSurface surface(stream_.get());
+  // Act.
+  stream_->IncrementFollowedFromWebPageMenuCount();
+  // Assert.
+  EXPECT_EQ(1, stream_->GetMetadata().followed_from_web_page_menu_count());
+  EXPECT_EQ(1, stream_->GetRequestMetadata(kWebFeedStream, false)
+                   .followed_from_web_page_menu_count);
 }
 
 // Keep instantiations at the bottom.

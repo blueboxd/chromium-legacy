@@ -80,7 +80,6 @@ class GpuChannelHost;
 }
 
 namespace media {
-class DecoderFactory;
 class GpuVideoAcceleratorFactories;
 }
 
@@ -98,7 +97,6 @@ namespace content {
 class AgentSchedulingGroup;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
-class MediaInterfaceFactory;
 class RenderFrameImpl;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
@@ -192,7 +190,6 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::WebString GetFullUserAgent() override;
   blink::WebString GetReducedUserAgent() override;
   const blink::UserAgentMetadata& GetUserAgentMetadata() override;
-  bool IsUseZoomForDSF() override;
   void WriteIntoTrace(
       perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto)
       override;
@@ -301,7 +298,6 @@ class CONTENT_EXPORT RenderThreadImpl
   SharedCompositorWorkerContextProvider();
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
-  media::DecoderFactory* GetMediaDecoderFactory();
 
   scoped_refptr<viz::ContextProviderCommandBuffer>
   SharedMainThreadContextProvider();
@@ -532,10 +528,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // NOTE(dcastagna): At worst this accumulates a few bytes per context lost.
   std::vector<std::unique_ptr<GpuVideoAcceleratorFactoriesImpl>> gpu_factories_;
 
-  // Utility classes to allow WebRTC to create video decoders.
-  std::unique_ptr<MediaInterfaceFactory> media_interface_factory_;
-  std::unique_ptr<media::DecoderFactory> media_decoder_factory_;
-
   // Thread for running multimedia operations (e.g., video decoding).
   std::unique_ptr<base::Thread> media_thread_;
 
@@ -582,7 +574,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_gpu_memory_buffer_compositor_resources_enabled_;
   bool is_partial_raster_enabled_;
   bool is_elastic_overscroll_enabled_;
-  bool is_zoom_for_dsf_enabled_;
   bool is_threaded_animation_enabled_;
   bool is_scroll_animator_enabled_;
 

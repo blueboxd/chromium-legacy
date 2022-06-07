@@ -22,6 +22,7 @@ Note: This tool will make edits on files in your local repo. It will revert the
 """
 
 import argparse
+import collections
 import contextlib
 import dataclasses
 import functools
@@ -29,6 +30,7 @@ import logging
 import os
 import pathlib
 import re
+import statistics
 import subprocess
 import sys
 import time
@@ -54,6 +56,7 @@ _SECONDS_TO_POLL_FOR_EMULATOR = 30
 
 _SUPPORTED_EMULATORS = {
     'generic_android23.textpb': 'x86',
+    'generic_android24.textpb': 'x86',
     'generic_android25.textpb': 'x86',
     'generic_android27.textpb': 'x86',
     'generic_android28.textpb': 'x86',
@@ -335,7 +338,12 @@ def _run_incremental_benchmark(*, out_dir: str, target: str, from_string: str,
     # This ensures that the only change is the one that this script makes.
     logging.info(f'Prepping incremental benchmark...')
     prep_time = _run_and_maybe_install(out_dir, target, emulator)
-    logging.info(f'Took {prep_time:.1f}s to prep this test')
+    logging.info(f'Took {prep_time:.1f}s to prep. Sleeping for 1 minute.')
+    # 60s is enough to sufficiently reduce load and improve consistency. 30s
+    # did not sufficiently lower standard deviation and 90s did not further
+    # reduce standard deviation compared to 60s.
+    time.sleep(60)
+    logging.info(f'Starting actual test...')
     change_file_path = os.path.join(_SRC_ROOT, change_file)
     with _backup_file(change_file_path):
         with open(change_file_path, 'r') as f:
@@ -361,10 +369,11 @@ def _run_benchmark(*, kind: str, emulator: Optional[device_utils.DeviceUtils],
 
 def _format_result(time_taken: List[float]) -> str:
     avg_time = sum(time_taken) / len(time_taken)
-    list_of_times = ', '.join(f'{t:.1f}s' for t in time_taken)
     result = f'{avg_time:.1f}s'
     if len(time_taken) > 1:
-        result += f' avg ({list_of_times})'
+        standard_deviation = statistics.stdev(time_taken)
+        list_of_times = ', '.join(f'{t:.1f}s' for t in time_taken)
+        result += f' avg [sd: {standard_deviation:.1f}s] ({list_of_times})'
     return result
 
 
@@ -385,8 +394,8 @@ def _parse_benchmarks(benchmarks: List[str]) -> Iterator[Benchmark]:
 
 def run_benchmarks(benchmarks: List[str], gn_args: List[str],
                    output_directory: str, target: str, repeat: int,
-                   no_server: bool, emulator_avd_name: Optional[str]
-                   ) -> Iterator[Tuple[str, List[float]]]:
+                   no_server: bool,
+                   emulator_avd_name: Optional[str]) -> Dict[str, List[float]]:
     out_dir = os.path.relpath(output_directory, _SRC_ROOT)
     args_gn_path = os.path.join(out_dir, 'args.gn')
     if emulator_avd_name is None:
@@ -394,17 +403,17 @@ def run_benchmarks(benchmarks: List[str], gn_args: List[str],
     else:
         emulator_ctx = functools.partial(_emulator, emulator_avd_name)
     server_ctx = _server if not no_server else contextlib.nullcontext
+    timings = collections.defaultdict(list)
     with _backup_file(args_gn_path):
         with open(args_gn_path, 'w') as f:
             # Use newlines instead of spaces since autoninja.py uses regex to
             # determine whether use_goma is turned on or off.
             f.write('\n'.join(gn_args))
-        yield 'gn gen', [_run_gn_gen(out_dir)]
-        for benchmark in _parse_benchmarks(benchmarks):
-            logging.info(f'Starting {benchmark.name}...')
-            time_taken = []
-            for run_num in range(repeat):
-                logging.info(f'Run number: {run_num + 1}')
+        for run_num in range(repeat):
+            logging.info(f'Run number: {run_num + 1}')
+            timings['gn gen'].append(_run_gn_gen(out_dir))
+            for benchmark in _parse_benchmarks(benchmarks):
+                logging.info(f'Starting {benchmark.name}...')
                 # Run the fast local dev server fresh for each benchmark run
                 # to avoid later benchmarks being slower due to the server
                 # accumulating queued tasks. Start a fresh emulator for each
@@ -414,11 +423,9 @@ def run_benchmarks(benchmarks: List[str], gn_args: List[str],
                                              target=target,
                                              emulator=emulator,
                                              **benchmark.info)
-                    logging.info(f'Time: {elapsed:.1f}s')
-                    time_taken.append(elapsed)
-            logging.info(f'Completed {benchmark.name}')
-            logging.info('Result: %s', _format_result(time_taken))
-            yield benchmark.name, time_taken
+                logging.info(f'Completed {benchmark.name}: {elapsed:.1f}s')
+                timings[benchmark.name].append(elapsed)
+    return timings
 
 
 def _all_benchmark_and_suite_names() -> Iterator[str]:
@@ -491,6 +498,11 @@ def main():
         devil_chromium.Initialize()
         logging.info('Using emulator %s', args.emulator)
         gn_args.append(f'target_cpu="{_SUPPORTED_EMULATORS[args.emulator]}"')
+    else:
+        # Default to an emulator target_cpu when just building to be comparable
+        # to building and installing on an emulator. It is likely that devs are
+        # mostly using emulator builds so this is more valuable to track.
+        gn_args.append('target_cpu="x86"')
 
     if args.target:
         target = args.target
@@ -503,10 +515,8 @@ def main():
     print(f'emulator: {args.emulator}')
     print(f'gn args: {" ".join(gn_args)}')
     print(f'target: {target}')
-    for name, result in results:
-        # Flush helps when redirecting output to a file so that each resulting
-        # line can be seen immediately in the log file.
-        print(f'{name}: {_format_result(result)}', flush=True)
+    for name, timings in results.items():
+        print(f'{name}: {_format_result(timings)}')
 
 
 if __name__ == '__main__':

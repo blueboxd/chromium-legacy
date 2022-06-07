@@ -45,7 +45,6 @@
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/base/media_log.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -59,7 +58,6 @@
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_v8_value_converter.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
@@ -90,6 +88,7 @@ namespace media {
 struct AudioSinkParameters;
 struct AudioSourceParameters;
 class DecoderFactory;
+class MediaLog;
 class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }  // namespace media
@@ -134,6 +133,7 @@ class WebAudioBus;
 class WebAudioLatencyHint;
 class WebCrypto;
 class WebDedicatedWorker;
+class WebDedicatedWorkerHostFactoryClient;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
@@ -607,11 +607,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   }
 #endif
 
-  // Whether zoom for dsf is enabled. When true, inputs to blink would all be
-  // scaled by the device scale factor so that layout is done in device pixel
-  // space.
-  virtual bool IsUseZoomForDSFEnabled() { return true; }
-
   // Whether LCD text is enabled.
   virtual bool IsLcdTextEnabled() { return false; }
 
@@ -715,9 +710,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual std::unique_ptr<WebDedicatedWorkerHostFactoryClient>
   CreateDedicatedWorkerHostFactoryClient(WebDedicatedWorker*,
-                                         const BrowserInterfaceBrokerProxy&) {
-    return nullptr;
-  }
+                                         const BrowserInterfaceBrokerProxy&);
   virtual void DidStartWorkerThread() {}
   virtual void WillStopWorkerThread() {}
   virtual void WorkerContextCreated(const v8::Local<v8::Context>& worker) {}
@@ -820,7 +813,9 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  virtual media::DecoderFactory* GetMediaDecoderFactory() { return nullptr; }
+  virtual base::WeakPtr<media::DecoderFactory> GetMediaDecoderFactory() {
+    return nullptr;
+  }
 
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) {}
 

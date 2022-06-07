@@ -4,15 +4,18 @@
 
 import 'chrome://chrome-signin/inline_login_app.js';
 
-import {ArcAccountPickerBrowserProxyImpl} from 'chrome://chrome-signin/arc_account_picker_browser_proxy.js';
+import {ArcAccountPickerAppElement} from 'chrome://chrome-signin/arc_account_picker/arc_account_picker_app.js';
+import {Account} from 'chrome://chrome-signin/arc_account_picker/arc_account_picker_browser_proxy.js';
 import {InlineLoginBrowserProxyImpl} from 'chrome://chrome-signin/inline_login_browser_proxy.js';
+import {AccountAdditionOptions} from 'chrome://chrome-signin/inline_login_util.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertDeepEquals, assertEquals} from '../chai_assert.js';
+import {getFakeAccountsNotAvailableInArcList, setTestArcAccountPickerBrowserProxy, TestArcAccountPickerBrowserProxy} from '../chromeos/arc_account_picker/test_util.js';
 
-import {fakeAuthExtensionData, fakeAuthExtensionDataWithEmail, getFakeAccountsNotAvailableInArcList, TestArcAccountPickerBrowserProxy, TestAuthenticator, TestInlineLoginBrowserProxy} from './inline_login_test_util.js';
+import {fakeAuthExtensionData, fakeAuthExtensionDataWithEmail, TestAuthenticator, TestInlineLoginBrowserProxy} from './inline_login_test_util.js';
 
 window.arc_account_picker_page_test = {};
 const arc_account_picker_page_test = window.arc_account_picker_page_test;
@@ -28,7 +31,7 @@ arc_account_picker_page_test.TestNames = {
 };
 
 suite(arc_account_picker_page_test.suiteName, () => {
-  /** @type {ArcAccountAppPickerAppElement} */
+  /** @type {ArcAccountPickerAppElement} */
   let arcAccountPickerComponent;
   /** @type {InlineLoginAppElement} */
   let inlineLoginComponent;
@@ -59,15 +62,15 @@ suite(arc_account_picker_page_test.suiteName, () => {
 
     testArcBrowserProxy = new TestArcAccountPickerBrowserProxy();
     testArcBrowserProxy.setAccountsNotAvailableInArc(accountsNotAvailableInArc);
-    ArcAccountPickerBrowserProxyImpl.setInstance(testArcBrowserProxy);
+    setTestArcAccountPickerBrowserProxy(testArcBrowserProxy);
 
     inlineLoginComponent = /** @type {InlineLoginAppElement} */ (
         document.createElement('inline-login-app'));
     document.body.appendChild(inlineLoginComponent);
     inlineLoginComponent.setAuthExtHostForTest(new TestAuthenticator());
     flush();
-    arcAccountPickerComponent =
-        inlineLoginComponent.$$('arc-account-picker-app');
+    arcAccountPickerComponent = /** @type {ArcAccountPickerAppElement} */ (
+        inlineLoginComponent.$$('arc-account-picker-app'));
 
     const switchViewPromise = new Promise(
         resolve => inlineLoginComponent.addEventListener(

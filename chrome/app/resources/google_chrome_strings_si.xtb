@@ -177,6 +177,7 @@
 <translation id="4600710005438004015">Chrome අලුත්ම අනුවාදයට යාවත්කාලීන කළ නොහැකිය, එබැවින් ඔබට අලුත් විශේෂාංග සහ ආරක්ෂණ පිළියම් මඟ හැරෙයි.</translation>
 <translation id="4627412468266359539">විකල්පමය: දෝෂ නිර්ණ සහ භාවිත දත්ත ස්වයංක්‍රියව Google වෙත යැවීමෙන් ChromeOS Flex විශේෂාංග සහ කාර්ය සාධනය වැඩිදියුණු කිරීමට උදවු වන්න.</translation>
 <translation id="4633000520311261472">Chrome වඩාත් ආරක්ෂිත කිරීම සඳහා, අප විසින් <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ලැයිස්තුගත කළ නොමැති හා ඔබේ දැනුමෙන් තොරව එක්කළ ඇතැම් දිගු අක්‍රීය කර ඇත.</translation>
+<translation id="469553575393225953">නොදන්නා මූලාශ්‍ර වෙතින් වන දිගු, යෙදුම් සහ තේමා ඔබගේ උපාංගයට හානි කළ හැකිය. Chrome ඒවා Chrome Web Store වෙතින් පමණක් ස්ථාපනය කිරීම නිර්දේශ කරයි</translation>
 <translation id="4728575227883772061">අනපේකෂිත දෝෂයක් හේතුවෙන් ස්ථාපනය අසාර්ථක විය. Google Chrome දැනටමත් ධාවනය වෙමින් පවතී නම්, එය වසා නැවත උත්සාහ කරන්න.</translation>
 <translation id="4747730611090640388">Chrome හට ඔබගේ ලැදිකම් තක්සේරු කළ හැකිය.  පසුව, ඔබ පිවිසෙන අඩවියක් ඔබ දකින වෙළඳ දැන්වීම් පුද්ගලිකකරණය කිරීම සඳහා ඔබගේ ලැදිකම් බැලීමට Chrome වෙතින් ඉල්ලිය හැකිය.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -220,6 +221,7 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="5736850870166430177">අඩවියක් ඔබගේ මුරපදය සොරා ගැනීමට උත්සාහ කළහොත්, හෝ ඔබ හානිකර ගොනුවක් බාගන්නා විට, Chrome පිටු අන්තර්ගතයේ කැබලි ඇතුළුව, URL සුරක්ෂිත බ්‍රවුස් කිරීම වෙත යැවීමටද හැකිය</translation>
 <translation id="573759479754913123">Chrome OS පිළිබඳ</translation>
 <translation id="5756509061973259733">මෙම ගිණුම සහිත Chrome පැතිකඩක් දැනටමත් මෙම උපාංගයේ පවතී</translation>
+<translation id="5763280521700030406">Chrome මෙම ගොනුව ආරක්ෂක පරීක්ෂාවකට විශාල වැඩි නිසා අවහිර කළේය. 50 MB දක්වා ගොනු සමඟ නැවත උත්සාහ කරන්න</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome කැනරි</translation>
 <translation id="5804318322022881572">Chrome දියත් කළ නොහැකි විය. නැවත උත්සාහ කරන්න.</translation>
 <translation id="5867197326698922595">Google Chrome මුරපද සංස්කරණ කිරීමට උත්සහ කරයි.</translation>
@@ -235,6 +237,7 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome බීටා</translation>
 <translation id="6235018212288296708">Google Chrome Chromeහි අභ්‍යන්තර නියෝගය වන්නේ mDNS තදබදයයි.</translation>
+<translation id="6247557882553405851">Google මුරපද කළමනාකරු</translation>
 <translation id="6291089322031436445">Chrome Dev යෙදුම්</translation>
 <translation id="6291549208091401781">ඔබේ පරිගණකය මත සියලුම පරිශීලකයින් සඳහා Google Chrome දැනටමත් ස්ථාපනය කර ඇත.</translation>
 <translation id="6368958679917195344">Chrome OS යතාර්තයක් බවට පත්කරන වෙනත් <ph name="BEGIN_LINK_CROS_OSS" />විවෘත කේත මෘදුකාංග<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -243,6 +246,7 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="6506909944137591434">ඔබගේ වටපිටාවේ 3D සිතියමක් තැනීමට Chrome හට කැමරා අවසරය අවශ්‍යයි</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS පද්ධතිය</translation>
+<translation id="659498884637196217">මෙම උපාංගයෙහි Google මුරපද කළමනාකරු තුළ</translation>
 <translation id="6632473616050862500">අතිරේක <ph name="BEGIN_LINK_CROS_OSS" />විවෘත මූලාශ්‍ර මෘදුකාංග<ph name="END_LINK_CROS_OSS" /> මගින් ChromeOS Flex සඳහා හැකියාව ලබා දී ඇත.</translation>
 <translation id="6676384891291319759">අන්තර්ජාලය වෙත පිවිසෙන්න</translation>
 <translation id="6679975945624592337">Chrome Run හට පසුබිම ධාවනය වීමට ඉඩ දෙන්න</translation>
@@ -282,6 +286,7 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 ඔබ දැනටමත් වෙබ් අඩවි සහ යෙදුම් සඳහා ලබා දී ඇති අවසර මෙම ගිණුමට අදාළ විය හැකිය. ඔබට ඔබගේ Google ගිණුම් <ph name="SETTINGS_LINK_BEGIN" />සැකසීම්<ph name="SETTINGS_LINK_END" /> තුළ කළමනාකරණය කිරීමට හැකිය.</translation>
 <translation id="7398801000654795464">ඔබ Chrome වෙත <ph name="USER_EMAIL_ADDRESS" /> ලෙස පුරා තිබුණි. කරුණාකර නැවත පිරීමට එම ගිණුමම භාවිතා කරන්න.</translation>
 <translation id="7408085963519505752">Chrome OS නියම</translation>
+<translation id="7410958280246779049">Chrome මෙම ගොනුව අනතුරුදායක නිසා අවහිර කළේය</translation>
 <translation id="7419046106786626209">Chrome OS ඔබේ වසම සඳහා සම්මුහුර්ත ලද නොහැකි නිසා Google Chrome හට ඔබේ දත්ත සම්මුහුර්ත කළ නොහැකි විය.</translation>
 <translation id="7481213027396403996">Chrome හි ප්‍රබලම ආරක්ෂාව ලබා ගන්න</translation>
 <translation id="7486227612705979895">ලිපින තීරුවේ යෝජනා කිරීමට Chrome ඔබගේ Drive ප්‍රවේශ කරනු ඇත</translation>
@@ -296,7 +301,6 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="7655455401911432608">ඔබගේ බ්‍රවුස් කිරීමේ ඉතිහාසය, මෙම උපාංගයේ Chrome භාවිතයෙන් ඔබ පිවිසි අඩවිවල වාර්තාවක්.</translation>
 <translation id="7665553140559834626">&amp;Chrome OS යාවත්කාලීන කිරීමට යළි දියත් කරන්න</translation>
 <translation id="7747138024166251722">ස්ථාපකයට තාවකාලික නාමාවලියක් තැනිය නොහැකි විය. කරුණාකර හිස් ඉඩ හා මෘදුකාංග ස්ථාපනයට හිස් තැටි ඉඩ පිරික්සන්න.</translation>
-<translation id="7748512868279796735">මෙම Chrome පැතිකඩ සඳහා පහත ගිණුම් තිබේ</translation>
 <translation id="7761834446675418963">ක්‍රෝම් විවෘත කිරීමට ඔබේ නම ක්ලික් කර ගවේෂණය අරඹන්න.</translation>
 <translation id="7777080907402804672">රූපයකට ප්‍රයෝජනවත් විස්තරයක් නොමැති නම්, Chrome ඔබට විස්තරයක් ලබා දීමට උත්සාහ කරයි. විස්තර නිර්මාණ කිරීමට, රූප Google වෙත යවනු ලැබේ. ඔබට ඕනෑම වේලාවක සැකසීම් තුළින් මෙය අක්‍රිය කළ හැක.</translation>
 <translation id="7781002470561365167">Google Chrome හි නව අනුවාදයක් පවතී.</translation>
@@ -312,10 +316,12 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="7951272445806340501">යාවත්කාලීනය යෙදීමට ChromeOS Flex යළි ඇරඹිය යුතුය.</translation>
 <translation id="7962410387636238736">Windows XP සහ Windows Vista සඳහා තවදුරටත් සහය නොදක්වන නිසා, මෙම පරිගණකයට තවදුරටත් Google Chrome යාවත්කාලීන නොලැබෙනු ඇත.</translation>
 <translation id="79947657522496226">Chrome OS හට අතිරේක <ph name="BEGIN_LINK_CROS_OSS" />විවෘත මූලාශ්‍ර මෘදුකාංග<ph name="END_LINK_CROS_OSS" /> මගින්, <ph name="BEGIN_LINK_LINUX_OSS" />Linux සංවර්ධන පරිසරය<ph name="END_LINK_LINUX_OSS" /> ලෙස හැකියාව ලබා දී ඇත.</translation>
+<translation id="8005666035647241369">මෙම උපාංගයෙහි Google මුරපද කළමනාකරු වෙත</translation>
 <translation id="8008534537613507642">Chrome යළි ස්ථාපනය කරන්න</translation>
 <translation id="8013993649590906847">රූපයකට ප්‍රයෝජනවත් විස්තරයක් නොමැති නම්, Chrome ඔබට විස්තරයක් ලබා දීමට උත්සාහ කරයි. විස්තර නිර්මාණ කිරීමට, රූප Google වෙත යවනු ලැබේ.</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">&amp;Google Chrome පිළිබඳ</translation>
+<translation id="822971176939352383">පහත දැක්වෙන ගිණුම් කිසිදු Chrome පැතිකඩකට පුරා නොමැත. ඔබට වෙනත් පැතිකඩක ගිණුමක් භාවිත කිරීමට අවශ්‍ය නම්, පළමුව එම පැතිකඩ ඉවත් කරන්න.</translation>
 <translation id="8255190535488645436">Google Chrome ඔබේ කැමරාව හා මයික්‍රෆෝනය භාවිත කරයි.</translation>
 <translation id="8286862437124483331">Google Chrome විසින් මුරපද පෙන්වීමට උත්සහ කරයි. එයට ඉඩදීම සඳහා Windows මුරපදය යොදන්න.</translation>
 <translation id="828798499196665338">ඔබේ මාපිය Chrome සඳහා "වෙබ් අඩවි, යෙදුම් සහ දිගු සඳහා වන අවසර" අක්‍රිය කර ඇත. මෙම <ph name="EXTENSION_TYPE_PARAMETER" /> සබල කිරීමට අවසර නැත.</translation>
@@ -327,8 +333,10 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="8394720698884623075">Chrome තුළ ගබඩා කර ඇති අනාරක්ෂිත වෙබ් අඩවි ලැයිස්තුවක් සමඟ URL පරීක්ෂා කරයි.</translation>
 <translation id="840084489713044809">Google Chrome හට ඔබගේ මුරපද නිර්යාත කිරීමට අවශ්‍යය.</translation>
 <translation id="8416347857511542594">Chrome තුළ වෙළඳ දැන්වීම් පුද්ගලිකකරණය ගැන තව දැන ගන්න</translation>
+<translation id="8421734018304082652">Chrome මෙම ගොනුව සංකේතිත නිසා අවහිර කළේය. එය විසංකේතනය කරන ලෙස එහි හිමිකරුගෙන් ඉල්ලන්න</translation>
 <translation id="8433638294851456451">මෙහි සිට ඔබගේ Android දුරකථනයට අංකයක් යැවීමට, උපාංග දෙකෙහිම Chrome වෙත පුරන්න.</translation>
 <translation id="8498858610309223613">Google Chrome සඳහා විශේෂ ආරක්‍ෂක යාවත්කාලීනයක් දැන් යොදා ගත්තා. දැන් යළි අරඹන්න, අපි ඔබේ පටිති ප්‍රතිසාධන කරන්නම්.</translation>
+<translation id="8504220326736535258">Chrome මෙම ගොනුව අනිෂ්ට මෘදුකාංග ඇති නිසා අවහිර කළේය</translation>
 <translation id="8516431725144212809">Chrome මගින් ඇස්තමේන්තුගත කර ඇති පරිදි ඔබගේ ලැදිකම්</translation>
 <translation id="8521348052903287641">mDNS තදබදයට ඉඩ දීමට Google Chrome Dev සඳහා බන්ධිත රීතිය.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

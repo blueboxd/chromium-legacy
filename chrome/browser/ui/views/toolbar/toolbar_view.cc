@@ -79,7 +79,6 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
-#include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -303,8 +302,7 @@ void ToolbarView::Init() {
   }
 
   std::unique_ptr<SidePanelToolbarButton> side_panel_button;
-  if (browser_view_->right_aligned_side_panel() &&
-      reading_list::switches::IsReadingListEnabled()) {
+  if (browser_view_->right_aligned_side_panel()) {
     side_panel_button = std::make_unique<SidePanelToolbarButton>(browser_);
   }
 
@@ -747,11 +745,11 @@ void ToolbarView::InitLayout() {
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCollapseMargins(true)
-      .SetDefault(views::kMarginsKey, gfx::Insets(0, default_margin));
+      .SetDefault(views::kMarginsKey, gfx::Insets::VH(0, default_margin));
 
   location_bar_->SetProperty(views::kFlexBehaviorKey, location_bar_flex_rule);
   location_bar_->SetProperty(views::kMarginsKey,
-                             gfx::Insets(0, location_bar_margin));
+                             gfx::Insets::VH(0, location_bar_margin));
 
   if (extensions_container_) {
     const views::FlexSpecification extensions_flex_rule =
@@ -935,6 +933,11 @@ BrowserRootView::DropIndex ToolbarView::GetDropIndex(
   return {browser_->tab_strip_model()->active_index(), false};
 }
 
+BrowserRootView::DropTarget* ToolbarView::GetDropTarget(
+    gfx::Point loc_in_local_coords) {
+  return HitTestPoint(loc_in_local_coords) ? this : nullptr;
+}
+
 views::View* ToolbarView::GetViewForDrop() {
   return this;
 }
@@ -986,9 +989,9 @@ void ToolbarView::OnTouchUiChanged() {
     const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
     layout_manager_->SetDefault(views::kMarginsKey,
-                                gfx::Insets(0, default_margin));
+                                gfx::Insets::VH(0, default_margin));
     location_bar_->SetProperty(views::kMarginsKey,
-                               gfx::Insets(0, location_bar_margin));
+                               gfx::Insets::VH(0, location_bar_margin));
 
     LoadImages();
     PreferredSizeChanged();

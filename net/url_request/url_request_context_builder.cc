@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -76,7 +75,9 @@ namespace {
 // it's not safe to subclass this.
 class ContainerURLRequestContext final : public URLRequestContext {
  public:
-  explicit ContainerURLRequestContext() : storage_(this) {}
+  explicit ContainerURLRequestContext(
+      base::PassKey<URLRequestContextBuilder> pass_key)
+      : URLRequestContext(pass_key), storage_(this) {}
 
   ContainerURLRequestContext(const ContainerURLRequestContext&) = delete;
   ContainerURLRequestContext& operator=(const ContainerURLRequestContext&) =
@@ -135,7 +136,11 @@ URLRequestContextBuilder::~URLRequestContextBuilder() = default;
 void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
     const URLRequestContext* request_context,
     HttpNetworkSessionContext* session_context,
-    bool suppress_setting_socket_performance_watcher_factory) {
+    bool suppress_setting_socket_performance_watcher_factory,
+    ClientSocketFactory* client_socket_factory) {
+  session_context->client_socket_factory =
+      client_socket_factory ? client_socket_factory
+                            : ClientSocketFactory::GetDefaultFactory();
   session_context->host_resolver = request_context->host_resolver();
   session_context->cert_verifier = request_context->cert_verifier();
   session_context->transport_security_state =
@@ -227,6 +232,11 @@ void URLRequestContextBuilder::set_reporting_policy(
   reporting_policy_ = std::move(reporting_policy);
 }
 
+void URLRequestContextBuilder::set_reporting_service(
+    std::unique_ptr<ReportingService> reporting_service) {
+  reporting_service_ = std::move(reporting_service);
+}
+
 void URLRequestContextBuilder::set_persistent_reporting_and_nel_store(
     std::unique_ptr<PersistentReportingAndNelStore>
         persistent_reporting_and_nel_store) {
@@ -295,6 +305,7 @@ void URLRequestContextBuilder::SetHttpServerProperties(
 void URLRequestContextBuilder::SetCreateHttpTransactionFactoryCallback(
     CreateHttpTransactionFactoryCallback
         create_http_network_transaction_factory) {
+  http_transaction_factory_.reset();
   create_http_network_transaction_factory_ =
       std::move(create_http_network_transaction_factory);
 }
@@ -317,11 +328,13 @@ void URLRequestContextBuilder::BindToNetwork(
 }
 
 std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
-  std::unique_ptr<ContainerURLRequestContext> context(
-      new ContainerURLRequestContext());
+  auto context = std::make_unique<ContainerURLRequestContext>(
+      base::PassKey<URLRequestContextBuilder>());
   URLRequestContextStorage* storage = context->storage();
 
   context->set_enable_brotli(enable_brotli_);
+  context->set_check_cleartext_permitted(check_cleartext_permitted_);
+  context->set_require_network_isolation_key(require_network_isolation_key_);
   context->set_network_quality_estimator(network_quality_estimator_);
 
   if (http_user_agent_settings_) {
@@ -347,6 +360,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (bound_network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
     DCHECK(!client_socket_factory_);
     DCHECK(!host_resolver_);
+    DCHECK(!host_resolver_manager_);
+    DCHECK(!host_resolver_factory_);
 
     context->set_bound_network(bound_network_);
 
@@ -357,16 +372,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     set_client_socket_factory(client_socket_factory.get());
     storage->set_client_socket_factory(std::move(client_socket_factory));
 
-    // Currently, only the system host resolver can perform lookups for a
-    // specific network.
-    // TODO(stefanoduo): Remove this once the built-in resolver can also do
-    // this.
-    net::HostResolver::ManagerOptions host_resolver_manager_options;
-    host_resolver_manager_options.insecure_dns_client_enabled = false;
-    host_resolver_manager_options.additional_types_via_insecure_dns_enabled =
-        false;
-    host_resolver_ = HostResolver::CreateStandaloneContextResolver(
-        context->net_log(), std::move(host_resolver_manager_options));
+    host_resolver_ = HostResolver::CreateStandaloneNetworkBoundResolver(
+        context->net_log(), bound_network_);
 
     if (!quic_context_)
       set_quic_context(std::make_unique<QuicContext>());
@@ -379,7 +386,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // QUIC connection migration should not be enabled when binding a context
     // to a network.
     quic_params->migrate_sessions_on_network_change_v2 = false;
-    quic_params->go_away_on_path_degrading = false;
 
     // Objects used by network sessions for this context shouldn't listen to
     // network changes.
@@ -516,7 +522,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   // Note: ReportingService::Create and NetworkErrorLoggingService::Create can
   // both return nullptr if the corresponding base::Feature is disabled.
 
-  if (reporting_policy_) {
+  if (reporting_service_) {
+    storage->set_reporting_service(std::move(reporting_service_));
+  } else if (reporting_policy_) {
     storage->set_reporting_service(
         ReportingService::Create(*reporting_policy_, context.get(),
                                  persistent_reporting_and_nel_store_.get()));
@@ -552,18 +560,20 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   HttpNetworkSessionContext network_session_context;
-  SetHttpNetworkSessionComponents(
-      context.get(), &network_session_context,
-      suppress_setting_socket_performance_watcher_factory_for_testing_);
   // Unlike the other fields of HttpNetworkSession::Context,
   // |client_socket_factory| is not mirrored in URLRequestContext.
-  network_session_context.client_socket_factory = client_socket_factory_;
+  SetHttpNetworkSessionComponents(
+      context.get(), &network_session_context,
+      suppress_setting_socket_performance_watcher_factory_for_testing_,
+      client_socket_factory_);
 
   storage->set_http_network_session(std::make_unique<HttpNetworkSession>(
       http_network_session_params_, network_session_context));
 
   std::unique_ptr<HttpTransactionFactory> http_transaction_factory;
-  if (!create_http_network_transaction_factory_.is_null()) {
+  if (http_transaction_factory_) {
+    http_transaction_factory = std::move(http_transaction_factory_);
+  } else if (!create_http_network_transaction_factory_.is_null()) {
     http_transaction_factory =
         std::move(create_http_network_transaction_factory_)
             .Run(storage->http_network_session());

@@ -21,6 +21,7 @@ This file contains the strings for ash.
     <output filename="ash_strings_bs.pak" type="data_package" lang="bs" />
     <output filename="ash_strings_ca.pak" type="data_package" lang="ca" />
     <output filename="ash_strings_cs.pak" type="data_package" lang="cs" />
+    <output filename="ash_strings_cy.pak" type="data_package" lang="cy" />
     <output filename="ash_strings_da.pak" type="data_package" lang="da" />
     <output filename="ash_strings_de.pak" type="data_package" lang="de" />
     <output filename="ash_strings_el.pak" type="data_package" lang="el" />
@@ -109,6 +110,7 @@ This file contains the strings for ash.
     <file path="strings/ash_strings_bs.xtb" lang="bs" />
     <file path="strings/ash_strings_ca.xtb" lang="ca" />
     <file path="strings/ash_strings_cs.xtb" lang="cs" />
+    <file path="strings/ash_strings_cy.xtb" lang="cy" />
     <file path="strings/ash_strings_da.xtb" lang="da" />
     <file path="strings/ash_strings_de.xtb" lang="de" />
     <file path="strings/ash_strings_el.xtb" lang="el" />
@@ -453,6 +455,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_ON_STATE" desc="Button label for the Dark theme feature." meaning="Dark theme feature is on. [CHAR_LIMIT=14]">
         On
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_ON_STATE_AUTO_SCHEDULED" desc="Button label for the Dark theme feature when auto scheduling is enabled." meaning="Dark mode is automatically scheduled to be on until sunrise. [CHAR_LIMIT=16]">
+        On until sunrise
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_OFF_STATE_AUTO_SCHEDULED" desc="Button label for the Dark theme feature when auto scheduling is enabled." meaning="Dark mode is automatically scheduled to be off until sunset. [CHAR_LIMIT=16]">
+        Off until sunset
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP_ACCESSIBILITY_STOP" desc="Stop button accessibility label used in the tray popup to tell the user to stop a cast to the desktop.">
         Stop casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
       </message>
@@ -700,7 +708,7 @@ This file contains the strings for ash.
       </message>
 
       <message name="IDS_GESTURE_NOTIFICATION_TITLE" desc="The title of the notification to show off new gestures.">
-        Try new ways to navigate Chrome OS
+        Try gestures to navigate
       </message>
       <message name="IDS_GESTURE_NOTIFICATION_MESSAGE_LEARN_MORE" desc="The body of the notification to show off new gestures. This notification body links to the help page for the gestures.">
         Use gestures to quickly switch between apps and interact with your Chromebook in tablet mode.
@@ -1101,126 +1109,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SWITCH_ACCESS_START_TEXT_SELECTION" desc="The label for the Switch Access menu option to start selecting text.">
         Start selecting
       </message>
-
-      <!-- This block of strings is for an experimental Switch Access feature hidden behind a flag -->
-      <message name="IDS_ASH_SWITCH_ACCESS_SHORTCUTS" desc="The label for the Switch Access menu option to open the shortcutss menu." translateable="false">
-        Shortcuts
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_LEAVE_GROUP" desc="The label for the Switch Access menu option to leave the current group." translateable="false">
-        Leave group
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_WEB_MENU" desc="Switch access sub menu option for web." translateable="false">
-        Web
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_WEB_BOOKMARK" desc="Switch access sub menu option to bookmark a page." translateable="false">
-        Bookmark
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_WEB_BOTTOM_OF_PAGE" desc="Switch access sub menu option to jump to bottom of page." translateable="false">
-        Bottom of page
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_WEB_TOP_OF_PAGE" desc="Switch access sub menu option to jump to top of page." translateable="false">
-        Top of page
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_WEB_FIND_IN_PAGE" desc="Switch access sub menu option to find in page." translateable="false">
-        Find in page
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_WEB_DOWNLOADS" desc="Switch access sub menu option to open downloads." translateable="false">
-        Downloads
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_WEB_CLEAR_HISTORY" desc="Switch access sub menu option to clear history." translateable="false">
-        Clear history
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_SYSTEM_MENU" desc="Switch access sub menu option for system." translateable="false">
-        System
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_SYSTEM_STATUS_BAR" desc="Switch access sub menu option to open status bar." translateable="false">
-        Status bar
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_SYSTEM_LAUNCHER" desc="Switch access sub menu option to open the launcher." translateable="false">
-        Launcher
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_SYSTEM_TASK_MANAGER" desc="Switch access sub menu option to open task manager." translateable="false">
-        Task manager
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_SYSTEM_DIAGNOSTICS" desc="Switch access sub menu option to open diagnostics." translateable="false">
-        Diagnostics
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_SYSTEM_SCREENSHOT" desc="Switch access sub menu option to take a screenshot." translateable="false">
-        Take screenshot
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_SYSTEM_HELP" desc="Switch access sub menu option to open help." translateable="false">
-        Help
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_MEDIA_MENU" desc="Switch access sub menu option for media." translateable="false">
-        Media
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_MEDIA_MUTE" desc="Switch access sub menu option to mute." translateable="false">
-        Mute
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_MEDIA_VOLUME_DOWN" desc="Switch access sub menu option to turn volume down." translateable="false">
-        Volume down
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_MEDIA_VOLUME_UP" desc="Switch access sub menu option to turn volume up." translateable="false">
-        Volume up
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_MEDIA_REWIND" desc="Switch access sub menu option to rewind." translateable="false">
-        Rewind
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_MEDIA_PLAY_PAUSE" desc="Switch access sub menu option to play or pause." translateable="false">
-        Play
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_MEDIA_FASTFORWARD" desc="Switch access sub menu option to fastforward." translateable="false">
-        Fast-forward
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_DISPLAY_MENU" desc="Switch access sub menu option for display." translateable="false">
-        Display
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_DISPLAY_MIRROR" desc="Switch access sub menu option to mirror display." translateable="false">
-        Mirror
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_DISPLAY_BRIGHTNESS_DOWN" desc="Switch access sub menu option to turn down brightness." translateable="false">
-        Brightness down
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_DISPLAY_BRIGHTNESS_UP" desc="Switch access sub menu option to turn up brightness." translateable="false">
-        Brightness up
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_DISPLAY_ROTATE" desc="Switch access sub menu option to rotate screen." translateable="false">
-        Rotate
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_DISPLAY_ZOOM_OUT" desc="Switch access sub menu option to zoom out." translateable="false">
-        Zoom out
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_DISPLAY_ZOOM_IN" desc="Switch access sub menu option to zoom in." translateable="false">
-        Zoom in
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_USER_MENU" desc="Switch access sub menu option for user." translateable="false">
-        User
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_USER_LOCK" desc="Switch access sub menu option to lock." translateable="false">
-        Lock
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_USER_PREVIOUS_USER" desc="Switch access sub menu option to go to previous user." translateable="false">
-        Previous user
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_USER_NEXT_USER" desc="Switch access sub menu option to go to next user." translateable="false">
-        Next user
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_USER_SIGN_OUT" desc="Switch access sub menu option to sign out." translateable="false">
-        Sign out
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_ACTION_RECORDER" desc="The label for the Switch Access menu option to open the action recorder menu." translateable="false">
-        Action recorder
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_START_RECORDING" desc="The label for the Switch Access menu option to start recording a macro." translateable="false">
-        Start recording
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_STOP_RECORDING" desc="The label for the Switch Access menu option to stop recording a macro." translateable="false">
-        Stop recording
-      </message>
-      <message name="IDS_ASH_SWITCH_ACCESS_EXECUTE_MACRO" desc="The label for the Switch Access menu option to execute the recorded macro." translateable="false">
-        Execute macro
-      </message>
-      <!-- End of experimental Switch Access feature block -->
 
       <!-- Dictation UI hint strings -->
       <message name="IDS_ASH_DICTATION_HINT_TRY_SAYING" desc="A label shown in the Dictation bubble UI telling users what they can say.">
@@ -1774,6 +1662,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. This name should be lower case.">
         search
       </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_ACCESSIBLE_NAME" desc="Template for the accessible name for categorized search result lists that are shown in launcher search. The placeholder will be replaced with the name of a category of search results.">
+        <ph name="CATEGORY">$1<ex>Best Match</ex></ph> , search result category
+      </message>
       <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_BEST_MATCH" desc="Category title for the list of search result shown in launcher search that are a best match for the query in the search box.">
         Best Match
       </message>
@@ -1909,6 +1800,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_SAVE_DESK_AS_TEMPLATE_BUTTON" desc="The text of the button to save the active desk as a template.">
         Save desk as a template
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_SAVE_DESK_FOR_LATER_BUTTON" desc="The text of the button to save the active desk for later.">
+        Save desk for later
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON" desc="The text of the button to launch the template.">
         Use template
@@ -3205,13 +3099,13 @@ This file contains the strings for ash.
         Couldn't connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
       </message>
       <message name="IDS_FAST_PAIR_CONNECTION_ERROR_MESSAGE" desc="Notification message shown when a there is a Fast Pair connection error.">
-        Open Bluetooth settings to pair the device manually
+        Open Bluetooth settings to pair your device
       </message>
       <message name="IDS_FAST_PAIR_ASSOCIATE_ACCOUNT_NOTIFICATION_TITLE" desc="Notification title shown to ask users if they want to save a Fast Pair device that was paired via classic bluetooth to their Google account.">
-        Save <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
+        Save your <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
       </message>
       <message name="IDS_FAST_PAIR_ASSOCIATE_ACCOUNT_NOTIFICATION_MESSAGE" desc="Notification message shown to ask users if they want to save a Fast Pair device that was paired via classic bluetooth to their Google account.">
-        Save <ph name="NAME">$1<ex>Pixel Buds</ex></ph> to <ph name="EMAIL">$2<ex>alisha123@gmail.com</ex></ph> for faster pairing to your other devices
+        Save your <ph name="NAME">$1<ex>Pixel Buds</ex></ph> to <ph name="EMAIL">$2<ex>alisha123@gmail.com</ex></ph> for faster pairing to your other devices
       </message>
       <message name="IDS_FAST_PAIR_SETTINGS_BUTTON" desc="Button title shown to direct users to settings when there is an error connecting with Fast Pair">
         Settings
@@ -3238,7 +3132,7 @@ This file contains the strings for ash.
         Learn More
       </message>
       <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_TITLE" desc="Notification title shown when a there is a device discovered with Fast Pair.">
-        Connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
+        Connect your <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
       </message>
       <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_MESSAGE" desc="Notification message shown when there is a device discovered with Fast Pair.">
         Connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph> to this Chromebook
@@ -4000,6 +3894,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_TITLE" desc="The title of the notification when capture mode is disabled because of a policy.">
         Can't capture content
       </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_MANAGED_BY_POLICY" desc="The title of the tooltip for a setting that is managed by a policy controlled by the admin.">
+        This setting is managed by your administrator
+      </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_FAILURE_TITLE" desc="The title of the notification when capture mode fails.">
         An error occurred
       </message>
@@ -4027,8 +3924,8 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_MESSAGE" desc="The message shows in the screenshot or screen recording notification.">
         Show in folder
       </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_LOW_DISK_SPACE_MESSAGE" desc="The message shows in the screen recording notification when recording ends due to low disk space.">
-        Recording ended due to critically low disk space
+      <message name="IDS_ASH_SCREEN_CAPTURE_LOW_STORAGE_SPACE_MESSAGE" desc="The message shows in the screen recording notification when recording ends due to low storage space.">
+        Recording ended due to critically low storage space
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_EDIT" desc="The edit button label for the screen capture notification.">
         Edit
@@ -4074,6 +3971,12 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_SHOW_CAMERA_USER_NUDGE" desc="The message shown in a toast widget to nudge the user and alert them to check out the new settings that allow them to show camera during video recording.">
         You can now record yourself and your screen at the same time
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_TOOLTIP_COLLAPSE_SELFIE_CAMERA" desc="Tooltip of the collapse resize button for screen capture selfie camera.">
+        Collapse camera
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_TOOLTIP_EXPAND_SELFIE_CAMERA" desc="Tooltip of the expand resize button for screen capture selfie camera.">
+        Expand camera
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_TOOLTIP_FULLSCREEN_SCREENSHOT" desc="Tooltip of the fullscreen toggle button when in image capture mode.">
         Take full screen screenshot
@@ -4134,6 +4037,12 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_ALERT_RECORD_MICROPHONE_TOGGLE" desc="Alert spoken by screen readers when record microphone setting is toggled.">
         Record microphone <ph name="STATE">$1<ex>off</ex></ph>
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_CAMERA_PREVIEW_ON" desc="Alert spoken by screen readers when camera preview is shown.">
+        Camera preview on
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_CAMERA_PREVIEW_HIDDEN" desc="Alert spoken by screen readers when camera preview is hidden.">
+        Camera preview hidden
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_NAVIGATION_ALERT_RECORD_MICROPHONE" desc="Alert spoken by screen readers when user tabs to record microphone setting.">
         Record microphone <ph name="CURRENT_STATE">$1<ex>off</ex></ph>, Press enter to turn microphone recording <ph name="NEW_STATE">$2<ex>on</ex></ph>
@@ -4485,13 +4394,13 @@ Here are some things you can try to get started.
       </message>
 
       <!-- SODA Download strings -->
-      <message name="IDS_ASH_ACCESSIBILITY_DICTATION_SETTING_SUBTITLE_SODA_DOWNLOAD_COMPLETE" desc="Description explaining that the speech recognition library download has completed.">
+      <message name="IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_COMPLETE" desc="Description explaining that the speech recognition library download has completed.">
         Speech files downloaded
       </message>
-      <message name="IDS_ASH_ACCESSIBILITY_DICTATION_SETTING_SUBTITLE_SODA_DOWNLOAD_PROGRESS" desc="Description explaining the progress for the speech recognition library download.">
+      <message name="IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_PROGRESS" desc="Description explaining the progress for the speech recognition library download.">
         Downloading speech recognition files... <ph name="PERCENT">$1<ex>17</ex></ph>%
       </message>
-      <message name="IDS_ASH_ACCESSIBILITY_DICTATION_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR" desc="Description explaining that there was an error with the speech recognition library download.">
+      <message name="IDS_ASH_ACCESSIBILITY_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR" desc="Description explaining that there was an error with the speech recognition library download.">
         Can't download speech files. Try again later.
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_DICTATION_BUTTON_TOOLTIP_SODA_DOWNLOADING" desc="A tooltip explaining that speech recognition files are downloading." >
@@ -4598,6 +4507,30 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_BUTTON" desc="Text for the privacy notice accepting button in the continue section of the launcher, which shows recent files and apps that the user can continue using.">
         OK
       </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_TITLE" desc="The title for the feedback dialog shown to users when they try to remove a file suggestion in the ChromeOS launcher UI (the launcher UI has a section that displays files the user may want to continue working on, and the user can remove individual suggestions).">
+        Remove this suggestion?
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_FEEDBACK_TEXT" desc="The text asking the user to provide optional feedback in a dialog shown to users when they try to remove a file suggestion in the ChromeOS launcher UI (the launcher UI has a section that displays files the user may want to continue working on, and the user can remove individual suggestions).">
+        Provide optional feedback to improve suggestions:
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_ANY_SUGGESTIONS_OPTION" desc="A radio button option shown in a feedback dialog shown to users when they try to remove a file suggestion in the ChromeOS launcher UI (the launcher UI has a section that displays files the user may want to continue working on, and the user can remove individual suggestions). The user can select this option to indicate that they are not interested in any file suggestions. The feedback dialog has another radio button to indicate the user is not interested in the specific suggestion that is being removed.">
+        Not interested in any suggestions
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_THIS_SUGGESTION_OPTION" desc="A radio button option shown in a feedback dialog shown to users when they try to remove a file suggestion in the ChromeOS launcher UI (the launcher UI has a section that displays files the user may want to continue working on, and the user can remove individual suggestions). The user can select this option to indicate that they are not interested in the specific file suggestion that is being removed. The feedback dialog has another radio button to indicate the user is not interested in the any file suggestions. After the user selects this choice, more options will be presented in the form of checkbox buttons to provide additional feedback for an specific suggestion.">
+        Not interested in this suggestion
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_FILE_DONE_OPTION" desc="A checkbutton option shown in a feedback dialog shown to users when they try to remove a file suggestion in the ChromeOS launcher UI (the launcher UI has a section that displays files the user may want to continue working on, and the user can remove individual suggestions). This option will be shown only to users who indicate that are not interested in one particular suggestion. The user can check this option to indicate that they will not use the file any further.">
+        Done using the file
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_DO_NOT_SHOW_FILE_OPTION" desc="A checkbutton option shown in a feedback dialog shown to users when they try to remove a file suggestion in the ChromeOS launcher UI (the launcher UI has a section that displays files the user may want to continue working on, and the user can remove individual suggestions). This option will be shown only to users who indicate that are not interested in one particular suggestion. The user can check this option to indicate that they are concerned about this file suggestion showing.">
+        Don't want this file shown
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_CANCEL_BUTTON_LABEL" desc="The label for the cancel button in a feedback dialog shown to users when they try to remove a file suggestion in the ChromeOS launcher UI (the launcher UI has a section that displays files the user may want to continue working on, and the user can remove individual suggestions). This button closes the dialog without removing the item suggestion.">
+        Cancel
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_REMOVE_BUTTON_LABEL" desc="The label for the remove button in a feedback dialog shown to users when they try to remove a file suggestion in the ChromeOS launcher UI (the launcher UI has a section that displays files the user may want to continue working on, and the user can remove individual suggestions). This button removes the item suggestion and collects the feedback provided by the user (if any).">
+        Remove
+      </message>
 
       <!-- Launcher / App List -->
       <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_TITLE" desc="Title of the context menu in apps grid view in Productivity Launcher that allows users to sort their apps in the laucher. The context menu will have provide options to sort by name or color.">
@@ -4618,8 +4551,23 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_LAUNCHER_UNDO_SORT_TOAST_ACTION_BUTTON" desc="The label for the action button for a toast shown within the launcher UI that appears after the user sorts their apps, either aplhabetically or by icon color. The action button reverts the order of apps in the launcher to the one from before the user requested sort.">
        Undo
       </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_NAME_SORT_TOAST_SPOKEN_TEXT" desc="Accessibility text read by chromevox when focusing on the undo button shown in a toast that gets shown in the launcher UI after the user sorts apps in the launcher by name. This undo button reverts the order of apps in launcher to the one before sort actions.">
+       Undo sort order by name
+      </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_COLOR_SORT_TOAST_SPOKEN_TEXT" desc="Accessibility text read by chromevox when focusing on the undo button shown in a toast that gets shown in the launcher UI after the user sorts apps in the launcher by color. This undo button reverts the order of apps in launcher to the one before sort actions.">
+       Undo sort order by color
+      </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_SORT_DONE_SPOKEN_TEXT" desc="Accessibility text read by chromevox after successfully undoing/reverting the sorting action on apps in launcher.">
+       Sort undo successful
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CLOSE_SORT_TOAST_BUTTON_SPOKEN_TEXT" desc="Accessibility text read by chromevox when focusing on the close button shown in a toast that gets shown in the launcher UI after user sorts apps in the launcher.">
+        Close sort toast
+      </message>
       <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_TITLE" desc="Title of a nudge shown in the Chrome OS launcher UI above the list of apps that informs users that they can sort their apps by name or color.">
         Sort your apps by name or color
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_DISMISS_BUTTON" desc="Text for the button used to dismiss a nudge shown in the Chrome OS launcher UI. The nudge is located above the list of apps and informs users that they can sort their apps by name or color.">
+        OK
       </message>
       <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_CLAMSHELL_MODE_SUBTITLE" desc="Subtitle of a nudge shown in the Chrome OS launcher UI in clamshell mode. The nudge locates above the list of apps that informs users that they can sort their apps by name or color.">
         Right-click anywhere to reorder your apps
@@ -4713,13 +4661,18 @@ New install
           Displaying 1 result for <ph name="query">$1<ex>search query</ex></ph>
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE" desc="Titlebar of removing zero state suggestion confirmation dialog">
-        Delete this search from your history?
+        Remove this suggestion?
       </message>
-      <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing removing an omnibox search result from launcher search results UI. This is a text in the dialog shown to the user when they try to remove a suggested omnibox search result from list of results shown in the launcher search - the omnibox search result may appear if the search query in launcher search matches a previous user search. The dialog asks the user to confirm the result removal.">
-        You searched for this query before. Deleting this search from your history will permanently remove it from your Google Account across all of your devices.
+      <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing removing an omnibox search result from launcher search results UI. This is a text in the dialog shown to the user when they try to remove a suggested omnibox search result from list of results shown in the launcher search - the omnibox search result may appear if the search query in launcher search matches a previous user search. The dialog asks the user to confirm the result removal. The query being removed is showing one linebreak after the message. The linebreak should NOT be removed from the string.">
+        The following suggestion will be permanently removed from your account’s suggestion history:
+
+<ph name="query">$1<ex>suggestion</ex></ph>
+      </message>
+      <message name="IDS_REMOVE_SUGGESTION_ANNOUNCEMENT" desc="Announcement confirming the removal of an omnibox suggestion from the launcher search results UI.">
+        Search history result removed
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
-        Delete
+        Remove
       </message>
       <message name="IDS_APP_LIST_KEYBOARD_SHORTCUT_OR" desc="Joiner text for several keyboard shortcuts that all do the same thing. Eg: 'Ctrl-A or Ctrl-B or Ctrl-C'">
         Or
@@ -4762,6 +4715,12 @@ New install
       </message>
       <message name="IDS_APP_LIST_OPEN_TAB_HINT" desc="Shown alongside launcher search results which will take the user to an open tab when clicked.">
         Go to this tab
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_GAME_PLATFORMS_PREFIX" desc="Shown next to a video game search result, begins a list of cloud gaming platforms the game is playable on.">
+        on
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_SCREENSHOT_SHORTCUT" desc="Template string for a keyboard shortcut describing two ways to take a screenshot: the snip key or Ctrl+Shift+Overview.">
+        <ph name="snip">$1<ex>Snip</ex></ph> or <ph name="ctrl">$2<ex>Ctrl</ex></ph><ph name="separator1">$3<ex>+</ex></ph><ph name="shift">$4<ex>Ctrl</ex></ph><ph name="separator2">$5<ex>+</ex></ph><ph name="overview">$6<ex>Overview</ex></ph>
       </message>
       <message name="IDS_APP_LIST_START_ASSISTANT" desc="Tooltip for the button that starts Google Assistant from the search box in the app list.">
         Google Assistant
@@ -4807,6 +4766,32 @@ New install
       </message>
       <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER" desc="Placeholder text for the search box shown in the app list UI.">
         Search your device, apps, settings, web...
+      </message>
+      <message name="IDS_ASH_LAUNCHER_RECENT_APPS_A11Y_NAME" desc="Accessible name of the recent apps section in launcher UI. The recent apps section shows a list of recent apps that the user can continue using.">
+        Recent Apps, navigate with left arrow to access all recent apps
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_GRID_A11Y_NAME" desc="Accessible name of the apps grid that contains all apps in launcher UI.">
+        All Apps, navigate with left or down arrow to access all apps
+      </message>
+
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE" desc="The template for rotating placeholder text for the search box shown within the Chrome OS launcher. Placeholders always list files and apps provider as well as a rotating first item.">
+        Search your <ph name="CATEGORY">$1<ex>shortcuts</ex></ph>, files, apps, and more...
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_TABLET" desc="A11Y text for placeholder texts for the search box shown within the Chrome OS launcher. Placeholders always list files and apps providers as well as a rotating first item.">
+        Search your <ph name="CATEGORY">$1<ex>shortcuts</ex></ph>, files, apps, and more.
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL" desc="A11Y text for placeholder texts for the search box shown within the Chrome OS launcher. Placeholders always list files and apps providers as well as a rotating first item.">
+        Search your <ph name="CATEGORY">$1<ex>shortcuts</ex></ph>, files, apps, and more. Use the arrow keys to navigate your apps.
+      </message>
+
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SHORTCUTS" desc="One of possible rotating providers listed in the placeholder text for the search box shown within the Chrome OS launcher. The provider is injected into string 'Search your $1, files, apps, and more...'">
+        shortcuts
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TABS" desc="One of possible rotating providers listed in the placeholder text for the search box shown within the Chrome OS launcher. The provider is injected into string 'Search your $1, files, apps, and more...'">
+        tabs
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SETTINGS" desc="One of possible rotating providers listed in the placeholder text for the search box shown within the Chrome OS launcher. The provider is injected into string 'Search your $1, files, apps, and more...'">
+        settings
       </message>
 
       <!-- WM -->
@@ -4891,11 +4876,17 @@ New install
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_MESSAGE_3_PLUS" desc="Notification message explaining that a popup from three or more applications have been blocked.">
         <ph name="APP_1_TITLE">$1<ex>Google Chat</ex></ph>, <ph name="APP_2_TITLE">$2<ex>Chrome</ex></ph> and other notifications are hidden because viewing protection is on
       </message>
-      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SYSTEM_TITLE" desc="Title used for the OS when listing blocked notification sources.">
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SYSTEM_TITLE_UPPER" desc="Title used for the OS when listing it as the first word in the blocked notifications message (i.e. capitalized).">
         System
       </message>
-      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_APP_TITLE" desc="Title used for a generic application when listing blocked notification sources.">
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SYSTEM_TITLE_LOWER" desc="Title used for the OS when listing it as a subsequent word in the blocked notifications message.">
+        system
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_APP_TITLE_UPPER" desc="Title used for a generic application when listing it as the first word in the blocked notifications message (i.e. capitalized).">
         App
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_APP_TITLE_LOWER" desc="Title used for a generic application when listing it as a subsequent word in the blocked notifications message.">
+        app
       </message>
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_ARC_TITLE" desc="Title used for an Android application when listing blocked notification sources.">
         Android
@@ -4903,8 +4894,11 @@ New install
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_CROSTINI_TITLE" desc="Title used for a Linux application when listing blocked notification sources.">
         Linux
       </message>
-      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_WEB_TITLE" desc="Title used for the web browser when listing blocked notification sources.">
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_WEB_TITLE_UPPER" desc="Title used for the web browser when listing it as the first word in the blocked notifications message (i.e. capitalized).">
         Web
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_WEB_TITLE_LOWER" desc="Title used for the web browser when listing it as a subsequent word in the blocked notifications message.">
+        web
       </message>
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_PHONE_HUB_TITLE" desc="Title used for the Phone Hub feature when listing blocked notification sources.">
         Phone Hub
@@ -4941,6 +4935,11 @@ New install
       </message>
       <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_SPEED_LIMITED_BODY" desc="Notification body text for when a user connects a device to their Chromebook with a cable that has a lower maximum data rate than the device.">
         Your device supports a higher data rate than your cable. Device performance may be limited.
+      </message>
+
+      <!-- Adaptive charging -->
+      <message name="IDS_ASH_ADAPTIVE_CHARGING_EDUCATIONAL_NUDGE_TEXT" desc="The body text explaining to the user that adaptive charging is on.">
+        Adaptive charging is on. Your battery will stay at 80% to extend battery life, and fully charge when you need it.
       </message>
     </messages>
   </release>

@@ -25,6 +25,7 @@ namespace ash {
 
 namespace test {
 class SearchResultListViewTest;
+class SearchResultViewWidgetTest;
 }  // namespace test
 
 class AppListViewDelegate;
@@ -48,11 +49,18 @@ class SearchResultPageDialogController;
 // | +----------------------+ +----------------------------------+ |
 // +---------------------------------------------------------------+
 //
+// +-------------------------------------------------------------------------+
+// |`big_title_container_`                                                   |
+// | +--------------------------------+ +----------------------------------+ |
+// | |'big_title_main_text_container_'| |`big_title_superscript_container_`| |
+// | +--------------------------------+ +----------------------------------+ |
+// +-------------------------------------------------------------------------+
+//
 // The `title_and_details_container_` has two possible layouts depending on
 // `view_type_` and whether `keyboard_shortcut_container_` has results
 //
 // Layout used when the view_type_ == SearchResultViewType::kDefault OR
-// `keyboard_shortcut_layout_override_` is set
+// `has_keyboard_shortcut_contents_` is set.
 //
 // +--------------------------------------------------------------------+
 // |`title_and_details_container_`                                      |
@@ -90,6 +98,7 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
 
   enum class LabelType {
     kBigTitle,
+    kBigTitleSuperscript,
     kTitle,
     kDetails,
     kKeyboardShortcut,
@@ -113,6 +122,7 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   void OnResultChanged() override;
 
   void SetSearchResultViewType(SearchResultViewType type);
+  void ClearBigTitleContainer();
   SearchResultViewType view_type() { return view_type_; }
 
   views::LayoutOrientation TitleAndDetailsOrientationForTest();
@@ -122,9 +132,33 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   // list changes.
   bool GetAndResetResultChanged();
 
+  // Calculates the width of the `title_container_` and 'details_container_'
+  // for SearchResultView's custom eliding behavior.
+  // total_width is the total width allocated to `title_and_details_container_`
+  static int GetTargetTitleWidth(int total_width,
+                                 int separator_width,
+                                 int target_details_width);
+  static int GetMinimumDetailsWidth(int total_width,
+                                    int details_width,
+                                    int details_no_elide_width);
+
+  // Set flex layout weights for title and details containers to support custom
+  // eliding behavior.
+  static void SetFlexBehaviorForTextContents(
+      int total_width,
+      int separator_width,
+      int non_elided_details_width,
+      views::FlexLayoutView* title_container,
+      views::FlexLayoutView* details_container);
+
  private:
   friend class test::SearchResultListViewTest;
   friend class SearchResultListView;
+  friend class SearchResultViewWidgetTest;
+
+  void set_multi_line_label_height_for_test(int height) {
+    multi_line_label_height_ = height;
+  }
 
   int PreferredHeight() const;
   int PrimaryTextHeight() const;
@@ -134,9 +168,12 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   std::vector<LabelAndTag> SetupContainerViewForTextVector(
       views::FlexLayoutView* parent,
       const std::vector<SearchResult::TextItem>& text_vector,
-      LabelType label_type);
+      LabelType label_type,
+      bool has_keyboard_shortcut_contents,
+      bool is_multi_line);
   void UpdateBadgeIcon();
   void UpdateBigTitleContainer();
+  void UpdateBigTitleSuperscriptContainer();
   void UpdateTitleContainer();
   void UpdateDetailsContainer();
   void UpdateKeyboardShortcutContainer();
@@ -146,6 +183,7 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
                   bool is_title_label,
                   const SearchResult::Tags& tags);
   void StyleBigTitleContainer();
+  void StyleBigTitleSuperscriptContainer();
   void StyleTitleContainer();
   void StyleDetailsContainer();
   void StyleKeyboardShortcutContainer();
@@ -195,6 +233,10 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
       nullptr;  // Owned by views hierarchy.
   views::FlexLayoutView* big_title_container_ =
       nullptr;  // Owned by views hierarchy.
+  views::FlexLayoutView* big_title_main_text_container_ =
+      nullptr;  // Owned by views hierarchy.
+  views::FlexLayoutView* big_title_superscript_container_ =
+      nullptr;  // Owned by views hierarchy.
   views::FlexLayoutView* body_text_container_ =
       nullptr;  // Owned by views hierarchy.
   views::FlexLayoutView* title_and_details_container_ =
@@ -206,6 +248,8 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   views::FlexLayoutView* keyboard_shortcut_container_ =
       nullptr;                                     // Owned by views hierarchy.
   std::vector<LabelAndTag> big_title_label_tags_;  // Owned by views hierarchy.
+  std::vector<LabelAndTag>
+      big_title_superscript_label_tags_;         // Owned by views hierarchy.
   std::vector<LabelAndTag> title_label_tags_;    // Owned by views hierarchy.
   std::vector<LabelAndTag> details_label_tags_;  // Owned by views hierarchy.
   std::vector<LabelAndTag>
@@ -230,6 +274,14 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   bool has_keyboard_shortcut_contents_ = false;
 
   SearchResultViewType view_type_;
+
+  // Search result view can have one non-elided label. Cache the its for flex
+  // layout weight calculations.
+  int non_elided_details_label_width_ = 0;
+
+  // Search result view can have one multi-line label. Cache its height for
+  // calculating PreferredHeight() and SecondaryTextHeight().
+  int multi_line_label_height_ = 0;
 
   base::WeakPtrFactory<SearchResultView> weak_ptr_factory_{this};
 };

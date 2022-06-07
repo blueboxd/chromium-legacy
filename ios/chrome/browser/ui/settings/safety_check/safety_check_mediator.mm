@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
@@ -49,6 +48,7 @@
 #include "ios/chrome/common/channel_info.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
@@ -98,8 +98,11 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 }  // namespace
 
 @interface SafetyCheckMediator () <BooleanObserver, PasswordCheckObserver> {
+  scoped_refptr<IOSChromePasswordCheckManager> _passwordCheckManager;
+
   // A helper object for observing changes in the password check status
-  // and changes to the compromised credentials list.
+  // and changes to the compromised credentials list. It needs to be destroyed
+  // before `_passwordCheckManager`, so it needs to be declared afterwards.
   std::unique_ptr<PasswordCheckObserverBridge> _passwordCheckObserver;
 }
 
@@ -174,6 +177,8 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 @end
 
 @implementation SafetyCheckMediator
+
+@synthesize passwordCheckManager = _passwordCheckManager;
 
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                    passwordCheckManager:
@@ -302,6 +307,15 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   [self reconfigurePasswordCheckItem];
   [self reconfigureUpdateCheckItem];
   [self reconfigureSafeBrowsingCheckItem];
+}
+
+#pragma mark - Public Methods
+
+- (void)startCheckIfNotRunning {
+  if (self.checksRemaining) {
+    return;
+  }
+  [self startCheck];
 }
 
 #pragma mark - PasswordCheckObserver
@@ -661,7 +675,11 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 
     return;
   }
+  [self startCheck];
+}
 
+// Starts a safety check
+- (void)startCheck {
   // Otherwise start a check.
   self.checkStartTime = base::Time::Now();
 

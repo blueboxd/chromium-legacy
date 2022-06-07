@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -20,6 +21,9 @@
 #include "build/buildflag.h"
 #include "build/chromecast_buildflags.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/cast_streaming/public/cast_streaming_url.h"
+#include "components/cast_streaming/public/features.h"
+#include "components/cast_streaming/renderer/public/wrapping_renderer_factory_selector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -101,13 +105,6 @@
 #include "media/remoting/renderer_controller.h"       // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_CAST_STREAMING_RENDERER)
-// Enable libcast streaming receiver.
-#include "components/cast_streaming/public/cast_streaming_url.h"  // nogncheck
-#include "components/cast_streaming/renderer/public/playback_command_forwarding_renderer_factory.h"  // nogncheck
-#include "components/cast_streaming/renderer/public/renderer_controller_proxy.h"  // nogncheck
-#endif
-
 #if BUILDFLAG(ENABLE_CAST_AUDIO_RENDERER)
 #include "content/renderer/media/cast_renderer_factory.h"
 #endif  // BUILDFLAG(ENABLE_CAST_AUDIO_RENDERER)
@@ -124,6 +121,7 @@
 #include "media/base/win/mf_feature_checks.h"
 #include "media/cdm/win/media_foundation_cdm.h"
 #include "media/mojo/clients/win/media_foundation_renderer_client_factory.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #endif  // BUILDFLAG(IS_WIN)
 
 namespace {
@@ -344,7 +342,11 @@ MediaFactory::MediaFactory(
     RenderFrameImpl* render_frame,
     media::RequestRoutingTokenCallback request_routing_token_cb)
     : render_frame_(render_frame),
-      request_routing_token_cb_(std::move(request_routing_token_cb)) {}
+      request_routing_token_cb_(std::move(request_routing_token_cb)) {
+  // Requesting a support check will ensure that the supplemental profiles
+  // cache is populated prior to anything that needs it on the media thread.
+  media::IsSupportedVideoType({});
+}
 
 MediaFactory::~MediaFactory() {
   // Release the DecoderFactory to the media thread since it may still be in use
@@ -442,8 +444,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   std::vector<std::unique_ptr<BatchingMediaLog::EventHandler>> handlers;
   handlers.push_back(
       std::make_unique<InspectorMediaEventHandler>(inspector_context));
-  if (base::FeatureList::IsEnabled(media::kEnableMediaInternals))
-    handlers.push_back(std::make_unique<RenderMediaEventHandler>());
+  handlers.push_back(std::make_unique<RenderMediaEventHandler>());
 
   // This must be created for every new WebMediaPlayer, each instance generates
   // a new player id which is used to collate logs on the browser side.
@@ -454,7 +455,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   base::WeakPtr<media::MediaObserver> media_observer;
   auto factory_selector = CreateRendererFactorySelector(
       media_log.get(), url, render_frame_->GetRenderFrameMediaPlaybackOptions(),
-      GetDecoderFactory(),
+      GetDecoderFactory().get(),
       std::make_unique<blink::RemotePlaybackClientWrapperImpl>(client),
       &media_observer);
 
@@ -559,6 +560,13 @@ MediaFactory::CreateRendererFactorySelector(
 
   auto factory_selector = std::make_unique<media::RendererFactorySelector>();
   bool is_base_renderer_factory_set = false;
+
+  if (cast_streaming::IsCastRemotingEnabled() &&
+      cast_streaming::IsCastStreamingMediaSourceUrl(url)) {
+    factory_selector =
+        std::make_unique<cast_streaming::WrappingRendererFactorySelector>(
+            render_frame_);
+  }
 
   auto factory = GetContentClient()->renderer()->GetBaseRendererFactory(
       render_frame_, media_log, decoder_factory,
@@ -674,11 +682,16 @@ MediaFactory::CreateRendererFactorySelector(
                             render_thread->GetDCOMPTextureFactory(),
                             render_thread->GetMediaThreadTaskRunner());
 
+    mojo::Remote<media::mojom::MediaFoundationRendererNotifier>
+        media_foundation_renderer_notifier;
+    interface_broker_->GetInterface(
+        media_foundation_renderer_notifier.BindNewPipeAndPassReceiver());
     factory_selector->AddFactory(
         RendererType::kMediaFoundation,
         std::make_unique<media::MediaFoundationRendererClientFactory>(
             media_log, std::move(dcomp_texture_creation_cb),
-            CreateMojoRendererFactory()));
+            CreateMojoRendererFactory(),
+            std::move(media_foundation_renderer_notifier)));
 
     if (use_mf_for_clear) {
       // We want to use Media Foundation even for non-explicit Media Foundation
@@ -718,36 +731,6 @@ MediaFactory::CreateRendererFactorySelector(
         RendererType::kRemoting, std::move(remoting_renderer_factory),
         is_remoting_media);
   }
-
-#if BUILDFLAG(ENABLE_CAST_STREAMING_RENDERER)
-  if (cast_streaming::IsCastStreamingMediaSourceUrl(url)) {
-    DCHECK(!is_base_renderer_factory_set);
-    is_base_renderer_factory_set = true;
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-    auto default_factory_cast_streaming =
-        std::make_unique<CastRendererClientFactory>(
-            media_log, CreateMojoRendererFactory());
-#else   // BUILDFLAG(ENABLE_CAST_RENDERER)
-    // NOTE: Prior to the resolution of b/187332037, playback will not work
-    // correctly with this renderer.
-    // NOTE: This renderer is only expected to be used in TEST scenarios and
-    // should not be used in production.
-    auto default_factory_cast_streaming = CreateDefaultRendererFactory(
-        media_log, decoder_factory, render_thread, render_frame_);
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
-
-    auto* renderer_controller_proxy =
-        cast_streaming::RendererControllerProxy::GetInstance();
-    DCHECK(renderer_controller_proxy);
-    auto cast_streaming_renderer_factory = std::make_unique<
-        cast_streaming::PlaybackCommandForwardingRendererFactory>(
-        std::move(default_factory_cast_streaming),
-        renderer_controller_proxy->GetReceiver(render_frame_));
-    factory_selector->AddBaseFactory(
-        RendererType::kCastStreaming,
-        std::move(cast_streaming_renderer_factory));
-  }
-#endif  // BUILDFLAG(ENABLE_CAST_STREAMING_RENDERER)
 #endif  // BUILDFLAG(IS_CHROMECAST)
 
   if (!is_base_renderer_factory_set) {
@@ -781,8 +764,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
   std::vector<std::unique_ptr<BatchingMediaLog::EventHandler>> handlers;
   handlers.push_back(
       std::make_unique<InspectorMediaEventHandler>(inspector_context));
-  if (base::FeatureList::IsEnabled(media::kEnableMediaInternals))
-    handlers.push_back(std::make_unique<RenderMediaEventHandler>());
+  handlers.push_back(std::make_unique<RenderMediaEventHandler>());
 
   // This must be created for every new WebMediaPlayer, each instance generates
   // a new player id which is used to collate logs on the browser side.
@@ -818,33 +800,20 @@ MediaFactory::GetWebMediaPlayerDelegate() {
   return media_player_delegate_;
 }
 
-media::DecoderFactory* MediaFactory::GetDecoderFactory() {
+base::WeakPtr<media::DecoderFactory> MediaFactory::GetDecoderFactory() {
   if (!decoder_factory_) {
+    std::unique_ptr<media::DecoderFactory> external_decoder_factory;
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
     media::mojom::InterfaceFactory* const interface_factory =
         GetMediaInterfaceFactory();
-#else
-    media::mojom::InterfaceFactory* const interface_factory = nullptr;
-#endif
-    decoder_factory_ = CreateDecoderFactory(interface_factory);
-  }
-
-  return decoder_factory_.get();
-}
-
-// static
-std::unique_ptr<media::DefaultDecoderFactory>
-MediaFactory::CreateDecoderFactory(
-    media::mojom::InterfaceFactory* interface_factory) {
-  std::unique_ptr<media::DecoderFactory> external_decoder_factory;
-#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  if (interface_factory) {
     external_decoder_factory =
         std::make_unique<media::MojoDecoderFactory>(interface_factory);
-  }
 #endif
-  return std::make_unique<media::DefaultDecoderFactory>(
-      std::move(external_decoder_factory));
+    decoder_factory_ = std::make_unique<media::DefaultDecoderFactory>(
+        std::move(external_decoder_factory));
+  }
+
+  return decoder_factory_->GetWeakPtr();
 }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)

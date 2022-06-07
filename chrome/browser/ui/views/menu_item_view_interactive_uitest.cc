@@ -5,7 +5,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/menu_test_base.h"
-#include "ui/native_theme/themed_vector_icon.h"
+#include "ui/base/themed_vector_icon.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
@@ -58,15 +58,7 @@ using MenuItemViewTestBasic2 = MenuItemViewTestBasic<2>;
 // If this flakes, disable and log details in http://crbug.com/523255.
 VIEW_TEST(MenuItemViewTestBasic0, SelectItem0)
 VIEW_TEST(MenuItemViewTestBasic1, SelectItem1)
-
-// If this flakes, disable and log details in http://crbug.com/523255.
-// Flake on Linux Tests (Wayland) builder. see http://crbug.com/523255.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_SelectItem2 DISABLED_SelectItem2
-#else
-#define MAYBE_SelectItem2 SelectItem2
-#endif
-VIEW_TEST(MenuItemViewTestBasic2, MAYBE_SelectItem2)
+VIEW_TEST(MenuItemViewTestBasic2, SelectItem2)
 
 // Test class for inserting a menu item while the menu is open.
 template <int INSERT_INDEX, int SELECT_INDEX>

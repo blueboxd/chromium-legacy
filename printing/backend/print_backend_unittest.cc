@@ -4,8 +4,8 @@
 
 #include "printing/backend/print_backend.h"
 
-#include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,6 +58,7 @@ TEST_F(PrintBackendTest, MANUAL_EnumeratePrintersNoneInstalled) {
 }
 
 #if BUILDFLAG(IS_WIN)
+
 // This test is for the XPS API that read the XML capabilities of a
 // specific printer.
 TEST_F(PrintBackendTest, MANUAL_GetXmlPrinterCapabilitiesForXpsDriver) {
@@ -79,7 +80,8 @@ TEST_F(PrintBackendTest, ParseValueForXpsPrinterCapabilities) {
   // in this test is based on the XML data returned by
   // `GetXmlPrinterCapabilitiesForXpsDriver` API and processed by data_decoder
   // service.
-  absl::optional<base::Value> capabilities = base::JSONReader::Read(R"({
+  // This is the correct format of XPS "PageOutputQuality" capability.
+  base::Value correct_capabilities = base::test::ParseJson(R"({
   "type": "element",
   "tag": "psf:PrintCapabilities",
   "children": [
@@ -225,11 +227,275 @@ TEST_F(PrintBackendTest, ParseValueForXpsPrinterCapabilities) {
 }
 )");
   PrinterSemanticCapsAndDefaults printer_info;
-  ASSERT_TRUE(capabilities);
+
+  // Expect that parsing XPS Printer Capabilities is successful.
+  // After parsing, `printer_info` will have 2 capabilities: "PageOutputQuality"
+  // and "PageOutputColor".
   EXPECT_EQ(GetPrintBackend()->ParseValueForXpsPrinterCapabilities(
-                *capabilities, &printer_info),
+                correct_capabilities, &printer_info),
             mojom::ResultCode::kSuccess);
 }
-#endif
+
+TEST_F(PrintBackendTest,
+       ParseCorrectPageOutputQualityForXpsPrinterCapabilities) {
+  // This is the correct format of XPS "PageOutputQuality" capability.
+  base::Value correct_capabilities = base::test::ParseJson(R"({
+  "type": "element",
+  "tag": "psf:PrintCapabilities",
+  "children": [
+    {
+      "type": "element",
+      "tag": "psf:Feature",
+      "attributes": {
+        "name": "psk:PageOutputQuality"
+      },
+      "children": [
+        {
+          "type": "element",
+          "tag": "psf:Feature",
+          "attributes": {
+            "name": "psk:PageOutputQuality"
+          }
+        },
+        {
+          "type": "element",
+          "tag": "psf:Property",
+          "attributes": {
+            "name": "psf:SelectionType"
+          },
+          "children": [
+            {
+              "type": "element",
+              "tag": "psf:Value",
+              "attributes": {
+                "xsi:type": "xsd:QName"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "psk:PickOne"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "psf:Property",
+          "attributes": {
+            "name": "psf:DisplayName"
+          },
+          "children": [
+            {
+              "type": "element",
+              "tag": "psf:Value",
+              "attributes": {
+                "xsi:type": "xsd:string"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Quality"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "psf:Option",
+          "attributes": {
+            "name": "ns0000:Draft",
+            "constrain": "psk:None"
+          },
+          "children": [
+            {
+              "type": "element",
+              "tag": "psf:Property",
+              "attributes": {
+                "name": "psf:DisplayName"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "psf:Value",
+                  "attributes": {
+                    "xsi:type": "xsd:string"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Draft"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "psf:Option",
+          "attributes": {
+            "name": "ns0000:Advanced",
+            "constrain": "psk:None"
+          },
+          "children": [
+            {
+              "type": "element",
+              "tag": "psf:Property",
+              "attributes": {
+                "name": "psf:DisplayName"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "psf:Value",
+                  "attributes": {
+                    "xsi:type": "xsd:string"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Advanced"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "psf:Option",
+          "attributes": {
+            "name": "psk:Normal"
+          }
+        }
+      ]
+    },
+    {
+      "type": "element",
+      "tag": "psf:Feature",
+      "attributes": {
+        "name": "psk:PageOutputColor"
+      }
+    }
+  ]
+}
+)");
+  PrinterSemanticCapsAndDefaults printer_info;
+
+  // Expect that parsing XPS Printer Capabilities is successful.
+  // After parsing, `printer_info` will have 2 capabilities: "PageOutputQuality"
+  // and "PageOutputColor".
+  EXPECT_EQ(GetPrintBackend()->ParseValueForXpsPrinterCapabilities(
+                correct_capabilities, &printer_info),
+            mojom::ResultCode::kSuccess);
+
+  // After parsing, `PageOutputQuality` of `printer_info` is expected to have 3
+  // options listed in `kPageOutputQualities`.
+  const PageOutputQualityAttributes kPageOutputQualities = {
+      PageOutputQualityAttribute("Draft", "ns0000:Draft"),
+      PageOutputQualityAttribute("Advanced", "ns0000:Advanced"),
+      PageOutputQualityAttribute("", "psk:Normal")};
+  EXPECT_EQ(printer_info.page_output_quality->qualities, kPageOutputQualities);
+}
+
+TEST_F(PrintBackendTest,
+       ParseIncorrectPageOutputQualityForXpsPrinterCapabilities) {
+  // This string below is incorrect format of XPS `PageOutputQuality` capability
+  // when the property inside option ns0000:Draft does not have any value.
+  base::Value incorrect_capabilities = base::test::ParseJson(R"({
+  "type": "element",
+  "tag": "psf:PrintCapabilities",
+  "children": [
+    {
+      "type": "element",
+      "tag": "psf:Feature",
+      "attributes": {
+        "name": "psk:PageOutputQuality"
+      },
+      "children": [
+        {
+          "type": "element",
+          "tag": "psf:Feature",
+          "attributes": {
+            "name": "psk:PageOutputQuality"
+          }
+        },
+        {
+          "type": "element",
+          "tag": "psf:Property",
+          "attributes": {
+            "name": "psf:SelectionType"
+          },
+          "children": [
+            {
+              "type": "element",
+              "tag": "psf:Value",
+              "attributes": {
+                "xsi:type": "xsd:QName"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "psk:PickOne"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "psf:Property",
+          "attributes": {
+            "name": "psf:DisplayName"
+          },
+          "children": [
+            {
+              "type": "element",
+              "tag": "psf:Value",
+              "attributes": {
+                "xsi:type": "xsd:string"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Quality"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "element",
+          "tag": "psf:Option",
+          "attributes": {
+            "name": "ns0000:Draft",
+            "constrain": "psk:None"
+          },
+          "children": [
+            {
+              "type": "element",
+              "tag": "psf:Property",
+              "attributes": {
+                "name": "psf:DisplayName"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+)");
+  PrinterSemanticCapsAndDefaults printer_info;
+  EXPECT_EQ(GetPrintBackend()->ParseValueForXpsPrinterCapabilities(
+                incorrect_capabilities, &printer_info),
+            mojom::ResultCode::kFailed);
+}
+
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace printing

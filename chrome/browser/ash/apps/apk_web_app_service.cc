@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -92,6 +93,12 @@ ApkWebAppService::ApkWebAppService(Profile* profile)
         apps::AppServiceProxyFactory::GetForProfile(profile)
             ->AppRegistryCache();
     app_registry_cache_observer_.Observe(&app_registry_cache);
+
+    // null in unit tests
+    if (auto* browser_manager = crosapi::BrowserManager::Get()) {
+      keep_alive_ = browser_manager->KeepAlive(
+          crosapi::BrowserManager::Feature::kApkWebAppService);
+    }
   }
 
   // Can be null in tests.
@@ -237,7 +244,8 @@ void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
             ->web_app_service_ash()
             ->GetWebAppProviderBridge();
     if (!web_app_provider_bridge) {
-      // TODO(crbug.com/1225830): handle crosapi disconnections
+      // TODO(crbug.com/1311501): make uninstallation idempotent: handle
+      // WebAppProviderBridge reconnect events.
       return;
     }
     web_app_provider_bridge->WebAppUninstalledInArc(web_app_id,
@@ -245,7 +253,8 @@ void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
   } else {
     DCHECK(provider_);
     provider_->install_finalizer().UninstallExternalWebApp(
-        web_app_id, webapps::WebappUninstallSource::kArc, base::DoNothing());
+        web_app_id, web_app::WebAppManagement::kWebAppStore,
+        webapps::WebappUninstallSource::kArc, base::DoNothing());
   }
 }
 
@@ -545,30 +554,30 @@ void ApkWebAppService::OnDidFinishInstall(
     bool is_web_only_twa,
     const absl::optional<std::string> sha256_fingerprint,
     webapps::InstallResultCode code) {
-  // Do nothing: any error cancels installation.
-  if (code != webapps::InstallResultCode::kSuccessNewInstall)
-    return;
+  if (code == webapps::InstallResultCode::kSuccessNewInstall) {
+    // Set a pref to map |web_app_id| to |package_name| for future
+    // uninstallation.
+    DictionaryPrefUpdate dict_update(profile_->GetPrefs(),
+                                     kWebAppToApkDictPref);
+    dict_update->SetPath({web_app_id, kPackageNameKey},
+                         base::Value(package_name));
 
-  // Set a pref to map |web_app_id| to |package_name| for future uninstallation.
-  DictionaryPrefUpdate dict_update(profile_->GetPrefs(), kWebAppToApkDictPref);
-  dict_update->SetPath({web_app_id, kPackageNameKey},
-                       base::Value(package_name));
+    // Set that the app should not be removed next time the ARC container starts
+    // up. This is to ensure that web apps which are uninstalled in the browser
+    // while the ARC container isn't running can be marked for uninstallation
+    // when the container starts up again.
+    dict_update->SetPath({web_app_id, kShouldRemoveKey}, base::Value(false));
 
-  // Set that the app should not be removed next time the ARC container starts
-  // up. This is to ensure that web apps which are uninstalled in the browser
-  // while the ARC container isn't running can be marked for uninstallation
-  // when the container starts up again.
-  dict_update->SetPath({web_app_id, kShouldRemoveKey}, base::Value(false));
+    // Set a pref to indicate if the |web_app_id| is a web-only TWA.
+    dict_update->SetPath({web_app_id, kIsWebOnlyTwaKey},
+                         base::Value(is_web_only_twa));
 
-  // Set a pref to indicate if the |web_app_id| is a web-only TWA.
-  dict_update->SetPath({web_app_id, kIsWebOnlyTwaKey},
-                       base::Value(is_web_only_twa));
-
-  if (sha256_fingerprint.has_value()) {
-    // Set a pref to hold the APK's certificate SHA256 fingerprint to use for
-    // digital asset link verification.
-    dict_update->SetPath({web_app_id, kSha256FingerprintKey},
-                         base::Value(sha256_fingerprint.value()));
+    if (sha256_fingerprint.has_value()) {
+      // Set a pref to hold the APK's certificate SHA256 fingerprint to use for
+      // digital asset link verification.
+      dict_update->SetPath({web_app_id, kSha256FingerprintKey},
+                           base::Value(sha256_fingerprint.value()));
+    }
   }
 
   // For testing.

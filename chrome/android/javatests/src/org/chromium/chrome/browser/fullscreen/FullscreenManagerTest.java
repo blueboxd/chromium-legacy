@@ -253,6 +253,49 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
+    public void testFullscreenOptionsUpdatedCorrectly() throws InterruptedException {
+        mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final TabWebContentsDelegateAndroid delegate = TabTestUtils.getTabWebContentsDelegate(tab);
+
+        FullscreenTestUtils.waitForFullscreenFlag(tab, false, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
+
+        // Enter fullscreen w/ all system UI hidden:
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(
+                tab, true, mActivityTestRule.getActivity(), false, false);
+
+        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
+
+        // We should be in fullscreen, navigation should be hidden:
+        FullscreenTestUtils.waitForFullscreenFlag(tab, true, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForHideNavigationFlag(tab, true, mActivityTestRule.getActivity());
+
+        // Adjust the fullscreen options to show navigation bar mid-fullscreen:
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(
+                tab, true, mActivityTestRule.getActivity(), true, false);
+
+        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
+
+        // We should be in fullscreen, navigation should be visible:
+        FullscreenTestUtils.waitForFullscreenFlag(tab, true, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForHideNavigationFlag(tab, false, mActivityTestRule.getActivity());
+
+        // Adjust the fullscreen options to show status bar mid-fullscreen:
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(
+                tab, true, mActivityTestRule.getActivity(), false, true);
+
+        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
+
+        // We should not be in fullscreen, navigation should be hidden:
+        FullscreenTestUtils.waitForFullscreenFlag(tab, false, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForHideNavigationFlag(tab, true, mActivityTestRule.getActivity());
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/1046749")
     public void testExitPersistentFullscreenAllowsManualFullscreen() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
@@ -282,8 +325,8 @@ public class FullscreenManagerTest {
     }
 
     @Test
-    //@LargeTest
-    //@Feature({"Fullscreen"})
+    @LargeTest
+    @Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/901280")
     public void testManualHidingShowingBrowserControls() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
@@ -573,10 +616,9 @@ public class FullscreenManagerTest {
         FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
     }
 
-    /* @LargeTest
-     * @Feature({"Fullscreen"})
-     */
     @Test
+    @LargeTest
+    @Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/698413")
     public void testBrowserControlsShownWhenInputIsFocused() throws TimeoutException {
         FullscreenManagerTestUtils.disableBrowserOverrides();
@@ -609,8 +651,8 @@ public class FullscreenManagerTest {
     }
 
     @Test
-    //@LargeTest
-    //@Feature({"Fullscreen"})
+    @LargeTest
+    @Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/979189")
     public void testPersistentFullscreenWithOptions() {
         FullscreenManagerTestUtils.disableBrowserOverrides();

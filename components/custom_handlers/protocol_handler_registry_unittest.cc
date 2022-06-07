@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/custom_handlers/pref_names.h"
 #include "components/custom_handlers/protocol_handler.h"
@@ -192,8 +191,8 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     DCHECK(browser_context_);
     auto delegate = std::make_unique<TestProtocolHandlerRegistryDelegate>();
     delegate_ = delegate.get();
-    registry_ = std::make_unique<ProtocolHandlerRegistry>(
-        browser_context_.get(), std::move(delegate));
+    registry_ = std::make_unique<ProtocolHandlerRegistry>(GetPrefs(),
+                                                          std::move(delegate));
     if (initialize)
       registry_->InitProtocolSettings();
   }

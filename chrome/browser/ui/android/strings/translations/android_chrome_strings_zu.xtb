@@ -184,7 +184,6 @@ Uma usula umlando wakho wokubhrawuza — konke noma okwesayithi elithile — fut
 <translation id="200114059308480249">Faka phakathi umbhalo ozungezile kusesho lwe-Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# Ifayela}one{# Amafayela}other{# Amafayela}}</translation>
 <translation id="2015836039326522978">I-<ph name="APP_NAME" /> izovuleka ku-Chrome. Ngokuqhubeka, uvumelana <ph name="BEGIN_LINK1" />Nemigomo Yesevisi ye-Google<ph name="END_LINK1" />, kanye <ph name="BEGIN_LINK2" />ne-Google Chrome Nemigomo Yesevisi ye-Chrome OS Engeziwe<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Inqubomgomo Yobumfihlo<ph name="END_LINK3" /> nayo iyasebenza.</translation>
-<translation id="2019145049163614359">Susa intshisekelo?</translation>
 <translation id="2020309681647789787">Uzoba nomlando wakho kuwo wonke amadivayisi akho avunyelanisiwe, ukuze uqhubeke nalokho ubukwenza</translation>
 <translation id="2021896219286479412">Izilawuli zesayithi zesikrini esiphelele</translation>
 <translation id="2038563949887743358">Vula ukucela isayithi yedeskithophu</translation>
@@ -213,6 +212,7 @@ Thepha noma iliphi igama ukuze useshe. Ukuze wenze ngcono usesho lwakho, thinta 
 <translation id="2141396931810938595">Ngokusekelwe ekusebenziseni kwakho</translation>
 <translation id="214888715418183969">Khetha lokho onethezeke ngakho ukukwaba ne-Chrome. Ama-metric owabayo azosetshenziselwa ukusiza ukuthuthukisa izici ze-Chrome, ukusebenza, nokuzinza.</translation>
 <translation id="2149973817440762519">Hlela ibhukhimakhi</translation>
+<translation id="2155214902713132423">Le ndlela yokuqinisekisa ayitholakali kule divayisi. Khetha inketho ehlukile kwenye idivayisi yakho.</translation>
 <translation id="2157851137955077194">Ukuze wabelane ngokuthile kusuka efonini yakho kuya kwenye idivayisi, vula ukuvumelanisa kuzilungiselelo ze-Chrome kuwo womabili amadivayisi</translation>
 <translation id="2158408438301413340">I-Chrome ayikwazanga ukuhlola wonke amaphasiwedi</translation>
 <translation id="2169830938017475061">Manje</translation>
@@ -733,7 +733,6 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="5091199029769593641">Maduze, uzobona izindaba ezivela ku-<ph name="SITE_NAME" /> uma uvula ithebhu entsha. Amasayithi owalandelayo alondolozwe ku-akhawunti yakho ye-Google. Ungawaphatha kumasethingi we-Discover.</translation>
 <translation id="5091249083535528968">Idatha yokusetshenziswa enwetshiwe</translation>
 <translation id="509429900233858213">Kuvele iphutha.</translation>
-<translation id="5098190077610408701">Engeza intshisekelo?</translation>
 <translation id="5102401324271069229">Uma isayithi lizama ukuntshontsha iphasiwedi yakho, noma uma udawuniloda ifayela eliyingozi, i-Chrome ingathumela ama-URL kuhlanganise nokuthile okuqukethwe kulelo khasi ku-Safe Browsing</translation>
 <translation id="510275257476243843">1 ihora elisele</translation>
 <translation id="5115811374190515607">ku-<ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="5906513782029855931">Ukwazi ama-URL wamasayithi kuvumela i-Google Assistant ukuthi ikusize uqedele imisebenzi. Ungavala i-Assistant kumasethingi we-Chrome.</translation>
 <translation id="5916664084637901428">Vuliwe</translation>
 <translation id="5919204609460789179">Buyekeza i-<ph name="PRODUCT_NAME" /> ukuze uqale ukuvumelanisa</translation>
+<translation id="5938820472109305350">Faka i-<ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Isebenzisa i-Google ukuze iseshe</translation>
 <translation id="5945035219773565305">Isincomo samanje:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Ibuka ikhasi elibukhoma</translation>
@@ -898,7 +898,6 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="6033245666633565791">Nge-<ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, i-Chrome ithuthukisa ubuchwepheshe obusha bokukuvikela ekulandeleni kwendawo ephambene lapho ugcina khona iwebhu evulekile.
 
 Imizamo ye-Privacy Sandbox isasungulwa futhi itholakala ezifundeni ezithile. Okwamanje, amasayithi angazama i-Privacy Sandbox kuyilapho eqhubeka nokusebenzisa ubuchwepheshe bewebhu bamanje obufana namakhukhi wenkampani yangaphandle.</translation>
-<translation id="6036057147555329831">I-ICU engeziwe</translation>
 <translation id="6039379616847168523">Yeqela kuthebhu elandelayo</translation>
 <translation id="6040143037577758943">Vala</translation>
 <translation id="604124094241169006">Okuzenzakalelayo</translation>
@@ -1023,6 +1022,7 @@ Amathokheni okuthemba athuthukisa ubumfihlo kuwebhu futhi awakwazi ukusetshenzis
 <translation id="663674369910034433">Ukuze uthole amanye amasethingi ahambisana nobumfihlo, ukuvikeleka, nokuqoqwa kwedatha, bona okuthi <ph name="BEGIN_LINK1" />Ukuvumelanisa<ph name="END_LINK1" /> nokuthi <ph name="BEGIN_LINK2" />Amasevisi we-Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Ukusiza ekuthuthukiseni i-app, i-Chrome ithumela idatha yokusetshenziswa neyokuphahlazeka ku-Google. <ph name="BEGIN_UMA_LINK" />Phatha<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Vimba ngaso sonke isikhathi</translation>
+<translation id="6641780377503683465">Susa i-<ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Sula</translation>
 <translation id="6645629752388991326">Lawula ukuthi imaphi amadivayisi angangena ngemvume ngokusebenzisa le divayisi njengokhiye wokuqinisekisa ubunikazi.</translation>
 <translation id="6648459603387803038">Umlawuli wakho angaguqula ukusethwa kwesiphequluli sakho akude. Umsebenzi kule divayisi ungaphinda aphathwe ngaphandle kwe-Chrome.</translation>

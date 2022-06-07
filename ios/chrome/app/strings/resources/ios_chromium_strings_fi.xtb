@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">Anna Chromiumin lisätä uusia kuvia valitsemalla Asetukset, niin voit tallentaa kuvia.</translation>
 <translation id="1289216811211435351">Vaihda Chromiumiin</translation>
 <translation id="1361748954329991663">Chromium on vanhentunut. Jos päivitystä ei ole saatavilla <ph name="BEGIN_LINK" />sovelluskaupasta<ph name="END_LINK" />, laitteesi ei välttämättä enää tue Chromiumin uusia versioita.</translation>
-<translation id="1370204544543370355">Kirjaudu sisään Chromiumiin Google-tililläsi, jotta saat parhaan hyödyn Chromiumista</translation>
 <translation id="1431818719585918472">Anna Chromiumin lukita incognito-välilehtesi.</translation>
 <translation id="1472013873724362412">Tilisi ei toimi Chromiumilla. Ota yhteyttä verkkotunnuksesi järjestelmänvalvojaan tai kirjaudu sisään tavallisella Google-tilillä.</translation>
 <translation id="1507010443238049608">Auta parantamaan Chromiumin ominaisuuksia ja suorituskykyä</translation>
@@ -31,7 +30,6 @@
 <translation id="2426113998523353159">Organisaatiosi edellyttää sisäänkirjautumista, jotta voit käyttää Chromiumia.</translation>
 <translation id="2450140762465183767">Voit nyt käyttää Chromiumia aina, kun napautat linkkejä viesteissä, dokumenteissa ja muissa sovelluksissa.</translation>
 <translation id="2478931088402984578">Valitse <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="2567507405773541360">Helppokäyttöisellä, turvallisella ja entistäkin nopeammalla Chromiumilla saat enemmän aikaan</translation>
 <translation id="2590893390871230428">Synkronoi Chromium-datasi</translation>
 <translation id="2650312721222849884">Laita synkronointi päälle, niin voit nähdä Chromium-välilehtesi missä tahansa</translation>
 <translation id="2684230048001240293">Aseta Chromium oletusselaimeksi, niin voit synkronoida välilehdet, salasanat ja maksutiedot kaikilla laitteillasi</translation>
@@ -43,6 +41,7 @@
 <translation id="3256316712990552818">Kopioitiin Chromiumiin.</translation>
 <translation id="3344973607274501920">Chromium ei voinut tarkistaa salasanojasi. Tarkista internetyhteytesi.</translation>
 <translation id="3472200483164753384">Ei tueta Chromium Canaryssa</translation>
+<translation id="3567399274263440288">Kirjaudu sisään Chromiumiin Google-tililläsi, jotta saat parhaan hyödyn Chromiumista.</translation>
 <translation id="3639997914391704523">Chromium voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> käytti Chromiumia, ja hänen käyttämiä kirjanmerkkejä, salasanoja ja muita asetuksia jäi laitteelle.</translation>
 <translation id="3805899903892079518">Chromium ei voi käyttää kuviasi tai videoitasi. Anna käyttöoikeus kohdassa iOS-asetukset &gt; Tietosuoja &gt; Kuvat.</translation>
@@ -56,16 +55,6 @@
 <translation id="4828317641996116749">Chromium ei voinut tarkistaa kaikkia salasanoja. Yritä myöhemmin uudelleen.</translation>
 <translation id="4985291216379576555">Chromium ei voi tarkistaa, onko päivityksiä saatavilla</translation>
 <translation id="4999538639245140991">Koska kirjaudut ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> ylläpitämältä tililtä, Chromium-datasi poistetaan tältä laitteelta. Se säilyy edelleen Google-tililläsi.</translation>
-<translation id="5039881550736388123">Kun tietoa lähetetään:
-<ph name="BEGIN_INDENT" />  • Autat tekemään Chromiumista paremman muille, jotka käyttävät sitä samoin kuin sinä<ph name="END_INDENT" />
-
-
-Huomioitavaa:
-<ph name="BEGIN_INDENT" />  • Chromiumin käytöstä lähetetään tietoa Googlelle, mutta sitä ei liitetä sinuun
-
-  • Chromiumin kaatumisesta kerättävät tiedot saattavat sisältää henkilökohtaisia tietoja
-
-  • Jos laitat synkronoinnin päälle, tiedot voivat koskea myös avaamiasi URL-osoitteita<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Kirjaudu Chromiumiin</translation>
 <translation id="5224391634244552924">Ei tallennettuja salasanoja. Chromium voi tarkistaa salasanasi, kun tallennat niitä.</translation>
 <translation id="5308226104666789935">Chromium ei voi tarkistaa, onko päivityksiä saatavilla</translation>

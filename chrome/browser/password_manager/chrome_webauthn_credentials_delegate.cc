@@ -9,11 +9,16 @@
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "content/public/common/content_features.h"
+#include "device/fido/discoverable_credential_metadata.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/webauthn/chrome_conditional_ui_delegate_android.h"
+#endif
 
 ChromeWebAuthnCredentialsDelegate::ChromeWebAuthnCredentialsDelegate(
     ChromePasswordManagerClient* client)
@@ -28,7 +33,17 @@ bool ChromeWebAuthnCredentialsDelegate::IsWebAuthnAutofillEnabled() const {
 
 void ChromeWebAuthnCredentialsDelegate::SelectWebAuthnCredential(
     std::string backend_id) {
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+  auto* credentials_delegate =
+      ChromeConditionalUiDelegateAndroid::GetConditionalUiDelegate(
+          client_->web_contents());
+  if (!credentials_delegate) {
+    std::move(retrieve_suggestions_callback_).Run();
+    return;
+  }
+  credentials_delegate->OnWebAuthnAccountSelected(
+      std::vector<uint8_t>(backend_id.begin(), backend_id.end()));
+#else
   ChromeAuthenticatorRequestDelegate* authenticator_delegate =
       AuthenticatorRequestScheduler::GetRequestDelegate(
           client_->web_contents());
@@ -37,7 +52,7 @@ void ChromeWebAuthnCredentialsDelegate::SelectWebAuthnCredential(
   }
   authenticator_delegate->dialog_model()->OnAccountPreselected(
       std::vector<uint8_t>(backend_id.begin(), backend_id.end()));
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 const std::vector<autofill::Suggestion>&
@@ -50,7 +65,16 @@ void ChromeWebAuthnCredentialsDelegate::RetrieveWebAuthnSuggestions(
   retrieve_suggestions_callback_ = std::move(callback);
 
 #if BUILDFLAG(IS_ANDROID)
-  std::move(retrieve_suggestions_callback_).Run();
+  auto* credentials_delegate =
+      ChromeConditionalUiDelegateAndroid::GetConditionalUiDelegate(
+          client_->web_contents());
+  if (!credentials_delegate) {
+    std::move(retrieve_suggestions_callback_).Run();
+    return;
+  }
+  credentials_delegate->RetrieveWebAuthnCredentials(
+      base::BindOnce(&ChromeWebAuthnCredentialsDelegate::OnCredentialsReceived,
+                     weak_ptr_factory_.GetWeakPtr()));
 #else
   ChromeAuthenticatorRequestDelegate* authenticator_delegate =
       AuthenticatorRequestScheduler::GetRequestDelegate(
@@ -66,25 +90,26 @@ void ChromeWebAuthnCredentialsDelegate::RetrieveWebAuthnSuggestions(
 }
 
 void ChromeWebAuthnCredentialsDelegate::OnCredentialsReceived(
-    const std::vector<device::PublicKeyCredentialUserEntity>& credentials) {
+    const std::vector<device::DiscoverableCredentialMetadata>& credentials) {
   std::vector<autofill::Suggestion> suggestions;
   for (const auto& credential : credentials) {
     std::u16string name;
-    if (credential.display_name && !credential.display_name->empty()) {
-      name = base::UTF8ToUTF16(*credential.display_name);
+    if (credential.user.display_name &&
+        !credential.user.display_name->empty()) {
+      name = base::UTF8ToUTF16(*credential.user.display_name);
     } else {
       // TODO(crbug.com/1179014): go through UX review, choose a string, and
       // i18n it.
       name = u"Unknown account";
     }
     autofill::Suggestion suggestion(std::move(name));
-    if (credential.name) {
-      suggestion.label = base::UTF8ToUTF16(*credential.name);
+    if (credential.user.name) {
+      suggestion.label = base::UTF8ToUTF16(*credential.user.name);
     }
     suggestion.icon = "fingerprint";
     suggestion.frontend_id = autofill::POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL;
     suggestion.backend_id =
-        std::string(credential.id.begin(), credential.id.end());
+        std::string(credential.user.id.begin(), credential.user.id.end());
     suggestions.push_back(std::move(suggestion));
   }
   suggestions_ = std::move(suggestions);

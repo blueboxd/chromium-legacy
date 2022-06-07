@@ -128,6 +128,7 @@ export class SettingsTextareaElement extends PolymerElement {
 
   override autofocus: boolean;
   disabled: boolean;
+  readonly: boolean;
   rows: number;
   label: string;
   value: string;
@@ -172,10 +173,6 @@ export class SettingsTextareaElement extends PolymerElement {
 
   private onDisabledChanged_() {
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
-  }
-
-  private shouldShowFooter_(): boolean {
-    return !!(this.firstFooter || this.secondFooter);
   }
 
   private getFooterAria_(): string {

@@ -27,7 +27,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -147,8 +146,6 @@ class UMAHistogramReporter {
   }
 
   void ReportExitCode(int exit_code) const {
-    RecordSparseHistogram("SoftwareReporter.ExitCode", exit_code);
-
     // Also report the exit code that the reporter writes to the registry.
     base::win::RegKey reporter_key;
     DWORD exit_code_in_registry;

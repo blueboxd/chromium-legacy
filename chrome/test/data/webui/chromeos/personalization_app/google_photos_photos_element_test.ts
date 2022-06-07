@@ -1,22 +1,20 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import 'chrome://personalization/strings.m.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {getNumberOfGridItemsPerRow} from 'chrome://personalization/common/utils.js';
-import {GooglePhotosPhoto, WallpaperLayout, WallpaperType} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
-import {GooglePhotosPhotos, GooglePhotosPhotosSection} from 'chrome://personalization/trusted/wallpaper/google_photos_photos_element.js';
-import {initializeGooglePhotosData} from 'chrome://personalization/trusted/wallpaper/wallpaper_controller.js';
-import {WallpaperGridItem} from 'chrome://personalization/trusted/wallpaper/wallpaper_grid_item_element.js';
+import {getNumberOfGridItemsPerRow, GooglePhotosPhoto, GooglePhotosPhotos, GooglePhotosPhotosSection, initializeGooglePhotosData, WallpaperGridItem, WallpaperLayout, WallpaperType} from 'chrome://personalization/trusted/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
-import {assertDeepEquals, assertEquals, assertNotEquals, assertNotReached} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
 import {baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
 import {TestWallpaperProvider} from './test_wallpaper_interface_provider.js';
 
-export function GooglePhotosPhotosTest() {
+suite('GooglePhotosPhotosTest', function() {
   let googlePhotosPhotosElement: GooglePhotosPhotos|null;
   let personalizationStore: TestPersonalizationStore;
   let wallpaperProvider: TestWallpaperProvider;
@@ -39,17 +37,10 @@ export function GooglePhotosPhotosTest() {
     return matches ? [...matches] : null;
   }
 
-  /** Scrolls the specified |element| until |predicate| returns true. */
-  async function scrollElementUntil(
-      element: HTMLElement, predicate: () => boolean) {
-    const timeout = +new Date() + 1000;
-    while (!predicate()) {
-      element.scrollBy(0, 500);
-      await waitAfterNextRender(googlePhotosPhotosElement!);
-      if (+new Date() > timeout) {
-        assertNotReached('Timed out while scrolling.');
-      }
-    }
+  /** Scrolls the specified |element| to the bottom. */
+  async function scrollToBottom(element: HTMLElement) {
+    element.scrollTop = element.scrollHeight;
+    await waitAfterNextRender(googlePhotosPhotosElement!);
   }
 
   /**
@@ -60,7 +51,7 @@ export function GooglePhotosPhotosTest() {
       GooglePhotosPhotosSection[] {
     const sections: GooglePhotosPhotosSection[] = [];
 
-    photos.forEach(photo => {
+    photos.forEach((photo, i) => {
       const title = toString(photo.date);
 
       // Find/create the appropriate |section| in which to insert |photo|.
@@ -77,7 +68,7 @@ export function GooglePhotosPhotosTest() {
         section.rows.push(row);
       }
 
-      row!.push(photo);
+      row!.push({...photo, index: i});
     });
 
     return sections;
@@ -117,19 +108,22 @@ export function GooglePhotosPhotosTest() {
         id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
         name: 'foo',
         date: toString16('Wednesday, February 16, 2022'),
-        url: {url: 'foo.com'}
+        url: {url: 'foo.com'},
+        location: 'home1'
       },
       {
         id: '0ec40478-9712-42e1-b5bf-3e75870ca042',
         name: 'bar',
         date: toString16('Friday, November 12, 2021'),
-        url: {url: 'bar.com'}
+        url: {url: 'bar.com'},
+        location: 'home2'
       },
       {
         id: '0a268a37-877a-4936-81d4-38cc84b0f596',
         name: 'baz',
         date: toString16('Friday, November 12, 2021'),
-        url: {url: 'baz.com'}
+        url: {url: 'baz.com'},
+        location: 'home3'
       }
     ];
 
@@ -149,7 +143,8 @@ export function GooglePhotosPhotosTest() {
     // should be rendered initially.
     const titleSelector = '.title:not([hidden])';
     assertEquals(querySelectorAll(titleSelector)!.length, 0);
-    const photoSelector = 'wallpaper-grid-item:not([hidden]).photo';
+    const photoSelector =
+        'wallpaper-grid-item:not([hidden]).photo:not([placeholder])';
     assertEquals(querySelectorAll(photoSelector)!.length, 0);
 
     // Initialize Google Photos data in the |personalizationStore|.
@@ -191,7 +186,7 @@ export function GooglePhotosPhotosTest() {
           assertEquals(photoEl!.primaryText, undefined);
           assertEquals(photoEl!.secondaryText, undefined);
         });
-        
+
         ++absoluteRowIndex;
       });
     });
@@ -202,14 +197,16 @@ export function GooglePhotosPhotosTest() {
       id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
       name: 'foo',
       date: {data: []},
-      url: {url: 'foo.com'}
+      url: {url: 'foo.com'},
+      location: 'home1'
     };
 
     const anotherPhoto: GooglePhotosPhoto = {
       id: '0ec40478-9712-42e1-b5bf-3e75870ca042',
       name: 'bar',
       date: {data: []},
-      url: {url: 'bar.com'}
+      url: {url: 'bar.com'},
+      location: 'home2'
     };
 
     // Set values returned by |wallpaperProvider|.
@@ -313,8 +310,54 @@ export function GooglePhotosPhotosTest() {
     assertEquals(photoEls[1]!.selected, false);
   });
 
-  // TODO(dmblack): Re-enable after branch.
-  test.skip('incrementally loads photos', async () => {
+  test('displays placeholders until photos are present', async () => {
+    // Prepare Google Photos data.
+    const photosCount = 5;
+    const photos: GooglePhotosPhoto[] =
+        Array.from({length: photosCount}, (_, i) => ({
+                                            id: `id-${i}`,
+                                            name: `name-${i}`,
+                                            date: {data: []},
+                                            url: {url: `url-${i}`},
+                                            location: `location-${i}`,
+                                          }));
+
+    // Initialize |googlePhotosPhotosElement|.
+    googlePhotosPhotosElement =
+        initElement(GooglePhotosPhotos, {hidden: false});
+    await waitAfterNextRender(googlePhotosPhotosElement);
+
+    // Initially only placeholders should be present.
+    const selector =
+        '.row:not([hidden]) wallpaper-grid-item:not([hidden]).photo';
+    const photoSelector = `${selector}:not([placeholder])`;
+    const placeholderSelector = `${selector}[placeholder]`;
+    assertEquals(querySelectorAll(photoSelector)!.length, 0);
+    assertNotEquals(querySelectorAll(placeholderSelector)!.length, 0);
+
+    // Clicking a placeholder should do nothing.
+    const clickHandler = 'selectGooglePhotosPhoto';
+    (querySelector(placeholderSelector) as HTMLElement).click();
+    await new Promise<void>(resolve => setTimeout(resolve));
+    assertEquals(wallpaperProvider.getCallCount(clickHandler), 0);
+
+    // Provide Google Photos data.
+    personalizationStore.data.wallpaper.googlePhotos.count = photosCount;
+    personalizationStore.data.wallpaper.googlePhotos.photos = photos;
+    personalizationStore.notifyObservers();
+
+    // Only photos should be present.
+    await waitAfterNextRender(googlePhotosPhotosElement);
+    assertNotEquals(querySelectorAll(photoSelector)!.length, 0);
+    assertEquals(querySelectorAll(placeholderSelector)!.length, 0);
+
+    // Clicking a photo should do something.
+    (querySelector(photoSelector) as HTMLElement).click();
+    assertEquals(
+        await wallpaperProvider.whenCalled(clickHandler), photos[0]!.id);
+  });
+
+  test('incrementally loads photos', async () => {
     // Set photos count returned by |wallpaperProvider|.
     const photosCount = 200;
     wallpaperProvider.setGooglePhotosCount(photosCount);
@@ -327,7 +370,8 @@ export function GooglePhotosPhotosTest() {
             id: `id-${nextPhotoId}`,
             name: `name-${nextPhotoId}`,
             date: {data: []},
-            url: {url: `url-${nextPhotoId++}`},
+            url: {url: `url-${nextPhotoId}`},
+            location: `location-${nextPhotoId++}`,
           };
         }));
 
@@ -352,7 +396,8 @@ export function GooglePhotosPhotosTest() {
             id: `id-${nextPhotoId}`,
             name: `name-${nextPhotoId}`,
             date: {data: []},
-            url: {url: `url-${nextPhotoId++}`},
+            url: {url: `url-${nextPhotoId}`},
+            location: `location-${nextPhotoId++}`,
           };
         }));
 
@@ -377,18 +422,9 @@ export function GooglePhotosPhotosTest() {
         initElement(GooglePhotosPhotos, {hidden: false});
     await waitAfterNextRender(googlePhotosPhotosElement);
 
-    // Register an event listener to cache whether the |gridScrollThreshold| has
-    // been reached.
-    let gridScrollThresholdReached = false;
+    // Scroll to the bottom of the grid.
     const gridScrollThreshold = googlePhotosPhotosElement.$.gridScrollThreshold;
-    gridScrollThreshold.addEventListener('lower-threshold', () => {
-      gridScrollThresholdReached = true;
-    });
-
-    // Scroll until the |gridScrollThreshold| is reached.
-    await scrollElementUntil(gridScrollThreshold, () => {
-      return gridScrollThresholdReached;
-    });
+    scrollToBottom(gridScrollThreshold);
 
     // Wait for and verify that the next batch of photos have been requested.
     assertDeepEquals(
@@ -399,13 +435,8 @@ export function GooglePhotosPhotosTest() {
     // Reset |wallpaperProvider| expectations.
     wallpaperProvider.resetResolver('fetchGooglePhotosPhotos');
 
-    // Scroll until the bottom of the grid is reached.
-    let scrollTop = -1;
-    await scrollElementUntil(gridScrollThreshold, () => {
-      const oldScrollTop = scrollTop;
-      scrollTop = gridScrollThreshold.scrollTop;
-      return scrollTop === oldScrollTop;
-    });
+    // Scroll to the bottom of the grid.
+    scrollToBottom(gridScrollThreshold);
 
     // Verify that no next batch of photos has been requested.
     assertEquals(wallpaperProvider.getCallCount('fetchGooglePhotosPhotos'), 0);
@@ -416,7 +447,8 @@ export function GooglePhotosPhotosTest() {
       id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
       name: 'foo',
       date: {data: []},
-      url: {url: 'foo.com'}
+      url: {url: 'foo.com'},
+      location: 'home'
     };
 
     // Set values returned by |wallpaperProvider|.
@@ -447,7 +479,8 @@ export function GooglePhotosPhotosTest() {
     assertEquals(personalizationStore.data.wallpaper.loading.setImage, 1);
     assertEquals(personalizationStore.data.wallpaper.loading.selected, true);
     assertDeepEquals(
-        personalizationStore.data.wallpaper.pendingSelected, photo);
+        personalizationStore.data.wallpaper.pendingSelected,
+        {...photo, index: 0});
 
     // Wait for and verify hard-coded selection failure.
     const methodName = 'selectGooglePhotosPhoto';
@@ -457,4 +490,4 @@ export function GooglePhotosPhotosTest() {
     assertEquals(personalizationStore.data.wallpaper.loading.selected, false);
     assertEquals(personalizationStore.data.wallpaper.pendingSelected, null);
   });
-}
+});

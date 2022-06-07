@@ -2,19 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('ChromeVoxKbHandler');
-
-goog.require('ChromeVox');
-goog.require('KeyMap');
-goog.require('KeySequence');
-goog.require('KeyUtil');
-goog.require('ChromeVoxState');
-
 /**
  * @fileoverview Handles user keyboard input events.
- *
  */
-ChromeVoxKbHandler = {};
+import {KeyMap} from './key_map.js';
+import {KeyUtil} from './key_util.js';
+
+export const ChromeVoxKbHandler = {};
 
 /**
  * The key map

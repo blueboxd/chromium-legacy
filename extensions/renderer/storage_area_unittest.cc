@@ -150,7 +150,8 @@ TEST_F(StorageAreaTest, HasOnChanged) {
 
     bindings_system()->DispatchEventInContext(
         base::StringPrintf("storage.%s.onChanged", kStorage).c_str(),
-        ListValueFromString("['foo']").get(), nullptr, script_context);
+        DeprecatedListValueFromString("['foo']").get(), nullptr,
+        script_context);
 
     EXPECT_EQ("\"foo\"", GetStringPropertyFromObject(context->Global(), context,
                                                      "change"));
@@ -199,7 +200,7 @@ TEST_F(StorageAreaTest, PromiseBasedFunctionsForManifestV3) {
               base::test::IsJson(R"(["local", "foo"])"));
 
   bindings_system()->HandleResponse(last_params().request_id, /*success=*/true,
-                                    *ListValueFromString(R"([{"foo": 42}])"),
+                                    ListValueFromString(R"([{"foo": 42}])"),
                                     /*error=*/std::string());
 
   EXPECT_EQ(v8::Promise::kFulfilled, promise->State());

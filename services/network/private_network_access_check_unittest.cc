@@ -23,6 +23,7 @@ TEST(PrivateNetworkAccessCheckTest, BlockedByLoadOption) {
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(PrivateNetworkAccessCheck(nullptr, mojom::IPAddressSpace::kUnknown,
+                                      absl::nullopt,
                                       mojom::kURLLoadOptionBlockLocalRequest,
                                       mojom::IPAddressSpace::kPrivate),
             Result::kBlockedByLoadOption);
@@ -35,7 +36,7 @@ TEST(PrivateNetworkAccessCheckTest, AllowedMissingClientSecurityState) {
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(PrivateNetworkAccessCheck(nullptr, mojom::IPAddressSpace::kUnknown,
-                                      mojom::kURLLoadOptionNone,
+                                      absl::nullopt, mojom::kURLLoadOptionNone,
                                       mojom::IPAddressSpace::kLocal),
             Result::kAllowedMissingClientSecurityState);
 
@@ -50,7 +51,7 @@ TEST(PrivateNetworkAccessCheckTest, AllowedNoLessPublic) {
   state.ip_address_space = mojom::IPAddressSpace::kPrivate;
 
   EXPECT_EQ(PrivateNetworkAccessCheck(&state, mojom::IPAddressSpace::kUnknown,
-                                      mojom::kURLLoadOptionNone,
+                                      absl::nullopt, mojom::kURLLoadOptionNone,
                                       mojom::IPAddressSpace::kPrivate),
             Result::kAllowedNoLessPublic);
 
@@ -67,7 +68,7 @@ TEST(PrivateNetworkAccessCheckTest, AllowedByPolicyAllow) {
       mojom::PrivateNetworkRequestPolicy::kAllow;
 
   EXPECT_EQ(PrivateNetworkAccessCheck(&state, mojom::IPAddressSpace::kUnknown,
-                                      mojom::kURLLoadOptionNone,
+                                      absl::nullopt, mojom::kURLLoadOptionNone,
                                       mojom::IPAddressSpace::kPrivate),
             Result::kAllowedByPolicyAllow);
 
@@ -84,7 +85,7 @@ TEST(PrivateNetworkAccessCheckTest, AllowedByPolicyWarn) {
       mojom::PrivateNetworkRequestPolicy::kWarn;
 
   EXPECT_EQ(PrivateNetworkAccessCheck(&state, mojom::IPAddressSpace::kUnknown,
-                                      mojom::kURLLoadOptionNone,
+                                      absl::nullopt, mojom::kURLLoadOptionNone,
                                       mojom::IPAddressSpace::kPrivate),
             Result::kAllowedByPolicyWarn);
 
@@ -101,7 +102,7 @@ TEST(PrivateNetworkAccessCheckTest, BlockedByPolicyBlock) {
       mojom::PrivateNetworkRequestPolicy::kBlock;
 
   EXPECT_EQ(PrivateNetworkAccessCheck(&state, mojom::IPAddressSpace::kUnknown,
-                                      mojom::kURLLoadOptionNone,
+                                      absl::nullopt, mojom::kURLLoadOptionNone,
                                       mojom::IPAddressSpace::kPrivate),
             Result::kBlockedByPolicyBlock);
 
@@ -113,7 +114,7 @@ TEST(PrivateNetworkAccessCheckTest, BlockedByTargetIpAddressSpace) {
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(PrivateNetworkAccessCheck(nullptr, mojom::IPAddressSpace::kPublic,
-                                      mojom::kURLLoadOptionNone,
+                                      absl::nullopt, mojom::kURLLoadOptionNone,
                                       mojom::IPAddressSpace::kPrivate),
             Result::kBlockedByTargetIpAddressSpace);
 
@@ -121,16 +122,64 @@ TEST(PrivateNetworkAccessCheckTest, BlockedByTargetIpAddressSpace) {
       kHistogramName, Result::kBlockedByTargetIpAddressSpace, 1);
 }
 
+TEST(PrivateNetworkAccessCheckTest, AllowedByPolicyPreflightWarn) {
+  base::HistogramTester histogram_tester;
+
+  mojom::ClientSecurityState state;
+  state.ip_address_space = mojom::IPAddressSpace::kPublic;
+  state.private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+
+  EXPECT_EQ(PrivateNetworkAccessCheck(&state, mojom::IPAddressSpace::kPublic,
+                                      absl::nullopt, mojom::kURLLoadOptionNone,
+                                      mojom::IPAddressSpace::kPrivate),
+            Result::kAllowedByPolicyPreflightWarn);
+
+  histogram_tester.ExpectUniqueSample(kHistogramName,
+                                      Result::kAllowedByPolicyPreflightWarn, 1);
+}
+
 TEST(PrivateNetworkAccessCheckTest, AllowedByTargetIpAddressSpace) {
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(PrivateNetworkAccessCheck(nullptr, mojom::IPAddressSpace::kPrivate,
-                                      mojom::kURLLoadOptionNone,
+                                      absl::nullopt, mojom::kURLLoadOptionNone,
                                       mojom::IPAddressSpace::kPrivate),
             Result::kAllowedByTargetIpAddressSpace);
 
   histogram_tester.ExpectUniqueSample(
       kHistogramName, Result::kAllowedByTargetIpAddressSpace, 1);
+}
+
+TEST(PrivateNetworkAccessCheckTest, AllowedByPolicyPreflightWarnInconsistent) {
+  base::HistogramTester histogram_tester;
+
+  mojom::ClientSecurityState state;
+  state.ip_address_space = mojom::IPAddressSpace::kPublic;
+  state.private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+
+  EXPECT_EQ(PrivateNetworkAccessCheck(&state, mojom::IPAddressSpace::kUnknown,
+                                      mojom::IPAddressSpace::kPublic,
+                                      mojom::kURLLoadOptionNone,
+                                      mojom::IPAddressSpace::kPrivate),
+            Result::kAllowedByPolicyPreflightWarn);
+
+  histogram_tester.ExpectUniqueSample(kHistogramName,
+                                      Result::kAllowedByPolicyPreflightWarn, 1);
+}
+
+TEST(PrivateNetworkAccessCheckTest, BlockedByInconsistentIpAddressSpace) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_EQ(PrivateNetworkAccessCheck(nullptr, mojom::IPAddressSpace::kUnknown,
+                                      mojom::IPAddressSpace::kPublic,
+                                      mojom::kURLLoadOptionNone,
+                                      mojom::IPAddressSpace::kPrivate),
+            Result::kBlockedByInconsistentIpAddressSpace);
+
+  histogram_tester.ExpectUniqueSample(
+      kHistogramName, Result::kBlockedByInconsistentIpAddressSpace, 1);
 }
 
 }  // namespace

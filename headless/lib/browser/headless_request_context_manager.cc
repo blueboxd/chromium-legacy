@@ -5,7 +5,6 @@
 #include "headless/lib/browser/headless_request_context_manager.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -265,16 +264,16 @@ void HeadlessRequestContextManager::ConfigureNetworkContextParamsInternal(
     context_params->enable_encrypted_cookies = cookie_encryption_enabled_;
     context_params->file_paths =
         ::network::mojom::NetworkContextFilePaths::New();
-    context_params->file_paths->data_path = user_data_path_;
+    context_params->file_paths->data_directory = user_data_path_;
     context_params->file_paths->cookie_database_name =
         base::FilePath(FILE_PATH_LITERAL("Cookies"));
   }
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDiskCacheDir)) {
-    context_params->http_cache_path =
+    context_params->http_cache_directory =
         command_line->GetSwitchValuePath(switches::kDiskCacheDir);
   } else if (!user_data_path_.empty()) {
-    context_params->http_cache_path =
+    context_params->http_cache_directory =
         user_data_path_.Append(FILE_PATH_LITERAL("Cache"));
   }
   if (proxy_config_) {

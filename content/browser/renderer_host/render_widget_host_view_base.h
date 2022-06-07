@@ -364,9 +364,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   virtual void SetLastPointerType(ui::EventPointerType last_pointer_type) {}
 
-  // Returns true if the view is in the active window.
-  virtual bool IsInActiveWindow() const;
-
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME
@@ -584,6 +581,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   void OnShowWithPageVisibility(PageVisibilityState page_visibility);
 
   void UpdateSystemCursorSize(const gfx::Size& cursor_size);
+
+  // Updates the active state by replicating it to the renderer.
+  void UpdateActiveState(bool active);
 
   // Each platform should override this to call RenderWidgetHostImpl::WasShown
   // and DelegatedFrameHost::WasShown, and do any platform-specific bookkeeping

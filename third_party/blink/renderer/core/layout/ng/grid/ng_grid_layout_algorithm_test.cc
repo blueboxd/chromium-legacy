@@ -41,12 +41,9 @@ class NGGridLayoutAlgorithmTest
   void SetUp() override { NGBaseLayoutAlgorithmTest::SetUp(); }
 
   void BuildGridItemsAndTrackCollections(NGGridLayoutAlgorithm& algorithm) {
-    NGGridPlacementData placement_data(
-        algorithm.Node().IsParentNGGrid(),
-        algorithm.ComputeAutomaticRepetitions(kForColumns),
-        algorithm.ComputeAutomaticRepetitions(kForRows));
-
-    items_->grid_items_ = algorithm.Node().ConstructGridItems(&placement_data);
+    auto placement_data = algorithm.PlacementData();
+    items_->grid_items_ =
+        algorithm.Node().GridItemsIncludingSubgridded(&placement_data);
 
     // Build block track collections.
     NGGridBlockTrackCollection column_block_track_collection(
@@ -201,7 +198,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmBaseSetSizes) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   BuildGridItemsAndTrackCollections(algorithm);
@@ -238,7 +235,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRanges) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -285,7 +282,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesWithAutoRepeater) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -354,7 +351,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicit) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -414,7 +411,7 @@ TEST_F(NGGridLayoutAlgorithmTest,
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -472,7 +469,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicitAutoRows) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -520,7 +517,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicitMixed) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -597,7 +594,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmAutoGridPositions) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -723,7 +720,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmAutoDense) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -805,7 +802,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmGridPositions) {
       /* is_new_formatting_context */ true);
 
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   EXPECT_EQ(GridItemCount(), 0U);
@@ -847,7 +844,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmResolveFixedTrackSizes) {
       /* stretch_inline_size_if_auto */ true,
       /* is_new_formatting_context */ true);
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   BuildGridItemsAndTrackCollections(algorithm);
@@ -924,7 +921,7 @@ TEST_F(NGGridLayoutAlgorithmTest,
       /* stretch_inline_size_if_auto */ true,
       /* is_new_formatting_context */ true);
   NGFragmentGeometry fragment_geometry =
-      CalculateInitialFragmentGeometry(space, node);
+      CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   BuildGridItemsAndTrackCollections(algorithm);

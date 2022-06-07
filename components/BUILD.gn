@@ -7,6 +7,7 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
+import("//components/optimization_guide/features.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
@@ -97,6 +98,7 @@ test("components_unittests") {
 
   deps = [
     "//base",
+    "//components/access_code_cast/common:unit_tests",
     "//components/apdu:unit_tests",
     "//components/assist_ranker:unit_tests",
     "//components/autofill/core/browser:unit_tests",
@@ -208,6 +210,7 @@ test("components_unittests") {
     "//components/subresource_filter/tools:unit_tests",
     "//components/sync:unit_tests",
     "//components/sync_bookmarks:unit_tests",
+    "//components/sync_device_info:unit_tests",
     "//components/sync_preferences:unit_tests",
     "//components/sync_user_events:unit_tests",
     "//components/system_media_controls:unit_tests",
@@ -233,6 +236,13 @@ test("components_unittests") {
     "//components/webdata_services:unit_tests",
   ]
 
+  if (build_with_internal_optimization_guide && is_android) {
+    loadable_module_deps = [
+      "//components/optimization_guide/internal:optimization_guide_internal",
+    ]
+    loadable_modules = [ "$root_out_dir/liboptimization_guide_internal.so" ]
+  }
+
   data_deps = [ "//testing/buildbot/filters:components_unittests_filters" ]
 
   if (toolkit_views) {
@@ -256,7 +266,6 @@ test("components_unittests") {
     deps += [
       "//components/browser_sync:unit_tests",
       "//components/send_tab_to_self:unit_tests",
-      "//components/sync_device_info:unit_tests",
       "//components/sync_sessions:unit_tests",
       "//components/update_client:unit_tests",
     ]
@@ -294,6 +303,7 @@ test("components_unittests") {
       "//components/captive_portal/content:unit_tests",
       "//components/cast_certificate:unit_tests",
       "//components/cast_channel:unit_tests",
+      "//components/cast_streaming:unit_tests",
       "//components/certificate_transparency:unit_tests",
       "//components/content_capture/browser:unit_tests",
       "//components/content_settings/browser:unit_tests",
@@ -391,10 +401,7 @@ test("components_unittests") {
     ]
 
     if (!is_win) {  #!iOS and!Windows
-      deps += [
-        "//components/cast:unit_tests",
-        "//components/cast_streaming:unit_tests",
-      ]
+      deps += [ "//components/cast:unit_tests" ]
     }
 
     if (!is_fuchsia) {  #!iOS and!Fuchsia
@@ -525,7 +532,7 @@ test("components_unittests") {
     ]
   }
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos) {
     deps += [
       "//components/account_manager_core:unit_tests",
       "//components/arc/common:unit_tests",
@@ -574,7 +581,7 @@ test("components_unittests") {
 
   if (safe_browsing_mode == 1) {
     deps += [
-      "//components/safe_browsing/content/renderer:websocket_sb_handshake_throttle_unittest",
+      "//components/safe_browsing/content/renderer:throttles_unittest",
       "//components/safe_browsing/core/browser:ping_manager_unittest",
       "//components/safe_browsing/core/browser:safe_browsing_url_checker_unittest",
       "//components/safe_browsing/core/browser:user_population_unittest",
@@ -770,6 +777,7 @@ if (!is_ios) {
       "//components/content_settings/renderer",
       "//components/continuous_search/common/public/mojom",
       "//components/continuous_search/renderer",
+      "//components/custom_handlers:browser_tests",
       "//components/dom_distiller/content/browser",
       "//components/dom_distiller/core",
       "//components/dom_distiller/core:test_support",

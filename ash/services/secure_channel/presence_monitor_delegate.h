@@ -7,17 +7,21 @@
 
 #include "ash/services/secure_channel/ble_scanner.h"
 #include "ash/services/secure_channel/public/cpp/shared/presence_monitor.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/components/multidevice/remote_device_cache.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace device {
 class BluetoothAdapter;
 class BluetoothDevice;
 }  // namespace device
 
-namespace ash::secure_channel {
+namespace ash {
+
+namespace multidevice {
+class RemoteDeviceCache;
+class RemoteDeviceRef;
+struct RemoteDevice;
+}  // namespace multidevice
+
+namespace secure_channel {
 
 class BleSynchronizerBase;
 class BluetoothHelper;
@@ -56,6 +60,7 @@ class PresenceMonitorDelegate : public BleScanner::Observer {
   std::string local_device_id_;
 };
 
-}  // namespace ash::secure_channel
+}  // namespace secure_channel
+}  // namespace ash
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PRESENCE_MONITOR_DELEGATE_H_

@@ -10,11 +10,9 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
-
-class PrefChangeRegistrar;
-class PrefService;
 
 // The consent will appear up to a total of 6 times.
 constexpr int kConsentImpressionCap = 6;
@@ -35,6 +33,7 @@ enum class ConsentResultType {
 class QuickAnswersStateObserver : public base::CheckedObserver {
  public:
   virtual void OnSettingsEnabled(bool enabled) {}
+  virtual void OnApplicationLocaleReady(const std::string& locale) {}
 };
 
 // A class that holds Quick Answers related prefs and states.
@@ -47,15 +46,13 @@ class QuickAnswersState {
   QuickAnswersState(const QuickAnswersState&) = delete;
   QuickAnswersState& operator=(const QuickAnswersState&) = delete;
 
-  ~QuickAnswersState();
+  virtual ~QuickAnswersState();
 
   void AddObserver(QuickAnswersStateObserver* observer);
   void RemoveObserver(QuickAnswersStateObserver* observer);
 
-  void RegisterPrefChanges(PrefService* pref_service);
-
-  void StartConsent();
-  void OnConsentResult(ConsentResultType result);
+  virtual void StartConsent() {}
+  virtual void OnConsentResult(ConsentResultType result) {}
 
   bool ShouldUseQuickAnswersTextAnnotator();
 
@@ -66,6 +63,13 @@ class QuickAnswersState {
   bool definition_enabled() const { return definition_enabled_; }
   bool translation_enabled() const { return translation_enabled_; }
   bool unit_conversion_enabled() const { return unit_conversion_enabled_; }
+  const std::string& application_locale() const {
+    return resolved_application_locale_;
+  }
+  const std::string& preferred_languages() const {
+    return preferred_languages_;
+  }
+  bool spoken_feedback_enabled() const { return spoken_feedback_enabled_; }
   bool is_eligible() const { return is_eligible_; }
 
   void set_eligibility_for_testing(bool is_eligible) {
@@ -75,18 +79,17 @@ class QuickAnswersState {
     use_text_annotator_for_testing_ = true;
   }
 
- private:
+ protected:
   void InitializeObserver(QuickAnswersStateObserver* observer);
-
-  // Called when the related preferences are obtained from the pref service.
-  void UpdateSettingsEnabled();
-  void UpdateConsentStatus();
-  void UpdateDefinitionEnabled();
-  void UpdateTranslationEnabled();
-  void UpdateUnitConversionEnabled();
 
   // Called when the feature eligibility might change.
   void UpdateEligibility();
+
+  // Record the consent result with how many times the user has seen the consent
+  // and impression duration.
+  void RecordConsentResult(ConsentResultType type,
+                           int nth_impression,
+                           const base::TimeDelta duration);
 
   // Whether the Quick Answers is enabled in system settings.
   bool settings_enabled_ = false;
@@ -104,6 +107,16 @@ class QuickAnswersState {
   // Whether the Quick Answers unit conversion is enabled.
   bool unit_conversion_enabled_ = true;
 
+  // The resolved application locale.
+  std::string resolved_application_locale_;
+
+  // The list of preferred languages, separated by comma.
+  // (ex. "en-US,zh,fr").
+  std::string preferred_languages_;
+
+  // Whether the a11y spoken feedback tool is enabled.
+  bool spoken_feedback_enabled_;
+
   // Whether the Quick Answers feature is eligible. The value is derived from a
   // number of other states.
   bool is_eligible_ = false;
@@ -113,12 +126,6 @@ class QuickAnswersState {
 
   // Whether to use text annotator for testing.
   bool use_text_annotator_for_testing_ = false;
-
-  // Time when the notice is shown.
-  base::TimeTicks consent_start_time_;
-
-  // Observes user profile prefs for the Assistant.
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::ObserverList<QuickAnswersStateObserver> observers_;
 };

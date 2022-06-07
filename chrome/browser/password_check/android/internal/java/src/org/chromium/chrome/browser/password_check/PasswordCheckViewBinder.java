@@ -164,7 +164,7 @@ class PasswordCheckViewBinder {
                 model.get(CREDENTIAL_HANDLER).onChangePasswordButtonClick(credential);
             });
             setTintListForCompoundDrawables(button.getCompoundDrawablesRelative(),
-                    view.getContext(), org.chromium.ui.R.color.default_text_color_inverse);
+                    view.getContext(), R.color.default_text_color_on_accent1_list);
             if (credential.hasAutoChangeButton()) {
                 ButtonCompat button_with_script =
                         view.findViewById(R.id.credential_change_button_with_script);
@@ -186,12 +186,12 @@ class PasswordCheckViewBinder {
         } else if (propertyKey == FAVICON_OR_FALLBACK) {
             ImageView imageView = view.findViewById(R.id.credential_favicon);
             PasswordCheckIconHelper.FaviconOrFallback data = model.get(FAVICON_OR_FALLBACK);
+            Resources resources = view.getResources();
+            Context context = view.getContext();
             imageView.setImageDrawable(FaviconUtils.getIconDrawableWithoutFilter(data.mIcon,
-                    data.mUrlOrAppName,
-                    PasswordCheckIconHelper.getIconColor(data, view.getResources()),
-                    FaviconUtils.createCircularIconGenerator(view.getResources()),
-                    view.getResources(),
-                    view.getResources().getDimensionPixelSize(
+                    data.mUrlOrAppName, PasswordCheckIconHelper.getIconColor(data, context),
+                    FaviconUtils.createCircularIconGenerator(context), resources,
+                    resources.getDimensionPixelSize(
                             org.chromium.chrome.browser.ui.favicon.R.dimen.default_favicon_size)));
         } else {
             assert false : "Unhandled update to property:" + propertyKey;

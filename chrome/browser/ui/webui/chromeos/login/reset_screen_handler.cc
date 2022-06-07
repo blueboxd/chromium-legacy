@@ -22,9 +22,8 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId ResetView::kScreenId;
 
-ResetScreenHandler::ResetScreenHandler(JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.ResetScreen.userActed");
+ResetScreenHandler::ResetScreenHandler() : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.ResetScreen.userActed");
 }
 
 ResetScreenHandler::~ResetScreenHandler() {
@@ -34,20 +33,20 @@ ResetScreenHandler::~ResetScreenHandler() {
 
 void ResetScreenHandler::Bind(ResetScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void ResetScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void ResetScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void ResetScreenHandler::Hide() {
@@ -102,8 +101,8 @@ void ResetScreenHandler::DeclareJSCallbacks() {
               &ResetScreenHandler::HandleSetTpmFirmwareUpdateChecked);
 }
 
-void ResetScreenHandler::Initialize() {
-  if (!page_is_ready())
+void ResetScreenHandler::InitializeDeprecated() {
+  if (!IsJavascriptAllowed())
     return;
 
   if (show_on_init_) {

@@ -94,6 +94,9 @@ class WebApps : public apps::PublisherBase,
                 apps::LoadIconCallback callback) override;
   void LaunchAppWithParams(apps::AppLaunchParams&& params,
                            apps::LaunchCallback callback) override;
+  void LaunchShortcut(const std::string& app_id,
+                      const std::string& shortcut_id,
+                      int64_t display_id) override;
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -183,6 +186,9 @@ class WebApps : public apps::PublisherBase,
   // The app type of the publisher. The app type is kSystemWeb if the web apps
   // are serving from Lacros, and the app type is kWeb for all other cases.
   const apps::AppType app_type_;
+
+  // Specifies whether the web app registry becomes ready.
+  bool is_ready_ = false;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   apps::InstanceRegistry* const instance_registry_;

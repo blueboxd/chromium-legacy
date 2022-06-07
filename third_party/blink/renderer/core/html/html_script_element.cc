@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlscriptelement_svgscriptelement.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -108,6 +109,7 @@ void HTMLScriptElement::ParseAttribute(
              RuntimeEnabledFeatures::BlockingAttributeEnabled()) {
     blocking_attribute_->DidUpdateAttributeValue(params.old_value,
                                                  params.new_value);
+    blocking_attribute_->CountTokenUsage();
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -131,7 +133,7 @@ Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
 
 void HTMLScriptElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
-  loader_->ReleaseWebBundleResource();
+  loader_->Removed();
   if (GetDocument().GetRenderBlockingResourceManager()) {
     GetDocument().GetRenderBlockingResourceManager()->RemovePendingScript(
         *this);

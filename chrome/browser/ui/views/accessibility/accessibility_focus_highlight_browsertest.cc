@@ -7,8 +7,10 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_focus_highlight.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_paths.h"
@@ -163,7 +165,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityFocusHighlightBrowserTest,
   } while (CountPercentPixelsWithColor(image, SkColorSetRGB(204, 255, 255)) <
            90.0f);
 
-  SkColor highlight_color = AccessibilityFocusHighlight::default_color_;
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  SkColor highlight_color =
+      browser_view->GetColorProvider()->GetColor(kColorFocusHighlightDefault);
 
   // Initially less than 0.05% of the image should be the focus ring's highlight
   // color.

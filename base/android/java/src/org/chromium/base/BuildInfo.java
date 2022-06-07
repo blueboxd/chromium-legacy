@@ -95,6 +95,7 @@ public class BuildInfo {
                 buildInfo.isTV ? "1" : "0",
                 Build.VERSION.INCREMENTAL,
                 Build.HARDWARE,
+                isAtLeastT() ? "1" : "0",
         };
     }
 
@@ -213,14 +214,6 @@ public class BuildInfo {
     }
 
     /**
-     * Wrap BuildCompat.isAtLeastS. This enables it to be shadowed in Robolectric tests.
-     */
-    @OptIn(markerClass = androidx.core.os.BuildCompat.PrereleaseSdkCheck.class)
-    public static boolean isAtLeastS() {
-        return BuildCompat.isAtLeastS();
-    }
-
-    /**
      * Wrap BuildCompat.isAtLeastT. This enables it to be shadowed in Robolectric tests.
      */
     @OptIn(markerClass = androidx.core.os.BuildCompat.PrereleaseSdkCheck.class)
@@ -238,13 +231,13 @@ public class BuildInfo {
         int target = ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion;
 
         // Logic for pre-API-finalization:
-        // return BuildCompat.isAtLeastT() && target == Build.VERSION_CODES.CUR_DEVELOPMENT;
+        return BuildCompat.isAtLeastT() && target == Build.VERSION_CODES.CUR_DEVELOPMENT;
 
         // Logic for smooth transition period so that both pre-finalization and final SDKs
         // will return true, assuming T will be API 33.
         // Keeping this until we upstream the public SDK is a reasonable transition period.
-        return target >= 33 ||
-                (BuildCompat.isAtLeastT() && target == Build.VERSION_CODES.CUR_DEVELOPMENT);
+        // return target >= 33 ||
+        //         (BuildCompat.isAtLeastT() && target == Build.VERSION_CODES.CUR_DEVELOPMENT);
 
         // Logic for public SDK release:
         // return target >= Build.VERSION_CODES.TIRAMISU;

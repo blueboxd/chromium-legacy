@@ -29,13 +29,19 @@ constexpr base::TimeDelta kVeryBigLocalChangeNudgeDelay = kDefaultPollInterval;
 
 constexpr base::TimeDelta kDefaultLocalChangeNudgeDelayForSessions =
     base::Seconds(11);
+
+// Nudge delay for remote invalidations. Common to all data types.
+constexpr base::TimeDelta kRemoteInvalidationDelay = base::Milliseconds(250);
+
+// Nudge delay for local changes & remote invalidations for extension-related
+// types when their quota is depleted.
 constexpr base::TimeDelta kDepletedQuotaNudgeDelayForExtensionTypes =
     base::Seconds(100);
 
 const size_t kDefaultMaxPayloadsPerType = 10;
 
 constexpr base::TimeDelta kRefillIntervalForExtensionTypes = base::Seconds(100);
-constexpr int kInitialQuotaForExtensionTypes = 100;
+constexpr int kInitialTokensForExtensionTypes = 100;
 
 base::TimeDelta GetDefaultLocalChangeNudgeDelay(ModelType model_type) {
   switch (model_type) {
@@ -97,18 +103,24 @@ base::TimeDelta GetDefaultLocalChangeNudgeDelay(ModelType model_type) {
 
 bool CanGetCommitsFromExtensions(ModelType model_type) {
   switch (model_type) {
-    case BOOKMARKS:
-    case EXTENSION_SETTINGS:
-    case APP_SETTINGS:
-      // Only for the types above, extensions can trigger a commit via a js API.
+    // For these types, extensions can trigger unlimited commits via a js API.
+    case BOOKMARKS:                  // chrome.bookmarks API.
+    case EXTENSION_SETTINGS:         // chrome.storage.sync API.
+    case APP_SETTINGS:               // chrome.storage.sync API.
+    case HISTORY_DELETE_DIRECTIVES:  // chrome.history and chrome.browsingData.
       return true;
-    case AUTOFILL:
+    // For these types, extensions can delete existing data using a js API.
+    // However, as they cannot generate new entities, the number of deletions is
+    // limited by the number of entities previously manually added by the user.
+    // Thus, there's no need to apply quota to these deletions.
+    case PASSWORDS:         // chrome.browsingData API.
+    case AUTOFILL:          // chrome.browsingData API.
+    case AUTOFILL_PROFILE:  // chrome.browsingData API.
+    // All the remaining types are not affected by any extension js API.
     case USER_EVENTS:
     case SESSIONS:
     case PREFERENCES:
     case SHARING_MESSAGE:
-    case PASSWORDS:
-    case AUTOFILL_PROFILE:
     case AUTOFILL_WALLET_DATA:
     case AUTOFILL_WALLET_METADATA:
     case AUTOFILL_WALLET_OFFER:
@@ -117,7 +129,6 @@ bool CanGetCommitsFromExtensions(ModelType model_type) {
     case EXTENSIONS:
     case SEARCH_ENGINES:
     case APPS:
-    case HISTORY_DELETE_DIRECTIVES:
     case DICTIONARY:
     case DEVICE_INFO:
     case PRIORITY_PREFERENCES:
@@ -159,13 +170,14 @@ DataTypeTracker::DataTypeTracker(ModelType type)
       payload_buffer_size_(kDefaultMaxPayloadsPerType),
       initial_sync_required_(false),
       sync_required_to_resolve_conflict_(false),
-      local_change_nudge_delay_(GetDefaultLocalChangeNudgeDelay(type)) {
+      local_change_nudge_delay_(GetDefaultLocalChangeNudgeDelay(type)),
+      depleted_quota_nudge_delay_(kDepletedQuotaNudgeDelayForExtensionTypes) {
   // Sanity check the hardcode value for kMinLocalChangeNudgeDelay.
   DCHECK_GE(local_change_nudge_delay_, kMinLocalChangeNudgeDelay);
 
   if (CanGetCommitsFromExtensions(type) &&
       base::FeatureList::IsEnabled(kSyncExtensionTypesThrottling)) {
-    quota_ = std::make_unique<CommitQuota>(kInitialQuotaForExtensionTypes,
+    quota_ = std::make_unique<CommitQuota>(kInitialTokensForExtensionTypes,
                                            kRefillIntervalForExtensionTypes);
   }
 }
@@ -248,6 +260,11 @@ void DataTypeTracker::RecordCommitConflict() {
 void DataTypeTracker::RecordSuccessfulCommitMessage() {
   if (quota_) {
     quota_->ConsumeToken();
+    if (!quota_->HasTokensAvailable()) {
+      base::UmaHistogramEnumeration(
+          "Sync.ModelTypeCommitMessageHasDepletedQuota",
+          ModelTypeHistogramValue(type_));
+    }
   }
 }
 
@@ -442,9 +459,20 @@ base::TimeDelta DataTypeTracker::GetLocalChangeNudgeDelay() const {
   if (quota_ && !quota_->HasTokensAvailable()) {
     base::UmaHistogramEnumeration("Sync.ModelTypeCommitWithDepletedQuota",
                                   ModelTypeHistogramValue(type_));
-    return kDepletedQuotaNudgeDelayForExtensionTypes;
+    return depleted_quota_nudge_delay_;
   }
   return local_change_nudge_delay_;
+}
+
+base::TimeDelta DataTypeTracker::GetRemoteInvalidationDelay() const {
+  if (quota_ && !quota_->HasTokensAvailable()) {
+    // Using the extended nudge delay for remote invalidations makes sure that
+    // two devices on a commit spree (e.g. through the same extension) don't
+    // have an escape hatch from the extended nudge delay by sending
+    // invalidations to each other.
+    return depleted_quota_nudge_delay_;
+  }
+  return kRemoteInvalidationDelay;
 }
 
 WaitInterval::BlockingMode DataTypeTracker::GetBlockingMode() const {
@@ -457,6 +485,19 @@ WaitInterval::BlockingMode DataTypeTracker::GetBlockingMode() const {
 void DataTypeTracker::SetLocalChangeNudgeDelayIgnoringMinForTest(
     base::TimeDelta delay) {
   local_change_nudge_delay_ = delay;
+}
+
+void DataTypeTracker::SetQuotaParamsIfExtensionType(
+    absl::optional<int> max_tokens,
+    absl::optional<base::TimeDelta> refill_interval,
+    absl::optional<base::TimeDelta> depleted_quota_nudge_delay) {
+  if (!quota_) {
+    return;
+  }
+  depleted_quota_nudge_delay_ = depleted_quota_nudge_delay.value_or(
+      kDepletedQuotaNudgeDelayForExtensionTypes);
+  quota_->SetParams(max_tokens.value_or(kInitialTokensForExtensionTypes),
+                    refill_interval.value_or(kRefillIntervalForExtensionTypes));
 }
 
 }  // namespace syncer

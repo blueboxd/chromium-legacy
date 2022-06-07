@@ -19,6 +19,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
@@ -61,7 +62,6 @@
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_context_menu_observer.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
@@ -82,15 +82,15 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
-#include "chrome/browser/url_param_filter/url_param_filterer.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -177,6 +177,7 @@
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
@@ -286,6 +287,9 @@ namespace {
 
 constexpr char16_t kGoogleLens[] = u"Google Lens";
 
+constexpr char kOpenLinkAsProfileHistogram[] =
+    "RenderViewContextMenu.OpenLinkAsProfile";
+
 base::OnceCallback<void(RenderViewContextMenu*)>* GetMenuShownCallback() {
   static base::NoDestructor<base::OnceCallback<void(RenderViewContextMenu*)>>
       callback;
@@ -295,6 +299,18 @@ base::OnceCallback<void(RenderViewContextMenu*)>* GetMenuShownCallback() {
 enum class UmaEnumIdLookupType {
   GeneralEnumId,
   ContextSpecificEnumId,
+};
+
+// Count when Open Link as Profile or Incognito Window menu item is displayed or
+// clicked. Metric: "RenderViewContextMenu.OpenLinkAsProfile".
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class OpenLinkAs {
+  kOpenLinkAsProfileDisplayed = 0,
+  kOpenLinkAsProfileClicked = 1,
+  kOpenLinkAsIncognitoDisplayed = 2,
+  kOpenLinkAsIncognitoClicked = 3,
+  kMaxValue = kOpenLinkAsIncognitoClicked,
 };
 
 const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
@@ -415,13 +431,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, 115},
        {IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH, 116},
        {IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT, 117},
+       {IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING, 118},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 118}});
+       {0, 119}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -451,13 +468,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, 22},
        {IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH, 23},
        {IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT, 24},
+       {IDC_OPEN_LINK_IN_PROFILE_FIRST, 25},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the ContextMenuOptionDesktop enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 25}});
+       {0, 26}});
 
   return *(type == UmaEnumIdLookupType::GeneralEnumId ? kGeneralMap
                                                       : kSpecificMap);
@@ -955,7 +973,11 @@ void RenderViewContextMenu::InitMenu() {
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
-      params_.misspelled_word.empty()) {
+      params_.misspelled_word.empty() &&
+      (params_.page_url !=
+           chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage) &&
+       params_.page_url !=
+           chrome::GetSettingsUrl(chrome::kPasswordCheckSubPage))) {
     AppendSearchProvider();
   }
 
@@ -972,6 +994,15 @@ void RenderViewContextMenu::InitMenu() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     AppendLanguageSettings();
     AppendPlatformEditableItems();
+  }
+
+  // Show Read Anything option if text is selected.
+  if (base::FeatureList::IsEnabled(features::kReadAnything)) {
+    if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY) ||
+        content_type_->SupportsGroup(
+            ContextMenuContentType::ITEM_GROUP_EDITABLE)) {
+      AppendReadAnythingItem();
+    }
   }
 
   if (content_type_->SupportsGroup(
@@ -1169,17 +1200,38 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
   }
 }
 
-void RenderViewContextMenu::RecordShownItem(int id) {
-  int enum_id =
-      FindUMAEnumValueForCommand(id, UmaEnumIdLookupType::GeneralEnumId);
-  if (enum_id != -1) {
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        "RenderViewContextMenu.Shown", enum_id,
-        GetUmaValueMax(UmaEnumIdLookupType::GeneralEnumId));
-  } else {
-    // Just warning here. It's harder to maintain list of all possibly
-    // visible items than executable items.
-    DLOG(ERROR) << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
+void RenderViewContextMenu::RecordShownItem(int id, bool is_submenu) {
+  // The "RenderViewContextMenu.Shown" histogram is not recorded for submenus.
+  if (!is_submenu) {
+    int enum_id =
+        FindUMAEnumValueForCommand(id, UmaEnumIdLookupType::GeneralEnumId);
+    if (enum_id != -1) {
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "RenderViewContextMenu.Shown", enum_id,
+          GetUmaValueMax(UmaEnumIdLookupType::GeneralEnumId));
+    } else {
+      // Just warning here. It's harder to maintain list of all possibly
+      // visible items than executable items.
+      DLOG(ERROR) << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
+    }
+  }
+
+  // The "Open Link as Profile" item can either be shown directly in the main
+  // menu as an item or as a sub-menu. The metric needs to track the
+  // impressions in the main menu, which are
+  // IDC_CONTENT_CONTEXT_OPENLINKINPROFILE when there is a sub-menu, and
+  // IDC_OPEN_LINK_IN_PROFILE_FIRST when there is not.
+  // IDC_OPEN_LINK_IN_PROFILE_FIRST is also emitted when the sub-menu is
+  // opened, so it is not taken into account when the sub-menu exists.
+  if (id == IDC_CONTENT_CONTEXT_OPENLINKINPROFILE ||
+      (id == IDC_OPEN_LINK_IN_PROFILE_FIRST &&
+       profile_link_submenu_model_.GetItemCount() == 0)) {
+    base::UmaHistogramEnumeration(kOpenLinkAsProfileHistogram,
+                                  OpenLinkAs::kOpenLinkAsProfileDisplayed);
+  } else if (id == IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD &&
+             IsOpenLinkOTREnabled()) {
+    base::UmaHistogramEnumeration(kOpenLinkAsProfileHistogram,
+                                  OpenLinkAs::kOpenLinkAsIncognitoDisplayed);
   }
 }
 
@@ -1350,7 +1402,9 @@ void RenderViewContextMenu::AppendLinkItems() {
         }
       }
 
-      if (multiple_profiles_open_ && !target_profiles_entries.empty()) {
+      if ((multiple_profiles_open_ ||
+           base::FeatureList::IsEnabled(features::kDisplayOpenLinkAsProfile)) &&
+          !target_profiles_entries.empty()) {
         if (target_profiles_entries.size() == 1) {
           int menu_index = static_cast<int>(profile_link_paths_.size());
           ProfileAttributesEntry* entry = target_profiles_entries.front();
@@ -1754,6 +1808,11 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
     menu_model_.AddItemWithStringId(IDC_ROUTE_MEDIA,
                                     IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   }
+}
+
+void RenderViewContextMenu::AppendReadAnythingItem() {
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING,
+                                  IDS_CONTENT_CONTEXT_READ_ANYTHING);
 }
 
 void RenderViewContextMenu::AppendRotationItems() {
@@ -2291,7 +2350,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
     case IDC_SEND_TAB_TO_SELF:
-    case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
       return true;
 
     case IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH:
@@ -2324,6 +2382,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_ROUTE_MEDIA:
       return IsRouteMediaEnabled();
+
+    case IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING:
+      return true;
 
     case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
       return true;
@@ -2418,6 +2479,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   if (id >= IDC_OPEN_LINK_IN_PROFILE_FIRST &&
       id <= IDC_OPEN_LINK_IN_PROFILE_LAST) {
     ExecOpenLinkInProfile(id - IDC_OPEN_LINK_IN_PROFILE_FIRST);
+    base::UmaHistogramEnumeration(kOpenLinkAsProfileHistogram,
+                                  OpenLinkAs::kOpenLinkAsProfileClicked);
     return;
   }
 
@@ -2439,12 +2502,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       // Pass along the |referring_url| so we can show it in browser UI. Note
       // that this won't and shouldn't be sent via the referrer header.
-      OpenURLWithExtraHeaders(url_param_filter::FilterUrl(
-                                  GetDocumentURL(params_), params_.link_url),
-                              GetDocumentURL(params_),
+      OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
                               WindowOpenDisposition::OFF_THE_RECORD,
                               ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
                               true /* started_from_context_menu */);
+      base::UmaHistogramEnumeration(kOpenLinkAsProfileHistogram,
+                                    OpenLinkAs::kOpenLinkAsIncognitoClicked);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP:
@@ -2483,6 +2546,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE:
       ExecSearchLensForImage();
+      break;
+
+    case IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING:
+      ExecOpenInReadAnything();
       break;
 
     case IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH:

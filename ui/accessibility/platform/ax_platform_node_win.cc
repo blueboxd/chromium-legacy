@@ -4487,6 +4487,21 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelection(LONG selection_index,
 }
 
 //
+// IAccessibleTextSelectionContainer methods.
+//
+
+IFACEMETHODIMP
+AXPlatformNodeWin::get_selections(IA2TextSelection** selections,
+                                  LONG* nSelections) {
+  return E_NOTIMPL;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::setSelections(LONG nSelections,
+                                                IA2TextSelection* selections) {
+  return E_NOTIMPL;
+}
+
+//
 // IAccessibleHypertext methods not implemented.
 //
 
@@ -7110,7 +7125,6 @@ bool AXPlatformNodeWin::IsUIAControl() const {
                    FromNativeViewAccessible(GetDelegate()->GetParent());
           case ax::mojom::Role::kButton:
           case ax::mojom::Role::kCheckBox:
-          case ax::mojom::Role::kGroup:
           case ax::mojom::Role::kHeading:
           case ax::mojom::Role::kLineBreak:
           case ax::mojom::Role::kLink:

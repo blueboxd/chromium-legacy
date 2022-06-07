@@ -62,12 +62,14 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
+#include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/session_features.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/autofill/features.h"
+#import "ios/chrome/browser/ui/bubble/bubble_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
@@ -76,7 +78,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
@@ -209,6 +210,18 @@ const FeatureEntry::FeatureVariation
          std::size(kDiscoverFeedSRSPreloadTemplates), nullptr},
 };
 
+const FeatureEntry::FeatureParam kiOSOmniboxUpdatedPopupUIVersion1[] = {
+    {kIOSOmniboxUpdatedPopupUIVariationName,
+     kIOSOmniboxUpdatedPopupUIVariation1}};
+const FeatureEntry::FeatureParam kiOSOmniboxUpdatedPopupUIVersion2[] = {
+    {kIOSOmniboxUpdatedPopupUIVariationName,
+     kIOSOmniboxUpdatedPopupUIVariation2}};
+const FeatureEntry::FeatureVariation kiOSOmniboxUpdatedPopupUIVariations[] = {
+    {"Version 1", kiOSOmniboxUpdatedPopupUIVersion1,
+     std::size(kiOSOmniboxUpdatedPopupUIVersion1), nullptr},
+    {"Version 2", kiOSOmniboxUpdatedPopupUIVersion2,
+     std::size(kiOSOmniboxUpdatedPopupUIVersion2), nullptr}};
+
 const FeatureEntry::FeatureParam kStartSurfaceTenSecondsShrinkLogo[] = {
     {kStartSurfaceShrinkLogoParam, "true"},
     {kReturnToStartSurfaceInactiveDurationInSeconds, "10"}};
@@ -332,6 +345,25 @@ const FeatureEntry::FeatureVariation
          std::size(kNewMICEFREWithThreeSteps), nullptr},
         {"new FRE with 2 steps", kNewMICEFREWithTwoSteps,
          std::size(kNewMICEFREWithTwoSteps), nullptr}};
+
+const FeatureEntry::FeatureParam kBubbleRichIPHTargetHighlight[] = {
+    {kBubbleRichIPHParameterName, kBubbleRichIPHParameterTargetHighlight}};
+const FeatureEntry::FeatureParam kBubbleRichIPHExplicitDismissal[] = {
+    {kBubbleRichIPHParameterName, kBubbleRichIPHParameterExplicitDismissal}};
+const FeatureEntry::FeatureParam kBubbleRichIPHRich[] = {
+    {kBubbleRichIPHParameterName, kBubbleRichIPHParameterRich}};
+const FeatureEntry::FeatureParam kBubbleRichIPHRichWithSnooze[] = {
+    {kBubbleRichIPHParameterName, kBubbleRichIPHParameterRichWithSnooze}};
+const FeatureEntry::FeatureVariation kBubbleRichIPHVariations[] = {
+    {"Target Highlight", kBubbleRichIPHTargetHighlight,
+     std::size(kBubbleRichIPHTargetHighlight), nullptr},
+    {"Explicit dismissal", kBubbleRichIPHExplicitDismissal,
+     std::size(kBubbleRichIPHExplicitDismissal), nullptr},
+    {"Dismissal and rich content", kBubbleRichIPHRich,
+     std::size(kBubbleRichIPHRich), nullptr},
+    {"Dismissal, rich content, and snooze", kBubbleRichIPHRichWithSnooze,
+     std::size(kBubbleRichIPHRichWithSnooze), nullptr},
+};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -487,23 +519,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableLongMessageDurationName,
      flag_descriptions::kEnableLongMessageDurationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableLongMessageDuration)},
-    {"enable-optimization-guide",
-     flag_descriptions::kEnableOptimizationGuideName,
-     flag_descriptions::kEnableOptimizationGuideDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(optimization_guide::features::kOptimizationHints)},
-    {"enable-optimization-guide-metadata-validation",
-     flag_descriptions::kEnableOptimizationGuideMetadataValidationName,
-     flag_descriptions::kEnableOptimizationGuideMetadataValidationDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         optimization_guide::features::kOptimizationGuideMetadataValidation)},
-    {"enable-optimization-hints-fetching-msbb",
-     flag_descriptions::kEnableOptimizationHintsFetchingMSBBName,
-     flag_descriptions::kEnableOptimizationHintsFetchingMSBBDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         optimization_guide::features::
-             kRemoteOptimizationGuideFetchingAnonymousDataConsent)},
 #if BUILDFLAG(IOS_SCREEN_TIME_ENABLED)
     {"screen-time-integration-ios",
      flag_descriptions::kScreenTimeIntegrationName,
@@ -549,7 +564,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kIOSNewOmniboxImplementation)},
     {"omnibox-new-popup-ui", flag_descriptions::kIOSOmniboxUpdatedPopupUIName,
      flag_descriptions::kIOSOmniboxUpdatedPopupUIDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kIOSOmniboxUpdatedPopupUI)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kIOSOmniboxUpdatedPopupUI,
+                                    kiOSOmniboxUpdatedPopupUIVariations,
+                                    "kIOSOmniboxUpdatedPopupUI")},
     {"start-surface", flag_descriptions::kStartSurfaceName,
      flag_descriptions::kStartSurfaceDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kStartSurface,
@@ -564,12 +581,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kDetectFormSubmissionOnFormClear)},
-    {"enable-manual-password-generation",
-     flag_descriptions::kEnableManualPasswordGenerationName,
-     flag_descriptions::kEnableManualPasswordGenerationDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEnableManualPasswordGeneration)},
     {"autofill-address-verification-in-save-prompt",
      flag_descriptions::kEnableAutofillAddressSavePromptAddressVerificationName,
      flag_descriptions::
@@ -624,15 +635,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUpdateHistoryEntryPointsInIncognito)},
-    {"reading-list-messages", flag_descriptions::kReadingListMessagesName,
-     flag_descriptions::kReadingListMessagesDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kReadingListMessages)},
-    {"force-disable-extended-sync-promos",
-     flag_descriptions::kForceDisableExtendedSyncPromosName,
-     flag_descriptions::kForceDisableExtendedSyncPromosDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kForceDisableExtendedSyncPromos)},
-
     {"sync-trusted-vault-passphrase-ios-rpc",
      flag_descriptions::kSyncTrustedVaultPassphraseiOSRPCName,
      flag_descriptions::kSyncTrustedVaultPassphraseiOSRPCDescription,
@@ -685,9 +687,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          web::features::kUseLoadSimulatedRequestForErrorPageNavigation)},
-    {"download-vcard", flag_descriptions::kDownloadVcardName,
-     flag_descriptions::kDownloadVcardDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDownloadVcard)},
     {"enable-discover-feed-static-resource-serving",
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingName,
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingDescription,
@@ -708,10 +707,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFREDefaultBrowserScreenTesting,
                                     kFREDefaultPromoTestingVariations,
                                     "EnableFREDefaultBrowserScreenTesting")},
-    {"credential-provider-extension-promo",
-     flag_descriptions::kCredentialProviderExtensionPromoName,
-     flag_descriptions::kCredentialProviderExtensionPromoDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCredentialProviderExtensionPromo)},
     {"enable-discover-feed-shorter-cache",
      flag_descriptions::kEnableDiscoverFeedShorterCacheName,
      flag_descriptions::kEnableDiscoverFeedShorterCacheDescription,
@@ -749,9 +744,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLazilyCreateWebStateOnRestorationDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kEnableUnrealizedWebStates)},
-    {"reading-list-time-to-read", flag_descriptions::kReadingListTimeToReadName,
-     flag_descriptions::kReadingListTimeToReadDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kReadingListTimeToRead)},
     {"enable-shortened-password-auto-fill-instruction",
      flag_descriptions::kEnableShortenedPasswordAutoFillInstructionName,
      flag_descriptions::kEnableShortenedPasswordAutoFillInstructionDescription,
@@ -848,6 +840,20 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPasswordRichIPHName,
      flag_descriptions::kAutofillPasswordRichIPHDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kAutofillPasswordRichIPH)},
+    {"bubble-rich-iph", flag_descriptions::kBubbleRichIPHName,
+     flag_descriptions::kBubbleRichIPHDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kBubbleRichIPH,
+                                    kBubbleRichIPHVariations,
+                                    "BubbleRichIPH")},
+    {"autofill-enforce-delays-in-strike-database",
+     flag_descriptions::kAutofillEnforceDelaysInStrikeDatabaseName,
+     flag_descriptions::kAutofillEnforceDelaysInStrikeDatabaseDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnforceDelaysInStrikeDatabase)},
+    {"download-calendar", flag_descriptions::kDownloadCalendarName,
+     flag_descriptions::kDownloadCalendarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDownloadCalendar)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -989,6 +995,13 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     [allowed_experimental_policies addObject:ntp_location_key];
   }
 
+  if ([defaults boolForKey:@"DisallowChromeDataInBackups"]) {
+    NSString* allow_backups_key =
+        base::SysUTF8ToNSString(policy::key::kAllowChromeDataInBackups);
+    [testing_policies addEntriesFromDictionary:@{allow_backups_key : @NO}];
+    [allowed_experimental_policies addObject:allow_backups_key];
+  }
+
   // If any experimental policy was allowed, set the EnableExperimentalPolicies
   // policy.
   if ([allowed_experimental_policies count] > 0) {
@@ -1007,7 +1020,8 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
 NSString* TestingPoliciesHash() {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   return [NSString
-      stringWithFormat:@"%d|%d|%d|%@|%d|%d|%d|%d|%d|%d|%d",
+      stringWithFormat:@"%d|%d|%d|%d|%@|%d|%d|%d|%d|%d|%d|%d",
+                       [defaults boolForKey:@"DisallowChromeDataInBackups"],
                        [defaults boolForKey:@"EnableSyncDisabledPolicy"],
                        [defaults boolForKey:@"EnableSamplePolicies"],
                        (int)[defaults
@@ -1053,6 +1067,10 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   if ([token length] > 0) {
     command_line->AppendSwitch(switches::kEnableChromeBrowserCloudManagement);
     [testing_policies setValue:token forKey:token_key];
+  }
+
+  if ([defaults boolForKey:@"EnableUserPolicy"]) {
+    policy::EnableUserPolicy();
   }
 
   // If some policies were set, commit them to the app's registration defaults.

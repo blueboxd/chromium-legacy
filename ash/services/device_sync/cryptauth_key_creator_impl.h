@@ -17,11 +17,11 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace multidevice {
 class SecureMessageDelegate;
-}  // namespace multidevice
+}
 
 namespace device_sync {
 
@@ -84,6 +84,6 @@ class CryptAuthKeyCreatorImpl : public CryptAuthKeyCreator {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_KEY_CREATOR_IMPL_H_

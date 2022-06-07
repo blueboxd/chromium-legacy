@@ -54,7 +54,9 @@
 # tags: [ display-server-wayland display-server-x ]
 # OOP-Canvas
 # tags: [ oop-c no-oop-c ]
-# results: [ Failure RetryOnFailure Skip ]
+# WebGPU Backend Validation
+# tags: [ dawn-backend-validation dawn-no-backend-validation ]
+# results: [ Failure RetryOnFailure Skip Slow ]
 # END TAG HEADER
 
 ###############################
@@ -374,11 +376,8 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal intel ] deqp/functiona
 
 # Metal M1
 # TODO(crbug.com/1276153) uncomment after fix for updated part of test applies
-# crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance/rendering/multisample-corruption.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance2/textures/misc/tex-storage-compressed-formats.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/draw/draw_arrays.html [ RetryOnFailure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/draw/draw_arrays_instanced.html [ RetryOnFailure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/draw/draw_elements.html [ RetryOnFailure ]
@@ -387,16 +386,6 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-rend
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/fboinvalidate/default.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/framebufferblit/rect_03.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/framebufferblit/rect_04.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/multisample/fbo_4_samples.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/multisample/fbo_max_samples.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/primitiverestart/00.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/primitiverestart/01.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/primitiverestart/02.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/primitiverestart/03.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/primitiverestart/04.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/primitiverestart/05.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/primitiverestart/06.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/primitiverestart/07.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/samplerobject.html [ RetryOnFailure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/shadertexturefunction/texturegrad.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/texturefiltering/cube_combinations_00.html [ Failure ]
@@ -732,6 +721,7 @@ crbug.com/1147232 [ linux amd-0x7340 angle-opengl passthrough ] conformance/text
 crbug.com/1152588 [ linux amd-0x7340 ] conformance2/rendering/multisampling-fragment-evaluation.html [ Failure ]
 crbug.com/1283514 [ linux amd-0x7340 angle-opengl ] conformance2/textures/misc/angle-stuck-depth-textures.html [ Failure ]
 crbug.com/1283514 [ linux amd-0x7340 angle-opengl ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
+crbug.com/1311007 [ linux amd-0x7340 angle-opengl passthrough ] deqp/functional/gles3/fborender/shared_depth_stencil.html [ Failure ]
 crbug.com/1300683 [ linux amd-0x7340 angle-opengl passthrough ] deqp/functional/gles3/fborender/recreate_depth_stencil.html [ RetryOnFailure ]
 
 ####################
@@ -785,6 +775,8 @@ crbug.com/1302143 [ android android-pixel-4 no-passthrough ] deqp/functional/gle
 crbug.com/1302143 [ android android-pixel-4 no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_triangles.html [ RetryOnFailure ]
 
 crbug.com/1191030 [ android android-pixel-4 ] conformance/textures/misc/video-rotation.html [ Failure ]
+
+crbug.com/1293967 [ android android-pixel-4 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 crbug.com/1239079 [ android no-passthrough ] conformance2/transform_feedback/too-small-buffers.html [ Failure ]
 

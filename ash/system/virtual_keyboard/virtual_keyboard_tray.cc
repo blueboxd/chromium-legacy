@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -45,7 +46,7 @@ VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
   const int vertical_padding = (kTrayItemSize - image.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
   icon_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(vertical_padding, horizontal_padding)));
+      gfx::Insets::VH(vertical_padding, horizontal_padding)));
   tray_container()->AddChildView(icon_);
 
   // The Shell may not exist in some unit tests.

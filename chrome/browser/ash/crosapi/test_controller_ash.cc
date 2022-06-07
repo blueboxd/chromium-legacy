@@ -14,7 +14,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/window_util.h"
@@ -362,6 +361,7 @@ void TestControllerAsh::OnGetContextMenuForShelfItem(
     GetContextMenuForShelfItemCallback callback,
     std::unique_ptr<ui::SimpleMenuModel> model) {
   std::vector<std::string> items;
+  items.reserve(model->GetItemCount());
   for (int i = 0; i < model->GetItemCount(); ++i) {
     items.push_back(base::UTF16ToUTF8(model->GetLabelAt(i)));
   }

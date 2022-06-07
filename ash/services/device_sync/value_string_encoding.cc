@@ -4,10 +4,10 @@
 
 #include "ash/services/device_sync/value_string_encoding.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "base/base64url.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -57,4 +57,4 @@ base::Value EncodeProtoMessageAsValueString(
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

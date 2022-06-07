@@ -110,6 +110,7 @@
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -226,24 +227,41 @@ enum class AXAction {
 blink::KeyboardEvent* CreateKeyboardEvent(
     blink::LocalDOMWindow* local_dom_window,
     blink::WebInputEvent::Type type,
-    AXAction action) {
+    AXAction action,
+    blink::AccessibilityOrientation orientation,
+    ax::mojom::blink::WritingDirection text_direction) {
   blink::WebKeyboardEvent key(type,
                               blink::WebInputEvent::Modifiers::kNoModifiers,
                               base::TimeTicks::Now());
 
-  // TODO(crbug.com/1099069): Fire different arrow events depending on
-  // orientation and dir (RTL/LTR)
-  switch (action) {
-    case AXAction::kActionIncrement:
+  if (action == AXAction::kActionIncrement) {
+    if (orientation == blink::kAccessibilityOrientationVertical) {
       key.dom_key = ui::DomKey::ARROW_UP;
       key.dom_code = static_cast<int>(ui::DomCode::ARROW_UP);
       key.native_key_code = key.windows_key_code = blink::VKEY_UP;
-      break;
-    case AXAction::kActionDecrement:
+    } else if (text_direction == ax::mojom::blink::WritingDirection::kRtl) {
+      key.dom_key = ui::DomKey::ARROW_LEFT;
+      key.dom_code = static_cast<int>(ui::DomCode::ARROW_LEFT);
+      key.native_key_code = key.windows_key_code = blink::VKEY_LEFT;
+    } else {  // horizontal and left to right
+      key.dom_key = ui::DomKey::ARROW_RIGHT;
+      key.dom_code = static_cast<int>(ui::DomCode::ARROW_RIGHT);
+      key.native_key_code = key.windows_key_code = blink::VKEY_RIGHT;
+    }
+  } else if (action == AXAction::kActionDecrement) {
+    if (orientation == blink::kAccessibilityOrientationVertical) {
       key.dom_key = ui::DomKey::ARROW_DOWN;
       key.dom_code = static_cast<int>(ui::DomCode::ARROW_DOWN);
       key.native_key_code = key.windows_key_code = blink::VKEY_DOWN;
-      break;
+    } else if (text_direction == ax::mojom::blink::WritingDirection::kRtl) {
+      key.dom_key = ui::DomKey::ARROW_RIGHT;
+      key.dom_code = static_cast<int>(ui::DomCode::ARROW_RIGHT);
+      key.native_key_code = key.windows_key_code = blink::VKEY_RIGHT;
+    } else {  // horizontal and left to right
+      key.dom_key = ui::DomKey::ARROW_LEFT;
+      key.dom_code = static_cast<int>(ui::DomCode::ARROW_LEFT);
+      key.native_key_code = key.windows_key_code = blink::VKEY_LEFT;
+    }
   }
 
   return blink::KeyboardEvent::Create(key, local_dom_window, true);
@@ -364,9 +382,12 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
   AXAction action =
       increase ? AXAction::kActionIncrement : AXAction::kActionDecrement;
   LocalDOMWindow* local_dom_window = GetDocument()->domWindow();
+  AccessibilityOrientation orientation = Orientation();
+  ax::mojom::blink::WritingDirection text_direction = GetTextDirection();
 
-  KeyboardEvent* keydown = CreateKeyboardEvent(
-      local_dom_window, WebInputEvent::Type::kRawKeyDown, action);
+  KeyboardEvent* keydown =
+      CreateKeyboardEvent(local_dom_window, WebInputEvent::Type::kRawKeyDown,
+                          action, orientation, text_direction);
   GetNode()->DispatchEvent(*keydown);
 
   // TODO(crbug.com/1099069): add a brief pause between keydown and keyup?
@@ -376,8 +397,9 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
   if (!GetNode())
     return;
 
-  KeyboardEvent* keyup = CreateKeyboardEvent(
-      local_dom_window, WebInputEvent::Type::kKeyUp, action);
+  KeyboardEvent* keyup =
+      CreateKeyboardEvent(local_dom_window, WebInputEvent::Type::kKeyUp, action,
+                          orientation, text_direction);
   GetNode()->DispatchEvent(*keyup);
 }
 
@@ -1095,22 +1117,13 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kDtTag))
     return ax::mojom::blink::Role::kDescriptionListTerm;
 
-  // MathMLElement instances are not created when MathMLCore is disabled, so one
-  // cannot rely on Node::HasTagName(const MathMLQualifiedName&) to test the
-  // <math> tag. See crbug.com/1272556.
-  if (!RuntimeEnabledFeatures::MathMLCoreEnabled()) {
-    if (auto* element = DynamicTo<Element>(GetNode())) {
-      if (element->namespaceURI() == mathml_names::kNamespaceURI &&
-          element->nodeName() == mathml_names::kMathTag.LocalName()) {
-        return ax::mojom::blink::Role::kMath;
-      }
-    }
-  }
-
   // Mapping of MathML elements. See https://w3c.github.io/mathml-aam/
   if (auto* element = DynamicTo<MathMLElement>(GetNode())) {
-    if (element->HasTagName(mathml_names::kMathTag))
-      return ax::mojom::blink::Role::kMathMLMath;
+    if (element->HasTagName(mathml_names::kMathTag)) {
+      return RuntimeEnabledFeatures::MathMLCoreEnabled()
+                 ? ax::mojom::blink::Role::kMathMLMath
+                 : ax::mojom::blink::Role::kMath;
+    }
     if (element->HasTagName(mathml_names::kMfracTag))
       return ax::mojom::blink::Role::kMathMLFraction;
     if (element->HasTagName(mathml_names::kMiTag))
@@ -1491,7 +1504,19 @@ bool AXNodeObject::IsLineBreakingObject() const {
 bool AXNodeObject::IsLoaded() const {
   if (!GetDocument())
     return false;
-  return !GetDocument()->Parser();
+
+  if (GetDocument()->Parser())
+    return false;
+
+  // Check for a navigation API single-page app navigation in progress.
+  if (auto* window = GetDocument()->domWindow()) {
+    if (auto* navigation_api = NavigationApi::navigation(*window)) {
+      if (navigation_api->HasNonDroppedOngoingNavigation())
+        return false;
+    }
+  }
+
+  return true;
 }
 
 bool AXNodeObject::IsMultiSelectable() const {
@@ -3984,6 +4009,11 @@ void AXNodeObject::AddNodeChildren() {
   if (!node_)
     return;
 
+  // Ignore DOM children of frame/iframe: they do not act as fallbacks and
+  // are never part of layout.
+  if (IsA<HTMLFrameElementBase>(GetNode()))
+    return;
+
   for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
        child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
     AddNodeChild(child);
@@ -4181,6 +4211,12 @@ void AXNodeObject::CheckValidChild(AXObject* child) {
       << "\nUseAXMenuList()=" << AXObjectCacheImpl::UseAXMenuList()
       << "\nShouldCreateAXMenuListOptionFor()="
       << AXObjectCacheImpl::ShouldCreateAXMenuListOptionFor(child_node);
+
+  DCHECK(!IsA<HTMLFrameElementBase>(GetNode()) ||
+         IsA<Document>(child->GetNode()))
+      << "Cannot have a non-document child of a frame or iframe."
+      << "\nChild: " << child->ToString(true, true)
+      << "\nParent: " << child->ParentObject()->ToString(true, true);
 }
 #endif
 
@@ -4509,19 +4545,6 @@ bool AXNodeObject::OnNativeFocusAction() {
   if (!element) {
     document->ClearFocusedElement();
     return true;
-  }
-
-  // If this node is already the currently focused node, then calling
-  // focus() won't do anything.  That is a problem when focus is removed
-  // from the webpage to chrome, and then returns.  In these cases, we need
-  // to do what keyboard and mouse focus do, which is reset focus first.
-  if (document->FocusedElement() == element) {
-    document->ClearFocusedElement();
-
-    // Calling ClearFocusedElement could result in changes to the document,
-    // like this AXObject becoming detached.
-    if (IsDetached())
-      return false;
   }
 
   // If the object is not natively focusable but can be focused using an ARIA

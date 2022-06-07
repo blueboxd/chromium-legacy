@@ -8,13 +8,13 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/allocator/buildflags.h"
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/notreached.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/malloc_dump_provider.h"
@@ -49,14 +49,16 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params,
   if (started_profiling_)
     return;
   started_profiling_ = true;
-  base::trace_event::MallocDumpProvider::GetInstance()->DisableMetrics();
 
-#if BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_APPLE) && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   // On macOS, this call is necessary to shim malloc zones that were created
   // after startup. This cannot be done during shim initialization because the
   // task scheduler has not yet been initialized.
+  //
+  // Wth PartitionAlloc, the shims are already in place, calling this leads to
+  // an infinite loop.
   base::allocator::PeriodicallyShimNewMallocZones();
-#endif
+#endif  // BUILDFLAG(IS_APPLE) && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 #if BUILDFLAG(IS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)

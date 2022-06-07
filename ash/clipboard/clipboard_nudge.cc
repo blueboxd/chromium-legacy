@@ -56,7 +56,11 @@ bool IsAssistantAvailable() {
 }  // namespace
 
 ClipboardNudge::ClipboardNudge(ClipboardNudgeType nudge_type)
-    : SystemNudge(kClipboardNudgeName), nudge_type_(nudge_type) {}
+    : SystemNudge(kClipboardNudgeName,
+                  kClipboardIconSize,
+                  kIconLabelSpacing,
+                  kNudgePadding),
+      nudge_type_(nudge_type) {}
 
 ClipboardNudge::~ClipboardNudge() = default;
 
@@ -65,8 +69,6 @@ std::unique_ptr<views::View> ClipboardNudge::CreateLabelView() const {
       std::make_unique<views::StyledLabel>();
   label->SetPaintToLayer();
   label->layer()->SetFillsBoundsOpaquely(false);
-  label->SetPosition(gfx::Point(
-      kNudgePadding + kClipboardIconSize + kIconLabelSpacing, kNudgePadding));
 
   bool use_launcher_key = ui::DeviceUsesKeyboardLayout2();
 
@@ -91,7 +93,8 @@ std::unique_ptr<views::View> ClipboardNudge::CreateLabelView() const {
   }
   auto keyboard_shortcut_icon = std::make_unique<views::ImageView>();
   keyboard_shortcut_icon->SetImage(shortcut_icon);
-  keyboard_shortcut_icon->SetBorder(views::CreateEmptyBorder(2, 4, 0, -2));
+  keyboard_shortcut_icon->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(2, 4, 0, -2)));
 
   // Set the text for |label_|.
   std::u16string shortcut_key = l10n_util::GetStringUTF16(

@@ -2,18 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Oobe} from './cr_ui.m.js';
-import * as OobeDebugger from './debug/debug.m.js';
-import {invokePolymerMethod} from './display_manager.m.js';
-import {loadTimeData} from './i18n_setup.js';
 import 'chrome://oobe/components/test_util.m.js';
 import 'chrome://oobe/test_api/test_api.m.js';
-import {i18nTemplate} from 'chrome://resources/js/i18n_template_no_process.m.js';
-
 import 'chrome://oobe/screens/common/app_downloading.m.js';
 import 'chrome://oobe/screens/common/app_launch_splash.m.js';
 import 'chrome://oobe/screens/common/adb_sideloading.m.js';
 import 'chrome://oobe/screens/common/arc_terms_of_service.m.js';
+import 'chrome://oobe/screens/common/assistant_optin.m.js';
 import 'chrome://oobe/screens/common/autolaunch.m.js';
 import 'chrome://oobe/screens/common/consolidated_consent.m.js';
 import 'chrome://oobe/screens/common/device_disabled.m.js';
@@ -41,6 +36,7 @@ import 'chrome://oobe/screens/common/saml_confirm_password.m.js';
 import 'chrome://oobe/screens/common/signin_fatal_error.m.js';
 import 'chrome://oobe/screens/common/smart_privacy_protection.m.js';
 import 'chrome://oobe/screens/common/sync_consent.m.js';
+import 'chrome://oobe/screens/common/theme_selection.m.js';
 import 'chrome://oobe/screens/common/tpm_error.m.js';
 import 'chrome://oobe/screens/common/user_creation.m.js';
 import 'chrome://oobe/screens/common/wrong_hwid.m.js';
@@ -63,6 +59,13 @@ import 'chrome://oobe/screens/oobe/welcome.m.js';
 import 'chrome://oobe/screens/oobe/packaged_license.m.js';
 import 'chrome://oobe/screens/oobe/update.m.js';
 
+import {i18nTemplate} from 'chrome://resources/js/i18n_template_no_process.m.js';
+
+import {Oobe} from './cr_ui.m.js';
+import * as OobeDebugger from './debug/debug.m.js';
+import {invokePolymerMethod} from './display_manager.m.js';
+import {loadTimeData} from './i18n_setup.js';
+
 function initializeDebugger() {
   if (document.readyState === 'loading')
     return;
@@ -73,20 +76,19 @@ function initializeDebugger() {
 // Create the global values attached to `window` that are used
 // for accessing OOBE controls from the browser side.
 function prepareGlobalValues(globalValue) {
-    console.log('Preparing global values.');
-    if (globalValue.cr == undefined) {
-        globalValue.cr = {};
-    }
-    if (globalValue.cr.ui == undefined) {
-      globalValue.cr.ui = {};
-    }
-    if (globalValue.cr.ui.login == undefined) {
-      globalValue.cr.ui.login = {};
-    }
+  if (globalValue.cr == undefined) {
+    globalValue.cr = {};
+  }
+  if (globalValue.cr.ui == undefined) {
+    globalValue.cr.ui = {};
+  }
+  if (globalValue.cr.ui.login == undefined) {
+    globalValue.cr.ui.login = {};
+  }
 
-    // Expose some values in the global object that are needed by OOBE.
-    globalValue.cr.ui.Oobe = Oobe;
-    globalValue.Oobe = Oobe;
+  // Expose some values in the global object that are needed by OOBE.
+  globalValue.cr.ui.Oobe = Oobe;
+  globalValue.Oobe = Oobe;
 }
 
 (function (root) {

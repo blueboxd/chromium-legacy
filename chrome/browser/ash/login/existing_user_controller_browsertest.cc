@@ -7,6 +7,7 @@
 
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/login/auth/key.h"
 #include "ash/components/login/auth/stub_authenticator_builder.h"
 #include "ash/components/login/auth/user_context.h"
@@ -70,7 +71,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
@@ -1010,6 +1011,36 @@ class ExistingUserControllerActiveDirectoryTest
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
+class ExistingUserControllerActiveDirectoryTestCreateProfileDir
+    : public ExistingUserControllerActiveDirectoryTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  ExistingUserControllerActiveDirectoryTestCreateProfileDir() {
+    cryptohome_mixin_.MarkUserAsExisting(ad_account_id_);
+
+    // TODO(crbug.com/1311355): This test is run with the feature
+    // kUseAuthsessionAuthentication enabled and disabled because of a
+    // transitive dependency of AffiliationTestHelper on that feature. Remove
+    // the parameter when kUseAuthsessionAuthentication is removed.
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kUseAuthsessionAuthentication);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kUseAuthsessionAuthentication);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  CryptohomeMixin cryptohome_mixin_{&mixin_host_};
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ActiveDirectory,
+    ExistingUserControllerActiveDirectoryTestCreateProfileDir,
+    ::testing::Bool());
+
 class ExistingUserControllerActiveDirectoryUserAllowlistTest
     : public ExistingUserControllerActiveDirectoryTest {
  public:
@@ -1074,8 +1105,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
 
 // Tests that Active Directory offline login succeeds on the Active Directory
 // managed device.
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
-                       ActiveDirectoryOfflineLogin_Success) {
+IN_PROC_BROWSER_TEST_P(
+    ExistingUserControllerActiveDirectoryTestCreateProfileDir,
+    ActiveDirectoryOfflineLogin_Success) {
   ExpectLoginSuccess();
   UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
                            ad_account_id_);
@@ -1313,10 +1345,10 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
                        CryptohomeUnavailable) {
-  FakeUserDataAuthClient::Get()->SetServiceIsAvailable(false);
+  FakeUserDataAuthClient::TestApi::Get()->SetServiceIsAvailable(false);
   SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::NONE);
 
-  FakeUserDataAuthClient::Get()->ReportServiceIsNotAvailable();
+  FakeUserDataAuthClient::TestApi::Get()->ReportServiceIsNotAvailable();
   WaitForAuthErrorMessage();
 }
 

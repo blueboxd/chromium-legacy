@@ -20,6 +20,7 @@
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_service.h"
@@ -145,8 +146,8 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   ~BrowsingHistoryService() override;
 
   // Start a new query with the given parameters.
-  void QueryHistory(const std::u16string& search_text,
-                    const QueryOptions& options);
+  virtual void QueryHistory(const std::u16string& search_text,
+                            const QueryOptions& options);
 
   // Gets a version of the last time any webpage on the given host was visited,
   // by using the min("last navigation time", x minutes ago) as the upper bound
@@ -169,6 +170,8 @@ class BrowsingHistoryService : public HistoryServiceObserver,
                          HistoryService* local_history,
                          syncer::SyncService* sync_service,
                          std::unique_ptr<base::OneShotTimer> web_history_timer);
+  // Should be used only for tests when mocking the service.
+  BrowsingHistoryService();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(::BrowsingHistoryHandlerTest,

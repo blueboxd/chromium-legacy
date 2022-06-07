@@ -51,8 +51,8 @@ namespace {
 // Appearance.
 constexpr int kChildSpacing = 8;
 constexpr int kLabelMaskGradientWidth = 16;
-constexpr gfx::Insets kLabelMargins(/*top=*/4, 0, /*bottom=*/4, /*right=*/2);
-constexpr gfx::Insets kPadding(0, /*left=*/8, 0, /*right=*/10);
+constexpr auto kLabelMargins = gfx::Insets::TLBR(4, 0, 4, 2);
+constexpr auto kPadding = gfx::Insets::TLBR(0, 8, 0, 10);
 constexpr int kPreferredHeight = 40;
 constexpr int kPreferredWidth = 160;
 constexpr int kProgressIndicatorSize = 26;
@@ -72,7 +72,7 @@ base::RepeatingCallback<void(T...)> IgnoreArgs(
 }
 
 void ToCenteredSize(gfx::Rect* rect, const gfx::Size& size) {
-  rect->Outset(size.width(), size.height());
+  rect->Outset(gfx::Outsets::VH(size.height(), size.width()));
   rect->ClampToCenteredSize(size);
 }
 
@@ -263,7 +263,7 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
       .SetCollapseMargins(true)
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetInteriorMargin(gfx::Insets(kPadding))
-      .SetDefault(views::kMarginsKey, gfx::Insets(0, kChildSpacing));
+      .SetDefault(views::kMarginsKey, gfx::Insets::VH(0, kChildSpacing));
 
   auto paint_label_mask_callback = base::BindRepeating(
       &HoldingSpaceItemChipView::OnPaintLabelMask, base::Unretained(this));

@@ -1130,6 +1130,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei height,
                                const char* function_name) override;
 
+  void GetCurrentUnpackState(TexImageParams& params) override;
   WebGLTexture* ValidateTexImageBinding(const char*,
                                         TexImageFunctionID,
                                         GLenum) override;
@@ -1187,7 +1188,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   HeapVector<Member<WebGLBuffer>> bound_indexed_uniform_buffers_;
   GLint max_transform_feedback_separate_attribs_;
-  wtf_size_t max_bound_uniform_buffer_index_;
 
   Member<WebGLQuery> current_boolean_occlusion_query_;
   Member<WebGLQuery> current_transform_feedback_primitives_written_query_;

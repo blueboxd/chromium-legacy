@@ -12,9 +12,7 @@
 #include "media/formats/hls/source_string.h"
 #include "third_party/re2/src/re2/re2.h"
 
-namespace media {
-namespace hls {
-namespace types {
+namespace media::hls::types {
 
 namespace {
 re2::StringPiece to_re2(base::StringPiece str) {
@@ -201,6 +199,31 @@ ParseStatus::Or<SignedDecimalFloatingPoint> ParseSignedDecimalFloatingPoint(
   return result;
 }
 
+ParseStatus::Or<base::StringPiece> ParseQuotedString(
+    SourceString source_str,
+    const VariableDictionary& variable_dict,
+    VariableDictionary::SubstitutionBuffer& sub_buffer) {
+  return ParseQuotedStringWithoutSubstitution(source_str)
+      .MapValue([&variable_dict, &sub_buffer](auto str) {
+        return variable_dict.Resolve(str, sub_buffer);
+      });
+}
+
+ParseStatus::Or<SourceString> ParseQuotedStringWithoutSubstitution(
+    SourceString source_str) {
+  if (source_str.Size() < 2) {
+    return ParseStatusCode::kFailedToParseQuotedString;
+  }
+  if (*source_str.Str().begin() != '"') {
+    return ParseStatusCode::kFailedToParseQuotedString;
+  }
+  if (*source_str.Str().rbegin() != '"') {
+    return ParseStatusCode::kFailedToParseQuotedString;
+  }
+
+  return source_str.Substr(1, source_str.Size() - 2);
+}
+
 AttributeListIterator::AttributeListIterator(SourceString content)
     : remaining_content_(content) {}
 
@@ -311,7 +334,7 @@ ParseStatus AttributeMap::FillUntilError(AttributeListIterator* iter) {
   }
 }
 
-ParseStatus::Or<VariableName> ParseVariableName(SourceString source_str) {
+ParseStatus::Or<VariableName> VariableName::Parse(SourceString source_str) {
   static const base::NoDestructor<re2::RE2> variable_name_regex(
       "[a-zA-Z0-9_-]+");
 
@@ -320,9 +343,7 @@ ParseStatus::Or<VariableName> ParseVariableName(SourceString source_str) {
     return ParseStatusCode::kMalformedVariableName;
   }
 
-  return VariableName{.name = source_str.Str()};
+  return VariableName{source_str.Str()};
 }
 
-}  // namespace types
-}  // namespace hls
-}  // namespace media
+}  // namespace media::hls::types

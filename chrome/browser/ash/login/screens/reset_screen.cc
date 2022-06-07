@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
@@ -283,7 +282,7 @@ void ResetScreen::OnViewDestroyed(ResetView* view) {
     view_ = nullptr;
 }
 
-void ResetScreen::OnUserAction(const std::string& action_id) {
+void ResetScreen::OnUserActionDeprecated(const std::string& action_id) {
   if (action_id == kUserActionCancelReset)
     OnCancel();
   else if (action_id == kUserActionResetRestartPressed)
@@ -301,7 +300,7 @@ void ResetScreen::OnUserAction(const std::string& action_id) {
   else if (action_id == kUserActionTPMFirmwareUpdateLearnMore)
     ShowHelpArticle(HelpAppLauncher::HELP_TPM_FIRMWARE_UPDATE);
   else
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
 }
 
 void ResetScreen::OnCancel() {

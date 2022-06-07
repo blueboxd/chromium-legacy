@@ -9,18 +9,16 @@
 #include <unordered_set>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/tether/host_scanner.h"
 #include "ash/components/tether/host_scanner_operation.h"
 #include "ash/components/tether/notification_presenter.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "ash/services/device_sync/public/cpp/device_sync_client.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
 #include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/session_manager/core/session_manager_observer.h"
 
@@ -29,6 +27,10 @@ class SessionManager;
 }  // namespace session_manager
 
 namespace ash {
+
+namespace device_sync {
+class DeviceSyncClient;
+}
 
 namespace tether {
 

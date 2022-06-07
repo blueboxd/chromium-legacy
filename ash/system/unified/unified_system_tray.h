@@ -12,6 +12,7 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shell_observer.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/time/time_view.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/unified_system_tray_model.h"
@@ -27,23 +28,20 @@ class MessagePopupView;
 
 namespace ash {
 
-namespace tray {
-class NetworkTrayView;
-class TimeTrayItemView;
-}  // namespace tray
-
 class AshMessagePopupCollection;
+class CameraMicTrayItemView;
 class CurrentLocaleView;
 class ImeModeView;
 class HpsNotifyView;
 class ManagedDeviceTrayItemView;
+class NetworkTrayView;
 class NotificationIconsController;
 class PrivacyScreenToastController;
+class TimeTrayItemView;
 class TrayItemView;
 class UnifiedSliderBubbleController;
 class UnifiedSystemTrayBubble;
 class UnifiedMessageCenterBubble;
-class CameraMicTrayItemView;
 
 // The UnifiedSystemTray is the system menu of Chromium OS, which is a clickable
 // rounded rectangle typically located on the bottom right corner of the screen,
@@ -135,13 +133,15 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // bubble is shown.
   void SetTrayBubbleHeight(int height);
 
-  // Focus the first notification in the message center.
-  void FocusFirstNotification();
+  // Transfer focus to the message center bubble. Will focus only on the message
+  // center if vox is enabled. Otherwise, will focus on the first element in the
+  // message center while honoring the `reverse` attribute that is passed in.
+  bool FocusMessageCenter(bool reverse, bool collapse_quick_settings = false);
 
-  // Transfer focus to the message center bubble.
-  bool FocusMessageCenter(bool reverse);
-
-  // Transfer focus to the quick settings bubble.
+  // Transfer focus to the quick settings bubble. Will focus only on the quick
+  // settings bubble if vox is enabled. Otherwise, will focus on the first
+  // element in the quick settings while honoring the `reverse` attribute that
+  // is passed in.
   bool FocusQuickSettings(bool reverse);
 
   // Returns true if the user manually expanded the quick settings.
@@ -182,9 +182,11 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
-  // Repeating callback passed to TimeView which is called when an action is
-  // performed.
-  void OnTimeViewActionPerformed(const ui::Event& event);
+  // Gets called when an action is performed on the `DateTray`.
+  void OnDateTrayActionPerformed(const ui::Event& event);
+
+  // Whether the bubble is currently showing the calendar view.
+  bool IsShowingCalendarView() const;
 
   std::u16string GetAccessibleNameForQuickSettingsBubble();
 
@@ -252,9 +254,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   ManagedDeviceTrayItemView* const managed_device_view_;
   CameraMicTrayItemView* const camera_view_;
   CameraMicTrayItemView* const mic_view_;
-  tray::TimeTrayItemView* time_view_ = nullptr;
+  TimeTrayItemView* const time_view_;
 
-  tray::NetworkTrayView* network_tray_view_ = nullptr;
+  NetworkTrayView* network_tray_view_ = nullptr;
 
   // Contains all tray items views added to tray_container().
   std::list<TrayItemView*> tray_items_;

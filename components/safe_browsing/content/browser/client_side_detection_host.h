@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "components/safe_browsing/content/browser/base_ui_manager.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
@@ -28,10 +29,6 @@
 
 namespace base {
 class TickClock;
-}
-
-namespace content {
-struct GlobalRenderFrameHostId;
 }
 
 namespace safe_browsing {
@@ -190,6 +187,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
   // Setup a PhishingDetector Mojo connection for the given render frame.
   void InitializePhishingDetector(content::RenderFrameHost* render_frame_host);
 
+  void ClearPhishingDetector(content::GlobalRenderFrameHostId rfh_id);
+
   // This pointer may be nullptr if client-side phishing detection is
   // disabled.
   raw_ptr<ClientSideDetectionService> csd_service_;
@@ -208,7 +207,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
   // A map from the live RenderFrameHosts to their PhishingDetector. These
   // correspond to the `phishing_detector_receiver_` in the
   // PhishingClassifierDelegate.
-  base::flat_map<content::RenderFrameHost*,
+  base::flat_map<content::GlobalRenderFrameHostId,
                  mojo::Remote<mojom::PhishingDetector>>
       phishing_detectors_;
 

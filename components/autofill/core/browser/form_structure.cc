@@ -22,6 +22,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -466,14 +467,14 @@ void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
                           /*include_checksum=*/false, metadata->mutable_name());
   }
 
-  for (const ButtonTitleInfo& e : form.button_titles()) {
+  for (const auto& [title, title_type] : form.button_titles()) {
     auto* button_title = metadata->add_button_title();
-    DCHECK(!e.first.empty());
+    DCHECK(!title.empty());
     EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
-                          RandomizedEncoder::FORM_BUTTON_TITLES, e.first,
+                          RandomizedEncoder::FORM_BUTTON_TITLES, title,
                           /*include_checksum=*/false,
                           button_title->mutable_title());
-    button_title->set_type(static_cast<ButtonTitleType>(e.second));
+    button_title->set_type(static_cast<ButtonTitleType>(title_type));
   }
   auto full_source_url = form.full_source_url().spec();
   if (encoder.AnonymousUrlCollectionIsEnabled() && !full_source_url.empty()) {
@@ -692,23 +693,30 @@ void FormStructure::DetermineHeuristicTypes(
   // Then if there are enough active fields, and if we are dealing with either a
   // proper <form> or a <form>-less checkout, run the heuristics and server
   // prediction routines.
+  FieldCandidatesMap field_type_map;
   if (ShouldRunHeuristics()) {
-    const FieldCandidatesMap field_type_map = FormField::ParseFormFields(
-        fields_, current_page_language_, is_form_tag_, log_manager);
-    for (const auto& field : fields_) {
-      const auto iter = field_type_map.find(field->global_id());
-      if (iter != field_type_map.end()) {
-        field->set_heuristic_type(iter->second.BestHeuristicType());
-      }
-    }
-  } else if (ShouldRunPromoCodeHeuristics()) {
-    const FieldCandidatesMap field_type_map =
-        FormField::ParseFormFieldsForPromoCodes(fields_, current_page_language_,
+    field_type_map = FormField::ParseFormFields(fields_, current_page_language_,
                                                 is_form_tag_, log_manager);
+  } else if (ShouldRunPromoCodeHeuristics()) {
+    field_type_map = FormField::ParseFormFieldsForPromoCodes(
+        fields_, current_page_language_, is_form_tag_, log_manager);
+  }
+  if (!field_type_map.empty()) {
     for (const auto& field : fields_) {
-      const auto iter = field_type_map.find(field->global_id());
+      auto iter = field_type_map.find(field->global_id());
       if (iter != field_type_map.end()) {
-        field->set_heuristic_type(iter->second.BestHeuristicType());
+        const FieldCandidates& candidates = iter->second;
+        field->set_heuristic_type(candidates.BestHeuristicType());
+
+        auto set_hypothetical_type =
+            [&field, &candidates](PredictionSource source) -> void {
+          absl::optional<ServerFieldType> type =
+              candidates.GetHypotheticalType(source);
+          if (type)
+            field->set_prediction(source, *type);
+        };
+        set_hypothetical_type(PredictionSource::kExperimentalHeuristics);
+        set_hypothetical_type(PredictionSource::kNextGenHeuristics);
       }
     }
   }
@@ -742,52 +750,51 @@ void FormStructure::DetermineHeuristicTypes(
       AutofillTickClock::NowTicks() - determine_heuristic_types_start_time);
 }
 
-bool FormStructure::EncodeUploadRequest(
+std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
     const ServerFieldTypeSet& available_field_types,
     bool form_was_autofilled,
-    const std::string& login_form_signature,
+    const base::StringPiece& login_form_signature,
     bool observed_submission,
-    bool is_raw_metadata_uploading_enabled,
-    AutofillUploadContents* upload,
-    std::vector<FormSignature>* encoded_signatures) const {
+    bool is_raw_metadata_uploading_enabled) const {
   DCHECK(AllTypesCaptured(*this, available_field_types));
-  encoded_signatures->clear();
+  std::string data_present = EncodeFieldTypes(available_field_types);
 
-  upload->set_submission(observed_submission);
-  upload->set_client_version(
+  AutofillUploadContents upload;
+  upload.set_submission(observed_submission);
+  upload.set_client_version(
       version_info::GetProductNameAndVersionForUserAgent());
-  upload->set_form_signature(form_signature().value());
-  upload->set_autofill_used(form_was_autofilled);
-  upload->set_data_present(EncodeFieldTypes(available_field_types));
-  upload->set_passwords_revealed(passwords_were_revealed_);
-  upload->set_has_form_tag(is_form_tag_);
+  upload.set_form_signature(form_signature().value());
+  upload.set_autofill_used(form_was_autofilled);
+  upload.set_data_present(data_present);
+  upload.set_passwords_revealed(passwords_were_revealed_);
+  upload.set_has_form_tag(is_form_tag_);
   if (!current_page_language_->empty() && randomized_encoder_ != nullptr) {
-    upload->set_language(current_page_language_.value());
+    upload.set_language(current_page_language_.value());
   }
   if (single_username_data_)
-    upload->mutable_single_username_data()->CopyFrom(*single_username_data_);
+    upload.mutable_single_username_data()->CopyFrom(*single_username_data_);
 
   auto triggering_event = (submission_event_ != SubmissionIndicatorEvent::NONE)
                               ? submission_event_
                               : ToSubmissionIndicatorEvent(submission_source_);
 
   DCHECK(autofill::mojom::IsKnownEnumValue(triggering_event));
-  upload->set_submission_event(
+  upload.set_submission_event(
       static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
           triggering_event));
 
   if (password_attributes_vote_) {
     EncodePasswordAttributesVote(*password_attributes_vote_,
                                  password_length_vote_, password_symbol_vote_,
-                                 upload);
+                                 &upload);
   }
 
   if (is_raw_metadata_uploading_enabled) {
-    upload->set_action_signature(StrToHash64Bit(target_url_.host_piece()));
+    upload.set_action_signature(StrToHash64Bit(target_url_.host_piece()));
     if (!form_name().empty())
-      upload->set_form_name(base::UTF16ToUTF8(form_name()));
+      upload.set_form_name(base::UTF16ToUTF8(form_name()));
     for (const ButtonTitleInfo& e : button_titles_) {
-      auto* button_title = upload->add_button_title();
+      auto* button_title = upload.add_button_title();
       button_title->set_title(base::UTF16ToUTF8(e.first));
       button_title->set_type(static_cast<ButtonTitleType>(e.second));
     }
@@ -796,15 +803,44 @@ bool FormStructure::EncodeUploadRequest(
   if (!login_form_signature.empty()) {
     uint64_t login_sig;
     if (base::StringToUint64(login_form_signature, &login_sig))
-      upload->set_login_form_signature(login_sig);
+      upload.set_login_form_signature(login_sig);
   }
 
   if (IsMalformed())
-    return false;  // Malformed form, skip it.
+    return {};  // Malformed form, skip it.
 
-  EncodeFormForUpload(is_raw_metadata_uploading_enabled, upload,
-                      encoded_signatures);
-  return true;
+  if (randomized_encoder_) {
+    PopulateRandomizedFormMetadata(*randomized_encoder_, *this,
+                                   upload.mutable_randomized_form_metadata());
+  }
+
+  EncodeFormFieldsForUpload(is_raw_metadata_uploading_enabled, absl::nullopt,
+                            &upload);
+
+  std::vector<AutofillUploadContents> uploads = {std::move(upload)};
+
+  // Build AutofillUploadContents for the renderer forms that have been
+  // flattened into `this` (see the function's documentation for details).
+  std::vector<std::pair<FormGlobalId, FormSignature>> subforms;
+  for (const auto& field : *this) {
+    if (field->host_form_signature != form_signature()) {
+      subforms.emplace_back(field->renderer_form_id(),
+                            field->host_form_signature);
+    }
+  }
+  for (const auto& [subform_id, subform_signature] :
+       base::flat_map<FormGlobalId, FormSignature>(std::move(subforms))) {
+    uploads.emplace_back();
+    uploads.back().set_client_version(
+        version_info::GetProductNameAndVersionForUserAgent());
+    uploads.back().set_form_signature(subform_signature.value());
+    uploads.back().set_autofill_used(form_was_autofilled);
+    uploads.back().set_data_present(data_present);
+    EncodeFormFieldsForUpload(is_raw_metadata_uploading_enabled, subform_id,
+                              &uploads.back());
+  }
+
+  return uploads;
 }
 
 // static
@@ -930,8 +966,8 @@ void FormStructure::ProcessQueryResponse(
           field->host_form_signature != form->form_signature()) {
         // Retrieves the alternative prediction even if it is not used so that
         // the alternative predictions are popped.
-        auto alternative_field = GetPrediction(field->host_form_signature,
-                                               field->GetFieldSignature());
+        absl::optional<FieldSuggestion> alternative_field = GetPrediction(
+            field->host_form_signature, field->GetFieldSignature());
         if (alternative_field &&
             (!current_field ||
              base::ranges::all_of(current_field->predictions(),
@@ -1042,9 +1078,7 @@ std::vector<FieldGlobalId> FormStructure::FindFieldsEligibleForManualFilling(
 std::unique_ptr<FormStructure> FormStructure::CreateForPasswordManagerUpload(
     FormSignature form_signature,
     const std::vector<FieldSignature>& field_signatures) {
-  std::unique_ptr<FormStructure> form;
-  form.reset(new FormStructure(form_signature, field_signatures));
-  return form;
+  return base::WrapUnique(new FormStructure(form_signature, field_signatures));
 }
 
 std::string FormStructure::FormSignatureAsStr() const {
@@ -2204,20 +2238,20 @@ void FormStructure::EncodeFormForQuery(
   }
 }
 
-void FormStructure::EncodeFormForUpload(
+// static
+void FormStructure::EncodeFormFieldsForUpload(
     bool is_raw_metadata_uploading_enabled,
-    AutofillUploadContents* upload,
-    std::vector<FormSignature>* encoded_signatures) const {
+    absl::optional<FormGlobalId> filter_renderer_form_id,
+    AutofillUploadContents* upload) const {
   DCHECK(!IsMalformed());
 
-  encoded_signatures->push_back(form_signature());
-
-  if (randomized_encoder_) {
-    PopulateRandomizedFormMetadata(*randomized_encoder_, *this,
-                                   upload->mutable_randomized_form_metadata());
-  }
-
   for (const auto& field : fields_) {
+    // Only take those fields that originate from the given renderer form.
+    if (filter_renderer_form_id &&
+        *filter_renderer_form_id != field->renderer_form_id()) {
+      continue;
+    }
+
     // Don't upload checkable fields.
     if (IsCheckable(field->check_status))
       continue;
@@ -2234,11 +2268,11 @@ void FormStructure::EncodeFormForUpload(
 
     field->NormalizePossibleTypesValidities();
 
-    for (const auto& field_type_validities :
+    for (const auto& [field_type, validities] :
          field->possible_types_validities()) {
       auto* type_validities = added_field->add_autofill_type_validities();
-      type_validities->set_type(field_type_validities.first);
-      for (const auto& validity : field_type_validities.second) {
+      type_validities->set_type(field_type);
+      for (const auto& validity : validities) {
         type_validities->add_validity(validity);
       }
     }

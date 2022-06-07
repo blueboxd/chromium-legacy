@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "media/fuchsia/cdm/service/provisioning_fetcher_impl.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
@@ -135,6 +136,8 @@ absl::optional<base::File::Error> CreateStorageDirectory(base::FilePath path) {
   }
   return {};
 }
+
+FuchsiaCdmManager* g_fuchsia_cdm_manager_instance = nullptr;
 
 }  // namespace
 
@@ -262,6 +265,11 @@ class FuchsiaCdmManager::KeySystemClient {
   base::flat_map<base::FilePath, DataStoreId> data_store_ids_by_path_;
 };
 
+// static
+FuchsiaCdmManager* FuchsiaCdmManager::GetInstance() {
+  return g_fuchsia_cdm_manager_instance;
+}
+
 FuchsiaCdmManager::FuchsiaCdmManager(
     CreateKeySystemCallbackMap create_key_system_callbacks_by_name,
     base::FilePath cdm_data_path,
@@ -278,9 +286,15 @@ FuchsiaCdmManager::FuchsiaCdmManager(
   // start.
   if (cdm_data_quota_bytes_)
     ApplyCdmStorageQuota(cdm_data_path_, *cdm_data_quota_bytes_);
+
+  DCHECK(!g_fuchsia_cdm_manager_instance);
+  g_fuchsia_cdm_manager_instance = this;
 }
 
-FuchsiaCdmManager::~FuchsiaCdmManager() = default;
+FuchsiaCdmManager::~FuchsiaCdmManager() {
+  DCHECK_EQ(g_fuchsia_cdm_manager_instance, this);
+  g_fuchsia_cdm_manager_instance = nullptr;
+}
 
 void FuchsiaCdmManager::CreateAndProvision(
     const std::string& key_system,

@@ -437,7 +437,12 @@ var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
 
   /** @override */
   get featureListInternal() {
-    return {enabled: ['features::kPrivacyGuide']};
+    return {
+      enabled: [
+        'features::kPrivacyGuide',
+        'features::kPrivacyGuide2',
+      ]
+    };
   }
 };
 
@@ -457,6 +462,10 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacySandboxEnabled', function() {
 
 TEST_F('CrSettingsPrivacyPageTest', 'PrivacyGuideEnabled', function() {
   runMochaSuite('PrivacyGuideEnabled');
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyGuide2Disabled', function() {
+  runMochaSuite('PrivacyGuide2Disabled');
 });
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
@@ -489,7 +498,12 @@ var CrSettingsPrivacyGuidePageTest = class extends CrSettingsBrowserTest {
 
   /** @override */
   get featureListInternal() {
-    return {enabled: ['features::kPrivacyGuide']};
+    return {
+      enabled: [
+        'features::kPrivacyGuide',
+        'features::kPrivacyGuide2',
+      ]
+    };
   }
 };
 
@@ -514,6 +528,54 @@ TEST_F(
 TEST_F('CrSettingsPrivacyGuidePageTest', 'CompletionFragmentTests', function() {
   runMochaSuite('CompletionFragment');
 });
+
+TEST_F(
+    'CrSettingsPrivacyGuidePageTest',
+    'CompletionFragmentPrivacyGuide2DisabledTests', function() {
+      runMochaSuite('CompletionFragmentPrivacyGuide2Disabled');
+    });
+
+TEST_F('CrSettingsPrivacyGuidePageTest', 'PrivacyGuideDialogTests', function() {
+  runMochaSuite('PrivacyGuideDialog');
+});
+
+var CrSettingsCookiesPageTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/cookies_page_test.js&host=webui-test';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'features::kConsolidatedSiteStorageControls',
+      ]
+    };
+  }
+};
+
+// Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
+GEN('#if (BUILDFLAG(IS_MAC)) || (BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+GEN('#define MAYBE_CookiesPageTest DISABLED_CookiesPageTest');
+GEN('#else');
+GEN('#define MAYBE_CookiesPageTest CookiesPageTest');
+GEN('#endif');
+TEST_F('CrSettingsCookiesPageTest', 'MAYBE_CookiesPageTest', function() {
+  runMochaSuite('CrSettingsCookiesPageTest');
+});
+
+// Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
+GEN('#if (BUILDFLAG(IS_MAC)) || (BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+GEN('#define MAYBE_ConsolidatedControlsEnabled DISABLED_ConsolidatedControlsEnabled');
+GEN('#else');
+GEN('#define MAYBE_ConsolidatedControlsEnabled ConsolidatedControlsEnabled');
+GEN('#endif');
+TEST_F(
+    'CrSettingsCookiesPageTest', 'MAYBE_ConsolidatedControlsEnabled',
+    function() {
+      runMochaSuite('CrSettingsCookiesPageTest_consolidatedControlsEnabled');
+    });
 
 var CrSettingsRouteTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -595,9 +657,7 @@ TEST_F('CrSettingsSiteDataDetailsSubpageTest', 'All', function() {
   mocha.run();
 });
 
-
-[['AllSites', 'all_sites_tests.js'],
- ['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
+[['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
  ['AppearancePage', 'appearance_page_test.js'],
  [
    'SettingsCategoryDefaultRadioGroup',
@@ -655,11 +715,9 @@ GEN('#if !((BUILDFLAG(IS_LINUX) && !defined(NDEBUG)) || BUILDFLAG(IS_MAC))');
 ].forEach(test => registerTest(...test));
 GEN('#endif');
 
-
-// Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
-GEN('#if (!BUILDFLAG(IS_MAC)) && (!BUILDFLAG(IS_LINUX) || defined(NDEBUG))');
-[['CookiesPage', 'cookies_page_test.js'],
-].forEach(test => registerTest(...test));
+// Timeout on Linux dbg bots: https://crbug.com/1311163
+GEN('#if !(BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+[['AllSites', 'all_sites_tests.js'], ].forEach(test => registerTest(...test));
 GEN('#endif');
 
 GEN('#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)');

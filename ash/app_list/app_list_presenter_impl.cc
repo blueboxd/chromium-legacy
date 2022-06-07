@@ -9,6 +9,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_presenter_event_filter.h"
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/apps_container_view.h"
@@ -22,6 +23,7 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
 #include "base/bind.h"
@@ -41,6 +43,7 @@
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/public/activation_client.h"
@@ -343,11 +346,29 @@ void AppListPresenterImpl::UpdateForNewSortingOrder(
   if (!view_)
     return;
 
+  base::OnceClosure done_closure;
+  if (animate) {
+    // The search box should ignore a11y events during the reorder animation
+    // so that the announcement of app list reorder is made before that of
+    // focus change.
+    SetViewIgnoredForAccessibility(view_->search_box_view(), true);
+
+    // Focus on the search box before starting the reorder animation to prevent
+    // focus moving through app list items as they're being hidden for order
+    // update animation.
+    view_->search_box_view()->search_box()->RequestFocus();
+
+    done_closure =
+        base::BindOnce(&AppListPresenterImpl::OnAppListReorderAnimationDone,
+                       weak_ptr_factory_.GetWeakPtr());
+  }
+
   view_->app_list_main_view()
       ->contents_view()
       ->apps_container_view()
       ->UpdateForNewSortingOrder(new_order, animate,
-                                 std::move(update_position_closure));
+                                 std::move(update_position_closure),
+                                 std::move(done_closure));
 }
 
 bool AppListPresenterImpl::IsVisibleDeprecated() const {
@@ -536,6 +557,10 @@ void AppListPresenterImpl::OnClosed() {
 
 void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
                                            aura::Window* lost_focus) {
+  // Do not focus app list window in the Kiosk mode.
+  if (Shell::Get()->session_controller()->IsRunningInAppMode())
+    return;
+
   if (!view_ || !is_target_visibility_show_)
     return;
 
@@ -686,6 +711,14 @@ void AppListPresenterImpl::SnapAppListBoundsToDisplayEdge() {
   const gfx::Rect bounds =
       controller_->SnapBoundsToDisplayEdge(window->bounds());
   window->SetBounds(bounds);
+}
+
+void AppListPresenterImpl::OnAppListReorderAnimationDone() {
+  if (!view_)
+    return;
+
+  // Re-enable the search box to handle a11y events.
+  SetViewIgnoredForAccessibility(view_->search_box_view(), false);
 }
 
 }  // namespace ash

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/common/content_switches.h"
@@ -36,16 +36,14 @@
 
 namespace quick_answers {
 
-using ::ash::AccessibilityManager;
-
 namespace {
 
 // Main view (or common) specs.
 constexpr int kMarginDip = 10;
 constexpr int kLineHeightDip = 20;
 constexpr int kContentSpacingDip = 8;
-constexpr gfx::Insets kMainViewInsets = {16, 12, 16, 16};
-constexpr gfx::Insets kContentInsets = {0, 12, 0, 0};
+constexpr auto kMainViewInsets = gfx::Insets::TLBR(16, 12, 16, 16);
+constexpr auto kContentInsets = gfx::Insets::TLBR(0, 12, 0, 0);
 
 // Google icon.
 constexpr int kGoogleIconSizeDip = 16;
@@ -56,13 +54,13 @@ constexpr int kDescFontSizeDelta = 1;
 
 // Buttons common.
 constexpr int kButtonSpacingDip = 8;
-constexpr gfx::Insets kButtonBarInsets = {8, 0, 0, 0};
-constexpr gfx::Insets kButtonInsets = {6, 16, 6, 16};
+constexpr auto kButtonBarInsets = gfx::Insets::TLBR(8, 0, 0, 0);
+constexpr auto kButtonInsets = gfx::Insets::TLBR(6, 16, 6, 16);
 constexpr int kButtonFontSizeDelta = 1;
 
 // Compact buttons layout.
 constexpr int kCompactButtonLayoutThreshold = 200;
-constexpr gfx::Insets kCompactButtonInsets = {6, 12, 6, 12};
+constexpr auto kCompactButtonInsets = gfx::Insets::TLBR(6, 12, 6, 12);
 constexpr int kCompactButtonFontSizeDelta = 0;
 
 int GetActualLabelWidth(int anchor_view_width) {
@@ -171,7 +169,7 @@ gfx::Size UserConsentView::CalculatePreferredSize() const {
 void UserConsentView::OnFocus() {
   // Unless screen-reader mode is enabled, transfer the focus to an actionable
   // button, otherwise retain to read out its contents.
-  if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+  if (QuickAnswersState::Get()->spoken_feedback_enabled()) {
     no_thanks_button_->RequestFocus();
   }
 }
@@ -204,7 +202,7 @@ void UserConsentView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 std::vector<views::View*> UserConsentView::GetFocusableViews() {
   std::vector<views::View*> focusable_views;
   // The view itself is not included in focus loop, unless screen-reader is on.
-  if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+  if (QuickAnswersState::Get()->spoken_feedback_enabled()) {
     focusable_views.push_back(this);
   }
   focusable_views.push_back(no_thanks_button_);
@@ -233,7 +231,7 @@ void UserConsentView::InitLayout() {
   auto* google_icon =
       main_view_->AddChildView(std::make_unique<views::ImageView>());
   google_icon->SetBorder(views::CreateEmptyBorder(
-      (kLineHeightDip - kGoogleIconSizeDip) / 2, 0, 0, 0));
+      gfx::Insets::TLBR((kLineHeightDip - kGoogleIconSizeDip) / 2, 0, 0, 0)));
   google_icon->SetImage(gfx::CreateVectorIcon(vector_icons::kGoogleColorIcon,
                                               kGoogleIconSizeDip,
                                               gfx::kPlaceholderColor));
@@ -252,9 +250,8 @@ void UserConsentView::InitContent() {
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetInteriorMargin(kContentInsets)
       .SetCollapseMargins(true)
-      .SetDefault(views::kMarginsKey, gfx::Insets(/*top=*/0, /*left=*/0,
-                                                  /*bottom=*/kContentSpacingDip,
-                                                  /*right=*/0));
+      .SetDefault(views::kMarginsKey,
+                  gfx::Insets::TLBR(0, 0, kContentSpacingDip, 0));
 
   // Title.
   title_ =
@@ -289,8 +286,7 @@ void UserConsentView::InitButtonBar() {
       .SetMainAxisAlignment(views::LayoutAlignment::kEnd)
       .SetCollapseMargins(true)
       .SetDefault(views::kMarginsKey,
-                  gfx::Insets(/*top=*/0, /*left=*/0, /*bottom=*/0,
-                              /*right=*/kButtonSpacingDip));
+                  gfx::Insets::TLBR(0, 0, 0, kButtonSpacingDip));
 
   // No thanks button.
   auto no_thanks_button = std::make_unique<CustomizedLabelButton>(

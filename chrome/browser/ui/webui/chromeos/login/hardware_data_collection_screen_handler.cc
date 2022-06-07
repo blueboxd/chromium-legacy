@@ -16,10 +16,10 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId HWDataCollectionView::kScreenId;
 
-HWDataCollectionScreenHandler::HWDataCollectionScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.HWDataCollectionScreen.userActed");
+HWDataCollectionScreenHandler::HWDataCollectionScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
+      "login.HWDataCollectionScreen.userActed");
 }
 
 HWDataCollectionScreenHandler::~HWDataCollectionScreenHandler() {
@@ -28,11 +28,11 @@ HWDataCollectionScreenHandler::~HWDataCollectionScreenHandler() {
 }
 
 void HWDataCollectionScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void HWDataCollectionScreenHandler::Hide() {
@@ -41,12 +41,12 @@ void HWDataCollectionScreenHandler::Hide() {
 
 void HWDataCollectionScreenHandler::Bind(ash::HWDataCollectionScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void HWDataCollectionScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void HWDataCollectionScreenHandler::ShowHWDataUsageLearnMore() {
@@ -65,8 +65,8 @@ void HWDataCollectionScreenHandler::DeclareLocalizedValues(
                IDS_HW_DATA_COLLECTION_ACCEPT_AND_CONTINUE_BUTTON_TEXT);
 }
 
-void HWDataCollectionScreenHandler::Initialize() {
-  if (!page_is_ready() || !screen_)
+void HWDataCollectionScreenHandler::InitializeDeprecated() {
+  if (!IsJavascriptAllowed() || !screen_)
     return;
 
   CallJS("login.HWDataCollectionScreen.setHWDataUsage",

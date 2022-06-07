@@ -184,7 +184,6 @@ Als je je browsegeschiedenis verwijdert (alles of alleen de geschiedenis voor ee
 <translation id="200114059308480249">Omringende tekst opnemen in Google-zoekopdrachten?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# bestand}other{# bestanden}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> wordt geopend in Chrome. Door verder te gaan, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden van Google<ph name="END_LINK1" /> en met de <ph name="BEGIN_LINK2" />Aanvullende servicevoorwaarden van Google Chrome en Chrome OS<ph name="END_LINK2" />. Het <ph name="BEGIN_LINK3" />Privacybeleid<ph name="END_LINK3" /> is ook van toepassing.</translation>
-<translation id="2019145049163614359">Interesse verwijderen?</translation>
 <translation id="2020309681647789787">Je krijgt je geschiedenis op al je gesynchroniseerde apparaten, zodat je kunt doorgaan met waar je mee bezig was.</translation>
 <translation id="2021896219286479412">Siteopties op volledig scherm</translation>
 <translation id="2038563949887743358">'Desktopsite aanvragen' aanzetten</translation>
@@ -213,6 +212,7 @@ Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken 
 <translation id="2141396931810938595">Gebaseerd op je gebruik</translation>
 <translation id="214888715418183969">Kies welke informatie je bereid bent te delen met Chrome. De statistieken die je deelt, worden gebruikt om de functies, prestaties en stabiliteit van Chrome te verbeteren.</translation>
 <translation id="2149973817440762519">Bookmark bewerken</translation>
+<translation id="2155214902713132423">Deze verificatiemethode is niet beschikbaar voor dit apparaat. Kies een andere optie op je andere apparaat.</translation>
 <translation id="2157851137955077194">Als je iets op je telefoon wilt delen met een ander apparaat, zet je de synchronisatie in de Chrome-instellingen op beide apparaten aan</translation>
 <translation id="2158408438301413340">Chrome kan niet alle wachtwoorden checken</translation>
 <translation id="2169830938017475061">Nu</translation>
@@ -733,7 +733,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5091199029769593641">Binnenkort zie je artikelen van <ph name="SITE_NAME" /> als je een nieuw tabblad opent. Sites die je volgt, worden opgeslagen in je Google-account. Je kunt ze beheren in de instellingen van Discover.</translation>
 <translation id="5091249083535528968">Uitgebreide gebruiksgegevens</translation>
 <translation id="509429900233858213">Er is een fout opgetreden.</translation>
-<translation id="5098190077610408701">Interesse toevoegen?</translation>
 <translation id="5102401324271069229">Als een site je wachtwoord probeert te stelen of als je een schadelijk bestand downloadt, kan Chrome URL's, inclusief delen van de paginacontent, naar Safe Browsing sturen</translation>
 <translation id="510275257476243843">1 uur resterend</translation>
 <translation id="5115811374190515607">naar <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5906513782029855931">Als de Google Assistent de URL's van sites weet, kan deze je helpen taken af te ronden. Je kunt de Assistent uitzetten in de instellingen van Chrome.</translation>
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> om de synchronisatie te starten</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> toevoegen</translation>
 <translation id="5942872142862698679">Google wordt gebruikt om te zoeken</translation>
 <translation id="5945035219773565305">Huidige aanbeveling: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Live pagina bekijken</translation>
@@ -898,7 +898,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6033245666633565791">Met <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> ontwikkelt Chrome nieuwe technologieën om je te beschermen tegen tracking op verschillende sites terwijl het open web behouden blijft.
 
 Privacy Sandbox-proeven zijn nog actief in ontwikkeling en zijn beschikbaar in bepaalde regio's. Voorlopig kunnen sites Privacy Sandbox uitproberen en tegelijkertijd gebruik blijven maken van huidige webtechnologieën, zoals cookies van derden.</translation>
-<translation id="6036057147555329831">Extra ICU</translation>
 <translation id="6039379616847168523">Naar het volgende tabblad gaan</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="604124094241169006">Automatisch</translation>
@@ -1023,13 +1022,14 @@ Trust Tokens verbeteren de privacy op internet en kunnen niet worden gebruikt om
 <translation id="663674369910034433">Bekijk <ph name="BEGIN_LINK1" />Synchronisatie<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />Google-services<ph name="END_LINK2" /> voor meer instellingen over privacy, beveiliging en gegevensverzameling.</translation>
 <translation id="6637100877383020115">Chrome stuurt gebruiks- en crashgegevens naar Google om de app te helpen verbeteren. <ph name="BEGIN_UMA_LINK" />Beheren<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Altijd blokkeren</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> verwijderen</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6645629752388991326">Bepaal welke apparaten kunnen inloggen door dit apparaat als beveiligingssleutel te gebruiken.</translation>
 <translation id="6648459603387803038">Je beheerder kan je browserinstellingen op afstand wijzigen. Activiteit op dit apparaat kan ook buiten Chrome worden beheerd.</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andere}other{<ph name="CONTACT_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andere}}</translation>
 <translation id="6649642165559792194">Afbeelding bekijken <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
-<translation id="6659594942844771486">Browsertabblad</translation>
+<translation id="6659594942844771486">Tabblad</translation>
 <translation id="666731172850799929">Openen in <ph name="APP_NAME" /></translation>
 <translation id="6671495933530132209">Afbeelding kopiëren</translation>
 <translation id="6674044799624355221">Stuurt een klein gedeelte pagina's, downloads, extensie-activiteit en systeeminformatie om nieuwe dreigingen te kunnen waarnemen</translation>

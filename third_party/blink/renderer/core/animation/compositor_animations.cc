@@ -465,8 +465,6 @@ bool CompositorAnimations::CompositorPropertyAnimationsHaveNoEffect(
     const EffectModel& effect,
     const PaintArtifactCompositor* paint_artifact_compositor) {
   LayoutObject* layout_object = target_element.GetLayoutObject();
-  if (!layout_object || !layout_object->FirstFragment().PaintProperties())
-    return false;
 
   if (!paint_artifact_compositor) {
     // TODO(pdr): This should return true. This likely only affects tests.
@@ -478,9 +476,18 @@ bool CompositorAnimations::CompositorPropertyAnimationsHaveNoEffect(
 
   const auto& keyframe_effect = To<KeyframeEffectModelBase>(effect);
   const auto& groups = keyframe_effect.GetPropertySpecificKeyframeGroups();
+  bool has_paint_properties =
+      layout_object && layout_object->FirstFragment().PaintProperties();
   for (const PropertyHandle& property : groups.Keys()) {
     if (!CompositedAnimationRequiresProperties(property))
       continue;
+
+    if (!has_paint_properties) {
+      // We have an animated property that requires a property node but no paint
+      // properties.
+      any_compositor_properties_missing = true;
+      break;
+    }
 
     CompositorElementId target_element_id =
         CompositorElementIdFromUniqueObjectId(
@@ -499,8 +506,9 @@ bool CompositorAnimations::CompositorPropertyAnimationsHaveNoEffect(
   // they were optimized out due to not having an effect. An example of this is
   // hidden animations that do not paint.
   if (any_compositor_properties_missing) {
-    // Because animations create all properties (crbug.com/900241), we should
-    // either have all properties or be missing all properties.
+    // Because we're only considering properties that are animated on this
+    // element, we should either have all properties or be missing all
+    // properties.
     DCHECK(!any_compositor_properties_present);
     return true;
   }
@@ -547,9 +555,11 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
                    layout_object->FirstFragment().PaintProperties()) {
       const auto* transform = paint_properties->Transform();
       const auto* effect = paint_properties->Effect();
+      const auto* filter = paint_properties->Filter();
       has_direct_compositing_reasons =
           (transform && transform->HasDirectCompositingReasons()) ||
-          (effect && effect->HasDirectCompositingReasons());
+          (effect && effect->HasDirectCompositingReasons()) ||
+          (filter && filter->HasDirectCompositingReasons());
     }
     if (!has_direct_compositing_reasons &&
         To<KeyframeEffectModelBase>(model).RequiresPropertyNode()) {

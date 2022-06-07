@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
-import {HelpContentList, HelpContentType, SearchRequest, SearchResponse} from './feedback_types.js';
+import {FeedbackContext, HelpContentList, HelpContentType, SearchRequest, SearchResponse} from './feedback_types.js';
 
 /**
  * @fileoverview
@@ -11,33 +11,47 @@ import {HelpContentList, HelpContentType, SearchRequest, SearchResponse} from '.
  */
 
 /** @type {!HelpContentList} */
+export const fakePopularHelpContentList = [
+  {
+    title: stringToMojoString16('fake article'),
+    url: {url: 'https://support.google.com/chromebook/?q=article'},
+    contentType: HelpContentType.kArticle
+  },
+  {
+    title: stringToMojoString16('fake forum'),
+    url: {url: 'https://support.google.com/chromebook/?q=forum'},
+    contentType: HelpContentType.kForum
+  }
+];
+
+/** @type {!HelpContentList} */
 export const fakeHelpContentList = [
   {
     title: stringToMojoString16('Fix connection problems'),
     url: {url: 'https://support.google.com/chromebook/?q=6318213'},
-    content_type: HelpContentType.kArticle
+    contentType: HelpContentType.kArticle
   },
   {
     title: stringToMojoString16(
         'Why won\'t my wireless mouse with a USB piece wor...?'),
     url: {url: 'https://support.google.com/chromebook/?q=123920509'},
-    content_type: HelpContentType.kForum
+    contentType: HelpContentType.kForum
   },
   {
     title: stringToMojoString16('Wifi Issues - only on Chromebooks'),
     url: {url: 'https://support.google.com/chromebook/?q=114174470'},
-    content_type: HelpContentType.kForum
+    contentType: HelpContentType.kForum
   },
   {
     title: stringToMojoString16('Network Connectivity Fault'),
     url: {url: 'https://support.google.com/chromebook/?q=131459420'},
-    content_type: HelpContentType.kForum
+    contentType: HelpContentType.kForum
   },
   {
     title: stringToMojoString16(
         'Connected to WiFi but can\'t connect to the internet'),
     url: {url: 'https://support.google.com/chromebook/?q=22864239'},
-    content_type: HelpContentType.kForum
+    contentType: HelpContentType.kUnknown
   }
 ];
 
@@ -51,4 +65,16 @@ export const fakeSearchRequest = {
 export const fakeSearchResponse = {
   results: fakeHelpContentList,
   totalResults: 10,
+};
+
+/** @type {!FeedbackContext} */
+export const fakeFeedbackContext = {
+  email: 'test.user2@test.com',
+  pageUrl: {url: 'chrome://tab/'},
+};
+
+/** @type {!FeedbackContext} */
+export const fakeEmptyFeedbackContext = {
+  email: '',
+  pageUrl: {url: ''},
 };

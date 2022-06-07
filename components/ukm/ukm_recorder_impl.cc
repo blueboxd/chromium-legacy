@@ -21,6 +21,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/time/time.h"
 #include "components/ukm/scheme_constants.h"
 #include "components/ukm/ukm_recorder_observer.h"
 #include "components/variations/variations_associated_data.h"
@@ -363,6 +364,10 @@ void UkmRecorderImpl::RemoveUkmRecorderObserver(UkmRecorderObserver* observer) {
       ++it;
     }
   }
+}
+
+void UkmRecorderImpl::OnUkmAllowedStateChanged(bool allowed) {
+  NotifyAllObservers(&UkmRecorderObserver::OnUkmAllowedStateChanged, allowed);
 }
 
 // TODO(rkaplow): This should be refactored.

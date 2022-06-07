@@ -13,7 +13,6 @@
 #include "base/numerics/checked_math.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/base/audio_bus.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_point.h"
 #include "media/base/channel_layout.h"
@@ -250,6 +249,7 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
   // this explicitly is only required with CHANNEL_LAYOUT_DISCRETE.
   void set_channels_for_discrete(int channels) {
     DCHECK(channel_layout_ == CHANNEL_LAYOUT_DISCRETE ||
+           channel_layout_ == CHANNEL_LAYOUT_5_1_4_DOWNMIX ||
            channels == ChannelLayoutToChannelCount(channel_layout_));
     channels_ = channels;
   }

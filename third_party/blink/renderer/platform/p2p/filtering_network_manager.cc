@@ -96,14 +96,18 @@ void FilteringNetworkManager::StopUpdating() {
   --start_count_;
 }
 
-void FilteringNetworkManager::GetNetworks(NetworkList* networks) const {
+std::vector<const rtc::Network*> FilteringNetworkManager::GetNetworks() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  networks->clear();
+  std::vector<const rtc::Network*> networks;
 
-  if (enumeration_permission() == ENUMERATION_ALLOWED)
-    NetworkManagerBase::GetNetworks(networks);
+  if (enumeration_permission() == ENUMERATION_ALLOWED) {
+    for (const rtc::Network* network : GetNetworksInternal()) {
+      networks.push_back(const_cast<rtc::Network*>(network));
+    }
+  }
 
-  VLOG(3) << "GetNetworks() returns " << networks->size() << " networks.";
+  VLOG(3) << "GetNetworks() returns " << networks.size() << " networks.";
+  return networks;
 }
 
 webrtc::MdnsResponderInterface* FilteringNetworkManager::GetMdnsResponder()
@@ -175,11 +179,11 @@ void FilteringNetworkManager::OnNetworksChanged() {
 
   // Copy and merge the networks. Fire a signal if the permission status is
   // known.
-  NetworkList networks;
-  network_manager_for_signaling_thread_->GetNetworks(&networks);
+  std::vector<const rtc::Network*> networks =
+      network_manager_for_signaling_thread_->GetNetworks();
   NetworkList copied_networks;
   copied_networks.reserve(networks.size());
-  for (rtc::Network* network : networks) {
+  for (const rtc::Network* network : networks) {
     auto copied_network = std::make_unique<rtc::Network>(*network);
     copied_network->set_default_local_address_provider(this);
     copied_network->set_mdns_responder_provider(this);

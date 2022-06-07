@@ -207,6 +207,7 @@ class PeerConnectionStaticDeps {
   rtc::Thread* GetWorkerThread() { return worker_thread_; }
   rtc::Thread* GetNetworkThread() { return network_thread_; }
   base::Thread& GetChromeSignalingThread() { return chrome_signaling_thread_; }
+  base::Thread& GetChromeWorkerThread() { return chrome_worker_thread_; }
   base::Thread& GetChromeNetworkThread() { return chrome_network_thread_; }
 
  private:
@@ -296,6 +297,9 @@ rtc::Thread* GetNetworkThread() {
 base::Thread& GetChromeSignalingThread() {
   return StaticDeps().GetChromeSignalingThread();
 }
+base::Thread& GetChromeWorkerThread() {
+  return StaticDeps().GetChromeWorkerThread();
+}
 base::Thread& GetChromeNetworkThread() {
   return StaticDeps().GetChromeNetworkThread();
 }
@@ -326,7 +330,7 @@ struct UmaVideoConfig {
 
 void ReportUmaEncodeDecodeCapabilities(
     media::GpuVideoAcceleratorFactories* gpu_factories,
-    media::DecoderFactory* media_decoder_factory) {
+    base::WeakPtr<media::DecoderFactory> media_decoder_factory) {
   const gfx::ColorSpace& render_color_space =
       Platform::Current()->GetRenderingColorSpace();
   scoped_refptr<base::SequencedTaskRunner> media_task_runner =
@@ -376,7 +380,7 @@ void ReportUmaEncodeDecodeCapabilities(
 
 void WaitForEncoderSupportReady(
     media::GpuVideoAcceleratorFactories* gpu_factories,
-    media::DecoderFactory* media_decoder_factory) {
+    base::WeakPtr<media::DecoderFactory> media_decoder_factory) {
   gpu_factories->NotifyEncoderSupportKnown(
       base::BindOnce(&ReportUmaEncodeDecodeCapabilities, gpu_factories,
                      media_decoder_factory));
@@ -529,7 +533,7 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
           Platform::Current()->GetRenderingColorSpace(),
           Platform::Current()->MediaThreadTaskRunner(),
           CrossThreadUnretained(Platform::Current()->GetGpuFactories()),
-          CrossThreadUnretained(Platform::Current()->GetMediaDecoderFactory()),
+          Platform::Current()->GetMediaDecoderFactory(),
           CrossThreadUnretained(&start_signaling_event)));
 
   start_signaling_event.Wait();
@@ -543,7 +547,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
     const gfx::ColorSpace& render_color_space,
     scoped_refptr<base::SequencedTaskRunner> media_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories,
-    media::DecoderFactory* media_decoder_factory,
+    base::WeakPtr<media::DecoderFactory> media_decoder_factory,
     base::WaitableEvent* event) {
   DCHECK(GetChromeSignalingThread().task_runner()->BelongsToCurrentThread());
   DCHECK(GetNetworkThread());
@@ -921,6 +925,14 @@ PeerConnectionDependencyFactory::GetWebRtcNetworkTaskRunner() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return GetChromeNetworkThread().IsRunning()
              ? GetChromeNetworkThread().task_runner()
+             : nullptr;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+PeerConnectionDependencyFactory::GetWebRtcWorkerTaskRunner() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return GetChromeWorkerThread().IsRunning()
+             ? GetChromeWorkerThread().task_runner()
              : nullptr;
 }
 

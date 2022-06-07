@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">若要保存图片，请点按“设置”并允许 Chromium 添加照片</translation>
 <translation id="1289216811211435351">改用 Chromium</translation>
 <translation id="1361748954329991663">Chromium 版本太旧。如果 <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> 中无任何可用更新，则可能是因为您的设备不再支持新版 Chromium。</translation>
-<translation id="1370204544543370355">若要充分利用 Chromium，请使用您的 Google 帐号登录 Chromium</translation>
 <translation id="1431818719585918472">让 Chromium 锁定您的无痕式标签页。</translation>
 <translation id="1472013873724362412">无法在 Chromium 上登录您的帐号。请与您的网域管理员联系，或使用普通的 Google 帐号登录。</translation>
 <translation id="1507010443238049608">帮助我们改进 Chromium 的功能和性能</translation>
@@ -31,7 +30,6 @@
 <translation id="2426113998523353159">根据贵单位的要求，您必须登录才能使用 Chromium。</translation>
 <translation id="2450140762465183767">现在，每当点按消息、文档和其他应用中的链接时，您都可以使用 Chromium 打开链接。</translation>
 <translation id="2478931088402984578">选择 <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="2567507405773541360">借助比以前更简单、更安全、更快速的 Chromium 提高工作效率</translation>
 <translation id="2590893390871230428">同步 Chromium 数据</translation>
 <translation id="2650312721222849884">要查看您在其他设备上用 Chromium 打开的标签页，请开启同步功能</translation>
 <translation id="2684230048001240293">将 Chromium 设为默认同步您所有设备上的标签页、密码和付款信息</translation>
@@ -43,6 +41,7 @@
 <translation id="3256316712990552818">已复制到 Chromium</translation>
 <translation id="3344973607274501920">Chromium 无法检查您的密码。请尝试检查您的互联网连接。</translation>
 <translation id="3472200483164753384">在 Chromium Canary 版中不受支持</translation>
+<translation id="3567399274263440288">若要充分利用 Chromium，请使用您的 Google 帐号登录 Chromium。</translation>
 <translation id="3639997914391704523">您需要先登录 Google 帐号才能使用 Chromium 的密码检查功能。</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> 原本使用 Chromium，并在此设备上保存了书签、密码及其他设置。</translation>
 <translation id="3805899903892079518">Chromium 无权访问您的照片或视频。请依次点按 iOS 中的“设置”&gt;“隐私”&gt;“照片”，授予其访问权限。</translation>
@@ -56,15 +55,6 @@
 <translation id="4828317641996116749">Chromium 无法检查所有密码。请稍后再试。</translation>
 <translation id="4985291216379576555">已离线，Chromium 无法检查是否有更新</translation>
 <translation id="4999538639245140991">由于您要退出的帐号是由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理，因此系统将会从这部设备中删除您的 Chromium 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
-<translation id="5039881550736388123">处于开启状态时：
-<ph name="BEGIN_INDENT" />  • 可协助改进 Chromium，让所有像您这样使用 Chromium 的用户都能够获享更好的体验。<ph name="END_INDENT" />
-
-注意事项：
-<ph name="BEGIN_INDENT" />  • 系统会向 Google 发送与您的 Chromium 使用情况相关的信息，但这些信息与您没有关联。
-
-  • 如果 Chromium 崩溃，崩溃事件的相关详情中可能会包含一些个人信息。
-
-  • 如果您开启同步功能，相关指标可能会包含与您访问的网址相关的信息。<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">登录 Chromium</translation>
 <translation id="5224391634244552924">尚未保存任何密码。您需要先保存密码才能使用 Chromium 的密码检查功能。</translation>
 <translation id="5308226104666789935">Chromium 无法检查是否有更新</translation>

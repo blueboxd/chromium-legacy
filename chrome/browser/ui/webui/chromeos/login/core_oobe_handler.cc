@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
 #include <type_traits>
+#include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -57,14 +57,9 @@ namespace chromeos {
 
 // Note that show_oobe_ui_ defaults to false because WizardController assumes
 // OOBE UI is not visible by default.
-CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
-    : BaseWebUIHandler(js_calls_container), version_info_updater_(this) {
-  DCHECK(js_calls_container);
-
+CoreOobeHandler::CoreOobeHandler() {
   ash::TabletMode::Get()->AddObserver(this);
 
-  ash::BindCrosDisplayConfigController(
-      cros_display_config_.BindNewPipeAndPassReceiver());
   OobeConfiguration::Get()->AddAndFireObserver(this);
 }
 
@@ -91,9 +86,12 @@ void CoreOobeHandler::DeclareLocalizedValues(
 
   builder->Add("playAnimationAriaLabel", IDS_OOBE_PLAY_ANIMATION_MESSAGE);
   builder->Add("pauseAnimationAriaLabel", IDS_OOBE_PAUSE_ANIMATION_MESSAGE);
+
+  builder->Add("back", IDS_EULA_BACK_BUTTON);
+  builder->Add("next", IDS_EULA_NEXT_BUTTON);
 }
 
-void CoreOobeHandler::Initialize() {
+void CoreOobeHandler::InitializeDeprecated() {
   UpdateOobeUIVisibility();
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   version_info_updater_.StartUpdate(true);
@@ -105,16 +103,16 @@ void CoreOobeHandler::Initialize() {
       display::Screen::GetScreen()->GetPrimaryDisplay().size());
 }
 
-void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
-  dict->SetKey("isInTabletMode",
-               base::Value(ash::TabletMode::Get()->InTabletMode()));
-  dict->SetKey("isDemoModeEnabled",
-               base::Value(DemoSetupController::IsDemoModeAllowed()));
+void CoreOobeHandler::GetAdditionalParameters(base::Value::Dict* dict) {
+  dict->Set("isInTabletMode",
+            base::Value(ash::TabletMode::Get()->InTabletMode()));
+  dict->Set("isDemoModeEnabled",
+            base::Value(DemoSetupController::IsDemoModeAllowed()));
   if (policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
-    dict->SetKey("flowType", base::Value("meet"));
+    dict->Set("flowType", base::Value("meet"));
   }
-  dict->SetKey("isQuickStartEnabled",
-               base::Value(ash::features::IsOobeQuickStartEnabled()));
+  dict->Set("isQuickStartEnabled",
+            base::Value(ash::features::IsOobeQuickStartEnabled()));
 }
 
 void CoreOobeHandler::RegisterMessages() {
@@ -126,11 +124,6 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("launchHelpApp", &CoreOobeHandler::HandleLaunchHelpApp);
   AddCallback("toggleResetScreen", &CoreOobeHandler::HandleToggleResetScreen);
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
-  // Note: Used by enterprise_RemoraRequisitionDisplayUsage.py:
-  // TODO(felixe): Use chrome.system.display or cros_display_config.mojom,
-  // https://crbug.com/858958.
-  AddRawCallback("getPrimaryDisplayNameForTesting",
-                 &CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting);
   AddCallback("startDemoModeSetupForTesting",
               &CoreOobeHandler::HandleStartDemoModeSetupForTesting);
 
@@ -142,8 +135,19 @@ void CoreOobeHandler::FocusReturned(bool reverse) {
   CallJS("cr.ui.Oobe.focusReturned", reverse);
 }
 
-void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
-  CallJS("cr.ui.Oobe.reloadContent", dictionary);
+void CoreOobeHandler::ShowScreenWithData(
+    const ash::OobeScreenId& screen,
+    absl::optional<base::Value::Dict> data) {
+  base::Value::Dict screen_params;
+  screen_params.Set("id", screen.name);
+  if (data.has_value()) {
+    screen_params.Set("data", std::move(data.value()));
+  }
+  CallJS("cr.ui.Oobe.showScreen", std::move(screen_params));
+}
+
+void CoreOobeHandler::ReloadContent(base::Value::Dict dictionary) {
+  CallJS("cr.ui.Oobe.reloadContent", base::Value(std::move(dictionary)));
 }
 
 void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
@@ -151,35 +155,19 @@ void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
 }
 
 void CoreOobeHandler::SetShelfHeight(int height) {
-  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
-  if (IsSafeToCallJavascript()) {
-    CallJS("cr.ui.Oobe.setShelfHeight", height);
-  } else {
-    LOG(ERROR) << "Silently dropping SetShelfHeight request.";
-  }
+  CallJS("cr.ui.Oobe.setShelfHeight", height);
 }
 
 void CoreOobeHandler::SetOrientation(bool is_horizontal) {
-  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
-  if (IsSafeToCallJavascript()) {
-    CallJS("cr.ui.Oobe.setOrientation", is_horizontal);
-  } else {
-    LOG(ERROR) << "Silently dropping SetOrientation request.";
-  }
+  CallJS("cr.ui.Oobe.setOrientation", is_horizontal);
 }
 
 void CoreOobeHandler::SetDialogSize(int width, int height) {
-  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
-  if (IsSafeToCallJavascript()) {
-    CallJS("cr.ui.Oobe.setDialogSize", width, height);
-  } else {
-    LOG(ERROR) << "Silently dropping SetDialogSize request.";
-  }
+  CallJS("cr.ui.Oobe.setDialogSize", width, height);
 }
 
 void CoreOobeHandler::HandleInitialized() {
   VLOG(3) << "CoreOobeHandler::HandleInitialized";
-  AllowJavascript();
   GetOobeUI()->InitializeHandlers();
 }
 
@@ -231,7 +219,7 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
 
   show_oobe_ui_ = show;
 
-  if (page_is_ready())
+  if (IsJavascriptAllowed())
     UpdateOobeUIVisibility();
 }
 
@@ -284,12 +272,7 @@ ui::EventSink* CoreOobeHandler::GetEventSink() {
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,
                                   const std::string& text) {
-  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
-  if (IsSafeToCallJavascript()) {
-    CallJS("cr.ui.Oobe.setLabelText", id, text);
-  } else {
-    LOG(ERROR) << "Silently dropping UpdateLabel request.";
-  }
+  CallJS("cr.ui.Oobe.setLabelText", id, text);
 }
 
 void CoreOobeHandler::UpdateKeyboardState() {
@@ -322,10 +305,10 @@ void CoreOobeHandler::OnOobeConfigurationChanged() {
   configuration::FilterConfiguration(
       OobeConfiguration::Get()->GetConfiguration(),
       configuration::ConfigurationHandlerSide::HANDLER_JS, configuration);
-  CallJS("cr.ui.Oobe.updateOobeConfiguration", configuration);
+  CallJS("cr.ui.Oobe.updateOobeConfiguration", std::move(configuration));
 }
 
-void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {
+void CoreOobeHandler::HandleLaunchHelpApp(int help_topic_id) {
   if (!help_app_.get())
     help_app_ = new HelpAppLauncher(
         LoginDisplayHost::default_host()->GetNativeWindow());
@@ -338,32 +321,6 @@ void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {
   if (reverse)
     event.set_flags(ui::EF_SHIFT_DOWN);
   SendEventToSink(&event);
-}
-
-void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetListDeprecated().size());
-  const base::Value& callback_id = args->GetListDeprecated()[0];
-
-  cros_display_config_->GetDisplayUnitInfoList(
-      false /* single_unified */,
-      base::BindOnce(&CoreOobeHandler::GetPrimaryDisplayNameCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback_id.Clone()));
-}
-
-void CoreOobeHandler::GetPrimaryDisplayNameCallback(
-    const base::Value& callback_id,
-    std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
-  AllowJavascript();
-  std::string display_name;
-  for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
-    if (info->is_primary) {
-      display_name = info->name;
-      break;
-    }
-  }
-  DCHECK(!display_name.empty());
-  ResolveJavascriptCallback(callback_id, base::Value(display_name));
 }
 
 void CoreOobeHandler::HandleStartDemoModeSetupForTesting(

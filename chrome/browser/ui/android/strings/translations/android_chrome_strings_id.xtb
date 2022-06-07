@@ -184,8 +184,7 @@ Jika Anda menghapus histori penjelajahan, baik semua histori maupun histori untu
 <translation id="200114059308480249">Sertakan teks di sekitar dalam penelusuran Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# File}other{# File}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> akan dibuka di Chrome. Dengan melanjutkan, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan Google<ph name="END_LINK1" />, serta <ph name="BEGIN_LINK2" />Persyaratan Layanan Tambahan Google Chrome dan Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Kebijakan Privasi<ph name="END_LINK3" /> juga akan berlaku.</translation>
-<translation id="2019145049163614359">Hapus minat?</translation>
-<translation id="2020309681647789787">Histori Anda akan tersedia di semua perangkat yang disinkronkan, sehingga Anda dapat melanjutkan kegiatan Anda</translation>
+<translation id="2020309681647789787">Anda akan memiliki histori di semua perangkat yang disinkronkan, sehingga Anda dapat melanjutkan kegiatan Anda</translation>
 <translation id="2021896219286479412">Kontrol situs layar penuh</translation>
 <translation id="2038563949887743358">Aktifkan Ubah situs desktop</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> juga memiliki data di Chrome</translation>
@@ -213,6 +212,7 @@ Ketuk kata apa pun untuk menelusuri. Untuk menyaring penelusuran, sentuh lama un
 <translation id="2141396931810938595">Berdasarkan penggunaan Anda</translation>
 <translation id="214888715418183969">Pilih metrik yang ingin dibagikan ke Chrome. Metrik yang Anda bagikan akan digunakan untuk membantu menyempurnakan fitur, performa, dan stabilitas Chrome.</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
+<translation id="2155214902713132423">Metode verifikasi ini tidak tersedia untuk perangkat ini. Pilih opsi lain di perangkat lainnya.</translation>
 <translation id="2157851137955077194">Untuk berbagi dari ponsel Anda ke perangkat lain, aktifkan sinkronisasi di setelan Chrome pada kedua perangkat</translation>
 <translation id="2158408438301413340">Chrome tidak dapat memeriksa semua sandi</translation>
 <translation id="2169830938017475061">Sekarang</translation>
@@ -733,7 +733,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="5091199029769593641">Sebentar lagi, Anda akan melihat cerita dari <ph name="SITE_NAME" /> saat membuka tab baru. Situs yang Anda ikuti akan disimpan di Akun Google Anda. Anda dapat mengelolanya di setelan Discover.</translation>
 <translation id="5091249083535528968">Data penggunaan yang diperluas</translation>
 <translation id="509429900233858213">Terjadi kesalahan.</translation>
-<translation id="5098190077610408701">Tambahkan minat?</translation>
 <translation id="5102401324271069229">Jika situs berusaha mencuri sandi Anda, atau jika Anda mendownload file berbahaya, Chrome dapat mengirimkan URL, termasuk bit konten halaman, ke Safe Browsing</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
 <translation id="5115811374190515607">ke <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="5906513782029855931">Dengan mengetahui URL situs, Asisten Google dapat membantu Anda menyelesaikan tugas. Anda dapat menonaktifkan Asisten di setelan Chrome.</translation>
 <translation id="5916664084637901428">Aktif</translation>
 <translation id="5919204609460789179">Perbarui <ph name="PRODUCT_NAME" /> untuk memulai sinkronisasi</translation>
+<translation id="5938820472109305350">Tambahkan <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Menggunakan Google untuk penelusuran</translation>
 <translation id="5945035219773565305">Rekomendasi saat ini:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Melihat halaman live</translation>
@@ -898,7 +898,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="6033245666633565791">Dengan <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome mengembangkan teknologi baru untuk mengamankan Anda dari pelacakan lintas situs sekaligus mempertahankan web terbuka.
 
 Uji coba Privacy Sandbox masih dalam pengembangan aktif dan hanya tersedia di wilayah tertentu. Untuk saat ini, situs dapat mencoba Privacy Sandbox sambil tetap menggunakan teknologi web saat ini seperti cookie pihak ketiga.</translation>
-<translation id="6036057147555329831">ICU tambahan</translation>
 <translation id="6039379616847168523">Beralih ke tab berikutnya</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="604124094241169006">Otomatis</translation>
@@ -1023,6 +1022,7 @@ Trust token meningkatkan privasi di web dan tidak dapat digunakan untuk menemuka
 <translation id="663674369910034433">Untuk setelan lainnya yang berkaitan dengan privasi, keamanan, dan pengumpulan data, lihat <ph name="BEGIN_LINK1" />Sinkronisasi<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Layanan Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Untuk membantu meningkatkan kualitas aplikasi, Chrome akan mengirimkan data penggunaan dan error ke Google. <ph name="BEGIN_UMA_LINK" />Kelola<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokir sepanjang waktu</translation>
+<translation id="6641780377503683465">Hapus <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6645629752388991326">Kontrol perangkat mana yang dapat login dengan menggunakan perangkat ini sebagai kunci keamanan.</translation>
 <translation id="6648459603387803038">Administrator dapat mengubah penyiapan browser Anda dari jarak jauh. Aktivitas di perangkat ini juga dapat dikelola di luar Chrome.</translation>

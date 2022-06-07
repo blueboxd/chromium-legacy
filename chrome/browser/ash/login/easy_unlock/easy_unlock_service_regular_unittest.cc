@@ -11,6 +11,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/multidevice/beacon_seed.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/proximity_auth/fake_lock_handler.h"
 #include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/constants/ash_features.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_regular.h"
+#include "chrome/browser/ash/login/easy_unlock/smartlock_feature_usage_metrics.h"
 #include "chrome/browser/ash/login/session/chrome_session_manager.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
@@ -37,8 +40,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/components/multidevice/beacon_seed.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -172,8 +173,8 @@ class EasyUnlockServiceRegularTest : public testing::Test {
             multidevice::RemoteDeviceRefBuilder()
                 .SetPublicKey("local device")
                 .SetSoftwareFeatureState(
-                    chromeos::multidevice::SoftwareFeature::kSmartLockClient,
-                    chromeos::multidevice::SoftwareFeatureState::kEnabled)
+                    multidevice::SoftwareFeature::kSmartLockClient,
+                    multidevice::SoftwareFeatureState::kEnabled)
                 .SetBeaconSeeds(multidevice::FromCryptAuthSeedList(
                     std::vector<cryptauth::BeaconSeed>(4)))
                 .Build()),
@@ -181,8 +182,8 @@ class EasyUnlockServiceRegularTest : public testing::Test {
             multidevice::RemoteDeviceRefBuilder()
                 .SetPublicKey("local device")
                 .SetSoftwareFeatureState(
-                    chromeos::multidevice::SoftwareFeature::kSmartLockHost,
-                    chromeos::multidevice::SoftwareFeatureState::kEnabled)
+                    multidevice::SoftwareFeature::kSmartLockHost,
+                    multidevice::SoftwareFeatureState::kEnabled)
                 .SetBeaconSeeds(multidevice::FromCryptAuthSeedList(
                     std::vector<cryptauth::BeaconSeed>(4)))
                 .Build()) {}
@@ -208,8 +209,8 @@ class EasyUnlockServiceRegularTest : public testing::Test {
         multidevice::RemoteDeviceRefBuilder()
             .SetPublicKey("potential, but disabled, host device")
             .SetSoftwareFeatureState(
-                chromeos::multidevice::SoftwareFeature::kSmartLockHost,
-                chromeos::multidevice::SoftwareFeatureState::kSupported)
+                multidevice::SoftwareFeature::kSmartLockHost,
+                multidevice::SoftwareFeatureState::kSupported)
             .Build();
     test_remote_devices_.push_back(test_remote_device_smart_lock_host_);
     test_remote_devices_.push_back(test_other_remote_device);
@@ -515,9 +516,8 @@ TEST_F(EasyUnlockServiceRegularTest, GetRemoteDevices_SmartLockHostChanged) {
   auto new_remote_device =
       multidevice::RemoteDeviceRefBuilder()
           .SetPublicKey("new smartlock host")
-          .SetSoftwareFeatureState(
-              chromeos::multidevice::SoftwareFeature::kSmartLockHost,
-              chromeos::multidevice::SoftwareFeatureState::kEnabled)
+          .SetSoftwareFeatureState(multidevice::SoftwareFeature::kSmartLockHost,
+                                   multidevice::SoftwareFeatureState::kEnabled)
           .Build();
   multidevice::RemoteDeviceRefList new_remote_devices;
   new_remote_devices.push_back(new_remote_device);

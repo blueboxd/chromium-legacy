@@ -178,6 +178,7 @@
 <translation id="4600710005438004015">Chrome-г хамгийн сүүлийн хувилбарт шинэчлээгүй тул та шинэ онцлог болон аюулгүй байдлын засвар авах боломжгүй байна.</translation>
 <translation id="4627412468266359539">Заавал биш: Оношилгоо болон ашиглалтын өгөгдлийг Google-д автоматаар илгээснээр ChromeOS Flex-н онцлогууд, гүйцэтгэлийг сайжруулахад тусална уу.</translation>
 <translation id="4633000520311261472">Chrome-ыг илүү аюулгүй болгохын тулд бид <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />-дахь жагсаалтанд ороогүй мөн танд мэдэгдэлгүйгээр нэмэгдсэн байж болох зарим нэг өргөтгөлүүдийг идэвхгүй болголоо.</translation>
+<translation id="469553575393225953">Тодорхойгүй эх сурвалжийн өргөтгөл, апп болон загвар нь таны төхөөрөмжийг гэмтээх боломжтой. Chrome тэдгээрийг зөвхөн Chrome Веб Дэлгүүрээс суулгахыг зөвлөж байна</translation>
 <translation id="4728575227883772061">Тодорхой бус шалтгаанаар суурьлуулалт амжилтгүй боллоо. Хэрэв Google Chrome нээлттэй байгаа бол хаагаад, дахин оролдож үзнэ үү.</translation>
 <translation id="4747730611090640388">Chrome таны сонирхлыг тооцоолох боломжтой.  Дараа нь таны зочилсон сайт таны хардаг зарыг хувийн болгохын тулд Chrome-с таны сонирхлыг харахыг хүсэх боломжтой.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -221,6 +222,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="5736850870166430177">Хэрэв сайт таны нууц үгийг хулгайлахаар оролдох эсвэл таныг аюултай файл татах үед Chrome URL-г хуудасны бага зэрэг контентын хамт Аюулгүй үзэх рүү мөн илгээж болзошгүй</translation>
 <translation id="573759479754913123">Chrome үйлдлийн системийн тухай</translation>
 <translation id="5756509061973259733">Энэ бүртгэлтэй Chrome-н профайл аль хэдийн энэ төхөөрөмж дээр байна</translation>
+<translation id="5763280521700030406">Энэ файлд аюулгүй байдлын шалгалт хийхэд хэт том байгаа тул Chrome үүнийг блоклосон. 50 МБ хүртэлх файлуудаар дахин оролдоно уу</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Канари</translation>
 <translation id="5804318322022881572">Chrome-г эхлүүлж чадсангүй. Дахин оролдоно уу.</translation>
 <translation id="5867197326698922595">Google Chrome нь нууц үгсийг засах гэж оролдож байна.</translation>
@@ -236,6 +238,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Бета</translation>
 <translation id="6235018212288296708">mDNS урсгалыг зөвшөөрөх Google Chrome-ын дотоод дүрэм.</translation>
+<translation id="6247557882553405851">Google-н Нууц үгний менежер</translation>
 <translation id="6291089322031436445">Chrome Dev Апп</translation>
 <translation id="6291549208091401781">Google Chrome-г таны компьютерийн бүх хэрэглэгчид суулгасан.</translation>
 <translation id="6368958679917195344">Chrome OS-ийг нэмэлт <ph name="BEGIN_LINK_CROS_OSS" /> нээлттэй эхийн программ хангамжаар ажиллуулж байна <ph name="END_LINK_CROS_OSS" />.</translation>
@@ -244,6 +247,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="6506909944137591434">Таны эргэн тойрны 3D газрын зургийг үүсгэхийн тулд Chrome-д камерын зөвшөөрөл шаардлагатай</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Дев</translation>
 <translation id="6568793831116033768">Chrome үйлдлийн систем</translation>
+<translation id="659498884637196217">Энэ төхөөрөмжийн Google-н Нууц үгний менежерт байна</translation>
 <translation id="6632473616050862500">ChromeOS Flex-г нэмэлт <ph name="BEGIN_LINK_CROS_OSS" />нээлттэй эх кодын программ хангамжаар<ph name="END_LINK_CROS_OSS" /> боломжтой болгосон.</translation>
 <translation id="6676384891291319759">Интернэтэд нэвтрэх</translation>
 <translation id="6679975945624592337">Google Chrome-г цаана ажиллуулахыг зөвшөөрөх</translation>
@@ -283,6 +287,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 Таны вебсайтууд болон аппуудад аль хэдийн өгсөн зөвшөөрөл нь энэ бүртгэлд хэрэгжиж болзошгүй. Та Google Бүртгэлүүдээ <ph name="SETTINGS_LINK_BEGIN" />Тохиргоо<ph name="SETTINGS_LINK_END" /> хэсэгт удирдах боломжтой.</translation>
 <translation id="7398801000654795464">Та <ph name="USER_EMAIL_ADDRESS" /> нэрээр Chrome-д нэвтэрсэн байна. Та дараа дахин нэвтрэхдээ ижил хаяг ашиглан нэвтэрнэ үү.</translation>
 <translation id="7408085963519505752">Chrome OS-ийн нөхцлүүд</translation>
+<translation id="7410958280246779049">Энэ файл аюултай тул Chrome үүнийг блоклосон</translation>
 <translation id="7419046106786626209">Таны домэйн дээр мэдээллийн тохиргоог хийх боломжгүй байгаа тул Chrome OS нь таны мэдээллийн тохиргоог хийх боломжгүй байна.</translation>
 <translation id="7481213027396403996">Chrome-н хамгийн хүчирхэг аюулгүй байдлыг аваарай</translation>
 <translation id="7486227612705979895">Chrome хаяг оруулах хэсэгт зөвлөмж харуулахын тулд таны Драйвт хандах болно</translation>
@@ -297,7 +302,6 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="7655455401911432608">Таны хөтчийн түүх буюу энэ төхөөрөмж дээр Chrome-г ашиглан зочилсон сайтуудын бүртгэл.</translation>
 <translation id="7665553140559834626">&amp;Chrome OS-г шинэчлэхийн тулд дахин ачаалах</translation>
 <translation id="7747138024166251722">Суулгагч нь түр зуурын хадгалалтын санг үүсгэж чадсангүй. Дискэнд сул зай байгаа эсэхийг мөн программ хангамж суулгах зөвшөөрлийг шалгана уу.</translation>
-<translation id="7748512868279796735">Дараах бүртгэлүүд Chrome-н энэ профайлд боломжтой байна</translation>
 <translation id="7761834446675418963">Chrome-ыг нээж хайлтаа эхлүүлэх нэрэн дээрээ дарна уу.</translation>
 <translation id="7777080907402804672">Хэрэв зурагт хэрэгтэй тайлбар байхгүй бол Chrome танд тайлбар өгөхөөр оролдох болно. Тайлбар үүсгэхийн тулд зургийг Google-д илгээнэ. Та үүнийг хүссэн үедээ тохиргоонд унтрааж болно.</translation>
 <translation id="7781002470561365167">Google Chrome-ийн шинэ хувилбар боломжтой байна.</translation>
@@ -313,10 +317,12 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="7951272445806340501">Шинэчлэлтийг хэрэгжүүлэхийн тулд ChromeOS Flex-г дахин эхлүүлэх шаардлагатай.</translation>
 <translation id="7962410387636238736">Энэ компьютер Windows XP болон Windows Vista-г дэмжихээ больсон тул цаашид Google Chrome-н шинэчлэлтийг авахгүй.</translation>
 <translation id="79947657522496226">Chrome үйлдлийн системийг <ph name="BEGIN_LINK_LINUX_OSS" />Linux-н хөгжүүлэлтийн орчин <ph name="END_LINK_LINUX_OSS" /> болох нэмэлт <ph name="BEGIN_LINK_CROS_OSS" />нээлттэй эх кодын программ хангамж<ph name="END_LINK_CROS_OSS" />-аар боломжтой болгосон.</translation>
+<translation id="8005666035647241369">Энэ төхөөрөмж дээрх Google-н Нууц үгний менежерт</translation>
 <translation id="8008534537613507642">Chrome-ийг дахин суулгах</translation>
 <translation id="8013993649590906847">Хэрэв зурагт хэрэгтэй тайлбар байхгүй бол Chrome танд тайлбар өгөхөөр оролдох болно. Тайлбар үүсгэхийн тулд зургийг Google-д илгээнэ.</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">Google Chrome-ийн тухай</translation>
+<translation id="822971176939352383">Дараах бүртгэлүүд Chrome-н ямар ч профайлд нэвтрээгүй байна. Хэрэв та бүртгэлийг өөр профайлд ашиглахыг хүсвэл эхлээд тухайн профайлыг хасна уу.</translation>
 <translation id="8255190535488645436">Google Chrome нь таны камер болон микрофоныг ашиглаж байна.</translation>
 <translation id="8286862437124483331">Google Chrome нь нууц үгийг харуулахыг оролдож байна. Үүнийг зөвшөөрөхийн тулд Windows-ийн нууц үгээ бичиж оруулна уу.</translation>
 <translation id="828798499196665338">Таны эцэг эх Chrome-н "Сайтууд, аппууд болон өргөтгөлүүдийн зөвшөөрөл"-ийг унтраасан байна. Энэ <ph name="EXTENSION_TYPE_PARAMETER" />-г идэвхжүүлэхийг зөвшөөрдөггүй.</translation>
@@ -328,8 +334,10 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="8394720698884623075">Chrome-д хадгалсан аюултай сайтын жагсаалттай URL-г шалгана</translation>
 <translation id="840084489713044809">Google Chrome таны нууц үгийг экспортлох хүсэлтэй байна.</translation>
 <translation id="8416347857511542594">Chrome-н сонирхсон зарын тохируулгын талаар нэмэлт мэдээлэл авах</translation>
+<translation id="8421734018304082652">Энэ файлыг шифрлэсэн тул Chrome үүнийг блоклосон. Өмчлөгчөөс нь үүний кодыг тайлахыг хүснэ үү</translation>
 <translation id="8433638294851456451">Та эндээс Android утсандаа дугаар илгээхийн тулд хоёр төхөөрөмжийн аль алинаас нь Chrome-д нэвтэрнэ үү.</translation>
 <translation id="8498858610309223613">Google Chrome-н аюулгүй байдлын тусгай шинэчлэлтийг хийж дууслаа. Одоо дахин эхлүүлнэ үү. Бид таны табыг сэргээх болно.</translation>
+<translation id="8504220326736535258">Энэ файл хортой программтай тул Chrome үүнийг блоклосон</translation>
 <translation id="8516431725144212809">Chrome-с тооцоолсон таны сонирхол</translation>
 <translation id="8521348052903287641">mDNS урсгалыг зөвшөөрөх Google Chrome-н дотоод дүрэм.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

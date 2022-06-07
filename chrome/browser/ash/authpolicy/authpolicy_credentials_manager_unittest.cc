@@ -15,7 +15,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/network/network_handler_test_helper.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -25,8 +25,6 @@
 namespace ash {
 
 namespace {
-
-using ::chromeos::AuthPolicyClient;
 
 constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";
 constexpr char kProfileEmail[] = "user@example.com";
@@ -98,8 +96,8 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   AuthPolicyCredentialsManager* authpolicy_credentials_manager() {
     return authpolicy_credentials_manager_;
   }
-  chromeos::FakeAuthPolicyClient* fake_authpolicy_client() const {
-    return chromeos::FakeAuthPolicyClient::Get();
+  FakeAuthPolicyClient* fake_authpolicy_client() const {
+    return FakeAuthPolicyClient::Get();
   }
 
   MockUserManager* mock_user_manager() {

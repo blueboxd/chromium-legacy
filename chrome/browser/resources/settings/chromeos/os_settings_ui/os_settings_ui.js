@@ -11,6 +11,7 @@
  *    <settings-ui prefs="{{prefs}}"></settings-ui>
  */
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '//resources/cr_elements/cr_drawer/cr_drawer.js';
 import '//resources/cr_elements/cr_page_host_style_css.js';
 import '//resources/cr_elements/icons.m.js';
 import '//resources/cr_elements/shared_vars_css.m.js';
@@ -22,7 +23,6 @@ import '../../prefs/prefs.js';
 import '../../settings_vars_css.js';
 
 import {CrContainerShadowBehavior} from '//resources/cr_elements/cr_container_shadow_behavior.m.js';
-import {CrDrawerElement} from '//resources/cr_elements/cr_drawer/cr_drawer.js';
 import {CrToolbarSearchFieldElement} from '//resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 import {FindShortcutBehavior} from '//resources/cr_elements/find_shortcut_behavior.js';
 import {CrPolicyIndicatorType} from '//resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
@@ -33,9 +33,9 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 import {loadTimeData} from '../../i18n_setup.js';
 import {Route, Router} from '../../router.js';
 import {GlobalScrollTargetBehavior, setGlobalScrollTarget} from '../global_scroll_target_behavior.js';
-import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
+import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSettingChange} from '../metrics_recorder.js';
 import {OSPageVisibility, osPageVisibility} from '../os_page_visibility.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 import {PrefToSettingMetricConverter} from '../pref_to_setting_metric_converter.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 

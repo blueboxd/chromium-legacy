@@ -14,10 +14,11 @@ import '//resources/cr_elements/icons.m.js';
 import '//resources/cr_elements/shared_style_css.m.js';
 import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../settings_shared_css.js';
+import '../site_favicon.js';
 
 import {CrSearchFieldElement} from '//resources/cr_elements/cr_search_field/cr_search_field.js';
 import {FindShortcutMixin, FindShortcutMixinInterface} from '//resources/cr_elements/find_shortcut_mixin.js';
-import {assert} from '//resources/js/assert.m.js';
+import {assert} from '//resources/js/assert_ts.js';
 import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from '//resources/js/i18n_mixin.js';
 import {listenOnce} from '//resources/js/util.m.js';
@@ -42,7 +43,7 @@ const SettingsSubpageElementBase =
         [IronResizableBehavior],
         RouteObserverMixin(FindShortcutMixin(I18nMixin(PolymerElement)))) as {
       new (): PolymerElement & FindShortcutMixinInterface & I18nMixinInterface &
-      RouteObserverMixinInterface
+          RouteObserverMixinInterface,
     };
 
 export class SettingsSubpageElement extends SettingsSubpageElementBase {
@@ -54,7 +55,11 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
     return {
       pageTitle: String,
 
+      /** Setting this will display the icon at the given URL. */
       titleIcon: String,
+
+      /** Setting this will display the favicon of the website. */
+      faviconSiteUrl: String,
 
       learnMoreUrl: String,
 
@@ -118,6 +123,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
 
   pageTitle: string;
   titleIcon: string;
+  faviconSiteUrl: string;
   learnMoreUrl: string;
   searchLabel: string;
   searchTerm: string;
@@ -166,7 +172,8 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
     return new Promise(resolve => {
       listenOnce(this, 'dom-change', () => {
         searchField = this.shadowRoot!.querySelector('cr-search-field');
-        resolve(assert(searchField!));
+        assert(!!searchField);
+        resolve(searchField);
       });
     });
   }

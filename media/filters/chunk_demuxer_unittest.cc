@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
@@ -2012,9 +2013,9 @@ TEST_F(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
                             kInfiniteDuration));
 
   DemuxerStream* audio = GetStream(DemuxerStream::AUDIO);
-  EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, audio->liveness());
+  EXPECT_EQ(StreamLiveness::kLive, audio->liveness());
   DemuxerStream* video = GetStream(DemuxerStream::VIDEO);
-  EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, video->liveness());
+  EXPECT_EQ(StreamLiveness::kLive, video->liveness());
   EXPECT_EQ(212949, demuxer_->GetMemoryUsage());
 }
 

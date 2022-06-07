@@ -57,13 +57,14 @@ AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
     base::PlatformThreadRef context_thread_ref,
     scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
     viz::ReleaseCallback release_callback,
-    bool supports_display_compositing) {
+    bool supports_display_compositing,
+    bool is_overlay_candidate) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, shared_image_texture_id, sk_image_info,
       texture_target, is_origin_top_left, supports_display_compositing,
-      ImageOrientationEnum::kDefault, std::move(context_provider_wrapper),
-      context_thread_ref, std::move(context_task_runner),
-      std::move(release_callback)));
+      is_overlay_candidate, ImageOrientationEnum::kDefault,
+      std::move(context_provider_wrapper), context_thread_ref,
+      std::move(context_task_runner), std::move(release_callback)));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
@@ -74,6 +75,7 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     GLenum texture_target,
     bool is_origin_top_left,
     bool supports_display_compositing,
+    bool is_overlay_candidate,
     const ImageOrientation& orientation,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::PlatformThreadRef context_thread_ref,
@@ -85,6 +87,7 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
       texture_target_(texture_target),
       is_origin_top_left_(is_origin_top_left),
       supports_display_compositing_(supports_display_compositing),
+      is_overlay_candidate_(is_overlay_candidate),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       mailbox_ref_(
           base::MakeRefCounted<MailboxRef>(sync_token,
@@ -103,8 +106,8 @@ AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-gfx::Size AcceleratedStaticBitmapImage::SizeInternal() const {
-  return gfx::Size(sk_image_info_.width(), sk_image_info_.height());
+SkImageInfo AcceleratedStaticBitmapImage::GetSkImageInfoInternal() const {
+  return sk_image_info_;
 }
 
 scoped_refptr<StaticBitmapImage>
@@ -385,14 +388,15 @@ scoped_refptr<StaticBitmapImage>
 AcceleratedStaticBitmapImage::ConvertToColorSpace(
     sk_sp<SkColorSpace> color_space,
     SkColorType color_type) {
+  SkImageInfo image_info = PaintImageForCurrentFrame().GetSkImageInfo();
   DCHECK(color_space);
   DCHECK(color_type == kRGBA_F16_SkColorType ||
-         color_type == kRGBA_8888_SkColorType);
+         color_type == kRGBA_8888_SkColorType ||
+         color_type == image_info.colorType());
 
   if (!ContextProviderWrapper())
     return nullptr;
 
-  SkImageInfo image_info = PaintImageForCurrentFrame().GetSkImageInfo();
   if (SkColorSpace::Equals(color_space.get(), image_info.colorSpace()) &&
       color_type == image_info.colorType()) {
     return this;

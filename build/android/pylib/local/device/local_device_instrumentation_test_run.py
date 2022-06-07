@@ -198,8 +198,7 @@ class LocalDeviceInstrumentationTestRun(
           # manually invoke its __enter__ and __exit__ methods in setup and
           # teardown.
           system_app_context = system_app.ReplaceSystemApp(
-              dev, self._test_instance.replace_system_package.package,
-              self._test_instance.replace_system_package.replacement_apk)
+              dev, replacement_apk=self._test_instance.replace_system_package)
           # Pylint is not smart enough to realize that this field has
           # an __enter__ method, and will complain loudly.
           # pylint: disable=no-member
@@ -739,9 +738,14 @@ class LocalDeviceInstrumentationTestRun(
           try:
             if not os.path.exists(self._test_instance.coverage_directory):
               os.makedirs(self._test_instance.coverage_directory)
-            device.PullFile(coverage_device_file,
-                            self._test_instance.coverage_directory)
-            device.RemovePath(coverage_device_file, True)
+            # Retries add time to test execution.
+            if device.PathExists(coverage_device_file, retries=0):
+              device.PullFile(coverage_device_file,
+                              self._test_instance.coverage_directory)
+              device.RemovePath(coverage_device_file, True)
+            else:
+              logging.warning('Coverage file does not exist: %s',
+                              coverage_device_file)
           except (OSError, base_error.BaseError) as e:
             logging.warning('Failed to handle coverage data after tests: %s', e)
 
@@ -1200,8 +1204,12 @@ class LocalDeviceInstrumentationTestRun(
           # All the key/value pairs in the JSON file are strings, so convert
           # to a bool.
           json_dict = json.load(infile)
-          fail_on_unsupported = json_dict.get('fail_on_unsupported_configs',
-                                              'false')
+          optional_dict = json_dict.get('optional_keys', {})
+          if 'optional_keys' in json_dict:
+            should_rewrite = True
+            del json_dict['optional_keys']
+          fail_on_unsupported = optional_dict.get('fail_on_unsupported_configs',
+                                                  'false')
           fail_on_unsupported = fail_on_unsupported.lower() == 'true'
           # Grab the full test name so we can associate the comparison with a
           # particular test, which is necessary if tests are batched together.
@@ -1221,7 +1229,8 @@ class LocalDeviceInstrumentationTestRun(
         # should_ignore_in_gold != should_hide_failure.
         should_hide_failure = running_on_unsupported
         if should_ignore_in_gold:
-          should_rewrite = True
+          # This is put in the regular keys dict instead of the optional one
+          # because ignore rules do not apply to optional keys.
           json_dict['ignore'] = '1'
         if should_rewrite:
           with open(json_path, 'w') as outfile:
@@ -1236,6 +1245,7 @@ class LocalDeviceInstrumentationTestRun(
               png_file=image_path,
               output_manager=self._env.output_manager,
               use_luci=use_luci,
+              optional_keys=optional_dict,
               force_dryrun=self._IsRetryWithoutPatch())
         except Exception as e:  # pylint: disable=broad-except
           _FailTestIfNecessary(results, full_test_name)

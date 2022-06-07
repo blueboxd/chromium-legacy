@@ -4,9 +4,9 @@
 
 #include "ash/components/phonehub/multidevice_feature_access_manager.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace ash {
 namespace phonehub {
@@ -20,7 +20,7 @@ MultideviceFeatureAccessManager::AttemptNotificationSetup(
     NotificationAccessSetupOperation::Delegate* delegate) {
   // Should only be able to start the setup process if notification access is
   // available but not yet granted.
-  // TODO: check camra roll access status once setup flow is wired up
+  // Legacy setup flow used when FeatureSetupRequest is not supported.
   if (GetNotificationAccessStatus() != AccessStatus::kAvailableButNotGranted)
     return nullptr;
 
@@ -29,11 +29,45 @@ MultideviceFeatureAccessManager::AttemptNotificationSetup(
 
   auto operation = base::WrapUnique(new NotificationAccessSetupOperation(
       delegate,
-      base::BindOnce(&MultideviceFeatureAccessManager::OnSetupOperationDeleted,
-                     weak_ptr_factory_.GetWeakPtr(), operation_id)));
-  id_to_operation_map_.emplace(operation_id, operation.get());
+      base::BindOnce(
+          &MultideviceFeatureAccessManager::OnNotificationSetupOperationDeleted,
+          weak_ptr_factory_.GetWeakPtr(), operation_id)));
+  id_to_notification_operation_map_.emplace(operation_id, operation.get());
 
-  OnSetupRequested();
+  OnNotificationSetupRequested();
+  return operation;
+}
+
+std::unique_ptr<CombinedAccessSetupOperation>
+MultideviceFeatureAccessManager::AttemptCombinedFeatureSetup(
+    bool camera_roll,
+    bool notifications,
+    CombinedAccessSetupOperation::Delegate* delegate) {
+  // New setup flow for combined Camera Roll and/or Notifications setup using
+  // FeatureSetupRequest message type.
+  if (!GetFeatureSetupRequestSupported()) {
+    return nullptr;
+  }
+  if (GetCameraRollAccessStatus() != AccessStatus::kAvailableButNotGranted &&
+      camera_roll) {
+    return nullptr;
+  }
+  if (GetNotificationAccessStatus() != AccessStatus::kAvailableButNotGranted &&
+      notifications) {
+    return nullptr;
+  }
+
+  int operation_id = next_operation_id_;
+  ++next_operation_id_;
+
+  auto operation = base::WrapUnique(new CombinedAccessSetupOperation(
+      delegate,
+      base::BindOnce(
+          &MultideviceFeatureAccessManager::OnCombinedSetupOperationDeleted,
+          weak_ptr_factory_.GetWeakPtr(), operation_id)));
+  id_to_combined_operation_map_.emplace(operation_id, operation.get());
+
+  OnCombinedSetupRequested(camera_roll, notifications);
   return operation;
 }
 
@@ -55,33 +89,81 @@ void MultideviceFeatureAccessManager::NotifyCameraRollAccessChanged() {
     observer.OnCameraRollAccessChanged();
 }
 
+void MultideviceFeatureAccessManager::NotifyAppsAccessChanged() {
+  for (auto& observer : observer_list_)
+    observer.OnAppsAccessChanged();
+}
+
+void MultideviceFeatureAccessManager::
+    NotifyFeatureSetupRequestSupportedChanged() {
+  for (auto& observer : observer_list_)
+    observer.OnFeatureSetupRequestSupportedChanged();
+}
+
 void MultideviceFeatureAccessManager::SetNotificationSetupOperationStatus(
     NotificationAccessSetupOperation::Status new_status) {
-  DCHECK(IsSetupOperationInProgress());
+  DCHECK(IsNotificationSetupOperationInProgress());
 
   PA_LOG(INFO) << "Notification access setup flow - new status: " << new_status;
 
-  for (auto& it : id_to_operation_map_)
-    it.second->NotifyStatusChanged(new_status);
+  for (auto& it : id_to_notification_operation_map_)
+    it.second->NotifyNotificationStatusChanged(new_status);
 
   if (NotificationAccessSetupOperation::IsFinalStatus(new_status))
-    id_to_operation_map_.clear();
+    id_to_notification_operation_map_.clear();
 }
 
-bool MultideviceFeatureAccessManager::IsSetupOperationInProgress() const {
-  return !id_to_operation_map_.empty();
+bool MultideviceFeatureAccessManager::IsNotificationSetupOperationInProgress()
+    const {
+  return !id_to_notification_operation_map_.empty();
 }
 
-void MultideviceFeatureAccessManager::OnSetupOperationDeleted(
+void MultideviceFeatureAccessManager::OnNotificationSetupOperationDeleted(
     int operation_id) {
-  auto it = id_to_operation_map_.find(operation_id);
-  if (it == id_to_operation_map_.end())
+  auto it = id_to_notification_operation_map_.find(operation_id);
+  if (it == id_to_notification_operation_map_.end())
     return;
 
-  id_to_operation_map_.erase(it);
+  id_to_notification_operation_map_.erase(it);
 
-  if (id_to_operation_map_.empty())
+  if (id_to_notification_operation_map_.empty())
     PA_LOG(INFO) << "Notification access setup operation has ended.";
+}
+
+void MultideviceFeatureAccessManager::SetCombinedSetupOperationStatus(
+    CombinedAccessSetupOperation::Status new_status) {
+  DCHECK(IsCombinedSetupOperationInProgress());
+
+  PA_LOG(INFO) << "Combined access setup flow - new status: " << new_status;
+
+  for (auto& it : id_to_combined_operation_map_)
+    it.second->NotifyCombinedStatusChanged(new_status);
+
+  if (CombinedAccessSetupOperation::IsFinalStatus(new_status))
+    id_to_combined_operation_map_.clear();
+}
+
+bool MultideviceFeatureAccessManager::IsCombinedSetupOperationInProgress()
+    const {
+  return !id_to_combined_operation_map_.empty();
+}
+
+void MultideviceFeatureAccessManager::OnNotificationSetupRequested() {}
+
+void MultideviceFeatureAccessManager::OnCombinedSetupRequested(
+    bool camera_roll,
+    bool notifications) {}
+
+void MultideviceFeatureAccessManager::OnCombinedSetupOperationDeleted(
+    int operation_id) {
+  auto it = id_to_combined_operation_map_.find(operation_id);
+  if (it == id_to_combined_operation_map_.end())
+    return;
+
+  id_to_combined_operation_map_.erase(it);
+
+  if (id_to_combined_operation_map_.empty())
+    PA_LOG(INFO) << "Combined access setup operation has ended.";
 }
 
 void MultideviceFeatureAccessManager::Observer::OnNotificationAccessChanged() {
@@ -89,6 +171,15 @@ void MultideviceFeatureAccessManager::Observer::OnNotificationAccessChanged() {
 }
 
 void MultideviceFeatureAccessManager::Observer::OnCameraRollAccessChanged() {
+  // Optional method, inherit class doesn't have to implement this
+}
+
+void MultideviceFeatureAccessManager::Observer::OnAppsAccessChanged() {
+  // Optional method, inherit class doesn't have to implement this
+}
+
+void MultideviceFeatureAccessManager::Observer::
+    OnFeatureSetupRequestSupportedChanged() {
   // Optional method, inherit class doesn't have to implement this
 }
 

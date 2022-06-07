@@ -235,7 +235,7 @@ std::vector<std::string> ChromeShelfPrefs::GetAppsPinnedByPolicy(
   for (const auto& policy_dict_entry : policy_apps->GetListDeprecated()) {
     const std::string* policy_entry =
         policy_dict_entry.is_dict()
-            ? policy_dict_entry.FindStringKey(
+            ? policy_dict_entry.GetDict().FindString(
                   ChromeShelfPrefs::kPinnedAppsPrefAppIDKey)
             : nullptr;
 
@@ -247,25 +247,6 @@ std::vector<std::string> ChromeShelfPrefs::GetAppsPinnedByPolicy(
     if (ash::DemoSession::Get() &&
         !ash::DemoSession::Get()->ShouldShowAndroidOrChromeAppInShelf(
             *policy_entry)) {
-      continue;
-    }
-
-    // Handle Chrome App ids
-    if (crx_file::id_util::IdIsValid(*policy_entry)) {
-      if (*policy_entry == file_manager::kFileManagerAppId &&
-          chromeos::features::IsFileManagerSwaEnabled()) {
-        absl::optional<std::string> files_app_id =
-            web_app::GetAppIdForSystemWebApp(
-                helper->profile(), web_app::SystemAppType::FILE_MANAGER);
-        if (files_app_id) {
-          result.emplace_back(*files_app_id);
-        } else {
-          // Fall-back to the policy_entry if we cannot fetch one for Files app.
-          result.emplace_back(*policy_entry);
-        }
-      } else {
-        result.emplace_back(*policy_entry);
-      }
       continue;
     }
 
@@ -281,15 +262,24 @@ std::vector<std::string> ChromeShelfPrefs::GetAppsPinnedByPolicy(
     // Handle App Service policy IDs (currently Web Apps only)
     if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
             helper->profile())) {
+      size_t initial_result_size = result.size();
       apps::AppServiceProxyFactory::GetForProfile(helper->profile())
           ->AppRegistryCache()
           .ForEachApp([&result, &policy_entries_to_check](
                           const apps::AppUpdate& update) {
             if (base::Contains(policy_entries_to_check, update.PolicyId())) {
-              DCHECK(!base::Contains(result, update.AppId()));
               result.emplace_back(update.AppId());
             }
           });
+      if (result.size() > initial_result_size) {
+        continue;
+      }
+    }
+
+    // Handle Chrome App ids
+    if (crx_file::id_util::IdIsValid(*policy_entry)) {
+      result.emplace_back(*policy_entry);
+      continue;
     }
 
     // Handle Arc++ App ids
@@ -675,7 +665,7 @@ bool ChromeShelfPrefs::IsStandaloneBrowserPublishingChromeApps() {
   return crosapi::browser_util::IsLacrosChromeAppsEnabled();
 }
 
-apps::mojom::AppType ChromeShelfPrefs::GetAppType(const std::string& app_id) {
+apps::AppType ChromeShelfPrefs::GetAppType(const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
   return proxy->AppRegistryCache().GetAppType(app_id);
@@ -720,7 +710,7 @@ std::string ChromeShelfPrefs::GetShelfId(const std::string& sync_id) {
 
   // Now we have to check if the sync id corresponds to a lacros extension app.
   if (GetAppType(transformed_app_id) ==
-      apps::mojom::AppType::kStandaloneBrowserChromeApp) {
+      apps::AppType::kStandaloneBrowserChromeApp) {
     return transformed_app_id;
   }
 
@@ -737,15 +727,15 @@ std::string ChromeShelfPrefs::GetSyncId(const std::string& shelf_id) {
   std::string prefix_removed = shelf_id;
   base::ReplaceFirstSubstringAfterOffset(&prefix_removed, /*start_offset=*/0,
                                          kLacrosChromeAppPrefix, "");
-  apps::mojom::AppType type = GetAppType(shelf_id);
-  if (type == apps::mojom::AppType::kStandaloneBrowserChromeApp) {
+  apps::AppType type = GetAppType(shelf_id);
+  if (type == apps::AppType::kStandaloneBrowserChromeApp) {
     return prefix_removed;
   }
 
   // If removing the prefix turns this into an ash chrome app, then we must
   // remove the prefix.
   type = GetAppType(prefix_removed);
-  if (type == apps::mojom::AppType::kChromeApp) {
+  if (type == apps::AppType::kChromeApp) {
     return prefix_removed;
   }
 

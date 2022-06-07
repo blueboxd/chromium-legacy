@@ -312,7 +312,8 @@ void IconLabelBubbleView::Layout() {
   // The separator should be the same height as the icons.
   const int separator_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   gfx::Rect separator_bounds(label()->bounds());
-  separator_bounds.Inset(0, (separator_bounds.height() - separator_height) / 2);
+  separator_bounds.Inset(
+      gfx::Insets::VH((separator_bounds.height() - separator_height) / 2, 0));
 
   float separator_width =
       GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
@@ -565,7 +566,8 @@ void IconLabelBubbleView::HideAnimation() {
 SkPath IconLabelBubbleView::GetHighlightPath() const {
   gfx::Rect highlight_bounds = GetLocalBounds();
   if (ShouldShowSeparator())
-    highlight_bounds.Inset(0, 0, GetEndPaddingWithSeparator(), 0);
+    highlight_bounds.Inset(
+        gfx::Insets::TLBR(0, 0, 0, GetEndPaddingWithSeparator()));
   highlight_bounds = GetMirroredRect(highlight_bounds);
 
   const float corner_radius = highlight_bounds.height() / 2.f;
@@ -579,9 +581,9 @@ void IconLabelBubbleView::UpdateBorder() {
   // child views in the location bar have the same height. The visible height of
   // the bubble should be smaller, so use an empty border to shrink down the
   // content bounds so the background gets painted correctly.
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
-                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
+  SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(
+      GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
 }
 
 BEGIN_METADATA(IconLabelBubbleView, views::LabelButton)

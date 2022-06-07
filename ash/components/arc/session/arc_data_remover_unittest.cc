@@ -15,8 +15,8 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +24,7 @@
 namespace arc {
 namespace {
 
-class TestUpstartClient : public chromeos::FakeUpstartClient {
+class TestUpstartClient : public ash::FakeUpstartClient {
  public:
   TestUpstartClient() = default;
 
@@ -71,7 +71,7 @@ class ArcDataRemoverTest : public testing::Test {
   }
 
   TestUpstartClient* upstart_client() {
-    return static_cast<TestUpstartClient*>(chromeos::UpstartClient::Get());
+    return static_cast<TestUpstartClient*>(ash::UpstartClient::Get());
   }
 
  private:

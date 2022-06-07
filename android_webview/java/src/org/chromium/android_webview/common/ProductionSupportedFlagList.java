@@ -11,7 +11,7 @@ import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
-import org.chromium.components.power_scheduler.PowerSchedulerFeatures;
+import org.chromium.components.variations.VariationsSwitches;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.components.webrtc.ComponentsWebRtcFeatures;
 import org.chromium.content_public.common.ContentFeatures;
@@ -96,6 +96,8 @@ public final class ProductionSupportedFlagList {
                     "Enable sending HTTP/2 SETTINGS parameters with reserved identifiers."),
             Flag.commandLine(NetworkSessionSwitches.DISABLE_HTTP2_GREASE_SETTINGS,
                     "Disable sending HTTP/2 SETTINGS parameters with reserved identifiers."),
+            Flag.commandLine(VariationsSwitches.ENABLE_FINCH_SEED_DELTA_COMPRESSION,
+                    "Enables delta-compression when requesting a new seed from the server."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_VULKAN,
                     "Use Vulkan for composite. Requires Android device and OS support. May crash "
                             + "if enabled on unsupported device."),
@@ -127,20 +129,6 @@ public final class ProductionSupportedFlagList {
                             + "feature flag until the true runtime cost can be measured."),
             Flag.baseFeature(AwFeatures.WEBVIEW_DISPLAY_CUTOUT,
                     "Enables display cutout (notch) support in WebView for Android P and above."),
-            Flag.baseFeature(PowerSchedulerFeatures.WEBVIEW_CPU_AFFINITY_RESTRICT_TO_LITTLE_CORES,
-                    "Forces WebView to do rendering work on LITTLE CPU cores on big.LITTLE "
-                            + "architectures"),
-            Flag.baseFeature(PowerSchedulerFeatures.WEBVIEW_POWER_SCHEDULER_THROTTLE_IDLE,
-                    "Restricts all of WebView's out-of-process renderer threads to use only LITTLE "
-                            + "CPU cores on big.LITTLE architectures when the power mode is idle. "
-                            + "WebViewCpuAffinityRestrictToLittleCores, if set, takes precedence "
-                            + "over this flag."),
-            Flag.baseFeature(PowerSchedulerFeatures.POWER_SCHEDULER,
-                    "Enables the Power Scheduler. Defaults to throttling when idle or in no-op "
-                            + "animations, if at least 250ms of CPU time were spent "
-                            + "in the first 500ms after entering idle/no-op animation mode. "
-                            + "Can be further configured via field trial parameters, "
-                            + "see power_scheduler.h/cc for details."),
             Flag.baseFeature(BlinkFeatures.WEBVIEW_ACCELERATE_SMALL_CANVASES,
                     "Accelerate all canvases in webview."),
             Flag.baseFeature(AwFeatures.WEBVIEW_MIXED_CONTENT_AUTOUPGRADES,
@@ -177,8 +165,6 @@ public final class ProductionSupportedFlagList {
                             + "interact with a payment form."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_AUGMENTED_PHONE_COUNTRY_CODE,
                     "Enables support for phone code number fields with additional text."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_DISPLACE_REMOVED_FORMS,
-                    "Fixes memory leaks in the renderer- and browser-form caches."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_USE_UNASSOCIATED_LISTED_ELEMENTS,
                     "Caches unowned listed elements in the document."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSING_PATTERN_PROVIDER,
@@ -187,6 +173,9 @@ public final class ProductionSupportedFlagList {
                     "Enables Autofill to retrieve the page language for form parsing."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SENDING_BCN_IN_GET_UPLOAD_DETAILS,
                     "Enables sending billing customer number in GetUploadDetails."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSE_MERCHANT_PROMO_CODE_FIELDS,
+                    "When enabled, Autofill will attempt to find merchant promo/coupon/gift code "
+                            + "fields when parsing forms."),
             Flag.baseFeature(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
                     "When enabled, merchant bound virtual cards will be offered in the keyboard "
                             + "accessory."),
@@ -222,9 +211,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE,
                     "Upload UMA metrics logs through MetricsUploadService not via GMS-core"
                             + " directly."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_LOG_FIRST_PARTY_PAGE_TIME_SPENT,
-                    "Enables logging whether it was a first party page when logging"
-                            + " PageTimeSpent."),
             Flag.baseFeature(BlinkFeatures.FORCE_MAJOR_VERSION_IN_MINOR_POSITION_IN_USER_AGENT,
                     "Force the Chrome major version number to 99 and put the major version"
                             + " number in the minor version position in the User-Agent string."),
@@ -251,9 +237,6 @@ public final class ProductionSupportedFlagList {
                     "Executes tasks with  the kBootstrap task type on the default task queues "
                             + "(based on priority of the task) rather than a dedicated "
                             + "high-priority task queue."),
-            Flag.baseFeature(BlinkFeatures.RTC_DISALLOW_PLAN_B_OUTSIDE_DEPRECATION_TRIAL,
-                    "Makes constructing an RTCPeerConnection with {sdpSemantics:'plan-b'} throw "
-                            + "an exception."),
             Flag.baseFeature(BlinkFeatures.PREFETCH_ANDROID_FONTS,
                     "Enables prefetching Android fonts on renderer startup."),
             Flag.baseFeature(AwFeatures.WEBVIEW_LEGACY_TLS_SUPPORT,
@@ -300,8 +283,16 @@ public final class ProductionSupportedFlagList {
                     "Free Canvas2D resources when the webview is in the background."),
             Flag.baseFeature(VizFeatures.SURFACE_SYNC_THROTTLING,
                     "Enables throttling of Surface Sync to improve rotations"),
+            Flag.baseFeature(BlinkFeatures.AUTOFILL_SHADOW_DOM,
+                    "Enables Autofill associate form elements with form "
+                            + "control elements across shadow boundaries."),
             Flag.baseFeature(BlinkFeatures.UACH_OVERRIDE_BLANK,
                     "Changes behavior of User-Agent Client Hints to send blank headers "
                             + "when the User-Agent string is overriden"),
+            Flag.baseFeature(BlinkFeatures.MAX_UNTHROTTLED_TIMEOUT_NESTING_LEVEL,
+                    "Increases the nesting threshold before which "
+                            + "setTimeout(..., <4ms) starts being clamped to 4 ms."),
+            // Add new commandline switches and features above. The final entry should have a
+            // trailing comma for cleaner diffs.
     };
 }

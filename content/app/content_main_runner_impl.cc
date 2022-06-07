@@ -39,7 +39,6 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/hang_watcher.h"
@@ -172,7 +171,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/system/sys_info.h"
-#include "components/power_scheduler/power_scheduler.h"
 #include "content/browser/android/battery_metrics.h"
 #include "content/browser/android/browser_startup_controller.h"
 #endif
@@ -861,35 +859,14 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   RegisterPathProvider();
 
 #if BUILDFLAG(IS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
-  // On Android, we have two ICU data files. A main one with most languages
-  // that is expected to always be available and an extra one that is
-  // installed separately via a dynamic feature module. If the extra ICU data
-  // file is available we have to apply it _before_ the main ICU data file.
-  // Otherwise, the languages of the extra ICU file will be overridden.
   if (process_type.empty()) {
     TRACE_EVENT0("startup", "InitializeICU");
     // In browser process load ICU data files from disk.
-    std::string split_name;
-    if (GetContentClient()->browser()->ShouldLoadExtraIcuDataFile(
-            &split_name)) {
-      if (!base::i18n::InitializeExtraICU(split_name)) {
-        return TerminateForFatalInitializationError();
-      }
-    }
     if (!base::i18n::InitializeICU()) {
       return TerminateForFatalInitializationError();
     }
   } else {
     // In child process map ICU data files loaded by browser process.
-    int icu_extra_data_fd = g_fds->MaybeGet(kAndroidICUExtraDataDescriptor);
-    if (icu_extra_data_fd != -1) {
-      auto icu_extra_data_region =
-          g_fds->GetRegion(kAndroidICUExtraDataDescriptor);
-      if (!base::i18n::InitializeExtraICUWithFileDescriptor(
-              icu_extra_data_fd, icu_extra_data_region)) {
-        return TerminateForFatalInitializationError();
-      }
-    }
     int icu_data_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
     if (icu_data_fd == -1) {
       return TerminateForFatalInitializationError();
@@ -1065,8 +1042,8 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
       mojo::core::InitFeatures();
     }
 
-    // Create and start the ThreadPool early to allow upcoming code to use
-    // the post_task.h API.
+    // Create and start the ThreadPool early to allow upcoming code to use the
+    // thread_pool.h API.
     const bool has_thread_pool =
         GetContentClient()->browser()->CreateThreadPool("Browser");
 
@@ -1126,11 +1103,6 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
 
     // Requires base::PowerMonitor to be initialized first.
     AndroidBatteryMetrics::GetInstance();
-
-    // For child processes, this requires allowing of the
-    // sched_setaffinity() syscall in the sandbox (baseline_policy_android.cc).
-    // When this call is removed, the sandbox allowlist should be updated too.
-    power_scheduler::PowerScheduler::GetInstance()->Setup();
 #endif
 
     if (should_start_minimal_browser)
@@ -1208,10 +1180,6 @@ void ContentMainRunnerImpl::Shutdown() {
 // static
 std::unique_ptr<ContentMainRunner> ContentMainRunner::Create() {
   return ContentMainRunnerImpl::Create();
-}
-
-ContentClient* GetContentClientForTesting() {
-  return GetContentClient();
 }
 
 #if BUILDFLAG(IS_ANDROID)

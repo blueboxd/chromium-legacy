@@ -14,7 +14,7 @@
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ui/webui/chromeos/login/os_install_screen_handler.h"
-#include "chromeos/dbus/os_install/os_install_client.h"
+#include "chromeos/ash/components/dbus/os_install/os_install_client.h"
 
 namespace ash {
 
@@ -38,7 +38,7 @@ class OsInstallScreen : public BaseScreen, public OsInstallClient::Observer {
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
   // OsInstallClient::Observer:
   void StatusChanged(OsInstallClient::Status status,

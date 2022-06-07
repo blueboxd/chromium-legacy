@@ -5,10 +5,21 @@
 /**
  * @fileoverview ChromeVox commands.
  */
+import {AbstractTts} from '../common/abstract_tts.js';
+import {CommandStore} from '../common/command_store.js';
+import {TypingEcho} from '../common/editable_text_base.js';
+import {GestureGranularity} from '../common/gesture_command_data.js';
+import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
+
+import {AutoScrollHandler} from './auto_scroll_handler.js';
+import {BrailleBackground} from './braille/braille_background.js';
+import {BrailleCaptionsBackground} from './braille/braille_captions_background.js';
 import {ChromeVoxBackground} from './classic_background.js';
 import {Color} from './color.js';
+import {CustomAutomationEvent} from './custom_automation_event.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {GestureInterface} from './gesture_interface.js';
+import {ChromeVoxPrefs} from './prefs.js';
 import {SmartStickyMode} from './smart_sticky_mode.js';
 
 const ActionType = chrome.automation.ActionType;
@@ -124,15 +135,15 @@ export class CommandHandler extends CommandHandlerInterface {
         ChromeVox.passThroughMode = true;
         ChromeVox.tts.speak(Msgs.getMsg('pass_through_key'), QueueMode.QUEUE);
         return true;
-      case 'showKbExplorerPage':
+      case 'showLearnModePage':
         const explorerPage = {
-          url: 'chromevox/learn_mode/kbexplorer.html',
+          url: 'chromevox/learn_mode/learn_mode.html',
           type: 'panel'
         };
         chrome.windows.create(explorerPage);
         break;
       case 'showLogPage':
-        const logPage = {url: 'chromevox/background/logging/log.html'};
+        const logPage = {url: 'chromevox/log_page/log.html'};
         chrome.tabs.create(logPage);
         break;
       case 'enableLogging': {

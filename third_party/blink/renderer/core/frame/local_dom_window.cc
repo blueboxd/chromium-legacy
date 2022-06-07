@@ -621,8 +621,8 @@ void LocalDOMWindow::AddConsoleMessageImpl(ConsoleMessage* console_message,
     console_message = MakeGarbageCollected<ConsoleMessage>(
         console_message->Source(), console_message->Level(),
         console_message->Message(),
-        std::make_unique<SourceLocation>(Url().GetString(), line_number, 0,
-                                         nullptr));
+        std::make_unique<SourceLocation>(Url().GetString(), String(),
+                                         line_number, 0, nullptr));
     console_message->SetNodes(GetFrame(), std::move(nodes));
     if (category)
       console_message->SetCategory(*category);
@@ -1717,8 +1717,10 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
 }
 
 void LocalDOMWindow::moveBy(int x, int y) const {
-  if (!GetFrame() || !GetFrame()->IsMainFrame() || document()->IsPrerendering())
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      document()->IsPrerendering()) {
     return;
+  }
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -1733,8 +1735,10 @@ void LocalDOMWindow::moveBy(int x, int y) const {
 }
 
 void LocalDOMWindow::moveTo(int x, int y) const {
-  if (!GetFrame() || !GetFrame()->IsMainFrame() || document()->IsPrerendering())
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      document()->IsPrerendering()) {
     return;
+  }
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -1749,8 +1753,10 @@ void LocalDOMWindow::moveTo(int x, int y) const {
 }
 
 void LocalDOMWindow::resizeBy(int x, int y) const {
-  if (!GetFrame() || !GetFrame()->IsMainFrame() || document()->IsPrerendering())
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      document()->IsPrerendering()) {
     return;
+  }
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -1764,8 +1770,10 @@ void LocalDOMWindow::resizeBy(int x, int y) const {
 }
 
 void LocalDOMWindow::resizeTo(int width, int height) const {
-  if (!GetFrame() || !GetFrame()->IsMainFrame() || document()->IsPrerendering())
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      document()->IsPrerendering()) {
     return;
+  }
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -2069,6 +2077,11 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   WebWindowFeatures window_features =
       GetWindowFeaturesFromString(features, incumbent_window);
 
+  // In fenced frames, we should always use `noopener`.
+  if (GetFrame()->IsInFencedFrameTree()) {
+    window_features.noopener = true;
+  }
+
   FrameLoadRequest frame_request(incumbent_window,
                                  ResourceRequest(completed_url));
   frame_request.SetFeaturesForWindowOpen(window_features);
@@ -2146,6 +2159,7 @@ DOMWindow* LocalDOMWindow::openPictureInPictureWindow(
     ExceptionState& exception_state) {
   LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
   LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
+  DCHECK(isSecureContext());
 
   // If the bindings implementation is 100% correct, the current realm and the
   // entered realm should be same origin-domain. However, to be on the safe
@@ -2274,7 +2288,7 @@ Fence* LocalDOMWindow::fence() {
   }
 
   if (!fence_) {
-    fence_ = MakeGarbageCollected<Fence>();
+    fence_ = MakeGarbageCollected<Fence>(*this);
   }
 
   return fence_.Get();

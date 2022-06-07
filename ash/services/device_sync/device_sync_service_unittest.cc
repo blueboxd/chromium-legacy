@@ -7,7 +7,10 @@
 #include <tuple>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device_test_util.h"
+#include "ash/components/multidevice/secure_message_delegate.h"
 #include "ash/constants/ash_features.h"
+#include "ash/services/device_sync/attestation_certificates_syncer.h"
 #include "ash/services/device_sync/cryptauth_device_manager_impl.h"
 #include "ash/services/device_sync/cryptauth_device_registry_impl.h"
 #include "ash/services/device_sync/cryptauth_enroller.h"
@@ -39,6 +42,7 @@
 #include "ash/services/device_sync/remote_device_provider_impl.h"
 #include "ash/services/device_sync/software_feature_manager_impl.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
@@ -50,8 +54,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler_test_helper.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -63,7 +65,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -407,7 +409,9 @@ class FakeCryptAuthV2DeviceManagerFactory
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
       CryptAuthScheduler* scheduler,
-      PrefService* pref_service) override {
+      PrefService* pref_service,
+      AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+          get_attestation_certificates_function) override {
     EXPECT_TRUE(features::ShouldUseV2DeviceSync());
     EXPECT_EQ(client_app_metadata_.SerializeAsString(),
               client_app_metadata.SerializeAsString());
@@ -688,11 +692,14 @@ class DeviceSyncServiceTest
         const GcmDeviceInfoProvider* gcm_device_info_provider,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-        std::unique_ptr<base::OneShotTimer> timer) override {
+        std::unique_ptr<base::OneShotTimer> timer,
+        AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+            get_attestation_certificates_function) override {
       return base::WrapUnique(new DeviceSyncImpl(
           identity_manager, gcm_driver, profile_prefs, gcm_device_info_provider,
           client_app_metadata_provider, std::move(url_loader_factory),
-          simple_test_clock_, std::move(mock_timer_)));
+          simple_test_clock_, std::move(mock_timer_),
+          get_attestation_certificates_function));
     }
 
    private:
@@ -911,7 +918,10 @@ class DeviceSyncServiceTest
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
         test_pref_service_.get(), fake_gcm_device_info_provider_.get(),
         fake_client_app_metadata_provider_.get(), shared_url_loader_factory,
-        std::make_unique<base::OneShotTimer>());
+        std::make_unique<base::OneShotTimer>(),
+        base::BindRepeating(
+            [](AttestationCertificatesSyncer::NotifyCallback notifyCallback,
+               const std::string&) {}));
 
     fake_device_sync_observer_ = std::make_unique<FakeDeviceSyncObserver>();
 
@@ -2475,4 +2485,4 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

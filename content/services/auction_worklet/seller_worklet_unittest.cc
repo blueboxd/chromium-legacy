@@ -148,6 +148,7 @@ class SellerWorkletTest : public testing::Test {
     browser_signal_bidding_duration_msecs_ = 0;
     browser_signal_desireability_ = 1;
     seller_timeout_ = absl::nullopt;
+    browser_signal_highest_scoring_other_bid_ = 0;
   }
 
   // Configures `url_loader_factory_` to return a script with the specified
@@ -370,11 +371,14 @@ class SellerWorkletTest : public testing::Test {
       const std::string& extra_code,
       const absl::optional<std::string>& expected_signals_for_winner,
       const absl::optional<GURL>& expected_report_url,
+      const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
+          base::flat_map<std::string, GURL>(),
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
     RunReportResultWithJavascriptExpectingResult(
         CreateReportToScript(raw_return_value, extra_code),
-        expected_signals_for_winner, expected_report_url, expected_errors);
+        expected_signals_for_winner, expected_report_url,
+        expected_ad_beacon_map, expected_errors);
   }
 
   // Configures `url_loader_factory_` to return the provided script, and then
@@ -384,13 +388,16 @@ class SellerWorkletTest : public testing::Test {
       const std::string& javascript,
       const absl::optional<std::string>& expected_signals_for_winner,
       const absl::optional<GURL>& expected_report_url,
+      const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
+          base::flat_map<std::string, GURL>(),
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
     SCOPED_TRACE(javascript);
     AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
                           javascript);
     RunReportResultExpectingResult(expected_signals_for_winner,
-                                   expected_report_url, expected_errors);
+                                   expected_report_url, expected_ad_beacon_map,
+                                   expected_errors);
   }
 
   // Loads and runs a report_result() script, expecting the supplied result.
@@ -400,6 +407,7 @@ class SellerWorkletTest : public testing::Test {
       mojom::SellerWorklet* seller_worklet,
       const absl::optional<std::string>& expected_signals_for_winner,
       const absl::optional<GURL>& expected_report_url,
+      const base::flat_map<std::string, GURL>& expected_ad_beacon_map,
       const std::vector<std::string>& expected_errors,
       base::OnceClosure done_closure) {
     seller_worklet->ReportResult(
@@ -407,24 +415,28 @@ class SellerWorkletTest : public testing::Test {
         browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
         browser_signal_desireability_,
+        browser_signal_highest_scoring_other_bid_,
         browser_signals_component_auction_report_result_params_.Clone(),
         browser_signal_data_version_.value_or(0),
         browser_signal_data_version_.has_value(),
         base::BindOnce(
             [](const absl::optional<std::string>& expected_signals_for_winner,
                const absl::optional<GURL>& expected_report_url,
+               const base::flat_map<std::string, GURL>& expected_ad_beacon_map,
                const std::vector<std::string>& expected_errors,
                base::OnceClosure done_closure,
                const absl::optional<std::string>& signals_for_winner,
                const absl::optional<GURL>& report_url,
+               const base::flat_map<std::string, GURL>& ad_beacon_map,
                const std::vector<std::string>& errors) {
               EXPECT_EQ(expected_signals_for_winner, signals_for_winner);
               EXPECT_EQ(expected_report_url, report_url);
+              EXPECT_EQ(expected_ad_beacon_map, ad_beacon_map);
               EXPECT_EQ(expected_errors, errors);
               std::move(done_closure).Run();
             },
-            expected_signals_for_winner, expected_report_url, expected_errors,
-            std::move(done_closure)));
+            expected_signals_for_winner, expected_report_url,
+            expected_ad_beacon_map, expected_errors, std::move(done_closure)));
   }
 
   void RunReportResultExpectingCallbackNeverInvoked(
@@ -434,20 +446,25 @@ class SellerWorkletTest : public testing::Test {
         browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
         browser_signal_desireability_,
+        browser_signal_highest_scoring_other_bid_,
         browser_signals_component_auction_report_result_params_.Clone(),
         browser_signal_data_version_.value_or(0),
         browser_signal_data_version_.has_value(),
-        base::BindOnce([](const absl::optional<std::string>& signals_for_winner,
-                          const absl::optional<GURL>& report_url,
-                          const std::vector<std::string>& errors) {
-          ADD_FAILURE() << "This should not be invoked";
-        }));
+        base::BindOnce(
+            [](const absl::optional<std::string>& signals_for_winner,
+               const absl::optional<GURL>& report_url,
+               const base::flat_map<std::string, GURL>& ad_beacon_map,
+               const std::vector<std::string>& errors) {
+              ADD_FAILURE() << "This should not be invoked";
+            }));
   }
 
   // Loads and runs a report_result() script, expecting the supplied result.
   void RunReportResultExpectingResult(
       const absl::optional<std::string>& expected_signals_for_winner,
       const absl::optional<GURL>& expected_report_url,
+      const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
+          base::flat_map<std::string, GURL>(),
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
     auto seller_worklet = CreateWorklet();
@@ -456,7 +473,7 @@ class SellerWorkletTest : public testing::Test {
     base::RunLoop run_loop;
     RunReportResultExpectingResultAsync(
         seller_worklet.get(), expected_signals_for_winner, expected_report_url,
-        expected_errors, run_loop.QuitClosure());
+        expected_ad_beacon_map, expected_errors, run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -526,7 +543,7 @@ class SellerWorkletTest : public testing::Test {
   // Arguments passed to score_bid() and report_result(). Arguments common to
   // both of them use the same field.
   std::string ad_metadata_;
-  // This is a browser signal for report_result(), but a direct parameter for
+  // `bid_` is a browser signal for report_result(), but a direct parameter for
   // score_bid().
   double bid_;
   GURL decision_logic_url_;
@@ -540,6 +557,7 @@ class SellerWorkletTest : public testing::Test {
   std::vector<GURL> browser_signal_ad_components_;
   uint32_t browser_signal_bidding_duration_msecs_;
   double browser_signal_desireability_;
+  double browser_signal_highest_scoring_other_bid_;
   auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
       browser_signals_component_auction_report_result_params_;
   absl::optional<uint32_t> browser_signal_data_version_;
@@ -1504,6 +1522,7 @@ TEST_F(SellerWorkletTest, ReportResultParallel) {
           /*expected_signals_for_winner=*/base::NumberToString(bid_),
           /*expected_report_url=*/
           GURL("https://" + base::NumberToString(bid_)),
+          /*expected_ad_beacon_map=*/{},
           /*expected_errors=*/{},
           base::BindLambdaForTesting([&run_loop, &num_report_result_calls]() {
             ++num_report_result_calls;
@@ -1570,6 +1589,7 @@ TEST_F(SellerWorkletTest, ReportResult) {
       "shrimp", std::string() /* extra_code */,
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
+      /*expected_ad_beacon_map=*/{},
       {"https://url.test/:10 Uncaught ReferenceError: "
        "shrimp is not defined."});
 }
@@ -1588,12 +1608,14 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       "1", R"(sendReportTo("http://foo.test/"))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
+      /*expected_ad_beacon_map=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
   RunReportResultCreatedScriptExpectingResult(
       "1", R"(sendReportTo("file:///foo/"))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
+      /*expected_ad_beacon_map=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
 
@@ -1603,6 +1625,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       R"(sendReportTo("https://foo.test/"); sendReportTo("https://foo.test/"))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
+      /*expected_ad_beacon_map=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo may be called at most once."});
 
@@ -1619,18 +1642,21 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       "1", R"(sendReportTo("France"))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
+      /*expected_ad_beacon_map=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
   RunReportResultCreatedScriptExpectingResult(
       "1", R"(sendReportTo(null))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
+      /*expected_ad_beacon_map=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo requires 1 string parameter."});
   RunReportResultCreatedScriptExpectingResult(
       "1", R"(sendReportTo([5]))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
+      /*expected_ad_beacon_map=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo requires 1 string parameter."});
 }
@@ -1640,6 +1666,7 @@ TEST_F(SellerWorkletTest, ReportResultDateNotAvailable) {
       "1", R"(sendReportTo("https://foo.test/" + Date().toString()))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
+      /*expected_ad_beacon_map=*/{},
       {"https://url.test/:9 Uncaught ReferenceError: Date is not defined."});
 }
 
@@ -1823,6 +1850,149 @@ TEST_F(SellerWorkletTest, ReportResultRenderUrl) {
       R"("https://foo/")", browser_signal_render_url_);
 }
 
+TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
+  bid_ = 5;
+  base::flat_map<std::string, GURL> expected_ad_beacon_map = {
+      {"click", GURL("https://click.example.com/")},
+      {"view", GURL("https://view.example.com/")},
+  };
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+        'click': "https://click.example.com/",
+        'view': "https://view.example.com/",
+      }))",
+      /*expected_signals_for_winner=*/"5",
+      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+
+  browser_signal_render_url_ = GURL("https://foo/");
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+        'click': "https://click.example.com/",
+        'view': "https://view.example.com/",
+      });
+      sendReportTo(browserSignals.renderUrl))",
+      /*expected_signals_for_winner=*/"5",
+      /*expected_report_url =*/browser_signal_render_url_,
+      expected_ad_beacon_map);
+
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(sendReportTo(browserSignals.renderUrl);
+      registerAdBeacon({
+        'click': "https://click.example.com/",
+        'view': "https://view.example.com/",
+      }))",
+      /*expected_signals_for_winner=*/"5",
+      /*expected_report_url =*/browser_signal_render_url_,
+      expected_ad_beacon_map);
+
+  // Don't call twice.
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+        'click': "https://click.example.com/",
+        'view': "https://view.example.com/",
+      });
+      registerAdBeacon())",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {"https://url.test/:13 Uncaught TypeError: registerAdBeacon may be "
+       "called at most once."});
+
+  // If called twice and the error is caught, use the first result.
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+           'click': "https://click.example.com/",
+           'view': "https://view.example.com/",
+         });
+         try { registerAdBeacon() }
+         catch (e) {})",
+      /*expected_signals_for_winner=*/"5",
+      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+
+  // If error on first call, can be called again.
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(try { registerAdBeacon() }
+         catch (e) {}
+         registerAdBeacon({
+           'click': "https://click.example.com/",
+           'view': "https://view.example.com/",
+         }))",
+      /*expected_signals_for_winner=*/"5",
+      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+
+  // Error if no parameters
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)", R"(registerAdBeacon())",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {"https://url.test/:9 Uncaught TypeError: registerAdBeacon requires 1 "
+       "object parameter."});
+
+  // Error if parameter is not an object
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)", R"(registerAdBeacon("foo"))",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {"https://url.test/:9 Uncaught TypeError: registerAdBeacon requires 1 "
+       "object parameter."});
+
+  // Error if parameter is not an object
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)", R"(registerAdBeacon("foo"))",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {"https://url.test/:9 Uncaught TypeError: registerAdBeacon requires 1 "
+       "object parameter."});
+
+  // Error if parameter attributes are not strings
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+        'click': "https://click.example.com/",
+        1: "https://view.example.com/",
+      }))",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {"https://url.test/:9 Uncaught TypeError: registerAdBeacon object "
+       "attributes must be strings."});
+
+  // Error if invalid reporting URL
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+        'click': "https://click.example.com/",
+        'view': "gopher://view.example.com/",
+      }))",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {"https://url.test/:9 Uncaught TypeError: registerAdBeacon invalid "
+       "reporting url for key 'view': 'gopher://view.example.com/'."});
+
+  // Error if not trustworthy reporting URL
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+        'click': "https://127.0.0.1/",
+        'view': "http://view.example.com/",
+      }))",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {"https://url.test/:9 Uncaught TypeError: registerAdBeacon invalid "
+       "reporting url for key 'view': 'http://view.example.com/'."});
+}
+
 TEST_F(SellerWorkletTest, ReportResultBid) {
   bid_ = 5;
   RunReportResultCreatedScriptExpectingResult(
@@ -1839,18 +2009,29 @@ TEST_F(SellerWorkletTest, ReportResultDesireability) {
       absl::nullopt /* expected_report_url */);
 }
 
+TEST_F(SellerWorkletTest, ReportResultHighestScoringOtherBid) {
+  browser_signal_highest_scoring_other_bid_ = 5;
+  RunReportResultCreatedScriptExpectingResult(
+      "browserSignals.highestScoringOtherBid + typeof "
+      "browserSignals.highestScoringOtherBid",
+      std::string() /* extra_code */, R"("5number")",
+      absl::nullopt /* expected_report_url */);
+}
+
 TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
   // Empty AuctionAdConfig, with nothing filled in, except the seller and
   // decision logic URL.
   decision_logic_url_ = GURL("https://example.com/auction.js");
   RunReportResultCreatedScriptExpectingResult(
-      "auctionConfig", std::string() /* extra_code */,
+      "auctionConfig", /*extra_code=*/std::string(),
       R"({"seller":"https://example.com",)"
       R"("decisionLogicUrl":"https://example.com/auction.js"})",
-      absl::nullopt /* expected_report_url */);
+      /*expected_report_url=*/absl::nullopt);
 
   // Everything filled in.
   decision_logic_url_ = GURL("https://example.com/auction.js");
+  trusted_scoring_signals_url_ =
+      GURL("https://example.com/scoring_signals.json");
   auction_ad_config_non_shared_params_->interest_group_buyers = {
       url::Origin::Create(GURL("https://buyer1.com")),
       url::Origin::Create(GURL("https://another-buyer.com"))};
@@ -1876,19 +2057,54 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
   auction_ad_config_non_shared_params_->all_buyers_timeout =
       base::Milliseconds(150);
 
+  // Add and populate two component auctions, each with one the mandatory
+  // `seller` and `decision_logic_url` fields filled in, one one extra field:
+  // One that's directly a member of the AuctionAdConfig, and one that's in the
+  // non-shared params.
+
+  auto& component_auctions =
+      auction_ad_config_non_shared_params_->component_auctions;
+
+  component_auctions.emplace_back(blink::mojom::AuctionAdConfig::New());
+  component_auctions[0]->auction_ad_config_non_shared_params =
+      blink::mojom::AuctionAdConfigNonSharedParams::New();
+  component_auctions[0]->seller =
+      url::Origin::Create(GURL("http://component1.com"));
+  component_auctions[0]->decision_logic_url =
+      GURL("http://component1.com/script.js");
+  component_auctions[0]->auction_ad_config_non_shared_params->seller_timeout =
+      base::Milliseconds(111);
+
+  component_auctions.emplace_back(blink::mojom::AuctionAdConfig::New());
+  component_auctions[1]->auction_ad_config_non_shared_params =
+      blink::mojom::AuctionAdConfigNonSharedParams::New();
+  component_auctions[1]->seller =
+      url::Origin::Create(GURL("http://component2.com"));
+  component_auctions[1]->decision_logic_url =
+      GURL("http://component2.com/script.js");
+  component_auctions[1]->trusted_scoring_signals_url =
+      GURL("http://component2.com/signals.json");
+
   const char kExpectedJson[] =
       R"({"seller":"https://example.com",)"
       R"("decisionLogicUrl":"https://example.com/auction.js",)"
+      R"("trustedScoringSignalsUrl":"https://example.com/scoring_signals.json",)"
       R"("interestGroupBuyers":["https://buyer1.com","https://another-buyer.com"],)"
       R"("auctionSignals":{"is_auction_signals":true},)"
       R"("sellerSignals":{"is_seller_signals":true},)"
       R"("sellerTimeout":200,)"
       R"("perBuyerSignals":{"https://a.com":{"signals_a":"A"},)"
       R"("https://b.com":{"signals_b":"B"}},)"
-      R"("perBuyerTimeouts":{"https://a.com":100,"*":150}})";
+      R"("perBuyerTimeouts":{"https://a.com":100,"*":150},)"
+      R"("componentAuctions":[{"seller":"http://component1.com",)"
+      R"("decisionLogicUrl":"http://component1.com/script.js",)"
+      R"("sellerTimeout":111},)"
+      R"({"seller":"http://component2.com",)"
+      R"("decisionLogicUrl":"http://component2.com/script.js",)"
+      R"("trustedScoringSignalsUrl":"http://component2.com/signals.json"}]})";
   RunReportResultCreatedScriptExpectingResult(
-      "auctionConfig", std::string() /* extra_code */, kExpectedJson,
-      absl::nullopt /* expected_report_url */);
+      "auctionConfig", /*extra_code=*/std::string(), kExpectedJson,
+      /*expected_report_url=*/absl::nullopt);
 }
 
 TEST_F(SellerWorkletTest, ReportResultAuctionConfigParamPerBuyerTimeouts) {
@@ -1992,13 +2208,16 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
           browser_signals_other_seller_.Clone(),
           browser_signal_interest_group_owner_, browser_signal_render_url_,
           bid_, browser_signal_desireability_,
+          browser_signal_highest_scoring_other_bid_,
           browser_signals_component_auction_report_result_params_.Clone(),
           browser_signal_data_version_.value_or(0),
           browser_signal_data_version_.has_value(),
           base::BindLambdaForTesting(
-              [&run_loop](const absl::optional<std::string>& signals_for_winner,
-                          const absl::optional<GURL>& report_url,
-                          const std::vector<std::string>& errors) {
+              [&run_loop](
+                  const absl::optional<std::string>& signals_for_winner,
+                  const absl::optional<GURL>& report_url,
+                  const base::flat_map<std::string, GURL>& ad_beacon_map,
+                  const std::vector<std::string>& errors) {
                 EXPECT_EQ("2", signals_for_winner);
                 EXPECT_TRUE(errors.empty());
                 run_loop.Quit();
@@ -2050,12 +2269,13 @@ TEST_F(SellerWorkletTest, DeleteBeforeReportResultCallback) {
       auction_ad_config_non_shared_params_.Clone(),
       browser_signals_other_seller_.Clone(),
       browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
-      browser_signal_desireability_,
+      browser_signal_desireability_, browser_signal_highest_scoring_other_bid_,
       browser_signals_component_auction_report_result_params_.Clone(),
       browser_signal_data_version_.value_or(0),
       browser_signal_data_version_.has_value(),
       base::BindOnce([](const absl::optional<std::string>& signals_for_winner,
                         const absl::optional<GURL>& report_url,
+                        const base::flat_map<std::string, GURL>& ad_beacon_map,
                         const std::vector<std::string>& errors) {
         ADD_FAILURE() << "Callback should not be invoked since worklet deleted";
       }));
@@ -2491,9 +2711,10 @@ TEST_F(SellerWorkletTest, InstrumentationBreakpoints) {
 
   // Now try reporting, should hit the other breakpoint.
   base::RunLoop run_loop2;
-  RunReportResultExpectingResultAsync(worklet.get(), "1",
-                                      GURL("https://foo.test/"), {},
-                                      run_loop2.QuitClosure());
+  RunReportResultExpectingResultAsync(
+      worklet.get(), "1", GURL("https://foo.test/"),
+      /*expected_ad_beacon_map=*/{}, /*expected_errors=*/{},
+      run_loop2.QuitClosure());
   TestDevToolsAgentClient::Event breakpoint_hit2 =
       debug.WaitForMethodNotification("Debugger.paused");
   const std::string* breakpoint2 =
@@ -2612,7 +2833,15 @@ class SellerWorkletRealTimeTest : public SellerWorkletTest {
             base::test::TaskEnvironment::TimeSource::SYSTEM_TIME) {}
 };
 
+// `scoreAd` should time out due to AuctionV8Helper's default script timeout (50
+// ms).
 TEST_F(SellerWorkletRealTimeTest, ScoreAdTimedOut) {
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(/*raw_return_value=*/"", R"(while (1))"), 0,
+      {"https://url.test/ execution of `scoreAd` timed out."});
+}
+
+TEST_F(SellerWorkletRealTimeTest, ScoreAdSellerTimeoutFromAuctionConfig) {
   // Use a very long default script timeout, and a short seller timeout, so
   // that if the seller script with endless loop times out, we know that the
   // seller timeout overwrote the default script timeout and worked.
@@ -2635,7 +2864,7 @@ TEST_F(SellerWorkletRealTimeTest, ScoreAdTimedOut) {
 }
 
 class SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest
-    : public SellerWorkletTest {
+    : public SellerWorkletRealTimeTest {
  public:
   SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest() {
     feature_list_.InitAndEnableFeature(
@@ -2769,24 +2998,84 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
 }
 
 TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
-       ForDebuggingOnlyReportsMultiCalls) {
+       ForDebuggingOnlyReportsMultiCallsAllowed) {
   RunScoreAdWithJavascriptExpectingResult(
       CreateScoreAdScript(
           "1",
           R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
             forDebuggingOnly.reportAdAuctionLoss("https://loss.url2"))"),
-      0,
-      {"https://url.test/:5 Uncaught TypeError: "
-       "reportAdAuctionLoss may be called at most once."});
+      1, /*expected_errors=*/{}, mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/GURL("https://loss.url2"),
+      /*expected_debug_win_report_url=*/absl::nullopt);
+
+  // Test that the first URL is preserved when the second call throws.
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+             try {
+               forDebuggingOnly.reportAdAuctionLoss("http://invalidloss.url");
+             } catch (e) {})"),
+      1, /*expected_errors=*/{}, mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/GURL("https://loss.url"),
+      /*expected_debug_win_report_url=*/absl::nullopt);
 
   RunScoreAdWithJavascriptExpectingResult(
       CreateScoreAdScript(
           "1",
           R"(forDebuggingOnly.reportAdAuctionWin("https://win.url");
             forDebuggingOnly.reportAdAuctionWin("https://win.url2"))"),
-      0,
-      {"https://url.test/:5 Uncaught TypeError: "
-       "reportAdAuctionWin may be called at most once."});
+      1, /*expected_errors=*/{}, mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/GURL("https://win.url2"));
+
+  // Test that the first URL is preserved when the second call throws.
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1",
+          R"(forDebuggingOnly.reportAdAuctionWin("https://win.url");
+             try {
+              forDebuggingOnly.reportAdAuctionWin("http://invalidwin.url");
+             } catch (e) {})"),
+      1, /*expected_errors=*/{}, mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/GURL("https://win.url"));
+}
+
+// Loss report URLs before seller script times out should be kept.
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ScoreAdHasError) {
+  // The seller script has an endless while loop. It will time out due to
+  // AuctionV8Helper's default script timeout (50 ms).
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          /*raw_return_value=*/"",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url1");
+            error;
+            forDebuggingOnly.reportAdAuctionLoss("https://loss.url2"))"),
+      0, {"https://url.test/:5 Uncaught ReferenceError: error is not defined."},
+      mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/{}, GURL("https://loss.url1"));
+}
+
+// Loss report URLs before seller script times out should be kept.
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ScoreAdTimedOut) {
+  // The seller script has an endless while loop. It will time out due to
+  // AuctionV8Helper's default script timeout (50 ms).
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          /*raw_return_value=*/"",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url1");
+            while (1);
+            forDebuggingOnly.reportAdAuctionLoss("https://loss.url2"))"),
+      0, {"https://url.test/ execution of `scoreAd` timed out."},
+      mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/{}, GURL("https://loss.url1"));
 }
 
 // Subsequent runs of the same script should not affect each other.

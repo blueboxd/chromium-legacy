@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -470,7 +470,7 @@ namespace inspector_scroll_layer_event {
 void Data(perfetto::TracedValue context, LayoutObject*);
 }
 
-namespace inspector_update_layer_tree_event {
+namespace inspector_pre_paint_event {
 void Data(perfetto::TracedValue context, LocalFrame*);
 }
 

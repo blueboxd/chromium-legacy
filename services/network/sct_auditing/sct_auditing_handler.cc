@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/task/bind_post_task.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
@@ -213,7 +212,6 @@ void SCTAuditingHandler::DeserializeData(const std::string& serialized) {
     return;
   }
 
-  size_t num_reporters_deserialized = 0u;
   for (base::Value& sct_entry : value->GetListDeprecated()) {
     if (!sct_entry.is_dict()) {
       continue;
@@ -275,7 +273,6 @@ void SCTAuditingHandler::DeserializeData(const std::string& serialized) {
 
     AddReporter(cache_key, std::move(audit_report), std::move(sct_metadata),
                 std::move(backoff_entry));
-    ++num_reporters_deserialized;
   }
   // TODO(crbug.com/1144205): Add metrics for number of reporters deserialized.
 }

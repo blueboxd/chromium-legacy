@@ -12,6 +12,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
 
+import com.google.common.base.Optional;
+
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerError;
@@ -51,6 +53,15 @@ public class PasswordManagerHelper {
     private static final String LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM =
             "PasswordManager.CredentialManager.LocalProfile.Launch.Success";
 
+    private static final String PASSWORD_CHECKUP_GET_INTENT_LATENCY_HISTOGRAM =
+            "PasswordManager.PasswordCheckup.GetIntent.Latency";
+    private static final String PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM =
+            "PasswordManager.PasswordCheckup.GetIntent.Success";
+    private static final String PASSWORD_CHECKUP_GET_INTENT_ERROR_HISTOGRAM =
+            "PasswordManager.PasswordCheckup.GetIntent.Error";
+    private static final String PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM =
+            "PasswordManager.PasswordCheckup.Launch.Success";
+
     /**
      * Launches the password settings or, if available, the credential manager from Google Play
      * Services.
@@ -80,6 +91,27 @@ public class PasswordManagerHelper {
         fragmentArgs.putInt(MANAGE_PASSWORDS_REFERRER, referrer);
         context.startActivity(settingsLauncher.createSettingsActivityIntent(
                 context, PASSWORD_SETTINGS_CLASS, fragmentArgs));
+    }
+
+    public static void showPasswordCheckup(@PasswordCheckReferrer int referrer,
+            PasswordCheckupClientHelper checkupClient, SyncService syncService) {
+        assert checkupClient != null;
+        if (!usesUnifiedPasswordManagerUI()) return;
+
+        Optional<String> account = hasChosenToSyncPasswords(syncService)
+                ? Optional.of(CoreAccountInfo.getEmailFrom(syncService.getAccountInfo()))
+                : Optional.absent();
+        long startTimeMs = SystemClock.elapsedRealtime();
+        checkupClient.getPasswordCheckupPendingIntent(referrer, account,
+                (intent)
+                        -> PasswordManagerHelper.launchPasswordCheckup(intent, startTimeMs),
+                (error) -> {
+                    RecordHistogram.recordBooleanHistogram(
+                            PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM, false);
+                    RecordHistogram.recordEnumeratedHistogram(
+                            PASSWORD_CHECKUP_GET_INTENT_ERROR_HISTOGRAM, error,
+                            CredentialManagerError.COUNT);
+                });
     }
 
     /**
@@ -126,11 +158,21 @@ public class PasswordManagerHelper {
     }
 
     public static boolean usesUnifiedPasswordManagerUI() {
-        return ChromeFeatureList.isEnabled(UNIFIED_PASSWORD_MANAGER_ANDROID)
-                && ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                           UNIFIED_PASSWORD_MANAGER_ANDROID, UPM_VARIATION_FEATURE_PARAM,
-                           UpmExperimentVariation.ENABLE_FOR_SYNCING_USERS)
-                != UpmExperimentVariation.SHADOW_SYNCING_USERS;
+        if (!ChromeFeatureList.isEnabled(UNIFIED_PASSWORD_MANAGER_ANDROID)) return false;
+        @UpmExperimentVariation
+        int variation = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                UNIFIED_PASSWORD_MANAGER_ANDROID, UPM_VARIATION_FEATURE_PARAM,
+                UpmExperimentVariation.ENABLE_FOR_SYNCING_USERS);
+        switch (variation) {
+            case UpmExperimentVariation.ENABLE_FOR_SYNCING_USERS:
+            case UpmExperimentVariation.ENABLE_FOR_ALL_USERS:
+                return true;
+            case UpmExperimentVariation.SHADOW_SYNCING_USERS:
+            case UpmExperimentVariation.ENABLE_ONLY_BACKEND_FOR_SYNCING_USERS:
+                return false;
+        }
+        assert false : "Whether to use UI is undefined for variation: " + variation;
+        return false;
     }
 
     private static void launchTheCredentialManager(@ManagePasswordsReferrer int referrer,
@@ -166,6 +208,16 @@ public class PasswordManagerHelper {
                 kGetIntentErrorHistogram, error, CredentialManagerError.COUNT);
     }
 
+    private static boolean launchIntent(PendingIntent intent) {
+        boolean launchIntentSuccessfully = true;
+        try {
+            intent.send();
+        } catch (CanceledException e) {
+            launchIntentSuccessfully = false;
+        }
+        return launchIntentSuccessfully;
+    }
+
     private static void launchCredentialManager(
             PendingIntent intent, long startTimeMs, boolean forAccount) {
         recordSuccessMetrics(SystemClock.elapsedRealtime() - startTimeMs, forAccount);
@@ -174,15 +226,21 @@ public class PasswordManagerHelper {
             return; // The built-in settings screen has already been started at this point.
         }
 
-        boolean launchIntentSuccessfully = true;
-        try {
-            intent.send();
-        } catch (CanceledException e) {
-            launchIntentSuccessfully = false;
-        }
+        boolean launchIntentSuccessfully = launchIntent(intent);
         RecordHistogram.recordBooleanHistogram(forAccount
                         ? ACCOUNT_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM
                         : LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM,
+                launchIntentSuccessfully);
+    }
+
+    private static void launchPasswordCheckup(PendingIntent intent, long startTimeMs) {
+        RecordHistogram.recordTimesHistogram(PASSWORD_CHECKUP_GET_INTENT_LATENCY_HISTOGRAM,
+                SystemClock.elapsedRealtime() - startTimeMs);
+        RecordHistogram.recordBooleanHistogram(PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM, true);
+
+        boolean launchIntentSuccessfully = launchIntent(intent);
+        RecordHistogram.recordBooleanHistogram(
+                PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM,
                 launchIntentSuccessfully);
     }
 

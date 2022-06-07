@@ -184,7 +184,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="200114059308480249">Sisällytetäänkö ympäröivä teksti Google-hakuihin?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# tiedosto}other{# tiedostoa}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> avautuu Chromessa. Jatkamalla hyväksyt <ph name="BEGIN_LINK1" />Googlen käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />Chromen ja Chrome-käyttöjärjestelmän lisäkäyttöehdot<ph name="END_LINK2" />. Myös <ph name="BEGIN_LINK3" />tietosuojakäytäntöä<ph name="END_LINK3" /> sovelletaan.</translation>
-<translation id="2019145049163614359">Poistetaanko kiinnostuksen kohde?</translation>
 <translation id="2020309681647789787">Historia löytyy kaikilta synkronoiduilta laitteilta, joten voit jatkaa samasta kohdasta</translation>
 <translation id="2021896219286479412">Ohjaimet koko näytön tilassa</translation>
 <translation id="2038563949887743358">Ota käyttöön Käytä tietokoneversiota</translation>
@@ -213,6 +212,7 @@ Hae napauttamalla sanaa. Jos haluat tarkentaa hakuasi, valitse enemmän tai väh
 <translation id="2141396931810938595">Perustuu käyttöösi</translation>
 <translation id="214888715418183969">Valitse, mitä olet valmis jakamaan Chromelle. Jakamasi mittarit auttavat parantamaan Chromen ominaisuuksia, toimintaa ja vakautta.</translation>
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
+<translation id="2155214902713132423">Tämä vahvistustapa ei ole saatavilla tälle laitteelle. Valitse muu vaihtoehto toisella laitteellasi.</translation>
 <translation id="2157851137955077194">Jos haluat jakaa jotakin puhelimelta toiselle laitteelle, ota synkronointi käyttöön molempien laitteiden Chrome-asetuksista</translation>
 <translation id="2158408438301413340">Chrome ei voinut tarkistaa kaikkia salasanoja</translation>
 <translation id="2169830938017475061">Nyt</translation>
@@ -733,7 +733,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5091199029769593641">Näet pian tarinoita täältä avatessasi uuden välilehden: <ph name="SITE_NAME" />. Seuraamasi sivustot tallennetaan Google-tilillesi. Voit ylläpitää niitä Discoverin asetuksissa.</translation>
 <translation id="5091249083535528968">Laajennettu käyttödata</translation>
 <translation id="509429900233858213">Tapahtui virhe.</translation>
-<translation id="5098190077610408701">Lisätäänkö kiinnostuksen kohteita?</translation>
 <translation id="5102401324271069229">Jos sivusto yrittää varastaa salasanaasi tai jos lataat haitallisen tiedoston, Chrome voi lähettää Selaussuojan tarkistettavaksi URL-osoitteita, mukaan lukien osia sivujen sisällöstä</translation>
 <translation id="510275257476243843">1 tunti jäljellä</translation>
 <translation id="5115811374190515607">kohde: <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5906513782029855931">Sivustojen URL-osoitteiden avulla Google Assistantia voi auttaa sinua tekemään asioita. Voit poistaa Assistantin käytöstä Chromen asetuksissa.</translation>
 <translation id="5916664084637901428">Päällä</translation>
 <translation id="5919204609460789179">Aloita synkronointi päivittämällä <ph name="PRODUCT_NAME" /></translation>
+<translation id="5938820472109305350">Lisää <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Hakukoneena käytetään Googlea.</translation>
 <translation id="5945035219773565305">Tämänhetkinen suositus:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Katsotaan live-sivua</translation>
@@ -898,7 +898,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="6033245666633565791">Chrome kehittää <ph name="BEGIN_LINK" />Privacy Sandboxin<ph name="END_LINK" /> avulla uusia tekniikoita, joiden avulla sinua voidaan suojata sivustojen väliseltä seurannalta verkon pysyessä avoimena.
 
 Privacy Sandbox ‑kokeiluja kehitetään yhä aktiivisesti, ja ne ovat saatavilla vain tietyillä alueilla. Tällä hetkellä sivustot voivat kokeilla Privacy Sandboxia ja jatkaa samalla nykyisten verkkoteknologioiden, esim. kolmansien osapuolten evästeiden, käyttöä.</translation>
-<translation id="6036057147555329831">Ylimääräinen ICU</translation>
 <translation id="6039379616847168523">Siirry seuraavalle välilehdelle</translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="604124094241169006">Automaattinen</translation>
@@ -1023,6 +1022,7 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="663674369910034433">Näet lisää yksityisyyteen, tietoturvaan ja datankeruuseen liittyviä asetuksia kohdista <ph name="BEGIN_LINK1" />Synkronointi<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />Googlen palvelut<ph name="END_LINK2" />.</translation>
 <translation id="6637100877383020115">Chrome lähettää käyttö- ja kaatumisdataa Googlelle sovelluksen kehittämiseksi. <ph name="BEGIN_UMA_LINK" />Muokkaa<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Estä aina</translation>
+<translation id="6641780377503683465">Poista <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6645629752388991326">Hallitse, mitkä laitteet voivat kirjautua sisään käyttämällä tätä laitetta suojausavaimena.</translation>
 <translation id="6648459603387803038">Järjestelmänvalvoja voi muuttaa selaimen määrityksiä etäyhteydellä. Toimintaa tällä laitteella saatetaan ylläpitää myös Chromen ulkopuolelta.</translation>

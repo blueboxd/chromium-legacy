@@ -116,11 +116,13 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void ClearFramebuffer();
 
   // Callers should init an SkAutoCanvasRestore before calling this function.
-  // |scissor_rect| and |rounded_corner_bounds| should be in device space,
+  // |scissor_rect| and |mask_filter_info| should be in device space,
   // i.e. same space that |cdt| will transform subsequent draws into.
-  void PrepareCanvas(const absl::optional<gfx::Rect>& scissor_rect,
-                     const absl::optional<gfx::RRectF>& rounded_corner_bounds,
-                     const gfx::Transform* cdt);
+  void PrepareCanvas(
+      const absl::optional<gfx::Rect>& scissor_rect,
+      const absl::optional<gfx::MaskFilterInfo>& mask_filter_info,
+      const gfx::Transform* cdt);
+
   // Further modify the canvas as needed to apply the effects represented by
   // |rpdq_params|. Call Prepare[Paint|Color]OrCanvasForRPDQ when possible,
   // in order apply the RPDQ effects into a more efficient format.
@@ -135,7 +137,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // the quad; otherwise modify the current canvas as a fallback.
   void PrepareColorOrCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
                                    DrawQuadParams* params,
-                                   SkColor* color);
+                                   SkColor4f* color);
 
   // The returned DrawQuadParams can be modified by the DrawX calls that accept
   // params so that they can apply explicit data transforms before sending to
@@ -180,7 +182,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   // Utility to draw a single quad as a filled color, and optionally apply the
   // effects defined in |rpdq_params| when the quad is bypassing the render pass
-  void DrawColoredQuad(SkColor color,
+  void DrawColoredQuad(SkColor4f color,
                        const DrawRPDQParams* rpdq_params,
                        DrawQuadParams* params);
   // Utility to make a single ImageSetEntry and draw it with the complex paint,
@@ -295,7 +297,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // captured by this state cannot be batched.
   struct BatchedQuadState {
     absl::optional<gfx::Rect> scissor_rect;
-    absl::optional<gfx::RRectF> rounded_corner_bounds;
+    absl::optional<gfx::MaskFilterInfo> mask_filter_info;
     SkBlendMode blend_mode;
     SkSamplingOptions sampling;
     SkCanvas::SrcRectConstraint constraint;

@@ -126,6 +126,14 @@ AX_BASE_EXPORT extern const base::Feature
 // Returns true if dictation with pumpkin is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationWithPumpkinEnabled();
 
+// Enables downloading Google TTS voices using Language Packs.
+AX_BASE_EXPORT extern const base::Feature
+    kExperimentalAccessibilityGoogleTtsLanguagePacks;
+
+// Returns true if using Language Packs to download Google TTS voices is
+// enabled.
+AX_BASE_EXPORT bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled();
+
 // Enables high-quality, network-based voices in Select-to-speak.
 AX_BASE_EXPORT extern const base::Feature kEnhancedNetworkVoices;
 
@@ -175,12 +183,11 @@ AX_BASE_EXPORT extern const base::Feature kComputeAXMode;
 AX_BASE_EXPORT bool IsComputeAXModeEnabled();
 #endif  // BUILDFLAG(IS_ANDROID)
 
-AX_BASE_EXPORT extern const base::Feature kReaderModeSidePanel;
+AX_BASE_EXPORT extern const base::Feature kReadAnything;
 
-// Returns true if reader mode in a side panel is enabled. This feature shows
-// users websites, such as articles, in a comfortable reading experience in a
-// side panel.
-AX_BASE_EXPORT bool IsReaderModeSidePanelEnabled();
+// Returns true if read anything is enabled. This feature shows users websites,
+// such as articles, in a comfortable reading experience in a side panel.
+AX_BASE_EXPORT bool IsReadAnythingEnabled();
 
 #if !BUILDFLAG(IS_ANDROID)
 // Enables using Screen AI library to add metadata for accessibility tools.

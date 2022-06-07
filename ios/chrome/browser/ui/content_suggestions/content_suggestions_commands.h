@@ -11,27 +11,14 @@
 // with the coordinator layer, and from there to the rest of the application.
 @protocol ContentSuggestionsCommands
 
-// Opens the Reading List.
-- (void)openReadingList;
 // Opens the Most Visited associated with this |item| at the |mostVisitedItem|.
 - (void)openMostVisitedItem:(CollectionViewItem*)item
                     atIndex:(NSInteger)mostVisitedIndex;
 // Handles the actions tapping the "Return to Recent Tab" item that returns the
 // user to the last opened tab.
 - (void)openMostRecentTab;
-// Handles the action that dismisses the "Return to Recent Tab" item.
-- (void)hideMostRecentTab;
 // Handles the actions following a tap on the promo.
 - (void)handlePromoTapped;
-// Handles the actions following a tap on the "Manage Activity" item in the
-// Discover feed menu.
-- (void)handleFeedManageActivityTapped;
-// Handles the actions following a tap on the "Manage Interests" item in the
-// Discover feed menu.
-- (void)handleFeedManageInterestsTapped;
-// Handles the actions following a tap on the "Learn More" item in the Discover
-// feed menu.
-- (void)handleFeedLearnMoreTapped;
 
 @end
 

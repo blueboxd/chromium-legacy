@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
@@ -56,7 +57,7 @@ class SignInFatalErrorScreen : public BaseScreen {
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
   Error error_state_ = Error::UNKNOWN;
   absl::optional<base::Value> extra_error_info_;

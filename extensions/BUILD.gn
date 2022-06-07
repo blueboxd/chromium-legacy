@@ -140,12 +140,12 @@ static_library("test_support") {
     "test/extension_test_notification_observer.h",
     "test/logging_timer.cc",
     "test/logging_timer.h",
+    "test/permissions_manager_waiter.cc",
+    "test/permissions_manager_waiter.h",
     "test/result_catcher.cc",
     "test/result_catcher.h",
     "test/test_content_script_load_waiter.cc",
     "test/test_content_script_load_waiter.h",
-    "test/test_content_utility_client.cc",
-    "test/test_content_utility_client.h",
     "test/test_extension_dir.cc",
     "test/test_extension_dir.h",
     "test/test_extensions_client.cc",
@@ -315,7 +315,7 @@ test("extensions_browsertests") {
 # and these moved to the extensions_browsertests target. Currently, we solve
 # the problem by making this a source set and linking it into
 # //chrome/test:browser_tests.
-source_set("chrome_extensions_browsertests") {
+source_set("chrome_extensions_browsertests_sources") {
   testonly = true
   sources = [
     "browser/api/app_window/app_window_apitest.cc",

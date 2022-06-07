@@ -9,8 +9,10 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -33,7 +35,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedReceiverBase {
   void SetFilter(std::unique_ptr<MessageFilter> filter);
 
   void reset();
-  void ResetWithReason(uint32_t custom_reason, const std::string& description);
+  void ResetWithReason(uint32_t custom_reason, base::StringPiece description);
 
   void set_disconnect_handler(base::OnceClosure error_handler);
   void set_disconnect_with_reason_handler(
@@ -279,9 +281,7 @@ class AssociatedReceiver : public internal::AssociatedReceiverBase {
   // Test code should prefer using `mojo::test::ScopedSwapImplForTesting` if
   // possible.
   [[nodiscard]] ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
-    Interface* old_impl = impl();
-    stub_.set_sink(std::move(new_impl));
-    return old_impl;
+    return std::exchange(stub_.sink(), std::move(new_impl));
   }
 
   // Reports the currently dispatching message as bad and resets this receiver.
@@ -304,7 +304,7 @@ class AssociatedReceiver : public internal::AssociatedReceiverBase {
     return base::BindOnce(
         [](ReportBadMessageCallback inner_callback,
            base::WeakPtr<AssociatedReceiver> receiver,
-           const std::string& error) {
+           base::StringPiece error) {
           std::move(inner_callback).Run(error);
           if (receiver)
             receiver->reset();

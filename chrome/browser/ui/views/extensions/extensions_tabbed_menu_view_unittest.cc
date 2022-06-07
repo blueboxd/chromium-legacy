@@ -19,13 +19,16 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_unittest.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/test/permissions_manager_waiter.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -288,11 +291,14 @@ void ExtensionsTabbedMenuViewUnitTest::SelectSiteSetting(int index) {
   auto* site_setting = static_cast<views::RadioButton*>(
       extensions_tabbed_menu()->GetSiteSettingsForTesting()->children().at(
           index));
-
+  extensions::PermissionsManagerWaiter manager_waiter(
+      extensions::PermissionsManager::Get(profile()));
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
                                gfx::PointF(), ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   site_setting->NotifyClick(release_event);
+  manager_waiter.WaitForPermissionsChange();
+  LayoutMenuIfNecessary();
 }
 
 TEST_F(ExtensionsTabbedMenuViewUnitTest, ButtonOpensAndClosesCorrespondingTab) {
@@ -701,7 +707,7 @@ TEST_F(ExtensionsTabbedMenuViewUnitTest, SiteAccessTab_NoExtensionsHaveAccess) {
 
   auto no_extensions_have_access_text = l10n_util::GetStringFUTF16(
       IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_NO_EXTENSIONS_HAVE_ACCESS_TEXT,
-      base::UTF8ToUTF16(url.host()));
+      url_formatter::IDNToUnicode(url_formatter::StripWWW(url.host())));
 
   // Verify only the correct message is displayed when no extensions have access
   // to the current site.
@@ -1046,38 +1052,52 @@ TEST_F(ExtensionsTabbedMenuViewUnitTest, SiteAccessTab_SelectSiteSetting) {
   auto extensionB =
       InstallExtensionWithHostPermissions("Extension B", {"<all_urls>"});
 
-  // Navigate to a url where the extension should have access to.
+  // Navigate to a url where both extensions have access. Withheld site access
+  // in one of the extensions to be able to test both site access sections.
   const GURL url("http://www.a.com");
   web_contents_tester()->NavigateAndCommit(url);
+  content::WindowedNotificationObserver permissions_observer(
+      extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
+      content::NotificationService::AllSources());
+  extensions::SitePermissionsHelper(profile()).UpdateSiteAccess(
+      *extensionA, browser()->tab_strip_model()->GetActiveWebContents(),
+      /*new_access=*/extensions::SitePermissionsHelper::SiteAccess::kOnClick);
+  permissions_observer.Wait();
   WaitForAnimation();
   ShowSiteAccessTabInMenu();
 
-  auto* manager = extensions::PermissionsManager::Get(profile());
-  auto origin = url::Origin::Create(url);
-
-  // Verify site has "customize by extensions" site setting by default.
-  EXPECT_EQ(
-      manager->GetUserSiteSetting(origin),
-      extensions::PermissionsManager::UserSiteSetting::kCustomizeByExtension);
-
-  // TODO(crbug.com/1263310): After adding a permissions manager observer in the
-  // menu, test the site access tab contents view is the appropriate instead of
-  // checking the user site setting directly.
+  // Verify site has "customize by extensions" site setting by default, and both
+  // site access sections are displayed.
+  EXPECT_TRUE(IsHasAccessSectionDisplayed());
+  EXPECT_TRUE(IsRequestsAccessSectionDisplayed());
+  EXPECT_FALSE(site_access_message()->GetVisible());
 
   SelectSiteSetting(kGrantAllExtensionsIndex);
-  EXPECT_EQ(
-      manager->GetUserSiteSetting(origin),
-      extensions::PermissionsManager::UserSiteSetting::kGrantAllExtensions);
+  EXPECT_TRUE(IsHasAccessSectionDisplayed());
+  // TODO(crbug.com/1263310): Currently, user site settings are stored but not
+  // granted and thus extension B is still requesting access. Requests access
+  // section should be empty once user permissions are granted.
+  EXPECT_TRUE(IsRequestsAccessSectionDisplayed());
+  EXPECT_FALSE(site_access_message()->GetVisible());
+  // TODO(crbug.com/1263310): Test the site access menu items do not have a
+  // dropdown.
 
+  // Verify selecting "block all extensions" site setting displays only the
+  // appropriate message.
   SelectSiteSetting(kBlockAllExtensionsIndex);
-  EXPECT_EQ(
-      manager->GetUserSiteSetting(origin),
-      extensions::PermissionsManager::UserSiteSetting::kBlockAllExtensions);
+  EXPECT_FALSE(IsHasAccessSectionDisplayed());
+  EXPECT_FALSE(IsRequestsAccessSectionDisplayed());
+  EXPECT_TRUE(site_access_message()->GetVisible());
+  EXPECT_EQ(site_access_message()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_SITE_ACCESS_TAB_BLOCK_ALL_EXTENSIONS_TEXT));
 
+  // Verify selecting "customize by extension" site setting displays both site
+  // access sections.
   SelectSiteSetting(kCustomizeByExtensionIndex);
-  EXPECT_EQ(
-      manager->GetUserSiteSetting(origin),
-      extensions::PermissionsManager::UserSiteSetting::kCustomizeByExtension);
+  EXPECT_TRUE(IsHasAccessSectionDisplayed());
+  EXPECT_TRUE(IsRequestsAccessSectionDisplayed());
+  EXPECT_FALSE(site_access_message()->GetVisible());
 }
 
 TEST_F(ExtensionsTabbedMenuViewUnitTest, WindowTitle) {

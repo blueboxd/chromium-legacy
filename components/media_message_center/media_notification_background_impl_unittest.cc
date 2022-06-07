@@ -11,6 +11,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -238,10 +239,11 @@ class MediaNotificationBackgroundImplBlackWhiteTest
     bitmap.allocN32Pixels(area.width(), area.height());
     bitmap.eraseColor(GetParam());
 
-    area.Inset(40, 0, 0, 0);
+    area.Inset(gfx::Insets::TLBR(0, 40, 0, 0));
     bitmap.erase(first, gfx::RectToSkIRect(area));
 
-    area.Inset(first_width, area.height() - second_height, 0, 0);
+    area.Inset(
+        gfx::Insets::TLBR(area.height() - second_height, first_width, 0, 0));
     bitmap.erase(second, gfx::RectToSkIRect(area));
 
     return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);

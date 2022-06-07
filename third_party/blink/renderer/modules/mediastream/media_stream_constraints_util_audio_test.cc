@@ -16,6 +16,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/media_switches.h"
+#include "media/media_buildflags.h"
 #include "media/webrtc/constants.h"
 #include "media/webrtc/webrtc_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -556,6 +558,57 @@ class MediaStreamConstraintsUtilAudioTest
   std::string GetMediaStreamSource() override { return GetParam(); }
 };
 
+enum class ApmLocation {
+  kProcessedLocalAudioSource,
+  kAudioService,
+  kAudioServiceAvoidResampling
+};
+
+class MediaStreamConstraintsRemoteAPMTest
+    : public MediaStreamConstraintsUtilAudioTestBase,
+      public testing::WithParamInterface<ApmLocation> {
+ protected:
+  ApmLocation GetApmLocation() { return GetParam(); }
+
+ private:
+  void SetUp() override {
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+    switch (GetApmLocation()) {
+      case ApmLocation::kProcessedLocalAudioSource:
+        scoped_feature_list_.InitAndDisableFeature(
+            media::kChromeWideEchoCancellation);
+        break;
+      case ApmLocation::kAudioService:
+        scoped_feature_list_.InitAndEnableFeatureWithParameters(
+            media::kChromeWideEchoCancellation,
+            {{ "minimize_resampling",
+               "false" }});
+        break;
+      case ApmLocation::kAudioServiceAvoidResampling:
+        scoped_feature_list_.InitAndEnableFeatureWithParameters(
+            media::kChromeWideEchoCancellation,
+            {{ "minimize_resampling",
+               "true" }});
+        break;
+    }
+#endif
+
+    // Setup the capabilities.
+    ResetFactory();
+    if (IsDeviceCapture()) {
+      capabilities_.emplace_back(
+          "default_device", "fake_group1",
+          media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                 media::CHANNEL_LAYOUT_STEREO,
+                                 media::AudioParameters::kAudioCDSampleRate,
+                                 1000));
+      default_device_ = &capabilities_[0];
+    }
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // The Unconstrained test checks the default selection criteria.
 TEST_P(MediaStreamConstraintsUtilAudioTest, Unconstrained) {
   auto result = SelectSettings();
@@ -797,9 +850,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, Channels) {
 }
 
 TEST_P(MediaStreamConstraintsUtilAudioTest, MultiChannelEchoCancellation) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatureState(::features::kWebRtcEnableCaptureMultiChannelApm,
-                                true);
   if (!IsDeviceCapture())
     return;
 
@@ -851,67 +901,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, MultiChannelEchoCancellation) {
   EXPECT_EQ(result.device_id(), "4_channels_device");
   EXPECT_EQ(result.audio_processing_properties().echo_cancellation_type,
             EchoCancellationType::kEchoCancellationAec3);
-  EXPECT_EQ(result.num_channels(), 4);
-}
-
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       MultiChannelEchoCancellationDisabled) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatureState(::features::kWebRtcEnableCaptureMultiChannelApm,
-                                false);
-  if (!IsDeviceCapture())
-    return;
-
-  AudioCaptureSettings result;
-
-  ResetFactory();
-  result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(result.device_id(), "default_device");
-  // By default the number of channels must be 1 with echo cancellation enabled.
-  EXPECT_EQ(result.audio_processing_properties().echo_cancellation_type,
-            EchoCancellationType::kEchoCancellationAec3);
-  EXPECT_EQ(result.num_channels(), 1);
-
-  ResetFactory();
-  constraint_factory_.basic().device_id.SetExact("default_device");
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  // By default, use 1 channel,
-  EXPECT_EQ(result.device_id(), "default_device");
-  EXPECT_EQ(result.audio_processing_properties().echo_cancellation_type,
-            EchoCancellationType::kEchoCancellationAec3);
-  EXPECT_EQ(result.num_channels(), 1);
-
-  ResetFactory();
-  constraint_factory_.basic().channel_count.SetExact(2);
-  result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(result.device_id(), "default_device");
-  // Forcing two channels requires APM disabled.
-  EXPECT_EQ(result.audio_processing_properties().echo_cancellation_type,
-            EchoCancellationType::kEchoCancellationDisabled);
-  EXPECT_EQ(result.num_channels(), 2);
-
-  ResetFactory();
-  constraint_factory_.basic().channel_count.SetIdeal(2);
-  result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(result.device_id(), "default_device");
-  // Satisfying the requested 2 channels requires APM disabled.
-  EXPECT_EQ(result.audio_processing_properties().echo_cancellation_type,
-            EchoCancellationType::kEchoCancellationDisabled);
-  EXPECT_EQ(result.num_channels(), 2);
-
-  ResetFactory();
-  constraint_factory_.basic().channel_count.SetIdeal(4);
-  result = SelectSettings();
-  EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(result.device_id(), "4_channels_device");
-  // Satisfying the requested 4 channels requires APM disabled.
-  EXPECT_EQ(result.audio_processing_properties().echo_cancellation_type,
-            EchoCancellationType::kEchoCancellationDisabled);
   EXPECT_EQ(result.num_channels(), 4);
 }
 
@@ -2038,6 +2027,45 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExperimetanlEcWithSource) {
   EXPECT_TRUE(result.HasValue());
 }
 
+TEST_P(MediaStreamConstraintsRemoteAPMTest, DeviceSampleRate) {
+  if (!IsDeviceCapture())
+    return;
+
+  AudioCaptureSettings result;
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetExact(
+      media::AudioParameters::kAudioCDSampleRate);
+  constraint_factory_.basic().echo_cancellation.SetExact(true);
+  result = SelectSettings();
+
+  // Native sample rate is only supported by APM in the audio service, without
+  // resampling mitigations.
+  if (GetApmLocation() == ApmLocation::kAudioService)
+    EXPECT_TRUE(result.HasValue());
+  else
+    EXPECT_FALSE(result.HasValue());
+}
+
+TEST_P(MediaStreamConstraintsRemoteAPMTest,
+       WebRtcSampleRateButNotDeviceSampleRate) {
+  if (!IsDeviceCapture())
+    return;
+
+  AudioCaptureSettings result;
+  ResetFactory();
+  constraint_factory_.basic().sample_rate.SetExact(
+      media::kAudioProcessingSampleRateHz);
+  constraint_factory_.basic().echo_cancellation.SetExact(true);
+  result = SelectSettings();
+
+  // Native sample rate is only supported by APM in the audio service, without
+  // resampling mitigations.
+  if (GetApmLocation() == ApmLocation::kAudioService)
+    EXPECT_FALSE(result.HasValue());
+  else
+    EXPECT_TRUE(result.HasValue());
+}
+
 TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyConstraint) {
   if (!IsDeviceCapture())
     return;
@@ -2093,4 +2121,17 @@ INSTANTIATE_TEST_SUITE_P(All,
                                          blink::kMediaStreamSourceTab,
                                          blink::kMediaStreamSourceSystem,
                                          blink::kMediaStreamSourceDesktop));
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    MediaStreamConstraintsRemoteAPMTest,
+    testing::Values(ApmLocation::kProcessedLocalAudioSource,
+                    ApmLocation::kAudioService,
+                    ApmLocation::kAudioServiceAvoidResampling));
+#else
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    MediaStreamConstraintsRemoteAPMTest,
+    testing::Values(ApmLocation::kProcessedLocalAudioSource));
+#endif
 }  // namespace blink

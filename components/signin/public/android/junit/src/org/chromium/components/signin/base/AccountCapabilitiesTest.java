@@ -50,6 +50,8 @@ public final class AccountCapabilitiesTest {
                 return capabilities.canRunChromePrivacySandboxTrials();
             case AccountCapabilitiesConstants.IS_SUBJECT_TO_PARENTAL_CONTROLS_CAPABILITY_NAME:
                 return capabilities.isSubjectToParentalControls();
+            case AccountCapabilitiesConstants.CAN_STOP_PARENTAL_SUPERVISION_CAPABILITY_NAME:
+                return capabilities.canStopParentalSupervision();
         }
         assert false : "Capability name is not known.";
         return -1;
@@ -59,7 +61,8 @@ public final class AccountCapabilitiesTest {
     public static HashMap<String, Integer> populateCapabilitiesResponse(
             @AccountManagerDelegate.CapabilityResponse int value) {
         HashMap<String, Integer> response = new HashMap<>();
-        for (String capabilityName : AccountCapabilities.SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
+        for (String capabilityName :
+                AccountCapabilitiesConstants.SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
             response.put(capabilityName, value);
         }
         return response;
@@ -79,6 +82,10 @@ public final class AccountCapabilitiesTest {
                         .value(AccountCapabilitiesConstants
                                         .IS_SUBJECT_TO_PARENTAL_CONTROLS_CAPABILITY_NAME),
                 new ParameterSet()
+                        .name("CanStopParentalSupervision")
+                        .value(AccountCapabilitiesConstants
+                                        .CAN_STOP_PARENTAL_SUPERVISION_CAPABILITY_NAME),
+                new ParameterSet()
                         .name("CanOfferExtendedChromeSyncPromos")
                         .value(AccountCapabilitiesConstants
                                         .CAN_OFFER_EXTENDED_CHROME_SYNC_PROMOS_CAPABILITY_NAME));
@@ -92,7 +99,7 @@ public final class AccountCapabilitiesTest {
 
         static {
             // Asserts that the list of parameters contains all supported capability names.
-            assert AccountCapabilities.SUPPORTED_ACCOUNT_CAPABILITY_NAMES.containsAll(
+            assert AccountCapabilitiesConstants.SUPPORTED_ACCOUNT_CAPABILITY_NAMES.containsAll(
                     Lists.transform(sCapabilties, (paramSet) -> getCapabilityName(paramSet)));
         }
 
@@ -110,40 +117,25 @@ public final class AccountCapabilitiesTest {
     @Test
     @ParameterAnnotations.UseMethodParameter(CapabilitiesTestParams.class)
     public void testCapabilityResponseException(String capabilityName) {
-        AccountCapabilities capabilities = new AccountCapabilities();
-        capabilities.setAccountCapability(
-                capabilityName, AccountManagerDelegate.CapabilityResponse.EXCEPTION);
+        AccountCapabilities capabilities = new AccountCapabilities(new HashMap<>());
         Assert.assertEquals(getCapability(capabilityName, capabilities), Tribool.UNKNOWN);
     }
 
     @Test
     @ParameterAnnotations.UseMethodParameter(CapabilitiesTestParams.class)
     public void testCapabilityResponseYes(String capabilityName) {
-        AccountCapabilities capabilities = new AccountCapabilities();
-        capabilities.setAccountCapability(
-                capabilityName, AccountManagerDelegate.CapabilityResponse.YES);
+        AccountCapabilities capabilities = new AccountCapabilities(new HashMap<String, Boolean>() {
+            { put(capabilityName, true); }
+        });
         Assert.assertEquals(getCapability(capabilityName, capabilities), Tribool.TRUE);
     }
 
     @Test
     @ParameterAnnotations.UseMethodParameter(CapabilitiesTestParams.class)
     public void testCapabilityResponseNo(String capabilityName) {
-        AccountCapabilities capabilities = new AccountCapabilities();
-        capabilities.setAccountCapability(
-                capabilityName, AccountManagerDelegate.CapabilityResponse.NO);
-        Assert.assertEquals(getCapability(capabilityName, capabilities), Tribool.FALSE);
-    }
-
-    @Test
-    @ParameterAnnotations.UseMethodParameter(CapabilitiesTestParams.class)
-    public void testCapabilityResponseFalseAfterException(String capabilityName) {
-        AccountCapabilities capabilities = new AccountCapabilities();
-        capabilities.setAccountCapability(
-                capabilityName, AccountManagerDelegate.CapabilityResponse.NO);
-        Assert.assertEquals(getCapability(capabilityName, capabilities), Tribool.FALSE);
-
-        capabilities.setAccountCapability(
-                capabilityName, AccountManagerDelegate.CapabilityResponse.EXCEPTION);
+        AccountCapabilities capabilities = new AccountCapabilities(new HashMap<String, Boolean>() {
+            { put(capabilityName, false); }
+        });
         Assert.assertEquals(getCapability(capabilityName, capabilities), Tribool.FALSE);
     }
 
@@ -152,7 +144,8 @@ public final class AccountCapabilitiesTest {
         AccountCapabilities capabilities = AccountCapabilities.parseFromCapabilitiesResponse(
                 populateCapabilitiesResponse(AccountManagerDelegate.CapabilityResponse.YES));
 
-        for (String capabilityName : AccountCapabilities.SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
+        for (String capabilityName :
+                AccountCapabilitiesConstants.SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
             Assert.assertEquals(getCapability(capabilityName, capabilities), Tribool.TRUE);
         }
     }
@@ -162,7 +155,8 @@ public final class AccountCapabilitiesTest {
         AccountCapabilities capabilities = AccountCapabilities.parseFromCapabilitiesResponse(
                 populateCapabilitiesResponse(AccountManagerDelegate.CapabilityResponse.NO));
 
-        for (String capabilityName : AccountCapabilities.SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
+        for (String capabilityName :
+                AccountCapabilitiesConstants.SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
             Assert.assertEquals(getCapability(capabilityName, capabilities), Tribool.FALSE);
         }
     }
@@ -172,7 +166,8 @@ public final class AccountCapabilitiesTest {
         AccountCapabilities capabilities = AccountCapabilities.parseFromCapabilitiesResponse(
                 populateCapabilitiesResponse(AccountManagerDelegate.CapabilityResponse.EXCEPTION));
 
-        for (String capabilityName : AccountCapabilities.SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
+        for (String capabilityName :
+                AccountCapabilitiesConstants.SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
             Assert.assertEquals(getCapability(capabilityName, capabilities), Tribool.UNKNOWN);
         }
     }

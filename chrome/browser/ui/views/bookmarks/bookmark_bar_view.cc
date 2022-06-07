@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
@@ -57,7 +59,6 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_background.h"
-#include "chrome/browser/ui/views/read_later/read_later_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -75,7 +76,6 @@
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
-#include "components/reading_list/features/reading_list_switches.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "extensions/browser/extension_registry.h"
@@ -128,7 +128,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/drag_utils.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/metrics.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -423,7 +422,7 @@ class TabGroupButton : public BookmarkMenuButtonBase {
   void OnPaintBackground(gfx::Canvas* canvas) override {
     const ui::ThemeProvider* const tp = GetThemeProvider();
     gfx::RectF rect_f = gfx::RectF(width(), height());
-    rect_f.Inset(1.0f, 1.0f);
+    rect_f.Inset(1.0f);
     float border_thickness_ = 2.0f;
 
     // Relies on logic in theme_helper.cc to determine dark/light palette.
@@ -440,7 +439,7 @@ class TabGroupButton : public BookmarkMenuButtonBase {
       border_color =
           tp->GetColor(GetTabGroupDialogColorId(tab_group_color_id_));
       border_thickness_ = 2.0f;
-      rect_f.Inset(border_thickness_ / 2, border_thickness_ / 2);
+      rect_f.Inset(border_thickness_ / 2);
     }
 
     // Draw background.
@@ -557,8 +556,8 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
     constexpr int kPaddingWidth = kSeparatorWidth - kThickness;
     constexpr int kLeadingPadding = (kPaddingWidth + 1) / 2;
 
-    SetBorder(views::CreateEmptyBorder(0, kLeadingPadding, 0,
-                                       kPaddingWidth - kLeadingPadding));
+    SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+        0, kLeadingPadding, 0, kPaddingWidth - kLeadingPadding)));
     SetPreferredHeight(gfx::kFaviconSize);
   }
   ButtonSeparatorView(const ButtonSeparatorView&) = delete;
@@ -663,8 +662,6 @@ void BookmarkBarView::SetBookmarkBarState(
     if (state == BookmarkBar::SHOW) {
       size_animation_.Show();
     } else {
-      if (read_later_button_)
-        read_later_button_->CloseBubble();
       size_animation_.Hide();
     }
   } else {
@@ -845,12 +842,6 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
     gfx::Size size = apps_page_shortcut_->GetPreferredSize();
     width += size.width() + bookmark_bar_button_padding;
   }
-  if (read_later_button_ && read_later_button_->GetVisible()) {
-    gfx::Size separator_size = read_later_separator_view_->GetPreferredSize();
-    gfx::Size size = read_later_button_->GetPreferredSize();
-    width +=
-        separator_size.width() + size.width() + bookmark_bar_button_padding;
-  }
 
   return gfx::Size(width, height);
 }
@@ -903,21 +894,8 @@ void BookmarkBarView::Layout() {
 
   int max_x = kBookmarkBarHorizontalMargin + width - overflow_pref.width() -
               bookmarks_separator_pref.width();
-  if (other_bookmarks_button_->GetVisible()) {
+  if (other_bookmarks_button_->GetVisible())
     max_x -= other_bookmarks_pref.width();
-    // Additional spacing is only needed for this button if it is the last
-    // button in the bookmark bar. When the read later button exists this is no
-    // longer the last button.
-    if (!read_later_button_ || !read_later_button_->GetVisible())
-      max_x -= bookmark_bar_button_padding;
-  }
-
-  if (read_later_button_ && read_later_button_->GetVisible()) {
-    if (bookmarks_separator_view_->GetVisible())
-      max_x -= bookmarks_separator_pref.width();
-    max_x -= read_later_button_->GetPreferredSize().width() +
-             bookmark_bar_button_padding;
-  }
 
   // Start with the apps page shortcut button.
   if (apps_page_shortcut_->GetVisible()) {
@@ -1034,23 +1012,6 @@ void BookmarkBarView::Layout() {
     other_bookmarks_button_->SetBounds(x, y, other_bookmarks_pref.width(),
                                        button_height);
     x += other_bookmarks_pref.width();
-    // Additional spacing is only needed for the last button in the bookmark
-    // bar. When the read later button exists this is no longer the last button.
-    if (!read_later_button_ || !read_later_button_->GetVisible())
-      x += bookmark_bar_button_padding;
-  }
-
-  // Read-later button and separator.
-  if (read_later_button_ && read_later_button_->GetVisible()) {
-    gfx::Size read_later_separator_pref =
-        read_later_separator_view_->GetPreferredSize();
-    gfx::Size read_later_pref = read_later_button_->GetPreferredSize();
-    read_later_separator_view_->SetBounds(
-        x, center_y(read_later_separator_pref.height()),
-        read_later_separator_pref.width(), read_later_separator_pref.height());
-    x += read_later_separator_pref.width();
-    read_later_button_->SetBounds(x, y, read_later_pref.width(), button_height);
-    x += read_later_pref.width() + bookmark_bar_button_padding;
   }
 }
 
@@ -1488,10 +1449,9 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
         chrome::BookmarkFolderIconType::kNormal, ui::kColorMenuIcon);
   }
 
-  button_drag_utils::SetDragImage(
-      node->url(), node->GetTitle(),
-      views::GetImageSkiaFromImageModel(icon, GetColorProvider()), &press_pt,
-      data);
+  button_drag_utils::SetDragImage(node->url(), node->GetTitle(),
+                                  icon.Rasterize(GetColorProvider()), &press_pt,
+                                  data);
   WriteBookmarkDragData(node, data);
 }
 
@@ -1586,7 +1546,7 @@ void BookmarkBarView::OnTabGroupButtonPressed(
   // TODO: Handle click if group has already been opened (crbug.com/1238539)
   // left click on a saved tab group opens all links in new group
   if (event.flags() & ui::EF_LEFT_MOUSE_BUTTON) {
-    if (group->urls.empty())
+    if (group->saved_tabs.empty())
       return;
     chrome::OpenSavedTabGroup(browser_, GetPageNavigatorGetter(), group,
                               WindowOpenDisposition::NEW_BACKGROUND_TAB);
@@ -1612,8 +1572,6 @@ void BookmarkBarView::ShowContextMenuForViewImpl(
   } else if (source == managed_bookmarks_button_) {
     parent = managed_->managed_node();
     nodes.push_back(parent);
-  } else if (source == read_later_button_) {
-    // Do nothing here for now.
   } else if (source != this && source != apps_page_shortcut_) {
     // User clicked on one of the bookmark buttons, find which one they
     // clicked on, except for the apps page shortcut, which must behave as if
@@ -1674,15 +1632,6 @@ void BookmarkBarView::Init() {
   // We'll re-enable when the model is loaded.
   other_bookmarks_button_->SetEnabled(false);
 
-  if (base::FeatureList::IsEnabled(reading_list::switches::kReadLater) &&
-      !base::FeatureList::IsEnabled(features::kSidePanel)) {
-    read_later_separator_view_ =
-        AddChildView(std::make_unique<ButtonSeparatorView>());
-    read_later_button_ =
-        AddChildView(std::make_unique<ReadLaterButton>(browser_));
-    read_later_button_->set_context_menu_controller(this);
-  }
-
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
@@ -1701,24 +1650,12 @@ void BookmarkBarView::Init() {
     InsertTabGroupButtonsFromModel();
   }
 
-  if (read_later_button_) {
-    profile_pref_registrar_.Add(
-        bookmarks::prefs::kShowReadingListInBookmarkBar,
-        base::BindRepeating(
-            &BookmarkBarView::OnReadingListVisibilityPrefChanged,
-            base::Unretained(this)));
-  }
-
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
       base::BindRepeating(&BookmarkBarView::OnShowManagedBookmarksPrefChanged,
                           base::Unretained(this)));
   apps_page_shortcut_->SetVisible(
       chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile()));
-  if (read_later_button_) {
-    read_later_button_->SetVisible(
-        chrome::ShouldShowReadingListInBookmarkBar(browser_->profile()));
-  }
 
   bookmarks_separator_view_ =
       AddChildView(std::make_unique<ButtonSeparatorView>());
@@ -1883,8 +1820,10 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
         // See https://crbug/814447
         const gfx::ImageSkia icon =
             gfx::CreateVectorIcon(kDefaultTouchFaviconIcon, text_color);
+        // The color used in `mask` is not relevant as long it is opaque; Only
+        // the alpha channel matters.
         const gfx::ImageSkia mask =
-            gfx::CreateVectorIcon(kDefaultTouchFaviconMaskIcon, SK_ColorBLACK);
+            gfx::CreateVectorIcon(kDefaultTouchFaviconMaskIcon, SK_ColorWHITE);
         favicon = gfx::ImageSkiaOperations::CreateMaskedImage(icon, mask);
       } else {
         favicon = favicon::GetDefaultFavicon().AsImageSkia();
@@ -1919,18 +1858,12 @@ void BookmarkBarView::ConfigureButton(const SavedTabGroup& saved_group,
   if (tp) {
     tab_groups::TabGroupColorId tab_group_color_id = saved_group.color;
 
-    // In most cases our text color will match the hover border color.
-    // However, for yellow, orange, and custom colors/themes this may not be
-    // true with respect to contrast and visibility, so a default grey color may
-    // be more appropriate.
     SkColor background_color =
         tp->GetColor(GetTabGroupBookmarkColorId(tab_group_color_id));
     text_color = tp->GetColor(GetTabGroupDialogColorId(tab_group_color_id));
-    bool meets_contrast_req =
-        color_utils::GetContrastRatio(background_color, text_color) >=
-        color_utils::kMinimumVisibleContrastRatio;
-    if (!meets_contrast_req)
-      text_color = gfx::kGoogleGrey800;
+    text_color = color_utils::PickGoogleColor(
+        text_color, background_color,
+        color_utils::kMinimumReadableContrastRatio);
 
     // Set empty border using the default horizontal padding (but leaving
     // vertical empty). This provides enough space to render some
@@ -2340,18 +2273,6 @@ void BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged() {
     return;
   apps_page_shortcut_->SetVisible(visible);
   UpdateBookmarksSeparatorVisibility();
-  LayoutAndPaint();
-}
-
-void BookmarkBarView::OnReadingListVisibilityPrefChanged() {
-  DCHECK(read_later_button_);
-  bool visible =
-      chrome::ShouldShowReadingListInBookmarkBar(browser_->profile());
-  if (read_later_button_->GetVisible() == visible)
-    return;
-  read_later_button_->CloseBubble();
-  read_later_button_->SetVisible(visible);
-  read_later_separator_view_->SetVisible(visible);
   LayoutAndPaint();
 }
 

@@ -21,7 +21,7 @@ body {
   overflow: auto;
 }
 
-#page-heading {
+h1 {
   color: rgb(92, 97, 102);
   font-size: 1.5rem;
   padding-bottom: 10px;
@@ -35,9 +35,10 @@ body {
   color: red;
 }
 
-hr {
+main {
   border-top: 1px solid rgb(48, 57, 66);
-  width: 100%;
+  margin-top: 1rem;
+  padding-top: 1rem;
 }
 
 .content {
@@ -101,4 +102,9 @@ button {
 
 .http-error {
   background-color: rgb(250,199,192);
+}
+
+.debug-url {
+  color: rgb(66,135,245);
+  font-weight: bold;
 }

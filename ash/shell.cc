@@ -77,6 +77,7 @@
 #include "ash/marker/marker_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/projector/projector_controller_impl.h"
@@ -90,10 +91,10 @@
 #include "ash/public/cpp/tab_cluster/tab_cluster_ui_controller.h"
 #include "ash/public/cpp/views_text_services_context_menu_impl.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
+#include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_window_watcher.h"
 #include "ash/shell_delegate.h"
@@ -103,6 +104,7 @@
 #include "ash/shutdown_controller_impl.h"
 #include "ash/style/ash_color_mixer.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/dark_mode_controller.h"
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_device_status_ui_handler.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
@@ -112,7 +114,9 @@
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/caps_lock_notification_controller.h"
+#include "ash/system/diagnostics/diagnostics_log_controller.h"
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
+#include "ash/system/geolocation/geolocation_controller.h"
 #include "ash/system/hps/hps_orientation_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
@@ -127,6 +131,7 @@
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
+#include "ash/system/power/adaptive_charging_controller.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_button_controller.h"
@@ -186,13 +191,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/usb/usbguard_client.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/system/devicemode.h"
+#include "chromeos/ui/wm/features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -454,11 +459,6 @@ bool Shell::ShouldSaveDisplaySettings() {
   return focus_controller_.get();
 }
 
-void Shell::UpdateShelfVisibility() {
-  for (aura::Window* root : GetAllRootWindows())
-    Shelf::ForWindow(root)->UpdateVisibilityState();
-}
-
 bool Shell::HasPrimaryStatusArea() {
   return !!GetPrimaryRootWindowController()->GetStatusAreaWidget();
 }
@@ -714,6 +714,9 @@ Shell::~Shell() {
   // before destroying |session_controller_|.
   accelerator_controller_->Shutdown();
 
+  // Must be destructed before hps_orientation_controller_.
+  power_prefs_.reset();
+
   // Must be destructed before the tablet mode and message center controllers,
   // both of which these rely on.
   hps_notify_controller_.reset();
@@ -738,6 +741,8 @@ Shell::~Shell() {
 
   // Accesses root window containers.
   logout_confirmation_controller_.reset();
+
+  adaptive_charging_controller_.reset();
 
   // Drag-and-drop must be canceled prior to close all windows.
   drag_drop_controller_.reset();
@@ -786,7 +791,6 @@ Shell::~Shell() {
   event_client_.reset();
   toplevel_window_event_handler_.reset();
   visibility_controller_.reset();
-  power_prefs_.reset();
 
   tray_action_.reset();
 
@@ -830,13 +834,20 @@ Shell::~Shell() {
   // Removes itself as an observer of |pref_service_|.
   shelf_controller_.reset();
 
-  // NightLightControllerImpl depends on the PrefService as well as the window
-  // tree host manager, and must be destructed before them. crbug.com/724231.
+  // NightLightControllerImpl depends on the PrefService, the window tree host
+  // manager, and `geolocation_controller_`, so it must be destructed before
+  // them. crbug.com/724231.
   night_light_controller_ = nullptr;
   // Similarly for DockedMagnifierController.
   docked_magnifier_controller_ = nullptr;
   // Similarly for PrivacyScreenController.
   privacy_screen_controller_ = nullptr;
+
+  // Depends on `geolocation_controller_`, so it must be destructed before the
+  // geolocation controller.
+  dark_mode_controller_.reset();
+
+  geolocation_controller_.reset();
 
   // NearbyShareDelegateImpl must be destroyed before SessionController and
   // NearbyShareControllerImpl.
@@ -910,11 +921,15 @@ Shell::~Shell() {
   // before it.
   detachable_base_handler_.reset();
 
+  diagnostics_log_controller_.reset();
+
   firmware_update_notification_controller_.reset();
 
   pcie_peripheral_notification_controller_.reset();
 
   usb_peripheral_notification_controller_.reset();
+
+  rgb_keyboard_manager_.reset();
 
   message_center_ash_impl_.reset();
 
@@ -993,11 +1008,26 @@ void Shell::Init(
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
-  // Observes the tablet mode controller and adds a notification to the message
-  // center, so must be constructed after both.
-  if (features::IsSnoopingProtectionEnabled()) {
+  if (::features::IsRgbKeyboardEnabled()) {
+    rgb_keyboard_manager_ = std::make_unique<RgbKeyboardManager>();
+  }
+
+  // Observes the tablet mode controller if any hps feature is enabled.
+  if (features::IsSnoopingProtectionEnabled() ||
+      features::IsQuickDimEnabled()) {
     hps_orientation_controller_ = std::make_unique<HpsOrientationController>();
+  }
+
+  // Construct HpsNotifyController, must be constructed after
+  // HpsOrientationController.
+  if (features::IsSnoopingProtectionEnabled()) {
     hps_notify_controller_ = std::make_unique<HpsNotifyController>();
+  }
+
+  // Manages lifetime of DiagnosticApp logs.
+  if (features::IsLogControllerForDiagnosticsAppEnabled()) {
+    diagnostics_log_controller_ =
+        std::make_unique<diagnostics::DiagnosticsLogController>();
   }
 
   firmware_update_notification_controller_ =
@@ -1035,8 +1065,7 @@ void Shell::Init(
   // Shelf, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
-  wallpaper_controller_ =
-      std::make_unique<WallpaperControllerImpl>(local_state_);
+  wallpaper_controller_ = WallpaperControllerImpl::Create(local_state_);
 
   window_positioner_ = std::make_unique<WindowPositioner>();
 
@@ -1060,9 +1089,19 @@ void Shell::Init(
   ui::ColorProviderManager::Get().AppendColorProviderInitializer(
       base::BindRepeating(AddAshColorMixer));
 
-  // Night Light depends on the display manager, the display color manager, and
-  // aura::Env, so initialize it after all have been initialized.
+  // Geolocation controller needs to be created before any `ScheduledFeature`
+  // subclasses such as night light and dark mode controllers because
+  // `ScheduledFeature` ctor will access `geolocation_controller_` from
+  // `Shell`.
+  geolocation_controller_ = std::make_unique<GeolocationController>(
+      shell_delegate_->GetGeolocationUrlLoaderFactory());
+
+  // Night Light depends on the display manager, the display color manager,
+  // aura::Env, and geolocation controller, so initialize it after all have
+  // been initialized.
   night_light_controller_ = std::make_unique<NightLightControllerImpl>();
+
+  dark_mode_controller_ = std::make_unique<DarkModeController>();
 
   // Privacy Screen depends on the display manager, so initialize it after
   // display manager was properly initialized.
@@ -1196,6 +1235,11 @@ void Shell::Init(
   mouse_cursor_filter_ = std::make_unique<MouseCursorEventFilter>();
   AddPreTargetHandler(mouse_cursor_filter_.get(),
                       ui::EventTarget::Priority::kAccessibility);
+
+  if (features::IsAdaptiveChargingEnabled()) {
+    adaptive_charging_controller_ =
+        std::make_unique<AdaptiveChargingController>();
+  }
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
@@ -1358,7 +1402,7 @@ void Shell::Init(
     projector_controller_ = std::make_unique<ProjectorControllerImpl>();
   }
 
-  if (features::IsWindowControlMenuEnabled())
+  if (chromeos::wm::features::IsFloatWindowEnabled())
     float_controller_ = std::make_unique<FloatController>();
 
   // Injects the factory which fulfills the implementation of the text context

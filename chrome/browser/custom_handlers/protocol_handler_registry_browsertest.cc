@@ -7,9 +7,9 @@
 
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -23,7 +23,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fenced_frame_test_util.h"
@@ -63,14 +62,19 @@ class ProtocolHandlerChangeWaiter : public ProtocolHandlerRegistry::Observer {
 
 }  // namespace
 
-class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
+class ChromeRegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
  public:
-  RegisterProtocolHandlerBrowserTest() { }
+  ChromeRegisterProtocolHandlerBrowserTest() = default;
 
   void SetUpOnMainThread() override {
 #if BUILDFLAG(IS_MAC)
     ASSERT_TRUE(test::RegisterAppWithLaunchServices());
 #endif
+
+    // We might define browser tests for other embedders, so the test's data
+    // files will be shared via //componennts
+    embedded_test_server()->ServeFilesFromSourceDirectory(
+        "components/test/data/");
   }
 
   TestRenderViewContextMenu* CreateContextMenu(GURL url) {
@@ -129,8 +133,8 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
   content::test::FencedFrameTestHelper fenced_frame_helper_;
 };
 
-IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
-    ContextMenuEntryAppearsForHandledUrls) {
+IN_PROC_BROWSER_TEST_F(ChromeRegisterProtocolHandlerBrowserTest,
+                       ContextMenuEntryAppearsForHandledUrls) {
   std::unique_ptr<TestRenderViewContextMenu> menu(
       CreateContextMenu(GURL("https://www.google.com/")));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
@@ -146,8 +150,8 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 }
 
-IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
-    UnregisterProtocolHandler) {
+IN_PROC_BROWSER_TEST_F(ChromeRegisterProtocolHandlerBrowserTest,
+                       UnregisterProtocolHandler) {
   std::unique_ptr<TestRenderViewContextMenu> menu(
       CreateContextMenu(GURL("https://www.google.com/")));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
@@ -168,7 +172,8 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 }
 
-IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
+IN_PROC_BROWSER_TEST_F(ChromeRegisterProtocolHandlerBrowserTest,
+                       CustomHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL handler_url = embedded_test_server()->GetURL("/custom_handler.html");
   AddProtocolHandler("news", handler_url);
@@ -191,8 +196,43 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
                              ->GetLastCommittedURL());
 }
 
+IN_PROC_BROWSER_TEST_F(ChromeRegisterProtocolHandlerBrowserTest,
+                       IgnoreRequestWithoutUserGesture) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto* content_settings =
+      chrome::PageSpecificContentSettingsDelegate::FromWebContents(
+          web_contents);
+
+  // Ensure the registry is currently empty.
+  GURL url("web+search:testing");
+  ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_EQ(0u, registry->GetHandlersFor(url.scheme()).size());
+
+  // Ensure there is no registration pending.
+  ASSERT_TRUE(content_settings->pending_protocol_handler().IsEmpty());
+
+  // Attempt to add an entry.
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      web_contents,
+      "navigator.registerProtocolHandler('web+"
+      "search', 'test.html?%s', 'test');"));
+
+  // Verify the registration is ignored if no user gesture involved.
+  ASSERT_EQ(0u, registry->GetHandlersFor(url.scheme()).size());
+
+  // Verify the handler registration is pending.
+  ASSERT_TRUE(content_settings->pending_protocol_handler().IsValid());
+}
+
 // FencedFrames can not register to handle any protocols.
-IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, FencedFrame) {
+IN_PROC_BROWSER_TEST_F(ChromeRegisterProtocolHandlerBrowserTest, FencedFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -220,39 +260,6 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, FencedFrame) {
 
   // Ensure the registry is still empty.
   ASSERT_EQ(0u, registry->GetHandlersFor(url.scheme()).size());
-}
-
-class RegisterProtocolHandlerSubresourceWebBundlesBrowserTest
-    : public RegisterProtocolHandlerBrowserTest {
- public:
-  RegisterProtocolHandlerSubresourceWebBundlesBrowserTest() = default;
-  ~RegisterProtocolHandlerSubresourceWebBundlesBrowserTest() override = default;
-
-  void SetUp() override {
-    feature_list_.InitWithFeatures({features::kSubresourceWebBundles}, {});
-    RegisterProtocolHandlerBrowserTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerSubresourceWebBundlesBrowserTest,
-                       UrnProtocolHandler) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL handler_url = embedded_test_server()->GetURL("/%s");
-  AddProtocolHandler("urn", handler_url);
-
-  std::u16string expected_title = u"OK";
-  content::TitleWatcher title_watcher(
-      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
-
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("/web_bundle/urn-handler-test.html")));
-
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 using RegisterProtocolHandlerExtensionBrowserTest =
@@ -295,10 +302,15 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerExtensionBrowserTest, Basic) {
                                                    ->GetLastCommittedURL());
 }
 
-class RegisterProtocolHandlerAndServiceWorkerInterceptor
+class ChromeRegisterProtocolHandlerAndServiceWorkerInterceptor
     : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
+    // We might define browser tests for other embedders, so the test's data
+    // files will be shared via //componennts
+    embedded_test_server()->ServeFilesFromSourceDirectory(
+        "components/test/data/");
+
     ASSERT_TRUE(embedded_test_server()->Start());
 
     // Navigate to the test page.
@@ -316,7 +328,7 @@ class RegisterProtocolHandlerAndServiceWorkerInterceptor
 };
 
 // TODO(crbug.com/1204127): Fix flakiness.
-IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerAndServiceWorkerInterceptor,
+IN_PROC_BROWSER_TEST_F(ChromeRegisterProtocolHandlerAndServiceWorkerInterceptor,
                        DISABLED_RegisterFetchListenerForHTMLHandler) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

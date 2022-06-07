@@ -26,7 +26,6 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
@@ -92,7 +91,7 @@ const char kKeyboardMechanicalLayoutPath[] = "keyboard_mechanical_layout";
 // devices. It's known *not* to be present on caroline.
 // TODO(tnagel): Remove "Product_S/N" after all devices that have it are AUE.
 const char* const kMachineInfoSerialNumberKeys[] = {
-    "client_id",      // Used by Reven devices
+    "flex_id",        // Used by Reven devices
     "Product_S/N",    // Samsung legacy
     "serial_number",  // VPD v2+ devices (Samsung: caroline and later)
 };

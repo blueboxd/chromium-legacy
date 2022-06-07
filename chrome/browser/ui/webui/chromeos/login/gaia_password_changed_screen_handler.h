@@ -38,8 +38,7 @@ class GaiaPasswordChangedScreenHandler : public GaiaPasswordChangedView,
  public:
   using TView = GaiaPasswordChangedView;
 
-  explicit GaiaPasswordChangedScreenHandler(
-      JSCallsContainer* js_calls_container);
+  GaiaPasswordChangedScreenHandler();
   GaiaPasswordChangedScreenHandler(const GaiaPasswordChangedScreenHandler&) =
       delete;
   GaiaPasswordChangedScreenHandler& operator=(
@@ -56,7 +55,7 @@ class GaiaPasswordChangedScreenHandler : public GaiaPasswordChangedView,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   ash::GaiaPasswordChangedScreen* screen_ = nullptr;
 };

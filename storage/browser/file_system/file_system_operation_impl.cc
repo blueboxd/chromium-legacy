@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -21,6 +22,7 @@
 #include "net/url_request/url_request.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/copy_or_move_hook_delegate.h"
 #include "storage/browser/file_system/copy_or_move_operation_delegate.h"
 #include "storage/browser/file_system/file_observers.h"
 #include "storage/browser/file_system/file_system_backend.h"
@@ -103,15 +105,16 @@ void FileSystemOperationImpl::Copy(
     const FileSystemURL& dest_url,
     CopyOrMoveOptionSet options,
     ErrorBehavior error_behavior,
-    const CopyOrMoveProgressCallback& progress_callback,
+    std::unique_ptr<CopyOrMoveHookDelegate> copy_or_move_hook_delegate,
     StatusCallback callback) {
+  DCHECK(copy_or_move_hook_delegate);
   DCHECK(SetPendingOperationType(kOperationCopy));
   DCHECK(!recursive_operation_delegate_);
 
   recursive_operation_delegate_ = std::make_unique<CopyOrMoveOperationDelegate>(
       file_system_context(), src_url, dest_url,
       CopyOrMoveOperationDelegate::OPERATION_COPY, options, error_behavior,
-      progress_callback,
+      std::move(copy_or_move_hook_delegate),
       base::BindOnce(&FileSystemOperationImpl::DidFinishOperation,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
   recursive_operation_delegate_->RunRecursively();
@@ -122,14 +125,15 @@ void FileSystemOperationImpl::Move(
     const FileSystemURL& dest_url,
     CopyOrMoveOptionSet options,
     ErrorBehavior error_behavior,
-    const CopyOrMoveProgressCallback& progress_callback,
+    std::unique_ptr<CopyOrMoveHookDelegate> copy_or_move_hook_delegate,
     StatusCallback callback) {
+  DCHECK(copy_or_move_hook_delegate);
   DCHECK(SetPendingOperationType(kOperationMove));
   DCHECK(!recursive_operation_delegate_);
   recursive_operation_delegate_ = std::make_unique<CopyOrMoveOperationDelegate>(
       file_system_context(), src_url, dest_url,
       CopyOrMoveOperationDelegate::OPERATION_MOVE, options, error_behavior,
-      progress_callback,
+      std::move(copy_or_move_hook_delegate),
       base::BindOnce(&FileSystemOperationImpl::DidFinishOperation,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
   recursive_operation_delegate_->RunRecursively();
@@ -409,7 +413,7 @@ void FileSystemOperationImpl::GetUsageAndQuotaThenRunTask(
     const FileSystemURL& url,
     base::OnceClosure task,
     base::OnceClosure error_callback) {
-  QuotaManagerProxy* quota_manager_proxy =
+  const scoped_refptr<QuotaManagerProxy>& quota_manager_proxy =
       file_system_context()->quota_manager_proxy();
   if (!quota_manager_proxy ||
       !file_system_context()->GetQuotaUtil(url.type())) {

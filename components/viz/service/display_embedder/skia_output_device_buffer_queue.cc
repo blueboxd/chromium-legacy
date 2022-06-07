@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -227,7 +228,7 @@ void SkiaOutputDeviceBufferQueue::PageFlipComplete(
       if (!available_images_.front()->sk_surface()) {
         // BeginWriteSkia() may alter GL's state.
         context_state_->set_need_context_state_reset(true);
-        available_images_.front()->BeginWriteSkia();
+        available_images_.front()->BeginWriteSkia(sample_count_);
       }
     }
   }
@@ -253,8 +254,7 @@ void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
     const absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>&
         plane) {
   // See |needs_background_image|.
-  MaybeScheduleBackgroundImage(plane.has_value() ? plane->display_rect
-                                                 : gfx::RectF{4.f, 4.f});
+  MaybeScheduleBackgroundImage();
 
   if (plane) {
     // If the current_image_ is nullptr, it means there is no change on the
@@ -320,9 +320,9 @@ const gpu::Mailbox SkiaOutputDeviceBufferQueue::GetImageMailboxForColor(
       solid_color =
           presenter_->AllocateSingleImage(color_space_, gfx::Size(4, 4));
     }
-    solid_color->BeginWriteSkia();
+    solid_color->BeginWriteSkia(/*sample_count=*/1);
     solid_color->sk_surface()->getCanvas()->clear(color);
-    solid_color->EndWriteSkia(/*force_flush*/ true);
+    solid_color->EndWriteSkia(/*force_flush=*/true);
   }
   DCHECK(solid_color);
   auto image_mailbox = solid_color->skia_representation()->mailbox();
@@ -640,13 +640,13 @@ gfx::Size SkiaOutputDeviceBufferQueue::GetSwapBuffersSize() {
   }
 }
 
-bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
-                                          float device_scale_factor,
-                                          const gfx::ColorSpace& color_space,
-                                          gfx::BufferFormat format,
-                                          gfx::OverlayTransform transform) {
+bool SkiaOutputDeviceBufferQueue::Reshape(
+    const SkSurfaceCharacterization& characterization,
+    const gfx::ColorSpace& color_space,
+    float device_scale_factor,
+    gfx::OverlayTransform transform) {
   DCHECK(pending_overlay_mailboxes_.empty());
-  if (!presenter_->Reshape(size, device_scale_factor, color_space, format,
+  if (!presenter_->Reshape(characterization, color_space, device_scale_factor,
                            transform)) {
     LOG(ERROR) << "Failed to resize.";
     CheckForLoopFailuresBufferQueue();
@@ -656,11 +656,12 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
   }
 
   overlay_transform_ = transform;
-
+  gfx::Size size = gfx::SkISizeToSize(characterization.dimensions());
   if (color_space_ == color_space && image_size_ == size)
     return true;
   color_space_ = color_space;
   image_size_ = size;
+  sample_count_ = characterization.sampleCount();
 
   bool success = RecreateImages();
   if (!success) {
@@ -671,12 +672,17 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
   return success;
 }
 
+void SkiaOutputDeviceBufferQueue::SetViewportSize(
+    const gfx::Size& viewport_size) {
+  viewport_size_ = viewport_size;
+}
+
 bool SkiaOutputDeviceBufferQueue::RecreateImages() {
-  size_t existing_number_of_buffers = images_.size();
   FreeAllSurfaces();
-  size_t number_to_allocate = capabilities_.use_dynamic_frame_buffer_allocation
-                                  ? existing_number_of_buffers
-                                  : capabilities_.number_of_buffers;
+  size_t number_to_allocate =
+      capabilities_.supports_dynamic_frame_buffer_allocation
+          ? number_of_images_to_allocate_
+          : capabilities_.number_of_buffers;
   if (!number_to_allocate)
     return true;
 
@@ -690,15 +696,14 @@ bool SkiaOutputDeviceBufferQueue::RecreateImages() {
   return !images_.empty();
 }
 
-void SkiaOutputDeviceBufferQueue::MaybeScheduleBackgroundImage(
-    const gfx::RectF& display_rect) {
+void SkiaOutputDeviceBufferQueue::MaybeScheduleBackgroundImage() {
   if (!needs_background_image_)
     return;
 
   gpu::SharedImageRepresentationOverlay::ScopedReadAccess* access = nullptr;
   OverlayCandidate candidate;
   candidate.color_space = color_space_;
-  candidate.display_rect = display_rect;
+  candidate.display_rect = gfx::RectF(gfx::SizeF(viewport_size_));
   candidate.solid_color = SK_ColorTRANSPARENT;
   candidate.plane_z_order = INT32_MIN;
 
@@ -721,24 +726,15 @@ void SkiaOutputDeviceBufferQueue::MaybeScheduleBackgroundImage(
 }
 
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(
-    bool allocate_frame_buffer,
     std::vector<GrBackendSemaphore>* end_semaphores) {
-  if (!capabilities_.use_dynamic_frame_buffer_allocation)
-    DCHECK(!allocate_frame_buffer);
-
   primary_plane_waiting_on_paint_ = false;
 
-  if (allocate_frame_buffer) {
-    DCHECK(!current_image_);
-    if (!AllocateFrameBuffers(1u))
-      return nullptr;
-  }
   if (!current_image_) {
     current_image_ = GetNextImage();
   }
 
   if (!current_image_->sk_surface())
-    current_image_->BeginWriteSkia();
+    current_image_->BeginWriteSkia(sample_count_);
   *end_semaphores = current_image_->TakeEndWriteSkiaSemaphores();
   return current_image_->sk_surface();
 }
@@ -748,36 +744,17 @@ void SkiaOutputDeviceBufferQueue::EndPaint() {
   current_image_->EndWriteSkia();
 }
 
-bool SkiaOutputDeviceBufferQueue::AllocateFrameBuffers(size_t n) {
-  std::vector<std::unique_ptr<OutputPresenter::Image>> new_images =
-      presenter_->AllocateImages(color_space_, image_size_, n);
-  if (new_images.size() != n) {
-    LOG(ERROR) << "AllocateImages failed " << new_images.size() << " " << n;
-    CheckForLoopFailuresBufferQueue();
-    return false;
-  }
-  for (auto& image : new_images) {
-    available_images_.push_front(image.get());
-  }
-  images_.insert(images_.end(), std::make_move_iterator(new_images.begin()),
-                 std::make_move_iterator(new_images.end()));
-  return true;
-}
+bool SkiaOutputDeviceBufferQueue::EnsureMinNumberOfBuffers(size_t n) {
+  DCHECK(capabilities_.supports_dynamic_frame_buffer_allocation);
+  DCHECK_GT(n, 0u);
+  DCHECK_LE(n, static_cast<size_t>(capabilities_.number_of_buffers));
 
-void SkiaOutputDeviceBufferQueue::ReleaseOneFrameBuffer() {
-  DCHECK(capabilities_.use_dynamic_frame_buffer_allocation);
-  CHECK_GE(available_images_.size(), 1u);
-  OutputPresenter::Image* image_to_free = available_images_.back();
-  DCHECK_NE(image_to_free, current_image_);
-  DCHECK_NE(image_to_free, submitted_image_);
-  DCHECK_NE(image_to_free, displayed_image_);
-  available_images_.pop_back();
-  for (auto iter = images_.begin(); iter != images_.end(); ++iter) {
-    if (iter->get() == image_to_free) {
-      images_.erase(iter);
-      break;
-    }
-  }
+  if (number_of_images_to_allocate_ >= n)
+    return true;
+  number_of_images_to_allocate_ = n;
+  if (image_size_.IsEmpty())
+    return true;
+  return RecreateImages();
 }
 
 bool SkiaOutputDeviceBufferQueue::OverlayDataComparator::operator()(

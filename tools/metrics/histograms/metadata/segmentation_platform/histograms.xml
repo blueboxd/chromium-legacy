@@ -88,7 +88,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.AdaptiveToolbar.SegmentSelection.Computed"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2022-08-14">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2022-10-04">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -428,6 +428,7 @@ chromium-metrics-reviews@google.com.
     Recorded when failure is hit when trying to compute selection, or when
     reading the selected segment.
   </summary>
+  <token key="SegmentationKey" variants="SegmentationKey"/>
 </histogram>
 
 <histogram
@@ -496,6 +497,21 @@ chromium-metrics-reviews@google.com.
     fail to upload due to input size. Recorded immediately after the failure
     when an ML model is reporting structured metrics.
   </summary>
+</histogram>
+
+<histogram
+    name="SegmentationPlatform.TrainingDataCollectionEvents.{SegmentationModel}"
+    enum="SegmentationPlatformTrainingDataCollectionEvent"
+    expires_after="2023-03-21">
+  <owner>ssid@chromium.org</owner>
+  <owner>qinmin@chromium.org</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    Records training data collection events for segmentation platform. Recorded
+    when the training data collection flow starts, completes or encountering an
+    error.
+  </summary>
+  <token key="SegmentationModel" variants="SegmentationModel"/>
 </histogram>
 
 <histogram name="SegmentationPlatform.{BooleanModel}.SegmentSwitched"

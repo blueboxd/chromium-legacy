@@ -11,11 +11,15 @@
 #include "ash/services/secure_channel/session_keys.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "third_party/ukey2/proto/device_to_device_messages.pb.h"
 
-namespace ash::secure_channel {
+namespace ash {
+
+namespace multidevice {
+class SecureMessageDelegate;
+}
+
+namespace secure_channel {
 
 // Class containing operations in the DeviceToDevice protocol that the initiator
 // needs to perform. This class is instantiable rather than being a utility
@@ -187,6 +191,7 @@ class DeviceToDeviceInitiatorHelper {
   base::WeakPtrFactory<DeviceToDeviceInitiatorHelper> weak_ptr_factory_{this};
 };
 
-}  // namespace ash::secure_channel
+}  // namespace secure_channel
+}  // namespace ash
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_DEVICE_TO_DEVICE_INITIATOR_HELPER_H_

@@ -30,7 +30,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -414,7 +413,7 @@ bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
     return false;
 
   // TODO(crbug.com/1096654): Get the timeout from TestTimeouts.
-  return process.WaitForExitWithTimeout(base::Seconds(45), exit_code);
+  return process.WaitForExitWithTimeout(base::Seconds(360), exit_code);
 }
 
 bool WaitFor(base::RepeatingCallback<bool()> predicate) {

@@ -31,7 +31,7 @@ bool IsDialogOnboardingEnabled() {
 namespace autofill_assistant {
 
 TriggerScriptCoordinator::TriggerScriptCoordinator(
-    StarterPlatformDelegate* starter_delegate,
+    base::WeakPtr<StarterPlatformDelegate> starter_delegate,
     content::WebContents* web_contents,
     std::unique_ptr<WebController> web_controller,
     std::unique_ptr<ServiceRequestSender> request_sender,
@@ -85,7 +85,8 @@ void TriggerScriptCoordinator::Start(
 
 void TriggerScriptCoordinator::OnGetTriggerScripts(
     int http_status,
-    const std::string& response) {
+    const std::string& response,
+    const ServiceRequestSender::ResponseInfo& response_info) {
   if (http_status != net::HTTP_OK) {
     Stop(Metrics::TriggerScriptFinishedState::GET_ACTIONS_FAILED);
     return;

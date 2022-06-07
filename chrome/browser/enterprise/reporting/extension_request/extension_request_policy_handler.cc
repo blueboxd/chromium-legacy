@@ -26,14 +26,13 @@ ExtensionRequestPolicyHandler::~ExtensionRequestPolicyHandler() = default;
 bool ExtensionRequestPolicyHandler::CheckPolicySettings(
     const policy::PolicyMap& policies,
     policy::PolicyErrorMap* errors) {
-  if (!policies.GetValue(policy_name()))
+  if (!policies.IsPolicySet(policy_name()))
     return true;
   if (!TypeCheckingPolicyHandler::CheckPolicySettings(policies, errors))
     return false;
-  const base::Value* cloud_reporting_policy_value =
-      policies.GetValue(policy::key::kCloudReportingEnabled);
+  const base::Value* cloud_reporting_policy_value = policies.GetValue(
+      policy::key::kCloudReportingEnabled, base::Value::Type::BOOLEAN);
   if (!cloud_reporting_policy_value ||
-      !cloud_reporting_policy_value->is_bool() ||
       !cloud_reporting_policy_value->GetBool()) {
     errors->AddError(policy_name(), IDS_POLICY_DEPENDENCY_ERROR,
                      policy::key::kCloudReportingEnabled, "Enabled");
@@ -64,7 +63,7 @@ void ExtensionRequestPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
   const base::Value* extension_request_policy_value =
-      policies.GetValue(policy_name());
+      policies.GetValue(policy_name(), base::Value::Type::BOOLEAN);
 
   if (extension_request_policy_value) {
     prefs->SetValue(prefs::kCloudExtensionRequestEnabled,

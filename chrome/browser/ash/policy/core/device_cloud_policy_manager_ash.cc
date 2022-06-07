@@ -11,6 +11,7 @@
 
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
@@ -46,7 +47,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
@@ -179,7 +179,7 @@ DeviceCloudPolicyManagerAsh::GetZeroTouchEnrollmentMode() {
 
 void DeviceCloudPolicyManagerAsh::StartConnection(
     std::unique_ptr<CloudPolicyClient> client_to_connect,
-    chromeos::InstallAttributes* install_attributes) {
+    ash::InstallAttributes* install_attributes) {
   CHECK(!service());
 
   // Set state keys here so the first policy fetch submits them to the server.
@@ -259,7 +259,7 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
 }
 
 void DeviceCloudPolicyManagerAsh::OnPolicyStoreReady(
-    chromeos::InstallAttributes* install_attributes) {
+    ash::InstallAttributes* install_attributes) {
   if (!install_attributes->IsCloudManaged()) {
     return;
   }

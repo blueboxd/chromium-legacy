@@ -4,10 +4,10 @@
 
 /** @fileoverview Test suite for theme-element component.  */
 
-import {emptyState} from 'chrome://personalization/trusted/personalization_state.js';
-import {PersonalizationThemeElement} from 'chrome://personalization/trusted/personalization_theme_element.js';
-import {SetDarkModeEnabledAction, ThemeActionName} from 'chrome://personalization/trusted/theme/theme_actions.js';
-import {ThemeObserver} from 'chrome://personalization/trusted/theme/theme_observer.js';
+import 'chrome://personalization/strings.m.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
+
+import {emptyState, PersonalizationThemeElement, SetDarkModeEnabledAction, ThemeActionName, ThemeObserver} from 'chrome://personalization/trusted/personalization_app.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
@@ -15,7 +15,7 @@ import {baseSetup, initElement} from './personalization_app_test_utils.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
 import {TestThemeProvider} from './test_theme_interface_provider.js';
 
-export function PersonalizationThemeTest() {
+suite('PersonalizationThemeTest', function() {
   let personalizationThemeElement: PersonalizationThemeElement|null;
   let themeProvider: TestThemeProvider;
   let personalizationStore: TestPersonalizationStore;
@@ -37,7 +37,8 @@ export function PersonalizationThemeTest() {
   });
 
   test('displays content', async () => {
-    personalizationStore.data.theme = {darkModeEnabled: false};
+    personalizationStore.data.theme.darkModeEnabled = false;
+    personalizationStore.data.theme.colorModeAutoScheduleEnabled = false;
     personalizationThemeElement = initElement(PersonalizationThemeElement);
     await waitAfterNextRender(personalizationThemeElement);
 
@@ -58,9 +59,6 @@ export function PersonalizationThemeTest() {
   test('sets theme data in store on changed', async () => {
     // Make sure state starts as expected.
     assertDeepEquals(emptyState(), personalizationStore.data);
-
-    personalizationThemeElement = initElement(PersonalizationThemeElement);
-
     await themeProvider.whenCalled('setThemeObserver');
 
     personalizationStore.expectAction(ThemeActionName.SET_DARK_MODE_ENABLED);
@@ -76,6 +74,7 @@ export function PersonalizationThemeTest() {
   test('shows pressed button on load', async () => {
     personalizationThemeElement = initElement(PersonalizationThemeElement);
     personalizationStore.data.theme.darkModeEnabled = true;
+    personalizationStore.data.theme.colorModeAutoScheduleEnabled = false;
     personalizationStore.notifyObservers();
     await waitAfterNextRender(personalizationThemeElement);
     const radioButton =
@@ -83,4 +82,49 @@ export function PersonalizationThemeTest() {
     assertTrue(!!radioButton);
     assertEquals(radioButton.getAttribute('aria-pressed'), 'true');
   });
-}
+
+  test('sets dark mode enabled when dark button is clicked', async () => {
+    personalizationThemeElement = initElement(PersonalizationThemeElement);
+    personalizationStore.data.theme.darkModeEnabled = false;
+    personalizationStore.data.theme.colorModeAutoScheduleEnabled = false;
+    personalizationStore.notifyObservers();
+    await waitAfterNextRender(personalizationThemeElement);
+    const radioButton =
+        personalizationThemeElement.shadowRoot!.getElementById('darkMode');
+    assertTrue(!!radioButton);
+    assertEquals(radioButton.getAttribute('aria-pressed'), 'false');
+
+    personalizationStore.setReducersEnabled(true);
+    personalizationStore.expectAction(ThemeActionName.SET_DARK_MODE_ENABLED);
+    radioButton.click();
+    let action =
+        await personalizationStore.waitForAction(
+            ThemeActionName.SET_DARK_MODE_ENABLED) as SetDarkModeEnabledAction;
+    assertTrue(action.enabled);
+    assertTrue(personalizationStore.data.theme.darkModeEnabled);
+    assertEquals(radioButton.getAttribute('aria-pressed'), 'true');
+  });
+
+  test('sets auto mode enabled when auto button is clicked', async () => {
+    personalizationThemeElement = initElement(PersonalizationThemeElement);
+    personalizationStore.data.theme.darkModeEnabled = false;
+    personalizationStore.data.theme.colorModeAutoScheduleEnabled = false;
+    personalizationStore.notifyObservers();
+    await waitAfterNextRender(personalizationThemeElement);
+    const radioButton =
+        personalizationThemeElement.shadowRoot!.getElementById('autoMode');
+    assertTrue(!!radioButton);
+    assertEquals(radioButton.getAttribute('aria-pressed'), 'false');
+
+    personalizationStore.setReducersEnabled(true);
+    personalizationStore.expectAction(
+        ThemeActionName.SET_COLOR_MODE_AUTO_SCHEDULE_ENABLED);
+    radioButton.click();
+    let action = await personalizationStore.waitForAction(
+                     ThemeActionName.SET_COLOR_MODE_AUTO_SCHEDULE_ENABLED) as
+        SetDarkModeEnabledAction;
+    assertTrue(action.enabled);
+    assertTrue(personalizationStore.data.theme.colorModeAutoScheduleEnabled);
+    assertEquals(radioButton.getAttribute('aria-pressed'), 'true');
+  });
+});

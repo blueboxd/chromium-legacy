@@ -39,12 +39,12 @@ if (!is_chromeos_ash) {
 # Test files that do not require preprocessing. If adding // <if expr> to any
 # file below, move it to the list above.
 non_preprocessed_files = [
-  "a11y/about_a11y_test.js",
-  "a11y/accessibility_a11y_test.js",
-  "a11y/basic_a11y_test.js",
-  "a11y/manage_profile_a11y_test.js",
-  "a11y/passwords_a11y_test.js",
-  "a11y/sign_out_a11y_test.js",
+  "a11y/about_a11y_test.ts",
+  "a11y/accessibility_a11y_test.ts",
+  "a11y/basic_a11y_test.ts",
+  "a11y/manage_profile_a11y_test.ts",
+  "a11y/passwords_a11y_test.ts",
+  "a11y/sign_out_a11y_test.ts",
   "advanced_page_test.ts",
   "all_sites_tests.ts",
   "appearance_fonts_page_test.ts",
@@ -52,7 +52,7 @@ non_preprocessed_files = [
   "autofill_section_test.ts",
   "avatar_icon_test.ts",
   "basic_page_test.ts",
-  "category_default_setting_tests.js",
+  "category_default_setting_tests.ts",
   "category_setting_exceptions_tests.ts",
   "checkbox_tests.ts",
   "chooser_exception_list_entry_tests.ts",
@@ -64,7 +64,7 @@ non_preprocessed_files = [
   "do_not_track_toggle_test.ts",
   "dropdown_menu_tests.ts",
   "extension_controlled_indicator_tests.ts",
-  "fake_settings_private.js",
+  "fake_settings_private.ts",
   "help_page_test.ts",
   "idle_load_tests.ts",
   "multi_store_exception_entry_test.ts",
@@ -73,7 +73,7 @@ non_preprocessed_files = [
   "passwords_and_autofill_fake_data.ts",
   "passwords_device_section_test.ts",
   "passwords_export_test.ts",
-  "passwords_section_test.js",
+  "passwords_section_test.ts",
   "payments_section_interactive_test.ts",
   "payments_section_test.ts",
   "people_page_sync_controls_test.ts",
@@ -104,8 +104,8 @@ non_preprocessed_files = [
   "settings_subpage_test.ts",
   "settings_textarea_tests.ts",
   "settings_ui_tests.ts",
-  "site_data_details_subpage_tests.js",
-  "site_data_test.js",
+  "site_data_details_subpage_tests.ts",
+  "site_data_test.ts",
   "site_details_permission_tests.ts",
   "site_details_tests.ts",
   "site_entry_tests.ts",
@@ -130,21 +130,18 @@ non_preprocessed_files = [
   "zoom_levels_tests.ts",
 ]
 
-if (!is_chromeos_ash && !is_chromeos_lacros) {
+if (!is_chromeos) {
   non_preprocessed_files += [
     "default_browser_test.ts",
     "import_data_dialog_test.ts",
     "system_page_tests.ts",
   ]
 } else {
-  non_preprocessed_files += [ "passwords_section_test_cros.js" ]
+  non_preprocessed_files += [ "passwords_section_test_cros.ts" ]
 }
 
 if (!is_mac && !is_chromeos_ash) {
-  non_preprocessed_files += [
-    "a11y/edit_dictionary_a11y_test.js",
-    "edit_dictionary_page_test.ts",
-  ]
+  non_preprocessed_files += [ "edit_dictionary_page_test.ts" ]
 }
 
 if (is_chromeos_ash) {

@@ -69,12 +69,15 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
      *         visibility.
      * @param isIncognito Whether incognito mode is initially enabled. This can later be changed
      *         using {@link #setIncognitoColorsEnabled(boolean)}.
+     * @param reportExceptionCallback A {@link Callback} to report exceptions.
      */
     public UrlBarCoordinator(@NonNull UrlBar urlBar, @Nullable WindowDelegate windowDelegate,
             @NonNull ActionMode.Callback actionModeCallback,
             @NonNull Callback<Boolean> focusChangeCallback, @NonNull UrlBarDelegate delegate,
-            @NonNull KeyboardVisibilityDelegate keyboardVisibilityDelegate, boolean isIncognito) {
+            @NonNull KeyboardVisibilityDelegate keyboardVisibilityDelegate, boolean isIncognito,
+            Callback<Throwable> reportExceptionCallback) {
         mUrlBar = urlBar;
+        urlBar.setTag(R.id.report_exception_callback, reportExceptionCallback);
         mKeyboardVisibilityDelegate = keyboardVisibilityDelegate;
         mWindowDelegate = windowDelegate;
         mFocusChangeCallback = focusChangeCallback;
@@ -269,5 +272,10 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
             if (imm.isActive(mUrlBar)) setKeyboardVisibility(false, false);
         }
         mFocusChangeCallback.onResult(hasFocus);
+    }
+
+    /** Signals that's it safe to call code that requires native to be loaded. */
+    public void onFinishNativeInitialization() {
+        mUrlBar.onFinishNativeInitialization();
     }
 }

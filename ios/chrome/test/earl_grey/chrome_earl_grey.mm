@@ -1229,6 +1229,10 @@ UIWindow* GetAnyKeyWindow() {
   return [ChromeEarlGreyAppInterface isCustomWebKitLoadedIfRequested];
 }
 
+- (BOOL)isLoadSimulatedRequestAPIEnabled {
+  return [ChromeEarlGreyAppInterface isLoadSimulatedRequestAPIEnabled];
+}
+
 - (BOOL)isMobileModeByDefault {
   return [ChromeEarlGreyAppInterface isMobileModeByDefault];
 }
@@ -1243,6 +1247,10 @@ UIWindow* GetAnyKeyWindow() {
 
 - (BOOL)isNewOverflowMenuEnabled {
   return [ChromeEarlGreyAppInterface isNewOverflowMenuEnabled];
+}
+
+- (BOOL)isNewOmniboxPopupEnabled {
+  return [ChromeEarlGreyAppInterface isNewOmniboxPopupEnabled];
 }
 
 - (BOOL)isThumbstripEnabledForWindowWithNumber:(int)windowNumber {

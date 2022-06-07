@@ -47,7 +47,7 @@ declare global {
   }
 
   interface Window {
-    CrPolicyStrings: {[key: string]: string},
+    CrPolicyStrings: {[key: string]: string};
   }
 }
 
@@ -66,7 +66,7 @@ export interface SettingsUiElement {
 const SettingsUiElementBase = RouteObserverMixin(CrContainerShadowMixin(
                                   FindShortcutMixin(PolymerElement))) as {
   new (): PolymerElement & RouteObserverMixinInterface &
-  FindShortcutMixinInterface & CrContainerShadowMixinInterface
+      FindShortcutMixinInterface & CrContainerShadowMixinInterface,
 };
 
 export class SettingsUiElement extends SettingsUiElementBase {
@@ -154,7 +154,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
           loadTimeData.getString('controlledSettingRecommendedMatches'),
       controlledSettingRecommendedDiffers:
           loadTimeData.getString('controlledSettingRecommendedDiffers'),
-      // <if expr="chromeos">
+      // <if expr="chromeos_ash">
       controlledSettingShared:
           loadTimeData.getString('controlledSettingShared'),
       controlledSettingWithOwner:

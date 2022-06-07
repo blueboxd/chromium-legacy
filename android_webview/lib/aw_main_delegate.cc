@@ -41,12 +41,11 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/metrics/unsent_log_store_metrics.h"
-#include "components/power_scheduler/power_scheduler.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/variations/variations_ids_provider.h"
 #include "components/translate/core/common/translate_util.h"
+#include "components/variations/variations_ids_provider.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/android/media_url_interceptor_register.h"
@@ -148,6 +147,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // with the changed API contracts around new navigation types and changes to
   // the document lifecycle.
   cl->AppendSwitch(switches::kDisableBackForwardCache);
+
+  // Deemed that performance benefit is not worth the stability cost.
+  // See crbug.com/1309151.
+  cl->AppendSwitch(switches::kDisableGpuShaderDiskCache);
 
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
@@ -264,6 +267,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     // Disabled until viz scheduling can be improved.
     features.DisableIfNotSet(::features::kUseSurfaceLayerForVideoDefault);
+
+    // Enabled by default for webview.
+    features.EnableIfNotSet(::features::kWebViewThreadSafeMediaDefault);
 
     // Disable dr-dc on webview.
     features.DisableIfNotSet(::features::kEnableDrDc);
@@ -397,15 +403,7 @@ void AwMainDelegate::PostFieldTrialInitialization() {
       *base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
-  bool is_browser_process = process_type.empty();
-
-  // Enable LITTLE-cores only mode/idle power mode throttling if the features
-  // are enabled, but only for child processes, as the browser process is shared
-  // with the hosting app.
-  if (!is_browser_process) {
-    power_scheduler::PowerScheduler::GetInstance()
-        ->InitializePolicyFromFeatureList();
-  }
+  [[maybe_unused]] bool is_browser_process = process_type.empty();
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,

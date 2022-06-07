@@ -62,6 +62,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/service_worker_test_helpers.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "extensions/browser/extension_host.h"
@@ -96,6 +97,12 @@ namespace extensions {
 namespace {
 
 using ::testing::HasSubstr;
+
+content::ServiceWorkerContext* GetServiceWorkerContext(
+    content::BrowserContext* browser_context) {
+  return browser_context->GetDefaultStoragePartition()
+      ->GetServiceWorkerContext();
+}
 
 class WebContentsLoadStopObserver : content::WebContentsObserver {
  public:
@@ -247,10 +254,7 @@ class ServiceWorkerTest : public ExtensionApiTest {
 
   size_t GetWorkerRefCount(const blink::StorageKey& key) {
     content::ServiceWorkerContext* sw_context =
-        browser()
-            ->profile()
-            ->GetDefaultStoragePartition()
-            ->GetServiceWorkerContext();
+        GetServiceWorkerContext(browser()->profile());
     return sw_context->CountExternalRequestsForTest(key);
   }
 };
@@ -304,7 +308,6 @@ class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
     return false;
   }
 };
-
 
 class ServiceWorkerBasedBackgroundTestWithNotification
     : public ServiceWorkerBasedBackgroundTest {
@@ -657,12 +660,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, FilteredEvents) {
 
 // Listens for |message| from extension Service Worker early so that tests can
 // wait for the message on startup (and not miss it).
+template <const char message[]>
 class ServiceWorkerWithEarlyMessageListenerTest
     : public ServiceWorkerBasedBackgroundTest {
  public:
-  explicit ServiceWorkerWithEarlyMessageListenerTest(
-      const std::string& test_message)
-      : test_message_(test_message) {}
+  ServiceWorkerWithEarlyMessageListenerTest() : test_message_(message) {}
 
   ServiceWorkerWithEarlyMessageListenerTest(
       const ServiceWorkerWithEarlyMessageListenerTest&) = delete;
@@ -686,19 +688,9 @@ class ServiceWorkerWithEarlyMessageListenerTest
   std::unique_ptr<ExtensionTestMessageListener> listener_;
 };
 
-class ServiceWorkerOnStartupEventTest
-    : public ServiceWorkerWithEarlyMessageListenerTest {
- public:
-  ServiceWorkerOnStartupEventTest()
-      : ServiceWorkerWithEarlyMessageListenerTest("onStartup event") {}
-
-  ServiceWorkerOnStartupEventTest(const ServiceWorkerOnStartupEventTest&) =
-      delete;
-  ServiceWorkerOnStartupEventTest& operator=(
-      const ServiceWorkerOnStartupEventTest&) = delete;
-
-  ~ServiceWorkerOnStartupEventTest() override = default;
-};
+constexpr char kMsgOnStartup[] = "onStartup event";
+using ServiceWorkerOnStartupEventTest =
+    ServiceWorkerWithEarlyMessageListenerTest<kMsgOnStartup>;
 
 // Tests "runtime.onStartup" for extension SW.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerOnStartupEventTest, PRE_Event) {
@@ -712,12 +704,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerOnStartupEventTest, DISABLED_Event) {
   EXPECT_TRUE(WaitForMessage());
 }
 
+constexpr char kMsgWorkerRunning[] = "WORKER_RUNNING";
 class ServiceWorkerRegistrationAtStartupTest
-    : public ServiceWorkerWithEarlyMessageListenerTest,
+    : public ServiceWorkerWithEarlyMessageListenerTest<kMsgWorkerRunning>,
       public ServiceWorkerTaskQueue::TestObserver {
  public:
-  ServiceWorkerRegistrationAtStartupTest()
-      : ServiceWorkerWithEarlyMessageListenerTest("WORKER_RUNNING") {
+  ServiceWorkerRegistrationAtStartupTest() {
     ServiceWorkerTaskQueue::SetObserverForTest(this);
   }
 
@@ -1689,8 +1681,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
   // webpage.html will create an iframe pointing to a resource from |extension|.
   // Expect the resource to be served by the extension.
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, base::StringPrintf("window.testIframe('%s', 'iframe.html')",
-                                       extension->id().c_str()),
+      web_contents,
+      base::StringPrintf("window.testIframe('%s', 'iframe.html')",
+                         extension->id().c_str()),
       &result));
   EXPECT_EQ("FROM_EXTENSION_RESOURCE", result);
 
@@ -1704,8 +1697,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
   // |extension| as before. But this time, the resource should be be served
   // from the Service Worker.
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, base::StringPrintf("window.testIframe('%s', 'iframe.html')",
-                                       extension->id().c_str()),
+      web_contents,
+      base::StringPrintf("window.testIframe('%s', 'iframe.html')",
+                         extension->id().c_str()),
       &result));
   EXPECT_EQ("FROM_SW_RESOURCE", result);
 
@@ -1914,10 +1908,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   // Stop the service worker.
   {
     base::RunLoop run_loop;
-    content::ServiceWorkerContext* context = browser()
-                                                 ->profile()
-                                                 ->GetDefaultStoragePartition()
-                                                 ->GetServiceWorkerContext();
+    content::ServiceWorkerContext* context =
+        GetServiceWorkerContext(browser()->profile());
     // The service worker is registered at the root scope.
     content::StopServiceWorkerForScope(context, extension->url(),
                                        run_loop.QuitClosure());
@@ -2234,10 +2226,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // Regression test for https://crbug.com/1019161.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        WorkerStartFailureClearsPendingTasks) {
-  content::StoragePartition* storage_partition =
-      browser()->profile()->GetDefaultStoragePartition();
   content::ServiceWorkerContext* context =
-      storage_partition->GetServiceWorkerContext();
+      GetServiceWorkerContext(browser()->profile());
 
   const ExtensionId test_extension_id("iegclhlplifhodhkoafiokenjoapiobj");
   // Set up an observer to wait for worker to start and then stop.
@@ -2317,20 +2307,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   absl::optional<WorkerId> worker_id =
       GetUniqueRunningWorkerId(extension->id());
   ASSERT_TRUE(worker_id);
-  {
-    // Shutdown the worker.
-    // TODO(lazyboy): Ideally we'd want to test worker shutdown on idle, do that
-    // once //content API allows to override test timeouts for Service Workers.
-    base::RunLoop run_loop;
-    content::StoragePartition* storage_partition =
-        browser()->profile()->GetDefaultStoragePartition();
-    GURL scope = extension->url();
-    content::StopServiceWorkerForScope(
-        storage_partition->GetServiceWorkerContext(),
-        // The service worker is registered at the top level scope.
-        extension->url(), run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  browsertest_util::StopServiceWorkerForExtensionGlobalScope(
+      browser()->profile(), extension->id());
 
   EXPECT_FALSE(ProcessManager::Get(profile())->HasServiceWorker(*worker_id));
 }
@@ -2642,6 +2620,127 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, Component) {
       << message_;
 }
 
+// Tests that two extensions with the same ServiceWorkerContext* can be
+// disabled successfully. This test ensures that the DCHECK in
+// ServiceWorkerTaskQueue::StopObserving does not fail in such a scenario.
+
+// Regression test for https://crbug.com/1223476
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       ObserveServiceWorkerContext) {
+  static constexpr char kManifest[] = R"({
+    "name": "Test",
+    "manifest_version": 3,
+    "version": "0.1",
+    "background": {"service_worker": "worker.js"}
+  })";
+  static constexpr char kScript[] = "";
+
+  TestExtensionDir test_dir1;
+  test_dir1.WriteManifest(kManifest);
+  test_dir1.WriteFile(FILE_PATH_LITERAL("worker.js"), kScript);
+
+  scoped_refptr<const Extension> extension1 =
+      LoadExtension(test_dir1.UnpackedPath());
+  ASSERT_TRUE(extension1);
+
+  TestExtensionDir test_dir2;
+  test_dir2.WriteManifest(kManifest);
+  test_dir2.WriteFile(FILE_PATH_LITERAL("worker.js"), kScript);
+
+  scoped_refptr<const Extension> extension2 =
+      LoadExtension(test_dir2.UnpackedPath());
+  ASSERT_TRUE(extension2);
+  EXPECT_NE(extension1->id(), extension2->id());
+
+  extension_service()->DisableExtension(extension1->id(),
+                                        disable_reason::DISABLE_USER_ACTION);
+  extension_service()->DisableExtension(extension2->id(),
+                                        disable_reason::DISABLE_USER_ACTION);
+}
+
+constexpr char kReady[] = "ready";
+class ServiceWorkerTestWithEarlyReadyMesssage
+    : public ServiceWorkerWithEarlyMessageListenerTest<kReady>,
+      public ServiceWorkerTaskQueue::TestObserver {
+ public:
+  ServiceWorkerTestWithEarlyReadyMesssage() {
+    ServiceWorkerTaskQueue::SetObserverForTest(this);
+  }
+
+  // ServiceWorkerTaskQueue::TestObserver:
+  void RegistrationMismatchMitigated(bool success) override {
+    registration_mismatch_mitigated_ = success;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  // Waits and returns whether registration mismatch mitigation succeeded.
+  bool WaitForRegistrationMismatchMitigation() {
+    if (!registration_mismatch_mitigated_) {
+      run_loop_ = std::make_unique<base::RunLoop>();
+      run_loop_->Run();
+    }
+    return *registration_mismatch_mitigated_;
+  }
+
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
+ private:
+  absl::optional<bool> registration_mismatch_mitigated_;
+  base::HistogramTester histogram_tester_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
+// Tests that missing SW registration is re-registered upon extension
+// activation.
+//
+// In PRE_ test, extension is loaded and then its SW is unregistered. After
+// browser restart, the tests verifies that the extension still runs after
+// browser restart.
+//
+// Regression test for crbug.com/1271154.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTestWithEarlyReadyMesssage,
+                       PRE_MissingRegistrationMitigated) {
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/activate_ensures_register"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(WaitForMessage());
+
+  // Unregister the extension service worker.
+  {
+    base::RunLoop run_loop;
+    content::ServiceWorkerContext* context = GetServiceWorkerContext(profile());
+
+    // The service worker is registered at the root scope.
+    context->UnregisterServiceWorker(
+        extension->url(), blink::StorageKey(extension->origin()),
+        base::BindLambdaForTesting(
+            [&run_loop](bool success) { run_loop.Quit(); }));
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTestWithEarlyReadyMesssage,
+                       MissingRegistrationMitigated) {
+  WaitForMessage();
+
+  EXPECT_EQ(1,
+            histogram_tester().GetBucketCount(
+                "Extensions.ServiceWorkerBackground.RegistrationWhenExpected",
+                false));
+  EXPECT_EQ(
+      1, histogram_tester().GetBucketCount(
+             "Extensions.ServiceWorkerBackground.RegistrationMismatchLocation",
+             mojom::ManifestLocation::kUnpacked));
+
+  bool mitigation_succeeded = WaitForRegistrationMismatchMitigation();
+  EXPECT_TRUE(mitigation_succeeded);
+  EXPECT_EQ(
+      1, histogram_tester().GetBucketCount(
+             "Extensions.ServiceWorkerBackground.RegistrationMismatchMitigated",
+             true));
+}
+
 // Tests that an extension's service worker can't be used to relax the extension
 // CSP.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerWithManifestVersionTest,
@@ -2656,7 +2755,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerWithManifestVersionTest,
   const char* kDefaultCSP = GetParam() == ManifestVersion::kTwo
                                 ? "script-src 'self' blob: filesystem:; "
                                   "object-src 'self' blob: filesystem:;"
-                                : "script-src 'self'; object-src 'self';";
+                                : "script-src 'self' 'wasm-unsafe-eval'; "
+                                  "object-src 'self';";
   ExtensionTestMessageListener csp_modified_listener(kDefaultCSP, false);
   csp_modified_listener.set_extension_id(extension_id);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
@@ -2712,9 +2812,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
     ConsoleMessageObserver(content::BrowserContext* browser_context,
                            const std::string& expected_message)
         : expected_message_(base::UTF8ToUTF16(expected_message)) {
-      content::StoragePartition* partition =
-          browser_context->GetDefaultStoragePartition();
-      scoped_observation_.Observe(partition->GetServiceWorkerContext());
+      scoped_observation_.Observe(GetServiceWorkerContext(browser_context));
     }
 
     ConsoleMessageObserver(const ConsoleMessageObserver&) = delete;

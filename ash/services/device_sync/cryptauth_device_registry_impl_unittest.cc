@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/services/device_sync/cryptauth_device_registry.h"
 #include "ash/services/device_sync/pref_names.h"
 #include "ash/services/device_sync/proto/cryptauth_better_together_device_metadata.pb.h"
@@ -17,12 +19,10 @@
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -190,4 +190,4 @@ TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, PopulateRegistryFromPref) {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

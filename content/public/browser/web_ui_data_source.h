@@ -14,13 +14,13 @@
 #include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
 namespace base {
-class DictionaryValue;
 class RefCountedMemory;
 }  // namespace base
 
@@ -56,10 +56,9 @@ class WebUIDataSource {
   CONTENT_EXPORT static void Add(BrowserContext* browser_context,
                                  WebUIDataSource* source);
 
-  CONTENT_EXPORT static void Update(
-      BrowserContext* browser_context,
-      const std::string& source_name,
-      std::unique_ptr<base::DictionaryValue> update);
+  CONTENT_EXPORT static void Update(BrowserContext* browser_context,
+                                    const std::string& source_name,
+                                    const base::Value::Dict& update);
 
   // Adds a string keyed to its name to our dictionary.
   virtual void AddString(base::StringPiece name,
@@ -77,9 +76,9 @@ class WebUIDataSource {
   virtual void AddLocalizedStrings(
       base::span<const webui::LocalizedString> strings) = 0;
 
-  // Add strings from |localized_strings| to our dictionary.
+  // Add strings from `localized_strings` to our dictionary.
   virtual void AddLocalizedStrings(
-      const base::DictionaryValue& localized_strings) = 0;
+      const base::Value::Dict& localized_strings) = 0;
 
   // Adds a boolean keyed to its name to our dictionary.
   virtual void AddBoolean(base::StringPiece name, bool value) = 0;

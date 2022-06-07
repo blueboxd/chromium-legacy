@@ -5,22 +5,22 @@
 #ifndef CHROME_BROWSER_UI_ASH_DESKS_TEMPLATES_DESKS_TEMPLATES_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_DESKS_TEMPLATES_DESKS_TEMPLATES_CLIENT_H_
 
+#include <map>
 #include <memory>
 
-#include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/guid.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/desks_templates/desks_templates_app_launch_handler.h"
-#include "components/app_restore/full_restore_info.h"
 #include "components/desks_storage/core/desk_model.h"
 
 class DesksTemplatesAppLaunchHandler;
+class Profile;
 
 namespace ash {
+class Desk;
 class DeskTemplate;
 class DesksController;
 }  // namespace ash
@@ -138,10 +138,6 @@ class DesksTemplatesClient : public ash::SessionObserver {
   friend class DesksTemplatesClientTest;
   friend class ScopedDesksTemplatesAppLaunchHandlerSetter;
 
-  void RecordWindowAndTabCountHistogram(ash::DeskTemplate* desk_template);
-  void RecordLaunchFromTemplateHistogram();
-  void RecordTemplateCountHistogram();
-
   // Launches DeskTemplate after retrieval from storage.
   void OnGetTemplateForDeskLaunch(
       LaunchDeskTemplateCallback callback,
@@ -155,7 +151,7 @@ class DesksTemplatesClient : public ash::SessionObserver {
       std::unique_ptr<ash::DeskTemplate> desk_template,
       LaunchDeskTemplateCallback callback,
       base::Time time_launch_started,
-      bool on_create_activate_success);
+      const ash::Desk* new_desk);
 
   // Callback function that allows the |CaptureActiveDeskAndSaveTemplate|
   // |callback| to be called as a |desks_storage::AddOrUpdateEntryCallback|.

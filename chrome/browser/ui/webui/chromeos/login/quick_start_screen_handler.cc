@@ -6,16 +6,14 @@
 
 #include "base/values.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
-#include "chrome/browser/ui/webui/chromeos/login/js_calls_container.h"
 
 namespace chromeos {
 
 constexpr StaticOobeScreenId QuickStartView::kScreenId;
 
-QuickStartScreenHandler::QuickStartScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.QuickStartScreen.userActed");
+QuickStartScreenHandler::QuickStartScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.QuickStartScreen.userActed");
 }
 
 QuickStartScreenHandler::~QuickStartScreenHandler() {
@@ -24,24 +22,24 @@ QuickStartScreenHandler::~QuickStartScreenHandler() {
 }
 
 void QuickStartScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
 
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void QuickStartScreenHandler::Bind(QuickStartScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
-  if (page_is_ready())
-    Initialize();
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
+  if (IsJavascriptAllowed())
+    InitializeDeprecated();
 }
 
 void QuickStartScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 std::vector<base::Value> ToValue(const ash::quick_start::ShapeList& list) {
@@ -61,7 +59,7 @@ void QuickStartScreenHandler::SetShapes(
   CallJS("login.QuickStartScreen.setFigures", base::Value(ToValue(shape_list)));
 }
 
-void QuickStartScreenHandler::Initialize() {
+void QuickStartScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;

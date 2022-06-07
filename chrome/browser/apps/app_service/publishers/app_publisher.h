@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -78,6 +79,10 @@ class AppPublisher {
   // - Return launch_result if applicable.
   virtual void LaunchAppWithParams(AppLaunchParams&& params,
                                    LaunchCallback callback) = 0;
+
+  virtual void LaunchShortcut(const std::string& app_id,
+                              const std::string& shortcut_id,
+                              int64_t display_id) {}
 
  protected:
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)

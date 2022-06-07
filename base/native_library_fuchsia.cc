@@ -55,7 +55,8 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
   base::ScopedFD fd;
   zx_status_t status = fdio_open_fd(
       computed_path.value().c_str(),
-      fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_EXECUTABLE,
+      static_cast<uint32_t>(fuchsia::io::OpenFlags::RIGHT_READABLE |
+                            fuchsia::io::OpenFlags::RIGHT_EXECUTABLE),
       base::ScopedFD::Receiver(fd).get());
   if (status != ZX_OK) {
     if (error) {

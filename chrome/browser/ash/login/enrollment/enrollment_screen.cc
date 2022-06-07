@@ -33,7 +33,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/policy/enrollment_status.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/userdataauth/install_attributes_util.h"
@@ -224,7 +224,7 @@ bool EnrollmentScreen::AdvanceToNextAuth() {
 void EnrollmentScreen::CreateEnrollmentHelper() {
   if (!enrollment_helper_) {
     enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-        this, this, config_, enrolling_user_domain_);
+        this, this, config_, enrolling_user_domain_, license_type_to_use_);
   }
 }
 
@@ -265,16 +265,30 @@ void EnrollmentScreen::UpdateFlowType() {
   if (!view_)
     return;
   if (features::IsLicensePackagedOobeFlowEnabled() &&
-      config_.license_type ==
-          policy::EnrollmentConfig::LicenseType::kEnterprise) {
+      config_.license_type == policy::LicenseType::kEnterprise) {
     view_->SetFlowType(EnrollmentScreenView::FlowType::kEnterpriseLicense);
+    view_->SetGaiaButtonsType(EnrollmentScreenView::GaiaButtonsType::kDefault);
     return;
   }
   const bool cfm = policy::EnrollmentRequisitionManager::IsRemoraRequisition();
   if (cfm) {
     view_->SetFlowType(EnrollmentScreenView::FlowType::kCFM);
+    view_->SetGaiaButtonsType(EnrollmentScreenView::GaiaButtonsType::kDefault);
   } else {
     view_->SetFlowType(EnrollmentScreenView::FlowType::kEnterprise);
+    if (!features::IsKioskEnrollmentInOobeEnabled()) {
+      view_->SetGaiaButtonsType(
+          EnrollmentScreenView::GaiaButtonsType::kDefault);
+      return;
+    }
+    if (context()->enrollment_preference_ ==
+        WizardContext::EnrollmentPreference::kKiosk) {
+      view_->SetGaiaButtonsType(
+          EnrollmentScreenView::GaiaButtonsType::kKioskPreffered);
+    } else {
+      view_->SetGaiaButtonsType(
+          EnrollmentScreenView::GaiaButtonsType::kEnterprisePreffered);
+    }
   }
 }
 
@@ -422,10 +436,12 @@ void EnrollmentScreen::AuthenticateUsingAttestation() {
 }
 
 void EnrollmentScreen::OnLoginDone(const std::string& user,
+                                   int license_type,
                                    const std::string& auth_code) {
   LOG_IF(ERROR, auth_code.empty()) << "Auth code is empty.";
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
   enrolling_user_domain_ = gaia::ExtractDomainName(user);
+  license_type_to_use_ = static_cast<policy::LicenseType>(license_type);
   UMA(enrollment_failed_once_ ? policy::kMetricEnrollmentRestarted
                               : policy::kMetricEnrollmentStarted);
 
@@ -775,11 +791,11 @@ void EnrollmentScreen::OnActiveDirectoryJoined(
   }
 }
 
-void EnrollmentScreen::OnUserAction(const std::string& action_id) {
+void EnrollmentScreen::OnUserActionDeprecated(const std::string& action_id) {
   if (action_id == kUserActionCancelTPMCheck) {
     OnCancel();
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 

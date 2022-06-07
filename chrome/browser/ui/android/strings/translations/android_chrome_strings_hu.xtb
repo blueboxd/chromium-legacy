@@ -89,6 +89,7 @@ Az összes böngészési előzmény vagy csak adott webhely böngészési előzm
 <translation id="1409879593029778104">A következő fájl letöltését a böngésző megakadályozta, mert a fájl már létezik: <ph name="FILE_NAME" />.</translation>
 <translation id="1414981605391750300">Kapcsolatfelvétel a Google-lal… ez eltarthat pár percig…</translation>
 <translation id="1416550906796893042">Alkalmazás verziószáma</translation>
+<translation id="1428770807407000502">Kikapcsolja a szinkronizálást?</translation>
 <translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1436784010935106834">Eltávolítva</translation>
 <translation id="1448440926884431741">A nyomon követett termékeket a Könyvjelzők között rendszerezheti</translation>
@@ -184,7 +185,6 @@ Az összes böngészési előzmény vagy csak adott webhely böngészési előzm
 <translation id="200114059308480249">Használni szeretné a környező szöveget is a Google Kereső használatakor?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fájl}other{# fájl}}</translation>
 <translation id="2015836039326522978">A(z) <ph name="APP_NAME" /> a Chrome-ban fog megnyílni. A továbblépéssel elfogadja a <ph name="BEGIN_LINK1" />Google Általános Szerződési Feltételeket<ph name="END_LINK1" />, valamint <ph name="BEGIN_LINK2" />A Google Chrome és a Chrome OS Kiegészítő Általános Szerződési Feltételeket<ph name="END_LINK2" />. Az <ph name="BEGIN_LINK3" />adatvédelmi irányelvek<ph name="END_LINK3" /> is érvényben vannak.</translation>
-<translation id="2019145049163614359">Eltávolítja az érdeklődési kört?</translation>
 <translation id="2020309681647789787">Előzményeihez az összes szinkronizált eszközén hozzáférhet, így ott folytathatja a böngészést, ahol abbahagyta.</translation>
 <translation id="2021896219286479412">Teljes képernyős oldal vezérlői</translation>
 <translation id="2038563949887743358">Kapcsolja be az Asztali webhely kérése funkciót</translation>
@@ -213,6 +213,7 @@ A kereséshez koppintson a kívánt szóra. A keresés finomításához ujja nyo
 <translation id="2141396931810938595">A használata alapján</translation>
 <translation id="214888715418183969">Válassza ki, hogy mit osztana meg szívesen a Chrome-mal. A megosztott mutatókat a Chrome funkcióinak, teljesítményének és stabilitásának fejlesztésére használjuk majd.</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
+<translation id="2155214902713132423">Ez az ellenőrzési módszer nem áll rendelkezésre ezen az eszközön. Válasszon másik lehetőséget a másik eszközén.</translation>
 <translation id="2157851137955077194">Ha szeretne megosztani valamit a telefonjáról egy másik eszközre, kapcsolja be a szinkronizálást a Chrome beállításaiban mindkét eszközön</translation>
 <translation id="2158408438301413340">A Chrome nem tudta ellenőrizni az összes jelszót</translation>
 <translation id="2169830938017475061">Most</translation>
@@ -733,7 +734,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5091199029769593641">Új lap megnyitásakor hamarosan látni fogja a(z) <ph name="SITE_NAME" /> webhely történeteit. A követett webhelyeket a Google-fiókjába menti a rendszer. A Discover beállításaiban kezelheti őket.</translation>
 <translation id="5091249083535528968">Bővített használati adatok</translation>
 <translation id="509429900233858213">Hiba történt.</translation>
-<translation id="5098190077610408701">Felveszi az érdeklődési kört?</translation>
 <translation id="5102401324271069229">Ha egy webhely megpróbálja ellopni az Ön jelszavát, illetve ha Ön ártalmas fájlt tölt le, akkor a Chrome elküldheti az URL-eket (az oldaltartalmak részleteivel együtt) a Biztonságos Böngészésnek.</translation>
 <translation id="510275257476243843">1 óra van hátra</translation>
 <translation id="5115811374190515607">ide: <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +879,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5906513782029855931">A webhelyek URL-jeinek ismerete lehetővé teszi a Google Segédnek, hogy segítsen bizonyos műveletek elvégzésében. A Segédet a Chrome beállításai között kapcsolhatja ki.</translation>
 <translation id="5916664084637901428">Be</translation>
 <translation id="5919204609460789179">A szinkronizálás megkezdéséhez frissítse a következőt: <ph name="PRODUCT_NAME" /></translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> hozzáadása</translation>
 <translation id="5942872142862698679">A Google használata a kereséshez</translation>
 <translation id="5945035219773565305">Aktuális javaslat:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Élő oldal megtekintése</translation>
@@ -898,7 +899,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="6033245666633565791">A <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> révén a Chrome olyan új technológiákat fejlesztünk, melyek megvédik Önt a nyomon követési mechanizmusoktól, miközben megőrzik a web nyitottságát.
 
 A Privacy Sandbox próbaverziói még mindig aktív fejlesztés alatt állnak, és csak egyes régiókban állnak rendelkezésre. A webhelyek egyelőre kipróbálhatják a Privacy Sandbox funkcióit, miközben továbbra is használhatják a jelenlegi webes technológiákat (pl. a cookie-kat).</translation>
-<translation id="6036057147555329831">További ICU</translation>
 <translation id="6039379616847168523">Ugrás a következő lapra</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="604124094241169006">Automatikus</translation>
@@ -1023,6 +1023,7 @@ A megbízhatósági tokenek nagyobb fokú adatvédelmet biztosítanak az interne
 <translation id="663674369910034433">A <ph name="BEGIN_LINK1" />Szinkronizálás<ph name="END_LINK1" /> és a <ph name="BEGIN_LINK2" />Google-szolgáltatások<ph name="END_LINK2" /> részben további beállításokat talál az adatvédelemre, biztonságra és adatgyűjtésre vonatkozóan.</translation>
 <translation id="6637100877383020115">Az alkalmazás továbbfejlesztése érdekében a Chrome használati és hibaadatokat küld a Google-nak. <ph name="BEGIN_UMA_LINK" />Kezelés<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Letiltás mindig</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> eltávolítása</translation>
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="6645629752388991326">Ön szabályozhatja, hogy melyik eszközök jelentkezhetnek be úgy, hogy ezt az eszközt használják biztonsági kulcsként.</translation>
 <translation id="6648459603387803038">A rendszergazda távolról módosítani tudja a böngészőbeállításokat. Az is lehetséges, hogy az eszközön végzett tevékenységeket a Chrome-on kívülről felügyelik.</translation>

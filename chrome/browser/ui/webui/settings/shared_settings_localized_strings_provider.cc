@@ -13,6 +13,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -32,6 +33,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/common/url_constants.h"
@@ -78,6 +80,14 @@ bool ShouldShowLacrosSideBySideWarningInLacros() {
          !chromeos::LacrosService::Get()
               ->init_params()
               ->standalone_browser_is_only_browser;
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+std::string BuildOSSettingsUrl(const std::string& sub_page) {
+  std::string os_settings_url = chrome::kChromeUIOSSettingsURL;
+  os_settings_url.append(sub_page);
+  return os_settings_url;
 }
 #endif
 
@@ -274,8 +284,6 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER},
     {"readingListCheckboxLabel", IDS_SETTINGS_READING_LIST_CHECKBOX_LABEL},
     {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
-    {"themesAndWallpapersCheckboxLabel",
-     IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL},
     {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
     {"sync", IDS_SETTINGS_SYNC},
     {"cancelSync", IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC},
@@ -298,8 +306,27 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
     {"syncSettingsLacrosSideBySideWarning",
      IDS_SYNC_SETTINGS_SIDE_BY_SIDE_WARNING_LACROS},
 #endif
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+    {"browserSyncFeatureLabel", IDS_BROWSER_SETTINGS_SYNC_FEATURE_LABEL},
+#endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
+    html_source->AddLocalizedString("themeCheckboxLabel",
+                                    IDS_SETTINGS_THEME_CHECKBOX_LABEL);
+  } else {
+    html_source->AddLocalizedString(
+        "themeCheckboxLabel",
+        IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL);
+  }
+#else
+  // TODO(https://crbug.com/1249845): Move this string back to the list above
+  //     after launching SyncSettingsCategorization.
+  html_source->AddLocalizedString("themeCheckboxLabel",
+                                  IDS_SETTINGS_THEME_CHECKBOX_LABEL);
+#endif
 
   std::string sync_dashboard_url =
       google_util::AppendGoogleLocaleParam(
@@ -343,8 +370,15 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-  html_source->AddString("chromeOSSyncSettingsPath",
-                         chromeos::settings::mojom::kSyncSetupSubpagePath);
+  html_source->AddString(
+      "osSyncSetupSettingsUrl",
+      BuildOSSettingsUrl(chromeos::settings::mojom::kSyncSetupSubpagePath));
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  html_source->AddString(
+      "osSyncSettingsUrl",
+      BuildOSSettingsUrl(chromeos::settings::mojom::kSyncSubpagePath));
 #endif
 
   html_source->AddString("syncErrorsHelpUrl", chrome::kSyncErrorsHelpURL);

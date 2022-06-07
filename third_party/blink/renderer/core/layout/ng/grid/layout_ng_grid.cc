@@ -15,7 +15,6 @@ void LayoutNGGrid::UpdateBlockLayout(bool relayout_children) {
     UpdateOutOfFlowBlockLayout();
     return;
   }
-
   UpdateInFlowBlockLayout();
 }
 
@@ -24,7 +23,7 @@ void LayoutNGGrid::AddChild(LayoutObject* new_child,
   NOT_DESTROYED();
   LayoutBlock::AddChild(new_child, before_child);
 
-  // Out-of-flow grid items do not impact grid placement.
+  // Out-of-flow grid items don't impact placement.
   if (!new_child->IsOutOfFlowPositioned())
     SetGridPlacementDirty(true);
 }
@@ -33,7 +32,7 @@ void LayoutNGGrid::RemoveChild(LayoutObject* child) {
   NOT_DESTROYED();
   LayoutBlock::RemoveChild(child);
 
-  // Out-of-flow grid items do not impact grid placement.
+  // Out-of-flow grid items don't impact placement.
   if (!child->IsOutOfFlowPositioned())
     SetGridPlacementDirty(true);
 }
@@ -42,14 +41,12 @@ namespace {
 
 bool ExplicitGridDidResize(const ComputedStyle& new_style,
                            const ComputedStyle& old_style) {
-  const NGGridTrackList& old_ng_columns_track_list =
-      old_style.GridTemplateColumns().track_sizes.NGTrackList();
-  const NGGridTrackList& new_ng_columns_track_list =
-      new_style.GridTemplateColumns().track_sizes.NGTrackList();
-  const NGGridTrackList& old_ng_rows_track_list =
-      old_style.GridTemplateRows().track_sizes.NGTrackList();
-  const NGGridTrackList& new_ng_rows_track_list =
-      new_style.GridTemplateRows().track_sizes.NGTrackList();
+  const auto& old_ng_columns_track_list =
+      old_style.GridTemplateColumns().TrackList();
+  const auto& new_ng_columns_track_list =
+      new_style.GridTemplateColumns().TrackList();
+  const auto& old_ng_rows_track_list = old_style.GridTemplateRows().TrackList();
+  const auto& new_ng_rows_track_list = new_style.GridTemplateRows().TrackList();
 
   return old_ng_columns_track_list.TrackCountWithoutAutoRepeat() !=
              new_ng_columns_track_list.TrackCountWithoutAutoRepeat() ||
@@ -85,15 +82,15 @@ void LayoutNGGrid::StyleDidChange(StyleDifference diff,
   if (!old_style)
     return;
 
-  const ComputedStyle& new_style = StyleRef();
-  const GridTrackList& new_grid_columns_track_sizes =
-      new_style.GridTemplateColumns().track_sizes;
-  const GridTrackList& new_grid_rows_track_sizes =
-      new_style.GridTemplateRows().track_sizes;
+  const auto& new_style = StyleRef();
+  const auto& new_grid_columns_track_list =
+      new_style.GridTemplateColumns().TrackList();
+  const auto& new_grid_rows_track_list =
+      new_style.GridTemplateRows().TrackList();
 
-  if (new_grid_columns_track_sizes !=
-          old_style->GridTemplateColumns().track_sizes ||
-      new_grid_rows_track_sizes != old_style->GridTemplateRows().track_sizes ||
+  if (new_grid_columns_track_list !=
+          old_style->GridTemplateColumns().TrackList() ||
+      new_grid_rows_track_list != old_style->GridTemplateRows().TrackList() ||
       new_style.GridAutoColumns() != old_style->GridAutoColumns() ||
       new_style.GridAutoRows() != old_style->GridAutoRows() ||
       new_style.GetGridAutoFlow() != old_style->GetGridAutoFlow()) {
@@ -103,8 +100,8 @@ void LayoutNGGrid::StyleDidChange(StyleDifference diff,
   if (ExplicitGridDidResize(new_style, *old_style) ||
       NamedGridLinesDefinitionDidChange(new_style, *old_style) ||
       (diff.NeedsLayout() &&
-       (new_grid_columns_track_sizes.NGTrackList().AutoRepeatTrackCount() ||
-        new_grid_rows_track_sizes.NGTrackList().AutoRepeatTrackCount()))) {
+       (new_grid_columns_track_list.AutoRepeatTrackCount() ||
+        new_grid_rows_track_list.AutoRepeatTrackCount()))) {
     SetGridPlacementDirty(true);
   }
 }
@@ -114,13 +111,9 @@ const LayoutNGGridInterface* LayoutNGGrid::ToLayoutNGGridInterface() const {
   return this;
 }
 
-bool LayoutNGGrid::HasCachedPlacementData() const {
-  return cached_placement_data_ && !IsGridPlacementDirty();
-}
-
 const NGGridPlacementData& LayoutNGGrid::CachedPlacementData() const {
-  DCHECK(HasCachedPlacementData());
-  return *cached_placement_data_;
+  DCHECK(!IsGridPlacementDirty());
+  return cached_placement_data_;
 }
 
 void LayoutNGGrid::SetCachedPlacementData(
@@ -141,50 +134,52 @@ const NGGridLayoutData* LayoutNGGrid::GridLayoutData() const {
 wtf_size_t LayoutNGGrid::AutoRepeatCountForDirection(
     const GridTrackSizingDirection track_direction) const {
   NOT_DESTROYED();
-  if (!HasCachedPlacementData())
+  if (IsGridPlacementDirty())
     return 0;
 
   const bool is_for_columns = track_direction == kForColumns;
-  const wtf_size_t auto_repeat_size = is_for_columns
-                                          ? StyleRef()
-                                                .GridTemplateColumns()
-                                                .track_sizes.NGTrackList()
-                                                .AutoRepeatTrackCount()
-                                          : StyleRef()
-                                                .GridTemplateRows()
-                                                .track_sizes.NGTrackList()
-                                                .AutoRepeatTrackCount();
+  const wtf_size_t auto_repeat_size =
+      is_for_columns
+          ? StyleRef().GridTemplateColumns().TrackList().AutoRepeatTrackCount()
+          : StyleRef().GridTemplateRows().TrackList().AutoRepeatTrackCount();
 
   return auto_repeat_size *
-         (is_for_columns ? cached_placement_data_->column_auto_repetitions
-                         : cached_placement_data_->row_auto_repetitions);
+         (is_for_columns ? cached_placement_data_.column_auto_repetitions
+                         : cached_placement_data_.row_auto_repetitions);
 }
 
 wtf_size_t LayoutNGGrid::ExplicitGridStartForDirection(
     const GridTrackSizingDirection track_direction) const {
   NOT_DESTROYED();
-  if (!HasCachedPlacementData())
+  if (IsGridPlacementDirty())
     return 0;
   return (track_direction == kForColumns)
-             ? cached_placement_data_->column_start_offset
-             : cached_placement_data_->row_start_offset;
+             ? cached_placement_data_.column_start_offset
+             : cached_placement_data_.row_start_offset;
 }
 
 wtf_size_t LayoutNGGrid::ExplicitGridEndForDirection(
     const GridTrackSizingDirection track_direction) const {
   NOT_DESTROYED();
-  const wtf_size_t start_offset =
-      ExplicitGridStartForDirection(track_direction);
+  if (IsGridPlacementDirty())
+    return 0;
+
+  const bool is_for_columns = track_direction == kForColumns;
+  const wtf_size_t subgrid_span_size =
+      is_for_columns ? cached_placement_data_.column_subgrid_span_size
+                     : cached_placement_data_.row_subgrid_span_size;
+
+  const wtf_size_t explicit_grid_track_count =
+      is_for_columns ? GridPositionsResolver::ExplicitGridColumnCount(
+                           StyleRef(), AutoRepeatCountForDirection(kForColumns),
+                           /* is_ng_grid */ true, subgrid_span_size)
+                     : GridPositionsResolver::ExplicitGridRowCount(
+                           StyleRef(), AutoRepeatCountForDirection(kForRows),
+                           /* is_ng_grid */ true, subgrid_span_size);
 
   return base::checked_cast<wtf_size_t>(
-      start_offset +
-      ((track_direction == kForColumns)
-           ? GridPositionsResolver::ExplicitGridColumnCount(
-                 StyleRef(), AutoRepeatCountForDirection(kForColumns),
-                 /* is_ng_grid */ true)
-           : GridPositionsResolver::ExplicitGridRowCount(
-                 StyleRef(), AutoRepeatCountForDirection(kForRows),
-                 /* is_ng_grid */ true)));
+      ExplicitGridStartForDirection(track_direction) +
+      explicit_grid_track_count);
 }
 
 LayoutUnit LayoutNGGrid::GridGap(

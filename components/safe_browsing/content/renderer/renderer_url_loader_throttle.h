@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/common/safe_browsing_url_checker.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -34,6 +35,10 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
   ~RendererURLLoaderThrottle() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SBRendererUrlLoaderThrottleTest, DefersHttpsUrl);
+  FRIEND_TEST_ALL_PREFIXES(SBRendererUrlLoaderThrottleTest,
+                           DoesNotDeferChromeUrl);
+
   // blink::URLLoaderThrottle implementation.
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,

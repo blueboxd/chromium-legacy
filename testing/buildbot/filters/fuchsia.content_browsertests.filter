@@ -2,8 +2,6 @@
 
 -All/EmergencyStopTracingTest.StopOnUIThread/0
 -All/EmergencyStopTracingTest.StopOnUIThread/1
--All/RenderFrameHostManagerTest.IgnoreRendererDebugURLsWhenCrashed/0
--All/RenderFrameHostManagerTest.IgnoreRendererDebugURLsWhenCrashed/1
 -All/SitePerProcessBrowserTest.RenderFrameProxyNotRecreatedDuringProcessShutdown/0
 -All/SitePerProcessBrowserTest.RenderFrameProxyNotRecreatedDuringProcessShutdown/1
 -All/WorkerFromAnonymousIframeNikBrowserTest.SharedWorkerRequestIsDoneWithPartitionedNetworkState/0
@@ -16,16 +14,6 @@
 -DohHttpsProtocolUpgradeBrowserTest.HttpsProtocolUpgrade
 -DohHttpsProtocolUpgradeBrowserTest.NoProtocolUpgrade
 -MojoSandboxTest.NotIsProcessSandboxed
--NetworkServiceDataMigrationBrowserTest.LegacyDataDir
--NetworkServiceDataMigrationBrowserTest.MigrateThenNoMigrate
--NetworkServiceDataMigrationBrowserTest.MigratedPreviouslyAndMigrateAgain
--NetworkServiceDataMigrationBrowserTest.NewDataDirWithMigrationTest
--NetworkServiceDataMigrationBrowserTest.NewDataDirWithNoMigrationTest
--OutOfProcess/NetworkServiceDataMigrationBrowserTestWithFailures.MigrateDataTest/0
--OutOfProcess/NetworkServiceDataMigrationBrowserTestWithFailures.MigrateDataTest/1
--OutOfProcess/NetworkServiceDataMigrationBrowserTestWithFailures.MigrateDataTest/2
--OutOfProcess/NetworkServiceDataMigrationBrowserTestWithFailures.MigrateDataTest/3
--OutOfProcess/NetworkServiceDataMigrationBrowserTestWithFailures.MigrateDataTest/4
 -PrerenderBrowserTest.AbandonIfRendererProcessCrashes
 -SitePerProcessDelegatedInkBrowserTest.MetadataAndPointGoThroughOOPIF
 -SnapshotBrowserTest.AsyncMultiWindowTest
@@ -58,7 +46,8 @@
 -DatabaseTest.ReloadPage
 -DatabaseTest.UpdateRecord
 
-# crbug.com/702993: PDF is disabled until it has been migrated off PPAPI
+# TODO(crbug.com/1306610): crbug.com/1306610: Enable once PDF rendering can be
+# enabled without PPAPI.
 -All/BlockedSchemeNavigationBrowserTest.PDF_BrowserInitiatedNavigation_Allow/*
 -All/BlockedSchemeNavigationBrowserTest.PDF_FormPost_Block/*
 -All/BlockedSchemeNavigationBrowserTest.PDF_NavigationFromFrame_Block/*

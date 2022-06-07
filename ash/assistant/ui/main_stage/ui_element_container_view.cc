@@ -29,6 +29,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
@@ -139,7 +140,8 @@ void UiElementContainerView::InitLayout() {
   const int horizontal_margin = assistant::ui::GetHorizontalMargin();
   content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(0, horizontal_margin, kPaddingBottomDip, horizontal_margin),
+      gfx::Insets::TLBR(0, horizontal_margin, kPaddingBottomDip,
+                        horizontal_margin),
       kSpacingDip));
 
   // Scroll indicator.
@@ -162,7 +164,8 @@ void UiElementContainerView::InitLayout() {
   // When |scroll_indicator_| is not visible, this just adds a negligible amount
   // of margin to the bottom of the content. Otherwise, |scroll_indicator_| will
   // occupy this space.
-  SetBorder(views::CreateEmptyBorder(0, 0, kScrollIndicatorHeightDip, 0));
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(0, 0, kScrollIndicatorHeightDip, 0)));
 
   // We set invisible overflow indicators with thickness=0. But we observe
   // visibility change of the bottom indicator.
@@ -215,7 +218,8 @@ std::unique_ptr<ElementAnimator> UiElementContainerView::HandleUiElement(
   const bool is_first_ui_element = content_view()->children().empty();
   if (is_card && is_first_ui_element) {
     constexpr int kMarginTopDip = 24;
-    view->SetBorder(views::CreateEmptyBorder(kMarginTopDip, 0, 0, 0));
+    view->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets::TLBR(kMarginTopDip, 0, 0, 0)));
   }
 
   // Add the view to the hierarchy and prepare its animation layer for entry.

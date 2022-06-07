@@ -89,6 +89,7 @@
 <translation id="1409879593029778104">ফাইল ইতিমধ্যেই থাকায় <ph name="FILE_NAME" /> ডাউনলোড আটকানো হয়েছে।</translation>
 <translation id="1414981605391750300">Google এর সাথে যোগাযোগ করা হচ্ছে। এতে একটু সময় লাগবে…</translation>
 <translation id="1416550906796893042">অ্যাপ্লিকেশন ভার্সন</translation>
+<translation id="1428770807407000502">সিঙ্ক করা বন্ধ করতে চান?</translation>
 <translation id="1430915738399379752">প্রিন্ট</translation>
 <translation id="1436784010935106834">সরানো হয়েছে</translation>
 <translation id="1448440926884431741">Bookmarks-এ আপনার ট্র্যাক করা সমস্ত প্রোডাক্ট সাজিয়ে রাখুন</translation>
@@ -184,7 +185,6 @@
 <translation id="200114059308480249">Google searches-এ কোনও কিছু সার্চ করার সময় সার্চের সাথে মেলে এমন টেক্সট অন্তর্ভুক্ত করবেন?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{#টি ফাইল}one{#টি ফাইল}other{#টি ফাইল}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> Chrome-এ খুলবে। চালিয়ে যাওয়ার মাধ্যমে, আপনি <ph name="BEGIN_LINK1" />Google-এর পরিষেবার শর্তাবলী<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />Google Chrome ও Chrome OS-এর পরিষেবার অতিরিক্ত শর্তাবলী<ph name="END_LINK2" /> মেনে নিচ্ছেন। এছাড়াও <ph name="BEGIN_LINK3" />গোপনীয়তা নীতি<ph name="END_LINK3" /> প্রযোজ্য।</translation>
-<translation id="2019145049163614359">আগ্রহ সরাবেন?</translation>
 <translation id="2020309681647789787">আপনার সিঙ্ক করা সব ডিভাইসে ইতিহাস সেভ হবে, যাতে আপনার আগের করা কাজ চালিয়ে যেতে পারেন</translation>
 <translation id="2021896219286479412">পূর্ণ স্ক্রিন সাইট নিয়ন্ত্রণ</translation>
 <translation id="2038563949887743358">ডেস্কটপ সাইটের অনুরোধ চালু করুন</translation>
@@ -213,6 +213,7 @@
 <translation id="2141396931810938595">আপনার ব্যবহারের উপর ভিত্তি করে</translation>
 <translation id="214888715418183969">Chrome-এর সাথে আপনি কী কী স্বচ্ছন্দে শেয়ার করতে পারবেন তা বেছে নিন। আপনার শেয়ার করা মেট্রিক্স Chrome-এর ফিচার, পারফর্ম্যান্স ও স্থিতিশীলতা উন্নত করে তুলতে ব্যবহার করা হবে।</translation>
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
+<translation id="2155214902713132423">এই ডিভাইসের জন্য যাচাইকরণের এই পদ্ধতি উপলভ্য নেই। আপনার অন্য ডিভাইসে অন্য একটি বিকল্প বেছে নিন।</translation>
 <translation id="2157851137955077194">আপনার ফোন থেকে অন্য কোনও ডিভাইসে কিছু শেয়ার করতে হলে, দুটি ডিভাইসের Chrome সেটিংস থেকে সিঙ্ক ফিচার চালু করুন</translation>
 <translation id="2158408438301413340">Chrome সব পাসওয়ার্ড চেক করতে পারেনি</translation>
 <translation id="2169830938017475061">Now</translation>
@@ -735,7 +736,6 @@
 <translation id="5091199029769593641">শীঘ্রই, আপনি নতুন কোনও ট্যাব খুললে, <ph name="SITE_NAME" /> থেকে গল্প পড়তে পারবেন। আপনি যেসব সাইট ফলো করেন, সেগুলি আপনার Google অ্যাকাউন্টে সেভ হয়ে যায়। আপনি 'ডিসকভার' সেটিংসে গিয়ে সেগুলি ম্যানেজ করতে পারেন।</translation>
 <translation id="5091249083535528968">বেশি ব্যবহারের ডেটা</translation>
 <translation id="509429900233858213">একটি ত্রুটি ঘটেছে৷</translation>
-<translation id="5098190077610408701">আগ্রহ যোগ করবেন?</translation>
 <translation id="5102401324271069229">যদি কোনও সাইট আপনার পাসওয়ার্ড চুরি করার চেষ্টা করে বা আপনি কোনও ক্ষতিকারক ফাইল ডাউনলোড করলে, Chrome, পৃষ্ঠার কিছু কন্টেন্ট সহ URL ও হয়ত Safe Browsing-এ পাঠাতে পারে</translation>
 <translation id="510275257476243843">১ ঘণ্টা বাকি আছে</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" />-এ</translation>
@@ -881,6 +881,7 @@
 <translation id="5906513782029855931">সাইটের URL জেনে, Google Assistant আপনাকে কাজটি সম্পূর্ণ করতে সাহায্য করে। আপনি Chrome সেটিংস থেকে Assistant বন্ধ করে দিতে পারেন।</translation>
 <translation id="5916664084637901428">চালু</translation>
 <translation id="5919204609460789179">সিঙ্ক শুরু করতে <ph name="PRODUCT_NAME" /> আপডেট করুন</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> যোগ করুন</translation>
 <translation id="5942872142862698679">সার্চের জন্য Google কে ব্যবহার করছে</translation>
 <translation id="5945035219773565305">বর্তমান সাজেশন:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">লাইভ পৃষ্ঠা দেখছেন</translation>
@@ -900,7 +901,6 @@
 <translation id="6033245666633565791"><ph name="BEGIN_LINK" />প্রাইভেসি স্যান্ডবক্স<ph name="END_LINK" />-এর সাহায্যে 'Chrome' এক নতুন প্রযুক্তি তৈরি করছে। এটি ওপেন ওয়েব সুরক্ষিত করার মাধ্যমে আপনাকে ক্রস-সাইট ট্র্যাক করা থেকে রক্ষা করে।
 
 'প্রাইভেসি স্যান্ডবক্স' ট্রায়াল এখনও তৈরি করা হচ্ছে এবং বাছাই করা অঞ্চলগুলিতেই এটি উপলভ্য। আপাতত, থার্ড-পার্টি কুকির মতো বর্তমান ওয়েব প্রযুক্তি ব্যবহার করা চালিয়ে যাওয়ার সময় সাইটগুলি 'প্রাইভেসি স্যান্ডবক্স' ব্যবহার করে দেখতে পারে।</translation>
-<translation id="6036057147555329831">অতিরিক্ত ICU</translation>
 <translation id="6039379616847168523">পরবর্তী ট্যাবে চলে যান</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="604124094241169006">স্বয়ংক্রিয়</translation>
@@ -1025,6 +1025,7 @@
 <translation id="663674369910034433">আপনার গোপনীয়তা, নিরাপত্তা ও ডেটা সংগ্রহের সাথে সম্পর্কিত আরও সেটিংসের জন্য <ph name="BEGIN_LINK1" />সিঙ্ক<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />Google পরিষেবা<ph name="END_LINK2" /> দেখুন</translation>
 <translation id="6637100877383020115">অ্যাপ উন্নত করার জন্য সাহায্য করতে, Chrome ব্যবহার সম্পর্কিত ও ক্র্যাশ ডেটা Google-এ পাঠায়। <ph name="BEGIN_UMA_LINK" />ম্যানেজ করুন<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">সবসময় ব্লক করুন</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> সরিয়ে দিন</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6645629752388991326">এই ডিভাইসটিকে নিরাপত্তা কী হিসেবে ব্যবহার করে কোন ডিভাইসে সাইন-ইন করা যাবে তা নিয়ন্ত্রণ করুন।</translation>
 <translation id="6648459603387803038">আপনার অ্যাডমিনিস্ট্রেটর রিমোট লোকেশন থেকে আপনার ব্রাউজারের সেটআপ পরিবর্তন করতে পারেন। এই ডিভাইসের অ্যাক্টিভিটি Chrome-এর বাইরে থেকেও ম্যানেজ করা যেতে পারে।</translation>

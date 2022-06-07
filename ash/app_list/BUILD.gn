@@ -121,6 +121,8 @@ source_set("app_list") {
     "views/recent_apps_view.h",
     "views/remove_query_confirmation_dialog.cc",
     "views/remove_query_confirmation_dialog.h",
+    "views/remove_task_feedback_dialog.cc",
+    "views/remove_task_feedback_dialog.h",
     "views/result_selection_controller.cc",
     "views/result_selection_controller.h",
     "views/scrollable_apps_grid_view.cc",
@@ -205,6 +207,7 @@ source_set("app_list") {
     "//ui/display",
     "//ui/display/manager",
     "//ui/events",
+    "//ui/events/devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/native_theme",
@@ -298,6 +301,7 @@ source_set("unit_tests") {
     "views/search_result_list_view_unittest.cc",
     "views/search_result_page_view_unittest.cc",
     "views/search_result_tile_item_list_view_unittest.cc",
+    "views/search_result_view_unittest.cc",
   ]
 
   deps = [

@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
-#include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_controller.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -63,6 +63,8 @@ class GM2TabStyle : public TabStyleViews {
       RenderUnits render_units = RenderUnits::kPixels) const override;
   gfx::Insets GetContentsInsets() const override;
   float GetZValue() const override;
+  float GetActiveOpacity() const override;
+  TabActive GetApparentActiveState() const override;
   TabStyle::TabColors CalculateColors() const override;
   const gfx::FontList& GetFontList() const override;
   void PaintTab(gfx::Canvas* canvas) const override;
@@ -166,7 +168,7 @@ void DrawHighlight(gfx::Canvas* canvas,
                    const SkPoint& p,
                    SkScalar radius,
                    SkColor color) {
-  const SkColor colors[2] = {color, SkColorSetA(color, 0)};
+  const SkColor colors[2] = {color, SkColorSetA(color, SK_AlphaTRANSPARENT)};
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setShader(cc::PaintShader::MakeRadialGradient(
@@ -219,9 +221,9 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     // the clip, especially if other children get crossfaded.
     const auto opacities = GetSeparatorOpacities(true);
     constexpr float kChildClipPadding = 2.5f;
-    aligned_bounds.Inset(gfx::InsetsF(0.0f, kChildClipPadding + opacities.left,
-                                      0.0f,
-                                      kChildClipPadding + opacities.right));
+    aligned_bounds.Inset(
+        gfx::InsetsF::TLBR(0.0f, kChildClipPadding + opacities.left, 0.0f,
+                           kChildClipPadding + opacities.right));
   }
 
   // Calculate the corner radii. Note that corner radius is based on original
@@ -412,7 +414,7 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
 gfx::Insets GM2TabStyle::GetContentsInsets() const {
   const int stroke_thickness = GetStrokeThickness();
   const int horizontal_inset = GetContentsHorizontalInsetSize();
-  return gfx::Insets(
+  return gfx::Insets::TLBR(
       stroke_thickness, horizontal_inset,
       stroke_thickness + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
       horizontal_inset);
@@ -451,28 +453,31 @@ float GM2TabStyle::GetZValue() const {
   return sort_value;
 }
 
-TabStyle::TabColors GM2TabStyle::CalculateColors() const {
+float GM2TabStyle::GetActiveOpacity() const {
+  if (tab_->IsActive())
+    return 1.0f;
+  if (tab_->IsSelected())
+    return kSelectedTabOpacity;
+  if (tab_->mouse_hovered())
+    return GetHoverOpacity();
+  return 0.0f;
+}
+
+TabActive GM2TabStyle::GetApparentActiveState() const {
   // In some cases, inactive tabs may have background more like active tabs than
   // inactive tabs, so colors should be adapted to ensure appropriate contrast.
   // In particular, text should have plenty of contrast in all cases, so switch
   // to using foreground color designed for active tabs if the tab looks more
   // like an active tab than an inactive tab.
-  float expected_opacity = 0.0f;
-  if (tab_->IsActive()) {
-    expected_opacity = 1.0f;
-  } else if (tab_->IsSelected()) {
-    expected_opacity = kSelectedTabOpacity;
-  } else if (tab_->mouse_hovered()) {
-    expected_opacity = GetHoverOpacity();
-  }
+  return GetActiveOpacity() > 0.5f ? TabActive::kActive : TabActive::kInactive;
+}
+
+TabStyle::TabColors GM2TabStyle::CalculateColors() const {
+  const SkColor foreground_color =
+      tab_->controller()->GetTabForegroundColor(GetApparentActiveState());
   const SkColor background_color = color_utils::AlphaBlend(
       GetTabBackgroundColor(TabActive::kActive),
-      GetTabBackgroundColor(TabActive::kInactive), expected_opacity);
-
-  const SkColor foreground_color = tab_->controller()->GetTabForegroundColor(
-      expected_opacity > 0.5f ? TabActive::kActive : TabActive::kInactive,
-      background_color);
-
+      GetTabBackgroundColor(TabActive::kInactive), GetActiveOpacity());
   return {foreground_color, background_color};
 }
 
@@ -953,8 +958,9 @@ gfx::RectF GM2TabStyle::ScaleAndAlignBounds(const gfx::Rect& bounds,
   // Note: This intentionally doesn't subtract TABSTRIP_TOOLBAR_OVERLAP from the
   // bottom inset, because we want to pixel-align the bottom of the stroke, not
   // the bottom of the overlap.
-  gfx::InsetsF layout_insets(stroke_thickness, corner_radius, stroke_thickness,
-                             corner_radius + GetSeparatorSize().width());
+  auto layout_insets =
+      gfx::InsetsF::TLBR(stroke_thickness, corner_radius, stroke_thickness,
+                         corner_radius + GetSeparatorSize().width());
   aligned_bounds.Inset(layout_insets);
 
   // Scale layout bounds from DIP to px.

@@ -36,6 +36,7 @@
 #include "chrome/browser/ash/crosapi/dlp_ash.h"
 #include "chrome/browser/ash/crosapi/download_controller_ash.h"
 #include "chrome/browser/ash/crosapi/drive_integration_service_ash.h"
+#include "chrome/browser/ash/crosapi/echo_private_ash.h"
 #include "chrome/browser/ash/crosapi/feedback_ash.h"
 #include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
 #include "chrome/browser/ash/crosapi/file_manager_ash.h"
@@ -148,6 +149,7 @@ CrosapiAsh::CrosapiAsh()
       download_controller_ash_(std::make_unique<DownloadControllerAsh>()),
       drive_integration_service_ash_(
           std::make_unique<DriveIntegrationServiceAsh>()),
+      echo_private_ash_(std::make_unique<EchoPrivateAsh>()),
       feedback_ash_(std::make_unique<FeedbackAsh>()),
       field_trial_service_ash_(std::make_unique<FieldTrialServiceAsh>()),
       file_manager_ash_(std::make_unique<FileManagerAsh>()),
@@ -287,13 +289,22 @@ void CrosapiAsh::BindChromeAppPublisher(
     mojo::PendingReceiver<mojom::AppPublisher> receiver) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   apps::StandaloneBrowserExtensionApps* chrome_apps =
-      apps::StandaloneBrowserExtensionAppsFactory::GetForProfile(profile);
-  chrome_apps->RegisterChromeAppsCrosapiHost(std::move(receiver));
+      apps::StandaloneBrowserExtensionAppsFactoryForApp::GetForProfile(profile);
+  chrome_apps->RegisterCrosapiHost(std::move(receiver));
 }
 
 void CrosapiAsh::BindChromeAppWindowTracker(
     mojo::PendingReceiver<mojom::AppWindowTracker> receiver) {
   chrome_app_window_tracker_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindExtensionPublisher(
+    mojo::PendingReceiver<mojom::AppPublisher> receiver) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  apps::StandaloneBrowserExtensionApps* extensions =
+      apps::StandaloneBrowserExtensionAppsFactoryForExtension::GetForProfile(
+          profile);
+  extensions->RegisterCrosapiHost(std::move(receiver));
 }
 
 void CrosapiAsh::BindFieldTrialService(

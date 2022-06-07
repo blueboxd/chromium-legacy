@@ -15,6 +15,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "build/chromeos_buildflags.h"
 #include "components/url_formatter/elide_url.h"
@@ -68,7 +69,7 @@ namespace {
 
 // Dimensions.
 constexpr int kActionsRowHorizontalSpacing = 8;
-constexpr gfx::Insets kStatusTextPadding(4, 0, 0, 0);
+constexpr auto kStatusTextPadding = gfx::Insets::TLBR(4, 0, 0, 0);
 constexpr gfx::Insets kActionsRowPadding(8);
 constexpr int kLargeImageMaxHeight = 218;
 
@@ -605,8 +606,8 @@ void NotificationViewBase::CreateOrUpdateProgressBarView(
     auto progress_bar_view =
         std::make_unique<views::ProgressBar>(kProgressBarHeight,
                                              /* allow_round_corner */ false);
-    progress_bar_view->SetBorder(
-        views::CreateEmptyBorder(kProgressBarTopPadding, 0, 0, 0));
+    progress_bar_view->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets::TLBR(kProgressBarTopPadding, 0, 0, 0)));
     progress_bar_view_ = AddViewToLeftContent(std::move(progress_bar_view));
   } else {
     ReorderViewInLeftContent(progress_bar_view_);
@@ -706,11 +707,12 @@ void NotificationViewBase::CreateOrUpdateIconView(
     const Notification& notification) {
   const bool use_image_for_icon = notification.icon().IsEmpty();
 
-  gfx::ImageSkia icon = use_image_for_icon ? notification.image().AsImageSkia()
-                                           : notification.icon().AsImageSkia();
+  ui::ImageModel icon = use_image_for_icon
+                            ? ui::ImageModel::FromImage(notification.image())
+                            : notification.icon();
 
   if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
-      notification.type() == NOTIFICATION_TYPE_MULTIPLE || icon.isNull()) {
+      notification.type() == NOTIFICATION_TYPE_MULTIPLE || icon.IsEmpty()) {
     DCHECK(!icon_view_ || right_content_->Contains(icon_view_));
     delete icon_view_;
     icon_view_ = nullptr;
@@ -727,7 +729,7 @@ void NotificationViewBase::CreateOrUpdateIconView(
   apply_rounded_corners =
       ash::features::IsNotificationsRefreshEnabled() && use_image_for_icon;
 #endif  // IS_CHROMEOS_ASH
-  icon_view_->SetImage(icon, icon.size(), apply_rounded_corners);
+  icon_view_->SetImage(icon, icon.Size(), apply_rounded_corners);
 
   // Hide the icon on the right side when the notification is expanded.
   hide_icon_on_expanded_ = use_image_for_icon;
@@ -764,11 +766,9 @@ void NotificationViewBase::CreateOrUpdateActionButtonViews(
   }
 
   // Hide inline reply field if it doesn't exist anymore.
-  if (inline_reply_->GetVisible()) {
-    if (HasInlineReply(notification)) {
-      action_buttons_row_->SetVisible(true);
-      inline_reply_->SetVisible(false);
-    }
+  if (inline_reply_->GetVisible() && !HasInlineReply(notification)) {
+    action_buttons_row_->SetVisible(true);
+    inline_reply_->SetVisible(false);
   }
 
   for (size_t i = 0; i < buttons.size(); ++i) {
@@ -861,7 +861,7 @@ bool NotificationViewBase::HasInlineReply(
     const Notification& notification) const {
   auto buttons = notification.buttons();
   const size_t index = inline_reply_->GetTextfieldIndex();
-  return index >= buttons.size() || !buttons[index].placeholder.has_value();
+  return index < buttons.size() && buttons[index].placeholder.has_value();
 }
 
 void NotificationViewBase::SetExpandButtonEnabled(bool enabled) {

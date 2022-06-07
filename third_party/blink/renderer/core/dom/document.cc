@@ -42,6 +42,7 @@
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
@@ -84,12 +85,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
-#include "third_party/blink/renderer/core/animation/css/css_animation_update_scope.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
@@ -102,6 +103,7 @@
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/post_style_update_scope.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/font_builder.h"
@@ -136,6 +138,7 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
+#include "third_party/blink/renderer/core/dom/focused_element_change_observer.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/live_node_list.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
@@ -249,6 +252,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/loader/anchor_element_interaction_tracker.h"
 #include "third_party/blink/renderer/core/loader/cookie_jar.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
@@ -257,6 +261,7 @@
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/no_state_prefetch_client.h"
+#include "third_party/blink/renderer/core/loader/pending_link_preload.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_row_element.h"
@@ -270,6 +275,7 @@
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
@@ -640,6 +646,10 @@ ExplicitlySetAttrElementsMap* Document::GetExplicitlySetAttrElementsMap(
   return add_result.stored_value->value;
 }
 
+UnloadEventTimingInfo::UnloadEventTimingInfo(
+    scoped_refptr<SecurityOrigin> new_document_origin)
+    : new_document_origin(std::move(new_document_origin)) {}
+
 Document* Document::Create(Document& document) {
   Document* new_document = MakeGarbageCollected<Document>(
       DocumentInit::Create()
@@ -1003,15 +1013,18 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
     if (!element)
       element = MakeGarbageCollected<SVGUnknownElement>(qname, *this);
     saw_elements_in_known_namespaces_ = true;
-  } else if (RuntimeEnabledFeatures::MathMLCoreEnabled() &&
-             qname.NamespaceURI() == mathml_names::kNamespaceURI) {
-    element = MathMLElementFactory::Create(qname.LocalName(), *this, flags);
-    // An unknown MathML element is treated like an <mrow> element.
-    // TODO(crbug.com/1021837): Determine if we need to introduce a
-    // MathMLUnknownElement IDL.
-    if (!element)
-      element = MakeGarbageCollected<MathMLRowElement>(qname, *this);
-    saw_elements_in_known_namespaces_ = true;
+  } else if (qname.NamespaceURI() == mathml_names::kNamespaceURI) {
+    if (RuntimeEnabledFeatures::MathMLCoreEnabled()) {
+      element = MathMLElementFactory::Create(qname.LocalName(), *this, flags);
+      // An unknown MathML element is treated like an <mrow> element.
+      // TODO(crbug.com/1021837): Determine if we need to introduce a
+      // MathMLUnknownElement IDL.
+      if (!element)
+        element = MakeGarbageCollected<MathMLRowElement>(qname, *this);
+      saw_elements_in_known_namespaces_ = true;
+    } else {
+      element = MakeGarbageCollected<MathMLElement>(qname, *this);
+    }
   } else {
     element = MakeGarbageCollected<Element>(qname, this);
   }
@@ -1498,20 +1511,6 @@ AtomicString Document::contentType() const {
     return AtomicString(mime_type);
 
   return AtomicString("application/xml");
-}
-
-Element* Document::ElementFromPoint(double x, double y) const {
-  if (!GetLayoutView())
-    return nullptr;
-
-  return TreeScope::ElementFromPoint(x, y);
-}
-
-HeapVector<Member<Element>> Document::ElementsFromPoint(double x,
-                                                        double y) const {
-  if (!GetLayoutView())
-    return HeapVector<Member<Element>>();
-  return TreeScope::ElementsFromPoint(x, y);
 }
 
 Range* Document::caretRangeFromPoint(int x, int y) {
@@ -2005,6 +2004,7 @@ static void AssertLayoutTreeUpdated(Node& root,
 #if EXPENSIVE_DCHECKS_ARE_ON()
 void Document::AssertLayoutTreeUpdatedAfterLayout() {
   AssertLayoutTreeUpdated(*this, false /* allow_dirty_container_subtrees */);
+  DCHECK(!GetStyleEngine().SkippedContainerRecalc());
 }
 #endif
 
@@ -2029,7 +2029,7 @@ void Document::UpdateStyleAndLayoutTree(LayoutUpgrade& upgrade) {
     owner->GetDocument().UpdateStyleAndLayoutTree(parent_upgrade);
   }
 
-  CSSAnimationUpdateScope animation_update_scope(*this);
+  PostStyleUpdateScope post_style_update_scope(*this);
 
   // This call has to happen even if UpdateStyleAndLayout below will be called.
   // This is because the subsequent call to ShouldUpgrade may depend on the
@@ -2043,6 +2043,13 @@ void Document::UpdateStyleAndLayoutTree(LayoutUpgrade& upgrade) {
     // TODO(crbug.com/1145970): Provide a better reason.
     UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
   }
+
+  // If the above call to UpdateStyleAndLayoutTreeForThisDocument caused us to
+  // skip style recalc for some node, we should have upgraded [1] and performed
+  // layout to clear that flag again.
+  //
+  // [1] LayoutUpgrade::ShouldUpgrade
+  DCHECK(!GetStyleEngine().SkippedContainerRecalc());
 }
 
 void Document::UpdateStyleAndLayoutTreeForThisDocument() {
@@ -2140,21 +2147,6 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   if (GetStyleResolver().WasViewportResized()) {
     GetStyleResolver().ClearResizedForViewportUnits();
     View()->MarkOrthogonalWritingModeRootsForLayout();
-  }
-
-  // TODO(crbug.com/1298921): If style is layout-dependent, we have to
-  // delay this until after layout.
-  if (focused_element_) {
-    bool focusable = false;
-    if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled() &&
-        GetStyleEngine().StyleMayRequireLayout()) {
-      const ComputedStyle* style = focused_element_->GetComputedStyle();
-      focusable = style && style->IsFocusable();
-    } else {
-      focusable = focused_element_->IsFocusable();
-    }
-    if (!focusable)
-      ClearFocusedElementSoon();
   }
 
   GetLayoutView()->ClearHitTestCache();
@@ -2264,7 +2256,7 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
   bool maybe_needs_layout =
       (update != StyleAndLayoutTreeUpdate::kNone) || View()->NeedsLayout();
   if (!analyze)
-    analyze = GetStyleEngine().StyleMayRequireLayout() && maybe_needs_layout;
+    analyze = GetStyleEngine().StyleAffectedByLayout() && maybe_needs_layout;
 
   if (!analyze) {
     DCHECK_EQ(StyleAndLayoutTreeUpdate::kNone, update);
@@ -2410,7 +2402,7 @@ void Document::ApplyScrollRestorationLogic() {
       !FrameLoader::NeedsHistoryItemRestore(document_loader->LoadType()))
     return;
 
-  auto* history_item = document_loader->GetHistoryItem();
+  HistoryItem* history_item = document_loader->GetHistoryItem();
 
   if (!history_item || !history_item->GetViewState())
     return;
@@ -2585,9 +2577,11 @@ void Document::AttachCompositorTimeline(
                                                                  GetFrame());
 }
 
-void Document::ClearFocusedElementSoon() {
-  if (!clear_focused_element_timer_.IsActive())
+void Document::ClearFocusedElementIfNeeded() {
+  if (!clear_focused_element_timer_.IsActive() && focused_element_ &&
+      !focused_element_->IsFocusable()) {
     clear_focused_element_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
+  }
 }
 
 void Document::ClearFocusedElementTimerFired(TimerBase*) {
@@ -2614,6 +2608,32 @@ void Document::EnsurePaintLocationDataValidForNode(
   DCHECK(node);
   if (!node->InActiveDocument())
     return;
+
+  if (RuntimeEnabledFeatures::DeferredShapingEnabled()) {
+    if (GetDisplayLockDocumentState().LockedDisplayLockCount() !=
+        GetDisplayLockDocumentState().DisplayLockBlockingAllActivationCount()) {
+      // Unlock all prior deferred elements.
+      for (const Node* previous = node; previous;
+           previous = FlatTreeTraversal::Previous(*previous)) {
+        const Element* prior_element = DynamicTo<Element>(previous);
+        if (!prior_element || !prior_element->GetLayoutObject() ||
+            !prior_element->GetLayoutObject()->IsShapingDeferred())
+          continue;
+        prior_element->GetDisplayLockContext()->SetRequestedState(
+            EContentVisibility::kVisible);
+      }
+      // Unlock all descendant deferred elements too.
+      for (const Node* next = FlatTreeTraversal::Next(*node, node); next;
+           next = FlatTreeTraversal::Next(*next, node)) {
+        const auto* element = DynamicTo<Element>(next);
+        if (!element || !element->GetLayoutObject() ||
+            !element->GetLayoutObject()->IsShapingDeferred())
+          continue;
+        element->GetDisplayLockContext()->SetRequestedState(
+            EContentVisibility::kVisible);
+      }
+    }
+  }
 
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
       node, DisplayLockContext::ForcedPhase::kLayout);
@@ -2841,6 +2861,7 @@ void Document::Shutdown() {
                                 mojom::blink::FocusType::kNone);
   }
   sequential_focus_navigation_starting_point_ = nullptr;
+  focused_element_change_observers_.clear();
 
   if (this == &AXObjectCacheOwner()) {
     ax_contexts_.clear();
@@ -3273,6 +3294,11 @@ DocumentParser* Document::OpenForNavigation(
   DocumentParser* parser = ImplicitOpen(parser_sync_policy);
   if (parser->NeedsDecoder())
     parser->SetDecoder(BuildTextResourceDecoderFor(this, mime_type, encoding));
+  if (AnchorElementInteractionTracker::IsFeatureEnabled() &&
+      !GetFrame()->IsProvisional()) {
+    anchor_element_interaction_tracker_ =
+        MakeGarbageCollected<AnchorElementInteractionTracker>(*this);
+  }
   return parser;
 }
 
@@ -3300,13 +3326,25 @@ DocumentParser* Document::ImplicitOpen(
       PageDismissalEventBeingDispatched() == kNoDismissal) {
     load_event_progress_ = kLoadEventNotRun;
   }
+  DispatchHandleLoadStart();
+  return parser_;
+}
+
+void Document::DispatchHandleLoadStart() {
   if (AXObjectCache* cache = ExistingAXObjectCache()) {
     // Don't fire load start for popup document.
     if (this == &AXObjectCacheOwner())
       cache->HandleLoadStart(this);
   }
+}
 
-  return parser_;
+void Document::DispatchHandleLoadOrLayoutComplete() {
+  if (AXObjectCache* cache = ExistingAXObjectCache()) {
+    if (this == &AXObjectCacheOwner())
+      cache->HandleLoadComplete(this);
+    else
+      cache->HandleLayoutComplete(this);
+  }
 }
 
 HTMLElement* Document::body() const {
@@ -3547,12 +3585,7 @@ void Document::ImplicitClose() {
   load_event_progress_ = kLoadEventCompleted;
 
   if (GetFrame() && GetLayoutView()) {
-    if (AXObjectCache* cache = ExistingAXObjectCache()) {
-      if (this == &AXObjectCacheOwner())
-        cache->HandleLoadComplete(this);
-      else
-        cache->HandleLayoutComplete(this);
-    }
+    DispatchHandleLoadOrLayoutComplete();
     FontFaceSetDocument::DidLayout(*this);
   }
 
@@ -3564,11 +3597,16 @@ static bool AllDescendantsAreComplete(Document* document) {
   Frame* frame = document->GetFrame();
   if (!frame)
     return true;
-  for (Frame* child = frame->Tree().FirstChild(); child;
-       child = child->Tree().TraverseNext(frame)) {
+
+  // TODO(crbug.com/1262022): Remove this Fenced FrameTreeBoundary when Fenced
+  // Frames transition to MPArch completely.
+  for (Frame* child = frame->Tree().FirstChild(FrameTreeBoundary::kFenced);
+       child;
+       child = child->Tree().TraverseNext(frame, FrameTreeBoundary::kFenced)) {
     if (child->IsLoading())
       return false;
   }
+
   for (PortalContents* portal : DocumentPortals::From(*document).GetPortals()) {
     auto* portal_frame = portal->GetFrame();
     if (portal_frame && portal_frame->IsLoading())
@@ -4836,9 +4874,14 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     focused_element_ = new_focused_element;
     SetSequentialFocusNavigationStartingPoint(focused_element_.Get());
 
-    // Keep track of last focus from user interaction, ignoring focus from code.
-    if (params.type != mojom::blink::FocusType::kNone)
+    // Keep track of last focus from user interaction, ignoring focus from code
+    // and other non-user internal interventions.
+    if (params.type != mojom::blink::FocusType::kNone &&
+        params.type != mojom::blink::FocusType::kScript)
       last_focus_type_ = params.type;
+
+    for (auto& observer : focused_element_change_observers_)
+      observer->DidChangeFocus();
 
     focused_element_->SetFocused(true, params.type);
     // Setting focus can cause the element to become detached (e.g. if an
@@ -5537,8 +5580,7 @@ String Document::cookie(ExceptionState& exception_state) const {
     } else {
       exception_state.ThrowSecurityError("Access is denied for this document.");
       // Count cookie accesses in opaque-origin documents from WebBundles.
-      // TODO(https://crbug.com/1257045): Remove urn: scheme support.
-      if (Url().ProtocolIs("urn") || Url().ProtocolIs("uuid-in-package")) {
+      if (Url().ProtocolIs("uuid-in-package")) {
         CountUse(WebFeature::kUrnDocumentAccessedCookies);
       }
     }
@@ -5567,8 +5609,7 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
     } else {
       exception_state.ThrowSecurityError("Access is denied for this document.");
       // Count cookie accesses in opaque-origin documents from WebBundles.
-      // TODO(https://crbug.com/1257045): Remove urn: scheme support.
-      if (Url().ProtocolIs("urn") || Url().ProtocolIs("uuid-in-package")) {
+      if (Url().ProtocolIs("uuid-in-package")) {
         CountUse(WebFeature::kUrnDocumentAccessedCookies);
       }
     }
@@ -6573,23 +6614,6 @@ DOMWindow* Document::defaultView() const {
   return dom_window_;
 }
 
-void Document::RecordAsyncScriptCount() {
-  UMA_HISTOGRAM_COUNTS_100("Blink.Script.AsyncScriptCount",
-                           async_script_count_);
-
-  // Only record async script count for mainframe documents, as per UKM policy.
-  if (!IsInMainFrame())
-    return;
-
-  auto* recorder = UkmRecorder();
-  DCHECK(recorder);
-  DCHECK(UkmSourceID() != ukm::kInvalidSourceId);
-  ukm::builders::Blink_Script_AsyncScripts(UkmSourceID())
-      .SetAsyncScriptCount(
-          ukm::GetExponentialBucketMin(async_script_count_, 1.3))
-      .Record(recorder);
-}
-
 using AllowState = blink::Document::DeclarativeShadowRootAllowState;
 AllowState Document::GetDeclarativeShadowRootAllowState() const {
   return declarative_shadow_root_allow_state_;
@@ -6603,7 +6627,6 @@ void Document::setAllowDeclarativeShadowRoots(bool val) {
 void Document::FinishedParsing() {
   DCHECK(!GetScriptableDocumentParser() || !parser_->IsParsing());
   DCHECK(!GetScriptableDocumentParser() || ready_state_ != kLoading);
-  RecordAsyncScriptCount();
   SetParsingState(kInDOMContentLoaded);
   DocumentParserTiming::From(*this).MarkParserStop();
 
@@ -6824,7 +6847,7 @@ void Document::ColorSchemeMetaChanged() {
       }
     }
   }
-  GetStyleEngine().SetColorSchemeFromMeta(color_scheme);
+  GetStyleEngine().SetPageColorSchemes(color_scheme);
 }
 
 void Document::BatterySavingsMetaChanged() {
@@ -7082,6 +7105,14 @@ const ScriptRegexp& Document::EnsureEmailRegexp() const {
   return *data_->email_regexp_;
 }
 
+void Document::SetMediaFeatureEvaluated(int feature) {
+  evaluated_media_features_ |= (1 << feature);
+}
+
+bool Document::WasMediaFeatureEvaluated(int feature) {
+  return (evaluated_media_features_ >> feature) & 1;
+}
+
 void Document::AddConsoleMessage(ConsoleMessage* message,
                                  bool discard_duplicates) const {
   // Don't let non-attached Documents spam the console.
@@ -7131,21 +7162,38 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
 bool Document::PopupShowing() const {
   return !popup_element_stack_.IsEmpty();
 }
-void Document::HideTopmostPopupElement() const {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
-  if (popup_element_stack_.IsEmpty())
-    return;
-  popup_element_stack_.back()->hide();
-}
-void Document::HideAllPopupsUntil(const HTMLPopupElement* endpoint) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
-  while (!popup_element_stack_.IsEmpty() &&
-         popup_element_stack_.back() != endpoint) {
-    popup_element_stack_.back()->hide();
+
+void Document::HidePopup(Element* popup) {
+  if (auto* popup_element = DynamicTo<HTMLPopupElement>(popup)) {
+    popup_element->hide();
+  } else if (popup->HasValidPopupAttribute()) {
+    popup->hidePopup();
+  } else {
+    NOTREACHED() << "popup should be either a <popup> or have a valid "
+                    "popup attribute";
   }
 }
-void Document::HidePopupIfShowing(const HTMLPopupElement* popup) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
+
+void Document::HideTopmostPopupElement() {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  if (popup_element_stack_.IsEmpty())
+    return;
+  HidePopup(popup_element_stack_.back());
+}
+
+void Document::HideAllPopupsUntil(const Element* endpoint) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  while (!popup_element_stack_.IsEmpty() &&
+         popup_element_stack_.back() != endpoint) {
+    HidePopup(popup_element_stack_.back());
+  }
+}
+
+void Document::HidePopupIfShowing(const Element* popup) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   if (!popup_element_stack_.Contains(popup))
     return;
   HideAllPopupsUntil(popup);
@@ -7963,6 +8011,9 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(meta_theme_color_elements_);
   visitor->Trace(unassociated_listed_elements_);
   visitor->Trace(intrinsic_size_observer_);
+  visitor->Trace(anchor_element_interaction_tracker_);
+  visitor->Trace(focused_element_change_observers_);
+  visitor->Trace(pending_link_header_preloads_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8290,6 +8341,27 @@ void Document::UnblockLoadEventAfterLayoutTreeUpdate() {
     delay_load_event_until_layout_tree_update_ = false;
     DecrementLoadEventDelayCount();
   }
+}
+
+void Document::AddPendingLinkHeaderPreload(const PendingLinkPreload& preload) {
+  pending_link_header_preloads_.insert(&preload);
+}
+
+void Document::RemovePendingLinkHeaderPreloadIfNeeded(
+    const PendingLinkPreload& preload) {
+  pending_link_header_preloads_.erase(&preload);
+}
+
+void Document::AddFocusedElementChangeObserver(
+    FocusedElementChangeObserver* observer) {
+  DCHECK(observer);
+  focused_element_change_observers_.insert(observer);
+}
+
+void Document::RemoveFocusedElementChangeObserver(
+    FocusedElementChangeObserver* observer) {
+  DCHECK(focused_element_change_observers_.Contains(observer));
+  focused_element_change_observers_.erase(observer);
 }
 
 void Document::WriteIntoTrace(perfetto::TracedValue ctx) const {

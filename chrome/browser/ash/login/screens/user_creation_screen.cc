@@ -39,6 +39,8 @@ std::string UserCreationScreen::GetResultString(Result result) {
       return "CreateChildAccount";
     case Result::ENTERPRISE_ENROLL:
       return "EnterpriseEnroll";
+    case Result::KIOSK_ENTERPRISE_ENROLL:
+      return "KioskEnterpriseEnroll";
     case Result::CANCEL:
       return "Cancel";
     case Result::SKIPPED:
@@ -115,7 +117,7 @@ void UserCreationScreen::HideImpl() {
   error_screen_->Hide();
 }
 
-void UserCreationScreen::OnUserAction(const std::string& action_id) {
+void UserCreationScreen::OnUserActionDeprecated(const std::string& action_id) {
   if (action_id == kUserActionSignIn) {
     context()->sign_in_as_child = false;
     RunExitCallback(Result::SIGNIN);
@@ -131,13 +133,17 @@ void UserCreationScreen::OnUserAction(const std::string& action_id) {
     context()->is_user_creation_enabled = false;
     RunExitCallback(Result::CANCEL);
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 
 bool UserCreationScreen::HandleAccelerator(LoginAcceleratorAction action) {
   if (action == LoginAcceleratorAction::kStartEnrollment) {
     RunExitCallback(Result::ENTERPRISE_ENROLL);
+    return true;
+  }
+  if (action == LoginAcceleratorAction::kStartKioskEnrollment) {
+    RunExitCallback(Result::KIOSK_ENTERPRISE_ENROLL);
     return true;
   }
   return false;

@@ -6,6 +6,7 @@ import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
 import {ShimlessRma} from 'chrome://shimless-rma/shimless_rma.js';
+import {ShutdownMethod} from 'chrome://shimless-rma/shimless_rma_types.js';
 import {WrapupRepairCompletePage} from 'chrome://shimless-rma/wrapup_repair_complete_page.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
@@ -82,12 +83,17 @@ export function wrapupRepairCompletePageTest() {
     assertFalse(logsDialog.open);
   });
 
-  test('CanShutDown', async () => {
+  test('ShutDownButtonTriggersShutDownIfNoPowerwashRequired', async () => {
     const resolver = new PromiseResolver();
     await initializeRepairCompletePage();
+
+    service.setGetPowerwashRequiredResult(false);
+
     let callCount = 0;
-    service.endRmaAndShutdown = () => {
+    let shutdownMethod;
+    service.endRma = (seenShutdownMethod) => {
       callCount++;
+      shutdownMethod = seenShutdownMethod;
       return resolver.promise;
     };
     await flushTasks();
@@ -96,14 +102,92 @@ export function wrapupRepairCompletePageTest() {
     await flushTasks();
 
     assertEquals(1, callCount);
+    assertEquals(ShutdownMethod.kShutdown, shutdownMethod);
   });
 
-  test('CanReboot', async () => {
+  test('ShutDownButtonOpensPowerwashDialogIfPowerwashRequired', async () => {
     const resolver = new PromiseResolver();
     await initializeRepairCompletePage();
+
+    service.setGetPowerwashRequiredResult(true);
+
     let callCount = 0;
-    service.endRmaAndReboot = () => {
+    service.endRma = (seenShutdownMethod) => {
       callCount++;
+      return resolver.promise;
+    };
+    await flushTasks();
+
+    await clickButton('#shutDownButton');
+    await flushTasks();
+
+    // Don't shut down immediately.
+    assertEquals(0, callCount);
+    // Show the dialog instead.
+    const powerwashDialog =
+        component.shadowRoot.querySelector('#powerwashDialog');
+    assertTrue(!!powerwashDialog);
+    assertTrue(powerwashDialog.open);
+  });
+
+  test(
+      'PowerwashButtonTriggersShutDownIfOpenedWithShutdownButton', async () => {
+        const resolver = new PromiseResolver();
+        await initializeRepairCompletePage();
+
+        service.setGetPowerwashRequiredResult(true);
+
+        let callCount = 0;
+        let shutdownMethod;
+        service.endRma = (seenShutdownMethod) => {
+          callCount++;
+          shutdownMethod = seenShutdownMethod;
+          return resolver.promise;
+        };
+        await flushTasks();
+
+        await clickButton('#shutDownButton');
+        await clickButton('#powerwashButton');
+        await flushTasks();
+
+        assertEquals(1, callCount);
+        assertEquals(ShutdownMethod.kShutdown, shutdownMethod);
+      });
+
+  test('PowerwashButtonTriggersRebootIfOpenedWithRebootButton', async () => {
+    const resolver = new PromiseResolver();
+    await initializeRepairCompletePage();
+
+    service.setGetPowerwashRequiredResult(true);
+
+    let callCount = 0;
+    let shutdownMethod;
+    service.endRma = (seenShutdownMethod) => {
+      callCount++;
+      shutdownMethod = seenShutdownMethod;
+      return resolver.promise;
+    };
+    await flushTasks();
+
+    await clickButton('#rebootButton');
+    await clickButton('#powerwashButton');
+    await flushTasks();
+
+    assertEquals(1, callCount);
+    assertEquals(ShutdownMethod.kReboot, shutdownMethod);
+  });
+
+  test('RebootButtonTriggersRebootIfNoPowerwashRequired', async () => {
+    const resolver = new PromiseResolver();
+    await initializeRepairCompletePage();
+
+    service.setGetPowerwashRequiredResult(false);
+
+    let callCount = 0;
+    let shutdownMethod;
+    service.endRma = (seenShutdownMethod) => {
+      callCount++;
+      shutdownMethod = seenShutdownMethod;
       return resolver.promise;
     };
     await flushTasks();
@@ -112,14 +196,42 @@ export function wrapupRepairCompletePageTest() {
     await flushTasks();
 
     assertEquals(1, callCount);
+    assertEquals(ShutdownMethod.kReboot, shutdownMethod);
+  });
+
+  test('RebootButtonOpensPowerwashDialogIfPowerwashRequired', async () => {
+    const resolver = new PromiseResolver();
+    await initializeRepairCompletePage();
+
+    service.setGetPowerwashRequiredResult(true);
+
+    let callCount = 0;
+    service.endRma = (seenShutdownMethod) => {
+      callCount++;
+      return resolver.promise;
+    };
+    await flushTasks();
+
+    await clickButton('#rebootButton');
+    await flushTasks();
+
+    // Don't reboot immediately.
+    assertEquals(0, callCount);
+    // Show the dialog instead.
+    const powerwashDialog =
+        component.shadowRoot.querySelector('#powerwashDialog');
+    assertTrue(!!powerwashDialog);
+    assertTrue(powerwashDialog.open);
   });
 
   test('CanCutOffBattery', async () => {
     const resolver = new PromiseResolver();
     await initializeRepairCompletePage();
     let callCount = 0;
-    service.endRmaAndCutoffBattery = () => {
+    let shutdownMethod;
+    service.endRma = (seenShutdownMethod) => {
       callCount++;
+      shutdownMethod = seenShutdownMethod;
       return resolver.promise;
     };
     await flushTasks();
@@ -131,6 +243,7 @@ export function wrapupRepairCompletePageTest() {
     await flushTasks();
 
     assertEquals(1, callCount);
+    assertEquals(ShutdownMethod.kBatteryCutoff, shutdownMethod);
   });
 
   test('OpensRmaLogDialog', async () => {
@@ -180,6 +293,21 @@ export function wrapupRepairCompletePageTest() {
     assertFalse(logsDialog.open);
 
     await clickButton('#batteryCutButton');
+  });
+
+  test('PowerwashCancelButtonClosesPowerwashDialog', async () => {
+    await initializeRepairCompletePage();
+    const powerwashDialog =
+        component.shadowRoot.querySelector('#powerwashDialog');
+    assertTrue(!!powerwashDialog);
+
+    service.setGetPowerwashRequiredResult(true);
+
+    await clickButton('#shutDownButton');
+    assertTrue(powerwashDialog.open);
+
+    await clickButton('#closePowerwashDialogButton');
+    assertFalse(powerwashDialog.open);
   });
 
   test('AllButtonsDisabled', async () => {

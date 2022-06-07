@@ -111,8 +111,8 @@ class ToggleButton::ThumbView : public View {
     // We want the circle to have an integer pixel diameter and to be aligned
     // with pixel boundaries, so we scale dip bounds to pixel bounds and round.
     gfx::RectF thumb_bounds(GetLocalBounds());
-    thumb_bounds.Inset(-GetShadowOutsets());
-    thumb_bounds.Inset(gfx::InsetsF(0.5f));
+    thumb_bounds.Inset(-gfx::InsetsF(GetShadowOutsets()));
+    thumb_bounds.Inset(0.5f);
     thumb_bounds.Scale(dsf);
     thumb_bounds = gfx::RectF(gfx::ToEnclosingRect(thumb_bounds));
     canvas->DrawCircle(thumb_bounds.CenterPoint(), thumb_bounds.height() / 2.f,
@@ -248,7 +248,7 @@ void ToggleButton::RemoveLayerBeneathView(ui::Layer* layer) {
 
 gfx::Size ToggleButton::CalculatePreferredSize() const {
   gfx::Rect rect(kTrackSize);
-  rect.Inset(gfx::Insets(-kTrackVerticalMargin, -kTrackHorizontalMargin));
+  rect.Inset(gfx::Insets::VH(-kTrackVerticalMargin, -kTrackHorizontalMargin));
   rect.Inset(-GetInsets());
   return rect.size();
 }

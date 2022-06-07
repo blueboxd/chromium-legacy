@@ -1013,14 +1013,15 @@ ExtensionFunction::ResponseAction DownloadsDownloadFunction::Run() {
           download_url, source_process_id(),
           render_frame_host() ? render_frame_host()->GetRoutingID() : -1,
           traffic_annotation));
-
   base::FilePath creator_suggested_filename;
   if (options.filename.get()) {
+    // Strip "%" character as it affects environment variables.
+    std::string filenme;
+    base::ReplaceChars(*options.filename, "%", "_", &filenme);
 #if BUILDFLAG(IS_WIN)
-    creator_suggested_filename =
-        base::FilePath::FromUTF8Unsafe(*options.filename);
+    creator_suggested_filename = base::FilePath::FromUTF8Unsafe(filenme);
 #elif BUILDFLAG(IS_POSIX)
-    creator_suggested_filename = base::FilePath(*options.filename);
+    creator_suggested_filename = base::FilePath(filenme);
 #endif
     if (!net::IsSafePortableRelativePath(creator_suggested_filename)) {
       return RespondNow(Error(download_extension_errors::kInvalidFilename));
@@ -1141,7 +1142,7 @@ ExtensionFunction::ResponseAction DownloadsSearchFunction::Run() {
         *it, off_record
                  ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
                  : profile->GetOriginalProfile()));
-    json_results->Append(std::move(json_item));
+    json_results->Append(base::Value::FromUniquePtrValue(std::move(json_item)));
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_SEARCH);
   return RespondNow(
@@ -1929,10 +1930,10 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!EventRouter::Get(profile_))
     return;
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(std::move(arg));
+  base::ListValue args;
+  args.Append(base::Value::FromUniquePtrValue(std::move(arg)));
   std::string json_args;
-  base::JSONWriter::Write(*args, &json_args);
+  base::JSONWriter::Write(args, &json_args);
   // The downloads system wants to share on-record events with off-record
   // extension renderers even in incognito_split_mode because that's how
   // chrome://downloads works. The "restrict_to_profile" mechanism does not
@@ -1946,7 +1947,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
       (include_incognito && !profile_->IsOffTheRecord()) ? nullptr
                                                          : profile_.get();
   auto event = std::make_unique<Event>(histogram_value, event_name,
-                                       std::move(*args).TakeListDeprecated(),
+                                       std::move(args).TakeListDeprecated(),
                                        restrict_to_browser_context);
   event->will_dispatch_callback = std::move(will_dispatch_callback);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));

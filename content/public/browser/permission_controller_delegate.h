@@ -15,6 +15,7 @@ class GURL;
 namespace content {
 enum class PermissionType;
 class RenderFrameHost;
+class RenderProcessHost;
 
 class CONTENT_EXPORT PermissionControllerDelegate {
  public:
@@ -64,10 +65,29 @@ class CONTENT_EXPORT PermissionControllerDelegate {
   // TODO(raymes): Currently we still pass the |requesting_origin| as a separate
   // parameter because we can't yet guarantee that it matches the last committed
   // origin of the RenderFrameHost. See https://crbug.com/698985.
+  // Deprecated. Use `GetPermissionStatusForCurrentDocument` instead.
   virtual blink::mojom::PermissionStatus GetPermissionStatusForFrame(
       PermissionType permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin) = 0;
+
+  // Returns the permission status for the current document in the given
+  // RenderFrameHost. Use this over `GetPermissionStatusForFrame` and
+  // `GetPermissionStatus` whenever possible as this API takes into account the
+  // lifecycle state of a given document (i.e. whether it's in back-forward
+  // cache or being prerendered) in addition to its origin.
+  virtual blink::mojom::PermissionStatus GetPermissionStatusForCurrentDocument(
+      PermissionType permission,
+      RenderFrameHost* render_frame_host) = 0;
+
+  // Returns the status of the given `permission` for a worker on
+  // `worker_origin` running in `render_process_host`, also performing
+  // additional checks such as Permission Policy.  Use this over
+  // GetPermissionStatus whenever possible.
+  virtual blink::mojom::PermissionStatus GetPermissionStatusForWorker(
+      PermissionType permission,
+      RenderProcessHost* render_process_host,
+      const GURL& worker_origin) = 0;
 
   // Sets the permission back to its default for the requesting_origin/
   // embedding_origin tuple.
@@ -76,11 +96,14 @@ class CONTENT_EXPORT PermissionControllerDelegate {
                                const GURL& embedding_origin) = 0;
 
   // Runs the given |callback| whenever the |permission| associated with the
-  // given RenderFrameHost changes. A nullptr should be passed if the request
-  // is from a worker. Returns the ID to be used to unsubscribe, which can be
-  // `is_null()` if the subscribe was not successful.
+  // given |render_frame_host| changes. |render_process_host| should be passed
+  // instead if the request is from a worker. Returns the ID to be used to
+  // unsubscribe, which can be `is_null()` if the subscribe was not successful.
+  // Exactly one of |render_process_host| and |render_frame_host| should be
+  // set, RenderProcessHost will be inferred from |render_frame_host|.
   virtual SubscriptionId SubscribePermissionStatusChange(
       content::PermissionType permission,
+      content::RenderProcessHost* render_process_host,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       base::RepeatingCallback<void(blink::mojom::PermissionStatus)>

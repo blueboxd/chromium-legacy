@@ -263,11 +263,9 @@ bool DoesURLMatchOriginForNavigation(
 
   const GURL& url_for_origin =
       check_origin_against_base_url ? base_url_for_data_url : destination_url;
-  // Urn: and uuid-in-package: subframe from WebBundle has an opaque origin
-  // derived from the Bundle's origin.
-  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
-  if ((url_for_origin.SchemeIs(url::kUrnScheme) ||
-       url_for_origin.SchemeIs(url::kUuidInPackageScheme)) &&
+  // Uuid-in-package: subframe from WebBundle has an opaque origin derived from
+  // the Bundle's origin.
+  if (url_for_origin.SchemeIs(url::kUuidInPackageScheme) &&
       subresource_web_bundle_navigation_info) {
     return origin->CanBeDerivedFrom(
         subresource_web_bundle_navigation_info->bundle_url());
@@ -691,7 +689,6 @@ void NavigationControllerImpl::Restore(
   needs_reload_ = true;
   needs_reload_type_ = NeedsReloadType::kRestoreSession;
   entries_.reserve(entries->size());
-  int index = 0;
   for (auto& entry : *entries) {
     if (entry->GetURL().is_empty()) {
       // We're trying to restore an entry with an empty URL (e.g. from
@@ -705,7 +702,6 @@ void NavigationControllerImpl::Restore(
     }
     entries_.push_back(
         NavigationEntryImpl::FromNavigationEntry(std::move(entry)));
-    index++;
   }
 
   // At this point, the |entries| is full of empty scoped_ptrs, so it can be
@@ -2608,7 +2604,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     network::mojom::SourceLocationPtr source_location,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     const absl::optional<blink::Impression>& impression,
-    base::TimeTicks navigation_start_time) {
+    base::TimeTicks navigation_start_time,
+    absl::optional<bool> is_fenced_frame_opaque_url) {
   if (is_renderer_initiated)
     DCHECK(initiator_origin.has_value());
 
@@ -2737,7 +2734,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
           node, params, override_user_agent, should_replace_current_entry,
           false /* has_user_gesture */, std::move(source_location),
           ReloadType::NONE, entry.get(), frame_entry.get(),
-          navigation_start_time);
+          navigation_start_time, is_fenced_frame_opaque_url);
 
   if (!request)
     return;
@@ -3592,7 +3589,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     ReloadType reload_type,
     NavigationEntryImpl* entry,
     FrameNavigationEntry* frame_entry,
-    base::TimeTicks navigation_start_time) {
+    base::TimeTicks navigation_start_time,
+    absl::optional<bool> is_fenced_frame_opaque_url) {
   DCHECK_EQ(-1, GetIndexOfEntry(entry));
   DCHECK(frame_entry);
   // All renderer-initiated navigations must have an initiator_origin.
@@ -3736,9 +3734,10 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           blink::mojom::NavigationApiHistoryEntryArrays::New(),
           std::vector<GURL>() /* early_hints_preloaded_resources */,
           absl::nullopt /* ad_auction_components */,
+          /*fenced_frame_reporting_metadata=*/nullptr,
           // This timestamp will be populated when the commit IPC is sent.
           base::TimeTicks() /* commit_sent */, false /* anonymous */,
-          std::string() /* srcdoc_value */);
+          std::string() /* srcdoc_value */, false /* should_load_data_url */);
 #if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
@@ -3764,7 +3763,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.initiator_process_id, extra_headers_crlf, frame_entry, entry,
       request_body,
       params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr,
-      params.impression, params.is_pdf);
+      params.impression, params.is_pdf, is_fenced_frame_opaque_url);
   navigation_request->set_from_download_cross_origin_redirect(
       params.from_download_cross_origin_redirect);
   navigation_request->set_force_new_browsing_instance(
@@ -4469,6 +4468,7 @@ NavigationControllerImpl::ShouldNavigateToEntryForNavigationApiKey(
 
 void NavigationControllerImpl::NavigateToNavigationApiKey(
     FrameTreeNode* node,
+    int sandboxed_source_frame_tree_node_id,
     const std::string& key) {
   FrameNavigationEntry* current_entry =
       GetLastCommittedEntry()->GetFrameEntry(node);
@@ -4484,7 +4484,7 @@ void NavigationControllerImpl::NavigateToNavigationApiKey(
     if (result == HistoryNavigationAction::kStopLooking)
       break;
     if (result != HistoryNavigationAction::kKeepLooking) {
-      GoToIndex(i, FrameTreeNode::kFrameTreeNodeInvalidId,
+      GoToIndex(i, sandboxed_source_frame_tree_node_id,
                 false /* is_browser_initiated*/);
       return;
     }
@@ -4495,7 +4495,7 @@ void NavigationControllerImpl::NavigateToNavigationApiKey(
     if (result == HistoryNavigationAction::kStopLooking)
       break;
     if (result != HistoryNavigationAction::kKeepLooking) {
-      GoToIndex(i, FrameTreeNode::kFrameTreeNodeInvalidId,
+      GoToIndex(i, sandboxed_source_frame_tree_node_id,
                 false /* is_browser_initiated*/);
       return;
     }

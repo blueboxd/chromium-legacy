@@ -55,7 +55,7 @@ void PaintLoadingArc(gfx::Canvas* canvas,
                      double loading_fraction) {
   gfx::Rect oval = bounds;
   // Inset to make sure the whole arc is inside the visible rect.
-  oval.Inset(/*horizontal=*/1, /*vertical=*/1);
+  oval.Inset(gfx::Insets::VH(/*vertical=*/1, /*horizontal=*/1));
 
   SkPath path;
   path.arcTo(RectToSkRect(oval), /*startAngle=*/-90,
@@ -74,7 +74,7 @@ void PaintLoadingArc(gfx::Canvas* canvas,
 
 ArrowButtonView::ArrowButtonView(PressedCallback callback, int size)
     : LoginButton(std::move(callback)) {
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(kBorderForFocusRingDp)));
+  SetBorder(views::CreateEmptyBorder(kBorderForFocusRingDp));
   SetPreferredSize(gfx::Size(size + 2 * kBorderForFocusRingDp,
                              size + 2 * kBorderForFocusRingDp));
   SetFocusBehavior(FocusBehavior::ALWAYS);

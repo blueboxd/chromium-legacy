@@ -81,21 +81,15 @@
 
 #pragma mark - Public
 
-// TODO(crbug.com/929981): "traitCollectionDidChange:" method won't get called
-// when the view is not displayed, and in that case the only chance
-// TabGridBottomToolbar can update its layout is when the TabGrid sets its
-// "page" property in the
-// "viewWillTransitionToSize:withTransitionCoordinator:" method. An early
-// return for "self.page == page" can be added here since iOS 13 where the bug
-// is fixed in UIKit.
 - (void)setPage:(TabGridPage)page {
+  if (_page == page)
+    return;
   _page = page;
   _smallNewTabButton.page = page;
   _largeNewTabButton.page = page;
   // Reset the title of UIBarButtonItem to update the title in a11y modal panel.
   _newTabButtonItem.title = _largeNewTabButton.accessibilityLabel;
   [self updateLayout];
-  self.hidden = !self.subviews.count;
 }
 
 - (void)setMode:(TabGridMode)mode {
@@ -105,7 +99,6 @@
   // Reset selected tabs count when mode changes.
   self.selectedTabsCount = 0;
   [self updateLayout];
-  self.hidden = !self.subviews.count;
 }
 
 - (void)setSelectedTabsCount:(int)count {
@@ -336,22 +329,24 @@
   // return early in that case.
   if (self.mode == TabGridModeSearch) {
     [NSLayoutConstraint deactivateConstraints:_compactConstraints];
-    [_toolbar removeFromSuperview];
     [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
+    [_toolbar removeFromSuperview];
     [_largeNewTabButton removeFromSuperview];
+    self.hidden = !self.subviews.count;
     return;
   }
   _largeNewTabButtonBottomAnchor.constant =
       -kTabGridFloatingButtonVerticalInset;
 
   if (self.mode == TabGridModeSelection) {
+    [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
+    [_largeNewTabButton removeFromSuperview];
     [_toolbar setItems:@[
       _closeTabsButton, _spaceItem, _shareButton, _spaceItem, _addToButton
     ]];
-    [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
-    [_largeNewTabButton removeFromSuperview];
     [self addSubview:_toolbar];
     [NSLayoutConstraint activateConstraints:_compactConstraints];
+    self.hidden = !self.subviews.count;
     return;
   }
   UIBarButtonItem* leadingButton = _closeAllOrUndoButton;
@@ -360,6 +355,9 @@
   UIBarButtonItem* trailingButton = _doneButton;
 
   if ([self shouldUseCompactLayout]) {
+    [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
+    [_largeNewTabButton removeFromSuperview];
+
     // For incognito/regular pages, display all 3 buttons;
     // For remote tabs page, only display new tab button.
     if (self.page == TabGridPageRemoteTabs) {
@@ -370,8 +368,6 @@
       ]];
     }
 
-    [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
-    [_largeNewTabButton removeFromSuperview];
     [self addSubview:_toolbar];
     [NSLayoutConstraint activateConstraints:_compactConstraints];
   } else {
@@ -389,6 +385,7 @@
       [NSLayoutConstraint activateConstraints:_floatingConstraints];
     }
   }
+  self.hidden = !self.subviews.count;
 }
 
 // Returns YES if the |_largeNewTabButton| is showing on the toolbar.
@@ -399,14 +396,9 @@
 
 // Returns YES if should use compact bottom toolbar layout.
 - (BOOL)shouldUseCompactLayout {
-  // TODO(crbug.com/929981): UIView's |traitCollection| can be wrong and
-  // contradict the keyWindow's |traitCollection| because UIView's
-  // |-traitCollectionDidChange:| is not properly called when the view rotates
-  // while it is in a ViewController deeper in the ViewController hierarchy. Use
-  // self.traitCollection since iOS 13 where the bug is fixed in UIKit.
-  return self.window.traitCollection.verticalSizeClass ==
+  return self.traitCollection.verticalSizeClass ==
              UIUserInterfaceSizeClassRegular &&
-         self.window.traitCollection.horizontalSizeClass ==
+         self.traitCollection.horizontalSizeClass ==
              UIUserInterfaceSizeClassCompact;
 }
 

@@ -178,21 +178,21 @@ TEST_F(BrowserUtilTest, IsLacrosEnabledForMigrationBeforePolocyInit) {
       user, browser_util::PolicyInitState::kBeforeInit));
 }
 
-TEST_F(BrowserUtilTest, LacrosGoogleRollout) {
+TEST_F(BrowserUtilTest, LacrosCrosTeamRollout) {
   AddRegularUser("user@google.com");
   {
     ScopedLacrosAvailabilityCache cache(LacrosAvailability::kSideBySide);
     EXPECT_EQ(browser_util::GetCachedLacrosAvailabilityForTesting(),
-              LacrosAvailability::kUserChoice);
+              LacrosAvailability::kSideBySide);
   }
 
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({browser_util::kLacrosGooglePolicyRollout}, {});
+  feature_list.InitWithFeatures({}, {browser_util::kLacrosGooglePolicyRollout});
 
   {
     ScopedLacrosAvailabilityCache cache(LacrosAvailability::kSideBySide);
     EXPECT_EQ(browser_util::GetCachedLacrosAvailabilityForTesting(),
-              LacrosAvailability::kSideBySide);
+              LacrosAvailability::kUserChoice);
   }
 }
 
@@ -754,6 +754,46 @@ TEST_F(BrowserUtilTest, GetLacrosLaunchSwitchSource) {
               browser_util::GetLacrosLaunchSwitchSource())
         << static_cast<int>(launch_switch);
   }
+}
+
+// Check that the exist configurations used for the Google rollout have the
+// precisely intended side-effects.
+TEST_F(BrowserUtilTest, LacrosGoogleRolloutUserChoice) {
+  AddRegularUser("user@google.com");
+  // Lacros availability is set by policy to user choice.
+  ScopedLacrosAvailabilityCache cache(LacrosAvailability::kUserChoice);
+
+  // We enable 3 features: LacrosSupport, LacrosPrimary, LacrosOnly
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {chromeos::features::kLacrosSupport, chromeos::features::kLacrosPrimary,
+       chromeos::features::kLacrosOnly},
+      {});
+
+  // Check that Lacros is allowed, enabled, and set to lacros-only.
+  EXPECT_TRUE(browser_util::IsLacrosAllowedToBeEnabled());
+  EXPECT_TRUE(browser_util::IsLacrosEnabled());
+  EXPECT_TRUE(browser_util::IsLacrosPrimaryBrowser());
+  EXPECT_FALSE(browser_util::IsAshWebBrowserEnabled());
+}
+
+TEST_F(BrowserUtilTest, LacrosGoogleRolloutPrimary) {
+  AddRegularUser("user@google.com");
+  // Lacros availability is set by policy to primary.
+  ScopedLacrosAvailabilityCache cache(LacrosAvailability::kLacrosPrimary);
+
+  // We enable 3 features: LacrosSupport, LacrosPrimary, LacrosOnly
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {chromeos::features::kLacrosSupport, chromeos::features::kLacrosPrimary,
+       chromeos::features::kLacrosOnly},
+      {});
+
+  // Check that Lacros is allowed, enabled, and set to lacros-only.
+  EXPECT_TRUE(browser_util::IsLacrosAllowedToBeEnabled());
+  EXPECT_TRUE(browser_util::IsLacrosEnabled());
+  EXPECT_TRUE(browser_util::IsLacrosPrimaryBrowser());
+  EXPECT_FALSE(browser_util::IsAshWebBrowserEnabled());
 }
 
 }  // namespace crosapi

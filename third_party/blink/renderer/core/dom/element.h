@@ -59,7 +59,7 @@
 namespace gfx {
 class QuadF;
 class Vector2dF;
-}
+}  // namespace gfx
 
 namespace blink {
 
@@ -94,6 +94,7 @@ class Locale;
 class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class PointerLockOptions;
+class PopupData;
 class PseudoElement;
 class ResizeObservation;
 class ResizeObserver;
@@ -154,6 +155,13 @@ enum class NamedItemType {
   kNameOrIdWithName,
 };
 
+enum class PopupValueType {
+  kNone,
+  kPopup,
+  kHint,
+  kAsync,
+};
+
 typedef HeapVector<Member<Attr>> AttrNodeList;
 
 typedef HashMap<AtomicString, SpecificTrustedType> AttrNameToTrustedType;
@@ -173,7 +181,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste, kBeforepaste)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforematch, kBeforematch)
 
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;
@@ -444,7 +451,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual const CSSPropertyValueSet* AdditionalPresentationAttributeStyle() {
     return nullptr;
   }
-  void InvalidateStyleAttribute();
+  void InvalidateStyleAttribute(bool only_changed_independent_properties);
 
   const CSSPropertyValueSet* InlineStyle() const {
     return GetElementData() ? GetElementData()->inline_style_.Get() : nullptr;
@@ -525,6 +532,18 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // While the owner document is parsed, this function is called after all
   // attributes in a start tag were added to the element.
   virtual void ParseAttribute(const AttributeModificationParams&);
+
+  // Popup API related functions.
+  void UpdatePopupAttribute(String);
+  bool HasValidPopupAttribute() const;
+  PopupData* GetPopupData() const;
+  bool popupOpen() const;
+  void showPopup();
+  void hidePopup();
+  static const Element* NearestOpenAncestralPopup(Node* start_node);
+  static void HandlePopupLightDismiss(const Event& event);
+  void InvokePopup(Element* invoker);
+  void SetPopupFocusOnShow();
 
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
   virtual const QualifiedName& SubResourceAttributeName() const;
@@ -693,6 +712,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool DelegatesFocus() const;
   Element* GetFocusableArea() const;
   Element* GetAutofocusDelegate() const;
+  // Element focus function called through IDL (i.e. element.focus() in JS)
+  void focusForBindings();
+  void focusForBindings(const FocusOptions*);
+  // Element focus function called from outside IDL (user focus,
+  // accessibility, etc...)
   virtual void focus(const FocusParams&);
   void focus();
   void focus(const FocusOptions*);
@@ -1254,6 +1278,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     kRebuildLayoutTree,
     kAttachLayoutTree,
   };
+
+  // Retrieves the element pointed to by this element's 'anchor' content
+  // attribute, if that element exists.
+  Element* anchorElement() const;
+
+  // Special focus handling for popups.
+  Element* GetPopupFocusableArea(bool autofocus_only) const;
 
   void UpdateFirstLetterPseudoElement(StyleUpdatePhase,
                                       const StyleRecalcContext&);

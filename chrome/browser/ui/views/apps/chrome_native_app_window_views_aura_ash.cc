@@ -52,7 +52,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -183,8 +182,7 @@ ui::ImageModel ChromeNativeAppWindowViewsAuraAsh::GetWindowIcon() {
     return ui::ImageModel();
 
   DCHECK(image.IsImage());
-  const gfx::ImageSkia image_skia =
-      views::GetImageSkiaFromImageModel(image, nullptr);
+  const gfx::ImageSkia image_skia = image.Rasterize(nullptr);
   return ui::ImageModel::FromImageSkia(
       apps::CreateStandardIconImage(image_skia));
 }
@@ -596,21 +594,21 @@ void ChromeNativeAppWindowViewsAuraAsh::LoadAppIcon(
     apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
         Profile::FromBrowserContext(app_window()->browser_context()));
 
-    apps::mojom::AppType app_type =
+    auto app_type =
         proxy->AppRegistryCache().GetAppType(app_window()->extension_id());
 
-    if (app_type != apps::mojom::AppType::kUnknown) {
+    if (app_type != apps::AppType::kUnknown) {
       if (base::FeatureList::IsEnabled(
               features::kAppServiceLoadIconWithoutMojom)) {
         proxy->LoadIcon(
-            apps::ConvertMojomAppTypToAppType(app_type),
-            app_window()->extension_id(), apps::IconType::kStandard,
+            app_type, app_window()->extension_id(), apps::IconType::kStandard,
             app_window()->app_delegate()->PreferredIconSize(),
             allow_placeholder_icon,
             base::BindOnce(&ChromeNativeAppWindowViewsAuraAsh::OnLoadIcon,
                            weak_ptr_factory_.GetWeakPtr()));
       } else {
-        proxy->LoadIcon(app_type, app_window()->extension_id(),
+        proxy->LoadIcon(apps::ConvertAppTypeToMojomAppType(app_type),
+                        app_window()->extension_id(),
                         apps::mojom::IconType::kStandard,
                         app_window()->app_delegate()->PreferredIconSize(),
                         allow_placeholder_icon,

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -232,6 +233,12 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       DownloadItem* download,
       const base::FilePath& path,
       DownloadTargetDeterminerDelegate::ConfirmationCallback) override {}
+
+  void DetermineLocalPath(download::DownloadItem* download,
+                          const base::FilePath& virtual_path,
+                          download::LocalPathCallback callback) override {
+    std::move(callback).Run(virtual_path, virtual_path.BaseName());
+  }
 
  private:
   friend class ChromeDownloadManagerDelegateTest;

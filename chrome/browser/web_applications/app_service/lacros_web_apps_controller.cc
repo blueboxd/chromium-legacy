@@ -5,8 +5,10 @@
 #include "chrome/browser/web_applications/app_service/lacros_web_apps_controller.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/one_shot_event.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_item_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/startup/first_run_lacros.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -34,6 +37,32 @@
 #include "url/gurl.h"
 
 using apps::IconEffects;
+
+namespace {
+
+// Callback to run to finish a controller command. At the end of the command,
+// web contents created by it (if any) should be returned to crosapi by calling
+// this callback. See `LacrosWebAppsController::ReturnLaunchResults()` for more
+// details.
+using CommandFinishedCallback =
+    base::OnceCallback<void(const std::vector<content::WebContents*>&)>;
+
+// Helper to run `execute_command_callback`, with the option to bypass it if
+// `proceed` is false by running `command_finished_callback` right away and
+// returning.
+void OnOpenPrimaryProfileFirstRunExited(
+    CommandFinishedCallback command_finished_callback,
+    base::OnceCallback<void(CommandFinishedCallback)> execute_command_callback,
+    bool proceed) {
+  if (!proceed) {
+    std::move(command_finished_callback).Run({});
+  } else {
+    std::move(execute_command_callback)
+        .Run(std::move(command_finished_callback));
+  }
+}
+
+}  // namespace
 
 namespace web_app {
 
@@ -181,11 +210,33 @@ void LacrosWebAppsController::GetMenuModel(const std::string& app_id,
 void LacrosWebAppsController::ExecuteContextMenuCommand(
     const std::string& app_id,
     const std::string& id,
-    ExecuteContextMenuCommandCallback callback) {
-  auto* web_contents = publisher_helper().ExecuteContextMenuCommand(
-      app_id, id, display::kDefaultDisplayId);
+    ExecuteContextMenuCommandCallback mojo_callback) {
+  auto execution_finished_callback =
+      base::BindOnce(&LacrosWebAppsController::ReturnLaunchResults,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(mojo_callback));
 
-  ReturnLaunchResult(std::move(callback), web_contents);
+  if (!ShouldOpenPrimaryProfileFirstRun()) {
+    ExecuteContextMenuCommandInternal(app_id, id,
+                                      std::move(execution_finished_callback));
+    return;
+  }
+
+  OpenPrimaryProfileFirstRunIfNeeded(base::BindOnce(
+      &OnOpenPrimaryProfileFirstRunExited,
+      std::move(execution_finished_callback),
+      base::BindOnce(
+          &LacrosWebAppsController::ExecuteContextMenuCommandInternal,
+          weak_ptr_factory_.GetWeakPtr(), app_id, id)));
+}
+
+void LacrosWebAppsController::ExecuteContextMenuCommandInternal(
+    const std::string& app_id,
+    const std::string& id,
+    CommandFinishedCallback callback) {
+  content::WebContents* web_contents =
+      publisher_helper().ExecuteContextMenuCommand(app_id, id,
+                                                   display::kDefaultDisplayId);
+  std::move(callback).Run({web_contents});
 }
 
 void LacrosWebAppsController::StopApp(const std::string& app_id) {
@@ -202,57 +253,68 @@ void LacrosWebAppsController::SetPermission(const std::string& app_id,
 // duplicated code.
 void LacrosWebAppsController::Launch(
     crosapi::mojom::LaunchParamsPtr launch_params,
-    LaunchCallback callback) {
-  content::WebContents* web_contents = nullptr;
+    LaunchCallback mojo_callback) {
   if (launch_params->intent) {
     if (!profile_) {
-      ReturnLaunchResult(std::move(callback), nullptr);
-      return;
-    }
-
-    web_contents = publisher_helper().MaybeNavigateExistingWindow(
-        launch_params->app_id, launch_params->intent->url);
-    if (web_contents) {
-      ReturnLaunchResult(std::move(callback), web_contents);
+      ReturnLaunchResults(std::move(mojo_callback), {});
       return;
     }
   }
 
+  auto launch_finished_callback =
+      base::BindOnce(&LacrosWebAppsController::ReturnLaunchResults,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(mojo_callback));
   auto params = apps::ConvertCrosapiToLaunchParams(launch_params, profile_);
+  if (!ShouldOpenPrimaryProfileFirstRun()) {
+    LaunchInternal(launch_params->app_id, std::move(params),
+                   std::move(launch_finished_callback));
+    return;
+  }
+
+  OpenPrimaryProfileFirstRunIfNeeded(base::BindOnce(
+      &OnOpenPrimaryProfileFirstRunExited, std::move(launch_finished_callback),
+      base::BindOnce(&LacrosWebAppsController::LaunchInternal,
+                     weak_ptr_factory_.GetWeakPtr(), launch_params->app_id,
+                     std::move(params))));
+}
+
+void LacrosWebAppsController::LaunchInternal(const std::string& app_id,
+                                             apps::AppLaunchParams params,
+                                             CommandFinishedCallback callback) {
   bool is_file_handling_launch =
       !params.launch_files.empty() && !apps_util::IsShareIntent(params.intent);
   if (is_file_handling_launch) {
     // File handling may create the WebContents asynchronously.
     publisher_helper().LaunchAppWithFilesCheckingUserPermission(
-        launch_params->app_id, std::move(params),
-        base::BindOnce(&LacrosWebAppsController::ReturnLaunchResult,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+        app_id, std::move(params), std::move(callback));
     return;
   }
 
-  web_contents = publisher_helper().LaunchAppWithParams(std::move(params));
-
-  ReturnLaunchResult(std::move(callback), web_contents);
+  content::WebContents* web_contents =
+      publisher_helper().LaunchAppWithParams(std::move(params));
+  std::move(callback).Run({web_contents});
 }
 
-void LacrosWebAppsController::ReturnLaunchResult(
-    LaunchCallback callback,
-    content::WebContents* web_contents) {
-  // TODO(crbug.com/1144877): Run callback when the window is ready.
+void LacrosWebAppsController::ReturnLaunchResults(
+    base::OnceCallback<void(crosapi::mojom::LaunchResultPtr)> callback,
+    const std::vector<content::WebContents*>& web_contentses) {
   auto* app_instance_tracker =
       apps::AppServiceProxyFactory::GetForProfile(profile_)
           ->BrowserAppInstanceTracker();
   auto launch_result = crosapi::mojom::LaunchResult::New();
+  launch_result->instance_id = base::UnguessableToken::Create();
+  launch_result->instance_ids = std::vector<base::UnguessableToken>();
+
+  // TODO(crbug.com/1144877): Replaced with DCHECK when the app instance tracker
+  // flag is turned on.
   if (app_instance_tracker) {
-    const apps::BrowserAppInstance* app_instance =
-        app_instance_tracker->GetAppInstance(web_contents);
-    launch_result->instance_id =
-        app_instance ? app_instance->id : base::UnguessableToken::Create();
-  } else {
-    // TODO(crbug.com/1144877): This part of code should not be reached
-    // after the instance tracker flag is turn on. Replaced with DCHECK when
-    // the app instance tracker flag is turned on.
-    launch_result->instance_id = base::UnguessableToken::Create();
+    for (content::WebContents* web_contents : web_contentses) {
+      const apps::BrowserAppInstance* app_instance =
+          app_instance_tracker->GetAppInstance(web_contents);
+      if (app_instance) {
+        launch_result->instance_ids->push_back(app_instance->id);
+      }
+    }
   }
   std::move(callback).Run(std::move(launch_result));
 }

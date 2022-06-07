@@ -7,10 +7,13 @@
 
 #include "base/callback.h"
 
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/components/multidevice/remote_device.h"
+namespace ash {
 
-namespace ash::secure_channel {
+namespace multidevice {
+struct RemoteDevice;
+}
+
+namespace secure_channel {
 
 // Monitors device proximity while a secure channel is active.
 class PresenceMonitor {
@@ -35,6 +38,7 @@ class PresenceMonitor {
   PresenceMonitor() = default;
 };
 
-}  // namespace ash::secure_channel
+}  // namespace secure_channel
+}  // namespace ash
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_SHARED_PRESENCE_MONITOR_H_

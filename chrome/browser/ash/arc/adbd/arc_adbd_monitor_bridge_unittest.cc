@@ -15,7 +15,7 @@
 #include "ash/components/arc/test/test_browser_context.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "chromeos/dbus/upstart/fake_upstart_client.h"
+#include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +35,7 @@ class ArcAdbdMonitorBridgeTest : public testing::Test {
       delete;
 
   void SetUp() override {
-    chromeos::UpstartClient::InitializeFake();
+    ash::UpstartClient::InitializeFake();
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     context_ = std::make_unique<TestBrowserContext>();
     instance_ = std::make_unique<FakeAdbdMonitorInstance>();
@@ -69,7 +69,7 @@ class ArcAdbdMonitorBridgeTest : public testing::Test {
   }
 
   void InjectUpstartStopJobFailure(const std::string& job_name_to_fail) {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_stop_job_cb(base::BindLambdaForTesting(
         [job_name_to_fail](const std::string& job_name,
                            const std::vector<std::string>& env) {
@@ -79,7 +79,7 @@ class ArcAdbdMonitorBridgeTest : public testing::Test {
   }
 
   void StartRecordingUpstartOperations() {
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    auto* upstart_client = ash::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(
         base::BindLambdaForTesting([this](const std::string& job_name,
                                           const std::vector<std::string>& env) {

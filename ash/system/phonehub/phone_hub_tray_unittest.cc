@@ -21,6 +21,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/button.h"
@@ -29,6 +30,7 @@ namespace ash {
 
 namespace {
 
+using multidevice_setup::mojom::Feature;
 using AccessStatus = phonehub::MultideviceFeatureAccessManager::AccessStatus;
 using AccessProhibitedReason =
     phonehub::MultideviceFeatureAccessManager::AccessProhibitedReason;
@@ -252,6 +254,8 @@ TEST_F(PhoneHubTrayTest, ShowOptInViewWhenCameraRollAccessNotGranted) {
       AccessStatus::kAccessGranted, AccessProhibitedReason::kUnknown);
   GetMultideviceFeatureAccessManager()->SetCameraRollAccessStatusInternal(
       AccessStatus::kAvailableButNotGranted);
+  GetMultideviceFeatureAccessManager()->SetFeatureReadyForAccess(
+      Feature::kPhoneHubCameraRoll);
 
   ClickTrayButton();
 
@@ -300,6 +304,8 @@ TEST_F(PhoneHubTrayTest, StartMultideviceFeatureSetUpFlow) {
       AccessStatus::kAvailableButNotGranted, AccessProhibitedReason::kUnknown);
   GetMultideviceFeatureAccessManager()->SetCameraRollAccessStatusInternal(
       AccessStatus::kAvailableButNotGranted);
+  GetMultideviceFeatureAccessManager()->SetFeatureReadyForAccess(
+      Feature::kPhoneHubCameraRoll);
 
   ClickTrayButton();
   EXPECT_TRUE(multidevice_feature_opt_in_view());
@@ -347,6 +353,10 @@ TEST_F(PhoneHubTrayTest, StartAllPermissionSetUpFlow) {
       AccessStatus::kAvailableButNotGranted);
   GetMultideviceFeatureAccessManager()->SetAppsAccessStatusInternal(
       AccessStatus::kAvailableButNotGranted);
+  GetMultideviceFeatureAccessManager()->SetFeatureReadyForAccess(
+      Feature::kEche);
+  GetMultideviceFeatureAccessManager()->SetFeatureReadyForAccess(
+      Feature::kPhoneHubCameraRoll);
 
   ClickTrayButton();
   EXPECT_TRUE(multidevice_feature_opt_in_view());
@@ -376,6 +386,8 @@ TEST_F(PhoneHubTrayTest, StartNotificationAndAppSetUpFlow) {
       AccessStatus::kAvailableButNotGranted);
   GetMultideviceFeatureAccessManager()->SetCameraRollAccessStatusInternal(
       AccessStatus::kAccessGranted);
+  GetMultideviceFeatureAccessManager()->SetFeatureReadyForAccess(
+      Feature::kEche);
 
   ClickTrayButton();
   EXPECT_TRUE(multidevice_feature_opt_in_view());
@@ -434,6 +446,8 @@ TEST_F(PhoneHubTrayTest, StartAppsAccessOnlySetUpFlow) {
       AccessStatus::kAccessGranted);
   GetMultideviceFeatureAccessManager()->SetAppsAccessStatusInternal(
       AccessStatus::kAvailableButNotGranted);
+  GetMultideviceFeatureAccessManager()->SetFeatureReadyForAccess(
+      Feature::kEche);
 
   ClickTrayButton();
   EXPECT_TRUE(multidevice_feature_opt_in_view());
@@ -447,6 +461,26 @@ TEST_F(PhoneHubTrayTest, StartAppsAccessOnlySetUpFlow) {
                       NewWindowDelegate::OpenUrlFrom::kUserInteraction));
 
   LeftClickOn(notification_opt_in_set_up_button());
+}
+
+TEST_F(PhoneHubTrayTest, DoNotShowAppsAccessSetUpFlowIfFeatureIsNotReady) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kPhoneHub,
+                            chromeos::features::kEcheSWA,
+                            chromeos::features::
+                                kEchePhoneHubPermissionsOnboarding},
+      /*disabled_features=*/{});
+  GetMultideviceFeatureAccessManager()->SetNotificationAccessStatusInternal(
+      AccessStatus::kAccessGranted, AccessProhibitedReason::kUnknown);
+  GetMultideviceFeatureAccessManager()->SetCameraRollAccessStatusInternal(
+      AccessStatus::kAccessGranted);
+  GetMultideviceFeatureAccessManager()->SetAppsAccessStatusInternal(
+      AccessStatus::kAvailableButNotGranted);
+
+  ClickTrayButton();
+  EXPECT_TRUE(multidevice_feature_opt_in_view());
+  EXPECT_FALSE(multidevice_feature_opt_in_view()->GetVisible());
 }
 
 TEST_F(PhoneHubTrayTest, StartCameraRollOnlySetUpFlow) {
@@ -463,6 +497,8 @@ TEST_F(PhoneHubTrayTest, StartCameraRollOnlySetUpFlow) {
       AccessStatus::kAvailableButNotGranted);
   GetMultideviceFeatureAccessManager()->SetAppsAccessStatusInternal(
       AccessStatus::kAccessGranted);
+  GetMultideviceFeatureAccessManager()->SetFeatureReadyForAccess(
+      Feature::kPhoneHubCameraRoll);
 
   ClickTrayButton();
   EXPECT_TRUE(multidevice_feature_opt_in_view());
@@ -648,7 +684,8 @@ TEST_F(PhoneHubTrayTest, CloseBubbleWhileShowingSameView) {
   EXPECT_FALSE(content_view());
 }
 
-TEST_F(PhoneHubTrayTest, OnSessionChanged) {
+// Flaky. See https://crbug.com/1308967.
+TEST_F(PhoneHubTrayTest, DISABLED_OnSessionChanged) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 

@@ -9,7 +9,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/share/share_features.h"
 #include "chrome/browser/share/share_metrics.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/sharing_hub/sharing_hub_model.h"
@@ -143,11 +145,7 @@ Profile* SharingHubBubbleController::GetProfile() const {
 }
 
 bool SharingHubBubbleController::ShouldOfferOmniboxIcon() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return !GetProfile()->IsIncognitoProfile() && !GetProfile()->IsGuestSession();
-#else
   return SharingHubOmniboxEnabled(GetWebContents().GetBrowserContext());
-#endif
 }
 
 std::vector<SharingHubAction>
@@ -170,6 +168,33 @@ SharingHubBubbleController::GetThirdPartyActions() {
     model->GetThirdPartyActionList(&actions);
 
   return actions;
+}
+
+bool SharingHubBubbleController::ShouldUsePreview() {
+  return share::GetDesktopSharePreviewVariant() !=
+         share::DesktopSharePreviewVariant::kDisabled;
+}
+
+std::u16string SharingHubBubbleController::GetPreviewTitle() {
+  // TODO(https://crbug.com/1312524): get passed this state from the omnibox
+  // instead.
+  return GetWebContents().GetTitle();
+}
+
+GURL SharingHubBubbleController::GetPreviewUrl() {
+  // TODO(https://crbug.com/1312524): get passed this state from the omnibox
+  // instead.
+  return GetWebContents().GetVisibleURL();
+}
+
+ui::ImageModel SharingHubBubbleController::GetPreviewImage() {
+  return ui::ImageModel::FromImage(favicon::GetDefaultFavicon());
+}
+
+base::CallbackListSubscription
+SharingHubBubbleController::RegisterPreviewImageChangedCallback(
+    PreviewImageChangedCallback callback) {
+  return preview_image_changed_callbacks_.Add(callback);
 }
 
 void SharingHubBubbleController::OnActionSelected(
@@ -253,9 +278,9 @@ void SharingHubBubbleController::ShowSharesheet(
       &GetWebContents(), std::move(intent),
       sharesheet::LaunchSource::kOmniboxShare,
       base::BindOnce(&SharingHubBubbleController::OnShareDelivered,
-                     AsWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&SharingHubBubbleController::OnSharesheetClosed,
-                     AsWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // Save the window in order to close the sharesheet if the tab is closed. This
   // will return the incorrect window if called later.

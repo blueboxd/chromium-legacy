@@ -12,6 +12,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/location.h"
@@ -81,6 +82,7 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
+#include "components/viz/test/test_raster_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -650,16 +652,17 @@ class LayerTreeHostFreesWorkerContextResourcesOnZeroMemoryLimit
   void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
                                    bool success) override {
     // Ensure that our initialization expectations have completed.
+    Mock::VerifyAndClearExpectations(mock_main_context_support_);
     Mock::VerifyAndClearExpectations(mock_worker_context_support_);
 
-    // Worker context support should start freeing resources when hard memory
-    // limit is zeroed.
+    // Main and worker context support should start freeing resources when hard
+    // memory limit is zeroed.
+    EXPECT_CALL(*mock_main_context_support_,
+                SetAggressivelyFreeResources(true));
     EXPECT_CALL(*mock_worker_context_support_,
                 SetAggressivelyFreeResources(true))
         .WillOnce(testing::Invoke([this](bool is_visible) {
-          // Main context is unchanged. It will start freeing on destruction.
-          EXPECT_CALL(*mock_main_context_support_,
-                      SetAggressivelyFreeResources(true));
+          // End test after verifying both.
           EndTest();
         }));
     ManagedMemoryPolicy zero_policy(
@@ -2558,7 +2561,7 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
       viz::TestContextProvider* context_provider,
       viz::TestContextProvider* worker_provider) override {
     context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
-    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestRasterInterface()->set_gpu_rasterization(true);
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
@@ -6603,7 +6606,7 @@ class LayerTreeHostTestGpuRasterizationDisabled : public LayerTreeHostTest {
         context_provider->UnboundTestContextGL()->test_capabilities();
     EXPECT_FALSE(caps.gpu_rasterization);
     gpu::Capabilities worker_caps =
-        context_provider->UnboundTestContextGL()->test_capabilities();
+        worker_provider->UnboundTestRasterInterface()->capabilities();
     EXPECT_FALSE(worker_caps.gpu_rasterization);
   }
 
@@ -6653,7 +6656,7 @@ class LayerTreeHostTestGpuRasterizationSupportedButDisabled
       viz::TestContextProvider* context_provider,
       viz::TestContextProvider* worker_provider) override {
     context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
-    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestRasterInterface()->set_gpu_rasterization(true);
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -6704,7 +6707,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
       viz::TestContextProvider* context_provider,
       viz::TestContextProvider* worker_provider) override {
     context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
-    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestRasterInterface()->set_gpu_rasterization(true);
   }
 
   void SetupTree() override {
@@ -6755,9 +6758,9 @@ class LayerTreeHostTestGpuRasterizationEnabledWithMSAA : public LayerTreeTest {
     viz::TestGLES2Interface* gl = context_provider->UnboundTestContextGL();
     gl->set_gpu_rasterization(true);
     gl->set_support_multisample_compatibility(false);
-    viz::TestGLES2Interface* worker = worker_provider->UnboundTestContextGL();
+    auto* worker = worker_provider->UnboundTestRasterInterface();
     worker->set_gpu_rasterization(true);
-    worker->set_support_multisample_compatibility(false);
+    worker->set_multisample_compatibility(false);
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -7418,7 +7421,7 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
       viz::TestContextProvider* context_provider,
       viz::TestContextProvider* worker_provider) override {
     context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
-    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestRasterInterface()->set_gpu_rasterization(true);
   }
 
   void SetupTree() override {
@@ -7464,7 +7467,7 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
       viz::TestContextProvider* context_provider,
       viz::TestContextProvider* worker_provider) override {
     context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
-    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestRasterInterface()->set_gpu_rasterization(true);
   }
 
   void SetupTree() override {
@@ -8134,7 +8137,7 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
       viz::TestContextProvider* context_provider,
       viz::TestContextProvider* worker_provider) override {
     context_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
-    worker_provider->UnboundTestContextGL()->set_gpu_rasterization(true);
+    worker_provider->UnboundTestRasterInterface()->set_gpu_rasterization(true);
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -8553,7 +8556,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDiscardAckAfterRelease);
 class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
  public:
   explicit LayerTreeHostTestImageAnimation(
-      viz::RendererType type = viz::RendererType::kGL)
+      viz::RendererType type = kDefaultRendererType)
       : LayerTreeHostTest(type) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -8633,7 +8636,7 @@ class LayerTreeHostTestImageAnimationDrawImage
     : public LayerTreeHostTestImageAnimation {
  public:
   explicit LayerTreeHostTestImageAnimationDrawImage(
-      viz::RendererType type = viz::RendererType::kGL)
+      viz::RendererType type = kDefaultRendererType)
       : LayerTreeHostTestImageAnimation(type) {}
 
  private:
@@ -8689,7 +8692,7 @@ class LayerTreeHostTestImageAnimationSynchronousScheduling
     : public LayerTreeHostTestImageAnimationDrawImage {
  public:
   explicit LayerTreeHostTestImageAnimationSynchronousScheduling(
-      viz::RendererType type = viz::RendererType::kGL)
+      viz::RendererType type = kDefaultRendererType)
       : LayerTreeHostTestImageAnimationDrawImage(type) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -10132,87 +10135,6 @@ class LayerTreeHostTestOccludedTileReleased
 };
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestOccludedTileReleased);
-
-class LayerTreeHostTestPriorityCutoffOverride
-    : public LayerTreeHostTestWithHelper {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_occlusion_for_tile_prioritization = true;
-    settings->minimum_occlusion_tracking_size = gfx::Size(60, 60);
-    settings->default_tile_size = gfx::Size(128, 128);
-  }
-
-  void BeginTest() override {
-    layer_tree_host()->SetViewportRectAndScale(gfx::Rect(100, 100), 1.f,
-                                               viz::LocalSurfaceId());
-    layer_tree_host()->root_layer()->SetBounds(gfx::Size(100, 100));
-    picture_layer_ = CreateAndAddFakePictureLayer(gfx::Size(128, 1280));
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
-                                      const Tile* tile) override {
-    const int tile_with_resource_count =
-        GetPictureLayerImpl(host_impl)->GetNumberOfTilesWithResources();
-    switch (phase_) {
-      case Phase::kWaitingForInitialState:
-        if (tile_with_resource_count > 1) {
-          phase_ = Phase::kRequiredOnly;
-          ScheduleChangePriorityCutoff();
-        }
-        break;
-      case Phase::kRequiredOnly:
-        if (tile_with_resource_count == 1) {
-          phase_ = Phase::kBackToAllowEverything;
-          ScheduleChangePriorityCutoff();
-        }
-        break;
-      case Phase::kBackToAllowEverything:
-        if (tile_with_resource_count > 1)
-          EndTest();
-    }
-  }
-
- private:
-  void ScheduleChangePriorityCutoff() {
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &LayerTreeHostTestPriorityCutoffOverride::ChangePriorityCutoff,
-            base::Unretained(this)));
-  }
-
-  void ChangePriorityCutoff() {
-    layer_tree_host()->SetPriorityCutoffOverride(
-        phase_ == Phase::kRequiredOnly
-            ? gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY
-            : gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING);
-  }
-
-  // Phases (in order) the test transitions through.
-  enum class Phase {
-    // Waits for more than one tile with a resource.
-    kWaitingForInitialState,
-
-    // Changes the cutoff to CUTOFF_ALLOW_REQUIRED_ONLY, which should trigger
-    // going back to only one tile having a resource.
-    kRequiredOnly,
-
-    // Changes the cutoff back to CUTOFF_ALLOW_EVERYTHING, which should trigger
-    // going back to more than one tile with a resource.
-    kBackToAllowEverything,
-  };
-
-  FakePictureLayerImpl* GetPictureLayerImpl(LayerTreeHostImpl* host_impl) {
-    return static_cast<FakePictureLayerImpl*>(
-        host_impl->sync_tree()->LayerById(picture_layer_->id()));
-  }
-
-  scoped_refptr<FakePictureLayer> picture_layer_;
-  Phase phase_ = Phase::kWaitingForInitialState;
-};
-
-SINGLE_THREAD_TEST_F(LayerTreeHostTestPriorityCutoffOverride);
 
 class LayerTreeHostTestNoCommitDeadlock : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

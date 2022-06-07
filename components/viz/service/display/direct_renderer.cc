@@ -31,6 +31,7 @@
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/skia_output_surface.h"
+#include "media/base/video_util.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
@@ -175,6 +176,10 @@ void DirectRenderer::SetVisible(bool visible) {
     return;
   visible_ = visible;
   DidChangeVisibility();
+}
+
+void DirectRenderer::ReallocatedFrameBuffers() {
+  next_frame_needs_full_frame_redraw_ = true;
 }
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
@@ -364,12 +369,14 @@ void DirectRenderer::DrawFrame(
   bool use_stencil = overdraw_feedback_;
   bool needs_full_frame_redraw = false;
   auto display_transform = output_surface_->GetDisplayTransform();
-  if (surface_resource_size != reshape_surface_size_ ||
+  if (next_frame_needs_full_frame_redraw_ ||
+      surface_resource_size != reshape_surface_size_ ||
       device_scale_factor != reshape_device_scale_factor_ ||
       frame_color_space != reshape_color_space_ ||
       frame_buffer_format != reshape_buffer_format_ ||
       use_stencil != reshape_use_stencil_ ||
       display_transform != reshape_display_transform_) {
+    next_frame_needs_full_frame_redraw_ = false;
     reshape_surface_size_ = surface_resource_size;
     reshape_device_scale_factor_ = device_scale_factor;
     reshape_color_space_ = frame_color_space;
@@ -591,7 +598,13 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
                                    request->scale_from(), request->scale_to())
                              : gfx::Rect(output_rect.size());
 
-    geometry.result_selection = geometry.result_bounds;
+    // Result bounds may not satisfy the pixel format requirements for the
+    // CopyOutputRequest - we need to adjust them to something that will be
+    // compatible. Formats other than RGBA have this restriction.
+    geometry.result_selection =
+        request->result_format() == CopyOutputRequest::ResultFormat::RGBA
+            ? geometry.result_bounds
+            : media::MinimallyShrinkRectForI420(geometry.result_bounds);
     if (request->has_result_selection())
       geometry.result_selection.Intersect(request->result_selection());
     if (geometry.result_selection.IsEmpty())
@@ -603,6 +616,7 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
         MoveFromDrawToWindowSpace(geometry.result_selection +
                                   output_rect.OffsetFromOrigin())
             .OffsetFromOrigin();
+
     CopyDrawnRenderPass(geometry, std::move(request));
   }
 }

@@ -8,11 +8,11 @@
 #include <ostream>
 #include <string>
 
+#include "ash/components/multidevice/software_feature.h"
 #include "base/containers/flat_set.h"
-#include "chromeos/components/multidevice/software_feature.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -143,6 +143,6 @@ std::ostream& operator<<(std::ostream& stream,
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_FEATURE_TYPE_H_

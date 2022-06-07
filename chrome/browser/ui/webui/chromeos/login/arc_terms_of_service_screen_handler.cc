@@ -48,21 +48,25 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId ArcTermsOfServiceScreenView::kScreenId;
 
-ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container),
+ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler()
+    : BaseScreenHandler(kScreenId),
       is_child_account_(
           user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
-  set_user_acted_method_path("login.ArcTermsOfServiceScreen.userActed");
+  set_user_acted_method_path_deprecated(
+      "login.ArcTermsOfServiceScreen.userActed");
 }
 
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
   OobeUI* oobe_ui = GetOobeUI();
   if (oobe_ui)
     oobe_ui->RemoveObserver(this);
-  chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-      this, FROM_HERE);
-  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+  if (network_time_zone_observing_) {
+    network_time_zone_observing_ = false;
+    chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+    system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+  }
+
   for (auto& observer : observer_list_)
     observer.OnViewDestroyed(this);
 }
@@ -83,12 +87,7 @@ void ArcTermsOfServiceScreenHandler::MaybeLoadPlayStoreToS(
   if (!ignore_network_state && !default_network)
     return;
   const std::string country_code = base::CountryCodeForCurrentTimezone();
-  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
-  if (IsSafeToCallJavascript()) {
-    CallJS("login.ArcTermsOfServiceScreen.loadPlayStoreToS", country_code);
-  } else {
-    LOG(ERROR) << "Silently dropping MaybeLoadPlayStoreToS request.";
-  }
+  CallJS("login.ArcTermsOfServiceScreen.loadPlayStoreToS", country_code);
 }
 
 void ArcTermsOfServiceScreenHandler::OnCurrentScreenChanged(
@@ -280,7 +279,7 @@ void ArcTermsOfServiceScreenHandler::RemoveObserver(
 }
 
 void ArcTermsOfServiceScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
@@ -296,16 +295,20 @@ void ArcTermsOfServiceScreenHandler::Show() {
 }
 
 void ArcTermsOfServiceScreenHandler::Hide() {
-  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+  if (network_time_zone_observing_) {
+    network_time_zone_observing_ = false;
+    chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+    system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+  }
   pref_handler_.reset();
 }
 
 void ArcTermsOfServiceScreenHandler::Bind(ArcTermsOfServiceScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void ArcTermsOfServiceScreenHandler::StartNetworkAndTimeZoneObserving() {
-  // TODO(crbug.com/1180291) - Clean up work. Fix this logic.
   if (network_time_zone_observing_)
     return;
 
@@ -315,7 +318,7 @@ void ArcTermsOfServiceScreenHandler::StartNetworkAndTimeZoneObserving() {
   network_time_zone_observing_ = true;
 }
 
-void ArcTermsOfServiceScreenHandler::Initialize() {
+void ArcTermsOfServiceScreenHandler::InitializeDeprecated() {
   if (!show_on_init_) {
     // Send time zone information as soon as possible to able to pre-load the
     // Play Store ToS.
@@ -341,7 +344,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 
   action_taken_ = false;
 
-  ShowScreen(kScreenId);
+  ShowInWebUI();
   arc_managed_ = arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile);
   is_child_account_ = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
   CallJS("login.ArcTermsOfServiceScreen.setArcManaged", arc_managed_,
@@ -360,7 +363,7 @@ void ArcTermsOfServiceScreenHandler::DoShowForDemoModeSetup() {
 
   CallJS("login.ArcTermsOfServiceScreen.setupForDemoMode");
   action_taken_ = false;
-  ShowScreen(kScreenId);
+  ShowInWebUI();
   MaybeLoadPlayStoreToS(true);
   StartNetworkAndTimeZoneObserving();
 }

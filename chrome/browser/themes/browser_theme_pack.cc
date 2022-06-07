@@ -22,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -1583,7 +1582,7 @@ void BrowserThemePack::SetFrameAndToolbarRelatedColors() {
     // TODO(pkasting): Should this code be shared with
     // ThemeHelper::GetDefaultColor() somehow?
     const SkColor button_color =
-        color_utils::HSLShift(gfx::kChromeIconGrey, button_tint);
+        color_utils::HSLShift(gfx::kGoogleGrey700, button_tint);
     SetColor(TP::COLOR_TAB_THROBBER_SPINNING, button_color);
     SetColor(TP::COLOR_TAB_THROBBER_WAITING, button_color);
   }

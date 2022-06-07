@@ -122,6 +122,16 @@ class TextFragmentSelectorGeneratorTest : public SimTest {
   base::HistogramTester histogram_tester_;
   ScopedFakeUkmRecorder scoped_ukm_recorder_;
   int generate_call_count_ = 0;
+
+  struct ScopedExactTextMaxCharsOverride {
+    explicit ScopedExactTextMaxCharsOverride(int value) {
+      TextFragmentSelectorGenerator::OverrideExactTextMaxCharsForTesting(value);
+    }
+
+    ~ScopedExactTextMaxCharsOverride() {
+      TextFragmentSelectorGenerator::OverrideExactTextMaxCharsForTesting(-1);
+    }
+  };
 };
 
 // Basic exact selector case.
@@ -159,6 +169,26 @@ TEST_F(TextFragmentSelectorGeneratorTest, ExactTextSelector) {
 
   VerifySelector(selected_start, selected_end,
                  "First%20paragraph%20text%20that%20is");
+}
+
+// A single long word will return an exact selection, even if it would normally
+// exceed the max chars for exact threshold.
+TEST_F(TextFragmentSelectorGeneratorTest, ExactTextSelector_Long) {
+  ScopedExactTextMaxCharsOverride force_range_generation(10);
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div>Test page</div>
+    <p id='first'>first_texts_and_last</p>
+  )HTML");
+  Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
+  const auto& selected_start = Position(first_paragraph, 0);
+  const auto& selected_end = Position(first_paragraph, 20);
+  ASSERT_EQ("first_texts_and_last",
+            PlainText(EphemeralRange(selected_start, selected_end)));
+
+  VerifySelector(selected_start, selected_end, "first_texts_and_last");
 }
 
 // Exact selector test where selection contains nested <i> node.
@@ -636,6 +666,28 @@ TEST_F(TextFragmentSelectorGeneratorTest, RangeSelector_RangeNotUnique) {
                  "First-,paragraph,text,-Second%20paragraph");
 }
 
+// When selecting multiple short non block nodes, ensure range is produced
+// correctly.
+TEST_F(TextFragmentSelectorGeneratorTest,
+       RangeSelector_RangeMultipleNonBlockNodes) {
+  // This ensures that a range selector is created instead of an exact text
+  // selector.
+  ScopedExactTextMaxCharsOverride force_range_generation(4);
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <span id='foo'>foo</span> <span id='bar'>bar</span>
+  )HTML");
+  Node* foo = GetDocument().getElementById("foo")->firstChild();
+  Node* bar = GetDocument().getElementById("bar")->firstChild();
+  const auto& selected_start = Position(foo, 0);
+  const auto& selected_end = Position(bar, 3);
+  ASSERT_EQ("foo bar", PlainText(EphemeralRange(selected_start, selected_end)));
+
+  VerifySelector(selected_start, selected_end, "foo,bar");
+}
+
 // When using all the selected text for the range is not enough for unique
 // match, context should be added, but only prefxi and no suffix is available.
 TEST_F(TextFragmentSelectorGeneratorTest,
@@ -660,104 +712,72 @@ TEST_F(TextFragmentSelectorGeneratorTest,
 
 // Check the case with long word for range end.
 TEST_F(TextFragmentSelectorGeneratorTest, RangeSelector_LongWord) {
+  ScopedExactTextMaxCharsOverride force_range_generation(4);
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <div>Test page</div>
-    <p id='first'>First paragraph text text text text text text text
-    text text text text text text text text text text text text text
-    text text text text text text text text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_text_and_last_text</p>
+    <p id='first'>First second third fourth fifth sixth text_text_text_text_text_text_text_text_text_text_text_text_text_and_last_text</p>
   )HTML");
   Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
   const auto& selected_start = Position(first_paragraph, 0);
-  const auto& selected_end = Position(first_paragraph, 312);
+  const auto& selected_end = Position(first_paragraph, 116);
   ASSERT_EQ(
-      "First paragraph text text text text text text text \
-text text text text text text text text text text text text text \
-text text text text text text text text_text_text_text_text_text_\
-text_text_text_text_text_text_text_text_text_text_text_text_text_\
+      "First second third fourth fifth sixth text_text_text_text_\
 text_text_text_text_text_text_text_text_text_and_last_text",
       PlainText(EphemeralRange(selected_start, selected_end)));
 
-  VerifySelector(
-      selected_start, selected_end,
-      "First%20paragraph%20text,text%20text%20text_text_text_text_text_text_"
-      "text_text_text_text_text_text_text_text_text_text_text_text_text_text_"
-      "text_text_text_text_text_text_text_text_and_last_text");
+  VerifySelector(selected_start, selected_end,
+                 "First%20second%20third,fifth%20sixth%20text_text_text_text_"
+                 "text_text_text_text_text_text_text_text_text_and_last_text");
 }
 
-// When range start and end overlap for the first candidate it should return
-// empty selector.
+// The generator tries to include at least 3 words from the start and end of a
+// range. This test ensures that the number of words used is reduced if there
+// are fewer than 6 words in the selection, preventing the start and end
+// overlaping.
 TEST_F(TextFragmentSelectorGeneratorTest,
-       RangeSelector_OverlapFailOnFirstAttenpt) {
+       RangeSelector_OverlapFailOnFirstAttempt) {
+  ScopedExactTextMaxCharsOverride force_range_generation(10);
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <div>Test page</div>
-    <p id='first'>First paragraph text
-  with_a_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word
-  with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word
-  with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word
-  with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word
-  with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word
-  end of first paragraph</p>
+    <p id='first'>one two three four five</p>
   )HTML");
   Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
-  const auto& selected_start = Position(first_paragraph, 23);
-  const auto& selected_end = Position(first_paragraph, 364);
-  ASSERT_EQ(
-      "with_a_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word \
-with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word \
-with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word \
-with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word \
-with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word",
-      PlainText(EphemeralRange(selected_start, selected_end)));
+  const auto& selected_start = Position(first_paragraph, 0);
+  const auto& selected_end = Position(first_paragraph, 23);
+  ASSERT_EQ("one two three four five",
+            PlainText(EphemeralRange(selected_start, selected_end)));
 
-  VerifySelectorFails(selected_start, selected_end,
-                      LinkGenerationError::kNoRange);
+  VerifySelector(selected_start, selected_end, "one%20two,four%20five");
 }
 
 // When range start and end overlap on second or later attempt it should stop
 // adding range and start adding context.
 TEST_F(TextFragmentSelectorGeneratorTest, RangeSelector_OverlapNeedsContext) {
+  ScopedExactTextMaxCharsOverride force_range_generation(30);
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <div>Test page</div>
-    <p id='first'>First paragraph text
-  1_with_a_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  2_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  3_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  4_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  5_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  end of first paragraph</p>
-  <p id='second'>Second paragraph text
-  1_with_a_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  2_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  3_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  4_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  5_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and
-  end of second paragraph</p>
+    <p id='first'>First paragraph text one two three four five six seven eight nine ten
+    end of first paragraph</p>
+    <p id='second'>Second paragraph text one two three four five six seven eight nine ten
+    end of second paragraph</p>
   )HTML");
   Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
-  const auto& selected_start = Position(first_paragraph, 23);
-  const auto& selected_end = Position(first_paragraph, 390);
-  ASSERT_EQ(
-      "1_with_a_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and \
-2_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and \
-3_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and \
-4_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word and \
-5_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word",
-      PlainText(EphemeralRange(selected_start, selected_end)));
+  const auto& selected_start = Position(first_paragraph, 21);
+  const auto& selected_end = Position(first_paragraph, 69);
+  ASSERT_EQ("one two three four five six seven eight nine ten",
+            PlainText(EphemeralRange(selected_start, selected_end)));
   VerifySelector(selected_start, selected_end,
-                 "First%20paragraph%20text-,\
-1_with_a_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word%20and%20\
-2_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word%20and,\
-and%204_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word%20and%20\
-5_with_another_veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery_long_word,-and%20end%20of");
+                 "First%20paragraph%20text-,one%20two%20three%20four%20five,"
+                 "six%20seven%20eight%20nine%20ten,-end%20of%20first");
 }
 
 // Selection should be autocompleted to contain full words.

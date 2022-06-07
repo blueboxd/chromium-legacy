@@ -27,8 +27,10 @@
 #include "printing/backend/print_backend.h"
 
 #if BUILDFLAG(IS_WIN)
+#include "base/win/win_util.h"
 #include "printing/backend/win_helper.h"
 #include "printing/printed_page_win.h"
+#include "ui/views/win/hwnd_util.h"
 #endif
 
 namespace printing {
@@ -57,6 +59,14 @@ size_t GetClientsCountForRemoteId(
   }
   return 0;
 }
+
+#if BUILDFLAG(IS_WIN)
+// TODO(crbug.com/809738):  Update for other platforms as they are made able
+// to support modal dialogs from OOP.
+uint32_t NativeViewToUint(gfx::NativeView view) {
+  return base::win::HandleToUint32(views::HWNDForNativeView(view));
+}
+#endif
 
 }  // namespace
 
@@ -95,16 +105,17 @@ void PrintBackendServiceManager::SetCrashKeys(const std::string& printer_name) {
 }
 
 uint32_t PrintBackendServiceManager::RegisterQueryClient() {
-  return RegisterClient(ClientType::kQuery, kEmptyPrinterName);
+  return *RegisterClient(ClientType::kQuery, kEmptyPrinterName);
 }
 
-uint32_t PrintBackendServiceManager::RegisterQueryWithUiClient() {
+absl::optional<uint32_t>
+PrintBackendServiceManager::RegisterQueryWithUiClient() {
   return RegisterClient(ClientType::kQueryWithUi, kEmptyPrinterName);
 }
 uint32_t PrintBackendServiceManager::RegisterPrintDocumentClient(
     const std::string& printer_name) {
   DCHECK_NE(printer_name, kEmptyPrinterName);
-  return RegisterClient(ClientType::kPrintDocument, printer_name);
+  return *RegisterClient(ClientType::kPrintDocument, printer_name);
 }
 
 void PrintBackendServiceManager::UnregisterClient(uint32_t id) {
@@ -241,6 +252,32 @@ void PrintBackendServiceManager::UseDefaultSettings(
                      base::Unretained(this), context));
 }
 
+#if BUILDFLAG(IS_WIN)
+void PrintBackendServiceManager::AskUserForSettings(
+    const std::string& printer_name,
+    gfx::NativeView parent_view,
+    int max_pages,
+    bool has_selection,
+    bool is_scripted,
+    mojom::PrintBackendService::AskUserForSettingsCallback callback) {
+  CallbackContext context;
+  auto& service = GetServiceAndCallbackContext(
+      printer_name, ClientType::kQueryWithUi, context);
+
+  SaveCallback(GetRemoteSavedAskUserForSettingsCallbacks(context.is_sandboxed),
+               context.remote_id, context.saved_callback_id,
+               std::move(callback));
+
+  SetCrashKeys(printer_name);
+
+  LogCallToRemote("AskUserForSettings", context);
+  service->AskUserForSettings(
+      NativeViewToUint(parent_view), max_pages, has_selection, is_scripted,
+      base::BindOnce(&PrintBackendServiceManager::OnDidAskUserForSettings,
+                     base::Unretained(this), context));
+}
+#endif  // BUILDFLAG(IS_WIN)
+
 void PrintBackendServiceManager::UpdatePrintSettings(
     const std::string& printer_name,
     base::flat_map<std::string, base::Value> job_settings,
@@ -316,6 +353,29 @@ void PrintBackendServiceManager::RenderPrintedPage(
                      base::Unretained(this), context));
 }
 #endif  // BUILDFLAG(IS_WIN)
+
+void PrintBackendServiceManager::RenderPrintedDocument(
+    const std::string& printer_name,
+    int document_cookie,
+    mojom::MetafileDataType data_type,
+    base::ReadOnlySharedMemoryRegion serialized_data,
+    mojom::PrintBackendService::RenderPrintedDocumentCallback callback) {
+  CallbackContext context;
+  auto& service = GetServiceAndCallbackContext(
+      printer_name, ClientType::kPrintDocument, context);
+
+  SaveCallback(
+      GetRemoteSavedRenderPrintedDocumentCallbacks(context.is_sandboxed),
+      context.remote_id, context.saved_callback_id, std::move(callback));
+
+  SetCrashKeys(printer_name);
+
+  LogCallToRemote("RenderPrintedDocument", context);
+  service->RenderPrintedDocument(
+      document_cookie, data_type, std::move(serialized_data),
+      base::BindOnce(&PrintBackendServiceManager::OnDidRenderPrintedDocument,
+                     base::Unretained(this), context));
+}
 
 void PrintBackendServiceManager::DocumentDone(
     const std::string& printer_name,
@@ -407,7 +467,7 @@ std::string PrintBackendServiceManager::GetRemoteIdForPrinterName(
 #endif
 }
 
-uint32_t PrintBackendServiceManager::RegisterClient(
+absl::optional<uint32_t> PrintBackendServiceManager::RegisterClient(
     ClientType client_type,
     const std::string& printer_name) {
   uint32_t client_id = ++last_client_id_;
@@ -421,7 +481,8 @@ uint32_t PrintBackendServiceManager::RegisterClient(
       break;
     case ClientType::kQueryWithUi:
 #if !BUILDFLAG(IS_LINUX)
-      DCHECK_EQ(query_with_ui_clients_.size(), 0u);
+      if (!query_with_ui_clients_.empty())
+        return absl::nullopt;
 #endif
       query_with_ui_clients_.insert(client_id);
       break;
@@ -817,6 +878,11 @@ void PrintBackendServiceManager::OnRemoteDisconnected(
   RunSavedCallbacksStructResult(
       GetRemoteSavedUseDefaultSettingsCallbacks(sandboxed), remote_id,
       mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
+#if BUILDFLAG(IS_WIN)
+  RunSavedCallbacksStructResult(
+      GetRemoteSavedAskUserForSettingsCallbacks(sandboxed), remote_id,
+      mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
+#endif
   RunSavedCallbacksStructResult(
       GetRemoteSavedUpdatePrintSettingsCallbacks(sandboxed), remote_id,
       mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
@@ -826,6 +892,9 @@ void PrintBackendServiceManager::OnRemoteDisconnected(
   RunSavedCallbacksResult(GetRemoteSavedRenderPrintedPageCallbacks(sandboxed),
                           remote_id, mojom::ResultCode::kFailed);
 #endif
+  RunSavedCallbacksResult(
+      GetRemoteSavedRenderPrintedDocumentCallbacks(sandboxed), remote_id,
+      mojom::ResultCode::kFailed);
   RunSavedCallbacksResult(GetRemoteSavedDocumentDoneCallbacks(sandboxed),
                           remote_id, mojom::ResultCode::kFailed);
 }
@@ -868,6 +937,15 @@ PrintBackendServiceManager::GetRemoteSavedUseDefaultSettingsCallbacks(
                    : unsandboxed_saved_use_default_settings_callbacks_;
 }
 
+#if BUILDFLAG(IS_WIN)
+PrintBackendServiceManager::RemoteSavedAskUserForSettingsCallbacks&
+PrintBackendServiceManager::GetRemoteSavedAskUserForSettingsCallbacks(
+    bool sandboxed) {
+  return sandboxed ? sandboxed_saved_ask_user_for_settings_callbacks_
+                   : unsandboxed_saved_ask_user_for_settings_callbacks_;
+}
+#endif
+
 PrintBackendServiceManager::RemoteSavedUpdatePrintSettingsCallbacks&
 PrintBackendServiceManager::GetRemoteSavedUpdatePrintSettingsCallbacks(
     bool sandboxed) {
@@ -890,6 +968,13 @@ PrintBackendServiceManager::GetRemoteSavedRenderPrintedPageCallbacks(
                    : unsandboxed_saved_render_printed_page_callbacks_;
 }
 #endif
+
+PrintBackendServiceManager::RemoteSavedRenderPrintedDocumentCallbacks&
+PrintBackendServiceManager::GetRemoteSavedRenderPrintedDocumentCallbacks(
+    bool sandboxed) {
+  return sandboxed ? sandboxed_saved_render_printed_document_callbacks_
+                   : unsandboxed_saved_render_printed_document_callbacks_;
+}
 
 PrintBackendServiceManager::RemoteSavedDocumentDoneCallbacks&
 PrintBackendServiceManager::GetRemoteSavedDocumentDoneCallbacks(
@@ -984,6 +1069,17 @@ void PrintBackendServiceManager::OnDidUseDefaultSettings(
       context.remote_id, context.saved_callback_id, std::move(settings));
 }
 
+#if BUILDFLAG(IS_WIN)
+void PrintBackendServiceManager::OnDidAskUserForSettings(
+    const CallbackContext& context,
+    mojom::PrintSettingsResultPtr settings) {
+  LogCallbackFromRemote("AskUserForSettings", context);
+  ServiceCallbackDone(
+      GetRemoteSavedAskUserForSettingsCallbacks(context.is_sandboxed),
+      context.remote_id, context.saved_callback_id, std::move(settings));
+}
+#endif  // BUILDFLAG(IS_WIN)
+
 void PrintBackendServiceManager::OnDidUpdatePrintSettings(
     const CallbackContext& context,
     mojom::PrintSettingsResultPtr settings) {
@@ -1013,6 +1109,14 @@ void PrintBackendServiceManager::OnDidRenderPrintedPage(
 }
 #endif
 
+void PrintBackendServiceManager::OnDidRenderPrintedDocument(
+    const CallbackContext& context,
+    mojom::ResultCode result) {
+  LogCallbackFromRemote("RenderPrintedDocument", context);
+  ServiceCallbackDone(
+      GetRemoteSavedRenderPrintedDocumentCallbacks(context.is_sandboxed),
+      context.remote_id, context.saved_callback_id, result);
+}
 void PrintBackendServiceManager::OnDidDocumentDone(
     const CallbackContext& context,
     mojom::ResultCode result) {

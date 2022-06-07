@@ -6,14 +6,14 @@
 
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/secure_message_delegate.h"
 #include "ash/services/device_sync/cryptauth_client_impl.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "crypto/sha2.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -242,4 +242,4 @@ void CryptAuthEnrollerImpl::OnFinishEnrollmentFailure(
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

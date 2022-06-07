@@ -45,16 +45,12 @@
         <item name="elevationOverlayColor">@color/baseline_neutral_600</item>
         <item name="elevationOverlayAccentColor">?attr/colorPrimary</item>
 
-        <!-- Custom semantic names -->
-        <!-- Supports dynamic colors now. -->
-        <item name="default_bg_color_dynamic">?attr/colorSurface</item>
-        <item name="divider_line_bg_color_dynamic">?attr/colorSurfaceVariant</item>
-
         <!-- Baseline values for the theme attributes in ThemeOverlay.DynamicButtons, used to
              prevent crashes when the DynamicColorCTAAndroid flag is disabled. -->
         <item name="globalFilledButtonBgColor">@color/filled_button_bg</item>
         <item name="globalFilledButtonTextColor">@color/default_text_color_on_accent1_baseline_list</item>
         <item name="globalTextButtonTextColor">@color/blue_when_enabled</item>
+        <item name="globalOutlinedButtonBorderColor">@color/divider_line_bg_color_baseline</item>
         <item name="globalLinkTextColor">@color/default_text_color_link_baseline</item>
         <item name="globalClickableSpanColor">@color/default_text_color_blue_baseline</item>
     </style>
@@ -137,24 +133,21 @@
         <item name="elevationOverlayColor">@color/baseline_neutral_600</item>
         <item name="elevationOverlayAccentColor">?attr/colorPrimary</item>
 
-        <!-- Custom semantic names -->
-        <!-- Supports dynamic colors now. -->
-        <item name="default_bg_color_dynamic">?attr/colorSurface</item>
-        <item name="divider_line_bg_color_dynamic">?attr/colorSurfaceVariant</item>
-
         <!-- Baseline values for the theme attributes in ThemeOverlay.DynamicButtons, used to
              prevent crashes when the DynamicColorCTAAndroid flag is disabled. -->
         <item name="globalFilledButtonBgColor">@color/filled_button_bg</item>
         <item name="globalFilledButtonTextColor">@color/default_text_color_on_accent1_baseline_list</item>
         <item name="globalTextButtonTextColor">@color/blue_when_enabled</item>
+        <item name="globalOutlinedButtonBorderColor">@color/divider_line_bg_color_baseline</item>
         <item name="globalLinkTextColor">@color/default_text_color_link_baseline</item>
         <item name="globalClickableSpanColor">@color/default_text_color_blue_baseline</item>
     </style>
     <!-- Overridden by night mode. -->
     <style name="Theme.BrowserUI.DialogWhenLarge.DayNight" parent="Theme.BrowserUI.DialogWhenLarge"/>
 
-    <!-- Unlike |Theme.Chromium.AlertDialog|, this is a complete theme that can be used as an
-         activity theme on its own. This should be kept in sync with |Theme.Chromium.AlertDialog|.
+    <!-- Unlike |ThemeOverlay.BrowserUI.AlertDialog|, this is a complete theme that can be used as
+         an activity theme on its own. This should be kept in sync with
+         |ThemeOverlay.BrowserUI.AlertDialog|.
          -->
     <style name="Theme.BrowserUI.AlertDialog.NoActionBar"
         parent="Theme.MaterialComponents.DayNight.Dialog.Alert">

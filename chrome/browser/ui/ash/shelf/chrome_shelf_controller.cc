@@ -31,7 +31,6 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
@@ -104,6 +103,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
+#include "net/base/escape.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -841,17 +841,23 @@ void ChromeShelfController::DoShowAppInfoFlow(Profile* profile,
 
   // Apps that are not in the App Service may call this function.
   // E.g. extensions, apps that are using their platform specific IDs.
-  if (app_type == apps::mojom::AppType::kUnknown) {
+  if (app_type == apps::AppType::kUnknown) {
     return;
   }
 
-  if (app_type == apps::mojom::AppType::kWeb ||
-      app_type == apps::mojom::AppType::kSystemWeb) {
+  if (app_type == apps::AppType::kWeb ||
+      app_type == apps::AppType::kSystemWeb) {
     chrome::ShowAppManagementPage(
         profile, app_id,
         ash::settings::AppManagementEntryPoint::kShelfContextMenuAppInfoWebApp);
   } else {
-    chrome::ShowAppManagementPage(profile, app_id,
+    // Normally app ids would only contain alphanumerics, but standalone
+    // browser extension app uses '#' as a delimiter.
+    std::string escaped_id =
+        app_type == apps::AppType::kStandaloneBrowserChromeApp
+            ? net::EscapeAllExceptUnreserved(app_id)
+            : app_id;
+    chrome::ShowAppManagementPage(profile, escaped_id,
                                   ash::settings::AppManagementEntryPoint::
                                       kShelfContextMenuAppInfoChromeApp);
   }
@@ -1497,14 +1503,10 @@ void ChromeShelfController::AttachProfile(Profile* profile_to_attach) {
       prefs::kPolicyPinnedLauncherApps,
       base::BindRepeating(&ChromeShelfController::UpdatePinnedAppsFromSync,
                           base::Unretained(this)));
-  // Handling of prefs::kArcEnabled change should be called deferred to avoid
-  // race condition when OnAppUninstalledPrepared for ARC apps is called after
-  // UpdatePinnedAppsFromSync.
   pref_change_registrar_.Add(
       arc::prefs::kArcEnabled,
-      base::BindRepeating(
-          &ChromeShelfController::ScheduleUpdatePinnedAppsFromSync,
-          base::Unretained(this)));
+      base::BindRepeating(&ChromeShelfController::UpdatePinnedAppsFromSync,
+                          base::Unretained(this)));
 
   app_list::AppListSyncableService* app_list_syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile());

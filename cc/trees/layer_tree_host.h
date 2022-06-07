@@ -595,11 +595,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return thread_unsafe_commit_state().mutator_host;
   }
 
-  // Overrides the value specified in LayerTreeSettings. Providing an empty
-  // value results in using the value from LayerTreeSettings.
-  void SetPriorityCutoffOverride(
-      absl::optional<gpu::MemoryAllocation::PriorityCutoff> priority_cutoff);
-
   void SetPropertyTreesForTesting(const PropertyTrees* property_trees);
 
   void SetNeedsDisplayOnAllLayers();
@@ -667,9 +662,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void RegisterElement(ElementId element_id,
                        Layer* layer);
   void UnregisterElement(ElementId element_id);
-
-  // For layer list mode only.
-  void UpdateActiveElements();
 
   void SetElementIdsForTesting();
   void BuildPropertyTreesForTesting();

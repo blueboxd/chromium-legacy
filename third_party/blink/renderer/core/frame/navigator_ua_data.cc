@@ -15,6 +15,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_ua_data_values.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/dactyloscoper.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
@@ -117,9 +119,32 @@ bool NavigatorUAData::mobile() const {
 
 const HeapVector<Member<NavigatorUABrandVersion>>& NavigatorUAData::brands()
     const {
-  if (GetExecutionContext()) {
+  constexpr auto identifiable_surface = IdentifiableSurface::FromTypeAndToken(
+      IdentifiableSurface::Type::kWebFeature,
+      WebFeature::kNavigatorUAData_Brands);
+
+  ExecutionContext* context = GetExecutionContext();
+  if (context) {
+    // Record IdentifiabilityStudy metrics if the client is in the study.
+    if (UNLIKELY(IdentifiabilityStudySettings::Get()->ShouldSampleSurface(
+            identifiable_surface))) {
+      IdentifiableTokenBuilder token_builder;
+      for (const auto& brand : brand_set_) {
+        token_builder.AddValue(brand->hasBrand());
+        if (brand->hasBrand())
+          token_builder.AddAtomic(brand->brand().Utf8());
+        token_builder.AddValue(brand->hasVersion());
+        if (brand->hasVersion())
+          token_builder.AddAtomic(brand->version().Utf8());
+      }
+      IdentifiabilityMetricBuilder(context->UkmSourceID())
+          .Add(identifiable_surface, token_builder.GetToken())
+          .Record(context->UkmRecorder());
+    }
+
     return brand_set_;
   }
+
   return empty_brand_set_;
 }
 
@@ -140,24 +165,31 @@ ScriptPromise NavigatorUAData::getHighEntropyValues(
   DCHECK(execution_context);
 
   bool record_identifiability =
-      IdentifiabilityStudySettings::Get()->ShouldSample(
+      IdentifiabilityStudySettings::Get()->ShouldSampleType(
           IdentifiableSurface::Type::kNavigatorUAData_GetHighEntropyValues);
   UADataValues* values = MakeGarbageCollected<UADataValues>();
+  // TODO: It'd be faster to compare hint when turning |hints| into an
+  // AtomicString vector and turning the const string literals |hint| into
+  // AtomicStrings as well.
+
   // According to
   // https://wicg.github.io/ua-client-hints/#getHighEntropyValues, brands,
   // mobile and platform should be included regardless of whether they were
   // asked for.
 
-  // TODO: It'd be faster to compare hint when turning |hints| into an
-  // AtomicString vector and turning the const string literals |hint| into
-  // AtomicStrings as well.
-  for (const String& hint : hints) {
-    values->setBrands(brand_set_);
-    values->setMobile(is_mobile_);
-    values->setPlatform(platform_);
-    MaybeRecordMetric(record_identifiability, hint, platform_,
-                      execution_context);
+  // Use `brands()` and not `brand_set_` directly since the former also
+  // records IdentifiabilityStudy metrics.
+  values->setBrands(brands());
+  values->setMobile(is_mobile_);
+  values->setPlatform(platform_);
+  // Record IdentifiabilityStudy metrics for `mobile()` and `platform()` (the
+  // `brands()` part is already recorded inside that function).
+  Dactyloscoper::RecordDirectSurface(
+      GetExecutionContext(), WebFeature::kNavigatorUAData_Mobile, mobile());
+  Dactyloscoper::RecordDirectSurface(
+      GetExecutionContext(), WebFeature::kNavigatorUAData_Platform, platform());
 
+  for (const String& hint : hints) {
     if (hint == "platformVersion") {
       values->setPlatformVersion(platform_version_);
       MaybeRecordMetric(record_identifiability, hint, platform_version_,
@@ -201,6 +233,12 @@ ScriptValue NavigatorUAData::toJSON(ScriptState* script_state) const {
   V8ObjectBuilder builder(script_state);
   builder.Add("brands", brands());
   builder.Add("mobile", mobile());
+
+  // Record IdentifiabilityStudy metrics for `mobile()` (the `brands()` part is
+  // already recorded inside that function).
+  Dactyloscoper::RecordDirectSurface(
+      GetExecutionContext(), WebFeature::kNavigatorUAData_Mobile, mobile());
+
   return builder.GetScriptValue();
 }
 

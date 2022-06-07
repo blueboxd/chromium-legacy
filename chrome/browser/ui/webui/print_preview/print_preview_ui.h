@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/services/printing/public/mojom/pdf_nup_converter.mojom.h"
 #include "components/printing/common/print.mojom.h"
@@ -84,7 +85,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
 
   const std::u16string& initiator_title() const { return initiator_title_; }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool source_is_arc() const { return source_is_arc_; }
+#endif
 
   bool source_is_modifiable() const { return source_is_modifiable_; }
 
@@ -261,8 +264,10 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   // Weak pointer to the WebUI handler.
   const raw_ptr<PrintPreviewHandler> handler_;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Indicates whether the source document is from ARC.
   bool source_is_arc_ = false;
+#endif
 
   // Indicates whether the source document can be modified.
   bool source_is_modifiable_ = true;

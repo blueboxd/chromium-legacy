@@ -4632,9 +4632,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "precommit_args": [
-          "--gtest_filter=-*"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9922,9 +9919,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "precommit_args": [
-          "--gtest_filter=-*"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12171,7 +12165,8 @@
   },
   "ios-catalyst": {
     "additional_compile_targets": [
-      "form_activity_tab_helper_fuzzer"
+      "form_activity_tab_helper_fuzzer",
+      "ios/chrome/app:chrome"
     ]
   },
   "ios-device": {
@@ -12202,7 +12197,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 14.4",
+        "name": "absl_hardening_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12234,8 +12229,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
       },
       {
         "args": [
@@ -12255,7 +12249,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 15.2",
+        "name": "absl_hardening_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12287,8 +12281,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
       },
       {
         "args": [
@@ -12308,7 +12301,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPad Air 2 14.4",
+        "name": "base_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12340,8 +12333,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -12361,7 +12353,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPad Air 2 15.2",
+        "name": "base_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12393,8 +12385,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -12414,7 +12405,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s 14.4",
+        "name": "base_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12446,8 +12437,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -12467,7 +12457,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s 15.2",
+        "name": "base_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12499,8 +12489,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -12520,7 +12509,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s Plus 14.4",
+        "name": "base_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12552,8 +12541,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -12573,7 +12561,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s Plus 15.2",
+        "name": "base_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12605,8 +12593,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -12626,7 +12613,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone SE (1st generation) 14.4",
+        "name": "base_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12658,8 +12645,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -12679,7 +12665,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone SE (1st generation) 15.2",
+        "name": "base_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12711,8 +12697,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -12732,7 +12717,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 14.4",
+        "name": "boringssl_crypto_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12764,8 +12749,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
       },
       {
         "args": [
@@ -12785,7 +12769,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 15.2",
+        "name": "boringssl_crypto_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12817,8 +12801,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
       },
       {
         "args": [
@@ -12838,7 +12821,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 14.4",
+        "name": "boringssl_ssl_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12870,8 +12853,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
       },
       {
         "args": [
@@ -12891,7 +12873,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 15.2",
+        "name": "boringssl_ssl_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12923,8 +12905,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
       },
       {
         "args": [
@@ -12944,7 +12925,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPad Air 2 14.4",
+        "name": "components_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12976,8 +12957,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -12997,7 +12977,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPad Air 2 15.2",
+        "name": "components_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13029,8 +13009,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -13050,7 +13029,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s 14.4",
+        "name": "components_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13082,8 +13061,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -13103,7 +13081,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s 15.2",
+        "name": "components_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13135,8 +13113,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -13156,7 +13133,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s Plus 14.4",
+        "name": "components_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13188,8 +13165,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -13209,7 +13185,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s Plus 15.2",
+        "name": "components_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13241,8 +13217,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -13262,7 +13237,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone SE (1st generation) 14.4",
+        "name": "components_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13294,8 +13269,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -13315,7 +13289,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone SE (1st generation) 15.2",
+        "name": "components_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13347,8 +13321,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -13368,7 +13341,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 14.4",
+        "name": "crypto_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13400,8 +13373,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://crypto:crypto_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://crypto:crypto_unittests/"
       },
       {
         "args": [
@@ -13421,7 +13393,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 15.2",
+        "name": "crypto_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13453,8 +13425,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://crypto:crypto_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://crypto:crypto_unittests/"
       },
       {
         "args": [
@@ -13474,7 +13445,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPad Air 2 14.4",
+        "name": "gfx_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13506,8 +13477,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -13527,7 +13497,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPad Air 2 15.2",
+        "name": "gfx_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13559,8 +13529,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -13580,7 +13549,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s 14.4",
+        "name": "gfx_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13612,8 +13581,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -13633,7 +13601,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s 15.2",
+        "name": "gfx_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13665,8 +13633,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -13686,7 +13653,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s Plus 14.4",
+        "name": "gfx_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13718,8 +13685,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -13739,7 +13705,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s Plus 15.2",
+        "name": "gfx_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13771,8 +13737,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -13792,7 +13757,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone SE (1st generation) 14.4",
+        "name": "gfx_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13824,8 +13789,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -13845,7 +13809,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone SE (1st generation) 15.2",
+        "name": "gfx_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13877,8 +13841,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -13898,7 +13861,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 14.4",
+        "name": "google_apis_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13930,8 +13893,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
         "args": [
@@ -13951,7 +13913,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 15.2",
+        "name": "google_apis_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13983,8 +13945,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
         "args": [
@@ -14005,7 +13966,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14038,8 +13999,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -14060,7 +14020,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 15.2",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14093,8 +14053,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -14115,7 +14074,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14145,10 +14104,10 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -14169,7 +14128,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 15.2",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14199,10 +14158,10 @@
               "path": "Runtime-ios-15.2"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -14223,7 +14182,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14256,8 +14215,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -14278,7 +14236,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 15.2",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14311,8 +14269,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -14332,7 +14289,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPad Air 2 14.4",
+        "name": "ios_chrome_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14364,8 +14321,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -14385,7 +14341,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPad Air 2 15.2",
+        "name": "ios_chrome_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14417,8 +14373,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -14438,7 +14393,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s 14.4",
+        "name": "ios_chrome_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14470,8 +14425,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -14491,7 +14445,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s 15.2",
+        "name": "ios_chrome_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14523,8 +14477,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -14544,7 +14497,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s Plus 14.4",
+        "name": "ios_chrome_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14576,8 +14529,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -14597,7 +14549,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s Plus 15.2",
+        "name": "ios_chrome_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14629,8 +14581,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -14650,7 +14601,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone SE (1st generation) 14.4",
+        "name": "ios_chrome_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14682,8 +14633,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -14703,7 +14653,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone SE (1st generation) 15.2",
+        "name": "ios_chrome_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14735,8 +14685,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
       },
       {
         "args": [
@@ -14756,7 +14705,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests_iPhone 6s 14.4",
+        "name": "ios_components_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14788,8 +14737,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/components:ios_components_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/components:ios_components_unittests/"
       },
       {
         "args": [
@@ -14809,7 +14757,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests_iPhone 6s 15.2",
+        "name": "ios_components_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14841,8 +14789,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/components:ios_components_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/components:ios_components_unittests/"
       },
       {
         "args": [
@@ -14862,7 +14809,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 14.4",
+        "name": "ios_net_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14895,8 +14842,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/net:ios_net_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/net:ios_net_unittests/"
       },
       {
         "args": [
@@ -14916,7 +14862,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 15.2",
+        "name": "ios_net_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14949,8 +14895,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/net:ios_net_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/net:ios_net_unittests/"
       },
       {
         "args": [
@@ -14970,7 +14915,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests_iPhone 6s 14.4",
+        "name": "ios_remoting_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15002,8 +14947,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/"
       },
       {
         "args": [
@@ -15023,7 +14967,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests_iPhone 6s 15.2",
+        "name": "ios_remoting_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15055,8 +14999,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/"
       },
       {
         "args": [
@@ -15076,7 +15019,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests_iPhone 6s 14.4",
+        "name": "ios_testing_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15108,8 +15051,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/"
       },
       {
         "args": [
@@ -15129,7 +15071,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests_iPhone 6s 15.2",
+        "name": "ios_testing_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15161,8 +15103,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/"
       },
       {
         "args": [
@@ -15182,7 +15123,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPad Air 2 14.4",
+        "name": "ios_web_inttests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15214,8 +15155,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -15235,7 +15175,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPad Air 2 15.2",
+        "name": "ios_web_inttests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15267,8 +15207,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -15288,7 +15227,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s 14.4",
+        "name": "ios_web_inttests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15320,8 +15259,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -15341,7 +15279,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s 15.2",
+        "name": "ios_web_inttests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15373,8 +15311,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -15394,7 +15331,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s Plus 14.4",
+        "name": "ios_web_inttests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15426,8 +15363,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -15447,7 +15383,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s Plus 15.2",
+        "name": "ios_web_inttests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15479,8 +15415,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -15500,7 +15435,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_inttests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15532,8 +15467,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -15553,7 +15487,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone SE (1st generation) 15.2",
+        "name": "ios_web_inttests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15585,8 +15519,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
       },
       {
         "args": [
@@ -15607,7 +15540,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15639,8 +15572,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -15661,7 +15593,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s 15.2",
+        "name": "ios_web_shell_eg2tests_module iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15693,8 +15625,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -15714,7 +15645,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPad Air 2 14.4",
+        "name": "ios_web_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15746,8 +15677,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -15767,7 +15697,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPad Air 2 15.2",
+        "name": "ios_web_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15799,8 +15729,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -15820,7 +15749,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s 14.4",
+        "name": "ios_web_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15852,8 +15781,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -15873,7 +15801,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s 15.2",
+        "name": "ios_web_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15905,8 +15833,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -15926,7 +15853,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s Plus 14.4",
+        "name": "ios_web_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15958,8 +15885,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -15979,7 +15905,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s Plus 15.2",
+        "name": "ios_web_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16011,8 +15937,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -16032,7 +15957,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16064,8 +15989,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -16085,7 +16009,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone SE (1st generation) 15.2",
+        "name": "ios_web_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16117,8 +16041,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
       },
       {
         "args": [
@@ -16138,7 +16061,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPad Air 2 14.4",
+        "name": "ios_web_view_inttests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16170,8 +16093,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -16191,7 +16113,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPad Air 2 15.2",
+        "name": "ios_web_view_inttests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16223,8 +16145,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -16244,7 +16165,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s 14.4",
+        "name": "ios_web_view_inttests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16276,8 +16197,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -16297,7 +16217,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s 15.2",
+        "name": "ios_web_view_inttests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16329,8 +16249,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -16350,7 +16269,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s Plus 14.4",
+        "name": "ios_web_view_inttests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16382,8 +16301,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -16403,7 +16321,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s Plus 15.2",
+        "name": "ios_web_view_inttests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16435,8 +16353,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -16456,7 +16373,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_view_inttests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16488,8 +16405,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -16509,7 +16425,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone SE (1st generation) 15.2",
+        "name": "ios_web_view_inttests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16541,8 +16457,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
       },
       {
         "args": [
@@ -16562,7 +16477,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPad Air 2 14.4",
+        "name": "ios_web_view_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16594,8 +16509,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
       },
       {
         "args": [
@@ -16615,7 +16529,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPad Air 2 15.2",
+        "name": "ios_web_view_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16647,8 +16561,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
       },
       {
         "args": [
@@ -16668,7 +16581,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone 6s 14.4",
+        "name": "ios_web_view_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16700,8 +16613,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
       },
       {
         "args": [
@@ -16721,7 +16633,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone 6s 15.2",
+        "name": "ios_web_view_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16753,8 +16665,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
       },
       {
         "args": [
@@ -16774,7 +16685,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone 6s Plus 14.4",
+        "name": "ios_web_view_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16806,8 +16717,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
       },
       {
         "args": [
@@ -16827,7 +16737,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone 6s Plus 15.2",
+        "name": "ios_web_view_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16859,8 +16769,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
       },
       {
         "args": [
@@ -16880,7 +16789,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_view_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16912,8 +16821,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
       },
       {
         "args": [
@@ -16933,7 +16841,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone SE (1st generation) 15.2",
+        "name": "ios_web_view_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16965,8 +16873,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
       },
       {
         "args": [
@@ -16986,7 +16893,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 14.4",
+        "name": "net_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17018,8 +16925,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://net:net_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://net:net_unittests/"
       },
       {
         "args": [
@@ -17039,7 +16945,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 15.2",
+        "name": "net_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17071,8 +16977,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://net:net_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://net:net_unittests/"
       },
       {
         "args": [
@@ -17092,7 +16997,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests_iPhone 6s 14.4",
+        "name": "services_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17124,8 +17029,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://services:services_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://services:services_unittests/"
       },
       {
         "args": [
@@ -17145,7 +17049,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests_iPhone 6s 15.2",
+        "name": "services_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17177,8 +17081,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://services:services_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://services:services_unittests/"
       },
       {
         "args": [
@@ -17198,7 +17101,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPad Air 2 14.4",
+        "name": "skia_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17230,8 +17133,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -17251,7 +17153,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPad Air 2 15.2",
+        "name": "skia_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17283,8 +17185,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -17304,7 +17205,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s 14.4",
+        "name": "skia_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17336,8 +17237,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -17357,7 +17257,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s 15.2",
+        "name": "skia_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17389,8 +17289,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -17410,7 +17309,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s Plus 14.4",
+        "name": "skia_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17442,8 +17341,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -17463,7 +17361,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s Plus 15.2",
+        "name": "skia_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17495,8 +17393,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -17516,7 +17413,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone SE (1st generation) 14.4",
+        "name": "skia_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17548,8 +17445,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -17569,7 +17465,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone SE (1st generation) 15.2",
+        "name": "skia_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17601,8 +17497,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -17622,7 +17517,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 14.4",
+        "name": "sql_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17654,8 +17549,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://sql:sql_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
         "args": [
@@ -17675,7 +17569,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 15.2",
+        "name": "sql_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17707,8 +17601,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://sql:sql_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
         "args": [
@@ -17728,7 +17621,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPad Air 2 14.4",
+        "name": "ui_base_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17760,8 +17653,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -17781,7 +17673,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPad Air 2 15.2",
+        "name": "ui_base_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17813,8 +17705,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -17834,7 +17725,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s 14.4",
+        "name": "ui_base_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17866,8 +17757,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -17887,7 +17777,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s 15.2",
+        "name": "ui_base_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17919,8 +17809,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -17940,7 +17829,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s Plus 14.4",
+        "name": "ui_base_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17972,8 +17861,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -17993,7 +17881,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s Plus 15.2",
+        "name": "ui_base_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18025,8 +17913,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone 6s Plus 15.2"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -18046,7 +17933,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone SE (1st generation) 14.4",
+        "name": "ui_base_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18078,8 +17965,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -18099,7 +17985,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone SE (1st generation) 15.2",
+        "name": "ui_base_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18131,8 +18017,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone SE (1st generation) 15.2"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -18152,7 +18037,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 14.4",
+        "name": "url_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18184,8 +18069,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://url:url_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://url:url_unittests/"
       },
       {
         "args": [
@@ -18205,7 +18089,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 15.2",
+        "name": "url_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18237,8 +18121,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://url:url_unittests/",
-        "variant_id": "iPhone 6s 15.2"
+        "test_id_prefix": "ninja://url:url_unittests/"
       }
     ]
   },
@@ -18266,7 +18149,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18298,8 +18181,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/"
       },
       {
         "args": [
@@ -18320,7 +18202,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18352,8 +18234,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/"
       },
       {
         "args": [
@@ -18374,7 +18255,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18406,8 +18287,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/"
       },
       {
         "args": [
@@ -18428,7 +18308,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18460,8 +18340,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/"
       },
       {
         "args": [
@@ -18482,7 +18361,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 14.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18514,8 +18393,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPhone X 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/"
       },
       {
         "args": [
@@ -18536,7 +18414,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 15.2",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18568,8 +18446,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPhone X 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/"
       },
       {
         "args": [
@@ -18590,7 +18467,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18623,8 +18500,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -18645,7 +18521,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_integration_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18678,8 +18554,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -18700,7 +18575,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18733,8 +18608,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -18755,7 +18629,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18788,8 +18662,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -18810,7 +18683,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_settings_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18843,8 +18716,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/"
       },
       {
         "args": [
@@ -18865,7 +18737,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_settings_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18898,8 +18770,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/"
       },
       {
         "args": [
@@ -18920,7 +18791,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_settings_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18953,8 +18824,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/"
       },
       {
         "args": [
@@ -18975,7 +18845,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_settings_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19008,8 +18878,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/"
       },
       {
         "args": [
@@ -19030,7 +18899,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone X 14.4",
+        "name": "ios_chrome_settings_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19063,8 +18932,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPhone X 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/"
       },
       {
         "args": [
@@ -19085,7 +18953,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone X 15.2",
+        "name": "ios_chrome_settings_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19118,8 +18986,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPhone X 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/"
       },
       {
         "args": [
@@ -19140,7 +19007,223 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPad Air 2 14.4",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13c100",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_14_4",
+              "path": "Runtime-ios-14.4"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air 2",
+          "--version",
+          "15.2",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13c100",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_signin_eg2tests_module iPad Air 2 15.2",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13c100",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 7",
+          "--version",
+          "14.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13c100",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_signin_eg2tests_module iPhone 7 14.4",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13c100",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_14_4",
+              "path": "Runtime-ios-14.4"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 7",
+          "--version",
+          "15.2",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13c100",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_signin_eg2tests_module iPhone 7 15.2",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13c100",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air 2",
+          "--version",
+          "14.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13c100",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_smoke_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19172,8 +19255,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/"
       },
       {
         "args": [
@@ -19188,13 +19270,13 @@
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_signin_eg2tests_module",
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_smoke_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19226,8 +19308,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/"
       },
       {
         "args": [
@@ -19242,13 +19323,13 @@
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_signin_eg2tests_module",
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19280,8 +19361,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/"
       },
       {
         "args": [
@@ -19296,13 +19376,13 @@
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_signin_eg2tests_module",
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19334,224 +19414,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "14.4",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "13c100",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_smoke_eg2tests_module",
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_smoke_eg2tests_module_iPad Air 2 14.4",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_13c100",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_14_4",
-              "path": "Runtime-ios-14.4"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "15.2",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "13c100",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_smoke_eg2tests_module",
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_smoke_eg2tests_module_iPad Air 2 15.2",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_13c100",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_15_2",
-              "path": "Runtime-ios-15.2"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPhone 7",
-          "--version",
-          "14.4",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "13c100",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_smoke_eg2tests_module",
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone 7 14.4",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_13c100",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_14_4",
-              "path": "Runtime-ios-14.4"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPhone 7",
-          "--version",
-          "15.2",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "13c100",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_smoke_eg2tests_module",
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone 7 15.2",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_13c100",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_15_2",
-              "path": "Runtime-ios-15.2"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/"
       },
       {
         "args": [
@@ -19572,7 +19435,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone X 14.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19604,8 +19467,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPhone X 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/"
       },
       {
         "args": [
@@ -19626,7 +19488,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone X 15.2",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19658,8 +19520,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPhone X 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/"
       },
       {
         "args": [
@@ -19680,7 +19541,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19713,8 +19574,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -19735,7 +19595,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_ui_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19768,8 +19628,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -19790,7 +19649,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19823,8 +19682,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -19845,7 +19703,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19878,8 +19736,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -19900,7 +19757,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_web_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19932,8 +19789,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/"
       },
       {
         "args": [
@@ -19954,7 +19810,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_web_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19986,8 +19842,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/"
       },
       {
         "args": [
@@ -20008,7 +19863,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_web_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20040,8 +19895,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/"
       },
       {
         "args": [
@@ -20062,7 +19916,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_web_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20094,8 +19948,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/"
       },
       {
         "args": [
@@ -20116,7 +19969,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone X 14.4",
+        "name": "ios_chrome_web_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20148,8 +20001,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPhone X 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/"
       },
       {
         "args": [
@@ -20170,7 +20022,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone X 15.2",
+        "name": "ios_chrome_web_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20202,8 +20054,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPhone X 15.2"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/"
       },
       {
         "args": [
@@ -20224,7 +20075,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_showcase_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20256,8 +20107,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/"
       },
       {
         "args": [
@@ -20278,7 +20128,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_showcase_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20310,8 +20160,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/"
       },
       {
         "args": [
@@ -20332,7 +20181,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_showcase_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20364,8 +20213,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/"
       },
       {
         "args": [
@@ -20386,7 +20234,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_showcase_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20418,8 +20266,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/"
       },
       {
         "args": [
@@ -20440,7 +20287,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone X 14.4",
+        "name": "ios_showcase_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20472,8 +20319,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPhone X 14.4"
+        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/"
       },
       {
         "args": [
@@ -20494,7 +20340,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone X 15.2",
+        "name": "ios_showcase_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20526,8 +20372,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPhone X 15.2"
+        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/"
       },
       {
         "args": [
@@ -20548,7 +20393,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_web_shell_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20580,8 +20425,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -20602,7 +20446,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_web_shell_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20634,8 +20478,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPad Air 2 15.2"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -20656,7 +20499,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20688,8 +20531,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -20710,7 +20552,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_web_shell_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20742,8 +20584,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       }
     ]
   },
@@ -20769,7 +20610,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 14.4",
+        "name": "absl_hardening_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20801,8 +20642,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
       },
       {
         "args": [
@@ -20821,7 +20661,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 14.4",
+        "name": "boringssl_crypto_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20853,8 +20693,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
       },
       {
         "args": [
@@ -20873,7 +20712,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 14.4",
+        "name": "boringssl_ssl_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20905,8 +20744,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
       },
       {
         "args": [
@@ -20925,7 +20763,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 14.4",
+        "name": "crypto_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20957,8 +20795,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://crypto:crypto_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://crypto:crypto_unittests/"
       },
       {
         "args": [
@@ -20977,7 +20814,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 14.4",
+        "name": "google_apis_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21009,8 +20846,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
         "args": [
@@ -21030,7 +20866,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21062,8 +20898,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/"
       },
       {
         "args": [
@@ -21083,7 +20918,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21116,8 +20951,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -21137,7 +20971,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21170,8 +21004,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -21191,7 +21024,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s Plus 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21224,8 +21057,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -21245,7 +21077,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone SE (1st generation) 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21278,8 +21110,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
@@ -21299,7 +21130,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_settings_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21332,8 +21163,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/"
       },
       {
         "args": [
@@ -21353,7 +21183,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21383,10 +21213,10 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -21406,7 +21236,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21436,10 +21266,10 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -21459,7 +21289,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s Plus 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21489,10 +21319,10 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -21512,7 +21342,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone SE (1st generation) 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21542,10 +21372,10 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
@@ -21565,7 +21395,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21597,8 +21427,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/"
       },
       {
         "args": [
@@ -21618,7 +21447,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21651,8 +21480,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -21672,7 +21500,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21705,8 +21533,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -21726,7 +21553,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s Plus 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21759,8 +21586,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -21780,7 +21606,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone SE (1st generation) 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21813,8 +21639,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
@@ -21834,7 +21659,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_web_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21866,8 +21691,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/"
       },
       {
         "args": [
@@ -21886,7 +21710,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests_iPhone 6s 14.4",
+        "name": "ios_components_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21918,8 +21742,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/components:ios_components_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/components:ios_components_unittests/"
       },
       {
         "args": [
@@ -21939,7 +21762,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_crash_xcuitests_module_iPhone 7 14.4",
+        "name": "ios_crash_xcuitests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21971,8 +21794,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module/",
-        "variant_id": "iPhone 7 14.4"
+        "test_id_prefix": "ninja://third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module/"
       },
       {
         "args": [
@@ -21992,7 +21814,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_crash_xcuitests_module_iPhone 7 15.2",
+        "name": "ios_crash_xcuitests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22024,8 +21846,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module/",
-        "variant_id": "iPhone 7 15.2"
+        "test_id_prefix": "ninja://third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module/"
       },
       {
         "args": [
@@ -22044,7 +21865,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 14.4",
+        "name": "ios_net_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22077,8 +21898,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/net:ios_net_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/net:ios_net_unittests/"
       },
       {
         "args": [
@@ -22097,7 +21917,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests_iPhone 6s 14.4",
+        "name": "ios_remoting_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22129,8 +21949,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/"
       },
       {
         "args": [
@@ -22150,7 +21969,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_showcase_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22182,8 +22001,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/"
       },
       {
         "args": [
@@ -22202,7 +22020,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests_iPhone 6s 14.4",
+        "name": "ios_testing_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22234,8 +22052,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/"
       },
       {
         "args": [
@@ -22255,7 +22072,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_web_shell_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22287,8 +22104,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPad Air 2 14.4"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -22308,7 +22124,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22340,8 +22156,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -22361,7 +22176,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s Plus 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22393,8 +22208,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPhone 6s Plus 14.4"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -22414,7 +22228,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22446,8 +22260,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPhone SE (1st generation) 14.4"
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       },
       {
         "args": [
@@ -22466,7 +22279,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 14.4",
+        "name": "net_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22498,8 +22311,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://net:net_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://net:net_unittests/"
       },
       {
         "args": [
@@ -22518,7 +22330,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests_iPhone 6s 14.4",
+        "name": "services_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22550,8 +22362,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://services:services_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://services:services_unittests/"
       },
       {
         "args": [
@@ -22570,7 +22381,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 14.4",
+        "name": "sql_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22602,8 +22413,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://sql:sql_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
         "args": [
@@ -22622,7 +22432,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 14.4",
+        "name": "url_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22654,8 +22464,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://url:url_unittests/",
-        "variant_id": "iPhone 6s 14.4"
+        "test_id_prefix": "ninja://url:url_unittests/"
       }
     ]
   },

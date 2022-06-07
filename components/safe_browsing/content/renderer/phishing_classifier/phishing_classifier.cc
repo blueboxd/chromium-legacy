@@ -84,7 +84,7 @@ PhishingClassifier::~PhishingClassifier() {
   DCHECK(!page_text_);
 }
 
-void PhishingClassifier::set_phishing_scorer(Scorer* scorer) {
+void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
   DCHECK(done_callback_.is_null());
   DCHECK(!page_text_);
   scorer_ = scorer;
@@ -283,35 +283,7 @@ void PhishingClassifier::VisualExtractionFinished(bool success) {
   verdict->set_is_phishing(is_dom_match);
   verdict->set_is_dom_match(is_dom_match);
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  visual_matching_start_ = base::TimeTicks::Now();
-  scorer_->GetMatchingVisualTargets(
-      *bitmap_, std::move(verdict),
-      base::BindOnce(&PhishingClassifier::OnVisualTargetsMatched,
-                     weak_factory_.GetWeakPtr()));
-// TODO(crbug/1278502): This is disabled as a temporary measure due to crashes.
-#elif BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !BUILDFLAG(IS_CHROMEOS) && \
-    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
-  scorer_->ApplyVisualTfLiteModel(
-      *bitmap_, base::BindOnce(&PhishingClassifier::OnVisualTfLiteModelDone,
-                               weak_factory_.GetWeakPtr(), std::move(verdict)));
-#else
-  RunCallback(*verdict);
-#endif
-}
-
-void PhishingClassifier::OnVisualTargetsMatched(
-    std::unique_ptr<ClientPhishingRequest> verdict) {
-  DCHECK(content::RenderThread::IsMainThread());
-  if (!verdict->vision_match().empty()) {
-    verdict->set_is_phishing(true);
-  }
-  base::UmaHistogramTimes("SBClientPhishing.VisualComparisonTime",
-                          base::TimeTicks::Now() - visual_matching_start_);
-
-// TODO(crbug/1278502): This is disabled as a temporary measure due to crashes.
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !BUILDFLAG(IS_CHROMEOS) && \
-    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   scorer_->ApplyVisualTfLiteModel(
       *bitmap_, base::BindOnce(&PhishingClassifier::OnVisualTfLiteModelDone,
                                weak_factory_.GetWeakPtr(), std::move(verdict)));

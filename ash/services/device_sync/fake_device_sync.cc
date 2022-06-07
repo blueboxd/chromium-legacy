@@ -6,11 +6,11 @@
 
 #include "ash/services/device_sync/fake_device_sync.h"
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -133,4 +133,4 @@ void FakeDeviceSync::GetDevicesActivityStatus(
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

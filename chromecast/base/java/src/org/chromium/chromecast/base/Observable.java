@@ -4,6 +4,7 @@
 
 package org.chromium.chromecast.base;
 
+import org.chromium.base.Consumer;
 import org.chromium.base.Function;
 
 /**
@@ -38,18 +39,28 @@ public abstract class Observable<T> {
     }
 
     /**
+     * Returns an Observable that is only activated with the values added after subscription.
+     *
+     * Some Observables synchronously notify observers of their current state the moment they are
+     * subscribed. This operator filters these out and only notifies the observer of changes that
+     * occur after the moment of subscription.
+     */
+    public final Observable<T> after() {
+        return make(observer -> {
+            Box<Boolean> after = new Box<Boolean>(false);
+            Subscription sub = subscribe(t -> after.value ? observer.open(t) : Scopes.NO_OP);
+            after.value = true;
+            return sub;
+        });
+    }
+
+    /**
      * Returns an Observable that is activated when `this` and `other` are activated in order.
      *
      * This is similar to `and()`, but does not activate if `other` is activated before `this`.
      */
     public final <U> Observable<Both<T, U>> andThen(Observable<U> other) {
-        Controller<U> otherAfterThis = new Controller<>();
-        other.subscribe((U value) -> {
-            otherAfterThis.set(value);
-            return otherAfterThis::reset;
-        });
-        subscribe(Observers.onEnter(x -> otherAfterThis.reset()));
-        return and(otherAfterThis);
+        return and(other.after());
     }
 
     /**
@@ -133,5 +144,26 @@ public abstract class Observable<T> {
     public static <T> Observable<T> just(T value) {
         if (value == null) return empty();
         return make(observer -> observer.open(value));
+    }
+
+    /**
+     * Push debug info about subscriptions and state transitions to a logger.
+     *
+     * The logger is a consumer of strings. Typically, the consumer should be a lambda that prints
+     * the input using org.chromium.base.Log with any extra info you want to include. See
+     * chromium/base/reactive_java.md for an example.
+     *
+     * By passing a Consumer instead of having debug() call logger methods directly, you can 1)
+     * control the logging level, or use alternative loggers, and 2) when using chromium's logger,
+     * see the right file name and line number in the logs.
+     */
+    public Observable<T> debug(Consumer<String> logger) {
+        return make(observer -> {
+            logger.accept("subscribe");
+            return Scopes.combine(() -> logger.accept("unsubscribe"), subscribe(data -> {
+                logger.accept(new StringBuilder("open ").append(data).toString());
+                return () -> logger.accept(new StringBuilder("close ").append(data).toString());
+            })::close);
+        });
     }
 }

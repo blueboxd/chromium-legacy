@@ -30,6 +30,11 @@ extern const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[];
 extern const char kAutofillEnableUnmaskCardRequestSetInstrumentIdName[];
 extern const char kAutofillEnableUnmaskCardRequestSetInstrumentIdDescription[];
 
+// Title and description for flag to enforce delays between offering Autofill
+// opportunities.
+extern const char kAutofillEnforceDelaysInStrikeDatabaseName[];
+extern const char kAutofillEnforceDelaysInStrikeDatabaseDescription[];
+
 // Title and description for the flag to fill promo code fields with Autofill.
 extern const char kAutofillFillMerchantPromoCodeFieldsName[];
 extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
@@ -72,6 +77,11 @@ extern const char kAutofillUseRendererIDsDescription[];
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
 
+// Title and description for the flag to enable the rich iph experiment on
+// bubble views.
+extern const char kBubbleRichIPHName[];
+extern const char kBubbleRichIPHDescription[];
+
 // Title and description for the flag that moves the Content Suggestions header
 // to the Discover feed ScrollView.
 extern const char kContentSuggestionsHeaderMigrationName[];
@@ -86,11 +96,6 @@ extern const char kContentSuggestionsUIViewControllerMigrationDescription[];
 // is used.
 extern const char kCrashpadIOSName[];
 extern const char kCrashpadIOSDescription[];
-
-// Title and description for the flag to trigger credentials provider extension
-// promo.
-extern const char kCredentialProviderExtensionPromoName[];
-extern const char kCredentialProviderExtensionPromoDescription[];
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 // Title and description for the flag to enable configurable DCHECKs.
@@ -134,9 +139,9 @@ extern const char kDetectMainThreadFreezeDescription[];
 extern const char kDiscoverFeedInNtpName[];
 extern const char kDiscoverFeedInNtpDescription[];
 
-// Title and description for the flag to enable Vcard support.
-extern const char kDownloadVcardName[];
-extern const char kDownloadVcardDescription[];
+// Title and description for the flag to enable Calendar support.
+extern const char kDownloadCalendarName[];
+extern const char kDownloadCalendarDescription[];
 
 // Title and description for the flag to enable kEditPasswordsInSettings flag on
 // iOS.
@@ -199,29 +204,9 @@ extern const char kEnableFullscreenAPIDescription[];
 extern const char kEnableLongMessageDurationName[];
 extern const char kEnableLongMessageDurationDescription[];
 
-// Title and description for the flag to enable UI that allows the user to
-// create a strong password even if the field wasn't parsed as a new password
-// field.
-extern const char kEnableManualPasswordGenerationName[];
-extern const char kEnableManualPasswordGenerationDescription[];
-
 // Title and description for the flag to enable the new download API.
 extern const char kEnableNewDownloadAPIName[];
 extern const char kEnableNewDownloadAPIDescription[];
-
-// Title and description for the flag to enable optimization guide.
-extern const char kEnableOptimizationGuideName[];
-extern const char kEnableOptimizationGuideDescription[];
-
-// Title and description for the flag to enable optimization guide metadata
-// validation.
-extern const char kEnableOptimizationGuideMetadataValidationName[];
-extern const char kEnableOptimizationGuideMetadataValidationDescription[];
-
-// Title and description for the flag to enable optimization guide hints
-// fetching for MSBB users.
-extern const char kEnableOptimizationHintsFetchingMSBBName[];
-extern const char kEnableOptimizationHintsFetchingMSBBDescription[];
 
 // Title and description for the flag to enable shorted password auto-fill
 // instructions and button.
@@ -241,10 +226,6 @@ extern const char kExpandedTabStripDescription[];
 // websites.
 extern const char kFillingAcrossAffiliatedWebsitesName[];
 extern const char kFillingAcrossAffiliatedWebsitesDescription[];
-
-// Title and description for the flag to disable all extended sync promos.
-extern const char kForceDisableExtendedSyncPromosName[];
-extern const char kForceDisableExtendedSyncPromosDescription[];
 
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
@@ -390,14 +371,6 @@ extern const char kIOSOmniboxUpdatedPopupUIDescription[];
 // detection.
 extern const char kPasswordReuseDetectionName[];
 extern const char kPasswordReuseDetectionDescription[];
-
-// Title and description for the flag to enable the Reading List Messages.
-extern const char kReadingListMessagesName[];
-extern const char kReadingListMessagesDescription[];
-
-// Title and description for the flag to enable Reading List Time to Read.
-extern const char kReadingListTimeToReadName[];
-extern const char kReadingListTimeToReadDescription[];
 
 // Title and description for the flag to native restore web states.
 extern const char kRestoreSessionFromCacheName[];

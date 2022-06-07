@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
@@ -158,8 +160,10 @@ class InProcessContextFactory::PerCompositorData
 
 InProcessContextFactory::InProcessContextFactory(
     viz::HostFrameSinkManager* host_frame_sink_manager,
-    viz::FrameSinkManagerImpl* frame_sink_manager)
+    viz::FrameSinkManagerImpl* frame_sink_manager,
+    bool output_to_window)
     : frame_sink_id_allocator_(kDefaultClientId),
+      output_to_window_(output_to_window),
       disable_vsync_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableVsyncForTests)),
       host_frame_sink_manager_(host_frame_sink_manager),
@@ -209,7 +213,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
 
   auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
       viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
-      gpu::kNullSurfaceHandle);
+      output_to_window_ ? data->surface_handle() : gpu::kNullSurfaceHandle);
   auto display_dependency =
       std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
           std::move(skia_deps));

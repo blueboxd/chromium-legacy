@@ -184,7 +184,6 @@
 <translation id="200114059308480249">क्या आप Google पर कुछ खोजते समय, खोज से जुड़े मिलते-जुलते शब्द भी शामिल करना चाहते हैं?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फ़ाइल}one{# फ़ाइलें}other{# फ़ाइलें}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" />, Chrome में खुलेगा. जारी रखने का मतलब है कि आप <ph name="BEGIN_LINK1" />Google की सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />Google Chrome और Chrome OS की सेवा की अन्य शर्तों<ph name="END_LINK2" /> से सहमत हैं. <ph name="BEGIN_LINK3" />निजता नीति<ph name="END_LINK3" /> भी लागू होगी.</translation>
-<translation id="2019145049163614359">पसंद का विषय हटाएं?</translation>
 <translation id="2020309681647789787">सिंक किए हुए सभी डिवाइसों पर आपका इतिहास सेव होगा, ताकि आप अपने पिछले काम को जारी रख सकें</translation>
 <translation id="2021896219286479412">पूरी स्क्रीन के साइट नियंत्रण</translation>
 <translation id="2038563949887743358">अनुरोध डेस्कटॉप साइट चालू करें</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">आपके इस्तेमाल करने के हिसाब से</translation>
 <translation id="214888715418183969">चुनें कि Chrome के साथ आपकी क्या जानकारी शेयर की जाए. आप जो मेट्रिक शेयर करते हैं उसका इस्तेमाल, Chrome की सुविधाओं और परफ़ॉर्मेंस को बेहतर बनाने में किया जाएगा. साथ ही, इसका इस्तेमाल क्रैश होने जैसी दिक्कतों को ठीक करने में भी होगा.</translation>
 <translation id="2149973817440762519">बुकमार्क में बदलाव करें</translation>
+<translation id="2155214902713132423">इस डिवाइस पर, पुष्टि का यह तरीका इस्तेमाल नहीं किया जा सकता. अपने दूसरे डिवाइस पर, पुष्टि का कोई दूसरा तरीका चुनें.</translation>
 <translation id="2157851137955077194">अपने फ़ोन से किसी दूसरे डिवाइस पर कुछ शेयर करने के लिए, दोनों डिवाइस पर Chrome की सेटिंग में जाकर सिंक की सुविधा चालू करें</translation>
 <translation id="2158408438301413340">Chrome सभी पासवर्ड की जांच नहीं कर सका</translation>
 <translation id="2169830938017475061">अभी</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">जल्द ही, कोई भी नया टैब खोलते ही आपको <ph name="SITE_NAME" /> से जुड़ी जानकारी दिखेगी. आप जिन साइटों को फ़ॉलो करते हैं वे आपके Google खाते में सेव हो जाती हैं. आप उन्हें डिस्कवर की सेटिंग में मैनेज कर सकते हैं.</translation>
 <translation id="5091249083535528968">इस्तेमाल के बारे में ज़्यादा डेटा</translation>
 <translation id="509429900233858213">कोई गड़बड़ी हुई.</translation>
-<translation id="5098190077610408701">पसंद का विषय जोड़ें?</translation>
 <translation id="5102401324271069229">अगर कोई साइट आपका पासवर्ड चुराने की कोशिश करती है या नुकसान पहुंचाने वाली कोई फ़ाइल डाउनलोड होती है, तो Chrome उनके यूआरएल, सुरक्षित ब्राउज़िंग की सेवा को भेज सकता है. यूआरएल के साथ-साथ, पेज का कुछ कॉन्टेंट भी भेजा जाता है</translation>
 <translation id="510275257476243843">1 घंटा शेष</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> में ले जाया गया</translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">साइटों के यूआरएल के बारे में जानकारी होने पर, Google Assistant टास्क पूरे करने में आपकी मदद कर पाती है. Chrome की सेटिंग में जाकर, Assistant को बंद किया जा सकता है.</translation>
 <translation id="5916664084637901428">चालू है</translation>
 <translation id="5919204609460789179">सिंक शुरू करने के लिए <ph name="PRODUCT_NAME" /> अपडेट करें</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> जोड़ें</translation>
 <translation id="5942872142862698679">खोजने के लिए Google का उपयोग किया जा रहा है</translation>
 <translation id="5945035219773565305">मौजूदा सुझाव: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">लाइव पेज देखा जा रहा है</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791"><ph name="BEGIN_LINK" />निजता सैंडबॉक्स<ph name="END_LINK" /> की मदद से Chrome एक नई टेक्नोलॉजी डेवलप कर रहा है. यह टेक्नोलॉजी ओपन वेब को सुरक्षित रखते हुए, आपको क्रॉस-साइट ट्रैकिंग से बचाने में मदद करेगी.
 
 निजता सैंडबॉक्स को मुफ़्त में आज़माने की सुविधाएं अब भी डेवलप की जा रही हैं. ये चुनिंदा क्षेत्रों में उपलब्ध हैं. फ़िलहाल, साइटें मौजूदा वेब टेक्नोलॉजी (जैसे, तीसरे पक्ष की कुकी) का इस्तेमाल जारी रखते हुए, निजता सैंडबॉक्स को आज़मा सकती हैं.</translation>
-<translation id="6036057147555329831">कुछ और ICU</translation>
 <translation id="6039379616847168523">सीधे अगले टैब पर जाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="604124094241169006">स्वचालित</translation>
@@ -1023,13 +1022,14 @@
 <translation id="663674369910034433">निजता, सुरक्षा और डेटा इकट्ठा करने से जुड़ी ज़्यादा सेटिंग के लिए, <ph name="BEGIN_LINK1" />सिंक करें<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />Google की सेवाएं<ph name="END_LINK2" /> देखें</translation>
 <translation id="6637100877383020115">ऐप्लिकेशन को बेहतर बनाने के लिए Chrome, ऐप्लिकेशन के इस्तेमाल और क्रैश होने से जुड़ा डेटा Google को भेजता है. <ph name="BEGIN_UMA_LINK" />मैनेज करें<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">हमेशा के लिए ब्लॉक करें</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> हटाएं</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="6645629752388991326">कंट्रोल करें कि सुरक्षा कुंजी के तौर पर इस फ़ोन का इस्तेमाल करके किन डिवाइसों पर साइन इन किया जा सकता है.</translation>
 <translation id="6648459603387803038">आपका एडमिन किसी दूसरे डिवाइस से आपके ब्राउज़र का सेट अप बदल सकता है. इस डिवाइस की गतिविधि को Chrome से बाहर भी प्रबंधित किया जा सकता है.</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}one{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}other{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}}</translation>
 <translation id="6649642165559792194">इमेज की झलक देखें <ph name="BEGIN_NEW" />नई<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
-<translation id="6659594942844771486">ब्राउज़र टैब</translation>
+<translation id="6659594942844771486">टैब</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> में खोलें</translation>
 <translation id="6671495933530132209">चित्र की कॉपी बनाएं</translation>
 <translation id="6674044799624355221">नए खतरों का पता लगाने के लिए, पेज के नमूने, डाउनलोड, एक्सटेंशन की गतिविधि, और सिस्टम की जानकारी भेजी जाती है</translation>

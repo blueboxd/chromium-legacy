@@ -9,14 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/multidevice/software_feature.h"
 #include "ash/services/device_sync/cryptauth_feature_status_setter.h"
 #include "ash/services/device_sync/cryptauth_feature_status_setter_impl.h"
 #include "ash/services/device_sync/network_request_error.h"
 #include "base/callback.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/multidevice/software_feature.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -116,6 +116,11 @@ class FakeCryptAuthFeatureStatusSetterFactory
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos::device_sync {
+using ::ash::device_sync::FakeCryptAuthFeatureStatusSetter;
+}
 
 #endif  //  ASH_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_FEATURE_STATUS_SETTER_H_

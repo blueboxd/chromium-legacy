@@ -18,12 +18,14 @@ import time
 from functools import partial
 from http.server import SimpleHTTPRequestHandler
 from threading import Thread
+from skia_gold_infra.finch_skia_gold_properties import FinchSkiaGoldProperties
+from skia_gold_infra import finch_skia_gold_session_manager
+from skia_gold_infra import finch_skia_gold_utils
 
 import common
 import variations_seed_access_helper as seed_helper
 
-_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-_SRC_DIR = os.path.join(_THIS_DIR, os.path.pardir, os.path.pardir)
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 _VARIATIONS_TEST_DATA = 'variations_smoke_test_data'
 
 from selenium import webdriver
@@ -47,8 +49,13 @@ _TEST_CASES = [
         'url': 'http://localhost:8000',
         'expected_id': 'sites-chrome-userheader-title',
         'expected_text': 'The Chromium Projects',
+        'skia_gold_image': 'finch_smoke_render_chromium_org_html',
     },
 ]
+# This is the corpus used by skia gold to identify the data set.
+# We are not using the same corpus as the rest of the skia gold chromium tests.
+# This corpus is a dedicated one for finch smoke tests.
+CORPUS = 'finch-smoke-tests'
 
 
 def _get_httpd():
@@ -141,15 +148,33 @@ def _confirm_new_seed_downloaded(user_data_dir,
   return False
 
 
-def _run_tests(*args):
+def _get_skia_gold_session(session_manager):
+  """Returns a SkiaGoldSession from the given session_manager.
+
+  Args:
+    session_manager: A SkiaGoldSessionManager object.
+
+  Returns:
+    a SkiaGoldSession object.
+  """
+  key_input = {}
+  key_input['platform'] = _get_platform()
+  return session_manager.GetSkiaGoldSession(
+      key_input, CORPUS)
+
+def _run_tests(work_dir, session_manager, *args):
   """Runs the smoke tests.
 
   Args:
+    work_dir: A working directory to store screenshots and other artifacts.
+    session_manager: A SkiaGoldSessionManager used to do
+      pixel test.
     args: Arguments to be passed to the chrome binary.
 
   Returns:
     0 if tests passed, otherwise 1.
   """
+  skia_gold_session = _get_skia_gold_session(session_manager)
   path_chrome = _find_chrome_binary()
   path_chromedriver = os.path.join('.', 'chromedriver')
 
@@ -174,7 +199,10 @@ def _run_tests(*args):
     if not _confirm_new_seed_downloaded(user_data_dir, path_chromedriver,
                                         chrome_options):
       logging.error('Failed to fetch variations seed on initial run')
-      return 1
+      # For MacOS, there is sometime the test fail to download seed on initial
+      # run (crbug/1312393)
+      if _get_platform() != 'mac':
+        return 1
 
     # Inject the test seed.
     # This is a path as fallback when |seed_helper.load_test_seed_from_file()|
@@ -208,8 +236,18 @@ def _run_tests(*args):
             'Test failed because element: "%s" is not visibly found after '
             'visiting url: "%s"', t['expected_text'], t['url'])
         return 1
-    driver.quit()
+      if 'skia_gold_image' in t:
+        image_name = t['skia_gold_image']
+        sc_file = os.path.join(work_dir, image_name + '.png')
+        driver.save_screenshot(sc_file)
+        status, error = skia_gold_session.RunComparison(
+            image_name, sc_file)
+        if status:
+          finch_skia_gold_utils.log_skia_gold_status_code(
+              skia_gold_session, image_name, status, error)
+          return status
 
+    driver.quit()
     # Verify seed has been updated successfully and it's different from the
     # injected test seed.
     #
@@ -262,17 +300,22 @@ def main_run(args):
   logging.basicConfig(level=logging.INFO)
   parser = argparse.ArgumentParser()
   parser.add_argument('--isolated-script-test-output', type=str)
+  FinchSkiaGoldProperties.AddCommandLineArguments(parser)
   args, rest = parser.parse_known_args()
 
+  temp_dir = tempfile.mkdtemp()
   httpd = _start_local_http_server()
+  manager = finch_skia_gold_session_manager.FinchSkiaGoldSessionManager(
+      temp_dir, FinchSkiaGoldProperties(args))
   try:
-    rc = _run_tests(*rest)
+    rc = _run_tests(temp_dir, manager, *rest)
     if args.isolated_script_test_output:
       with open(args.isolated_script_test_output, 'w') as f:
         common.record_local_script_results('run_variations_smoke_tests', f, [],
                                            rc == 0)
   finally:
     httpd.shutdown()
+    shutil.rmtree(temp_dir, ignore_errors=True)
 
   return rc
 

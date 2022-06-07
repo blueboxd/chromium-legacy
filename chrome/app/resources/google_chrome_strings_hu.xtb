@@ -174,6 +174,7 @@
 <translation id="4600710005438004015">Nem sikerült a Chrome frissítése a legújabb verzióra, így Ön lemarad az új funkciókról és biztonsági javításokról.</translation>
 <translation id="4627412468266359539">Nem kötelező: Segítheti a ChromeOS Flex funkcióinak és teljesítményének javítását azzal, hogy automatikusan elküldi a diagnosztikai és használati adatokat a Google-nak.</translation>
 <translation id="4633000520311261472">A Chrome biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
+<translation id="469553575393225953">Az ismeretlen forrásból származó bővítmények, alkalmazások és témák károsíthatják az eszközt. A Chrome azt javasolja, hogy csak a Chrome Webáruházból telepítse őket.</translation>
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="4747730611090640388">A Chrome megbecsülheti az Ön érdeklődési köreit.  Később az Ön által felkeresett webhelyek a megjelenő hirdetések személyre szabása érdekében kérhetik a Chrome-tól az Ön érdeklődési köreinek megismerését.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -213,6 +214,7 @@
 <translation id="5736850870166430177">Ha valamelyik webhely megpróbálja ellopni az Ön jelszavát, illetve ha Ön kártékony fájlt tölt le, akkor a Chrome elküldheti az URL-eket is (az oldal tartalmának részeivel együtt) a Biztonságos Böngészésnek.</translation>
 <translation id="573759479754913123">A Chrome OS névjegye</translation>
 <translation id="5756509061973259733">Már létezik Chrome-profil ezzel a fiókkal ezen az eszközön.</translation>
+<translation id="5763280521700030406">A Chrome letiltotta ezt a fájlt, mert túl nagy méretű a biztonsági ellenőrzés elvégzéséhez. Próbálkozzon újra legfeljebb 50 MB méretű fájllal.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Nem sikerült a Chrome elindítása. Próbálkozzon újra.</translation>
 <translation id="5867197326698922595">A Google Chrome szerkeszteni próbálja a jelszavakat.</translation>
@@ -228,6 +230,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Béta</translation>
 <translation id="6235018212288296708">Bejövő szabály a Google Chrome-hoz az mDNS forgalom engedélyezése céljából.</translation>
+<translation id="6247557882553405851">Google Jelszókezelő</translation>
 <translation id="6291089322031436445">Chrome Dev-alkalmazások</translation>
 <translation id="6291549208091401781">A Google Chrome már telepítve van az összes felhasználó számára a számítógépen.</translation>
 <translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS" /> is hozzájárult.</translation>
@@ -236,6 +239,7 @@
 <translation id="6506909944137591434">A Chrome-nak kamerahasználati engedélyre van szüksége, hogy 3D-s térképet készíthessen az Ön környezetéről</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS rendszer</translation>
+<translation id="659498884637196217">A Google Jelszókezelőben ezen az eszközön</translation>
 <translation id="6632473616050862500">A ChromeOS Flex létrejöttéhez egyéb <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftverek<ph name="END_LINK_CROS_OSS" /> is hozzájárultak.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
 <translation id="6679975945624592337">A Google Chrome futhat a háttérben</translation>
@@ -275,6 +279,7 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra is érvényesek lehetnek. Google-fiókjait a <ph name="SETTINGS_LINK_BEGIN" />Beállításokban<ph name="SETTINGS_LINK_END" /> kezelheti.</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chrome-ba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
 <translation id="7408085963519505752">Chrome OS – Szerződési Feltételek</translation>
+<translation id="7410958280246779049">A Chrome letiltotta ezt a fájlt, mert veszélyes</translation>
 <translation id="7419046106786626209">A Chrome OS nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="7481213027396403996">Állítsa be a Chrome legerősebb védelmét</translation>
 <translation id="7486227612705979895">A Chrome hozzáfér Drive-jához, hogy javaslatokat nyújthasson a címsávon.</translation>
@@ -289,7 +294,6 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="7655455401911432608">Böngészési előzményei és az Ön által az ezen az eszközön használt Chrome-ban felkeresett webhelyek jegyzéke.</translation>
 <translation id="7665553140559834626">Indítsa újra a Chrome OS frissítéshez</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
-<translation id="7748512868279796735">A következő fiókok használhatók ennél a Chrome-profilnál.</translation>
 <translation id="7761834446675418963">Kattintson a nevére a Chrome megnyitásához és a böngészés megkezdéséhez.</translation>
 <translation id="7777080907402804672">Ha valamelyik kép nem rendelkezik hasznos leírással, akkor a Chrome igyekszik leírást adni róla. A Google automatikusan megkapja a leírások létrehozásához szükséges képeket. A funkciót a beállítások között bármikor kikapcsolhatja.</translation>
 <translation id="7781002470561365167">Elérhető a Google Chrome új verziója</translation>
@@ -305,10 +309,12 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="7951272445806340501">A frissítés alkalmazásához a ChromeOS Flex újraindítása szükséges.</translation>
 <translation id="7962410387636238736">Ez a számítógép a továbbiakban már nem kapja meg a Google Chrome frissítéseit, mert már nem támogatjuk a Windows XP és Windows Vista rendszereket.</translation>
 <translation id="79947657522496226">A Chrome OS létrejöttéhez egyéb <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftverek<ph name="END_LINK_CROS_OSS" /> is hozzájárultak, ahogyan a <ph name="BEGIN_LINK_LINUX_OSS" />Linux fejlesztői környezet<ph name="END_LINK_LINUX_OSS" /> létrejöttéhez is.</translation>
+<translation id="8005666035647241369">A Google Jelszókezelőbe ezen az eszközön</translation>
 <translation id="8008534537613507642">A Chrome újratelepítése</translation>
 <translation id="8013993649590906847">Ha valamelyik kép nem rendelkezik hasznos leírással, akkor a Chrome igyekszik leírást adni róla. A Google automatikusan megkapja a leírások létrehozásához szükséges képeket.</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">A &amp;Google Chrome névjegye</translation>
+<translation id="822971176939352383">A következő fiókok nincsenek egyetlen Chrome-profilba sem bejelentkezve. Ha másik profilban szeretné használni az adott fiókot, előbb távolítsa el a szóban forgó profilt.</translation>
 <translation id="8255190535488645436">A Google Chrome használja a kamerát és a mikrofont.</translation>
 <translation id="8286862437124483331">A Google Chrome megkísérli megjeleníteni a jelszavakat. Ennek engedélyezéséhez írja be Windows-jelszavát.</translation>
 <translation id="828798499196665338">Szülőd kikapcsolta a Chrome „Engedélyek webhelyek, alkalmazások és bővítmények számára” beállítását. A(z) <ph name="EXTENSION_TYPE_PARAMETER" /> nem engedélyezhető.</translation>
@@ -320,8 +326,10 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="8394720698884623075">Ellenőrzi az URL-eket a Chrome-ban a nem biztonságos webhelyekről tárolt lista alapján.</translation>
 <translation id="840084489713044809">A Google Chrome exportálni szeretné a jelszavakat.</translation>
 <translation id="8416347857511542594">További információ a hirdetések személyre szabásáról a Chrome-ban</translation>
+<translation id="8421734018304082652">A Chrome letiltotta ezt a fájlt, mert titkosítva van. Kérje meg a tulajdonosát, hogy oldja fel a titkosítást.</translation>
 <translation id="8433638294851456451">Ha innen szeretne számot küldeni Android-telefonjára, jelentkezzen be a Chrome-ba mindkét eszközén.</translation>
 <translation id="8498858610309223613">A rendszer egy speciális biztonsági frissítést alkalmazott a Google Chrome-on. Indítsa újra a számítógépet, a lapokat majd mi visszaállítjuk.</translation>
+<translation id="8504220326736535258">A Chrome letiltotta ezt a fájlt, mert rosszindulatú program található benne.</translation>
 <translation id="8516431725144212809">Az Ön Chrome által megbecsült érdeklődési körei</translation>
 <translation id="8521348052903287641">Bejövő szabály a Google Chrome Devhez az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -336,6 +344,7 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="8649026945479135076">A felkeresett webhelyek esetében megszokott dolog, hogy megjegyzik az Önt érdeklő dolgokat a felhasználói élmény személyre szabása érdekében. Emellett a webhelyek tárolhatnak az Ön érdeklődési köreivel kapcsolatos információkat a Chrome-ban.</translation>
 <translation id="8669527147644353129">Google Chrome segéd</translation>
 <translation id="8679801911857917785">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chrome indításakor.</translation>
+<translation id="8684875378076460854">A Chrome a fájl ellenőrzését javasolja, mert veszélyes lehet</translation>
 <translation id="8686817260976772516">A Chrome-profilokkal különválaszthatja minden Chrome-anyagát. Létrehozhat profilokat ismerőseinek és családtagjainak, vagy elkülönítheti egymástól a munkát és a szórakozást.</translation>
 <translation id="8712767363896337380">Már majdnem naprakész! Indítsa újra a Chrome-ot a frissítés befejezéséhez.</translation>
 <translation id="873133009373065397">A Google Chrome problémába ütközött az alapértelmezett böngésző megállapításakor vagy beállításakor</translation>

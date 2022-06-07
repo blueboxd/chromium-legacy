@@ -27,6 +27,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -89,10 +90,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                                           scoped_refptr<const ComputedStyle>,
                                           LegacyLayout);
 
-  static LayoutText* CreateAnonymous(Document&,
-                                     scoped_refptr<const ComputedStyle>,
-                                     scoped_refptr<StringImpl>,
-                                     LegacyLayout legacy);
+  static LayoutText* CreateAnonymousForFormattedText(
+      Document&,
+      scoped_refptr<const ComputedStyle>,
+      scoped_refptr<StringImpl>,
+      LegacyLayout legacy);
 
   const char* GetName() const override {
     NOT_DESTROYED();

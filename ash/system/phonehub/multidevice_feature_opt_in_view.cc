@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/phonehub/multidevice_feature_access_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/new_window_delegate.h"
@@ -14,11 +15,11 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
+using multidevice_setup::mojom::Feature;
 using phone_hub_metrics::InterstitialScreenEvent;
 using phone_hub_metrics::LogInterstitialScreenEvent;
 
@@ -43,11 +44,15 @@ PermissionSetupMode GetPermissionSetupMode(
   bool can_request_apps_acess =
       features::IsEcheSWAEnabled() &&
       features::IsEchePhoneHubPermissionsOnboarding() &&
+      multidevice_feature_access_manager->IsAccessRequestAllowed(
+          Feature::kEche) &&
       multidevice_feature_access_manager->GetAppsAccessStatus() ==
           phonehub::MultideviceFeatureAccessManager::AccessStatus::
               kAvailableButNotGranted;
   bool can_request_camera_roll_access =
       features::IsPhoneHubCameraRollEnabled() &&
+      multidevice_feature_access_manager->IsAccessRequestAllowed(
+          Feature::kPhoneHubCameraRoll) &&
       multidevice_feature_access_manager->GetCameraRollAccessStatus() ==
           phonehub::MultideviceFeatureAccessManager::AccessStatus::
               kAvailableButNotGranted;

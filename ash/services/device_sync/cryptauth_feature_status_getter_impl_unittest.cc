@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/services/device_sync/cryptauth_client.h"
 #include "ash/services/device_sync/cryptauth_device.h"
 #include "ash/services/device_sync/cryptauth_device_sync_result.h"
@@ -23,12 +25,10 @@
 #include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -436,4 +436,4 @@ TEST_F(DeviceSyncCryptAuthFeatureStatusGetterImplTest,
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

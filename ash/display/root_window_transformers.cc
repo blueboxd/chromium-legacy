@@ -143,7 +143,7 @@ class AshRootWindowTransformer : public RootWindowTransformer {
       return initial_root_bounds_;
 
     gfx::RectF new_bounds = gfx::RectF(gfx::SizeF(host_size));
-    new_bounds.Inset(host_insets_);
+    new_bounds.Inset(gfx::InsetsF(host_insets_));
     root_window_bounds_transform_.TransformRect(&new_bounds);
 
     // Root window origin will be (0,0) except during bounds changes.
@@ -248,7 +248,7 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
       int margin = static_cast<int>((mirror_display_rect.height() -
                                      root_bounds_.height() * inverted_scale) /
                                     2);
-      insets_.Set(0, margin, 0, margin);
+      insets_ = gfx::Insets::TLBR(0, margin, 0, margin);
 
       transform_.Translate(0, margin);
       transform_.Scale(inverted_scale, inverted_scale);
@@ -260,7 +260,7 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
       int margin = static_cast<int>((mirror_display_rect.width() -
                                      root_bounds_.width() * inverted_scale) /
                                     2);
-      insets_.Set(margin, 0, margin, 0);
+      insets_ = gfx::Insets::TLBR(margin, 0, margin, 0);
 
       transform_.Translate(margin, 0);
       transform_.Scale(inverted_scale, inverted_scale);

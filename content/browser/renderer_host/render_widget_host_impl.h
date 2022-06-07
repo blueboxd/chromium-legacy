@@ -21,6 +21,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/kill.h"
@@ -100,7 +101,6 @@ enum class DomCode;
 }
 
 namespace content {
-class AgentSchedulingGroupHost;
 class BrowserAccessibilityManager;
 class FlingSchedulerBase;
 class FrameTree;
@@ -108,6 +108,7 @@ class InputRouter;
 class MockRenderWidgetHost;
 class PeakGpuMemoryTracker;
 class RenderWidgetHostOwnerDelegate;
+class SiteInstanceGroup;
 class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
@@ -158,7 +159,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   static std::unique_ptr<RenderWidgetHostImpl> Create(
       FrameTree* frame_tree,
       RenderWidgetHostDelegate* delegate,
-      AgentSchedulingGroupHost& agent_scheduling_host,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t routing_id,
       bool hidden,
       bool renderer_initiated_creation,
@@ -174,7 +175,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   static RenderWidgetHostImpl* CreateSelfOwned(
       FrameTree* frame_tree,
       RenderWidgetHostDelegate* delegate,
-      AgentSchedulingGroupHost& agent_scheduling_host,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t routing_id,
       bool hidden,
       std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue);
@@ -418,9 +419,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void WasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr
                     record_tab_switch_time_request);
 
-  // Notifies the RenderWidget as to whether it is in the active window.
-  void OnActiveWindowChanged(bool in_active_window);
-
   // Called to request the presentation time for the next frame or cancel any
   // requests when the RenderWidget's visibility state is not changing. If the
   // visibility state is changing call WasHidden or WasShown instead.
@@ -463,6 +461,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // update. Users other than WebContents and RenderWidgetHost should use
   // Focus()/Blur().
   void SetPageFocus(bool focused);
+
+  // Returns true if the RenderWidgetHost thinks it is active. This
+  // is different than `is_focused` but must always be true if `is_focused`
+  // is true. All RenderWidgetHosts in an active tab are considered active,
+  // but only one FrameTree can have page focus (e.g., an inner frame
+  // tree (fenced frame or portals) will not have focus if the primary frame
+  // tree has focus. See
+  // https://www.chromium.org/developers/design-documents/aura/focus-and-activation.
+  bool is_active() const { return is_active_; }
 
   // Called to notify the RenderWidget that it has lost the mouse lock.
   void LostMouseLock();
@@ -877,15 +884,19 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override;
 
+  SiteInstanceGroup* GetSiteInstanceGroup();
+
  protected:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
-  // |delegate| goes away.
+  // |delegate| goes away. |site_instance_group| will outlive this
+  // widget but we store it via a `base::SafeRef` instead of a scoped_refptr to
+  // not create a cycle and keep alive the `SiteInstanceGroup`.
   RenderWidgetHostImpl(
       FrameTree* frame_tree,
       bool self_owned,
       RenderWidgetHostDelegate* delegate,
-      AgentSchedulingGroupHost& agent_scheduling_host,
+      base::SafeRef<SiteInstanceGroup> site_instance_group,
       int32_t routing_id,
       bool hidden,
       bool renderer_initiated_creation,
@@ -1166,8 +1177,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // AgentSchedulingGroupHost to be used for IPC with the corresponding
   // (renderer-side) AgentSchedulingGroup. Its channel may be nullptr if the
-  // renderer crashed.
+  // renderer crashed. We store it here as a separate reference instead of
+  // dynamically fetching it from `site_instance_group_` since its
+  // value gets cleared early in `SiteInstanceGroup` via
+  // RenderProcessHostDestroyed before this object is destroyed.
   AgentSchedulingGroupHost& agent_scheduling_group_;
+
+  // The SiteInstanceGroup this RenderWidgetHost belongs to.
+  base::SafeRef<SiteInstanceGroup> site_instance_group_;
 
   // The ID of the corresponding object in the Renderer Instance.
   const int routing_id_;
@@ -1332,6 +1349,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderWidgetHostView::HasFocus in that in that the focus request may fail,
   // causing HasFocus to return false when is_focused_ is true.
   bool is_focused_ = false;
+
+  // Indicates whether what the last focus active state that was sent to the
+  // renderer.
+  bool is_active_ = false;
 
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;

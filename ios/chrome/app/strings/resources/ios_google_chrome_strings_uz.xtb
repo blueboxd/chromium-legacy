@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uz">
-<translation id="1096883626080133124">Oddiy, xavfsiz va har qachongidan tezkor Google Chrome brauzerida koʻplab imkoniyatlar</translation>
 <translation id="1143896152279775643">Parolingiz Google Parollar menejerida <ph name="EMAIL" /> hisobiga saqlanadi.</translation>
 <translation id="1282031177488366470">Chrome funksiyalari va unumdorligini yaxshilashga yordam bering</translation>
 <translation id="1479202195792305274">Google hisobingizga kirsangiz, Chrome parollaringizni tekshira oladi.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Chrome’ni o‘zingiz bilan olib yuring</translation>
 <translation id="3522659714780527202">Boshqa qurilmalardagi Chrome varaqlarini koʻrish uchun sinxronizatsiyani yoqing</translation>
 <translation id="3533694711092285624">Hech qanday parol saqlanmagan. Chrome faqat saqlangan parollaringizni tekshira oladi.</translation>
-<translation id="3634910711516114487">Chrome imkoniyatlaridan maksimal foydalanish uchun Chromega Google hisobingiz bilan kiring</translation>
 <translation id="3655656110921623717">Bunda Chrome har safar saytning mobil versiyasini talab qiladi.</translation>
 <translation id="3706101708757577809">Siz endi Chromium brauzerini har doim xabarlar, hujjatlar va boshqa ilovalardagi havolalar ustiga bosib ishga tushirishingiz mumkin.</translation>
 <translation id="3720541637541300822">Chrome yopilganda, Inkognito varaqlar qulflansin</translation>
@@ -83,19 +81,13 @@
 <translation id="6709398533399187136">Parolingiz oshkor qilingan. Google Parollar menejeri uni hoziroq almashtirishni tavsiya etadi.</translation>
 <translation id="6822673484890854830">Chrome ayrim parollarni tekshira olmadi. Keyinroq qayta urining.</translation>
 <translation id="6964931465519938134">Siz endi Chrome brauzerini har doim xabarlar, hujjatlar va boshqa ilovalardagi havolalar ustiga bosib ishga tushirishingiz mumkin.</translation>
-<translation id="7046845777663074840">Yoniq boʻlsa:
-<ph name="BEGIN_INDENT" />  • Chromeni siz kabi ishlatadigan odamlar uchun yaxshilashga yordam beradi<ph name="END_INDENT" />
-
-Bularni hisobga olish kerak:
-<ph name="BEGIN_INDENT" />  • Chromedan foydalanish maʼlumotlari Googlega yuboriladi, lekin siz bilan bogʻlanilmaydi
-  • Chromeda nosozlik yuz bersa, u haqidagi maʼlumotlar, shuningdek, ayrim shaxsiy axborotlar ham yuboriladi
-  • Sinxronizatsiya yoqilsa, koʻrsatkichlarga siz kiritgan URL manzillar ham biriktiriladi<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Chrome brauzerini oʻzingizga moslashtiring</translation>
 <translation id="7124339256045485976">Chrome brauzerini yangilab boring</translation>
 <translation id="7161390184744336561">Google Chrome versiyasi eskirdi</translation>
 <translation id="7165736900384873061">Google Chrome QR-kod skaneridan foydalaning</translation>
 <translation id="7172660552945675509">Maslahat: <ph name="BEGIN_LINK" />Chrome brauzerini sevimli ilovalar paneliga qadab oling<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Parollaringizga tezkor ruxsat olish uchun Chrome – Face ID tekshiruvini ishlatadi.</translation>
+<translation id="7187993566681480880">Hisobingizga kirganingizda Chrome va boshqa Google ilovalaridan xavfsiz foydalanishingizni taʼminlaydi.</translation>
 <translation id="72119412072970160">Google Parollar menejeriga saqlangan parollarni iPaddagi boshqa ilovalarda ishlatish mumkin.</translation>
 <translation id="7261678641327190792">Chrome parollaringizni tekshira olmadi</translation>
 <translation id="7272930098487145294">Rasmlarni saqlash uchun Sozlamalar ustiga bosib, Chromega rasmlarni ochishga ruxsat bering.</translation>
@@ -108,6 +100,7 @@ Bularni hisobga olish kerak:
 <translation id="766361182512894255">Parolingiz oshkor qilingan. Chrome parolni hoziroq yangilashni tavsiya qiladi.</translation>
 <translation id="7693590760643069321">Siz endi Chrome brauzerini har doim xabarlar, hujjatlar va boshqa ilovalardagi havolalar ustiga bosib ishga tushirishingiz mumkin.</translation>
 <translation id="7698568245838009292">Chrome kameradan foydalanmoqchi</translation>
+<translation id="7780154209050837198">Chrome imkoniyatlaridan maksimal foydalanish uchun Chromega Google hisobingiz bilan kiring.</translation>
 <translation id="7855730255114109580">Google Chrome versiyasi yangi</translation>
 <translation id="8022947259858476807">Havolalarni ochish, vidjetlar orqali qidiruv, boshqa ilovalarda parollar avtomatik kitilishda Chrome birlamchi ilova sifatida ishlatilsin</translation>
 <translation id="8160472928944011082">Chrome yangilanmadi</translation>

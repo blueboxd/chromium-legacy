@@ -11,9 +11,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
+#include "media/base/bitstream_buffer.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/test/bitstream_helpers.h"
 #include "media/gpu/test/video_encoder/video_encoder.h"
@@ -77,7 +80,8 @@ struct VideoEncoderClientConfig {
   const bool reverse = false;
 };
 
-struct VideoEncoderStats {
+class VideoEncoderStats {
+ public:
   VideoEncoderStats();
   VideoEncoderStats(const VideoEncoderStats&);
   ~VideoEncoderStats();
@@ -85,6 +89,7 @@ struct VideoEncoderStats {
                     size_t num_temporal_layers,
                     size_t num_spatial_layers);
   uint32_t Bitrate() const;
+  uint32_t LayerBitrate(size_t spatial_idx, size_t temporal_idx) const;
   void Reset();
 
   uint32_t framerate = 0;
@@ -265,6 +270,10 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
 
   // The current top spatial layer index.
   uint8_t current_top_spatial_index_ = 0;
+
+  // A map from an input VideoFrame timestamp to the time when it is enqueued
+  // into |encoder_|.
+  std::map<base::TimeDelta, base::TimeTicks> source_timestamps_;
 
   // Force a key frame on next Encode(), only accessed on the
   // |encoder_client_thread_|.

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
-<translation id="1096883626080133124">Opravite več s preprostim in varnim Chromom, ki je hitrejši kot kdaj prej.</translation>
 <translation id="1143896152279775643">Geslo bo shranjeno v Google Upravitelju gesel za račun <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Pomagajte izboljšati funkcije in delovanje Chroma</translation>
 <translation id="1479202195792305274">Chrome lahko preveri vaša gesla, ko se prijavite z računom Google.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Use Chrome Everywhere</translation>
 <translation id="3522659714780527202">Če si želite ogledati zavihke iz naprav, v katerih uporabljate Chrome, vklopite sinhronizacijo</translation>
 <translation id="3533694711092285624">Ni shranjenih gesel. Chrome lahko preveri gesla, če jih shranite.</translation>
-<translation id="3634910711516114487">Če želite kar najbolje izkoristiti Chrome, se prijavite v Chrome z računom Google.</translation>
 <translation id="3655656110921623717">To pomeni, da bo Chrome vsakič zahteval spletno mesto za mobilne naprave.</translation>
 <translation id="3706101708757577809">Zdaj lahko uporabljate Chrome, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
 <translation id="3720541637541300822">Zaklepanje anonimnih zavihkov po zaprtju Chroma</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Geslo je bilo razkrito zaradi podatkovne kršitve. Google Upravitelj gesel priporoča, da ga takoj spremenite.</translation>
 <translation id="6822673484890854830">Chromu ni uspelo preveriti vseh gesel. Poskusite znova pozneje.</translation>
 <translation id="6964931465519938134">Zdaj lahko uporabljate Chrome, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
-<translation id="7046845777663074840">Če je omogočeno:
-<ph name="BEGIN_INDENT" />  • Pomagate izboljšati Chrome za ljudi, ki ga uporabljajo kot vi.<ph name="END_INDENT" />
-
-Kaj je treba upoštevati:
-<ph name="BEGIN_INDENT" />  • Googlu se pošiljajo podatki o vaši uporabi Chroma, vendar niso povezani z vami.
-
-  • Če se Chrome zruši, bodo med podatki o zrušitvi morda nekateri osebni podatki.
-
-  • Če vklopite sinhronizacijo, bodo meritve vključevale tudi podatke o URL-jih, ki jih obiščete.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Prilagodite si Chrome</translation>
 <translation id="7124339256045485976">Posodobitev Chroma</translation>
 <translation id="7161390184744336561">Google Chrome je zastarel</translation>
 <translation id="7165736900384873061">Začetek uporabe bralnika kod QR Google Chroma</translation>
 <translation id="7172660552945675509">Nasvet: <ph name="BEGIN_LINK" />premaknite Chrome v vrstico z aplikacijami<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome uporablja funkcijo Face ID za zagotavljanje pooblaščenega dostopa do vaših gesel.</translation>
+<translation id="7187993566681480880">Skrbi za vašo varnost v Chromu in ga je mogoče uporabiti za okrepitev varnosti v drugih Googlovih aplikacijah, ko ste prijavljeni.</translation>
 <translation id="72119412072970160">Gesla, ki ste jih shranili v Googlovem upravitelju gesel, lahko uporabite v drugih aplikacijah v iPadu.</translation>
 <translation id="7261678641327190792">Chrome ne more preveriti vaših gesel</translation>
 <translation id="7272930098487145294">Če želite shraniti slike, se dotaknite aplikacije Settings in dovolite, da Chrome dodaja fotografijam</translation>
@@ -110,6 +100,7 @@ Kaj je treba upoštevati:
 <translation id="766361182512894255">Geslo je bilo razkrito zaradi podatkovne kršitve. Chrome priporoča, da takoj spremenite geslo.</translation>
 <translation id="7693590760643069321">Zdaj lahko uporabljate Chrome, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
 <translation id="7698568245838009292">Chrome želi dostopati do fotoaparata</translation>
+<translation id="7780154209050837198">Če želite kar najbolje izkoristiti Chrome, se prijavite vanj z računom Google.</translation>
 <translation id="7855730255114109580">Google Chrome je posodobljen</translation>
 <translation id="8022947259858476807">Uporabljajte Chrome kot privzeto možnost odpiranja povezav, iskanja v pripomočkih in samodejnega izpolnjevanja gesel v drugih aplikacijah.</translation>
 <translation id="8160472928944011082">Chroma ni mogoče posodobiti</translation>

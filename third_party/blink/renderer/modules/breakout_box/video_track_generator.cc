@@ -33,11 +33,8 @@ VideoTrackGenerator* VideoTrackGenerator::Create(
 
 VideoTrackGenerator::VideoTrackGenerator(ScriptState* script_state,
                                          ExceptionState& exception_state) {
-  auto track_id = WTF::CreateCanonicalUUIDString();
-  MediaStreamSource* wrapped_source = MakeGarbageCollected<MediaStreamSource>(
-      track_id, MediaStreamSource::kTypeVideo, track_id, /*remote=*/false);
   wrapped_generator_ = MakeGarbageCollected<MediaStreamTrackGenerator>(
-      script_state, wrapped_source);
+      script_state, MediaStreamSource::kTypeVideo);
 }
 
 WritableStream* VideoTrackGenerator::writable(ScriptState* script_state) {

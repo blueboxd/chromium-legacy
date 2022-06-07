@@ -75,7 +75,7 @@ void BackgroundBorderAdderImageSource::Draw(gfx::Canvas* canvas) {
   float half_thickness = kBorderThickness / 2.0f;
   gfx::SizeF size_f(size());
   gfx::RectF bounds(size_f);
-  bounds.Inset(half_thickness, half_thickness);
+  bounds.Inset(half_thickness);
   // Draw the background
   if (add_background_) {
     DCHECK(background_color_);
@@ -160,9 +160,7 @@ void ImageWithBadge::Render() {
   const auto* color_provider = GetColorProvider();
   const SkColor kBackgroundColor =
       color_provider->GetColor(ui::kColorBubbleBackground);
-  // Make the border color a softer version of the icon color.
-  const SkColor kBorderColor =
-      SkColorSetA(color_provider->GetColor(ui::kColorIcon), 96);
+  const SkColor kBorderColor = color_provider->GetColor(ui::kColorBubbleBorder);
 
   gfx::Image rounded_badge = profiles::GetSizedAvatarIcon(
       gfx::Image(GetBadge()),
@@ -224,10 +222,8 @@ MoveToAccountStoreBubbleView::MovingBannerView::MovingBannerView(
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetDefault(
           views::kMarginsKey,
-          gfx::Insets(
-              /*vertical=*/0,
-              /*horizontal=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                  views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+          gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 
   from_view = AddChildView(std::move(from_image));
 
@@ -268,10 +264,9 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
                                    /*adjust_height_for_width=*/true))
       .SetDefault(
           views::kMarginsKey,
-          gfx::Insets(
-              /*vertical=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                  DISTANCE_CONTROL_LIST_VERTICAL),
-              /*horizontal=*/0));
+          gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                              DISTANCE_CONTROL_LIST_VERTICAL),
+                          0));
 
   AddChildView(CreateDescription());
 

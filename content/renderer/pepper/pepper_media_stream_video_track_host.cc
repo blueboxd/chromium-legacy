@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_util.h"
 #include "ppapi/c/pp_errors.h"
@@ -528,18 +529,17 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
   std::string source_id;
   base::Base64Encode(base::RandBytesAsString(64), &source_id);
   blink::WebMediaStreamSource webkit_source;
+  auto source = std::make_unique<VideoSource>(weak_factory_.GetWeakPtr());
+  blink::MediaStreamVideoSource* const source_ptr = source.get();
   webkit_source.Initialize(blink::WebString::FromASCII(source_id),
                            blink::WebMediaStreamSource::kTypeVideo,
                            blink::WebString::FromASCII(kPepperVideoSourceName),
-                           false /* remote */);
-  blink::MediaStreamVideoSource* const source =
-      new VideoSource(weak_factory_.GetWeakPtr());
-  webkit_source.SetPlatformSource(
-      base::WrapUnique(source));  // Takes ownership of |source|.
+                           false /* remote */,
+                           std::move(source));  // Takes ownership of |source|.
 
   const bool enabled = true;
   track_ = blink::CreateWebMediaStreamVideoTrack(
-      source,
+      source_ptr,
       base::BindOnce(&PepperMediaStreamVideoTrackHost::OnTrackStarted,
                      base::Unretained(this)),
       enabled);

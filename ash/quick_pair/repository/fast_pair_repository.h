@@ -33,6 +33,14 @@ using CheckAccountKeysCallback =
     base::OnceCallback<void(absl::optional<PairingMetadata>)>;
 using DeviceMetadataCallback = base::OnceCallback<void(DeviceMetadata*, bool)>;
 using ValidModelIdCallback = base::OnceCallback<void(bool)>;
+using CheckOptInStatusCallback =
+    base::OnceCallback<void(nearby::fastpair::OptInStatus)>;
+using UpdateOptInStatusCallback = base::OnceCallback<void(bool)>;
+using DeleteAssociatedDeviceByAccountKeyCallback =
+    base::OnceCallback<void(bool)>;
+using GetSavedDevicesCallback =
+    base::OnceCallback<void(nearby::fastpair::OptInStatus,
+                            std::vector<nearby::fastpair::FastPairDevice>)>;
 
 // The entry point for the Repository component in the Quick Pair system,
 // responsible for connecting to back-end services.
@@ -54,6 +62,11 @@ class FastPairRepository {
   virtual void CheckAccountKeys(const AccountKeyFilter& account_key_filter,
                                 CheckAccountKeysCallback callback) = 0;
 
+  // Checks account keys saved to the device registry for a match to
+  // |account_key|. Return true if a match is found and false otherwise.
+  virtual bool IsAccountKeyPairedLocally(
+      const std::vector<uint8_t>& account_key) = 0;
+
   // Stores the given |account_key| for a |device| on the server.
   virtual void AssociateAccountKey(scoped_refptr<Device> device,
                                    const std::vector<uint8_t>& account_key) = 0;
@@ -63,6 +76,13 @@ class FastPairRepository {
   // otherwise.
   virtual bool DeleteAssociatedDevice(
       const device::BluetoothDevice* device) = 0;
+
+  // Deletes the associated data for a given |account_key|.
+  // Runs true if a delete is successful for this account key, false
+  // otherwise on |callback|.
+  virtual void DeleteAssociatedDeviceByAccountKey(
+      const std::vector<uint8_t>& account_key,
+      DeleteAssociatedDeviceByAccountKeyCallback callback) = 0;
 
   // Fetches the |device| images and a record of the device ID -> model ID
   // mapping to memory.
@@ -79,6 +99,23 @@ class FastPairRepository {
   // Returns device images belonging to |device_id|, if found.
   virtual absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
   GetImagesForDevice(const std::string& device_id) = 0;
+
+  // Fetches the opt in status from Footprints to determine the status for
+  // saving a user's devices to their account, which is synced all across a
+  // user's devices.
+  virtual void CheckOptInStatus(CheckOptInStatusCallback callback) = 0;
+
+  // Updates the opt in status for saving a user's devices to their account,
+  // synced across all of a user's devices, based on |opt_in_status|.
+  // If |opt_in_status| reflects the user being opted out, then all devices
+  // saved to their account are removed. The success or failure of updating
+  // the opt in status is reflected in running |callback|.
+  virtual void UpdateOptInStatus(nearby::fastpair::OptInStatus opt_in_status,
+                                 UpdateOptInStatusCallback callback) = 0;
+
+  // Gets a list of devices saved to the user's account and the user's opt in
+  // status for saving future devices to their account.
+  virtual void GetSavedDevices(GetSavedDevicesCallback callback) = 0;
 
  protected:
   static void SetInstance(FastPairRepository* instance);

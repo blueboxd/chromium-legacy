@@ -30,8 +30,8 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/features.h"
-#include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/prefs/pref_service.h"
@@ -114,7 +114,7 @@ FullRestoreService::FullRestoreService(Profile* profile)
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile_);
   if (user) {
-    ::full_restore::FullRestoreInfo::GetInstance()->SetRestorePref(
+    ::app_restore::AppRestoreInfo::GetInstance()->SetRestorePref(
         user->GetAccountId(), CanPerformRestore(prefs));
   }
 
@@ -465,13 +465,6 @@ void FullRestoreService::MaybeShowRestoreNotification(const std::string& id) {
 }
 
 void FullRestoreService::Restore() {
-  const user_manager::User* user =
-      ProfileHelper::Get()->GetUserByProfile(profile_);
-  if (user) {
-    ::full_restore::FullRestoreInfo::GetInstance()->SetRestoreFlag(
-        user->GetAccountId(), true);
-  }
-
   if (app_launch_handler_)
     app_launch_handler_->SetShouldRestore();
 }
@@ -494,7 +487,7 @@ void FullRestoreService::OnPreferenceChanged(const std::string& pref_name) {
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile_);
   if (user) {
-    ::full_restore::FullRestoreInfo::GetInstance()->SetRestorePref(
+    ::app_restore::AppRestoreInfo::GetInstance()->SetRestorePref(
         user->GetAccountId(), CanPerformRestore(profile_->GetPrefs()));
   }
 }

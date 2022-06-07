@@ -18,8 +18,8 @@
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -401,12 +401,12 @@ void ConfigureUpstartJobs(std::deque<JobDesc> jobs,
                                          std::move(jobs), std::move(callback));
   switch (operation) {
     case UpstartOperation::JOB_START:
-      chromeos::UpstartClient::Get()->StartJob(job_name, environment,
-                                               std::move(wrapped_callback));
+      ash::UpstartClient::Get()->StartJob(job_name, environment,
+                                          std::move(wrapped_callback));
       break;
     case UpstartOperation::JOB_STOP:
-      chromeos::UpstartClient::Get()->StopJob(job_name, environment,
-                                              std::move(wrapped_callback));
+      ash::UpstartClient::Get()->StopJob(job_name, environment,
+                                         std::move(wrapped_callback));
       break;
     case UpstartOperation::JOB_STOP_AND_START:
       NOTREACHED();

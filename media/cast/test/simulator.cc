@@ -61,6 +61,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "media/base/audio_bus.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -675,7 +676,7 @@ int main(int argc, char** argv) {
   const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   base::FilePath media_path = cmd->GetSwitchValuePath(media::cast::kLibDir);
   if (media_path.empty()) {
-    if (!base::PathService::Get(base::DIR_MODULE, &media_path)) {
+    if (!base::PathService::Get(base::DIR_GEN_TEST_DATA_ROOT, &media_path)) {
       LOG(ERROR) << "Failed to load FFmpeg.";
       return 1;
     }

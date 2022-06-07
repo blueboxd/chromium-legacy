@@ -17,6 +17,7 @@
     <output filename="chromeos_strings_bs.pak" type="data_package" lang="bs" />
     <output filename="chromeos_strings_ca.pak" type="data_package" lang="ca" />
     <output filename="chromeos_strings_cs.pak" type="data_package" lang="cs" />
+    <output filename="chromeos_strings_cy.pak" type="data_package" lang="cy" />
     <output filename="chromeos_strings_da.pak" type="data_package" lang="da" />
     <output filename="chromeos_strings_de.pak" type="data_package" lang="de" />
     <output filename="chromeos_strings_el.pak" type="data_package" lang="el" />
@@ -105,6 +106,7 @@
     <file path="strings/chromeos_strings_bs.xtb" lang="bs" />
     <file path="strings/chromeos_strings_ca.xtb" lang="ca" />
     <file path="strings/chromeos_strings_cs.xtb" lang="cs" />
+    <file path="strings/chromeos_strings_cy.xtb" lang="cy" />
     <file path="strings/chromeos_strings_da.xtb" lang="da" />
     <file path="strings/chromeos_strings_de.xtb" lang="de" />
     <file path="strings/chromeos_strings_el.xtb" lang="el" />
@@ -578,10 +580,6 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SCANNING_APP_PNG_OPTION_TEXT" desc="The text displayed for the PNG file type option.">
         PNG
-      </message>
-      <!-- TODO (gavinwill): Remove "translateable="false"" once string is confirmed. -->
-      <message translateable="false" name="IDS_SCANNING_APP_SEARCHABLE_PDF_OPTION_TEXT" desc="The text displayed for the Searchable PDF file type option. This option utilizes the Object Character Recognition (OCR) service to generate a PDF file whose text has been added as a searchable layer.">
-        Searchable PDF
       </message>
       <message name="IDS_SCANNING_APP_COLOR_MODE_DROPDOWN_LABEL" desc="The label for the dropdown that displays available color modes (e.g. color, grayscale, black and white, etc.).">
         Color
@@ -1182,6 +1180,24 @@ Try tapping the mic to ask me anything.
         USB touchscreen
       </message>
 
+      <message name="IDS_INPUT_DIAGNOSTICS_TESTER_DONE" desc="Text for a button the user clicks to indicate that they are done testing an input device, causing the dialog to close.">
+        Done
+      </message>
+
+      <!-- Input diagnostics: keyboard tester -->
+      <message name="IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_FOCUS_LOSS_MESSAGE" desc="A message displayed in a keyboard testing UI when its window loses focus, explaining that the tester won't respond to key presses again until its window is refocused.">
+        Keys aren't tested when you're using another window
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_HELP_LINK" desc="Text offering a link to the help center page for a keyboard testing UI.">
+        For more help, go to the <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Help Center<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_INSTRUCTION" desc="Instruction text in a keyboard testing UI. Appears above a visual representation showing the keys currently pressed on the keyboard.">
+        Type any key on your keyboard. You can press up to 4 keys at the same time.
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_TITLE" desc="Title for a dialog allowing the user to test their keyboard.">
+        Test your keyboard
+      </message>
+
       <!-- Ash keyboard diagram ARIA labels -->
       <message name="IDS_KEYBOARD_DIAGRAM_ARIA_LABEL_NOT_PRESSED" desc="ARIA label that describes a key that has not yet been pressed, as part of a keyboard testing UI. Key names could be single letters like Q, or a phrase like 'Down arrow'.">
         <ph name="KEY_NAME">$1<ex>Q</ex></ph> key not pressed
@@ -1211,6 +1227,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_BACKSPACE" desc="Describes the Backspace key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Backspace key not pressed', 'Backspace key pressed', or 'Backspace key tested').">
         Backspace
       </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_CONTROL_PANEL" desc="Describes the key on a ChromeOS keyboard that shows the quick settings when pressed. Used as part of an ARIA label on a keyboard testing UI (one of 'Control Panel key not pressed', 'Control Panel key pressed', or 'Control Panel key tested').">
+        Control Panel
+      </message>
       <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_ENTER" desc="Describes the Enter key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Enter key not pressed', 'Enter key pressed', or 'Enter key tested').">
         Enter
       </message>
@@ -1222,6 +1241,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_LAYOUT_SWITCH" desc="Describes the key on a Dell Chromebook keyboard that switches between keyboard layouts. Used as part of an ARIA label on a keyboard testing UI (one of 'Layout switch key not pressed', 'Layout switch key pressed', or 'Layout switch key tested').">
         Layout switch
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_LOCK" desc="Describes the key on a ChromeOS keyboard that locks the screen when pressed. Used as part of an ARIA label on a keyboard testing UI (one of 'Lock key not pressed', 'Lock key pressed', or 'Lock key tested').">
+        Lock
       </message>
       <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_POWER" desc="Describes the power key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Power key not pressed', 'Power key pressed', or 'Power key tested').">
         Power
@@ -1442,10 +1464,10 @@ Try tapping the mic to ask me anything.
         Group name
       </message>
       <message name="IDS_ONC_VPN_IPSEC_LOCAL_IDENTITY" desc="ONC Property label for VPN.IPSec.LocalIdentity">
-        Local identity
+        Local identity (optional)
       </message>
       <message name="IDS_ONC_VPN_IPSEC_REMOTE_IDENTITY" desc="ONC Property label for VPN.IPSec.RemoteIdentity">
-        Remote identity
+        Remote identity (optional)
       </message>
       <message name="IDS_ONC_VPN_THIRD_PARTY_VPN_PROVIDER_NAME" desc="ONC Property label for VPN.ThirdPartyVPN.ProviderName">
         Provider name
@@ -2248,7 +2270,38 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_MULTIPLE_ALBUMS_DESC" desc="Album description shown in the Ambient preview when more than 3 albums are selected">
         <ph name="TITLE">$1<ex>Sweden 2020</ex></ph>, +<ph name="NUMBER">$2<ex>2</ex></ph> more albums
-      </message> 
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_MAIN_PAGE_ZERO_STATE_MESSAGE" desc="Message shown in the Ambient subpage on the main page of personalization hub when ambient mode is disabled.">
+        Turn the feature on to select screensaver options
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TURN_ON_LABEL" desc="Label of button to turn on ambient mode.">
+        Turn on
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_MANAGED_SETTING" desc="Message to show in the personalization hub for a setting which is enterprise managed by administrators.">
+        This setting is managed by your administrators
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_CHANGE_AVATAR" desc="Aria label for the button to enter user avatar list subpage.">
+        Change avatar
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_CHANGE_WALLPAPER" desc="Aria label for the button to enter wallpaper subpage.">
+        Change wallpaper
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_CHANGE_SCREENSAVER" desc="Aria label for the button to enter ambient subpage.">
+        Change screensaver
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_ENABLE_DARK_COLOR_MODE" desc="Aria label for the button to enable dark color mode.">
+        Enable dark color mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_ENABLE_LIGHT_COLOR_MODE" desc="Aria label for the button to enable light color mode.">
+        Enable light color mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_ENABLE_AUTO_COLOR_MODE" desc="Aria label for the button to enable auto color mode.">
+        Enable auto color mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_GO_TO_ACCOUNT_SETTINGS" desc="Aria label for the link to account settings.">
+        Go to account settings
+      </message>
+
       <!-- Traffic Counters UI -->
       <message name="IDS_TRAFFIC_COUNTERS_UNKNOWN" desc="Traffic counters related to an unknown source">
         Unknown
@@ -2363,6 +2416,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_KEYBOARD" desc="Accessibility text for the type of a device that is a keyboard.">
         Device is a keyboard.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_KEYBOARD_MOUSE_COMBO" desc="Accessibility text for the type of a device that is a keyboard and mouse combo.">
+        Device is a keyboard and mouse combo.
       </message>
       <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_MOUSE" desc="Accessibility text for the type of a device that is a mouse.">
         Device is a mouse.
@@ -2643,8 +2699,8 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_PROVISIONING_TITLE" translateable="false" desc="Title for the device provisioning page. Provisioning is when component specific data is set e.g. erasing fingerprint data from the thumb reader or regenerating the device stable secret before returning the device to a new owner.">
         Provisioning the device...
       </message>
-      <message name="IDS_SHIMLESS_RMA_PROVISIONING_PROGRESS" translateable="false" desc="Message to display current progress of provisioning.">
-        Progress <ph name="PROGRESS_PERCENT">$1<ex>25</ex></ph>%.
+      <message name="IDS_SHIMLESS_RMA_PROVISIONING_IN_PROGRESS" translateable="false" desc="Message to display while the device is provisioning.">
+        Provisioning the device. Do not turn off the power.
       </message>
       <message name="IDS_SHIMLESS_RMA_PROVISIONING_COMPLETE" translateable="false" desc="Message to display when provisioning is complete.">
         Complete.
@@ -2704,9 +2760,24 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_BATTERY_SHUTOFF_TOOLTIP_TEXT" translateable="false" desc="Label for the battery shutoff tooltip.">
         Unplug power to perform battery cutoff
       </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_TITLE" translateable="false" desc="Title for the powerwash dialog displayed on repair complete page">
+        Powerwash required
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_SHUTDOWN_DESCRIPTION" translateable="false" desc="Contents of the powerwash dialog displayed on repair complete page when trying to shut down">
+        Device will be powerwashed before shutting down. Wait until it completes before closing the lid. This may take up to a minute.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_REBOOT_DESCRIPTION" translateable="false" desc="Contents of the powerwash dialog displayed on repair complete page when trying to reboot">
+        Device will be powerwashed before rebooting to the login screen. Wait until it completes before closing the lid. This may take up to a minute.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_BUTTON" translateable="false" desc="Label for the button that starts a powerwash">
+        Powerwash
+      </message>
       <!-- Run calibration page -->
       <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_PAGE_TITLE" translateable="false" desc="Title for the page shown when running component calibration steps.">
         Calibrating device components
+      </message>
+      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE_TITLE" translateable="false" desc="Title for the page shown when component calibration steps are complete.">
+        Calibration complete
       </message>
       <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE" translateable="false" desc="Message to display when all component calibration steps are complete.">
         Completed
@@ -2730,8 +2801,8 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_UPDATE_OS_VERY_OUT_OF_DATE" translateable="false" desc="Description when the installed OS is too many versions behind the update.">
         Chrome OS needs an additional update to get fully up to date
       </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_OUT_OF_DATE" translateable="false" desc="Description when the installed OS is not the most recent available.">
-        Chrome OS needs an additional update to get fully up to date.
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_OUT_OF_DATE" translateable="false" desc="The instructions shown when there is a Chrome OS update available.">
+        Update to the latest version of Chrome OS for an optimized repair process
       </message>
       <message name="IDS_SHIMLESS_RMA_UPDATE_OS_NETWORK_UNAVAILABLE" translateable="false" desc="Notice that no network is available when attempting to update Chrome OS.">
         To check if OS is up to date, connect to the internet in previous screen
@@ -2750,6 +2821,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_UPDATE_VERSION_AND_RESTART" translateable="false" desc="Label for the button that updates the device to the latest version of Chrome OS then restarts the device.">
         Update to <ph name="VERSION_NUMBER">$1</ph> &#38; restart
+      </message>
+      <message name="IDS_SHIMLESS_RMA_UPDATING_OS_VERSION" translateable="false" desc="The message shown while updating the device's OS version.">
+        Updating OS version
       </message>
       <!-- Manually disable wp page -->
       <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS" translateable="false" desc="The text instructions for how to manually disable write-protect on the device.">
@@ -2879,7 +2953,7 @@ Try tapping the mic to ask me anything.
         <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> repair error
       </message>
       <message name="IDS_SHIMLESS_RMA_CRITICAL_ERROR_MESSAGE" translateable="false" desc="The message for the critical error when Shimless RMA app is launched when not in RMA. This should never happen.">
-        We're running into errors. Try rebooting or return to the login screen.
+        We're running into errors. Try rebooting or recover the firmware using a USB thumbdrive.
       </message>
       <message name="IDS_SHIMLESS_RMA_CRITICAL_EXIT_BUTTON" translateable="false" desc="Label for the exit button on the error page.">
         Exit repair

@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
 #include "chrome/grit/generated_resources.h"
@@ -19,10 +20,9 @@ constexpr StaticOobeScreenId DemoSetupScreenView::kScreenId;
 
 DemoSetupScreenView::~DemoSetupScreenView() = default;
 
-DemoSetupScreenHandler::DemoSetupScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.DemoSetupScreen.userActed");
+DemoSetupScreenHandler::DemoSetupScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.DemoSetupScreen.userActed");
 }
 
 DemoSetupScreenHandler::~DemoSetupScreenHandler() {
@@ -31,14 +31,14 @@ DemoSetupScreenHandler::~DemoSetupScreenHandler() {
 }
 
 void DemoSetupScreenHandler::Show() {
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void DemoSetupScreenHandler::Hide() {}
 
 void DemoSetupScreenHandler::Bind(DemoSetupScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void DemoSetupScreenHandler::OnSetupFailed(
@@ -62,7 +62,7 @@ void DemoSetupScreenHandler::OnSetupSucceeded() {
   CallJS("login.DemoSetupScreen.onSetupSucceeded");
 }
 
-void DemoSetupScreenHandler::Initialize() {}
+void DemoSetupScreenHandler::InitializeDeprecated() {}
 
 void DemoSetupScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -82,9 +82,8 @@ void DemoSetupScreenHandler::DeclareLocalizedValues(
 }
 
 void DemoSetupScreenHandler::GetAdditionalParameters(
-    base::DictionaryValue* parameters) {
-  parameters->SetPath("demoSetupSteps",
-                      DemoSetupController::GetDemoSetupSteps());
+    base::Value::Dict* parameters) {
+  parameters->Set("demoSetupSteps", DemoSetupController::GetDemoSetupSteps());
 }
 
 }  // namespace chromeos

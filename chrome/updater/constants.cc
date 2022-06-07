@@ -42,6 +42,7 @@ const char kAppIdSwitch[] = "app-id";
 const char kAppVersionSwitch[] = "app-version";
 const char kWakeSwitch[] = "wake";
 const char kTagSwitch[] = "tag";
+const char kInstallerDataSwitch[] = "installerdata";
 
 const char kServerServiceSwitch[] = "service";
 
@@ -61,6 +62,10 @@ const char kInstallFromOutDir[] = "install-from-out-dir";
 const char kHealthCheckSwitch[] = "healthcheck";
 
 const char kHandoffSwitch[] = "handoff";
+
+const char kCmdLineExpectElevated[] = "expect-elevated";
+
+const char kCmdLinePrefersUser[] = "prefers-user";
 
 // Path names.
 const char kAppsDir[] = "apps";
@@ -85,6 +90,8 @@ const char kProxyModeSystem[] = "system";
 
 // Specifies that urls that can be cached by proxies are preferred.
 const char kDownloadPreferenceCacheable[] = "cacheable";
+
+const char kUTF8BOM[] = "\xEF\xBB\xBF";
 
 #if BUILDFLAG(IS_MAC)
 // The user defaults suite name.

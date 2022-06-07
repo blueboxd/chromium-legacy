@@ -6,6 +6,9 @@
 
 #include <string.h>
 
+#include <utility>
+#include <vector>
+
 #include "ash/components/arc/arc_util.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -15,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -87,12 +89,10 @@ std::unique_ptr<ArcDefaultAppList::AppInfoMap> ReadAppsFromFileThread(
     base::Value app_info =
         base::Value::FromUniquePtrValue(std::move(app_info_ptr));
 
-    CHECK(app_info.is_dict());
-
-    auto* name = app_info.FindStringKey(kName);
-    auto* package_name = app_info.FindStringKey(kPackageName);
-    auto* activity = app_info.FindStringKey(kActivity);
-    auto* app_path = app_info.FindStringKey(kAppPath);
+    auto* name = app_info.GetDict().FindString(kName);
+    auto* package_name = app_info.GetDict().FindString(kPackageName);
+    auto* activity = app_info.GetDict().FindString(kActivity);
+    auto* app_path = app_info.GetDict().FindString(kAppPath);
     bool oem = app_info.FindBoolPath(kOem).value_or(false);
 
     if (!name || !package_name || !activity || !app_path || name->empty() ||
@@ -328,7 +328,8 @@ void ArcDefaultAppList::SetAppHidden(const std::string& app_id, bool hidden) {
   // Store hidden flag.
   arc::ArcAppScopedPrefUpdate(profile_->GetPrefs(), app_id, kDefaultApps)
       .Get()
-      ->SetBoolKey(kHidden, hidden);
+      ->GetDict()
+      .Set(kHidden, hidden);
 }
 
 void ArcDefaultAppList::SetAppsHiddenForPackage(

@@ -176,6 +176,7 @@
 <translation id="4600710005438004015">由於 Chrome 無法更新至最新版本，因此您無法使用最新功能和安全性修正。</translation>
 <translation id="4627412468266359539">選用：將診斷和使用情況資料自動傳送給 Google，協助改善 ChromeOS Flex 的功能和效能。</translation>
 <translation id="4633000520311261472">為了提高 Chrome 的安全性，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，它們可能在您不知情的情況下新增至瀏覽器。</translation>
+<translation id="469553575393225953">來源不明的擴充程式、應用程式和主題可能會損害您的裝置。Chrome 建議您只透過「Chrome 網上應用程式商店」安裝這些項目</translation>
 <translation id="4728575227883772061">安裝失敗，錯誤原因不明。如果目前正在執行 Google Chrome，請先關閉，然後再試一次。</translation>
 <translation id="4747730611090640388">Chrome 可以推測您的興趣。您日後瀏覽的網站可向 Chrome 要求查看您的興趣，以便向您顯示個人化廣告。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -219,6 +220,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5736850870166430177">如果有網站試圖盜取您的密碼，或當您下載有害檔案時，Chrome 亦可能將網址 (包括部分網頁內容) 傳送至「安全瀏覽」功能</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5756509061973259733">此裝置上已有此帳戶的 Chrome 設定檔</translation>
+<translation id="5763280521700030406">由於此檔案太大，無法進行安全檢查，因此已被 Chrome 封鎖。請嘗試使用大小不超過 50 MB 的檔案再試一次</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">無法啟動 Chrome，請再試一次。</translation>
 <translation id="5867197326698922595">Google Chrome 正在嘗試編輯密碼。</translation>
@@ -234,6 +236,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta 版</translation>
 <translation id="6235018212288296708">允許 mDNS 流量的 Google Chrome 輸入規則。</translation>
+<translation id="6247557882553405851">Google 密碼管理工具</translation>
 <translation id="6291089322031436445">Chrome 開發人員應用程式</translation>
 <translation id="6291549208091401781">電腦上的所有使用者均安裝了 Google Chrome。</translation>
 <translation id="6368958679917195344">Chrome 作業系統的開發全賴其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟件<ph name="END_LINK_CROS_OSS" />協助才得以面世。</translation>
@@ -242,6 +245,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6506909944137591434">Chrome 需要相機權限，才能根據您身處的環境製作 3D 地圖</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome 開發人員版</translation>
 <translation id="6568793831116033768">Chrome 作業系統</translation>
+<translation id="659498884637196217">前往此裝置的「Google 密碼管理工具」進行更新</translation>
 <translation id="6632473616050862500">ChromeOS Flex 的開發全賴其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟件<ph name="END_LINK_CROS_OSS" />協助才得以面世。</translation>
 <translation id="6676384891291319759">連線到互聯網</translation>
 <translation id="6679975945624592337">讓 Google Chrome 在背景執行</translation>
@@ -280,6 +284,7 @@ Google Chrome 無法復原您的設定。</translation>
 您已向網站和應用程式授予的權限，可能會套用到此帳戶。您可在「<ph name="SETTINGS_LINK_BEGIN" />設定<ph name="SETTINGS_LINK_END" />」中管理 Google 帳戶。</translation>
 <translation id="7398801000654795464">您使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chrome，請使用相同帳戶重新登入。</translation>
 <translation id="7408085963519505752">Chrome 作業系統條款</translation>
+<translation id="7410958280246779049">由於此檔案不安全，因此 Chrome 已封鎖此檔案</translation>
 <translation id="7419046106786626209">您的網域無法使用「同步功能」，因此 Chrome 作業系統無法同步處理您的數據。</translation>
 <translation id="7481213027396403996">取得 Chrome 最強大的安全防護</translation>
 <translation id="7486227612705979895">Chrome 會存取您的「雲端硬碟」，然後在網址列提出建議</translation>
@@ -294,7 +299,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7655455401911432608">您的瀏覽記錄，亦即您在此裝置上使用 Chrome 瀏覽過的網站記錄。</translation>
 <translation id="7665553140559834626">重新啟動以更新 &amp;Chrome 作業系統</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟件。</translation>
-<translation id="7748512868279796735">可在此 Chrome 設定檔使用以下帳戶</translation>
 <translation id="7761834446675418963">按一下您的名稱即可開啟 Chrome 並開始瀏覽。</translation>
 <translation id="7777080907402804672">如果圖片並無有用的說明，Chrome 會嘗試為您提供說明。因此，圖片將傳送至 Google 以建立說明。您可以隨時在設定中關閉此功能。</translation>
 <translation id="7781002470561365167">Google Chrome 已推出新版本。</translation>
@@ -310,10 +314,12 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7951272445806340501">ChromeOS Flex 必須重新啟動，才能套用更新。</translation>
 <translation id="7962410387636238736">由於 Google Chrome 將停止支援 Windows XP 和 Windows Vista，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="79947657522496226">「Chrome 作業系統」的開發全賴其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟件<ph name="END_LINK_CROS_OSS" />協助才得以面世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux 開發環境<ph name="END_LINK_LINUX_OSS" />也一樣。</translation>
+<translation id="8005666035647241369">儲存至此裝置的「Google 密碼管理工具」</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>
 <translation id="8013993649590906847">如果圖片並無有用的說明，Chrome 會嘗試為您提供說明。因此，圖片將傳送至 Google 以建立說明。</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">關於 Google Chrome(&amp;G)</translation>
+<translation id="822971176939352383">以下帳戶未登入任何 Chrome 設定檔。如要將帳戶用於其他設定檔，請先移除該設定檔。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的相機和麥克風。</translation>
 <translation id="8286862437124483331">Google Chrome 正在嘗試顯示密碼。如果您同意，請輸入您的 Windows 密碼。</translation>
 <translation id="828798499196665338">您的家長已停用 Chrome 的「網站、應用程式和擴充程式權限」設定，因此您無法啟用此<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
@@ -325,8 +331,10 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8394720698884623075">使用儲存在 Chrome 中的不安全網站清單來檢查網址</translation>
 <translation id="840084489713044809">Google Chrome 想匯出您的密碼。</translation>
 <translation id="8416347857511542594">前往 Chrome 進一步瞭解廣告個人化</translation>
+<translation id="8421734018304082652">由於此檔案已加密，因此已被 Chrome 封鎖。請要求擁有者解密檔案</translation>
 <translation id="8433638294851456451">如要將號碼從此處傳送至 Android 手機，請在這兩部裝置上登入 Chrome。</translation>
 <translation id="8498858610309223613">Google Chrome 剛套用了特別的安全性更新。請立即重新啟動，我們將會還原您的分頁。</translation>
+<translation id="8504220326736535258">由於此檔案含有惡意軟件，因此已被 Chrome 封鎖</translation>
 <translation id="8516431725144212809">Chrome 推測您有以下興趣</translation>
 <translation id="8521348052903287641">允許 mDNS 流量的 Google Chrome 開發人員版輸入規則。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -26,7 +26,7 @@
 #include "base/containers/flat_map.h"
 #include "base/scoped_observation.h"
 #include "components/account_id/account_id.h"
-#include "components/app_restore/full_restore_info.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -262,7 +262,7 @@ class WindowRestoreControllerTest : public AshTestBase,
 
     // Turn on the user preference by default, so do not need to set
     // for all test cases all the time.
-    full_restore::FullRestoreInfo::GetInstance()->SetRestorePref(
+    app_restore::AppRestoreInfo::GetInstance()->SetRestorePref(
         Shell::Get()->session_controller()->GetActiveAccountId(), true);
   }
 
@@ -321,6 +321,7 @@ class WindowRestoreControllerTest : public AshTestBase,
     out_dst->current_bounds = src.current_bounds;
     out_dst->window_state_type = src.window_state_type;
     out_dst->display_id = src.display_id;
+    out_dst->arc_extra_info = src.arc_extra_info;
   }
 
   // A map which is a fake representation of the window restore file.
@@ -337,8 +338,7 @@ TEST_F(WindowRestoreControllerTest, WindowSaveDisabled) {
   ResetSaveWindowsCount();
 
   // Disable window restore.
-  full_restore::FullRestoreInfo::GetInstance()->SetRestorePref(account_id,
-                                                               false);
+  app_restore::AppRestoreInfo::GetInstance()->SetRestorePref(account_id, false);
 
   auto* window1_state = WindowState::Get(window1.get());
   auto* window2_state = WindowState::Get(window2.get());
@@ -351,8 +351,7 @@ TEST_F(WindowRestoreControllerTest, WindowSaveDisabled) {
   EXPECT_EQ(0, GetSaveWindowsCount(window2.get()));
 
   // Enable window restore.
-  full_restore::FullRestoreInfo::GetInstance()->SetRestorePref(account_id,
-                                                               true);
+  app_restore::AppRestoreInfo::GetInstance()->SetRestorePref(account_id, true);
 
   // Setting the user preference to true should trigger window save
   // immediately.
@@ -1300,14 +1299,21 @@ TEST_F(WindowRestoreControllerTest, WindowsOnInactiveDeskAreNotActivatable) {
 // used. See https://crbug.com/1265750.
 TEST_F(WindowRestoreControllerTest, WindowsSavedInOverview) {
   const gfx::Rect window_bounds(300, 200);
-  auto window = CreateAppWindow(window_bounds, AppType::BROWSER);
+  auto browser_window = CreateAppWindow(window_bounds, AppType::BROWSER);
+  auto arc_window = CreateAppWindow(window_bounds, AppType::ARC_APP);
 
   ToggleOverview();
-  EXPECT_NE(window_bounds, window->GetBoundsInScreen());
+  EXPECT_NE(window_bounds, browser_window->GetBoundsInScreen());
+  EXPECT_NE(window_bounds, arc_window->GetBoundsInRootWindow());
 
-  app_restore::WindowInfo* window_info = GetWindowInfo(window.get());
-  ASSERT_TRUE(window_info);
-  EXPECT_EQ(window_bounds, window_info->current_bounds);
+  app_restore::WindowInfo* browser_window_info =
+      GetWindowInfo(browser_window.get());
+  ASSERT_TRUE(browser_window_info);
+  EXPECT_EQ(window_bounds, browser_window_info->current_bounds);
+
+  app_restore::WindowInfo* arc_window_info = GetWindowInfo(arc_window.get());
+  ASSERT_TRUE(arc_window_info);
+  EXPECT_EQ(window_bounds, arc_window_info->arc_extra_info->bounds_in_root);
 }
 
 }  // namespace ash

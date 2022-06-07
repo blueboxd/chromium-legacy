@@ -184,7 +184,6 @@ Kui kustutate oma sirvimisajaloo – kogu ajaloo või konkreetse saidi ajaloo �
 <translation id="200114059308480249">Kas kaasata ümbritsev tekst Google'i otsingutesse?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fail}other{# faili}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> avaneb Chrome'is. Jätkates nõustute <ph name="BEGIN_LINK1" />Google'i teenusetingimustega<ph name="END_LINK1" /> ning <ph name="BEGIN_LINK2" />Google Chrome'i ja Chrome OS-i lisateenusetingimustega<ph name="END_LINK2" />. Kehtivad ka <ph name="BEGIN_LINK3" />privaatsuseeskirjad<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Kas eemaldada huvi?</translation>
 <translation id="2020309681647789787">Teie ajalugu on saadaval kõigis sünkroonitud seadmetes, et saaksite pooleli jäänud toiminguid jätkata</translation>
 <translation id="2021896219286479412">Saidi juhtelemendid täisekraanil</translation>
 <translation id="2038563949887743358">Valiku Taotle arvutisaiti sisselülitamine</translation>
@@ -213,6 +212,7 @@ Puudutage otsimiseks mis tahes sõna. Otsingu täpsustamiseks puudutage pikalt, 
 <translation id="2141396931810938595">Kasutuse põhjal</translation>
 <translation id="214888715418183969">Valige, mida olete nõus Chrome'iga jagama. Teie jagatavaid mõõdikuid kasutatakse Chrome'i funktsioonide, toimivuse ja stabiilsuse täiustamiseks.</translation>
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
+<translation id="2155214902713132423">See kinnitusmeetod pole selle seadme jaoks saadaval. Tehke oma teises seadmes muu valik.</translation>
 <translation id="2157851137955077194">Kui soovite midagi oma telefonist teise seadmega jagada, lülitage sünkroonimine mõlema seadme Chrome'i seadetes sisse</translation>
 <translation id="2158408438301413340">Chrome'il ei õnnestunud kõiki paroole kontrollida</translation>
 <translation id="2169830938017475061">Kohe</translation>
@@ -733,7 +733,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5091199029769593641">Varsti näete uue vahelehe avamisel lugusid saidilt <ph name="SITE_NAME" />. Jälgitud saidid salvestatakse teie Google'i kontole. Saate neid hallata teenuse Discover seadetes.</translation>
 <translation id="5091249083535528968">Laiendatud kasutusandmed</translation>
 <translation id="509429900233858213">Tekkis viga.</translation>
-<translation id="5098190077610408701">Kas lisada huvi?</translation>
 <translation id="5102401324271069229">Kui sait üritab teie parooli varastada või laadite alla kahjuliku faili, võib Chrome saata URL-id ja lehe sisu osad teenusele Google'i ohutu sirvimine</translation>
 <translation id="510275257476243843">Jäänud on 1 tund</translation>
 <translation id="5115811374190515607">teenusesse <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5906513782029855931">Kui teate saitide URL-e, saab Google'i assistent aidata teil ülesandeid täita. Assistendi saab Chrome'i seadetes välja lülitada.</translation>
 <translation id="5916664084637901428">Sees</translation>
 <translation id="5919204609460789179">Sünkroonimise alustamiseks värskendage teenust <ph name="PRODUCT_NAME" /></translation>
+<translation id="5938820472109305350">Lisa <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Otsimiseks kasutatakse Google'it</translation>
 <translation id="5945035219773565305">Praegune soovitus: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Kuvatud on aktiivne leht</translation>
@@ -898,7 +898,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6033245666633565791"><ph name="BEGIN_LINK" />Privaatsuse liivakasti<ph name="END_LINK" /> abil arendab Chrome uusi tehnoloogiaid, mille abil kaitsta teid saidiülese jälgimise eest, säilitades siiski juurdepääsu avatud veebile.
 
 Privaatsuse liivakasti prooviperioodid on endiselt arendusjärgus ja saadaval vaid valitud piirkondades. Praegu võivad saidid privaatsuse liivakasti proovida, kasutades jätkuvalt ka muid veebitehnoloogiaid, nagu kolmandate osapoolte küpsisefailid.</translation>
-<translation id="6036057147555329831">Täiendav ICU</translation>
 <translation id="6039379616847168523">Järgmisele vahelehele liikumine</translation>
 <translation id="6040143037577758943">Sulge</translation>
 <translation id="604124094241169006">Automaatne</translation>
@@ -1023,6 +1022,7 @@ Usaldusmärgid täiustavad veebis privaatsust ja neid ei saa kasutada teie isiku
 <translation id="663674369910034433">Privaatsuse, turvalisuse ning andmete kogumisega seotud lisaseadete nägemiseks vaadake jaotisi <ph name="BEGIN_LINK1" />Sünkroonimine<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />Google'i teenused<ph name="END_LINK2" />.</translation>
 <translation id="6637100877383020115">Rakenduse täiustamiseks saadab Chrome Google'ile kasutus- ja krahhiandmeid. <ph name="BEGIN_UMA_LINK" />Haldamine<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Blokeeri alati</translation>
+<translation id="6641780377503683465">Eemalda <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Tühjenda</translation>
 <translation id="6645629752388991326">Hallake, millised seadmed saavad seda seadet turvavõtmena kasutades sisse logida.</translation>
 <translation id="6648459603387803038">Teie administraator saab brauseri seadistust kaugühenduse kaudu muuta. Selle seadme tegevusi võidakse hallata ka väljaspool Chrome'i.</translation>

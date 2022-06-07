@@ -36,7 +36,7 @@ class OsTrialScreenHandler : public BaseScreenHandler,
  public:
   using TView = OsTrialScreenView;
 
-  explicit OsTrialScreenHandler(JSCallsContainer* js_calls_container);
+  OsTrialScreenHandler();
   OsTrialScreenHandler(const OsTrialScreenHandler&) = delete;
   OsTrialScreenHandler& operator=(const OsTrialScreenHandler&) = delete;
   ~OsTrialScreenHandler() override;
@@ -45,7 +45,7 @@ class OsTrialScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // OsTrialScreenView:
   void Show() override;

@@ -86,6 +86,60 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="History.ClearBrowsingData.Duration.ChromeTask.{Task}"
+    units="ms" expires_after="2022-10-01">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Records the duration of a ChromeBrowsingDataRemoverDelegate task for {Task}
+    deletion.
+  </summary>
+  <token key="Task">
+    <variant name="AccountCompromisedCredentials"
+        summary="AccountCompromisedCredentials"/>
+    <variant name="AccountPasswords" summary="AccountPasswords"/>
+    <variant name="AccountPasswordsSynced" summary="AccountPasswordsSynced"/>
+    <variant name="AutofillData" summary="AutofillData"/>
+    <variant name="AutofillOrigins" summary="AutofillOrigins"/>
+    <variant name="CdmLicenses" summary="CdmLicenses"/>
+    <variant name="CompromisedCredentials" summary="CompromisedCredentials"/>
+    <variant name="Cookies" summary="Cookies"/>
+    <variant name="DisableAutoSignin" summary="DisableAutoSignin"/>
+    <variant name="DomainReliability" summary="DomainReliability"/>
+    <variant name="ExploreSites" summary="ExploreSites"/>
+    <variant name="FaviconCacheExpiration" summary="FaviconCacheExpiration"/>
+    <variant name="FieldInfo" summary="FieldInfo"/>
+    <variant name="FlashDeauthorization" summary="FlashDeauthorization"/>
+    <variant name="History" summary="History"/>
+    <variant name="HostCache" summary="HostCache"/>
+    <variant name="HostNameResolution" summary="HostNameResolution"/>
+    <variant name="HttpAuthCache" summary="HttpAuthCache"/>
+    <variant name="KeywordsModel" summary="KeywordsModel"/>
+    <variant name="LegacyStrikes" summary="LegacyStrikes"/>
+    <variant name="MediaFeeds" summary="MediaFeeds"/>
+    <variant name="NaclCache" summary="NaclCache"/>
+    <variant name="NetworkErrorLogging" summary="NetworkErrorLogging"/>
+    <variant name="NetworkPredictor" summary="NetworkPredictor"/>
+    <variant name="OfflinePages" summary="OfflinePages"/>
+    <variant name="Passwords" summary="Passwords"/>
+    <variant name="PasswordsStatistics" summary="PasswordsStatistics"/>
+    <variant name="PluginData" summary="PluginData"/>
+    <variant name="PnaclCache" summary="PnaclCache"/>
+    <variant name="ReportingCache" summary="ReportingCache"/>
+    <variant name="SecurePaymentConfirmationCredentials"
+        summary="SecurePaymentConfirmationCredentials"/>
+    <variant name="Strikes" summary="Strikes"/>
+    <variant name="Synchronous" summary="Synchronous"/>
+    <variant name="TpmAttestationKeys" summary="TpmAttestationKeys"/>
+    <variant name="UserDataSnapshot" summary="UserDataSnapshot"/>
+    <variant name="VideoDecodeHistory" summary="VideoDecodeHistory"/>
+    <variant name="WebAppHistory" summary="WebAppHistory"/>
+    <variant name="WebAuthnCredentials" summary="WebAuthnCredentials"/>
+    <variant name="WebrtcEventLogs" summary="WebrtcEventLogs"/>
+    <variant name="WebrtcLogs" summary="WebrtcLogs"/>
+  </token>
+</histogram>
+
 <histogram name="History.ClearBrowsingData.Duration.FilteredDeletion"
     units="ms" expires_after="never">
 <!-- expires-never: tracked as an important privacy metric. -->
@@ -157,6 +211,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.ClearBrowsingData.Duration.Task.{Task}" units="ms"
+    expires_after="2022-10-01">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Records the duration of a BrowsingDataRemoverImpl task for {Task} deletion.
+  </summary>
+  <token key="Task">
+    <variant name="AuthCache" summary="AuthCache"/>
+    <variant name="ChannelIds" summary="ChannelIds"/>
+    <variant name="CodeCaches" summary="CodeCaches"/>
+    <variant name="Conversions" summary="Conversions"/>
+    <variant name="DeferredCookies" summary="DeferredCookies"/>
+    <variant name="EmbedderData" summary="EmbedderData"/>
+    <variant name="HttpAndMediaCaches" summary="HttpAndMediaCaches"/>
+    <variant name="HttpCache" summary="HttpCache"/>
+    <variant name="NetworkErrorLogging" summary="NetworkErrorLogging"/>
+    <variant name="NetworkHistory" summary="NetworkHistory"/>
+    <variant name="ReportingCache" summary="ReportingCache"/>
+    <variant name="StoragePartition" summary="StoragePartition"/>
+    <variant name="Synchronous" summary="Synchronous"/>
+    <variant name="TrustTokens" summary="TrustTokens"/>
+  </token>
+</histogram>
+
 <histogram name="History.ClearBrowsingData.Duration.TimeRangeDeletion"
     units="ms" expires_after="never">
 <!-- expires-never: tracked as an important privacy metric. -->
@@ -171,7 +250,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.FailedTasksChrome"
-    enum="ChromeBrowsingDataRemoverTasks" expires_after="2022-07-11">
+    enum="ChromeBrowsingDataRemoverTasks" expires_after="2022-09-25">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -386,7 +465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.FinalState"
-    enum="HistoryClustersFinalState" expires_after="2022-07-17">
+    enum="HistoryClustersFinalState" expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -405,7 +484,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.InitialState"
-    enum="HistoryClustersInitialState" expires_after="2022-07-17">
+    enum="HistoryClustersInitialState" expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -417,7 +496,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.LinksOpened" units="links opened"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -428,7 +507,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.NumQueries"
-    units="number queries made" expires_after="2022-07-17">
+    units="number queries made" expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -457,7 +536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupLatency2" units="ms"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -470,7 +549,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupSize" units="count"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -500,7 +579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.ComputeClusters.ThreadTime"
-    units="ms" expires_after="2022-07-17">
+    units="ms" expires_after="2022-09-18">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -514,7 +593,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.EntityIdGathering.ThreadTime"
-    units="ms" expires_after="2022-07-17">
+    units="ms" expires_after="2022-09-18">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -528,7 +607,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.GetClustersLatency" units="ms"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -540,7 +619,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.AllKeywordPhraseCount"
-    units="count" expires_after="2022-09-11">
+    units="count" expires_after="2022-04-06">
+  <obsolete>
+    Deprecated 04/2022 because we no longer break keywords apart before storing
+    in the cache.
+  </obsolete>
   <owner>manukh@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -560,10 +643,8 @@ chromium-metrics-reviews@google.com.
   <owner>manukh@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
-    Logs the number of keywords stored in the primary cache.
-
-    Each cluster can have multiple keyword phrases; each phrase consists of 1 or
-    more words.
+    Logs the number of keywords stored in the primary cache. Each keyword may
+    actually be multiple words.
 
     Logged each time the primary cache is refreshed, i.e. on omnibox key stroke
     limited to at most once every 2 hours, though clearing history items will
@@ -572,7 +653,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.ShortKeywordPhraseCount"
-    units="count" expires_after="2022-09-11">
+    units="count" expires_after="2022-04-06">
+  <obsolete>
+    Deprecated 04/2022 because we no longer break keywords apart before storing
+    in the cache.
+  </obsolete>
   <owner>manukh@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -591,7 +676,8 @@ chromium-metrics-reviews@google.com.
   <owner>manukh@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
-    Logs the number of keyword phrases stored in the short cache.
+    Logs the number of keyword stored in the short cache. Each keyword may
+    actually be multiple words.
 
     Each cluster can have multiple keyword phrases; each phrase consists of 1 or
     more words.
@@ -602,7 +688,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumBatchesProcessedForVisits"
-    units="number of batches" expires_after="2022-07-17">
+    units="number of batches" expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -614,7 +700,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumClustersReturned"
-    units="number clusters returned" expires_after="2022-07-17">
+    units="number clusters returned" expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -643,7 +729,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumVisitsToCluster"
-    units="number visits" expires_after="2022-07-17">
+    units="number visits" expires_after="2022-09-18">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -655,7 +741,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.ProcessBatchOfVisits.BatchSize"
-    units="number visits" expires_after="2022-07-17">
+    units="number visits" expires_after="2022-09-18">
   <owner>tbansal@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -668,7 +754,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.ProcessBatchOfVisits.ThreadTime"
-    units="ms" expires_after="2022-07-17">
+    units="ms" expires_after="2022-09-18">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -683,7 +769,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.QueryAnnotatedVisits.ThreadTime"
-    units="ms" expires_after="2022-07-24">
+    units="ms" expires_after="2022-09-25">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -742,7 +828,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.KeywordCache.ThreadTime" units="ms"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -754,7 +840,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.ProcessClustersDuration" units="ms"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>olivierli@chromium.org</owner>
   <owner>tommycli@chromium.org</owner>
   <summary>
@@ -775,7 +861,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.ServiceLatency" units="ms"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -889,8 +975,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DatabaseFileMB" units="MB" expires_after="M85">
-  <owner>shess@chromium.org</owner>
+<histogram name="History.DatabaseFileMB" units="MB" expires_after="M110">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
   <summary>
     Size of History DB file. Duplicate of Profile.HistorySize and
     Sqlite.SizeKB.History. Logged on initialization of the History DB on 1% of
@@ -1169,7 +1257,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLHistoryItems" units="items"
-    expires_after="2022-08-14">
+    expires_after="2022-12-01">
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1180,7 +1268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-12-01">
   <owner>mpearson@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -1190,7 +1278,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime.RoundTripTime" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-12-01">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -1206,7 +1294,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexRestoreCacheTime" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-12-01">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -1216,7 +1304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexSaveCacheTime" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-12-01">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>

@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -180,7 +179,7 @@ void UpdateCheckerTest::UpdateCheckComplete(
 
 scoped_refptr<UpdateContext> UpdateCheckerTest::MakeMockUpdateContext() const {
   return base::MakeRefCounted<UpdateContext>(
-      config_, false, std::vector<std::string>(),
+      config_, false, false, std::vector<std::string>(),
       UpdateClient::CrxStateChangeCallback(),
       UpdateEngine::NotifyObserversCallback(), UpdateEngine::Callback(),
       nullptr);
@@ -263,7 +262,6 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_EQ("cr", request->FindKey("dedup")->GetString());
   EXPECT_EQ("params", request->FindKey("extra")->GetString());
   EXPECT_LT(0, request->FindPath({"hw", "physmemory"})->GetInt());
-  EXPECT_EQ("fake_lang", request->FindKey("lang")->GetString());
   EXPECT_TRUE(request->FindKey("nacl_arch"));
   EXPECT_EQ("fake_channel_string",
             request->FindKey("prodchannel")->GetString());
@@ -289,6 +287,7 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_EQ(kUpdateItemId, app.FindKey("appid")->GetString());
   EXPECT_EQ("0.9", app.FindKey("version")->GetString());
   EXPECT_EQ("TEST", app.FindKey("brand")->GetString());
+  EXPECT_EQ("fake_lang", app.FindKey("lang")->GetString());
 
   const auto& data = app.FindKey("data")->GetIfList()->front();
   EXPECT_EQ("install", data.FindKey("name")->GetString());

@@ -14,7 +14,7 @@ namespace cryptauthv2 {
 class DeviceMetadataPacket;
 }  // namespace cryptauthv2
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -62,6 +62,8 @@ cryptauthv2::DeviceMetadataPacket ConvertTestDeviceToMetadataPacket(
     const CryptAuthDevice& device,
     const std::string& group_public_key,
     bool need_group_private_key);
+const cryptauthv2::DeviceMetadataPacket& GetLocalDeviceMetadataPacketForTest(
+    CryptAuthDevice& device);
 const cryptauthv2::DeviceMetadataPacket& GetLocalDeviceMetadataPacketForTest();
 const cryptauthv2::DeviceMetadataPacket&
 GetRemoteDeviceMetadataPacketNeedsGroupPrivateKeyForTest();
@@ -72,6 +74,11 @@ GetAllTestDeviceMetadataPackets();
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos::device_sync {
+using ::ash::device_sync::kDefaultLocalDeviceBluetoothAddress;
+}
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_V2_DEVICE_SYNC_TEST_DEVICES_H_

@@ -74,10 +74,6 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   // Preference to save data. When enabled, requests will contain the header
   // 'Save-Data: on'.
   bool data_saver_enabled;
-  // Whether data saver holdback for Web APIs is enabled. If enabled, data saver
-  // appears as disabled to the web consumers even if it has been actually
-  // enabled by the user.
-  bool data_saver_holdback_web_api_enabled;
   bool local_storage_enabled;
   bool databases_enabled;
   bool tabs_to_links;
@@ -88,9 +84,6 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   bool webgl1_enabled;
   bool webgl2_enabled;
   bool pepper_3d_enabled;
-  bool flash_3d_enabled;
-  bool flash_stage3d_enabled;
-  bool flash_stage3d_baseline_enabled;
   bool privileged_webgl_extensions_enabled;
   bool webgl_errors_to_console_enabled;
   bool hide_scrollbars;

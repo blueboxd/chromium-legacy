@@ -9,12 +9,12 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/proximity_auth/metrics.h"
 #include "ash/services/secure_channel/public/cpp/client/client_channel.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -31,7 +31,7 @@ const double kRssiSampleWeight = 0.3;
 const int kRssiThreshold = -70;
 
 ProximityMonitorImpl::ProximityMonitorImpl(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
+    ash::multidevice::RemoteDeviceRef remote_device,
     ash::secure_channel::ClientChannel* channel)
     : remote_device_(remote_device),
       channel_(channel),
@@ -70,7 +70,7 @@ void ProximityMonitorImpl::RecordProximityMetricsOnAuthSuccess() {
                                     : metrics::kUnknownProximityValue;
 
   std::string remote_device_model = metrics::kUnknownDeviceModel;
-  chromeos::multidevice::RemoteDeviceRef remote_device = remote_device_;
+  ash::multidevice::RemoteDeviceRef remote_device = remote_device_;
   if (!remote_device.name().empty())
     remote_device_model = remote_device.name();
 

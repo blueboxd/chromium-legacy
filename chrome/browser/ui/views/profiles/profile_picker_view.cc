@@ -227,6 +227,15 @@ bool ProfilePicker::IsOpen() {
   return g_profile_picker_view;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+bool ProfilePicker::IsLacrosFirstRunOpen() {
+  return ProfilePicker::IsOpen() &&
+         g_profile_picker_view->params_.entry_point() ==
+             ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun;
+}
+#endif
+
 bool ProfilePicker::IsActive() {
   if (!IsOpen())
     return false;
@@ -600,8 +609,7 @@ void ProfilePickerView::Init(Profile* picker_profile) {
 
     signed_in_flow_ = std::make_unique<LacrosFirstRunSignedInFlowController>(
         this, picker_profile, std::move(contents_for_signed_in_flow),
-        /*profile_color=*/absl::optional<SkColor>(),
-        base::BindOnce(&ProfilePicker::Params::NotifyFirstRunFinished,
+        base::BindOnce(&ProfilePicker::Params::NotifyFirstRunExited,
                        base::Unretained(&params_)));
     signed_in_flow_->Init();
 #else

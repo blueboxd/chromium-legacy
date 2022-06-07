@@ -22,7 +22,6 @@
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -919,19 +918,19 @@ void PolicyUIHandler::RegisterMessages() {
                                          ->registry();
   registry->AddObserver(this);
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "exportPoliciesJSON",
       base::BindRepeating(&PolicyUIHandler::HandleExportPoliciesJson,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "listenPoliciesUpdates",
       base::BindRepeating(&PolicyUIHandler::HandleListenPoliciesUpdates,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "reloadPolicies",
       base::BindRepeating(&PolicyUIHandler::HandleReloadPolicies,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "copyPoliciesJSON",
       base::BindRepeating(&PolicyUIHandler::HandleCopyPoliciesJson,
                           base::Unretained(this)));
@@ -1028,6 +1027,7 @@ base::Value PolicyUIHandler::GetPolicyValues() {
   if (updater_policies_) {
     return policy::ArrayPolicyConversions(std::move(client))
         .EnableConvertValues(true)
+        .SetDropDefaultValues(true)
         .WithUpdaterPolicies(
             std::make_unique<policy::PolicyMap>(updater_policies_->Clone()))
         .WithUpdaterPolicySchemas(GetGoogleUpdatePolicySchemas())
@@ -1152,7 +1152,7 @@ base::DictionaryValue PolicyUIHandler::GetStatusValue(bool for_webui) const {
   return status;
 }
 
-void PolicyUIHandler::HandleExportPoliciesJson(const base::ListValue* args) {
+void PolicyUIHandler::HandleExportPoliciesJson(const base::Value::List& args) {
 #if BUILDFLAG(IS_ANDROID)
   // TODO(crbug.com/1228691): Unify download logic between all platforms to
   // use the WebUI download solution (and remove the Android check).
@@ -1192,12 +1192,13 @@ void PolicyUIHandler::HandleExportPoliciesJson(const base::ListValue* args) {
 #endif
 }
 
-void PolicyUIHandler::HandleListenPoliciesUpdates(const base::ListValue* args) {
+void PolicyUIHandler::HandleListenPoliciesUpdates(
+    const base::Value::List& args) {
   AllowJavascript();
   OnRefreshPoliciesDone();
 }
 
-void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
+void PolicyUIHandler::HandleReloadPolicies(const base::Value::List& args) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Allow user to manually fetch remote commands. Useful for testing or when
   // the invalidation service is not working properly.
@@ -1240,7 +1241,7 @@ void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
       &PolicyUIHandler::OnRefreshPoliciesDone, weak_factory_.GetWeakPtr()));
 }
 
-void PolicyUIHandler::HandleCopyPoliciesJson(const base::ListValue* args) {
+void PolicyUIHandler::HandleCopyPoliciesJson(const base::Value::List& args) {
   std::string policies_json = GetPoliciesAsJson();
   ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
   scw.WriteText(base::UTF8ToUTF16(policies_json));

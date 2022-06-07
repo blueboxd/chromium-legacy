@@ -27,6 +27,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -383,6 +384,9 @@ class ASH_EXPORT LockContentsView
 
   // Opens an error bubble to indicate authentication failure.
   void ShowAuthErrorMessage();
+
+  // Hides the error bubble indicating authentication failure if open.
+  void HideAuthErrorMessage();
 
   // Called when the easy unlock icon is hovered.
   void OnEasyUnlockIconHovered();

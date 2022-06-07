@@ -235,6 +235,10 @@ bool TestBrowserWindow::IsToolbarShowing() const {
   return false;
 }
 
+bool TestBrowserWindow::IsLocationBarVisible() const {
+  return false;
+}
+
 ShowTranslateBubbleResult TestBrowserWindow::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,
@@ -297,6 +301,10 @@ bool TestBrowserWindow::IsDownloadShelfVisible() const {
 
 DownloadShelf* TestBrowserWindow::GetDownloadShelf() {
   return &download_shelf_;
+}
+
+DownloadBubbleUIController* TestBrowserWindow::GetDownloadBubbleUIController() {
+  return nullptr;
 }
 
 std::unique_ptr<FindBar> TestBrowserWindow::CreateFindBar() {

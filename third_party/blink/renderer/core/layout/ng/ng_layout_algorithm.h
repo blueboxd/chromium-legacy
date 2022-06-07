@@ -97,7 +97,8 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
     container_builder_.SetIsNewFormattingContext(
         params.space.IsNewFormattingContext());
     container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
-    if (UNLIKELY(params.space.HasBlockFragmentation() || params.break_token)) {
+    if (UNLIKELY(params.space.HasBlockFragmentation() ||
+                 IsResumingLayout(params.break_token))) {
       SetupFragmentBuilderForFragmentation(
           params.space, params.node, params.break_token, &container_builder_);
     }
@@ -128,6 +129,9 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
   }
   const NGBoxStrut& BorderScrollbarPadding() const {
     return container_builder_.BorderScrollbarPadding();
+  }
+  LayoutUnit OriginalBorderScrollbarPaddingBlockStart() const {
+    return container_builder_.OriginalBorderScrollbarPaddingBlockStart();
   }
   const LogicalSize& ChildAvailableSize() const {
     return container_builder_.ChildAvailableSize();
@@ -203,7 +207,7 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
   // There are cases where we may need more than one early break per fragment.
   // For example, there may be an early break within multiple flex columns. This
   // can be used to pass additional early breaks to the next layout pass.
-  const HeapVector<Member<NGEarlyBreak>>* additional_early_breaks_;
+  const HeapVector<Member<NGEarlyBreak>>* additional_early_breaks_ = nullptr;
 };
 
 }  // namespace blink

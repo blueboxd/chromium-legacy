@@ -5,10 +5,12 @@
 #include "ash/capture_mode/recording_overlay_controller.h"
 
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/stop_recording_button_tray.h"
 #include "ash/projector/projector_annotation_tray.h"
 #include "ash/public/cpp/capture_mode/recording_overlay_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/system/status_area_widget.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -76,15 +78,44 @@ class OverlayTargeter : public aura::WindowTargeter {
                                       ui::Event* event) override {
     if (event->IsLocatedEvent()) {
       auto* root_window = overlay_window_->GetRootWindow();
-      ProjectorAnnotationTray* annotations =
-          RootWindowController::ForWindow(root_window)
-              ->GetStatusAreaWidget()
-              ->projector_annotation_tray();
-      if (annotations && annotations->visible_preferred()) {
-        auto* located_event = event->AsLocatedEvent();
-        auto screen_location = located_event->root_location();
-        wm::ConvertPointToScreen(root_window, &screen_location);
+      auto* status_area_widget =
+          RootWindowController::ForWindow(root_window)->GetStatusAreaWidget();
+      StopRecordingButtonTray* stop_recording_button =
+          status_area_widget->stop_recording_button_tray();
+      auto screen_location = event->AsLocatedEvent()->root_location();
+      wm::ConvertPointToScreen(root_window, &screen_location);
 
+      Shelf* shelf = RootWindowController::ForWindow(root_window)->shelf();
+      // To be able to bring the auto-hidden shelf back even while annotation is
+      // active, we expose a slim 1dp region at the edge of the screen in which
+      // the shelf is aligned. Events in that region will not be consumed so
+      // that they can be used to show the auto-hidden shelf.
+      if (!shelf->IsVisible()) {
+        gfx::Rect root_window_bounds_in_screen =
+            root_window->GetBoundsInScreen();
+        const int display_width = root_window_bounds_in_screen.width();
+        const int display_height = root_window_bounds_in_screen.height();
+        const gfx::Rect shelf_activation_bounds =
+            shelf->SelectValueForShelfAlignment(
+                gfx::Rect(0, display_height - 1, display_width, 1),
+                gfx::Rect(0, 0, 1, display_height),
+                gfx::Rect(display_width - 1, 0, 1, display_height));
+
+        if (shelf_activation_bounds.Contains(screen_location))
+          return nullptr;
+      }
+
+      // To be able to end video recording even while annotation is active,
+      // let events over the stop recording button to go through.
+      if (stop_recording_button && stop_recording_button->visible_preferred() &&
+          stop_recording_button->GetBoundsInScreen().Contains(
+              screen_location)) {
+        return nullptr;
+      }
+
+      ProjectorAnnotationTray* annotations =
+          status_area_widget->projector_annotation_tray();
+      if (annotations && annotations->visible_preferred()) {
         // Let events over the projector shelf pod to go through.
         if (annotations->GetBoundsInScreen().Contains(screen_location))
           return nullptr;
@@ -95,6 +126,13 @@ class OverlayTargeter : public aura::WindowTargeter {
             bubble_widget->GetWindowBoundsInScreen().Contains(
                 screen_location)) {
           return nullptr;
+        }
+
+        // Ensure that the annotator bubble is closed when a press event is
+        // triggered.
+        if (event->type() == ui::ET_MOUSE_PRESSED ||
+            event->type() == ui::ET_TOUCH_PRESSED) {
+          annotations->ClickedOutsideBubble();
         }
       }
     }

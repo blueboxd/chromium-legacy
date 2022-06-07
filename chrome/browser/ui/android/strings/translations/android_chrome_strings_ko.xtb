@@ -184,7 +184,6 @@
 <translation id="200114059308480249">Google 검색어에 주변 텍스트를 포함하시겠습니까?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{파일 #개}other{파일 #개}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> 앱이 Chrome에서 열립니다. 계속하면 <ph name="BEGIN_LINK1" />Google 서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />Chrome 및 Chrome OS 추가 서비스 약관<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다. <ph name="BEGIN_LINK3" />개인정보처리방침<ph name="END_LINK3" />도 적용됩니다.</translation>
-<translation id="2019145049163614359">관심분야를 삭제하시겠습니까?</translation>
 <translation id="2020309681647789787">동기화된 모든 기기에 방문 기록이 유지되므로 하던 작업을 이어서 할 수 있습니다.</translation>
 <translation id="2021896219286479412">전체화면 사이트 컨트롤</translation>
 <translation id="2038563949887743358">데스크톱 버전으로 보기 사용 설정</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">사용량 기준</translation>
 <translation id="214888715418183969">Chrome과 공유할 항목을 선택합니다. 공유하는 측정항목은 Chrome의 기능, 성능, 안정성을 개선하는 데 사용됩니다.</translation>
 <translation id="2149973817440762519">북마크 수정</translation>
+<translation id="2155214902713132423">이 기기에서 사용할 수 없는 인증 방법입니다. 다른 기기에서 다른 옵션을 선택하세요.</translation>
 <translation id="2157851137955077194">스마트폰에서 다른 기기로 콘텐츠를 공유하려면 두 기기의 Chrome 설정에서 동기화를 사용 설정하세요.</translation>
 <translation id="2158408438301413340">Chrome에서 일부 비밀번호를 확인할 수 없습니다.</translation>
 <translation id="2169830938017475061">방금</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">곧 새 탭을 열 때 <ph name="SITE_NAME" /> 스토리가 표시됩니다. 내가 팔로우하는 사이트는 Google 계정에 저장되며 디스커버 설정에서 관리할 수 있습니다.</translation>
 <translation id="5091249083535528968">확장된 사용 데이터</translation>
 <translation id="509429900233858213">오류가 발생했습니다.</translation>
-<translation id="5098190077610408701">관심분야를 추가하시겠습니까?</translation>
 <translation id="5102401324271069229">사이트에서 사용자의 비밀번호를 도용하려고 하거나 사용자가 유해한 파일을 다운로드하는 경우, Chrome에서 페이지 콘텐츠 일부를 비롯한 URL을 세이프 브라우징 서비스에 보낼 수 있습니다.</translation>
 <translation id="510275257476243843">1시간 남음</translation>
 <translation id="5115811374190515607">이동 위치: <ph name="PRODUCT_NAME" /></translation>
@@ -803,7 +802,7 @@
 <translation id="5514904542973294328">기기 관리자가 사용 중지함</translation>
 <translation id="5515439363601853141">비밀번호를 보려면 잠금 해제하세요</translation>
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" />에서 가져온 북마크, 방문 기록, 비밀번호 및 기타 설정이 있습니다.</translation>
-<translation id="5524761631371622910">무료 체험이 사용 설정되어 있으며 Chrome에서 임의로 나에게 현재 진행 중인 무료 체험을 적용한 경우, 표시되는 광고 및 아래의 예측 관심분야에 방문 기록이 영향을 미칩니다. 개인 정보를 보호하기 위해 Chrome에서는 매월 최소 한 번씩 수시로 관심분야를 삭제합니다.</translation>
+<translation id="5524761631371622910">무료 체험이 사용 설정되어 있는 경우와 Chrome에서 임의로 나에게 현재 진행 중인 무료 체험을 적용한 경우, 표시되는 광고 및 아래의 예측 관심분야에 방문 기록이 영향을 미칩니다. 개인 정보를 보호하기 위해 Chrome에서는 매월 최소 한 번씩 수시로 관심분야를 삭제합니다.</translation>
 <translation id="5524843473235508879">리디렉션이 차단되었습니다.</translation>
 <translation id="5548606607480005320">안전 확인</translation>
 <translation id="5555525474779371165">세이프 브라우징 보호 기능을 선택하세요</translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">사이트의 URL을 알려 주시면 Google 어시스턴트가 작업을 도와드릴 수 있습니다. Chrome 설정에서 어시스턴트를 사용 중지하실 수 있습니다.</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5919204609460789179"><ph name="PRODUCT_NAME" />을(를) 업데이트하여 동기화를 시작합니다.</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> 추가</translation>
 <translation id="5942872142862698679">검색할 때 Google 사용</translation>
 <translation id="5945035219773565305">현재 추천: <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">라이브 페이지 보기 중</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791"><ph name="BEGIN_LINK" />개인 정보 보호 샌드박스<ph name="END_LINK" />를 통해 Chrome은 오픈 웹의 장점을 유지하면서 크로스 사이트 추적으로부터 사용자를 보호하는 새로운 기술을 개발하고 있습니다.
 
 개인 정보 보호 샌드박스 무료 체험은 아직 개발 단계에 있으므로 일부 지역에서만 제공됩니다. 현재 사이트는 타사 쿠키와 같은 기존 웹 기술을 계속 사용하면서 개인 정보 보호 샌드박스를 사용해 볼 수 있습니다.</translation>
-<translation id="6036057147555329831">추가 ICU</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="604124094241169006">자동</translation>
@@ -1023,6 +1022,7 @@
 <translation id="663674369910034433">개인정보 보호, 보안, 데이터 수집에 관한 추가 설정을 보려면 <ph name="BEGIN_LINK1" />동기화<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />Google 서비스<ph name="END_LINK2" />를 참고하세요.</translation>
 <translation id="6637100877383020115">앱 개선을 위해 Chrome에서 사용 및 비정상 종료 데이터를 Google에 전송합니다. <ph name="BEGIN_UMA_LINK" />관리<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">항상 차단</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> 삭제</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6645629752388991326">이 기기를 보안 키로 사용하여 로그인할 수 있는 기기를 제어합니다.</translation>
 <translation id="6648459603387803038">관리자가 원격으로 브라우저 설정을 변경할 수 있습니다. 이 기기의 활동은 Chrome 외부에서도 관리할 수 있습니다.</translation>

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/extensions/api/login.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -37,18 +38,27 @@ crosapi::mojom::Login* GetLoginApi() {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+const char kCannotBeCalledFromLacros[] = "API cannot be called from Lacros";
+const char kUnsupportedByAsh[] = "Unsupported by ash";
+
 // Performs common crosapi validation. These errors are not caused by the
 // extension so they are considered recoverable. Returns an error message on
 // error, or nullopt on success.
-absl::optional<std::string> ValidateCrosapi() {
-  if (!chromeos::LacrosService::Get()->IsAvailable<crosapi::mojom::Login>()) {
-    return "Unsupported by ash";
-  }
+// |min_version| is the minimum version of the ash implementation of
+// crosapi::mojom::Login necessary to run a specific API method.
+absl::optional<std::string> ValidateCrosapi(int min_version = 0) {
+  if (!chromeos::LacrosService::Get()->IsAvailable<crosapi::mojom::Login>())
+    return kUnsupportedByAsh;
+
+  if (min_version == 0)
+    return absl::nullopt;
+  int interface_version = chromeos::LacrosService::Get()->GetInterfaceVersion(
+      crosapi::mojom::Login::Uuid_);
+  if (interface_version < min_version)
+    return kUnsupportedByAsh;
+
   return absl::nullopt;
 }
-
-const char kCannotBeCalledFromLacros[] = "API cannot be called from Lacros";
-
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
@@ -193,6 +203,70 @@ LoginUnlockManagedGuestSessionFunction::Run() {
   GetLoginApi()->UnlockManagedGuestSession(parameters->password,
                                            std::move(callback));
   return did_respond() ? AlreadyResponded() : RespondLater();
+#endif
+}
+
+LoginLockCurrentSessionFunction::LoginLockCurrentSessionFunction() = default;
+LoginLockCurrentSessionFunction::~LoginLockCurrentSessionFunction() = default;
+
+ExtensionFunction::ResponseAction LoginLockCurrentSessionFunction::Run() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  absl::optional<std::string> error =
+      ValidateCrosapi(crosapi::mojom::Login::kLockCurrentSessionMinVersion);
+  if (error.has_value()) {
+    return RespondNow(Error(error.value()));
+  }
+#endif
+
+  auto callback =
+      base::BindOnce(&LoginLockCurrentSessionFunction::OnResult, this);
+
+  GetLoginApi()->LockCurrentSession(std::move(callback));
+  return RespondLater();
+}
+
+LoginUnlockCurrentSessionFunction::LoginUnlockCurrentSessionFunction() =
+    default;
+LoginUnlockCurrentSessionFunction::~LoginUnlockCurrentSessionFunction() =
+    default;
+
+ExtensionFunction::ResponseAction LoginUnlockCurrentSessionFunction::Run() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return RespondNow(Error(kCannotBeCalledFromLacros));
+#else
+  auto parameters = api::login::UnlockCurrentSession::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  auto callback =
+      base::BindOnce(&LoginUnlockCurrentSessionFunction::OnResult, this);
+
+  GetLoginApi()->UnlockCurrentSession(parameters->password,
+                                      std::move(callback));
+  return RespondLater();
+#endif
+}
+
+LoginLaunchSamlUserSessionFunction::LoginLaunchSamlUserSessionFunction() =
+    default;
+LoginLaunchSamlUserSessionFunction::~LoginLaunchSamlUserSessionFunction() =
+    default;
+
+ExtensionFunction::ResponseAction LoginLaunchSamlUserSessionFunction::Run() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return RespondNow(Error(kCannotBeCalledFromLacros));
+#else
+  auto parameters = api::login::LaunchSamlUserSession::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  auto callback =
+      base::BindOnce(&LoginLaunchSamlUserSessionFunction::OnResult, this);
+
+  auto properties = crosapi::mojom::SamlUserSessionProperties::New(
+      parameters->properties.email, parameters->properties.gaia_id,
+      parameters->properties.password, parameters->properties.oauth_code);
+  GetLoginApi()->LaunchSamlUserSession(std::move(properties),
+                                       std::move(callback));
+  return RespondLater();
 #endif
 }
 

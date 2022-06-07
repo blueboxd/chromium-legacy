@@ -59,6 +59,10 @@ export class PrivacyGuideCompletionFragmentElement extends
         (event: UpdateSyncStateEvent) => this.updateWaaLink_(event.signedIn));
   }
 
+  override focus() {
+    this.shadowRoot!.querySelector<HTMLElement>('.headline-container')!.focus();
+  }
+
   /**
    * Updates the completion card waa link depending on the signin state.
    */
@@ -77,7 +81,14 @@ export class PrivacyGuideCompletionFragmentElement extends
         PrivacyGuideInteractions.COMPLETION_NEXT_BUTTON);
     this.metricsBrowserProxy_.recordAction(
         'Settings.PrivacyGuide.NextClickCompletion');
-    Router.getInstance().navigateToPreviousRoute();
+    if (loadTimeData.getBoolean('privacyGuide2Enabled')) {
+      // Send a |close| event to the privacy guide dialog to close itself.
+      this.dispatchEvent(
+          new CustomEvent('close', {bubbles: true, composed: true}));
+    } else {
+      // Navigate away from the privacy guide settings subpage.
+      Router.getInstance().navigateToPreviousRoute();
+    }
   }
 
   private onPrivacySandboxClick_() {

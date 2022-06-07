@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -1045,7 +1046,7 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
 
 TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   custom_handlers::ProtocolHandlerRegistry registry(
-      profile(),
+      profile()->GetPrefs(),
       std::make_unique<custom_handlers::TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
@@ -1113,7 +1114,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
 
 TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
   custom_handlers::ProtocolHandlerRegistry registry(
-      profile(),
+      profile()->GetPrefs(),
       std::make_unique<custom_handlers::TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 

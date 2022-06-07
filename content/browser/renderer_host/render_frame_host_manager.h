@@ -275,14 +275,14 @@ class CONTENT_EXPORT RenderFrameHostManager {
                         const blink::FramePolicy& frame_policy);
 
   // Called when this frame's opener is changed to the frame specified by
-  // |opener_frame_token| in |source_site_instance|'s process.  This change
-  // could come from either the current RenderFrameHost or one of the
+  // |opener_frame_token| in |source_site_instance_group|'s process.  This
+  // change could come from either the current RenderFrameHost or one of the
   // proxies (e.g., window.open that targets a RemoteFrame by name).  The
   // updated opener will be forwarded to any other RenderFrameProxies and
   // RenderFrames for this FrameTreeNode.
   void DidChangeOpener(
       const absl::optional<blink::LocalFrameToken>& opener_frame_token,
-      SiteInstance* source_site_instance);
+      SiteInstanceGroup* source_site_instance_group);
 
   // Creates and initializes a RenderFrameHost. If |for_early_commit| is true
   // then this RenderFrameHost and its RenderFrame will be prepared knowing that
@@ -334,9 +334,9 @@ class CONTENT_EXPORT RenderFrameHostManager {
   bool HasPendingCommitForCrossDocumentNavigation() const;
 
   // Returns the routing id for a RenderFrameHost or RenderFrameProxyHost
-  // that has the given SiteInstance and is associated with this
+  // that has the given SiteInstanceGroup and is associated with this
   // RenderFrameHostManager. Returns MSG_ROUTING_NONE if none is found.
-  int GetRoutingIdForSiteInstance(SiteInstance* site_instance);
+  int GetRoutingIdForSiteInstanceGroup(SiteInstanceGroup* site_instance_group);
 
   // Returns the frame token for a RenderFrameHost or RenderFrameProxyHost
   // that has the given SiteInstanceGroup and is associated with this
@@ -429,20 +429,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // no opener, or if the opener node doesn't have a proxy for |group|.
   absl::optional<blink::FrameToken> GetOpenerFrameToken(
       SiteInstanceGroup* group);
-
-  // Called on the RFHM of the inner WebContents to create a
-  // RenderFrameProxyHost in its outer WebContents's SiteInstance,
-  // |outer_contents_site_instance|. The frame in outer WebContents that is
-  // hosting the inner WebContents is |render_frame_host|, and the frame will
-  // be swapped with the proxy. Note that this method must only be called for an
-  // OOPIF-based inner WebContents.
-  RenderFrameProxyHost* CreateOuterDelegateProxy(
-      SiteInstance* outer_contents_site_instance);
-
-  // Called on an inner WebContents that's being detached from its outer
-  // WebContents. This will delete the proxy in the
-  // |outer_contents_site_instance|.
-  void DeleteOuterDelegateProxy(SiteInstance* outer_contents_site_instance);
 
   // Tells the |render_frame_host|'s renderer that its RenderFrame is being
   // swapped for a frame in another process, and that it should create a

@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
-import {MechanicalLayout as DiagramMechanicalLayout, PhysicalLayout as DiagramPhysicalLayout, TopRowKey as DiagramTopRowKey} from 'chrome://resources/ash/common/keyboard_diagram.js';
+import {MechanicalLayout as DiagramMechanicalLayout, PhysicalLayout as DiagramPhysicalLayout, TopRightKey as DiagramTopRightKey, TopRowKey as DiagramTopRowKey} from 'chrome://resources/ash/common/keyboard_diagram.js';
 import {KeyboardKeyState} from 'chrome://resources/ash/common/keyboard_key.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {ConnectionType, InputDataProviderInterface, KeyboardInfo, KeyboardObserverInterface, KeyboardObserverReceiver, KeyEvent, KeyEventType, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRowKey} from './diagnostics_types.js';
+import {InputDataProviderInterface, KeyboardInfo, KeyboardObserverInterface, KeyboardObserverReceiver, KeyEvent, KeyEventType, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey, TopRowKey} from './diagnostics_types.js';
 
 /**
  * @fileoverview
@@ -44,10 +47,51 @@ const topRowKeyMap = {
   [TopRowKey.kUnknown]: DiagramTopRowKey.kUnknown,
 };
 
+/** Maps top-right key evdev codes to the corresponding DiagramTopRightKey. */
+const topRightKeyByCode = new Map([
+  [116, DiagramTopRightKey.kPower],
+  [142, DiagramTopRightKey.kLock],
+  [579, DiagramTopRightKey.kControlPanel],
+]);
+
+/** Evdev codes for keys that always appear in the number pad area. */
+const numberPadCodes = new Set([
+  55,   // KEY_KPASTERISK
+  71,   // KEY_KP7
+  72,   // KEY_KP8
+  73,   // KEY_KP9
+  74,   // KEY_KPMINUS
+  75,   // KEY_KP4
+  76,   // KEY_KP5
+  77,   // KEY_KP6
+  78,   // KEY_KPPLUS
+  79,   // KEY_KP1
+  80,   // KEY_KP2
+  81,   // KEY_KP3
+  82,   // KEY_KP0
+  83,   // KEY_KPDOT
+  96,   // KEY_KPENTER
+  98,   // KEY_KPSLASH
+  102,  // KEY_HOME
+  107,  // KEY_END
+]);
+
+/**
+ * Evdev codes for keys that appear in the number pad area on standard ChromeOS
+ * keyboards, but not on Dell Enterprise ones.
+ */
+const standardNumberPadCodes = new Set([
+  104,  // KEY_PAGEUP
+  109,  // KEY_PAGEDOWN
+  111,  // KEY_DELETE
+]);
+
 Polymer({
   is: 'keyboard-tester',
 
   _template: html`{__html_template__}`,
+
+  behaviors: [I18nBehavior],
 
   /** @private {?KeyboardObserverReceiver} */
   receiver_: null,
@@ -69,12 +113,6 @@ Polymer({
      * @type {?KeyboardInfo}
      */
     keyboard: KeyboardInfo,
-
-    /** @protected */
-    dialogTitle_: {
-      type: String,
-      computed: 'computeDialogTitle_(keyboard)',
-    },
 
     /** @private */
     layoutIsKnown_: {
@@ -98,6 +136,14 @@ Polymer({
       computed: 'computeDiagramPhysicalLayout_(keyboard)',
     },
 
+    // TODO(crbug.com/1257138): use the proper type annotation instead of
+    // string.
+    /** @protected {?string} */
+    diagramTopRightKey_: {
+      type: String,
+      computed: 'computeDiagramTopRightKey_(keyboard)',
+    },
+
     /** @private */
     showNumberPad_: {
       type: Boolean,
@@ -111,20 +157,6 @@ Polymer({
       type: Array,
       computed: 'computeTopRowKeys_(keyboard)',
     },
-  },
-
-  /**
-   * @param {?KeyboardInfo} keyboard
-   * @return {string}
-   * @private
-   */
-  computeDialogTitle_(keyboard) {
-    if (!keyboard) {
-      return '';
-    }
-    return keyboard.connectionType === ConnectionType.kInternal ?
-        'Test your internal keyboard' :
-        'Test your external keyboard';
   },
 
   /**
@@ -181,6 +213,24 @@ Polymer({
   },
 
   /**
+   * @param {?KeyboardInfo} keyboardInfo
+   * TODO(crbug.com/1257138): use the proper type annotation instead of string.
+   * @return {?string}
+   * @private
+   */
+  computeDiagramTopRightKey_(keyboardInfo) {
+    if (!keyboardInfo) {
+      return null;
+    }
+    return {
+      [TopRightKey.kUnknown]: null,
+      [TopRightKey.kPower]: DiagramTopRightKey.kPower,
+      [TopRightKey.kLock]: DiagramTopRightKey.kLock,
+      [TopRightKey.kControlPanel]: DiagramTopRightKey.kControlPanel,
+    }[keyboardInfo.topRightKey];
+  },
+
+  /**
    * @param {?KeyboardInfo} keyboard
    * @return {boolean}
    * @private
@@ -230,17 +280,62 @@ Polymer({
   },
 
   /**
+   * Returns whether a key is part of the number pad on this keyboard layout.
+   * @param {number} evdevCode
+   * @return {boolean}
+   */
+  isNumberPadKey_(evdevCode) {
+    // Some keys that are on the number pad on standard ChromeOS keyboards are
+    // elsewhere on Dell Enterprise keyboards, so we should only check them if
+    // we know this is a standard layout.
+    if (this.keyboard.physicalLayout === PhysicalLayout.kChromeOS &&
+        standardNumberPadCodes.has(evdevCode)) {
+      return true;
+    }
+
+    return numberPadCodes.has(evdevCode);
+  },
+
+  /**
    * Implements KeyboardObserver.OnKeyEvent.
    * @param {!KeyEvent} keyEvent
    */
   onKeyEvent(keyEvent) {
+    const diagram = this.$$('#diagram');
     const state = keyEvent.type === KeyEventType.kPress ?
         KeyboardKeyState.kPressed :
         KeyboardKeyState.kTested;
-    if (keyEvent.topRowPosition !== -1) {
-      this.$$('#diagram').setTopRowKeyState(keyEvent.topRowPosition, state);
+    if (keyEvent.topRowPosition !== -1 &&
+        keyEvent.topRowPosition < this.keyboard.topRowKeys.length) {
+      diagram.setTopRowKeyState(keyEvent.topRowPosition, state);
     } else {
-      this.$$('#diagram').setKeyState(keyEvent.keyCode, state);
+      // We can't be sure that the top right key reported over Mojo is correct,
+      // so we need to fix it if we see a key event that suggests it's wrong.
+      if (topRightKeyByCode.has(keyEvent.keyCode) &&
+          diagram.topRightKey !== topRightKeyByCode.get(keyEvent.keyCode)) {
+        const newValue = topRightKeyByCode.get(keyEvent.keyCode);
+        console.warn(
+            'Corrected diagram top right key from ' +
+            `${this.diagramTopRightKey_} to ${newValue}`);
+        diagram.topRightKey = newValue;
+      }
+
+      // Some Chromebooks (at least the Lenovo ThinkPad C13 Yoga a.k.a.
+      // Morphius) report F13 instead of SLEEP when Lock is pressed.
+      if (keyEvent.keyCode === 183 /* KEY_F13 */) {
+        keyEvent.keyCode = 142 /* KEY_SLEEP */;
+      }
+
+      // There may be Chromebooks where hasNumberPad is incorrect, so if we see
+      // any number pad key codes we need to adapt on-the-fly.
+      if (!diagram.showNumberPad && this.isNumberPadKey_(keyEvent.keyCode)) {
+        console.warn(
+            'Corrected number pad presence due to key code ' +
+            keyEvent.keyCode);
+        diagram.showNumberPad = true;
+      }
+
+      diagram.setKeyState(keyEvent.keyCode, state);
     }
   },
 
@@ -248,16 +343,16 @@ Polymer({
    * Implements KeyboardObserver.OnKeyEventsPaused.
    */
   onKeyEventsPaused() {
-    // TODO(crbug.com/1207678): show key event pauses in the UI.
-    console.log('key events paused');
+    console.log('Key events paused');
     this.$$('#diagram').clearPressedKeys();
+    this.$.lostFocusToast.show();
   },
 
   /**
    * Implements KeyboardObserver.OnKeyEventsResumed.
    */
   onKeyEventsResumed() {
-    // TODO(crbug.com/1207678): show key event pauses in the UI.
-    console.log('key events resumed');
+    console.log('Key events resumed');
+    this.$.lostFocusToast.hide();
   },
 });

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_context_client_base.h"
@@ -124,7 +123,7 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
 
     network_context_params->file_paths =
         network::mojom::NetworkContextFilePaths::New();
-    network_context_params->file_paths->data_path = user_data_dir_.Append(
+    network_context_params->file_paths->data_directory = user_data_dir_.Append(
         base::FilePath(base::FilePath::StringType(kSafeBrowsingBaseFilename) +
                        FILE_PATH_LITERAL(" Network")));
     network_context_params->file_paths->unsandboxed_data_path = user_data_dir_;

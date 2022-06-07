@@ -13,13 +13,17 @@
 namespace blink {
 
 // https://html.spec.whatwg.org/#blocking-attribute
-// TODO(crbug.com/1271296): Add use counter.
 class BlockingAttribute final : public DOMTokenList {
  public:
+  static const char kRenderToken[];
+
   explicit BlockingAttribute(Element* element)
       : DOMTokenList(*element, html_names::kBlockingAttr) {}
 
-  bool IsRenderBlocking() const { return contains("render"); }
+  static bool IsRenderBlocking(const String& attribute_value);
+  bool IsRenderBlocking() const { return contains(kRenderToken); }
+
+  void CountTokenUsage();
 
  private:
   static HashSet<AtomicString>& SupportedTokens();

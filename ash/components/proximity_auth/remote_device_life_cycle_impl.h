@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/proximity_auth/messenger_observer.h"
 #include "ash/components/proximity_auth/remote_device_life_cycle.h"
 #include "ash/services/secure_channel/public/cpp/client/connection_attempt.h"
@@ -15,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace ash {
 namespace secure_channel {
@@ -37,8 +37,8 @@ class RemoteDeviceLifeCycleImpl
   // Creates the life cycle for controlling the given |remote_device|.
   // |proximity_auth_client| is not owned.
   RemoteDeviceLifeCycleImpl(
-      chromeos::multidevice::RemoteDeviceRef remote_device,
-      absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device,
+      ash::multidevice::RemoteDeviceRef remote_device,
+      absl::optional<ash::multidevice::RemoteDeviceRef> local_device,
       ash::secure_channel::SecureChannelClient* secure_channel_client);
 
   RemoteDeviceLifeCycleImpl(const RemoteDeviceLifeCycleImpl&) = delete;
@@ -49,7 +49,7 @@ class RemoteDeviceLifeCycleImpl
 
   // RemoteDeviceLifeCycle:
   void Start() override;
-  chromeos::multidevice::RemoteDeviceRef GetRemoteDevice() const override;
+  ash::multidevice::RemoteDeviceRef GetRemoteDevice() const override;
   ash::secure_channel::ClientChannel* GetChannel() const override;
 
   RemoteDeviceLifeCycle::State GetState() const override;
@@ -79,10 +79,10 @@ class RemoteDeviceLifeCycleImpl
   void OnDisconnected() override;
 
   // The remote device being controlled.
-  const chromeos::multidevice::RemoteDeviceRef remote_device_;
+  const ash::multidevice::RemoteDeviceRef remote_device_;
 
   // Represents this device (i.e. this Chromebook) for a particular profile.
-  absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device_;
+  absl::optional<ash::multidevice::RemoteDeviceRef> local_device_;
 
   // The entrypoint to the SecureChannel API.
   ash::secure_channel::SecureChannelClient* secure_channel_client_;

@@ -207,9 +207,9 @@
   static boolean isDebug() return false;
 }
 
-# Never inline classes, methods, or fields  with this annotation, but allow
+# Never inline classes, methods, or fields with this annotation, but allow
 # shrinking and obfuscation.
-# Relevant to fields when they are needed to store strong refrences to objects
+# Relevant to fields when they are needed to store strong references to objects
 # that are held as weak references by native code.
 -if @org.chromium.base.annotations.DoNotInline class * {
     *** *(...);
@@ -223,6 +223,10 @@
 -keepclassmembers,allowobfuscation,allowaccessmodification class * {
    @org.chromium.base.annotations.DoNotInline <fields>;
 }
+
+# Never merge classes horizontally or vertically with this annotation.
+# Relevant to classes being used as a key in maps or sets.
+-keep,allowaccessmodification,allowobfuscation,allowshrinking @DoNotClassMerge class *
 
 # Keep all CREATOR fields within Parcelable that are kept.
 -keepclassmembers class org.chromium.** implements android.os.Parcelable {
@@ -854,19 +858,36 @@
   <fields>;
 }
 
-# File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_android/kotlinx-coroutines-android-1.5.0.jar:META-INF/proguard/coroutines.pro
-# Files in this directory will be ignored starting with Android Gradle Plugin 3.6.0+
+# File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_android/kotlinx-coroutines-android-1.6.1.jar:META-INF/com.android.tools/r8-from-1.6.0/coroutines.pro
+# Allow R8 to optimize away the FastServiceLoader.
+# Together with ServiceLoader optimization in R8
+# this results in direct instantiation when loading Dispatchers.Main
+-assumenosideeffects class kotlinx.coroutines.internal.MainDispatcherLoader {
+    boolean FAST_SERVICE_LOADER_ENABLED return false;
+}
 
-# When editing this file, update the following files as well for AGP 3.6.0+:
-# - META-INF/com.android.tools/proguard/coroutines.pro
-# - META-INF/com.android.tools/r8-upto-1.6.0/coroutines.pro
+-assumenosideeffects class kotlinx.coroutines.internal.FastServiceLoaderKt {
+    boolean ANDROID_DETECTED return true;
+}
 
 -keep class kotlinx.coroutines.android.AndroidDispatcherFactory {*;}
 
-# File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm/kotlinx-coroutines-core-jvm-1.5.0.jar:META-INF/proguard/coroutines.pro
-# ServiceLoader support
--keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+# Disable support for "Missing Main Dispatcher", since we always have Android main dispatcher
+-assumenosideeffects class kotlinx.coroutines.internal.MainDispatchersKt {
+    boolean SUPPORT_MISSING return false;
+}
+
+# Statically turn off all debugging facilities and assertions
+-assumenosideeffects class kotlinx.coroutines.DebugKt {
+    boolean getASSERTIONS_ENABLED() return false;
+    boolean getDEBUG() return false;
+    boolean getRECOVER_STACK_TRACES() return false;
+}
+
+# File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm/kotlinx-coroutines-core-jvm-1.6.1.jar:META-INF/com.android.tools/r8/coroutines.pro
+# When editing this file, update the following files as well:
+# - META-INF/proguard/coroutines.pro
+# - META-INF/com.android.tools/proguard/coroutines.pro
 
 # Most of volatile fields are updated with AFU and should not be mangled
 -keepclassmembers class kotlinx.coroutines.** {
@@ -884,6 +905,13 @@
 -dontwarn sun.misc.SignalHandler
 -dontwarn java.lang.instrument.Instrumentation
 -dontwarn sun.misc.Signal
+
+# Only used in `kotlinx.coroutines.internal.ExceptionsConstructor`.
+# The case when it is not available is hidden in a `try`-`catch`, as well as a check for Android.
+-dontwarn java.lang.ClassValue
+
+# An annotation used for build tooling, won't be directly accessed.
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 # File: //build/android/gyp/proguard.py (generated rules)
 -ignorewarnings

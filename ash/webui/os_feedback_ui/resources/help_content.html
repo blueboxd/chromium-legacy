@@ -1,21 +1,26 @@
 <style>
   .help-item {
     display: flex;
-    margin: 12px 12px 0;
+    margin:  12px 0 0;
+  }
+
+  iron-icon {
+    padding-inline-end: 12px;
   }
 
   #helpContentLabel {
-    margin-top: 24px;
+    margin: 24px 0 0;
   }
 </style>
 <div id="helpContentContainer">
-  <!--TODO(xiangdongkong): use localized strings -->
-  <p id="helpContentLabel">Suggested help content:</p>
-  <dom-repeat items="[[helpContentList]]">
+  <p id="helpContentLabel">[[getLabel_(searchResult)]]</p>
+  <dom-repeat items="[[searchResult.contentList]]">
     <template>
       <div class="help-item">
-        <!--TODO(xiangdongkong): add icon -->
-        <a href="[[getUrl_(item)]]" target="_blank">[[getTitle_(item)]]</a>
+        <a href="[[getUrl_(item)]]" target="_blank">
+          <iron-icon icon="[[getIcon_(item.contentType)]]"></iron-icon>
+          <span>[[getTitle_(item)]]</span>
+        </a>
       </div>
     </template>
   </dom-repeat>

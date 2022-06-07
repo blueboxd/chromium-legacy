@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_MULTIDEVICE_SETUP_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_MULTIDEVICE_SETUP_SCREEN_HANDLER_H_
 
+#include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
@@ -32,7 +33,7 @@ class MultiDeviceSetupScreenHandler : public BaseScreenHandler,
  public:
   using TView = MultiDeviceSetupScreenView;
 
-  explicit MultiDeviceSetupScreenHandler(JSCallsContainer* js_calls_container);
+  MultiDeviceSetupScreenHandler();
 
   MultiDeviceSetupScreenHandler(const MultiDeviceSetupScreenHandler&) = delete;
   MultiDeviceSetupScreenHandler& operator=(
@@ -43,7 +44,7 @@ class MultiDeviceSetupScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void GetAdditionalParameters(base::DictionaryValue* dict) override;
+  void GetAdditionalParameters(base::Value::Dict* dict) override;
 
   // MultiDeviceSetupScreenView:
   void Bind(ash::MultiDeviceSetupScreen* screen) override;
@@ -52,7 +53,7 @@ class MultiDeviceSetupScreenHandler : public BaseScreenHandler,
 
  private:
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
 };
 
 }  // namespace chromeos

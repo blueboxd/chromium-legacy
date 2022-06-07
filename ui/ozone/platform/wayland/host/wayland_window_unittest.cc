@@ -389,7 +389,7 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
   Sync();
 
   // Set insets for normal DPI.
-  const gfx::Insets kDecorationInsets = {24, 28, 32, 28};
+  const auto kDecorationInsets = gfx::Insets::TLBR(24, 28, 32, 28);
   auto bounds_with_insets = kNormalBounds;
   bounds_with_insets.Inset(kDecorationInsets);
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
@@ -426,7 +426,7 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
   window_->root_surface()->SetSurfaceBufferScale(kHiDpiScale);
 
   // Set new insets so that rounding does not result in integer.
-  const gfx::Insets kDecorationInsets_2x = {48, 55, 63, 55};
+  const auto kDecorationInsets_2x = gfx::Insets::TLBR(48, 55, 63, 55);
   EXPECT_CALL(*xdg_surface_,
               SetWindowGeometry(bounds_with_insets.x(), bounds_with_insets.y(),
                                 bounds_with_insets.width(),
@@ -813,7 +813,7 @@ TEST_P(WaylandWindowTest, StartMaximized) {
 
 TEST_P(WaylandWindowTest, CompositorSideStateChanges) {
   // Real insets used by default on HiDPI.
-  const auto kInsets = gfx::Insets{38, 44, 55, 44};
+  const auto kInsets = gfx::Insets::TLBR(38, 44, 55, 44);
   const auto kNormalBounds = window_->GetBounds();
 
   EXPECT_EQ(window_->GetPlatformWindowState(), PlatformWindowState::kNormal);
@@ -2527,6 +2527,87 @@ TEST_P(WaylandWindowTest, WaylandPopupNestedParent) {
     menu_window->SetPointerFocus(false);
     nested_wayland_popup->Hide();
   }
+}
+
+// Tests that size constraints returned by the `ui::PlatformWindowDelegate` are
+// obeyed by the window when its bounds are set internally via its SetBounds()
+// implementation.
+TEST_P(WaylandWindowTest, SizeConstraintsInternal) {
+  const gfx::Rect kMinBounds{0, 0, 100, 100};
+  const gfx::Rect kMaxBounds{0, 0, 300, 300};
+
+  window_->SetBounds({0, 0, 200, 200});
+  Sync();
+
+  auto even_smaller_bounds = kMinBounds;
+  even_smaller_bounds.Inset(10);
+  even_smaller_bounds.set_origin({0, 0});
+
+  EXPECT_CALL(delegate_, GetMinimumSizeForWindow())
+      .WillOnce(Return(kMinBounds.size()));
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kMinBounds)));
+
+  window_->SetBounds(even_smaller_bounds);
+  Sync();
+
+  VerifyAndClearExpectations();
+
+  auto even_greater_bounds = kMaxBounds;
+  even_greater_bounds.Outset(10);
+  even_greater_bounds.set_origin({0, 0});
+
+  EXPECT_CALL(delegate_, GetMaximumSizeForWindow())
+      .WillOnce(Return(kMaxBounds.size()));
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kMaxBounds)));
+
+  window_->SetBounds(even_greater_bounds);
+  Sync();
+}
+
+// Tests that size constraints returned by the `ui::PlatformWindowDelegate` are
+// obeyed by the window when its bounds are set externally via the configure
+// event sent by the compositor.
+TEST_P(WaylandWindowTest, SizeConstraintsExternal) {
+  const gfx::Rect kMinBounds{0, 0, 100, 100};
+  const gfx::Rect kMaxBounds{0, 0, 300, 300};
+
+  EXPECT_CALL(delegate_, GetMinimumSizeForWindow())
+      .WillRepeatedly(Return(kMinBounds.size()));
+  EXPECT_CALL(delegate_, GetMaximumSizeForWindow())
+      .WillRepeatedly(Return(kMaxBounds.size()));
+
+  window_->SetBounds({0, 0, 200, 200});
+  Sync();
+
+  uint32_t serial = 0;
+  auto state = InitializeWlArrayWithActivatedState();
+
+  auto even_smaller_bounds = kMinBounds;
+  even_smaller_bounds.Inset(10);
+  even_smaller_bounds.set_origin({0, 0});
+
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kMinBounds)));
+
+  SendConfigureEvent(xdg_surface_, even_smaller_bounds.width(),
+                     even_smaller_bounds.height(), ++serial, state.get());
+  Sync();
+
+  VerifyAndClearExpectations();
+
+  EXPECT_CALL(delegate_, GetMinimumSizeForWindow())
+      .WillRepeatedly(Return(kMinBounds.size()));
+  EXPECT_CALL(delegate_, GetMaximumSizeForWindow())
+      .WillRepeatedly(Return(kMaxBounds.size()));
+
+  auto even_greater_bounds = kMaxBounds;
+  even_greater_bounds.Outset(10);
+  even_greater_bounds.set_origin({0, 0});
+
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kMaxBounds)));
+
+  SendConfigureEvent(xdg_surface_, even_greater_bounds.width(),
+                     even_greater_bounds.height(), ++serial, state.get());
+  Sync();
 }
 
 TEST_P(WaylandWindowTest, OnSizeConstraintsChanged) {

@@ -56,9 +56,6 @@ try_.builder(
 try_.builder(
     name = "win-official",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    mirrors = [
-        "ci/win-official",
-    ],
     os = os.WINDOWS_DEFAULT,
     execution_timeout = 6 * time.hour,
 )
@@ -68,7 +65,4 @@ try_.builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     os = os.WINDOWS_DEFAULT,
     execution_timeout = 6 * time.hour,
-    mirrors = [
-        "ci/win32-official",
-    ],
 )

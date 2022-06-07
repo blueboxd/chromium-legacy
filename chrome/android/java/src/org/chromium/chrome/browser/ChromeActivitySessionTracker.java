@@ -19,6 +19,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
@@ -157,22 +158,25 @@ public class ChromeActivitySessionTracker {
      * activity.
      */
     private void onForegroundSessionStart() {
-        UmaUtils.recordForegroundStartTime();
-        updatePasswordEchoState();
-        FontSizePrefs.getInstance(Profile.getLastUsedRegularProfile()).onSystemFontScaleChanged();
-        ChromeLocalizationUtils.recordUiLanguageStatus();
-        updateAcceptLanguages();
-        mVariationsSession.start();
-        mPowerBroadcastReceiver.onForegroundSessionStart();
-        AppHooks.get().getChimeDelegate().startSession();
-        ReadingListBridge.onStartChromeForeground();
-        PasswordManagerLifecycleHelper.getInstance().onStartForegroundSession();
+        try (TraceEvent te = TraceEvent.scoped(
+                     "ChromeActivitySessionTracker.onForegroundSessionStart")) {
+            UmaUtils.recordForegroundStartTime();
+            updatePasswordEchoState();
+            FontSizePrefs.getInstance(Profile.getLastUsedRegularProfile())
+                    .onSystemFontScaleChanged();
+            ChromeLocalizationUtils.recordUiLanguageStatus();
+            updateAcceptLanguages();
+            mVariationsSession.start();
+            mPowerBroadcastReceiver.onForegroundSessionStart();
+            AppHooks.get().getChimeDelegate().startSession();
+            ReadingListBridge.onStartChromeForeground();
+            PasswordManagerLifecycleHelper.getInstance().onStartForegroundSession();
 
-        // Track the ratio of Chrome startups that are caused by notification clicks.
-        // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
-        RecordHistogram.recordBooleanHistogram(
-                "Startup.BringToForegroundReason",
-                NotificationPlatformBridge.wasNotificationRecentlyClicked());
+            // Track the ratio of Chrome startups that are caused by notification clicks.
+            // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
+            RecordHistogram.recordBooleanHistogram("Startup.BringToForegroundReason",
+                    NotificationPlatformBridge.wasNotificationRecentlyClicked());
+        }
     }
 
     /**
@@ -198,8 +202,7 @@ public class ChromeActivitySessionTracker {
             if (tabModelSelectorSupplier == null || !tabModelSelectorSupplier.hasValue()) continue;
             totalTabCount += tabModelSelectorSupplier.get().getTotalTabCount();
         }
-        RecordHistogram.recordCountHistogram(
-                "Tab.TotalTabCount.BeforeLeavingApp", totalTabCount);
+        RecordHistogram.recordCount1MHistogram("Tab.TotalTabCount.BeforeLeavingApp", totalTabCount);
 
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         tracker.notifyEvent(EventConstants.FOREGROUND_SESSION_DESTROYED);

@@ -9,12 +9,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
-#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
+#include "chrome/browser/ui/webui/signin/turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -56,7 +57,6 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/dice_signed_in_profile_creator.h"
-#include "chrome/browser/ui/webui/signin/turn_sync_on_helper_delegate_impl.h"
 #endif
 
 namespace {
@@ -95,7 +95,7 @@ class TurnSyncOnHelperShutdownNotifierFactory
 // User input handler for the signin confirmation dialog.
 class SigninDialogDelegate : public ui::ProfileSigninConfirmationDelegate {
  public:
-  explicit SigninDialogDelegate(TurnSyncOnHelper::SigninChoiceCallback callback)
+  explicit SigninDialogDelegate(signin::SigninChoiceCallback callback)
       : callback_(std::move(callback)) {
     DCHECK(callback_);
   }
@@ -105,21 +105,21 @@ class SigninDialogDelegate : public ui::ProfileSigninConfirmationDelegate {
 
   void OnCancelSignin() override {
     DCHECK(callback_);
-    std::move(callback_).Run(TurnSyncOnHelper::SIGNIN_CHOICE_CANCEL);
+    std::move(callback_).Run(signin::SIGNIN_CHOICE_CANCEL);
   }
 
   void OnContinueSignin() override {
     DCHECK(callback_);
-    std::move(callback_).Run(TurnSyncOnHelper::SIGNIN_CHOICE_CONTINUE);
+    std::move(callback_).Run(signin::SIGNIN_CHOICE_CONTINUE);
   }
 
   void OnSigninWithNewProfile() override {
     DCHECK(callback_);
-    std::move(callback_).Run(TurnSyncOnHelper::SIGNIN_CHOICE_NEW_PROFILE);
+    std::move(callback_).Run(signin::SIGNIN_CHOICE_NEW_PROFILE);
   }
 
  private:
-  TurnSyncOnHelper::SigninChoiceCallback callback_;
+  signin::SigninChoiceCallback callback_;
 };
 
 struct CurrentTurnSyncOnHelperUserData : public base::SupportsUserData::Data {
@@ -228,7 +228,6 @@ TurnSyncOnHelper::TurnSyncOnHelper(
                      weak_pointer_factory_.GetWeakPtr()));
 }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 TurnSyncOnHelper::TurnSyncOnHelper(
     Profile* profile,
     Browser* browser,
@@ -245,7 +244,6 @@ TurnSyncOnHelper::TurnSyncOnHelper(
                        signin_aborted_mode,
                        std::make_unique<TurnSyncOnHelperDelegateImpl>(browser),
                        base::OnceClosure()) {}
-#endif
 
 TurnSyncOnHelper::~TurnSyncOnHelper() {
   DCHECK_EQ(this, GetCurrentTurnSyncOnHelper(profile_));
@@ -263,53 +261,54 @@ bool TurnSyncOnHelper::HasCanOfferSigninError() {
   return true;
 }
 
-void TurnSyncOnHelper::OnMergeAccountConfirmation(SigninChoice choice) {
+void TurnSyncOnHelper::OnMergeAccountConfirmation(signin::SigninChoice choice) {
   switch (choice) {
-    case SIGNIN_CHOICE_NEW_PROFILE:
+    case signin::SIGNIN_CHOICE_NEW_PROFILE:
       base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_DontImport"));
       TurnSyncOnWithProfileMode(ProfileMode::NEW_PROFILE);
       break;
-    case SIGNIN_CHOICE_CONTINUE:
+    case signin::SIGNIN_CHOICE_CONTINUE:
       base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_ImportData"));
       TurnSyncOnWithProfileMode(ProfileMode::CURRENT_PROFILE);
       break;
-    case SIGNIN_CHOICE_CANCEL:
+    case signin::SIGNIN_CHOICE_CANCEL:
       base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_Cancel"));
       AbortAndDelete();
       break;
-    case SIGNIN_CHOICE_SIZE:
+    case signin::SIGNIN_CHOICE_SIZE:
       NOTREACHED();
       AbortAndDelete();
       break;
   }
 }
 
-void TurnSyncOnHelper::OnEnterpriseAccountConfirmation(SigninChoice choice) {
-  enterprise_account_confirmed_ =
-      choice == SIGNIN_CHOICE_CONTINUE || choice == SIGNIN_CHOICE_NEW_PROFILE;
+void TurnSyncOnHelper::OnEnterpriseAccountConfirmation(
+    signin::SigninChoice choice) {
+  enterprise_account_confirmed_ = choice == signin::SIGNIN_CHOICE_CONTINUE ||
+                                  choice == signin::SIGNIN_CHOICE_NEW_PROFILE;
   signin_util::RecordEnterpriseProfileCreationUserChoice(
       profile_, enterprise_account_confirmed_);
 
   switch (choice) {
-    case SIGNIN_CHOICE_CANCEL:
+    case signin::SIGNIN_CHOICE_CANCEL:
       base::RecordAction(
           base::UserMetricsAction("Signin_EnterpriseAccountPrompt_Cancel"));
       AbortAndDelete();
       break;
-    case SIGNIN_CHOICE_CONTINUE:
+    case signin::SIGNIN_CHOICE_CONTINUE:
       base::RecordAction(
           base::UserMetricsAction("Signin_EnterpriseAccountPrompt_ImportData"));
       LoadPolicyWithCachedCredentials();
       break;
-    case SIGNIN_CHOICE_NEW_PROFILE:
+    case signin::SIGNIN_CHOICE_NEW_PROFILE:
       base::RecordAction(base::UserMetricsAction(
           "Signin_EnterpriseAccountPrompt_DontImportData"));
       CreateNewSignedInProfile();
       break;
-    case SIGNIN_CHOICE_SIZE:
+    case signin::SIGNIN_CHOICE_SIZE:
       NOTREACHED();
       AbortAndDelete();
       break;
@@ -606,12 +605,18 @@ void TurnSyncOnHelper::FinishSyncSetupAndDelete(
       AbortAndDelete();
       return;
     }
-    // No explicit action when the ui gets closed. If the embedder wants the
-    // helper to abort sync in this case, it must redirect this action to
-    // ABORT_SYNC. For UI_CLOSED, also no final callback is sent.
-    case LoginUIService::UI_CLOSED:
+    // No explicit action when the ui gets closed. No final callback is sent.
+    case LoginUIService::UI_CLOSED: {
+      // We need to reset sync, to not leave it in a partially setup state.
+      auto* primary_account_mutator =
+          identity_manager_->GetPrimaryAccountMutator();
+      DCHECK(primary_account_mutator);
+      primary_account_mutator->RevokeSyncConsent(
+          signin_metrics::ABORT_SIGNIN,
+          signin_metrics::SignoutDelete::kIgnoreMetric);
       scoped_callback_runner_.ReplaceClosure(base::OnceClosure());
       break;
+    }
   }
   delete this;
 }

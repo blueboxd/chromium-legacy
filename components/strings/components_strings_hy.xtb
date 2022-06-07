@@ -13,7 +13,6 @@
 <translation id="1024111578869940408">Հաքերները երբեմն ստեղծում են կայքերի կրկնօրինակներ՝ փոքր-ինչ փոփոխելով դրանց տիրույթի հասցեները, ինչը հնարավոր չէ միանգամից նկատել։</translation>
 <translation id="1028781062521375153">Դիտել մանրամասները</translation>
 <translation id="1030706264415084469"><ph name="URL" /> կայքն ուզում է ձեր սարքում մեծ ծավալով տվյալներ մշտապես պահել</translation>
-<translation id="1032854598605920125">Պտտել ժամացույցի սլաքի ուղղությամբ</translation>
 <translation id="1033329911862281889">Ինկոգնիտո ռեժիմը չի կարող ձեզ լիովին անտեսանելի դարձնել համացանցում, մասնավորապես՝
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />այցելությունները կարող են տեսանելի լինել կայքերին և դրանց կողմից օգտագործվող ծառայություններին,<ph name="END_LIST_ITEM" />
@@ -174,7 +173,6 @@
 <translation id="1386623374109090026">Ծանոթագրություններ</translation>
 <translation id="1391289752476847787">Բաժնետոմսեր և պարտատոմսեր</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" />-ը տվյալներ չի ուղարկել:</translation>
-<translation id="1403196654932095242"><ph name="HISTORY_CLUSTERS_SEARCH_FOCUSED_FRIENDLY_MATCH_TEXT" />։ Որոնումը շարունակելու և Chrome-ի պատմության մեջ նման հարցումները դիտելու համար սեղմեք Tab, ապա՝ Enter։</translation>
 <translation id="1405567553485452995">Բաց կանաչ</translation>
 <translation id="1407135791313364759">Բացել բոլորը</translation>
 <translation id="1408787208417187241">Երեք ամրակ վերևում</translation>
@@ -254,7 +252,6 @@
 <translation id="1567040042588613346">Այս կանոնը պատշաճ կերպով աշխատում է, սակայն միևնույն արժեքը սահմանված է այլ տեղում և փոխարինվում է կանոնի կողմից։</translation>
 <translation id="1569487616857761740">Մուտքագրեք գործողության ժամկետը</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583294866416602487">Plex</translation>
 <translation id="1583429793053364125">Չհաջողվեց բացել վեբէջը:</translation>
 <translation id="1586541204584340881">Ինչ ընդլայնումներ եք դուք տեղադրել</translation>
 <translation id="1588438908519853928">Սովորական</translation>
@@ -291,6 +288,7 @@
 <translation id="1662550410081243962">Պահել վճարման եղանակները և դրանց տվյալներով ինքնալրացնել ձևերը</translation>
 <translation id="1663943134801823270">Քարտերն ու հասցեները նշված են Chrome-ում: Դրանք կարող եք կառավարել <ph name="BEGIN_LINK" />Կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="1671391448414634642">Այսուհետ <ph name="SOURCE_LANGUAGE" /> լեզվով էջերը կթարգմանվեն <ph name="TARGET_LANGUAGE" />:</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />ից <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Կարճ եզրից սկսած</translation>
 <translation id="168693727862418163">Կանոնը կանտեսվի, քանի որ դրա արժեքը չի համապատասխանում սխեմային։</translation>
 <translation id="168841957122794586">Սերվերի վկայագիրը թույլ գաղտնագրման բանալի ունի:</translation>
@@ -304,7 +302,7 @@
 <translation id="1711528724596764268">Մեքենայական ուսուցում և արհեստական բանականություն</translation>
 <translation id="1712552549805331520"><ph name="URL" /> կայքն ուզում է ձեր համակարգչում տվյալներ մշտապես պահել</translation>
 <translation id="1713628304598226412">Դարակ 2</translation>
-<translation id="1715874602234207">Ու</translation>
+<translation id="1715874602234207">F</translation>
 <translation id="1717218214683051432">Շարժման տվիչներ</translation>
 <translation id="1717494416764505390">Փոստարկղ 3</translation>
 <translation id="1718029547804390981">Հնարավոր չէ ծանոթագրություն ավելացնել, քանի որ փաստաթուղթը չափազանց մեծ է։</translation>
@@ -349,6 +347,7 @@
 <translation id="1807246157184219062">Բաց</translation>
 <translation id="1807528111851433570">Առաջին թերթ</translation>
 <translation id="1812527064848182527">հորիզոնական</translation>
+<translation id="1813414402673211292">Ջնջել դիտարկման տվյալները</translation>
 <translation id="182139138257690338">ավտոմատ ներբեռնումներ</translation>
 <translation id="1821930232296380041">Հարցումը կամ հարցման հարաչափերը սխալ են</translation>
 <translation id="1822540298136254167">Ձեր այցելած կայքերը և դրանց վրա ծախսած ժամանակը</translation>
@@ -537,7 +536,6 @@
 <translation id="2359808026110333948">Շարունակել</translation>
 <translation id="236340516568226369">Չափափոխման ընտրացանկ</translation>
 <translation id="2367567093518048410">Մակարդակ</translation>
-<translation id="2372464001869762664">Հաստատումից հետո ձեր Google հաշվում նշված քարտի տվյալները կփոխանցվեն այս կայքին։ CVC կոդը կարող եք գտնել Plex հաշվի տվյալներում։</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2383455408879745299">Անհատականացնել հատուկ գործառույթների գործիքները Chrome-ի կարգավորումներում</translation>
 <translation id="2384307209577226199">Կորպորատիվ կանխադրված</translation>
@@ -580,6 +578,7 @@
 <translation id="2505268675989099013">Պաշտպանել հաշիվը</translation>
 <translation id="2509167091171468975">Մթերային և նպարեղենի խանութներ</translation>
 <translation id="2512101340618156538">Արգելված է (կանխադրված)</translation>
+<translation id="2512413427717747692">«Դարձնել Chrome-ը կանխադրված դիտարկիչ» կոճակ։ Սեղմեք Enter՝ iOS-ի կարգավորումներում Chrome-ը համակարգի կանխադրված դիտարկիչը դարձնելու համար։</translation>
 <translation id="2515629240566999685">Ստուգել ազդանշանը ձեր տարածքում</translation>
 <translation id="2521385132275182522">Ամրակ ներքևի աջ կողմում</translation>
 <translation id="2521736961081452453">Ստեղծել ձև</translation>
@@ -595,6 +594,7 @@
 <translation id="2542106216580219892">Սերֆինգ</translation>
 <translation id="2544546346215446551">Ադմինիստրատորը վերագործարկել է ձեր սարքը</translation>
 <translation id="2544644783021658368">Մեկ փաստաթուղթ</translation>
+<translation id="254524874071906077">Դարձնել Chrome-ը կանխադրված դիտարկիչ</translation>
 <translation id="2546283357679194313">Cookie ֆայլեր և կայքի տվյալներ</translation>
 <translation id="2547466893236767989">Վեբ դիզայն և մշակում</translation>
 <translation id="254947805923345898">Կանոնում նշված արժեքն անվավեր է։</translation>
@@ -675,7 +675,6 @@
 <translation id="2728127805433021124">Սերվերի վկայագիրը ստորագրված է ստորագրության թույլ ալգորիթմով:</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Գործարկել կապակցման ախտորոշումը<ph name="END_LINK" /></translation>
 <translation id="2730600605555029057">Դասական երաժշտություն</translation>
-<translation id="2737403869486738563">Շարունակել որոնումը՝ Chrome-ի պատմության մեջ նման հարցումները դիտելու համար</translation>
 <translation id="2738330467931008676">Ընտրեք ստացման հասցեն</translation>
 <translation id="2740531572673183784">Եղավ</translation>
 <translation id="2742511345840685325">Սեղանի թենիս</translation>
@@ -691,7 +690,6 @@
 <translation id="2792012897584536778">Այս սարքի ադմինիստրատորները կարգավորել են անվտանգության հավաստագրեր, որոնց շնորհիվ նրանք կարող են տեսնել ձեր այցելած կայքերի բովանդակությունը:</translation>
 <translation id="2799020568854403057">Կայքը, որը պատրաստվում եք այցելել, պարունակում է վնասարար հավելվածներ</translation>
 <translation id="2799223571221894425">Վերագործարկել</translation>
-<translation id="2799846101868535739">«Շարունակել որոնումը» կոճակ։ Սեղմեք Enter՝ որոնումը շարունակելու և Chrome-ի պատմության մեջ նման հարցումները դիտելու համար։</translation>
 <translation id="2803306138276472711">Վերջերս Google Safe Browsing-ը <ph name="BEGIN_LINK" />վնասագիր է հայտնաբերել<ph name="END_LINK" /> <ph name="SITE" /> կայքում: Նույնիսկ ապահով վեբկայքերը երբեմն վնասվում են վնասագրերով:</translation>
 <translation id="2807052079800581569">Պատկերի դիրքը Y առանցքով</translation>
 <translation id="2820957248982571256">Որոնում…</translation>
@@ -771,7 +769,6 @@
 <translation id="3029752078111257850">Միջազգային լուրեր</translation>
 <translation id="3037605927509011580">Վա՛յ</translation>
 <translation id="3041612393474885105">Վկայագրի տեղեկությունները</translation>
-<translation id="3044034790304486808">Շարունակել որոնումը</translation>
 <translation id="305162504811187366">Chrome հեռակա աշխատասեղանի պատմությունը, այդ թվում՝ ժամադրոշմները, խնամորդները և սպասառուների աշխատաշրջանների նույնացուցիչները</translation>
 <translation id="3060227939791841287">C9 (ծրար)</translation>
 <translation id="3061707000357573562">Խոցելիության շտկում</translation>
@@ -806,9 +803,9 @@
 <translation id="3162559335345991374">Անլար կապը, որից օգտվում եք, կարող է պահանջել, որպեսզի դուք այցելեք նրա մուտքի էջը:</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Կղզի</translation>
-<translation id="3176929007561373547">Ստուգեք ձեր պրոքսի սերվերի կարգավորումները կամ կապվեք
+<translation id="3176929007561373547">Ստուգեք ձեր միջնորդ սերվերի կարգավորումները կամ կապվեք
       ցանցի ադմինիստրատորի հետ, որպեսզի համոզվեք, որ 
-      պրոքսի սերվերն աշխատում է: Եթե չեք օգտագործում պրոքսի սերվեր`
+      միջնորդ սերվերն աշխատում է: Եթե չեք օգտագործում միջնորդ սերվեր`
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="317878711435188021">Տեղեկանալ, երբ դուք ակտիվորեն օգտագործում եք այս սարքը</translation>
 <translation id="3180358318770512945">Ծնողավարություն</translation>
@@ -882,6 +879,7 @@
 <translation id="3366477098757335611">Դիտել քարտերը</translation>
 <translation id="3369192424181595722">Ժամացույցի սխալ</translation>
 <translation id="3369459162151165748">Ավտոպահեստամասեր և լրասարքեր</translation>
+<translation id="3371064404604898522">Դարձնել Chrome-ը կանխադրված դիտարկիչ</translation>
 <translation id="3371076217486966826"><ph name="URL" /> կայքն ուզում է՝
       • Ստեղծել շրջակայքի եռաչափ քարտեզը և հետագծել տեսախցիկի դիրքը
       • Օգտագործել ձեր տեսախցիկը</translation>
@@ -1016,7 +1014,7 @@
 <translation id="3714780639079136834">Միացնել բջջային ինտերնետը կամ Wi-Fi-ը</translation>
 <translation id="3715597595485130451">Կապակցվել անլար կապին</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Ստուգել պրոքսի-սերվերի, հրապատի և DNS-ի կազմաձևումը<ph name="END_LINK" /></translation>
-<translation id="372429172604983730">Սխալի պատճառ կարող է լինել հակավիրուսային ծրագիրը, հրապատը, վեբ բովանդակության զտման կամ պրոքսի սերվերի ծրագրերը:</translation>
+<translation id="372429172604983730">Սխալի պատճառ կարող է լինել հակավիրուսային ծրագիրը, հրապատը, վեբ բովանդակության զտման կամ միջնորդ սերվերի ծրագրերը:</translation>
 <translation id="3727101516080730231"><ph name="CREATE_GOOGLE_SLIDE_FOCUSED_FRIENDLY_MATCH_TEXT" />։ Սլայդներում արագ Google ներկայացում ստեղծելու համար սեղմեք Tab, ապա՝ Enter։</translation>
 <translation id="373042150751172459">B4 (ծրար)</translation>
 <translation id="3733139489341305600">Ինքնավար տրանսպորտային միջոցներ</translation>
@@ -1055,9 +1053,8 @@
 <translation id="3807873520724684969">Վնասաբեր բովանդակությունն արգելափակված է։</translation>
 <translation id="3810973564298564668">Կառավարել</translation>
 <translation id="3816482573645936981">Արժեքը (փոխարինված է)</translation>
-<translation id="382518646247711829">Եթե օգտագործում եք պրոքսի սերվեր…</translation>
+<translation id="382518646247711829">Եթե օգտագործում եք միջնորդ սերվեր…</translation>
 <translation id="3827112369919217609">Բացարձակ</translation>
-<translation id="3827475930221174051">Ըստ «<ph name="SEARCH_TERM" />» հարցմանն առնչվող գործողությունների տվյալների</translation>
 <translation id="3827666161959873541">Ընտանեկան ֆիլմեր</translation>
 <translation id="3828924085048779000">Անցաբառի դաշտը չի կարող դատարկ լինել:</translation>
 <translation id="3831065134033923230">Ստուգեք ձեր պահված գաղտնաբառերը</translation>
@@ -1355,6 +1352,7 @@
 <translation id="467662567472608290">Այս սերվերը չի կարող ապացուցել, որ <ph name="DOMAIN" /> է: Դրա անվտանգության վկայականը սխալներ է պարունակում: Պատճառը կարող է լինել սխալ կազմաձևումը կամ կապակցման խափանումը հարձակվողի կողմից:</translation>
 <translation id="4677585247300749148"><ph name="URL" /> կայքն ուզում է օգտագործել հատուկ գործողությունները</translation>
 <translation id="467809019005607715">Google Սլայդներ</translation>
+<translation id="4682496302933121474">Թարգմանե՞լ էջը</translation>
 <translation id="468314109939257734">Դիտել ձեր վիրտուալ քարտի համարը</translation>
 <translation id="4691835149146451662">Architecture-A (ծրար)</translation>
 <translation id="4692623383562244444">Որոնիչներ</translation>
@@ -1802,10 +1800,12 @@
 <translation id="5922853866070715753">Գրեթե պատրաստ է</translation>
 <translation id="5928444777041341328">Տուն և այգի</translation>
 <translation id="5932224571077948991">Կայքը հոգնեցնող կամ մոլորեցնող գովազդ է ցուցադրում</translation>
+<translation id="5937560539988385583">Էջը թարգմանված է</translation>
 <translation id="5938153366081463283">Ավելացրեք վիրտուալ քարտ</translation>
 <translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Բացվում է <ph name="SITE_NAME" /> կայքը…</translation>
 <translation id="5951495562196540101">Հնարավոր չէ գրանցվել սովորական հաշվով (հասանելի է փաթեթով արտոնագիր)։</translation>
+<translation id="5953516610448771166">Կենդանի ենթագրերը հասանելի չեն այս մեդիա բովադնակության համար։ Ենթագրեր ստանալու համար արգելափակեք <ph name="CONTENT_SETTINGS" />ն այս կայքի համար</translation>
 <translation id="5955063559762970069">Հյուրանոցներ և բնակարաններ</translation>
 <translation id="5963413905009737549">Հատված</translation>
 <translation id="5967592137238574583">Փոփոխեք կոնտակտային տվյալները</translation>
@@ -1899,6 +1899,7 @@
 <translation id="6232271601416750929">Բնական գեղեցկություն</translation>
 <translation id="6233160458685643793">Լայն ժպիտ</translation>
 <translation id="6234122620015464377">Կտրել յուրաքանչյուր փաստաթղթից հետո</translation>
+<translation id="6236290670123303279">Կառավարել կարգավորումները</translation>
 <translation id="6240447795304464094">Google Pay-ի լոգո</translation>
 <translation id="6241121617266208201">Թաքցնել հուշումները</translation>
 <translation id="624499991300733384">Տպագիր նյութերի խմբագրման ծառայություն</translation>
@@ -1930,6 +1931,7 @@
 <translation id="6319249456820053699">Ֆոտոխցիկներ և տեսախցիկներ</translation>
 <translation id="6321917430147971392">Ստուգեք ձեր DNS կարգավորումները</translation>
 <translation id="6322182122604171028">Չհաջողվեց օգտագործել Windows Hello-ն</translation>
+<translation id="6326947323444967009">Դարձրեք Chrome-ը համակարգի կանխադրված դիտարկիչ iOS-ի կարգավորումներում</translation>
 <translation id="6328639280570009161">Անջատեք ցանցի գործողությունների կանխատեսումը</translation>
 <translation id="6328784461820205019">«Ձեր կապը պաշտպանված չէ» կամ «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» կամ «SSL հավաստագրի սխալ»</translation>
 <translation id="6328786501058569169">Սա կեղծ կայք է</translation>
@@ -2061,7 +2063,7 @@
 <translation id="6710213216561001401">Նախորդը</translation>
 <translation id="6710594484020273272">&lt;Մուտքագրեք որոնման հարցումը&gt;</translation>
 <translation id="671076103358959139">Գրանցման թոքեն՝</translation>
-<translation id="6711464428925977395">Պրոքսի սերվերի հետ ինչ-որ բան այն չէ, կամ հասցեն սխալ է:</translation>
+<translation id="6711464428925977395">Միջնորդ սերվերի հետ ինչ-որ բան այն չէ, կամ հասցեն սխալ է:</translation>
 <translation id="6716672519412350405"><ph name="URL" /> կայքն ուզում է ստեղծել ձեր շրջակայքի եռաչափ քարտեզը և հետագծել տեսախցիկի դիրքը</translation>
 <translation id="6718612893943028815">Օգտագործե՞լ տեսախցիկը</translation>
 <translation id="6721678857435001674">Տեսնել անվտանգության բանալու արտադրողի և մոդելի անունը</translation>
@@ -2534,7 +2536,9 @@
 <translation id="7995512525968007366">Նշված չէ</translation>
 <translation id="7998269595945679889">«Բացել ինկոգնիտո ներդիր» կոճակ։ Սեղմեք Enter՝ նոր ինկոգնիտո ներդիր բացելու համար։</translation>
 <translation id="800218591365569300">Փակեք մյուս ներդիրներն ու ծրագրերը՝ տարածք ազատելու համար:</translation>
+<translation id="8003046808285812021">«<ph name="SEARCH_TERMS" />»</translation>
 <translation id="8004582292198964060">Դիտարկիչ</translation>
+<translation id="8009225694047762179">Կառավարել գաղտնաբառերը</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Այս քարտի տվյալները և վճարային հասցեն կպահվեն: Դուք կկարողանաք օգտագործել քարտը, երբ մտնեք <ph name="USER_EMAIL" /> հաշիվ:}one{Այս քարտի տվյալները և վճարային հասցեն կպահվեն: Դուք կկարողանաք օգտագործել քարտը, երբ մտնեք <ph name="USER_EMAIL" /> հաշիվ:}other{Այս քարտերի տվյալները և վճարային հասցեները կպահվեն: Դուք կկարողանաք օգտագործել քարտերը, երբ մտնեք <ph name="USER_EMAIL" /> հաշիվ:}}</translation>
 <translation id="8025119109950072390">Այս կայքում հարձակվողները կարող են ձեր սարքում խաբեությամբ ծրագրեր տեղադրել կամ առբերել ձեր անձնական տեղեկությունները (օրինակ՝ գաղտնաբառերը, հեռախոսահամարները կամ վարկային քարտերը):</translation>
 <translation id="8026334261755873520">Դիտարկումների տվյալների մաքրում</translation>
@@ -2633,6 +2637,7 @@
 <translation id="8277900682056760511">Վճարման մշակման թերթը բացված է</translation>
 <translation id="8280630997017109758">Դարակ 11</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
+<translation id="8281886186245836920">Բաց թողնել</translation>
 <translation id="8282947398454257691">Իմանալ ձեր հատուկ սարքի նույնացուցիչը</translation>
 <translation id="8284769179630993263">Կառավարեք Ապահով դիտարկումը և այլ պարամետրեր Chrome-ի կարգավորումներում</translation>
 <translation id="8286036467436129157">Մուտք գործել</translation>
@@ -2856,7 +2861,7 @@
 <translation id="8996941253935762404">Կայքը, որը պատրաստվում եք այցելել, պարունակում է վնասաբեր ծրագրեր</translation>
 <translation id="8997023839087525404">Սերվերը ներկայացրել է մի վկայագիր, որը «Վկայագրերի թափանցիկություն» կանոնի միջոցով հրապարակայնորեն չի բացահայտվել: Որոշ վկայագրերի համար սա պարտադիր պայման է, որպեսզի դրանք լինեն վստահելի և պաշտպանեն հարձակվողներից:</translation>
 <translation id="900097728357967923">Սպորտային միջոցառումների ուղիղ հեռարձակում</translation>
-<translation id="9001074447101275817"><ph name="DOMAIN" /> պրոքսի սերվերի օգտագործման համար անհրաժեշտ է մուտքագրել օգտանուն և գաղտնաբառ:</translation>
+<translation id="9001074447101275817"><ph name="DOMAIN" /> միջնորդ սերվերի օգտագործման համար անհրաժեշտ է մուտքագրել օգտանուն և գաղտնաբառ:</translation>
 <translation id="9001963517402879850">Ցատկե՛ք։</translation>
 <translation id="900220564053416031">Մարտարվեստներ</translation>
 <translation id="9004367719664099443">VR աշխատաշրջանն ակտիվ է</translation>
@@ -2892,6 +2897,7 @@
 <translation id="908796725011587895">Համալսարանական սպորտ</translation>
 <translation id="9089260154716455634">Ոչ աշխատանքային ժամանակին վերաբերող կանոն՝</translation>
 <translation id="9095388113577226029">Այլ լեզուներ…</translation>
+<translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />։ Սեղմեք Tab, ապա՝ Enter, որպեսզի iOS-ի կարգավորումներում Chrome-ը դարձնեք համակարգի կանխադրված դիտարկիչը։</translation>
 <translation id="9096679202588811390">Հեռուստահաղորդումներ և ծրագրեր</translation>
 <translation id="9101630580131696064">Դարակ 1</translation>
 <translation id="9103537084693478942">Տեսանյութերի մշակման ծրագիր</translation>

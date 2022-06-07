@@ -9,6 +9,10 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device_ref.h"
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/feature_status_change.h"
 #include "ash/services/device_sync/public/cpp/device_sync_client.h"
@@ -24,10 +28,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -36,9 +36,6 @@ namespace ash {
 namespace multidevice_setup {
 
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace device_sync = ::chromeos::device_sync;
 
 // This pref name is left in a legacy format to maintain compatibility.
 const char kWifiSyncPendingStatePrefName[] =

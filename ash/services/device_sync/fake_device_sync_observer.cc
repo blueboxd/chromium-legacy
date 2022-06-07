@@ -4,7 +4,7 @@
 
 #include "ash/services/device_sync/fake_device_sync_observer.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -29,4 +29,4 @@ void FakeDeviceSyncObserver::OnNewDevicesSynced() {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

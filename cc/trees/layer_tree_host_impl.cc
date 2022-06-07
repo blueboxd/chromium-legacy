@@ -29,6 +29,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/histogram.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -606,6 +607,14 @@ void LayerTreeHostImpl::FinishCommit(
   TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::FinishCommit");
   LayerTreeImpl* tree = sync_tree();
   tree->PullPropertiesFrom(state, unsafe_state);
+
+  // Check whether the impl scroll animating node was removed by the commit.
+  if (ElementId impl_only_scrolling_element =
+          mutator_host()->ImplOnlyScrollAnimatingElement()) {
+    if (!tree->property_trees()->HasElement(impl_only_scrolling_element)) {
+      mutator_host()->ImplOnlyScrollAnimatingElementRemoved();
+    }
+  }
   PullLayerTreeHostPropertiesFrom(state);
 
   // Transfer image decode requests to the impl thread.
@@ -642,13 +651,6 @@ void LayerTreeHostImpl::PullLayerTreeHostPropertiesFrom(
   set_viewport_mobile_optimized(commit_state.is_viewport_mobile_optimized);
   SetPrefersReducedMotion(commit_state.prefers_reduced_motion);
   SetMayThrottleIfUndrawnFrames(commit_state.may_throttle_if_undrawn_frames);
-  if (!was_set_memory_policy_called_ &&
-      commit_state.priority_cutoff !=
-          cached_managed_memory_policy_.priority_cutoff_when_visible) {
-    cached_managed_memory_policy_.priority_cutoff_when_visible =
-        commit_state.priority_cutoff;
-    UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
-  }
 }
 
 void LayerTreeHostImpl::RecordGpuRasterizationHistogram() {
@@ -678,10 +680,6 @@ void LayerTreeHostImpl::CommitComplete() {
 
   if (CommitToActiveTree()) {
     active_tree_->HandleScrollbarShowRequests();
-
-    // Property tree nodes have been updated by the commit. Update elements
-    // available on active tree to start/stop ticking animations.
-    UpdateElements(ElementListType::ACTIVE);
 
     // We have to activate animations here or "IsActive()" is true on the layers
     // but the animations aren't activated yet so they get ignored by
@@ -1554,10 +1552,6 @@ void LayerTreeHostImpl::SetEnableFrameRateThrottling(
   enable_frame_rate_throttling_ = enable_frame_rate_throttling;
 }
 
-void LayerTreeHostImpl::UpdateElements(ElementListType changed_list) {
-  mutator_host()->UpdateRegisteredElementIds(changed_list);
-}
-
 void LayerTreeHostImpl::InvalidateContentOnImplSide() {
   DCHECK(!pending_tree_);
   // Invalidation should never be ran outside the impl frame for non
@@ -2061,8 +2055,6 @@ void LayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
 
 void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   DCHECK(task_runner_provider_->IsImplThread());
-
-  was_set_memory_policy_called_ = true;
 
   SetMemoryPolicyImpl(policy);
 
@@ -3364,10 +3356,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     pending_tree_->PushPropertiesTo(active_tree_.get());
     if (!pending_tree_->LayerListIsEmpty())
       pending_tree_->property_trees()->ResetAllChangeTracking();
-
-    // Property tree nodes have been updated by PushLayerProperties. Update
-    // elements available on active tree to start/stop ticking animations.
-    UpdateElements(ElementListType::ACTIVE);
 
     active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
 
@@ -4915,6 +4903,11 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
                     element_id));
   const ScrollNode* scroll_node =
       property_trees->scroll_tree().FindNodeFromElementId(element_id);
+  // TODO(crbug.com/1307498): We should aim to prevent this condition from
+  // happening and either remove this check or make it fatal.
+  DCHECK(scroll_node);
+  if (!scroll_node)
+    return;
   property_trees->scroll_tree_mutable().OnScrollOffsetAnimated(
       element_id, scroll_node->id, scroll_offset, tree);
 }

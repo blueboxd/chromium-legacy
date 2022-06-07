@@ -32,6 +32,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -383,7 +384,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas,
                            canvas->getBaseLayerSize().height());
   SkIRect canvas_clip = canvas->getDeviceClipBounds();
   params->clip = gfx::SkIRectToRect(canvas_clip);
-  params->transform.matrix() = canvas->getTotalMatrix();
+  params->transform = gfx::Transform(canvas->getTotalMatrix());
   if (params->size.IsEmpty())
     return true;
 

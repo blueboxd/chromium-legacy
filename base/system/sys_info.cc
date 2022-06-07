@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/system/sys_info_internal.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -23,8 +22,13 @@
 
 namespace base {
 namespace {
+#if BUILDFLAG(IS_IOS)
+// For M99, 45% of devices have 2GB of RAM, and 55% have more.
+constexpr int64_t kLowMemoryDeviceThresholdMB = 1024;
+#else
 // Updated Desktop default threshold to match the Android 2021 definition.
 constexpr int64_t kLowMemoryDeviceThresholdMB = 2048;
+#endif
 }  // namespace
 
 // static

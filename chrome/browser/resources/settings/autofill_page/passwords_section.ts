@@ -30,14 +30,15 @@ import './passwords_export_dialog.js';
 import './passwords_shared_css.js';
 import './avatar_icon.js';
 
+import {CrA11yAnnouncerElement} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeat, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {GlobalScrollTargetMixin} from '../global_scroll_target_mixin.js';
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
@@ -56,8 +57,9 @@ import {MergePasswordsStoreCopiesMixin} from './merge_passwords_store_copies_mix
 import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordCheckMixin} from './password_check_mixin.js';
-import {AddCredentialFromSettingsUserInteractions} from './password_edit_dialog.js';
+import {AddCredentialFromSettingsUserInteractions, PasswordEditDialogElement} from './password_edit_dialog.js';
 import {PasswordCheckReferrer, PasswordExceptionListChangedListener, PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+import {PasswordRequestorMixin} from './password_requestor_mixin.js';
 import {PasswordsListHandlerElement} from './passwords_list_handler.js';
 import {getTemplate} from './passwords_section.html.js';
 
@@ -78,14 +80,38 @@ type FocusConfig = Map<string, string|(() => void)>;
 
 export interface PasswordsSectionElement {
   $: {
+    accountEmail: HTMLElement,
+    accountStorageButtonsContainer: HTMLElement,
+    accountStorageOptInBody: HTMLElement,
+    accountStorageOptOutBody: HTMLElement,
+    addPasswordDialog: PasswordEditDialogElement,
+    checkPasswordLeakCount: HTMLElement,
+    checkPasswordLeakDescription: HTMLElement,
+    checkPasswordWarningIcon: HTMLElement,
+    checkPasswordsBannerContainer: HTMLElement,
+    checkPasswordsButtonRow: HTMLElement,
+    checkPasswordsLinkRow: HTMLElement,
+    devicePasswordsLink: HTMLElement,
     exportImportMenu: CrActionMenuElement,
+    manageLink: HTMLElement,
+    menuEditPassword: HTMLElement,
+    menuExportPassword: HTMLElement,
+    noExceptionsLabel: HTMLElement,
+    noPasswordsLabel: HTMLElement,
+    optInToAccountStorageButton: HTMLElement,
+    optOutOfAccountStorageButton: HTMLElement,
+    passwordExceptionsList: HTMLElement,
+    passwordList: DomRepeat,
     passwordsListHandler: PasswordsListHandlerElement,
+    savedPasswordsHeaders: HTMLElement,
+    trustedVaultBanner: CrLinkRowElement,
   };
 }
 
 const PasswordsSectionElementBase = MergePasswordsStoreCopiesMixin(
-    PrefsMixin(GlobalScrollTargetMixin(MergeExceptionsStoreCopiesMixin(
-        WebUIListenerMixin(I18nMixin(PasswordCheckMixin(PolymerElement)))))));
+    PasswordRequestorMixin(PrefsMixin(GlobalScrollTargetMixin(
+        MergeExceptionsStoreCopiesMixin(WebUIListenerMixin(
+            I18nMixin(PasswordCheckMixin(PolymerElement))))))));
 
 export class PasswordsSectionElement extends PasswordsSectionElementBase {
   static get is() {
@@ -218,6 +244,13 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
             'eligibleForAccountStorage_)',
       },
 
+      isUnifiedPasswordManagerEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('unifiedPasswordManagerEnabled');
+        },
+      },
+
       showImportPasswords_: {
         type: Boolean,
         value() {
@@ -243,7 +276,6 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
 
       // <if expr="chromeos_ash or chromeos_lacros">
       showPasswordPromptDialog_: Boolean,
-      tokenRequestManager_: Object,
       // </if>
 
       showPasswordsExportDialog_: Boolean,
@@ -275,6 +307,7 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   private hasPasswordExceptions_: boolean;
   private shouldShowBanner_: boolean;
   private isAccountStoreUser_: boolean;
+  private isUnifiedPasswordManagerEnabled_: boolean;
   private shouldShowDevicePasswordsLink_: boolean;
   private trustedVaultBannerState_: TrustedVaultBannerState;
   private hasLeakedCredentials_: boolean;
@@ -288,7 +321,6 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
 
   // <if expr="chromeos_ash or chromeos_lacros">
   private showPasswordPromptDialog_: boolean;
-  private tokenRequestManager_: BlockingRequestManager;
   // </if>
 
   private showPasswordsExportDialog_: boolean;
@@ -347,12 +379,12 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
     // <if expr="chromeos_ash or chromeos_lacros">
     // If the user's account supports the password check, an auth token will be
     // required in order for them to view or export passwords. Otherwise there
-    // is no additional security so |tokenRequestManager_| will immediately
+    // is no additional security so |tokenRequestManager| will immediately
     // resolve requests.
     if (loadTimeData.getBoolean('userCannotManuallyEnterPassword')) {
-      this.tokenRequestManager_ = new BlockingRequestManager();
+      this.tokenRequestManager = new BlockingRequestManager();
     } else {
-      this.tokenRequestManager_ =
+      this.tokenRequestManager =
           new BlockingRequestManager(() => this.openPasswordPromptDialog_());
     }
     // </if>
@@ -392,10 +424,6 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
           this.trustedVaultBannerState_ = state;
         });
 
-    afterNextRender(this, function() {
-      IronA11yAnnouncer.requestAvailability();
-    });
-
     HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
         TrustSafetyInteraction.OPENED_PASSWORD_MANAGER);
   }
@@ -403,8 +431,9 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   override disconnectedCallback() {
     super.disconnectedCallback();
 
+    assert(this.setIsOptedInForAccountStorageListener_);
     this.passwordManager_.removeAccountStorageOptInStateListener(
-        assert(this.setIsOptedInForAccountStorageListener_!));
+        this.setIsOptedInForAccountStorageListener_);
     this.setIsOptedInForAccountStorageListener_ = null;
   }
 
@@ -460,12 +489,14 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   /**
    * hide the link to the user's Google Account if:
    *  a) the link is embedded in the account storage message OR
-   *  b) the user is signed out (or signed-in but has encrypted passwords)
+   *  b) the user is signed out (or signed-in but has encrypted passwords) OR
+   *  c) unified password manager for desktop is enabled.
    */
   private computeHidePasswordsLink_(): boolean {
     return this.eligibleForAccountStorage_ ||
         (!!this.syncStatus_ && !!this.syncStatus_.signedIn &&
-         !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData);
+         !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData) ||
+        this.isUnifiedPasswordManagerEnabled_;
   }
 
   private computeHasLeakedCredentials_(): boolean {
@@ -474,6 +505,10 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
 
   private computeHasNeverCheckedPasswords_(): boolean {
     return !this.status.elapsedTimeSinceLastCheck;
+  }
+
+  private getPasswordToggleClass_(): string {
+    return this.isUnifiedPasswordManagerEnabled_ ? 'hr' : '';
   }
 
   /**
@@ -509,6 +544,10 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
     Router.getInstance().navigateTo(routes.DEVICE_PASSWORDS);
   }
 
+  getPasswordManagerForTest(): PasswordManagerProxy {
+    return this.passwordManager_;
+  }
+
   // <if expr="chromeos_ash or chromeos_lacros">
   /**
    * When this event fired, it means that the password-prompt-dialog succeeded
@@ -526,12 +565,14 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
    */
   private onTokenObtained_(e: CustomEvent<any>) {
     assert(e.detail);
-    this.tokenRequestManager_.resolve();
+    this.tokenRequestManager.resolve();
   }
 
   private onPasswordPromptClosed_() {
     this.showPasswordPromptDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()!));
+    const toFocus = this.activeDialogAnchorStack_.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private openPasswordPromptDialog_() {
@@ -614,13 +655,15 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
 
   private onPasswordsExportDialogClosed_() {
     this.showPasswordsExportDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()!));
+    const toFocus = this.activeDialogAnchorStack_.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onAddPasswordTap_() {
     chrome.metricsPrivate.recordEnumerationValue(
         'PasswordManager.AddCredentialFromSettings.UserAction',
-        AddCredentialFromSettingsUserInteractions.Add_Dialog_Opened,
+        AddCredentialFromSettingsUserInteractions.ADD_DIALOG_OPENED,
         AddCredentialFromSettingsUserInteractions.COUNT);
     this.showAddPasswordDialog_ = true;
     this.activeDialogAnchorStack_.push(
@@ -630,10 +673,12 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   private onAddPasswordDialogClosed_() {
     chrome.metricsPrivate.recordEnumerationValue(
         'PasswordManager.AddCredentialFromSettings.UserAction',
-        AddCredentialFromSettingsUserInteractions.Add_Dialog_Closed,
+        AddCredentialFromSettingsUserInteractions.ADD_DIALOG_CLOSED,
         AddCredentialFromSettingsUserInteractions.COUNT);
     this.showAddPasswordDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()!));
+    const toFocus = this.activeDialogAnchorStack_.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onOptIn_() {
@@ -668,8 +713,10 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
     // Populate the |focusConfig| map of the parent <settings-autofill-page>
     // element, with additional entries that correspond to subpage trigger
     // elements residing in this element's Shadow DOM.
-    this.focusConfig.set(assert(routes.CHECK_PASSWORDS).path, () => {
-      focusWithoutInk(assert(this.shadowRoot!.querySelector('#icon')!));
+    this.focusConfig.set(routes.CHECK_PASSWORDS.path, () => {
+      const toFocus = this.shadowRoot!.querySelector<HTMLElement>('#icon');
+      assert(toFocus);
+      focusWithoutInk(toFocus);
     });
   }
 
@@ -678,7 +725,6 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
       return;
     }
     setTimeout(() => {  // Async to allow list to update.
-      IronA11yAnnouncer.requestAvailability();
       const total = this.shownPasswordsCount_ + this.shownExceptionsCount_;
       let text;
       switch (total) {
@@ -692,13 +738,8 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
           text =
               this.i18n('searchResultsPlural', total.toString(), this.filter);
       }
-      this.dispatchEvent(new CustomEvent('iron-announce', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          text: text,
-        }
-      }));
+
+      CrA11yAnnouncerElement.getInstance().announce(text);
     }, 0);
   }
 
@@ -712,7 +753,6 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         return '';
       default:
         assertNotReached();
-        return '';
     }
   }
 

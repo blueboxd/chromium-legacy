@@ -57,6 +57,9 @@ class AssistantClientV1 : public AssistantClient {
   void SetExternalPlaybackState(const MediaStatus& status_proto) override;
   void AddDeviceStateEventObserver(
       GrpcServicesObserver<OnDeviceStateEventRequest>* observer) override;
+  void AddMediaActionFallbackEventObserver(
+      GrpcServicesObserver<OnMediaActionFallbackEventRequest>* observer)
+      override;
   void SendVoicelessInteraction(
       const ::assistant::api::Interaction& interaction,
       const std::string& description,
@@ -68,6 +71,8 @@ class AssistantClientV1 : public AssistantClient {
       const std::vector<std::string>& context_protos) override;
   void StartVoiceInteraction() override;
   void StopAssistantInteraction(bool cancel_conversation) override;
+  void AddConversationStateEventObserver(
+      GrpcServicesObserver<OnConversationStateEventRequest>* observer) override;
   void SetAuthenticationInfo(const AuthTokens& tokens) override;
   void SetInternalOptions(const std::string& locale,
                           bool spoken_feedback_enabled) override;
@@ -103,12 +108,18 @@ class AssistantClientV1 : public AssistantClient {
   class DeviceStateListener;
   class DisplayConnectionImpl;
   class MediaManagerListener;
+  class AssistantManagerDelegateImpl;
 
   void AddMediaManagerListener();
+  void HandleMediaAction(const std::string& action_name,
+                         const std::string& media_action_args_proto);
 
-  void NotifyAllServicesReady();
+  void NotifyConversationStateEvent(
+      const OnConversationStateEventRequest& request);
 
   void NotifyDeviceStateEvent(const OnDeviceStateEventRequest& request);
+
+  void NotifyAllServicesReady();
 
   void OnSpeakerIdEnrollmentUpdate(
       const assistant_client::SpeakerIdEnrollmentUpdate& update);
@@ -124,12 +135,19 @@ class AssistantClientV1 : public AssistantClient {
 
   std::unique_ptr<DisplayConnectionImpl> display_connection_;
   std::unique_ptr<MediaManagerListener> media_manager_listener_;
+  std::unique_ptr<AssistantManagerDelegateImpl> assistant_manager_delegate_;
 
   base::ObserverList<GrpcServicesObserver<OnSpeakerIdEnrollmentEventRequest>>
       speaker_event_observer_list_;
 
+  base::ObserverList<GrpcServicesObserver<OnConversationStateEventRequest>>
+      conversation_state_event_observer_list_;
+
   base::ObserverList<GrpcServicesObserver<OnDeviceStateEventRequest>>
       device_state_event_observer_list_;
+
+  base::ObserverList<GrpcServicesObserver<OnMediaActionFallbackEventRequest>>
+      media_action_fallback_event_observer_list_;
 
   base::ObserverList<
       GrpcServicesObserver<::assistant::api::OnAlarmTimerEventRequest>>

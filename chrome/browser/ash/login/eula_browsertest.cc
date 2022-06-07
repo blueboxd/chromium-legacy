@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -281,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LearnMore) {
           1)));
 }
 
-#if BUILDFLAG(IS_CHROMEOS) && defined(NDEBUG)
+#if defined(NDEBUG)
 #define MAYBE_AdditionalToS DISABLED_AdditionalToS
 #else
 #define MAYBE_AdditionalToS AdditionalToS

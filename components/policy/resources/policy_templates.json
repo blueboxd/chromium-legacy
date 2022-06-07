@@ -509,8 +509,6 @@
       ],
     },
     {
-      # TODO(joaodasilva): Flag these policies with 'can_be_recommended'
-      # after fixing https://crbug.com/106683
       'name': 'DefaultSearchProvider',
       'type': 'group',
       'caption': '''Default search provider''',
@@ -700,7 +698,8 @@
         'DeviceBatteryChargeMode',
         'DeviceBatteryChargeCustomStartCharging',
         'DeviceBatteryChargeCustomStopCharging',
-        'DeviceUsbPowerShareEnabled'
+        'DeviceUsbPowerShareEnabled',
+        'DevicePowerAdaptiveChargingEnabled'
       ],
     },
     {
@@ -1219,6 +1218,7 @@
         'CrostiniArcAdbSideloadingAllowed',
         'DeviceCrostiniArcAdbSideloadingAllowed',
         'CrostiniPortForwardingAllowed',
+        'SystemTerminalSshAllowed',
       ]
     },
     {
@@ -1338,7 +1338,7 @@
       'caption': '''First-Party Sets Settings''',
       'desc': '''Controls policies for the First-Party Sets feature.''',
       'policies': [
-        'FirstPartySetsEnabled',
+        'FirstPartySetsEnabled', 'FirstPartySetsOverrides'
       ]
     },
     {
@@ -1770,6 +1770,28 @@
 
       If this policy is left not set or the list is empty all schemes will be accessible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
       'label': '''List of disabled protocol schemes''',
+    },
+    {
+      'name': 'GetDisplayMediaSetSelectAllScreensAllowedForUrls',
+      'owners': ['file://chrome/browser/media/webrtc/OWNERS', 'simonha@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:102-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 972,
+      'caption': '''Enables auto-select for multi screen captures''',
+      'tags': [],
+      'desc': '''The <ph name="GET_DISPLAY_MEDIA_SET_NAME">getDisplayMediaSet</ph> API allows web applications to capture multiple surfaces at once.
+      This policy unlocks the <ph name="AUTO_SELECT_ALL_SCREENS_NAME">autoSelectAllScreens</ph> property for web applications at defined origins.
+      If the <ph name="AUTO_SELECT_ALL_SCREENS_NAME">autoSelectAllScreens</ph> property is defined in a <ph name="GET_DISPLAY_MEDIA_SET_NAME">getDisplayMediaSet</ph> request, all screen surfaces are automatically captured without requiring explicit user permission.
+      If the policy is not set, <ph name="AUTO_SELECT_ALL_SCREENS_NAME">autoSelectAllScreens</ph> is not available for any web application.''',
     },
     {
       'name': 'GloballyScopeHTTPAuthCacheEnabled',
@@ -4496,6 +4518,35 @@
       'label': '''Set media disk cache size''',
     },
     {
+      'name': 'DownloadBubbleEnabled',
+      'owners': ['file://components/safe_browsing/OWNERS', 'bhatiarohit@chromium.org', 'xinghuilu@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*: 102-', 'chrome_os: 102-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable download bubble UI',
+        },
+        {
+          'value': False,
+          'caption': 'Disable download bubble UI',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 970,
+      'caption': '''Enable download bubble UI''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled or leaving it unset shows the new download bubble UI in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      Setting the policy to Disabled means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> keeps showing the old download shelf UI.''',
+    },
+    {
       'name': 'DownloadRestrictions',
       'owners': ['mad@chromium.org', 'zmin@chromium.org'],
       'type': 'int-enum',
@@ -5606,7 +5657,7 @@
     {
       'name': 'ExtensionAllowedTypes',
       'owners': ['benwells@chromium.org', 'file://extensions/OWNERS'],
-      'type': 'list',
+      'type': 'string-enum-list',
       'schema': {
         'type': 'array',
         'items': {
@@ -5622,6 +5673,38 @@
         },
         'id': 'ExtensionAllowedTypes',
       },
+      'items': [
+        {
+          'name': 'extension',
+          'value': 'extension',
+          'caption': '''Extension''',
+        },
+        {
+          'name': 'theme',
+          'value': 'theme',
+          'caption': '''Theme''',
+        },
+        {
+          'name': 'user_script',
+          'value': 'user_script',
+          'caption': '''User script''',
+        },
+        {
+          'name': 'hosted_app',
+          'value': 'hosted_app',
+          'caption': '''Hosted app''',
+        },
+        {
+          'name': 'legacy_packaged_app',
+          'value': 'legacy_packaged_app',
+          'caption': '''Legacy packaged app''',
+        },
+        {
+          'name': 'platform_app',
+          'value': 'platform_app',
+          'caption': '''Platform app''',
+        },
+      ],
       'supported_on': ['chrome.*:25-', 'chrome_os:25-'],
       'features': {
         'dynamic_refresh': True,
@@ -9009,7 +9092,7 @@
     },
     {
       'name': 'ChromeOsMultiProfileUserBehavior',
-      'owners': ['xiyuan@chromium.org', 'sinhak@chromium.org', 'tellier@google.com', 'rsorokin@chromium.org', 'cros-oac@google.com'],
+      'owners': ['xiyuan@chromium.org', 'sinhak@chromium.org', 'rsorokin@chromium.org', 'cros-oac@google.com'],
       'type': 'string-enum',
       'schema': {
         'type': 'string',
@@ -9215,7 +9298,7 @@
       'owners': ['ericlaw@microsoft.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:88-', 'chrome_os:88-', 'android:88-'],
+      'supported_on': ['chrome.*:88-102', 'chrome_os:88-102', 'android:88-102'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -9230,6 +9313,7 @@
           'caption': 'Allow all popups opened with a target of <ph name="BLANK_PAGE_NAME">_blank</ph> to interact the page that requested to open the popup unless the opener page explicitly opts-out of such interaction ',
         },
       ],
+      'deprecated': True,
       'example_value': False,
       'default': True,
       'id': 802,
@@ -9239,7 +9323,7 @@
 
       Setting the policy to Enabled or leaving it unset causes the <ph name="WINDOW_OPENER_PROPERTY">window.opener</ph> property to be set to <ph name="NULL_VALUE">null</ph> unless the anchor specifies <ph name="REL_OPENER_ATTRIBUTE">rel="opener"</ph>.
 
-      This policy will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 95.
+      This policy was removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 102.
 
       See https://chromestatus.com/feature/6140064063029248.''',
     },
@@ -9947,6 +10031,8 @@
       'tags': [],
       'desc': '''Setting the policy allows merging of selected policies when they come from different sources, with the same scopes and level.
 
+      Use the wildcard character '*' to allow merging of all list policies.
+
       If a policy is in the list and there's conflict between sources with:
 
       * The same scopes and level: The values merge into a new policy list.
@@ -10015,6 +10101,8 @@
       'caption': '''Allow merging dictionary policies from different sources''',
       'tags': [],
       'desc': '''Setting the policy allows merging of selected policies when they come from different sources, with the same scopes and level. This merging is in the first level keys of the dictionary from each source. The key coming from the highest priority source takes precedence.
+
+      Use the wildcard character '*' to allow merging of all supported dictionary policies.
 
       If a policy is in the list and there's conflict between sources with:
 
@@ -10322,11 +10410,12 @@
       'owners': ['file://printing/OWNERS', 'weili@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:17-'],
+      'supported_on': ['chrome.*:17-101'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 109,
       'caption': '''Enable submission of documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>''',
@@ -17094,7 +17183,7 @@
     {
       'name': 'UsbDetachableWhitelist',
       'owners': ['vpalatin@chromium.org', 'hendrich@chromium.org'],
-      'type': 'list',
+      'type': 'dict',
       'schema': {
         'type': 'array',
         'items': {
@@ -17135,7 +17224,7 @@
     {
       'name': 'UsbDetachableAllowlist',
       'owners': ['vpalatin@chromium.org', 'hendrich@chromium.org'],
-      'type': 'list',
+      'type': 'dict',
       'schema': {
         'type': 'array',
         'items': {
@@ -18754,7 +18843,7 @@
     {
       'name': 'QuickUnlockModeAllowlist',
       'owners': ['file://components/policy/resources/OWNERS', 'bartfab@chromium.org'],
-      'type': 'list',
+      'type': 'string-enum-list',
       'schema': {
         'type': 'array',
         'items': {
@@ -18767,6 +18856,23 @@
         },
         'id': 'QuickUnlockModeAllowlist',
       },
+      'items': [
+        {
+          'name': 'all',
+          'value': 'all',
+          'caption': '''All''',
+        },
+        {
+          'name': 'PIN',
+          'value': 'PIN',
+          'caption': '''PIN''',
+        },
+        {
+          'name': 'FINGERPRINT',
+          'value': 'FINGERPRINT',
+          'caption': '''Fingerprint''',
+        },
+      ],
       'supported_on': ['chrome_os:87-'],
       'features': {
         'dynamic_refresh': True,
@@ -18792,7 +18898,7 @@
     {
       'name': 'QuickUnlockModeWhitelist',
       'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
-      'type': 'list',
+      'type': 'string-enum-list',
       'schema': {
         'type': 'array',
         'items': {
@@ -18805,6 +18911,23 @@
         },
         'id': 'QuickUnlockModeWhitelist',
       },
+      'items': [
+        {
+          'name': 'all',
+          'value': 'all',
+          'caption': '''All''',
+        },
+        {
+          'name': 'PIN',
+          'value': 'PIN',
+          'caption': '''PIN''',
+        },
+        {
+          'name': 'FINGERPRINT',
+          'value': 'FINGERPRINT',
+          'caption': '''Fingerprint''',
+        },
+      ],
       'supported_on': ['chrome_os:56-100'],
       'features': {
         'dynamic_refresh': True,
@@ -20991,6 +21114,36 @@
       If this policy is set to False, port forwarding into Crostini containers will be disabled.''',
     },
     {
+      'name': 'SystemTerminalSshAllowed',
+      'owners': ['joelhockey@chromium.org', 'aoldemeier@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable SSH in Terminal System App',
+        },
+        {
+          'value': False,
+          'caption': 'Disable SSH in Terminal System App',
+        },
+      ],
+      'supported_on': ['chrome_os:102-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default': True,
+      'default_for_enterprise_users': False,
+      'id': 974,
+      'caption': '''Allow SSH outgoing client connections in Terminal System App''',
+      'tags': ['system-security'],
+      'desc': '''If this policy doesn't exist (e.g. for unmanaged users), the SSH (Secure SHell) outgoing client connections feature in Terminal System App is enabled (default True).
+      If the user is managed, and the policy is unset or Disabled, the feature is disabled in Terminal.
+      Setting the policy to Enabled allows managed users to create outgoing client SSH connections in Terminal.''',
+    },
+    {
       'name': 'SafeBrowsingWhitelistDomains',
       'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'list',
@@ -21036,6 +21189,8 @@
       'desc': '''Setting the policy to Enabled means Safe Browsing will trust the domains you designate. It won't check them for dangerous resources such as phishing, malware, or unwanted software. Safe Browsing's download protection service won't check downloads hosted on these domains. Its password protection service won't check for password reuse.
 
       Leaving the policy unset means default Safe Browsing protection applies to all resources.
+
+      This policy must be set as a list of fully qualified domain names. It does not support regular expressions, and will not allowlist subdomains of domains listed in the policy.
 
       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
@@ -21539,7 +21694,7 @@
       'supported_on': ['chrome_os:69-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True
+        'per_profile': False
       },
       'example_value': {
         'time_window_limit': {
@@ -22487,7 +22642,7 @@
       'name': 'CloudReportingUploadFrequency',
       'owners':  ['zmin@chromium.org', 'file://components/enterprise/browser/reporting/OWNERS'],
       'type': 'int',
-      'schema': { 'type': 'integer', 'minimum': 3 , 'maximum': 168},
+      'schema': { 'type': 'integer', 'minimum': 3 , 'maximum': 24},
       'supported_on': ['chrome.*:101-', 'chrome_os:101-', 'android:101-', 'ios:101-'],
       'tags': ['admin-sharing', 'google-sharing'],
       'features': {
@@ -23194,7 +23349,7 @@
       'supported_on': ['chrome_os:73-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True
+        'per_profile': False
       },
       'example_value': {
         'current_config': {
@@ -25835,7 +25990,7 @@
       'supported_on': ['chrome_os: 80-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True
+        'per_profile': False
       },
       'example_value': {
         'app_limits': [
@@ -26000,7 +26155,8 @@
         {
           'name': 'privet',
           'value': 'privet',
-          'caption': '''Zeroconf-based (mDNS + DNS-SD) protocol destinations''',
+          'caption': '''Zeroconf-based (mDNS + DNS-SD) protocol destinations (Deprecated)''',
+          'supported_on': ['chrome_os:80-101', 'chrome.*:80-101']
         },
         {
           'name': 'extension',
@@ -26020,7 +26176,8 @@
         {
           'name': 'cloud',
           'value': 'cloud',
-          'caption': '''<ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and 'Save to Google Drive' destinations''',
+          'caption': '''<ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and 'Save to Google Drive' destinations (Deprecated)''',
+          'supported_on': ['chrome_os:80-101', 'chrome.*:80-101']
         },
       ],
       'supported_on': ['chrome_os:80-', 'chrome.*:80-'],
@@ -26028,7 +26185,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['cloud', 'privet'],
+      'example_value': ['local', 'pdf'],
       'id': 647,
       'caption': '''Disable printer types on the deny list''',
       'tags': [],
@@ -26036,7 +26193,7 @@
 
       Placing all printer types on the deny list effectively disables printing, as there would be no available destinations to send a document for printing.
 
-      Including <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> on the deny list has the same effect as setting the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy to false. In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy must be set to true and <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> must not be on the deny list.
+      In versions before 102, including <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> on the deny list has the same effect as setting the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy to false. In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy must be set to true and <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> must not be on the deny list. Beginning in version 102, <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations are not supported and will not appear regardless of policy values.
 
       If the policy is not set, or is set to an empty list, all printer types will be available for discovery.
 
@@ -26344,7 +26501,7 @@
       'id': 658,
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True
+        'per_profile': False
       },
       'deprecated': True,
       'type':  'dict',
@@ -26418,7 +26575,7 @@
       'id': 762,
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True
+        'per_profile': False
       },
       'type':  'dict',
       'schema': {
@@ -26485,7 +26642,7 @@
     },
     {
       'name': 'LocalDiscoveryEnabled',
-      'owners': ['file://cloud_print/OWNERS', 'weili@chromium.org'],
+      'owners': ['thestig@chromium.org', 'weili@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:81-87', 'chrome_os:81-87'],
@@ -26984,7 +27141,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
     },
     {
       'name': 'LoginDisplayPasswordButtonEnabled',
-      'owners': ['tellier@google.com', 'rsorokin@chromium.org', 'cros-oac@google.com'],
+      'owners': ['rsorokin@chromium.org', 'cros-oac@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:86-'],
@@ -27777,7 +27934,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': '333024512',
       'id': 790,
@@ -28170,9 +28327,10 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'desc': '''This settings enables or disables signin interception.
 
-      When this policy not set or is set to True, the signin interception dialog triggers when a Google account is added on the web, and the user may benefit from moving this account to another (new or existing) profile.
+      When this policy not set or is enabled, the signin interception dialog triggers when a Google account is added on the web, and the user may benefit from moving this account to another (new or existing) profile.
 
-      When this is set to False, the signin interception dialog does not trigger.''',
+      When this is disabled, the signin interception dialog does not trigger.
+      When this is disabled, a dialog will still be shown if managed account profile separation is enforced by <ph name="MANAGED_ACCOUNTS_SIGNIN_RESTRICTION_POLICY_NAME">ManagedAccountsSigninRestriction</ph>.''',
     },
     {
       'name': 'WebXRImmersiveArEnabled',
@@ -28333,57 +28491,50 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['mjackson@microsoft.com', 'cmp@chromium.org', 'file://chrome/browser/web_applications/OWNERS', 'tapted@chromium.org'],
       'type': 'dict',
       'schema': {
-        'type': 'object',
-        'patternProperties': {
-          '^.+$': {
-            'type': 'object',
-            'properties': {
-              'run_on_os_login': {
-                'type': 'string',
-                'enum': ['allowed', 'blocked', 'run_windowed']
-              }
-            },
-          }
-        },
-        'properties': {
-          '*': {
-            'type': 'object',
-            'properties': {
-              'run_on_os_login': {
-                'type': 'string',
-                'enum': ['allowed', 'blocked']
-              }
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'manifest_id': { 'type': 'string', },
+            'run_on_os_login': {
+              'type': 'string',
+              'enum': ['allowed', 'blocked', 'run_windowed']
             },
           },
+          'required': ['manifest_id']
         },
       },
-      'future_on': ['chrome.*'],
+      'supported_on': ['chrome.*:102-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
-      'example_value': {
-        'https://foo.example' : {
-          'run_on_os_login': 'allowed',
+      'example_value': [
+        {
+          'manifest_id': 'https://foo.example/index.html',
+          'run_on_os_login': 'allowed'
         },
-        'https://bar.example' : {
-          'run_on_os_login': 'blocked',
+        {
+          'manifest_id': 'https://bar.example/index.html',
+          'run_on_os_login': 'allowed'
         },
-        'https://foobar.example' : {
-          'run_on_os_login': 'run_windowed',
+        {
+          'manifest_id': 'https://foobar.example/index.html',
+          'run_on_os_login': 'run_windowed'
         },
-        '*': {
-          'run_on_os_login': 'blocked',
-        },
-      },
+        {
+          'manifest_id': '*',
+          'run_on_os_login': 'blocked'
+        }
+      ],
       'id': 824,
       'caption': 'Web App management settings',
       'tags': [],
       'desc': '''This policy allows an admin to specify settings for installed web apps.
 
-      This policy maps a Web App ID to its specific setting. See <ph name="WEB_APP_ID_REFERENCE_URL">https://developer.chrome.com/blog/pwa-manifest-id/<ex>https://developer.chrome.com/blog/pwa-manifest-id/</ex></ph> for instructions on how to determine the id for an installed web app.
-      A default configuration can be set using the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which applies to all web apps without a custom configuration in this policy.
+      This policy maps a Web App ID to its specific setting. A default configuration can be set using the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which applies to all web apps without a custom configuration in this policy.
 
+      The <ph name="MANIFEST_ID_FIELD">"manifest_id"</ph> field is the Manifest ID for the Web App. See <ph name="WEB_APP_ID_REFERENCE_URL">https://developer.chrome.com/blog/pwa-manifest-id/<ex>https://developer.chrome.com/blog/pwa-manifest-id/</ex></ph> for instructions on how to determine the Manifest ID for an installed web app.
       The <ph name="RUN_ON_OS_LOGIN_FIELD">"run_on_os_login"</ph> field specifies if a web app can be run during OS login. If this field is set to <ph name="BLOCKED">"blocked"</ph>, the web app will not run during OS login and the user will not be able to enable this later. If this field is set to <ph name="RUN_WINDOWED">"run_windowed"</ph>, the web app will run during OS login and the user will not be able to disable this later. If this field is set to <ph name="ALLOWED">"allowed"</ph>, the user will be able to configure the web app to run at OS login. The default configuration only allows the <ph name="ALLOWED">"allowed"</ph> and <ph name="BLOCKED">"blocked"</ph> values.
       ''',
     },
@@ -28924,8 +29075,6 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'caption': '''Add restrictions on managed accounts''',
       'tags': [],
       'desc': '''
-      This policy requires <ph name="SIGNIN_INTERCEPTION_ENABLED_POLICY_NAME">SigninInterceptionEnabled</ph> to be set to True to take effect.
-
       If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph> at the machine level, all managed accounts will be forced to be primary.
       If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph> on an account, that account will always be a primary account, but may have secondary accounts in its profile.
 
@@ -30165,6 +30314,96 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
                   It also controls whether Chrome supports First-Party Sets related features (e.g. the SameParty cookie attribute).''',
     },
     {
+      'name': 'FirstPartySetsOverrides',
+      'owners': ['kaklilu@chromium.com', 'chrome-first-party-sets@chromium.org'],
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'replacements': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'owner': { 'type': 'string' },
+                'members': {
+                  'type': 'array',
+                  'items': { 'type': 'string' }
+                },
+              },
+              'required': ['owner', 'members']
+            },
+          },
+          'additions': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'owner': { 'type': 'string' },
+                'members': {
+                  'type': 'array',
+                  'items': { 'type': 'string' }
+                },
+              },
+              'required': ['owner', 'members']
+            },
+          }
+        }
+      },
+      'default': {},
+      'example_value': {
+        'replacements': [
+          {
+            "owner": "https://owner1.test",
+            "members": ["https://member1.test", "https://member2.test"]
+          }
+        ],
+        'additions': [
+          {
+            "owner": "https://owner2.test",
+            "members": ["https://member3.test"]
+          }
+        ]
+      },
+      'features' : {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'future_on': ['chrome.*', 'chrome_os', 'android', 'webview_android'],
+      'tags': [],
+      'id': 969,
+      'caption': '''Override First-Party Sets.''',
+      'desc': '''This policy provides a way to override the list of sets the browser uses for First-Party Sets features.
+
+      Each set in the browser's list of First-Party Sets must meet the requirements of a First-Party Set.
+      A First-Party Set consists of an owner and one or more member sites. All sites in a First-Party Set must
+      be a registrable domain served over HTTPS, regardless of whether it is an owner or member site.
+      Each site in a First-Party Set must also be unique, meaning a site cannot be both owner and member, nor
+      listed more than once as a member of a First-Party Set.
+      See https://github.com/privacycg/first-party-sets for more information on First-Party Sets.
+
+      When this policy is given an empty dictionary, the browser uses the public list of First-Party Sets.
+
+      For all sites in a First-Party Set from the <ph name="REPLACEMENTS">replacements</ph> list, if a site is also present
+      on a First-Party Set in the browser's list, then that site will be removed from the browser's First-Party Set.
+      After this, the policy's First-Party Set will be added to the browser's list of First-Party Sets.
+
+      For all sites in a First-Party Set from the <ph name="ADDITIONS">additions</ph> list, if a site is also present
+      on a First-Party Set in the browser's list, then the browser's First-Party Set will be updated so that the
+      new First-Party Set can be added to the browser's list. After the browser's list has been updated,
+      the policy's First-Party Set will be added to the browser's list of First-Party Sets.
+
+      The browser's list of First-Party Sets requires that for all sites in its list, no site is in
+      more than one set. This is also required for both the <ph name="REPLACEMENTS">replacements</ph> list
+      and the <ph name="ADDITIONS">additions</ph> list. Similarly, a site cannot be in both the
+      <ph name="REPLACEMENTS">replacements</ph> list and the <ph name="ADDITIONS">additions</ph> list.
+
+      Wildcards (*) are not supported as a policy value, nor within any First-Party Set in these lists.
+
+      All sets provided by to policy must be valid First-Party Sets, if they aren't then an
+      appropriate error will be outputted.''',
+    },
+    {
       'name': 'DeviceEncryptedReportingPipelineEnabled',
       'owners': ['cros-reporting-team@google.com', 'albertojuarez@google.com'],
       'type': 'main',
@@ -30352,6 +30591,166 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
           This is a temporary policy that is planned be removed in Chrome 105. This deadline may be extended if there is a need for it among enterprises.
           ''',
     },
+    {
+      'name': 'AllowChromeDataInBackups',
+      'owners': ['ajuma@chromium.org', 'file://ios/chrome/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['ios'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data to be included in backups',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data from being included in backups',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 968,
+      'caption': '''Allow backup of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data''',
+      'tags': [],
+      'desc': '''If this policy is set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data, including cookies and website local storage, will be excluded from iCloud and local backups on iOS.
+          If this policy is set to True or unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may be included in backups.''',
+    },
+    {
+      'name': 'DevicePowerAdaptiveChargingEnabled',
+      'owners': ['thanhdng@chromium.org', 'napper@chromium.org', 'dbasehore@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:102-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable adaptive charging model on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>',
+        },
+        {
+          'value': False,
+          'caption': 'Disable adaptive charging model on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>',
+        },
+      ],
+      'default': False,
+      'example_value': False,
+      'id': 971,
+      'caption': '''Enable adaptive charging model to hold charging process to extend battery life''',
+      'tags': [],
+      'desc': '''Specifies whether an adaptive charging model is allowed to hold charging process to extend battery life.
+
+      When the device is on AC, the adaptive charging model evaluates if charging process should be hold to extend battery life. If the adaptive charging model holds the charging process, it'll keep the battery at a certain level (i.e. 80%) and then charge the device to 100% when the user need it.
+      If this policy is set to True or left not set, the adaptive charging model will be enabled and allowed to hold the charging process to extend battery life. If this policy is set to False, the adaptive charging model will not influence the charging process.''',
+    },
+    {
+      'name': 'WarnBeforeQuittingEnabled',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': '''Show a warning dialog when the user is attempting to quit''',
+        },
+        {
+          'value': False,
+          'caption': '''Do not show a warning dialog when the user is attempting to quit''',
+        },
+      ],
+      'supported_on': ['chrome.mac:102-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'default': True,
+      'id': 973,
+      'caption': '''Show a warning dialog when the user is attempting to quit''',
+      'tags': [],
+      'desc': '''Controls "Warn Before Quitting (⌘Q)" dialog when the user is attempting to quit browser.
+
+      If this policy is set to Enabled or not set, a warning dialog is shown when the user is attempting to quit.
+
+      If this policy is set to Disabled, a warning dialog is not shown when the user is attempting to quit.'''
+    },
+    {
+      'name': 'InsightsExtensionEnabled',
+      'owners': ['cros-reporting-team@google.com', 'vshenvi@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable insights extension',
+        },
+        {
+          'value': False,
+          'caption': 'Disable insights extension',
+        },
+      ],
+      'default': False,
+      'example_value': False,
+      'id': 975,
+      'caption': '''Enable insights extension for reporting usage metrics''',
+      'tags': ['admin-sharing'],
+      'desc': '''The insights extension reports user internet download and upload speed, user idle time, and application insights.
+
+      If the policy is set to enabled, the insights extension will be installed and report metrics.
+
+      If the policy is not set or set to disabled, then the insights extension will not be installed and will not report metrics.''',
+      'arc_support': 'This policy has no effect on the reporting done by Android.',
+    },
+    {
+      'name': 'EnterpriseAuthenticationAppLinkPolicy',
+      'owners': ['ayushsha@google.com','afw-security-team@google.com'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'url': {
+              'type': 'string'
+            },
+          },
+        },
+      },
+      'future_on': ['webview_android'],
+      'features': { 'dynamic_refresh': True, 'per_profile': False,},
+      'example_value': [
+        {
+          'url':'https://www.abc.com'
+        }
+      ],
+      'id': 976,
+      'caption': '''External authentication app launch URLs''',
+      'tags': [],
+      'desc' : '''Allows you to specify configs for authentication urls in <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>.
+
+      These Authentication urls would be treated special by <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>, such that during authentication when webpage in <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>
+      is navigated to authentication urls, corresponding Identity providers authenticator app that can handle this authentication URL would be launched.
+
+      This flow of launching the Idenity providers authenticator app would be used by the Identity providers to enable
+      use cases like providing SSO across apps or provide better security by collecting zero trust device signals to understand device posture during authentication.
+
+      If there is no valid app installed to handle authentication url on the the device, navigation will continue in <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>.
+
+      Valid authentication url should have the scheme <ph name="HTTP_PROTOCOL">http</ph>/<ph name="HTTPS_PROTOCOL">https</ph> and should not contain wildcards.
+      '''
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -31348,6 +31747,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 967,
+  'highest_id_currently_used': 976,
   'highest_atomic_group_id_currently_used': 42
 }

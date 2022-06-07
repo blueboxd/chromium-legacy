@@ -83,6 +83,12 @@ extern const char kInstallSwitch[];
 // currently encoded as a ASCII string.
 extern const char kTagSwitch[];
 
+// The --installerdata=file.dat switch is passed to an installer if an
+// installdataindex is specified in the tag or if installerdata is passed in via
+// --appargs. The corresponding installerdata is written to file.dat with an
+// UTF8 encoding as well as a UTF8 BOM.
+extern const char kInstallerDataSwitch[];
+
 #if BUILDFLAG(IS_WIN)
 // A debug switch to indicate that --install is running from the `out` directory
 // of the build. When this switch is present, the setup picks up the run time
@@ -156,6 +162,16 @@ extern const char kHealthCheckSwitch[];
 // `/handoff <install-args-details>`. Manual argument parsing is needed for that
 // scenario.
 extern const char kHandoffSwitch[];
+
+// The "expect-elevated" switch indicates that updater setup should be running
+// elevated (at high integrity). This switch is needed to avoid running into a
+// loop trying (but failing repeatedly) to elevate updater setup when attempting
+// to install on a standard user account with UAC disabled.
+extern const char kCmdLineExpectElevated[];
+
+// The "prefers-user" switch indicates that updater setup could not elevate, and
+// is now trying to install the app per-user.
+extern const char kCmdLinePrefersUser[];
 
 // File system paths.
 //
@@ -237,7 +253,6 @@ constexpr int kErrorWaitFailedInstall = 6;
 constexpr int kErrorPathServiceFailed = 7;
 constexpr int kErrorComInitializationFailed = 8;
 constexpr int kErrorUnknownCommandLine = 9;
-constexpr int kErrorFailedToDeleteRegistryKeys = 10;
 constexpr int kErrorNoVersionedDirectory = 11;
 constexpr int kErrorNoBaseDirectory = 12;
 constexpr int kErrorPathTooLong = 13;
@@ -318,6 +333,10 @@ extern const char kProxyModeFixedServers[];
 extern const char kProxyModeSystem[];
 
 extern const char kDownloadPreferenceCacheable[];
+
+// UTF8 byte order mark (BOM) used to prefix the contents of the installerdata
+// file.
+extern const char kUTF8BOM[];
 
 constexpr int kPolicyNotSet = -1;
 constexpr int kPolicyDisabled = 0;

@@ -177,6 +177,7 @@
 <translation id="4600710005438004015">Chrome ନବୀନତମ ସଂସ୍କରଣରେ ଅପ୍‌ଡେଟ୍ କରିପାରିଲା ନାହିଁ, ତେଣୁ ଆପଣ ନୂତନ ବୈଶିଷ୍ଟ୍ୟ ଏବଂ ସୁରକ୍ଷା ସମସ୍ୟାର ସମାଧାନରୁ ବଞ୍ଚିତ ହେଉଛନ୍ତି।</translation>
 <translation id="4627412468266359539">ଇଚ୍ଛାଧୀନ: Googleକୁ ସ୍ୱଚାଳିତ ଭାବେ ଡାଏଗ୍ନୋଷ୍ଟିକ ଓ ବ୍ୟବହାର ଡାଟା ପଠାଇ ChromeOS Flex ଫିଚର ଓ ପରଫରମାନ୍ସକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ।</translation>
 <translation id="4633000520311261472">Chromeକୁ ଆହୁରି ସୁରକ୍ଷିତ କରିବା ପାଇଁ, ଆମେ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />ରେ ତାଲିକାଭୁକ୍ତ ହୋଇନଥିବା ଏବଂ ଆପଣଙ୍କର ଅଜାଣତରେ ଯୋଗ କରାଯାଇଥିବା କିଛି ଏକ୍ସ‌ଟେନ୍‌ସନ୍‌ଗୁଡ଼ିକୁ ଅକ୍ଷମ କରିଦେଇଛୁ।</translation>
+<translation id="469553575393225953">ଅଜଣା ସୋର୍ସରୁ ଏକ୍ସଟେନସନ, ଆପ ଏବଂ ଥିମଗୁଡ଼ିକ ଆପଣଙ୍କ ଡିଭାଇସକୁ କ୍ଷତି ପହଞ୍ଚାଇପାରିବ। କେବଳ Chrome Web Storeରୁ ସେଗୁଡ଼ିକୁ ଇନଷ୍ଟଲ କରିବା ପାଇଁ Chrome ସୁପାରିଶ କରେ</translation>
 <translation id="4728575227883772061">ଅଣନିର୍ଦ୍ଧିଷ୍ଟିତ ତ୍ରୁଟି ଯୋଗୁଁ ସଂସ୍ଥାପନ ବିଫଳ ହେଲା । ଯଦି Google Chrome ବର୍ତ୍ତମାନ ଚାଲୁଛି, ଦୟାକରି ଏହାକୁ ବନ୍ଦ କରନ୍ତୁ ଏବଂ ପୁନଃ ଚେଷ୍ଟା କରନ୍ତୁ ।</translation>
 <translation id="4747730611090640388">Chrome ଆପଣଙ୍କ ରୁଚିଗୁଡ଼ିକୁ ଆକଳନ କରିପାରିବ।  ପରେ, ଆପଣ ଭିଜିଟ କରୁଥିବା ଏକ ସାଇଟ, ଆପଣ ଦେଖୁଥିବା ବିଜ୍ଞାପନଗୁଡ଼ିକୁ ପର୍ସନାଲାଇଜ କରିବା ପାଇଁ Chromeକୁ ଆପଣଙ୍କ ରୁଚିଗୁଡ଼ିକୁ ଦେଖିବା ପାଇଁ କହିପାରିବ।</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -220,6 +221,7 @@
 <translation id="5736850870166430177">ଯଦି କୌଣସି ସାଇଟ ଆପଣଙ୍କ ପାସୱାର୍ଡ ଚୋରି କରିବାକୁ ଚେଷ୍ଟା କରେ କିମ୍ବା ଆପଣ ଏକ କ୍ଷତିକାରକ ଫାଇଲ ଡାଉନଲୋଡ କଲେ, ପୃଷ୍ଠାର କିଛି ବିଷୟବସ୍ତୁ ସହିତ URLଗୁଡ଼ିକୁ ମଧ୍ୟ Chrome ସୁରକ୍ଷିତ ବ୍ରାଉଜିଂକୁ ପଠାଇପାରେ</translation>
 <translation id="573759479754913123">Chrome OS ବିଷୟରେ</translation>
 <translation id="5756509061973259733">ଏହି ଡିଭାଇସରେ ଏହି ଆକାଉଣ୍ଟ ସହ ଏକ Chrome ପ୍ରୋଫାଇଲ୍ ପୂର୍ବରୁ ଅଛି</translation>
+<translation id="5763280521700030406">ଏକ ସୁରକ୍ଷା ଯାଞ୍ଚ ପାଇଁ ଏହି ଫାଇଲଟି ବହୁତ ବଡ଼ ହୋଇଥିବା ଯୋଗୁଁ Chrome ଏହାକୁ ବ୍ଲକ କରିଦେଇଛି। 50 MB ପର୍ଯ୍ୟନ୍ତ ଫାଇଲଗୁଡ଼ିକୁ ବ୍ୟବହାର କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome କେନେରୀ</translation>
 <translation id="5804318322022881572">Chrome ଲଞ୍ଚ କରାଯାଇପାରିଲା ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="5867197326698922595">Google Chrome ପାସୱାର୍ଡଗୁଡ଼ିକୁ ଏଡିଟ୍ କରିବାକୁ ଚେଷ୍ଟା କରୁଛି।</translation>
@@ -235,6 +237,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome ବିଟା</translation>
 <translation id="6235018212288296708">mDNS ଟ୍ରାଫିକ୍‍କୁ ଅନୁମତି ଦେବା ପାଇଁ Google Chromeରେ ଥିବା ଇନ୍‌ବାଉଣ୍ଡ ନିୟମ।</translation>
+<translation id="6247557882553405851">Google Password Manager</translation>
 <translation id="6291089322031436445">Chrome ଡେଭଲପର୍‌ ଆପ୍ସ</translation>
 <translation id="6291549208091401781">ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟର୍‌ରେ ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତାଙ୍କ ପାଇଁ Google Chrome ପୂର୍ବରୁ ଇନ୍‌ଷ୍ଟଲ୍ ଅଛି।</translation>
 <translation id="6368958679917195344">Chrome OS ଅତିରିକ୍ତ <ph name="BEGIN_LINK_CROS_OSS" />ମୁକ୍ତ ଉତ୍ସ ସଫ୍ଟୱେୟାର୍ <ph name="END_LINK_CROS_OSS" /> ଦ୍ୱାରା ସମ୍ଭବପର ହୋ‍ଇଛି।</translation>
@@ -243,6 +246,7 @@
 <translation id="6506909944137591434">ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ପାଇଁ Chrome କ୍ୟାମେରା ଅନୁମତି ଆବଶ୍ୟକ କରେ</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS ସିଷ୍ଟମ୍</translation>
+<translation id="659498884637196217">ଏହି ଡିଭାଇସରେ ଥିବା Google ପାସୱାର୍ଡ ମ୍ୟାନେଜରରେ</translation>
 <translation id="6632473616050862500">ChromeOS Flex ଅତିରିକ୍ତ <ph name="BEGIN_LINK_CROS_OSS" />ଓପନ ସୋର୍ସ ସଫ୍ଟୱେର<ph name="END_LINK_CROS_OSS" /> ଦ୍ୱାରା ସମ୍ଭବପର ହୋଇଛି।</translation>
 <translation id="6676384891291319759">ଇଣ୍ଟର୍ନେଟ୍ ପ୍ରବେଶ କରନ୍ତୁ</translation>
 <translation id="6679975945624592337">ପୃଷ୍ଠଭୂମିରେ Google Chromeକୁ ଚାଲିବାକୁ ଦିଅନ୍ତୁ</translation>
@@ -281,6 +285,7 @@
 ଆପଣ ୱେବସାଇଟ ଏବଂ ଆପ୍ସକୁ ପୂର୍ବରୁ ଦେଇଥିବା ଅନୁମତିଗୁଡ଼ିକ ଏହି ଆକାଉଣ୍ଟରେ ଲାଗୁ ହୋଇପାରେ। ଆପଣ <ph name="SETTINGS_LINK_BEGIN" />ସେଟିଂସ<ph name="SETTINGS_LINK_END" />ରେ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟଗୁଡ଼ିକୁ ପରିଚାଳନା କରିପାରିବେ।</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> ଭାବରେ ଆପଣ Chromeରେ ସାଇନ୍ ଇନ୍ କରିଛନ୍ତି। ପୁଣିଥରେ ସାଇନ୍ ଇନ୍ କରିବା ପାଇଁ ଦୟାକରି ସେହି ଆକାଉଣ୍ଟ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="7408085963519505752">Chrome OS ସର୍ତ୍ତ</translation>
+<translation id="7410958280246779049">ଏହି ଫାଇଲଟି ବିପଦଜନକ ହୋଇଥିବା ଯୋଗୁଁ Chrome ଏହାକୁ ବ୍ଲକ କରିଛି</translation>
 <translation id="7419046106786626209">Chrome OS ଆପଣଙ୍କର ଡାଟାକୁ ସିଙ୍କ୍ କରିପାରିବ ନାହିଁ, କାରଣ ଆପଣଙ୍କ ଡୋମେନ୍ ପାଇଁ ସିଙ୍କ୍ ଉପଲବ୍ଧ ନାହିଁ।</translation>
 <translation id="7481213027396403996">Chromeର ସବୁଠାରୁ ଶକ୍ତିଶାଳୀ ସୁରକ୍ଷା ପାଆନ୍ତୁ</translation>
 <translation id="7486227612705979895">ଠିକଣା ବାର୍‌‌ରେ ପ୍ରସ୍ତାବ ଦେବା ପାଇଁ Chrome ଆପଣଙ୍କର ଡ୍ରାଇଭ୍‌କୁ ଆକ୍‌ସେସ୍ କରିବ</translation>
@@ -295,7 +300,6 @@
 <translation id="7655455401911432608">ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଇତିହାସ, ଏହି ଡିଭାଇସରେ Chrome ବ୍ୟବହାର କରି ଆପଣ ଭିଜିଟ କରିଥିବା ସାଇଟଗୁଡ଼ିକର ଏକ ରେକର୍ଡ।</translation>
 <translation id="7665553140559834626">&amp;Chrome OS ଅପଡେଟ୍ କରିବା ପାଇଁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="7747138024166251722">ସଂସ୍ଥାପକ ଏକ ଅସ୍ଥାୟୀ ଡିରେକ୍ଟୋରୀ ସୃଷ୍ଟି କରିପାରିବ ନାହିଁ । ଦୟାକରି ମୁକ୍ତ ଡିସ୍କ ସ୍ଥାନ ପାଇଁ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ସଂସ୍ଥାପନ ସଫ୍ଟୱେୟାରକୁ ଅନୁମତି କରନ୍ତୁ ।</translation>
-<translation id="7748512868279796735">ଏହି Chrome ପ୍ରୋଫାଇଲ ପାଇଁ ନିମ୍ନୋକ୍ତ ଆକାଉଣ୍ଟଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଟେ</translation>
 <translation id="7761834446675418963">Chrome ଖୋଲିବା ପାଇଁ ନିଜର ନାମ ଉପରେ କ୍ଲିକ୍ କରନ୍ତୁ ଏବଂ ବ୍ରାଉଜ୍ କରିବା ଆରମ୍ଭ କରନ୍ତୁ।</translation>
 <translation id="7777080907402804672">ଯଦି ଗୋଟିଏ ଛବିରେ ଏକ ବ୍ୟବହାରଯୋଗ୍ୟ ବିବରଣୀ ନାହିଁ, ତେବେ Chrome ଆପଣଙ୍କ ପାଇଁ ଏକ ବିବରଣୀ ପ୍ରଦାନ କରିବାକୁ ଚେଷ୍ଟା କରିବ। ବିବରଣୀ ତିଆରି କରିବାକୁ, ଛବିଗୁଡ଼ିକ Googleକୁ ପଠାଇ ଦିଆଯାଇଛି। ଆପଣ ଯେକୌଣସି ସମୟରେ ସେଟିଂସ୍‌ରେ ଏହାକୁ ବନ୍ଦ କରିପାରିବେ।</translation>
 <translation id="7781002470561365167">Google Chromeର ଏକ ନୂତନ ସଂସ୍କରଣ ଉପଲବ୍ଧ ଅଛି।</translation>
@@ -311,10 +315,12 @@
 <translation id="7951272445806340501">ଅପଡେଟ ଲାଗୁ କରିବା ପାଇଁ ChromeOS Flexକୁ ରିଷ୍ଟାର୍ଟ କରାଯିବା ଆବଶ୍ୟକ।</translation>
 <translation id="7962410387636238736">ଏହି କମ୍ପ୍ୟୁଟର୍‌ ଆଉ Google Chrome ଅପ‌ଡେଟ୍‍ ପ୍ରାପ୍ତ କରିବ ନାହିଁ କାରଣ ଏହା ଆଉ Windows XP ଏବଂ Windows Vista ଦ୍ୱାରା ସମର୍ଥିତ ନୁହେଁ</translation>
 <translation id="79947657522496226">Chrome OS <ph name="BEGIN_LINK_LINUX_OSS" />Linux ଡେଭଲପମେଣ୍ଟ ପରିବେଶ <ph name="END_LINK_LINUX_OSS" /> ପରି ଅତିରିକ୍ତ <ph name="BEGIN_LINK_CROS_OSS" />ଓପନ୍ ସୋର୍ସ ସଫ୍ଟୱେର୍<ph name="END_LINK_CROS_OSS" /> ଦ୍ୱାରା ସମ୍ଭବପର ହୋଇଛି।</translation>
+<translation id="8005666035647241369">ଏହି ଡିଭାଇସରେ ଥିବା Google ପାସୱାର୍ଡ ମ୍ୟାନେଜରରେ</translation>
 <translation id="8008534537613507642">Chrome ପୁଣି ଇନ୍‍ଷ୍ଟଲ୍ କରନ୍ତୁ</translation>
 <translation id="8013993649590906847">ଯଦି ଗୋଟିଏ ଛବିରେ ଏକ ବ୍ୟବହାରଯୋଗ୍ୟ ବିବରଣୀ ନାହିଁ, ତେବେ Chrome ଆପଣଙ୍କ ପାଇଁ ଏକ ବିବରଣୀ ପ୍ରଦାନ କରିବାକୁ ଚେଷ୍ଟା କରିବ। ବିବରଣୀ ତିଆରି କରିବାକୁ, ଛବିଗୁଡ଼ିକ Googleକୁ ପଠାଇ ଦିଆଯାଇଛି।</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">&amp;Google Chrome ବିଷୟରେ</translation>
+<translation id="822971176939352383">ନିମ୍ନୋକ୍ତ ଆକାଉଣ୍ଟଗୁଡ଼ିକ କୌଣସି Chrome ପ୍ରୋଫାଇଲରେ ସାଇନ୍ ଇନ୍ କରାଯାଇନାହିଁ। ଯଦି ଆପଣ ଅନ୍ୟ ଏକ ପ୍ରୋଫାଇଲରେ ଏକ ଆକାଉଣ୍ଟ ବ୍ୟବହାର କରିବାକୁ ଚାହୁଁଛନ୍ତି, ତେବେ ପ୍ରଥମେ ସେହି ପ୍ରୋଫାଇଲକୁ କାଢ଼ି ଦିଅନ୍ତୁ।</translation>
 <translation id="8255190535488645436">Google Chrome ଆପଣଙ୍କର କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନ୍‌କୁ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="8286862437124483331">Google Chrome ପାସ୍‌ୱର୍ଡ ଦେଖାଇବାକୁ ଚାହୁଁଛି। ଏହାକୁ ଅନୁମତି ଦେବାପାଇଁ ଆପଣଙ୍କର Windows ପାସ୍‌ୱର୍ଡ ଟାଇପ୍ କରନ୍ତୁ।</translation>
 <translation id="828798499196665338">ଆପଣଙ୍କ ବାପାମା Chrome ପାଇଁ "ସାଇଟ୍, ଆପ୍ ଏବଂ ଏକ୍ସଟେନସନଗୁଡ଼ିକ ନିମନ୍ତେ ଅନୁମତିଗୁଡ଼ିକ" ବନ୍ଦ କରିଦେଇଛନ୍ତି। ଏହି <ph name="EXTENSION_TYPE_PARAMETER" />କୁ ସକ୍ଷମ କରିବା ପାଇଁ ଅନୁମତି ନାହିଁ।</translation>
@@ -326,8 +332,10 @@
 <translation id="8394720698884623075">Chromeରେ ଷ୍ଟୋର କରାଯାଇଥିବା ଅସୁରକ୍ଷିତ ସାଇଟଗୁଡ଼ିକର ଏକ ତାଲିକା ସହ URLଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରେ</translation>
 <translation id="840084489713044809">Google Chrome ଆପଣଙ୍କର ପାସ୍‌ୱାର୍ଡ‌ଗୁଡିକୁ ଏକ୍ସପୋର୍ଟ୍ କରିବାକୁ ଚାହେଁ।</translation>
 <translation id="8416347857511542594">Chromeରେ ବିଜ୍ଞାପନ ପର୍ସନାଲାଇଜେସନ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ</translation>
+<translation id="8421734018304082652">ଏହି ଫାଇଲକୁ ଏନକ୍ରିପ୍ଟ କରାଯାଇଥିବା ଯୋଗୁଁ Chrome ଏହାକୁ ବ୍ଲକ କରିଦେଇଛି। ଏହାକୁ ଡିକ୍ରିପ୍ଟ କରିବା ପାଇଁ ଏହାର ମାଲିକଙ୍କୁ କୁହନ୍ତୁ</translation>
 <translation id="8433638294851456451">ଏଠାରୁ ଆପଣଙ୍କ Android ଫୋନକୁ ଏକ ନମ୍ବର ପଠାଇବାକୁ, ଉଭୟ ଡିଭାଇସରେ Chromeରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ।</translation>
 <translation id="8498858610309223613">କିଛି ସମୟ ପୂର୍ବରୁ Google Chrome ପାଇଁ ଏକ ବିଶେଷ ସୁରକ୍ଷା ଅପ୍‌ଡେଟ୍ ଲାଗୁ କରାଯାଇଛି। ବର୍ତ୍ତମାନ ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ ଏବଂ ଆମେ ଆପଣଙ୍କ ଟାବ୍ ରିଷ୍ଟୋର୍ କରିବୁ।</translation>
+<translation id="8504220326736535258">ଏହି ଫାଇଲରେ ମାଲୱେର ଥିବା ଯୋଗୁଁ Chrome ଏହାକୁ ବ୍ଲକ କରିଦେଇଛି</translation>
 <translation id="8516431725144212809">Chrome ଦ୍ୱାରା ଆକଳନ କରାଯାଇଥିବା ଅନୁସାରେ ଆପଣଙ୍କ ରୁଚିଗୁଡ଼ିକ</translation>
 <translation id="8521348052903287641">mDNS ଟ୍ରାଫିକ୍‍କୁ ଅନୁମତି ଦେବାକୁ Google Chrome Dev ପାଇଁ ଇନ୍‌ବାଉଣ୍ଡ ନିୟମ।</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

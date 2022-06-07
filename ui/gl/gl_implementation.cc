@@ -19,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -66,9 +67,6 @@ std::string GLImplementationParts::ToString() const {
       break;
     case GLImplementation::kGLImplementationDesktopGLCoreProfile:
       s << "desktop-gl-core-profile";
-      break;
-    case GLImplementation::kGLImplementationSwiftShaderGL:
-      s << "swiftshader-gl";
       break;
     case GLImplementation::kGLImplementationAppleGL:
       s << "apple-gl";
@@ -135,8 +133,6 @@ const struct {
 } kGLImplementationNamePairs[] = {
     {kGLImplementationDesktopName, kANGLEImplementationNoneName,
      GLImplementationParts(kGLImplementationDesktopGL)},
-    {kGLImplementationSwiftShaderName, kANGLEImplementationNoneName,
-     GLImplementationParts(kGLImplementationSwiftShaderGL)},
 #if BUILDFLAG(IS_APPLE)
     {kGLImplementationAppleName, kANGLEImplementationNoneName,
      GLImplementationParts(kGLImplementationAppleGL)},
@@ -261,26 +257,12 @@ GLImplementationParts GetNamedGLImplementation(const std::string& gl_name,
   return GLImplementationParts(kGLImplementationNone);
 }
 
-GLImplementationParts GetLegacySoftwareGLImplementation() {
-  return GLImplementationParts(kGLImplementationSwiftShaderGL);
-}
-
 GLImplementationParts GetSoftwareGLImplementation() {
   return GLImplementationParts(ANGLEImplementation::kSwiftShader);
 }
 
-GLImplementationParts GetSoftwareGLImplementationForPlatform() {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_FUCHSIA)
-  return GetSoftwareGLImplementation();
-#else
-  return GetLegacySoftwareGLImplementation();
-#endif
-}
-
 bool IsSoftwareGLImplementation(GLImplementationParts implementation) {
-  return (implementation == GetLegacySoftwareGLImplementation()) ||
-         (implementation == GetSoftwareGLImplementation());
+  return (implementation == GetSoftwareGLImplementation());
 }
 
 void SetSoftwareGLCommandLineSwitches(base::CommandLine* command_line) {
@@ -303,7 +285,7 @@ GetRequestedGLImplementationFromCommandLine(
     bool* fallback_to_software_gl) {
   *fallback_to_software_gl = false;
   if (command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
-    return GetSoftwareGLImplementationForPlatform();
+    return GetSoftwareGLImplementation();
   }
 
   if (!command_line->HasSwitch(switches::kUseGL) &&
@@ -324,11 +306,6 @@ GetRequestedGLImplementationFromCommandLine(
   if (gl_name == "any") {
     *fallback_to_software_gl = true;
     return absl::nullopt;
-  }
-
-  if ((gl_name == kGLImplementationSwiftShaderName) ||
-      (gl_name == kGLImplementationSwiftShaderForWebGLName)) {
-    return GLImplementationParts(kGLImplementationSwiftShaderGL);
   }
 
   if ((gl_name == kGLImplementationANGLEName) &&

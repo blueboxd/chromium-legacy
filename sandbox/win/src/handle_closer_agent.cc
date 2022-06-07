@@ -7,7 +7,9 @@
 #include <stddef.h>
 
 #include "base/check.h"
+#include "base/logging.h"
 #include "base/win/static_constants.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/win_utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -144,13 +146,13 @@ void HandleCloserAgent::InitializeHandlesToClose(bool* is_csrss_connected) {
 bool HandleCloserAgent::CloseHandles() {
   // Skip closing these handles when Application Verifier is in use in order to
   // avoid invalid-handle exceptions.
-  if (GetModuleHandleA(base::win::kApplicationVerifierDllName))
+  if (base::win::IsAppVerifierLoaded())
     return true;
   // If the accurate handle enumeration fails then fallback to the old brute
-  // force approach. This should only happen on Windows 7.
+  // force approach. This should only happen on Windows 7 and 8.0.
   absl::optional<ProcessHandleMap> handle_map = GetCurrentProcessHandles();
   if (!handle_map) {
-    DCHECK(base::win::GetVersion() < base::win::Version::WIN8);
+    DCHECK(base::win::GetVersion() < base::win::Version::WIN8_1);
     handle_map = GetCurrentProcessHandlesWin7();
   }
 

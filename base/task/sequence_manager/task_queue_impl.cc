@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
@@ -1497,8 +1498,7 @@ void TaskQueueImpl::ReportIpcTaskQueued(
         proto->set_ipc_hash(pending_task.ipc_hash);
         proto->set_source_location_iid(
             base::trace_event::InternedSourceLocation::Get(
-                &ctx, base::trace_event::TraceSourceLocation(
-                          pending_task.posted_from)));
+                &ctx, pending_task.posted_from));
       });
 }
 

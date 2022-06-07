@@ -24,6 +24,7 @@
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_egl_angle_vulkan.h"
@@ -80,11 +81,13 @@ class AngleVulkanBacking : public ClearTrackingSharedImageBacking,
       passthrough_texture_.reset();
       egl_image_.reset();
     }
-    auto* fence_helper = context_state_->vk_context_provider()
-                             ->GetDeviceQueue()
-                             ->GetFenceHelper();
-    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-        std::move(vulkan_image_));
+    if (vulkan_image_) {
+      auto* fence_helper = context_state_->vk_context_provider()
+                               ->GetDeviceQueue()
+                               ->GetFenceHelper();
+      fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+          std::move(vulkan_image_));
+    }
   }
 
   bool Initialize(

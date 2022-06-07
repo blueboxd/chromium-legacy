@@ -38,7 +38,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -1123,7 +1122,7 @@ public class ExternalNavigationHandler {
     protected AlertDialog showLeavingIncognitoAlert(final Context context,
             final ExternalNavigationParams params, final Intent intent, final GURL fallbackUrl,
             final boolean proxy) {
-        return new AlertDialog.Builder(context, R.style.Theme_Chromium_AlertDialog)
+        return new AlertDialog.Builder(context, R.style.ThemeOverlay_BrowserUI_AlertDialog)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(R.string.external_app_leave_incognito_warning)
                 .setPositiveButton(R.string.external_app_leave_incognito_leave,
@@ -2049,10 +2048,6 @@ public class ExternalNavigationHandler {
      */
     @VisibleForTesting
     protected boolean shouldRequestFileAccess(GURL url) {
-        // TODO(https://crbug.com/1316672): Replace READ_EXTERNAL_STORAGE with READ_MEDIA_*
-        //       permissions to restore capability to open file:// on Android T.
-        if (BuildInfo.isAtLeastT()) return false;
-
         // If the tab is null, then do not attempt to prompt for access.
         if (!mDelegate.hasValidTab()) return false;
         assert url.getScheme().equals(UrlConstants.FILE_SCHEME);

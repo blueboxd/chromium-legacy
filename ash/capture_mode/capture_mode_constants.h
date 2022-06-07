@@ -5,6 +5,7 @@
 #ifndef ASH_CAPTURE_MODE_CAPTURE_MODE_CONSTANTS_H_
 #define ASH_CAPTURE_MODE_CAPTURE_MODE_CONSTANTS_H_
 
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,11 +36,21 @@ constexpr SkColor kRegionBorderColor = SK_ColorWHITE;
 // The space between the `image_toggle_button_` and `video_toggle_button_`.
 constexpr int kSpaceBetweenCaptureModeTypeButtons = 2;
 
-constexpr gfx::Size kCameraPreviewSize{96, 96};
+constexpr gfx::Size kCameraPreviewSize{192, 192};
+
+constexpr gfx::Size kCollapsedPreviewSize{96, 96};
 
 // The space between the camera preview and edges of the bounds that will be
 // recorded.
 constexpr int kSpaceBetweenCameraPreviewAndEdges = 16;
+
+// The space between the bottom of camera preview resize button and the bottom
+// of the camera preview.
+constexpr int kSpaceBetweenResizeButtonAndCameraPreview = 12;
+
+// The duration to continue showing resize button since the mouse exiting the
+// preview bounds or the last tap on the preview widget.
+constexpr base::TimeDelta kResizeButtonShowDuration = base::Milliseconds(4500);
 
 }  // namespace capture_mode
 

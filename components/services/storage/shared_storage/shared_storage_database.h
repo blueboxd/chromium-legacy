@@ -19,6 +19,8 @@
 #include "base/threading/sequence_bound.h"
 #include "base/time/clock.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom-forward.h"
+#include "components/services/storage/shared_storage/public/mojom/shared_storage.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -204,14 +206,25 @@ class SharedStorageDatabase {
   // TODO(crbug.com/1277662): Consider renaming to something more descriptive.
   [[nodiscard]] int64_t Length(url::Origin context_origin);
 
-  // If a list of all the keys for `context_origin` are taken in lexicographic
-  // order, retrieves the `key` at `index` of the list and sets it as
-  // data in the returned struct; otherwise the struct holds `absl::nullopt` if
-  // no such `key` exists.  The `GetResult` struct also has a bool
-  // `success` indicating whether the transaction was free of errors.
-  //
-  // TODO(crbug.com/1247861): Replace with an async iterator.
-  [[nodiscard]] GetResult Key(url::Origin context_origin, uint64_t index);
+  // From a list of all the keys for `context_origin` taken in lexicographic
+  // order, send batches of keys to the Shared Storage worklet's async iterator
+  // via a remote that consumes `pending_listener`. Returns whether the
+  // operation was successful.
+  [[nodiscard]] OperationResult Keys(
+      const url::Origin& context_origin,
+      mojo::PendingRemote<
+          shared_storage_worklet::mojom::SharedStorageEntriesListener>
+          pending_listener);
+
+  // From a list of all the key-value pairs for `context_origin` taken in
+  // lexicographic order, send batches of key-value pairs to the Shared Storage
+  // worklet's async iterator via a remote that consumes `pending_listener`.
+  // Returns whether the operation was successful.
+  [[nodiscard]] OperationResult Entries(
+      const url::Origin& context_origin,
+      mojo::PendingRemote<
+          shared_storage_worklet::mojom::SharedStorageEntriesListener>
+          pending_listener);
 
   // Clears all origins that match `origin_matcher` run on the owning
   // StoragePartition's `SpecialStoragePolicy` and have `last_used_time` between
@@ -240,17 +253,30 @@ class SharedStorageDatabase {
   // Returns the `db_status_` for tests.
   [[nodiscard]] InitStatus DBStatusForTesting() const;
 
-  // Changes `last_used_time` to `override_last_used_time` for `context_origin`.
+  // Changes `last_used_time` to `new_last_used_time` for `context_origin`.
   [[nodiscard]] bool OverrideLastUsedTimeForTesting(
       url::Origin context_origin,
-      base::Time override_last_used_time);
+      base::Time new_last_used_time);
 
   // Overrides the clock used to check the time.
   void OverrideClockForTesting(base::Clock* clock);
 
-  // Overrides the `SpecialStoragePolicy` for tests. Returns true.
-  [[nodiscard]] bool OverrideSpecialStoragePolicyForTesting(
+  // Overrides the `SpecialStoragePolicy` for tests.
+  void OverrideSpecialStoragePolicyForTesting(
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
+
+  // Populates the database in order to test integration with
+  // `content::StoragePartitionImpl` while keeping in this file the parts of
+  // those tests that depend on implementation details of
+  // `SharedStorageDatabase`.
+  //
+  // Sets two example key-value pairs for `origin1`, one example pair for
+  // `origin2`, and two example pairs for `origin3`, while also overriding the
+  // `last_used_time` for `origin2` so that it is 1 day earlier and the
+  // `last_used_time` for `origin3` so that it is 60 days earlier.
+  [[nodiscard]] bool PopulateDatabaseForTesting(url::Origin origin1,
+                                                url::Origin origin2,
+                                                url::Origin origin3);
 
  private:
   // Policy to tell `LazyInit()` whether or not to create a new database if a
@@ -376,6 +402,10 @@ class SharedStorageDatabase {
 
   // Maxmium number of times that SQL database attempts to initialize.
   size_t max_init_tries_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Maximum number of keys or key-value pairs returned per batch by the
+  // async `Keys()` and `Entries()` iterators, respectively.
+  size_t max_iterator_batch_size_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Clock used to determine current time. Can be overridden in tests.
   raw_ptr<base::Clock> clock_ GUARDED_BY_CONTEXT(sequence_checker_);

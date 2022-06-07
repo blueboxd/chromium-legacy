@@ -6,6 +6,7 @@
 <translation id="1013923882670373915">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil rechten om te koppelen. Voer de volgende pincode in op dat apparaat: <ph name="PINCODE" /></translation>
 <translation id="1014111206066007277">Screencasttools</translation>
 <translation id="1024261588257374085">Gedeeltelijk screenshot geselecteerd</translation>
+<translation id="1024364763893396229">Je <ph name="NAME" /> opslaan</translation>
 <translation id="1032891413405719768">Batterij van stylus bijna leeg</translation>
 <translation id="1036073649888683237">Ga naar Instellingen om meldingen te beheren</translation>
 <translation id="1036672894875463507">Ik ben de Google Assistent en ik ben er om je te helpen met je dag.
@@ -35,6 +36,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1175572348579024023">Scrollen</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
+<translation id="1183863904939664422">Niet geïnteresseerd in deze suggestie</translation>
 <translation id="118437560755358292">Geef je wachtwoord of pincode op voor extra beveiliging</translation>
 <translation id="118532027333893379">Tik ergens om het hele scherm vast te leggen</translation>
 <translation id="1190609913194133056">Meldingscentrum</translation>
@@ -129,7 +131,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1708345662127501511">Bureau: <ph name="DESK_NAME" /></translation>
 <translation id="1709762881904163296">Netwerkinstellingen</translation>
 <translation id="1715293566947629045">Profiel uitzetten. Wacht een paar minuten.</translation>
-<translation id="1715874602234207">V</translation>
+<translation id="1715874602234207">F</translation>
 <translation id="1719094688023114093">Live ondertiteling staat aan.</translation>
 <translation id="1720011244392820496">Wifi-synchronisatie aanzetten</translation>
 <translation id="1736898441010944794"><ph name="NAME" /> is zichtbaar voor bluetooth-apparaten.</translation>
@@ -145,7 +147,6 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1771761307086386028">Naar rechts scrollen</translation>
 <translation id="1774796056689732716">Agenda, <ph name="CURRENT_MONTH_YEAR" />, momenteel is <ph name="DATE" /> geselecteerd.</translation>
 <translation id="1787955149152357925">Uit</translation>
-<translation id="1804572139604454141">Opname beëindigd omdat er zeer weinig schijfruimte beschikbaar is</translation>
 <translation id="181103072419391116">Signaalsterkte <ph name="SIGNAL_STRENGTH" />, beheerd door je beheerder</translation>
 <translation id="1812997170047690955">Wat wordt er op mijn scherm getoond?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -165,6 +166,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1954252331066828794">Schermopname voltooid</translation>
 <translation id="1957958912175573503">Je taal instellen</translation>
+<translation id="1961239773406905488">Het cameravoorbeeld is verborgen</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Vergrendelscherm</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -182,6 +184,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2047639699071423250">Sleutelidee toevoegen</translation>
 <translation id="2049240716062114887">Bureaunaam is veranderd in <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Staand</translation>
+<translation id="2064048859448024834">Het cameravoorbeeld staat aan</translation>
 <translation id="2066708475850724665">Vergrootglas stoppen</translation>
 <translation id="2067602449040652523">Toetsenbordhelderheid</translation>
 <translation id="2078034614700056995">Swipe met 4 vingers naar rechts om naar het volgende bureau te schakelen</translation>
@@ -218,6 +221,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2302092602801625023">Dit account wordt beheerd door Family Link</translation>
 <translation id="2303600792989757991">Overzicht aan/uit</translation>
 <translation id="2318576281648121272">Vandaag <ph name="TODAY_DATE" /></translation>
+<translation id="2322065293366551060"><ph name="CATEGORY" />, zoekresultaatcategorie</translation>
 <translation id="2322173485024759474">Terug per letter</translation>
 <translation id="2339073806695260576">Tik op de stylusknop op de plank om een notitie of screenshot te maken, of om de Assistent, de laserpen of het vergrootglas te gebruiken.</translation>
 <translation id="2341729377289034582">Vergrendeld in verticale stand</translation>
@@ -237,6 +241,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2429753432712299108">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil rechten om te koppelen. Bevestig vóór het accepteren dat de volgende toegangscode op dat apparaat wordt getoond: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Wachtwoord bekijken</translation>
 <translation id="243878895369688216">Gisteren geopend</translation>
+<translation id="2441427462554639370">Opname beëindigd omdat er zeer weinig opslagruimte beschikbaar is</translation>
 <translation id="24452542372838207">Melding uitvouwen</translation>
 <translation id="2450205753526923158">Screenshotmodus</translation>
 <translation id="2456008742792828469">Agenda, <ph name="CURRENT_MONTH_YEAR" /></translation>
@@ -266,6 +271,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2673968385134502798">Games</translation>
 <translation id="2678852583403169292">Menu Selecteer om uitgesproken te worden</translation>
 <translation id="2689613560355655046">Bureau 8</translation>
+<translation id="2695305337569143674">web</translation>
 <translation id="2700493154570097719">Je toetsenbord instellen</translation>
 <translation id="2704781753052663061">Verbinden met andere wifi-netwerken</translation>
 <translation id="2705001408393684014">Microfoon aan/uit. <ph name="STATE_TEXT" /></translation>
@@ -289,6 +295,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2819276065543622893">Je wordt nu uitgelogd.</translation>
 <translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> ondersteunt <ph name="SPECIFIED_RESOLUTION" /> niet. De resolutie is gewijzigd in <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Plank</translation>
+<translation id="2831035692318564937">Aan tot zonsopgang</translation>
 <translation id="2834813915651407382">Recent geopend</translation>
 <translation id="2841907151129139818">Overgeschakeld naar tabletmodus</translation>
 <translation id="2844169650293029770">USB-C-apparaat (poort links aan de voorkant)</translation>
@@ -371,6 +378,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan later nog inloggen.</translation>
 <translation id="3321628682574733415">Onjuiste oudercode</translation>
 <translation id="3339826665088060472">Screenshot, tools om screenshots en schermopnamen te maken</translation>
+<translation id="3340978935015468852">instellingen</translation>
 <translation id="3341303451326249809">Screenshot gemaakt</translation>
 <translation id="334252345105450327">Een screenshot maken</translation>
 <translation id="3351879221545518001">Je cast momenteel een scherm.</translation>
@@ -435,8 +443,8 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3626281679859535460">Helderheid</translation>
 <translation id="3630697955794050612">uit</translation>
 <translation id="3631369015426612114">Meldingen toestaan van het volgende</translation>
+<translation id="3633097874324966332">Open de bluetooth-instellingen om je apparaat te koppelen</translation>
 <translation id="3638400994746983214">Privacyscherm aan/uit. <ph name="STATE_TEXT" />.</translation>
-<translation id="3640092422335864171"><ph name="NAME" /> opslaan</translation>
 <translation id="3649505501900178324">Update vereist</translation>
 <translation id="366222428570480733">Beheerde gebruiker <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3680908746918359504">Alle markeringen wissen</translation>
@@ -463,6 +471,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3798670284305777884">Luidspreker (intern)</translation>
 <translation id="3799080171973636491">Je hebt op de sneltoets van het vergrootglas voor volledig scherm gedrukt. Wil je deze functie aanzetten?</translation>
 <translation id="380165613292957338">Hoi, wat kan ik voor je doen?</translation>
+<translation id="3804737937830804242">Camera samenvouwen</translation>
 <translation id="3826099427150913765">Overschakelen naar wachtwoord</translation>
 <translation id="383058930331066723">Batterijbesparing staat aan</translation>
 <translation id="3835880383832568924">Open de app Snelkoppelingen om de updates te bekijken</translation>
@@ -482,6 +491,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3922427723338465344">{0,plural, =1{Zet het apparaat binnen 1 minuut terug naar een oudere versie}other{Zet het apparaat binnen # minuten terug naar een oudere versie}}</translation>
 <translation id="3923494859158167397">Geen mobiele netwerken ingesteld</translation>
 <translation id="3932043219784172185">Geen apparaat aangesloten</translation>
+<translation id="3934456833412894880">Aangepast opladen staat aan. Je batterij blijft op 80% om de batterijduur te verlengen en wordt volledig opgeladen wanneer je dat nodig hebt.</translation>
 <translation id="3943857333388298514">Plak</translation>
 <translation id="394485226368336402">Audio-instellingen</translation>
 <translation id="3945319193631853098">Tik om het instellen af te ronden</translation>
@@ -525,7 +535,6 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="4215497585250573029">VPN-instellingen</translation>
 <translation id="4217571870635786043">Dicteren</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, geïnstalleerde app, onderbroken</translation>
-<translation id="4223947355273782392">Sla <ph name="NAME" /> op in <ph name="EMAIL" /> voor sneller koppelen met je andere apparaten</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4242533952199664413">Instellingen openen</translation>
 <translation id="4250229828105606438">Screenshot</translation>
@@ -580,6 +589,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="4481530544597605423">Ontkoppelde apparaten</translation>
 <translation id="4505050298327493054">Actief bureaublad.</translation>
 <translation id="4513946894732546136">Feedback</translation>
+<translation id="4516867700536986208">Alle apps, navigeer met de pijl-links of -omlaag voor toegang tot alle apps</translation>
 <translation id="4518404433291145981">Ontgrendel eerst je telefoon om je Chromebook te ontgrendelen</translation>
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil rechten om te koppelen.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tot volledig opgeladen</translation>
@@ -588,6 +598,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="4560576029703263363">Aan</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Wachtwoord verbergen</translation>
+<translation id="4566144812051858745">Niet geïnteresseerd in suggesties</translation>
 <translation id="4570957409596482333">Knop 'Selecteer om uitgesproken te worden'</translation>
 <translation id="4573176682887762361">'Typ [woord/woordgroep]'</translation>
 <translation id="4577274620589681794">De tijd is om · <ph name="LABEL" /></translation>
@@ -638,6 +649,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="4868492592575313542">geactiveerd</translation>
 <translation id="4872237917498892622">Alt+Zoeken of Shift</translation>
 <translation id="4881695831933465202">Openen</translation>
+<translation id="4889868803215848840">Geef optionele feedback om suggesties te verbeteren:</translation>
 <translation id="4890187583552566966">De Google Assistent is uitgezet door je beheerder.</translation>
 <translation id="4890408602550914571">Zorg dat je telefoon in de buurt is en dat bluetooth aanstaat.</translation>
 <translation id="4895488851634969361">De batterij is vol.</translation>
@@ -763,6 +775,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="5744083938413354016">Tikken en slepen</translation>
 <translation id="5745612484876805746">Nachtverlichting wordt automatisch aangezet bij zonsondergang</translation>
 <translation id="5750765938512549687">Bluetooth staat uit</translation>
+<translation id="5760866832697883462">Je <ph name="NAME" /> verbinden</translation>
 <translation id="576341972084747908">Downloaden van <ph name="FILENAME" /> is gevaarlijk</translation>
 <translation id="5763928712329149804">Shelf Party staat uit.</translation>
 <translation id="576453121877257266">Nachtverlichting staat aan.</translation>
@@ -797,6 +810,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> staat aan.</translation>
 <translation id="5947494881799873997">Terugzetten</translation>
 <translation id="595202126637698455">Bijhouden van prestaties staat aan</translation>
+<translation id="5955304353782037793">app</translation>
 <translation id="5958529069007801266">Gelimiteerde gebruiker</translation>
 <translation id="5977415296283489383">Hoofdtelefoon</translation>
 <translation id="5978382165065462689">De controle over je scherm delen via externe support.</translation>
@@ -823,8 +837,10 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="6054305421211936131">Inloggen met smartkaart</translation>
 <translation id="6059276912018042191">Recente Chrome-tabbladen</translation>
 <translation id="6062360702481658777">Je wordt automatisch uitgelogd over <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064463340679478396">Klaar met gebruik van het bestand</translation>
 <translation id="6073451960410192870">Opname stoppen</translation>
 <translation id="6099678161144790572">In de afgelopen maand bewerkt</translation>
+<translation id="6103838137565245112">systeem</translation>
 <translation id="6114505516289286752">Spraakbestanden in het <ph name="LANGUAGE" /> gedownload</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="6121838516699723042">Downloaden van <ph name="FILENAME" /> bevestigen</translation>
@@ -901,9 +917,9 @@ Nieuwe installatie</translation>
 <translation id="6625718907317144388">Meldingen van <ph name="APP_1_TITLE" />, <ph name="APP_2_TITLE" /> en andere apps zijn verborgen omdat weergavebeveiliging aanstaat</translation>
 <translation id="6627638273713273709">Zoeken+Shift+K</translation>
 <translation id="6629480180092995136"><ph name="APP_NAME" /> wil de microfoon gebruiken</translation>
-<translation id="6630773993843701741">Open de bluetooth-instellingen om het apparaat handmatig te koppelen</translation>
 <translation id="6637729079642709226">Tijd wijzigen</translation>
 <translation id="6641720045729354415">Live ondertiteling aan-/uitzetten. <ph name="STATE_TEXT" /></translation>
+<translation id="6643169293433369663">Sorteren op naam ongedaan maken</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> wil bevestigen dat jij het bent</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil rechten om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
@@ -942,11 +958,11 @@ Nieuwe installatie</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Nog 1 cijfer nodig}other{Nog # cijfers nodig}}</translation>
 <translation id="6867938213751067702">Download van <ph name="FILENAME" /> is onderbroken</translation>
 <translation id="6878400149835617132">Snelkoppeling staat uit</translation>
-<translation id="6880133753431418782">Je hebt eerder naar deze zoekopdracht gezocht. Als je deze zoekopdracht uit je geschiedenis verwijdert, wordt die definitief uit je Google-account verwijderd op al je apparaten.</translation>
 <translation id="6884665277231944629">Terug naar vandaag</translation>
 <translation id="6886172995547742638">Je <ph name="DEVICE_TYPE" /> kan slechtere prestaties leveren. Gebruik een gecertificeerde USB-C-voedingsadapter van <ph name="PREFERRED_MINIMUM_POWER" /> W of hoger.</translation>
 <translation id="688631446150864480">Druk op de pijl-omlaag om tussen vensters te schakelen</translation>
 <translation id="6896758677409633944">Kopieer</translation>
+<translation id="6901883536534621389">Gebaren gebruiken om te navigeren</translation>
 <translation id="6919251195245069855">Je smartkaart wordt niet herkend. Probeer het opnieuw.</translation>
 <translation id="6921188888306725546">Sneltoetsen zijn verbeterd</translation>
 <translation id="6931576957638141829">Opslaan in</translation>
@@ -1004,13 +1020,14 @@ Nieuwe installatie</translation>
 <translation id="7302889331339392448">Live ondertiteling staat uit.</translation>
 <translation id="7303365578352795231">Je vraag wordt beantwoord op een ander apparaat.</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7307830679306928882">Recente apps, navigeer met de pijl-links voor toegang tot alle recente apps</translation>
+<translation id="7313193732017069507">Camera uitvouwen</translation>
 <translation id="731589979057211264">Shelf Party staat aan.</translation>
 <translation id="7319740667687257810">Launcher, gedeeltelijke weergave</translation>
 <translation id="7346909386216857016">OK, begrepen</translation>
 <translation id="7348093485538360975">Schermtoetsenbord</translation>
 <translation id="735745346212279324">Verbinding met VPN verbroken</translation>
 <translation id="7360036564632145207">Als je de instelling 'Beveiliging voor gegevenstoegang voor randapparaten' wijzigt, kun je de prestaties optimaliseren</translation>
-<translation id="7366890467478514168"><ph name="NAME" /> koppelen</translation>
 <translation id="7371404428569700291">Opname van venster maken</translation>
 <translation id="7377169924702866686">Caps Lock staat aan.</translation>
 <translation id="7377481913241237033">Koppelen met een code</translation>
@@ -1026,7 +1043,6 @@ Nieuwe installatie</translation>
 <translation id="742594950370306541">Camera is in gebruik.</translation>
 <translation id="742608627846767349">Goedemorgen,</translation>
 <translation id="743058460480092004">Camera en microfoon zijn in gebruik.</translation>
-<translation id="7430878839542012341">Deze zoekopdracht uit je geschiedenis verwijderen?</translation>
 <translation id="7434543979546293336">Gemarkeerd als sleutelidee</translation>
 <translation id="7452560014878697800">Een app gebruikt je camera</translation>
 <translation id="7461924472993315131">Vastzetten</translation>
@@ -1105,6 +1121,7 @@ Nieuwe installatie</translation>
 <translation id="7886169021410746335">Privacyinstellingen aanpassen</translation>
 <translation id="7886277072580235377">Je internetsessie wordt gewist wanneer je uitlogt. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Stuur een e-mail</translation>
+<translation id="7893503627044934815">Wil niet dat dit bestand wordt getoond</translation>
 <translation id="7895348134893321514">Bak</translation>
 <translation id="7897375687985782769">Je hebt op de sneltoets voor schermrotatie gedrukt. Wil je het scherm draaien?</translation>
 <translation id="7901405293566323524">Phone Hub</translation>
@@ -1120,9 +1137,9 @@ Nieuwe installatie</translation>
 <translation id="7955885781510802139">Modus voor hoog contrast</translation>
 <translation id="7968693143708939792">Map selecteren...</translation>
 <translation id="7977927628060636163">Mobiele netwerken zoeken…</translation>
-<translation id="7980780401175799550">Probeer nieuwe manieren om te navigeren in Chrome OS</translation>
 <translation id="7982789257301363584">Netwerk</translation>
 <translation id="7984197416080286869">Te veel vingerafdrukpogingen</translation>
+<translation id="798779949890829624">Deze instelling wordt beheerd door je beheerder</translation>
 <translation id="7994370417837006925">Toegang tot meerdere accounts</translation>
 <translation id="7995804128062002838">Schermopname mislukt</translation>
 <translation id="8000066093800657092">Geen netwerk</translation>
@@ -1150,6 +1167,7 @@ Nieuwe installatie</translation>
 <translation id="813913629614996137">Starten...</translation>
 <translation id="8142441511840089262">Dubbelklik</translation>
 <translation id="8142699993796781067">Privénetwerk</translation>
+<translation id="8144760705599030999">Sla je <ph name="NAME" /> op in <ph name="EMAIL" /> voor sneller koppelen met je andere apparaten</translation>
 <translation id="8152092012181020186">Druk op Ctrl + W om te sluiten.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatisch aanvullen</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Deze instelling wordt beheerd door je beheerder.</translation>
@@ -1187,6 +1205,7 @@ Nieuwe installatie</translation>
 <translation id="8412677897383510995">Scherminstellingen bekijken</translation>
 <translation id="8413272770729657668">Opname start over 3, 2, 1</translation>
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" />% (case)</translation>
+<translation id="8420205633584771378">Deze suggestie verwijderen?</translation>
 <translation id="8421270167862077762"><ph name="UNAVAILABLE_APPS" /> staat niet op dit apparaat.</translation>
 <translation id="8425213833346101688">Wijzigen</translation>
 <translation id="8426708595819210923">Goedenavond <ph name="GIVEN_NAME" />,</translation>
@@ -1206,6 +1225,8 @@ Nieuwe installatie</translation>
 <translation id="8513108775083588393">Autom. draaien</translation>
 <translation id="851458219935658693">Vensters van het huidige bureau bekijken, keuzerondje geselecteerd</translation>
 <translation id="8517041960877371778">Je <ph name="DEVICE_TYPE" /> wordt mogelijk niet opgeladen als deze aanstaat.</translation>
+<translation id="8535393432370007982">Sorteren op kleur ongedaan maken</translation>
+<translation id="8546059259582788728">Sorteren is ongedaan gemaakt</translation>
 <translation id="8551588720239073785">Instellingen voor datum en tijd</translation>
 <translation id="8553395910833293175">Al toegewezen aan alle bureaus.</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> raadt aan dat je je <ph name="DEVICE_TYPE" /> updatet</translation>
@@ -1279,6 +1300,7 @@ Nieuwe installatie</translation>
 <translation id="9000771174482730261">OPSLAG BEHEREN</translation>
 <translation id="9017320285115481645">Geef de Family Link-toegangscode voor ouders op.</translation>
 <translation id="9024331582947483881">volledig scherm</translation>
+<translation id="9030319654231318877">Uit tot zonsondergang</translation>
 <translation id="9034924485347205037">Linux-bestanden</translation>
 <translation id="9047624247355796468">Instellingen openen voor <ph name="NETWORK_NAME" /></translation>
 <translation id="9059834730836941392">Melding samenvouwen</translation>
@@ -1298,6 +1320,7 @@ Nieuwe installatie</translation>
 <translation id="9099154003160514616">Lacros-update beschikbaar</translation>
 <translation id="9100887602489003640">Profiel toevoegen. Wacht een paar minuten.</translation>
 <translation id="9105450214093926548">Een tweede gebruiker inloggen wordt niet ondersteund als de Lacros-browser actief is. Gebruik in plaats daarvan een tweede browserprofiel in Lacros of sluit Lacros en probeer het opnieuw.</translation>
+<translation id="9121941381564890244"><ph name="SNIP" /> of <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9133335900048457298">Kan geen beschermde content opnemen</translation>
 <translation id="9161053988251441839">VOORGESTELDE APPS</translation>
 <translation id="9166331175924255663">Hoge zichtbaarheid voor Dichtbij delen aan-/uitzetten.</translation>

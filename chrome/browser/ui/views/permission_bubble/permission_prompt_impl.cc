@@ -274,7 +274,7 @@ void PermissionPromptImpl::SelectPwaPrompt() {
 
 void PermissionPromptImpl::SelectNormalPrompt() {
   DCHECK(!delegate_->ShouldCurrentRequestUseQuietUI());
-  if (ShouldCurrentRequestUseChip() && IsLocationBarDisplayed()) {
+  if (ShouldCurrentRequestUseChip()) {
     ShowChip();
   } else {
     ShowBubble();

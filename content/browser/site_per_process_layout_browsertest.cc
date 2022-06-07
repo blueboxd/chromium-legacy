@@ -6,13 +6,13 @@
 
 #include "base/json/json_reader.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/math_util.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/input/actions_parser.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -495,8 +495,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       filter->GetIntersectionState()->compositor_visible_rect;
 
   float device_scale_factor = 1.0f;
-  if (IsUseZoomForDSFEnabled())
-    device_scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
+  device_scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
 
   // The math below replicates the calculations in
   // RemoteFrameView::GetCompositingRect(). That could be subject to tweaking,
@@ -600,8 +599,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       filter->GetIntersectionState()->compositor_visible_rect;
 
   float scale_factor = 1.0f;
-  if (IsUseZoomForDSFEnabled())
-    scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
+  scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
 
   // See comment in ScaledIframeRasterSize for explanation of this. In this
   // case, the raster area of the large iframe should be restricted to
@@ -670,8 +668,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       filter->GetIntersectionState()->compositor_visible_rect;
 
   float scale_factor = 1.0f;
-  if (IsUseZoomForDSFEnabled())
-    scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
+  scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
 
   gfx::Point visible_offset(0, 0);
   gfx::Size visible_size =

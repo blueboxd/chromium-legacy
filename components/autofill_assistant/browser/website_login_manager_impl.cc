@@ -7,6 +7,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
@@ -337,7 +338,7 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
     form_fetcher_->AddConsumer(this);
   }
 
-  void CommitGeneratedPassword() {
+  void SaveGeneratedPassword() {
     password_save_manager_->Save(&form_data_ /* observed_form */,
                                  password_form_);
   }
@@ -374,7 +375,11 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
 WebsiteLoginManagerImpl::WebsiteLoginManagerImpl(
     password_manager::PasswordManagerClient* client,
     content::WebContents* web_contents)
-    : client_(client), web_contents_(web_contents), weak_ptr_factory_(this) {}
+    : client_(client),
+      web_contents_(web_contents),
+      leak_delegate_(
+          std::make_unique<SavePasswordLeakDetectionDelegate>(client_)),
+      weak_ptr_factory_(this) {}
 
 WebsiteLoginManagerImpl::~WebsiteLoginManagerImpl() = default;
 
@@ -483,14 +488,14 @@ void WebsiteLoginManagerImpl::PresaveGeneratedPassword(
   update_password_request_->FetchAndPresave();
 }
 
-bool WebsiteLoginManagerImpl::ReadyToCommitGeneratedPassword() {
+bool WebsiteLoginManagerImpl::ReadyToSaveGeneratedPassword() {
   return update_password_request_ != nullptr;
 }
 
-void WebsiteLoginManagerImpl::CommitGeneratedPassword() {
+void WebsiteLoginManagerImpl::SaveGeneratedPassword() {
   DCHECK(update_password_request_);
 
-  update_password_request_->CommitGeneratedPassword();
+  update_password_request_->SaveGeneratedPassword();
 
   update_password_request_.reset();
 }
@@ -499,12 +504,32 @@ void WebsiteLoginManagerImpl::ResetPendingCredentials() {
   client_->GetPasswordManager()->ResetPendingCredentials();
 }
 
-bool WebsiteLoginManagerImpl::ReadyToCommitSubmittedPassword() {
+bool WebsiteLoginManagerImpl::ReadyToSaveSubmittedPassword() {
   return client_->GetPasswordManager()->HasSubmittedManager();
 }
 
+bool WebsiteLoginManagerImpl::SubmittedPasswordIsSame() {
+  return client_->GetPasswordManager()->HasSubmittedManagerWithSamePassword();
+}
+
+void WebsiteLoginManagerImpl::CheckWhetherSubmittedCredentialIsLeaked(
+    SavePasswordLeakDetectionDelegate::Callback callback,
+    base::TimeDelta timeout) {
+  absl::optional<password_manager::PasswordForm> credentials =
+      client_->GetPasswordManager()->GetSubmittedCredentials();
+
+  if (!credentials.has_value()) {
+    std::move(callback).Run(
+        LeakDetectionStatus(LeakDetectionStatusCode::NO_USERNAME), false);
+    return;
+  }
+
+  leak_delegate_->StartLeakCheck(credentials.value(), std::move(callback),
+                                 timeout);
+}
+
 bool WebsiteLoginManagerImpl::SaveSubmittedPassword() {
-  if (!ReadyToCommitSubmittedPassword()) {
+  if (!ReadyToSaveSubmittedPassword()) {
     return false;
   }
   client_->GetPasswordManager()->SaveSubmittedManager();

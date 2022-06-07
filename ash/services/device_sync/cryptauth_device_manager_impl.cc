@@ -10,6 +10,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/services/device_sync/cryptauth_client.h"
 #include "ash/services/device_sync/pref_names.h"
 #include "ash/services/device_sync/proto/enum_util.h"
@@ -21,14 +23,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -846,4 +846,4 @@ void CryptAuthDeviceManagerImpl::OnSyncRequested(
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

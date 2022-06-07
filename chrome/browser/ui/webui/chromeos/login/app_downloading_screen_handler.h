@@ -35,7 +35,7 @@ class AppDownloadingScreenHandler : public BaseScreenHandler,
  public:
   using TView = AppDownloadingScreenView;
 
-  explicit AppDownloadingScreenHandler(JSCallsContainer* js_calls_container);
+  AppDownloadingScreenHandler();
 
   AppDownloadingScreenHandler(const AppDownloadingScreenHandler&) = delete;
   AppDownloadingScreenHandler& operator=(const AppDownloadingScreenHandler&) =
@@ -55,7 +55,7 @@ class AppDownloadingScreenHandler : public BaseScreenHandler,
 
  private:
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   ash::AppDownloadingScreen* screen_ = nullptr;
 };

@@ -109,7 +109,7 @@ bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
 }
 
 const base::Feature kDockedMagnifierResizing{"DockedMagnifierResizing",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsDockedMagnifierResizingEnabled() {
   return base::FeatureList::IsEnabled(::features::kDockedMagnifierResizing);
@@ -154,6 +154,15 @@ const base::Feature kExperimentalAccessibilityDictationWithPumpkin{
 bool IsExperimentalAccessibilityDictationWithPumpkinEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilityDictationWithPumpkin);
+}
+
+const base::Feature kExperimentalAccessibilityGoogleTtsLanguagePacks{
+    "ExperimentalAccessibilityGoogleTtsLanguagePacks",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityGoogleTtsLanguagePacks);
 }
 
 const base::Feature kEnhancedNetworkVoices{"EnhancedNetworkVoices",
@@ -203,11 +212,11 @@ bool IsComputeAXModeEnabled() {
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-const base::Feature kReaderModeSidePanel{"ReaderModeSidePanel",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kReadAnything{"ReadAnything",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsReaderModeSidePanelEnabled() {
-  return base::FeatureList::IsEnabled(::features::kReaderModeSidePanel);
+bool IsReadAnythingEnabled() {
+  return base::FeatureList::IsEnabled(::features::kReadAnything);
 }
 
 #if !BUILDFLAG(IS_ANDROID)

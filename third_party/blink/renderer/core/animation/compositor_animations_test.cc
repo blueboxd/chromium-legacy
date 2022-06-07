@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_string_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
@@ -2463,6 +2464,18 @@ TEST_P(AnimationCompositorAnimationsTest,
     BeginFrame();
     EXPECT_EQ(1U, host->MainThreadAnimationsCount());
   }
+}
+
+TEST_P(AnimationCompositorAnimationsTest,
+       MainAnimationCountExcludesInactiveAnimations) {
+  LoadTestData("inactive-animations.html");
+
+  cc::AnimationHost* host =
+      GetFrame()->GetDocument()->View()->GetCompositorAnimationHost();
+
+  // Verify that the paused animation does not count as a running main thread
+  // animation.
+  EXPECT_EQ(0U, host->MainThreadAnimationsCount());
 }
 
 TEST_P(AnimationCompositorAnimationsTest, TrackRafAnimationAcrossAllDocuments) {

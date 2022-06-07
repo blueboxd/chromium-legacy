@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -23,7 +23,7 @@ class DeviceSyncBase : public mojom::DeviceSync {
 
   ~DeviceSyncBase() override;
 
-  // mojom::DeviceSync:
+  // device_sync::mojom::DeviceSync:
   void AddObserver(mojo::PendingRemote<mojom::DeviceSyncObserver> observer,
                    AddObserverCallback callback) override;
 
@@ -52,13 +52,11 @@ class DeviceSyncBase : public mojom::DeviceSync {
 
 }  // namespace device_sync
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-namespace device_sync {
-using ::chromeos::device_sync::DeviceSyncBase;
-}
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos::device_sync {
+using ::ash::device_sync::DeviceSyncBase;
+}
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_DEVICE_SYNC_BASE_H_

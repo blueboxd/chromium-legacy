@@ -18,6 +18,8 @@
 
 namespace policy {
 
+// {{{Note}}} ERP Payload Overview
+//
 // EncryptedReportingJobConfiguration configures a payload for the Encrypted
 // server endpoint. A JSON version of the payload looks like this:
 // {
@@ -25,28 +27,36 @@ namespace policy {
 //     {
 //       "encryptedWrappedRecord": "EncryptedMessage",
 //       "encryptionInfo" : {
-//         "encryptionKey": "EncryptedMessage",
+//         "encryptionKey": "LocalPublicValue",
 //         "publicKeyId": 1
 //       },
-//       "sequencingInformation": {
+//       "sequenceInformation": {
 //         "sequencingId": 1,
 //         "generationId": 123456789,
 //         "priority": 1
+//       },
+//       "compressionInformation": {
+//         "compressionAlgorithm": 1
 //       }
 //     },
 //     {
 //       "encryptedWrappedRecord": "EncryptedMessage",
 //       "encryptionInfo" : {
-//         "encryptionKey": "EncryptedMessage",
+//         "encryptionKey": "LocalPublicValue",
 //         "publicKeyId": 2
 //       },
-//       "sequencingInformation": {
+//       "sequenceInformation": {
 //         "sequencingId": 2,
 //         "generationId": 123456789,
 //         "priority": 1
+//       },
+//       "compressionInformation": {
+//         "compressionAlgorithm": 1
 //       }
 //     }
 //   ],
+//   "attachEncryptionSettings": true,  // optional field
+//   "requestId": "SomeString",
 //   "device": {
 //     "client_id": "abcdef1234",
 //     "dmToken": "abcdef1234",
@@ -63,6 +73,10 @@ namespace policy {
 // }
 // "device" and "browser" are populated by the base class,
 // the rest needs to be provided as |merging_payload|.
+//
+// Details other than the "device" and "browser" fields are documented at note
+// "ERP Encrypted Record".
+
 class POLICY_EXPORT EncryptedReportingJobConfiguration
     : public ReportingJobConfigurationBase {
  public:

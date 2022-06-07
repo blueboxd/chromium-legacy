@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -187,6 +188,11 @@ PrefService* WebViewPasswordManagerClient::GetPrefs() const {
   return pref_service_;
 }
 
+const syncer::SyncService* WebViewPasswordManagerClient::GetSyncService()
+    const {
+  return sync_service_;
+}
+
 PasswordStoreInterface* WebViewPasswordManagerClient::GetProfilePasswordStore()
     const {
   return profile_store_;
@@ -318,10 +324,6 @@ WebViewPasswordManagerClient::GetFieldInfoManager() const {
 
 bool WebViewPasswordManagerClient::IsAutofillAssistantUIVisible() const {
   return false;
-}
-
-const syncer::SyncService* WebViewPasswordManagerClient::GetSyncService() {
-  return sync_service_;
 }
 
 safe_browsing::PasswordProtectionService*

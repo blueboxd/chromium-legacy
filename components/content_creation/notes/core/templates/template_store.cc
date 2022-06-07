@@ -5,12 +5,15 @@
 #include "components/content_creation/notes/core/templates/template_store.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/rand_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/content_creation/notes/core/note_prefs.h"
 #include "components/content_creation/notes/core/templates/note_template.h"
@@ -22,12 +25,43 @@
 
 namespace content_creation {
 
+namespace {
+
+bool ConvertProtoDateToTime(proto::Date date, base::Time& time_date) {
+  base::Time::Exploded exploded_date = {
+      /*year=*/date.year(),
+      /*month=*/date.month(),
+      /*day_of_week=*/0,
+      /*day_of_month=*/date.day(),
+      /*hour=*/0,
+      /*minute=*/0,
+      /*second=*/0,
+      /*millisecond=*/0,
+  };
+
+  return base::Time::FromLocalExploded(exploded_date, &time_date);
+}
+
+std::string FetchTemplatesFromFile(base::FilePath local_path) {
+  std::string data;
+
+  if (!base::ReadFileToString(local_path, &data)) {
+    return "";
+  }
+
+  return data;
+}
+
+}  // namespace
+
 TemplateStore::TemplateStore(
     PrefService* pref_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader,
+    std::string country_code)
     : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_BLOCKING})),
-      pref_service_(pref_service) {
+      pref_service_(pref_service),
+      country_code_(country_code) {
   fetcher_ = std::make_unique<TemplateFetcher>(url_loader);
 }
 
@@ -39,6 +73,16 @@ void TemplateStore::FetchTemplates(GetTemplatesCallback callback) {
 }
 
 void TemplateStore::GetTemplates(GetTemplatesCallback callback) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kLocalDynamicTemplatesForTesting)) {
+    OnFetchTemplateComplete(
+        std::move(callback),
+        FetchTemplatesFromFile(
+            base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+                kLocalDynamicTemplatesForTesting)));
+    return;
+  }
+
   if (IsDynamicTemplatesEnabled()) {
     FetchTemplates(std::move(callback));
   } else {
@@ -67,10 +111,85 @@ std::vector<NoteTemplate> TemplateStore::BuildDefaultTemplates() {
   return templates;
 }
 
+bool TemplateStore::TemplateDateAvailable(proto::CollectionItem current_item,
+                                          base::Time today) {
+  base::Time activation;
+  base::Time expiration;
+
+  if (current_item.has_activation() &&
+      (!ConvertProtoDateToTime(current_item.activation(), activation) ||
+       today < activation)) {
+    return false;
+  }
+
+  if (current_item.has_expiration() &&
+      (!ConvertProtoDateToTime(current_item.expiration(), expiration) ||
+       today >= expiration)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool TemplateStore::TemplateLocationAvailable(
+    proto::CollectionItem current_item) {
+  // If there are no locations set, the template is considered available for all
+  // locations.
+  if (current_item.geo_size() == 0) {
+    return true;
+  }
+
+  // If a location is set, but the user's country code is empty, the template
+  // will not be available for the user.
+  if (country_code_.empty()) {
+    return false;
+  }
+
+  for (std::string template_location : current_item.geo()) {
+    if (country_code_ == template_location) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 std::vector<NoteTemplate> TemplateStore::ParseTemplatesFromString(
     std::string response_body) {
-  // TODO(graysonlafleur): implement dynamic templates here
-  return BuildDefaultTemplates();
+  std::vector<NoteTemplate> templates = {};
+  proto::Collection collection;
+  // Time is set here so that all templates will be compared against the exact
+  // same date.
+  base::Time today = base::Time::NowFromSystemTime();
+
+  if (!collection.ParseFromString(response_body)) {
+    return BuildDefaultTemplates();
+  }
+
+  int numTemplates = 0;
+
+  for (int i = 0; i < collection.collectionitems_size() &&
+                  numTemplates < collection.max_template_number();
+       i++) {
+    proto::CollectionItem current_item = collection.collectionitems(i);
+
+    if (!TemplateDateAvailable(current_item, today)) {
+      continue;
+    }
+
+    if (!TemplateLocationAvailable(current_item)) {
+      continue;
+    }
+
+    templates.push_back(NoteTemplate(current_item.notetemplate()));
+    numTemplates++;
+  }
+
+  if (templates.size() == 0) {
+    return BuildDefaultTemplates();
+  }
+
+  return templates;
 }
 
 void TemplateStore::OnTemplatesReceived(

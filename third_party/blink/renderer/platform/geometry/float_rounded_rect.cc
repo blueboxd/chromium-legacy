@@ -146,22 +146,23 @@ void FloatRoundedRect::Radii::OutsetForMarginOrShadow(float outset) {
   OutsetCornerForMarginOrShadow(bottom_right_, outset);
 }
 
+void FloatRoundedRect::Radii::OutsetForShapeMargin(float outset) {
+  // TODO(crbug.com/1309478): This isn't correct for non-circular
+  // corners (that is, corners that have x and y radii that are not
+  // equal).  But it's not clear to me if the correct result for that
+  // case is even an ellipse.
+  gfx::SizeF outset_size(outset, outset);
+  top_left_ += outset_size;
+  top_right_ += outset_size;
+  bottom_left_ += outset_size;
+  bottom_right_ += outset_size;
+}
+
 static inline float CornerRectIntercept(float y,
                                         const gfx::RectF& corner_rect) {
   DCHECK_GT(corner_rect.height(), 0);
   return corner_rect.width() *
          sqrt(1 - (y * y) / (corner_rect.height() * corner_rect.height()));
-}
-
-gfx::RectF FloatRoundedRect::RadiusCenterRect() const {
-  gfx::InsetsF maximum_radius_insets(
-      std::max(radii_.TopLeft().height(), radii_.TopRight().height()),
-      std::max(radii_.TopRight().width(), radii_.BottomRight().width()),
-      std::max(radii_.BottomLeft().height(), radii_.BottomRight().height()),
-      std::max(radii_.TopLeft().width(), radii_.BottomLeft().width()));
-  gfx::RectF center_rect(rect_);
-  center_rect.Inset(maximum_radius_insets);
-  return center_rect;
 }
 
 bool FloatRoundedRect::XInterceptsAtY(float y,
@@ -225,19 +226,12 @@ void FloatRoundedRect::OutsetForMarginOrShadow(float size) {
   radii_.OutsetForMarginOrShadow(size);
 }
 
-void FloatRoundedRect::InflateWithRadii(int size) {
-  gfx::RectF old = rect_;
-
-  rect_.Outset(size);
-  // Considering the inflation factor of shorter size to scale the radii seems
-  // appropriate here
-  float factor;
-  if (rect_.width() < rect_.height())
-    factor = old.width() ? (float)rect_.width() / old.width() : int(0);
-  else
-    factor = old.height() ? (float)rect_.height() / old.height() : int(0);
-
-  radii_.Scale(factor);
+void FloatRoundedRect::OutsetForShapeMargin(float outset) {
+  DCHECK_GE(outset, 0);
+  if (outset == 0.f)
+    return;
+  rect_.Outset(outset);
+  radii_.OutsetForShapeMargin(outset);
 }
 
 bool FloatRoundedRect::IntersectsQuad(const gfx::QuadF& quad) const {

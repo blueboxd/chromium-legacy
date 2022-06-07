@@ -193,6 +193,8 @@ source_set("formats") {
     "hls/media_segment.h",
     "hls/parse_status.cc",
     "hls/parse_status.h",
+    "hls/playlist.cc",
+    "hls/playlist.h",
     "hls/playlist_common.cc",
     "hls/playlist_common.h",
     "hls/source_string.cc",
@@ -203,6 +205,8 @@ source_set("formats") {
     "hls/tags.h",
     "hls/types.cc",
     "hls/types.h",
+    "hls/variable_dictionary.cc",
+    "hls/variable_dictionary.h",
   ]
   deps += [ "//third_party/re2" ]
   public_deps = [
@@ -322,6 +326,7 @@ source_set("unit_tests") {
     "hls/media_playlist_unittest.cc",
     "hls/tags_unittest.cc",
     "hls/types_unittest.cc",
+    "hls/variable_dictionary_unittest.cc",
   ]
 }
 
@@ -348,6 +353,7 @@ fuzzer_test("hls_media_playlist_fuzzer") {
   sources = [ "hls/media_playlist_fuzzer.cc" ]
   deps = [
     "//base",
+    "//base:i18n",
     "//media",
   ]
 }

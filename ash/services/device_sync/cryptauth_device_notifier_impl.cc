@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/services/device_sync/async_execution_time_metrics_logger.h"
 #include "ash/services/device_sync/cryptauth_client.h"
 #include "ash/services/device_sync/cryptauth_key_bundle.h"
@@ -13,9 +14,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -248,4 +248,4 @@ std::ostream& operator<<(std::ostream& stream,
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash

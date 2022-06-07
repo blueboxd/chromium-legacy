@@ -10,6 +10,13 @@
 #include "base/i18n/rtl.h"
 #include "cc/paint/paint_shader.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkPathTypes.h"
+#include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkScalar.h"
+#include "third_party/skia/include/core/SkTileMode.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
@@ -153,7 +160,7 @@ absl::optional<SkColor> GetNotificationForegroundColor(
   const SkColor fallback_color = is_light ? SK_ColorBLACK : SK_ColorWHITE;
 
   gfx::Rect bitmap_area(source->width(), source->height());
-  bitmap_area.Inset(source->width() * 0.4, 0, 0, 0);
+  bitmap_area.Inset(gfx::Insets::TLBR(0, source->width() * 0.4, 0, 0));
 
   // If the background color is dark we want to look for colors that are darker
   // and vice versa.
@@ -438,7 +445,8 @@ gfx::Rect MediaNotificationBackgroundImpl::GetFilledBackgroundBounds(
   // taken up by the artwork.
   const gfx::Rect& view_bounds = owner.GetContentsBounds();
   gfx::Rect bounds = gfx::Rect(view_bounds);
-  bounds.Inset(0, 0, GetArtworkVisibleWidth(view_bounds.size()), 0);
+  bounds.Inset(
+      gfx::Insets().set_right(GetArtworkVisibleWidth(view_bounds.size())));
   return owner.GetMirroredRect(bounds);
 }
 

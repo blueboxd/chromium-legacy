@@ -25,6 +25,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -229,6 +230,8 @@ void QueryTraceEvents(trace_analyzer::TraceAnalyzer* analyzer,
       trace_analyzer::Query::EventNameIs(std::string(event_name)) &&
       (trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_BEGIN) ||
        trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN) ||
+       trace_analyzer::Query::EventPhaseIs(
+           TRACE_EVENT_PHASE_NESTABLE_ASYNC_BEGIN) ||
        trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_FLOW_BEGIN) ||
        trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_INSTANT) ||
        trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_COMPLETE));

@@ -4,18 +4,17 @@
 
 #include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
 
+#include "ash/components/tpm/install_attributes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/authpolicy/data_pipe_utils.h"
-#include "chromeos/dbus/authpolicy/authpolicy_client.h"
+#include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
@@ -24,9 +23,6 @@
 namespace ash {
 
 namespace {
-
-using ::chromeos::AuthPolicyClient;
-using ::chromeos::InstallAttributes;
 
 constexpr char kDCPrefix[] = "DC=";
 constexpr char kOUPrefix[] = "OU=";
@@ -145,7 +141,7 @@ void AuthPolicyHelper::TryAuthenticateUser(const std::string& username,
 
 // static
 void AuthPolicyHelper::Restart() {
-  chromeos::UpstartClient::Get()->RestartAuthPolicyService();
+  UpstartClient::Get()->RestartAuthPolicyService();
 }
 
 // static

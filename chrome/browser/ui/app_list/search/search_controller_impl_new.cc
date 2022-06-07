@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/app_list/search/common/string_util.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
+#include "chrome/browser/ui/app_list/search/ranking/scoring.h"
 #include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "chrome/browser/ui/app_list/search/search_features.h"
 #include "chrome/browser/ui/app_list/search/search_metrics_observer.h"
@@ -41,14 +42,41 @@
 namespace app_list {
 namespace {
 
-// TODO(crbug.com/1288636): This is brittle as it relies on knowing exactly
-// which providers are sending zero-state results. We should replace it with an
-// approach where providers indicate whether a result type is for query search
-// or zero-state.
+bool IsPartOfContinueSection(ProviderType type) {
+  switch (type) {
+    case ash::AppListSearchResultType::kZeroStateFile:
+    case ash::AppListSearchResultType::kZeroStateDrive:
+      return true;
+    case ash::AppListSearchResultType::kUnknown:
+    case ash::AppListSearchResultType::kInstalledApp:
+    case ash::AppListSearchResultType::kPlayStoreApp:
+    case ash::AppListSearchResultType::kInstantApp:
+    case ash::AppListSearchResultType::kInternalApp:
+    case ash::AppListSearchResultType::kOmnibox:
+    case ash::AppListSearchResultType::kLauncher:
+    case ash::AppListSearchResultType::kAnswerCard:
+    case ash::AppListSearchResultType::kPlayStoreReinstallApp:
+    case ash::AppListSearchResultType::kArcAppShortcut:
+    case ash::AppListSearchResultType::kFileChip:
+    case ash::AppListSearchResultType::kDriveChip:
+    case ash::AppListSearchResultType::kAssistantChip:
+    case ash::AppListSearchResultType::kOsSettings:
+    case ash::AppListSearchResultType::kInternalPrivacyInfo:
+    case ash::AppListSearchResultType::kAssistantText:
+    case ash::AppListSearchResultType::kHelpApp:
+    case ash::AppListSearchResultType::kFileSearch:
+    case ash::AppListSearchResultType::kDriveSearch:
+    case ash::AppListSearchResultType::kKeyboardShortcut:
+    case ash::AppListSearchResultType::kOpenTab:
+    case ash::AppListSearchResultType::kGames:
+    case ash::AppListSearchResultType::kPersonalization:
+      return false;
+  }
+}
+
 void ClearAllResultsExceptContinue(ResultsMap& results) {
   for (auto it = results.begin(); it != results.end();) {
-    if (it->first != ResultType::kZeroStateFile &&
-        it->first != ResultType::kZeroStateDrive) {
+    if (!IsPartOfContinueSection(it->first)) {
       it = results.erase(it);
     } else {
       ++it;
@@ -347,27 +375,8 @@ void SearchControllerImplNew::Rank(ProviderType provider_type) {
 }
 
 void SearchControllerImplNew::Publish() {
-  // Sort categories first by burn-in iteration number, then by score.
-  std::sort(categories_.begin(), categories_.end(),
-            [](const auto& a, const auto& b) {
-              const int a_burnin = a.burnin_iteration;
-              const int b_burnin = b.burnin_iteration;
-              if (a.category == Category::kSearchAndAssistant ||
-                  b.category == Category::kSearchAndAssistant) {
-                // Special-case the search and assistant category, which should
-                // always be sorted last.
-                return b.category == Category::kSearchAndAssistant;
-              } else if (a_burnin != b_burnin) {
-                // Sort order: 0, 1, 2, 3, ... then -1.
-                // The effect of this is to sort by arrival order, with unseen
-                // categories ranked last.
-                // N.B. (a ^ b) < 0 checks for opposite sign.
-                return (a_burnin ^ b_burnin) < 0 ? a_burnin > b_burnin
-                                                 : a_burnin < b_burnin;
-              } else {
-                return a.score > b.score;
-              }
-            });
+  SortCategories(categories_);
+
   // Create a vector of category enums in display order.
   std::vector<Category> category_enums;
   for (const auto& category : categories_)
@@ -400,54 +409,7 @@ void SearchControllerImplNew::Publish() {
     }
   }
 
-  // TODO(crbug.com/1258415): Refactor this lambda to be a method on the Scoring
-  // struct.
-  std::sort(
-      all_results.begin(), all_results.end(),
-      [&](const ChromeSearchResult* a, const ChromeSearchResult* b) {
-        const int a_best_match_rank = a->scoring().best_match_rank;
-        const int b_best_match_rank = b->scoring().best_match_rank;
-        if (a_best_match_rank != b_best_match_rank) {
-          // First, sort by best match. All best matches are brought to
-          // the front of the list and ordered by best_match_rank.
-          //
-          // The following gives sort order:
-          //    0, 1, 2, ... (best matches) then -1 (non-best matches).
-          // N.B. (a ^ b) < 0 checks for opposite sign.
-          return (a_best_match_rank ^ b_best_match_rank) < 0
-                     ? a_best_match_rank > b_best_match_rank
-                     : a_best_match_rank < b_best_match_rank;
-        } else if (a_best_match_rank == -1 && a->category() != b->category()) {
-          // Next, sort by categories, except for within best match.
-          // |categories_| has been sorted above so the first category in
-          // |categories_| should be ranked more highly.
-          for (const auto& category : categories_) {
-            if (category.category == a->category()) {
-              return true;
-            } else if (category.category == b->category()) {
-              return false;
-            }
-          }
-          // Any category associated with a result should also be present
-          // in |categories_|.
-          NOTREACHED();
-          return false;
-        } else if (a->scoring().burnin_iteration !=
-                   b->scoring().burnin_iteration) {
-          // Next, sort by burn-in iteration number. This has no effect on
-          // results which arrive pre-burn-in. For post-burn-in results
-          // for a given category, later-arriving results are placed below
-          // earlier-arriving results.
-          // This happens before sorting on display_score, as a trade-off
-          // between ranking accuracy and UX pop-in mitigation.
-          return a->scoring().burnin_iteration < b->scoring().burnin_iteration;
-        } else if (a->scoring().continue_rank != b->scoring().continue_rank) {
-          return a->scoring().continue_rank > b->scoring().continue_rank;
-        } else {
-          // Lastly, sort by display score.
-          return a->display_score() > b->display_score();
-        }
-      });
+  SortResults(all_results, categories_);
 
   if (!observer_list_.empty()) {
     std::vector<const ChromeSearchResult*> observer_results;

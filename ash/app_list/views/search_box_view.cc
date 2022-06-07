@@ -30,9 +30,11 @@
 #include "ash/search_box/search_box_view_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/highlight_border.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
+#include "base/rand_util.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -40,6 +42,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -71,10 +74,11 @@ constexpr int kSearchBoxFocusRingCornerRadius = 28;
 constexpr int kMinimumLengthToAutocomplete = 2;
 
 // Border insets for SearchBoxView in bubble launcher.
-constexpr gfx::Insets kBorderInsetsForAppListBubble(4, 4, 4, 0);
+constexpr auto kBorderInsetsForAppListBubble = gfx::Insets::TLBR(4, 4, 4, 0);
 
 // Margins for the search box text field in bubble launcher.
-constexpr gfx::Insets kTextFieldMarginsForAppListBubble(8, 0, 0, 0);
+constexpr auto kTextFieldMarginsForAppListBubble =
+    gfx::Insets::TLBR(8, 0, 0, 0);
 
 bool IsTrimmedQueryEmpty(const std::u16string& query) {
   std::u16string trimmed_query;
@@ -83,6 +87,43 @@ bool IsTrimmedQueryEmpty(const std::u16string& query) {
 }
 
 }  // namespace
+
+class SearchBoxView::FocusRingLayer : public ui::Layer, ui::LayerDelegate {
+ public:
+  FocusRingLayer() : Layer(ui::LAYER_TEXTURED) {
+    SetName("search_box/FocusRing");
+    SetFillsBoundsOpaquely(false);
+    set_delegate(this);
+  }
+  FocusRingLayer(const FocusRingLayer&) = delete;
+  FocusRingLayer& operator=(const FocusRingLayer&) = delete;
+  ~FocusRingLayer() override {}
+
+ private:
+  // views::LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    ui::PaintRecorder recorder(context, bounds().size());
+    gfx::Canvas* canvas = recorder.canvas();
+
+    // When using strokes to draw a rect, the bounds set is the center of the
+    // rect, which means that setting draw bounds to `bounds()` will leave half
+    // of the border outside the layer that may not be painted. Shrink the draw
+    // bounds by half of the width to solve this problem.
+    gfx::Rect draw_bounds(bounds().size());
+    draw_bounds.Inset(kSearchBoxFocusRingWidth / 2);
+
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
+    flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
+    flags.setStrokeWidth(kSearchBoxFocusRingWidth);
+    canvas->DrawRoundRect(draw_bounds, kSearchBoxFocusRingCornerRadius, flags);
+  }
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {
+    SchedulePaint(gfx::Rect(size()));
+  }
+};
 
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                              AppListViewDelegate* view_delegate,
@@ -215,6 +256,10 @@ void SearchBoxView::UpdateModel(bool initiated_by_user) {
   SearchBoxModel* const search_box_model =
       AppListModelProvider::Get()->search_model()->search_box();
 
+  // Randomly select a new placeholder text when we get an empty new query.
+  if (new_query.empty() && features::IsProductivityLauncherEnabled())
+    UpdatePlaceholderTextAndAccessibleName();
+
   if (initiated_by_user) {
     const std::u16string& previous_query = search_box_model->text();
     const base::TimeTicks current_time = base::TimeTicks::Now();
@@ -297,6 +342,9 @@ void SearchBoxView::UpdateSearchBoxBorder() {
 }
 
 void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
+  // Paint the SearchBoxBackground defined in SearchBoxViewBase first.
+  views::View::OnPaintBackground(canvas);
+
   if (is_app_list_bubble_) {
     // When the search box is focused, paint a vertical focus bar along the left
     // edge, vertically aligned with the search icon.
@@ -306,20 +354,14 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
       PaintFocusBar(canvas, gfx::Point(0, icon_origin.y()),
                     /*height=*/kSearchBoxIconSize);
     }
-    return;
   }
+}
 
-  // Paints the focus ring if the search box is focused.
-  if (search_box()->HasFocus() && !is_search_box_active() &&
-      view_delegate_->KeyboardTraversalEngaged()) {
-    gfx::Rect bounds = GetContentsBounds();
-    bounds.Inset(-kSearchBoxFocusRingPadding, -kSearchBoxFocusRingPadding);
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
-    flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
-    flags.setStrokeWidth(kSearchBoxFocusRingWidth);
-    canvas->DrawRoundRect(bounds, kSearchBoxFocusRingCornerRadius, flags);
+void SearchBoxView::OnPaintBorder(gfx::Canvas* canvas) {
+  if (should_paint_highlight_border_) {
+    HighlightBorder::PaintBorderToCanvas(
+        canvas, GetContentsBounds(), corner_radius_,
+        HighlightBorder::Type::kHighlightBorder1, false);
   }
 }
 
@@ -334,9 +376,22 @@ void SearchBoxView::OnThemeChanged() {
   OnWallpaperColorsChanged();
 }
 
+void SearchBoxView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (focus_ring_layer_)
+    focus_ring_layer_->SetBounds(bounds());
+}
+
 // static
 int SearchBoxView::GetFocusRingSpacing() {
   return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
+}
+
+void SearchBoxView::MaybeCreateFocusRing() {
+  if (!is_app_list_bubble_) {
+    focus_ring_layer_ = std::make_unique<FocusRingLayer>();
+    layer()->parent()->Add(focus_ring_layer_.get());
+    layer()->parent()->StackAtBottom(focus_ring_layer_.get());
+  }
 }
 
 void SearchBoxView::SetupCloseButton() {
@@ -402,17 +457,27 @@ void SearchBoxView::OnSearchBoxActiveChanged(bool active) {
     result_selection_controller_->ClearSelection();
   }
 
-  // In the non-bubble launcher, when the search box is active there are no
-  // apps to navigate with arrow keys, so remove the accessibility hint.
-  if (!is_app_list_bubble_) {
+  // Remove accessibility hint for classic launcher when search box is active
+  // because there are no apps to navigate to.
+  if (!features::IsProductivityLauncherEnabled()) {
     if (active) {
       search_box()->SetAccessibleName(std::u16string());
     } else {
-      search_box()->SetAccessibleName(l10n_util::GetStringUTF16(
-          is_tablet_mode_
-              ? IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET
-              : IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
+      UpdatePlaceholderTextAndAccessibleName();
     }
+  }
+}
+
+void SearchBoxView::UpdateSearchBoxFocusPaint() {
+  if (!focus_ring_layer_)
+    return;
+
+  // Paints the focus ring if the search box is focused.
+  if (search_box()->HasFocus() && !is_search_box_active() &&
+      view_delegate_->KeyboardTraversalEngaged()) {
+    focus_ring_layer_->SetVisible(true);
+  } else {
+    focus_ring_layer_->SetVisible(false);
   }
 }
 
@@ -457,6 +522,10 @@ void SearchBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void SearchBoxView::UpdateBackground(AppListState target_state) {
   int corner_radius = GetSearchBoxBorderCornerRadiusForState(target_state);
   SetSearchBoxBackgroundCornerRadius(corner_radius);
+  const bool is_corner_radius_changed = corner_radius_ != corner_radius;
+  corner_radius_ = corner_radius;
+
+  bool highlight_border_changed = false;
 
   // The background layer is only painted for the search box in tablet mode.
   // Also the layer is not painted when the search result page is visible.
@@ -466,11 +535,17 @@ void SearchBoxView::UpdateBackground(AppListState target_state) {
     layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
     layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
     layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(corner_radius));
+    highlight_border_changed = !should_paint_highlight_border_;
+    should_paint_highlight_border_ = true;
   } else {
     layer()->SetBackgroundBlur(0);
     layer()->SetBackdropFilterQuality(0);
+    highlight_border_changed = should_paint_highlight_border_;
+    should_paint_highlight_border_ = false;
   }
 
+  if (is_corner_radius_changed || highlight_border_changed)
+    SchedulePaint();
   UpdateBackgroundColor(GetBackgroundColorForState(target_state));
   UpdateTextColor();
   current_app_list_state_ = target_state;
@@ -484,7 +559,7 @@ void SearchBoxView::UpdateLayout(AppListState target_state,
   const int horizontal_right_padding =
       horizontal_spacing - (kSearchBoxButtonSizeDip - kSearchBoxIconSize) / 2;
   box_layout()->set_inside_border_insets(
-      gfx::Insets(0, horizontal_spacing, 0, horizontal_right_padding));
+      gfx::Insets::TLBR(0, horizontal_spacing, 0, horizontal_right_padding));
   box_layout()->set_between_child_spacing(horizontal_spacing);
   InvalidateLayout();
   UpdateBackground(target_state);
@@ -625,11 +700,57 @@ void SearchBoxView::UpdateTextColor() {
 }
 
 void SearchBoxView::UpdatePlaceholderTextAndAccessibleName() {
-  search_box()->SetPlaceholderText(
-      l10n_util::GetStringUTF16(IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER));
-  search_box()->SetAccessibleName(l10n_util::GetStringUTF16(
-      is_tablet_mode_ ? IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET
-                      : IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
+  if (features::IsProductivityLauncherEnabled()) {
+    // Randomly select a placeholder text.
+    const PlaceholderTextType placeholder_type = PlaceholderTextType(
+        base::RandInt(0, static_cast<int>(PlaceholderTextType::kMaxValue)));
+
+    switch (placeholder_type) {
+      case PlaceholderTextType::kShortcuts:
+        search_box()->SetPlaceholderText(l10n_util::GetStringFUTF16(
+            IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE,
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SHORTCUTS)));
+        search_box()->SetAccessibleName(l10n_util::GetStringFUTF16(
+            is_tablet_mode_
+                ? IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_TABLET
+                : IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SHORTCUTS)));
+        break;
+      case PlaceholderTextType::kTabs:
+        search_box()->SetPlaceholderText(l10n_util::GetStringFUTF16(
+            IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE,
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TABS)));
+        search_box()->SetAccessibleName(l10n_util::GetStringFUTF16(
+            is_tablet_mode_
+                ? IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_TABLET
+                : IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TABS)));
+        break;
+      case PlaceholderTextType::kSettings:
+        search_box()->SetPlaceholderText(l10n_util::GetStringFUTF16(
+            IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE,
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SETTINGS)));
+        search_box()->SetAccessibleName(l10n_util::GetStringFUTF16(
+            is_tablet_mode_
+                ? IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_TABLET
+                : IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
+            l10n_util::GetStringUTF16(
+                IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SETTINGS)));
+        break;
+    }
+  } else {
+    search_box()->SetPlaceholderText(
+        l10n_util::GetStringUTF16(IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER));
+    search_box()->SetAccessibleName(l10n_util::GetStringUTF16(
+        is_tablet_mode_
+            ? IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET
+            : IDS_APP_LIST_SEARCH_BOX_ACCESSIBILITY_NAME_CLAMSHELL));
+  }
 }
 
 void SearchBoxView::AcceptAutocompleteText() {

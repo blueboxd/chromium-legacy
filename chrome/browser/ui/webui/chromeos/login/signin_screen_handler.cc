@@ -170,12 +170,10 @@ bool IsSigninScreen(const OobeScreenId screen) {
 // SigninScreenHandler implementation ------------------------------------------
 
 SigninScreenHandler::SigninScreenHandler(
-    JSCallsContainer* js_calls_container,
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen,
     GaiaScreenHandler* gaia_screen_handler)
-    : BaseWebUIHandler(js_calls_container),
-      network_state_informer_(network_state_informer),
+    : network_state_informer_(network_state_informer),
       error_screen_(error_screen),
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
@@ -183,7 +181,6 @@ SigninScreenHandler::SigninScreenHandler(
           std::make_unique<ErrorScreensHistogramHelper>("Signin")) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
-  DCHECK(js_calls_container);
   gaia_screen_handler_->set_signin_screen_handler(this);
   network_state_informer_->AddObserver(this);
 
@@ -207,25 +204,6 @@ SigninScreenHandler::~SigninScreenHandler() {
 
 void SigninScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  // Format numbers to be used on the pin keyboard.
-  for (int j = 0; j <= 9; j++) {
-    builder->Add("pinKeyboard" + base::NumberToString(j),
-                 base::FormatNumber(int64_t{j}));
-  }
-
-  builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
-
-  // Used by SAML password dialog.
-  builder->Add("nextButtonText", IDS_OFFLINE_LOGIN_NEXT_BUTTON_TEXT);
-
-  builder->Add("samlNotice", features::IsRedirectToDefaultIdPEnabled()
-                                 ? IDS_LOGIN_SAML_NOTICE_SHORT
-                                 : IDS_LOGIN_SAML_NOTICE);
-  builder->Add("samlNoticeWithVideo", IDS_LOGIN_SAML_NOTICE_WITH_VIDEO);
-  builder->Add("samlChangeProviderMessage",
-               IDS_LOGIN_SAML_CHANGE_PROVIDER_MESSAGE);
-  builder->Add("samlChangeProviderButton",
-               IDS_LOGIN_SAML_CHANGE_PROVIDER_BUTTON);
   builder->AddF("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE,
                 ui::GetChromeOSDeviceName());
   builder->Add("manualPasswordTitle", IDS_LOGIN_MANUAL_PASSWORD_TITLE);
@@ -242,14 +220,9 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_NO);
   builder->Add("accountSetupCancelDialogYes",
                IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_YES);
-
-  builder->Add("fatalEnrollmentError",
-               IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR);
-  builder->Add("insecureURLEnrollmentError",
-               IDS_ENTERPRISE_ENROLLMENT_AUTH_INSECURE_URL_ERROR);
 }
 
-void SigninScreenHandler::Initialize() {}
+void SigninScreenHandler::InitializeDeprecated() {}
 
 void SigninScreenHandler::RegisterMessages() {
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);

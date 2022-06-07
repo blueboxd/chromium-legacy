@@ -34,9 +34,9 @@ export interface PrivacyGuideHistorySyncFragmentElement {
 
 const PrivacyGuideHistorySyncFragmentElementBase =
     RouteObserverMixin(WebUIListenerMixin(BaseMixin(PolymerElement))) as {
-  new (): PolymerElement&RouteObserverMixinInterface&
-      WebUIListenerMixinInterface;
-};
+      new (): PolymerElement & RouteObserverMixinInterface &
+          WebUIListenerMixinInterface,
+    };
 
 export class PrivacyGuideHistorySyncFragmentElement extends
     PrivacyGuideHistorySyncFragmentElementBase {
@@ -99,6 +99,10 @@ export class PrivacyGuideHistorySyncFragmentElement extends
         (syncPrefs: SyncPrefs) => this.onSyncPrefsChange_(syncPrefs));
     this.syncBrowserProxy_.sendSyncPrefsChanged();
     this.addEventListener('view-exit-finish', this.onViewExitFinish_);
+  }
+
+  override focus() {
+    this.shadowRoot!.querySelector<HTMLElement>('.header')!.focus();
   }
 
   private onViewExitFinish_() {

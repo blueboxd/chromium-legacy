@@ -110,7 +110,7 @@ class BluetoothDeviceListItemViewTest : public AshTestBase {
     feature_list_.InitAndEnableFeature(features::kBluetoothRevamp);
 
     fake_bluetooth_detailed_view_ =
-        std::make_unique<tray::FakeBluetoothDetailedView>(/*delegate=*/nullptr);
+        std::make_unique<FakeBluetoothDetailedView>(/*delegate=*/nullptr);
     std::unique_ptr<BluetoothDeviceListItemView> bluetooth_device_list_item =
         std::make_unique<BluetoothDeviceListItemView>(
             fake_bluetooth_detailed_view_.get());
@@ -143,8 +143,7 @@ class BluetoothDeviceListItemViewTest : public AshTestBase {
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<views::Widget> widget_;
-  std::unique_ptr<tray::FakeBluetoothDetailedView>
-      fake_bluetooth_detailed_view_;
+  std::unique_ptr<FakeBluetoothDetailedView> fake_bluetooth_detailed_view_;
   BluetoothDeviceListItemView* bluetooth_device_list_item_;
 };
 
@@ -216,6 +215,8 @@ TEST_F(BluetoothDeviceListItemViewTest, HasExpectedA11yText) {
        IDS_BLUETOOTH_A11Y_DEVICE_TYPE_GAME_CONTROLLER},
       {DeviceType::kHeadset, IDS_BLUETOOTH_A11Y_DEVICE_TYPE_HEADSET},
       {DeviceType::kKeyboard, IDS_BLUETOOTH_A11Y_DEVICE_TYPE_KEYBOARD},
+      {DeviceType::kKeyboardMouseCombo,
+       IDS_BLUETOOTH_A11Y_DEVICE_TYPE_KEYBOARD_MOUSE_COMBO},
       {DeviceType::kMouse, IDS_BLUETOOTH_A11Y_DEVICE_TYPE_MOUSE},
       {DeviceType::kPhone, IDS_BLUETOOTH_A11Y_DEVICE_TYPE_PHONE},
       {DeviceType::kTablet, IDS_BLUETOOTH_A11Y_DEVICE_TYPE_TABLET},
@@ -349,6 +350,7 @@ TEST_F(BluetoothDeviceListItemViewTest, HasCorrectIcon) {
           {DeviceType::kVideoCamera, &ash::kSystemMenuVideocamIcon},
           {DeviceType::kGameController, &ash::kSystemMenuGamepadIcon},
           {DeviceType::kKeyboard, &ash::kSystemMenuKeyboardIcon},
+          {DeviceType::kKeyboardMouseCombo, &ash::kSystemMenuKeyboardIcon},
           {DeviceType::kMouse, &ash::kSystemMenuMouseIcon},
           {DeviceType::kTablet, &ash::kSystemMenuTabletIcon},
           {DeviceType::kUnknown, &ash::kSystemMenuBluetoothIcon},

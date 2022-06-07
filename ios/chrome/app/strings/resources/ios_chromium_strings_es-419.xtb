@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">Para guardar imágenes, presiona en la Configuración a fin de permitir que Chromium agregue tus fotos</translation>
 <translation id="1289216811211435351">Cambia a Chromium</translation>
 <translation id="1361748954329991663">Chromium no está actualizado. Si no hay actualizaciones disponibles en <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, es posible que tu dispositivo no sea compatible con nuevas versiones de Chromium.</translation>
-<translation id="1370204544543370355">Para aprovechar Chromium al máximo, accede al navegador con tu Cuenta de Google</translation>
 <translation id="1431818719585918472">Permite que Chromium bloquee tus pestañas de incógnito.</translation>
 <translation id="1472013873724362412">Tu cuenta no funciona en Chromium. Comunícate con tu administrador de dominio o utiliza una cuenta común de Google para acceder.</translation>
 <translation id="1507010443238049608">Ayudar a mejorar las funciones y el rendimiento de Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="2426113998523353159">Tu organización requiere que accedas para usar Chromium.</translation>
 <translation id="2450140762465183767">Ahora puedes usar Chromium cada vez que presionas vínculos que aparecen en mensajes, documentos u otras apps.</translation>
 <translation id="2478931088402984578">Selecciona <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />.</translation>
-<translation id="2567507405773541360">Realiza más tareas con una versión de Chromium más simple, segura y rápida que nunca</translation>
 <translation id="2590893390871230428">Sincronizar tus datos de Chromium</translation>
 <translation id="2650312721222849884">Para ver tus pestañas donde sea que uses Chromium, activa la sincronización</translation>
 <translation id="2684230048001240293">Establece Chromium como navegador predeterminado para sincronizar tus pestañas, información de pago y contraseñas en todos tus dispositivos</translation>
@@ -43,6 +41,7 @@
 <translation id="3256316712990552818">Se copió en Chromium.</translation>
 <translation id="3344973607274501920">Chromium no pudo revisar las contraseñas. Revisa la conexión a Internet.</translation>
 <translation id="3472200483164753384">No es compatible en Chromium Canary</translation>
+<translation id="3567399274263440288">Para aprovechar Chromium al maximo, accede al navegador con tu Cuenta de Google.</translation>
 <translation id="3639997914391704523">Chromium puede revisar las contraseñas cuando accedes con tu Cuenta de Google.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> usó Chromium y dejó favoritos, contraseñas y otros parámetros de configuración en este dispositivo.</translation>
 <translation id="3805899903892079518">Chromium no tiene acceso a tus fotos o videos. Habilita el acceso en Configuración de iOS &gt; Privacidad &gt; Fotos.</translation>
@@ -56,15 +55,6 @@
 <translation id="4828317641996116749">Chromium no pudo verificar todas las contraseñas. Vuelve a intentarlo más tarde.</translation>
 <translation id="4985291216379576555">Sin conexión, Chromium no puede buscar actualizaciones.</translation>
 <translation id="4999538639245140991">Como estás saliendo de una cuenta que administra <ph name="SIGNOUT_MANAGED_DOMAIN" />, tus datos de Chromium se borrarán de este dispositivo, pero permanecerán en tu Cuenta de Google.</translation>
-<translation id="5039881550736388123">Cuando se activa:
-<ph name="BEGIN_INDENT" />  • Ayuda a mejorar Chromium para las personas que lo usan de la misma forma que tú.<ph name="END_INDENT" />
-
-Aspectos para tener en cuenta:
-<ph name="BEGIN_INDENT" />  • Se envía información sobre tu uso de Chromium a Google, pero no está vinculada a ti.
-
-  • Si Chromium falla, los detalles sobre lo ocurrido pueden incluir información personal.
-
-  • Si desactivas la sincronización, las métricas también pueden incluir información sobre las URLs que visitas.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Accede en Chromium</translation>
 <translation id="5224391634244552924">No hay contraseñas guardadas. Chromium puede revisar las contraseñas cuando las guardas.</translation>
 <translation id="5308226104666789935">Chromium no puede buscar actualizaciones.</translation>

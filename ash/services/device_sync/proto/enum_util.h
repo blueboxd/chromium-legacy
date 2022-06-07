@@ -9,7 +9,7 @@
 
 #include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -58,6 +58,6 @@ std::string DeviceTypeEnumToString(cryptauth::DeviceType device_type);
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_PROTO_ENUM_UTIL_H_

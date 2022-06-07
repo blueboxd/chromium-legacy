@@ -5,8 +5,8 @@
 #include "components/services/quarantine/quarantine_impl.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/services/quarantine/quarantine.h"
 

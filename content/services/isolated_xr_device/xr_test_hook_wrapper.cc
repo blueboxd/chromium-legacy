@@ -4,6 +4,8 @@
 
 #include "content/services/isolated_xr_device/xr_test_hook_wrapper.h"
 
+#include "base/threading/thread_task_runner_handle.h"
+
 namespace device {
 
 // TODO(https://crbug.com/891832): Remove these as conversion functions as part
@@ -28,7 +30,7 @@ PoseFrameData MojoToDevicePoseFrameData(
   PoseFrameData ret = {};
   ret.is_valid = !!pose->device_to_origin;
   if (ret.is_valid) {
-    pose->device_to_origin->matrix().asColMajorf(ret.device_to_origin);
+    pose->device_to_origin->matrix().getColMajor(ret.device_to_origin);
   }
 
   return ret;

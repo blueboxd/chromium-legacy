@@ -20,6 +20,9 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/custom_handlers/protocol_handler_throttle.h"
+#include "components/custom_handlers/simple_protocol_handler_registry_factory.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -36,7 +39,6 @@
 #include "components/variations/service/variations_service.h"
 #include "components/variations/service/variations_service_client.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
@@ -52,7 +54,6 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/browser/shell_identity_dialog_controller.h"
 #include "content/shell/browser/shell_paths.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
@@ -268,6 +269,37 @@ ShellContentBrowserClient::CreateBrowserMainParts(
   shell_browser_main_parts_ = browser_main_parts.get();
 
   return browser_main_parts;
+}
+
+bool ShellContentBrowserClient::HasCustomSchemeHandler(
+    content::BrowserContext* browser_context,
+    const std::string& scheme) {
+  if (custom_handlers::ProtocolHandlerRegistry* protocol_handler_registry =
+          custom_handlers::SimpleProtocolHandlerRegistryFactory::
+              GetForBrowserContext(browser_context)) {
+    return protocol_handler_registry->IsHandledProtocol(scheme);
+  }
+  return false;
+}
+
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+ShellContentBrowserClient::CreateURLLoaderThrottles(
+    const network::ResourceRequest& request,
+    BrowserContext* browser_context,
+    const base::RepeatingCallback<WebContents*()>& wc_getter,
+    NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
+
+  auto* factory = custom_handlers::SimpleProtocolHandlerRegistryFactory::
+      GetForBrowserContext(browser_context);
+  // null in unit tests.
+  if (factory) {
+    result.push_back(
+        std::make_unique<custom_handlers::ProtocolHandlerThrottle>(*factory));
+  }
+
+  return result;
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
@@ -622,11 +654,6 @@ bool ShellContentBrowserClient::HasErrorPage(int http_status_code) {
   return http_status_code >= 400 && http_status_code < 600;
 }
 
-std::unique_ptr<IdentityRequestDialogController>
-ShellContentBrowserClient::CreateIdentityRequestDialogController() {
-  return std::make_unique<ShellIdentityDialogController>();
-}
-
 void ShellContentBrowserClient::CreateFeatureListAndFieldTrials() {
   local_state_ = CreateLocalState();
   SetUpFieldTrials();
@@ -709,14 +736,12 @@ void ShellContentBrowserClient::OnNetworkServiceCreated(
   // using `MockCertVerifier` (otherwise CT validation would fail due to the
   // empty log list).
   if (g_enable_expect_ct_for_testing) {
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     network_service->UpdateCtLogList(
-        std::vector<network::mojom::CTLogInfoPtr>(), base::Time::Now());
+        std::vector<network::mojom::CTLogInfoPtr>(), base::Time::Now(),
+        run_loop.QuitClosure());
+    run_loop.Run();
   }
-
-  // Network service receives an empty First-Party Sets file when component
-  // updater is disabled.
-  content::FirstPartySetsHandler::GetInstance()->SetPublicFirstPartySets(
-      base::File());
 }
 
 }  // namespace content

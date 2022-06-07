@@ -38,7 +38,6 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
-#include "net/dns/dns_socket_allocator.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_over_https_config.h"
@@ -56,6 +55,8 @@
 #include "net/test/test_with_task_environment.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/third_party/uri_template/uri_template.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
@@ -339,7 +340,7 @@ class TransactionHelper {
                         bool secure,
                         ResolveContext* context) {
     std::unique_ptr<DnsTransaction> transaction = factory->CreateTransaction(
-        hostname, qtype, CompletionCallback(),
+        hostname, qtype,
         NetLogWithSource::Make(net::NetLog::Get(), net::NetLogSourceType::NONE),
         secure, factory->GetSecureDnsModeForTest(), context,
         true /* fast_timeout */);
@@ -352,7 +353,8 @@ class TransactionHelper {
     EXPECT_FALSE(transaction_);
     transaction_ = std::move(transaction);
     qtype_ = transaction_->GetType();
-    transaction_->Start();
+    transaction_->Start(base::BindOnce(
+        &TransactionHelper::OnTransactionComplete, base::Unretained(this)));
   }
 
   void Cancel() {
@@ -360,17 +362,10 @@ class TransactionHelper {
     transaction_.reset(nullptr);
   }
 
-  DnsTransactionFactory::CallbackType CompletionCallback() {
-    return base::BindOnce(&TransactionHelper::OnTransactionComplete,
-                          base::Unretained(this));
-  }
-
-  void OnTransactionComplete(DnsTransaction* t,
-                             int rv,
+  void OnTransactionComplete(int rv,
                              const DnsResponse* response,
                              absl::optional<std::string> doh_provider_id) {
     EXPECT_FALSE(completed_);
-    EXPECT_EQ(transaction_.get(), t);
 
     completed_ = true;
     response_ = response;
@@ -655,14 +650,11 @@ class DnsTransactionTestBase : public testing::Test {
 
   // Called after fully configuring |config|.
   void ConfigureFactory() {
-    socket_factory_ = std::make_unique<TestSocketFactory>();
-    session_ = new DnsSession(
-        config_,
-        std::make_unique<DnsSocketAllocator>(
-            socket_factory_.get(), config_.nameservers, nullptr /* net_log */),
-        base::BindRepeating(&DnsTransactionTestBase::GetNextId,
-                            base::Unretained(this)),
-        nullptr /* NetLog */);
+    session_ =
+        new DnsSession(config_,
+                       base::BindRepeating(&DnsTransactionTestBase::GetNextId,
+                                           base::Unretained(this)),
+                       nullptr /* NetLog */);
     resolve_context_->InvalidateCachesAndPerSessionData(
         session_.get(), false /* network_change */);
     transaction_factory_ = DnsTransactionFactory::CreateFactory(session_.get());
@@ -909,8 +901,11 @@ class DnsTransactionTestBase : public testing::Test {
     config_.attempts = 1;
     // and an arbitrary fallback period.
     config_.fallback_period = kFallbackPeriod;
-
-    request_context_ = std::make_unique<TestURLRequestContext>();
+    auto context_builder = CreateTestURLRequestContextBuilder();
+    socket_factory_ = std::make_unique<TestSocketFactory>();
+    context_builder->set_client_socket_factory_for_testing(
+        socket_factory_.get());
+    request_context_ = context_builder->Build();
     resolve_context_ = std::make_unique<ResolveContext>(
         request_context_.get(), false /* enable_caching */);
 
@@ -948,7 +943,7 @@ class DnsTransactionTestBase : public testing::Test {
 
   base::circular_deque<int> transaction_ids_;
   std::unique_ptr<TestSocketFactory> socket_factory_;
-  std::unique_ptr<TestURLRequestContext> request_context_;
+  std::unique_ptr<URLRequestContext> request_context_;
   std::unique_ptr<ResolveContext> resolve_context_;
   scoped_refptr<DnsSession> session_;
   std::unique_ptr<DnsTransactionFactory> transaction_factory_;
@@ -1220,9 +1215,8 @@ TEST_F(DnsTransactionTestWithMockTime, Timeout_FastTimeout) {
   TransactionHelper helper0(ERR_DNS_TIMED_OUT);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper0.CompletionCallback(),
-          NetLogWithSource(), false /* secure */, SecureDnsMode::kOff,
-          resolve_context_.get(), true /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), false /* secure */,
+          SecureDnsMode::kOff, resolve_context_.get(), true /* fast_timeout */);
 
   helper0.StartTransaction(std::move(transaction));
 
@@ -2597,8 +2591,8 @@ TEST_F(DnsTransactionTest, MAYBE_HttpsPostLookupWithLog) {
                            true /* secure */, resolve_context_.get());
   helper0.RunUntilComplete();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(observer.count(), 5);
-  EXPECT_EQ(observer.dict_count(), 3);
+  EXPECT_EQ(observer.count(), 14);
+  EXPECT_EQ(observer.dict_count(), 6);
 }
 
 // Test for when a slow DoH response is delayed until after the initial fallback
@@ -2627,9 +2621,9 @@ TEST_F(DnsTransactionTestWithMockTime, SlowHttpsResponse_SingleAttempt) {
   TransactionHelper helper(kT0RecordCount);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
 
   helper.StartTransaction(std::move(transaction));
   base::RunLoop().RunUntilIdle();
@@ -2656,9 +2650,9 @@ TEST_F(DnsTransactionTestWithMockTime,
   TransactionHelper helper(ERR_DNS_TIMED_OUT);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), true /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          true /* fast_timeout */);
   helper.StartTransaction(std::move(transaction));
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(helper.has_completed());
@@ -2690,9 +2684,9 @@ TEST_F(DnsTransactionTestWithMockTime, SlowHttpsResponse_TwoAttempts) {
   TransactionHelper helper(kT0RecordCount);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
 
   helper.StartTransaction(std::move(transaction));
   base::RunLoop().RunUntilIdle();
@@ -2733,9 +2727,9 @@ TEST_F(DnsTransactionTestWithMockTime, HttpsTimeout) {
   TransactionHelper helper(ERR_DNS_TIMED_OUT);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
   helper.StartTransaction(std::move(transaction));
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(helper.has_completed());
@@ -2774,9 +2768,9 @@ TEST_F(DnsTransactionTestWithMockTime, HttpsTimeout2) {
   TransactionHelper helper(ERR_DNS_TIMED_OUT);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
   helper.StartTransaction(std::move(transaction));
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(helper.has_completed());
@@ -2831,9 +2825,9 @@ TEST_F(DnsTransactionTestWithMockTime, LongHttpsTimeouts) {
   TransactionHelper helper(ERR_DNS_TIMED_OUT);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
   helper.StartTransaction(std::move(transaction));
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(helper.has_completed());
@@ -2875,9 +2869,9 @@ TEST_F(DnsTransactionTestWithMockTime, LastHttpsAttemptFails) {
   TransactionHelper helper(kT0RecordCount);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
   helper.StartTransaction(std::move(transaction));
 
   // Wait for one timeout period to start (and fail) the second attempt.
@@ -2907,9 +2901,9 @@ TEST_F(DnsTransactionTestWithMockTime, LastHttpsAttemptFails_Timeout) {
   TransactionHelper helper(ERR_DNS_TIMED_OUT);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
 
   helper.StartTransaction(std::move(transaction));
   base::RunLoop().RunUntilIdle();
@@ -2956,9 +2950,9 @@ TEST_F(DnsTransactionTestWithMockTime, LastHttpsAttemptFails_FastTimeout) {
   TransactionHelper helper(ERR_DNS_SERVER_FAILED);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), true /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          true /* fast_timeout */);
 
   helper.StartTransaction(std::move(transaction));
   base::RunLoop().RunUntilIdle();
@@ -2995,9 +2989,9 @@ TEST_F(DnsTransactionTestWithMockTime, LastHttpsAttemptFailsFirst) {
   TransactionHelper helper(ERR_DNS_SERVER_FAILED);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
   helper.StartTransaction(std::move(transaction));
 
   // Wait for one timeout period to start (and fail) the second attempt.
@@ -3028,9 +3022,9 @@ TEST_F(DnsTransactionTestWithMockTime, LastHttpsAttemptFailsLast) {
   TransactionHelper helper(ERR_DNS_SERVER_FAILED);
   std::unique_ptr<DnsTransaction> transaction =
       transaction_factory_->CreateTransaction(
-          kT0HostName, kT0Qtype, helper.CompletionCallback(),
-          NetLogWithSource(), true /* secure */, SecureDnsMode::kSecure,
-          resolve_context_.get(), false /* fast_timeout */);
+          kT0HostName, kT0Qtype, NetLogWithSource(), true /* secure */,
+          SecureDnsMode::kSecure, resolve_context_.get(),
+          false /* fast_timeout */);
   helper.StartTransaction(std::move(transaction));
 
   // Expect both attempts will run quickly without waiting for fallbacks or
@@ -3569,8 +3563,8 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners_SeparateContexts) {
                       DnsQuery::PaddingStrategy::BLOCK_LENGTH_128,
                       false /* enqueue_transaction_id */);
 
-  TestURLRequestContext request_context2;
-  ResolveContext context2(&request_context2, false /* enable_caching */);
+  auto request_context2 = CreateTestURLRequestContextBuilder()->Build();
+  ResolveContext context2(request_context2.get(), false /* enable_caching */);
   context2.InvalidateCachesAndPerSessionData(session_.get(),
                                              false /* network_change */);
 

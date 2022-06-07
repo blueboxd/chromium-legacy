@@ -9,9 +9,9 @@
 import './styles.js';
 import '../../common/styles.js';
 
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import {WithPersonalizationStore} from '../personalization_store.js';
+
+import {getTemplate} from './google_photos_zero_state_element.html.js';
 
 export class GooglePhotosZeroState extends WithPersonalizationStore {
   static get is() {
@@ -19,8 +19,20 @@ export class GooglePhotosZeroState extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
+
+  static get properties() {
+    return {
+      isDarkModeActive_: {
+        type: Boolean,
+        value: false,
+      },
+    };
+  }
+
+  /** Whether the page is being rendered in dark mode. */
+  private isDarkModeActive_: boolean;
 
   /** Returns the message to be displayed. */
   private getMessage_(): string {
@@ -29,6 +41,12 @@ export class GooglePhotosZeroState extends WithPersonalizationStore {
         '<a target="_blank" href="https://photos.google.com">photos.google.com</a>'
       ]
     });
+  }
+
+  private getImageSource_(): string {
+    return this.isDarkModeActive_ ?
+        'chrome://personalization/common/no_google_photos_images_dark.svg' :
+        'chrome://personalization/common/no_google_photos_images.svg';
   }
 }
 

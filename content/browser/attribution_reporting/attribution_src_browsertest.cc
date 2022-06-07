@@ -37,6 +37,7 @@ namespace {
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Field;
+using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::Pointee;
@@ -80,11 +81,6 @@ class AttributionSrcBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    embedded_test_server()->ServeFilesFromSourceDirectory(
-        "content/test/data/attribution_reporting");
-    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-    content::SetupCrossSiteRedirector(embedded_test_server());
-    ASSERT_TRUE(embedded_test_server()->Start());
 
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
@@ -92,8 +88,6 @@ class AttributionSrcBrowserTest : public ContentBrowserTest {
     net::test_server::RegisterDefaultHandlers(https_server_.get());
     https_server_->ServeFilesFromSourceDirectory(
         "content/test/data/attribution_reporting");
-    https_server_->ServeFilesFromSourceDirectory("content/test/data");
-    SetupCrossSiteRedirector(https_server_.get());
     ASSERT_TRUE(https_server_->Start());
 
     mock_attribution_host_ = MockAttributionHost::Override(web_contents());
@@ -441,7 +435,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -523,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_THAT(trigger_data.front()->filters->filter_values, IsEmpty());
   EXPECT_FALSE(trigger_data.front()->debug_key);
   EXPECT_EQ(trigger_data.front()->event_triggers.size(), 1u);
-  EXPECT_EQ(trigger_data.front()->event_triggers.front()->data, 10u);
+  EXPECT_EQ(trigger_data.front()->event_triggers.front()->data, 7u);
   EXPECT_THAT(
       trigger_data.front()->event_triggers.front()->filters->filter_values,
       IsEmpty());
@@ -533,6 +526,25 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_THAT(trigger_data.front()->aggregatable_trigger->trigger_data,
               IsEmpty());
   EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values, IsEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       PermissionsPolicyDisabled_SourceNotRegistered) {
+  GURL page_url = https_server()->GetURL(
+      "b.test", "/page_with_conversion_measurement_disabled.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  EXPECT_CALL(mock_attribution_host(), RegisterDataHost).Times(0);
+
+  GURL register_url =
+      https_server()->GetURL("c.test", "/register_source_headers.html");
+
+  auto result =
+      EvalJs(web_contents(),
+             JsReplace("window.attributionReporting.registerSource($1);",
+                       register_url));
+  EXPECT_THAT(result.error, HasSubstr("Failed to execute 'registerSource' on "
+                                      "'AttributionReporting': Not allowed."));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -684,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_EQ(trigger_data.front()->reporting_origin,
             url::Origin::Create(register_url));
   EXPECT_EQ(trigger_data.front()->event_triggers.size(), 1u);
-  EXPECT_EQ(trigger_data.front()->event_triggers.front()->data, 10u);
+  EXPECT_EQ(trigger_data.front()->event_triggers.front()->data, 7u);
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -698,7 +710,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -777,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 
   // Both triggers should be processed.
   EXPECT_EQ(trigger_data.front()->event_triggers.front()->data, 5u);
-  EXPECT_EQ(trigger_data.back()->event_triggers.front()->data, 10u);
+  EXPECT_EQ(trigger_data.back()->event_triggers.front()->data, 7u);
 
   // Middle redirect source should be ignored.
   EXPECT_EQ(data_host->source_data().size(), 0u);
@@ -794,7 +805,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -962,302 +972,5 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcPrerenderBrowserTest,
   EXPECT_EQ(source_data.size(), 1u);
   EXPECT_EQ(source_data.front()->source_event_id, 5UL);
 }
-
-class AttributionSrcInvalidFiltersBrowserTest
-    : public AttributionSrcBrowserTest,
-      public ::testing::WithParamInterface<const char*> {};
-
-IN_PROC_BROWSER_TEST_P(AttributionSrcInvalidFiltersBrowserTest,
-                       AttributionSrcImgFiltersInvalid_SourceDropped) {
-  // Create a separate server as we cannot register a `ControllableHttpResponse`
-  // after the server starts.
-  auto https_server = std::make_unique<net::EmbeddedTestServer>(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
-  net::test_server::RegisterDefaultHandlers(https_server.get());
-  https_server->ServeFilesFromSourceDirectory(
-      "content/test/data/attribution_reporting");
-  https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
-
-  auto register_response =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          https_server.get(), "/register_source");
-  ASSERT_TRUE(https_server->Start());
-
-  GURL page_url =
-      https_server->GetURL("b.test", "/page_with_impression_creator.html");
-  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
-
-  std::unique_ptr<MockDataHost> data_host;
-  base::RunLoop loop;
-  EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
-      .WillOnce(
-          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
-            data_host = GetRegisteredDataHost(std::move(host));
-            loop.Quit();
-          });
-
-  GURL register_url = https_server->GetURL("d.test", "/register_source");
-  EXPECT_TRUE(ExecJs(web_contents(),
-                     JsReplace("createAttributionSrcImg($1);", register_url)));
-
-  register_response->WaitForRequest();
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-  http_response->AddCustomHeader(
-      "Attribution-Reporting-Register-Source",
-      base::StrCat(
-          {R"({"source_event_id":"9", "destination":"https://d.test", "filter_data":)",
-           GetParam(), "}"}));
-  http_response->AddCustomHeader("Location", "/register_source_headers.html");
-  register_response->Send(http_response->ToResponseString());
-  register_response->Done();
-
-  if (!data_host)
-    loop.Run();
-  data_host->WaitForSourceData(/*num_source_data=*/1);
-  const auto& source_data = data_host->source_data();
-
-  // Only the second source is registered.
-  EXPECT_EQ(source_data.size(), 1u);
-  EXPECT_EQ(source_data.back()->source_event_id, 5UL);
-  EXPECT_EQ(source_data.back()->destination,
-            url::Origin::Create(GURL("https://d.test")));
-}
-
-IN_PROC_BROWSER_TEST_P(AttributionSrcInvalidFiltersBrowserTest,
-                       AttributionSrcImgFiltersInvalid_TriggerDropped) {
-  // Create a separate server as we cannot register a `ControllableHttpResponse`
-  // after the server starts.
-  auto https_server = std::make_unique<net::EmbeddedTestServer>(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
-  net::test_server::RegisterDefaultHandlers(https_server.get());
-  https_server->ServeFilesFromSourceDirectory(
-      "content/test/data/attribution_reporting");
-  https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
-
-  auto register_response =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          https_server.get(), "/register_trigger");
-  ASSERT_TRUE(https_server->Start());
-
-  GURL page_url =
-      https_server->GetURL("b.test", "/page_with_impression_creator.html");
-  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
-
-  std::unique_ptr<MockDataHost> data_host;
-  base::RunLoop loop;
-  EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
-      .WillOnce(
-          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
-            data_host = GetRegisteredDataHost(std::move(host));
-            loop.Quit();
-          });
-
-  GURL register_url = https_server->GetURL("d.test", "/register_trigger");
-  EXPECT_TRUE(ExecJs(web_contents(),
-                     JsReplace("createAttributionSrcImg($1);", register_url)));
-
-  register_response->WaitForRequest();
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-  http_response->AddCustomHeader(
-      "Attribution-Reporting-Register-Event-Trigger",
-      base::StrCat({R"([{"trigger_data":"9","filters":)", GetParam(), "}]"}));
-  http_response->AddCustomHeader("Location", "/register_trigger_headers.html");
-  register_response->Send(http_response->ToResponseString());
-  register_response->Done();
-
-  if (!data_host)
-    loop.Run();
-  data_host->WaitForTriggerData(/*num_trigger_data=*/1);
-  const auto& trigger_data = data_host->trigger_data();
-
-  // Only the second trigger is registered.
-  EXPECT_EQ(trigger_data.size(), 1u);
-  EXPECT_EQ(trigger_data.front()->event_triggers.size(), 1u);
-  EXPECT_EQ(trigger_data.front()->event_triggers.front()->data, 10u);
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    AttributionSrcInvalidFilters,
-    AttributionSrcInvalidFiltersBrowserTest,
-    ::testing::Values(R"("x")",        // not a dictionary
-                      R"({"a":"y"})",  // dictionary value isn't an array
-                      R"({"b":[8]})"   // array value isn't a string
-                      ));
-
-class AttributionSrcFilterSizeBrowserTest
-    : public AttributionSrcBrowserTest,
-      public ::testing::WithParamInterface<AttributionFilterSizeTestCase> {};
-
-IN_PROC_BROWSER_TEST_P(AttributionSrcFilterSizeBrowserTest,
-                       AttributionSrcImgExcessiveFilterSize_SourceDropped) {
-  const AttributionFilterSizeTestCase& test_case = GetParam();
-
-  // Create a separate server as we cannot register a `ControllableHttpResponse`
-  // after the server starts.
-  auto https_server = std::make_unique<net::EmbeddedTestServer>(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
-  net::test_server::RegisterDefaultHandlers(https_server.get());
-  https_server->ServeFilesFromSourceDirectory(
-      "content/test/data/attribution_reporting");
-  https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
-
-  auto register_response =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          https_server.get(), "/register_source");
-  ASSERT_TRUE(https_server->Start());
-
-  GURL page_url =
-      https_server->GetURL("b.test", "/page_with_impression_creator.html");
-  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
-
-  std::unique_ptr<MockDataHost> data_host;
-  base::RunLoop loop;
-  EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
-      .WillOnce(
-          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
-            data_host = GetRegisteredDataHost(std::move(host));
-            loop.Quit();
-          });
-
-  GURL register_url = https_server->GetURL("d.test", "/register_source");
-  EXPECT_TRUE(ExecJs(web_contents(),
-                     JsReplace("createAttributionSrcImg($1);", register_url)));
-
-  register_response->WaitForRequest();
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("source_event_id", "9");
-  dict.SetStringKey("destination", "https://d.test");
-
-  base::Value filter_data(base::Value::Type::DICTIONARY);
-  for (auto [filter, values] : test_case.AsMap()) {
-    base::Value list(base::Value::Type::LIST);
-    for (auto value : values) {
-      list.Append(std::move(value));
-    }
-    filter_data.SetKey(std::move(filter), std::move(list));
-  }
-  dict.SetKey("filter_data", std::move(filter_data));
-
-  std::string json;
-  EXPECT_TRUE(base::JSONWriter::Write(dict, &json));
-
-  http_response->AddCustomHeader("Attribution-Reporting-Register-Source",
-                                 std::move(json));
-  http_response->AddCustomHeader("Location", "/register_source_headers.html");
-  register_response->Send(http_response->ToResponseString());
-  register_response->Done();
-
-  if (!data_host)
-    loop.Run();
-
-  const size_t expected_sources = test_case.valid ? 2 : 1;
-  data_host->WaitForSourceData(/*num_source_data=*/expected_sources);
-  const auto& source_data = data_host->source_data();
-
-  EXPECT_EQ(source_data.size(), expected_sources);
-  EXPECT_EQ(source_data.back()->source_event_id, 5UL);
-  EXPECT_EQ(source_data.back()->destination,
-            url::Origin::Create(GURL("https://d.test")));
-}
-
-IN_PROC_BROWSER_TEST_P(AttributionSrcFilterSizeBrowserTest,
-                       AttributionSrcImgExcessiveFilterSize_TriggerDropped) {
-  const AttributionFilterSizeTestCase& test_case = GetParam();
-
-  // Create a separate server as we cannot register a `ControllableHttpResponse`
-  // after the server starts.
-  auto https_server = std::make_unique<net::EmbeddedTestServer>(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
-  net::test_server::RegisterDefaultHandlers(https_server.get());
-  https_server->ServeFilesFromSourceDirectory(
-      "content/test/data/attribution_reporting");
-  https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
-
-  auto register_response =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          https_server.get(), "/register_trigger");
-  ASSERT_TRUE(https_server->Start());
-
-  GURL page_url =
-      https_server->GetURL("b.test", "/page_with_impression_creator.html");
-  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
-
-  std::unique_ptr<MockDataHost> data_host;
-  base::RunLoop loop;
-  EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
-      .WillOnce(
-          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
-            data_host = GetRegisteredDataHost(std::move(host));
-            loop.Quit();
-          });
-
-  GURL register_url = https_server->GetURL("d.test", "/register_trigger");
-  EXPECT_TRUE(ExecJs(web_contents(),
-                     JsReplace("createAttributionSrcImg($1);", register_url)));
-
-  register_response->WaitForRequest();
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("trigger_data", "9");
-
-  base::Value filter_data(base::Value::Type::DICTIONARY);
-  for (auto [filter, values] : test_case.AsMap()) {
-    base::Value list(base::Value::Type::LIST);
-    for (auto value : values) {
-      list.Append(std::move(value));
-    }
-    filter_data.SetKey(std::move(filter), std::move(list));
-  }
-  dict.SetKey("filters", std::move(filter_data));
-
-  base::Value list(base::Value::Type::LIST);
-  list.Append(std::move(dict));
-
-  std::string json;
-  EXPECT_TRUE(base::JSONWriter::Write(list, &json));
-
-  http_response->AddCustomHeader("Attribution-Reporting-Register-Event-Trigger",
-                                 std::move(json));
-  http_response->AddCustomHeader("Location", "/register_trigger_headers.html");
-  register_response->Send(http_response->ToResponseString());
-  register_response->Done();
-
-  if (!data_host)
-    loop.Run();
-
-  const size_t expected_triggers = test_case.valid ? 2 : 1;
-  data_host->WaitForTriggerData(/*num_trigger_data=*/expected_triggers);
-  const auto& trigger_data = data_host->trigger_data();
-
-  EXPECT_EQ(trigger_data.size(), expected_triggers);
-  EXPECT_EQ(trigger_data.back()->event_triggers.size(), 1u);
-  EXPECT_EQ(trigger_data.back()->event_triggers.front()->data, 10u);
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    AttributionSrcFilterSizes,
-    AttributionSrcFilterSizeBrowserTest,
-    ::testing::ValuesIn(kAttributionFilterSizeTestCases),
-    /*name_generator=*/
-    [](const ::testing::TestParamInfo<AttributionFilterSizeTestCase>& info) {
-      return info.param.description;
-    });
-
-// TODO(apaseltiner): Add tests for overlong filters.
 
 }  // namespace content

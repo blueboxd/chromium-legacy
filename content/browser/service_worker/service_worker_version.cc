@@ -23,7 +23,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -2460,10 +2459,7 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
     // Require foreground if the controllee is in different process and is
     // foreground.
     if (controllee_process_id != worker_process_id &&
-        (!base::FeatureList::IsEnabled(
-             features::
-                 kChangeServiceWorkerPriorityForClientForegroundStateChange) ||
-         !render_host->IsProcessBackgrounded())) {
+        !render_host->IsProcessBackgrounded()) {
       return true;
     }
   }

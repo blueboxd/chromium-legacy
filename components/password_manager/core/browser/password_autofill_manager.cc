@@ -129,7 +129,13 @@ void AppendSuggestionIfMatching(
     suggestion.additional_label =
         std::u16string(password_length, kPasswordReplacementChar);
     suggestion.voice_over = l10n_util::GetStringFUTF16(
-        IDS_PASSWORD_MANAGER_PASSWORD_FOR_ACCOUNT, suggestion.label);
+        IDS_PASSWORD_MANAGER_PASSWORD_FOR_ACCOUNT, suggestion.value);
+    if (!suggestion.label.empty()) {
+      // The domainname is only shown for passwords with a common eTLD+1
+      // but different subdomain.
+      *suggestion.voice_over += u", ";
+      *suggestion.voice_over += suggestion.label;
+    }
     if (from_account_store) {
       suggestion.frontend_id =
           is_password_field
@@ -148,7 +154,7 @@ void AppendSuggestionIfMatching(
     suggestion.custom_icon = custom_icon;
     // The UI code will pick up an icon from the resources based on the string.
     suggestion.icon = "globeIcon";
-    suggestion.store_indicator_icon = CreateStoreIcon(from_account_store);
+    suggestion.trailing_icon = CreateStoreIcon(from_account_store);
     suggestions->push_back(suggestion);
   }
 }
@@ -227,6 +233,11 @@ void MaybeAppendManagePasswordsEntry(
           password_manager::features::kEnablePasswordsAccountStorage)) {
     // The UI code will pick up an icon from the resources based on the string.
     suggestion.icon = "settingsIcon";
+  }
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    // The UI code will pick up an icon from the resources based on the string.
+    suggestion.trailing_icon = "googlePasswordManager";
   }
   suggestions->push_back(std::move(suggestion));
 }

@@ -33,7 +33,10 @@ class TrayAccessibilityLoginScreenTest;
 class TrayAccessibilitySodaTest;
 class TrayAccessibilityTest;
 
-namespace tray {
+enum class SodaFeature {
+  kDictation,
+  kLiveCaption,
+};
 
 // Create the detailed view of accessibility tray.
 class ASH_EXPORT AccessibilityDetailedView
@@ -56,9 +59,9 @@ class ASH_EXPORT AccessibilityDetailedView
   const char* GetClassName() const override;
 
  private:
-  friend class ::ash::TrayAccessibilityLoginScreenTest;
-  friend class ::ash::TrayAccessibilitySodaTest;
-  friend class ::ash::TrayAccessibilityTest;
+  friend class TrayAccessibilityLoginScreenTest;
+  friend class TrayAccessibilitySodaTest;
+  friend class TrayAccessibilityTest;
   friend class chromeos::TrayAccessibilityTest;
 
   // TrayDetailedView:
@@ -74,16 +77,19 @@ class ASH_EXPORT AccessibilityDetailedView
   // Add the accessibility feature list.
   void AppendAccessibilityList();
 
-  void UpdateSodaInstallerObserverStatus();
-
   // SodaInstaller::Observer:
   void OnSodaInstalled(speech::LanguageCode language_code) override;
   void OnSodaError(speech::LanguageCode language_code) override;
   void OnSodaProgress(speech::LanguageCode language_code,
                       int combined_progress) override;
 
-  void SetDictationViewSubtitleTextForTesting(std::u16string text);
-  std::u16string GetDictationViewSubtitleTextForTesting();
+  // Shows a message next to the feature icon in the tray if it is available
+  // and if the language code provided is relevant to the feature.
+  void MaybeShowSodaMessage(SodaFeature feature,
+                            speech::LanguageCode language_code,
+                            std::u16string message);
+  bool IsSodaFeatureInTray(SodaFeature feature);
+  void SetSodaFeatureSubtext(SodaFeature feature, std::u16string message);
 
   HoverHighlightView* spoken_feedback_view_ = nullptr;
   HoverHighlightView* select_to_speak_view_ = nullptr;
@@ -125,7 +131,6 @@ class ASH_EXPORT AccessibilityDetailedView
   LoginStatus login_;
 };
 
-}  // namespace tray
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_ACCESSIBILITY_TRAY_ACCESSIBILITY_H_

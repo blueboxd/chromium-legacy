@@ -112,10 +112,6 @@ try_.compilator_builder(
 try_.orchestrator_builder(
     name = "mac11-arm64-rel",
     compilator = "mac11-arm64-rel-compilator",
-    mirrors = [
-        "ci/mac-arm64-rel",
-        "ci/mac11-arm64-rel-tests",
-    ],
     main_list_view = "try",
     tryjob = try_.job(
         experiment_percentage = 100,
@@ -194,13 +190,6 @@ try_.builder(
 try_.builder(
     name = "mac_chromium_compile_dbg_ng",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    mirrors = [
-        "ci/Mac Builder (dbg)",
-    ],
-    try_settings = builder_config.try_settings(
-        include_all_triggered_testers = True,
-        is_compile_only = True,
-    ),
     goma_jobs = goma.jobs.J150,
     os = os.MAC_DEFAULT,
     main_list_view = "try",
@@ -220,10 +209,6 @@ try_.builder(
 
 try_.builder(
     name = "mac_chromium_dbg_ng",
-    mirrors = [
-        "ci/Mac Builder (dbg)",
-        "ci/Mac11 Tests (dbg)",
-    ],
 )
 
 try_.builder(
@@ -261,11 +246,28 @@ ios_builder(
 )
 
 ios_builder(
+    name = "ios-fieldtrial-fyi-rel",
+    builderless = True,
+    mirrors = ["ci/ios-fieldtrial-rel"],
+)
+
+ios_builder(
+    name = "ios-m1-simulator",
+    mirrors = ["ci/ios-m1-simulator"],
+    os = os.MAC_11,
+    cpu = cpu.ARM64,
+)
+
+ios_builder(
+    name = "ios-m1-simulator-cronet",
+    mirrors = ["ci/ios-m1-simulator-cronet"],
+    os = os.MAC_11,
+    cpu = cpu.ARM64,
+)
+
+ios_builder(
     name = "ios-simulator",
     branch_selector = branches.STANDARD_MILESTONE,
-    mirrors = [
-        "ci/ios-simulator",
-    ],
     check_for_flakiness = True,
     main_list_view = "try",
     use_clang_coverage = True,
@@ -294,9 +296,6 @@ ios_builder(
 ios_builder(
     name = "ios-simulator-full-configs",
     branch_selector = branches.STANDARD_MILESTONE,
-    mirrors = [
-        "ci/ios-simulator-full-configs",
-    ],
     check_for_flakiness = True,
     main_list_view = "try",
     use_clang_coverage = True,
@@ -311,7 +310,6 @@ ios_builder(
 
 ios_builder(
     name = "ios-simulator-inverse-fieldtrials-fyi",
-    mirrors = builder_config.copy_from("try/ios-simulator"),
 )
 
 ios_builder(
@@ -336,7 +334,6 @@ ios_builder(
 ios_builder(
     name = "ios14-sdk-simulator",
     os = os.MAC_11,
-    cpu = cpu.ARM64,
 )
 
 ios_builder(
@@ -385,12 +382,6 @@ try_.gpu.optional_tests_builder(
 
 ios_builder(
     name = "ios-simulator-rts",
-    mirrors = builder_config.copy_from("try/ios-simulator"),
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.ALWAYS,
-        ),
-    ),
     builderless = False,
     check_for_flakiness = True,
     use_clang_coverage = True,

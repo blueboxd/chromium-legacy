@@ -152,6 +152,10 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
   // Set V8 flags.
   v8::V8::SetFlagsFromString(v8_flags.c_str(), v8_flags.size());
 
+  // Makes Mojo calls to the browser. This is called inside
+  // blink::Initialize so it needs to be set first.
+  blink::WebRuntimeFeatures::EnableAndroidDownloadableFontsMatching(false);
+
   mojo::BinderMap binders;
   blink::Initialize(this, &binders, main_thread_scheduler_.get());
   g_test_platform = this;
@@ -261,10 +265,6 @@ bool TestBlinkWebUnitTestSupport::IsThreadedAnimationEnabled() {
   return threaded_animation_;
 }
 
-bool TestBlinkWebUnitTestSupport::IsUseZoomForDSFEnabled() {
-  return use_zoom_for_dsf_;
-}
-
 cc::TaskGraphRunner* TestBlinkWebUnitTestSupport::GetTaskGraphRunner() {
   return &test_task_graph_runner_;
 }
@@ -275,15 +275,6 @@ bool TestBlinkWebUnitTestSupport::SetThreadedAnimationEnabled(bool enabled) {
       << "Not using TestBlinkWebUnitTestSupport as blink::Platform";
   bool old = g_test_platform->threaded_animation_;
   g_test_platform->threaded_animation_ = enabled;
-  return old;
-}
-
-// static
-bool TestBlinkWebUnitTestSupport::SetUseZoomForDsfEnabled(bool enabled) {
-  DCHECK(g_test_platform)
-      << "Not using TestBlinkWebUnitTestSupport as blink::Platform";
-  bool old = g_test_platform->use_zoom_for_dsf_;
-  g_test_platform->use_zoom_for_dsf_ = enabled;
   return old;
 }
 

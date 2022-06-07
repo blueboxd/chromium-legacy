@@ -20,8 +20,8 @@ import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_moj
 
 import {LifetimeBrowserProxyImpl} from '../../lifetime_browser_proxy.js';
 import {Router} from '../../router.js';
-import {recordSettingChange} from '../metrics_recorder.m.js';
-import {routes} from '../os_route.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
+import {routes} from '../os_route.js';
 
 import {OsResetBrowserProxy, OsResetBrowserProxyImpl} from './os_reset_browser_proxy.js';
 
@@ -94,7 +94,7 @@ Polymer({
   onMobileSettingsLinkClicked_(event) {
     event.detail.event.preventDefault();
 
-    const params = new URLSearchParams;
+    const params = new URLSearchParams();
     params.append(
         'type',
         OncMojo.getNetworkTypeString(

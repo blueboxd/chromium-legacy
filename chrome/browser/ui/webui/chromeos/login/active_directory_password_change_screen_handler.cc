@@ -21,10 +21,9 @@ constexpr char kErrorKey[] = "error";
 constexpr StaticOobeScreenId ActiveDirectoryPasswordChangeView::kScreenId;
 
 ActiveDirectoryPasswordChangeScreenHandler::
-    ActiveDirectoryPasswordChangeScreenHandler(
-        JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path(
+    ActiveDirectoryPasswordChangeScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated(
       "login.ActiveDirectoryPasswordChangeScreen.userActed");
 }
 
@@ -36,7 +35,7 @@ void ActiveDirectoryPasswordChangeScreenHandler::DeclareLocalizedValues(
   builder->Add("adPassChangeMessage", IDS_AD_PASSWORD_CHANGE_MESSAGE);
 }
 
-void ActiveDirectoryPasswordChangeScreenHandler::Initialize() {}
+void ActiveDirectoryPasswordChangeScreenHandler::InitializeDeprecated() {}
 
 void ActiveDirectoryPasswordChangeScreenHandler::RegisterMessages() {
   BaseScreenHandler::RegisterMessages();
@@ -47,21 +46,21 @@ void ActiveDirectoryPasswordChangeScreenHandler::RegisterMessages() {
 void ActiveDirectoryPasswordChangeScreenHandler::Show(
     const std::string& username,
     int error) {
-  base::DictionaryValue data;
-  data.SetStringKey(kUsernameKey, username);
-  data.SetIntKey(kErrorKey, error);
-  ShowScreenWithData(kScreenId, &data);
+  base::Value::Dict data;
+  data.Set(kUsernameKey, username);
+  data.Set(kErrorKey, error);
+  ShowInWebUI(std::move(data));
 }
 
 void ActiveDirectoryPasswordChangeScreenHandler::Bind(
     ActiveDirectoryPasswordChangeScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void ActiveDirectoryPasswordChangeScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void ActiveDirectoryPasswordChangeScreenHandler::ShowSignInError(

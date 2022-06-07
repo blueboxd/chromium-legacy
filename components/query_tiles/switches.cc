@@ -12,12 +12,8 @@ const base::Feature kQueryTiles{"QueryTiles",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kQueryTilesInNTP{"QueryTilesInNTP",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kQueryTilesInOmnibox{"QueryTilesInOmnibox",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kQueryTilesEnableQueryEditing{
     "QueryTilesEnableQueryEditing", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kQueryTilesLocalOrdering{"QueryTilesLocalOrdering",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kQueryTilesRemoveTrendingTilesAfterInactivity{
     "QueryTilesRemoveTrendingAfterInactivity",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -29,7 +25,7 @@ const base::Feature kQueryTilesDisableCountryOverride{
     "QueryTilesDisableCountryOverride", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsQueryTilesEnabledForCountry(const std::string& country_code) {
-  std::string enabled_countries[] = {"IN", "NG"};
+  std::string enabled_countries[] = {"IN", "NG", "JP"};
   for (const auto& country : enabled_countries) {
     if (base::EqualsCaseInsensitiveASCII(country_code, country))
       return true;
@@ -48,8 +44,6 @@ const char kQueryTilesInstantBackgroundTask[] =
     "query-tiles-instant-background-task";
 
 const char kQueryTilesEnableTrending[] = "query-tiles-enable-trending";
-
-const char kQueryTilesMoreTrending[] = "query-tiles-more-trending";
 
 const char kQueryTilesRankTiles[] = "query-tiles-rank-tiles";
 }  // namespace switches

@@ -10,6 +10,7 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
@@ -220,7 +221,6 @@ bool CreateWebURLRequest(PP_Instance instance,
   if (!data->body.empty()) {
     WebHTTPBody http_body;
     http_body.Initialize();
-    int file_index = 0;
     for (size_t i = 0; i < data->body.size(); ++i) {
       const URLRequestInfoData::BodyItem& item = data->body[i];
       if (item.is_file) {
@@ -231,7 +231,6 @@ bool CreateWebURLRequest(PP_Instance instance,
                                  item.expected_last_modified_time,
                                  &http_body))
           return false;
-        file_index++;
       } else {
         DCHECK(!item.data.empty());
         http_body.AppendData(WebData(item.data));

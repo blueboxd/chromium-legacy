@@ -303,7 +303,6 @@ static const char* const kSwitchNames[] = {
     switches::kReachedCodeSamplingIntervalUs,
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
-    switches::kPlatformDisallowsChromeOSDirectVideoDecoder,
     switches::kSchedulerBoostUrgent,
 #endif
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -404,7 +403,7 @@ class GpuSandboxedProcessLauncherDelegate
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
       sandbox::policy::SandboxWin::SetJobLevel(
-          cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
+          cmd_line_, sandbox::JobLevel::kUnprotected, 0, policy);
     } else {
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
@@ -416,7 +415,7 @@ class GpuSandboxedProcessLauncherDelegate
       // message pump entirely and just add job restrictions to prevent child
       // processes.
       sandbox::policy::SandboxWin::SetJobLevel(
-          cmd_line_, sandbox::JOB_LIMITED_USER,
+          cmd_line_, sandbox::JobLevel::kLimitedUser,
           JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS | JOB_OBJECT_UILIMIT_DESKTOP |
               JOB_OBJECT_UILIMIT_EXITWINDOWS |
               JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
@@ -973,14 +972,9 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
   // Record crash before doing anything that could start a new GPU process.
   LOG(ERROR) << "GPU process exited unexpectedly: exit_code=" << exit_code;
   RecordProcessCrash();
-
   gpu_host_->OnProcessCrashed();
-
   SendOutstandingReplies();
-
-  ChildProcessTerminationInfo info =
-      process_->GetTerminationInfo(/*known_dead=*/true);
-  GpuDataManagerImpl::GetInstance()->ProcessCrashed(info.status);
+  GpuDataManagerImpl::GetInstance()->ProcessCrashed();
 }
 
 gpu::GPUInfo GpuProcessHost::GetGPUInfo() const {

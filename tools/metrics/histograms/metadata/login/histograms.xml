@@ -38,7 +38,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.ArcBugReportBackupTime" units="ms"
-    expires_after="2022-06-30">
+    expires_after="2022-10-04">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -48,7 +48,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.ArcContinueBootImpulseStatus"
-    enum="ArcContinueBootImpulseStatus" expires_after="2022-06-30">
+    enum="ArcContinueBootImpulseStatus" expires_after="2022-10-04">
   <owner>vsomani@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -71,7 +71,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.ArcContinueBootImpulseTime2" units="ms"
-    expires_after="2022-06-30">
+    expires_after="2022-10-04">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -118,13 +118,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.FailureReason" enum="LoginFailureReason"
-    expires_after="2022-08-28">
+    expires_after="2023-04-05">
   <owner>achuith@chromium.org</owner>
+  <owner>antrim@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>Chrome OS login failure reason.</summary>
 </histogram>
 
 <histogram name="Login.InvalidCombinationsOfAllowedUsersPolicies"
-    enum="AllowedUsersPoliciesInvalidState" expires_after="2022-04-17">
+    enum="AllowedUsersPoliciesInvalidState" expires_after="2022-10-17">
   <owner>emaamari@google.com</owner>
   <owner>src/ash/components/policy/OWNERS</owner>
   <summary>
@@ -159,7 +161,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.NumberOfUsersOnLoginScreen" units="units"
-    expires_after="M105">
+    expires_after="2022-10-04">
   <owner>mslus@chromium.org</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>
@@ -170,7 +172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.OfflineLoginWithHiddenUserPods"
-    enum="ChromeOSHiddenUserPodsOfflineLogin" expires_after="M105">
+    enum="ChromeOSHiddenUserPodsOfflineLogin" expires_after="2022-10-04">
   <owner>mslus@chromium.org</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>
@@ -179,9 +181,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.OfflineSuccess.Attempts" units="units"
-    expires_after="2022-04-17">
-  <owner>rsorokin@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
+    expires_after="2023-04-05">
+  <obsolete>
+    Removed 03/2022
+  </obsolete>
+  <owner>antrim@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>
     On offline login success, records number of attempts, including success.
   </summary>
@@ -198,9 +203,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.PasswordChanged.ReauthReason" enum="LoginReauthReasons"
-    expires_after="2023-02-24">
-  <owner>rsorokin@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
+    expires_after="2023-04-05">
+  <owner>antrim@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>
     Tracks the reason why a user was sent through the GAIA re-auth flow which
     caused the local password change.
@@ -208,9 +213,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.PasswordNotChanged.ReauthReason"
-    enum="LoginReauthReasons" expires_after="2023-02-24">
-  <owner>rsorokin@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
+    enum="LoginReauthReasons" expires_after="2023-04-05">
+  <owner>antrim@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>
     Tracks the reason why a user was sent through the GAIA re-auth flow which
     did not cause the local password change.
@@ -236,21 +241,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.PromptToCompleteLoginTime" units="ms"
-    expires_after="2022-04-24">
-  <owner>rsorokin@chromium.org</owner>
+    expires_after="2023-04-05">
+  <owner>antrim@chromium.org</owner>
   <owner>achuith@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>
     Time from first display of the login prompt until the user completes signing
     in.
   </summary>
 </histogram>
 
-<histogram name="Login.PromptToLoginTime" units="ms" expires_after="2022-04-10">
+<histogram name="Login.PromptToLoginTime" units="ms" expires_after="2023-04-05">
   <owner>elijahtaylor@google.com</owner>
   <owner>yusukes@chromium.org</owner>
-  <owner>rsorokin@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
+  <owner>antrim@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>
     Time from first display of the login prompt until the existing user
     completes signing in.
@@ -288,8 +293,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.SuccessReason" enum="LoginSuccessReason"
-    expires_after="2022-04-17">
+    expires_after="2023-04-05">
   <owner>achuith@chromium.org</owner>
+  <owner>antrim@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>Chrome OS login success reason.</summary>
 </histogram>
 

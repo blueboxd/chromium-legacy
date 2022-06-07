@@ -18,6 +18,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill_assistant/browser/cud_condition.pb.h"
@@ -113,15 +114,18 @@ class ControllerTest : public testing::Test {
         .WillByDefault(Return(&fake_script_executor_ui_delegate_));
 
     // Fetching scripts succeeds for all URLs, but return nothing.
-    ON_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
-        .WillByDefault(RunOnceCallback<2>(net::HTTP_OK, ""));
+    ON_CALL(*mock_service_, GetScriptsForUrl(_, _, _))
+        .WillByDefault(RunOnceCallback<2>(
+            net::HTTP_OK, "", ServiceRequestSender::ResponseInfo{}));
 
     // Scripts run, but have no actions.
-    ON_CALL(*mock_service_, OnGetActions(_, _, _, _, _, _))
-        .WillByDefault(RunOnceCallback<5>(net::HTTP_OK, ""));
+    ON_CALL(*mock_service_, GetActions)
+        .WillByDefault(RunOnceCallback<5>(
+            net::HTTP_OK, "", ServiceRequestSender::ResponseInfo{}));
 
-    ON_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _, _))
-        .WillByDefault(RunOnceCallback<5>(net::HTTP_OK, ""));
+    ON_CALL(*mock_service_, GetNextActions)
+        .WillByDefault(RunOnceCallback<6>(
+            net::HTTP_OK, "", ServiceRequestSender::ResponseInfo{}));
 
     ON_CALL(*mock_web_controller_, FindElement(_, _, _))
         .WillByDefault(RunOnceCallback<2>(ClientStatus(), nullptr));
@@ -164,16 +168,18 @@ class ControllerTest : public testing::Test {
   void SetupScripts(SupportsScriptResponseProto scripts) {
     std::string scripts_str;
     scripts.SerializeToString(&scripts_str);
-    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
-        .WillOnce(RunOnceCallback<2>(net::HTTP_OK, scripts_str));
+    EXPECT_CALL(*mock_service_, GetScriptsForUrl(_, _, _))
+        .WillOnce(RunOnceCallback<2>(net::HTTP_OK, scripts_str,
+                                     ServiceRequestSender::ResponseInfo{}));
   }
 
   void SetupActionsForScript(const std::string& path,
                              ActionsResponseProto actions_response) {
     std::string actions_response_str;
     actions_response.SerializeToString(&actions_response_str);
-    EXPECT_CALL(*mock_service_, OnGetActions(StrEq(path), _, _, _, _, _))
-        .WillOnce(RunOnceCallback<5>(net::HTTP_OK, actions_response_str));
+    EXPECT_CALL(*mock_service_, GetActions(StrEq(path), _, _, _, _, _))
+        .WillOnce(RunOnceCallback<5>(net::HTTP_OK, actions_response_str,
+                                     ServiceRequestSender::ResponseInfo{}));
   }
 
   void Start() { Start("http://initialurl.com"); }
@@ -215,8 +221,9 @@ class ControllerTest : public testing::Test {
     std::string response_str;
     response.SerializeToString(&response_str);
 
-    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
-        .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+    EXPECT_CALL(*mock_service_, GetScriptsForUrl(_, _, _))
+        .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                     ServiceRequestSender::ResponseInfo{}));
   }
 
   // Sets up all calls to the service for scripts to return |response|.
@@ -224,8 +231,9 @@ class ControllerTest : public testing::Test {
     std::string response_str;
     response.SerializeToString(&response_str);
 
-    EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
-        .WillRepeatedly(RunOnceCallback<2>(net::HTTP_OK, response_str));
+    EXPECT_CALL(*mock_service_, GetScriptsForUrl(_, _, _))
+        .WillRepeatedly(RunOnceCallback<2>(
+            net::HTTP_OK, response_str, ServiceRequestSender::ResponseInfo{}));
   }
 
   UserData* GetUserData() { return &controller_->user_data_; }
@@ -340,20 +348,20 @@ TEST_F(ControllerTest, RunDirectActionWithArguments) {
                         Field(&DirectAction::optional_arguments,
                               ElementsAre("arg0", "arg1"))))));
 
-  EXPECT_CALL(*mock_service_, OnGetActions("action", _, _, _, _, _))
-      .WillOnce(Invoke([](const std::string& script_path, const GURL& url,
-                          const TriggerContext& trigger_context,
-                          const std::string& global_payload,
-                          const std::string& script_payload,
-                          Service::ResponseCallback& callback) {
+  EXPECT_CALL(*mock_service_, GetActions("action", _, _, _, _, _))
+      .WillOnce([](const std::string& script_path, const GURL& url,
+                   const TriggerContext& trigger_context,
+                   const std::string& global_payload,
+                   const std::string& script_payload,
+                   ServiceRequestSender::ResponseCallback callback) {
         EXPECT_THAT(trigger_context.GetScriptParameters().ToProto(),
                     testing::UnorderedElementsAreArray(
                         base::flat_map<std::string, std::string>(
                             {{"required", "value"}, {"arg0", "value0"}})));
         EXPECT_TRUE(trigger_context.GetDirectAction());
 
-        std::move(callback).Run(true, "");
-      }));
+        std::move(callback).Run(true, "", ServiceRequestSender::ResponseInfo{});
+      });
 
   TriggerContext::Options options;
   options.is_direct_action = true;
@@ -515,8 +523,9 @@ TEST_F(ControllerTest, Shutdown) {
   actions_response.add_actions()->mutable_stop();
   std::string actions_response_str;
   actions_response.SerializeToString(&actions_response_str);
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, actions_response_str));
+  EXPECT_CALL(*mock_service_, GetActions(StrEq("stop"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, actions_response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start();
   ASSERT_THAT(controller_->GetDirectActionScripts(), SizeIs(1));
@@ -539,8 +548,9 @@ TEST_F(ControllerTest, ShutdownGracefully) {
   actions_response.add_actions()->mutable_stop();
   std::string actions_response_str;
   actions_response.SerializeToString(&actions_response_str);
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, actions_response_str));
+  EXPECT_CALL(*mock_service_, GetActions(StrEq("stop"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, actions_response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start();
   ASSERT_THAT(controller_->GetDirectActionScripts(), SizeIs(1));
@@ -561,8 +571,9 @@ TEST_F(ControllerTest, CloseCustomTab) {
   actions_response.add_actions()->mutable_stop()->set_close_cct(true);
   std::string actions_response_str;
   actions_response.SerializeToString(&actions_response_str);
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, actions_response_str));
+  EXPECT_CALL(*mock_service_, GetActions(StrEq("stop"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, actions_response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start();
   ASSERT_THAT(controller_->GetDirectActionScripts(), SizeIs(1));
@@ -582,11 +593,13 @@ TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
   script_response.SerializeToString(&scripts_str);
 
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(Eq(GURL("http://a.example.com/path1")), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, scripts_str));
+              GetScriptsForUrl(Eq(GURL("http://a.example.com/path1")), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, scripts_str,
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(Eq(GURL("http://b.example.com/path1")), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, scripts_str));
+              GetScriptsForUrl(Eq(GURL("http://b.example.com/path1")), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, scripts_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start("http://a.example.com/path1");
   SimulateNavigateToUrl(GURL("http://a.example.com/path2"));
@@ -620,8 +633,9 @@ TEST_F(ControllerTest, Autostart) {
 
 TEST_F(ControllerTest, InitialUrlLoads) {
   GURL initialUrl("http://a.example.com/path");
-  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(initialUrl), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, ""));
+  EXPECT_CALL(*mock_service_, GetScriptsForUrl(Eq(initialUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   controller_->Start(initialUrl, std::make_unique<TriggerContext>());
 }
@@ -700,8 +714,9 @@ TEST_F(ControllerTest, ScriptTimeoutError) {
   std::string on_timeout_error_str;
   on_timeout_error.SerializeToString(&on_timeout_error_str);
   EXPECT_CALL(*mock_service_,
-              OnGetActions(StrEq("on_timeout_error"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, on_timeout_error_str));
+              GetActions(StrEq("on_timeout_error"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, on_timeout_error_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start("http://a.example.com/path");
   for (int i = 0; i < 30; i++) {
@@ -732,8 +747,9 @@ TEST_F(ControllerTest, ScriptTimeoutWarning) {
   std::string on_timeout_error_str;
   on_timeout_error.SerializeToString(&on_timeout_error_str);
   EXPECT_CALL(*mock_service_,
-              OnGetActions(StrEq("on_timeout_error"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, on_timeout_error_str));
+              GetActions(StrEq("on_timeout_error"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, on_timeout_error_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start("http://a.example.com/path");
 
@@ -896,9 +912,11 @@ TEST_F(ControllerTest, WaitForNavigationActionTimesOut) {
   SetupActionsForScript("script", actions_response);
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(*mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   Start("http://a.example.com/path");
   EXPECT_THAT(controller_->GetDirectActionScripts(), SizeIs(1));
@@ -930,9 +948,11 @@ TEST_F(ControllerTest, WaitForNavigationActionStartWithinTimeout) {
   SetupActionsForScript("script", actions_response);
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(*mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   Start("http://a.example.com/path");
   EXPECT_THAT(controller_->GetDirectActionScripts(), SizeIs(1));
@@ -998,12 +1018,14 @@ TEST_F(ControllerTest, Track) {
   std::string response_str;
   script_response.SerializeToString(&response_str);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+              GetScriptsForUrl(GURL("http://example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://b.example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, ""));
+              GetScriptsForUrl(GURL("http://b.example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // Start tracking at example.com, with one script matching
   SetLastCommittedUrl(GURL("http://example.com/"));
@@ -1197,8 +1219,9 @@ TEST_F(ControllerTest, TrackScriptShowUIOnError) {
 
   // Running the script fails, due to a backend issue. The error message should
   // be shown.
-  EXPECT_CALL(*mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(*mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // Start tracking at example.com, with one script matching
   SetLastCommittedUrl(GURL("http://example.com/"));
@@ -1228,8 +1251,9 @@ TEST_F(ControllerTest, TrackContinuesAfterScriptError) {
   std::string response_str;
   script_response.SerializeToString(&response_str);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+              GetScriptsForUrl(GURL("http://example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // Start tracking at example.com, with one script matching
   SetLastCommittedUrl(GURL("http://example.com/"));
@@ -1238,8 +1262,9 @@ TEST_F(ControllerTest, TrackContinuesAfterScriptError) {
   EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
   ASSERT_THAT(controller_->GetDirectActionScripts(), SizeIs(1));
 
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, ""));
+  EXPECT_CALL(*mock_service_, GetActions(StrEq("runnable"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_UNAUTHORIZED, "",
+                                   ServiceRequestSender::ResponseInfo{}));
 
   // When the script fails, the controller transitions to STOPPED state, then
   // right away back to TRACKING state.
@@ -1256,14 +1281,13 @@ TEST_F(ControllerTest, TrackContinuesAfterScriptError) {
 }
 
 TEST_F(ControllerTest, TrackReportsFirstSetOfScripts) {
-  Service::ResponseCallback get_scripts_callback;
-  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
-      .WillOnce(
-          Invoke([&get_scripts_callback](const GURL& url,
-                                         const TriggerContext& trigger_context,
-                                         Service::ResponseCallback& callback) {
-            get_scripts_callback = std::move(callback);
-          }));
+  ServiceRequestSender::ResponseCallback get_scripts_callback;
+  EXPECT_CALL(*mock_service_, GetScriptsForUrl(_, _, _))
+      .WillOnce([&get_scripts_callback](
+                    const GURL& url, const TriggerContext& trigger_context,
+                    ServiceRequestSender::ResponseCallback callback) {
+        get_scripts_callback = std::move(callback);
+      });
 
   SetLastCommittedUrl(GURL("http://example.com/"));
   bool first_check_done = false;
@@ -1287,7 +1311,8 @@ TEST_F(ControllerTest, TrackReportsFirstSetOfScripts) {
   AddRunnableScript(&script_response, "runnable");
   std::string response_str;
   script_response.SerializeToString(&response_str);
-  std::move(get_scripts_callback).Run(net::HTTP_OK, response_str);
+  std::move(get_scripts_callback)
+      .Run(net::HTTP_OK, response_str, ServiceRequestSender::ResponseInfo{});
 
   EXPECT_TRUE(first_check_done);
   EXPECT_TRUE(controller_->HasRunFirstCheck());
@@ -1408,13 +1433,14 @@ TEST_F(ControllerTest, BrowseStateStopsOnDifferentDomain) {
   std::string response_str;
   script_response.SerializeToString(&response_str);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+              GetScriptsForUrl(GURL("http://example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://b.example.com/"), _, _))
+              GetScriptsForUrl(GURL("http://b.example.com/"), _, _))
       .Times(0);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://c.example.com/"), _, _))
+              GetScriptsForUrl(GURL("http://c.example.com/"), _, _))
       .Times(0);
 
   Start("http://example.com/");
@@ -1453,8 +1479,9 @@ TEST_F(ControllerTest, BrowseStateWithDomainAllowlist) {
   std::string response_str;
   script_response.SerializeToString(&response_str);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://a.example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+              GetScriptsForUrl(GURL("http://a.example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start("http://a.example.com/");
   EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
@@ -1503,8 +1530,9 @@ TEST_F(ControllerTest, BrowseStateWithDomainAllowlistCleanup) {
   std::string response_str;
   script_response.SerializeToString(&response_str);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://a.example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+              GetScriptsForUrl(GURL("http://a.example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start("http://a.example.com/");
   EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
@@ -1542,8 +1570,9 @@ TEST_F(ControllerTest, PromptStateStopsOnGoBack) {
   std::string response_str;
   script_response.SerializeToString(&response_str);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+              GetScriptsForUrl(GURL("http://example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start("http://example.com/");
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
@@ -1573,8 +1602,9 @@ TEST_F(ControllerTest, PromptStateStopsOnRendererInitiatedBack) {
   std::string response_str;
   script_response.SerializeToString(&response_str);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+              GetScriptsForUrl(GURL("http://example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start("http://example.com/");
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
@@ -1883,8 +1913,9 @@ TEST_F(ControllerTest,
   std::string response_str;
   script_response.SerializeToString(&response_str);
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(GURL("http://a.example.com/"), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str));
+              GetScriptsForUrl(GURL("http://a.example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, response_str,
+                                   ServiceRequestSender::ResponseInfo{}));
 
   Start("http://a.example.com/");
   EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
@@ -1967,8 +1998,9 @@ TEST_F(ControllerTest, WriteUserData) {
 TEST_F(ControllerTest, StartPasswordChangeFlow) {
   const GURL initialUrl("http://example.com/password");
   const std::string username = "test_username";
-  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(initialUrl), _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, ""));
+  EXPECT_CALL(*mock_service_, GetScriptsForUrl(Eq(initialUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(mock_password_change_success_tracker_,
               OnChangePasswordFlowStarted(
                   initialUrl.DeprecatedGetOriginAsURL(), username,
@@ -2011,9 +2043,11 @@ TEST_F(ControllerTest, EndPromptWithOnEndNavigation) {
   SetupActionsForScript("script", actions_response);
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(*mock_service_, GetNextActions)
+      .WillOnce(
+          DoAll(SaveArg<3>(&processed_actions_capture),
+                RunOnceCallback<6>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{})));
 
   Start("http://a.example.com/path");
 
@@ -2111,8 +2145,9 @@ TEST_F(ControllerTest, RuntimeManagerDestroyed) {
 
 TEST_F(ControllerTest, OnGetScriptsFailedWillShutdown) {
   EXPECT_CALL(mock_observer_, OnStart(_));
-  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
-      .WillOnce(RunOnceCallback<2>(net::HTTP_NOT_FOUND, ""));
+  EXPECT_CALL(*mock_service_, GetScriptsForUrl(_, _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_NOT_FOUND, "",
+                                   ServiceRequestSender::ResponseInfo{}));
   EXPECT_CALL(
       mock_observer_,
       OnError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),

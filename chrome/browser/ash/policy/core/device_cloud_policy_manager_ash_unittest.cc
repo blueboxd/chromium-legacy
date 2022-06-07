@@ -13,6 +13,7 @@
 #include "ash/components/attestation/fake_certificate.h"
 #include "ash/components/attestation/mock_attestation_flow.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -38,14 +39,13 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/common/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/dbus/userdataauth/fake_install_attributes_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -95,8 +95,8 @@ MATCHER_P(HasJobType, job_type, "matches job type") {
 }
 
 void CopyLockResult(base::RunLoop* loop,
-                    chromeos::InstallAttributes::LockResult* out,
-                    chromeos::InstallAttributes::LockResult result) {
+                    ash::InstallAttributes::LockResult* out,
+                    ash::InstallAttributes::LockResult result) {
   *out = result;
   loop->Quit();
 }
@@ -190,8 +190,8 @@ class DeviceCloudPolicyManagerAshTest
           std::vector<uint8_t>());
     }
 
-    chromeos::InstallAttributesClient::InitializeFake();
-    install_attributes_ = std::make_unique<chromeos::InstallAttributes>(
+    ash::InstallAttributesClient::InitializeFake();
+    install_attributes_ = std::make_unique<ash::InstallAttributes>(
         chromeos::FakeInstallAttributesClient::Get());
     store_ = new DeviceCloudPolicyStoreAsh(device_settings_service_.get(),
                                            install_attributes_.get(),
@@ -236,7 +236,7 @@ class DeviceCloudPolicyManagerAshTest
 
     DeviceOAuth2TokenServiceFactory::Shutdown();
     chromeos::SystemSaltGetter::Shutdown();
-    chromeos::InstallAttributesClient::Shutdown();
+    ash::InstallAttributesClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
     DeviceSettingsTestBase::TearDown();
@@ -244,14 +244,14 @@ class DeviceCloudPolicyManagerAshTest
 
   void LockDevice() {
     base::RunLoop loop;
-    chromeos::InstallAttributes::LockResult result;
+    ash::InstallAttributes::LockResult result;
     install_attributes_->LockDevice(
         DEVICE_MODE_ENTERPRISE, PolicyBuilder::kFakeDomain,
         std::string(),  // realm
         PolicyBuilder::kFakeDeviceId,
         base::BindOnce(&CopyLockResult, &loop, &result));
     loop.Run();
-    ASSERT_EQ(chromeos::InstallAttributes::LOCK_SUCCESS, result);
+    ASSERT_EQ(ash::InstallAttributes::LOCK_SUCCESS, result);
   }
 
   void AddStateKeys() {
@@ -327,7 +327,7 @@ class DeviceCloudPolicyManagerAshTest
         *device_policy_->GetNewSigningKey());
   }
 
-  std::unique_ptr<chromeos::InstallAttributes> install_attributes_;
+  std::unique_ptr<ash::InstallAttributes> install_attributes_;
 
   net::HttpStatusCode url_fetcher_response_code_;
   std::string url_fetcher_response_string_;
@@ -687,7 +687,8 @@ class DeviceCloudPolicyManagerAshEnrollmentTest
         store_, install_attributes_.get(), &state_keys_broker_,
         &mock_attestation_flow_, std::move(fake_signing_service),
         std::move(client), base::ThreadTaskRunnerHandle::Get(),
-        /*ad_join_delegate=*/nullptr, enrollment_config, std::move(auth),
+        /*ad_join_delegate=*/nullptr, enrollment_config,
+        policy::LicenseType::kEnterprise, std::move(auth),
         install_attributes_->GetDeviceId(),
         EnrollmentRequisitionManager::GetDeviceRequisition(),
         EnrollmentRequisitionManager::GetSubOrganization(),

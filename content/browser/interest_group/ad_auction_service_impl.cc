@@ -21,7 +21,6 @@
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -156,7 +155,8 @@ bool IsAuctionValid(const blink::mojom::AuctionAdConfig& config,
     }
   }
 
-  for (const auto& component_auction : config.component_auctions) {
+  for (const auto& component_auction :
+       config.auction_ad_config_non_shared_params->component_auctions) {
     // Component auctions may not have their own nested component auctions.
     if (!is_top_level_auction)
       return false;
@@ -316,7 +316,8 @@ class FencedFrameURLMappingObserver
       absl::optional<GURL> mapped_url,
       absl::optional<AdAuctionData> ad_auction_data,
       absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-          pending_ad_components_map) override {
+          pending_ad_components_map,
+      ReportingMetadata& reporting_metadata) override {
     mapped_url_ = mapped_url;
     called_ = true;
   }
@@ -459,6 +460,7 @@ void AdAuctionServiceImpl::OnAuctionComplete(
     std::vector<GURL> report_urls,
     std::vector<GURL> debug_loss_report_urls,
     std::vector<GURL> debug_win_report_urls,
+    ReportingMetadata ad_beacon_map,
     std::vector<std::string> errors) {
   // Delete the AuctionRunner. Since all arguments are passed by value, they're
   // all safe to used after this has been done.
@@ -486,13 +488,11 @@ void AdAuctionServiceImpl::OnAuctionComplete(
     return;
   }
   DCHECK(winning_group_id);  // Should always be present with a render_url
-  render_url =
-      GetFrame()
-          ->GetPage()
-          .fenced_frame_urls_map()
-          .AddFencedFrameURLWithInterestGroupInfo(
-              *render_url, {winning_group_id->owner, winning_group_id->name},
-              ad_component_urls);
+  FencedFrameURLMapping& fenced_frame_urls_map =
+      GetFrame()->GetPage().fenced_frame_urls_map();
+  render_url = fenced_frame_urls_map.AddFencedFrameURLWithInterestGroupInfo(
+      *render_url, {winning_group_id->owner, winning_group_id->name},
+      ad_component_urls, ad_beacon_map);
   DCHECK(render_url->is_valid());
 
   std::move(callback).Run(render_url);

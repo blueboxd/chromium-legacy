@@ -15,8 +15,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
+#include "components/user_notes/interfaces/user_note_service_delegate.h"
 #include "components/user_notes/interfaces/user_notes_ui_delegate.h"
 #include "components/user_notes/model/user_note.h"
+
+namespace content {
+class RenderFrameHost;
+}  // namespace content
 
 namespace user_notes {
 
@@ -26,31 +32,36 @@ class UserNotesManager;
 // layer) of the User Notes feature for the current user profile.
 class UserNoteService : public KeyedService, public UserNotesUIDelegate {
  public:
-  explicit UserNoteService();
+  explicit UserNoteService(std::unique_ptr<UserNoteServiceDelegate> delegate);
   ~UserNoteService() override;
   UserNoteService(const UserNoteService&) = delete;
   UserNoteService& operator=(const UserNoteService&) = delete;
 
   base::SafeRef<UserNoteService> GetSafeRef();
 
+  // Called by the embedder when a frame navigates to a new URL. Queries the
+  // storage to find notes associated with that URL, and if there are any, kicks
+  // off the logic to display them in the page.
+  void OnFrameNavigated(content::RenderFrameHost* rfh);
+
   // Called by |UserNotesManager| objects when a |UserNoteInstance| is added to
   // the page they're attached to. Updates the model map to add a ref to the
-  // given |UserNotesManager| for the note with the specified GUID.
-  void OnNoteInstanceAddedToPage(const std::string& guid,
+  // given |UserNotesManager| for the note with the specified ID.
+  void OnNoteInstanceAddedToPage(const base::UnguessableToken& id,
                                  UserNotesManager* manager);
 
   // Same as |OnNoteInstanceAddedToPage|, except for when a note is removed from
   // a page. Updates the model map to remove the ref to the given
   // |UserNotesManager|. If this is the last page where the note was displayed,
   // also deletes the model from the model map.
-  void OnNoteInstanceRemovedFromPage(const std::string& guid,
+  void OnNoteInstanceRemovedFromPage(const base::UnguessableToken& id,
                                      UserNotesManager* manager);
 
   // UserNotesUIDelegate implementation.
-  void OnNoteFocused(const std::string& guid) override;
-  void OnNoteCreationDone(const std::string& guid,
+  void OnNoteFocused(const base::UnguessableToken& id) override;
+  void OnNoteCreationDone(const base::UnguessableToken& id,
                           const std::string& note_content) override;
-  void OnNoteCreationCancelled(const std::string& guid) override;
+  void OnNoteCreationCancelled(const base::UnguessableToken& id) override;
 
  private:
   struct ModelMapEntry {
@@ -65,7 +76,7 @@ class UserNoteService : public KeyedService, public UserNotesUIDelegate {
   };
 
   friend class UserNoteServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(UserNoteServiceTest, UserNoteServiceTest);
+  friend class UserNotesManagerTest;
 
   // Source of truth for the in-memory note models. Any note currently being
   // displayed in a tab is stored in this data structure. Each entry also
@@ -73,8 +84,12 @@ class UserNoteService : public KeyedService, public UserNotesUIDelegate {
   // instance of that note, which is necessary to clean up the models when
   // they're no longer in use and to remove notes from affected web pages when
   // they're deleted by the user.
-  std::unordered_map<std::string, ModelMapEntry> model_map_;
+  std::unordered_map<base::UnguessableToken,
+                     ModelMapEntry,
+                     base::UnguessableTokenHash>
+      model_map_;
 
+  std::unique_ptr<UserNoteServiceDelegate> delegate_;
   base::WeakPtrFactory<UserNoteService> weak_ptr_factory_{this};
 };
 

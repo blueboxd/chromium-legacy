@@ -165,8 +165,6 @@ ProtoEnum::BackForwardCacheNotRestoredReason NotRestoredReasonToTraceEnum(
       return ProtoEnum::BROWSING_INSTANCE_NOT_SWAPPED;
     case Reason::kBackForwardCacheDisabledForDelegate:
       return ProtoEnum::BACK_FORWARD_CACHE_DISABLED_FOR_DELEGATE;
-    case Reason::kOptInUnloadHeaderNotPresent:
-      return ProtoEnum::OPT_IN_UNLOAD_HEADER_NOT_PRESENT;
     case Reason::kUnloadHandlerExistsInMainFrame:
       return ProtoEnum::UNLOAD_HANDLER_EXISTS_IN_MAIN_FRAME;
     case Reason::kUnloadHandlerExistsInSubFrame:
@@ -183,6 +181,8 @@ ProtoEnum::BackForwardCacheNotRestoredReason NotRestoredReasonToTraceEnum(
       return ProtoEnum::NO_RESPONSE_HEAD;
     case Reason::kErrorDocument:
       return ProtoEnum::ERROR_DOCUMENT;
+    case Reason::kFencedFramesEmbedder:
+      return ProtoEnum::FENCED_FRAMES_EMBEDDER;
     case Reason::kBlocklistedFeatures:
       return ProtoEnum::BLOCKLISTED_FEATURES;
     case Reason::kUnknown:
@@ -365,9 +365,6 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "Browsing instance is not swapped";
     case Reason::kBackForwardCacheDisabledForDelegate:
       return "BackForwardCache is not supported by delegate";
-    case Reason::kOptInUnloadHeaderNotPresent:
-      return "BFCache-Opt-In header not present, or does not include `unload` "
-             "token, and an experimental config which requires it is active.";
     case Reason::kUnloadHandlerExistsInMainFrame:
       return "Unload handler exists in the main frame, and the current "
              "experimental config doesn't permit it to be BFCached.";
@@ -393,6 +390,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
              "due not having successfully committed a navigation.";
     case Reason::kErrorDocument:
       return "Error documents cannot be stored in bfcache";
+    case Reason::kFencedFramesEmbedder:
+      return "Pages using FencedFrames cannot be stored in bfcache.";
   }
 }
 

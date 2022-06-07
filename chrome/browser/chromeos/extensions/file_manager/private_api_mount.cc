@@ -15,7 +15,6 @@
 #include "base/format_macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
@@ -176,6 +175,11 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
     case file_manager::VOLUME_TYPE_SMB:
       ash::smb_client::SmbServiceFactory::Get(profile)->UnmountSmbFs(
           volume->mount_path());
+      break;
+    case file_manager::VOLUME_TYPE_GUEST_OS:
+      // TODO(crbug/1293229): Figure out if we need to support unmounting. I'm
+      // not actually sure if it's possible to reach here.
+      NOTREACHED();
       break;
     default:
       // Requested unmounting a device which is not unmountable.

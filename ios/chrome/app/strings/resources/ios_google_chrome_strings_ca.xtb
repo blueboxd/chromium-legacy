@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="1096883626080133124">Augmenta la teva productivitat amb un Google Chrome senzill, segur i més ràpid que mai</translation>
 <translation id="1143896152279775643">La contrasenya es desarà al gestor de contrasenyes de Google per a <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Ajuda a millorar les funcions i el rendiment de Chrome</translation>
 <translation id="1479202195792305274">Chrome pot comprovar les teves contrasenyes quan inicies la sessió amb el Compte de Google.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Utilitzeu Chrome a tot arreu</translation>
 <translation id="3522659714780527202">Per veure les pestanyes des de tots els llocs on facis servir Chrome, activa la sincronització</translation>
 <translation id="3533694711092285624">No hi ha cap contrasenya desada. Chrome pot comprovar les teves contrasenyes quan les deses.</translation>
-<translation id="3634910711516114487">Per treure el màxim profit de Chrome, inicia-hi la sessió amb el teu Compte de Google</translation>
 <translation id="3655656110921623717">Això vol dir que Chrome sol·licitarà el lloc web per a mòbils cada vegada.</translation>
 <translation id="3706101708757577809">Ara pots utilitzar Chrome cada vegada que toquis enllaços en missatges, documents i altres aplicacions</translation>
 <translation id="3720541637541300822">Bloqueja les pestanyes d'incògnit després de tancar Chrome</translation>
@@ -83,19 +81,13 @@
 <translation id="6709398533399187136">La teva contrasenya ha quedat exposada en una violació de les dades. El gestor de contrasenyes de Google recomana que la canviïs ara.</translation>
 <translation id="6822673484890854830">Chrome no ha pogut comprovar totes les contrasenyes. Torna-ho a provar més tard.</translation>
 <translation id="6964931465519938134">Ara pots utilitzar Chrome cada vegada que toquis enllaços en missatges, documents i altres aplicacions.</translation>
-<translation id="7046845777663074840">Quan aquesta opció està activada:
-<ph name="BEGIN_INDENT" />  • Ajuda a millorar Chrome per a les persones que el fan servir igual que tu.<ph name="END_INDENT" />
-
-Aspectes que cal tenir en compte:
-<ph name="BEGIN_INDENT" />  • S'envia informació a Google sobre l'ús que fas de Chrome, però no es relaciona amb tu.
-  • Si Chrome falla, els detalls sobre el bloqueig poden incloure informació personal.
-  • Si actives la sincronització, les mètriques també poden incloure informació sobre els URL que visites.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Personalitza Chrome</translation>
 <translation id="7124339256045485976">Mantén Chrome actualitzat</translation>
 <translation id="7161390184744336561">Google Chrome no està actualitzat</translation>
 <translation id="7165736900384873061">Comença a utilitzar l'escàner QR de Google Chrome</translation>
 <translation id="7172660552945675509">Consell: <ph name="BEGIN_LINK" />moveu Chrome al Dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome utilitza Face ID per garantir l'accés autoritzat a les contrasenyes.</translation>
+<translation id="7187993566681480880">Et protegeix a Chrome i és possible que s'utilitzi per millorar la teva seguretat en altres aplicacions de Google quan tinguis la sessió iniciada.</translation>
 <translation id="72119412072970160">Pots utilitzar les contrasenyes que has desat al gestor de contrasenyes de Google en altres aplicacions de l'iPad.</translation>
 <translation id="7261678641327190792">Chrome no pot comprovar les teves contrasenyes</translation>
 <translation id="7272930098487145294">Si vols desar imatges, toca Configuració per permetre que Chrome les afegeixi a les teves fotos</translation>
@@ -108,6 +100,7 @@ Aspectes que cal tenir en compte:
 <translation id="766361182512894255">La teva contrasenya ha quedat exposada en l'àmbit d'una violació de les dades. Chrome et recomana que canviïs la contrasenya ara.</translation>
 <translation id="7693590760643069321">Ara pots utilitzar Chrome cada vegada que toquis enllaços en missatges, documents i altres aplicacions.</translation>
 <translation id="7698568245838009292">Chrome sol·licita accés a la càmera</translation>
+<translation id="7780154209050837198">Per treure el màxim profit de Chrome, inicia-hi la sessió amb el teu Compte de Google.</translation>
 <translation id="7855730255114109580">Google Chrome està actualitzat</translation>
 <translation id="8022947259858476807">Utilitza Chrome de manera predeterminada per obrir enllaços, cercar des de widgets i emplenar automàticament contrasenyes en altres aplicacions</translation>
 <translation id="8160472928944011082">Chrome no es pot actualitzar</translation>

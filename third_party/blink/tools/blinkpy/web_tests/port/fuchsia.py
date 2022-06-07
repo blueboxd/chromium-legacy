@@ -62,8 +62,6 @@ def _import_fuchsia_runner():
     # pylint: disable=import-error
     # pylint: disable=invalid-name
     # pylint: disable=redefined-outer-name
-    global aemu_target
-    import aemu_target
     global ConnectPortForwardingTask
     from common import ConnectPortForwardingTask
     global _GetPathToBuiltinTarget, _LoadTargetClass, InitializeTargetArgs
@@ -307,6 +305,9 @@ class FuchsiaPort(base.Port):
             self._path_from_chromium_base('third_party', 'blink')
         super(FuchsiaPort, self).start_http_server(additional_dirs,
                                                    number_of_drivers)
+
+    def operating_system(self):
+        return self._operating_system
 
     def path_to_apache(self):
         return self._host_port.path_to_apache()

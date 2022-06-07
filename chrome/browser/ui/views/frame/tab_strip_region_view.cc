@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_scroll_container.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -34,6 +33,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -111,7 +111,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
 
   // This is the margin necessary to ensure correct spacing between right-
   // aligned control and the end of the TabStripRegionView.
-  const gfx::Insets control_padding = gfx::Insets(
+  const auto control_padding = gfx::Insets::TLBR(
       0, 0, 0, GetLayoutConstant(TABSTRIP_REGION_VIEW_CONTROL_PADDING));
 
   tip_marquee_view_ = AddChildView(
@@ -133,7 +133,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
     return;
 #endif
 
-  const Browser* browser = tab_strip_->controller()->GetBrowser();
+  const Browser* browser = tab_strip_->GetBrowser();
   if (!browser ||
       WindowFrameUtil::IsWin10TabSearchCaptionButtonEnabled(browser)) {
     return;
@@ -223,10 +223,10 @@ void TabStripRegionView::OnDragExited() {
   tab_strip_->OnDragExited();
 }
 
-ui::mojom::DragOperation TabStripRegionView::OnPerformDrop(
+views::View::DropCallback TabStripRegionView::GetDropCallback(
     const ui::DropTargetEvent& event) {
   DCHECK(tab_strip_->WantsToReceiveAllDragEvents());
-  return tab_strip_->OnPerformDrop(event);
+  return tab_strip_->GetDropCallback(event);
 }
 
 void TabStripRegionView::ChildPreferredSizeChanged(views::View* child) {
@@ -277,7 +277,7 @@ void TabStripRegionView::UpdateNewTabButtonBorder() {
   // should be improved, likely by taking the scroll state of the tabstrip into
   // account.
   new_tab_button_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(extra_vertical_space / 2, 0, 0, kHorizontalInset)));
+      gfx::Insets::TLBR(extra_vertical_space / 2, 0, 0, kHorizontalInset)));
 }
 
 BEGIN_METADATA(TabStripRegionView, views::AccessiblePaneView)

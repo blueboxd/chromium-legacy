@@ -21,6 +21,8 @@ extern const char kESimRefreshedEuiccs[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kESimProfiles[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kManagedCellularIccidSmdpPair[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEmojiSuggestionEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEmojiSuggestionEnterpriseAllowed[];
@@ -58,6 +60,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLoginDisplayPasswordButtonEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSuggestedContentEnabled[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kLauncherFeedbackOnContinueSectionSent[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLauncherResultEverLaunched[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -164,6 +168,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDesksActiveDesk[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDockedMagnifierEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDockedMagnifierScale[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kDockedMagnifierScreenHeightDivisor[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDockedMagnifierAcceleratorDialogHasBeenAccepted[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kHighContrastAcceleratorDialogHasBeenAccepted[];
@@ -233,7 +239,7 @@ extern const char kMessageCenterLockScreenModeHideSensitive[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAmbientColorEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kColorModeThemed[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkModeEnabled[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkModeAutoScheduled[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkModeScheduleType[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kNightLightEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kNightLightTemperature[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kNightLightScheduleType[];
@@ -255,6 +261,10 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPowerAcScreenOffDelayMs[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPowerAcScreenLockDelayMs[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPowerAcIdleWarningDelayMs[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPowerAcIdleDelayMs[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPowerAdaptiveChargingEnabled[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPowerAdaptiveChargingNudgeShown[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kPowerBatteryScreenBrightnessPercent[];
 COMPONENT_EXPORT(ASH_CONSTANTS)

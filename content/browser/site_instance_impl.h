@@ -21,14 +21,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace perfetto {
-namespace protos {
-namespace pbzero {
-class SiteInstance;
-}
-}  // namespace protos
-}  // namespace perfetto
-
 namespace content {
 
 class BrowsingInstance;
@@ -133,15 +125,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   bool IsRelatedSiteInstance(const SiteInstance* instance) override;
   size_t GetRelatedActiveContentsCount() override;
   bool RequiresDedicatedProcess() override;
+  bool RequiresOriginKeyedProcess() override;
   bool IsSameSiteWithURL(const GURL& url) override;
   bool IsGuest() override;
   SiteInstanceProcessAssignment GetLastProcessAssignmentOutcome() override;
-  void WriteIntoTrace(perfetto::TracedValue context) override;
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) override;
   int EstimateOriginAgentClusterOverheadForMetrics() override;
-
-  // Write a representation of this object into a trace.
-  void WriteIntoTrace(
-      perfetto::TracedProto<perfetto::protos::pbzero::SiteInstance> proto);
 
   // This is called every time a renderer process is assigned to a SiteInstance
   // and is used by the content embedder for collecting metrics.

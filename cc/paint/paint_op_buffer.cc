@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
@@ -24,6 +25,7 @@
 #include "cc/paint/skottie_serialization_history.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
@@ -2602,7 +2604,7 @@ gfx::Rect PaintOp::ComputePaintRect(const PaintOp* op,
   // raster time, since we might be sending a larger-than-one-item display
   // item to skia, which means that skia will internally determine whether to
   // raster the picture (using device clip bounds that are outset).
-  transformed_rect.Inset(-1, -1);
+  transformed_rect.Inset(-1);
   return transformed_rect;
 }
 

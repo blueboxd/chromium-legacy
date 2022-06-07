@@ -44,11 +44,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
@@ -438,7 +438,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
   const base::Value::Dict* event = wrapper.FindDict(
       SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent);
   EXPECT_NE(nullptr, event);
-  EXPECT_EQ("/path/to/malware.exe",
+  EXPECT_EQ("malware.exe",
             *event->FindString(SafeBrowsingPrivateEventRouter::kKeyFileName));
   EXPECT_EQ("exe", *event->FindString(
                        SafeBrowsingPrivateEventRouter::kKeyContentType));
@@ -550,7 +550,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadWarning) {
   const base::Value::Dict* event = wrapper.FindDict(
       SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent);
   EXPECT_NE(nullptr, event);
-  EXPECT_EQ("/path/to/warning.exe",
+  EXPECT_EQ("warning.exe",
             *event->FindString(SafeBrowsingPrivateEventRouter::kKeyFileName));
   EXPECT_EQ("exe", *event->FindString(
                        SafeBrowsingPrivateEventRouter::kKeyContentType));
@@ -588,7 +588,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   const base::Value::Dict* event = wrapper.FindDict(
       SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent);
   EXPECT_NE(nullptr, event);
-  EXPECT_EQ("/path/to/bypass.exe",
+  EXPECT_EQ("bypass.exe",
             *event->FindString(SafeBrowsingPrivateEventRouter::kKeyFileName));
   EXPECT_EQ("exe", *event->FindString(
                        SafeBrowsingPrivateEventRouter::kKeyContentType));

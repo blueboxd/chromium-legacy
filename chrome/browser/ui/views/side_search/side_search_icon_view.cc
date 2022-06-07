@@ -53,7 +53,6 @@ void SideSearchIconView::UpdateImpl() {
 
   // Only show the page action button if the side panel is showable for this
   // active web contents and is not currently toggled open.
-  // TODO(tluk): Setup conditions for `AnimateIn()`.
   auto* tab_contents_helper =
       SideSearchTabContentsHelper::FromWebContents(active_contents);
   if (!tab_contents_helper)

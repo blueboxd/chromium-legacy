@@ -5,8 +5,8 @@
     grid-template-areas:
       '. .     . .'
       '. image . text';
-    grid-template-columns: 8px 84px 16px minmax(0, 1fr);
-    grid-template-rows: 12px 84px;
+    grid-template-columns: 8px 82px 16px minmax(0, 1fr);
+    grid-template-rows: 12px 82px;
     height: 100%;
   }
 
@@ -14,58 +14,77 @@
     grid-area: image;
     position: relative;
   }
-  #imageContainer img:hover {
-    background-color: var(--cros-highlight-color-focus);
+
+  :host([clickable]) #imageContainer:hover {
+    filter: brightness(0.94);
   }
+
   #imageContainer img {
-    border: 2px solid rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 50%;
     height: 80px;
     width: 80px;
   }
+
   #infoContainer {
-    align-items: flex-start;
     display: flex;
     flex-flow: column nowrap;
     grid-area: text;
-    justify-content: flex-end;
+    justify-content: center;
     margin: 0;
   }
+
   #infoContainer > * {
     margin: 0;
   }
+
   #infoContainer > p {
     color: var(--cros-text-color-primary);
-    font: 500 20px/28px var(--cros-font-family-google-sans);
+    font: 400 22px/28px var(--cros-font-family-google-sans);
   }
+
   #emailContainer {
     align-items: center;
+    cursor: pointer;
     display: flex;
     flex-flow: row nowrap;
+    padding-top: 4px;
+    width: fit-content;
   }
+
+  #emailContainer:focus-visible {
+    outline: 2px solid var(--cros-focus-ring-color);
+  }
+
   #emailContainer > p {
     color: var(--cros-link-color);
     font: var(--cros-body-2-font);
+    margin: 0;
   }
+
   iron-icon[icon='cr:open-in-new'] {
     --iron-icon-height: 16px;
     --iron-icon-width: 16px;
     --iron-icon-fill-color: var(--cros-link-color);
     margin-inline-start: 6px;
   }
+
   paper-ripple {
     color: rgba(var(--cros-ripple-color-rgb), 1);
     --paper-ripple-opacity: var(--cros-button-primary-ripple-opacity);
   }
-  ::slotted(cr-icon-button) {
+
+  ::slotted(div[id='userSubpageLink']) {
     bottom: 0;
     grid-area: image;
     position: absolute;
-    right: 10px;
+    right: 2px;
   }
+
   #avatar {
     cursor: pointer;
   }
+
   #avatar:focus-visible {
     outline: 2px solid var(--cros-focus-ring-color);
   }
@@ -76,6 +95,7 @@
       <template is="dom-if" if="[[clickable]]">
         <paper-ripple class="circle"></paper-ripple>
         <img tabindex="0" id="avatar" src$="[[imageUrl_.url]]"
+            role="button" aria-label="$i18n{ariaLabelChangeAvatar}"
             on-click="onClickUserSubpageLink_"
             on-keypress="onClickUserSubpageLink_">
       </template>
@@ -88,7 +108,9 @@
   <div id="infoContainer">
     <template is="dom-if" if="[[info_]]">
       <p id="name">[[info_.name]]</p>
-      <div id="emailContainer" on-click="onClickUserEmail_">
+      <div id="emailContainer" tabindex="0" on-click="onClickUserEmail_"
+          on-keypress="onClickUserEmail_" role="link"
+          aria-label="$i18n{ariaLabelGoToAccountSettings}">
         <p id="email">[[info_.email]]</p>
         <iron-icon icon="cr:open-in-new"></iron-icon>
       </div>

@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -380,7 +381,8 @@ TEST_F(IntentUtilTest, GlobMatchType) {
       apps_util::ConditionValueMatches("/acb", condition_value_escape_star));
 }
 
-TEST_F(IntentUtilTest, FilterMatchLevel) {
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, FilterMatchLevelMojom) {
   auto filter_scheme_only = apps_util::CreateSchemeOnlyFilter("http");
   auto filter_scheme_and_host_only =
       apps_util::CreateSchemeAndHostOnlyFilter("https", "www.abc.com");
@@ -389,16 +391,16 @@ TEST_F(IntentUtilTest, FilterMatchLevel) {
   auto filter_empty = apps::mojom::IntentFilter::New();
 
   EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_url),
-            apps_util::IntentFilterMatchLevel::kScheme +
-                apps_util::IntentFilterMatchLevel::kHost +
-                apps_util::IntentFilterMatchLevel::kPattern);
+            static_cast<int>(apps::IntentFilterMatchLevel::kScheme) +
+                static_cast<int>(apps::IntentFilterMatchLevel::kHost) +
+                static_cast<int>(apps::IntentFilterMatchLevel::kPattern));
   EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_scheme_and_host_only),
-            apps_util::IntentFilterMatchLevel::kScheme +
-                apps_util::IntentFilterMatchLevel::kHost);
+            static_cast<int>(apps::IntentFilterMatchLevel::kScheme) +
+                static_cast<int>(apps::IntentFilterMatchLevel::kHost));
   EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_scheme_only),
-            apps_util::IntentFilterMatchLevel::kScheme);
+            static_cast<int>(apps::IntentFilterMatchLevel::kScheme));
   EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_empty),
-            apps_util::IntentFilterMatchLevel::kNone);
+            static_cast<int>(apps::IntentFilterMatchLevel::kNone));
 
   EXPECT_TRUE(apps_util::GetFilterMatchLevel(filter_url) >
               apps_util::GetFilterMatchLevel(filter_scheme_and_host_only));
@@ -406,6 +408,39 @@ TEST_F(IntentUtilTest, FilterMatchLevel) {
               apps_util::GetFilterMatchLevel(filter_scheme_only));
   EXPECT_TRUE(apps_util::GetFilterMatchLevel(filter_scheme_only) >
               apps_util::GetFilterMatchLevel(filter_empty));
+}
+
+TEST_F(IntentUtilTest, FilterMatchLevel) {
+  auto filter_scheme_only = apps_util::MakeSchemeOnlyFilter("http");
+  auto filter_scheme_and_host_only =
+      apps_util::MakeSchemeAndHostOnlyFilter("https", "www.abc.com");
+  auto filter_url =
+      apps_util::MakeIntentFilterForUrlScope(GURL("https:://www.google.com/"));
+  auto filter_empty = std::make_unique<apps::IntentFilter>();
+
+  EXPECT_TRUE(filter_scheme_only->IsBrowserFilter());
+  EXPECT_FALSE(filter_scheme_and_host_only->IsBrowserFilter());
+  EXPECT_FALSE(filter_url->IsBrowserFilter());
+  EXPECT_FALSE(filter_empty->IsBrowserFilter());
+
+  EXPECT_EQ(filter_url->GetFilterMatchLevel(),
+            static_cast<int>(apps::IntentFilterMatchLevel::kScheme) +
+                static_cast<int>(apps::IntentFilterMatchLevel::kHost) +
+                static_cast<int>(apps::IntentFilterMatchLevel::kPattern));
+  EXPECT_EQ(filter_scheme_and_host_only->GetFilterMatchLevel(),
+            static_cast<int>(apps::IntentFilterMatchLevel::kScheme) +
+                static_cast<int>(apps::IntentFilterMatchLevel::kHost));
+  EXPECT_EQ(filter_scheme_only->GetFilterMatchLevel(),
+            static_cast<int>(apps::IntentFilterMatchLevel::kScheme));
+  EXPECT_EQ(filter_empty->GetFilterMatchLevel(),
+            static_cast<int>(apps::IntentFilterMatchLevel::kNone));
+
+  EXPECT_TRUE(filter_url->GetFilterMatchLevel() >
+              filter_scheme_and_host_only->GetFilterMatchLevel());
+  EXPECT_TRUE(filter_scheme_and_host_only->GetFilterMatchLevel() >
+              filter_scheme_only->GetFilterMatchLevel());
+  EXPECT_TRUE(filter_scheme_only->GetFilterMatchLevel() >
+              filter_empty->GetFilterMatchLevel());
 }
 
 // TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
@@ -930,6 +965,12 @@ GURL ext_test_url(const std::string& file_name) {
   return url;
 }
 
+GURL system_web_app_test_url(const std::string& file_name) {
+  GURL url = GURL("filesystem:chrome://file-manager/external/" + file_name);
+  EXPECT_TRUE(url.is_valid());
+  return url;
+}
+
 std::vector<apps::mojom::IntentFilePtr> vectorise(
     const apps::mojom::IntentFilePtr& file) {
   std::vector<apps::mojom::IntentFilePtr> vector;
@@ -1139,6 +1180,27 @@ TEST_F(IntentUtilTest, FileURLMatch) {
   EXPECT_FALSE(intent->MatchFilter(ext_wild_filter));
 }
 
+TEST_F(IntentUtilTest, FileSystemWebAppURLMatch) {
+  std::string mp3_url_pattern = R"(filesystem:chrome://.*/.*\.mp3)";
+
+  auto url_filter = apps_util::MakeURLFilterForView(mp3_url_pattern, "label");
+
+  // Test match with mp3 file extension.
+  auto intent = std::make_unique<apps::Intent>(
+      CreateIntentFiles(system_web_app_test_url("abc.mp3"), "", false));
+  EXPECT_TRUE(intent->MatchFilter(url_filter));
+
+  // Test non-match with mp4 file extension.
+  intent = std::make_unique<apps::Intent>(
+      CreateIntentFiles(system_web_app_test_url("abc.mp4"), "", false));
+  EXPECT_FALSE(intent->MatchFilter(url_filter));
+
+  // Test non-match with just the end of a file extension.
+  intent = std::make_unique<apps::Intent>(
+      CreateIntentFiles(system_web_app_test_url("abc.testmp3"), "", false));
+  EXPECT_FALSE(intent->MatchFilter(url_filter));
+}
+
 // TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
 TEST_F(IntentUtilTest, FileWithTitleTextMojom) {
   const std::string mime_type = "image/jpeg";
@@ -1336,7 +1398,8 @@ TEST_F(IntentUtilTest, CalculateCommonMimeType) {
                        {"image/png", "image/jpeg", "text/plain"}));
 }
 
-TEST_F(IntentUtilTest, IsGenericFileHandler) {
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, IsGenericFileHandlerMojom) {
   using apps::mojom::IntentFile;
   using apps::mojom::IntentFilePtr;
   using apps::mojom::IntentFilterPtr;
@@ -1443,6 +1506,116 @@ TEST_F(IntentUtilTest, IsGenericFileHandler) {
   IntentFilterPtr filter12 =
       apps_util::CreateFileFilterForView("inode/directory", "", kLabel);
   EXPECT_FALSE(apps_util::IsGenericFileHandler(intent3, filter12));
+}
+
+TEST_F(IntentUtilTest, IsGenericFileHandler) {
+  using apps::Intent;
+  using apps::IntentFile;
+  using apps::IntentFilePtr;
+  using apps::IntentFilterPtr;
+  using apps::IntentPtr;
+
+  std::vector<IntentFilePtr> intent_files;
+  IntentFilePtr foo = std::make_unique<IntentFile>(test_url("foo.jpg"));
+  foo->mime_type = "image/jpeg";
+  foo->is_directory = false;
+  intent_files.push_back(std::move(foo));
+
+  IntentFilePtr bar = std::make_unique<IntentFile>(test_url("bar.txt"));
+  bar->mime_type = "text/plain";
+  bar->is_directory = false;
+  intent_files.push_back(std::move(bar));
+
+  std::vector<IntentFilePtr> intent_files2;
+  IntentFilePtr foo2 = std::make_unique<IntentFile>(test_url("foo.ics"));
+  foo2->mime_type = "text/calendar";
+  foo2->is_directory = false;
+  intent_files2.push_back(std::move(foo2));
+
+  std::vector<IntentFilePtr> intent_files3;
+  IntentFilePtr foo_dir = std::make_unique<IntentFile>(test_url("foo/"));
+  foo_dir->mime_type = "";
+  foo_dir->is_directory = true;
+  intent_files3.push_back(std::move(foo_dir));
+
+  IntentPtr intent = std::make_unique<Intent>(std::move(intent_files));
+  IntentPtr intent2 = std::make_unique<Intent>(std::move(intent_files2));
+  IntentPtr intent3 = std::make_unique<Intent>(std::move(intent_files3));
+
+  const std::string kLabel = "";
+
+  // extensions: ["*"]
+  IntentFilterPtr filter1 = apps_util::MakeFileFilterForView("", "*", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter1));
+  EXPECT_TRUE(filter1->IsFileExtensionsFilter());
+
+  // extensions: ["*", "jpg"]
+  IntentFilterPtr filter2 = apps_util::MakeFileFilterForView("", "*", kLabel);
+  apps_util::AddConditionValue(apps::ConditionType::kFile, "jpg",
+                               apps::PatternMatchType::kFileExtension, filter2);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter2));
+  EXPECT_TRUE(filter2->IsFileExtensionsFilter());
+
+  // extensions: ["jpg"]
+  IntentFilterPtr filter3 = apps_util::MakeFileFilterForView("", "jpg", kLabel);
+  EXPECT_FALSE(apps_util::IsGenericFileHandler(intent, filter3));
+  EXPECT_TRUE(filter3->IsFileExtensionsFilter());
+
+  // types: ["*"]
+  IntentFilterPtr filter4 = apps_util::MakeFileFilterForView("*", "", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter4));
+  EXPECT_FALSE(filter4->IsFileExtensionsFilter());
+
+  // types: ["*/*"]
+  IntentFilterPtr filter5 = apps_util::MakeFileFilterForView("*/*", "", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter5));
+  EXPECT_FALSE(filter5->IsFileExtensionsFilter());
+
+  // types: ["image/*"]
+  IntentFilterPtr filter6 =
+      apps_util::MakeFileFilterForView("image/*", "", kLabel);
+  // Partial wild card is not generic.
+  EXPECT_FALSE(apps_util::IsGenericFileHandler(intent, filter6));
+  EXPECT_FALSE(filter6->IsFileExtensionsFilter());
+
+  // types: ["*", "image/*"]
+  IntentFilterPtr filter7 = apps_util::MakeFileFilterForView("*", "", kLabel);
+  apps_util::AddConditionValue(apps::ConditionType::kFile, "image/*",
+                               apps::PatternMatchType::kMimeType, filter7);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter7));
+  EXPECT_FALSE(filter7->IsFileExtensionsFilter());
+
+  // extensions: ["*"], types: ["image/*"]
+  IntentFilterPtr filter8 =
+      apps_util::MakeFileFilterForView("image/*", "*", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent, filter8));
+  EXPECT_FALSE(filter8->IsFileExtensionsFilter());
+
+  // types: ["text/*"] and target files contain unsupported text mime type, e.g.
+  // text/calendar.
+  IntentFilterPtr filter9 =
+      apps_util::MakeFileFilterForView("text/*", "", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent2, filter9));
+  EXPECT_FALSE(filter9->IsFileExtensionsFilter());
+
+  // types: ["text/*"] and target files don't contain unsupported text mime
+  // type.
+  IntentFilterPtr filter10 =
+      apps_util::MakeFileFilterForView("text/*", "", kLabel);
+  EXPECT_FALSE(apps_util::IsGenericFileHandler(intent, filter10));
+  EXPECT_FALSE(filter10->IsFileExtensionsFilter());
+
+  // File is a directory.
+  IntentFilterPtr filter11 =
+      apps_util::MakeFileFilterForView("text/*", "", kLabel);
+  EXPECT_TRUE(apps_util::IsGenericFileHandler(intent3, filter11));
+  EXPECT_FALSE(filter11->IsFileExtensionsFilter());
+
+  // File is a directory, but filter is inode/directory.
+  IntentFilterPtr filter12 =
+      apps_util::MakeFileFilterForView("inode/directory", "", kLabel);
+  EXPECT_FALSE(apps_util::IsGenericFileHandler(intent3, filter12));
+  EXPECT_FALSE(filter12->IsFileExtensionsFilter());
 }
 
 // TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.

@@ -31,6 +31,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -547,6 +548,8 @@ DispatchEventResult DragController::DispatchTextInputEventFor(
       *inner_frame,
       CreateVisibleSelection(
           SelectionInDOMTree::Builder().Collapse(caret_position).Build()));
+  if (!target)
+    return DispatchEventResult::kNotCanceled;
   return target->DispatchEvent(
       *TextEvent::CreateForDrop(inner_frame->DomWindow(), text));
 }
@@ -1251,8 +1254,7 @@ bool DragController::StartDrag(LocalFrame* src,
       // TODO(oshima): Remove this scaling and simply pass imageRect to
       // dragImageForImage once all platforms are migrated to use zoom for dsf.
       gfx::Size image_size_in_pixels = gfx::ScaleToFlooredSize(
-          image_rect.size(), src->GetPage()->DeviceScaleFactorDeprecated() *
-                                 src->GetPage()->GetVisualViewport().Scale());
+          image_rect.size(), src->GetPage()->GetVisualViewport().Scale());
 
       float screen_device_scale_factor =
           src->GetChromeClient().GetScreenInfo(*src).device_scale_factor;

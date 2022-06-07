@@ -16,12 +16,15 @@ source_set("commands") {
     "browsing_data_commands.h",
     "command_dispatcher.h",
     "command_dispatcher.mm",
+    "feed_commands.h",
     "find_in_page_commands.h",
     "generate_qr_code_command.h",
     "generate_qr_code_command.mm",
     "help_commands.h",
     "infobar_commands.h",
+    "lens_commands.h",
     "load_query_commands.h",
+    "new_tab_page_commands.h",
     "omnibox_commands.h",
     "omnibox_suggestion_commands.h",
     "open_new_tab_command.h",
@@ -47,6 +50,7 @@ source_set("commands") {
     "text_zoom_commands.h",
     "thumb_strip_commands.h",
     "toolbar_commands.h",
+    "tos_commands.h",
     "whats_new_commands.h",
   ]
 
@@ -63,6 +67,7 @@ source_set("commands") {
     "//components/browsing_data/core",
     "//components/password_manager/core/browser",
     "//ios/chrome/browser/browsing_data:browsing_data_remove_mask",
+    "//ios/chrome/browser/discover_feed:constants",
   ]
 }
 

@@ -6,12 +6,12 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/proximity_auth/messenger_impl.h"
 #include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "ash/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace proximity_auth {
 
@@ -22,8 +22,8 @@ const char kSmartLockFeatureName[] = "easy_unlock";
 }  // namespace
 
 RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
-    absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device,
+    ash::multidevice::RemoteDeviceRef remote_device,
+    absl::optional<ash::multidevice::RemoteDeviceRef> local_device,
     ash::secure_channel::SecureChannelClient* secure_channel_client)
     : remote_device_(remote_device),
       local_device_(local_device),
@@ -38,8 +38,8 @@ void RemoteDeviceLifeCycleImpl::Start() {
   FindConnection();
 }
 
-chromeos::multidevice::RemoteDeviceRef
-RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
+ash::multidevice::RemoteDeviceRef RemoteDeviceLifeCycleImpl::GetRemoteDevice()
+    const {
   return remote_device_;
 }
 

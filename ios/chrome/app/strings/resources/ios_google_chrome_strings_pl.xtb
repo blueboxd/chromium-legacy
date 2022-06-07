@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="1096883626080133124">Zwiększ produktywność, korzystając z prostej, bezpiecznej i wyjątkowo szybkiej przeglądarki Google Chrome</translation>
 <translation id="1143896152279775643">Hasło zostanie zapisane w menedżerze haseł Google na koncie <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Pomóż w ulepszaniu funkcji i działania Chrome</translation>
 <translation id="1479202195792305274">Chrome może sprawdzić Twoje hasła, gdy zalogujesz się na swoje konto Google.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Korzystaj z Chrome w dowolnym miejscu</translation>
 <translation id="3522659714780527202">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chrome, włącz synchronizację</translation>
 <translation id="3533694711092285624">Brak zapisanych haseł. Chrome może sprawdzać Twoje hasła, gdy je zapiszesz.</translation>
-<translation id="3634910711516114487">Aby w pełni wykorzystać możliwości Chrome, zaloguj się na konto Google</translation>
 <translation id="3655656110921623717">Oznacza to, że Chrome będzie za każdym razem wyświetlać witrynę mobilną.</translation>
 <translation id="3706101708757577809">Teraz możesz używać Chrome za każdym razem, gdy klikniesz link w wiadomościach, dokumentach i w innych aplikacjach.</translation>
 <translation id="3720541637541300822">Po zamknięciu Chrome blokuj karty incognito</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Wskutek naruszenia bezpieczeństwa danych doszło do ujawnienia hasła. Menedżer haseł Google zaleca, aby jak najszybciej je zmienić.</translation>
 <translation id="6822673484890854830">Przeglądarce Chrome nie udało się sprawdzić wszystkich haseł. Spróbuj ponownie później.</translation>
 <translation id="6964931465519938134">Teraz możesz używać Chrome za każdym razem, gdy klikniesz link w wiadomościach, dokumentach i w innych aplikacjach.</translation>
-<translation id="7046845777663074840">Po włączeniu:
-<ph name="BEGIN_INDENT" />  • Pomagaj w udoskonalaniu Chrome pod kątem potrzeb użytkowników, którzy korzystają z przeglądarki w taki sam sposób jak Ty.<ph name="END_INDENT" />
-
-Pamiętaj, że:
-<ph name="BEGIN_INDENT" />  • Do Google są wysyłane informacje o tym, jak używasz Chrome, ale nie są one powiązane z Tobą.
-
-  • Jeśli Chrome ulegnie awarii, szczegółowe informacje o problemie mogą zawierać niektóre dane osobowe.
-
-  • Jeśli włączysz synchronizację, dane mogą też zawierać informacje o adresach URL, które odwiedzasz.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Dostosuj Chrome do swoich potrzeb</translation>
 <translation id="7124339256045485976">Zawsze używaj aktualnej wersji Chrome</translation>
 <translation id="7161390184744336561">Masz nieaktualną wersję Google Chrome</translation>
 <translation id="7165736900384873061">Skaner QR w Google Chrome</translation>
 <translation id="7172660552945675509">Wskazówka: <ph name="BEGIN_LINK" />przenieś Chrome do Docka<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome używa Face ID do autoryzacji dostępu do Twoich haseł.</translation>
+<translation id="7187993566681480880">Dba o Twoje bezpieczeństwo w Chrome i może poprawiać Twoje bezpieczeństwo w innych aplikacjach Google, gdy się w nich zalogujesz.</translation>
 <translation id="72119412072970160">Haseł zapisanych w menedżerze haseł Google możesz używać w innych aplikacjach na iPadzie.</translation>
 <translation id="7261678641327190792">Chrome nie może sprawdzić Twoich haseł</translation>
 <translation id="7272930098487145294">Aby zapisać obrazy, kliknij Ustawienia i pozwól Chrome na dodanie ich do Twoich zdjęć</translation>
@@ -110,6 +100,7 @@ Pamiętaj, że:
 <translation id="766361182512894255">Wskutek naruszenia bezpieczeństwa danych doszło do ujawnienia hasła. Chrome zaleca jego natychmiastową zmianę.</translation>
 <translation id="7693590760643069321">Teraz możesz używać Chrome za każdym razem, gdy klikniesz link w wiadomościach, dokumentach i w innych aplikacjach.</translation>
 <translation id="7698568245838009292">Chrome chce mieć dostęp do kamery</translation>
+<translation id="7780154209050837198">Aby w pełni wykorzystać możliwości Chrome, zaloguj się na konto Google.</translation>
 <translation id="7855730255114109580">Masz aktualną wersję Google Chrome</translation>
 <translation id="8022947259858476807">Używaj domyślnie Chrome, aby otwierać linki, wyszukiwać z widżetów i korzystać z autouzupełniania haseł w innych aplikacjach</translation>
 <translation id="8160472928944011082">Nie udało się zaktualizować Chrome</translation>

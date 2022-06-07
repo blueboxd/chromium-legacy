@@ -190,6 +190,7 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
     this.initializeLoginScreen('ConsolidatedConsentScreen', {
       resetAllowed: true,
     });
+    this.updateLocalizedContent();
 
     if (loadTimeData.valueExists(
             'consolidatedConsentArcTosHostNameForTesting')) {
@@ -199,7 +200,6 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   }
 
   onBeforeShow(data) {
-    this.updateLocalizedContent();
     window.setTimeout(this.applyOobeConfiguration_);
 
     this.isArcEnabled_ = data['isArcEnabled'];
@@ -342,7 +342,8 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
     var tosLoader = new WebViewLoader(
         webview, CONSOLIDATED_CONSENT_ONLINE_LOAD_TIMEOUT_IN_MS,
-        loadFailureCallback, false /* clear_anchors */, false /* inject_css */);
+        loadFailureCallback, this.isDemo_ /* clear_anchors */,
+        false /* inject_css */);
     tosLoader.setUrl(online_tos_url);
   }
 
@@ -389,7 +390,8 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
     var tosLoader = new WebViewLoader(
         webview, CONSOLIDATED_CONSENT_ONLINE_LOAD_TIMEOUT_IN_MS,
-        loadFailureCallback, false /* clear_anchors */, false /* inject_css */);
+        loadFailureCallback, this.isDemo_ /* clear_anchors */,
+        false /* inject_css */);
     tosLoader.setUrl(online_tos_url);
   }
 

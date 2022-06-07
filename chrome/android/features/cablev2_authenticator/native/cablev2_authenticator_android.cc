@@ -30,6 +30,7 @@
 
 // These "headers" actually contain several function definitions and thus can
 // only be included once across Chromium.
+#include "base/time/time.h"
 #include "chrome/android/features/cablev2_authenticator/jni_headers/BLEAdvert_jni.h"
 #include "chrome/android/features/cablev2_authenticator/jni_headers/CableAuthenticator_jni.h"
 #include "chrome/android/features/cablev2_authenticator/jni_headers/USBHandler_jni.h"
@@ -707,7 +708,10 @@ static jlong JNI_CableAuthenticator_StartQR(
       CableV2MobileEvent::kStoppedWhileAwaitingTunnelServerConnection;
   global_data
       .current_transaction = device::cablev2::authenticator::TransactFromQRCode(
-      /*protocol_revision=*/0,
+      // Just because the client supports storing linking information doesn't
+      // imply that it supports revision one, but we happened to introduce
+      // these features at the same time.
+      /*protocol_revision=*/decoded_qr->supports_linking.has_value() ? 1 : 0,
       std::make_unique<AndroidPlatform>(env, cable_authenticator,
                                         /*is_usb=*/false),
       global_data.network_context, *global_data.root_secret,

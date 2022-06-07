@@ -115,6 +115,7 @@ void ImageResourceContent::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
   visitor->Trace(finished_observers_);
   ImageObserver::Trace(visitor);
+  MediaTiming::Trace(visitor);
 }
 
 void ImageResourceContent::HandleObserverFinished(
@@ -150,7 +151,7 @@ void ImageResourceContent::AddObserver(ImageResourceObserver* observer) {
     observer->ImageChanged(this, CanDeferInvalidation::kNo);
   }
 
-  if (IsLoaded() && observers_.Contains(observer))
+  if (IsSufficientContentLoadedForPaint() && observers_.Contains(observer))
     HandleObserverFinished(observer);
 }
 
@@ -485,11 +486,14 @@ ImageDecoder::CompressionFormat ImageResourceContent::GetCompressionFormat()
 }
 
 uint64_t ImageResourceContent::ContentSizeForEntropy() const {
-  uint64_t resource_length =
-      static_cast<double>(GetResponse().ExpectedContentLength());
-  if (resource_length <= 0 && image_ && image_->HasData()) {
-    // WPT and LayoutTests server returns -1 or 0 for the content length.
-    resource_length = image_->DataSize();
+  int64_t resource_length = GetResponse().ExpectedContentLength();
+  if (resource_length <= 0) {
+    if (image_ && image_->HasData()) {
+      // WPT and LayoutTests server returns -1 or 0 for the content length.
+      resource_length = image_->DataSize();
+    } else {
+      resource_length = 0;
+    }
   }
   return resource_length;
 }
@@ -614,6 +618,10 @@ void ImageResourceContent::EmulateLoadStartedForInspector(
   info_->EmulateLoadStartedForInspector(fetcher, url, initiator_name);
 }
 
+bool ImageResourceContent::IsSufficientContentLoadedForPaint() const {
+  return IsLoaded();
+}
+
 bool ImageResourceContent::IsLoaded() const {
   return GetContentStatus() > ResourceStatus::kPending;
 }
@@ -635,9 +643,16 @@ ResourceStatus ImageResourceContent::GetContentStatus() const {
   return content_status_;
 }
 
-bool ImageResourceContent::IsAnimatedImageWithPaintedFirstFrame() const {
-  return (image_ && !image_->IsNull() && image_->MaybeAnimated() &&
-          image_->CurrentFrameIsComplete());
+bool ImageResourceContent::IsAnimatedImage() const {
+  return image_ && !image_->IsNull() && image_->MaybeAnimated();
+}
+
+bool ImageResourceContent::IsPaintedFirstFrame() const {
+  return IsAnimatedImage() && image_->CurrentFrameIsComplete();
+}
+
+bool ImageResourceContent::TimingAllowPassed() const {
+  return GetResponse().TimingAllowPassed();
 }
 
 // TODO(hiroshige): Consider removing the following methods, or stopping

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-HK">
-<translation id="1096883626080133124">Google Chrome 比以前更簡便、安全而快速，讓您事半功倍</translation>
 <translation id="1143896152279775643">系統會將密碼儲存在 <ph name="EMAIL" /> 的「Google 密碼管理工具」。</translation>
 <translation id="1282031177488366470">協助改善 Chrome 的功能和效能</translation>
 <translation id="1479202195792305274">Chrome 可在您使用 Google 帳戶登入時檢查密碼。</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">隨時隨地使用 Chrome</translation>
 <translation id="3522659714780527202">如要在任何使用 Chrome 的裝置上查看分頁，請開啟同步處理功能</translation>
 <translation id="3533694711092285624">沒有已儲存的密碼。儲存密碼時，Chrome 可檢查您的密碼。</translation>
-<translation id="3634910711516114487">如要充分運用 Chrome 的所有功能，請透過 Google 帳戶登入 Chrome</translation>
 <translation id="3655656110921623717">這代表 Chrome 每次都會要求取得流動網站。</translation>
 <translation id="3706101708757577809">您現在只要在訊息、文件或其他應用程式中輕按連結，即可使用 Chrome。</translation>
 <translation id="3720541637541300822">關閉 Chrome 時鎖定無痕式分頁</translation>
@@ -83,19 +81,13 @@
 <translation id="6709398533399187136">您的密碼因資料外洩而被洩露。Google 密碼管理工具建議您立即變更密碼。</translation>
 <translation id="6822673484890854830">Chrome 無法檢查所有密碼。請稍後再試。</translation>
 <translation id="6964931465519938134">您現在只要在訊息、文件或其他應用程式中輕按連結，即可使用 Chrome。</translation>
-<translation id="7046845777663074840">開啟時：
-<ph name="BEGIN_INDENT" />  • 可協助 Chrome 為使用者提供更優質的使用體驗。<ph name="END_INDENT" />
-
-注意事項：
-<ph name="BEGIN_INDENT" />  • 系統會將 Chrome 使用情況傳送給 Google，但不會與您有任何關聯。
-  • Chromium 當機時，有關當機詳情可能會包括部分個人資料。
-  • 開啟同步處理功能後，數據可能亦會包括先前瀏覽網址的資料。<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">自訂屬於您的 Chrome</translation>
 <translation id="7124339256045485976">取得 Chrome 最新更新</translation>
 <translation id="7161390184744336561">Google Chrome 版本過舊</translation>
 <translation id="7165736900384873061">開始使用 Google Chrome 二維條碼掃描器</translation>
 <translation id="7172660552945675509">提示：<ph name="BEGIN_LINK" />將 Chrome 移至工具列<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome 透過 Face ID 確保只有獲授權人士才可存取您的密碼。</translation>
+<translation id="7187993566681480880">確保您登入使用 Chrome 的安全，並可提升您在其他 Google 應用程式的安全性。</translation>
 <translation id="72119412072970160">您可在 iPad 上的其他應用程式使用您儲存到「Google 密碼管理工具」的密碼。</translation>
 <translation id="7261678641327190792">Chrome 無法檢查密碼</translation>
 <translation id="7272930098487145294">如要儲存圖片，請輕按 [設定] 並允許 Chrome 新增您的相片</translation>
@@ -108,6 +100,7 @@
 <translation id="766361182512894255">您的密碼因資料外洩而被洩露。Chrome 建議立即變更密碼。</translation>
 <translation id="7693590760643069321">您現在只要在訊息、文件或其他應用程式中輕按連結，即可使用 Chrome。</translation>
 <translation id="7698568245838009292">Chrome 要求存取相機</translation>
+<translation id="7780154209050837198">如要充分運用 Chrome 的所有功能，請透過 Google 帳戶登入 Chrome。</translation>
 <translation id="7855730255114109580">Google Chrome 已是最新版本</translation>
 <translation id="8022947259858476807">預設使用 Chrome 來開啟連結、從小工具搜尋，以及在其他應用程式中自動填入密碼</translation>
 <translation id="8160472928944011082">Chrome 無法更新</translation>

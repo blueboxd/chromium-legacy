@@ -26,6 +26,7 @@ class Point;
 
 namespace ui {
 class WindowTreeHost;
+class SimpleMenuModel;
 }
 
 namespace views {
@@ -198,9 +199,6 @@ class ASH_EXPORT RootWindowController {
   // for something else.
   void MoveWindowsTo(aura::Window* dest);
 
-  // Force the shelf to query for it's current visibility state.
-  void UpdateShelfVisibility();
-
   // Initialize touch HUDs if necessary.
   void InitTouchHuds();
 
@@ -231,6 +229,9 @@ class ASH_EXPORT RootWindowController {
   void CloseAmbientWidget(bool immediately);
 
   views::Widget* ambient_widget_for_testing() { return ambient_widget_.get(); }
+  AppMenuModelAdapter* menu_model_adapter_for_testing() {
+    return root_window_menu_model_adapter_.get();
+  }
 
   // Returns accessibility panel layout manager for this root window.
   AccessibilityPanelLayoutManager* GetAccessibilityPanelLayoutManagerForTest();
@@ -282,6 +283,7 @@ class ASH_EXPORT RootWindowController {
 
   // Manages the context menu.
   std::unique_ptr<AppMenuModelAdapter> root_window_menu_model_adapter_;
+  std::unique_ptr<ui::SimpleMenuModel> sort_apps_submenu_;
 
   std::unique_ptr<StackingController> stacking_controller_;
 

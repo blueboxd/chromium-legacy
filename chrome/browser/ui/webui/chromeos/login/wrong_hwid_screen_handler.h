@@ -37,7 +37,7 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenView,
  public:
   using TView = WrongHWIDScreenView;
 
-  explicit WrongHWIDScreenHandler(JSCallsContainer* js_calls_container);
+  WrongHWIDScreenHandler();
 
   WrongHWIDScreenHandler(const WrongHWIDScreenHandler&) = delete;
   WrongHWIDScreenHandler& operator=(const WrongHWIDScreenHandler&) = delete;
@@ -54,7 +54,7 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenView,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   ash::WrongHWIDScreen* screen_ = nullptr;
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {beforeNextRender, dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
@@ -33,7 +33,7 @@ export enum RouteState {
 }
 
 let guestTopLevelRoute = routes.SEARCH;
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 guestTopLevelRoute = routes.PRIVACY;
 // </if>
 

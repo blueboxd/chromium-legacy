@@ -18,7 +18,7 @@
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -167,7 +167,7 @@ void EulaScreen::ShowImpl() {
         ::tpm_manager::TakeOwnershipRequest(), base::DoNothing());
   }
   if (WizardController::IsZeroTouchHandsOffOobeFlow())
-    OnUserAction(kUserActionAcceptButtonClicked);
+    OnUserActionDeprecated(kUserActionAcceptButtonClicked);
   else if (view_)
     view_->Show();
 }
@@ -177,9 +177,9 @@ void EulaScreen::HideImpl() {
     view_->Hide();
 }
 
-void EulaScreen::OnUserAction(const std::string& action_id) {
+void EulaScreen::OnUserActionDeprecated(const std::string& action_id) {
   if (!IsEulaUserAction(action_id)) {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
     return;
   }
   RecordUserAction(action_id);

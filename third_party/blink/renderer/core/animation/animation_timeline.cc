@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 
 namespace blink {
 
@@ -90,10 +91,12 @@ void AnimationTimeline::ClearOutdatedAnimation(Animation* animation) {
 wtf_size_t AnimationTimeline::AnimationsNeedingUpdateCount() const {
   wtf_size_t count = 0;
   for (const auto& animation : animations_needing_update_) {
-    // This function is for frame sequence tracking for animations. Exclude
-    // no-effect animations which don't generate frames.
-    if (!animation->AnimationHasNoEffect())
-      count++;
+    // Exclude animations which are not actively generating frames.
+    if ((!animation->CompositorPending() && !animation->Playing()) ||
+        animation->AnimationHasNoEffect()) {
+      continue;
+    }
+    count++;
   }
   return count;
 }

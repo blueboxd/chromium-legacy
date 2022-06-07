@@ -72,6 +72,11 @@ void MatchResult::FinishAddingUARules() {
 
 void MatchResult::FinishAddingUserRules() {
   DCHECK_EQ(current_origin_, CascadeOrigin::kUser);
+  current_origin_ = CascadeOrigin::kAuthorPresentationalHint;
+}
+
+void MatchResult::FinishAddingPresentationalHints() {
+  DCHECK_EQ(current_origin_, CascadeOrigin::kAuthorPresentationalHint);
   current_origin_ = CascadeOrigin::kAuthor;
 }
 
@@ -80,15 +85,6 @@ void MatchResult::FinishAddingAuthorRulesForTreeScope(
   DCHECK_EQ(current_origin_, CascadeOrigin::kAuthor);
   tree_scopes_.push_back(&tree_scope);
   current_tree_order_ = base::ClampAdd(current_tree_order_, 1);
-}
-
-MatchedExpansionsRange MatchResult::Expansions(const Document& document,
-                                               CascadeFilter filter) const {
-  return MatchedExpansionsRange(
-      MatchedExpansionsIterator(matched_properties_.begin(), document, filter,
-                                0),
-      MatchedExpansionsIterator(matched_properties_.end(), document, filter,
-                                matched_properties_.size()));
 }
 
 void MatchResult::Reset() {

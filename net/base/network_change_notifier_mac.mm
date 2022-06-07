@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
@@ -80,9 +79,6 @@ NetworkChangeNotifierMac::GetCurrentConnectionType() const {
 
   if (connection_type_initialized_)
     return connection_type_;
-
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Net.NetworkChangeNotifierMac.GetCurrentConnectionTypeWaitTime");
 
   // Wait up to a limited amount of time for the connection type to be
   // determined, to avoid blocking the main thread indefinitely. Since

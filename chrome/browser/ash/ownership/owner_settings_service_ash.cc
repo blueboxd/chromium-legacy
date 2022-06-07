@@ -11,6 +11,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/tpm/install_attributes.h"
+#include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -20,7 +22,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -32,8 +33,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/tpm/install_attributes.h"
-#include "chromeos/tpm/tpm_token_loader.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
@@ -279,14 +278,14 @@ bool OwnerSettingsServiceAsh::HasPendingChanges() const {
 }
 
 bool OwnerSettingsServiceAsh::IsOwner() {
-  if (chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
+  if (InstallAttributes::Get()->IsEnterpriseManaged()) {
     return false;
   }
   return OwnerSettingsService::IsOwner();
 }
 
 void OwnerSettingsServiceAsh::IsOwnerAsync(IsOwnerCallback callback) {
-  if (chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
+  if (InstallAttributes::Get()->IsEnterpriseManaged()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;

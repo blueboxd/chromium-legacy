@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">Lai saglabātu attēlus, pieskarieties vienumam Iestatījumi un atļaujiet Chromium pievienot fotoattēlus.</translation>
 <translation id="1289216811211435351">Pāriešana uz Chromium</translation>
 <translation id="1361748954329991663">Pārlūka Chromium versija ir novecojusi. Ja veikalā <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> nav pieejami atjauninājumi, iespējams, jūsu ierīcē vairs netiek atbalstītas pārlūka Chromium jaunās versijas.</translation>
-<translation id="1370204544543370355">Lai pilnvērtīgi izmantotu pārlūku Chromium, pierakstieties tajā, izmantojot savu Google kontu</translation>
 <translation id="1431818719585918472">Atļaujiet pārlūkā Chromium bloķēt inkognito cilnes.</translation>
 <translation id="1472013873724362412">Jūsu konts nedarbojas pārlūkā Chromium. Sazinieties ar savu domēna administratoru vai pierakstieties, izmantojot parastu Google kontu.</translation>
 <translation id="1507010443238049608">Palīdzēt uzlabot Chromium funkcijas un veiktspēju</translation>
@@ -31,7 +30,6 @@
 <translation id="2426113998523353159">Saskaņā ar jūsu organizācijas prasībām, lai izmantotu pārlūku Chromium, jums ir jāpierakstās.</translation>
 <translation id="2450140762465183767">Tagad varat izmantot Chromium ikreiz, kad pieskaraties saitēm ziņojumos, dokumentos un citās lietotnēs.</translation>
 <translation id="2478931088402984578">Atlasiet <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />.</translation>
-<translation id="2567507405773541360">Vairāk iespēju vienkāršajā un drošajā pārlūkā Chromium, kas tagad ir vēl ātrāks</translation>
 <translation id="2590893390871230428">Sinhronizēt jūsu Chromium datus</translation>
 <translation id="2650312721222849884">Lai skatītu cilnes no ierīcēm, kurās lietojat pārlūku Chromium, ieslēdziet sinhronizāciju.</translation>
 <translation id="2684230048001240293">Lai visās ierīcēs sinhronizētu savas cilnes, paroles un maksājumu informāciju, iestatiet pārlūku Chromium kā noklusējuma pārlūku</translation>
@@ -43,6 +41,7 @@
 <translation id="3256316712990552818">Nokopēta pārlūkā Chromium</translation>
 <translation id="3344973607274501920">Pārlūkprogrammā Chromium nevarēja pārbaudīt jūsu paroles. Pārbaudiet interneta savienojumu.</translation>
 <translation id="3472200483164753384">Netiek atbalstīta pārlūkā Chromium Canary.</translation>
+<translation id="3567399274263440288">Lai pilnvērtīgi izmantotu pārlūku Chromium, pierakstieties tajā, izmantojot savu Google kontu.</translation>
 <translation id="3639997914391704523">Pārlūkprogrammā Chromium var pārbaudīt jūsu paroles, ja esat pierakstījies savā Google kontā.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> izmantoja pārlūku Chromium un neizdzēsa grāmatzīmes, paroles un citus iestatījumus šajā ierīcē.</translation>
 <translation id="3805899903892079518">Chromium nevar piekļūt jūsu fotoattēliem un videoklipiem. Iespējojiet piekļuvi: iOS Settings &gt; Privacy &gt; Photos.</translation>
@@ -56,13 +55,6 @@
 <translation id="4828317641996116749">Pārlūkprogrammā Chromium nevarēja pārbaudīt visas paroles. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="4985291216379576555">Bezsaistē, pārlūkā Chromium nevar pārbaudīt atjauninājumu pieejamību.</translation>
 <translation id="4999538639245140991">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="SIGNOUT_MANAGED_DOMAIN" />, tādēļ jūsu Chromium dati tiks dzēsti no šīs ierīces. Dati joprojām būs pieejami jūsu Google kontā.</translation>
-<translation id="5039881550736388123">Kad iestatījums ir ieslēgts
-<ph name="BEGIN_INDENT" />  • Palīdziet uzlabot pārlūku Chromium visiem lietotājiem, kuri to izmanto līdzīgi jums.<ph name="END_INDENT" />
-
-Svarīga informācija
-<ph name="BEGIN_INDENT" />  • Uzņēmumam Google tiek nosūtīta informācija par Chromium lietojumu, taču tā netiek saistīta ar jums.
-  • Ja pārlūks Chromium avarē, informācija par avāriju var ietvert noteiktu personas informāciju.
-  • Ja ieslēgsiet sinhronizāciju, dati var ietvert arī informāciju par jūsu apmeklētajiem vietrāžiem URL.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Pierakstīšanās pārlūkprogrammā Chromium</translation>
 <translation id="5224391634244552924">Nav saglabātu paroļu. Pārlūkprogrammā Chromium var pārbaudīt jūsu paroles, ja jūs tās saglabājat.</translation>
 <translation id="5308226104666789935">Pārlūkā Chromium nevar pārbaudīt atjauninājumu pieejamību.</translation>

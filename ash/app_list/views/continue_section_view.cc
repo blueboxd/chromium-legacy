@@ -19,6 +19,7 @@
 #include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/app_list/views/app_list_view_util.h"
 #include "ash/app_list/views/continue_task_view.h"
+#include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/bubble/bubble_utils.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -42,7 +43,7 @@
 namespace ash {
 namespace {
 // Header paddings in dips.
-constexpr gfx::Insets kHeaderPadding(0, 12, 4, 12);
+constexpr auto kHeaderPadding = gfx::Insets::TLBR(0, 12, 4, 12);
 
 // Suggested tasks layout constants.
 constexpr size_t kMinFilesForContinueSectionClamshellMode = 3;
@@ -53,7 +54,8 @@ constexpr size_t kPrivacyIconSizeClamshell = 60;
 constexpr size_t kPrivacyIconSizeTablet = 48;
 
 // Privacy toast interior margin
-constexpr gfx::Insets kPrivacyToastInteriorMarginClamshell(12, 12, 12, 16);
+constexpr auto kPrivacyToastInteriorMarginClamshell =
+    gfx::Insets::TLBR(12, 12, 12, 16);
 
 // Delay before marking the privacy notice as swhon.
 const base::TimeDelta kPrivacyNoticeShownDelay = base::Seconds(6);
@@ -80,10 +82,12 @@ void CleanupLayer(views::View* view) {
 
 }  // namespace
 
-ContinueSectionView::ContinueSectionView(AppListViewDelegate* view_delegate,
-                                         int columns,
-                                         bool tablet_mode)
-    : tablet_mode_(tablet_mode) {
+ContinueSectionView::ContinueSectionView(
+    AppListViewDelegate* view_delegate,
+    SearchResultPageDialogController* dialog_controller,
+    int columns,
+    bool tablet_mode)
+    : dialog_controller_(dialog_controller), tablet_mode_(tablet_mode) {
   DCHECK(view_delegate);
 
   AppListModelProvider::Get()->AddObserver(this);
@@ -113,9 +117,8 @@ ContinueSectionView::ContinueSectionView(AppListViewDelegate* view_delegate,
           base::BindRepeating(
               &ContinueSectionView::OnSearchResultContainerResultsChanged,
               base::Unretained(this)),
-          tablet_mode));
-
-  UpdateElementsVisibility();
+          dialog_controller_, tablet_mode));
+  suggestions_container_->SetVisible(false);
 }
 
 ContinueSectionView::~ContinueSectionView() {
@@ -306,6 +309,7 @@ void ContinueSectionView::RemovePrivacyNotice() {
     privacy_toast_ = nullptr;
   }
   UpdateElementsVisibility();
+  PreferredSizeChanged();
 }
 
 void ContinueSectionView::OnPrivacyNoticeShowTimerDone() {
@@ -390,10 +394,17 @@ void ContinueSectionView::MaybeAnimateOutPrivacyNotice() {
 void ContinueSectionView::UpdateElementsVisibility() {
   const bool show_files_section = ShouldShowFilesSection();
   const bool show_privacy_notice = ShouldShowPrivacyNotice();
+
   SetVisible(show_files_section || show_privacy_notice);
+
+  const bool suggestions_visibility_changed =
+      show_files_section != suggestions_container_->GetVisible();
   suggestions_container_->SetVisible(show_files_section);
   if (continue_label_)
     continue_label_->SetVisible(show_files_section);
+
+  if (suggestions_visibility_changed)
+    PreferredSizeChanged();
 }
 
 void ContinueSectionView::AddedToWidget() {
@@ -455,6 +466,9 @@ void ContinueSectionView::OnAppListVisibilityChanged(bool shown,
   if (shown)
     MaybeCreatePrivacyNotice();
   UpdateElementsVisibility();
+
+  if (privacy_toast_)
+    PreferredSizeChanged();
 }
 
 BEGIN_METADATA(ContinueSectionView, views::View)

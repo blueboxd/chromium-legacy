@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/registration.h"
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
@@ -14,7 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/component_updater/app_provisioning_component_installer.h"
-#include "chrome/browser/component_updater/autofill_regex_component_installer.h"
+#include "chrome/browser/component_updater/autofill_regex_remover.h"
 #include "chrome/browser/component_updater/chrome_client_side_phishing_component_installer.h"
 #include "chrome/browser/component_updater/chrome_origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
@@ -63,7 +64,6 @@
 #include "chrome/browser/component_updater/commerce_heuristics_component_installer.h"
 #include "chrome/browser/component_updater/desktop_screenshot_editor_component_installer.h"
 #include "chrome/browser/component_updater/desktop_sharing_hub_component_installer.h"
-#include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "media/base/media_switches.h"
@@ -88,6 +88,10 @@
 #if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 #endif  // BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
+
+#if BUILDFLAG(IS_LINUX)
+#include "chrome/browser/component_updater/screen_ai_component_installer.h"
+#endif  // BUILDFLAG(IS_LINUX)
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -140,6 +144,8 @@ void RegisterComponentsForUpdate() {
     // The CRLSet component previously resided in a different location: delete
     // the old file.
     component_updater::DeleteLegacyCRLSet(path);
+
+    component_updater::DeleteAutofillRegex(path);
 
 #if BUILDFLAG(IS_ANDROID)
     // Clean up any desktop sharing hubs that were installed on Android.
@@ -205,9 +211,11 @@ void RegisterComponentsForUpdate() {
 
   RegisterAutofillStatesComponent(cus, g_browser_process->local_state());
 
-  RegisterAutofillRegexComponent(cus);
-
   RegisterClientSidePhishingComponent(cus);
+
+#if BUILDFLAG(IS_LINUX)
+  RegisterScreenAIComponent(cus, g_browser_process->local_state());
+#endif  // BUILDFLAG(IS_LINUX)
 }
 
 }  // namespace component_updater

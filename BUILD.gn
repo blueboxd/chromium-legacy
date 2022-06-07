@@ -86,6 +86,7 @@ group("gn_all") {
     "//codelabs",
     "//components:components_unittests",
     "//components/gwp_asan:gwp_asan_unittests",
+    "//infra/orchestrator:orchestrator_all",
     "//net:net_unittests",
     "//services:services_unittests",
     "//services/service_manager/public/cpp",
@@ -129,7 +130,7 @@ group("gn_all") {
     ]
   }
 
-  if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
+  if (!is_ios && !is_android && !is_chromecast) {
     deps += [
       "//chrome",
       "//chrome/browser/ui/color:dump_colors",
@@ -177,7 +178,6 @@ group("gn_all") {
       "//components/viz:viz_unittests",
       "//content/shell:content_shell",
       "//content/test:content_browsertests",
-      "//content/test:content_perftests",
       "//content/test:content_unittests",
       "//device:device_unittests",
       "//gpu:gpu_benchmark",
@@ -209,7 +209,7 @@ group("gn_all") {
     ]
   }
 
-  if (is_win || (is_linux && !is_chromeos_lacros) || is_android) {
+  if (is_win || is_linux || is_android) {
     deps += [
       "//weblayer/shell:weblayer_shell",
       "//weblayer/test:weblayer_browsertests",
@@ -238,7 +238,7 @@ group("gn_all") {
     deps += [ "//chrome/browser/media/router:openscreen_unittests" ]
   }
 
-  if (!is_ios && !is_fuchsia) {
+  if (!is_ios) {
     deps += [
       "//google_apis/gcm:mcs_probe",
       "//media/cast:cast_unittests",
@@ -252,17 +252,32 @@ group("gn_all") {
         deps += [ "//chrome/test:telemetry_perf_unittests${_target_suffix}" ]
       }
     }
-  } else if (is_ios) {
+  } else {
     deps += [
       "//ios:all",
       "//third_party/crashpad/crashpad:crashpad_tests",
     ]
-  } else if (is_fuchsia && !is_chromecast) {
+  }
+
+  if (is_fuchsia && !is_chromecast) {
     deps += [
       ":d8_fuchsia",
-      "//fuchsia:gn_all",
-      "//headless:headless_non_renderer",
+      "//fuchsia/engine:web_engine",
+      "//fuchsia/release:fuchsia_sizes",
+      "//fuchsia/runners:cast_runner",
+      "//fuchsia/runners:web_runner",
+
+      # Ensure this target, used by cipd, is built in all configurations.
+      # TODO(crbug.com/1265618): Remove this once it has a natural dependency.
+      "//media/cdm/library_cdm/clear_key_cdm",
+
+      # Ensure this target continues to build.
+      "//chromecast/bindings:bindings_manager_fuchsia",
     ]
+
+    if (is_official_build) {
+      deps += [ "//fuchsia/cipd" ]
+    }
   }
 
   deps += root_extra_deps
@@ -347,7 +362,7 @@ group("gn_all") {
 
   if (is_android) {
     deps += [
-      "//android_webview/tools/js_sandbox_tests:webview_js_sandbox_test_app",
+      "//android_webview/js_sandbox/javatests:webview_js_sandbox_test_app",
       "//base:base_junit_tests",
       "//base/android/jni_generator:jni_generator_tests",
       "//base/android/linker:chromium_android_linker",
@@ -464,7 +479,7 @@ group("gn_all") {
     ]
   }
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos) {
     deps += [ "//chromeos:chromeos_unittests" ]
   }
 
@@ -503,7 +518,7 @@ group("gn_all") {
     }
   }
 
-  if (is_ios || is_win || (is_linux || is_chromeos_lacros) || is_fuchsia) {
+  if (is_ios || is_win || is_linux || is_chromeos_lacros || is_fuchsia) {
     deps += [
       "//base:base_i18n_perftests",
       "//google_apis:google_apis_unittests",
@@ -516,8 +531,8 @@ group("gn_all") {
   }
 
   # TODO(GYP): Figure out which of these should (and can) build
-  # for Chrome OS, iOS, and Fuchsia.
-  if (!is_chromeos_ash && !is_ios && !is_fuchsia) {
+  # for Chrome OS and iOS.
+  if (!is_chromeos_ash && !is_ios) {
     deps += [
       "//base:build_utf8_validator_tables",
       "//base:check_example",
@@ -566,7 +581,9 @@ group("gn_all") {
       deps += [ "//extensions/shell:app_shell" ]
     }
 
-    if (enable_nacl) {
+    # TODO(https://crbug.com/1299021): Implement building these NaCl targets
+    # as ARM32 when Chrome is built for ARM64 (for Linux/Chrome OS).
+    if (enable_nacl && target_cpu != "arm64") {
       deps += [ "//components/nacl/loader:nacl_loader_unittests" ]
 
       if (is_linux || is_chromeos) {
@@ -587,11 +604,18 @@ group("gn_all") {
     ]
   }
 
-  if (is_fuchsia) {
+  # TODO(crbug.com/1258253): Consolidate all ChromeDriver deps in one location
+  # and avoid conditionally removing targets.
+  if (is_fuchsia && !is_chromecast) {
+    # For Fuchsia, ChromeDriver runs on the host, not on Fuchsia.
+    deps -= [
+      "//chrome/test/chromedriver:chromedriver",
+      "//chrome/test/chromedriver:chromedriver_unittests",
+    ]
     deps += [ "//chrome/test/chromedriver:chromedriver($host_toolchain)" ]
   }
 
-  if (is_android || (is_linux || is_chromeos_lacros)) {
+  if (is_android || is_linux || is_chromeos_lacros) {
     deps += [
       "//components/network_hints/browser",
       "//content/public/app",
@@ -653,7 +677,6 @@ group("gn_all") {
       "//chrome/installer/setup:setup_unittests",
       "//chrome/notification_helper:notification_helper_unittests",
       "//chrome/test:delayloads_unittests",
-      "//cloud_print:cloud_print_unittests",
       "//components/wifi:wifi_test",
       "//components/zucchini",
       "//net:quic_client",
@@ -702,7 +725,7 @@ group("gn_all") {
     deps += [ "//ui/message_center:message_center_unittests" ]
   }
 
-  if (!is_android && !is_ios && !is_fuchsia) {
+  if (!is_android && !is_ios) {
     deps += [ "//content/browser/bluetooth/tools:bluetooth_metrics_hash" ]
   }
 
@@ -745,16 +768,9 @@ group("gn_all") {
       "//ui/shell_dialogs:shell_dialogs_unittests",
     ]
 
-    if (enable_nacl) {
-      deps += [ "//native_client/src/trusted/debug_stub:gdb_rsp_unittest" ]
-    }
-
     if (target_cpu == "x86" || target_cpu == "x64") {
       if (!is_android) {
         deps += [ "//chrome/test:load_library_perf_tests" ]
-      }
-      if (enable_nacl) {
-        deps += [ "//native_client/src/trusted/platform_qualify:vcpuid" ]
       }
       deps += [ "//third_party/libjpeg_turbo:simd_asm" ]
     }
@@ -787,11 +803,12 @@ group("gn_all") {
     }
   }
 
-  if (enable_nacl) {
+  # TODO(https://crbug.com/1299021): Remove the special case for arm64.
+  if (enable_nacl && target_cpu != "arm64") {
     deps += [ "//native_client_sdk/src:nacl_core_sdk" ]
   }
 
-  if ((is_linux || is_chromeos) && use_ozone) {
+  if (((is_linux || is_chromeos) && use_ozone) || is_fuchsia) {
     deps += [
       "//headless:headless_non_renderer",
       "//headless:headless_tests",
@@ -829,8 +846,8 @@ group("gn_all") {
       "//third_party/dawn/src/dawn/tests:dawn_end2end_tests",
       "//third_party/dawn/src/dawn/tests:dawn_unittests",
       "//third_party/dawn/src/fuzzers/dawn:dawn_fuzzers",
-      "//third_party/dawn/third_party/tint/src/tint/fuzzers",
-      "//third_party/dawn/third_party/tint/test/tint:tint_unittests",
+      "//third_party/dawn/src/tint/fuzzers",
+      "//third_party/dawn/test/tint:tint_unittests",
     ]
   }
 
@@ -840,9 +857,6 @@ group("gn_all") {
     "//third_party/pffft:pffft_benchmark",
     "//third_party/pffft:pffft_unittest",
   ]
-
-  # OpenCV
-  deps += [ "//third_party/opencv:opencv_emd_fuzzer" ]
 
   # Minimal binaries to exercise Rust toolchain.
   deps += [ ":rust_build_tests" ]
@@ -922,8 +936,6 @@ if (is_win) {
       "//chrome/installer/gcapi",
       "//chrome/installer/mini_installer",
       "//chrome/updater/win:updater_zip",
-      "//cloud_print",
-      "//cloud_print/virtual_driver/win/port_monitor:copy_gcp_portmon_binaries",
       "//components/policy:pack_policy_templates",
       "//components/zucchini",
       "//courgette",
@@ -1463,7 +1475,6 @@ if (!is_ios) {
   }
 
   script_test("blink_python_tests") {
-    run_under_python2 = true
     script = "//testing/scripts/run_isolated_script_test.py"
     args = [ "@WrappedPath(" +
              rebase_path("//third_party/blink/tools/run_blinkpy_tests.py",
@@ -1508,7 +1519,7 @@ if (!is_ios) {
 group("chromium_builder_perf") {
   testonly = true
 
-  if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
+  if (!is_ios && !is_android && !is_chromecast) {
     data_deps = [
       "//cc:cc_perftests",
       "//chrome/test:load_library_perf_tests",
@@ -1550,10 +1561,17 @@ group("chromium_builder_perf") {
         "//third_party/angle/src/tests:angle_perftests",
       ]
     }
+
+    # An `if (is_fuchsia)` condition in //chrome/test/BUILD.gn prevents this
+    # target from being defined.
+    # TODO(crbug.com/1310086): Resolve that and remove this exception.
+    if (is_fuchsia) {
+      data_deps -= [ "//chrome/test:performance_test_suite" ]
+    }
   }
 }
 
-if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
+if (!is_ios && !is_android && !is_chromecast) {
   group("chromium_builder_asan") {
     testonly = true
 
@@ -1585,7 +1603,7 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
     }
 
     if (build_dawn_tests) {
-      deps += [ "//third_party/dawn/third_party/tint/src/tint/fuzzers:fuzzers" ]
+      deps += [ "//third_party/dawn/src/tint/fuzzers:fuzzers" ]
     }
   }
 }

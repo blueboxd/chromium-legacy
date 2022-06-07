@@ -54,7 +54,9 @@
 # tags: [ display-server-wayland display-server-x ]
 # OOP-Canvas
 # tags: [ oop-c no-oop-c ]
-# results: [ Failure RetryOnFailure Skip ]
+# WebGPU Backend Validation
+# tags: [ dawn-backend-validation dawn-no-backend-validation ]
+# results: [ Failure RetryOnFailure Skip Slow ]
 # END TAG HEADER
 
 ###############################
@@ -125,6 +127,9 @@ crbug.com/1261260 [ android android-shield-android-tv ] GpuProcess_webgpu_iframe
 
 # Flaky Vulkan Loader Timeout
 crbug.com/1275738 [ linux angle-swiftshader ] GpuProcess_disable_gpu [ RetryOnFailure ]
+
+# Flakey on Lacros FYI bot
+crbug.com/1311719 [ linux display-server-wayland ] GpuProcess_disabling_workarounds_works [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

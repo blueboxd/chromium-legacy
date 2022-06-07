@@ -6,12 +6,12 @@
 
 #import "base/check_op.h"
 #import "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/first_run/uma/uma_table_view_controller_model_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_attributed_string_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_switch_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_google_chrome_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -100,7 +100,7 @@ NSMutableAttributedString* AddIndentAttributes(NSString* string,
       base::mac::ObjCCastStrict<TableViewSwitchItem>(
           [model itemAtIndexPath:indexPath]);
   DCHECK(switchItem);
-  self.modelDelegate.reportingMetricEnabled = sender.isOn;
+  self.UMAReportingUserChoice = sender.isOn;
 }
 
 #pragma mark - UITableViewDataSource
@@ -132,7 +132,7 @@ NSMutableAttributedString* AddIndentAttributes(NSString* string,
   // Adds switch item.
   TableViewSwitchItem* switchItem =
       [[TableViewSwitchItem alloc] initWithType:UMAItemTypeCheckbox];
-  switchItem.on = self.modelDelegate.reportingMetricEnabled;
+  switchItem.on = self.UMAReportingUserChoice;
   switchItem.text =
       l10n_util::GetNSString(IDS_IOS_FIRST_RUN_UMA_DIALOG_CHECKBOX);
   [model addItem:switchItem toSectionWithIdentifier:UMAMainSectionIdentifier];
@@ -144,6 +144,8 @@ NSMutableAttributedString* AddIndentAttributes(NSString* string,
   [regularAttributes
       setObject:[UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle]
          forKey:NSFontAttributeName];
+  [regularAttributes setObject:[UIColor colorNamed:kTextSecondaryColor]
+                        forKey:NSForegroundColorAttributeName];
   CGSize indentSize = [kBulletPrefix sizeWithAttributes:regularAttributes];
   NSMutableAttributedString* attributedString =
       AddIndentAttributes(string, indentSize.width);

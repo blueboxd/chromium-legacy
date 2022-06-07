@@ -199,6 +199,17 @@ std::wstring GetServiceDisplayName(bool is_internal_service);
 // should use `Wow6432(access)` as the `REGSAM`.
 REGSAM Wow6432(REGSAM access);
 
+// Starts a new process via ::ShellExecuteEx. `parameters` and `verb` can be
+// empty strings. The function waits until the spawned process has completed.
+// The exit code of the process is returned in `exit_code`.
+// `verb` specifies the action to perform. For instance, the "runas" verb
+// launches an application as administrator with an UAC prompt if UAC is enabled
+// and the parent process is running at medium integrity.
+HRESULT ShellExecuteAndWait(const base::FilePath& file_path,
+                            const std::wstring& parameters,
+                            const std::wstring& verb,
+                            DWORD* exit_code);
+
 // Starts a new elevated process. `file_path` specifies the program to be run.
 // `parameters` can be an empty string.
 // The function waits until the spawned process has completed. The exit code of
@@ -214,14 +225,28 @@ absl::optional<base::FilePath> GetGoogleUpdateExePath(UpdaterScope scope);
 // program state.
 [[nodiscard]] HRESULT DisableCOMExceptionHandling();
 
-// Builds a command line running `MSIExec` on the provided `msi_installer` and
-// `arguments`, with added logging to a log file in the same directory as the
-// MSI installer.
-std::wstring BuildMsiCommandLine(const std::wstring& arguments,
-                                 const base::FilePath& msi_installer);
+// Builds a command line running `MSIExec` on the provided
+// `msi_installer`,`arguments`, and `installer_data_file`, with added logging to
+// a log file in the same directory as the MSI installer.
+std::wstring BuildMsiCommandLine(
+    const std::wstring& arguments,
+    const absl::optional<base::FilePath>& installer_data_file,
+    const base::FilePath& msi_installer);
+
+// Builds a command line running the provided `exe_installer`, `arguments`, and
+// `installer_data_file`.
+std::wstring BuildExeCommandLine(
+    const std::wstring& arguments,
+    const absl::optional<base::FilePath>& installer_data_file,
+    const base::FilePath& exe_installer);
 
 // Returns `true` if the service specified is currently running or starting.
 bool IsServiceRunning(const std::wstring& service_name);
+
+// Returns the HKEY root corresponding to the UpdaterScope:
+// * scope == UpdaterScope::kSystem == HKEY_LOCAL_MACHINE
+// * scope == UpdaterScope::kUser == HKEY_CURRENT_USER
+HKEY UpdaterScopeToHKeyRoot(UpdaterScope scope);
 
 }  // namespace updater
 

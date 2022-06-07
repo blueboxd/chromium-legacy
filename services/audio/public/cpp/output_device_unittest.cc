@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/audio/audio_output_device.h"
@@ -84,11 +85,9 @@ class MockAudioOutputIPC : public media::AudioOutputIPC {
                void(media::AudioOutputIPCDelegate* delegate,
                     const base::UnguessableToken& session_id,
                     const std::string& device_id));
-  MOCK_METHOD3(
-      CreateStream,
-      void(media::AudioOutputIPCDelegate* delegate,
-           const media::AudioParameters& params,
-           const absl::optional<base::UnguessableToken>& processing_id));
+  MOCK_METHOD2(CreateStream,
+               void(media::AudioOutputIPCDelegate* delegate,
+                    const media::AudioParameters& params));
   MOCK_METHOD0(PlayStream, void());
   MOCK_METHOD0(PauseStream, void());
   MOCK_METHOD0(FlushStream, void());
@@ -275,7 +274,7 @@ TEST_F(AudioServiceOutputDeviceTest, CreateBitStreamStream) {
   EXPECT_CALL(*ipc, RequestDeviceAuthorization(audio_device.get(),
                                                base::UnguessableToken(),
                                                kNonDefaultDeviceId));
-  EXPECT_CALL(*ipc, CreateStream(audio_device.get(), _, _));
+  EXPECT_CALL(*ipc, CreateStream(audio_device.get(), _));
   EXPECT_CALL(*ipc, PlayStream());
   task_env_.RunUntilIdle();
   Mock::VerifyAndClear(ipc);
@@ -340,7 +339,7 @@ TEST_F(AudioServiceOutputDeviceTest, CreateNondefaultDevice) {
   EXPECT_CALL(*ipc, RequestDeviceAuthorization(audio_device.get(),
                                                base::UnguessableToken(),
                                                kNonDefaultDeviceId));
-  EXPECT_CALL(*ipc, CreateStream(audio_device.get(), _, _));
+  EXPECT_CALL(*ipc, CreateStream(audio_device.get(), _));
   EXPECT_CALL(*ipc, PlayStream());
   task_env_.RunUntilIdle();
   Mock::VerifyAndClear(ipc);

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/browser/shared_storage/shared_storage_worklet_host.h"
+#include "components/services/storage/shared_storage/public/mojom/shared_storage.mojom.h"
 
+#include "components/services/storage/shared_storage/shared_storage_manager.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -18,6 +20,37 @@ namespace {
 
 constexpr base::TimeDelta kKeepAliveTimeout = base::Seconds(2);
 
+using SharedStorageURNMappingResult =
+    FencedFrameURLMapping::SharedStorageURNMappingResult;
+
+using SharedStorageBudgetMetadata =
+    FencedFrameURLMapping::SharedStorageBudgetMetadata;
+
+using OperationResult = storage::SharedStorageManager::OperationResult;
+using GetResult = storage::SharedStorageManager::GetResult;
+
+SharedStorageURNMappingResult CalculateSharedStorageURNMappingResult(
+    bool url_selection_succeeded,
+    const url::Origin& shared_storage_origin,
+    const std::vector<GURL>& urls,
+    uint32_t index) {
+  DCHECK_GT(urls.size(), 0u);
+  DCHECK_LT(index, urls.size());
+  DCHECK(url_selection_succeeded || index == 0);
+
+  GURL mapped_url = urls[index];
+  double budget_to_charge =
+      (urls.size() > 1u)
+          ? (url_selection_succeeded ? std::log2(urls.size()) : 1.0)
+          : 0.0;
+
+  return SharedStorageURNMappingResult{
+      .mapped_url = mapped_url,
+      .metadata =
+          SharedStorageBudgetMetadata{.origin = shared_storage_origin,
+                                      .budget_to_charge = budget_to_charge}};
+}
+
 }  // namespace
 
 SharedStorageWorkletHost::SharedStorageWorkletHost(
@@ -27,7 +60,14 @@ SharedStorageWorkletHost::SharedStorageWorkletHost(
       document_service_(document_service.GetWeakPtr()),
       page_(
           static_cast<PageImpl&>(document_service.render_frame_host().GetPage())
-              .GetWeakPtrImpl()) {}
+              .GetWeakPtrImpl()),
+      shared_storage_manager_(static_cast<StoragePartitionImpl*>(
+                                  document_service.render_frame_host()
+                                      .GetProcess()
+                                      ->GetStoragePartition())
+                                  ->GetSharedStorageManager()),
+      shared_storage_origin_(
+          document_service.render_frame_host().GetLastCommittedOrigin()) {}
 
 SharedStorageWorkletHost::~SharedStorageWorkletHost() {
   if (!page_)
@@ -35,9 +75,17 @@ SharedStorageWorkletHost::~SharedStorageWorkletHost() {
 
   // If the worklet is destructed and there are still unresolved URNs (i.e. the
   // keep-alive timeout is reached), consider the mapping to be failed.
-  for (const GURL& urn_uuid : unresolved_urns_) {
-    page_->fenced_frame_urls_map().OnURNMappingResultDetermined(urn_uuid,
-                                                                absl::nullopt);
+  auto it = unresolved_urns_.begin();
+  while (it != unresolved_urns_.end()) {
+    const GURL& urn_uuid = it->first;
+    const std::vector<GURL>& urls = it->second;
+
+    page_->fenced_frame_urls_map().OnSharedStorageURNMappingResultDetermined(
+        urn_uuid, CalculateSharedStorageURNMappingResult(
+                      /*url_selection_succeeded=*/false, shared_storage_origin_,
+                      urls, /*index=*/0));
+
+    it = unresolved_urns_.erase(it);
   }
 }
 
@@ -126,10 +174,10 @@ void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
 
   GURL urn_uuid = page_->fenced_frame_urls_map().GeneratePendingMappedURN();
 
-  bool insert_succeeded = unresolved_urns_.insert(urn_uuid).second;
+  bool emplace_succeeded = unresolved_urns_.emplace(urn_uuid, urls).second;
 
   // Assert that `urn_uuid` was not in the set before.
-  DCHECK(insert_succeeded);
+  DCHECK(emplace_succeeded);
 
   std::move(callback).Run(
       /*success=*/true, /*error_message=*/{},
@@ -139,7 +187,7 @@ void SharedStorageWorkletHost::RunURLSelectionOperationOnWorklet(
       name, urls, serialized_data,
       base::BindOnce(&SharedStorageWorkletHost::
                          OnRunURLSelectionOperationOnWorkletFinished,
-                     weak_ptr_factory_.GetWeakPtr(), urn_uuid, urls));
+                     weak_ptr_factory_.GetWeakPtr(), urn_uuid));
 }
 
 bool SharedStorageWorkletHost::HasPendingOperations() {
@@ -169,9 +217,30 @@ void SharedStorageWorkletHost::SharedStorageSet(
     SharedStorageSetCallback callback) {
   DCHECK(add_module_state_ == AddModuleState::kInitiated);
 
-  std::move(callback).Run(
-      /*success=*/false,
-      /*error_message=*/"sharedStorage.set() is not implemented");
+  auto operation_completed_callback = base::BindOnce(
+      [](SharedStorageSetCallback callback, OperationResult result) {
+        if (result != OperationResult::kSet &&
+            result != OperationResult::kIgnored) {
+          std::move(callback).Run(
+              /*success=*/false,
+              /*error_message=*/"sharedStorage.set() failed");
+          return;
+        }
+
+        std::move(callback).Run(
+            /*success=*/true,
+            /*error_message=*/{});
+      },
+      std::move(callback));
+
+  storage::SharedStorageDatabase::SetBehavior set_behavior =
+      ignore_if_present
+          ? storage::SharedStorageDatabase::SetBehavior::kIgnoreIfPresent
+          : storage::SharedStorageDatabase::SetBehavior::kDefault;
+
+  shared_storage_manager_->Set(shared_storage_origin_, key, value,
+                               std::move(operation_completed_callback),
+                               set_behavior);
 }
 
 void SharedStorageWorkletHost::SharedStorageAppend(
@@ -180,9 +249,23 @@ void SharedStorageWorkletHost::SharedStorageAppend(
     SharedStorageAppendCallback callback) {
   DCHECK(add_module_state_ == AddModuleState::kInitiated);
 
-  std::move(callback).Run(
-      /*success=*/false,
-      /*error_message=*/"sharedStorage.append() is not implemented");
+  auto operation_completed_callback = base::BindOnce(
+      [](SharedStorageAppendCallback callback, OperationResult result) {
+        if (result != OperationResult::kSet) {
+          std::move(callback).Run(
+              /*success=*/false,
+              /*error_message=*/"sharedStorage.append() failed");
+          return;
+        }
+
+        std::move(callback).Run(
+            /*success=*/true,
+            /*error_message=*/{});
+      },
+      std::move(callback));
+
+  shared_storage_manager_->Append(shared_storage_origin_, key, value,
+                                  std::move(operation_completed_callback));
 }
 
 void SharedStorageWorkletHost::SharedStorageDelete(
@@ -190,18 +273,46 @@ void SharedStorageWorkletHost::SharedStorageDelete(
     SharedStorageDeleteCallback callback) {
   DCHECK(add_module_state_ == AddModuleState::kInitiated);
 
-  std::move(callback).Run(
-      /*success=*/false,
-      /*error_message=*/"sharedStorage.delete() is not implemented");
+  auto operation_completed_callback = base::BindOnce(
+      [](SharedStorageDeleteCallback callback, OperationResult result) {
+        if (result != OperationResult::kSuccess) {
+          std::move(callback).Run(
+              /*success=*/false,
+              /*error_message=*/"sharedStorage.delete() failed");
+          return;
+        }
+
+        std::move(callback).Run(
+            /*success=*/true,
+            /*error_message=*/{});
+      },
+      std::move(callback));
+
+  shared_storage_manager_->Delete(shared_storage_origin_, key,
+                                  std::move(operation_completed_callback));
 }
 
 void SharedStorageWorkletHost::SharedStorageClear(
     SharedStorageClearCallback callback) {
   DCHECK(add_module_state_ == AddModuleState::kInitiated);
 
-  std::move(callback).Run(
-      /*success=*/false,
-      /*error_message=*/"sharedStorage.clear() is not implemented");
+  auto operation_completed_callback = base::BindOnce(
+      [](SharedStorageClearCallback callback, OperationResult result) {
+        if (result != OperationResult::kSuccess) {
+          std::move(callback).Run(
+              /*success=*/false,
+              /*error_message=*/"sharedStorage.clear() failed");
+          return;
+        }
+
+        std::move(callback).Run(
+            /*success=*/true,
+            /*error_message=*/{});
+      },
+      std::move(callback));
+
+  shared_storage_manager_->Clear(shared_storage_origin_,
+                                 std::move(operation_completed_callback));
 }
 
 void SharedStorageWorkletHost::SharedStorageGet(
@@ -209,9 +320,24 @@ void SharedStorageWorkletHost::SharedStorageGet(
     SharedStorageGetCallback callback) {
   DCHECK(add_module_state_ == AddModuleState::kInitiated);
 
-  std::move(callback).Run(
-      /*success=*/false,
-      /*error_message=*/"sharedStorage.get() is not implemented", /*value=*/{});
+  auto operation_completed_callback = base::BindOnce(
+      [](SharedStorageGetCallback callback, GetResult result) {
+        // We consider either database error or missing key to be a failure.
+        if (result.result != OperationResult::kSuccess || !result.data) {
+          std::move(callback).Run(
+              /*success=*/false,
+              /*error_message=*/"sharedStorage.get() failed", /*value=*/{});
+          return;
+        }
+
+        std::move(callback).Run(
+            /*success=*/true,
+            /*error_message=*/{}, /*value=*/*result.data);
+      },
+      std::move(callback));
+
+  shared_storage_manager_->Get(shared_storage_origin_, key,
+                               std::move(operation_completed_callback));
 }
 
 void SharedStorageWorkletHost::SharedStorageKeys(
@@ -250,10 +376,26 @@ void SharedStorageWorkletHost::SharedStorageLength(
     SharedStorageLengthCallback callback) {
   DCHECK(add_module_state_ == AddModuleState::kInitiated);
 
-  std::move(callback).Run(
-      /*success=*/false,
-      /*error_message=*/"sharedStorage.length() is not implemented",
-      /*length=*/0);
+  auto operation_completed_callback = base::BindOnce(
+      [](SharedStorageLengthCallback callback, int result) {
+        if (result == -1) {
+          std::move(callback).Run(
+              /*success=*/false,
+              /*error_message=*/"sharedStorage.length() failed", /*length=*/0);
+          return;
+        }
+
+        DCHECK_GE(result, 0);
+
+        std::move(callback).Run(
+            /*success=*/true,
+            /*error_message=*/{},
+            /*length=*/result);
+      },
+      std::move(callback));
+
+  shared_storage_manager_->Length(shared_storage_origin_,
+                                  std::move(operation_completed_callback));
 }
 
 void SharedStorageWorkletHost::ConsoleLog(const std::string& message) {
@@ -295,11 +437,13 @@ void SharedStorageWorkletHost::OnRunOperationOnWorkletFinished(
 
 void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
     const GURL& urn_uuid,
-    const std::vector<GURL>& urls,
     bool success,
     const std::string& error_message,
     uint32_t index) {
-  if (success && index >= urls.size()) {
+  std::vector<GURL> urls = unresolved_urns_.at(urn_uuid);
+  unresolved_urns_.erase(urn_uuid);
+
+  if ((success && index >= urls.size()) || (!success && index != 0)) {
     // This could indicate a compromised worklet environment, so let's terminate
     // it.
     mojo::ReportBadMessage(
@@ -316,13 +460,9 @@ void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
   }
 
   if (page_) {
-    DCHECK(base::Contains(unresolved_urns_, urn_uuid));
-    unresolved_urns_.erase(urn_uuid);
-
-    absl::optional<GURL> selected_url =
-        success ? absl::make_optional<GURL>(urls[index]) : absl::nullopt;
-    page_->fenced_frame_urls_map().OnURNMappingResultDetermined(urn_uuid,
-                                                                selected_url);
+    page_->fenced_frame_urls_map().OnSharedStorageURNMappingResultDetermined(
+        urn_uuid, CalculateSharedStorageURNMappingResult(
+                      success, shared_storage_origin_, urls, index));
   }
 
   DecrementPendingOperationsCount();

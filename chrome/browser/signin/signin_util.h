@@ -7,11 +7,44 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
+#include "base/supports_user_data.h"
 #include "build/build_config.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/tribool.h"
 
 class Profile;
 
 namespace signin_util {
+
+// This class is used by cloud policy to indicate signout is disallowed for
+// cloud-managed enterprise accounts. Signout would require profile destruction
+// (See ChromeSigninClient::PreSignOut(),
+//      PrimaryAccountPolicyManager::EnsurePrimaryAccountAllowedForProfile()).
+// This class is also used on Android to disallow signout for supervised users.
+class UserSignoutSetting : public base::SupportsUserData::Data {
+ public:
+  // Fetch from Profile. Make and store if not already present.
+  static UserSignoutSetting* GetForProfile(Profile* profile);
+
+  // Public as this class extends base::SupportsUserData::Data. Use
+  // |GetForProfile()| to get the instance associated with a profile.
+  UserSignoutSetting();
+  ~UserSignoutSetting() override;
+  UserSignoutSetting(const UserSignoutSetting&) = delete;
+  UserSignoutSetting& operator=(const UserSignoutSetting&) = delete;
+
+  signin::Tribool signout_allowed() const;
+  void SetSignoutAllowed(bool is_allowed);
+
+ private:
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // `signout_allowed()` is always true for Lacros main profile despite of
+  // policies.
+  bool is_main_profile_ = false;
+#endif
+  signin::Tribool signout_allowed_ = signin::Tribool::kUnknown;
+};
 
 // This class calls ResetForceSigninForTesting when destroyed, so that
 // ForcedSigning doesn't leak across tests.
@@ -19,6 +52,10 @@ class ScopedForceSigninSetterForTesting {
  public:
   explicit ScopedForceSigninSetterForTesting(bool enable);
   ~ScopedForceSigninSetterForTesting();
+  ScopedForceSigninSetterForTesting(const ScopedForceSigninSetterForTesting&) =
+      delete;
+  ScopedForceSigninSetterForTesting& operator=(
+      const ScopedForceSigninSetterForTesting&) = delete;
 };
 
 // Return whether the force sign in policy is enabled or not.
@@ -47,14 +84,6 @@ void SetUserSignoutAllowedForProfile(Profile* profile, bool is_allowed);
 // This should be called at the end of the flow to initialize a profile to
 // ensure that the signout allowed flag is updated.
 void EnsureUserSignoutAllowedIsInitializedForProfile(Profile* profile);
-
-// Ensures that the primary account for |profile| is allowed:
-// * If profile does not have any primary account, then this is a no-op.
-// * If |IsUserSignoutAllowedForProfile| is allowed and the primary account
-//   is no longer allowed, then this clears the primary account.
-// * If |IsUserSignoutAllowedForProfile| is not allowed and the primary account
-//   is not longer allowed, then this removes the profile.
-void EnsurePrimaryAccountAllowedForProfile(Profile* profile);
 
 #if !BUILDFLAG(IS_ANDROID)
 // Returns true if profile separation is enforced by policy.

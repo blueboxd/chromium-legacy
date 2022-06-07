@@ -14,13 +14,13 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../common/styles.js';
-
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import './cros_button_style.js';
 
 import {isNonEmptyArray} from '../common/utils.js';
 
 import {GooglePhotosAlbum, TopicSource, WallpaperCollection} from './personalization_app.mojom-webui.js';
-import {isPersonalizationHubEnabled, Paths, PersonalizationRouter} from './personalization_router_element.js';
+import {getTemplate} from './personalization_breadcrumb_element.html.js';
+import {isPathValid, isPersonalizationHubEnabled, Paths, PersonalizationRouter} from './personalization_router_element.js';
 import {WithPersonalizationStore} from './personalization_store.js';
 import {inBetween, isNonEmptyString} from './utils.js';
 
@@ -46,7 +46,7 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -186,7 +186,7 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
     if (index < this.breadcrumbs_.length - 1) {
       const pathElements = this.path.split('/');
       const newPath = pathElements.slice(0, index + 2).join('/');
-      if (Object.values(Paths).includes(newPath as Paths)) {
+      if (isPathValid(newPath)) {
         PersonalizationRouter.instance().goToRoute(newPath as Paths);
       }
     }

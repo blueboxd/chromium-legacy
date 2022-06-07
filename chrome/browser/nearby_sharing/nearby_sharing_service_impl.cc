@@ -22,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -1934,12 +1933,13 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
   }
 
   // Do not advertise on lock screen unless Self Share is enabled.
-  if (is_screen_locked_ &&
-      !base::FeatureList::IsEnabled(features::kNearbySharingSelfShare)) {
-    StopAdvertising();
-    NS_LOG(VERBOSE) << __func__
-                    << ": Stopping advertising because the screen is locked.";
-    return;
+  if (!base::FeatureList::IsEnabled(features::kNearbySharingSelfShareUI)) {
+    if (is_screen_locked_) {
+      StopAdvertising();
+      NS_LOG(VERBOSE) << __func__
+                      << ": Stopping advertising because the screen is locked.";
+      return;
+    }
   }
 
   if (!HasAvailableConnectionMediums()) {
@@ -3664,6 +3664,15 @@ void NearbySharingServiceImpl::OnStorageCheckCompleted(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(
+          features::kNearbySharingSelfShareAutoAccept)) {
+    // Auto-accept self shares when not in high-visibility mode.
+    if (share_target.for_self_share && !IsInHighVisibility()) {
+      NS_LOG(INFO) << __func__ << ": Auto-accepting self share.";
+      Accept(share_target, base::DoNothing());
+    }
+  }
+
   frames_reader->ReadFrame(
       base::BindOnce(&NearbySharingServiceImpl::OnFrameRead,
                      weak_ptr_factory_.GetWeakPtr(), std::move(share_target)));
@@ -3793,7 +3802,8 @@ absl::optional<ShareTarget> NearbySharingServiceImpl::CreateShareTarget(
   target.device_name = std::move(*device_name);
   target.is_incoming = is_incoming;
   target.device_id = GetDeviceId(endpoint_id, certificate);
-  if (base::FeatureList::IsEnabled(features::kNearbySharingSelfShare)) {
+  if (base::FeatureList::IsEnabled(
+          features::kNearbySharingSelfShareAutoAccept)) {
     target.for_self_share = certificate && certificate->for_self_share();
   }
 

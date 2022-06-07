@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
@@ -272,7 +271,13 @@ TEST_P(FilesystemProxyTest, OpenFileReadOnly) {
   EXPECT_EQ(kFile1Contents, ReadFileContents(&file.value()));
 }
 
-TEST_P(FilesystemProxyTest, OpenFileWriteOnly) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1314081): Re-enable when OpenFileWriteOnly works on Fuchsia.
+#define MAYBE_OpenFileWriteOnly DISABLED_OpenFileWriteOnly
+#else
+#define MAYBE_OpenFileWriteOnly OpenFileWriteOnly
+#endif
+TEST_P(FilesystemProxyTest, MAYBE_OpenFileWriteOnly) {
   FileErrorOr<base::File> file = proxy().OpenFile(
       kFile2, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   ASSERT_FALSE(file.is_error());
@@ -290,7 +295,13 @@ TEST_P(FilesystemProxyTest, OpenFileWriteOnly) {
   EXPECT_EQ(kData, ReadFileContentsAtPath(kFile2));
 }
 
-TEST_P(FilesystemProxyTest, OpenFileAppendOnly) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1314079): Re-enable when OpenFileAppendOnly works on Fuchsia.
+#define MAYBE_OpenFileAppendOnly DISABLED_OpenFileAppendOnly
+#else
+#define MAYBE_OpenFileAppendOnly OpenFileAppendOnly
+#endif
+TEST_P(FilesystemProxyTest, MAYBE_OpenFileAppendOnly) {
   const base::FilePath kFile3{FILE_PATH_LITERAL("file3")};
   FileErrorOr<base::File> file = proxy().OpenFile(
       kFile3, base::File::FLAG_CREATE | base::File::FLAG_APPEND);
@@ -316,7 +327,13 @@ TEST_P(FilesystemProxyTest, OpenFileAppendOnly) {
   EXPECT_EQ(kData + kMoreData, ReadFileContentsAtPath(kFile3));
 }
 
-TEST_P(FilesystemProxyTest, DeleteFile) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1314076): Re-enable when DeleteFile works on Fuchsia.
+#define MAYBE_DeleteFile DISABLED_DeleteFile
+#else
+#define MAYBE_DeleteFile DeleteFile
+#endif
+TEST_P(FilesystemProxyTest, MAYBE_DeleteFile) {
   FileErrorOr<base::File> file =
       proxy().OpenFile(kFile1, base::File::FLAG_OPEN | base ::File::FLAG_READ);
   ASSERT_FALSE(file.is_error());
@@ -344,7 +361,15 @@ TEST_P(FilesystemProxyTest, CreateAndRemoveDirectory) {
   EXPECT_TRUE(proxy().DeleteFile(kNewDirectoryName));
 }
 
-TEST_P(FilesystemProxyTest, DeleteFileFailsOnSubDirectory) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1314076): Re-enable when DeleteFileFailsOnSubDirectory works
+// on Fuchsia.
+#define MAYBE_DeleteFileFailsOnSubDirectory \
+  DISABLED_DeleteFileFailsOnSubDirectory
+#else
+#define MAYBE_DeleteFileFailsOnSubDirectory DeleteFileFailsOnSubDirectory
+#endif
+TEST_P(FilesystemProxyTest, MAYBE_DeleteFileFailsOnSubDirectory) {
   // kDir1 has a subdirectory kDir1Dir1, which DeleteFile can't remove.
   EXPECT_TRUE(proxy().PathExists(kDir1));
   EXPECT_FALSE(proxy().DeleteFile(kDir1));

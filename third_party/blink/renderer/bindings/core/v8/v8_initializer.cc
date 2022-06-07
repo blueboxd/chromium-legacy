@@ -33,6 +33,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/system/sys_info.h"
+#include "components/crash/core/common/crash_key.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_string_trustedscript.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -280,8 +282,8 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
     if (message->IsSharedCrossOrigin())
       sanitize_script_errors = SanitizeScriptErrors::kDoNotSanitize;
   } else {
-    location = std::make_unique<SourceLocation>(context->Url().GetString(), 0,
-                                                0, nullptr);
+    location = std::make_unique<SourceLocation>(context->Url().GetString(),
+                                                String(), 0, 0, nullptr);
   }
 
   String message_for_console =
@@ -672,6 +674,22 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   }
 }
 
+// Callback functions called when V8 encounters a fatal or OOM error.
+void ReportV8FatalError(const char* location, const char* message) {
+  LOG(FATAL) << "V8 error: " << message << " (" << location << ").";
+}
+
+void ReportV8OOMError(const char* location, bool is_js_heap) {
+  if (location) {
+    static crash_reporter::CrashKeyString<64> location_key("v8-oom-location");
+    location_key.Set(location);
+  }
+
+  LOG(ERROR) << "V8 " << (is_js_heap ? "javascript" : "process") << " OOM: ("
+             << location << ").";
+  OOM_CRASH(0);
+}
+
 namespace {
 
 class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
@@ -757,13 +775,14 @@ void V8Initializer::InitializeMainThread(
   DEFINE_STATIC_LOCAL(ArrayBufferAllocator, array_buffer_allocator, ());
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  &array_buffer_allocator, reference_table,
-                                 js_command_line_flags);
+                                 js_command_line_flags, ReportV8FatalError,
+                                 ReportV8OOMError);
 
   ThreadScheduler* scheduler = ThreadScheduler::Current();
 
   v8::Isolate* isolate = V8PerIsolateData::Initialize(
       scheduler->V8TaskRunner(), GetV8ContextSnapshotMode(), CreateHistogram,
-      AddHistogramSample, ReportV8FatalError, ReportV8OOMError);
+      AddHistogramSample);
   scheduler->SetV8Isolate(isolate);
 
   // ThreadState::isolate_ needs to be set before setting the EmbedderHeapTracer

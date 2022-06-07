@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/web_package/web_bundle_parser.h"
 #include "components/web_package/web_bundle_utils.h"
@@ -678,12 +679,9 @@ void WebBundleURLLoaderFactory::StartLoad(base::WeakPtr<URLLoader> loader) {
     loader->OnFail(net::ERR_INVALID_WEB_BUNDLE);
     return;
   }
-  // Currently, we just return the first response for the URL.
-  // TODO(crbug.com/1082020): Support variant matching.
-  auto& location = it->second->response_locations[0];
 
   parser_->ParseResponse(
-      location->offset, location->length,
+      it->second->offset, it->second->length,
       base::BindOnce(&WebBundleURLLoaderFactory::OnResponseParsed,
                      weak_ptr_factory_.GetWeakPtr(), loader->GetWeakPtr()));
 }
@@ -736,15 +734,6 @@ void WebBundleURLLoaderFactory::OnMetadataParsed(
         mojom::WebBundleErrorType::kDeprecationWarning,
         "WebBundle format \"b1\" is deprecated. See migration guide at "
         "https://bit.ly/3rpDuEX.");
-  }
-  for (auto& it : metadata_->requests) {
-    if (it.first.SchemeIs(url::kUrnScheme)) {
-      web_bundle_handle_->OnWebBundleError(
-          mojom::WebBundleErrorType::kDeprecationWarning,
-          "urn:uuid resource URL in WebBundles is deprecated. See migration "
-          "guide at https://bit.ly/3rpDuEX.");
-      break;
-    }
   }
 
   if (data_completed_)

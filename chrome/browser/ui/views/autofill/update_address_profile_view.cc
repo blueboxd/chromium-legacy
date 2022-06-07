@@ -62,10 +62,9 @@ std::unique_ptr<views::View> CreateValuesView(
       .SetCollapseMargins(true)
       .SetDefault(
           views::kMarginsKey,
-          gfx::Insets(
-              /*vertical=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                  DISTANCE_CONTROL_LIST_VERTICAL),
-              /*horizontal=*/0));
+          gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                              DISTANCE_CONTROL_LIST_VERTICAL),
+                          0));
 
   for (const ProfileValueDifference& diff_entry : diff) {
     const std::u16string& value =
@@ -82,10 +81,8 @@ std::unique_ptr<views::View> CreateValuesView(
         .SetCollapseMargins(true)
         .SetDefault(
             views::kMarginsKey,
-            gfx::Insets(
-                /*vertical=*/0,
-                /*horizontal=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                    views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
+            gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                   views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
 
     auto icon_view = std::make_unique<views::ImageView>();
     icon_view->SetImage(ui::ImageModel::FromVectorIcon(
@@ -109,7 +106,7 @@ void AddValuesRow(views::TableLayoutView* layout_view,
                   bool show_row_label,
                   views::Button::PressedCallback edit_button_callback) {
   bool are_new_values = !!edit_button_callback;
-  layout_view->AddRows(1, /*vertical_resize=*/views::GridLayout::kFixedSize);
+  layout_view->AddRows(1, /*vertical_resize=*/views::TableLayout::kFixedSize);
 
   if (show_row_label) {
     auto label = std::make_unique<views::Label>(
@@ -194,10 +191,9 @@ UpdateAddressProfileView::UpdateAddressProfileView(
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetCollapseMargins(true)
       .SetDefault(views::kMarginsKey,
-                  gfx::Insets(
-                      /*vertical=*/layout_provider->GetDistanceMetric(
-                          DISTANCE_CONTROL_LIST_VERTICAL),
-                      /*horizontal=*/0));
+                  gfx::Insets::VH(layout_provider->GetDistanceMetric(
+                                      DISTANCE_CONTROL_LIST_VERTICAL),
+                                  0));
 
   std::vector<ProfileValueDifference> profile_diff = GetProfileDifferenceForUi(
       controller_->GetProfileToSave(), *controller_->GetOriginalProfile(),

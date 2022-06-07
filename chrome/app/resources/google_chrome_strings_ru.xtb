@@ -227,6 +227,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome (бета-версия)</translation>
 <translation id="6235018212288296708">Разрешить в Google Chrome передачу входящего трафика по протоколу mDNS</translation>
+<translation id="6247557882553405851">Google Менеджер паролей</translation>
 <translation id="6291089322031436445">Приложения Chrome для разработчиков</translation>
 <translation id="6291549208091401781">Google Chrome уже установлен для всех пользователей вашего компьютера</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -235,6 +236,7 @@
 <translation id="6506909944137591434">Для создания 3D-карты места, в котором вы находитесь, браузеру Chrome требуется доступ к камере.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
 <translation id="6568793831116033768">Chrome OS</translation>
+<translation id="659498884637196217">В Диспетчере паролей Google на этом устройстве</translation>
 <translation id="6632473616050862500">Chrome OS Flex работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6679975945624592337">Разрешить Google Chrome работать в фоновом режиме</translation>
@@ -274,6 +276,7 @@
 Разрешения, предоставленные сайтам и приложениям, могут применяться к этому аккаунту. Для управления аккаунтами Google перейдите в <ph name="SETTINGS_LINK_BEGIN" />настройки<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7408085963519505752">Условия использования Chrome OS</translation>
+<translation id="7410958280246779049">Chrome заблокировал этот файл как опасный.</translation>
 <translation id="7419046106786626209">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
 <translation id="7481213027396403996">Обеспечьте максимальную защиту в Chrome</translation>
 <translation id="7486227612705979895">Chrome получит доступ к Google Диску, чтобы вы могли просматривать рекомендации в адресной строке</translation>
@@ -288,7 +291,6 @@
 <translation id="7655455401911432608">Ваша история браузера – список сайтов, которые вы открывали в Chrome на этом устройстве.</translation>
 <translation id="7665553140559834626">Перезапустить для обновления &amp;Chrome OS</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
-<translation id="7748512868279796735">Для этого профиля Chrome доступны следующие аккаунты:</translation>
 <translation id="7761834446675418963">Нажмите на свое имя, чтобы войти в Chrome.</translation>
 <translation id="7777080907402804672">Если у изображения нет понятного описания, Chrome попытается его найти. Для создания описаний изображения отправляются в Google. Эту функцию можно отключить в настройках в любое время.</translation>
 <translation id="7781002470561365167">Доступна новая версия Google Chrome.</translation>
@@ -304,10 +306,12 @@
 <translation id="7951272445806340501">Чтобы установить обновление, перезапустите Chrome OS Flex.</translation>
 <translation id="7962410387636238736">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
 <translation id="79947657522496226">Chrome OS, как и <ph name="BEGIN_LINK_LINUX_OSS" />среда разработки Linux<ph name="END_LINK_LINUX_OSS" />, работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="8005666035647241369">В Диспетчере паролей Google на этом устройстве</translation>
 <translation id="8008534537613507642">Переустановить Chrome</translation>
 <translation id="8013993649590906847">Если у изображения нет понятного описания, Chrome попытается его найти. Для создания описаний изображения отправляются в Google.</translation>
 <translation id="8064015586118426197">Chrome OS Flex</translation>
 <translation id="8129812357326543296">О браузере &amp;Google Chrome</translation>
+<translation id="822971176939352383">Со следующими аккаунтами не выполнен вход ни в один профиль Chrome. Чтобы использовать аккаунт в другом профиле, сначала удалите этот профиль.</translation>
 <translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>
 <translation id="8286862437124483331">Чтобы просмотреть пароли, введите пароль своего аккаунта Windows.</translation>
 <translation id="828798499196665338">Родители отключили в Chrome параметр "Разрешения для сайтов, приложений и расширений". Включать это <ph name="EXTENSION_TYPE_PARAMETER" /> запрещено.</translation>
@@ -335,6 +339,7 @@
 <translation id="8649026945479135076">Обычно сайты, которые вы посещаете, запоминают ваши интересы, чтобы показывать персонализированную рекламу. В том числе они могут хранить об этом информацию в Chrome.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Кроме того, расширение изменило стартовую страницу Chrome.</translation>
+<translation id="8684875378076460854">Chrome рекомендует просканировать этот потенциально вредоносный файл.</translation>
 <translation id="8686817260976772516">Профили Chrome нужны для раздельного использования браузера, например разными людьми или в разных целях.</translation>
 <translation id="8712767363896337380">Почти готово! Чтобы завершить обновление, перезапустите Chrome.</translation>
 <translation id="873133009373065397">Google Chrome не удалось определить или задать браузер по умолчанию</translation>

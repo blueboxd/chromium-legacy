@@ -9,15 +9,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
+#include "components/url_formatter/elide_url.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_custom_action_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_util.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_url_cell_favicon_badge_view.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
+#import "ios/chrome/common/ui/table_view/table_view_url_cell_favicon_badge_view.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -30,7 +29,7 @@
 
 namespace {
 // The string format used to append the distillation date to the URL host.
-NSString* const kURLAndDistillationDateFormat = @"%s • %@";
+NSString* const kURLAndDistillationDateFormat = @"%@ • %@";
 }
 
 @interface ReadingListTableViewItem ()
@@ -89,11 +88,7 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
   TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
   URLCell.titleLabel.text = [self titleLabelText];
   URLCell.URLLabel.text = [self URLLabelText];
-  if (IsReadingListTimeToReadEnabled()) {
-    URLCell.metadataLabel.text = self.estimatedReadTimeText;
-  } else {
-    URLCell.metadataLabel.text = self.distillationSizeText;
-  }
+  URLCell.metadataLabel.text = self.distillationSizeText;
   URLCell.cellUniqueIdentifier = base::SysUTF8ToNSString(self.entryURL.host());
   URLCell.accessibilityTraits |= UIAccessibilityTraitButton;
 
@@ -103,8 +98,7 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
   URLCell.faviconBadgeView.image = self.distillationBadgeImage;
   cell.isAccessibilityElement = YES;
   cell.accessibilityLabel = GetReadingListCellAccessibilityLabel(
-      self.title, base::SysUTF8ToNSString(self.entryURL.host()),
-      self.distillationState);
+      self.title, [self hostname], self.distillationState);
   cell.accessibilityCustomActions =
       [self.customActionFactory customActionsForItem:self];
   [URLCell configureUILayout];
@@ -113,8 +107,8 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
 #pragma mark - NSObject
 
 - (NSString*)description {
-  return [NSString stringWithFormat:@"Reading List item \"%@\" for url %s",
-                                    self.title, self.entryURL.host().c_str()];
+  return [NSString stringWithFormat:@"Reading List item \"%@\" for url %@",
+                                    self.title, [self hostname]];
 }
 
 - (BOOL)isEqual:(id)other {
@@ -125,8 +119,7 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
 
 // Returns the text to use when configuring a TableViewURLCell's title label.
 - (NSString*)titleLabelText {
-  return self.title.length ? self.title
-                           : base::SysUTF8ToNSString(self.entryURL.host());
+  return self.title.length ? self.title : self.hostname;
 }
 
 // Returns the text to use when configuring a TableViewURLCell's URL label.
@@ -138,12 +131,18 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
 
   // Append the hostname with the distillation date if it exists.
   if (self.distillationDateText.length) {
-    return [NSString stringWithFormat:kURLAndDistillationDateFormat,
-                                      self.entryURL.host().c_str(),
-                                      self.distillationDateText];
+    return
+        [NSString stringWithFormat:kURLAndDistillationDateFormat,
+                                   [self hostname], self.distillationDateText];
   } else {
-    return base::SysUTF8ToNSString(self.entryURL.host());
+    return [self hostname];
   }
+}
+
+- (NSString*)hostname {
+  return base::SysUTF16ToNSString(
+      url_formatter::FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
+          self.entryURL));
 }
 
 @end

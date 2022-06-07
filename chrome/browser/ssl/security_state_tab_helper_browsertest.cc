@@ -18,7 +18,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
@@ -62,8 +61,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/ssl_status.h"
@@ -82,6 +79,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
@@ -1355,10 +1353,7 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   EXPECT_EQ(security_state::SecurityLevel::DANGEROUS,
             observer.latest_security_level());
 
-  content::WindowedNotificationObserver back_nav_load_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &web_contents->GetController()));
+  content::LoadStopObserver back_nav_load_observer(web_contents);
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back_nav_load_observer.Wait();
 
@@ -1869,9 +1864,6 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperFencedFrameTest,
   }
 }
 
-// TODO(crbug.com/1282044): This behavior should not be allowed, since it allows
-// mixed frames, which are otherwise blocked, once this is fixed, change this
-// test so it verifies the navigation is block.
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperFencedFrameTest,
                        LoadFencedFrameViaInsecureURL) {
   // Setup a mock certificate verifier.
@@ -1893,9 +1885,15 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperFencedFrameTest,
       fenced_frame_test_helper().CreateFencedFrame(
           web_contents()->GetMainFrame(), fenced_frame_url);
   EXPECT_NE(nullptr, fenced_frame_host);
+  // Check that nothing has been loaded in the fenced frame.
+  EXPECT_EQ(
+      0, content::EvalJs(fenced_frame_host, "document.body.childElementCount"));
 
-  CheckSecurityInfoForSecure(web_contents(), security_state::DANGEROUS, false,
-                             false, true, false /* expect cert status error */);
+  // Since we are blocking http content in a fenced frame, the security
+  // indicator should not change, and there should be no mixed content loaded.
+  CheckSecurityInfoForSecure(web_contents(), security_state::SECURE, false,
+                             false, false /* expect no mixed content loaded */,
+                             false /* expect cert status error */);
 }
 
 }  // namespace

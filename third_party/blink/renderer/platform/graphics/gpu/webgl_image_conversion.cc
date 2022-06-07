@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
@@ -3519,6 +3520,25 @@ WebGLImageConversion::PixelStoreParams::PixelStoreParams()
       skip_rows(0),
       skip_images(0) {}
 
+WebGLImageConversion::DataFormat WebGLImageConversion::SkColorTypeToDataFormat(
+    SkColorType color_type) {
+  switch (color_type) {
+    case kRGBA_8888_SkColorType:
+      return kDataFormatRGBA8;
+    case kBGRA_8888_SkColorType:
+      return kDataFormatBGRA8;
+    case kR16G16B16A16_unorm_SkColorType:
+      return kDataFormatRGBA16;
+    case kRGBA_F16_SkColorType:
+      return kDataFormatRGBA16F;
+    case kRGBA_F32_SkColorType:
+      return kDataFormatRGBA32F;
+    default:
+      NOTREACHED();
+      return kDataFormatNumFormats;
+  }
+}
+
 bool WebGLImageConversion::ComputeFormatAndTypeParameters(
     GLenum format,
     GLenum type,
@@ -3788,23 +3808,14 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
   if (!skia_image)
     return;
 
-#if SK_B32_SHIFT
-  image_source_format_ = kDataFormatRGBA8;
-#else
-  image_source_format_ = kDataFormatBGRA8;
-#endif
-  image_source_unpack_alignment_ =
-      0;  // FIXME: this seems to always be zero - why use at all?
-
   DCHECK(skia_image->width());
   DCHECK(skia_image->height());
-  image_width_ = skia_image->width();
-  image_height_ = skia_image->height();
 
   // Fail if the image was downsampled because of memory limits.
-  if (image_width_ != (unsigned)image_->width() ||
-      image_height_ != (unsigned)image_->height())
+  if (skia_image->width() != image_->width() ||
+      skia_image->height() != image_->height()) {
     return;
+  }
 
   image_pixel_locker_.emplace(std::move(skia_image), info.alphaType(),
                               kN32_SkColorType);
@@ -3896,6 +3907,46 @@ unsigned WebGLImageConversion::GetChannelBitsByFormat(GLenum format) {
     default:
       return 0;
   }
+}
+
+bool WebGLImageConversion::PackSkPixmap(
+    const SkPixmap* pixmap,
+    GLenum format,
+    GLenum type,
+    bool flip_y,
+    AlphaOp alpha_op,
+    const gfx::Rect& source_image_sub_rectangle,
+    int depth,
+    unsigned source_unpack_alignment,
+    int unpack_image_height,
+    Vector<uint8_t>& data) {
+  DCHECK(pixmap);
+  const void* const pixels = pixmap->addr();
+  DCHECK(pixels);
+  const unsigned source_image_width = pixmap->width();
+  DCHECK(source_image_width);
+  const unsigned source_image_height = pixmap->height();
+  DCHECK(source_image_height);
+  const DataFormat source_format = SkColorTypeToDataFormat(pixmap->colorType());
+  DCHECK_NE(source_format, kDataFormatNumFormats);
+
+  unsigned packed_size;
+  // Output data is tightly packed (alignment == 1).
+  PixelStoreParams params;
+  params.alignment = 1;
+  if (ComputeImageSizeInBytes(format, type, source_image_sub_rectangle.width(),
+                              source_image_sub_rectangle.height(), depth,
+                              params, &packed_size, nullptr,
+                              nullptr) != GL_NO_ERROR) {
+    return false;
+  }
+  data.resize(packed_size);
+
+  return PackPixels(reinterpret_cast<const uint8_t*>(pixels), source_format,
+                    source_image_width, source_image_height,
+                    source_image_sub_rectangle, depth, source_unpack_alignment,
+                    unpack_image_height, format, type, alpha_op, data.data(),
+                    flip_y);
 }
 
 bool WebGLImageConversion::PackImageData(

@@ -72,8 +72,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->xslt_enabled = data.xslt_enabled();
   out->dns_prefetching_enabled = data.dns_prefetching_enabled();
   out->data_saver_enabled = data.data_saver_enabled();
-  out->data_saver_holdback_web_api_enabled =
-      data.data_saver_holdback_web_api_enabled();
   out->local_storage_enabled = data.local_storage_enabled();
   out->databases_enabled = data.databases_enabled();
   out->tabs_to_links = data.tabs_to_links();
@@ -86,9 +84,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->webgl1_enabled = data.webgl1_enabled();
   out->webgl2_enabled = data.webgl2_enabled();
   out->pepper_3d_enabled = data.pepper_3d_enabled();
-  out->flash_3d_enabled = data.flash_3d_enabled();
-  out->flash_stage3d_enabled = data.flash_stage3d_enabled();
-  out->flash_stage3d_baseline_enabled = data.flash_stage3d_baseline_enabled();
   out->privileged_webgl_extensions_enabled =
       data.privileged_webgl_extensions_enabled();
   out->webgl_errors_to_console_enabled = data.webgl_errors_to_console_enabled();

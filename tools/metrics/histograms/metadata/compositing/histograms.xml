@@ -295,7 +295,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrawToSwapUs" units="microseconds"
-    expires_after="2022-07-31">
+    expires_after="2022-10-02">
   <owner>backer@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
   <summary>
@@ -318,8 +318,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Display.DrmOverlayManager.FirstTestPageFlipPassed"
+    enum="Boolean" expires_after="2022-11-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or more times per frame, whether the first call to
+    HardwareDisplayController.TestPageFlip succeeded.
+  </summary>
+</histogram>
+
 <histogram name="Compositing.Display.DrmOverlayManager.TestPageFlipCount"
-    units="units" expires_after="2022-06-30">
+    units="units" expires_after="2022-10-04">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -329,7 +339,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrmOverlayManager.TestPageFlipUs"
-    units="microseconds" expires_after="2022-06-30">
+    units="microseconds" expires_after="2022-10-04">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -352,7 +362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrmThread.CheckOverlayCapabilitiesSyncUs"
-    units="microseconds" expires_after="2022-06-30">
+    units="microseconds" expires_after="2022-10-04">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -375,6 +385,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Display.OverlayCombinationCache.NumIdsEvicted"
+    units="units" expires_after="2022-11-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or one times per frame, the number of stale candidate ids we are
+    evicting from the OverlayCombinationCache this frame. If this number is high
+    the CandidateIds or the candidates proposed are likely less stable than they
+    should be.
+  </summary>
+</histogram>
+
 <histogram
     name="Compositing.Display.OverlayProcessorOzone.IsCandidateSharedImage"
     enum="Boolean" expires_after="2021-09-19">
@@ -385,6 +407,19 @@ chromium-metrics-reviews@google.com.
     OverlayCandidateValidatorOzone is backed by a SharedImage (as opposed to a
     legacy mailbox). Recorded for every candidate in every overlay configuration
     passed to OverlayProcessorOzone.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Display.OverlayProcessorOzone.MaxOverlaysSupported"
+    units="units" expires_after="2022-11-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    This is logged every time a new HardwareCapabilities is received from DRM
+    when display configuration may have changed. It records the number of
+    overlay planes we have available in addition to the primary plane on this
+    device.
   </summary>
 </histogram>
 
@@ -399,8 +434,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Compositing.Display.OverlayProcessorUsingStrategy.CandidateCombinationPreviouslySucceeded"
+    enum="Boolean" expires_after="2022-11-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or one times per frame, whether or not the candidate combination
+    being tested this frame was successfully promoted to overlays on the
+    previous frame.
+  </summary>
+</histogram>
+
+<histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportCallCount"
-    units="units" expires_after="2022-06-30">
+    units="units" expires_after="2022-09-18">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -411,13 +458,43 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportUs"
-    units="microseconds" expires_after="2022-06-30">
+    units="microseconds" expires_after="2022-09-18">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
     Logged zero or more times per frame, the time spent checking if a set of
     candidates can be promoted to overlay. Only reported for platforms
     supporting high resolution clocks.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Display.OverlayProcessorUsingStrategy.NumOverlays{Counted}"
+    units="units" expires_after="2022-11-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or one times per frame, the number of overlays {Counted} when
+    using the AttemptMultipleOverlays codepath.
+
+    Note: NumOverlaysFailed and NumOverlaysPromoted are only logged when
+    NumOverlaysAttempted &gt; 0.
+  </summary>
+  <token key="Counted">
+    <variant name="Attempted" summary="attempted"/>
+    <variant name="Failed" summary="failed"/>
+    <variant name="Promoted" summary="promoted"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Compositing.Display.OverlayProcessorUsingStrategy.ShouldAttemptMultipleOverlays"
+    enum="AttemptingMultipleOverlays" expires_after="2022-11-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or one times per frame, whether we're using the
+    AttemptingMultipleOverlays codepath this frame or why we arent.
   </summary>
 </histogram>
 
@@ -691,7 +768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SkiaRenderer.DrawTileDrawQuad.CDT.IsTranslateOnly"
-    units="boolean" expires_after="2022-07-31">
+    units="boolean" expires_after="2022-10-04">
   <owner>penghuang@chromium.org</owner>
   <owner>herb@google.com</owner>
   <summary>
@@ -1006,7 +1083,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.Checkerboarding" units="%"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1088,7 +1165,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Graphics.Smoothness.Jank" units="%" expires_after="2022-09-11">
+<histogram name="Graphics.Smoothness.Jank" units="%" expires_after="2022-10-04">
   <owner>sadrul@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -1425,7 +1502,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Graphics.Smoothness.PerSession.MaxPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2022-07-31">
+    units="%" expires_after="2022-10-02">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

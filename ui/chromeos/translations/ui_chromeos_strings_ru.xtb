@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Сохранение файлов (<ph name="FILE_COUNT" />)…</translation>
 <translation id="4218274196133425560">Удалить исключение для <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Презентация Google</translation>
+<translation id="4277536868133419688">Фильтр "<ph name="FILTER_NAME" />" включен.</translation>
 <translation id="4290535918735525311">Linux предоставлен доступ к 1 папке</translation>
 <translation id="4299729908419173967">бразильская</translation>
 <translation id="4302605047395093221">Все пользователи устройства должны будут вводить указанный PIN-код при подключении к этой мобильной сети.</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">Ещё...</translation>
 <translation id="4579744207439506346">Выбран объект "<ph name="ENTRY_NAME" />".</translation>
 <translation id="4594543368593301662">Результаты поиска по запросу "<ph name="SEARCH_TERM" />".</translation>
+<translation id="4599600860674643278">Фильтр сброшен.</translation>
 <translation id="4603392156942865207">Копирование файла "<ph name="FILE_NAME" />" в папку "<ph name="FOLDER_NAME" />"…</translation>
 <translation id="4631887759990505102">Исполнитель</translation>
 <translation id="4642769377300286600">Установка мобильного профиля, сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -530,6 +532,7 @@
 <translation id="5469868506864199649">Итальянский</translation>
 <translation id="5473333559083690127">Повторно введите новый PIN-код</translation>
 <translation id="5489067830765222292">Латышский</translation>
+<translation id="5489965683297092283">Фильтр "<ph name="FILTER_NAME" />" отключен.</translation>
 <translation id="5494920125229734069">Выделить все</translation>
 <translation id="5500122897333236901">Исландский</translation>
 <translation id="5508696409934741614">Точки</translation>
@@ -596,6 +599,7 @@
 <translation id="6082256976217156453">Сжатый архив LZMA</translation>
 <translation id="6096979789310008754">Поисковый запрос удален. Показаны все файлы и папки.</translation>
 <translation id="610101264611565198">Перемещение файла "<ph name="FILE_NAME" />" в папку "<ph name="FOLDER_NAME" />"…</translation>
+<translation id="61118516107968648">Текстовый файл формата CSV</translation>
 <translation id="6129953537138746214">Пробел</translation>
 <translation id="6133173853026656527">Перемещение файла "<ph name="FILE_NAME" />"…</translation>
 <translation id="613750717151263950">Японский, американская раскладка</translation>
@@ -846,6 +850,7 @@
 <translation id="8208580316430297579">Обложка</translation>
 <translation id="8223479393428528563">Чтобы работать с этими файлами в офлайн-режиме, подключитесь к Интернету, нажмите правой кнопкой мыши на каждый документ и выберите вариант "<ph name="OFFLINE_CHECKBOX_NAME" />".</translation>
 <translation id="8249296373107784235">Отмена</translation>
+<translation id="8250920743982581267">Документы</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8261561378965667560">Китайский, структурный ввод</translation>
 <translation id="8269755669432358899">Свернуть панель с информацией о файлах</translation>

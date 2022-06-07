@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PersonalizationActionName} from 'chrome://personalization/trusted/personalization_actions.js';
-import {PersonalizationToastElement} from 'chrome://personalization/trusted/personalization_toast_element.js';
+import 'chrome://personalization/strings.m.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 
+import {PersonalizationActionName, PersonalizationToastElement} from 'chrome://personalization/trusted/personalization_app.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
 import {baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
 
-export function PersonalizationToastTest() {
+suite('PersonalizationToastTest', function() {
   let personalizationToastElement: PersonalizationToastElement;
 
   let personalizationStore: TestPersonalizationStore;
@@ -52,4 +53,4 @@ export function PersonalizationToastTest() {
     await personalizationStore.waitForAction(
         PersonalizationActionName.DISMISS_ERROR);
   });
-}
+});

@@ -81,6 +81,11 @@ class PrefetchProxyTabHelper
 
     // Called when a url's eligiblity checks are done and fully processed.
     virtual void OnNewEligiblePrefetchStarted() {}
+
+    // Called when the cookies associated with a prefetch are changed after the
+    // initial eligiblity check.
+    virtual void OnCookiesChangedForPrefetchAfterInitialCheck(const GURL& url) {
+    }
   };
 
   // Container for several metrics which pertain to prefetching actions
@@ -89,18 +94,6 @@ class PrefetchProxyTabHelper
   class PrefetchMetrics : public base::RefCounted<PrefetchMetrics> {
    public:
     PrefetchMetrics();
-
-    // This bitmask keeps track each eligible page's placement in the original
-    // navigation prediction. The Nth-LSB is set if the Nth predicted page is
-    // eligible. Pages are in descending order of likelihood of user clicking.
-    // For example, if the following prediction is made:
-    //
-    //   [eligible, not eligible, eligible, eligible]
-    //
-    // then the resulting bitmask will be
-    //
-    //   0b1101.
-    int64_t ordered_eligible_pages_bitmask_ = 0;
 
     // The number of SRP links that were predicted. Only set on Google SRP pages
     // for eligible users. This should be used as the source of truth for
@@ -469,6 +462,10 @@ class PrefetchProxyTabHelper
   // isolated network context to the default context, and notifies the
   // |PrefetchProxySubresourceManager| associated with |url|.
   void PrepareToServe(const GURL& url);
+
+  // Called when the cookies of a prefetch have changed at some point after the
+  // initial check.
+  void OnCookiesChangedAfterInitialCheck(const GURL& url);
 
   raw_ptr<Profile> profile_;
 

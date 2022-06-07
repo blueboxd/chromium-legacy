@@ -29,7 +29,7 @@ export class PostMessageAPIServer extends RequestHandler {
      * taken place yet.
      * @private {number}
      */
-    this.initialization_timeout_id_ = 0;
+    this.initializationTimeoutId_ = 0;
 
     /**
      * Indicates how many attempts have been made to initialize the channel.
@@ -73,7 +73,7 @@ export class PostMessageAPIServer extends RequestHandler {
       // Tell the embedded webviews whose src matches our origin to initialize
       // by sending it a message, which will include a handle for it to use to
       // send messages back.
-      console.log(
+      console.info(
           'Sending init message to guest content,  attempt # :' +
           this.numInitializationAttempts_);
 
@@ -81,7 +81,7 @@ export class PostMessageAPIServer extends RequestHandler {
 
       // Set timeout to check if initialization message has been received using
       // exponential backoff.
-      this.initialization_timeout_id_ = setTimeout(
+      this.initializationTimeoutId_ = setTimeout(
           () => {
             // If the timeout id is non-zero, that indicates that initialization
             // hasn't succeeded yet, so  try to initialize again.
@@ -121,17 +121,18 @@ export class PostMessageAPIServer extends RequestHandler {
    */
   async onMessage_(event) {
     if (!this.originMatchesFilter(event.origin)) {
-      console.log('Message received from unauthorized origin: ' + event.origin);
+      console.info(
+          'Message received from unauthorized origin: ' + event.origin);
       return;
     }
 
     if (event.data === 'init') {
-      if (this.initialization_timeout_id_) {
+      if (this.initializationTimeoutId_) {
         // Cancel the current init timeout, and signal to the initialization
         // polling process that we have received an init message from the guest
         // content, so it doesn't reschedule the timer.
-        clearTimeout(this.initialization_timeout_id_);
-        this.initialization_timeout_id_ = 0;
+        clearTimeout(this.initializationTimeoutId_);
+        this.initializationTimeoutId_ = 0;
       }
 
       this.isInitialized_ = true;

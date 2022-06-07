@@ -125,7 +125,6 @@ void AddScanningAppStrings(content::WebUIDataSource* html_source) {
       {"scannerDropdownLabel", IDS_SCANNING_APP_SCANNER_DROPDOWN_LABEL},
       {"scannersLoadingText", IDS_SCANNING_APP_SCANNERS_LOADING_TEXT},
       {"scanningImagesAriaLabel", IDS_SCANNING_APP_SCANNING_IMAGES_ARIA_LABEL},
-      {"searchablePdfOptionText", IDS_SCANNING_APP_SEARCHABLE_PDF_OPTION_TEXT},
       {"selectFolderOption", IDS_SCANNING_APP_SELECT_FOLDER_OPTION},
       {"showInFolderButtonLabel", IDS_SCANNING_APP_SHOW_IN_FOLDER_BUTTON_LABEL},
       {"sourceDropdownLabel", IDS_SCANNING_APP_SOURCE_DROPDOWN_LABEL},
@@ -149,15 +148,6 @@ void AddScanningAppPluralStrings(ScanningHandler* handler) {
 
   for (const auto& str : kLocalizedStrings)
     handler->AddStringToPluralMap(str.name, str.id);
-}
-
-void AddFeatureFlags(content::WebUIDataSource* html_source) {
-  html_source->AddBoolean(
-      "scanAppMultiPageScanEnabled",
-      base::FeatureList::IsEnabled(chromeos::features::kScanAppMultiPageScan));
-  html_source->AddBoolean(
-      "scanAppSearchablePdfEnabled",
-      base::FeatureList::IsEnabled(chromeos::features::kScanAppSearchablePdf));
 }
 
 }  // namespace
@@ -189,8 +179,6 @@ ScanningUI::ScanningUI(
                                IDR_SCANNING_APP_FILE_PATH_MOJO_LITE_JS);
   html_source->AddResourcePath("accessibility_features.mojom-lite.js",
                                IDR_ACCESSIBILITY_FEATURES_MOJO_LITE_JS);
-
-  AddFeatureFlags(html_source);
 
   AddScanningAppStrings(html_source);
 

@@ -36,8 +36,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -146,7 +146,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
   std::unique_ptr<CloudPolicyManager> cloud_policy_manager_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+  ash::ScopedStubInstallAttributes test_install_attributes_;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 

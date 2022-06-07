@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="af">
-<translation id="1096883626080133124">Kry meer gedoen met 'n eenvoudige, veiliger Google Chrome wat vinniger as ooit vantevore is</translation>
 <translation id="1143896152279775643">Jou wagwoord sal vir <ph name="EMAIL" /> in Google Wagwoordbestuurder gestoor word.</translation>
 <translation id="1282031177488366470">Help om Chrome se kenmerke en werkverrigting te verbeter</translation>
 <translation id="1479202195792305274">Chrome kan jou wagwoorde nagaan as jy met jou Google-rekening aanmeld.</translation>
@@ -39,7 +38,6 @@
 <translation id="3345341804167540816">Gebruik Chrome oral</translation>
 <translation id="3522659714780527202">Skakel sinkronisering aan om jou oortjies te sien van waar ook al jy Chrome gebruik</translation>
 <translation id="3533694711092285624">Geen gestoorde wagwoorde nie. Chrome kan jou wagwoorde nagaan wanneer jy hulle stoor.</translation>
-<translation id="3634910711516114487">Meld met jou Google-rekening aan om die meeste voordeel uit Chrome te trek</translation>
 <translation id="3655656110921623717">Dit beteken dat Chrome elke keer die mobiele werf sal versoek.</translation>
 <translation id="3706101708757577809">Jy kan Chrome nou enige tyd gebruik wanneer jy op skakels in boodskappe, dokumente en ander programme tik.</translation>
 <translation id="3720541637541300822">Sluit Incognito-oortjies wanneer jy Chrome toemaak</translation>
@@ -83,21 +81,13 @@
 <translation id="6709398533399187136">Jou wagwoord is in 'n dataskending blootgestel. Google Wagwoordbestuurder beveel aan dat jy dit nou verander.</translation>
 <translation id="6822673484890854830">Chrome kon nie alle wagwoorde nagaan nie. Probeer later weer.</translation>
 <translation id="6964931465519938134">Jy kan Chrome nou enige tyd gebruik wanneer jy op skakels in boodskappe, dokumente en ander programme tik.</translation>
-<translation id="7046845777663074840">Wanneer dit aan is:
-<ph name="BEGIN_INDENT" />  • Help dit om Chrome beter te maak vir mense wat dit gebruik soos wat jy dit gebruik.<ph name="END_INDENT" />
-
-Dinge om te oorweeg:
-<ph name="BEGIN_INDENT" />  • Inligting oor jou gebruik van Chrome word aan Google gestuur, maar dit word nie aan jou verbind nie.
-
-  • As Chrome omval, kan besonderhede oor die omval sekere persoonlike inligting insluit.
-
-  • As jy sinkronisering aanskakel, kan maatstawwe inligting insluit oor URL'e wat jy besoek.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Maak Chrome jou eie</translation>
 <translation id="7124339256045485976">Hou Chrome op datum</translation>
 <translation id="7161390184744336561">Google Chrome is verouderd</translation>
 <translation id="7165736900384873061">Begin om Google Chrome se QR-skandeerder te gebruik</translation>
 <translation id="7172660552945675509">Wenk: <ph name="BEGIN_LINK" />Skuif Chrome na jou dok<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome gebruik Gesig-ID om gemagtigde toegang tot jou wagwoorde te verseker.</translation>
+<translation id="7187993566681480880">Hou jou veilig op Chrome en kan gebruik word om jou sekuriteit in ander Google-programme te verbeter wanneer jy aangemeld is.</translation>
 <translation id="72119412072970160">Jy kan die wagwoorde wat jy in Google Wagwoordbestuurder gestoor het in ander programme op jou iPad gebruik.</translation>
 <translation id="7261678641327190792">Chrome kan nie jou wagwoorde nagaan nie</translation>
 <translation id="7272930098487145294">Om prente te stoor, moet jy op Instellings tik om Chrome toe te laat om foto's by te voeg</translation>
@@ -110,6 +100,7 @@ Dinge om te oorweeg:
 <translation id="766361182512894255">Jou wagwoord is in 'n dataskending blootgestel. Chrome beveel aan dat jy die wagwoord nou verander.</translation>
 <translation id="7693590760643069321">Jy kan Chrome nou enige tyd gebruik wanneer jy op skakels in boodskappe, dokumente en ander programme tik.</translation>
 <translation id="7698568245838009292">Chrome wil toegang tot die kamera hê</translation>
+<translation id="7780154209050837198">Meld met jou Google-rekening by Chrome aan om die meeste voordeel daaruit te trek.</translation>
 <translation id="7855730255114109580">Google Chrome is op datum</translation>
 <translation id="8022947259858476807">Gebruik by verstek Chrome om skakels oop te maak, van legstukke af te soek, en wagwoorde outomaties by ander programme in te vul</translation>
 <translation id="8160472928944011082">Chrome kan nie opdateer nie</translation>

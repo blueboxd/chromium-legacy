@@ -8,8 +8,10 @@ import './keyboard_tester.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {DiagnosticsBrowserProxy, DiagnosticsBrowserProxyImpl} from './diagnostics_browser_proxy.js';
 import {ConnectedDevicesObserverInterface, ConnectedDevicesObserverReceiver, InputDataProviderInterface, KeyboardInfo, TouchDeviceInfo, TouchDeviceType} from './diagnostics_types.js';
 import {getInputDataProvider} from './mojo_interface_provider.js';
 
@@ -24,6 +26,9 @@ Polymer({
   _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
+
+  /** @private {?DiagnosticsBrowserProxy} */
+  browserProxy_: null,
 
   /** @private {?InputDataProviderInterface} */
   inputDataProvider_: null,
@@ -52,10 +57,33 @@ Polymer({
       type: Array,
       value: () => [],
     },
+
+    /** @protected */
+    showTouchpads_: {
+      type: Boolean,
+      computed: 'computeShowTouchpads_(touchpads_.length)',
+    },
+
+    /** @protected */
+    showTouchscreens_: {
+      type: Boolean,
+      computed: 'computeShowTouchscreens_(touchscreens_.length)',
+    },
+  },
+
+  computeShowTouchpads_(numTouchpads) {
+    return numTouchpads > 0 && loadTimeData.getBoolean('isTouchpadEnabled');
+  },
+
+  computeShowTouchscreens_(numTouchscreens) {
+    return numTouchscreens > 0 &&
+        loadTimeData.getBoolean('isTouchscreenEnabled');
   },
 
   /** @override */
   created() {
+    this.browserProxy_ = DiagnosticsBrowserProxyImpl.getInstance();
+    this.browserProxy_.initialize();
     this.inputDataProvider_ = getInputDataProvider();
     this.loadInitialDevices_();
     this.observeConnectedDevices_();
@@ -147,5 +175,19 @@ Polymer({
     this.keyboardTester_.keyboard = assert(
         this.keyboards_.find((keyboard) => keyboard.id === e.detail.evdevId));
     this.keyboardTester_.show();
+  },
+
+  /**
+   * 'navigation-view-panel' is responsible for calling this function when
+   * the active page changes.
+   * @param {{isActive: boolean}} isActive
+   * @public
+   */
+  onNavigationPageChanged({isActive}) {
+    if (isActive) {
+      // TODO(ashleydp): Remove when a call can be made at a higher component
+      // to avoid duplicate code in all navigatable pages.
+      this.browserProxy_.recordNavigation('input');
+    }
   },
 });

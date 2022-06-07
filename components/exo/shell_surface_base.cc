@@ -17,7 +17,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
@@ -25,7 +24,6 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/check.h"
 #include "base/logging.h"
@@ -42,9 +40,10 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/app_restore_utils.h"
-#include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/window_properties.h"
+#include "components/exo/custom_window_state_delegate.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/window_properties.h"
@@ -277,33 +276,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 
   ShellSurfaceBase* shell_surface_;
   views::Widget* const widget_;
-};
-
-// A place holder to disable default implementation created by
-// ash::NonClientFrameViewAsh, which triggers immersive fullscreen etc, which
-// we don't need.
-class CustomWindowStateDelegate : public ash::WindowStateDelegate {
- public:
-  CustomWindowStateDelegate() {}
-
-  CustomWindowStateDelegate(const CustomWindowStateDelegate&) = delete;
-  CustomWindowStateDelegate& operator=(const CustomWindowStateDelegate&) =
-      delete;
-
-  ~CustomWindowStateDelegate() override {}
-
-  // Overridden from ash::WindowStateDelegate:
-  bool ToggleFullscreen(ash::WindowState* window_state) override {
-    return false;
-  }
-
-  // Overridden from ash::WindowStateDelegate.
-  void ToggleLockedFullscreen(ash::WindowState* window_state) override {
-    // Sets up the shell environment as appropriate for locked Lacros or Ash
-    // chrome sessions including disabling ARC.
-    ash::Shell::Get()->shell_delegate()->SetUpEnvironmentForLockedFullscreen(
-        window_state->IsPinned());
-  }
 };
 
 void CloseAllShellSurfaceTransientChildren(aura::Window* window) {
@@ -1638,8 +1610,7 @@ void ShellSurfaceBase::SetParentInternal(aura::Window* parent) {
 bool ShellSurfaceBase::CalculateCanResize() const {
   if (overlay_widget_ && overlay_can_resize_.has_value())
     return *overlay_can_resize_;
-  return !movement_disabled_ &&
-         (minimum_size_.IsEmpty() || minimum_size_ != maximum_size_);
+  return !movement_disabled_ && GetCanResizeFromSizeConstraints();
 }
 
 void ShellSurfaceBase::CommitWidget() {

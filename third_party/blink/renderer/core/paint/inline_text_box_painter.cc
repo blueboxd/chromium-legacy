@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/editing/markers/highlight_pseudo_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
@@ -844,7 +845,7 @@ PhysicalRect InlineTextBoxPainter::PaintSelection(
   auto layout_item = inline_text_box_.GetLineLayoutItem();
   Color c = HighlightPaintingUtils::HighlightBackgroundColor(
       layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode(),
-      kPseudoIdSelection);
+      absl::nullopt, kPseudoIdSelection);
   if (!c.Alpha())
     return PhysicalRect();
 
@@ -975,7 +976,8 @@ void InlineTextBoxPainter::PaintTextMarkerBackground(
     auto layout_item = inline_text_box_.GetLineLayoutItem();
     color = HighlightPaintingUtils::HighlightBackgroundColor(
         layout_item.GetDocument(), layout_item.StyleRef(),
-        layout_item.GetNode(), highlight_pseudo_marker.GetPseudoId(),
+        layout_item.GetNode(), absl::nullopt,
+        highlight_pseudo_marker.GetPseudoId(),
         highlight_pseudo_marker.GetPseudoArgument());
   }
   GraphicsContext& context = paint_info.context;

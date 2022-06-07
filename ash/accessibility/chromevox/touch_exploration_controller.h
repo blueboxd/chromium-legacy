@@ -11,6 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/events/event.h"
@@ -290,10 +291,6 @@ class ASH_EXPORT TouchExplorationController
   void DispatchKeyWithFlags(const ui::KeyboardCode key,
                             int flags,
                             const Continuation continuation);
-
-  std::unique_ptr<ui::MouseEvent> CreateMouseMoveEvent(
-      const gfx::PointF& location,
-      int flags);
 
   void EnterTouchToMouseMode();
 

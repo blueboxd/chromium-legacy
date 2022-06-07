@@ -12,7 +12,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
@@ -48,7 +47,7 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();
-    bounds.Inset(horizontal_diff / 2, vertical_diff / 2);
+    bounds.Inset(gfx::Insets::VH(vertical_diff / 2, horizontal_diff / 2));
   }
   return bounds;
 }

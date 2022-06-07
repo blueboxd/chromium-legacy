@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/services/device_sync/attestation_certificates_syncer.h"
 #include "ash/services/device_sync/cryptauth_device_activity_getter.h"
 #include "ash/services/device_sync/cryptauth_enrollment_manager.h"
 #include "ash/services/device_sync/cryptauth_gcm_manager.h"
@@ -21,6 +22,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -40,7 +42,7 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -82,7 +84,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-        std::unique_ptr<base::OneShotTimer> timer);
+        std::unique_ptr<base::OneShotTimer> timer,
+        AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+            get_attestation_certificates_function);
     static void SetCustomFactory(Factory* custom_factory);
     static bool IsCustomFactorySet();
 
@@ -95,7 +99,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-        std::unique_ptr<base::OneShotTimer> timer) = 0;
+        std::unique_ptr<base::OneShotTimer> timer,
+        AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+            get_attestation_certificates_function) = 0;
 
    private:
     static Factory* custom_factory_instance_;
@@ -107,7 +113,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   ~DeviceSyncImpl() override;
 
  protected:
-  // mojom::DeviceSync:
+  // device_sync::mojom::DeviceSync:
   void ForceEnrollmentNow(ForceEnrollmentNowCallback callback) override;
   void ForceSyncNow(ForceSyncNowCallback callback) override;
   void GetLocalDeviceMetadata(GetLocalDeviceMetadataCallback callback) override;
@@ -215,7 +221,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
       ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::Clock* clock,
-      std::unique_ptr<base::OneShotTimer> timer);
+      std::unique_ptr<base::OneShotTimer> timer,
+      AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+          get_attestation_certificates_function);
 
   // DeviceSyncBase:
   void Shutdown() override;
@@ -282,6 +290,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   base::Clock* clock_;
   std::unique_ptr<base::OneShotTimer> timer_;
+  AttestationCertificatesSyncer::GetAttestationCertificatesFunction
+      get_attestation_certificates_function_;
 
   InitializationStatus status_ = InitializationStatus::kNotStarted;
   CoreAccountInfo primary_account_info_;
@@ -328,13 +338,11 @@ class DeviceSyncImpl : public DeviceSyncBase,
 
 }  // namespace device_sync
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-namespace device_sync {
-using ::chromeos::device_sync::DeviceSyncImpl;
-}
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos::device_sync {
+using ::ash::device_sync::DeviceSyncImpl;
+}
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_DEVICE_SYNC_IMPL_H_

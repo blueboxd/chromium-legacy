@@ -23,10 +23,10 @@
 #include "chrome/test/views/chrome_test_views_delegate.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #else
 #include "ui/views/test/scoped_views_test_helper.h"
 #endif
@@ -61,10 +61,11 @@ class TestingProfileManager;
 
 // Base class for browser based unit tests. BrowserWithTestWindowTest creates a
 // Browser with a TestingProfile and TestBrowserWindow. To add a tab use
-// AddTab. For example, the following adds a tab and navigates to
-// two URLs that target the TestWebContents:
+// AddTab. For example, the following adds a tab and navigates to two URLs:
 //
 //   // Add a new tab and navigate it. This will be at index 0.
+//   // WARNING: this creates a real WebContents. If you want to add a test
+//   // WebContents create it directly and insert it into the TabStripModel.
 //   AddTab(browser(), GURL("http://foo/1"));
 //   WebContents* contents = browser()->tab_strip_model()->GetWebContentsAt(0);
 //
@@ -156,6 +157,8 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   // Adds a tab to |browser| with the given URL and commits the load.
   // This is a convenience function. The new tab will be added at index 0.
+  // WARNING: this creates a real WebContents. If you want to add a test
+  // WebContents create it directly and insert it into the TabStripModel.
   void AddTab(Browser* browser, const GURL& url);
 
   // Commits the pending load on the given controller. It will keep the
@@ -207,7 +210,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::ScopedCrosSettingsTestHelper* GetCrosSettingsHelper();
-  chromeos::StubInstallAttributes* GetInstallAttributes();
+  ash::StubInstallAttributes* GetInstallAttributes();
 #endif
 
  private:

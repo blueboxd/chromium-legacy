@@ -66,7 +66,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -124,6 +123,11 @@ NetworkChangeNotifierAndroid::GetCurrentConnectionType() const {
   return delegate_->GetCurrentConnectionType();
 }
 
+NetworkChangeNotifier::ConnectionCost
+NetworkChangeNotifierAndroid::GetCurrentConnectionCost() {
+  return delegate_->GetCurrentConnectionCost();
+}
+
 NetworkChangeNotifier::ConnectionSubtype
 NetworkChangeNotifierAndroid::GetCurrentConnectionSubtype() const {
   return delegate_->GetCurrentConnectionSubtype();
@@ -167,6 +171,10 @@ NetworkChangeNotifierAndroid::GetCurrentDefaultNetwork() const {
 
 void NetworkChangeNotifierAndroid::OnConnectionTypeChanged() {
   BlockingThreadObjects::NotifyNetworkChangeNotifierObservers();
+}
+
+void NetworkChangeNotifierAndroid::OnConnectionCostChanged() {
+  NetworkChangeNotifier::NotifyObserversOfConnectionCostChange();
 }
 
 void NetworkChangeNotifierAndroid::OnMaxBandwidthChanged(

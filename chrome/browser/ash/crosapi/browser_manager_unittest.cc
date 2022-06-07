@@ -71,7 +71,7 @@ class BrowserManagerFake : public BrowserManager {
 
 class MockBrowserLoader : public BrowserLoader {
  public:
-  MockBrowserLoader(
+  explicit MockBrowserLoader(
       scoped_refptr<component_updater::CrOSComponentManager> manager)
       : BrowserLoader(manager) {}
   MockBrowserLoader(const MockBrowserLoader&) = delete;
@@ -125,7 +125,7 @@ class BrowserManagerTest : public testing::Test {
   TestingProfile testing_profile_;
   ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
-  MockBrowserLoader* browser_loader_;
+  MockBrowserLoader* browser_loader_ = nullptr;
   std::unique_ptr<MockComponentUpdateService> component_update_service_;
   std::unique_ptr<BrowserManagerFake> fake_browser_manager_;
   ScopedTestingLocalState local_state_;

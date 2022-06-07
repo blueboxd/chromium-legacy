@@ -184,7 +184,6 @@
 <translation id="200114059308480249">በGoogle ፍለጋዎች ውስጥ በዙሪያው ያለው ጽሑፍ ይካተት?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ፋይል}one{# ፋይሎች}other{# ፋይሎች}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> በChrome ውስጥ ይከፈታል። በመቀጠልዎ በ<ph name="BEGIN_LINK1" />የGoogle አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የGoogle Chrome እና የChrome OS ተጨማሪ አገልግሎት ውል<ph name="END_LINK2" /> ይስማማሉ። የ <ph name="BEGIN_LINK3" />ግላዊነት መመሪያም<ph name="END_LINK3" /> ይተገበራል።</translation>
-<translation id="2019145049163614359">ዝንባሌ ይወገድ?</translation>
 <translation id="2020309681647789787">እያደረጉ የነበሩትን መቀጠል እንዲችሉ ታሪክዎን በሁሉም በተሰመሩ መሳሪያዎችዎ ላይ ይኖረዎታል</translation>
 <translation id="2021896219286479412">የሙሉ ማያ ገጽ ጣቢያ መቆጣጠሪያዎች</translation>
 <translation id="2038563949887743358">የዴስክቶፕ ጣቢያን ጠይቅን አብራ</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">በአጠቃቀምዎ ላይ የተመሠረተ</translation>
 <translation id="214888715418183969">ለChrome ለማጋራት የሚመችዎትን ይምረጡ። የሚያጋሯቸው መለኪያዎች የChromeን ባህሪዎች፣ አፈፃፀም እና መረጋጋትን ለማሻሻል ጥቅም ላይ ይውላሉ።</translation>
 <translation id="2149973817440762519">እልባት አርትዕ</translation>
+<translation id="2155214902713132423">ይህ የማረጋገጫ ዘዴ ለዚህ መሣሪያ አይገኝም። በሌላ መሣሪያዎ ላይ ሌላ አማራጭ ይምረጡ።</translation>
 <translation id="2157851137955077194">የሆነ ነገር ከስልክዎ ወደ ሌላ መሣሪያ ለማጋራት በሁለቱም መሣሪያዎች ላይ በChrome ቅንብሮች ውስጥ ስምረትን ያብሩ</translation>
 <translation id="2158408438301413340">Chrome ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም</translation>
 <translation id="2169830938017475061">አሁን</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">በቅርቡ አዲስ ትር ሲከፍቱ ከ<ph name="SITE_NAME" /> የመጡ ታሪኮችን ይመለከታሉ። እርስዎ የሚከተሏቸው ጣቢያዎች በGoogle መለያዎ ውስጥ ይቀመጣሉ። በምርምር ቅንብሮች ውስጥ ሊያቀናብሯቸው ይችላሉ።</translation>
 <translation id="5091249083535528968">የተራዘመ የአጠቃቀም ውሂብ</translation>
 <translation id="509429900233858213">ስህተት አጋጥሟል።</translation>
-<translation id="5098190077610408701">ፍላጎት ይታከል?</translation>
 <translation id="5102401324271069229">አንድ ጣቢያ የእርስዎን የይለፍ ቃል ለመስረቅ ከሞከረ ወይም ጎጂ ፋይል ካወረደ Chrome የገጽ ይዘትን ክፍሎችም ጨምሮ ዩአርኤሎችን ወደ የጥንቃቄ አሰሳ ሊልክ ይችላል</translation>
 <translation id="510275257476243843">1 ሰዓት ይቀራል</translation>
 <translation id="5115811374190515607">ወደ <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">የጣቢያዎችን ዩአርኤሎች ማወቅ Google ረዳት ስራዎችን እንዲያጠናቅቁ እንዲያግዘዎት ያስችለዋል። ረዳትን በChrome ቅንብሮች ላይ ማጥፋት ይችላሉ።</translation>
 <translation id="5916664084637901428">በርቷል</translation>
 <translation id="5919204609460789179">ስምረትን ለመጀመር <ph name="PRODUCT_NAME" />ን ያዘምኑ</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" />ን አክል</translation>
 <translation id="5942872142862698679">ለፍለጋ Googleን መጠቀም</translation>
 <translation id="5945035219773565305">የአሁኑ ምክር፦  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">የቀጥታ ስርጭት ገጽን በማየት ላይ</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791">በ<ph name="BEGIN_LINK" />የግላዊነት Sandbox<ph name="END_LINK" /> አማካኝነት Chrome ክፍት ድርን በሚጠብቁበት ጊዜ እርስዎን ከጣቢያ-ተሻጋሪ መከታተያ ለመጠበቅ አዲስ ቴክኖሎጂዎችን እየገነባ ነው።
 
 የግላዊነት ማጠሪያ ሙከራዎች አሁንም በንቁ ግንባታ ላይ ናቸው፣ እንዲሁም በተመረጡ ክልሎች ውስጥም ይገኛሉ። ለአሁን ጣቢያዎች እንደ የሶስተኛ ወገን ኩኪዎች ያሉ ወቅታዊ የድር ቴክኖሎጂዎችን መጠቀሙን በሚቀጥሉበት ጊዜ የግላዊነት ማጠሪያን ሊሞክሩ ይችላሉ።</translation>
-<translation id="6036057147555329831">ተጨማሪ አይሲዩ</translation>
 <translation id="6039379616847168523">ወደ ቀጣዩ ትር ዝለል</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="604124094241169006">ራስ-ሰር</translation>
@@ -1023,6 +1022,7 @@
 <translation id="663674369910034433">ከግላዊነት፣ ደህንነት እና የውሂብ ስብስብ ጋር ለሚዛመዱ ተጨማሪ ቅንብሮች <ph name="BEGIN_LINK1" />ስምረት<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የGoogle አገልግሎቶች<ph name="END_LINK2" />ን ይመልከቱ</translation>
 <translation id="6637100877383020115">መተግበሪያውን ለማሻሻል ለማገዝ Chrome የአጠቃቀም እና የስንክል ውሂብን ወደ Google ይልካል። <ph name="BEGIN_UMA_LINK" />ያስተዳድሩ<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">ሁልጊዜ አግድ</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" />ን አስወግድ</translation>
 <translation id="6643016212128521049">አጽዳ</translation>
 <translation id="6645629752388991326">ይህንን መሳሪያ እንደ የደህንነት ቁልፍ በመጠቀም የትኛዎቹ መሳሪያዎች መግባት እንደሚችሉ ይቆጣጠሩ።</translation>
 <translation id="6648459603387803038">የእርስዎ አስተዳዳሪ በርቀት የአሳሽዎን ውቅረት መቀየር ይችላል። በዚህ መሣሪያ ላይ ያለ እንቅስቃሴ ከChrome ውጭም ሊስተዳደር ይችላል።</translation>

@@ -20,6 +20,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -215,6 +216,9 @@ class ASH_EXPORT AppListPresenterImpl
   // https://crbug.com/884889).
   void SnapAppListBoundsToDisplayEdge();
 
+  // Called when the reorder animation completes.
+  void OnAppListReorderAnimationDone();
+
   // Owns |this|.
   AppListControllerImpl* const controller_;
 
@@ -245,6 +249,8 @@ class ASH_EXPORT AppListPresenterImpl
   // Data we need to store for metrics.
   absl::optional<base::Time> last_open_time_;
   absl::optional<AppListShowSource> last_open_source_;
+
+  base::WeakPtrFactory<AppListPresenterImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

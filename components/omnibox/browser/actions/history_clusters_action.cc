@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/history/core/browser/visitsegment_database.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
@@ -28,18 +29,10 @@ class HistoryClustersAction : public OmniboxAction {
   explicit HistoryClustersAction(const std::string& query)
       : OmniboxAction(
             OmniboxAction::LabelStrings(
-                GetConfig().alternate_omnibox_action_text
-                    ? IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT_ALTERNATE
-                    : IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT,
-                GetConfig().alternate_omnibox_action_text
-                    ? IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS_ALTERNATE
-                    : IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS,
-                GetConfig().alternate_omnibox_action_text
-                    ? IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX_ALTERNATE
-                    : IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX,
-                GetConfig().alternate_omnibox_action_text
-                    ? IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_ALTERNATE
-                    : IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH),
+                IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT,
+                IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS,
+                IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX,
+                IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH),
             GURL(base::StringPrintf(
                 "chrome://history/journeys?q=%s",
                 net::EscapeQueryParamValue(query, /*use_plus=*/false)
@@ -93,19 +86,27 @@ void AttachHistoryClustersActions(
       continue;
     }
 
-    // Also skip all URLs. Only match this for Search matches. Pedals doesn't
-    // explicitly filter URL matches out, but the "bag" of words it searches
-    // over is quite small. That's why we need to be stricter than Pedals.
-    if (!AutocompleteMatch::IsSearchType(match.type)) {
-      continue;
+    if (AutocompleteMatch::IsSearchType(match.type)) {
+      std::string query = base::UTF16ToUTF8(match.contents);
+      if (service->DoesQueryMatchAnyCluster(query)) {
+        match.action = base::MakeRefCounted<HistoryClustersAction>(query);
+      }
+    } else if (GetConfig().omnibox_action_on_urls) {
+      // We do the URL stripping here, because we need it to both execute the
+      // query, as well as to feed it into the action chip so the chip navigates
+      // to the right place (with the query pre-populated).
+      std::string stripped_url =
+          history::VisitSegmentDatabase::ComputeSegmentName(
+              match.destination_url);
+      if (service->DoesURLMatchAnyCluster(stripped_url)) {
+        match.action =
+            base::MakeRefCounted<HistoryClustersAction>(stripped_url);
+      }
     }
 
-    std::string query = base::UTF16ToUTF8(match.contents);
-    if (service->DoesQueryMatchAnyCluster(query)) {
-      match.action = base::MakeRefCounted<HistoryClustersAction>(query);
-
-      // Only ever attach one action (to the highest match), to not overwhelm
-      // the user with multiple "Resume Journey" action buttons.
+    // Only ever attach one action (to the highest match), to not overwhelm
+    // the user with multiple "Resume Journey" action buttons.
+    if (match.action) {
       return;
     }
   }

@@ -13,9 +13,7 @@ namespace content {
 
 class MockIdpNetworkRequestManager : public IdpNetworkRequestManager {
  public:
-  MockIdpNetworkRequestManager(const GURL& provider,
-                               const url::Origin& relaying_party_origin);
-
+  MockIdpNetworkRequestManager();
   ~MockIdpNetworkRequestManager() override;
 
   MockIdpNetworkRequestManager(const MockIdpNetworkRequestManager&) = delete;
@@ -24,6 +22,7 @@ class MockIdpNetworkRequestManager : public IdpNetworkRequestManager {
 
   bool IsMockIdpNetworkRequestManager() const override { return true; }
 
+  MOCK_METHOD1(FetchManifestList, void(FetchManifestListCallback));
   MOCK_METHOD3(FetchManifest,
                void(absl::optional<int>,
                     absl::optional<int>,
@@ -32,8 +31,6 @@ class MockIdpNetworkRequestManager : public IdpNetworkRequestManager {
                void(const GURL&,
                     const std::string&,
                     FetchClientMetadataCallback));
-  MOCK_METHOD3(SendSigninRequest,
-               void(const GURL&, const std::string&, SigninRequestCallback));
   MOCK_METHOD3(SendAccountsRequest,
                void(const GURL&, const std::string&, AccountsRequestCallback));
   MOCK_METHOD4(SendTokenRequest,

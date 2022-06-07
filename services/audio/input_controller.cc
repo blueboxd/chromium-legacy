@@ -29,12 +29,18 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_processing.h"
+#include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
-#include "services/audio/audio_processor_handler.h"
+#include "services/audio/audio_manager_power_user.h"
 #include "services/audio/concurrent_stream_metric_reporter.h"
 #include "services/audio/device_output_listener.h"
 #include "services/audio/output_tapper.h"
+#include "services/audio/processing_audio_fifo.h"
 #include "services/audio/reference_output.h"
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+#include "services/audio/audio_processor_handler.h"
+#endif
 
 namespace audio {
 namespace {
@@ -181,8 +187,10 @@ InputController::InputController(
     media::UserInputMonitor* user_input_monitor,
     InputStreamActivityMonitor* activity_monitor,
     DeviceOutputListener* device_output_listener,
+    AecdumpRecordingManager* aecdump_recording_manager,
     media::mojom::AudioProcessingConfigPtr processing_config,
-    const media::AudioParameters& params,
+    const media::AudioParameters& output_params,
+    const media::AudioParameters& device_params,
     StreamType type)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       event_handler_(event_handler),
@@ -198,8 +206,9 @@ InputController::InputController(
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-  MaybeSetUpAudioProcessing(std::move(processing_config), params,
-                            device_output_listener);
+  MaybeSetUpAudioProcessing(std::move(processing_config), output_params,
+                            device_params, device_output_listener,
+                            aecdump_recording_manager);
 #endif
 
   if (!user_input_monitor_) {
@@ -211,8 +220,10 @@ InputController::InputController(
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 void InputController::MaybeSetUpAudioProcessing(
     media::mojom::AudioProcessingConfigPtr processing_config,
-    const media::AudioParameters& params,
-    DeviceOutputListener* device_output_listener) {
+    const media::AudioParameters& processing_output_params,
+    const media::AudioParameters& device_params,
+    DeviceOutputListener* device_output_listener,
+    AecdumpRecordingManager* aecdump_recording_manager) {
   if (!device_output_listener)
     return;
 
@@ -220,24 +231,54 @@ void InputController::MaybeSetUpAudioProcessing(
         processing_config->settings.NeedAudioModification())) {
     return;
   }
-    // Unretained() is safe, since |this| and |event_handler_| outlive
-    // |audio_processor_handler_|.
-    audio_processor_handler_ = std::make_unique<AudioProcessorHandler>(
-        processing_config->settings, params,
-        base::BindRepeating(&EventHandler::OnLog,
-                            base::Unretained(event_handler_)),
-        base::BindRepeating(&InputController::DeliverProcessedAudio,
-                            base::Unretained(this)),
-        std::move(processing_config->controls_receiver));
 
-    if (!processing_config->settings.NeedPlayoutReference())
-      return;
+  absl::optional<media::AudioParameters> processing_input_params =
+      media::AudioProcessor::ComputeInputFormat(device_params,
+                                                processing_config->settings);
+  if (!processing_input_params) {
+    event_handler_->OnLog(base::StringPrintf(
+        "AIC::MaybeSetupAudioProcessing() => (Unsupported device_params=%s, "
+        "cannot do audio processing)",
+        device_params.AsHumanReadableString().c_str()));
+    return;
+  }
 
-    // Unretained() is safe, since |event_handler_| outlives |output_tapper_|.
-    output_tapper_ = std::make_unique<OutputTapper>(
-        device_output_listener, audio_processor_handler_.get(),
+  // Unretained() is safe, since |this| and |event_handler_| outlive
+  // |audio_processor_handler_|.
+  audio_processor_handler_ = std::make_unique<AudioProcessorHandler>(
+      processing_config->settings, *processing_input_params,
+      processing_output_params,
+      base::BindRepeating(&EventHandler::OnLog,
+                          base::Unretained(event_handler_)),
+      base::BindRepeating(&InputController::DeliverProcessedAudio,
+                          base::Unretained(this)),
+      std::move(processing_config->controls_receiver),
+      aecdump_recording_manager);
+
+  // If the required processing is lightweight, there is no need to offload work
+  // to a new thread.
+  if (!processing_config->settings.NeedPlayoutReference())
+    return;
+
+  int fifo_size = media::kChromeWideEchoCancellationProcessingFifoSize.Get();
+
+  // Only use the FIFO/new thread if its size is explicitly set.
+  if (fifo_size) {
+    // base::Unretained() is safe since both |audio_processor_handler_| and
+    // |event_handler_| outlive |processing_fifo_|.
+    processing_fifo_ = std::make_unique<ProcessingAudioFifo>(
+        *processing_input_params, fifo_size,
+        base::BindRepeating(&AudioProcessorHandler::ProcessCapturedAudio,
+                            base::Unretained(audio_processor_handler_.get())),
         base::BindRepeating(&EventHandler::OnLog,
-                            base::Unretained(event_handler_)));
+                            base::Unretained(event_handler_.get())));
+  }
+
+  // Unretained() is safe, since |event_handler_| outlives |output_tapper_|.
+  output_tapper_ = std::make_unique<OutputTapper>(
+      device_output_listener, audio_processor_handler_.get(),
+      base::BindRepeating(&EventHandler::OnLog,
+                          base::Unretained(event_handler_)));
 }
 #endif
 
@@ -256,6 +297,7 @@ std::unique_ptr<InputController> InputController::Create(
     media::UserInputMonitor* user_input_monitor,
     InputStreamActivityMonitor* activity_monitor,
     DeviceOutputListener* device_output_listener,
+    AecdumpRecordingManager* aecdump_recording_manager,
     media::mojom::AudioProcessingConfigPtr processing_config,
     const media::AudioParameters& params,
     const std::string& device_id,
@@ -270,13 +312,17 @@ std::unique_ptr<InputController> InputController::Create(
   if (params.channels() > kMaxInputChannels)
     return nullptr;
 
+  const media::AudioParameters device_params =
+      AudioManagerPowerUser(audio_manager).GetInputStreamParameters(device_id);
+
   // Create the InputController object and ensure that it runs on
   // the audio-manager thread.
   // Using `new` to access a non-public constructor.
   std::unique_ptr<InputController> controller =
       base::WrapUnique(new InputController(
           event_handler, sync_writer, user_input_monitor, activity_monitor,
-          device_output_listener, std::move(processing_config), params,
+          device_output_listener, aecdump_recording_manager,
+          std::move(processing_config), params, device_params,
           ParamsToStreamType(params)));
 
   controller->DoCreate(audio_manager, params, device_id, enable_agc);
@@ -304,8 +350,8 @@ void InputController::Record() {
   // audio thread, since all AudioCallback callbacks run on the hw callback
   // thread.
   audio_callback_ = std::make_unique<AudioCallback>(
-      /*on_data_callback=*/base::BindRepeating(
-          &InputController::DeliverDataToSyncWriter, base::Unretained(this)),
+      /*on_data_callback=*/base::BindRepeating(&InputController::OnData,
+                                               base::Unretained(this)),
       /*on_first_data_callback=*/
       base::BindPostTask(
           task_runner_,
@@ -316,6 +362,9 @@ void InputController::Record() {
           base::BindRepeating(&InputController::DoReportError, weak_this_)));
 
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  if (processing_fifo_)
+    processing_fifo_->Start();
+
   if (output_tapper_)
     output_tapper_->Start();
 #endif
@@ -339,11 +388,22 @@ void InputController::Close() {
 
   // Allow calling unconditionally and bail if we don't have a stream to close.
   if (audio_callback_) {
+    // Calls to OnData() should stop beyond this point.
+    stream_->Stop();
+
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
     if (output_tapper_)
       output_tapper_->Stop();
+
+    if (processing_fifo_) {
+      // Stop the FIFO after |stream_| is stopped, to guarantee there are no
+      // more calls to OnData().
+      // Note: destroying the FIFO will synchronously wait for the processing
+      // thread to stop.
+      processing_fifo_.reset();
+    }
 #endif
-    stream_->Stop();
+
     activity_monitor_->OnInputStreamInactive();
 
     // Sometimes a stream (and accompanying audio track) is created and
@@ -479,9 +539,15 @@ void InputController::DoCreate(media::AudioManager* audio_manager,
   last_audio_level_log_time_ = base::TimeTicks::Now();
 #endif
 
+  const media::AudioParameters audio_input_stream_params =
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+      audio_processor_handler_ ? audio_processor_handler_->input_format() :
+#endif
+                               params;
+
   // Unretained is safe since |this| owns |stream|.
   auto* stream = audio_manager->MakeAudioInputStream(
-      params, device_id,
+      audio_input_stream_params, device_id,
       base::BindRepeating(&InputController::LogMessage,
                           base::Unretained(this)));
 
@@ -698,12 +764,15 @@ void InputController::ReportIsAlive() {
   event_handler_->OnLog("AIC::OnData => (stream is alive)");
 }
 
-void InputController::DeliverDataToSyncWriter(const media::AudioBus* source,
-                                              base::TimeTicks capture_time,
-                                              double volume) {
+void InputController::OnData(const media::AudioBus* source,
+                             base::TimeTicks capture_time,
+                             double volume) {
   const bool key_pressed = CheckForKeyboardInput();
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-  if (audio_processor_handler_) {
+  if (processing_fifo_) {
+    DCHECK(audio_processor_handler_);
+    processing_fifo_->PushData(source, capture_time, volume, key_pressed);
+  } else if (audio_processor_handler_) {
     audio_processor_handler_->ProcessCapturedAudio(*source, capture_time,
                                                    volume, key_pressed);
   } else

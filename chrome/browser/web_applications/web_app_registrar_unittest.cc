@@ -44,7 +44,7 @@ Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
         GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(url));
 
     auto web_app = std::make_unique<WebApp>(app_id);
-    web_app->AddSource(Source::kSync);
+    web_app->AddSource(WebAppManagement::kSync);
     web_app->SetStartUrl(GURL(url));
     web_app->SetName("Name" + base::NumberToString(i));
     web_app->SetDisplayMode(DisplayMode::kBrowser);
@@ -170,7 +170,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   auto web_app = std::make_unique<WebApp>(app_id);
   auto web_app2 = std::make_unique<WebApp>(app_id2);
 
-  web_app->AddSource(Source::kSync);
+  web_app->AddSource(WebAppManagement::kSync);
   web_app->SetDisplayMode(DisplayMode::kStandalone);
   web_app->SetUserDisplayMode(DisplayMode::kStandalone);
   web_app->SetName(name);
@@ -179,7 +179,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   web_app->SetScope(scope);
   web_app->SetThemeColor(theme_color);
 
-  web_app2->AddSource(Source::kDefault);
+  web_app2->AddSource(WebAppManagement::kDefault);
   web_app2->SetDisplayMode(DisplayMode::kBrowser);
   web_app2->SetUserDisplayMode(DisplayMode::kBrowser);
   web_app2->SetStartUrl(start_url2);
@@ -194,8 +194,8 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   const WebApp* app = registrar().GetAppById(app_id);
 
   EXPECT_EQ(app_id, app->app_id());
-  EXPECT_EQ(name, app->name());
-  EXPECT_EQ(description, app->description());
+  EXPECT_EQ(name, app->untranslated_name());
+  EXPECT_EQ(description, app->untranslated_description());
   EXPECT_EQ(start_url, app->start_url());
   EXPECT_EQ(scope, app->scope());
   EXPECT_EQ(theme_color, app->theme_color());
@@ -388,7 +388,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   display_mode_override.push_back(DisplayMode::kMinimalUi);
   display_mode_override.push_back(DisplayMode::kStandalone);
 
-  web_app->AddSource(Source::kSync);
+  web_app->AddSource(WebAppManagement::kSync);
   web_app->SetName(name);
   web_app->SetDescription(description);
   web_app->SetThemeColor(theme_color);
@@ -664,7 +664,7 @@ TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {
   EXPECT_EQ(ids.size(), registry_written.size());
 
   for (auto& kv : registry_written) {
-    EXPECT_EQ("New Name", kv.second->name());
+    EXPECT_EQ("New Name", kv.second->untranslated_name());
     ids.erase(kv.second->app_id());
   }
 
@@ -729,7 +729,7 @@ TEST_F(WebAppRegistrarTest, ScopedRegistryUpdate) {
   EXPECT_EQ(ids.size(), updated_registry.size());
 
   for (auto& kv : updated_registry) {
-    EXPECT_EQ(kv.second->description(), "New Description");
+    EXPECT_EQ(kv.second->untranslated_description(), "New Description");
     ids.erase(kv.second->app_id());
   }
 
@@ -756,11 +756,11 @@ TEST_F(WebAppRegistrarTest, CopyOnWrite) {
     EXPECT_NE(app_copy, app);
 
     app_copy->SetName("New Name");
-    EXPECT_EQ(app_copy->name(), "New Name");
-    EXPECT_EQ(app->name(), "Name");
+    EXPECT_EQ(app_copy->untranslated_name(), "New Name");
+    EXPECT_EQ(app->untranslated_name(), "Name");
 
-    app_copy->AddSource(Source::kPolicy);
-    app_copy->RemoveSource(Source::kSync);
+    app_copy->AddSource(WebAppManagement::kPolicy);
+    app_copy->RemoveSource(WebAppManagement::kSync);
 
     EXPECT_FALSE(app_copy->IsSynced());
     EXPECT_TRUE(app_copy->HasAnySources());
@@ -774,7 +774,7 @@ TEST_F(WebAppRegistrarTest, CopyOnWrite) {
   // Pointer value stays the same.
   EXPECT_EQ(app, registrar().GetAppById(app_id));
 
-  EXPECT_EQ(app->name(), "New Name");
+  EXPECT_EQ(app->untranslated_name(), "New Name");
   EXPECT_FALSE(app->IsSynced());
   EXPECT_TRUE(app->HasAnySources());
 }
@@ -784,8 +784,9 @@ TEST_F(WebAppRegistrarTest, CountUserInstalledApps) {
 
   const std::string base_url{"https://example.com/path"};
 
-  for (int i = Source::kMinValue + 1; i <= Source::kMaxValue; ++i) {
-    auto source = static_cast<Source::Type>(i);
+  for (int i = WebAppManagement::kMinValue + 1;
+       i <= WebAppManagement::kMaxValue; ++i) {
+    auto source = static_cast<WebAppManagement::Type>(i);
     auto web_app =
         test::CreateWebApp(GURL(base_url + base::NumberToString(i)), source);
     RegisterApp(std::move(web_app));
@@ -839,6 +840,45 @@ TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeBrowser) {
             registrar().GetAppEffectiveDisplayMode(app_id));
 
   sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+
+  EXPECT_EQ(DisplayMode::kStandalone,
+            registrar().GetAppEffectiveDisplayMode(app_id));
+}
+
+TEST_F(WebAppRegistrarTest,
+       NotLocallyInstalledAppGetsDisplayModeBrowserEvenForIsolatedApps) {
+  controller().Init();
+
+  auto web_app = test::CreateWebApp();
+  const AppId app_id = web_app->app_id();
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetIsLocallyInstalled(false);
+
+  // Not locally installed apps get browser display mode because they do not
+  // have information aboud isolation because manifest is not available.
+  web_app->SetStorageIsolated(true);
+
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(DisplayMode::kBrowser,
+            registrar().GetAppEffectiveDisplayMode(app_id));
+}
+
+TEST_F(WebAppRegistrarTest,
+       IsolatedAppsGetDisplayModeStandaloneRegardlessOfUserSettings) {
+  controller().Init();
+
+  std::unique_ptr<WebApp> web_app = test::CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  // Valid manifest must have standalone display mode
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(DisplayMode::kBrowser);
+  web_app->SetIsLocallyInstalled(true);
+  web_app->SetStorageIsolated(true);
+
+  RegisterApp(std::move(web_app));
 
   EXPECT_EQ(DisplayMode::kStandalone,
             registrar().GetAppEffectiveDisplayMode(app_id));
@@ -948,19 +988,22 @@ TEST_F(WebAppRegistrarTest, RunOnOsLoginModesWithPolicy) {
   EXPECT_EQ(RunOnOsLoginMode::kWindowed,
             registrar().GetAppRunOnOsLoginMode(app_id_allowed).value);
 
-  const char kWebAppSettingWithDefaultConfiguration[] = R"({
-    "https://windowed.example/": {
+  const char kWebAppSettingWithDefaultConfiguration[] = R"([
+    {
+      "manifest_id": "https://windowed.example/",
       "run_on_os_login": "run_windowed"
     },
-    "https://allowed.example/": {
+    {
+      "manifest_id": "https://allowed.example/",
       "run_on_os_login": "allowed"
     },
-    "*": {
+    {
+      "manifest_id": "*",
       "run_on_os_login": "blocked"
     }
-  })";
+  ])";
 
-  test::SetWebAppSettingsDictPref(profile(),
+  test::SetWebAppSettingsListPref(profile(),
                                   kWebAppSettingWithDefaultConfiguration);
   controller().policy_manager().RefreshPolicySettingsForTesting();
 

@@ -15,11 +15,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigate_event_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_current_entry_change_event_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_navigation_history_behavior.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_navigate_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_reload_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_transition.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_update_current_entry_options.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
@@ -50,40 +52,43 @@ class NavigateReaction final : public ScriptFunction::Callable {
   static void React(ScriptState* script_state,
                     ScriptPromise promise,
                     NavigationApiNavigation* navigation,
-                    AbortSignal* signal,
-                    bool should_reset_focus,
+                    NavigateEvent* navigate_event,
                     ReactType react_type) {
     promise.Then(MakeGarbageCollected<ScriptFunction>(
                      script_state, MakeGarbageCollected<NavigateReaction>(
-                                       navigation, signal, should_reset_focus,
+                                       navigation, navigate_event,
                                        ResolveType::kFulfill, react_type)),
                  MakeGarbageCollected<ScriptFunction>(
                      script_state, MakeGarbageCollected<NavigateReaction>(
-                                       navigation, signal, should_reset_focus,
+                                       navigation, navigate_event,
                                        ResolveType::kReject, react_type)));
+    if (navigate_event->ShouldSendAxEvents()) {
+      auto* window = LocalDOMWindow::From(script_state);
+      DCHECK(window);
+      if (AXObjectCache* cache = window->document()->ExistingAXObjectCache())
+        cache->HandleLoadStart(window->document());
+    }
   }
 
   NavigateReaction(NavigationApiNavigation* navigation,
-                   AbortSignal* signal,
-                   bool should_reset_focus,
+                   NavigateEvent* navigate_event,
                    ResolveType resolve_type,
                    ReactType react_type)
       : navigation_(navigation),
-        signal_(signal),
-        should_reset_focus_(should_reset_focus),
+        navigate_event_(navigate_event),
         resolve_type_(resolve_type),
         react_type_(react_type) {}
 
   void Trace(Visitor* visitor) const final {
     ScriptFunction::Callable::Trace(visitor);
     visitor->Trace(navigation_);
-    visitor->Trace(signal_);
+    visitor->Trace(navigate_event_);
   }
 
   ScriptValue Call(ScriptState* script_state, ScriptValue value) final {
     auto* window = LocalDOMWindow::From(script_state);
     DCHECK(window);
-    if (signal_->aborted()) {
+    if (navigate_event_->signal()->aborted()) {
       return ScriptValue();
     }
 
@@ -91,20 +96,15 @@ class NavigateReaction final : public ScriptFunction::Callable {
     navigation_api->ongoing_navigation_signal_ = nullptr;
 
     if (resolve_type_ == ResolveType::kFulfill) {
+      if (react_type_ == ReactType::kTransitionWhile)
+        navigate_event_->RestoreScrollAfterTransitionIfNeeded();
       navigation_api->ResolvePromisesAndFireNavigateSuccessEvent(navigation_);
     } else {
       navigation_api->RejectPromisesAndFireNavigateErrorEvent(navigation_,
                                                               value);
     }
 
-    if (should_reset_focus_) {
-      auto* document = navigation_api->GetSupplementable()->document();
-      if (Element* focus_delegate = document->GetAutofocusDelegate()) {
-        focus_delegate->focus();
-      } else {
-        document->ClearFocusedElement();
-      }
-    }
+    navigate_event_->ResetFocusIfNeeded();
 
     if (react_type_ == ReactType::kTransitionWhile && window->GetFrame()) {
       window->GetFrame()->Loader().DidFinishNavigation(
@@ -113,13 +113,19 @@ class NavigateReaction final : public ScriptFunction::Callable {
               : FrameLoader::NavigationFinishState::kFailure);
     }
 
+    if (navigate_event_->ShouldSendAxEvents()) {
+      auto* window = LocalDOMWindow::From(script_state);
+      DCHECK(window);
+      if (AXObjectCache* cache = window->document()->ExistingAXObjectCache())
+        cache->HandleLoadComplete(window->document());
+    }
+
     return ScriptValue();
   }
 
  private:
   Member<NavigationApiNavigation> navigation_;
-  Member<AbortSignal> signal_;
-  bool should_reset_focus_;
+  Member<NavigateEvent> navigate_event_;
   ResolveType resolve_type_;
   ReactType react_type_;
 };
@@ -177,8 +183,8 @@ String DetermineNavigationType(WebFrameLoadType type) {
 const char NavigationApi::kSupplementName[] = "NavigationApi";
 
 NavigationApi* NavigationApi::navigation(LocalDOMWindow& window) {
-  return RuntimeEnabledFeatures::AppHistoryEnabled(&window) ? From(window)
-                                                            : nullptr;
+  return RuntimeEnabledFeatures::NavigationApiEnabled(&window) ? From(window)
+                                                               : nullptr;
 }
 
 NavigationApi* NavigationApi::From(LocalDOMWindow& window) {
@@ -192,7 +198,8 @@ NavigationApi* NavigationApi::From(LocalDOMWindow& window) {
 }
 
 NavigationApi::NavigationApi(LocalDOMWindow& window)
-    : Supplement<LocalDOMWindow>(window) {}
+    : Supplement<LocalDOMWindow>(window),
+      ExecutionContextLifecycleObserver(&window) {}
 
 void NavigationApi::setOnnavigate(EventListener* listener) {
   UseCounter::Count(GetSupplementable(), WebFeature::kAppHistory);
@@ -462,9 +469,6 @@ NavigationResult* NavigationApi::navigate(ScriptState* script_state,
                             "Invalid URL '" + completed_url.GetString() + "'.");
   }
 
-  if (DOMException* maybe_ex = PerformSharedNavigationChecks("navigate()"))
-    return EarlyErrorResult(script_state, maybe_ex);
-
   scoped_refptr<SerializedScriptValue> serialized_state = nullptr;
   {
     if (options->hasState()) {
@@ -482,20 +486,66 @@ NavigationResult* NavigationApi::navigate(ScriptState* script_state,
     }
   }
 
-  WebFrameLoadType frame_load_type = options->replace()
-                                         ? WebFrameLoadType::kReplaceCurrentItem
-                                         : WebFrameLoadType::kStandard;
+  FrameLoadRequest request(GetSupplementable(), ResourceRequest(completed_url));
+  request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
 
-  return PerformNonTraverseNavigation(script_state, completed_url,
+  if (options->history() == V8NavigationHistoryBehavior::Enum::kPush) {
+    LocalFrame* frame = GetSupplementable()->GetFrame();
+
+    if (frame->Loader().IsOnInitialEmptyDocument()) {
+      return EarlyErrorResult(
+          script_state, DOMExceptionCode::kNotSupportedError,
+          "A \"push\" navigation was explicitly requested, but only a "
+          "\"replace\" navigation is possible while on the initial about:blank "
+          "document.");
+    }
+
+    if (completed_url.ProtocolIsJavaScript()) {
+      return EarlyErrorResult(
+          script_state, DOMExceptionCode::kNotSupportedError,
+          "A \"push\" navigation was explicitly requested, but only a "
+          "\"replace\" navigation is possible when navigating to a javascript: "
+          "URL.");
+    }
+
+    if (completed_url == GetSupplementable()->Url()) {
+      return EarlyErrorResult(
+          script_state, DOMExceptionCode::kNotSupportedError,
+          "A \"push\" navigation was explicitly requested, but only a "
+          "\"replace\" navigation is possible when navigating to the current "
+          "URL.");
+    }
+
+    // The NavigationShouldReplaceCurrentHistoryEntry() check corresponds to the
+    // spec's check on whether the document is completely loaded, plus a couple
+    // of checks related to behind-a-flag features (portals and fenced frames).
+    // Eventually if portals and fenced frames make their way into the HTML
+    // Standard, they will need to modify the navigation API sections as well,
+    // probably by factoring out something similar in the spec as we have done
+    // in our implementation.
+    if (frame->NavigationShouldReplaceCurrentHistoryEntry(
+            request, WebFrameLoadType::kStandard)) {
+      return EarlyErrorResult(
+          script_state, DOMExceptionCode::kNotSupportedError,
+          "A \"push\" navigation was explicitly requested but only a "
+          "\"replace\" navigation is possible for this window.");
+    }
+  }
+
+  // The spec also converts "auto" to "replace" here if the document is not
+  // completely loaded. We let that happen later in the navigation pipeline.
+  WebFrameLoadType frame_load_type =
+      options->history() == V8NavigationHistoryBehavior::Enum::kReplace
+          ? WebFrameLoadType::kReplaceCurrentItem
+          : WebFrameLoadType::kStandard;
+
+  return PerformNonTraverseNavigation(script_state, request,
                                       std::move(serialized_state), options,
                                       frame_load_type);
 }
 
 NavigationResult* NavigationApi::reload(ScriptState* script_state,
                                         NavigationReloadOptions* options) {
-  if (DOMException* maybe_ex = PerformSharedNavigationChecks("reload()"))
-    return EarlyErrorResult(script_state, maybe_ex);
-
   scoped_refptr<SerializedScriptValue> serialized_state = nullptr;
   {
     if (options->hasState()) {
@@ -514,14 +564,18 @@ NavigationResult* NavigationApi::reload(ScriptState* script_state,
     }
   }
 
-  return PerformNonTraverseNavigation(script_state, GetSupplementable()->Url(),
+  FrameLoadRequest request(GetSupplementable(),
+                           ResourceRequest(GetSupplementable()->Url()));
+  request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
+
+  return PerformNonTraverseNavigation(script_state, request,
                                       std::move(serialized_state), options,
                                       WebFrameLoadType::kReload);
 }
 
 NavigationResult* NavigationApi::PerformNonTraverseNavigation(
     ScriptState* script_state,
-    const KURL& url,
+    FrameLoadRequest& request,
     scoped_refptr<SerializedScriptValue> serialized_state,
     NavigationOptions* options,
     WebFrameLoadType frame_load_type) {
@@ -529,15 +583,18 @@ NavigationResult* NavigationApi::PerformNonTraverseNavigation(
          frame_load_type == WebFrameLoadType::kReload ||
          frame_load_type == WebFrameLoadType::kStandard);
 
+  String method_name_for_error_message(
+      frame_load_type == WebFrameLoadType::kReload ? "reload()" : "navigate()");
+  if (DOMException* maybe_ex =
+          PerformSharedNavigationChecks(method_name_for_error_message))
+    return EarlyErrorResult(script_state, maybe_ex);
+
   NavigationApiNavigation* navigation =
       MakeGarbageCollected<NavigationApiNavigation>(
           script_state, this, options, String(), std::move(serialized_state));
   upcoming_non_traversal_navigation_ = navigation;
 
   GetSupplementable()->GetFrame()->MaybeLogAdClickNavigation();
-
-  FrameLoadRequest request(GetSupplementable(), ResourceRequest(url));
-  request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
   GetSupplementable()->GetFrame()->Navigate(request, frame_load_type);
 
   // DispatchNavigateEvent() will clear upcoming_non_traversal_navigation_ if we
@@ -668,15 +725,7 @@ bool NavigationApi::HasEntriesAndEventsDisabled() const {
 }
 
 NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
-    const KURL& url,
-    HTMLFormElement* form,
-    NavigateEventType event_type,
-    WebFrameLoadType type,
-    UserNavigationInvolvement involvement,
-    SerializedScriptValue* state_object,
-    HistoryItem* destination_item,
-    bool is_browser_initiated,
-    bool is_synchronously_committed) {
+    const DispatchParams& params) {
   // TODO(japhet): The draft spec says to cancel any ongoing navigate event
   // before invoking DispatchNavigateEvent(), because not all navigations will
   // fire a navigate event, but all should abort an ongoing navigate event.
@@ -685,8 +734,9 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   InformAboutCanceledNavigation();
 
   const KURL& current_url = GetSupplementable()->Url();
-  const String& key =
-      destination_item ? destination_item->GetNavigationApiKey() : String();
+  const String& key = params.destination_item
+                          ? params.destination_item->GetNavigationApiKey()
+                          : String();
   PromoteUpcomingNavigationToOngoing(key);
 
   if (HasEntriesAndEventsDisabled()) {
@@ -694,7 +744,7 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
       // The spec only does the equivalent of CleanupApiNavigation() + resetting
       // the state, but we need to detach promise resolvers for this case since
       // we will never resolve the finished/committed promises.
-      ongoing_navigation_->CleanupForCrossDocument();
+      ongoing_navigation_->CleanupForWillNeverSettle();
     }
     return DispatchResult::kContinue;
   }
@@ -703,8 +753,8 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
       ToScriptStateForMainWorld(GetSupplementable()->GetFrame());
   ScriptState::Scope scope(script_state);
 
-  if (type == WebFrameLoadType::kBackForward &&
-      event_type == NavigateEventType::kFragment &&
+  if (params.frame_load_type == WebFrameLoadType::kBackForward &&
+      params.event_type == NavigateEventType::kFragment &&
       !keys_to_indices_.Contains(key)) {
     // This same document history traversal was preempted by another navigation
     // that removed this entry from the back/forward list. Proceeding will leave
@@ -714,51 +764,56 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   }
 
   auto* init = NavigateEventInit::Create();
-  const String& navigation_type = DetermineNavigationType(type);
+  const String& navigation_type =
+      DetermineNavigationType(params.frame_load_type);
   init->setNavigationType(navigation_type);
 
   SerializedScriptValue* destination_state = nullptr;
-  if (destination_item)
-    destination_state = destination_item->GetNavigationApiState();
+  if (params.destination_item)
+    destination_state = params.destination_item->GetNavigationApiState();
   else if (ongoing_navigation_)
     destination_state = ongoing_navigation_->GetSerializedState();
   NavigationDestination* destination =
       MakeGarbageCollected<NavigationDestination>(
-          url, event_type != NavigateEventType::kCrossDocument,
+          params.url, params.event_type != NavigateEventType::kCrossDocument,
           destination_state);
-  if (type == WebFrameLoadType::kBackForward) {
+  if (params.frame_load_type == WebFrameLoadType::kBackForward) {
     auto iter = keys_to_indices_.find(key);
     int index = iter == keys_to_indices_.end() ? 0 : iter->value;
     destination->SetTraverseProperties(
-        key, destination_item->GetNavigationApiId(), index);
+        key, params.destination_item->GetNavigationApiId(), index);
   }
   init->setDestination(destination);
 
-  init->setCancelable(type != WebFrameLoadType::kBackForward);
+  init->setCancelable(params.frame_load_type != WebFrameLoadType::kBackForward);
   init->setCanTransition(
-      CanChangeToUrlForHistoryApi(url, GetSupplementable()->GetSecurityOrigin(),
-                                  current_url) &&
-      (event_type != NavigateEventType::kCrossDocument ||
-       type != WebFrameLoadType::kBackForward));
-  init->setHashChange(event_type == NavigateEventType::kFragment &&
-                      url != current_url &&
-                      EqualIgnoringFragmentIdentifier(url, current_url));
+      CanChangeToUrlForHistoryApi(
+          params.url, GetSupplementable()->GetSecurityOrigin(), current_url) &&
+      (params.event_type != NavigateEventType::kCrossDocument ||
+       params.frame_load_type != WebFrameLoadType::kBackForward));
+  init->setHashChange(params.event_type == NavigateEventType::kFragment &&
+                      params.url != current_url &&
+                      EqualIgnoringFragmentIdentifier(params.url, current_url));
 
-  init->setUserInitiated(involvement != UserNavigationInvolvement::kNone);
-  if (form && form->Method() == FormSubmission::kPostMethod) {
-    init->setFormData(FormData::Create(form, ASSERT_NO_EXCEPTION));
+  init->setUserInitiated(params.involvement !=
+                         UserNavigationInvolvement::kNone);
+  if (params.form && params.form->Method() == FormSubmission::kPostMethod) {
+    init->setFormData(FormData::Create(params.form, ASSERT_NO_EXCEPTION));
   }
   if (ongoing_navigation_)
     init->setInfo(ongoing_navigation_->GetInfo());
   init->setSignal(MakeGarbageCollected<AbortSignal>(GetSupplementable()));
+  init->setDownloadRequest(params.download_filename);
   auto* navigate_event = NavigateEvent::Create(
       GetSupplementable(), event_type_names::kNavigate, init);
-  navigate_event->SetUrl(url);
+  navigate_event->SetUrl(params.url);
+  navigate_event->SaveStateFromDestinationItem(params.destination_item);
 
   DCHECK(!ongoing_navigate_event_);
   DCHECK(!ongoing_navigation_signal_);
   ongoing_navigate_event_ = navigate_event;
   ongoing_navigation_signal_ = navigate_event->signal();
+  has_dropped_navigation_ = false;
   DispatchEvent(*navigate_event);
   ongoing_navigate_event_ = nullptr;
 
@@ -777,13 +832,15 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
     // |type| being a reload type makes it do none of the spec-relevant
     // steps. Instead it does stuff like the loading spinner and use counters.
     GetSupplementable()->document()->Loader()->RunURLAndHistoryUpdateSteps(
-        url, destination_item,
+        params.url, params.destination_item,
         mojom::blink::SameDocumentNavigationType::kNavigationApiTransitionWhile,
-        state_object, type, is_browser_initiated, is_synchronously_committed);
+        params.state_object, params.frame_load_type,
+        params.is_browser_initiated,
+        params.is_synchronously_committed_same_document);
   }
 
   if (!promise_list.IsEmpty() ||
-      event_type != NavigateEventType::kCrossDocument) {
+      params.event_type != NavigateEventType::kCrossDocument) {
     NavigateReaction::ReactType react_type =
         promise_list.IsEmpty() ? NavigateReaction::ReactType::kImmediate
                                : NavigateReaction::ReactType::kTransitionWhile;
@@ -804,19 +861,24 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
 
     NavigateReaction::React(
         script_state, ScriptPromise::All(script_state, tweaked_promise_list),
-        ongoing_navigation_, navigate_event->signal(),
-        navigate_event->ShouldResetFocus(), react_type);
-  } else if (ongoing_navigation_) {
-    // The spec assumes it's ok to leave a promise permanently unresolved, but
-    // ScriptPromiseResolver requires either resolution or explicit detach.
-    ongoing_navigation_->CleanupForCrossDocument();
+        ongoing_navigation_, navigate_event, react_type);
   }
+
+  // Note: we cannot clean up ongoing_navigation_ for cross-document
+  // navigations, because they might later get interrupted by another
+  // navigation, in which case we need to reject the promises and so on.
 
   return promise_list.IsEmpty() ? DispatchResult::kContinue
                                 : DispatchResult::kTransitionWhile;
 }
 
-void NavigationApi::InformAboutCanceledNavigation() {
+void NavigationApi::InformAboutCanceledNavigation(
+    CancelNavigationReason reason) {
+  if (reason == CancelNavigationReason::kDropped) {
+    has_dropped_navigation_ = true;
+    return;
+  }
+
   if (ongoing_navigation_signal_) {
     auto* script_state =
         ToScriptStateForMainWorld(GetSupplementable()->GetFrame());
@@ -842,6 +904,15 @@ void NavigationApi::InformAboutCanceledNavigation() {
       FinalizeWithAbortedNavigationError(script_state, traversal);
     DCHECK(upcoming_traversals_.IsEmpty());
   }
+}
+
+void NavigationApi::ContextDestroyed() {
+  if (ongoing_navigation_)
+    ongoing_navigation_->CleanupForWillNeverSettle();
+}
+
+bool NavigationApi::HasNonDroppedOngoingNavigation() const {
+  return ongoing_navigation_signal_ && !has_dropped_navigation_;
 }
 
 void NavigationApi::RejectPromisesAndFireNavigateErrorEvent(
@@ -925,6 +996,7 @@ const AtomicString& NavigationApi::InterfaceName() const {
 void NavigationApi::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(entries_);
   visitor->Trace(transition_);
   visitor->Trace(ongoing_navigation_);

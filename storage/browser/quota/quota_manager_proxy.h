@@ -38,6 +38,7 @@ class SequencedTaskRunner;
 
 namespace storage {
 
+struct BucketLocator;
 class QuotaOverrideHandle;
 
 // Thread-safe proxy for QuotaManagerImpl.
@@ -57,7 +58,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
   // `quota_manager_impl` isn't a base::WeakPtr<QuotaManagerImpl>.
   QuotaManagerProxy(
       QuotaManagerImpl* quota_manager_impl,
-      scoped_refptr<base::SequencedTaskRunner> quota_manager_impl_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> quota_manager_impl_task_runner,
+      const base::FilePath& profile_path);
 
   QuotaManagerProxy(const QuotaManagerProxy&) = delete;
   QuotaManagerProxy& operator=(const QuotaManagerProxy&) = delete;
@@ -70,6 +72,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
   virtual void BindInternalsHandler(
       mojo::PendingReceiver<mojom::QuotaInternalsHandler> receiver);
 
+  // Constructs path where `bucket` data is persisted to disk for partitioned
+  // storage.
+  base::FilePath GetBucketPath(const BucketLocator& bucket);
+
+  // Constructs path where `bucket` and `client_type` data is persisted to disk
+  // for partitioned storage.
+  base::FilePath GetClientBucketPath(const BucketLocator& bucket,
+                                     QuotaClientType client_type);
+
   // Gets the bucket with `bucket_name` for the `storage_key` for StorageType
   // kTemporary and returns the BucketInfo. If one doesn't exist, it creates
   // a new bucket with the specified policies. Returns a QuotaError if the
@@ -79,6 +90,20 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
       const std::string& bucket_name,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback);
+
+  // Synchronously gets the bucket with `bucket_name` for the `storage_key` for
+  // StorageType kTemporary and returns the BucketInfo. If one doesn't exist, it
+  // creates a new bucket with the specified policies. Returns a QuotaError if
+  // the operation has failed. This function calls the asynchronous
+  // GetOrCreateBucket function but blocks until completion.
+  //
+  // NOTE: this function cannot be called from the
+  // quota_manager_impl_task_runner. Additionally, the asychonrous version of
+  // this method `GetOrCreateBucket` is preferred; only use this synchronous
+  // version where asynchronous bucket retrieval is not possible.
+  virtual QuotaErrorOr<BucketInfo> GetOrCreateBucketSync(
+      const blink::StorageKey& storage_key,
+      const std::string& bucket_name);
 
   // Same as GetOrCreateBucket but takes in StorageType. This should only be
   // used by FileSystem, and is expected to be removed when
@@ -240,6 +265,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
   // to the same object), and the object it points to is thread-safe.
   const scoped_refptr<base::SequencedTaskRunner>
       quota_manager_impl_task_runner_;
+
+  const base::FilePath profile_path_;
 };
 
 }  // namespace storage

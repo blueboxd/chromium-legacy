@@ -28,6 +28,9 @@ class LacrosDataMigrationScreen : public BaseScreen,
   LacrosDataMigrationScreen& operator=(const LacrosDataMigrationScreen&) =
       delete;
 
+  // Called when `view` gets visible.
+  void OnViewVisible();
+
   // Called when `view` has been destroyed. If this instance is destroyed before
   // the `view` it should call view->Unbind().
   void OnViewDestroyed(LacrosDataMigrationScreenView* view);
@@ -50,14 +53,25 @@ class LacrosDataMigrationScreen : public BaseScreen,
   // PowerManagerClient::Observer:
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
 
+  // Sets |attempt_restart_| for testing. This helps testing as it can block
+  // to restart.
+  void SetAttemptRestartForTesting(
+      const base::RepeatingClosure& attempt_restart);
+
  private:
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
 
   // Updates the low battery message.
   void UpdateLowBatteryStatus();
+
+  // Called when migration is completed.
+  void OnMigrated(BrowserDataMigrator::Result result);
+
+  // Called when pending local_state commit is flushed.
+  void OnLocalStateCommited();
 
   device::mojom::WakeLock* GetWakeLock();
 
@@ -66,6 +80,7 @@ class LacrosDataMigrationScreen : public BaseScreen,
   LacrosDataMigrationScreenView* view_;
   std::unique_ptr<BrowserDataMigrator> migrator_;
   bool skip_post_show_button_for_testing_ = false;
+  base::RepeatingClosure attempt_restart_;
 
   // PowerManagerClient::Observer is used only when screen is shown.
   base::ScopedObservation<PowerManagerClient, PowerManagerClient::Observer>

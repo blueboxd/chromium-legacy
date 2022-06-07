@@ -22,6 +22,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
+#include "base/types/pass_key.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -47,6 +48,7 @@
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
+#include "services/network/public/cpp/transferable_directory.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom-shared.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -60,6 +62,7 @@
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
 #include "services/network/web_bundle/web_bundle_manager.h"
@@ -88,6 +91,7 @@ class NetworkIsolationKey;
 class ReportSender;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
+class URLRequestContextBuilder;
 }  // namespace net
 
 namespace certificate_transparency {
@@ -116,7 +120,6 @@ class NetworkServiceProxyDelegate;
 class P2PSocketManager;
 class PendingTrustTokenStore;
 class ProxyLookupRequest;
-class ResourceScheduler;
 class ResourceSchedulerClient;
 class SCTAuditingHandler;
 class SessionCleanupCookieStore;
@@ -146,6 +149,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
  public:
   using OnConnectionCloseCallback =
       base::OnceCallback<void(NetworkContext* network_context)>;
+  using OnURLRequestContextBuilderConfiguredCallback =
+      base::OnceCallback<void(net::URLRequestContextBuilder*)>;
 
   NetworkContext(NetworkService* network_service,
                  mojo::PendingReceiver<mojom::NetworkContext> receiver,
@@ -161,11 +166,25 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                  net::URLRequestContext* url_request_context,
                  const std::vector<std::string>& cors_exempt_header_list);
 
+  NetworkContext(base::PassKey<NetworkContext> pass_key,
+                 NetworkService* network_service,
+                 mojo::PendingReceiver<mojom::NetworkContext> receiver,
+                 mojom::NetworkContextParamsPtr params,
+                 OnConnectionCloseCallback on_connection_close_callback,
+                 OnURLRequestContextBuilderConfiguredCallback
+                     on_url_request_context_builder_configured);
+
   NetworkContext(const NetworkContext&) = delete;
   NetworkContext& operator=(const NetworkContext&) = delete;
 
   ~NetworkContext() override;
 
+  static std::unique_ptr<NetworkContext> CreateForTesting(
+      NetworkService* network_service,
+      mojo::PendingReceiver<mojom::NetworkContext> receiver,
+      mojom::NetworkContextParamsPtr params,
+      OnURLRequestContextBuilderConfiguredCallback
+          on_url_request_context_builder_configured);
   // Sets a global CertVerifier to use when initializing all profiles.
   static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
 
@@ -597,7 +616,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   URLRequestContextOwner MakeURLRequestContext(
       mojo::PendingRemote<mojom::URLLoaderFactory>
           url_loader_factory_for_cert_net_fetcher,
-      scoped_refptr<SessionCleanupCookieStore>);
+      scoped_refptr<SessionCleanupCookieStore>,
+      OnURLRequestContextBuilderConfiguredCallback
+          on_url_request_context_builder_configured);
   scoped_refptr<SessionCleanupCookieStore> MakeSessionCleanupCookieStore()
       const;
 
@@ -664,6 +685,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const net::HostPortPair& host_port_pair,
       const net::NetworkIsolationKey& network_isolation_key);
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
+
+#if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+  void EnsureMounted(network::TransferableDirectory* directory);
+#endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
 
   void InitializeCorsParams();
 
@@ -767,7 +792,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   mojo::UniqueReceiverSet<mojom::RestrictedCookieManager>
       restricted_cookie_manager_receivers_;
 
-  int current_resource_scheduler_client_id_ = 0;
+  ResourceScheduler::ClientId current_resource_scheduler_client_id_{0};
 
   // Owned by the URLRequestContext
   raw_ptr<net::StaticHttpUserAgentSettings> user_agent_settings_ = nullptr;
@@ -795,6 +820,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 #if BUILDFLAG(IS_CHROMEOS)
   CertVerifierWithTrustAnchors* cert_verifier_with_trust_anchors_ = nullptr;
 #endif
+
+#if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+  // Contains a list of closures that, when run, will dismount the shared
+  // directories used by this NetworkClosure.
+  std::vector<base::OnceClosure> dismount_closures_;
+#endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
 
   // CertNetFetcher used by the context's CertVerifier. May be nullptr if
   // CertNetFetcher is not used by the current platform, or if the actual

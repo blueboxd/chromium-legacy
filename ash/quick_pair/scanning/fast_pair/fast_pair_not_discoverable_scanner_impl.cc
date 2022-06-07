@@ -138,7 +138,7 @@ void FastPairNotDiscoverableScannerImpl::OnDeviceFound(
 
   QP_LOG(INFO) << __func__ << ": Attempting to parse advertisement.";
   quick_pair_process::ParseNotDiscoverableAdvertisement(
-      *fast_pair_service_data,
+      *fast_pair_service_data, device->GetAddress(),
       base::BindOnce(&FastPairNotDiscoverableScannerImpl::OnAdvertisementParsed,
                      weak_pointer_factory_.GetWeakPtr(), device->GetAddress()),
       base::BindOnce(
@@ -225,6 +225,13 @@ void FastPairNotDiscoverableScannerImpl::OnAccountKeyFilterCheckResult(
   if (!metadata || !metadata->device_metadata)
     return;
 
+  if (FastPairRepository::Get()->IsAccountKeyPairedLocally(
+          metadata->account_key)) {
+    QP_LOG(INFO) << __func__
+                 << ": device already paired and saved to this Chromebook";
+    return;
+  }
+
   auto& details = metadata->device_metadata->GetDetails();
 
   // Convert the integer model id to uppercase hex string.
@@ -309,7 +316,7 @@ void FastPairNotDiscoverableScannerImpl::OnUtilityProcessStopped(
 
   QP_LOG(INFO) << __func__ << ": Retrying call to parse advertisement";
   quick_pair_process::ParseNotDiscoverableAdvertisement(
-      *fast_pair_service_data,
+      *fast_pair_service_data, address,
       base::BindOnce(&FastPairNotDiscoverableScannerImpl::OnAdvertisementParsed,
                      weak_pointer_factory_.GetWeakPtr(), address),
       base::BindOnce(

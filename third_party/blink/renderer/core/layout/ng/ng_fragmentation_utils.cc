@@ -121,26 +121,27 @@ bool IsBreakableAtStartOfResumedContainer(
     const NGBoxFragmentBuilder& builder) {
   if (child_layout_result.Status() != NGLayoutResult::kSuccess)
     return false;
-  if (space.MinBreakAppeal() != kBreakAppealLastResort &&
-      IsResumingLayout(builder.PreviousBreakToken())) {
-    if (const auto* box_fragment = DynamicTo<NGPhysicalBoxFragment>(
-            child_layout_result.PhysicalFragment()))
-      return box_fragment->IsFirstForNode();
-    return true;
-  }
-  return false;
+  bool is_first_for_node = true;
+  if (const auto* box_fragment = DynamicTo<NGPhysicalBoxFragment>(
+          child_layout_result.PhysicalFragment()))
+    is_first_for_node = box_fragment->IsFirstForNode();
+  return IsBreakableAtStartOfResumedContainer(space, builder,
+                                              is_first_for_node);
+}
+
+bool IsBreakableAtStartOfResumedContainer(const NGConstraintSpace& space,
+                                          const NGBoxFragmentBuilder& builder,
+                                          bool is_first_for_node) {
+  return space.MinBreakAppeal() != kBreakAppealLastResort &&
+         IsResumingLayout(builder.PreviousBreakToken()) && is_first_for_node;
 }
 
 NGBreakAppeal CalculateBreakAppealBefore(const NGConstraintSpace& space,
                                          NGLayoutInputNode child,
                                          const NGLayoutResult& layout_result,
                                          const NGBoxFragmentBuilder& builder,
-                                         bool has_container_separation,
-                                         bool is_row_item) {
-  // Break-before and break-after for items in a row are handled at the row
-  // level, so |breakable_at_start_of_container| should be false for such items.
+                                         bool has_container_separation) {
   bool breakable_at_start_of_container =
-      !is_row_item &&
       IsBreakableAtStartOfResumedContainer(space, layout_result, builder);
   EBreakBetween break_between =
       CalculateBreakBetweenValue(child, layout_result, builder);
@@ -222,6 +223,17 @@ NGBreakAppeal CalculateBreakAppealInside(
       IsAvoidBreakValue(space, physical_fragment.Style().BreakInside()))
     appeal = kBreakAppealViolatingBreakAvoid;
   return appeal;
+}
+
+LogicalOffset GetFragmentainerProgression(const NGBoxFragmentBuilder& builder,
+                                          NGFragmentationType type) {
+  if (type == kFragmentColumn) {
+    LayoutUnit column_inline_progression = ColumnInlineProgression(
+        builder.ChildAvailableSize().inline_size, builder.Style());
+    return LogicalOffset(column_inline_progression, LayoutUnit());
+  }
+  DCHECK_EQ(type, kFragmentPage);
+  return LogicalOffset(LayoutUnit(), builder.ChildAvailableSize().block_size);
 }
 
 void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
@@ -456,7 +468,7 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
       builder->SetIsAtBlockEnd();
       // We entered layout already at the end of the block (but with overflowing
       // children). So we should take up no more space on our own.
-      DCHECK_EQ(desired_block_size, LayoutUnit());
+      DCHECK_EQ(final_block_size, LayoutUnit());
     } else if (desired_block_size <= space_left) {
       // We have room for the calculated block-size in the current
       // fragmentainer, but we need to figure out whether this node is going to
@@ -619,9 +631,8 @@ NGBreakStatus BreakBeforeChildIfNeeded(
     }
   }
 
-  NGBreakAppeal appeal_before =
-      CalculateBreakAppealBefore(space, child, layout_result, *builder,
-                                 has_container_separation, is_row_item);
+  NGBreakAppeal appeal_before = CalculateBreakAppealBefore(
+      space, child, layout_result, *builder, has_container_separation);
 
   // Attempt to move past the break point, and if we can do that, also assess
   // the appeal of breaking there, even if we didn't.
@@ -840,10 +851,11 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
       }
     }
   } else {
+    LayoutUnit block_size =
+        BlockSizeForFragmentation(layout_result, space.GetWritingDirection());
     bool move_past = refuse_break_before;
     if (!move_past) {
-      if (BlockSizeForFragmentation(
-              layout_result, space.GetWritingDirection()) <= space_left) {
+      if (block_size <= space_left) {
         // The fragment fits! We can move past.
         move_past = true;
       } else if (appeal_before == kBreakAppealLastResort && builder &&
@@ -868,6 +880,15 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
                                      layout_result, appeal_before, builder,
                                      flex_column_break_info);
       }
+
+      if (block_size > space_left && builder) {
+        // We're moving past the breakpoint even if the child doesn't fit. This
+        // may happen with monolithic content at the beginning of the
+        // fragmentainer. Report space shortage.
+        PropagateSpaceShortage(space, &layout_result,
+                               fragmentainer_block_offset, builder);
+      }
+
       return true;
     }
   }

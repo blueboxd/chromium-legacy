@@ -13,6 +13,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -360,7 +361,7 @@ bool MediaRecorder::isTypeSupported(ExecutionContext* context,
   ContentType content_type(type);
   bool result = handler->CanSupportMimeType(content_type.GetType(),
                                             content_type.Parameter("codecs"));
-  if (IdentifiabilityStudySettings::Get()->ShouldSample(
+  if (IdentifiabilityStudySettings::Get()->ShouldSampleType(
           blink::IdentifiableSurface::Type::kMediaRecorder_IsTypeSupported)) {
     blink::IdentifiabilityMetricBuilder(context->UkmSourceID())
         .Add(blink::IdentifiableSurface::FromTypeAndToken(

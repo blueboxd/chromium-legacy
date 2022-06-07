@@ -865,7 +865,7 @@ void AppListItemView::Layout() {
   // Reserve space for the new install dot if it is visible. Otherwise it
   // extends outside the app grid tile bounds and gets clipped.
   if (new_install_dot_ && new_install_dot_->GetVisible())
-    title_bounds.Inset(kNewInstallDotSize, 0, 0, 0);
+    title_bounds.Inset(gfx::Insets::TLBR(0, kNewInstallDotSize, 0, 0));
   title_->SetBoundsRect(title_bounds);
 
   if (new_install_dot_) {
@@ -1188,7 +1188,8 @@ gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
     const gfx::Size& icon_size,
     const float icon_scale) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(0, 0, 0, config->grid_icon_bottom_padding() * icon_scale);
+  rect.Inset(gfx::Insets::TLBR(
+      0, 0, config->grid_icon_bottom_padding() * icon_scale, 0));
   rect.ClampToCenteredSize(icon_size);
   return rect;
 }
@@ -1200,10 +1201,11 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
     const gfx::Size& title_size,
     float icon_scale) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(config->grid_title_horizontal_padding() * icon_scale,
-             config->grid_title_top_padding() * icon_scale,
-             config->grid_title_horizontal_padding() * icon_scale,
-             config->grid_title_bottom_padding() * icon_scale);
+  rect.Inset(
+      gfx::Insets::TLBR(config->grid_title_top_padding() * icon_scale,
+                        config->grid_title_horizontal_padding() * icon_scale,
+                        config->grid_title_bottom_padding() * icon_scale,
+                        config->grid_title_horizontal_padding() * icon_scale));
   rect.ClampToCenteredSize(title_size);
   // Respect the title preferred height, to ensure the text does not get clipped
   // due to padding if the item view gets too small.
@@ -1273,7 +1275,8 @@ void AppListItemView::CreateDraggedViewHoverAnimation() {
 void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {
   // ProductivityLauncher draws the focus highlight around the whole tile.
   if (!features::IsProductivityLauncherEnabled()) {
-    bounds->Inset(0, 0, 0, app_list_config_->grid_icon_bottom_padding());
+    bounds->Inset(gfx::Insets::TLBR(
+        0, 0, app_list_config_->grid_icon_bottom_padding(), 0));
     bounds->ClampToCenteredSize(app_list_config_->grid_focus_size());
   }
   // Update the bounds to account for the focus ring width - by default, the

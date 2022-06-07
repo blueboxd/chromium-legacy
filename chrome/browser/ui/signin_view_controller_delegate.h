@@ -10,6 +10,7 @@
 #include "base/observer_list_types.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -81,8 +82,10 @@ class SigninViewControllerDelegate {
   static SigninViewControllerDelegate* CreateEnterpriseConfirmationDelegate(
       Browser* browser,
       const AccountInfo& account_info,
+      bool force_new_profile,
+      bool show_link_data_option,
       SkColor profile_color,
-      base::OnceCallback<void(bool)> callback);
+      signin::SigninChoiceCallback callback);
 #endif
 
   void AddObserver(Observer* observer);

@@ -20,10 +20,9 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId UpdateRequiredView::kScreenId;
 
-UpdateRequiredScreenHandler::UpdateRequiredScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.UpdateRequiredScreen.userActed");
+UpdateRequiredScreenHandler::UpdateRequiredScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_user_acted_method_path_deprecated("login.UpdateRequiredScreen.userActed");
 }
 
 UpdateRequiredScreenHandler::~UpdateRequiredScreenHandler() {
@@ -82,7 +81,7 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
                IDS_UPDATE_REQUIRED_EOL_DELETE_USERS_DATA_CANCEL);
 }
 
-void UpdateRequiredScreenHandler::Initialize() {
+void UpdateRequiredScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;
@@ -101,23 +100,23 @@ void UpdateRequiredScreenHandler::SetEolMessage(const std::string& eolMessage) {
 }
 
 void UpdateRequiredScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void UpdateRequiredScreenHandler::Hide() {}
 
 void UpdateRequiredScreenHandler::Bind(UpdateRequiredScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void UpdateRequiredScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void UpdateRequiredScreenHandler::SetIsConnected(bool connected) {

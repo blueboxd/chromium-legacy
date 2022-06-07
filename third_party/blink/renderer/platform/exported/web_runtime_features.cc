@@ -303,6 +303,10 @@ void WebRuntimeFeatures::EnablePictureInPictureAPI(bool enable) {
   RuntimeEnabledFeatures::SetPictureInPictureAPIEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePictureInPictureV2(bool enable) {
+  RuntimeEnabledFeatures::SetPictureInPictureV2Enabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePointerLockOptions(bool enable) {
   RuntimeEnabledFeatures::SetPointerLockOptionsEnabled(enable);
 }
@@ -655,16 +659,16 @@ void WebRuntimeFeatures::EnableFedCmIdpSignout(bool enable) {
   RuntimeEnabledFeatures::SetFedCmIdpSignoutEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableTargetBlankImpliesNoOpener(bool enable) {
-  RuntimeEnabledFeatures::SetTargetBlankImpliesNoOpenerEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableDocumentTransition(bool enable) {
   RuntimeEnabledFeatures::SetDocumentTransitionEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableCLSScrollAnchoring(bool enable) {
   RuntimeEnabledFeatures::SetCLSScrollAnchoringEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableAndroidDownloadableFontsMatching(bool enable) {
+  RuntimeEnabledFeatures::SetAndroidDownloadableFontsMatchingEnabled(enable);
 }
 
 }  // namespace blink

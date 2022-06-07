@@ -46,7 +46,8 @@ void SwitchAccessMenuBubbleController::ShowMenu(
                             kShellWindowId_AccessibilityBubbleContainer);
     init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
     init_params.is_anchored_to_status_area = false;
-    init_params.insets = gfx::Insets(kBubbleMenuPadding, kBubbleMenuPadding);
+    init_params.insets =
+        gfx::Insets::VH(kBubbleMenuPadding, kBubbleMenuPadding);
     init_params.corner_radius = kBubbleCornerRadius;
     init_params.has_shadow = false;
     init_params.translucent = true;
@@ -54,8 +55,7 @@ void SwitchAccessMenuBubbleController::ShowMenu(
     bubble_view_->SetArrow(views::BubbleBorder::Arrow::TOP_LEFT);
 
     menu_view_ = new SwitchAccessMenuView();
-    menu_view_->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(kBubbleMenuPadding)));
+    menu_view_->SetBorder(views::CreateEmptyBorder(kBubbleMenuPadding));
     bubble_view_->AddChildView(menu_view_);
 
     menu_view_->SetPaintToLayer();
@@ -97,7 +97,7 @@ void SwitchAccessMenuBubbleController::ShowMenu(
   // The resting bounds includes padding on each side of the menu.
   // Remove that before passing to the back button controller so the back button
   // appears in the correct position.
-  resting_bounds.Inset(kBubbleMenuPadding, kBubbleMenuPadding);
+  resting_bounds.Inset(kBubbleMenuPadding);
   back_button_controller_->ShowBackButton(resting_bounds,
                                           /*show_focus_ring=*/false,
                                           /*for_menu=*/true);

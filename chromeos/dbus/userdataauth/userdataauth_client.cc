@@ -235,6 +235,14 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
                     std::move(callback));
   }
 
+  void UpdateCredential(
+      const ::user_data_auth::UpdateCredentialRequest& request,
+      UpdateCredentialCallback callback) override {
+    CallProtoMethod(::user_data_auth::kUpdateCredential,
+                    ::user_data_auth::kUserDataAuthInterface, request,
+                    std::move(callback));
+  }
+
   void PrepareGuestVault(
       const ::user_data_auth::PrepareGuestVaultRequest& request,
       PrepareGuestVaultCallback callback) override {
@@ -263,6 +271,14 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
       const ::user_data_auth::PreparePersistentVaultRequest& request,
       PreparePersistentVaultCallback callback) override {
     CallProtoMethod(::user_data_auth::kPreparePersistentVault,
+                    ::user_data_auth::kUserDataAuthInterface, request,
+                    std::move(callback));
+  }
+
+  void PrepareVaultForMigration(
+      const ::user_data_auth::PrepareVaultForMigrationRequest& request,
+      PrepareVaultForMigrationCallback callback) override {
+    CallProtoMethod(::user_data_auth::kPrepareVaultForMigration,
                     ::user_data_auth::kUserDataAuthInterface, request,
                     std::move(callback));
   }

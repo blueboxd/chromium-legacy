@@ -31,6 +31,7 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 class BrowserContextKeyedServiceFactory;
+class PrefService;
 
 namespace metrics {
 class PSIMemoryParser;
@@ -45,6 +46,8 @@ class BrowserContext;
 }  // namespace content
 
 namespace arc {
+
+class ArcMetricsAnr;
 
 namespace mojom {
 class AppInstance;
@@ -142,6 +145,8 @@ class ArcMetricsService : public KeyedService,
   void ReportDataRestore(mojom::DataRestoreStatus status,
                          int64_t duration_ms) override;
   void ReportMemoryPressure(const std::vector<uint8_t>& psiFile) override;
+  void ReportProvisioningPreSignIn() override;
+  void ReportWaylandLateTimingDuration(base::TimeDelta duration) override;
 
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.
@@ -159,6 +164,11 @@ class ArcMetricsService : public KeyedService,
                      const std::string& activity,
                      const std::string& intent);
   void OnTaskDestroyed(int32_t task_id);
+
+  // ArcSessionManagerObserver callbacks which are called through
+  // ArcMetricsServiceProxy.
+  void OnArcStarted();
+  void OnArcSessionStopped();
 
   void AddAppKillObserver(AppKillObserver* obs);
   void RemoveAppKillObserver(AppKillObserver* obs);
@@ -180,6 +190,12 @@ class ArcMetricsService : public KeyedService,
   // Make a request to ArcProcessService for App kill counts, so that those
   // counts can be logged to UMA. Public for testing.
   void RequestLowMemoryKillCountsForTesting();
+
+  void set_prefs(PrefService* prefs) { prefs_ = prefs; }
+
+  // Record the starting time of ARC provisioning, for later use.
+  void ReportProvisioningStartTime(const base::TimeTicks& start_time,
+                                   const std::string& account_type_suffix);
 
  private:
   // Adapter to be able to also observe ProcessInstance events.
@@ -306,6 +322,13 @@ class ArcMetricsService : public KeyedService,
 
   base::ObserverList<AppKillObserver> app_kill_observers_;
   base::ObserverList<UserInteractionObserver> user_interaction_observers_;
+
+  PrefService* prefs_ = nullptr;
+  std::unique_ptr<ArcMetricsAnr> metrics_anr_;
+
+  // For reporting Arc.Provisioning.PreSignInTimeDelta.
+  absl::optional<base::TimeTicks> arc_provisioning_start_time_;
+  absl::optional<std::string> arc_provisioning_account_type_suffix_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.

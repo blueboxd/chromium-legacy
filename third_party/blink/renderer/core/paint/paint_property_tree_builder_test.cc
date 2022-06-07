@@ -732,23 +732,19 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       TransformAnimationCreatesEffectAndFilterNodes) {
+       TransformAnimationDoesNotCreateEffectAndFilterNodes) {
   LoadTestData("transform-animation.html");
-  // TODO(flackr): Verify that after https://crbug.com/900241 is fixed we no
-  // longer create opacity or filter nodes for transform animations.
   EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Transform());
-  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Effect());
-  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Filter());
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Effect());
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Filter());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       OpacityAnimationCreatesTransformAndFilterNodes) {
+       OpacityAnimationDoesNotCreateTransformAndFilterNodes) {
   LoadTestData("opacity-animation.html");
-  // TODO(flackr): Verify that after https://crbug.com/900241 is fixed we no
-  // longer create transform or filter nodes for opacity animations.
-  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Transform());
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Transform());
   EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Effect());
-  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Filter());
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Filter());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -5158,9 +5154,9 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskSimple) {
   EXPECT_EQ(output_clip,
             &target->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(DocContentClip(), output_clip->Parent());
-  // For now we always pixel-snap both LayoutClipRect and PaintClipRect for
-  // mask clip.
-  EXPECT_CLIP_RECT(FloatRoundedRect(8, 8, 300, 201), output_clip);
+  EXPECT_EQ(FloatClipRect(gfx::RectF(8, 8, 300, 200.5)),
+            output_clip->LayoutClipRect());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 300, 201), output_clip->PaintClipRect());
 
   EXPECT_EQ(properties->Effect(),
             &target->FirstFragment().LocalBorderBoxProperties().Effect());
@@ -5694,7 +5690,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
         height: 100px;
       }
       #target {
-        will-change: transform;
+        will-change: opacity;
         width: 100px;
         height: 100px;
       }
@@ -5773,6 +5769,42 @@ TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
     EXPECT_FALSE(rect->FirstFragment().PaintProperties()->MaskClip());
     EXPECT_FALSE(rect->FirstFragment().PaintProperties()->ClipPathMask());
   }
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, EmptyClipPathSubpixelOffset) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id="target"
+         style="clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+                position: relative; top: 0.75px; left: 0.25px; width: 0">
+    </div>
+  )HTML");
+
+  const auto* target = GetLayoutObjectByElementId("target");
+  ASSERT_TRUE(target->FirstFragment().PaintProperties());
+  const auto* clip_path_clip =
+      target->FirstFragment().PaintProperties()->ClipPathClip();
+  ASSERT_TRUE(clip_path_clip);
+  EXPECT_EQ(gfx::RectF(0.25, 0.75, 0, 0),
+            clip_path_clip->LayoutClipRect().Rect());
+  EXPECT_EQ(FloatRoundedRect(), clip_path_clip->PaintClipRect());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, EmptyMaskSubpixelOffset) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id="target"
+         style="-webkit-mask: linear-gradient(blue, white);
+                position: relative; top: 0.75px; left: 0.25px; width: 0">
+    </div>
+  )HTML");
+
+  const auto* target = GetLayoutObjectByElementId("target");
+  ASSERT_TRUE(target->FirstFragment().PaintProperties());
+  const auto* mask_clip = target->FirstFragment().PaintProperties()->MaskClip();
+  ASSERT_TRUE(mask_clip);
+  EXPECT_EQ(gfx::RectF(0.25, 0.75, 0, 0), mask_clip->LayoutClipRect().Rect());
+  EXPECT_EQ(FloatRoundedRect(), mask_clip->PaintClipRect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, RootHasCompositedScrolling) {
@@ -6522,7 +6554,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MainFrameDoesntClipContent) {
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
   SetBodyInnerHTML(R"HTML(
-    <svg id='svg' style='clip-path: circle(); will-change: transform'></svg>
+    <svg id='svg' style='clip-path: circle(); will-change: transform, opacity'></svg>
   )HTML");
 
   const auto* properties = PaintPropertiesForElement("svg");

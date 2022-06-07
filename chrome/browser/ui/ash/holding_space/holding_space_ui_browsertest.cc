@@ -420,13 +420,6 @@ class DropTargetView : public views::WidgetDelegateView {
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  ui::mojom::DragOperation OnPerformDrop(
-      const ui::DropTargetEvent& event) override {
-    ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-    PerformDrop(event, output_drag_op);
-    return output_drag_op;
-  }
-
   DropCallback GetDropCallback(const ui::DropTargetEvent& event) override {
     return base::BindOnce(&DropTargetView::PerformDrop, base::Unretained(this));
   }
@@ -1339,10 +1332,6 @@ class HoldingSpaceUiInProgressDownloadsBrowserTestBase
   explicit HoldingSpaceUiInProgressDownloadsBrowserTestBase(
       DownloadTypeToUse download_type_to_use)
       : download_type_to_use_(download_type_to_use) {
-    // Enable in-progress downloads integration.
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kHoldingSpaceInProgressDownloadsIntegration);
-
     // Use a testing factory to give us a chance to swap out the production
     // download manager for a given browser `context` with a mock prior to
     // holding space keyed service creation.

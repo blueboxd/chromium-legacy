@@ -27,6 +27,8 @@ chromium-metrics-reviews@google.com.
   <variant name="Clipboard" summary="Handler for clipboard"/>
   <variant name="Extension" summary="Handler for extensions"/>
   <variant name="Files" summary="Handler for files"/>
+  <variant name="Lacros" summary="Handler which calls cleanup on Lacros"/>
+  <variant name="LacrosBrowsingData" summary="Handler for files on Lacros"/>
   <variant name="OpenWindows" summary="Handler for open browser windows"/>
   <variant name="PrintJobs" summary="Handler for print jobs"/>
 </variants>
@@ -772,6 +774,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.Dlp.CaptureModeInitWarned" enum="BooleanWarned"
+    expires_after="2022-12-01">
+  <owner>aidazolic@chromium.org</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when the user is warned by Data Leak Prevention before capture mode
+    initialization.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Dlp.ClipboardReadBlocked" enum="BooleanBlocked"
     expires_after="2022-12-01">
   <owner>poromov@chromium.org</owner>
@@ -1012,6 +1024,40 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.Dlp.ScreenshotWarned" enum="BooleanWarned"
+    expires_after="2022-12-01">
+  <owner>aidazolic@chromium.org</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when there is a &quot;warn&quot; level Data Leak Prevention
+    evaluation for taking a screenshot or a video capture.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.ScreenshotWarnProceeded" enum="Boolean"
+    expires_after="2022-12-01">
+  <owner>aidazolic@chromium.org</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when the user proceeded with (True) or canceled (False) the action
+    after a Data Leak Prevention warning shown at the capture mode
+    initialization or before taking a screenshot or a video capture.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.ScreenshotWarnSilentProceeded" enum="Boolean"
+    expires_after="2022-12-01">
+  <owner>aidazolic@chromium.org</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Recorded when there is a &quot;warn&quot; level Data Leak Prevention
+    evaluation for initiating capture mode, or taking a screenshot or a video
+    capture, but it is caused by the content that the user was already warned
+    about and decided to proceed, so no new warning is shown and the screen
+    share is silently allowed.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Dlp.VideoCaptureInterrupted" enum="Boolean"
     expires_after="2022-12-01">
   <owner>poromov@chromium.org</owner>
@@ -1154,7 +1200,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Enrollment" enum="EnterpriseEnrollmentType"
-    expires_after="2022-04-03">
+    expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1284,7 +1330,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.EnrollmentTime.Cancel" units="ms"
-    expires_after="2022-04-24">
+    expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1293,7 +1339,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.EnrollmentTime.Failure" units="ms"
-    expires_after="2022-04-17">
+    expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1302,7 +1348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.EnrollmentTime.Success" units="ms"
-    expires_after="2022-04-10">
+    expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -2073,7 +2119,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.VpdUpdateStatus" units="units"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>igorcov@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <summary>
@@ -2095,7 +2141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.InDomain" enum="BooleanEnabled"
-    expires_after="2022-04-30">
+    expires_after="2023-04-30">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <summary>

@@ -16,10 +16,8 @@ constexpr StaticOobeScreenId AutoEnrollmentCheckScreenView::kScreenId;
 
 namespace chromeos {
 
-AutoEnrollmentCheckScreenHandler::AutoEnrollmentCheckScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-}
+AutoEnrollmentCheckScreenHandler::AutoEnrollmentCheckScreenHandler()
+    : BaseScreenHandler(kScreenId) {}
 
 AutoEnrollmentCheckScreenHandler::~AutoEnrollmentCheckScreenHandler() {
   if (delegate_)
@@ -27,17 +25,17 @@ AutoEnrollmentCheckScreenHandler::~AutoEnrollmentCheckScreenHandler() {
 }
 
 void AutoEnrollmentCheckScreenHandler::Show() {
-  if (!page_is_ready()) {
+  if (!IsJavascriptAllowed()) {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(kScreenId);
+  ShowInWebUI();
 }
 
 void AutoEnrollmentCheckScreenHandler::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
-  if (page_is_ready())
-    Initialize();
+  if (IsJavascriptAllowed())
+    InitializeDeprecated();
 }
 
 void AutoEnrollmentCheckScreenHandler::DeclareLocalizedValues(
@@ -48,8 +46,8 @@ void AutoEnrollmentCheckScreenHandler::DeclareLocalizedValues(
                IDS_AUTO_ENROLLMENT_CHECK_SCREEN_MESSAGE);
 }
 
-void AutoEnrollmentCheckScreenHandler::Initialize() {
-  if (!page_is_ready() || !delegate_)
+void AutoEnrollmentCheckScreenHandler::InitializeDeprecated() {
+  if (!IsJavascriptAllowed() || !delegate_)
     return;
 
   if (show_on_init_) {

@@ -272,6 +272,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetIsFastRoundedCorner(true);
     layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+    layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
   } else {
     // Create a layer so that the layer for FocusRing stays in this view's
     // layer. Without it, the layer for FocusRing goes above the
@@ -327,7 +328,7 @@ void TrayBubbleView::SetMaxHeight(int height) {
 }
 
 void TrayBubbleView::SetBottomPadding(int padding) {
-  layout_->set_inside_border_insets(gfx::Insets(0, 0, padding, 0));
+  layout_->set_inside_border_insets(gfx::Insets::TLBR(0, 0, padding, 0));
 }
 
 void TrayBubbleView::SetPreferredWidth(int width) {

@@ -88,11 +88,13 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
     set_extended_drag_available_for_testing_ = true;
   }
 
+  WaylandWindow* origin_window_for_testing() { return origin_window_; }
+
  private:
   class ExtendedDragSource;
 
   FRIEND_TEST_ALL_PREFIXES(WaylandWindowDragControllerTest,
-                           HandleDraggedWindowDestructionAfterMoveLoop);
+                           HandleDraggedWindowDestruction);
 
   // WaylandDataDevice::DragDelegate:
   bool IsDragSource() const override;

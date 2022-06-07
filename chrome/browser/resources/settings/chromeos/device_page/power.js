@@ -23,8 +23,8 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
-import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
-import {routes} from '../os_route.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
+import {routes} from '../os_route.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {BatteryStatus, DevicePageBrowserProxy, DevicePageBrowserProxyImpl, ExternalStorage, getDisplayApi, IdleBehavior, LidClosedBehavior, NoteAppInfo, NoteAppLockScreenSupport, PowerManagementSettings, PowerSource, StorageSpaceState} from './device_page_browser_proxy.js';
@@ -128,8 +128,24 @@ Polymer({
       computed: 'hasSingleOption_(batteryIdleOptions_)',
     },
 
+    /** @private {boolean} */
+    adaptiveChargingEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isAdaptiveChargingEnabled');
+      },
+    },
+
     /** @private {!chrome.settingsPrivate.PrefObject} */
     lidClosedPref_: {
+      type: Object,
+      value() {
+        return /** @type {!chrome.settingsPrivate.PrefObject} */ ({});
+      },
+    },
+
+    /** @private {!chrome.settingsPrivate.PrefObject} */
+    adaptiveChargingPref_: {
       type: Object,
       value() {
         return /** @type {!chrome.settingsPrivate.PrefObject} */ ({});
@@ -147,6 +163,7 @@ Polymer({
         chromeos.settings.mojom.Setting.kPowerSource,
         chromeos.settings.mojom.Setting.kSleepWhenLaptopLidClosed,
         chromeos.settings.mojom.Setting.kPowerIdleBehaviorWhileOnBattery,
+        chromeos.settings.mojom.Setting.kAdaptiveCharging,
       ]),
     },
   },
@@ -289,6 +306,18 @@ Polymer({
     recordSettingChange();
   },
 
+  /** @private */
+  onAdaptiveChargingToggleChange_() {
+    const /** @type {boolean} */ enabled =
+        this.$.adaptiveChargingToggle.checked;
+    this.browserProxy_.setAdaptiveCharging(enabled);
+    recordSettingChange(
+        chromeos.settings.mojom.Setting.kAdaptiveCharging,
+        /** @type {!chromeos.settings.mojom.SettingChangeValue} */ ({
+          boolValue: enabled
+        }));
+  },
+
   /**
    * @param {!Array<PowerSource>} sources External power sources.
    * @param {string} selectedId The ID of the currently used power source.
@@ -418,15 +447,38 @@ Polymer({
     this.updateLidClosedLabelAndPref_(
         powerManagementSettings.lidClosedBehavior,
         powerManagementSettings.lidClosedControlled);
+    // Use an atomic assign to trigger UI change.
+    this.adaptiveChargingPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: powerManagementSettings.adaptiveCharging,
+    };
   },
 
   /**
+   * Returns the row class for the given settings row
    * @param {boolean} batteryPresent if battery is present
-   * @return {string} 'first' if idle/lid settings are first visible div
+   * @param {string} element the name of the row being queried
+   * @return {string} the class for the given row
    * @private
    */
-  getFirst_(batteryPresent) {
-    return !batteryPresent ? 'first' : '';
+  getClassForRow_(batteryPresent, element) {
+    let c = 'cr-row';
+
+    switch (element) {
+      case 'adaptiveCharging':
+        if (!batteryPresent) {
+          c += ' first';
+        }
+        break;
+      case 'idle':
+        if (!batteryPresent && !this.adaptiveChargingEnabled_) {
+          c += ' first';
+        }
+        break;
+    }
+
+    return c;
   },
 
   /**

@@ -54,6 +54,9 @@ Config::Config() {
           internal::kJourneys, "JourneysNumVisitsToAlwaysShowAboveTheFold",
           num_visits_to_always_show_above_the_fold);
 
+  drop_hidden_visits = base::GetFieldTrialParamByFeatureAsBool(
+      internal::kJourneys, "drop_hidden_visits", drop_hidden_visits);
+
   rescore_visits_within_clusters_for_query =
       base::GetFieldTrialParamByFeatureAsBool(
           internal::kJourneys, "JourneysRescoreVisitsWithinClustersForQuery",
@@ -64,11 +67,11 @@ Config::Config() {
           internal::kJourneys, "JourneysSortClustersWithinBatchForQuery",
           sort_clusters_within_batch_for_query);
 
-  alternate_omnibox_action_text = base::GetFieldTrialParamByFeatureAsBool(
-      internal::kJourneys, "JourneysAlternateOmniboxActionText",
-      alternate_omnibox_action_text);
-
   omnibox_action = base::FeatureList::IsEnabled(internal::kOmniboxAction);
+
+  omnibox_action_on_urls = base::GetFieldTrialParamByFeatureAsBool(
+      internal::kOmniboxAction, "omnibox_action_on_urls",
+      omnibox_action_on_urls);
 
   non_user_visible_debug =
       base::FeatureList::IsEnabled(internal::kNonUserVisibleDebug);
@@ -210,6 +213,14 @@ Config::Config() {
       features::kOnDeviceClustering, "should_label_clusters",
       should_label_clusters);
 
+  labels_from_hostnames = GetFieldTrialParamByFeatureAsBool(
+      features::kOnDeviceClustering, "labels_from_hostnames",
+      labels_from_hostnames);
+
+  labels_from_entities = GetFieldTrialParamByFeatureAsBool(
+      features::kOnDeviceClustering, "labels_from_entities",
+      labels_from_entities);
+
   const base::FeatureParam<std::string> kHostsToSkipClusteringFor{
       &features::kOnDeviceClusteringBlocklists, "hosts_to_skip_clustering_for",
       ""};
@@ -235,17 +246,21 @@ bool IsApplicationLocaleSupportedByJourneys(
   // is enabled.
   DCHECK(GetConfig().is_journeys_enabled_no_locale_check);
 
-  // Default to "", because defaulting it to a specific locale makes it hard
-  // to allow all locales, since the FeatureParam code interprets an empty
-  // string as undefined, and instead returns the default value.
+  // Note, we now set a default value for the allowlist, which means that when
+  // the feature parameter is undefined, the below allowlist is enabled.
   const base::FeatureParam<std::string> kLocaleOrLanguageAllowlist{
-      &internal::kJourneys, "JourneysLocaleOrLanguageAllowlist", ""};
+      &internal::kJourneys, "JourneysLocaleOrLanguageAllowlist",
+      "de:en:es:fr:it:nl:pt:tr"};
+
+  // To allow for using any locale, we also interpret the special '*' value.
+  auto allowlist_string = kLocaleOrLanguageAllowlist.Get();
+  if (allowlist_string == "*")
+    return true;
 
   // Allow comma and colon as delimiters to the language list.
-  auto allowlist =
-      base::SplitString(kLocaleOrLanguageAllowlist.Get(),
-                        ",:", base::WhitespaceHandling::TRIM_WHITESPACE,
-                        base::SplitResult::SPLIT_WANT_NONEMPTY);
+  auto allowlist = base::SplitString(
+      allowlist_string, ",:", base::WhitespaceHandling::TRIM_WHITESPACE,
+      base::SplitResult::SPLIT_WANT_NONEMPTY);
 
   // Allow any exact locale matches, and also allow any users where the
   // primary language subtag, e.g. "en" from "en-US" to match any element of

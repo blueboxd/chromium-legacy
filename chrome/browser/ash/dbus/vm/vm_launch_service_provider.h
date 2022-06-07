@@ -10,10 +10,6 @@
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
-namespace borealis {
-class BorealisCapabilities;
-}
-
 namespace ash {
 
 class VmLaunchServiceProvider
@@ -33,12 +29,6 @@ class VmLaunchServiceProvider
   void StartWaylandServer(dbus::MethodCall* method_call,
                           dbus::ExportedObject::ResponseSender response_sender);
 
-  void OnWaylandServerStarted(
-      dbus::MethodCall* method_call,
-      dbus::ExportedObject::ResponseSender response_sender,
-      borealis::BorealisCapabilities* capabilities,
-      const base::FilePath& path);
-
   void StopWaylandServer(dbus::MethodCall* method_call,
                          dbus::ExportedObject::ResponseSender response_sender);
 
@@ -56,6 +46,9 @@ class VmLaunchServiceProvider
   // its removal is documented in the linked bug.
   void ProvideVmToken(dbus::MethodCall* method_call,
                       dbus::ExportedObject::ResponseSender response_sender);
+
+  void EnsureVmLaunched(dbus::MethodCall* method_call,
+                        dbus::ExportedObject::ResponseSender response_sender);
 
   base::WeakPtrFactory<VmLaunchServiceProvider> weak_ptr_factory_{this};
 };

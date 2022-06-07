@@ -67,6 +67,7 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kAccessibilityDictationLocale,
     ash::prefs::kDockedMagnifierEnabled,
     ash::prefs::kDockedMagnifierScale,
+    ash::prefs::kDockedMagnifierScreenHeightDivisor,
     ash::prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
     ash::prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
     ash::prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
@@ -87,7 +88,6 @@ const char* const kPersistentPrefNames[] = {
     bookmarks::prefs::kManagedBookmarks,
     bookmarks::prefs::kManagedBookmarksFolderName,
     bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-    bookmarks::prefs::kShowReadingListInBookmarkBar,
     bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
     bookmarks::prefs::kShowBookmarkBar,
 #if BUILDFLAG(IS_ANDROID)

@@ -151,6 +151,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -211,16 +212,22 @@ base::LazyInstance<std::vector<
     WebContentsImpl::FriendWrapper::CreatedCallback>>::DestructorAtExit
     g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
-bool HasMatchingWidgetHost(FrameTree* tree, RenderWidgetHost* host) {
+bool HasMatchingWidgetHost(FrameTree* tree, RenderWidgetHostImpl* host) {
   // This method scans the frame tree rather than checking whether
   // host->delegate() == this, which allows it to return false when the host
   // for a frame that is pending or pending deletion.
   if (!host)
     return false;
 
-  for (FrameTreeNode* node : tree->Nodes()) {
-    if (node->current_frame_host()->GetRenderWidgetHost() == host)
+  for (FrameTreeNode* node : tree->NodesIncludingInnerTreeNodes()) {
+    // We might cross a WebContents boundary here, but it's fine as we are only
+    // comparing the RWHI with the given `host`, which is always guaranteed to
+    // belong to the same WebContents as `tree`.
+    if (node->current_frame_host()->GetRenderWidgetHost() == host) {
+      DCHECK_EQ(WebContentsImpl::FromFrameTreeNode(node),
+                WebContentsImpl::FromRenderWidgetHostImpl(host));
       return true;
+    }
   }
   return false;
 }
@@ -310,10 +317,23 @@ bool AreValidRegisterProtocolHandlerArguments(
   if (policy->IsPseudoScheme(protocol))
     return false;
 
+  // Implementation of the protocol handler arguments normalization steps defined
+  // in the spec.
+  // https://html.spec.whatwg.org/multipage/system-state.html#normalize-protocol-handler-parameters
+  //
+  // Verify custom handler schemes for errors as described in steps 1 and 2
+  if (!blink::IsValidCustomHandlerScheme(protocol, security_level))
+    return false;
+
+  // TODO(jfernandez): Should we include syntax checks (step 3) as we do in the
+  // renderer process ?
+
+  // Verify custom handler URL security as described in steps 6 and 7
+  if (!blink::IsAllowedCustomHandlerURL(url, security_level))
+    return false;
   url::Origin url_origin = url::Origin::Create(url);
   if (url_origin.opaque())
     return false;
-
   if (security_level < blink::ProtocolHandlerSecurityLevel::kUntrustedOrigins &&
       !origin.IsSameOriginWith(url))
     return false;
@@ -459,7 +479,7 @@ base::flat_set<WebContentsImpl*>* FullscreenContentsSet(
   return set_holder->set();
 }
 
-// Returns true if |host| has the Window Placement permission granted.
+// Returns true if `host` has the Window Placement permission granted.
 bool IsWindowPlacementGranted(RenderFrameHost* host) {
   content::PermissionController* permission_controller =
       host->GetBrowserContext()->GetPermissionController();
@@ -1764,9 +1784,12 @@ std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
   return all_contents;
 }
 
-void WebContentsImpl::OnManifestUrlChanged(const PageImpl& page) {
+void WebContentsImpl::OnManifestUrlChanged(PageImpl& page) {
   absl::optional<GURL> manifest_url = page.GetManifestUrl();
   if (!manifest_url.has_value())
+    return;
+
+  if (!page.IsPrimary())
     return;
 
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::NotifyManifestUrlChanged",
@@ -2474,8 +2497,10 @@ void WebContentsImpl::AttachInnerWebContents(
   // Create a proxy in top-level RenderFrameHostManager, pointing to the
   // SiteInstance of the outer WebContents. The proxy will be used to send
   // postMessage to the inner WebContents.
-  auto* proxy = inner_render_manager->CreateOuterDelegateProxy(
-      render_frame_host_impl->GetSiteInstance());
+  auto* proxy =
+      inner_main_frame->browsing_context_state()->CreateOuterDelegateProxy(
+          render_frame_host_impl->GetSiteInstance(),
+          inner_main_frame->frame_tree_node());
 
   // When attaching a GuestView as an inner WebContents, there should already be
   // a live RenderFrame, which has to be swapped. When attaching a portal, there
@@ -2546,10 +2571,13 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   for (auto* render_view_host : render_view_hosts)
     render_view_host->GetWidget()->GetView()->Destroy();
 
-  GetRenderManager()->DeleteOuterDelegateProxy(
-      node_.OuterContentsFrameTreeNode()
-          ->current_frame_host()
-          ->GetSiteInstance());
+  GetRenderManager()
+      ->current_frame_host()
+      ->browsing_context_state()
+      ->DeleteOuterDelegateProxy(node_.OuterContentsFrameTreeNode()
+                                     ->current_frame_host()
+                                     ->GetSiteInstance()
+                                     ->group());
   view_.reset(CreateWebContentsView(
       this, GetContentClient()->browser()->GetWebContentsViewDelegate(this),
       &render_view_host_delegate_view_));
@@ -2691,12 +2719,6 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
                          !command_line.HasSwitch(switches::kDisableWebGL2);
 
   prefs.pepper_3d_enabled = !command_line.HasSwitch(switches::kDisablePepper3d);
-
-  prefs.flash_3d_enabled = !command_line.HasSwitch(switches::kDisableFlash3d);
-  prefs.flash_stage3d_enabled =
-      !command_line.HasSwitch(switches::kDisableFlashStage3d);
-  prefs.flash_stage3d_baseline_enabled =
-      !command_line.HasSwitch(switches::kDisableFlashStage3d);
 
   prefs.allow_file_access_from_file_urls =
       command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
@@ -4040,7 +4062,7 @@ FrameTree* WebContentsImpl::CreateNewWindow(
 }
 
 RenderWidgetHostImpl* WebContentsImpl::CreateNewPopupWidget(
-    AgentSchedulingGroupHost& agent_scheduling_group,
+    base::SafeRef<SiteInstanceGroup> site_instance_group,
     int32_t route_id,
     mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
         blink_popup_widget_host,
@@ -4048,9 +4070,8 @@ RenderWidgetHostImpl* WebContentsImpl::CreateNewPopupWidget(
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::CreateNewPopupWidget",
                         "route_id", route_id);
-  RenderProcessHost* process = agent_scheduling_group.GetProcess();
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::CreateSelfOwned(
-      &primary_frame_tree_, this, agent_scheduling_group, route_id, IsHidden(),
+      &primary_frame_tree_, this, site_instance_group, route_id, IsHidden(),
       std::make_unique<FrameTokenMessageQueue>());
 
   widget_host->BindWidgetInterfaces(std::move(blink_widget_host),
@@ -4064,7 +4085,8 @@ RenderWidgetHostImpl* WebContentsImpl::CreateNewPopupWidget(
   widget_view->SetWidgetType(WidgetType::kPopup);
 
   // Save the created widget associated with the route so we can show it later.
-  pending_widgets_[GlobalRoutingID(process->GetID(), route_id)] = widget_host;
+  pending_widgets_[GlobalRoutingID(site_instance_group->process()->GetID(),
+                                   route_id)] = widget_host;
   AddRenderWidgetHostDestructionObserver(widget_host);
 
   return widget_host;
@@ -4471,6 +4493,19 @@ void WebContentsImpl::SendScreenRects() {
           render_frame_host->GetRenderWidgetHost()->SendScreenRects();
         }
       }));
+}
+
+void WebContentsImpl::SendActiveState(bool active) {
+  DCHECK(!IsBeingDestroyed());
+
+  // Replicate the active state to all LocalRoots.
+  GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
+      [](bool active, RenderFrameHostImpl* render_frame_host) {
+        if (render_frame_host->is_local_root()) {
+          render_frame_host->GetRenderWidgetHost()->SetActive(active);
+        }
+      },
+      active));
 }
 
 TextInputManager* WebContentsImpl::GetTextInputManager() {
@@ -5867,6 +5902,17 @@ void WebContentsImpl::DidInferColorScheme(PageImpl& page) {
   if (page.IsPrimary()) {
     observers_.NotifyObservers(&WebContentsObserver::InferredColorSchemeUpdated,
                                page.inferred_color_scheme());
+    if (page.inferred_color_scheme().has_value()) {
+      bool dark = page.inferred_color_scheme().value() ==
+                  blink::mojom::PreferredColorScheme::kDark;
+      base::UmaHistogramBoolean("Power.DarkMode.InferredDarkPageColorScheme",
+                                dark);
+      if (web_preferences_->preferred_color_scheme ==
+          blink::mojom::PreferredColorScheme::kDark) {
+        base::UmaHistogramBoolean(
+            "Power.DarkMode.DarkColorScheme.InferredDarkPageColorScheme", dark);
+      }
+    }
   }
 }
 
@@ -6154,7 +6200,7 @@ void WebContentsImpl::OnPageScaleFactorChanged(PageImpl& source) {
 
   if (source.IsPrimary()) {
     observers_.NotifyObservers(&WebContentsObserver::OnPageScaleFactorChanged,
-                               source.page_scale_factor());
+                               source.GetPageScaleFactor());
   }
 }
 
@@ -6189,6 +6235,9 @@ void WebContentsImpl::RegisterProtocolHandler(RenderFrameHostImpl* source,
   blink::ProtocolHandlerSecurityLevel security_level =
       delegate_->GetProtocolHandlerSecurityLevel(source);
 
+  // Run the protocol handler arguments normalization process defined in the
+  // spec.
+  // https://html.spec.whatwg.org/multipage/system-state.html#normalize-protocol-handler-parameters
   if (!AreValidRegisterProtocolHandlerArguments(
           protocol, url, source->GetLastCommittedOrigin(), security_level)) {
     ReceivedBadMessage(source->GetProcess(),
@@ -8098,7 +8147,13 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
             .Clone());
   }
 
-  if (!proxy_host)
+  // If `render_view_host` is for an inner WebContents, ensure that its
+  // RenderWidgetHostView is properly reattached to the outer WebContents. Note
+  // that this should only be done when `render_view_host` is already the
+  // current RenderViewHost in this WebContents.  If it isn't, the reattachment
+  // will happen later when `render_view_host` becomes current as part of
+  // committing the speculative RenderFrameHost it's associated with.
+  if (!proxy_host && render_view_host == GetRenderViewHost())
     ReattachOuterDelegateIfNeeded();
 
   SetHistoryOffsetAndLengthForView(

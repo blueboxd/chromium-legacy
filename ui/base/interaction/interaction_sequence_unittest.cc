@@ -8,7 +8,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
@@ -1237,6 +1236,39 @@ TEST(InteractionSequenceTest, CustomEventDuringCallbackSameView) {
   sequence->Start();
   EXPECT_CALLS_IN_SCOPE_3(step1_end, Run, step2_start, Run, completed, Run,
                           element2.Show());
+}
+
+TEST(InteractionSequenceTest, ElementHiddenDuringElementShownCallback) {
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::AbortedCallback, aborted);
+  UNCALLED_MOCK_CALLBACK(InteractionSequence::CompletedCallback, completed);
+
+  test::TestElement element1(kTestIdentifier1, kTestContext1);
+  test::TestElement element2(kTestIdentifier2, kTestContext1);
+  element1.Show();
+
+  auto hide_element = [&](InteractionSequence*, TrackedElement*) {
+    element2.Hide();
+  };
+
+  auto sequence =
+      InteractionSequence::Builder()
+          .SetAbortedCallback(aborted.Get())
+          .SetCompletedCallback(completed.Get())
+          .AddStep(InteractionSequence::WithInitialElement(&element1))
+          .AddStep(InteractionSequence::StepBuilder()
+                       .SetElementID(element2.identifier())
+                       .SetType(InteractionSequence::StepType::kShown)
+                       .SetStartCallback(
+                           base::BindLambdaForTesting(std::move(hide_element)))
+                       .Build())
+          .AddStep(InteractionSequence::StepBuilder()
+                       .SetElementID(element2.identifier())
+                       .SetType(InteractionSequence::StepType::kHidden)
+                       .Build())
+          .Build();
+
+  sequence->Start();
+  EXPECT_CALL_IN_SCOPE(completed, Run, element2.Show());
 }
 
 TEST(InteractionSequenceTest, HideAfterActivateDoesntAbort) {

@@ -120,7 +120,7 @@
 <translation id="3434246496373299699">O Chrome pode verificar suas senhas quando você faz login com sua Conta do Google</translation>
 <translation id="3451115285585441894">Adicionando ao Google Chrome...</translation>
 <translation id="345171907106878721">Cadastrar-se no Chrome</translation>
-<translation id="34857402635545079">Remover também dados do Chrome (<ph name="URL" />)</translation>
+<translation id="34857402635545079">Limpar também dados do Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">O Chrome precisa acessar seu local para compartilhá-lo com este site</translation>
 <translation id="3533694711092285624">Nenhuma senha salva. O Chrome poderá verificar suas senhas quando elas forem salvas.</translation>
 <translation id="3541482654983822893">Não foi possível verificar suas senhas. Tente novamente em 24 horas.</translation>
@@ -174,6 +174,7 @@
 <translation id="4600710005438004015">Não foi possível atualizar o Chrome para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança.</translation>
 <translation id="4627412468266359539">Opcional: ajude a melhorar os recursos e o desempenho do ChromeOS Flex enviando automaticamente dados de uso e diagnóstico ao Google.</translation>
 <translation id="4633000520311261472">Para tornar o Google Chrome mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e podem ser sido adicionadas sem seu conhecimento.</translation>
+<translation id="469553575393225953">Extensões, apps e temas de fontes desconhecidas podem danificar o dispositivo. O Chrome recomenda os instalar apenas pela Chrome Web Store</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
 <translation id="4747730611090640388">O Chrome faz uma estimativa dos seus interesses.  Sites que você visitar vão poder pedir ao Chrome para ver seus interesses e personalizar os anúncios mostrados a você.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -213,6 +214,7 @@
 <translation id="5736850870166430177">Se um site tentar roubar sua senha ou se você fizer o download de um arquivo nocivo, o Chrome também poderá enviar os URLs, incluindo partes do conteúdo da página, para o Navegação segura</translation>
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
 <translation id="5756509061973259733">Este dispositivo já tem um perfil do Chrome com essa conta</translation>
+<translation id="5763280521700030406">O Chrome bloqueou esse arquivo por ser grande demais para uma verificação de segurança. Tente novamente com arquivos de até 50 MB</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" />: Google Chrome Canary</translation>
 <translation id="5804318322022881572">Não foi possível iniciar o Chrome. Tente novamente.</translation>
 <translation id="5867197326698922595">O Google Chrome está tentando editar senhas.</translation>
@@ -228,6 +230,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" />: Google Chrome Beta</translation>
 <translation id="6235018212288296708">Regra interna do Google Chrome que permite o tráfego mDNS.</translation>
+<translation id="6247557882553405851">Gerenciador de senhas do Google</translation>
 <translation id="6291089322031436445">Apps do Chrome Dev</translation>
 <translation id="6291549208091401781">O Google Chrome já está instalado para todos os usuários do seu computador.</translation>
 <translation id="6368958679917195344">O sistema operacional do Chrome tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
@@ -236,6 +239,7 @@
 <translation id="6506909944137591434">O Chrome precisa da permissão de acesso à câmera para criar um mapa 3D do ambiente</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" />: Google Chrome Dev</translation>
 <translation id="6568793831116033768">Sistema Chrome OS</translation>
+<translation id="659498884637196217">No Gerenciador de senhas do Google deste dispositivo</translation>
 <translation id="6632473616050862500">A criação do ChromeOS Flex só foi possível graças a um outro <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>
 <translation id="6679975945624592337">Permitir a execução do Google Chrome em segundo plano</translation>
@@ -275,6 +279,7 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 As permissões que você já concedeu a sites e apps podem ser aplicadas a essa conta. É possível gerenciar suas Contas do Google nas <ph name="SETTINGS_LINK_BEGIN" />Configurações<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Você estava conectado ao Google Chrome como <ph name="USER_EMAIL_ADDRESS" />. Use a mesma conta para fazer login novamente.</translation>
 <translation id="7408085963519505752">Termos do Chrome OS</translation>
+<translation id="7410958280246779049">O Chrome bloqueou esse arquivo por ser perigoso</translation>
 <translation id="7419046106786626209">O Chrome OS não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
 <translation id="7481213027396403996">Use o nível mais alto de segurança do Chrome</translation>
 <translation id="7486227612705979895">O Chrome acessará seu Drive para fazer sugestões na barra de endereço</translation>
@@ -289,7 +294,6 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="7655455401911432608">Seu histórico de navegação, um registro de sites visitados usando o Chrome neste dispositivo.</translation>
 <translation id="7665553140559834626">Reinicializar para atualizar o &amp;Chrome OS</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
-<translation id="7748512868279796735">As seguintes contas estão disponíveis neste perfil do Chrome</translation>
 <translation id="7761834446675418963">Clique no seu nome para abrir o Chrome e começar a navegar.</translation>
 <translation id="7777080907402804672">Se uma imagem não tiver uma descrição útil, o Chrome tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições. É possível desativar essa opção nas configurações a qualquer momento.</translation>
 <translation id="7781002470561365167">Uma nova versão do Google Chrome está disponível.</translation>
@@ -305,10 +309,12 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="7951272445806340501">É necessário reiniciar o ChromeOS Flex para que a atualização seja aplicada.</translation>
 <translation id="7962410387636238736">Este computador não receberá mais atualizações do Google Chrome porque o Windows XP e o Windows Vista não são mais compatíveis</translation>
 <translation id="79947657522496226">A existência do Chrome OS tornou-se possível graças a outros <ph name="BEGIN_LINK_CROS_OSS" />softwares de código aberto<ph name="END_LINK_CROS_OSS" />, como o <ph name="BEGIN_LINK_LINUX_OSS" />ambiente para desenvolvedores do Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="8005666035647241369">Para o Gerenciador de senhas do Google deste dispositivo</translation>
 <translation id="8008534537613507642">Reinstalar o Google Chrome</translation>
 <translation id="8013993649590906847">Se uma imagem não tiver uma descrição útil, o Chrome tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições.</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">Sobre o Google Chrome</translation>
+<translation id="822971176939352383">As seguintes contas não estão conectadas a nenhum perfil do Chrome. Se você quiser usar uma conta em outro perfil, remova-o primeiro.</translation>
 <translation id="8255190535488645436">O Google Chrome está usando sua câmera e seu microfone.</translation>
 <translation id="8286862437124483331">O Google Chrome está tentando mostrar senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="828798499196665338">Seu pai/mãe desativou "Permissões para sites, apps e extensões" no Chrome. Não é permitido ativar <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
@@ -320,8 +326,10 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="8394720698884623075">Confere se os URLs estão em uma lista de sites não seguros armazenada no Chrome</translation>
 <translation id="840084489713044809">O Google Chrome quer exportar suas senhas.</translation>
 <translation id="8416347857511542594">Saiba mais sobre a personalização de anúncios no Chrome</translation>
+<translation id="8421734018304082652">O Chrome bloqueou este arquivo porque ele está criptografado. Peça ao proprietário para o descriptografar</translation>
 <translation id="8433638294851456451">Para enviar um número daqui para seu smartphone Android, faça login no Chrome nos dois dispositivos.</translation>
 <translation id="8498858610309223613">Uma atualização especial de segurança para o Google Chrome acabou de ser aplicada. Reinicie agora, e suas guias serão restauradas.</translation>
+<translation id="8504220326736535258">O Chrome bloqueou esse arquivo porque ele contém malware</translation>
 <translation id="8516431725144212809">Seus interesses estimados pelo Chrome</translation>
 <translation id="8521348052903287641">Regra interna do Google Chrome Dev que permite o tráfego mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -336,6 +344,7 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="8649026945479135076">É comum os sites que você visita lembrarem dos seus interesses para personalizar sua experiência. Sites também podem armazenar informações sobre seus interesses com o Chrome.</translation>
 <translation id="8669527147644353129">Auxiliar do Google Chrome</translation>
 <translation id="8679801911857917785">Controla também qual página deve ser exibida quando você inicia o Chrome.</translation>
+<translation id="8684875378076460854">O Chrome recomenda verificar esse arquivo porque ele pode ser perigoso</translation>
 <translation id="8686817260976772516">Você pode usar os perfis do Chrome para separar todos seus dados nele. Crie perfis para amigos e familiares ou separe trabalho e lazer.</translation>
 <translation id="8712767363896337380">Falta pouco para a atualização terminar. Reinicie o Chrome para concluir.</translation>
 <translation id="873133009373065397">O Google Chrome não pode determinar ou definir o navegador padrão</translation>

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_FLEX_NG_FLEX_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_FLEX_NG_FLEX_LAYOUT_ALGORITHM_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
@@ -22,8 +23,10 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  explicit NGFlexLayoutAlgorithm(const NGLayoutAlgorithmParams& params,
-                                 DevtoolsFlexInfo* devtools = nullptr);
+  explicit NGFlexLayoutAlgorithm(
+      const NGLayoutAlgorithmParams& params,
+      DevtoolsFlexInfo* devtools = nullptr,
+      const HashMap<wtf_size_t, LayoutUnit>* cross_size_adjustments = nullptr);
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) override;
   const NGLayoutResult* Layout() override;
@@ -32,7 +35,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   const NGLayoutResult* RelayoutIgnoringChildScrollbarChanges();
   const NGLayoutResult* LayoutInternal();
 
-  void PlaceFlexItems(HeapVector<NGFlexLine>* flex_line_outputs);
+  void PlaceFlexItems(HeapVector<NGFlexLine>* flex_line_outputs,
+                      HeapVector<Member<LayoutBox>>* oof_children);
   void CalculateTotalIntrinsicBlockSize(bool use_empty_line_block_size);
 
   Length GetUsedFlexBasis(const NGBlockNode& child) const;
@@ -49,9 +53,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // size that would be indefinite if the box weren't a flex item.
   // See https://drafts.csswg.org/css-flexbox/#definite-sizes
   bool WillChildCrossSizeBeContainerCrossSize(const NGBlockNode& child) const;
-  LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
+  LayoutUnit AdjustMainSizeForAspectRatioCrossAxisMinAndMax(
       const NGBlockNode& child,
-      LayoutUnit content_suggestion,
+      LayoutUnit main_size,
       const MinMaxSizes& cross_min_max,
       const NGBoxStrut& border_padding_in_child_writing_mode);
 
@@ -71,7 +75,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       absl::optional<LayoutUnit> line_cross_size_for_stretch = absl::nullopt,
       absl::optional<LayoutUnit> block_offset_for_fragmentation = absl::nullopt,
       bool min_block_size_should_encompass_intrinsic_size = false) const;
-  void ConstructAndAppendFlexItems(bool is_computing_intrinsic_size = false);
+  void ConstructAndAppendFlexItems(
+      bool is_computing_intrinsic_size = false,
+      HeapVector<Member<LayoutBox>>* oof_children = nullptr);
   void ApplyFinalAlignmentAndReversals(
       HeapVector<NGFlexLine>* flex_line_outputs);
   NGLayoutResult::EStatus GiveItemsFinalPositionAndSize(
@@ -92,7 +98,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   bool MainAxisIsInlineAxis(const NGBlockNode& child) const;
   LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size) const;
 
-  void HandleOutOfFlowPositioned(NGBlockNode child);
+  void HandleOutOfFlowPositionedItems(
+      const HeapVector<Member<LayoutBox>>& oof_children);
 
   void AdjustButtonBaseline(LayoutUnit final_content_cross_size);
 
@@ -124,21 +131,22 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // https://www.w3.org/TR/css-break-3/#box-splitting
   void ConsumeRemainingFragmentainerSpace(
       LayoutUnit previously_consumed_block_size,
-      NGFlexLine* flex_line);
+      NGFlexLine* flex_line,
+      const NGFlexColumnBreakInfo* column_break_info = nullptr);
 
   // Insert a fragmentainer break before a row if necessary. Rows do not produce
   // a layout result, so when breaking before a row, we will insert a
-  // fragmentainer break before the first child in a row. |child| and
-  // |layout_result| should be those associated with the first child in the row.
-  // |row|, |row_break_between|, |row_index| and |has_container_separation| are
-  // specific to the row itself. See |::blink::BreakBeforeChildIfNeeded()| for
-  // more documentation.
+  // fragmentainer break before the first child in a row. |child| should be
+  // those associated with the first child in the row. |row|,
+  // |row_break_between|, |row_index|, |has_container_separation| and
+  // |is_first_for_row| are specific to the row itself. See
+  // |::blink::BreakBeforeChildIfNeeded()| for more documentation.
   NGBreakStatus BreakBeforeRowIfNeeded(const NGFlexLine& row,
                                        EBreakBetween row_break_between,
                                        wtf_size_t row_index,
                                        NGLayoutInputNode child,
-                                       const NGLayoutResult& layout_result,
-                                       bool has_container_separation);
+                                       bool has_container_separation,
+                                       bool is_first_for_row);
 
   // Move past the breakpoint before the row, if possible, and return true. Also
   // update the appeal of breaking before the row (if we're not going
@@ -148,13 +156,26 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   bool MovePastRowBreakPoint(NGBreakAppeal appeal_before,
                              LayoutUnit fragmentainer_block_offset,
                              LayoutUnit row_block_size,
-                             wtf_size_t row_index);
+                             wtf_size_t row_index,
+                             bool has_container_separation,
+                             bool breakable_at_start_of_container);
 
   // Add an early break for the column at the provided |index|.
   void AddColumnEarlyBreak(NGEarlyBreak* breakpoint, wtf_size_t index);
 
+  // Add the amount an item expanded by to the item offset adjustment of the
+  // flex line at the index directly after |flex_line_idx|, if there is one.
+  void AdjustOffsetForNextLine(HeapVector<NGFlexLine>* flex_line_outputs,
+                               wtf_size_t flex_line_idx,
+                               LayoutUnit item_expansion) const;
+
+  // If a flex item expands past the row cross-size as a result of
+  // fragmentation, we will abort and re-run layout with the appropriate row
+  // cross-size adjustments.
+  const NGLayoutResult* RelayoutWithNewRowSizes();
+
 #if DCHECK_IS_ON()
-  void CheckFlexLines(const HeapVector<NGFlexLine>& flex_line_outputs) const;
+  void CheckFlexLines(HeapVector<NGFlexLine>& flex_line_outputs) const;
 #endif
 
   const bool is_column_;
@@ -192,6 +213,15 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // return to an early break within multiple flex columns. This stores the
   // early breaks per column to be used when aborting layout.
   HeapVector<Member<NGEarlyBreak>> column_early_breaks_;
+
+  // If an item expands past the row block-end, we will re-run layout with the
+  // new cross size. Keep track of each such flex line index mapped to how much
+  // it should expand by in the next layout pass.
+  HashMap<wtf_size_t, LayoutUnit> row_cross_size_updates_;
+
+  // If set, that means that we are re-running layout with updated row
+  // cross-sizes. See |row_cross_size_updates_| for what this maps to.
+  const HashMap<wtf_size_t, LayoutUnit>* cross_size_adjustments_ = nullptr;
 };
 
 }  // namespace blink

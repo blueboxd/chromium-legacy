@@ -15,15 +15,15 @@ import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './crostini_port_forwarding_add_port_dialog.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared_css.js';
+import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 
-import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert, assertNotReached} from '//resources/js/assert.m.js';
 import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
 
 import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniDiskInfo, CrostiniPortActiveSetting, CrostiniPortProtocol, CrostiniPortSetting, DEFAULT_CROSTINI_CONTAINER, DEFAULT_CROSTINI_VM, MAX_VALID_PORT_NUMBER, MIN_VALID_PORT_NUMBER, PortState} from './crostini_browser_proxy.js';
@@ -169,7 +169,7 @@ Polymer({
   onShowRemoveAllPortsMenuClick_: function(event) {
     const menu = /** @type {!CrActionMenuElement} */
         (this.$.removeAllPortsMenu.get());
-    menu.showAt(/** @type {!Element} */ (event.target));
+    menu.showAt(/** @type {!HTMLElement} */ (event.target));
   },
 
   /**
@@ -186,7 +186,7 @@ Polymer({
     };
     const menu = /** @type {!CrActionMenuElement} */
         (this.$.removeSinglePortMenu.get());
-    menu.showAt(/** @type {!Element} */ (event.target));
+    menu.showAt(/** @type {!HTMLElement} */ (event.target));
   },
 
   /**

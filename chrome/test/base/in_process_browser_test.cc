@@ -141,23 +141,24 @@ namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class FakeDeviceSyncImplFactory
-    : public chromeos::device_sync::DeviceSyncImpl::Factory {
+    : public ash::device_sync::DeviceSyncImpl::Factory {
  public:
   FakeDeviceSyncImplFactory() = default;
   ~FakeDeviceSyncImplFactory() override = default;
 
-  // chromeos::device_sync::DeviceSyncImpl::Factory:
-  std::unique_ptr<chromeos::device_sync::DeviceSyncBase> CreateInstance(
+  // ash::device_sync::DeviceSyncImpl::Factory:
+  std::unique_ptr<ash::device_sync::DeviceSyncBase> CreateInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       PrefService* profile_prefs,
-      const chromeos::device_sync::GcmDeviceInfoProvider*
-          gcm_device_info_provider,
-      chromeos::device_sync::ClientAppMetadataProvider*
-          client_app_metadata_provider,
+      const ash::device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
+      ash::device_sync::ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::unique_ptr<base::OneShotTimer> timer) override {
-    return std::make_unique<chromeos::device_sync::FakeDeviceSync>();
+      std::unique_ptr<base::OneShotTimer> timer,
+      ash::device_sync::AttestationCertificatesSyncer::
+          GetAttestationCertificatesFunction
+              get_attestation_certificates_function) override {
+    return std::make_unique<ash::device_sync::FakeDeviceSync>();
   }
 };
 
@@ -433,7 +434,7 @@ void InProcessBrowserTest::SetUp() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Device sync (for multidevice "Better Together") is ash specific.
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(
+  ash::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(
       GetFakeDeviceSyncImplFactory());
 
   // Using a screenshot for clamshell to tablet mode transitions makes the flow
@@ -495,7 +496,7 @@ void InProcessBrowserTest::TearDown() {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
+  ash::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
   launch_browser_for_testing_ = nullptr;
 #endif
 }

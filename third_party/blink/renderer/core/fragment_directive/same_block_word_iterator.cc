@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/fragment_directive/same_block_word_iterator.h"
 
+#include "third_party/blink/renderer/core/core_export.h"
+
 namespace blink {
 
 template <typename Direction>
@@ -38,7 +40,7 @@ String SameBlockWordIterator<Direction>::TextFromStart() const {
 }
 
 template <typename Direction>
-void SameBlockWordIterator<Direction>::AdvanceNextWord() {
+bool SameBlockWordIterator<Direction>::AdvanceNextWord() {
   do {
     int pos =
         Direction::FindNextWordPos(current_node_text_, current_text_offset_);
@@ -47,9 +49,10 @@ void SameBlockWordIterator<Direction>::AdvanceNextWord() {
             .StripWhiteSpace();
     if (!next_word.IsEmpty()) {
       current_text_offset_ = pos;
-      return;
+      return true;
     }
   } while (NextNode());
+  return false;
 }
 
 template <typename Direction>

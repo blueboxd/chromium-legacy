@@ -500,6 +500,19 @@ const std::vector<SearchConcept>& GetPowerWithLaptopLidSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetPowerWithAdaptiveChargingSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_POWER_ADAPTIVE_CHARGING,
+       mojom::kPowerSubpagePath,
+       mojom::SearchResultIcon::kPower,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAdaptiveCharging},
+       {}},
+  });
+  return *tags;
+}
+
 bool AreScrollSettingsAllowed() {
   return base::FeatureList::IsEnabled(
       ::chromeos::features::kAllowScrollSettings);
@@ -677,10 +690,7 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddLocalizedString(
       "displayArrangementText",
-      base::FeatureList::IsEnabled(
-          ash::features::kKeyboardBasedDisplayArrangementInSettings)
-          ? IDS_SETTINGS_DISPLAY_ARRANGEMENT_WITH_KEYBOARD_TEXT
-          : IDS_SETTINGS_DISPLAY_ARRANGEMENT_TEXT);
+      IDS_SETTINGS_DISPLAY_ARRANGEMENT_WITH_KEYBOARD_TEXT);
 
   html_source->AddBoolean("unifiedDesktopAvailable",
                           IsUnifiedDesktopAvailable());
@@ -700,11 +710,6 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "allowDisplayAlignmentApi",
       base::FeatureList::IsEnabled(ash::features::kDisplayAlignAssist));
-
-  html_source->AddBoolean(
-      "allowKeyboardBasedDisplayArrangementInSettings",
-      base::FeatureList::IsEnabled(
-          ash::features::kKeyboardBasedDisplayArrangementInSettings));
 }
 
 void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
@@ -773,11 +778,19 @@ void AddDevicePowerStrings(content::WebUIDataSource* html_source) {
       {"powerIdleDisplayOn", IDS_SETTINGS_POWER_IDLE_DISPLAY_ON},
       {"powerIdleDisplayShutDown", IDS_SETTINGS_POWER_IDLE_SHUT_DOWN},
       {"powerIdleDisplayStopSession", IDS_SETTINGS_POWER_IDLE_STOP_SESSION},
+      {"powerAdaptiveChargingLabel",
+       IDS_SETTINGS_POWER_ADAPTIVE_CHARGING_LABEL},
+      {"powerAdaptiveChargingSubtext",
+       IDS_SETTINGS_POWER_ADAPTIVE_CHARGING_SUBTEXT},
+      {"powerIdleDisplayShutDown", IDS_SETTINGS_POWER_IDLE_SHUT_DOWN},
       {"powerLidSleepLabel", IDS_SETTINGS_POWER_LID_CLOSED_SLEEP_LABEL},
       {"powerLidSignOutLabel", IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT_LABEL},
       {"powerLidShutDownLabel", IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN_LABEL},
   };
   html_source->AddLocalizedStrings(kPowerStrings);
+
+  // TODO(b:216035280): create and link to real "learn more" webpage.
+  html_source->AddString("powerAdaptiveChargingLearnMoreUrl", u"about://blank");
 }
 
 // Mirrors enum of the same name in enums.xml.
@@ -816,6 +829,10 @@ DeviceSection::DeviceSection(Profile* profile,
     // Determine whether to show laptop lid power settings.
     power_manager_client->GetSwitchStates(base::BindOnce(
         &DeviceSection::OnGotSwitchStates, weak_ptr_factory_.GetWeakPtr()));
+
+    // Surface adaptive charging setting in search if the feature is enabled.
+    if (ash::features::IsAdaptiveChargingEnabled())
+      updater.AddSearchTags(GetPowerWithAdaptiveChargingSearchConcepts());
   }
 
   // Keyboard/mouse search tags are added/removed dynamically.
@@ -876,6 +893,9 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddDeviceStorageStrings(
       html_source, features::ShouldShowExternalStorageSettings(profile()));
   AddDevicePowerStrings(html_source);
+
+  html_source->AddBoolean("isAdaptiveChargingEnabled",
+                          ash::features::IsAdaptiveChargingEnabled());
 }
 
 void DeviceSection::AddHandlers(content::WebUI* web_ui) {
@@ -1023,6 +1043,7 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Setting::kPowerIdleBehaviorWhileOnBattery,
       mojom::Setting::kPowerSource,
       mojom::Setting::kSleepWhenLaptopLidClosed,
+      mojom::Setting::kAdaptiveCharging,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kPower, kPowerSettings, generator);
 }
@@ -1265,9 +1286,6 @@ void DeviceSection::AddDevicePointersStrings(
   html_source->AddString("hapticFeedbackLearnMoreLink",
                          GetHelpUrlWithBoard(chrome::kHapticFeedbackHelpURL));
 
-  html_source->AddBoolean(
-      "allowDisableMouseAcceleration",
-      base::FeatureList::IsEnabled(::features::kAllowDisableMouseAcceleration));
   html_source->AddBoolean("allowScrollSettings", AreScrollSettingsAllowed());
   html_source->AddBoolean("allowTouchpadHapticFeedback",
                           base::FeatureList::IsEnabled(

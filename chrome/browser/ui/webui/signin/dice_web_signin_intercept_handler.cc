@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "content/public/browser/web_ui.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -59,18 +60,18 @@ DiceWebSigninInterceptHandler::DiceWebSigninInterceptHandler(
 DiceWebSigninInterceptHandler::~DiceWebSigninInterceptHandler() = default;
 
 void DiceWebSigninInterceptHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "accept",
       base::BindRepeating(&DiceWebSigninInterceptHandler::HandleAccept,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "cancel",
       base::BindRepeating(&DiceWebSigninInterceptHandler::HandleCancel,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "guest", base::BindRepeating(&DiceWebSigninInterceptHandler::HandleGuest,
                                    base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "pageLoaded",
       base::BindRepeating(&DiceWebSigninInterceptHandler::HandlePageLoaded,
                           base::Unretained(this)));
@@ -114,23 +115,25 @@ const AccountInfo& DiceWebSigninInterceptHandler::intercepted_account() {
   return bubble_parameters_.intercepted_account;
 }
 
-void DiceWebSigninInterceptHandler::HandleAccept(const base::ListValue* args) {
+void DiceWebSigninInterceptHandler::HandleAccept(
+    const base::Value::List& args) {
   if (callback_)
     std::move(callback_).Run(SigninInterceptionUserChoice::kAccept);
 }
 
-void DiceWebSigninInterceptHandler::HandleCancel(const base::ListValue* args) {
+void DiceWebSigninInterceptHandler::HandleCancel(
+    const base::Value::List& args) {
   if (callback_)
     std::move(callback_).Run(SigninInterceptionUserChoice::kDecline);
 }
 
-void DiceWebSigninInterceptHandler::HandleGuest(const base::ListValue* args) {
+void DiceWebSigninInterceptHandler::HandleGuest(const base::Value::List& args) {
   if (callback_)
     std::move(callback_).Run(SigninInterceptionUserChoice::kGuest);
 }
 
 void DiceWebSigninInterceptHandler::HandlePageLoaded(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   // Update the account info and the images.
@@ -152,7 +155,8 @@ void DiceWebSigninInterceptHandler::HandlePageLoaded(
   if (primary_account().given_name.empty())
     bubble_parameters_.primary_account.given_name = primary_account().email;
 
-  const base::Value& callback_id = args->GetListDeprecated()[0];
+  DCHECK(!args.empty());
+  const base::Value& callback_id = args[0];
   ResolveJavascriptCallback(callback_id, GetInterceptionParametersValue());
 }
 
@@ -238,6 +242,8 @@ std::string DiceWebSigninInterceptHandler::GetHeaderText() {
     case DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitch:
       return intercepted_account().given_name;
     case DiceWebSigninInterceptor::SigninInterceptionType::kEnterpriseForced:
+    case DiceWebSigninInterceptor::SigninInterceptionType::
+        kEnterpriseAcceptManagement:
     case DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitchForced:
       NOTREACHED() << "This interception type is not handled by a bubble";
       return std::string();
@@ -276,6 +282,8 @@ std::string DiceWebSigninInterceptHandler::GetBodyText() {
     case DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitch:
       return l10n_util::GetStringUTF8(
           IDS_SIGNIN_DICE_WEB_INTERCEPT_SWITCH_BUBBLE_DESC);
+    case DiceWebSigninInterceptor::SigninInterceptionType::
+        kEnterpriseAcceptManagement:
     case DiceWebSigninInterceptor::SigninInterceptionType::kEnterpriseForced:
     case DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitchForced:
       NOTREACHED() << "This interception type is not handled by a bubble";

@@ -23,7 +23,13 @@ TutorialService::TutorialService(
     TutorialRegistry* tutorial_registry,
     HelpBubbleFactoryRegistry* help_bubble_factory_registry)
     : tutorial_registry_(tutorial_registry),
-      help_bubble_factory_registry_(help_bubble_factory_registry) {}
+      help_bubble_factory_registry_(help_bubble_factory_registry) {
+  toggle_focus_subscription_ =
+      help_bubble_factory_registry->AddToggleFocusCallback(
+          base::BindRepeating(&TutorialService::OnFocusToggledForAccessibility,
+                              base::Unretained(this)));
+}
+
 TutorialService::~TutorialService() = default;
 
 bool TutorialService::StartTutorial(TutorialIdentifier id,
@@ -54,6 +60,7 @@ bool TutorialService::StartTutorial(TutorialIdentifier id,
 
   // Start the tutorial and mark the params used to created it for restarting.
   running_tutorial_->Start();
+  toggle_focus_count_ = 0;
 
   return true;
 }
@@ -72,13 +79,18 @@ bool TutorialService::RestartTutorial() {
     return false;
   }
 
+  // Note: if we restart the tutorial, we won't record whether the user pressed
+  // the pane focus key to focus the help bubble until the user actually decides
+  // they're finished, but we also won't reset the count, so at the end we can
+  // record the total.
+  // TODO(dfried): decide if this is actually the correct behavior.
   running_tutorial_was_restarted_ = true;
   running_tutorial_->Start();
 
   return true;
 }
 
-void TutorialService::AbortTutorial() {
+void TutorialService::AbortTutorial(absl::optional<int> abort_step) {
   // For various reasons, we could get called here while e.g. tearing down the
   // interaction sequence. We only want to actually run AbortTutorial() or
   // CompleteTutorial() exactly once, so we won't continue if the tutorial has
@@ -94,8 +106,9 @@ void TutorialService::AbortTutorial() {
   if (running_tutorial_was_restarted_)
     return CompleteTutorial();
 
-  // TODO:(crbug.com/1295165) provide step number information from the
-  // interaction sequence into the abort callback.
+  if (abort_step.has_value())
+    running_tutorial_creation_params_->description_->histograms
+        ->RecordAbortStep(abort_step.value());
 
   // Log the failure of completion for the tutorial.
   if (running_tutorial_creation_params_->description_->histograms)
@@ -105,6 +118,12 @@ void TutorialService::AbortTutorial() {
 
   // Reset the tutorial and call the external abort callback.
   ResetRunningTutorial();
+
+  // Record how many times the user toggled focus during the tutorial using
+  // the keyboard.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Tutorial.FocusToggleCount.Aborted",
+                              toggle_focus_count_, 0, 50, 6);
+  toggle_focus_count_ = 0;
 
   if (aborted_callback_) {
     std::move(aborted_callback_).Run();
@@ -121,6 +140,13 @@ void TutorialService::CompleteTutorial() {
   UMA_HISTOGRAM_BOOLEAN("Tutorial.Completion", true);
 
   ResetRunningTutorial();
+
+  // Record how many times the user toggled focus during the tutorial using
+  // the keyboard.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Tutorial.FocusToggleCount.Completed",
+                              toggle_focus_count_, 0, 50, 6);
+  toggle_focus_count_ = 0;
+
   std::move(completed_callback_).Run();
 }
 
@@ -145,4 +171,9 @@ void TutorialService::ResetRunningTutorial() {
   running_tutorial_creation_params_.reset();
   running_tutorial_was_restarted_ = false;
   currently_displayed_bubble_.reset();
+}
+
+void TutorialService::OnFocusToggledForAccessibility(HelpBubble* bubble) {
+  if (bubble == currently_displayed_bubble_.get())
+    ++toggle_focus_count_;
 }

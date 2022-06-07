@@ -9,14 +9,14 @@
 #include <ostream>
 #include <string>
 
+#include "ash/components/multidevice/software_feature.h"
+#include "ash/components/multidevice/software_feature_state.h"
 #include "ash/services/device_sync/proto/cryptauth_better_together_device_metadata.pb.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/multidevice/software_feature_state.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 
@@ -100,6 +100,11 @@ std::ostream& operator<<(std::ostream& stream, const CryptAuthDevice& device);
 
 }  // namespace device_sync
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos::device_sync {
+using ::ash::device_sync::CryptAuthDevice;
+}
 
 #endif  // ASH_SERVICES_DEVICE_SYNC_CRYPTAUTH_DEVICE_H_

@@ -6,6 +6,7 @@
 #define BASE_TRACE_EVENT_MALLOC_DUMP_PROVIDER_H_
 
 #include "base/allocator/buildflags.h"
+#include "base/base_export.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
@@ -25,6 +26,8 @@
 namespace base {
 namespace trace_event {
 
+class MemoryAllocatorDump;
+
 // Dump provider which collects process-wide memory stats.
 class BASE_EXPORT MallocDumpProvider : public MemoryDumpProvider {
  public:
@@ -41,17 +44,14 @@ class BASE_EXPORT MallocDumpProvider : public MemoryDumpProvider {
   bool OnMemoryDump(const MemoryDumpArgs& args,
                     ProcessMemoryDump* pmd) override;
 
-  // Used by out-of-process heap-profiling. When malloc is profiled by an
-  // external process, that process will be responsible for emitting metrics on
-  // behalf of this one. Thus, MallocDumpProvider should not do anything.
-  void EnableMetrics();
-  void DisableMetrics();
-
  private:
   friend struct DefaultSingletonTraits<MallocDumpProvider>;
 
   MallocDumpProvider();
   ~MallocDumpProvider() override;
+
+  void ReportSyscallCount(uint64_t syscall_count,
+                          MemoryAllocatorDump* malloc_dump);
 
   bool emit_metrics_on_memory_dump_
       GUARDED_BY(emit_metrics_on_memory_dump_lock_) = true;
@@ -105,14 +105,6 @@ class BASE_EXPORT MemoryDumpPartitionStatsDumper final
   bool detailed_;
 };
 
-class MemoryAllocatorDump;
-
-BASE_EXPORT void ReportPartitionAllocThreadCacheStats(
-    ProcessMemoryDump* pmd,
-    MemoryAllocatorDump* dump,
-    const ThreadCacheStats& stats,
-    const std::string& metrics_suffix,
-    bool detailed);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
 }  // namespace trace_event

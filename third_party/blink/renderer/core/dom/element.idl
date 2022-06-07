@@ -60,8 +60,6 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     [RaisesException, CEReactions] Attr? setAttributeNodeNS(Attr attr);
     [RaisesException, CEReactions] Attr removeAttributeNode(Attr attr);
 
-    [RuntimeEnabled=EditContext] attribute EditContext? editContext;
-
     [RaisesException, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
     [PerWorldBindings, ImplementedAs=OpenShadowRoot] readonly attribute ShadowRoot? shadowRoot;
 
@@ -138,6 +136,12 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     // Non-standard API
     [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
 
+    // The Popup API
+    [MeasureAs=ElementShowPopup,RuntimeEnabled=HTMLPopupAttribute] void showPopup();
+    [MeasureAs=ElementHidePopup,RuntimeEnabled=HTMLPopupAttribute] void hidePopup();
+    [Unscopable,CEReactions,RuntimeEnabled=HTMLPopupAttribute,Reflect] attribute DOMString popup;
+    [CEReactions,RuntimeEnabled=HTMLPopupAttribute,Reflect] attribute boolean initiallyOpen;
+
     // Experimental accessibility API
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedRole;
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedName;
@@ -150,7 +154,6 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     attribute EventHandler onbeforecut;
     attribute EventHandler onbeforepaste;
     attribute EventHandler onsearch;
-    [RuntimeEnabled=BeforeMatchEvent] attribute EventHandler onbeforematch;
 
     // Element Timing
     [CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;

@@ -17,8 +17,6 @@ extern const char kPreviewRequestID[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kPreviewUIID[];
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const char kSettingCapabilities[];
-COMPONENT_EXPORT(PRINTING_BASE)
-extern const char kSettingCloudPrintId[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kSettingCollate[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kSettingColor[];
 COMPONENT_EXPORT(PRINTING_BASE)
@@ -179,7 +177,7 @@ enum HorizontalHeaderFooterPosition { LEFT, CENTER, RIGHT };
 enum VerticalHeaderFooterPosition { TOP, BOTTOM };
 
 // Must match print_preview.ScalingType in
-// chrome/browser/resources/print_preview/data/scaling.js
+// chrome/browser/resources/print_preview/data/scaling.ts
 enum ScalingType {
   DEFAULT,
   FIT_TO_PAGE,

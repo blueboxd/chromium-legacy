@@ -138,6 +138,7 @@
 #include "services/audio/service.h"
 #include "services/data_decoder/public/cpp/service_provider.h"
 #include "services/data_decoder/public/mojom/data_decoder_service.mojom.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "skia/ext/event_tracer_impl.h"
@@ -939,11 +940,8 @@ int BrowserMainLoop::CreateThreads() {
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
       base::BindOnce(
           [](BrowserMainLoop* browser_main_loop) {
-            // Enable main thread and thread pool best effort queues. Non-best
-            // effort queues will already have been enabled. This will enable
-            // all queues on all browser threads, so we need to do this after
-            // the threads have been created, i.e. here.
-            content::BrowserTaskExecutor::EnableAllQueues();
+            // Informs BrowserTaskExecutor that startup is complete.
+            content::BrowserTaskExecutor::OnStartupComplete();
             browser_main_loop->scoped_best_effort_execution_fence_.reset();
           },
           // Main thread tasks can't run after BrowserMainLoop destruction.
@@ -985,16 +983,15 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
     result_code_ = parts_->PreMainMessageLoopRun();
 
   // ShellBrowserMainParts initializes a ShellBrowserContext with user data
-  // directory only in PreMainMessageLoopRun(). FirstPartySetsHandler needs to
-  // access this directory, hence triggering after this stage has run.
-  FirstPartySetsHandlerImpl::GetInstance()->SendAndUpdatePersistedSets(
+  // directory only in PreMainMessageLoopRun(). First-Party Sets handler needs
+  // to access this directory, hence triggering after this stage has run.
+  FirstPartySetsHandlerImpl::GetInstance()->Init(
       GetContentClient()->browser()->GetFirstPartySetsDirectory(),
-      /*send_sets=*/
-      base::BindOnce([](base::OnceCallback<void(const std::string&)> callback,
-                        const std::string& sets) {
-        content::GetNetworkService()
-            ->SetPersistedFirstPartySetsAndGetCurrentSets(sets,
-                                                          std::move(callback));
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          network::switches::kUseFirstPartySet),
+      base::BindOnce([](const base::flat_map<net::SchemefulSite,
+                                             net::SchemefulSite>& sets) {
+        content::GetNetworkService()->SetFirstPartySets(sets);
       }));
 
   variations::MaybeScheduleFakeCrash();

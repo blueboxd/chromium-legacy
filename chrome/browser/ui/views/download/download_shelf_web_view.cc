@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -53,7 +54,7 @@ bool DownloadShelfWebView::HandleContextMenu(
 void DownloadShelfWebView::OnThemeChanged() {
   views::WebView::OnThemeChanged();
   SetBorder(views::CreateSolidSidedBorder(
-      1, 0, 0, 0,
+      gfx::Insets::TLBR(1, 0, 0, 0),
       GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR)));
 }

@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "content/browser/notifications/notification_event_dispatcher_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/platform_notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/notifications/notification_constants.h"
@@ -81,12 +81,14 @@ BlinkNotificationServiceImpl::BlinkNotificationServiceImpl(
     PlatformNotificationContextImpl* notification_context,
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    RenderProcessHost* render_process_host,
     const url::Origin& origin,
     const GURL& document_url,
     mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
     : notification_context_(notification_context),
       browser_context_(browser_context),
       service_worker_context_(std::move(service_worker_context)),
+      render_process_host_id_(render_process_host->GetID()),
       origin_(origin),
       document_url_(document_url),
       receiver_(this, std::move(receiver)) {
@@ -176,12 +178,17 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotification(
 blink::mojom::PermissionStatus
 BlinkNotificationServiceImpl::CheckPermissionStatus() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TOOD(crbug.com/987654): It is odd that a service instance can be created
+
+  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_host_id_);
+  if (!rph)
+    return blink::mojom::PermissionStatus::DENIED;
+
+  // TODO(crbug.com/987654): It is odd that a service instance can be created
   // for cross-origin subframes, yet the instance is completely oblivious of
   // whether it is serving a top-level browsing context or an embedded one.
   return browser_context_->GetPermissionController()
-      ->GetPermissionStatusForServiceWorker(PermissionType::NOTIFICATIONS,
-                                            origin_);
+      ->GetPermissionStatusForWorker(PermissionType::NOTIFICATIONS, rph,
+                                     origin_);
 }
 
 bool BlinkNotificationServiceImpl::ValidateNotificationDataAndResources(

@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "device/fido/authenticator_supported_options.h"
@@ -167,6 +166,10 @@ void WinWebAuthnApiAuthenticator::Cancel() {
   win_api_->CancelCurrentOperation(&cancellation_id_);
 }
 
+FidoAuthenticator::Type WinWebAuthnApiAuthenticator::GetType() const {
+  return Type::kWinNative;
+}
+
 std::string WinWebAuthnApiAuthenticator::GetId() const {
   return "WinWebAuthnApiAuthenticator";
 }
@@ -188,10 +191,6 @@ WinWebAuthnApiAuthenticator::AuthenticatorTransport() const {
   // The Windows API could potentially use any external or
   // platform authenticator.
   return absl::nullopt;
-}
-
-bool WinWebAuthnApiAuthenticator::IsWinNativeApiAuthenticator() const {
-  return true;
 }
 
 bool WinWebAuthnApiAuthenticator::SupportsCredProtectExtension() const {

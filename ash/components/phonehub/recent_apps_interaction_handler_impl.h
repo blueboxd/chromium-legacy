@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -56,6 +57,7 @@ class RecentAppsInteractionHandlerImpl
 
   // MultideviceFeatureAccessManager::Observer:
   void OnNotificationAccessChanged() override;
+  void OnAppsAccessChanged() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RecentAppsInteractionHandlerTest, RecentAppsUpdated);

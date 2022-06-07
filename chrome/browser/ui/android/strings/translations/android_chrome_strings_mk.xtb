@@ -89,6 +89,7 @@
 <translation id="1409879593029778104">Преземањето на <ph name="FILE_NAME" /> е спречено затоа што датотеката веќе постои.</translation>
 <translation id="1414981605391750300">Се воспоставува контакт со Google… Ова може да потрае</translation>
 <translation id="1416550906796893042">Верзија на апликација</translation>
+<translation id="1428770807407000502">Да се исклучи синхронизацијата?</translation>
 <translation id="1430915738399379752">Печати</translation>
 <translation id="1436784010935106834">Отстрането</translation>
 <translation id="1448440926884431741">Организирајте ги следените производи во „Обележувачи“</translation>
@@ -184,7 +185,6 @@
 <translation id="200114059308480249">Да се вклучи околниот текст во пребарувањата на Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# датотека}one{# датотека}other{# датотеки}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> ќе се отвори во Chrome. Ако продолжите, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење на Google<ph name="END_LINK1" />и <ph name="BEGIN_LINK2" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_LINK2" />. Важи и <ph name="BEGIN_LINK3" />Политиката за приватност<ph name="END_LINK3" />.</translation>
-<translation id="2019145049163614359">Да се отстрани интересот?</translation>
 <translation id="2020309681647789787">Ќе ја задржите историјата на сите ваши синхронизирани уреди за да може да продолжите со активностите</translation>
 <translation id="2021896219286479412">Контроли на сајтот на цел екран</translation>
 <translation id="2038563949887743358">Вклучи „Барај локација на работна површина“</translation>
@@ -213,6 +213,7 @@
 <translation id="2141396931810938595">Според користењето</translation>
 <translation id="214888715418183969">Изберете какви податоци за користењето сакате да споделувате со Chrome. Метриката што ја споделувате ќе се користи за подобрување на функциите, изведбата и стабилноста на Chrome.</translation>
 <translation id="2149973817440762519">Измени Обележувач</translation>
+<translation id="2155214902713132423">Овој начин на потврда не е достапен за уредов. Изберете друга опција на другиот уред.</translation>
 <translation id="2157851137955077194">За да споделите нешто од телефонот на друг уред, вклучете ја синхронизацијата во поставките за Chrome на двата уреди</translation>
 <translation id="2158408438301413340">Chrome не може да ги провери сите лозинки</translation>
 <translation id="2169830938017475061">Сега</translation>
@@ -733,7 +734,6 @@
 <translation id="5091199029769593641">Наскоро ќе гледате стории од <ph name="SITE_NAME" /> при отворање нова картичка. Сајтовите што ги следите се зачувуваат во сметката на Google. Може да управувате со нив во поставките за Discover.</translation>
 <translation id="5091249083535528968">Проширени податоци за користењето</translation>
 <translation id="509429900233858213">Настана грешка.</translation>
-<translation id="5098190077610408701">Да се додаде интересот?</translation>
 <translation id="5102401324271069229">Ако некој сајт се обиде да ви ја украде лозинката или кога ќе преземете штетна датотека, Chrome може да испрати URL-адреси, вклучувајќи и делови од содржините на страницата, во „Безбедно прелистување“</translation>
 <translation id="510275257476243843">Остана 1 час</translation>
 <translation id="5115811374190515607">до <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +879,7 @@
 <translation id="5906513782029855931">„Помошникот на Google“ треба да ги знае URL-адресите на сајтовите за да ви помага да извршувате задачи. Може да го исклучите „Помошникот“ во поставките за Chrome.</translation>
 <translation id="5916664084637901428">Вклучено</translation>
 <translation id="5919204609460789179">Ажурирајте го <ph name="PRODUCT_NAME" /> за да започнете со синхронизирање</translation>
+<translation id="5938820472109305350">Додајте <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Се користи Google за пребарување</translation>
 <translation id="5945035219773565305">Моментална препорака:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">Се прикажува активна страница</translation>
@@ -898,7 +899,6 @@
 <translation id="6033245666633565791">Со <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome развива нови технологии за заштита од следење на повеќе сајтови, додека истовремено го зачувува отворениот интернет.
 
 Пробната верзија на Privacy Sandbox сѐ уште активно се развива и таа е достапна само во одредени региони. Засега, сајтовите може да ја испробаат Privacy Sandbox, а притоа да продолжат да ги користат тековните веб-технологии, како што се колачињата од трети страни.</translation>
-<translation id="6036057147555329831">Дополнителен ICU</translation>
 <translation id="6039379616847168523">Скокнете на следната картичка</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="604124094241169006">Автоматски</translation>
@@ -1023,6 +1023,7 @@
 <translation id="663674369910034433">За повеќе поставки што се однесуваат на приватноста, безбедноста и прибирањето податоци, одете на <ph name="BEGIN_LINK1" />Синхронизација<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Услуги на Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">За да се подобри апликацијата, Chrome испраќа податоци за користењето и падовите во Google. <ph name="BEGIN_UMA_LINK" />Управувајте<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Блокирај цело време</translation>
+<translation id="6641780377503683465">Отстранете <ph name="INTEREST" /></translation>
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="6645629752388991326">Контролирајте кои уреди можат да се најават користејќи го уредов како безбедносен клуч.</translation>
 <translation id="6648459603387803038">Администраторот може далечински да го менува поставувањето на прелистувачот. Со активноста на уредов може да се управува и надвор од Chrome.</translation>

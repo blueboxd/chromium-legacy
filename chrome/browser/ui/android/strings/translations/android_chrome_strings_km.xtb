@@ -184,7 +184,6 @@
 <translation id="200114059308480249">រួមបញ្ចូល​អក្សរដែលនៅជុំវិញ​នៅក្នុង​ការស្វែងរកនៅលើ Google ឬ?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{ឯកសារ #}other{ឯកសារ #}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" /> នឹងបើកនៅក្នុង Chrome។ ប្រសិនបើបន្ត មានន័យថាអ្នកយល់ព្រមតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់ Google<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />លក្ខខណ្ឌប្រើប្រាស់បន្ថែមរបស់ Google Chrome និង Chrome OS<ph name="END_LINK2" />។ <ph name="BEGIN_LINK3" />គោលការណ៍​ឯកជនភាព<ph name="END_LINK3" />ក៏អនុវត្តផងដែរ។</translation>
-<translation id="2019145049163614359">ដកចំណាប់អារម្មណ៍ចេញឬ?</translation>
 <translation id="2020309681647789787">អ្នកនឹងមានប្រវត្តិរបស់អ្នកនៅលើឧបករណ៍ដែលបានធ្វើ​សម​កាល​កម្មទាំងអស់របស់អ្នក ដើម្បីអាចឱ្យអ្នកបន្តអ្វីដែលអ្នកកំពុងបានធ្វើ</translation>
 <translation id="2021896219286479412">ការគ្រប់គ្រងទំព័រពេញអេក្រង់</translation>
 <translation id="2038563949887743358">បើកសំណើគេហទំព័រសម្រាប់កុំព្យូទ័រ</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">ផ្អែកលើការប្រើប្រាស់របស់អ្នក</translation>
 <translation id="214888715418183969">ជ្រើសរើសអ្វី​ដែលអ្នកយល់ថាអាចចែករំលែក​ជាមួយ Chrome បាន។ មេទ្រិកដែលអ្នកចែករំលែក​នឹងត្រូវបានប្រើ ដើម្បីជួយ​កែលម្អមុខងារ ប្រតិបត្តិការ និងស្ថិរភាពរបស់ Chrome។</translation>
 <translation id="2149973817440762519">កែប្រែចំណាំ</translation>
+<translation id="2155214902713132423">មិនអាចប្រើវិធី​ផ្ទៀងផ្ទាត់​នេះសម្រាប់ឧបករណ៍នេះបានទេ។ ជ្រើសរើសជម្រើសផ្សេងនៅលើឧបករណ៍ផ្សេងទៀតរបស់អ្នក។</translation>
 <translation id="2157851137955077194">ដើម្បី​ចែករំលែក​អ្វីមួយ​ពី​ទូរសព្ទរបស់អ្នកទៅឧបករណ៍​ផ្សេងទៀត សូមបើក​សមកាលកម្ម​នៅក្នុងការកំណត់ Chrome នៅលើឧបករណ៍ទាំងពីរ</translation>
 <translation id="2158408438301413340">Chrome មិនអាចពិនិត្យ​ពាក្យសម្ងាត់​ទាំងអស់បានទេ</translation>
 <translation id="2169830938017475061">ឥឡូវ​នេះ</translation>
@@ -267,7 +267,7 @@
 <translation id="2472163211318554013">ចូលគណនី ដើម្បីទទួលបាន​អត្ថប្រយោជន៍​ច្រើនបំផុតពី Chrome</translation>
 <translation id="247737702124049222">ការពណ៌នាអំពី​រូបភាព​ត្រូវបានបើក</translation>
 <translation id="2482878487686419369">ការជូនដំណឹង</translation>
-<translation id="2485422356828889247">លុប</translation>
+<translation id="2485422356828889247">លុបការតំឡើង</translation>
 <translation id="2494974097748878569">Google ជំនួយការនៅក្នុង Chrome</translation>
 <translation id="2496180316473517155">ប្រវត្តិរុករក</translation>
 <translation id="2497852260688568942">សមកាលកម្មបានបិទដោយអ្នកគ្រប់គ្រងរបស់អ្នក</translation>
@@ -733,7 +733,6 @@
 <translation id="5091199029769593641">ក្នុងពេលឆាប់ៗនេះ អ្នកនឹងមើលឃើញអត្ថបទពី <ph name="SITE_NAME" /> នៅពេលអ្នកបើកផ្ទាំងថ្មី។ គេហទំព័រដែលអ្នកតាមដានត្រូវបានរក្សាទុកនៅក្នុងគណនី Google របស់អ្នក។ អ្នកអាចគ្រប់គ្រងគេហទំព័រទាំងនេះនៅក្នុងការកំណត់ Discover។</translation>
 <translation id="5091249083535528968">ទិន្នន័យប្រើប្រាស់​បន្ថែម</translation>
 <translation id="509429900233858213">កំហុសឆ្គងបានកើតឡើង។</translation>
-<translation id="5098190077610408701">បញ្ចូលចំណាប់អារម្មណ៍ឬ?</translation>
 <translation id="5102401324271069229">ប្រសិនបើ​គេហទំព័រណាមួយ​ព្យាយាមលួចពាក្យសម្ងាត់​របស់អ្នក ឬនៅពេលអ្នកទាញយក​ឯកសារដែល​អាចបង្កគ្រោះថ្នាក់នោះ Chrome អាចបញ្ជូន URL រួមជាមួយផ្នែកនៃ​ខ្លឹមសារទំព័រ ទៅការរុករក​ដោយសុវត្ថិភាព</translation>
 <translation id="510275257476243843">នៅសល់ 1 ម៉ោងទៀត</translation>
 <translation id="5115811374190515607">ទៅ <ph name="PRODUCT_NAME" /></translation>
@@ -879,6 +878,7 @@
 <translation id="5906513782029855931">ការស្គាល់ URL របស់គេហទំព័រអាចឱ្យ Google Assistant ជួយអ្នកក្នុងការបំពេញកិច្ចការ។ អ្នក​អាចបិទ Assistant នៅក្នុងការកំណត់ Chrome។</translation>
 <translation id="5916664084637901428">បើក</translation>
 <translation id="5919204609460789179">អាប់ដេត <ph name="PRODUCT_NAME" /> ដើម្បីចាប់ផ្តើមធ្វើសមកាលកម្ម</translation>
+<translation id="5938820472109305350">បញ្ចូល <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">ប្រើ Google ដើម្បីធ្វើការស្វែងរក</translation>
 <translation id="5945035219773565305">ការណែនាំបច្ចុប្បន្ន៖  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">កំពុងមើល​ទំព័របន្តផ្ទាល់</translation>
@@ -898,7 +898,6 @@
 <translation id="6033245666633565791">Chrome កំពុងអភិវឌ្ឍបច្ចេកវិទ្យាថ្មី ដើម្បីការពារ​អ្នកពី​ការប្រមូល​ទិន្នន័យរុករក​នៅលើគេហទំព័រ​នានា ដោយរក្សាបណ្ដាញចំហ តាមរយៈ <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />។
 
 ការសាកល្បង Privacy Sandbox កំពុងស្ថិតនៅក្នុង​ការអភិវឌ្ឍសកម្ម​នៅឡើយ និង​អាចប្រើបាន​នៅក្នុងតំបន់​ដែលបានជ្រើសរើស។ សម្រាប់ពេលនេះ គេហទំព័រអាចសាកល្បងប្រើ Privacy Sandbox ខណៈពេលកំពុងបន្តប្រើ​បច្ចេកវិទ្យា​បណ្ដាញ​បច្ចុប្បន្នដូចជា ខូគីភាគីទីបី​ជាដើម។</translation>
-<translation id="6036057147555329831">ICU បន្ថែម</translation>
 <translation id="6039379616847168523">លោតទៅផ្ទាំងបន្ទាប់</translation>
 <translation id="6040143037577758943">បិទ</translation>
 <translation id="604124094241169006">ស្វ័យប្រវត្តិ</translation>
@@ -1023,6 +1022,7 @@
 <translation id="663674369910034433">សម្រាប់​ការកំណត់​ជាច្រើនទៀត ដែលពាក់ព័ន្ធនឹង​ឯកជន​ភាព សុវត្ថិភាព និង​ការ​ប្រមូល​ទិន្នន័យ សូមមើល<ph name="BEGIN_LINK1" />សមកាលកម្ម​<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />សេវាកម្ម Google<ph name="END_LINK2" /></translation>
 <translation id="6637100877383020115">Chrome ផ្ញើទិន្នន័យ​អំពីការគាំង និង​ការប្រើប្រាស់ទៅ Google ដើម្បីជួយកែលម្អ​កម្មវិធីខ្លួន។ <ph name="BEGIN_UMA_LINK" />គ្រប់គ្រង<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">ទប់ស្កាត់គ្រប់ពេល</translation>
+<translation id="6641780377503683465">ដក <ph name="INTEREST" /> ចេញ</translation>
 <translation id="6643016212128521049">ជម្រះ</translation>
 <translation id="6645629752388991326">គ្រប់គ្រងថាតើឧបករណ៍ណាខ្លះអាចចូលគណនីដោយប្រើឧបករណ៍នេះជាសោសុវត្ថិភាពបាន​។</translation>
 <translation id="6648459603387803038">អ្នកគ្រប់គ្រង​របស់អ្នក​អាចប្ដូរ​ការរៀបចំ​កម្មវិធីរុករកតាមអ៊ីនធឺណិត​របស់អ្នក​ពីចម្ងាយបាន។ សកម្មភាព​នៅលើឧបករណ៍នេះ​ក៏អាចត្រូវបាន​គ្រប់គ្រងនៅក្រៅ Chrome ផងដែរ។</translation>

@@ -34,6 +34,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decoder_buffer_queue.h"
@@ -119,7 +120,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
 
   // DemuxerStream implementation.
   Type type() const override;
-  Liveness liveness() const override;
+  StreamLiveness liveness() const override;
   void Read(ReadCB read_cb) override;
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
@@ -129,7 +130,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   bool IsEnabled() const;
   void SetEnabled(bool enabled, base::TimeDelta timestamp);
 
-  void SetLiveness(Liveness liveness);
+  void SetLiveness(StreamLiveness liveness);
 
   // Returns the range of buffered data in this stream.
   Ranges<base::TimeDelta> GetBufferedRanges() const;
@@ -185,8 +186,8 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   std::unique_ptr<AudioDecoderConfig> audio_config_;
   std::unique_ptr<VideoDecoderConfig> video_config_;
   raw_ptr<MediaLog> media_log_;
-  Type type_;
-  Liveness liveness_;
+  Type type_ = UNKNOWN;
+  StreamLiveness liveness_ = StreamLiveness::kUnknown;
   base::TimeDelta duration_;
   bool end_of_stream_;
   base::TimeDelta last_packet_timestamp_;
@@ -332,7 +333,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // the text renderer to bind each text stream to the cue rendering engine.
   void AddTextStreams();
 
-  void SetLiveness(DemuxerStream::Liveness liveness);
+  void SetLiveness(StreamLiveness liveness);
 
   void SeekInternal(base::TimeDelta time, base::OnceClosure seek_cb);
   void OnVideoSeekedForTrackChange(DemuxerStream* video_stream,

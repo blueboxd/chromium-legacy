@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
@@ -19,7 +20,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"

@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -725,7 +726,9 @@ void FileSystemChooseEntryFunction::BuildSuggestion(
     base::FilePath* suggested_name,
     base::FilePath::StringType* suggested_extension) {
   if (opt_name) {
-    *suggested_name = base::FilePath::FromUTF8Unsafe(*opt_name);
+    std::string name;
+    base::ReplaceChars(*opt_name, "%", "_", &name);
+    *suggested_name = base::FilePath::FromUTF8Unsafe(name);
 
     // Don't allow any path components; shorten to the base name. This should
     // result in a relative path, but in some cases may not. Clear the

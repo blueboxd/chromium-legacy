@@ -8,6 +8,8 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
 
@@ -32,8 +34,6 @@ ScopedJavaLocalRef<jobject> ToJavaDropData(const DropData& drop_data) {
     jtext = ConvertUTF16ToJavaString(env, *drop_data.text);
   }
 
-  // TODO(https://crbug.com/1289393): Revisit if drop_data.url is the correct
-  // link for image with links.
   ScopedJavaLocalRef<jobject> jgurl;
   if (!drop_data.url.is_empty()) {
     jgurl = url::GURLAndroid::FromNativeGURL(env, drop_data.url);
@@ -41,17 +41,36 @@ ScopedJavaLocalRef<jobject> ToJavaDropData(const DropData& drop_data) {
   }
 
   // If file_contents is not empty, user is trying to drag image out of the
-  // web contents.
+  // web contents. If the image contains a link, the link URL, represented by
+  // |jgurl|, will be added to the image clip data.
+  // drop_data.file_contents_source_url represents the image source URL;
+  // drop_data.url represents the URL that is linked to the image, which may not
+  // necessarily be the image source URL and is the desired URL to be added to
+  // the image clip data.
   ScopedJavaLocalRef<jbyteArray> jimage_bytes;
   ScopedJavaLocalRef<jstring> jimage_extension;
+  ScopedJavaLocalRef<jstring> jimage_filename;
   if (!drop_data.file_contents.empty()) {
     jimage_bytes = ToJavaByteArray(env, drop_data.file_contents);
     jimage_extension = ConvertUTF8ToJavaString(
         env, drop_data.file_contents_filename_extension);
+    absl::optional<base::FilePath> filename =
+        drop_data.GetSafeFilenameForImageFileContents();
+    if (filename) {
+      jimage_filename =
+          ConvertUTF16ToJavaString(env, filename->LossyDisplayName());
+    } else {
+      // Use the current timestamp as the image file name in case the file name
+      // is not retrieved from the source.
+      jimage_filename = ConvertUTF8ToJavaString(
+          env, base::NumberToString(
+                   base::Time::Now().since_origin().InMilliseconds()) +
+                   "." + drop_data.file_contents_filename_extension);
+    }
   }
 
   return ui::Java_DropDataAndroid_create(env, jtext, jgurl, jimage_bytes,
-                                         jimage_extension);
+                                         jimage_extension, jimage_filename);
 }  // ToJavaDropData
 
 }  // namespace content

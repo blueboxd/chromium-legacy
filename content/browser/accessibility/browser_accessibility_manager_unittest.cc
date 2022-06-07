@@ -937,8 +937,11 @@ TEST_F(BrowserAccessibilityManagerTest, TestFindIndicesInCommonParent) {
   ASSERT_EQ(2U, div_accessible->PlatformChildCount());
   BrowserAccessibility* button_accessible = div_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, button_accessible);
+  ASSERT_EQ(0U, button_accessible->PlatformChildCount());
+  ASSERT_EQ(1U, button_accessible->InternalChildCount());
+
   BrowserAccessibility* button_text_accessible =
-      button_accessible->PlatformGetChild(0);
+      button_accessible->InternalGetChild(0);
   ASSERT_NE(nullptr, button_text_accessible);
   BrowserAccessibility* line_break_accessible =
       div_accessible->PlatformGetChild(1);
@@ -1096,8 +1099,11 @@ TEST_F(BrowserAccessibilityManagerTest, TestGetTextForRange) {
   ASSERT_EQ(3U, div_accessible->PlatformChildCount());
   BrowserAccessibility* button_accessible = div_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, button_accessible);
+  ASSERT_EQ(0U, button_accessible->PlatformChildCount());
+  ASSERT_EQ(1U, button_accessible->InternalChildCount());
+
   BrowserAccessibility* button_text_accessible =
-      button_accessible->PlatformGetChild(0);
+      button_accessible->InternalGetChild(0);
   ASSERT_NE(nullptr, button_text_accessible);
   BrowserAccessibility* container_accessible =
       div_accessible->PlatformGetChild(1);
@@ -1576,36 +1582,6 @@ TEST_F(BrowserAccessibilityManagerTest, TestApproximateHitTestCache) {
   ASSERT_NE(nullptr, hittest2);
   ASSERT_EQ("child2",
             hittest2->GetStringAttribute(ax::mojom::StringAttribute::kName));
-}
-
-TEST_F(BrowserAccessibilityManagerTest, TestOnNodeReparented) {
-  ui::AXNodeData root;
-  root.id = 1;
-  root.child_ids = {2, 3};
-
-  ui::AXNodeData child1;
-  child1.id = 2;
-
-  ui::AXNodeData child2;
-  child2.id = 3;
-
-  ui::AXTreeUpdate initial_state = MakeAXTreeUpdate(root, child1, child2);
-
-  // Create manager.
-  std::unique_ptr<BrowserAccessibilityManager> manager(
-      BrowserAccessibilityManager::Create(
-          initial_state, test_browser_accessibility_delegate_.get()));
-
-  // Reparenting a child found in the tree should not crash.
-  root.child_ids = {2};
-  child1.child_ids = {3};
-  ui::AXTreeUpdate update = MakeAXTreeUpdate(root, child1, child2);
-  ui::AXTree tree(update);
-  manager->OnNodeReparented(&tree, tree.GetFromId(3));
-
-  // Reparenting a new child not found in the tree should not crash.
-  ui::AXNode child3(nullptr, nullptr, 4, 0);
-  manager->OnNodeReparented(&tree, &child3);
 }
 
 }  // namespace content

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 
@@ -70,6 +71,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
                                const base::Value& properties,
                                base::OnceClosure callback,
                                ErrorCallback error_callback) override;
+  void RemovePasspointCredentials(const dbus::ObjectPath& profile_path,
+                                  const base::Value& properties,
+                                  base::OnceClosure callback,
+                                  ErrorCallback error_callback) override;
 
   ShillManagerClient::TestInterface* GetTestInterface() override;
 

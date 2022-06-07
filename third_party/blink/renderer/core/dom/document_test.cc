@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
@@ -39,6 +40,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
@@ -50,6 +52,7 @@
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -432,6 +435,33 @@ TEST_F(DocumentTest, PrintRelayout) {
   EXPECT_EQ(GetDocument().documentElement()->OffsetWidth(), 400);
   GetDocument().GetFrame()->EndPrinting();
   EXPECT_EQ(GetDocument().documentElement()->OffsetWidth(), 800);
+}
+
+// This tests whether we properly set the bits for indicating if a media feature
+// has been evaluated.
+TEST_F(DocumentTest, MediaFeatureEvaluated) {
+  GetDocument().SetMediaFeatureEvaluated(
+      static_cast<int>(IdentifiableSurface::MediaFeatureName::kForcedColors));
+  for (int i = 0; i < 64; i++) {
+    if (i == static_cast<int>(
+                 IdentifiableSurface::MediaFeatureName::kForcedColors)) {
+      EXPECT_TRUE(GetDocument().WasMediaFeatureEvaluated(i));
+    } else {
+      EXPECT_FALSE(GetDocument().WasMediaFeatureEvaluated(i));
+    }
+  }
+  GetDocument().SetMediaFeatureEvaluated(
+      static_cast<int>(IdentifiableSurface::MediaFeatureName::kAnyHover));
+  for (int i = 0; i < 64; i++) {
+    if ((i == static_cast<int>(
+                  IdentifiableSurface::MediaFeatureName::kForcedColors)) ||
+        (i ==
+         static_cast<int>(IdentifiableSurface::MediaFeatureName::kAnyHover))) {
+      EXPECT_TRUE(GetDocument().WasMediaFeatureEvaluated(i));
+    } else {
+      EXPECT_FALSE(GetDocument().WasMediaFeatureEvaluated(i));
+    }
+  }
 }
 
 // This test checks that Documunt::linkManifest() returns a value conform to the
@@ -1732,6 +1762,131 @@ TEST_F(DocumentTest, DocumentDefiningElementWithMultipleBodies) {
   EXPECT_EQ(body2, GetDocument().ViewportDefiningElement());
   EXPECT_TRUE(body1->GetLayoutBox()->GetScrollableArea());
   EXPECT_FALSE(body2->GetLayoutBox()->GetScrollableArea());
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterNoStyles) {
+  SetHtmlInnerHTML(R"HTML(
+    <img>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterExplicitlyHidden) {
+  SetHtmlInnerHTML(R"HTML(
+    <style> .tag { overflow: hidden } </style>
+    <img class=tag>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterExplicitlyVisible) {
+  SetHtmlInnerHTML(R"HTML(
+    <style> .tag { overflow: visible } </style>
+    <img class=tag>
+  )HTML");
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterExplicitlyVisibleWithObjectFit) {
+  SetHtmlInnerHTML(R"HTML(
+    <style> .tag { overflow: visible; object-fit: cover; } </style>
+    <img class=tag>
+  )HTML");
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterExplicitlyVisibleLaterHidden) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      img { overflow: visible; }
+      .tag { overflow: hidden; }
+    </style>
+    <img class=tag>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterIframe) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      iframe { overflow: visible; }
+    </style>
+    <iframe></iframe>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+TEST_F(DocumentTest, LayoutReplacedUseCounterSvg) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      svg { overflow: visible; }
+    </style>
+    <svg></svg>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElement));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kExplicitOverflowVisibleOnReplacedElementWithObjectProp));
+}
+
+// https://crbug.com/1311370
+TEST_F(DocumentSimTest, HeaderPreloadRemoveReaddClient) {
+  SimRequest::Params main_params;
+  main_params.response_http_headers = {
+      {"Link", "<https://example.com/sheet.css>;rel=preload;as=style;"}};
+
+  SimRequest main_resource("https://example.com", "text/html", main_params);
+  SimSubresourceRequest css_resource("https://example.com/sheet.css",
+                                     "text/css");
+
+  LoadURL("https://example.com");
+  main_resource.Write(R"HTML(
+    <!doctype html>
+    <link rel="stylesheet" href="sheet.css">
+  )HTML");
+
+  // Remove and garbage-collect the pending stylesheet link element, which will
+  // remove it from the list of ResourceClients of the Resource being preloaded.
+  GetDocument().QuerySelector("link")->remove();
+  ThreadState::Current()->CollectAllGarbageForTesting();
+
+  // Removing the ResourceClient should not affect the preloading.
+  css_resource.Complete(".target { width: 100px; }");
+
+  // After the preload finishes, when a new ResourceClient is added, it should
+  // be able to use the Resource immediately.
+  main_resource.Complete(R"HTML(
+    <link rel="stylesheet" href="sheet.css">
+    <div class="target"></div>
+  )HTML");
+
+  Element* target = GetDocument().QuerySelector(".target");
+  EXPECT_EQ(100, target->OffsetWidth());
 }
 
 }  // namespace blink

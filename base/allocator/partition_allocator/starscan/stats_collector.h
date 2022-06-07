@@ -19,7 +19,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
-namespace base {
+namespace partition_alloc {
 
 class StatsReporter;
 
@@ -74,11 +74,12 @@ class StatsCollector final {
     using PerThreadEvents =
         std::array<DeferredTraceEvent, static_cast<size_t>(IdType::kNumIds)>;
     using UnderlyingMap = std::unordered_map<
-        PlatformThreadId,
+        ::base::PlatformThreadId,
         PerThreadEvents,
-        std::hash<PlatformThreadId>,
+        std::hash<::base::PlatformThreadId>,
         std::equal_to<>,
-        MetadataAllocator<std::pair<const PlatformThreadId, PerThreadEvents>>>;
+        MetadataAllocator<
+            std::pair<const ::base::PlatformThreadId, PerThreadEvents>>>;
 
     inline void RegisterBeginEventFromCurrentThread(IdType id);
     inline void RegisterEndEventFromCurrentThread(IdType id);
@@ -133,7 +134,7 @@ class StatsCollector final {
   }
 
   base::TimeDelta GetOverallTime() const;
-  void ReportTracesAndHists(StatsReporter& reporter) const;
+  void ReportTracesAndHists(partition_alloc::StatsReporter& reporter) const;
 
  private:
   using MetadataString =
@@ -161,10 +162,10 @@ class StatsCollector final {
 
   template <Context context>
   void ReportTracesAndHistsImpl(
-      StatsReporter& reporter,
+      partition_alloc::StatsReporter& reporter,
       const DeferredTraceEventMap<context>& event_map) const;
 
-  void ReportSurvivalRate(StatsReporter& reporter) const;
+  void ReportSurvivalRate(partition_alloc::StatsReporter& reporter) const;
 
   DeferredTraceEventMap<Context::kMutator> mutator_trace_events_;
   DeferredTraceEventMap<Context::kScanner> scanner_trace_events_;
@@ -242,6 +243,13 @@ inline StatsCollector::MetadataString StatsCollector::ToUMAString(
 #undef FOR_ALL_PCSCAN_SCANNER_SCOPES
 
 }  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc
+
+// TODO(crbug.com/1151236): Remove this when migration is complete.
+namespace base::internal {
+
+using ::partition_alloc::internal::StatsCollector;
+
+}  // namespace base::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_STARSCAN_STATS_COLLECTOR_H_

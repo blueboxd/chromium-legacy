@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/ime/edit_context.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
@@ -108,6 +109,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -1358,12 +1360,15 @@ void WebFrameWidgetImpl::ScheduleAnimation() {
   widget_base_->LayerTreeHost()->SetNeedsAnimate();
 }
 
-void WebFrameWidgetImpl::FocusChanged(bool enable) {
+void WebFrameWidgetImpl::FocusChanged(mojom::blink::FocusState focus_state) {
   // TODO(crbug.com/689777): FocusChange events are only sent to the MainFrame
   // these maybe should goto the local root so that the rest of input messages
   // sent to those are preserved in order.
   DCHECK(ForMainFrame());
-  View()->SetPageFocus(enable);
+  View()->SetIsActive(focus_state == mojom::blink::FocusState::kFocused ||
+                      focus_state ==
+                          mojom::blink::FocusState::kNotFocusedAndActive);
+  View()->SetPageFocus(focus_state == mojom::blink::FocusState::kFocused);
 }
 
 bool WebFrameWidgetImpl::ShouldAckSyntheticInputImmediately() {
@@ -1851,8 +1856,6 @@ void WebFrameWidgetImpl::SetAutoResizeMode(bool auto_resize,
   DCHECK(ForMainFrame());
 
   if (auto_resize) {
-    if (!Platform::Current()->IsUseZoomForDSFEnabled())
-      device_scale_factor = 1.f;
     View()->EnableAutoResizeMode(
         gfx::ScaleToCeiledSize(min_window_size, device_scale_factor),
         gfx::ScaleToCeiledSize(max_window_size, device_scale_factor));
@@ -2443,8 +2446,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
   DCHECK(!WebInputEvent::IsTouchEventType(input_event.GetType()));
   CHECK(LocalRootImpl());
 
-  // Only record metrics for the main frame.
-  if (ForMainFrame()) {
+  // Only record metrics for the root frame.
+  if (ForTopMostMainFrame()) {
     GetPage()->GetVisualViewport().StartTrackingPinchStats();
   }
 
@@ -2889,9 +2892,36 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   }
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    ReportSwapAndPresentationFailureOnTaskRunner(
-        task_runner_, std::move(promise_callbacks_), base::TimeTicks::Now());
-    return DidNotSwapAction::BREAK_PROMISE;
+    if (base::FeatureList::IsEnabled(
+            features::kReportFCPOnlyOnSuccessfulCommit)) {
+      if (reason != DidNotSwapReason::SWAP_FAILS &&
+          reason != DidNotSwapReason::COMMIT_NO_UPDATE) {
+        return DidNotSwapAction::KEEP_ACTIVE;
+      }
+    }
+
+    DidNotSwapAction action = DidNotSwapAction::BREAK_PROMISE;
+    WebFrameWidgetImpl::PromiseCallbacks promise_callbacks_on_failure = {
+        .swap_time_callback = std::move(promise_callbacks_.swap_time_callback),
+        .presentation_time_callback =
+            std::move(promise_callbacks_.presentation_time_callback)};
+
+#if BUILDFLAG(IS_MAC)
+    if (reason == DidNotSwapReason::COMMIT_FAILS &&
+        promise_callbacks_.core_animation_error_code_callback) {
+      action = DidNotSwapAction::KEEP_ACTIVE;
+    } else {
+      promise_callbacks_on_failure.core_animation_error_code_callback =
+          std::move(promise_callbacks_.core_animation_error_code_callback);
+    }
+#endif
+
+    if (!promise_callbacks_on_failure.IsEmpty()) {
+      ReportSwapAndPresentationFailureOnTaskRunner(
+          task_runner_, std::move(promise_callbacks_on_failure),
+          base::TimeTicks::Now());
+    }
+    return action;
   }
 
   int64_t GetTraceId() const override { return 0; }
@@ -3193,7 +3223,11 @@ bool WebFrameWidgetImpl::HandlingSelectRange() {
 }
 
 void WebFrameWidgetImpl::SetFocus(bool focus) {
-  widget_base_->SetFocus(focus);
+  widget_base_->SetFocus(
+      focus ? mojom::blink::FocusState::kFocused
+            : View()->IsActive()
+                  ? mojom::blink::FocusState::kNotFocusedAndActive
+                  : mojom::blink::FocusState::kNotFocusedAndNotActive);
 }
 
 bool WebFrameWidgetImpl::HasFocus() {
@@ -3965,11 +3999,7 @@ void WebFrameWidgetImpl::OrientationChanged() {
 void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
     const display::ScreenInfos& previous_original_screen_infos) {
   display::ScreenInfo screen_info = widget_base_->GetScreenInfo();
-  if (Platform::Current()->IsUseZoomForDSFEnabled()) {
-    View()->SetZoomFactorForDeviceScaleFactor(screen_info.device_scale_factor);
-  } else {
-    View()->SetDeviceScaleFactor(screen_info.device_scale_factor);
-  }
+  View()->SetZoomFactorForDeviceScaleFactor(screen_info.device_scale_factor);
 
   if (ShouldAutoDetermineCompositingToLCDTextSetting()) {
     // This causes compositing state to be modified which dirties the

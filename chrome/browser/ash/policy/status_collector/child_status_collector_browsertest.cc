@@ -13,6 +13,7 @@
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/environment.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -425,7 +426,7 @@ class ChildStatusCollectorTest : public testing::Test {
   ChromeContentClient content_client_;
   ChromeContentBrowserClient browser_content_client_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   ash::FakeOwnerSettingsService owner_settings_service_{
       scoped_testing_cros_settings_.device_settings(), nullptr};

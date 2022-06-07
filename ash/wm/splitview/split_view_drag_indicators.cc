@@ -143,8 +143,8 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
     label_parent_->layer()->SetFillsBoundsOpaquely(false);
     label_parent_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
-        gfx::Insets(kSplitviewLabelVerticalInsetDp,
-                    kSplitviewLabelHorizontalInsetDp)));
+        gfx::Insets::VH(kSplitviewLabelVerticalInsetDp,
+                        kSplitviewLabelHorizontalInsetDp)));
 
     label_ = label_parent_->AddChildView(std::make_unique<views::Label>(
         std::u16string(), views::style::CONTEXT_LABEL));
@@ -438,10 +438,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
           GetWorkAreaBoundsNoOverlapWithShelf(root_window);
       wm::ConvertRectFromScreen(root_window, &work_area_bounds);
       preview_area_bounds.set_y(preview_area_bounds.y() - work_area_bounds.y());
-      if (!drag_ending_in_snap) {
-        preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp,
-                                  kHighlightScreenEdgePaddingDp);
-      }
+      if (!drag_ending_in_snap)
+        preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp);
 
       // Calculate the bounds of the other highlight, which is the one that
       // shrinks and fades away, while the other one, the preview area, expands

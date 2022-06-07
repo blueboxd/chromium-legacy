@@ -187,6 +187,9 @@ ci.gpu.windows_builder(
         category = "ToT|Windows|ASAN",
         short_name = "x64",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu.windows_builder(
@@ -195,6 +198,9 @@ ci.gpu.windows_builder(
         category = "ToT|Windows|Builder",
         short_name = "x64",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu.windows_builder(
@@ -205,6 +211,9 @@ ci.gpu.windows_builder(
         short_name = "x64",
     ),
     cq_mirrors_console_view = "mirrors",
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 # Note that the Win testers are all thin Linux VMs, triggering jobs on the
@@ -255,6 +264,9 @@ ci.gpu.windows_builder(
         category = "ToT|Windows|Builder",
         short_name = "x86",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu.windows_builder(
@@ -265,6 +277,9 @@ ci.gpu.windows_builder(
         short_name = "x86",
     ),
     cq_mirrors_console_view = "mirrors",
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 # Note that the Win testers are all thin Linux VMs, triggering jobs on the

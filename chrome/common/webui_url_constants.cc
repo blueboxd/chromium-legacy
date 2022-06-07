@@ -7,10 +7,16 @@
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/history_clusters/core/history_clusters_buildflags.h"
 #include "components/nacl/common/buildflags.h"
+#include "components/optimization_guide/optimization_guide_internals/webui/url_constants.h"
 #include "components/safe_browsing/core/common/web_ui_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
+
+#if BUILDFLAG(BUILD_WITH_ON_DEVICE_CLUSTERING_BACKEND)
+#include "components/history_clusters/history_clusters_internals/webui/url_constants.h"
+#endif
 
 namespace chrome {
 
@@ -25,12 +31,15 @@ const char kChromeUIActivateSafetyCheckSettingsURL[] =
     "chrome://settings/safetyCheck?activateSafetyCheck";
 const char kChromeUIAccessibilityHost[] = "accessibility";
 const char kChromeUIAllSitesPath[] = "/content/all";
+const char kChromeUIAPCInternalsHost[] = "apc-internals";
 const char kChromeUIAppIconHost[] = "app-icon";
 const char kChromeUIAppIconURL[] = "chrome://app-icon/";
 const char kChromeUIAppLauncherPageHost[] = "apps";
 const char kChromeUIAppsURL[] = "chrome://apps/";
 const char kChromeUIAppsWithDeprecationDialogURL[] =
     "chrome://apps?showDeletionDialog";
+const char kChromeUIAppsWithForceInstalledDeprecationDialogURL[] =
+    "chrome://apps?showForceInstallDialog=";
 const char kChromeUIAutofillInternalsHost[] = "autofill-internals";
 const char kChromeUIBluetoothInternalsHost[] = "bluetooth-internals";
 const char kChromeUIBookmarksHost[] = "bookmarks";
@@ -103,6 +112,7 @@ const char kChromeUIHistoryClustersURL[] = "chrome://history/journeys";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistorySyncedTabs[] = "/syncedTabs";
 const char kChromeUIHistoryURL[] = "chrome://history/";
+const char kChromeUIHpsInternalsHost[] = "hps-internals";
 const char kChromeUIIdentityInternalsHost[] = "identity-internals";
 const char kChromeUIImageEditorHost[] = "image-editor";
 const char kChromeUIImageEditorURL[] = "chrome://image-editor/";
@@ -138,6 +148,7 @@ const char kChromeUINewTabPageThirdPartyHost[] = "new-tab-page-third-party";
 const char kChromeUINewTabPageThirdPartyURL[] =
     "chrome://new-tab-page-third-party/";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
+const char kChromeUIProfileInternalsHost[] = "profile-internals";
 const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
 #if BUILDFLAG(IS_CHROMEOS)
@@ -238,13 +249,14 @@ const char kChromeUIBookmarksSidePanelHost[] =
     "bookmarks-side-panel.top-chrome";
 const char kChromeUIBookmarksSidePanelURL[] =
     "chrome://bookmarks-side-panel.top-chrome/";
-const char kChromeUIReaderModeSidePanelHost[] =
-    "reader-mode-side-panel.top-chrome";
-const char kChromeUIReaderModeSidePanelURL[] =
-    "chrome://reader-mode-side-panel.top-chrome/";
+const char kChromeUIReadAnythingSidePanelHost[] =
+    "read-anything-side-panel.top-chrome";
+const char kChromeUIReadAnythingSidePanelURL[] =
+    "chrome://read-anything-side-panel.top-chrome/";
 const char kChromeUIReadLaterHost[] = "read-later.top-chrome";
 const char kChromeUIReadLaterURL[] = "chrome://read-later.top-chrome/";
 const char kChromeUIWebAppInternalsHost[] = "web-app-internals";
+const char kChromeUIWebUITestHost[] = "webui-test";
 #endif
 
 #if BUILDFLAG(PLATFORM_CFM)
@@ -437,6 +449,7 @@ const char kChromeUIOSSettingsURL[] = "chrome://os-settings/";
 const char kOsUIAboutURL[] = "os://about";
 const char kOsUIComponentsURL[] = "os://components";
 const char kOsUIFlagsURL[] = "os://flags";
+const char kOsUIHelpAppURL[] = "os://help-app";
 const char kOsUIVersionURL[] = "os://version";
 #endif
 
@@ -602,6 +615,12 @@ const char* const kChromeHostURLs[] = {
     kChromeUIFlagsHost,
     kChromeUIGCMInternalsHost,
     kChromeUIHistoryHost,
+#if BUILDFLAG(BUILD_WITH_ON_DEVICE_CLUSTERING_BACKEND)
+    history_clusters_internals::kChromeUIHistoryClustersInternalsHost,
+#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    kChromeUIHpsInternalsHost,
+#endif
     kChromeUIInterstitialHost,
     kChromeUIInvalidationsHost,
     kChromeUILocalStateHost,
@@ -613,10 +632,12 @@ const char* const kChromeHostURLs[] = {
     kChromeUINetInternalsHost,
     kChromeUINewTabHost,
     kChromeUIOmniboxHost,
+    optimization_guide_internals::kChromeUIOptimizationGuideInternalsHost,
     kChromeUIPasswordManagerInternalsHost,
     kChromeUIPolicyHost,
     kChromeUIPredictorsHost,
     kChromeUIPrefsInternalsHost,
+    kChromeUIProfileInternalsHost,
     kChromeUIQuotaInternalsHost,
     kChromeUISignInInternalsHost,
     kChromeUISiteEngagementHost,

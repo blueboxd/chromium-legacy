@@ -52,7 +52,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/page_visibility_state.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
@@ -142,19 +141,6 @@ using blink::WebGestureEvent;
 using blink::WebTouchEvent;
 
 namespace content {
-
-// Returns true if `window` is in the active window.
-bool CalculateIfWindowInActiveWindow(aura::Window* window) {
-  if (!window)
-    return false;
-
-  aura::Window* root = window->GetRootWindow();
-  if (!root)
-    return false;
-  wm::ActivationClient* activation_client = wm::GetActivationClient(root);
-  return activation_client && activation_client->GetActiveWindow() &&
-         activation_client->GetActiveWindow()->Contains(window);
-}
 
 // We need to watch for mouse events outside a Web Popup or its parent
 // and dismiss the popup for certain events.
@@ -691,6 +677,42 @@ void RenderWidgetHostViewAura::
   delegated_frame_host_->CancelPresentationTimeRequest();
 }
 
+bool RenderWidgetHostViewAura::ShouldSkipCursorUpdate() const {
+  aura::Window* root_window = window_->GetRootWindow();
+  DCHECK(root_window);
+  display::Screen* screen = display::Screen::GetScreen();
+  DCHECK(screen);
+
+  // Ignore cursor update messages if the window under the cursor is not us.
+#if BUILDFLAG(IS_WIN)
+  gfx::Point cursor_screen_point = screen->GetCursorScreenPoint();
+  aura::Window* window_at_screen_point =
+      screen->GetWindowAtScreenPoint(cursor_screen_point);
+  // On Windows we may fail to retrieve the aura Window at the current cursor
+  // position. This is because the WindowFromPoint API may return the legacy
+  // window which is not associated with an aura Window. In this case we need
+  // to get the aura window for the parent of the legacy window.
+  if (!window_at_screen_point && legacy_render_widget_host_HWND_) {
+    HWND hwnd_at_point = ::WindowFromPoint(cursor_screen_point.ToPOINT());
+
+    if (hwnd_at_point == legacy_render_widget_host_HWND_->hwnd())
+      hwnd_at_point = legacy_render_widget_host_HWND_->GetParent();
+
+    display::win::ScreenWin* screen_win =
+        static_cast<display::win::ScreenWin*>(screen);
+    window_at_screen_point = screen_win->GetNativeWindowFromHWND(hwnd_at_point);
+  }
+  if (!window_at_screen_point ||
+      (window_at_screen_point->GetRootWindow() != root_window)) {
+    return true;
+  }
+#elif !BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!screen->IsWindowUnderCursor(root_window))
+    return true;
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+  return false;
+}
+
 bool RenderWidgetHostViewAura::ShouldShowStaleContentOnEviction() {
   return host() && host()->ShouldShowStaleContentOnEviction();
 }
@@ -971,11 +993,9 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
     // that think of a maximized window as corresponding exactly to the work
     // area.  Correct for this by subtracting the frame thickness back off.
     if (::IsZoomed(hwnd)) {
-      bounds.Inset(GetSystemMetrics(SM_CXSIZEFRAME),
-                   GetSystemMetrics(SM_CYSIZEFRAME));
-
-      bounds.Inset(GetSystemMetrics(SM_CXPADDEDBORDER),
-                   GetSystemMetrics(SM_CXPADDEDBORDER));
+      bounds.Inset(gfx::Insets::VH(GetSystemMetrics(SM_CYSIZEFRAME),
+                                   GetSystemMetrics(SM_CXSIZEFRAME)));
+      bounds.Inset(GetSystemMetrics(SM_CXPADDEDBORDER));
     }
 
     // Pixels come back from GetWindowHost, so we need to convert those back to
@@ -1757,6 +1777,23 @@ void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(
   }
 }
 
+ui::TextInputClient::EditingContext
+RenderWidgetHostViewAura::GetTextEditingContext() {
+  ui::TextInputClient::EditingContext editing_context;
+  // We use the focused frame's URL here and not the main frame because
+  // TSF(Windows Text Service Framework) works on the active editable element
+  // context and it uses this information to assist the UIA(Microsoft UI
+  // Automation) service to determine the character that is being typed by the
+  // user via IME composition, the URL of the site that the user is typing on
+  // and other text related services that are used by the UIA clients to power
+  // accessibility features on Windows. We want to expose the focused frame's
+  // URL to TSF that notifies the UIA service which uses this info and the
+  // focused element's data to provide better screen reading capabilities.
+  RenderFrameHostImpl* frame = GetFocusedFrame();
+  if (frame)
+    editing_context.page_url = frame->GetLastCommittedURL();
+  return editing_context;
+}
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2017,20 +2054,6 @@ bool RenderWidgetHostViewAura::ShouldActivate() const {
   return !event;
 }
 
-void RenderWidgetHostViewAura::OnWindowActivated(ActivationReason reason,
-                                                 aura::Window* gained_active,
-                                                 aura::Window* lost_active) {
-  DCHECK(window_);
-  const bool new_in_active_window = CalculateIfWindowInActiveWindow(window_);
-  if (new_in_active_window == is_in_active_window_)
-    return;
-  is_in_active_window_ = new_in_active_window;
-  // `in_active_window` is sent when the renderer is shown, so only need to
-  // tell the renderer of state change when renderer is visible.
-  if (visibility_ == Visibility::VISIBLE)
-    host()->OnActiveWindowChanged(is_in_active_window_);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::client::CursorClientObserver implementation:
 
@@ -2056,7 +2079,7 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
       return;
 
     host()->GotFocus();
-    host()->SetActive(true);
+    UpdateActiveState(true);
 
     ui::InputMethod* input_method = GetInputMethod();
     if (input_method) {
@@ -2077,7 +2100,7 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     return;
   }
 
-  host()->SetActive(false);
+  UpdateActiveState(false);
   host()->LostFocus();
 
   DetachFromInputMethod(false);
@@ -2235,39 +2258,12 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   if (!root_window)
     return;
 
+  if (ShouldSkipCursorUpdate())
+    return;
+
   display::Screen* screen = display::Screen::GetScreen();
   DCHECK(screen);
-
-  gfx::Point cursor_screen_point = screen->GetCursorScreenPoint();
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Ignore cursor update messages if the window under the cursor is not us.
-  aura::Window* window_at_screen_point = screen->GetWindowAtScreenPoint(
-      cursor_screen_point);
-#if BUILDFLAG(IS_WIN)
-  // On Windows we may fail to retrieve the aura Window at the current cursor
-  // position. This is because the WindowFromPoint API may return the legacy
-  // window which is not associated with an aura Window. In this case we need
-  // to get the aura window for the parent of the legacy window.
-  if (!window_at_screen_point && legacy_render_widget_host_HWND_) {
-    HWND hwnd_at_point = ::WindowFromPoint(cursor_screen_point.ToPOINT());
-
-    if (hwnd_at_point == legacy_render_widget_host_HWND_->hwnd())
-      hwnd_at_point = legacy_render_widget_host_HWND_->GetParent();
-
-    display::win::ScreenWin* screen_win =
-        static_cast<display::win::ScreenWin*>(screen);
-    window_at_screen_point = screen_win->GetNativeWindowFromHWND(
-        hwnd_at_point);
-  }
-#endif  // BUILDFLAG(IS_WIN)
-  if (!window_at_screen_point ||
-      (window_at_screen_point->GetRootWindow() != root_window)) {
-    return;
-  }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-  gfx::Point root_window_point = cursor_screen_point;
+  gfx::Point root_window_point = screen->GetCursorScreenPoint();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
   if (screen_position_client) {
@@ -2475,7 +2471,7 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
 void RenderWidgetHostViewAura::UpdateInsetsWithVirtualKeyboardEnabled() {
   // Update insets if the keyboard is shown.
   if (!keyboard_occluded_bounds_.IsEmpty()) {
-    insets_ = gfx::Insets(
+    insets_ = gfx::Insets::TLBR(
         0, 0,
         gfx::IntersectRects(GetViewBounds(), keyboard_occluded_bounds_)
             .height(),
@@ -2514,9 +2510,8 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   window_->GetHost()->AddObserver(this);
   UpdateScreenInfo();
 
-  aura::Window* root_window = window_->GetRootWindow();
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window);
+      aura::client::GetCursorClient(window_->GetRootWindow());
   if (cursor_client) {
     cursor_client->AddObserver(this);
     NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
@@ -2526,11 +2521,6 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
     if (input_method)
       input_method->SetFocusedTextInputClient(this);
   }
-  wm::ActivationClient* activation_client =
-      wm::GetActivationClient(root_window);
-  if (activation_client)
-    activation_client->AddObserver(this);
-  is_in_active_window_ = CalculateIfWindowInActiveWindow(window_);
 
 #if BUILDFLAG(IS_WIN)
   UpdateLegacyWin();
@@ -2542,19 +2532,10 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   DCHECK(delegated_frame_host_) << "Cannot be invoked during destruction.";
 
-  aura::Window* root_window = window_->GetRootWindow();
-
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window);
+      aura::client::GetCursorClient(window_->GetRootWindow());
   if (cursor_client)
     cursor_client->RemoveObserver(this);
-
-  wm::ActivationClient* activation_client =
-      wm::GetActivationClient(root_window);
-  if (activation_client)
-    activation_client->RemoveObserver(this);
-
-  is_in_active_window_ = false;
 
   DetachFromInputMethod(true);
 
@@ -2875,10 +2856,6 @@ void RenderWidgetHostViewAura::TransferTouches(
 void RenderWidgetHostViewAura::SetLastPointerType(
     ui::EventPointerType last_pointer_type) {
   last_pointer_type_ = last_pointer_type;
-}
-
-bool RenderWidgetHostViewAura::IsInActiveWindow() const {
-  return is_in_active_window_;
 }
 
 void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {

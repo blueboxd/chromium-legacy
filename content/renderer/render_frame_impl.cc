@@ -40,7 +40,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -68,6 +67,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/extra_mojo_js_features.mojom.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -77,6 +77,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/aom_content_ax_tree.h"
+#include "content/renderer/accessibility/ax_tree_distiller.h"
 #include "content/renderer/accessibility/ax_tree_snapshotter_impl.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/accessibility/render_accessibility_manager.h"
@@ -422,7 +423,7 @@ bool MaybeGetOverriddenURL(WebDocumentLoader* document_loader, GURL* output) {
 
 // Returns false unless this is a top-level navigation.
 bool IsTopLevelNavigation(WebFrame* frame) {
-  return frame->Parent() == nullptr;
+  return frame->Parent() == nullptr && !frame->View()->IsFencedFrameRoot();
 }
 
 void FillNavigationParamsRequest(
@@ -852,26 +853,6 @@ mojo::PendingRemote<blink::mojom::BlobURLToken> CloneBlobURLToken(
   return cloned_token;
 }
 
-// Whether the navigation should be treated as a "loadDataWithBaseURL"
-// navigation, where the "document URL" is set to the supplied base URL instead
-// of the data URL set in CommonNavigationParams' `url` and the "unreachable
-// URL" is set to the supplied history URL. If this returns false, the data:
-// URL will still be loaded, but we won't try to use the supplied base URL and
-// history URL.
-// This should be kept in sync with NavigationRequest::IsLoadDataWithBaseURL().
-bool ShouldLoadDataWithBaseURL(
-    bool is_main_frame,
-    const blink::mojom::CommonNavigationParams& common_params,
-    const blink::mojom::CommitNavigationParams& commit_params) {
-  if (!is_main_frame)
-    return false;
-  // If no base URL is supplied, we should treat this as a normal data: URL
-  // navigation.
-  bool should_load_data_url = !common_params.base_url_for_data_url.is_empty();
-  DCHECK(!should_load_data_url || common_params.url.SchemeIs(url::kDataScheme));
-  return should_load_data_url;
-}
-
 // Creates a fully functional DocumentState in the case where we do not have
 // navigation parameters available.
 std::unique_ptr<DocumentState> BuildDocumentState() {
@@ -890,8 +871,7 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     mojom::NavigationClient::CommitNavigationCallback commit_callback,
     std::unique_ptr<NavigationClient> navigation_client,
     int request_id,
-    bool was_initiated_in_this_frame,
-    bool is_main_frame) {
+    bool was_initiated_in_this_frame) {
   std::unique_ptr<DocumentState> document_state(new DocumentState());
 
   DCHECK(!common_params.navigation_start.is_null());
@@ -907,10 +887,9 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   // If this is a loadDataWithBaseURL request, save the commit URL so that we
   // can send a DidCommit message with the URL that was originally sent by the
   // browser in CommonNavigationParams (See MaybeGetOverriddenURL()).
-  bool load_data =
-      ShouldLoadDataWithBaseURL(is_main_frame, common_params, commit_params);
-  document_state->set_was_load_data_with_base_url_request(load_data);
-  if (load_data)
+  document_state->set_was_load_data_with_base_url_request(
+      commit_params.is_load_data_with_base_url);
+  if (commit_params.is_load_data_with_base_url)
     document_state->set_data_url(common_params.url);
 
   document_state->set_navigation_state(NavigationState::Create(
@@ -1174,10 +1153,7 @@ perfetto::protos::pbzero::FrameDeleteIntention FrameDeleteIntentionToProto(
 
 void PropagatePageZoomToNewlyAttachedFrame(blink::WebView* web_view,
                                            float device_scale_factor) {
-  if (RenderThread::Get()->IsUseZoomForDSF())
-    web_view->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
-  else
-    web_view->SetZoomLevel(web_view->ZoomLevel());
+  web_view->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
 }
 
 void CallClientDeferMediaLoad(base::WeakPtr<RenderFrameImpl> frame,
@@ -2301,6 +2277,15 @@ void RenderFrameImpl::SnapshotAccessibilityTree(
   std::move(callback).Run(response);
 }
 
+void RenderFrameImpl::SnapshotAndDistillAXTree(
+    SnapshotAndDistillAXTreeCallback callback) {
+  if (!ax_tree_distiller_)
+    ax_tree_distiller_ = std::make_unique<AXTreeDistiller>(this);
+  ax_tree_distiller_->Distill();
+  std::move(callback).Run(*ax_tree_distiller_->GetSnapshot(),
+                          *ax_tree_distiller_->GetContentNodeIDs());
+}
+
 void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
     const base::flat_map<GURL, base::FilePath>& url_map,
     const base::flat_map<blink::FrameToken, base::FilePath>& frame_token_map,
@@ -2566,8 +2551,10 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
   enabled_bindings_ |= enabled_bindings_flags;
 }
 
-void RenderFrameImpl::EnableMojoJsBindings() {
+void RenderFrameImpl::EnableMojoJsBindings(
+    content::mojom::ExtraMojoJsFeaturesPtr features) {
   enable_mojo_js_bindings_ = true;
+  mojo_js_features_ = std::move(features);
 }
 
 void RenderFrameImpl::EnableMojoJsBindingsWithBroker(
@@ -2680,7 +2667,7 @@ void RenderFrameImpl::CommitNavigation(
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
       *common_params, *commit_params, std::move(commit_callback),
       std::move(navigation_client_impl_), request_id,
-      was_initiated_in_this_frame, is_main_frame_);
+      was_initiated_in_this_frame);
 
   // Check if the navigation being committed originated as a client redirect.
   bool is_client_redirect =
@@ -2716,8 +2703,7 @@ void RenderFrameImpl::CommitNavigation(
 #endif
 
   if (should_handle_data_url_as_string ||
-      ShouldLoadDataWithBaseURL(is_main_frame_, *common_params,
-                                *commit_params)) {
+      commit_params->is_load_data_with_base_url) {
     std::string mime_type, charset, data;
     // `base_url` will be set to `base_url_for_data_url` from `common_params`,
     // unless it's empty (the `data_url_as_string` handling case), in which
@@ -3059,7 +3045,7 @@ void RenderFrameImpl::CommitFailedNavigation(
       *common_params, *commit_params, std::move(callback),
       std::move(navigation_client_impl_),
       blink::WebResourceRequestSender::MakeRequestID(),
-      false /* was_initiated_in_this_frame */, is_main_frame_);
+      false /* was_initiated_in_this_frame */);
 
   DCHECK(!pending_loader_factories_);
   pending_loader_factories_ = std::move(new_loader_factories);
@@ -3463,6 +3449,27 @@ RenderFrameImpl::GetRemoteNavigationAssociatedInterfaces() {
   return GetRemoteAssociatedInterfaces();
 }
 
+namespace {
+
+// Emit the trace event using a helper as we:
+// a) want to ensure that the trace event covers the entire function.
+// b) we want to emit the new child routing id as an argument.
+// c) child routing id becomes available only after a sync call.
+struct CreateChildFrameTraceEvent {
+  explicit CreateChildFrameTraceEvent(int routing_id) {
+    TRACE_EVENT_BEGIN("navigation,rail", "RenderFrameImpl::createChildFrame",
+                      "routing_id", routing_id);
+  }
+
+  ~CreateChildFrameTraceEvent() {
+    TRACE_EVENT_END("navigation,rail", "child_routing_id", child_routing_id);
+  }
+
+  int child_routing_id = -1;
+};
+
+}  // namespace
+
 blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
     blink::mojom::TreeScopeType scope,
     const blink::WebString& name,
@@ -3471,6 +3478,10 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
     const blink::WebFrameOwnerProperties& frame_owner_properties,
     blink::FrameOwnerElementType frame_owner_element_type,
     blink::WebPolicyContainerBindParams policy_container_bind_params) {
+  // Tracing analysis uses this to find main frames when this value is
+  // MSG_ROUTING_NONE, and build the frame tree otherwise.
+  CreateChildFrameTraceEvent trace_event(routing_id_);
+
   // Allocate child routing ID. This is a synchronous call.
   int child_routing_id;
   blink::LocalFrameToken frame_token;
@@ -3479,6 +3490,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
           child_routing_id, frame_token, devtools_frame_token)) {
     return nullptr;
   }
+  trace_event.child_routing_id = child_routing_id;
 
   // The unique name generation logic was moved out of Blink, so for historical
   // reasons, unique name generation needs to take something called the
@@ -3516,11 +3528,6 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       scope, name.Utf8(), frame_unique_name, is_created_by_script, frame_policy,
       blink::mojom::FrameOwnerProperties::From(frame_owner_properties),
       frame_owner_element_type);
-
-  // Tracing analysis uses this to find main frames when this value is
-  // MSG_ROUTING_NONE, and build the frame tree otherwise.
-  TRACE_EVENT2("navigation,rail", "RenderFrameImpl::createChildFrame", "id",
-               routing_id_, "child", child_routing_id);
 
   // Create the RenderFrame and WebLocalFrame, linking the two.
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
@@ -3594,21 +3601,26 @@ blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
 blink::WebRemoteFrame* RenderFrameImpl::CreateFencedFrame(
     const blink::WebElement& fenced_frame,
     blink::CrossVariantMojoAssociatedReceiver<
-        blink::mojom::FencedFrameOwnerHostInterfaceBase> receiver) {
+        blink::mojom::FencedFrameOwnerHostInterfaceBase> receiver,
+    blink::mojom::FencedFrameMode mode) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   blink::mojom::FrameReplicationStatePtr initial_replicated_state =
       blink::mojom::FrameReplicationState::New();
   blink::RemoteFrameToken frame_token;
   base::UnguessableToken devtools_frame_token;
 
-  GetFrameHost()->CreateFencedFrame(std::move(receiver), &proxy_routing_id,
-                                    &initial_replicated_state, &frame_token,
-                                    &devtools_frame_token);
+  GetFrameHost()->CreateFencedFrame(
+      std::move(receiver), mode, &proxy_routing_id, &initial_replicated_state,
+      &frame_token, &devtools_frame_token);
 
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortalOrFencedFrame(
       agent_scheduling_group_, this, proxy_routing_id, frame_token,
       devtools_frame_token, fenced_frame);
   proxy->SetReplicatedState(std::move(initial_replicated_state));
+
+  for (auto& observer : observers_)
+    observer.DidCreateFencedFrame(frame_token);
+
   return proxy->web_frame();
 }
 
@@ -4434,6 +4446,11 @@ void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
     // We only allow these bindings to be installed when creating the main
     // world context of the main frame.
     blink::WebV8Features::EnableMojoJS(context, true);
+
+    if (mojo_js_features_) {
+      if (mojo_js_features_->file_system_access)
+        blink::WebV8Features::EnableMojoJSFileSystemAccessHelper(context, true);
+    }
   }
 
   if (world_id == ISOLATED_WORLD_ID_GLOBAL &&
@@ -5213,7 +5230,7 @@ void RenderFrameImpl::BeginNavigation(
   // an extension or app origin, leaving a WebUI page, etc). We only care about
   // top-level navigations (not iframes). But we sometimes navigate to
   // about:blank to clear a tab, and we want to still allow that.
-  if (!frame_->Parent() && !url.SchemeIs(url::kAboutScheme) &&
+  if (IsTopLevelNavigation(frame_) && !url.SchemeIs(url::kAboutScheme) &&
       !url.is_empty()) {
     // All navigations to or from WebUI URLs or within WebUI-enabled
     // RenderProcesses must be handled by the browser process so that the
@@ -5911,7 +5928,7 @@ blink::WebURL RenderFrameImpl::LastCommittedUrlForUKM() {
 // - For loadDataWithBaseURL() navigations, it will return the data: URL
 // used to commit, instead of the "base URL" used as the document URL in the
 // DocumentLoader. See comments in  BuildDocumentStateFromParams() and
-// ShouldLoadDataWithBaseURL() for more details.
+// in navigation_params.mojom's `is_load_data_with_base_url` for more details.
 GURL RenderFrameImpl::GetLoadingUrl() const {
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
 
@@ -6187,6 +6204,10 @@ RenderFrameImpl::GetAgentGroupScheduler() {
 
 url::Origin RenderFrameImpl::GetSecurityOriginOfTopFrame() {
   return frame_->Top()->GetSecurityOrigin();
+}
+
+base::WeakPtr<media::DecoderFactory> RenderFrameImpl::GetMediaDecoderFactory() {
+  return media_factory_.GetDecoderFactory();
 }
 
 gfx::RectF RenderFrameImpl::ElementBoundsInWindow(

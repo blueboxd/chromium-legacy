@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_error_event_init.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -44,14 +45,15 @@ ErrorEvent* ErrorEvent::CreateSanitizedError(ScriptState* script_state) {
   DCHECK(script_state);
   return MakeGarbageCollected<ErrorEvent>(
       "Script error.",
-      std::make_unique<SourceLocation>(String(), 0, 0, nullptr),
+      std::make_unique<SourceLocation>(String(), String(), 0, 0, nullptr),
       ScriptValue::CreateNull(script_state->GetIsolate()),
       &script_state->World());
 }
 
 ErrorEvent::ErrorEvent()
     : sanitized_message_(),
-      location_(std::make_unique<SourceLocation>(String(), 0, 0, nullptr)),
+      location_(
+          std::make_unique<SourceLocation>(String(), String(), 0, 0, nullptr)),
       world_(&DOMWrapperWorld::Current(v8::Isolate::GetCurrent())) {}
 
 ErrorEvent::ErrorEvent(ScriptState* script_state,
@@ -62,7 +64,7 @@ ErrorEvent::ErrorEvent(ScriptState* script_state,
       world_(&script_state->World()) {
   sanitized_message_ = initializer->message();
   location_ = std::make_unique<SourceLocation>(initializer->filename(),
-                                               initializer->lineno(),
+                                               String(), initializer->lineno(),
                                                initializer->colno(), nullptr);
   // TODO(crbug.com/1070964): Remove this existence check.  There is a bug that
   // the current code generator does not initialize a ScriptValue with the

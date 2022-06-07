@@ -20,8 +20,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/metrics/ranges_manager.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
@@ -672,6 +672,10 @@ bool FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner(
     base::HistogramSnapshotManager* snapshot_manager) {
   if (PersistentSystemProfile::GetSystemProfile(
           *source->allocator->memory_allocator(), system_profile_proto)) {
+    // Pass a custom RangesManager so that we do not register the BucketRanges
+    // with the global statistics recorder. Otherwise, it could add unnecessary
+    // contention, and a low amount of extra memory that will never be released.
+    source->allocator->SetRangesManager(new base::RangesManager());
     system_profile_proto->mutable_stability()->set_from_previous_run(true);
     RecordHistogramSnapshotsFromSource(snapshot_manager, source);
     return true;

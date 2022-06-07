@@ -85,7 +85,7 @@ class ArcTermsOfServiceScreenHandler
  public:
   using TView = ArcTermsOfServiceScreenView;
 
-  explicit ArcTermsOfServiceScreenHandler(JSCallsContainer* js_calls_container);
+  ArcTermsOfServiceScreenHandler();
 
   ArcTermsOfServiceScreenHandler(const ArcTermsOfServiceScreenHandler&) =
       delete;
@@ -121,7 +121,7 @@ class ArcTermsOfServiceScreenHandler
 
  private:
   // BaseScreenHandler:
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   // Shows default terms of service screen.
   void DoShow();

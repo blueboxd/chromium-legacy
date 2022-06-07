@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">Pour enregistrer une image, appuyez sur "Paramètres" afin que Chromium puisse l'ajouter à vos photos</translation>
 <translation id="1289216811211435351">Passer à Chromium</translation>
 <translation id="1361748954329991663">Version de Chromium obsolète. Si aucune mise à jour n'est disponible sur l'<ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, votre appareil n'est peut-être plus compatible avec les nouvelles versions de Chromium.</translation>
-<translation id="1370204544543370355">Pour profiter pleinement de Chromium, connectez-vous avec votre compte Google</translation>
 <translation id="1431818719585918472">Chromium peut verrouiller vos onglets de navigation privée.</translation>
 <translation id="1472013873724362412">Votre compte n'est pas compatible avec Chromium. Veuillez contacter l'administrateur de votre domaine ou utiliser un compte Google standard pour vous connecter.</translation>
 <translation id="1507010443238049608">Contribuer à l'amélioration des fonctionnalités et des performances de Chromium</translation>
@@ -31,7 +30,6 @@
 <translation id="2426113998523353159">Votre organisation exige que vous vous connectiez pour utiliser Chromium.</translation>
 <translation id="2450140762465183767">Chaque fois que vous appuierez sur des liens figurant dans des messages, des documents et d'autres applis, le contenu s'affichera dans Chromium.</translation>
 <translation id="2478931088402984578">Sélectionnez <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="2567507405773541360">Soyez plus efficace grâce à Chromium, un navigateur simple, sécurisé et encore plus rapide</translation>
 <translation id="2590893390871230428">Synchroniser vos données Chromium</translation>
 <translation id="2650312721222849884">Pour retrouver vos onglets Chromium quel que soit l'appareil utilisé, activez la synchronisation</translation>
 <translation id="2684230048001240293">Définissez Chromium par défaut pour synchroniser vos onglets, mots de passe et infos de paiement sur tous vos appareils</translation>
@@ -43,6 +41,7 @@
 <translation id="3256316712990552818">Copié dans Chromium</translation>
 <translation id="3344973607274501920">Chromium n'est pas parvenu à vérifier vos mots de passe. Vérifiez votre connexion Internet.</translation>
 <translation id="3472200483164753384">Non disponible dans Chromium Canary</translation>
+<translation id="3567399274263440288">Pour profiter pleinement de Chromium, connectez-vous avec votre compte Google.</translation>
 <translation id="3639997914391704523">Chromium peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> utilisait Chromium et a laissé des favoris, des mots de passe et d'autres paramètres sur cet appareil.</translation>
 <translation id="3805899903892079518">Chromium n'a pas accès à vos photos ni à vos vidéos. Activez l'accès dans iOS via Réglages &gt; Confidentialité &gt; Photos.</translation>
@@ -56,15 +55,6 @@
 <translation id="4828317641996116749">Chromium n'est pas parvenu à vérifier tous les mots de passe. Réessayez plus tard.</translation>
 <translation id="4985291216379576555">Chromium ne parvient pas à rechercher les mises à jour, car vous êtes hors connexion</translation>
 <translation id="4999538639245140991">Comme vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />, vos données Chromium seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
-<translation id="5039881550736388123">Si l'option est activée :
-<ph name="BEGIN_INDENT" />  • Contribuez à améliorer Chromium pour les personnes qui l'utilisent comme vous.<ph name="END_INDENT" />
-
-Éléments à prendre en compte :
-<ph name="BEGIN_INDENT" />  • Des infos sur l'utilisation de Chromium, mais qui ne sont pas rattachées à vous, sont transmises à Google.
-
-  • Si Chromium plante, les détails sur ce plantage peuvent contenir des infos personnelles.
-
-  • Si vous activez la synchronisation, les métriques peuvent aussi inclure des infos sur les URL que vous consultez.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Connectez-vous à Chromium</translation>
 <translation id="5224391634244552924">Aucun mot de passe enregistré. Chromium ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
 <translation id="5308226104666789935">Chromium ne parvient pas à rechercher les mises à jour</translation>

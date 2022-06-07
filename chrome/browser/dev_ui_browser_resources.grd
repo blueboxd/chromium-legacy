@@ -21,6 +21,9 @@ This file specifies browser resources for developer-facing chrome:// pages
       <include name="IDR_ACCESSIBILITY_HTML" file="resources\accessibility\accessibility.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ACCESSIBILITY_CSS" file="resources\accessibility\accessibility.css" type="BINDATA" />
       <include name="IDR_ACCESSIBILITY_JS" file="resources\accessibility\accessibility.js" type="BINDATA" />
+      <include name="IDR_APC_INTERNALS_HTML" file="resources\apc_internals\apc_internals.html" type="BINDATA" />
+      <include name="IDR_APC_INTERNALS_JS" file="resources\apc_internals\apc_internals.js" preprocess="true" type="BINDATA" />
+      <include name="IDR_APC_INTERNALS_CSS" file="resources\apc_internals\apc_internals.css" type="BINDATA" />
       <include name="IDR_COMPONENTS_COMPONENTS_HTML" file="resources\components\components.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_COMPONENTS_COMPONENTS_JS" file="resources\components\components.js" type="BINDATA" />
       <include name="IDR_DEVICE_LOG_UI_HTML" file="resources\device_log_ui\device_log_ui.html" type="BINDATA" />
@@ -44,6 +47,7 @@ This file specifies browser resources for developer-facing chrome:// pages
       <include name="IDR_PREDICTORS_HTML" file="resources\predictors\predictors.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PREDICTORS_JS" file="resources\predictors\predictors.js" type="BINDATA" />
       <include name="IDR_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_JS" file="resources\predictors\resource_prefetch_predictor.js" type="BINDATA" />
+      <include name="IDR_PROFILE_INTERNALS_HTML" file="resources\profiles\profile_internals.html" type="BINDATA" />
       <include name="IDR_MEDIA_SESSION_MOJOM_WEBUI_JS" file="${root_gen_dir}\mojom-webui\services\media_session\public\mojom\media_session.mojom-webui.js" use_base_dir="false" type="BINDATA" />
 
       <if expr="is_android or is_linux">

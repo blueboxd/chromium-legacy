@@ -54,6 +54,9 @@ class AssistantClientImpl : public AssistantClientV1 {
       GrpcServicesObserver<OnAssistantDisplayEventRequest>* observer) override;
   void AddDeviceStateEventObserver(
       GrpcServicesObserver<OnDeviceStateEventRequest>* observer) override;
+  void AddMediaActionFallbackEventObserver(
+      GrpcServicesObserver<OnMediaActionFallbackEventRequest>* observer)
+      override;
   void SendVoicelessInteraction(
       const ::assistant::api::Interaction& interaction,
       const std::string& description,
@@ -65,6 +68,8 @@ class AssistantClientImpl : public AssistantClientV1 {
       const std::vector<std::string>& context_protos) override;
   void StartVoiceInteraction() override;
   void StopAssistantInteraction(bool cancel_conversation) override;
+  void AddConversationStateEventObserver(
+      GrpcServicesObserver<OnConversationStateEventRequest>* observer) override;
 
   // Settings-related setters:
   void SetAuthenticationInfo(const AuthTokens& tokens) override;

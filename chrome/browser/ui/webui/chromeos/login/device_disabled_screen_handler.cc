@@ -14,10 +14,8 @@ namespace chromeos {
 
 constexpr StaticOobeScreenId DeviceDisabledScreenView::kScreenId;
 
-DeviceDisabledScreenHandler::DeviceDisabledScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-}
+DeviceDisabledScreenHandler::DeviceDisabledScreenHandler()
+    : BaseScreenHandler(kScreenId) {}
 
 DeviceDisabledScreenHandler::~DeviceDisabledScreenHandler() {
   if (screen_)
@@ -27,11 +25,11 @@ DeviceDisabledScreenHandler::~DeviceDisabledScreenHandler() {
 void DeviceDisabledScreenHandler::Show(const std::string& serial,
                                        const std::string& domain,
                                        const std::string& message) {
-  base::DictionaryValue screen_data;
-  screen_data.SetStringPath("serial", serial);
-  screen_data.SetStringPath("domain", domain);
-  screen_data.SetStringPath("message", message);
-  ShowScreenWithData(kScreenId, &screen_data);
+  base::Value::Dict screen_data;
+  screen_data.Set("serial", serial);
+  screen_data.Set("domain", domain);
+  screen_data.Set("message", message);
+  ShowInWebUI(std::move(screen_data));
 }
 
 void DeviceDisabledScreenHandler::Hide() {
@@ -55,8 +53,7 @@ void DeviceDisabledScreenHandler::DeclareLocalizedValues(
                IDS_DEVICE_DISABLED_EXPLANATION_WITHOUT_DOMAIN);
 }
 
-void DeviceDisabledScreenHandler::Initialize() {
-}
+void DeviceDisabledScreenHandler::InitializeDeprecated() {}
 
 void DeviceDisabledScreenHandler::RegisterMessages() {
 }

@@ -15,6 +15,7 @@
 #include "ash/webui/shimless_rma/mojom/shimless_rma.mojom.h"
 #include "ash/webui/shimless_rma/mojom/shimless_rma_mojom_traits.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/rmad/rmad.pb.h"
@@ -706,6 +707,11 @@ void ShimlessRmaService::RunCalibrationStep(
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
+
+  // Clear the previous calibration progress.
+  last_calibration_progress_ = absl::nullopt;
+  last_calibration_overall_progress_ = absl::nullopt;
+
   TransitionNextStateGeneric(std::move(callback));
 }
 
@@ -831,6 +837,18 @@ void ShimlessRmaService::OnGetLog(GetLogCallback callback,
   std::move(callback).Run(response->log(), response->error());
 }
 
+void ShimlessRmaService::GetPowerwashRequired(
+    GetPowerwashRequiredCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
+    LOG(ERROR) << "GetPowerwashRequired called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::move(callback).Run(state_proto_.repair_complete().powerwash_required());
+}
+
 void ShimlessRmaService::LaunchDiagnostics() {
   if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
     LOG(ERROR) << "LaunchDiagnostics called from incorrect state "
@@ -840,46 +858,20 @@ void ShimlessRmaService::LaunchDiagnostics() {
   shimless_rma_delegate_->ShowDiagnosticsDialog();
 }
 
-void ShimlessRmaService::EndRmaAndReboot(EndRmaAndRebootCallback callback) {
+void ShimlessRmaService::EndRma(
+    rmad::RepairCompleteState::ShutdownMethod shutdown_method,
+    EndRmaCallback callback) {
+  DCHECK_NE(rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_UNKNOWN,
+            shutdown_method);
   if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
-    LOG(ERROR) << "EndRmaAndReboot called from incorrect state "
+    LOG(ERROR) << "EndRma called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
                             can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  state_proto_.mutable_repair_complete()->set_shutdown(
-      rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_REBOOT);
-  TransitionNextStateGeneric(std::move(callback));
-}
-
-void ShimlessRmaService::EndRmaAndShutdown(EndRmaAndShutdownCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
-    LOG(ERROR) << "EndRmaAndShutdown called from incorrect state "
-               << state_proto_.state_case();
-    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
-                            can_abort_, can_go_back_,
-                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
-    return;
-  }
-  state_proto_.mutable_repair_complete()->set_shutdown(
-      rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_SHUTDOWN);
-  TransitionNextStateGeneric(std::move(callback));
-}
-
-void ShimlessRmaService::EndRmaAndCutoffBattery(
-    EndRmaAndCutoffBatteryCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
-    LOG(ERROR) << "EndRmaAndCutoffBattery called from incorrect state "
-               << state_proto_.state_case();
-    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
-                            can_abort_, can_go_back_,
-                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
-    return;
-  }
-  state_proto_.mutable_repair_complete()->set_shutdown(
-      rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_BATTERY_CUTOFF);
+  state_proto_.mutable_repair_complete()->set_shutdown(shutdown_method);
   TransitionNextStateGeneric(std::move(callback));
 }
 
@@ -977,6 +969,10 @@ void ShimlessRmaService::ObserveOsUpdateProgress(
 
 void ShimlessRmaService::ObserveCalibrationProgress(
     ::mojo::PendingRemote<mojom::CalibrationObserver> observer) {
+  if (calibration_observer_.is_bound()) {
+    calibration_observer_.reset();
+  }
+
   calibration_observer_.Bind(std::move(observer));
   if (last_calibration_progress_) {
     calibration_observer_->OnCalibrationUpdated(*last_calibration_progress_);

@@ -1015,19 +1015,6 @@ _BANNED_MOJOM_PATTERNS : Sequence[BanRule] = (
     ),
 )
 
-# Format: Sequence of tuples containing:
-# * String pattern or, if starting with a slash, a regular expression.
-# * Sequence of strings to show when the pattern matches.
-_DEPRECATED_MOJO_TYPES : Sequence[BanRule] = (
-    BanRule(
-      r'/\bmojo::AssociatedInterfacePtrInfo\b',
-      (
-        'mojo::AssociatedInterfacePtrInfo<Interface> is deprecated.',
-        'Use mojo::PendingAssociatedRemote<Interface> instead.',
-      ),
-    ),
-)
-
 _IPC_ENUM_TRAITS_DEPRECATED = (
     'You are using IPC_ENUM_TRAITS() in your code. It has been deprecated.\n'
     'See http://www.chromium.org/Home/chromium-security/education/'
@@ -1139,11 +1126,17 @@ _GENERIC_PYDEPS_FILES = [
     'net/tools/testserver/testserver.pydeps',
     'testing/scripts/run_android_wpt.pydeps',
     'testing/scripts/run_isolated_script_test.pydeps',
+    'testing/merge_scripts/standard_isolated_script_merge.pydeps',
+    'testing/merge_scripts/standard_gtest_merge.pydeps',
+    'testing/merge_scripts/code_coverage/merge_results.pydeps',
+    'testing/merge_scripts/code_coverage/merge_steps.pydeps',
     'third_party/android_platform/development/scripts/stack.pydeps',
     'third_party/blink/renderer/bindings/scripts/build_web_idl_database.pydeps',
     'third_party/blink/renderer/bindings/scripts/collect_idl_files.pydeps',
     'third_party/blink/renderer/bindings/scripts/generate_bindings.pydeps',
     'third_party/blink/renderer/bindings/scripts/validate_web_idl.pydeps',
+    'third_party/blink/tools/blinkpy/web_tests/merge_results.pydeps',
+    'third_party/blink/tools/merge_web_test_results.pydeps',
     'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
 ]
@@ -1733,48 +1726,6 @@ def _CheckAndroidNoBannedImports(input_api, output_api):
     return result
 
 
-def CheckNoDeprecatedMojoTypes(input_api, output_api):
-    """Make sure that old Mojo types are not used."""
-    warnings = []
-    errors = []
-
-    # For any path that is not an "ok" or an "error" path, a warning will be
-    # raised if deprecated mojo types are found.
-    ok_paths = ['components/arc']
-    error_paths = ['third_party/blink', 'content']
-
-    file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))
-    for f in input_api.AffectedFiles(file_filter=file_filter):
-        # Don't check //components/arc, not yet migrated (see crrev.com/c/1868870).
-        if any(map(lambda path: f.LocalPath().startswith(path), ok_paths)):
-            continue
-
-        for line_num, line in f.ChangedContents():
-            for ban_rule in _DEPRECATED_MOJO_TYPES:
-                problems = _GetMessageForMatchingType(input_api, f, line_num,
-                                                      line, ban_rule)
-
-                if problems:
-                    # Raise errors inside |error_paths| and warnings everywhere else.
-                    if any(
-                            map(lambda path: f.LocalPath().startswith(path),
-                                error_paths)):
-                        errors.extend(problems)
-                    else:
-                        warnings.extend(problems)
-
-    result = []
-    if (warnings):
-        result.append(
-            output_api.PresubmitPromptWarning(
-                'Banned Mojo types were used.\n' + '\n'.join(warnings)))
-    if (errors):
-        result.append(
-            output_api.PresubmitError('Banned Mojo types were used.\n' +
-                                      '\n'.join(errors)))
-    return result
-
-
 def CheckNoPragmaOnce(input_api, output_api):
     """Make sure that banned functions are not used."""
     files = []
@@ -2347,7 +2298,6 @@ def CheckSpamLogging(input_api, output_api):
             r"dll_hash_main\.cc$",
             r"^chrome[\\/]installer[\\/]setup[\\/].*",
             r"^chromecast[\\/]",
-            r"^cloud_print[\\/]",
             r"^components[\\/]browser_watcher[\\/]"
             r"dump_stability_report_main_win.cc$",
             r"^components[\\/]media_control[\\/]renderer[\\/]"
@@ -3122,13 +3072,14 @@ def CheckSetNoParent(input_api, output_api):
         # Check that every set noparent line has a corresponding file:// line
         # listed in build/OWNERS.setnoparent. An exception is made for top level
         # directories since src/OWNERS shouldn't review them.
-        if (f.LocalPath().count('/') != 1
-                and (not f.LocalPath() in _EXCLUDED_SET_NO_PARENT_PATHS)):
+        linux_path = f.LocalPath().replace(input_api.os_path.sep, '/')
+        if (linux_path.count('/') != 1
+                and (not linux_path in _EXCLUDED_SET_NO_PARENT_PATHS)):
             for set_noparent_line in found_set_noparent_lines:
                 if set_noparent_line in found_owners_files:
                     continue
                 errors.append('  %s:%d' %
-                              (f.LocalPath(),
+                              (linux_path,
                                found_set_noparent_lines[set_noparent_line]))
 
     results = []
@@ -4529,8 +4480,9 @@ def ChecksCommon(input_api, output_api):
         input_api.RunTests(
             input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
 
+    dirmd = 'dirmd.bat' if input_api.is_windows else 'dirmd'
     dirmd_bin = input_api.os_path.join(input_api.PresubmitLocalPath(),
-                                       'third_party', 'depot_tools', 'dirmd')
+                                       'third_party', 'depot_tools', dirmd)
     results.extend(
         input_api.RunTests(
             input_api.canned_checks.CheckDirMetadataFormat(
@@ -4674,7 +4626,8 @@ def CheckForSuperfluousStlIncludesInHeaders(input_api, output_api):
                 has_stl_include = True
                 continue
 
-            if not uses_std_namespace and std_namespace_re.search(line):
+            if not uses_std_namespace and (std_namespace_re.search(line)
+                    or 'no-std-usage-because-pch-file' in line):
                 uses_std_namespace = True
                 continue
 
@@ -4822,7 +4775,8 @@ def CheckForLongPathnames(input_api, output_api):
 def CheckForIncludeGuards(input_api, output_api):
     """Check that header files have proper guards against multiple inclusion.
     If a file should not have such guards (and it probably should) then it
-    should include the string "no-include-guard-because-multiply-included".
+    should include the string "no-include-guard-because-multiply-included" or
+    "no-include-guard-because-pch-file".
     """
 
     def is_chromium_header_file(f):
@@ -4882,7 +4836,8 @@ def CheckForIncludeGuards(input_api, output_api):
                                              guard_name_pattern + ')')
 
         for line_number, line in enumerate(f.NewContents()):
-            if 'no-include-guard-because-multiply-included' in line:
+            if ('no-include-guard-because-multiply-included' in line
+                    or 'no-include-guard-because-pch-file' in line):
                 guard_name = 'DUMMY'  # To not trigger check outside the loop.
                 break
 
@@ -4931,11 +4886,11 @@ def CheckForIncludeGuards(input_api, output_api):
         if guard_name is None:
             errors.append(
                 output_api.PresubmitPromptWarning(
-                    'Missing include guard %s' % expected_guard,
-                    [f.LocalPath()], 'Missing include guard in %s\n'
+                    'Missing include guard in %s\n'
                     'Recommended name: %s\n'
                     'This check can be disabled by having the string\n'
-                    'no-include-guard-because-multiply-included in the header.'
+                    '"no-include-guard-because-multiply-included" or\n'
+                    '"no-include-guard-because-pch-file" in the header.'
                     % (f.LocalPath(), expected_guard)))
 
     return errors
@@ -4945,7 +4900,7 @@ def CheckForWindowsLineEndings(input_api, output_api):
     """Check source code and known ascii text files for Windows style line
     endings.
     """
-    known_text_files = r'.*\.(txt|html|htm|mhtml|py|gyp|gypi|gn|isolate|icon)$'
+    known_text_files = r'.*\.(txt|html|htm|py|gyp|gypi|gn|isolate|icon)$'
 
     file_inclusion_pattern = (known_text_files,
                               r'.+%s' % _IMPLEMENTATION_EXTENSIONS,
@@ -4955,6 +4910,9 @@ def CheckForWindowsLineEndings(input_api, output_api):
     source_file_filter = lambda f: input_api.FilterSourceFile(
         f, files_to_check=file_inclusion_pattern, files_to_skip=None)
     for f in input_api.AffectedSourceFiles(source_file_filter):
+        # Ignore test files that contain crlf intentionally.
+        if f.LocalPath().endswith('crlf.txt'):
+          continue
         include_file = False
         for line in input_api.ReadFile(f, 'r').splitlines(True):
             if line.endswith('\r\n'):
@@ -5752,10 +5710,14 @@ def CheckMPArchApiUsage(input_api, output_api):
         'GetMainFrame',
         'GetFrameTreeNodeId',
     ]
+    concerning_ftn_methods = [
+        'IsMainFrame',
+    ]
     concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
         item for sublist in [
             concerning_wco_methods, concerning_nav_handle_methods,
-            concerning_web_contents_methods, concerning_rfh_methods
+            concerning_web_contents_methods, concerning_rfh_methods,
+            concerning_ftn_methods,
         ] for item in sublist) + r')\(')
 
     used_apis = set()

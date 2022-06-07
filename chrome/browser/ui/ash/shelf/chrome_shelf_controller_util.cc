@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -62,16 +63,18 @@ namespace {
 // Chrome App.
 std::string GetPolicyValueFromAppId(const std::string& app_id,
                                     Profile* profile) {
-  // Handle Web App ids
+  // Handle App Service apps (eg. web apps).
   //
-  // WebAppProvider is absent in some cases e.g. Arc++ Kiosk Mode.
-  if (auto* provider = web_app::WebAppProvider::GetDeprecated(profile)) {
-    std::map<web_app::AppId, GURL> installed_apps =
-        provider->registrar().GetExternallyInstalledApps(
-            web_app::ExternalInstallSource::kExternalPolicy);
-    auto it = installed_apps.find(app_id);
-    if (it != installed_apps.end())
-      return it->second.spec();
+  // App Service is absent in some cases e.g. Arc++ Kiosk Mode.
+  if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    std::string policy_id;
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->AppRegistryCache()
+        .ForOneApp(app_id, [&policy_id](const apps::AppUpdate& update) {
+          policy_id = update.PolicyId();
+        });
+    if (!policy_id.empty())
+      return policy_id;
   }
 
   // Handle Arc++ ids
@@ -130,8 +133,8 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     if (!policy_dict_entry.is_dict())
       return AppListControllerDelegate::PIN_EDITABLE;
 
-    const std::string* policy_entry =
-        policy_dict_entry.FindStringKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey);
+    const std::string* policy_entry = policy_dict_entry.GetDict().FindString(
+        ChromeShelfPrefs::kPinnedAppsPrefAppIDKey);
     if (!policy_entry)
       return AppListControllerDelegate::PIN_EDITABLE;
 
@@ -210,12 +213,21 @@ bool BrowserAppShelfControllerShouldHandleApp(const std::string& app_id,
   }
   auto* proxy =
       apps::AppServiceProxyFactory::GetInstance()->GetForProfile(profile);
-  apps::mojom::AppType app_type = proxy->AppRegistryCache().GetAppType(app_id);
+  apps::AppType app_type = proxy->AppRegistryCache().GetAppType(app_id);
   switch (app_type) {
-    case apps::mojom::AppType::kWeb:
-    case apps::mojom::AppType::kSystemWeb:
-    case apps::mojom::AppType::kStandaloneBrowser:
+    case apps::AppType::kWeb:
+    case apps::AppType::kSystemWeb:
+    case apps::AppType::kStandaloneBrowser:
       return true;
+    case apps::AppType::kStandaloneBrowserChromeApp: {
+      // Should handle Standalone browser hosted apps.
+      bool is_platform_app = false;
+      proxy->AppRegistryCache().ForOneApp(
+          app_id, [&is_platform_app](const apps::AppUpdate& update) {
+            is_platform_app = update.IsPlatformApp().value_or(true);
+          });
+      return !is_platform_app;
+    }
     default:
       return false;
   }

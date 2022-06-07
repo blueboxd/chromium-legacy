@@ -55,11 +55,6 @@ class ASH_EXPORT UnifiedSystemTrayBubble
 
   ~UnifiedSystemTrayBubble() override;
 
-  // Add observers that can delete `this`. This needs to be done separately
-  // after `UnifiedSystemTrayBubble` and `UnifiedMessageCenterBubble` have been
-  // completely constructed to prevent crashes. (crbug/1310675)
-  void InitializeObservers();
-
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBoundsInScreen() const;
 
@@ -114,8 +109,9 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Fire a notification that an accessibility event has occured on this object.
   void NotifyAccessibilityEvent(ax::mojom::Event event, bool send_native_event);
 
-  // Whether the bubble is currently showing audio details view.
+  // Whether the bubble is currently showing audio details or calendar view.
   bool ShowingAudioDetailedView() const;
+  bool ShowingCalendarView() const;
 
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;

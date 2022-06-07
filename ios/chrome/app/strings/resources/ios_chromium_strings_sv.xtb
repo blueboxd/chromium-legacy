@@ -8,7 +8,6 @@
 <translation id="1257458525759135959">Om du vill spara bilder trycker du på Inställningar och låter Chromium lägga till dina foton</translation>
 <translation id="1289216811211435351">Byt till Chromium</translation>
 <translation id="1361748954329991663">Den här versionen av Chromium är inaktuell. Om det inte finns någon uppdatering i <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> kan det hända att enheten inte längre har stöd för nya versioner av Chromium.</translation>
-<translation id="1370204544543370355">Logga in i Chromium med Google-kontot så att du får ut mesta möjliga av programmet</translation>
 <translation id="1431818719585918472">Låt Chromium låsa inkognitoflikarna.</translation>
 <translation id="1472013873724362412">Kontot fungerar inte på Chromium. Kontakta domänadministratören eller logga in med ett vanligt Google-konto.</translation>
 <translation id="1507010443238049608">Bidra till att förbättra Chromiums funktioner och prestanda</translation>
@@ -31,7 +30,6 @@
 <translation id="2426113998523353159">Organisationen kräver att du loggar in för att använda Chromium.</translation>
 <translation id="2450140762465183767">Nu kan du använda Chromium varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="2478931088402984578">Välj <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="2567507405773541360">Få mer gjort med Chromium, som är enklare, säkrare och snabbare än någonsin</translation>
 <translation id="2590893390871230428">Synkronisera data i Chromium</translation>
 <translation id="2650312721222849884">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter där du använder Chromium</translation>
 <translation id="2684230048001240293">Ställ in Chromium som standardwebbläsare och synkronisera flikar, lösenord och betalningsuppgifter på alla enheter</translation>
@@ -43,6 +41,7 @@
 <translation id="3256316712990552818">Kopierat till Chromium</translation>
 <translation id="3344973607274501920">Chromium kunde inte kontrollera dina lösenord. Testa att kontrollera internetanslutningen.</translation>
 <translation id="3472200483164753384">Stöds inte på Chromium Canary</translation>
+<translation id="3567399274263440288">Logga in i Chromium med Google-kontot så att du får ut mesta möjliga av programmet.</translation>
 <translation id="3639997914391704523">Chromium kan kontrollera dina lösenord när du loggar in med Google-kontot.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> använde Chromium och har lämnat kvar bokmärken, lösenord och andra inställningar på enheten.</translation>
 <translation id="3805899903892079518">Chromium har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Integritet &gt; Foton.</translation>
@@ -56,13 +55,6 @@
 <translation id="4828317641996116749">Chromium kunde inte kontrollera alla lösenord. Försök igen senare.</translation>
 <translation id="4985291216379576555">Chromium kan inte söka efter uppdateringar offline</translation>
 <translation id="4999538639245140991">Din data i Chromium raderas från den här enheten eftersom du loggar ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Din data finns kvar i Google-kontot.</translation>
-<translation id="5039881550736388123">När detta är aktiverat:
-<ph name="BEGIN_INDENT" />  • Du hjälper oss att göra Chromium bättre för den som använder programmet på samma sätt som du.<ph name="END_INDENT" />
-
-Tänk på detta:
-<ph name="BEGIN_INDENT" />  • Information om hur du använder Chromium skickas till Google men kopplas inte till dig.
-  • Om Chromium kraschar kan personliga uppgifter finnas med i kraschinformationen.
-  • Om du aktiverar synkronisering kan mätvärdena även innehålla information om webbadresser du besöker.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Logga in i Chromium</translation>
 <translation id="5224391634244552924">Inga sparade lösenord. Chromium kan bara kontrollera dina lösenord om du sparar dem.</translation>
 <translation id="5308226104666789935">Chromium kan inte söka efter uppdateringar</translation>

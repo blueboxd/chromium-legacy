@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import './icons.js';
 import './option.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -16,7 +17,7 @@ interface CommanderAppElement {
   $: {
     input: HTMLInputElement,
     inputRow: HTMLElement,
-  }
+  };
 }
 
 
@@ -113,8 +114,8 @@ class CommanderAppElement extends PolymerElement {
     if (viewModel.action === Action.DISPLAY_RESULTS) {
       this.options_ = viewModel.options || [];
       this.resultSetId_ = viewModel.resultSetId;
-      this.showNoResults_ =
-          this.resultSetId_ != null && this.options_.length === 0;
+      this.showNoResults_ = this.resultSetId_ != null &&
+          this.$.input.value !== '' && this.options_.length === 0;
       if (this.options_.length > 0) {
         this.focusedIndex_ = 0;
       }

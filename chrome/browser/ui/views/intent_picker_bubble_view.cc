@@ -20,11 +20,11 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/services/app_service/public/cpp/intent_constants.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -78,15 +78,12 @@ class IntentPickerLabelButton : public views::LabelButton {
     if (!icon_model.IsEmpty())
       SetImageModel(views::ImageButton::STATE_NORMAL, icon_model);
     auto* provider = ChromeLayoutProvider::Get();
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(
+    SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(
         provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI),
         provider->GetInsetsMetric(views::INSETS_DIALOG).left())));
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
-    views::InkDrop::Get(this)->SetVisibleOpacity(kToolbarInkDropVisibleOpacity);
-    views::InkDrop::Get(this)->SetHighlightOpacity(
-        kToolbarInkDropHighlightVisibleOpacity);
     views::InkDrop::Get(this)->SetBaseColorCallback(
-        base::BindRepeating(&GetToolbarInkDropBaseColor, this));
+        base::BindRepeating(&HoverButton::GetInkDropColor, this));
   }
   IntentPickerLabelButton(const IntentPickerLabelButton&) = delete;
   IntentPickerLabelButton& operator=(const IntentPickerLabelButton&) = delete;
@@ -203,7 +200,7 @@ void IntentPickerBubbleView::OnDialogAccepted() {
 }
 
 void IntentPickerBubbleView::OnDialogCancelled() {
-  const char* launch_name = apps::kUseBrowserForLink;
+  const char* launch_name = apps_util::kUseBrowserForLink;
   bool should_persist = remember_selection_checkbox_ &&
                         remember_selection_checkbox_->GetChecked();
   RunCallbackAndCloseBubble(launch_name, apps::PickerEntryType::kUnknown,
@@ -385,9 +382,9 @@ void IntentPickerBubbleView::Initialize() {
           : views::DialogContentType::kControl);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(insets.top(), 0, insets.bottom(), 0),
+      gfx::Insets::TLBR(insets.top(), 0, insets.bottom(), 0),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
-  insets = gfx::Insets(0, insets.left(), 0, insets.right());
+  insets = gfx::Insets::TLBR(0, insets.left(), 0, insets.right());
 
   scroll_view_ = AddChildView(std::move(scroll_view));
 

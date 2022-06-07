@@ -117,25 +117,17 @@ void PageSpecificContentSettingsDelegate::OnContentAllowed(
 void PageSpecificContentSettingsDelegate::OnContentBlocked(
     ContentSettingsType type) {}
 
-void PageSpecificContentSettingsDelegate::OnCacheStorageAccessAllowed(
-    const url::Origin& origin) {}
+void PageSpecificContentSettingsDelegate::OnStorageAccessAllowed(
+    content_settings::mojom::ContentSettingsManager::StorageType storage_type,
+    const url::Origin& origin,
+    content::Page& page) {}
 
 void PageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
-    const net::CookieList& accessed_cookies) {}
-
-void PageSpecificContentSettingsDelegate::OnDomStorageAccessAllowed(
-    const url::Origin& origin) {}
-
-void PageSpecificContentSettingsDelegate::OnFileSystemAccessAllowed(
-    const url::Origin& origin) {}
-
-void PageSpecificContentSettingsDelegate::OnIndexedDBAccessAllowed(
-    const url::Origin& origin) {}
+    const net::CookieList& accessed_cookies,
+    content::Page& page) {}
 
 void PageSpecificContentSettingsDelegate::OnServiceWorkerAccessAllowed(
-    const url::Origin& origin) {}
-
-void PageSpecificContentSettingsDelegate::OnWebDatabaseAccessAllowed(
-    const url::Origin& origin) {}
+    const url::Origin& origin,
+    content::Page& page) {}
 
 }  // namespace weblayer

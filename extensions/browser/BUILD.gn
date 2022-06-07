@@ -367,6 +367,8 @@ source_set("browser_sources") {
     "external_install_info.cc",
     "external_install_info.h",
     "external_provider_interface.h",
+    "favicon_util.cc",
+    "favicon_util.h",
     "file_highlighter.cc",
     "file_highlighter.h",
     "file_reader.cc",
@@ -625,7 +627,10 @@ source_set("browser_sources") {
   }
 
   if (is_chromeos_ash) {
-    deps += [ "//chromeos/login/login_state" ]
+    deps += [
+      "//chrome/browser/ash/crosapi:browser_util",
+      "//chromeos/login/login_state",
+    ]
   }
 
   if (is_chromeos) {
@@ -735,6 +740,7 @@ source_set("browser_tests") {
 
     deps += [
       "//ash/components/audio",
+      "//chromeos/ash/components/dbus/upstart",
       "//chromeos/dbus:test_support",
       "//chromeos/dbus/audio",
       "//chromeos/dbus/cec_service",
@@ -743,7 +749,6 @@ source_set("browser_tests") {
       "//chromeos/dbus/permission_broker",
       "//chromeos/dbus/power",
       "//chromeos/dbus/power:power_manager_proto",
-      "//chromeos/dbus/upstart",
       "//chromeos/login/login_state",
       "//chromeos/network",
       "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
@@ -909,6 +914,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//components/cast_certificate",
     "//components/cast_certificate:test_support",
     "//components/content_settings/core/test:test_support",
@@ -974,17 +980,21 @@ source_set("unit_tests") {
     ]
 
     deps += [
+      "//ash/constants",
+      "//chrome/browser/ash/crosapi:browser_util",
+      "//chrome/common:constants",
       "//chromeos:test_support",
+      "//chromeos/ash/components/dbus/upstart",
       "//chromeos/dbus:test_support",
       "//chromeos/dbus/audio",
       "//chromeos/dbus/media_analytics",
       "//chromeos/dbus/media_analytics:media_perception_proto",
       "//chromeos/dbus/permission_broker",
       "//chromeos/dbus/power",
-      "//chromeos/dbus/upstart",
       "//chromeos/login/login_state",
       "//chromeos/network:test_support",
       "//components/feedback",
+      "//components/prefs:prefs",
       "//extensions/shell:app_shell_lib",
     ]
   }

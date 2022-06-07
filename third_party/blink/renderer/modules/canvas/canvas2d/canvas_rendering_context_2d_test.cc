@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -1248,6 +1249,8 @@ TEST_P(CanvasRenderingContext2DTest,
 }
 
 TEST_P(CanvasRenderingContext2DTest, RemainAcceleratedAfterGetImageData) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(features::kCanvas2dStaysGPUOnReadback);
   CreateContext(kNonOpaque);
   gfx::Size size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(

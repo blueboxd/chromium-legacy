@@ -34,7 +34,7 @@ class KioskEnableScreenHandler : public KioskEnableScreenView,
  public:
   using TView = KioskEnableScreenView;
 
-  explicit KioskEnableScreenHandler(JSCallsContainer* js_calls_container);
+  KioskEnableScreenHandler();
 
   KioskEnableScreenHandler(const KioskEnableScreenHandler&) = delete;
   KioskEnableScreenHandler& operator=(const KioskEnableScreenHandler&) = delete;
@@ -49,7 +49,7 @@ class KioskEnableScreenHandler : public KioskEnableScreenView,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
  private:
   ash::KioskEnableScreen* screen_ = nullptr;

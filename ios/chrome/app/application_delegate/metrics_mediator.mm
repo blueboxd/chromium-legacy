@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
@@ -237,6 +236,8 @@ void RecordWidgetUsage(base::span<const HistogramNameCountPair> histograms) {
         @"IOS.CredentialExtension.KeychainSavePasswordFailureCount",
     app_group::kCredentialExtensionSaveCredentialFailureCount :
         @"IOS.CredentialExtension.SaveCredentialFailureCount",
+    app_group::kCredentialExtensionConsentVerifiedCount :
+        @"IOS.CredentialExtension.ConsentVerifiedCount",
   };
 
   NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();

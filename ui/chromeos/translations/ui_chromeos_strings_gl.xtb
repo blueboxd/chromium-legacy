@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Creando copia de seguranza de <ph name="FILE_COUNT" /></translation>
 <translation id="4218274196133425560">Quitar excepción para <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Presentación de Google</translation>
+<translation id="4277536868133419688">Activouse o filtro <ph name="FILTER_NAME" />.</translation>
 <translation id="4290535918735525311">1 cartafol compartido con Linux</translation>
 <translation id="4299729908419173967">Brasileiro</translation>
 <translation id="4302605047395093221">Calquera que utilice este dispositivo deberá meter o PIN para conectarse a esta rede de telefonía móbil</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">Máis...</translation>
 <translation id="4579744207439506346">Engadiuse <ph name="ENTRY_NAME" /> á selección.</translation>
 <translation id="4594543368593301662">Mostrando resultados para <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">Restableceuse o filtro.</translation>
 <translation id="4603392156942865207">Copiando <ph name="FILE_NAME" /> en <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4642769377300286600">Instalando perfil para móbiles, rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -529,6 +531,7 @@
 <translation id="5469868506864199649">Italiano</translation>
 <translation id="5473333559083690127">Volve introducir o novo PIN</translation>
 <translation id="5489067830765222292">Letón</translation>
+<translation id="5489965683297092283">Desactivouse o filtro <ph name="FILTER_NAME" />.</translation>
 <translation id="5494920125229734069">Seleccionar todo</translation>
 <translation id="5500122897333236901">Islandés</translation>
 <translation id="5508696409934741614">Puntos</translation>
@@ -561,7 +564,7 @@
 <translation id="5776325638577448643">Borrar e formatar</translation>
 <translation id="57838592816432529">Silenciar</translation>
 <translation id="5788127256798019331">Ficheiros de Play</translation>
-<translation id="5790193330357274855">Kazako</translation>
+<translation id="5790193330357274855">Casaco</translation>
 <translation id="5804245609861364054">Kannará (transliteración)</translation>
 <translation id="5814126672212206791">Tipo de conexión</translation>
 <translation id="5817397429773072584">Chinés tradicional</translation>
@@ -845,6 +848,7 @@
 <translation id="8208580316430297579">Material gráfico</translation>
 <translation id="8223479393428528563">Para gardar estes ficheiros para o uso sen conexión, accede en liña, fai clic co botón dereito nos ficheiros e selecciona a opción <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Cancelar</translation>
+<translation id="8250920743982581267">Documentos</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8261561378965667560">Chinés (matriz)</translation>
 <translation id="8269755669432358899">Contraer paneis de comentarios de ficheiros</translation>

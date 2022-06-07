@@ -230,7 +230,7 @@ Channel GetStatefulLacrosChannel() {
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 69,
+    crosapi::mojom::Crosapi::Version_ == 70,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 
 }  // namespace
@@ -253,7 +253,7 @@ const base::Feature kLacrosDisableChromeApps{"LacrosDisableChromeApps",
 // When this feature is enabled, Lacros is allowed to roll out by policy to
 // Googlers.
 const base::Feature kLacrosGooglePolicyRollout{
-    "LacrosGooglePolicyRollout", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LacrosGooglePolicyRollout", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Makes LaCrOS allowed for Family Link users.
 // With this feature disabled LaCrOS cannot be enabled for Family Link users.
@@ -297,6 +297,9 @@ const char kDataVerPref[] = "lacros.data_version";
 const char kRequiredDataVersion[] = "92.0.0.0";
 const char kProfileMigrationCompletedForUserPref[] =
     "lacros.profile_migration_completed_for_user";
+// This pref is to record whether the user clicks "Go to files" button
+// on error page of the data migration.
+const char kGotoFilesPref[] = "lacros.goto_files";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kLaunchOnLoginPref, /*default_value=*/false);
@@ -308,6 +311,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kDataVerPref);
   registry->RegisterDictionaryPref(kProfileMigrationCompletedForUserPref,
                                    base::DictionaryValue());
+  registry->RegisterListPref(kGotoFilesPref);
 }
 
 base::FilePath GetUserDataDir() {
@@ -438,6 +442,25 @@ bool IsLacrosEnabledForMigration(const User* user,
   return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
 }
 
+bool IsProfileMigrationAvailable() {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  const user_manager::User* user = user_manager->GetPrimaryUser();
+  // |user| may be nullptr on unittests.
+  if (!user || !IsProfileMigrationEnabled(user->GetAccountId()))
+    return false;
+
+  if (!IsLacrosEnabledForMigration(user, PolicyInitState::kAfterInit))
+    return false;
+
+  // If migration is already completed, it is not necessary to run again.
+  if (IsProfileMigrationCompletedForUser(user_manager->GetLocalState(),
+                                         user->username_hash())) {
+    return false;
+  }
+
+  return true;
+}
+
 bool IsLacrosSupportFlagAllowed() {
   return IsLacrosAllowedToBeEnabled() &&
          (GetCachedLacrosAvailability() == LacrosAvailability::kUserChoice);
@@ -456,8 +479,16 @@ bool IsAshWebBrowserEnabled() {
     case LacrosAvailability::kUserChoice:
       break;
     case LacrosAvailability::kLacrosDisallowed:
+      return true;
     case LacrosAvailability::kSideBySide:
     case LacrosAvailability::kLacrosPrimary:
+      // Normally, policy should override Finch. Due to complications in the
+      // Google rollout, in the short term Finch will override policy if Finch
+      // is enabling this feature.
+      if (IsGoogleInternal() &&
+          base::FeatureList::IsEnabled(chromeos::features::kLacrosOnly)) {
+        return false;
+      }
       return true;
     case LacrosAvailability::kLacrosOnly:
       return false;
@@ -636,7 +667,7 @@ void RecordDataVer(PrefService* local_state,
 bool IsDataWipeRequired(const std::string& user_id_hash) {
   base::Version data_version =
       GetDataVer(g_browser_process->local_state(), user_id_hash);
-  base::Version current_version = version_info::GetVersion();
+  const base::Version& current_version = version_info::GetVersion();
   base::Version required_version =
       base::Version(base::StringPiece(kRequiredDataVersion));
 
@@ -700,7 +731,7 @@ void CacheLacrosAvailability(const policy::PolicyMap& map) {
       value ? value->GetString() : base::StringPiece());
 }
 
-ComponentInfo GetLacrosComponentInfo() {
+ComponentInfo GetLacrosComponentInfoForChannel(version_info::Channel channel) {
   // We default to the Dev component for UNKNOWN channels.
   static const auto kChannelToComponentInfoMap =
       base::MakeFixedFlatMap<Channel, const ComponentInfo*>({
@@ -710,7 +741,11 @@ ComponentInfo GetLacrosComponentInfo() {
           {Channel::BETA, &kLacrosDogfoodBetaInfo},
           {Channel::STABLE, &kLacrosDogfoodStableInfo},
       });
-  return *kChannelToComponentInfoMap.at(GetStatefulLacrosChannel());
+  return *kChannelToComponentInfoMap.at(channel);
+}
+
+ComponentInfo GetLacrosComponentInfo() {
+  return GetLacrosComponentInfoForChannel(GetStatefulLacrosChannel());
 }
 
 Channel GetLacrosSelectionUpdateChannel(LacrosSelection selection) {
@@ -741,11 +776,6 @@ bool IsProfileMigrationCompletedForUser(PrefService* local_state,
   // g_browser_process->local_state() etc.
   if (g_profile_migration_completed_for_test)
     return true;
-
-  if (base::FeatureList::IsEnabled(
-          ash::features::kForceProfileMigrationCompletion)) {
-    return true;
-  }
 
   const auto* pref =
       local_state->FindPreference(kProfileMigrationCompletedForUserPref);
@@ -827,6 +857,28 @@ bool IsAshBrowserSyncEnabled() {
     return false;
 
   return true;
+}
+
+void SetGotoFilesClicked(PrefService* local_state,
+                         const std::string& user_id_hash) {
+  ListPrefUpdate update(local_state, kGotoFilesPref);
+  base::Value* list = update.Get();
+  base::Value user_id_hash_value(user_id_hash);
+  if (!base::Contains(list->GetList(), user_id_hash_value))
+    list->GetList().Append(std::move(user_id_hash_value));
+}
+
+void ClearGotoFilesClicked(PrefService* local_state,
+                           const std::string& user_id_hash) {
+  ListPrefUpdate update(local_state, kGotoFilesPref);
+  base::Value* list = update.Get();
+  list->GetList().EraseValue(base::Value(user_id_hash));
+}
+
+bool WasGotoFilesClicked(PrefService* local_state,
+                         const std::string& user_id_hash) {
+  const base::Value* list = local_state->GetList(kGotoFilesPref);
+  return base::Contains(list->GetList(), base::Value(user_id_hash));
 }
 
 }  // namespace browser_util

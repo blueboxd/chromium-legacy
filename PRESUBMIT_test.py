@@ -865,9 +865,9 @@ class IncludeGuardTest(unittest.TestCase):
                      'Include guard CONTENT_BROWSER_THING_BAR_H_ '
                      'not covering the whole file')
 
-    self.assertEqual(msgs[1].items, ['content/browser/test1.h'])
-    self.assertEqual(msgs[1].message,
-                     'Missing include guard CONTENT_BROWSER_TEST1_H_')
+    self.assertIn('content/browser/test1.h', msgs[1].message)
+    self.assertIn('Recommended name: CONTENT_BROWSER_TEST1_H_',
+                     msgs[1].message)
 
     self.assertEqual(msgs[2].items, ['content/browser/test2.h:3'])
     self.assertEqual(msgs[2].message,
@@ -879,9 +879,9 @@ class IncludeGuardTest(unittest.TestCase):
                      'Header using the wrong include guard name '
                      'CONTENT_BROWSER_SPLLEING_H_')
 
-    self.assertEqual(msgs[4].items, ['content/browser/foo+bar.h'])
-    self.assertEqual(msgs[4].message,
-                     'Missing include guard CONTENT_BROWSER_FOO_BAR_H_')
+    self.assertIn('content/browser/foo+bar.h', msgs[4].message)
+    self.assertIn('Recommended name: CONTENT_BROWSER_FOO_BAR_H_',
+                  msgs[4].message)
 
     self.assertEqual(msgs[5].items, ['content/NotInBlink.h:1'])
     self.assertEqual(msgs[5].message,
@@ -2612,74 +2612,6 @@ class BannedTypeCheckTest(unittest.TestCase):
     self.assertEqual(1, len(results))
     self.assertTrue('bad.mojom' in results[0].message)
     self.assertTrue('good.mojom' not in results[0].message)
-
-  def testDeprecatedMojoTypes(self):
-    ok_paths = ['components/arc']
-    warning_paths = ['some/cpp']
-    error_paths = ['third_party/blink', 'content']
-    test_cases = [
-      {
-        'type': 'mojo::AssociatedInterfacePtrInfo<>',
-        'file': 'file4.cc'
-      },
-      {
-        'type': 'mojo::AssociatedInterfaceRequest<>',
-        'file': 'file5.cc'
-      },
-      {
-        'type': 'mojo::InterfacePtr<>',
-        'file': 'file8.cc'
-      },
-      {
-        'type': 'mojo::InterfacePtrInfo<>',
-        'file': 'file9.cc'
-      },
-      {
-        'type': 'mojo::InterfaceRequest<>',
-        'file': 'file10.cc'
-      },
-      {
-        'type': 'mojo::MakeRequest()',
-        'file': 'file11.cc'
-      },
-    ]
-
-    # Build the list of MockFiles considering paths that should trigger warnings
-    # as well as paths that should trigger errors.
-    input_api = MockInputApi()
-    input_api.files = []
-    for test_case in test_cases:
-      for path in ok_paths:
-        input_api.files.append(MockFile(os.path.join(path, test_case['file']),
-                                        [test_case['type']]))
-      for path in warning_paths:
-        input_api.files.append(MockFile(os.path.join(path, test_case['file']),
-                                        [test_case['type']]))
-      for path in error_paths:
-        input_api.files.append(MockFile(os.path.join(path, test_case['file']),
-                                        [test_case['type']]))
-
-    results = PRESUBMIT.CheckNoDeprecatedMojoTypes(input_api, MockOutputApi())
-
-    # warnings are results[0], errors are results[1]
-    self.assertEqual(2, len(results))
-
-    for test_case in test_cases:
-      # Check that no warnings nor errors have been triggered for these paths.
-      for path in ok_paths:
-        self.assertFalse(path in results[0].message)
-        self.assertFalse(path in results[1].message)
-
-      # Check warnings have been triggered for these paths.
-      for path in warning_paths:
-        self.assertTrue(path in results[0].message)
-        self.assertFalse(path in results[1].message)
-
-      # Check errors have been triggered for these paths.
-      for path in error_paths:
-        self.assertFalse(path in results[0].message)
-        self.assertTrue(path in results[1].message)
-
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
   def testTruePositives(self):

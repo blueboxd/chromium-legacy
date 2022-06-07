@@ -86,7 +86,10 @@ public class ExploreSitesPageTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(
+                            ChromeRenderTestRule.Component.UI_BROWSER_NEW_TAB_PAGE_EXPLORE_SITES)
+                    .build();
 
     private Tab mTab;
     private RecyclerView mRecyclerView;
@@ -134,7 +137,7 @@ public class ExploreSitesPageTest {
 
     @Test
     @SmallTest
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/953254")
     @Feature({"ExploreSites", "RenderTest"})
     @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testScrolledLayout_withBack() throws Exception {

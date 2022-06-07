@@ -144,7 +144,7 @@
 <translation id="1754404134430936718">ಪಠ್ಯವನ್ನು ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="1772137089884020309">ಬುಕ್‌ಮಾರ್ಕ್ ಫೋಲ್ಡರ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ಮುಚ್ಚಲಾಗಿದೆ</translation>
 <translation id="1779766957982586368">ವಿಂಡೋ ಮುಚ್ಚು</translation>
-<translation id="1791662854739702043">ಇನ್‌ಸ್ಟಾಲ್ ಆಗಿದೆ</translation>
+<translation id="1791662854739702043">ಸ್ಥಾಪಿಸಲಾಗಿದೆ</translation>
 <translation id="1792959175193046959">ಡಿಫಾಲ್ಟ್ ಡೌನ್‌ಲೋಡ್ ಸ್ಥಳವನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಾಯಿಸಿ</translation>
 <translation id="1795251344124198516">Chrome ಮತ್ತು Chrome OS ಹೆಚ್ಚುವರಿ ಸೇವಾ ನಿಯಮಗಳು</translation>
 <translation id="1807246157184219062">ತಿಳಿ</translation>
@@ -184,7 +184,6 @@
 <translation id="200114059308480249">Google ಹುಡುಕಾಟಗಳಲ್ಲಿ ಸುತ್ತಮುತ್ತಲಿನ ಪಠ್ಯವನ್ನು ಸೇರಿಸಬೇಕೇ?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ಫೈಲ್}one{# ಫೈಲ್‌ಗಳು}other{# ಫೈಲ್‌ಗಳು}}</translation>
 <translation id="2015836039326522978"><ph name="APP_NAME" />, Chrome ನಲ್ಲಿ ತೆರೆಯುತ್ತದೆ. ಮುಂದುವರಿಯುವ ಮೂಲಕ, ನೀವು <ph name="BEGIN_LINK1" />Google ಸೇವಾ ನಿಯಮಗಳು<ph name="END_LINK1" />, ಹಾಗೂ <ph name="BEGIN_LINK2" />Google Chrome ಮತ್ತು Chrome OS ಹೆಚ್ಚುವರಿ ಸೇವಾ ನಿಯಮಗಳಿಗೆ<ph name="END_LINK2" /> ಸಮ್ಮತಿಸುತ್ತೀರಿ. <ph name="BEGIN_LINK3" />ಗೌಪ್ಯತೆ ನೀತಿ<ph name="END_LINK3" /> ಸಹ ಅನ್ವಯಿಸುತ್ತದೆ.</translation>
-<translation id="2019145049163614359">ಆಸಕ್ತಿಯನ್ನು ತೆಗೆದುಹಾಕಬೇಕೇ?</translation>
 <translation id="2020309681647789787">ನಿಮ್ಮ ಎಲ್ಲಾ ಸಿಂಕ್‌ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಇತಿಹಾಸ ಲಭ್ಯವಿರುತ್ತದೆ, ಇದರಿಂದ ನೀವು ಮಾಡುತ್ತಿದ್ದ ಕೆಲಸವನ್ನು ನೀವು ಮುಂದುವರಿಸಬಹುದು</translation>
 <translation id="2021896219286479412">ಪೂರ್ಣ ಪರದೆ ಸೈಟ್ ನಿಯಂತ್ರಣಗಳು</translation>
 <translation id="2038563949887743358">ಡೆಸ್ಕ್‌ಟಾಪ್ ಸೈಟ್ ವಿನಂತಿಯನ್ನು ಆನ್ ಮಾಡಿ</translation>
@@ -213,6 +212,7 @@
 <translation id="2141396931810938595">ನಿಮ್ಮ ಬಳಕೆಯನ್ನು ಆಧರಿಸಿ</translation>
 <translation id="214888715418183969">ನೀವು Chrome ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲು ಬಯಸುವುದನ್ನು ಆರಿಸಿ. ನೀವು ಹಂಚಿಕೊಳ್ಳುವ ಮೆಟ್ರಿಕ್‌ಗಳನ್ನು Chrome ನ ವೈಶಿಷ್ಟ್ಯಗಳು, ಕಾರ್ಯಕ್ಷಮತೆ ಮತ್ತು ಸ್ಥಿರತೆಯನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="2149973817440762519">ಬುಕ್‌ಮಾರ್ಕ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
+<translation id="2155214902713132423">ಈ ಸಾಧನಕ್ಕೆ ಈ ದೃಢೀಕರಣ ವಿಧಾನ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಮತ್ತೊಂದು ಸಾಧನದಲ್ಲಿ ಬೇರೊಂದು ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ.</translation>
 <translation id="2157851137955077194">ನಿಮ್ಮ ಫೋನ್‌ನಿಂದ ಮತ್ತೊಂದು ಸಾಧನಕ್ಕೆ ಏನನ್ನಾದರೂ ಹಂಚಿಕೊಳ್ಳಲು, ಎರಡೂ ಸಾಧನಗಳಲ್ಲಿರುವ, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸಿಂಕ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="2158408438301413340">ಎಲ್ಲಾ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು Chrome ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="2169830938017475061">ಈಗ</translation>
@@ -268,7 +268,7 @@
 <translation id="247737702124049222">ಚಿತ್ರ ವಿವರಣೆಗಳು ಆನ್ ಆಗಿವೆ</translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
 <translation id="2485422356828889247">ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್</translation>
-<translation id="2494974097748878569">Chrome ನಲ್ಲಿನ Google Assistant</translation>
+<translation id="2494974097748878569">Chrome ನಲ್ಲಿನ Google ಅಸಿಸ್ಟೆಂಟ್</translation>
 <translation id="2496180316473517155">ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ</translation>
 <translation id="2497852260688568942">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಸಿಂಕ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ</translation>
 <translation id="250020030759455918">ನಿಮ್ಮ <ph name="SITE_NAME" /> ಸೈನ್-ಇನ್ ಸ್ಥಿತಿ, ಬ್ರೌಸಿಂಗ್ ಡೇಟಾ ಮತ್ತು ಸೈಟ್ ಡೇಟಾವನ್ನು Chrome ನಲ್ಲಿ ನೋಡುವಿರಿ</translation>
@@ -732,7 +732,6 @@
 <translation id="5091199029769593641">ಶೀಘ್ರವೇ, ನೀವು ಹೊಸ ಟ್ಯಾಬ್ ಅನ್ನು ತೆರೆದಾಗ, ನಿಮಗೆ <ph name="SITE_NAME" /> ನಲ್ಲಿ ಸ್ಟೋರಿಗಳನ್ನು ಕಾಣುತ್ತವೆ. ನೀವು ಅನುಸರಿಸುವ ಸೈಟ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ. ನೀವು ಅವುಗಳನ್ನು Discover ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿರ್ವಹಿಸಬಹುದು.</translation>
 <translation id="5091249083535528968">ಬಳಕೆಯ ಡೇಟಾವನ್ನು ವಿಸ್ತರಿಸಲಾಗಿದೆ</translation>
 <translation id="509429900233858213">ದೋಷವೊಂದು ಕಾಣಿಸಿಕೊಂಡಿದೆ.</translation>
-<translation id="5098190077610408701">ಆಸಕ್ತಿಗಳನ್ನು ಸೇರಿಸಬೇಕೇ?</translation>
 <translation id="5102401324271069229">ಯಾವುದಾದರೂ ಸೈಟ್ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಕದಿಯಲು ಪ್ರಯತ್ನಿಸಿದರೆ ಅಥವಾ ನೀವು ಹಾನಿಕಾರಕ ಫೈಲ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದಾಗ, ಪುಟದ ವಿಷಯದ ತುಣುಕುಗಳನ್ನು ಒಳಗೊಂಡ URL ಗಳನ್ನು Chrome, ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್‌ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="510275257476243843">1 ಗಂಟೆ ಉಳಿದಿದೆ</translation>
 <translation id="5115811374190515607"><ph name="PRODUCT_NAME" /> ಗೆ</translation>
@@ -874,10 +873,11 @@
 <translation id="5869522115854928033">ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="587735546353481577">ಸೈಟ್ ಅನ್ನು ಫಾಲೋ ಮಾಡಲು, ಸೈಟ್‌ಗೆ ಹೋಗಿ, Chrome ಮೆನುವನ್ನು ತೆರೆಯಿರಿ, ಹಾಗೂ ಫಾಲೋ ಮಾಡಿ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="5880748256563468367">ಫೀಡ್‌ಗೆ ಹೋಗಿ</translation>
-<translation id="5884076754568147479">ಕಾರ್ಯಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸುವುದಕ್ಕೆ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು, ನೀವು Assistant ಅನ್ನು ಬಳಸಿದ ಸೈಟ್‌ಗಳ URL ಗಳು ಮತ್ತು ವಿಷಯಗಳು ಹಾಗೂ Assistant ಮೂಲಕ ನೀವು ಸಲ್ಲಿಸಿದ ಮಾಹಿತಿಯನ್ನು Google ಸ್ವೀಕರಿಸುತ್ತದೆ</translation>
+<translation id="5884076754568147479">ಕಾರ್ಯಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸುವುದಕ್ಕೆ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು, ನೀವು ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ಬಳಸಿದ ಸೈಟ್‌ಗಳ URL ಗಳು ಮತ್ತು ವಿಷಯಗಳು ಹಾಗೂ ಅಸಿಸ್ಟೆಂಟ್ ಮೂಲಕ ನೀವು ಸಲ್ಲಿಸಿದ ಮಾಹಿತಿಯನ್ನು Google ಸ್ವೀಕರಿಸುತ್ತದೆ</translation>
 <translation id="5906513782029855931">ಸೈಟ್‌ಗಳ URL ಗಳ ಬಗ್ಗೆ ತಿಳಿದುಕೊಳ್ಳುವುದರಿಂದ, ಕಾರ್ಯಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸುವುದಕ್ಕೆ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು Google Assistant ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ. Assistant ಅನ್ನು Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="5916664084637901428">ಆನ್‌</translation>
 <translation id="5919204609460789179">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು <ph name="PRODUCT_NAME" /> ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
+<translation id="5938820472109305350"><ph name="INTEREST" /> ಸೇರಿಸಿ</translation>
 <translation id="5942872142862698679">ಹುಡುಕಲು Google ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5945035219773565305">ಪ್ರಸ್ತುತ ಶಿಫಾರಸು:  <ph name="RECOMMENDATION" /></translation>
 <translation id="5951119116059277034">ಲೈವ್ ಪುಟವನ್ನು ವೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -897,7 +897,6 @@
 <translation id="6033245666633565791"><ph name="BEGIN_LINK" />ಪ್ರೈವೆಸಿ ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್<ph name="END_LINK" /> ನೊಂದಿಗೆ, ತೆರೆದ ವೆಬ್ ಅನ್ನು ಸಂರಕ್ಷಿಸುವುದರ ಜೊತೆಗೆ, ಕ್ರಾಸ್-ಸೈಟ್ ಟ್ರ್ಯಾಕಿಂಗ್‌ನಿಂದ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲು Chrome ಹೊಸ ತಂತ್ರಜ್ಞಾನಗಳನ್ನು ಅಭಿವೃದ್ಧಿಪಡಿಸುತ್ತಿದೆ.
 
 ಪ್ರೈವೆಸಿ ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್ ಪ್ರಯೋಗಗಳು ಇನ್ನೂ ಸಕ್ರಿಯ ಅಭಿವೃದ್ಧಿ ಹಂತದಲ್ಲಿವೆ ಮತ್ತು ಆಯ್ದ ಪ್ರದೇಶಗಳಲ್ಲಿ ಲಭ್ಯವಿವೆ. ಇದೀಗ, ಥರ್ಡ್ ಪಾರ್ಟಿ ಕುಕೀಗಳಂತಹ ಪ್ರಸ್ತುತ ವೆಬ್ ತಂತ್ರಜ್ಞಾನಗಳನ್ನು ಬಳಸುವುದನ್ನು ಮುಂದುವರಿಸುವಾಗ ಸೈಟ್‌ಗಳು ಪ್ರೈವೆಸಿ ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್ ಅನ್ನು ಬಳಸಿ ನೋಡಬಹುದು.</translation>
-<translation id="6036057147555329831">ಹೆಚ್ಚುವರಿ ICU</translation>
 <translation id="6039379616847168523">ಮುಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="604124094241169006">ಸ್ವಯಂಚಾಲಿತ</translation>
@@ -1022,13 +1021,14 @@
 <translation id="663674369910034433">ಗೌಪ್ಯತೆ, ಸುರಕ್ಷತೆ ಮತ್ತು ಡೇಟಾ ಸಂಗ್ರಹಣೆಗೆ ಸಂಬಂಧಿಸಿದ ಹೆಚ್ಚಿನ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗಾಗಿ <ph name="BEGIN_LINK1" />ಸಿಂಕ್<ph name="END_LINK1" /> ಮತ್ತು <ph name="BEGIN_LINK2" />Google ಸೇವೆಗಳನ್ನು<ph name="END_LINK2" /> ನೋಡಿ.</translation>
 <translation id="6637100877383020115">ಆ್ಯಪ್ ಅನ್ನು ಸುಧಾರಿಸುವುದಕ್ಕೆ ಸಹಾಯ ಮಾಡಲು, Chrome ಬಳಕೆ ಮತ್ತು ಕ್ರ್ಯಾಶ್ ಡೇಟಾವನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ. <ph name="BEGIN_UMA_LINK" />ನಿರ್ವಹಿಸಿ<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">ಎಲ್ಲಾ ಸಮಯದಲ್ಲಿ ನಿರ್ಬಂಧಿಸಿ</translation>
+<translation id="6641780377503683465"><ph name="INTEREST" /> ಅನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="6643016212128521049">ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="6645629752388991326">ಯಾವ ಸಾಧನಗಳು ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು ಎಂಬುದನ್ನು ನಿಯಂತ್ರಿಸಲು ಈ ಸಾಧನವನ್ನು ಭದ್ರತಾ ಕೀಯಾಗಿ ಬಳಸಿ.</translation>
 <translation id="6648459603387803038">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಬ್ರೌಸರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ದೂರದಿಂದಲೇ ಬದಲಾಯಿಸಬಹುದು. ಈ ಸಾಧನದಲ್ಲಿನ ಚಟುವಟಿಕೆಯನ್ನು Chrome ನ ಹೊರಗೆ ಸಹ ನಿರ್ವಹಿಸಬಹುದು.</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6649642165559792194">ಚಿತ್ರವನ್ನು ಪೂರ್ವವೀಕ್ಷಿಸಿ <ph name="BEGIN_NEW" />ಹೊಸದು<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">ಪಾಸ್‌ವರ್ಡ್</translation>
-<translation id="6659594942844771486">ಬ್ರೌಸರ್ ಟ್ಯಾಬ್</translation>
+<translation id="6659594942844771486">ಟ್ಯಾಬ್</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> ರಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="6671495933530132209">ಚಿತ್ರವನ್ನು ನಕಲಿಸಿ</translation>
 <translation id="6674044799624355221">ಹೊಸ ಬೆದರಿಕೆಗಳನ್ನು ಕಂಡುಹಿಡಿಯಲು ನೆರವಾಗುವುದಕ್ಕಾಗಿ, ಪುಟಗಳು, ಡೌನ್‌ಲೋಡ್‌ಗಳು, ವಿಸ್ತರಣೆಯ ಚಟುವಟಿಕೆ ಮತ್ತು ಸಿಸ್ಟಂ ಮಾಹಿತಿಯ ಸಣ್ಣ ಮಾದರಿಯನ್ನು ಸಹ ಕಳುಹಿಸುತ್ತದೆ</translation>

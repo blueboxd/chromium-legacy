@@ -31,6 +31,7 @@ extern const char kIosSettingsPromoAlreadySeen[];
 extern const char kIosSettingsSigninPromoDisplayedCount[];
 extern const char kLinkPreviewEnabled[];
 extern const char kNTPContentSuggestionsEnabled[];
+extern const char kNTPFollowingFeedSortType[];
 extern const char kPrintingEnabled[];
 extern const char kSearchSuggestEnabled[];
 extern const char kTrackPricesOnTabsEnabled[];
@@ -50,7 +51,7 @@ extern const char kIosUserZoomMultipliers[];
 extern const char kIncognitoAuthenticationSetting[];
 
 extern const char kBrowserSigninPolicy[];
-extern const char kBackupDisallowedPolicy[];
+extern const char kAllowChromeDataInBackups[];
 
 extern const char kNewTabPageLocationOverride[];
 

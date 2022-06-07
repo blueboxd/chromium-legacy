@@ -468,6 +468,29 @@ ci.builder(
     os = os.MAC_DEFAULT,
 )
 
+fyi_ios_builder(
+    name = "ios-fieldtrial-rel",
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+                "mac_toolchain",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = "ios",
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "ios",
+        ),
+    ),
+)
+
 ci.builder(
     name = "linux-lacros-builder-fyi-rel",
     console_view_entry = consoles.console_view_entry(
@@ -580,7 +603,6 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
-            target_platform = builder_config.target_platform.MAC,
         ),
         test_results_config = builder_config.test_results_config(
             config = "staging_server",
@@ -643,6 +665,9 @@ ci.builder(
     ),
     notifies = ["chrome-memory-safety"],
     os = os.WINDOWS_ANY,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -654,6 +679,9 @@ ci.builder(
     ),
     notifies = ["chrome-memory-safety"],
     os = os.WINDOWS_ANY,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -662,6 +690,9 @@ ci.builder(
         category = "win10",
     ),
     os = os.WINDOWS_10,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -708,6 +739,9 @@ ci.builder(
     os = os.WINDOWS_DEFAULT,
     schedule = "with 3h interval",
     triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -845,125 +879,6 @@ ci.builder(
     os = os.WINDOWS_DEFAULT,
     goma_backend = None,
     reclient_jobs = 80,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "Win x64 Builder (dbg) (goma cache silo)",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "goma_enable_cache_silo",
-                "mb",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-        ),
-    ),
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|builder",
-        short_name = "64",
-    ),
-    cores = 32,
-    os = os.WINDOWS_ANY,
-)
-
-ci.builder(
-    name = "Win x64 Builder (dbg) (reclient shadow)",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|builder",
-        short_name = "64",
-    ),
-    cores = 32,
-    os = os.WINDOWS_ANY,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "win-archive-dbg (goma cache silo)",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "clobber",
-                "goma_enable_cache_silo",
-                "mb",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-        ),
-    ),
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "win|dbg",
-        short_name = "64",
-    ),
-    cores = 32,
-    os = os.WINDOWS_DEFAULT,
-)
-
-ci.builder(
-    name = "win-archive-dbg (reclient shadow)",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "win|dbg",
-        short_name = "64",
-    ),
-    cores = 32,
-    os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "win-archive-rel (goma cache silo)",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "clobber",
-                "goma_enable_cache_silo",
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-    ),
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "win|rel",
-        short_name = "64",
-    ),
-    cores = 32,
-    os = os.WINDOWS_DEFAULT,
-)
-
-ci.builder(
-    name = "win-archive-rel (reclient shadow)",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "win|rel",
-        short_name = "64",
-    ),
-    cores = 32,
-    os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
 )
 
@@ -1149,6 +1064,9 @@ fyi_celab_builder(
     ),
     schedule = "0 0,6,12,18 * * *",
     triggered_by = [],
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
 )
 
 fyi_celab_builder(
@@ -1305,6 +1223,31 @@ fyi_ios_builder(
         short_name = "asan",
     ),
 )
+
+fyi_ios_builder(
+    name = "ios-m1-simulator",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "ios",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb", "mac_toolchain"],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.IOS,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "iOS|iOSM1",
+        short_name = "iosM1",
+    ),
+    os = os.MAC_11,
+    cpu = cpu.ARM64,
+    schedule = "0 1,5,9,13,17,21 * * *",
+    triggered_by = [],
+)
+
 fyi_ios_builder(
     name = "ios-reclient",
     console_view_entry = consoles.console_view_entry(
@@ -1325,9 +1268,33 @@ fyi_ios_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "cronet",
+        short_name = "intel",
     ),
     cq_mirrors_console_view = "mirrors",
     notifies = ["cronet"],
+)
+
+fyi_ios_builder(
+    name = "ios-m1-simulator-cronet",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "ios",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb", "mac_toolchain"],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.IOS,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet",
+        short_name = "m1",
+    ),
+    os = os.MAC_11,
+    cpu = cpu.ARM64,
+    schedule = "0 1,5,9,13,17,21 * * *",
 )
 
 fyi_ios_builder(
@@ -1367,7 +1334,6 @@ fyi_ios_builder(
         short_name = "sdk14",
     ),
     os = os.MAC_11,
-    cpu = cpu.ARM64,
     schedule = "0 2,6,10,14,18,22 * * *",
     triggered_by = [],
 )
@@ -1456,6 +1422,9 @@ ci.builder(
     ),
     os = os.WINDOWS_10,
     notifies = ["Win 10 Fast Ring"],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -1495,8 +1464,10 @@ ci.builder(
         category = "win32|arm64",
     ),
     cpu = cpu.X86,
-    goma_jobs = goma.jobs.J150,
     os = os.WINDOWS_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = 150,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -1509,4 +1480,7 @@ ci.builder(
     execution_timeout = 16 * time.hour,
     notifies = ["annotator-rel"],
     os = os.WINDOWS_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )

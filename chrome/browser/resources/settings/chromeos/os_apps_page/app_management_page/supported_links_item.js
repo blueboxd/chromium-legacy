@@ -16,7 +16,7 @@ import {recordAppManagementUserAction} from 'chrome://resources/cr_components/ap
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {recordSettingChange} from '../../metrics_recorder.m.js';
+import {recordSettingChange} from '../../metrics_recorder.js';
 
 import {BrowserProxy} from './browser_proxy.js';
 import {AppManagementStoreClient} from './store_client.js';
@@ -185,7 +185,7 @@ Polymer({
     } catch (err) {
       // If we fail to get the overlapping preferred apps, do not
       // show the overlap warning.
-      console.log(err);
+      console.warn(err);
       this.showOverlappingAppsWarning_ = false;
       return;
     }
@@ -274,7 +274,7 @@ Polymer({
     } catch (err) {
       // If we fail to get the overlapping preferred apps, don't prevent the
       // user from setting their preference.
-      console.log(err);
+      console.warn(err);
     }
 
     // If there are overlapping apps, show the overlap dialog to the user.

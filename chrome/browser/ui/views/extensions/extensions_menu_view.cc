@@ -172,9 +172,13 @@ void ExtensionsMenuView::Populate() {
 
   footer->SetBorder(views::CreateEmptyBorder(
       footer->GetInsets() +
-      gfx::Insets(0, kSettingsIconHorizontalPadding, 0, 0)));
+      gfx::Insets::TLBR(0, kSettingsIconHorizontalPadding, 0, 0)));
   footer->SetImageLabelSpacing(footer->GetImageLabelSpacing() +
                                kSettingsIconHorizontalPadding);
+  footer->SetImageModel(
+      views::Button::STATE_NORMAL,
+      ui::ImageModel::FromVectorIcon(vector_icons::kSettingsIcon,
+                                     ui::kColorIcon, kSettingsIconSize));
 
   manage_extensions_button_ = footer.get();
   AddChildView(std::move(footer));
@@ -213,9 +217,9 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
             ChromeTextStyle::STYLE_EMPHASIZED);
         header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         header->SetBorder(views::CreateEmptyBorder(
-            ChromeLayoutProvider::Get()->GetDistanceMetric(
-                DISTANCE_CONTROL_LIST_VERTICAL),
-            horizontal_spacing, 0, horizontal_spacing));
+            gfx::Insets::TLBR(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                  DISTANCE_CONTROL_LIST_VERTICAL),
+                              horizontal_spacing, 0, horizontal_spacing)));
         container->AddChildView(std::move(header));
 
         // Add longer text that explains the section in more detail.
@@ -225,8 +229,8 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
             views::style::STYLE_PRIMARY);
         description->SetMultiLine(true);
         description->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-        description->SetBorder(views::CreateEmptyBorder(0, horizontal_spacing,
-                                                        0, horizontal_spacing));
+        description->SetBorder(views::CreateEmptyBorder(
+            gfx::Insets::TLBR(0, horizontal_spacing, 0, horizontal_spacing)));
         container->AddChildView(std::move(description));
 
         // Add a (currently empty) section for the menu items of the section.
@@ -406,23 +410,6 @@ void ExtensionsMenuView::SanityCheck() {
 std::u16string ExtensionsMenuView::GetAccessibleWindowTitle() const {
   // The title is already spoken via the call to SetTitle().
   return std::u16string();
-}
-
-void ExtensionsMenuView::OnThemeChanged() {
-  BubbleDialogDelegateView::OnThemeChanged();
-  if (manage_extensions_button_) {
-    const SkColor background_color =
-        GetColorProvider()->GetColor(ui::kColorBubbleBackground);
-    SkColor icon_color = GetColorProvider()->GetColor(ui::kColorMenuIcon);
-    if (background_color != SK_ColorTRANSPARENT) {
-      icon_color =
-          color_utils::BlendForMinContrast(icon_color, background_color).color;
-    }
-    manage_extensions_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(vector_icons::kSettingsIcon, kSettingsIconSize,
-                              icon_color));
-  }
 }
 
 void ExtensionsMenuView::TabChangedAt(content::WebContents* contents,

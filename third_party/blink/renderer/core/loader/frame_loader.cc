@@ -175,6 +175,15 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   return request;
 }
 
+FrameLoader::ScopedOldDocumentInfoForCommitCapturer*
+    FrameLoader::ScopedOldDocumentInfoForCommitCapturer::current_capturer_ =
+        nullptr;
+
+FrameLoader::ScopedOldDocumentInfoForCommitCapturer::
+    ~ScopedOldDocumentInfoForCommitCapturer() {
+  current_capturer_ = previous_capturer_;
+}
+
 FrameLoader::FrameLoader(LocalFrame* frame)
     : frame_(frame),
       progress_tracker_(MakeGarbageCollected<ProgressTracker>(frame)),
@@ -265,7 +274,7 @@ void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container) {
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
       std::move(policy_container), nullptr /* extra_data */);
 
-  CommitDocumentLoader(new_document_loader, absl::nullopt, nullptr,
+  CommitDocumentLoader(new_document_loader, nullptr,
                        CommitReason::kInitialization);
 
   frame_->GetDocument()->CancelParsing();
@@ -368,13 +377,31 @@ void FrameLoader::SaveScrollState() {
   Client()->DidUpdateCurrentHistoryItem();
 }
 
-void FrameLoader::DispatchUnloadEvent(
-    UnloadEventTimingInfo* unload_timing_info) {
+void FrameLoader::DispatchUnloadEventAndFillOldDocumentInfoIfNeeded(
+    bool will_commit_new_document_in_this_frame) {
   FrameNavigationDisabler navigation_disabler(*frame_);
   SaveScrollState();
 
-  if (!SVGImage::IsInSVGImage(frame_->GetDocument()))
-    frame_->GetDocument()->DispatchUnloadEvents(unload_timing_info);
+  if (SVGImage::IsInSVGImage(frame_->GetDocument()))
+    return;
+
+  // Only fill in the info of the unloading document if it is needed for a new
+  // document committing in this frame (either due to frame swap or committing
+  // a new document in the same FrameLoader). This avoids overwriting the info
+  // saved of a parent frame that's already saved in
+  // ScopedOldDocumentInfoForCommitCapturer when a child frame is being
+  // destroyed due to the parent frame committing. In that case, only the parent
+  // frame needs should fill in the info.
+  OldDocumentInfoForCommit* old_document_info =
+      ScopedOldDocumentInfoForCommitCapturer::CurrentInfo();
+  if (!old_document_info || !will_commit_new_document_in_this_frame) {
+    frame_->GetDocument()->DispatchUnloadEvents(nullptr);
+    return;
+  }
+  old_document_info->history_item = GetDocumentLoader()->GetHistoryItem();
+
+  frame_->GetDocument()->DispatchUnloadEvents(
+      &old_document_info->unload_timing_info);
 }
 
 void FrameLoader::DidExplicitOpen() {
@@ -436,7 +463,7 @@ void FrameLoader::DidFinishNavigation(NavigationFinishState state) {
       return;
     if (auto* navigation_api =
             NavigationApi::navigation(*frame_->DomWindow())) {
-      if (navigation_api->HasOngoingNavigation())
+      if (navigation_api->HasNonDroppedOngoingNavigation())
         return;
     }
   }
@@ -758,14 +785,15 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
     if (request.GetNavigationPolicy() == kNavigationPolicyCurrentTab &&
         (!origin_window || origin_window->GetSecurityOrigin()->CanAccess(
                                frame_->DomWindow()->GetSecurityOrigin()))) {
-      if (navigation_api->DispatchNavigateEvent(
-              url, request.Form(), NavigateEventType::kCrossDocument,
-              frame_load_type,
-              request.GetTriggeringEventInfo() ==
-                      mojom::blink::TriggeringEventInfo::kFromTrustedEvent
-                  ? UserNavigationInvolvement::kActivation
-                  : UserNavigationInvolvement::kNone,
-              nullptr, nullptr) != NavigationApi::DispatchResult::kContinue) {
+      NavigationApi::DispatchParams params(
+          url, NavigateEventType::kCrossDocument, frame_load_type);
+      params.form = request.Form();
+      if (request.GetTriggeringEventInfo() ==
+          mojom::blink::TriggeringEventInfo::kFromTrustedEvent) {
+        params.involvement = UserNavigationInvolvement::kActivation;
+      }
+      if (navigation_api->DispatchNavigateEvent(params) !=
+          NavigationApi::DispatchResult::kContinue) {
         return;
       }
     }
@@ -804,10 +832,9 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
           ? CSPDisposition::DO_NOT_CHECK
           : CSPDisposition::CHECK;
 
-  // If this is a subframe load to a urn: / uuid-in-package: URL, allow loading
-  // from a Web Bundle attached to the parent document.
-  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
-  if (url.Protocol() == "urn" || url.Protocol() == "uuid-in-package") {
+  // If this is a subframe load to a uuid-in-package: URL, allow loading from a
+  // Web Bundle attached to the parent document.
+  if (url.Protocol() == "uuid-in-package") {
     auto* parent_local_frame = DynamicTo<LocalFrame>(frame_->Tree().Parent());
     if (parent_local_frame &&
         parent_local_frame->DomWindow() == origin_window &&
@@ -1001,13 +1028,13 @@ void FrameLoader::CommitNavigation(
 
   if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow())) {
     if (navigation_params->frame_load_type == WebFrameLoadType::kBackForward) {
-      auto result = navigation_api->DispatchNavigateEvent(
-          navigation_params->url, nullptr, NavigateEventType::kCrossDocument,
-          WebFrameLoadType::kBackForward,
-          navigation_params->is_browser_initiated
-              ? UserNavigationInvolvement::kBrowserUI
-              : UserNavigationInvolvement::kNone,
-          nullptr, navigation_params->history_item);
+      NavigationApi::DispatchParams params(navigation_params->url,
+                                           NavigateEventType::kCrossDocument,
+                                           WebFrameLoadType::kBackForward);
+      if (navigation_params->is_browser_initiated)
+        params.involvement = UserNavigationInvolvement::kBrowserUI;
+      params.destination_item = navigation_params->history_item;
+      auto result = navigation_api->DispatchNavigateEvent(params);
       DCHECK_EQ(result, NavigationApi::DispatchResult::kContinue);
       if (!document_loader_)
         return;
@@ -1016,12 +1043,6 @@ void FrameLoader::CommitNavigation(
 
   FillStaticResponseIfNeeded(navigation_params.get(), frame_);
   AssertCanNavigate(navigation_params.get(), frame_);
-
-  // Keep track of the current Document HistoryItem as the new DocumentLoader
-  // might need to copy state from it. Note that the current DocumentLoader
-  // should always exist, as the initial empty document is committed through
-  // FrameLoader::Init.
-  HistoryItem* previous_history_item = GetDocumentLoader()->GetHistoryItem();
 
   // If this is a javascript: URL or XSLT commit, we must copy the ExtraData
   // from the previous DocumentLoader to ensure the new DocumentLoader behaves
@@ -1035,8 +1056,14 @@ void FrameLoader::CommitNavigation(
     }
   }
 
-  UnloadEventTimingInfo unload_timing_info(
-      {SecurityOrigin::Create(navigation_params->url), absl::nullopt});
+  // Create the OldDocumentInfoForCommit for the old document (that might be in
+  // another FrameLoader) and save it in ScopedOldDocumentInfoForCommitCapturer,
+  // so that the old document can access it and fill in the information as it
+  // is being unloaded/swapped out.
+  ScopedOldDocumentInfoForCommitCapturer scoped_old_document_info(
+      MakeGarbageCollected<OldDocumentInfoForCommit>(
+          SecurityOrigin::Create(navigation_params->url)));
+
   FrameSwapScope frame_swap_scope(frame_owner);
   {
     base::AutoReset<bool> scoped_committing(&committing_navigation_, true);
@@ -1064,13 +1091,19 @@ void FrameLoader::CommitNavigation(
     // document.
     if (commit_reason == CommitReason::kXSLT && document_loader_)
       document_loader_->SetSentDidFinishLoad();
-    if (!DetachDocument(&unload_timing_info)) {
+    if (!DetachDocument()) {
       DCHECK(!is_provisional);
       return;
     }
 
-    // If the frame is provisional, swap it in now. However, if `Swap()` returns
-    // false, JS caused `frame_` to be removed, so just return.
+    // If the frame is provisional, swap it in now. However, if `SwapIn()`
+    // returns false, JS caused `frame_` to be removed, so just return. In case
+    // this triggers a local RenderFrame swap, it might trigger the unloading
+    // of the old RenderFrame's document, updating the contents of the
+    // OldDocumentInfoForCommit set in `scoped_old_document_info` above.
+    // NOTE: it's important that SwapIn() happens before DetachDocument(),
+    // because this ensures that the unload timing info generated by detaching
+    // the provisional frame's document isn't the one that gets used.
     if (is_provisional && !frame_->SwapIn())
       return;
   }
@@ -1120,8 +1153,10 @@ void FrameLoader::CommitNavigation(
       frame_, navigation_type, std::move(navigation_params),
       std::move(policy_container), std::move(extra_data));
 
-  CommitDocumentLoader(new_document_loader, unload_timing_info.unload_timing,
-                       previous_history_item, commit_reason);
+  CommitDocumentLoader(
+      new_document_loader,
+      ScopedOldDocumentInfoForCommitCapturer::CurrentInfo()->history_item,
+      commit_reason);
 
   RestoreScrollPositionAndViewState();
 
@@ -1184,7 +1219,7 @@ void FrameLoader::DidAccessInitialDocument() {
   }
 }
 
-bool FrameLoader::DetachDocument(UnloadEventTimingInfo* unload_timing_info) {
+bool FrameLoader::DetachDocument() {
   DCHECK(frame_->GetDocument());
   DCHECK(document_loader_);
 
@@ -1194,7 +1229,7 @@ bool FrameLoader::DetachDocument(UnloadEventTimingInfo* unload_timing_info) {
   // Don't allow this frame to navigate anymore. This line is needed for
   // navigation triggered from children's unload handlers. Blocking navigations
   // triggered from this frame's unload handler is already covered in
-  // DispatchUnloadEvent().
+  // DispatchUnloadEventAndFillOldDocumentInfoIfNeeded().
   FrameNavigationDisabler navigation_disabler(*frame_);
   // Don't allow any new child frames to load in this frame: attaching a new
   // child frame during or after detaching children results in an attached frame
@@ -1205,12 +1240,13 @@ bool FrameLoader::DetachDocument(UnloadEventTimingInfo* unload_timing_info) {
   // both when unloading itself and when unloading its descendants.
   IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
       frame_->GetDocument());
-  DispatchUnloadEvent(unload_timing_info);
+  DispatchUnloadEventAndFillOldDocumentInfoIfNeeded(
+      true /* will_commit_new_document_in_this_frame */);
   frame_->DetachChildren();
-  // The previous calls to dispatchUnloadEvent() and detachChildren() can
-  // execute arbitrary script via things like unload events. If the executed
-  // script causes the current frame to be detached, we need to abandon the
-  // current load.
+  // The previous calls to DispatchUnloadEventAndFillOldDocumentInfoIfNeeded()
+  // and detachChildren() can execute arbitrary script via things like unload
+  // events. If the executed script causes the current frame to be detached, we
+  // need to abandon the current load.
   if (!frame_->Client())
     return false;
   // FrameNavigationDisabler should prevent another load from starting.
@@ -1238,11 +1274,9 @@ bool FrameLoader::DetachDocument(UnloadEventTimingInfo* unload_timing_info) {
   return true;
 }
 
-void FrameLoader::CommitDocumentLoader(
-    DocumentLoader* document_loader,
-    const absl::optional<UnloadEventTiming>& unload_timing,
-    HistoryItem* previous_history_item,
-    CommitReason commit_reason) {
+void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader,
+                                       HistoryItem* previous_history_item,
+                                       CommitReason commit_reason) {
   TRACE_EVENT("blink", "FrameLoader::CommitDocumentLoader");
   document_loader_ = document_loader;
   CHECK(document_loader_);
@@ -1266,14 +1300,19 @@ void FrameLoader::CommitDocumentLoader(
 
   // Update the DocumentLoadTiming with the timings from the previous document
   // unload event.
-  if (unload_timing.has_value()) {
-    document_loader_->GetTiming().SetCanRequestFromPreviousDocument(
-        unload_timing->can_request);
-    document_loader_->GetTiming().MarkUnloadEventStart(
-        unload_timing->unload_event_start);
-    document_loader_->GetTiming().MarkUnloadEventEnd(
-        unload_timing->unload_event_end);
-    document_loader_->GetTiming().MarkCommitNavigationEnd();
+  if (OldDocumentInfoForCommit* old_document_info =
+          ScopedOldDocumentInfoForCommitCapturer::CurrentInfo()) {
+    if (old_document_info->unload_timing_info.unload_timing.has_value()) {
+      document_loader_->GetTiming().SetCanRequestFromPreviousDocument(
+          old_document_info->unload_timing_info.unload_timing->can_request);
+      document_loader_->GetTiming().MarkUnloadEventStart(
+          old_document_info->unload_timing_info.unload_timing
+              ->unload_event_start);
+      document_loader_->GetTiming().MarkUnloadEventEnd(
+          old_document_info->unload_timing_info.unload_timing
+              ->unload_event_end);
+      document_loader_->GetTiming().MarkCommitNavigationEnd();
+    }
   }
 
   TakeObjectSnapshot();
@@ -1534,7 +1573,7 @@ void FrameLoader::DidDropNavigation() {
     return;
   // TODO(dgozman): should we ClearClientNavigation instead and not
   // notify the client in response to its own call?
-  CancelClientNavigation();
+  CancelClientNavigation(CancelNavigationReason::kDropped);
   DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
   // Forcibly instantiate WindowProxy for initial frame document.
@@ -1580,11 +1619,13 @@ void FrameLoader::ClearClientNavigation() {
   virtual_time_pauser_.UnpauseVirtualTime();
 }
 
-void FrameLoader::CancelClientNavigation() {
+void FrameLoader::CancelClientNavigation(CancelNavigationReason reason) {
   if (!client_navigation_)
     return;
+
   if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow()))
-    navigation_api->InformAboutCanceledNavigation();
+    navigation_api->InformAboutCanceledNavigation(reason);
+
   ResourceError error = ResourceError::CancelledError(client_navigation_->url);
   ClearClientNavigation();
   if (WebPluginContainerImpl* plugin = frame_->GetWebPluginContainer())
@@ -1772,6 +1813,15 @@ FrameLoader::CreateWorkerCodeCacheHost() {
   if (!document_loader_)
     return mojo::NullRemote();
   return document_loader_->CreateWorkerCodeCacheHost();
+}
+
+FrameLoader::OldDocumentInfoForCommit::OldDocumentInfoForCommit(
+    scoped_refptr<SecurityOrigin> new_document_origin)
+    : unload_timing_info(
+          UnloadEventTimingInfo(std::move(new_document_origin))) {}
+
+void FrameLoader::OldDocumentInfoForCommit::Trace(Visitor* visitor) const {
+  visitor->Trace(history_item);
 }
 
 }  // namespace blink

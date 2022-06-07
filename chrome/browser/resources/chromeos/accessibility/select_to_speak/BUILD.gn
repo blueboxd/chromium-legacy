@@ -5,7 +5,7 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import(
-    "//chrome/browser/resources/chromeos/accessibility/common/run_jsbundler.gni")
+    "//chrome/browser/resources/chromeos/accessibility/tools/run_jsbundler.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
@@ -103,6 +103,7 @@ js2gtest("select_to_speak_extjs_tests") {
     "word_utils_unittest.js",
   ]
   gen_include_files = [
+    "../common/testing/accessibility_test_base.js",
     "../common/testing/callback_helper.js",
     "../common/testing/e2e_test_base.js",
     "../common/testing/mock_storage.js",

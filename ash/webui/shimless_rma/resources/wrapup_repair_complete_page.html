@@ -1,13 +1,13 @@
 <style include="cr-shared-style shimless-rma-shared shimless-fonts">
-  cr-dialog::part(dialog) {
+  #logsDialog::part(dialog) {
     width: 512px;
   }
 
-  cr-dialog [slot=body] {
+  #logsDialog [slot=body] {
     height: 480px;
   }
 
-  cr-dialog [slot=footer] {
+  #logsDialog [slot=footer] {
     padding-bottom: 24px;
     padding-top: 24px;
   }
@@ -88,6 +88,34 @@
   .log {
     white-space: normal;
   }
+
+  #navigationButtonWrapper {
+    bottom: 6px;
+    margin-inline-start: calc(-1 * var(--page-left-margin) + 6px);
+    position: absolute;
+  }
+
+  .navigation-button {
+    background-color: rgba(0, 0, 0, 0.06);
+    border: 0;
+    box-sizing: content-box;
+    color: var(--shimless-shutdown-buttons-text-color);
+    font-weight: var(--shimless-regular-font-weight);
+    height: 20px;
+    padding-inline-end: 8px;
+    padding-inline-start: 8px;
+  }
+
+  #shutDownButton {
+    margin-inline-end: 8px;
+  }
+
+  .navigation-icon {
+    fill: var(--cros-icon-color-primary);
+    height: 20px;
+    padding-inline-end: 8px;
+    width: 20px;
+  }
 </style>
 
 <base-page>
@@ -96,14 +124,20 @@
     <div class="instructions">
       [[i18n('repairCompletedDescriptionText')]]
     </div>
-    <cr-button id="shutDownButton" on-click="onShutDownButtonClick_"
-        disabled="[[allButtonsDisabled]]">
+    <div id="navigationButtonWrapper">
+      <cr-button id="shutDownButton" class="navigation-button"
+          on-click="onShutDownButtonClick_" disabled="[[allButtonsDisabled]]">
+        <iron-icon icon="shimless-icon:shutdown" class="navigation-icon">
+        </iron-icon>
         [[i18n('repairCompleteShutDownButtonText')]]
-    </cr-button>
-    <cr-button id="rebootButton" on-click="onRebootButtonClick_"
-        disabled="[[allButtonsDisabled]]">
+      </cr-button>
+      <cr-button id="rebootButton" class="navigation-button"
+          on-click="onRebootButtonClick_" disabled="[[allButtonsDisabled]]">
+        <iron-icon icon="shimless-icon:reboot" class="navigation-icon">
+        </iron-icon>
         [[i18n('repairCompleteRebootButtonText')]]
-    </cr-button>
+      </cr-button>
+    </div>
   </div>
   <div slot="right-pane">
     <div id="buttonContainer">
@@ -180,6 +214,24 @@
     <cr-button id="rmaLogButton" class="text-button action-button"
         on-click="onRmaLogButtonClick_">
       [[i18n('rmaLogsSaveToUsbButtonText')]]
+    </cr-button>
+  </div>
+</cr-dialog>
+
+<cr-dialog id="powerwashDialog" close-text="close">
+  <div slot="title">
+    [[i18n('repairCompletedPowerwashTitle')]]
+  </div>
+  <div slot="body">
+    [[getPowerwashDescriptionString_(selectedFinishRmaOption_)]]
+  </div>
+  <div class="dialog-footer" slot="button-container">
+    <cr-button id="closePowerwashDialogButton" on-click="onCancelClick_">
+      [[i18n('cancelButtonLabel')]]
+    </cr-button>
+    <cr-button id="powerwashButton" class="text-button action-button"
+        on-click="onPowerwashButtonClick_">
+      [[i18n('repairCompletedPowerwashButton')]]
     </cr-button>
   </div>
 </cr-dialog>

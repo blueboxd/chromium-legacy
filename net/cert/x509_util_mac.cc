@@ -57,7 +57,7 @@ OSStatus CreatePolicy(const CSSM_OID* policy_oid,
 scoped_refptr<X509Certificate> CreateX509CertificateFromSecCertificate(
     base::ScopedCFTypeRef<SecCertificateRef> sec_cert,
     const std::vector<base::ScopedCFTypeRef<SecCertificateRef>>& sec_chain) {
-  return CreateX509CertificateFromSecCertificate(sec_cert, sec_chain, {});
+  return CreateX509CertificateFromSecCertificate(sec_cert, sec_chain);
 }
 
 scoped_refptr<X509Certificate> CreateX509CertificateFromSecCertificate(

@@ -5,14 +5,11 @@
 #include "chrome/browser/ash/web_applications/projector_system_web_app_info.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/constants/ash_pref_names.h"
 #include "ash/webui/grit/ash_projector_app_trusted_resources.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/ui/ash/projector/projector_utils.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/styles/cros_styles.h"
@@ -44,8 +41,27 @@ ProjectorSystemWebAppDelegate::GetWebAppInfo() const {
 
   info->title = l10n_util::GetStringUTF16(IDS_PROJECTOR_APP_NAME);
 
-  // TODO(b/195127670): Add 48, 128, and 192 size icons through
-  // CreateIconInfoForSystemWebApp().
+  web_app::CreateIconInfoForSystemWebApp(
+      info->start_url,
+      {
+          {"app_icon_16.png", 16,
+           IDR_ASH_PROJECTOR_APP_TRUSTED_ASSETS_ICON_16_PNG},
+          {"app_icon_32.png", 32,
+           IDR_ASH_PROJECTOR_APP_TRUSTED_ASSETS_ICON_32_PNG},
+          {"app_icon_48.png", 48,
+           IDR_ASH_PROJECTOR_APP_TRUSTED_ASSETS_ICON_48_PNG},
+          {"app_icon_64.png", 64,
+           IDR_ASH_PROJECTOR_APP_TRUSTED_ASSETS_ICON_64_PNG},
+          {"app_icon_96.png", 96,
+           IDR_ASH_PROJECTOR_APP_TRUSTED_ASSETS_ICON_96_PNG},
+          {"app_icon_128.png", 128,
+           IDR_ASH_PROJECTOR_APP_TRUSTED_ASSETS_ICON_128_PNG},
+          {"app_icon_192.png", 192,
+           IDR_ASH_PROJECTOR_APP_TRUSTED_ASSETS_ICON_192_PNG},
+          {"app_icon_256.png", 256,
+           IDR_ASH_PROJECTOR_APP_TRUSTED_ASSETS_ICON_256_PNG},
+      },
+      *info);
 
   info->theme_color = GetBgColor(/*use_dark_mode=*/false);
   info->dark_mode_theme_color = GetBgColor(/*use_dark_mode=*/true);
@@ -71,15 +87,5 @@ gfx::Size ProjectorSystemWebAppDelegate::GetMinimumWindowSize() const {
 }
 
 bool ProjectorSystemWebAppDelegate::IsAppEnabled() const {
-  if (!IsProjectorAllowedForProfile(profile_))
-    return false;
-
-  if (!profile_->GetProfilePolicyConnector()->IsManaged() ||
-      profile_->IsChild()) {
-    return ash::features::IsProjectorAllUserEnabled();
-  }
-
-  // Check feature availability and admin policy for managed users.
-  return ash::features::IsProjectorEnabled() &&
-         profile_->GetPrefs()->GetBoolean(ash::prefs::kProjectorAllowByPolicy);
+  return IsProjectorAppEnabled(profile_);
 }

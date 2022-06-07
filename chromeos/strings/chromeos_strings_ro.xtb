@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Gateway</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Potrivește în funcție de zona de scanare</translation>
+<translation id="1367951781824006909">Alege un fișier</translation>
 <translation id="1387854245479784695">Aceasta este o valoare cumulată pentru toate nucleele</translation>
 <translation id="1394661041439318933">Nivelul bateriei carcasei dispozitivului este de <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="1397738625398125236">Gateway-ul acceptă testul de ping</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Versiune hardware</translation>
 <translation id="1905710495812624430">Ai depășit numărul maxim de încercări permise.</translation>
 <translation id="1908234395526491708">Erori de solicitare UDP</translation>
-<translation id="1930797645656624981">Serviciul metodei de introducere a textului din sistemul de operare Chrome</translation>
 <translation id="1947737735496445907">Printată</translation>
 <translation id="1951012854035635156">Asistent</translation>
+<translation id="1977994649430373166">Fotografie de profil Google</translation>
 <translation id="1979103255016296513">Ai depășit timpul limită pentru schimbarea parolei</translation>
 <translation id="1999615961760456652">Portal captiv</translation>
 <translation id="2006864819935886708">Conectivitate</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Trebuie să selectezi cel puțin un album din Galeria de imagini</translation>
 <translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Comutator pentru retroiluminarea tastaturii</translation>
 <translation id="2240366984605217732">Schimbarea aspectului</translation>
 <translation id="225692081236532131">Stare de activare</translation>
 <translation id="2287186687001756809">Nicio imagine disponibilă. Pentru a adăuga fotografii, accesează <ph name="LINK" /></translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">Precizia virgulei mobile</translation>
 <translation id="2448312741937722512">Tipul</translation>
 <translation id="2461822463642141190">Actual</translation>
+<translation id="2491955442992294626">Tastele nu sunt testate când folosești altă fereastră</translation>
 <translation id="2493126929778606526">Cele mai bune fotografii, selectate automat</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Actualizează imaginea de fundal actuală</translation>
@@ -148,7 +151,6 @@
 <translation id="2536159006530886390">Nu ne putem conecta la internet.</translation>
 <translation id="2570743873672969996">Se rulează testul <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">Accesează Setările pentru configurare</translation>
-<translation id="2585245331261708204">Noutăți în SO Chrome</translation>
 <translation id="2619761439309613843">Actualizare zilnică</translation>
 <translation id="2620436844016719705">Sistem</translation>
 <translation id="2640549051766135490">S-a selectat albumul <ph name="TITLE" /> <ph name="DESC" /></translation>
@@ -221,6 +223,7 @@
 <translation id="3604713164406837697">Schimbă imaginea de fundal</translation>
 <translation id="360565022852130722">Rețeaua Wi-Fi este securizată cu protocolul slab WEP 802.1x</translation>
 <translation id="3606583719724308068">Latență mare pe site-urile HTTPS</translation>
+<translation id="3621202678540785336">Intrări</translation>
 <translation id="3632579075709132555">Activarea / dezactivarea ecranului de confidențialitate</translation>
 <translation id="3689839747745352263">Testul <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Se încarcă…</translation>
@@ -245,6 +248,7 @@
 <translation id="3954678691475912818">Tipul dispozitivului este necunoscut.</translation>
 <translation id="3966286471246132217">Pentru rezultate mai precise, închide toate aplicațiile până la încheierea testului.</translation>
 <translation id="3967822245660637423">Descărcare finalizată</translation>
+<translation id="3969602104473960991">Parola sistemului de operare Chrome a fost actualizată</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="39823212440917567">Sarcinile de printare mai vechi de <ph name="NUMBER_OF_DAYS" /> zile vor fi eliminate</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> este actualizat</translation>
@@ -320,7 +324,6 @@
 <translation id="4731797938093519117">Acces pentru părinți</translation>
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="4744944742468440486">Informații legate de selecția ta</translation>
-<translation id="475869545581454722">Parola sistemului de operare Chrome a fost actualizată</translation>
 <translation id="4773299976671772492">Oprit</translation>
 <translation id="4782311465517282004">Obții definiții, traduceri sau conversii ale unităților când dai clic dreapta sau apeși lung pe text</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> fotografie</translation>
@@ -460,6 +463,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="6113701710518389813">Săgeată în sus</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, + încă <ph name="NUMBER" /> albume</translation>
 <translation id="6122191549521593678">Online</translation>
+<translation id="6122277663991249694">Serviciul metodei de introducere a textului din sistemul de operare Chrome</translation>
 <translation id="6137767437444130246">Certificat de utilizator</translation>
 <translation id="6146993107019042706">Pentru a finaliza, introdu noua parolă</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -551,6 +555,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="7143207342074048698">Se conectează</translation>
 <translation id="7144878232160441200">Reîncearcă</translation>
 <translation id="714876143603641390">Conectivitatea prin LAN</translation>
+<translation id="7155171745945906037">Fotografie existentă din camera foto sau din fișier</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7172721935181587524">O imagine</translation>
 <translation id="7175037578838465313">Configurează <ph name="NAME" /></translation>
@@ -625,6 +630,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Activează modul de culoare automată</translation>
 <translation id="8041089156583427627">Trimiteți feedback</translation>
+<translation id="8045012663542226664">Dezactivează sunetul microfonului</translation>
 <translation id="8075838845814659848">Nivel de încărcare rămas</translation>
 <translation id="8082366717211101304">Nu se poate rezolva solicitarea DNS din aplicații pentru Android</translation>
 <translation id="808894953321890993">Schimbă parola</translation>
@@ -656,6 +662,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8398927464629426868">Rata de încărcare sau de descărcare a dispozitivului</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Tastatură internă</translation>
+<translation id="8431300646573772016">Noutăți în SO Chrome</translation>
 <translation id="843568408673868420">Conexiune la internet</translation>
 <translation id="844521431886043384">Sistemul DNS nu este configurat</translation>
 <translation id="8461329675984532579">Numele furnizorului local</translation>
@@ -735,6 +742,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="917720651393141712">Testează</translation>
 <translation id="9204237731135241582">Nu se poate contacta gateway-ul din aplicații pentru Android</translation>
 <translation id="9211490828691860325">Toate desktopurile</translation>
+<translation id="932327136139879170">Pagina de pornire</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Neactivat</translation>
 <translation id="960719561871045870">Cod operator</translation>

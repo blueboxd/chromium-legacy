@@ -219,12 +219,16 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(NetworkServiceFeatures.COMBINE_RESPONSE_BODY,
                     "Reduces URLLoaderClient mojo calls."),
             Flag.baseFeature(NetworkServiceFeatures.FASTER_SET_COOKIE, "Optimizes cookie access."),
+            Flag.baseFeature(NetworkServiceFeatures.OPTIMIZE_NETWORK_BUFFERS,
+                    "Optimizes buffer size for reading from the network or InputStream."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
             Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
                     "Defers the first commit until FCP or timeout for cross-origin navigations."),
             Flag.baseFeature(BlinkFeatures.EARLY_CODE_CACHE,
                     "Enables fetching the code cache earlier in navigation."),
+            Flag.baseFeature(ContentFeatures.PRELOAD_COOKIES,
+                    "Enables preload cookie database on NetworkContext creation."),
             Flag.baseFeature(ContentFeatures.NAVIGATION_REQUEST_PRECONNECT,
                     "Enables preconnecting for frame requests."),
             Flag.baseFeature(ContentFeatures.NAVIGATION_NETWORK_RESPONSE_QUEUE,
@@ -292,6 +296,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.MAX_UNTHROTTLED_TIMEOUT_NESTING_LEVEL,
                     "Increases the nesting threshold before which "
                             + "setTimeout(..., <4ms) starts being clamped to 4 ms."),
+            Flag.baseFeature(BlinkFeatures.ESTABLISH_GPU_CHANNEL_ASYNC,
+                    "Enables establishing the GPU channel asnchronously when requesting a new "
+                            + "layer tree frame sink."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

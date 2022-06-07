@@ -73,6 +73,13 @@ try_.builder(
 try_.builder(
     name = "win_chromium_compile_dbg_ng",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    mirrors = [
+        "ci/Win Builder (dbg)",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -83,6 +90,13 @@ try_.builder(
 
 try_.builder(
     name = "win_chromium_compile_rel_ng",
+    mirrors = [
+        "ci/Win Builder",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
 )
 
 try_.builder(
@@ -95,10 +109,6 @@ try_.builder(
         "ci/Win x64 Builder",
         "ci/Win 7 Tests x64 (1)",
     ],
-)
-
-try_.builder(
-    name = "win_mojo",
 )
 
 try_.builder(
@@ -181,6 +191,10 @@ try_.builder(
 try_.builder(
     name = "win7-rel",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    mirrors = [
+        "ci/Win Builder",
+        "ci/Win7 Tests (1)",
+    ],
     cores = 16,
     execution_timeout = 4 * time.hour + 30 * time.minute,
     goma_jobs = goma.jobs.J300,
@@ -196,6 +210,26 @@ try_.builder(
 
 try_.gpu.optional_tests_builder(
     name = "win_optional_gpu_tests_rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "angle_internal",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-gpu-fyi-archive",
+    ),
+    try_settings = builder_config.try_settings(
+        retry_failed_shards = False,
+    ),
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builderless = True,
     main_list_view = "try",

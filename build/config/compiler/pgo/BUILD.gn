@@ -60,15 +60,14 @@ config("pgo_optimization_flags") {
       inputs = [ "//chrome/build/linux.pgo.txt" ]
     }
 
-    if (pgo_data_path == "" && _pgo_target != "") {
-      pgo_data_path = rebase_path(exec_script("//tools/update_pgo_profiles.py",
-                                              [
-                                                "--target",
-                                                _pgo_target,
-                                                "get_profile_path",
-                                              ],
-                                              "value"),
-                                  root_build_dir)
+    if (_pgo_target != "" && pgo_data_path == "") {
+      pgo_data_path = exec_script("//tools/update_pgo_profiles.py",
+                                  [
+                                    "--target",
+                                    _pgo_target,
+                                    "get_profile_path",
+                                  ],
+                                  "value")
     }
     assert(pgo_data_path != "",
            "Please set pgo_data_path to point at the profile data")

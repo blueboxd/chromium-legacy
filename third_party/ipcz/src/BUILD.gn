@@ -5,6 +5,28 @@
 import("//build_overrides/ipcz.gni")
 import("//testing/test.gni")
 
+shared_library("ipcz_shared") {
+  output_name = "ipcz"
+  sources = [
+    "api.cc",
+    "api.h",
+  ]
+  deps = [
+    ":ipcz_sources_standalone",
+    "//third_party/abseil-cpp:absl",
+  ]
+  public_deps = [ ":ipcz_header" ]
+  defines = [ "IPCZ_SHARED_LIBRARY" ]
+  public_configs = [ ":ipcz_include_dir" ]
+  configs += [ ":ipcz_include_src_dir" ]
+}
+
+source_set("ipcz_header") {
+  visibility = [ ":*" ]
+  public = [ "../include/ipcz/ipcz.h" ]
+  public_configs = [ ":ipcz_include_dir" ]
+}
+
 # This template emits two source_set targets for a target "foo": one named
 # "foo_standalone" for use in standalone ipcz library builds with no Chromium
 # dependencies; and one named "foo_chromium" for integration into the Chromium
@@ -93,6 +115,26 @@ template("ipcz_source_set") {
   }
 }
 
+ipcz_source_set("ipcz") {
+  public = [ "api.h" ]
+  sources = [ "api.cc" ]
+  deps = [ "//third_party/abseil-cpp:absl" ]
+  ipcz_deps = [ ":ipcz_sources" ]
+  public_deps = [ ":ipcz_header" ]
+  public_configs = [ ":ipcz_include_dir" ]
+  configs = [ ":ipcz_include_src_dir" ]
+}
+
+ipcz_source_set("reference_drivers") {
+  sources = [
+    "reference_drivers/single_process_reference_driver.cc",
+    "reference_drivers/single_process_reference_driver.h",
+  ]
+
+  public_deps = [ ":ipcz_header" ]
+  configs = [ ":ipcz_include_src_dir" ]
+}
+
 ipcz_source_set("util") {
   visibility = [ ":*" ]
 
@@ -100,12 +142,50 @@ ipcz_source_set("util") {
     "util/log.h",
     "util/ref_counted.h",
     "util/stack_trace.h",
+    "util/strong_alias.h",
   ]
 
   sources = [ "util/ref_counted.cc" ]
 
   deps = [ "//third_party/abseil-cpp:absl" ]
   configs = [ ":ipcz_include_src_dir" ]
+}
+
+ipcz_source_set("impl") {
+  visibility = [ ":*" ]
+  public = [
+    "ipcz/api_object.h",
+    "ipcz/node.h",
+    "ipcz/sequence_number.h",
+    "ipcz/sequenced_queue.h",
+  ]
+  sources = [
+    "ipcz/api_object.cc",
+    "ipcz/node.cc",
+    "ipcz/node_name.cc",
+    "ipcz/node_name.h",
+  ]
+  public_deps = [
+    ":ipcz_header",
+    "//third_party/abseil-cpp:absl",
+  ]
+  ipcz_public_deps = [ ":util" ]
+  public_configs = [ ":ipcz_include_dir" ]
+  configs = [ ":ipcz_include_src_dir" ]
+}
+
+ipcz_source_set("ipcz_sources") {
+  ipcz_public_deps = [
+    ":impl",
+    ":util",
+  ]
+
+  public_deps = [ ":ipcz_header" ]
+  public_configs = [ ":ipcz_include_dir" ]
+}
+
+config("ipcz_include_dir") {
+  include_dirs = [ "${ipcz_include_root}" ]
 }
 
 config("ipcz_include_src_dir") {
@@ -116,6 +196,10 @@ ipcz_source_set("ipcz_tests_sources") {
   testonly = true
 
   sources = [
+    "api_test.cc",
+    "ipcz/sequenced_queue_test.cc",
+    "test/test_base.cc",
+    "test/test_base.h",
     "util/ref_counted_test.cc",
     "util/stack_trace_test.cc",
   ]
@@ -124,7 +208,12 @@ ipcz_source_set("ipcz_tests_sources") {
     "//testing/gtest",
     "//third_party/abseil-cpp:absl",
   ]
-  ipcz_deps = [ ":util" ]
+  ipcz_deps = [
+    ":impl",
+    ":ipcz",
+    ":reference_drivers",
+    ":util",
+  ]
 
   configs = [ ":ipcz_include_src_dir" ]
 }

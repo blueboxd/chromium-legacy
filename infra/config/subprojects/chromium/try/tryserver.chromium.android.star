@@ -19,7 +19,7 @@ try_.defaults.set(
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     compilator_goma_jobs = goma.jobs.J300,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
@@ -110,6 +110,9 @@ try_.builder(
 try_.builder(
     name = "android-cronet-arm-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/android-cronet-arm-dbg",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -138,6 +141,9 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-x86-dbg",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+    ],
 )
 
 try_.builder(
@@ -147,6 +153,10 @@ try_.builder(
 try_.builder(
     name = "android-cronet-x86-dbg-10-tests",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-10-tests",
+    ],
     check_for_flakiness = True,
     main_list_view = "try",
     tryjob = try_.job(
@@ -164,14 +174,26 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-x86-dbg-11-tests",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-11-tests",
+    ],
 )
 
 try_.builder(
     name = "android-cronet-x86-dbg-oreo-tests",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-oreo-tests",
+    ],
 )
 
 try_.builder(
     name = "android-cronet-x86-dbg-pie-tests",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-pie-tests",
+    ],
 )
 
 try_.builder(
@@ -259,6 +281,10 @@ try_.builder(
 try_.builder(
     name = "android-oreo-arm64-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/Oreo Phone Tester",
+    ],
 )
 
 try_.builder(
@@ -283,6 +309,10 @@ try_.builder(
             ".+/[+]/third_party/arcore-android-sdk-client/.+",
         ],
     ),
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/android-pie-arm64-dbg",
+    ],
 )
 
 # TODO(crbug/1182468) Remove when experiment is done.
@@ -334,6 +364,10 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-11-x86-fyi-rel",
+)
+
+try_.builder(
     name = "android-pie-arm64-wpt-rel-non-cq",
 )
 
@@ -375,18 +409,34 @@ try_.builder(
 
 try_.builder(
     name = "android-webview-marshmallow-arm64-dbg",
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/Android WebView M (dbg)",
+    ],
 )
 
 try_.builder(
     name = "android-webview-nougat-arm64-dbg",
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/Android WebView N (dbg)",
+    ],
 )
 
 try_.builder(
     name = "android-webview-oreo-arm64-dbg",
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/Android WebView O (dbg)",
+    ],
 )
 
 try_.builder(
     name = "android-webview-pie-arm64-dbg",
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/Android WebView P (dbg)",
+    ],
 )
 
 try_.builder(
@@ -400,6 +450,13 @@ try_.builder(
 try_.builder(
     name = "android_arm64_dbg_recipe",
     goma_jobs = goma.jobs.J300,
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
 )
 
 try_.builder(
@@ -478,15 +535,19 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android_mojo",
-)
-
-try_.builder(
     name = "android_n5x_swarming_dbg",
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/Marshmallow 64 bit Tester",
+    ],
 )
 
 try_.builder(
     name = "android_unswarmed_pixel_aosp",
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/Android WebView N (dbg)",
+    ],
 )
 
 try_.builder(
@@ -504,11 +565,34 @@ try_.builder(
 try_.builder(
     name = "try-nougat-phone-tester",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Android arm64 Builder (dbg)",
+        "ci/Nougat Phone Tester",
+    ],
 )
 
 try_.gpu.optional_tests_builder(
     name = "android_optional_gpu_tests_rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+        build_gs_bucket = "chromium-gpu-fyi-archive",
+    ),
+    try_settings = builder_config.try_settings(
+        retry_failed_shards = False,
+    ),
     check_for_flakiness = True,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",

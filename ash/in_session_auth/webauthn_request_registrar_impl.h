@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "ash/public/cpp/webauthn_request_registrar.h"
 #include "base/callback_forward.h"
+#include "chromeos/components/webauthn/webauthn_request_registrar.h"
 #include "ui/aura/window_tracker.h"
 
 namespace aura {
@@ -18,7 +18,8 @@ class Window;
 namespace ash {
 
 // WebAuthnRequestRegistrarImpl persists as long as UI is running.
-class WebAuthnRequestRegistrarImpl : public WebAuthnRequestRegistrar {
+class WebAuthnRequestRegistrarImpl
+    : public chromeos::webauthn::WebAuthnRequestRegistrar {
  public:
   WebAuthnRequestRegistrarImpl();
   WebAuthnRequestRegistrarImpl(const WebAuthnRequestRegistrarImpl&) = delete;
@@ -31,7 +32,7 @@ class WebAuthnRequestRegistrarImpl : public WebAuthnRequestRegistrar {
   aura::Window* GetWindowForRequestId(std::string request_id) override;
 
  private:
-  uint32_t DoRegister(aura::Window* window);
+  std::string DoRegister(aura::Window* window);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

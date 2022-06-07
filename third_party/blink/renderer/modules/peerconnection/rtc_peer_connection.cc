@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_event.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
@@ -310,7 +311,9 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
   // value in JavaScript.
   // TODO(https://crbug.com/1302249): Don't support Plan B on Fuchsia either,
   // delete Plan B from all of Chromium.
-#if BUILDFLAG(IS_FUCHSIA)
+  // TODO(https://crbug.com/1323237): Also don't support it on CrOS. This is
+  // only temporary.
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS)
   if (configuration->hasSdpSemantics() &&
       configuration->sdpSemantics() == "plan-b") {
     web_configuration.sdp_semantics = webrtc::SdpSemantics::kPlanB;
@@ -990,6 +993,12 @@ ScriptPromise RTCPeerConnection::CreateOffer(
 
     platform_transceivers = peer_handler_->CreateOffer(request, offer_options);
   } else {
+    if (rtc_offer_options.IsObject()) {
+      Deprecation::CountDeprecation(
+          context,
+          WebFeature::kRTCPeerConnectionLegacyCreateWithMediaConstraints);
+    }
+
     MediaErrorState media_error_state;
     MediaConstraints constraints = media_constraints_impl::Create(
         context, rtc_offer_options, media_error_state);
@@ -1093,6 +1102,11 @@ ScriptPromise RTCPeerConnection::CreateAnswer(
   if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
     return ScriptPromise::CastUndefined(script_state);
 
+  if (media_constraints.IsObject()) {
+    Deprecation::CountDeprecation(
+        context,
+        WebFeature::kRTCPeerConnectionLegacyCreateWithMediaConstraints);
+  }
   MediaErrorState media_error_state;
   MediaConstraints constraints = media_constraints_impl::Create(
       context, media_constraints, media_error_state);
@@ -2113,41 +2127,9 @@ void RTCPeerConnection::restartIce() {
 
 void RTCPeerConnection::addStream(ScriptState* script_state,
                                   MediaStream* stream,
-                                  const ScriptValue& media_constraints_value,
-                                  ExceptionState& exception_state) {
-  Dictionary media_constraints(script_state->GetIsolate(),
-                               media_constraints_value.V8Value(),
-                               exception_state);
-  if (exception_state.HadException())
-    return;
-  AddStream(script_state, stream, media_constraints, exception_state);
-}
-
-void RTCPeerConnection::addStream(ScriptState* script_state,
-                                  MediaStream* stream,
-                                  ExceptionState& exception_state) {
-  AddStream(script_state, stream, Dictionary(), exception_state);
-}
-
-void RTCPeerConnection::AddStream(ScriptState* script_state,
-                                  MediaStream* stream,
-                                  const Dictionary& media_constraints,
                                   ExceptionState& exception_state) {
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return;
-  if (!media_constraints.IsUndefinedOrNull()) {
-    MediaErrorState media_error_state;
-    MediaConstraints constraints =
-        media_constraints_impl::Create(ExecutionContext::From(script_state),
-                                       media_constraints, media_error_state);
-    if (media_error_state.HadException()) {
-      media_error_state.RaiseException(exception_state);
-      return;
-    }
-    LOG(WARNING)
-        << "mediaConstraints is not a supported argument to addStream.";
-    LOG(WARNING) << "mediaConstraints was " << constraints.ToString().Utf8();
-  }
 
   MediaStreamVector streams;
   streams.push_back(stream);
@@ -2326,10 +2308,16 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
     }
     auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     ScriptPromise promise = resolver->Promise();
-    peer_handler_->GetStats(
-        WTF::Bind(WebRTCStatsReportCallbackResolver, WrapPersistent(resolver)),
-        GetExposedGroupIds(script_state));
-
+    if (peer_handler_unregistered_) {
+      LOG(ERROR) << "Internal error: context is destroyed";
+      // This is needed to have the resolver release its internal resources
+      // while leaving the associated promise pending as specified.
+      resolver->Detach();
+    } else {
+      peer_handler_->GetStats(WTF::Bind(WebRTCStatsReportCallbackResolver,
+                                        WrapPersistent(resolver)),
+                              GetExposedGroupIds(script_state));
+    }
     return promise;
   }
 
@@ -2739,8 +2727,8 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
   // Create track.
   MediaStreamTrack* track;
   if (receiver_it == rtp_receivers_.end()) {
-    track = MakeGarbageCollected<MediaStreamTrack>(GetExecutionContext(),
-                                                   platform_receiver->Track());
+    track = MakeGarbageCollected<MediaStreamTrackImpl>(
+        GetExecutionContext(), platform_receiver->Track());
     RegisterTrack(track);
   } else {
     track = (*receiver_it)->track();
@@ -3038,7 +3026,7 @@ void RTCPeerConnection::DidModifyReceiversPlanB(
   // Process the addition of receivers.
   for (auto& platform_receiver : platform_receivers_added) {
     // Create track.
-    auto* track = MakeGarbageCollected<MediaStreamTrack>(
+    auto* track = MakeGarbageCollected<MediaStreamTrackImpl>(
         GetExecutionContext(), platform_receiver->Track());
     tracks_.insert(track->Component(), track);
     // Create or update streams.

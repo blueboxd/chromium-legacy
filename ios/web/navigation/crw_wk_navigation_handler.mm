@@ -63,6 +63,22 @@ namespace {
 // stored errors is not expected to be high.
 const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
+// Returns true if the navigation was upgraded to HTTPS but failed due to an
+// SSL or net error. This can happen when HTTPS-Only Mode feature automatically
+// upgrades a navigation to HTTPS.
+bool IsFailedHttpsUpgrade(NSError* error, web::NavigationContextImpl* context) {
+  if (!context || !context->GetItem() ||
+      !context->GetItem()->IsUpgradedToHttps()) {
+    return false;
+  }
+  int error_code = 0;
+  if (!web::GetNetErrorFromIOSErrorCode(
+          error.code, &error_code, net::NSURLWithGURL(context->GetUrl()))) {
+    error_code = net::ERR_FAILED;
+  }
+  return (error_code != net::OK || web::IsWKWebViewSSLCertError(error));
+}
+
 }  // namespace
 
 @interface CRWWKNavigationHandler () <DownloadNativeTaskBridgeDelegate> {
@@ -1356,6 +1372,20 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     return NO;
   }
 
+  // TODO(crbug.com/1308875): Remove this when |canShowMIMEType| is fixed.
+  // On iOS 15 |canShowMIMEType| returns true for AR files although WebKit is
+  // not capable of displaying them natively.
+  if (@available(iOS 15, *)) {
+    NSString* MIMEType = WKResponse.response.MIMEType;
+    if ([MIMEType isEqual:@"model/vnd.pixar.usd"] ||
+        [MIMEType isEqual:@"model/usd"] ||
+        [MIMEType isEqual:@"model/vnd.usdz+zip"] ||
+        [MIMEType isEqual:@"model/vnd.pixar.usd"] ||
+        [MIMEType isEqual:@"model/vnd.reality"]) {
+      return NO;
+    }
+  }
+
   GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
   if (responseURL.SchemeIs(url::kDataScheme) && WKResponse.forMainFrame) {
     // Block rendering data URLs for renderer-initiated navigations in main
@@ -1638,6 +1668,13 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
   web::NavigationContextImpl* navigationContext =
       [self.navigationStates contextForNavigation:navigation];
+  if (IsFailedHttpsUpgrade(error, navigationContext)) {
+    navigationContext->SetIsFailedHTTPSUpgrade();
+    [self handleCancelledError:error
+                 forNavigation:navigation
+               provisionalLoad:provisionalLoad];
+    return;
+  }
 
   NSError* contextError = web::NetErrorFromError(error);
   if (policyDecisionCancellationError) {
@@ -1918,10 +1955,12 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 - (void)handleCancelledError:(NSError*)error
                forNavigation:(WKNavigation*)navigation
              provisionalLoad:(BOOL)provisionalLoad {
-  if (![self shouldCancelLoadForCancelledError:error
-                               provisionalLoad:provisionalLoad])
+  if (!IsFailedHttpsUpgrade(
+          error, [self.navigationStates contextForNavigation:navigation]) &&
+      ![self shouldCancelLoadForCancelledError:error
+                               provisionalLoad:provisionalLoad]) {
     return;
-
+  }
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
       [self.navigationStates removeNavigation:navigation];
   [self loadCancelled];

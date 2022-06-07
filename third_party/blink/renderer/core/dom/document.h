@@ -48,6 +48,7 @@
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/page/page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink-forward.h"
@@ -93,6 +94,11 @@ namespace gfx {
 class QuadF;
 class RectF;
 }
+
+namespace mojo {
+template <typename Interface>
+class PendingRemote;
+}  // namespace mojo
 
 namespace ukm {
 class UkmRecorder;
@@ -1790,6 +1796,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool RenderingHasBegun() const { return rendering_has_begun_; }
 
+  void IncrementLazyAdsFrameCount();
+  void IncrementLazyEmbedsFrameCount();
+
   enum class DeclarativeShadowRootAllowState : uint8_t {
     kNotSet,
     kAllow,
@@ -1801,7 +1810,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetFindInPageActiveMatchNode(Node*);
   const Node* GetFindInPageActiveMatchNode() const;
 
-  void ActivateForPrerendering(base::TimeTicks activation_start);
+  void ActivateForPrerendering(
+      const mojom::blink::PrerenderPageActivationParams& params);
 
   void AddWillDispatchPrerenderingchangeCallback(base::OnceClosure);
 

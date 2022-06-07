@@ -45,6 +45,7 @@
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/media_log.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -632,6 +633,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // If there is a pending asynchronous request, it will be completed by the
   // time this routine returns.
   virtual scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
+
+  // Same as above, but asynchronous.
+  using EstablishGpuChannelCallback =
+      base::OnceCallback<void(scoped_refptr<gpu::GpuChannelHost>)>;
+  virtual void EstablishGpuChannel(EstablishGpuChannelCallback callback);
 
   // The TaskGraphRunner. This must be non-null if compositing any widgets.
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() { return nullptr; }

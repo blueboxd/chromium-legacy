@@ -271,6 +271,7 @@ void ScriptExecutor::WaitForDomWithSlowWarning(
     NOTREACHED() << "must not be called outside of actions";
     return;
   }
+
   Action::ActionData& current_action_data = current_action_->GetActionData();
   current_action_data.wait_for_dom = std::make_unique<WaitForDomOperation>(
       this, delegate_, ui_delegate_, max_wait_time,
@@ -354,8 +355,7 @@ const CollectUserDataOptions* ScriptExecutor::GetLastSuccessfulUserDataOptions()
 }
 
 void ScriptExecutor::WriteUserData(
-    base::OnceCallback<void(UserData*, UserData::FieldChange*)>
-        write_callback) {
+    base::OnceCallback<void(UserData*, UserDataFieldChange*)> write_callback) {
   delegate_->WriteUserData(std::move(write_callback));
 }
 
@@ -480,7 +480,7 @@ void ScriptExecutor::RetrieveElementFormAndFieldData(
 }
 
 void ScriptExecutor::StoreScrolledToElement(
-    const ElementFinder::Result& element) {
+    const ElementFinderResult& element) {
   last_focused_element_ = element.dom_object();
 }
 
@@ -546,7 +546,7 @@ bool ScriptExecutor::WaitForNavigation(
 void ScriptExecutor::WaitForDocumentReadyState(
     base::TimeDelta max_wait_time,
     DocumentReadyState min_ready_state,
-    const ElementFinder::Result& optional_frame_element,
+    const ElementFinderResult& optional_frame_element,
     base::OnceCallback<void(const ClientStatus&,
                             DocumentReadyState,
                             base::TimeDelta)> callback) {
@@ -565,7 +565,7 @@ void ScriptExecutor::WaitForDocumentReadyState(
 void ScriptExecutor::WaitUntilDocumentIsInReadyState(
     base::TimeDelta max_wait_time,
     DocumentReadyState min_ready_state,
-    const ElementFinder::Result& optional_frame_element,
+    const ElementFinderResult& optional_frame_element,
     base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback) {
   WaitForDocumentReadyState(
       max_wait_time, min_ready_state, optional_frame_element,
@@ -1005,6 +1005,7 @@ void ScriptExecutor::OnProcessedAction(
     // to immediately ask for new actions.
     actions_.resize(processed_actions_.size());
   }
+
   current_action_ = nullptr;
   ProcessNextAction();
 }

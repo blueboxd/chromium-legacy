@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -41,11 +42,30 @@ bool MatchKeySystem(const CdmInfo& cdm_info, const std::string& key_system) {
           media::IsSubKeySystemOf(key_system, cdm_info.key_system));
 }
 
-void SendCdmAvailableUMA(const std::string& key_system, bool available) {
+// Reports whether the software secure CDM is available.
+void ReportSoftwareSecureCdmAvailableUMA(const std::string& key_system,
+                                         bool available) {
+  // Use GetKeySystemNameForUMA() without specifying `use_hw_secure_codecs` for
+  // backward compatibility.
   base::UmaHistogramBoolean("Media.EME." +
                                 media::GetKeySystemNameForUMA(key_system) +
                                 ".LibraryCdmAvailable",
                             available);
+}
+
+// Reports the status of the hardware secure CDM. Only reported once per browser
+// session per `key_system`.
+void ReportHardwareSecureCapabilityStatusUMA(const std::string& key_system,
+                                             CdmInfo::Status status) {
+  static base::NoDestructor<std::set<std::string>> reported_key_systems;
+  if (reported_key_systems->count(key_system))
+    return;
+
+  reported_key_systems->insert(key_system);
+  auto key_system_name_for_uma =
+      media::GetKeySystemNameForUMA(key_system, /*use_hw_secure_codecs=*/true);
+  base::UmaHistogramEnumeration(
+      "Media.EME." + key_system_name_for_uma + ".CdmInfoStatus", status);
 }
 
 bool IsEnabled(CdmInfo::Status status) {
@@ -112,11 +132,11 @@ absl::optional<media::CdmCapability> GetSoftwareSecureCapability(
   auto cdm_info = cdm_registry_impl.GetCdmInfo(
       key_system, CdmInfo::Robustness::kSoftwareSecure);
   if (!cdm_info) {
-    SendCdmAvailableUMA(key_system, false);
+    ReportSoftwareSecureCdmAvailableUMA(key_system, false);
     return absl::nullopt;
   }
 
-  SendCdmAvailableUMA(key_system, true);
+  ReportSoftwareSecureCdmAvailableUMA(key_system, true);
 
   if (!cdm_info->capability) {
     DVLOG(1) << "Lazy initialization of SoftwareSecure CdmCapability not "
@@ -253,6 +273,10 @@ void CdmRegistryImpl::RegisterCdm(const CdmInfo& info) {
   // browser restart, which is fine in most cases.
   cdms_.push_back(info);
 
+  // Reset cached `key_system_capabilities_` to avoid notifying new observers
+  // with the old capabilities and then update them again with new ones.
+  // This could cause notifying observers with the same capabilities multiple
+  // times, which is okay.
   key_system_capabilities_.reset();
 
   // If there are `key_system_capabilities_update_callbacks_` registered,
@@ -510,6 +534,7 @@ KeySystemCapabilities CdmRegistryImpl::GetKeySystemCapabilities() {
     std::tie(hw_secure_capability, status) =
         GetHardwareSecureCapability(*this, key_system);
     DCHECK(status != CdmInfo::Status::kUninitialized);
+    ReportHardwareSecureCapabilityStatusUMA(key_system, status);
     capability.hw_secure_capability =
         IsEnabled(status) ? hw_secure_capability : absl::nullopt;
 

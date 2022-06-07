@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Шлюз</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">По области сканирования</translation>
+<translation id="1367951781824006909">Выберите файл</translation>
 <translation id="1387854245479784695">Использование ЦП всеми ядрами</translation>
 <translation id="1394661041439318933">Чехол заряжен на <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="1397738625398125236">Запрос ping к шлюзу</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Версия оборудования</translation>
 <translation id="1905710495812624430">Превышено максимально допустимое число попыток.</translation>
 <translation id="1908234395526491708">Невыполненные запросы UDP.</translation>
-<translation id="1930797645656624981">Выбор способа ввода в Chrome OS</translation>
 <translation id="1947737735496445907">Напечатано</translation>
 <translation id="1951012854035635156">Ассистент</translation>
+<translation id="1977994649430373166">Фото профиля Google</translation>
 <translation id="1979103255016296513">Истек срок изменения пароля</translation>
 <translation id="1999615961760456652">Страница входа</translation>
 <translation id="2006864819935886708">Подключение</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Выберите хотя бы одну художественную галерею.</translation>
 <translation id="2230005943220647148">По шкале Цельсия</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Подсветка клавиатуры</translation>
 <translation id="2240366984605217732">Переключение раскладки клавиатуры</translation>
 <translation id="225692081236532131">Статус активации</translation>
 <translation id="2287186687001756809">Изображений нет. Добавить фотографии можно на сайте <ph name="LINK" />.</translation>
@@ -149,7 +151,6 @@
 <translation id="2536159006530886390">Ошибка подключения к Интернету.</translation>
 <translation id="2570743873672969996">Запуск теста "<ph name="TEST_NAME" />"…</translation>
 <translation id="2584559707064218956">Чтобы задать конфигурацию сети, перейдите в настройки.</translation>
-<translation id="2585245331261708204">Что нового в Chrome OS</translation>
 <translation id="2619761439309613843">Обновлять ежедневно</translation>
 <translation id="2620436844016719705">Система</translation>
 <translation id="2640549051766135490">Выбран альбом "<ph name="TITLE" />" с описанием "<ph name="DESC" />"</translation>
@@ -222,6 +223,7 @@
 <translation id="3604713164406837697">Изменить обои</translation>
 <translation id="360565022852130722">Безопасность сети Wi-Fi обеспечивается недостаточно надежным протоколом WEP 802.1x.</translation>
 <translation id="3606583719724308068">Длительная задержка у HTTPS-сайтов.</translation>
+<translation id="3621202678540785336">Вход</translation>
 <translation id="3632579075709132555">Включение экрана конфиденциальности</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />: тестирование</translation>
 <translation id="370665806235115550">Загрузка...</translation>
@@ -246,6 +248,7 @@
 <translation id="3954678691475912818">Это неизвестное устройство.</translation>
 <translation id="3966286471246132217">Чтобы получить более точные результаты, закройте все приложения и не запускайте их до завершения проверки.</translation>
 <translation id="3967822245660637423">Скачивание завершено.</translation>
+<translation id="3969602104473960991">Пароль Chrome OS изменен</translation>
 <translation id="397105322502079400">Вычисление…</translation>
 <translation id="39823212440917567">Задания печати, хранящиеся дольше <ph name="NUMBER_OF_DAYS" /> дн., будут удалены</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" />: установлено актуальное ПО</translation>
@@ -265,6 +268,7 @@
 <translation id="4170180284036919717">Сделать снимок</translation>
 <translation id="4170700058716978431">ОШИБКА</translation>
 <translation id="4176463684765177261">Отключено</translation>
+<translation id="4176659219503619100">Панель управления</translation>
 <translation id="4213104098953699324">Клавиатура USB</translation>
 <translation id="4227825898293920515">Срок действия пароля истекает через <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Задания печати не выполняются</translation>
@@ -320,7 +324,6 @@
 <translation id="4731797938093519117">Родительский доступ</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4744944742468440486">Информация на основе выделенного текста</translation>
-<translation id="475869545581454722">Пароль Chrome OS изменен</translation>
 <translation id="4773299976671772492">Остановлено</translation>
 <translation id="4782311465517282004">Получайте определения слов, перевод или значение в других единицах измерения: достаточно нажать на текст правой кнопкой мыши или коснуться его и удерживать.</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> фото</translation>
@@ -460,6 +463,7 @@
 <translation id="6113701710518389813">Стрелка вверх</translation>
 <translation id="6117895505466548728">Альбом "<ph name="TITLE" />" и ещё <ph name="NUMBER" /> других</translation>
 <translation id="6122191549521593678">Онлайн</translation>
+<translation id="6122277663991249694">Выбор способа ввода в Chrome OS</translation>
 <translation id="6137767437444130246">Сертификат пользователя</translation>
 <translation id="6146993107019042706">Чтобы завершить процедуру, введите новый пароль.</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -551,6 +555,7 @@
 <translation id="7143207342074048698">Подключение</translation>
 <translation id="7144878232160441200">Повторить</translation>
 <translation id="714876143603641390">Подключение к локальной сети</translation>
+<translation id="7155171745945906037">Фото с камеры или из галереи</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7172721935181587524">Изображений: 1</translation>
 <translation id="7175037578838465313">Настроить сеть "<ph name="NAME" />"</translation>
@@ -625,6 +630,7 @@
 <translation id="8031884997696620457">HSPA+</translation>
 <translation id="80398733265834479">Включить автоматический цветовой режим</translation>
 <translation id="8041089156583427627">Отправить отзыв</translation>
+<translation id="8045012663542226664">Микрофон</translation>
 <translation id="8075838845814659848">Уровень заряда</translation>
 <translation id="8082366717211101304">Не удается выполнить DNS-преобразование в приложениях для Android.</translation>
 <translation id="808894953321890993">Сменить пароль</translation>
@@ -656,6 +662,7 @@
 <translation id="8398927464629426868">Скорость, с которой устройство заряжается или разряжается в настоящее время</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Встроенная клавиатура</translation>
+<translation id="8431300646573772016">Что нового в Chrome OS</translation>
 <translation id="843568408673868420">Подключение к интернету</translation>
 <translation id="844521431886043384">DNS-сервер не настроен.</translation>
 <translation id="8461329675984532579">Название провайдера</translation>
@@ -735,6 +742,7 @@
 <translation id="917720651393141712">Проверить</translation>
 <translation id="9204237731135241582">Не удается связаться со шлюзом в приложениях для Android.</translation>
 <translation id="9211490828691860325">Все рабочие столы</translation>
+<translation id="932327136139879170">Главная страница</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Не активировано</translation>
 <translation id="960719561871045870">Код оператора</translation>

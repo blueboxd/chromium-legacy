@@ -51,9 +51,10 @@ const struct {
   const char* const name;
 } kBitsToOs[] = {
     {kOsMac, "Mac"},         {kOsWin, "Windows"},
-    {kOsLinux, "Linux"},     {kOsCrOS, "Chrome OS"},
-    {kOsAndroid, "Android"}, {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
+    {kOsLinux, "Linux"},     {kOsCrOS, "ChromeOS"},
+    {kOsAndroid, "Android"}, {kOsCrOSOwnerOnly, "ChromeOS (owner only)"},
     {kOsIos, "iOS"},         {kOsFuchsia, "Fuchsia"},
+    {kOsLacros, "Lacros"},
 };
 
 // Adds a |StringValue| to |list| for each platform where |bitmask| indicates

@@ -150,6 +150,7 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
     if (addResult !== AddSinkResultCode.OK) {
       this.$.errorMessage.setAddSinkError(addResult);
       this.set('canCast', true);
+      this.$.codeInput.focusInput();
       return;
     }
 
@@ -160,6 +161,7 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
     if (castResult !== RouteRequestResultCode.OK) {
       this.$.errorMessage.setCastError(castResult);
       this.set('canCast', true);
+      this.$.codeInput.focusInput();
       return;
     }
 
@@ -173,6 +175,16 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
   private castStateChange() {
     this.submitDisabled = !this.canCast ||
         this.accessCode.length !== AccessCodeCastElement.ACCESS_CODE_LENGTH;
+    if (this.$.errorMessage.getMessageCode() !== 0 &&
+        this.accessCode.length <=
+            AccessCodeCastElement.ACCESS_CODE_LENGTH - 1) {
+      // Hide error message once user starts editing the access code entered
+      // previously. Checking for access code's length
+      // <= (AccessCodeCastElement.ACCESS_CODE_LENGTH - 1 ) because it's
+      // possible to for the user to deletes more than one characters at a
+      // time.
+      this.$.errorMessage.setNoError();
+    }
   }
 
   private setState(state: PageState) {

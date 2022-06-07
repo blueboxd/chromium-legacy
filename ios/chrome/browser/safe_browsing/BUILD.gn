@@ -125,6 +125,8 @@ source_set("features") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "fake_safe_browsing_client.h",
+    "fake_safe_browsing_client.mm",
     "fake_safe_browsing_service.h",
     "fake_safe_browsing_service.mm",
   ]
@@ -133,6 +135,7 @@ source_set("test_support") {
     ":safe_browsing",
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/browser/db:test_database_manager",
+    "//ios/components/security_interstitials/safe_browsing",
     "//ios/web/public",
     "//services/network:test_support",
     "//services/network/public/cpp",
@@ -194,11 +197,13 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/content_settings/core/browser",
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/safe_browsing/core/browser",
+    "//components/safe_browsing/core/browser:token_fetcher",
     "//components/safe_browsing/core/browser:verdict_cache_manager",
     "//components/safe_browsing/core/browser/db",
     "//components/safe_browsing/core/browser/db:database_manager",
@@ -209,6 +214,7 @@ source_set("unit_tests") {
     "//components/safe_browsing/core/browser/db:v4_protocol_manager_util",
     "//components/safe_browsing/core/browser/db:v4_test_util",
     "//components/safe_browsing/core/browser/password_protection:password_protection_metrics_util",
+    "//components/safe_browsing/core/browser/realtime:url_lookup_service",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common/proto:realtimeapi_proto",
     "//components/safe_browsing/ios/browser:allow_list",
@@ -228,7 +234,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/prerender:test_support",
     "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
     "//ios/components/security_interstitials/safe_browsing",
     "//ios/web/public",

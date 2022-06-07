@@ -52,7 +52,7 @@
 <translation id="1251750620252348585">ቀጣይ የደረጃ 6 ርዕስ</translation>
 <translation id="1268366246392928616">ምንም ቀዳሚ የሒሳብ ሐረግ የለም</translation>
 <translation id="1273314450961659276">የጽሑፍ ወደ ንግግር ቅንብሮች</translation>
-<translation id="1275718070701477396">ተመርጧል</translation>
+<translation id="1275718070701477396">የተመረጡ</translation>
 <translation id="1284576163386164372">በአራት ጣት መታ አድርገው ምናሌዎችን በመክፈት ሁልጊዜ አጋዥ ሥልጠናዎችን መመልከት ይችላሉ። ከዚያ አጋዥ ሥልጠናውን ከ«ChromeVox» ክፍሉ ስር ያግብሩት።</translation>
 <translation id="1291286136605998134">የማቀያየሪያ አዝራር</translation>
 <translation id="1299774449519412690">ፈካ ያለ የሰማይ ሰማያዊ</translation>
@@ -684,6 +684,8 @@
 <translation id="5623842676595125836">ምዝግብ ማስታወሻ</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ሥዕላዊ ምልክት</translation>
+<translation id="5648939288050772726">እንኳን ደስ አለዎት! በተስካ ሁኔታ ChromeVox ለመጠቀም የሚያስፈልጉትን መሠረታዊ ነገሮች ተምረዋል። ፍለጋ+ነጥብ ላይ በመጫን በማንኛውም ጊዜ የChromeVox ትዕዛዝ ምናሌን መክፈት እንደሚችሉ ያስታውሱ። እንዲያውም ስለChromeVox እና ChromeOS የበለጠ ለመረዳት የሚከተሉትን ጽሑፎች ይጎብኙ።
+    የአጋዥ ስልጠናውን ከጨረሱ ChromeVoxን ተጠቅመው ወደ ዝጋ አዝራር ይሂዱና ጠቅ ያድርጉት።</translation>
 <translation id="5653397561111110475">የChromebook ማያ ንካ የተደራሽነት ባህሪዎችን ይጠቀሙ</translation>
 <translation id="5655682562155942719">የዝላይ ትዕዛዞች</translation>
 <translation id="56637627897541303">የጽሑፍ ቦታ</translation>
@@ -966,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">የተፈጥሮ ድምፅ</translation>
 <translation id="7714340021005120797">ምንም ቀጣይ ጥምድ ሳጥን የለም</translation>
-<translation id="772146615414628379">እንኳን ደስ አለዎት! በተስካ ሁኔታ ChromeVox ለመጠቀም የሚያስፈልጉትን መሠረታዊ ነገሮች ተምረዋል። ፍለጋ+ነጥብ ላይ በመጫን በማንኛውም ጊዜ የChromeVox ትዕዛዝ ምናሌን መክፈት እንደሚችሉ ያስታውሱ። እንዲያውም ስለChromeVox እና Chrome OS የበለጠ ለመረዳት የሚከተሉትን ጽሑፎች ይጎብኙ።
-    የአጋዥ ስልጠናውን ከጨረሱ ChromeVoxን ተጠቅመው ወደ ዝጋ አዝራር ይሂዱና ጠቅ ያድርጉት።</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
 <translation id="7731785449856576010">ምንም ቀጣይ የሚዲያ ንዑስ ፕሮግራም የለም</translation>
 <translation id="7735498529470878067">በመንካት ያስሱ በማያ ገጹ ላይ ስላለው ነገር በፍጥነት እንዲገነዘቡ ያግዘዎታል።</translation>

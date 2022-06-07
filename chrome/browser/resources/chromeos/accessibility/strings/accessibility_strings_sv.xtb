@@ -93,7 +93,7 @@
 <translation id="151784044608172266">Nästa mening</translation>
 <translation id="1524531499102321782">Punktskrift på nästa rad</translation>
 <translation id="1542513807034338907">Scrolla till föregående sida</translation>
-<translation id="1546370775711804143">Rullningslist</translation>
+<translation id="1546370775711804143">Scrollningslist</translation>
 <translation id="1551572888042734032">Sommar</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1559739829547075274">Navigera bakåt</translation>
@@ -684,6 +684,8 @@
 <translation id="5623842676595125836">Logg</translation>
 <translation id="5628125749885014029">rubr4</translation>
 <translation id="5632083598315326067">Grafisk symbol</translation>
+<translation id="5648939288050772726">Grattis! Nu kan du grunderna i att använda ChromeVox. Kom ihåg att du kan öppna kommandomenyn för ChromeVox när som helst genom att trycka på söktangenten + punkt. Om du vill veta ännu mer om ChromeVox och Chrome OS kan du läsa följande artiklar.
+    Om du är klar med självstudierna kan du använda ChromeVox till att navigera till stängningsknappen och klicka på den.</translation>
 <translation id="5653397561111110475">Använda tillgänglighetsfunktioner för pekskärmen på Chromebook</translation>
 <translation id="5655682562155942719">Hoppkommandon</translation>
 <translation id="56637627897541303">Textområde</translation>
@@ -966,8 +968,6 @@
 <translation id="7701196182766842984">autoslutför i lista</translation>
 <translation id="7713139339518499741">Naturlig röst</translation>
 <translation id="7714340021005120797">Det finns inga fler kombinationsrutor</translation>
-<translation id="772146615414628379">Grattis! Nu kan du grunderna i att använda ChromeVox. Kom ihåg att du kan öppna kommandomenyn för ChromeVox när som helst genom att trycka på söktangenten + punkt. Om du vill veta ännu mer om ChromeVox och Chrome OS kan du läsa följande artiklar.
-    Om du är klar med självstudierna kan du använda ChromeVox till att navigera till stängningsknappen och klicka på den.</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7731785449856576010">Det finns inga fler mediewidgetar</translation>
 <translation id="7735498529470878067">Med Explore by touch kan du snabbt få en uppfattning om vad som finns på skärmen.</translation>

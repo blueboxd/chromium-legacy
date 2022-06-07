@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -87,6 +86,7 @@ class ExceptionState;
 class FocusOptions;
 class GetInnerHTMLOptions;
 class HTMLFieldSetElement;
+class HTMLSelectMenuElement;
 class HTMLTemplateElement;
 class Image;
 class InputDeviceCapabilities;
@@ -161,6 +161,9 @@ enum class PopupValueType {
   kHint,
   kAsync,
 };
+constexpr const char* kPopupTypeValuePopup = "popup";
+constexpr const char* kPopupTypeValueHint = "hint";
+constexpr const char* kPopupTypeValueAsync = "async";
 
 typedef HeapVector<Member<Attr>> AttrNodeList;
 
@@ -544,6 +547,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   static void HandlePopupLightDismiss(const Event& event);
   void InvokePopup(Element* invoker);
   void SetPopupFocusOnShow();
+
+  // TODO(crbug.com/1197720): The popup position should be provided by the new
+  // anchored positioning scheme.
+  void SetNeedsRepositioningForSelectMenu(bool flag);
+  void SetOwnerSelectMenuElement(HTMLSelectMenuElement* element);
+  void AdjustPopupPositionForSelectMenu(ComputedStyle& style);
 
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
   virtual const QualifiedName& SubResourceAttributeName() const;

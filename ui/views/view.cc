@@ -1202,6 +1202,8 @@ void View::Paint(const PaintInfo& parent_paint_info) {
 
 void View::SetBackground(std::unique_ptr<Background> b) {
   background_ = std::move(b);
+  if (background_ && GetWidget())
+    background_->OnViewThemeChanged(this);
   SchedulePaint();
 }
 
@@ -3212,6 +3214,10 @@ void View::PropagateThemeChanged() {
       child->PropagateThemeChanged();
   }
   OnThemeChanged();
+  if (border_)
+    border_->OnViewThemeChanged(this);
+  if (background_)
+    background_->OnViewThemeChanged(this);
 #if DCHECK_IS_ON()
   DCHECK(on_theme_changed_called_)
       << "views::View::OnThemeChanged() has not been called. This means that "

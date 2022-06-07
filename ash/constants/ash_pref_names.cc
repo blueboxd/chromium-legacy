@@ -954,6 +954,11 @@ const char kProjectorViewerOnboardingShowCount[] =
 // policy.
 const char kProjectorAllowByPolicy[] = "ash.projector.allow_by_policy";
 
+// A boolean pref that controls Projector dogfood for Family Link users.
+// Set with an enterprise user policy.
+const char kProjectorDogfoodForFamilyLinkEnabled[] =
+    "ash.projector.dogfood_for_family_link_enabled";
+
 // A boolean pref that indicates whether the migration of Chromad devices to
 // cloud management can be started.
 const char kChromadToCloudMigrationEnabled[] =
@@ -973,6 +978,10 @@ const char kLoginScreenWebUILazyLoading[] =
 
 // Boolean value for the FloatingWorkspaceEnabled policy
 const char kFloatingWorkspaceEnabled[] = "ash.floating_workspace_enabled";
+
+// Boolean value indicating that post reboot notification should be shown to the
+// user.
+const char kShowPostRebootNotification[] = "ash.show_post_reboot_notification";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

@@ -125,6 +125,8 @@ if (!is_android) {
 
 static_library("shopping_service") {
   sources = [
+    "pref_names.cc",
+    "pref_names.h",
     "shopping_service.cc",
     "shopping_service.h",
   ]
@@ -132,5 +134,21 @@ static_library("shopping_service") {
   deps = [
     "//base",
     "//components/keyed_service/core",
+    "//components/prefs:prefs",
   ]
+
+  if (is_android) {
+    sources += [
+      "android/shopping_service_android.cc",
+      "android/shopping_service_android.h",
+    ]
+
+    deps += [ ":shopping_service_jni_headers" ]
+  }
+}
+
+if (is_android) {
+  generate_jni("shopping_service_jni_headers") {
+    sources = [ "android/java/src/org/chromium/components/commerce/core/ShoppingService.java" ]
+  }
 }

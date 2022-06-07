@@ -14,8 +14,7 @@ import {BackgroundGraphicsModeRestriction, Policies} from '../native_layer.js';
 import {ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from '../native_layer.js';
 // </if>
 import {CapabilityWithReset, Cdd, CddCapabilities, ColorOption, DpiOption, DuplexOption, MediaSizeOption} from './cdd.js';
-import {Destination, DestinationOrigin, GooglePromotedDestinationId, RecentDestination} from './destination.js';
-import {getPrinterTypeForDestination, PrinterType} from './destination_match.js';
+import {Destination, DestinationOrigin, GooglePromotedDestinationId, PrinterType, RecentDestination} from './destination.js';
 import {DocumentSettings} from './document_info.js';
 import {CustomMarginsOrientation, Margins, MarginsSetting, MarginsType} from './margins.js';
 import {ScalingType} from './scaling.js';
@@ -168,7 +167,9 @@ export type PrintTicket = Ticket&{
   pageCount: number,
   pageHeight: number,
   pageWidth: number,
+  // <if expr="chromeos_ash or chromeos_lacros">
   printToGoogleDrive: boolean,
+  // </if>
   showSystemDialog: boolean,
 };
 
@@ -755,8 +756,7 @@ export class PrintPreviewModelElement extends PolymerElement {
   }
 
   private updateSettingsAvailabilityFromDestinationAndDocumentSettings_() {
-    const isSaveAsPDF = getPrinterTypeForDestination(this.destination) ===
-        PrinterType.PDF_PRINTER;
+    const isSaveAsPDF = this.destination.type === PrinterType.PDF_PRINTER;
     const knownSizeToSaveAsPdf = isSaveAsPDF &&
         (!this.documentSettings.isModifiable ||
          this.documentSettings.hasCssMediaStyles);
@@ -1545,8 +1545,7 @@ export class PrintPreviewModelElement extends PolymerElement {
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: false,  // only used in print preview
       previewModifiable: this.documentSettings.isModifiable,
-      printToGoogleDrive: destination.id === GooglePromotedDestinationId.DOCS,
-      printerType: getPrinterTypeForDestination(destination),
+      printerType: destination.type,
       rasterizePDF: this.getSettingValue('rasterize'),
       scaleFactor:
           this.getSettingValue(scalingSettingKey) === ScalingType.CUSTOM ?
@@ -1561,11 +1560,11 @@ export class PrintPreviewModelElement extends PolymerElement {
       pageWidth: this.pageSize.width,
       pageHeight: this.pageSize.height,
       showSystemDialog: showSystemDialog,
+      // <if expr="chromeos_ash or chromeos_lacros">
+      printToGoogleDrive:
+          destination.id === GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS,
+      // </if>
     };
-    // <if expr="chromeos_ash or chromeos_lacros">
-    ticket['printToGoogleDrive'] = ticket['printToGoogleDrive'] ||
-        destination.id === GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS;
-    // </if>
 
     if (openPdfInPreview) {
       ticket['openPDFInPreview'] = openPdfInPreview;

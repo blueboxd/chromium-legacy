@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.homepage.HomepageManager;
-import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -63,7 +62,6 @@ public class TabModelImpl extends TabModelJniBridge {
     private final ObserverList<TabModelObserver> mObservers;
     private final NextTabPolicySupplier mNextTabPolicySupplier;
     private final AsyncTabParamsManager mAsyncTabParamsManager;
-    private RecentlyClosedBridge mRecentlyClosedBridge;
 
     // Undo State Tracking -------------------------------------------------------------------------
 
@@ -132,7 +130,6 @@ public class TabModelImpl extends TabModelJniBridge {
         // The call to initializeNative() should be as late as possible, as it results in calling
         // observers on the native side, which may in turn call |addObserver()| on this object.
         initializeNative(profile);
-        mRecentlyClosedBridge = new RecentlyClosedBridge(profile);
     }
 
     @Override
@@ -161,7 +158,6 @@ public class TabModelImpl extends TabModelJniBridge {
         }
         mTabs.clear();
         mObservers.clear();
-        mRecentlyClosedBridge.destroy();
         super.destroy();
     }
 
@@ -667,12 +663,14 @@ public class TabModelImpl extends TabModelJniBridge {
         return incognito ? mIncognitoTabCreator : mRegularTabCreator;
     }
 
+    /**
+     * Used to restore tabs from native.
+     */
     @Override
     protected boolean createTabWithWebContents(
             Tab parent, Profile profile, WebContents webContents) {
         return getTabCreator(profile.isOffTheRecord())
-                .createTabWithWebContents(
-                        parent, webContents, TabLaunchType.FROM_LONGPRESS_BACKGROUND);
+                .createTabWithWebContents(parent, webContents, TabLaunchType.FROM_RECENT_TABS);
     }
 
     @Override
@@ -704,7 +702,11 @@ public class TabModelImpl extends TabModelJniBridge {
         // If shouldIgnoreNewTab returns true, the intent is handled by another
         // activity. As a result, don't launch a new tab to open the URL.
         InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateTabHelper.get(parent);
-        if (delegate != null && delegate.shouldIgnoreNewTab(url, incognito)) return;
+        if (delegate != null
+                && delegate.shouldIgnoreNewTab(
+                        url, incognito, isRendererInitiated, initiatorOrigin)) {
+            return;
+        }
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setInitiatorOrigin(initiatorOrigin);
@@ -737,9 +739,9 @@ public class TabModelImpl extends TabModelJniBridge {
             return;
         }
 
-        // If there are no pending closures in the rewound list,
-        // then try to restore the tab from the native tab restore service.
-        mRecentlyClosedBridge.openMostRecentlyClosedTab(this);
+        // If there are no pending closures in the rewound list, then try to restore from the native
+        // tab restore service.
+        mModelDelegate.openMostRecentlyClosedEntry(this);
         // If there is only one tab, select it.
         if (getCount() == 1) setIndex(0, TabSelectionType.FROM_NEW, false);
     }

@@ -51,6 +51,8 @@ class InputMenuView : public views::View {
   ~InputMenuView() override;
 
  private:
+  class FeedbackButton;
+
   void CloseMenu();
   void Init();
   std::unique_ptr<views::View> BuildSeparator();
@@ -58,6 +60,13 @@ class InputMenuView : public views::View {
   void OnToggleGameControlPressed();
   void OnToggleShowHintPressed();
   void OnButtonCustomizedPressed();
+  void OnButtonSendFeedbackPressed();
+  // Calculate Insets for a given |view|, taking into account specs and hosted
+  // views. This is a fix due to the lack of a justify option for FlexLayout.
+  gfx::Insets CalculateInsets(views::View* view,
+                              int left,
+                              int right,
+                              int other_spacing) const;
 
   raw_ptr<views::ToggleButton> game_control_toggle_ = nullptr;
   raw_ptr<views::ToggleButton> show_hint_toggle_ = nullptr;

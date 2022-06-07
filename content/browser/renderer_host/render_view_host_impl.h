@@ -134,7 +134,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   RenderProcessHost* GetProcess() const override;
   int GetRoutingID() const override;
   void EnablePreferredSizeMode() override;
-  bool IsRenderViewLive() const override;
+  bool IsRenderViewLiveForTesting() const override;
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
 
   void SendWebPreferencesToRenderer();
@@ -174,6 +174,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool is_waiting_for_page_close_completion() const {
     return is_waiting_for_page_close_completion_;
   }
+
+  // Returns true if the RenderView is active and has not crashed.
+  bool IsRenderViewLive() const;
 
   // Called when the RenderView in the renderer process has been created, at
   // which point IsRenderViewLive() becomes true, and the mojo connections to
@@ -266,7 +269,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   bool is_in_back_forward_cache() const { return is_in_back_forward_cache_; }
 
-  void ActivatePrerenderedPage(base::TimeTicks activation_start,
+  void ActivatePrerenderedPage(blink::mojom::PrerenderPageActivationParamsPtr
+                                   prerender_page_activation_params,
                                base::OnceClosure callback);
 
   void SetFrameTreeVisibility(blink::mojom::PageVisibilityState visibility);

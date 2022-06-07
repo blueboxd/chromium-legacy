@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -109,13 +110,13 @@ SkColor GetHighlightColor(absl::optional<SkColor> theme_color) {
 EnterpriseProfileWelcomeHandler::EnterpriseProfileWelcomeHandler(
     Browser* browser,
     EnterpriseProfileWelcomeUI::ScreenType type,
-    bool force_new_profile,
+    bool profile_creation_required_by_policy,
     const AccountInfo& account_info,
     absl::optional<SkColor> profile_color,
     signin::SigninChoiceCallback proceed_callback)
     : browser_(browser),
       type_(type),
-      force_new_profile_(force_new_profile),
+      profile_creation_required_by_policy_(profile_creation_required_by_policy),
       email_(base::UTF8ToUTF16(account_info.email)),
       domain_name_(gaia::ExtractDomainName(account_info.email)),
       account_id_(account_info.account_id),
@@ -221,9 +222,8 @@ void EnterpriseProfileWelcomeHandler::HandleProceed(
   if (proceed_callback_) {
     bool use_existing_profile = args[0].GetIfBool().value_or(false);
     std::move(proceed_callback_)
-        .Run(use_existing_profile || !force_new_profile_
-                 ? signin::SIGNIN_CHOICE_CONTINUE
-                 : signin::SIGNIN_CHOICE_NEW_PROFILE);
+        .Run(use_existing_profile ? signin::SIGNIN_CHOICE_CONTINUE
+                                  : signin::SIGNIN_CHOICE_NEW_PROFILE);
   }
 }
 
@@ -279,6 +279,10 @@ base::Value EnterpriseProfileWelcomeHandler::GetProfileInfoValue() {
       dict.SetStringKey("proceedLabel", l10n_util::GetStringUTF8(IDS_DONE));
       break;
     case EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation:
+      title = l10n_util::GetStringUTF8(
+          profile_creation_required_by_policy_
+              ? IDS_ENTERPRISE_WELCOME_PROFILE_REQUIRED_TITLE
+              : IDS_ENTERPRISE_WELCOME_PROFILE_WILL_BE_MANAGED_TITLE);
       dict.SetBoolKey("showEnterpriseBadge", false);
       subtitle = GetManagedAccountTitleWithEmail(entry, domain_name_, email_);
       enterprise_info = l10n_util::GetStringUTF8(
@@ -286,7 +290,7 @@ base::Value EnterpriseProfileWelcomeHandler::GetProfileInfoValue() {
       dict.SetStringKey(
           "proceedLabel",
           l10n_util::GetStringUTF8(
-              force_new_profile_
+              profile_creation_required_by_policy_
                   ? IDS_ENTERPRISE_PROFILE_WELCOME_CREATE_PROFILE_BUTTON
                   : IDS_WELCOME_SIGNIN_VIEW_SIGNIN));
       break;
@@ -297,12 +301,9 @@ base::Value EnterpriseProfileWelcomeHandler::GetProfileInfoValue() {
           GetLacrosFirstRunManagedAccountInfo(entry, domain_name_);
       [[fallthrough]];
     case EnterpriseProfileWelcomeUI::ScreenType::kLacrosConsumerWelcome:
-      // TODO(crbug.com/1300109): Replace `email` with the first name. Pass this
-      // info only once the first name is available.
-      title = l10n_util::GetStringFUTF8(IDS_PRIMARY_PROFILE_FIRST_RUN_TITLE,
-                                        email_);
-      subtitle =
-          l10n_util::GetStringUTF8(IDS_PRIMARY_PROFILE_FIRST_RUN_SUBTITLE);
+      title = GetLacrosWelcomeTitle();
+      subtitle = l10n_util::GetStringFUTF8(
+          IDS_PRIMARY_PROFILE_FIRST_RUN_SUBTITLE, email_);
       dict.SetStringKey("proceedLabel",
                         l10n_util::GetStringUTF8(
                             IDS_PRIMARY_PROFILE_FIRST_RUN_NEXT_BUTTON_LABEL));
@@ -350,6 +351,22 @@ std::string EnterpriseProfileWelcomeHandler::GetPictureUrl() {
           true, avatar_icon_size, avatar_icon_size)
           .AsBitmap());
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+std::string EnterpriseProfileWelcomeHandler::GetLacrosWelcomeTitle() {
+  AccountInfo account_info =
+      IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
+          ->FindExtendedAccountInfoByAccountId(account_id_);
+  bool has_given_name = !account_info.given_name.empty();
+  base::UmaHistogramBoolean("Profile.LacrosFre.WelcomeHasGivenName",
+                            has_given_name);
+  return has_given_name ? l10n_util::GetStringFUTF8(
+                              IDS_PRIMARY_PROFILE_FIRST_RUN_TITLE,
+                              base::UTF8ToUTF16(account_info.given_name))
+                        : l10n_util::GetStringUTF8(
+                              IDS_PRIMARY_PROFILE_FIRST_RUN_NO_NAME_TITLE);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 EnterpriseProfileWelcomeUI::ScreenType
 EnterpriseProfileWelcomeHandler::GetTypeForTesting() {

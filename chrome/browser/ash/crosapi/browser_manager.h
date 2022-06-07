@@ -28,6 +28,8 @@
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/component_cloud_policy_service_observer.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -63,6 +65,7 @@ using component_updater::ComponentUpdateService;
 class BrowserManager : public session_manager::SessionManagerObserver,
                        public BrowserServiceHostObserver,
                        public policy::CloudPolicyStore::Observer,
+                       public policy::ComponentCloudPolicyServiceObserver,
                        public ComponentUpdateService::Observer {
  public:
   // Static getter of BrowserManager instance. In real use cases,
@@ -180,11 +183,14 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void HandleTabScrubbing(float x_offset);
 
   // Create a browser with the restored data containing |urls|,
-  // |bounds|, |show_state|, |active_tab_index|.
+  // |bounds|, |show_state|, |active_tab_index| and |app_name|. Note an
+  // non-empty |app_name| indicates that the browser window is an app type
+  // browser window.
   void CreateBrowserWithRestoredData(const std::vector<GURL>& urls,
                                      const gfx::Rect& bounds,
                                      const ui::WindowShowState show_state,
-                                     int32_t active_tab_index);
+                                     int32_t active_tab_index,
+                                     const std::string& app_name);
 
   // Initialize resources and start Lacros. This class provides two approaches
   // to fulfill different requirements.
@@ -332,7 +338,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     RestoreFromDeskTemplate(const std::vector<GURL>& urls,
                             const gfx::Rect& bounds,
                             ui::WindowShowState show_state,
-                            int32_t active_tab_index);
+                            int32_t active_tab_index,
+                            const std::string& app_name);
     RestoreFromDeskTemplate(const RestoreFromDeskTemplate&) = delete;
     RestoreFromDeskTemplate& operator=(const RestoreFromDeskTemplate&) = delete;
     RestoreFromDeskTemplate(RestoreFromDeskTemplate&&);
@@ -342,6 +349,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     gfx::Rect bounds;
     ui::WindowShowState show_state;
     int32_t active_tab_index;
+    // An non-empty |app_name| indicates that it's an app type browser window.
+    std::string app_name;
   };
 
   // Returns true if the binary is ready to launch or already launched.
@@ -443,12 +452,21 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Sets user policy to be propagated to Lacros and subsribes to the user
   // policy updates in Ash.
   void PrepareLacrosPolicies();
-  policy::CloudPolicyStore* GetDeviceAccountPolicyStore();
 
   // policy::CloudPolicyStore::Observer:
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
   void OnStoreError(policy::CloudPolicyStore* store) override;
   void OnStoreDestruction(policy::CloudPolicyStore* store) override;
+
+  // policy::ComponentCloudPolicyService::Observer:
+  // Updates the component policy for given namespace. The policy blob is
+  // serialized PolicyFetchResponse received from the server, or parsed from the
+  // file after is was validated.
+  void OnComponentPolicyUpdated(
+      const policy::ComponentCloudPolicyServiceObserver::ComponentPolicyMap&
+          serialized_policy) override;
+  void OnComponentPolicyServiceDestruction(
+      policy::ComponentCloudPolicyService* service) override;
 
   // component_updater::ComponentUpdateService::Observer:
   void OnEvent(Events event, const std::string& id) override;

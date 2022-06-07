@@ -10,6 +10,7 @@
             "--enable-cfv2",
             "--enable-features=Vulkan,CanvasOopRasterization",
         ],
+        lifecycle: { stop_event: "notify" },
 
         // SandboxPolicyFuchsia currently expects stderr & stdout to exist.
         // Route them to the LogSink, to capture any content they emit, for
@@ -50,6 +51,7 @@
         {
             protocol: [
                 "fuchsia.buildinfo.Provider",
+                "fuchsia.camera3.DeviceWatcher",
                 "fuchsia.device.NameProvider",
                 "fuchsia.element.GraphicalPresenter",
                 "fuchsia.fonts.Provider",
@@ -58,6 +60,11 @@
                 "fuchsia.media.Audio",
                 "fuchsia.media.AudioDeviceEnumerator",
                 "fuchsia.media.ProfileProvider",
+
+                // TODO(crbug.com/1293605): Do not provide this until the
+                // delegation issue is resolved.
+                // "fuchsia.mediacodec.CodecFactory",
+
                 "fuchsia.memorypressure.Provider",
                 "fuchsia.net.interfaces.State",
                 "fuchsia.net.name.Lookup",

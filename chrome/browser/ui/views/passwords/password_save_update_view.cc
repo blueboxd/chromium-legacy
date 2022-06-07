@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/views_utils.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -57,6 +58,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/editable_combobox/editable_combobox.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/layout/animating_layout_manager.h"
@@ -546,7 +548,7 @@ void PasswordSaveUpdateView::OnThemeChanged() {
         color_provider->GetColor(ui::kColorIconDisabled);
     views::SetImageFromVectorIconWithColor(password_view_button_, kEyeIcon,
                                            GetDefaultSizeOfVectorIcon(kEyeIcon),
-                                           icon_color);
+                                           icon_color, disabled_icon_color);
     views::SetToggledImageFromVectorIconWithColor(
         password_view_button_, kEyeCrossedIcon,
         GetDefaultSizeOfVectorIcon(kEyeCrossedIcon), icon_color,
@@ -645,14 +647,25 @@ std::unique_ptr<views::View> PasswordSaveUpdateView::CreateFooterView() {
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     return label;
   }
-  return CreateGooglePasswordManagerFooterView(
-      controller_.GetPrimaryAccountEmail(),
-      controller_.IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount(),
-      base::BindRepeating(
-          [](PasswordSaveUpdateView* dialog) {
-            dialog->controller_.OnGooglePasswordManagerLinkClicked();
-          },
-          base::Unretained(this)));
+  base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
+      [](PasswordSaveUpdateView* dialog) {
+        dialog->controller_.OnGooglePasswordManagerLinkClicked();
+      },
+      base::Unretained(this));
+  if (controller_.IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount()) {
+    return CreateGooglePasswordManagerLabel(
+        /*text_message_id=*/
+        IDS_PASSWORD_BUBBLES_FOOTER_SYNCED_TO_ACCOUNT,
+        /*link_message_id=*/
+        IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT,
+        controller_.GetPrimaryAccountEmail(), open_password_manager_closure);
+  }
+  return CreateGooglePasswordManagerLabel(
+      /*text_message_id=*/
+      IDS_PASSWORD_BUBBLES_FOOTER_SAVING_ON_DEVICE,
+      /*link_message_id=*/
+      IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE,
+      open_password_manager_closure);
 }
 
 bool PasswordSaveUpdateView::ShouldShowFailedReauthIPH() {

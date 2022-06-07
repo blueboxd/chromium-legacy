@@ -7,6 +7,7 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -101,6 +102,7 @@
 #import "ios/chrome/browser/ui/main/ui_blocker_scene_agent.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_scene_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
@@ -108,8 +110,10 @@
 #include "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/util/features.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -356,6 +360,10 @@ bool IsSigninForcedByPolicy() {
 
 - (BOOL)isPresentingSigninView {
   return self.signinCoordinator != nil;
+}
+
+- (BOOL)tabGridVisible {
+  return self.mainCoordinator.isTabGridActive;
 }
 
 - (UIViewController*)activeViewController {
@@ -708,7 +716,9 @@ bool IsSigninForcedByPolicy() {
       [self finishActivatingBrowserDismissingTabSwitcher:YES];
     }
 
-    [self handleShowStartSurfaceIfNecessary];
+    if (!IsStartSurfaceSplashStartupEnabled()) {
+      [self handleShowStartSurfaceIfNecessary];
+    }
   }
 
   [self recordWindowCreationForSceneState:self.sceneState];
@@ -804,6 +814,14 @@ bool IsSigninForcedByPolicy() {
   DCHECK(!self.browserViewWrangler);
   DCHECK(self.sceneURLLoadingService);
   DCHECK(self.sceneState.appState.mainBrowserState);
+
+  // Turn on KVO support on UIView window if enabled.
+  // TODO(crbug.com/1318016): Remove this call once it can be unconditionally
+  // enabled.
+  UIView.cr_supportsWindowObserving =
+      base::FeatureList::IsEnabled(kUIViewWindowObserving);
+  DCHECK_EQ(UIView.cr_supportsWindowObserving,
+            base::FeatureList::IsEnabled(kUIViewWindowObserving));
 
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.sceneState.appState.mainBrowserState
@@ -966,7 +984,9 @@ bool IsSigninForcedByPolicy() {
   // currentInterface is set in case a new tab needs to be opened. Since this is
   // synchronous with |setActivePage:| above, then the user should not see the
   // last tab if the Start Surface is opened.
-  [self handleShowStartSurfaceIfNecessary];
+  if (!IsStartSurfaceSplashStartupEnabled()) {
+    [self handleShowStartSurfaceIfNecessary];
+  }
 
   // Figure out what UI to show initially.
 
@@ -3028,7 +3048,8 @@ bool IsSigninForcedByPolicy() {
                   withURLLoadParams:(const UrlLoadParams&)urlLoadParams {
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
       urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
-      /*in_background=*/false, /*inherit_opener=*/false);
+      /*in_background=*/false, /*inherit_opener=*/false,
+      /*should_show_start_surface=*/false);
   [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
 }
 

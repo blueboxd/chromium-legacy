@@ -8,6 +8,7 @@
 
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -24,6 +25,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,11 +86,13 @@ class DeviceScheduledRebootHandlerTest : public testing::Test {
     auto task_executor = std::make_unique<FakeScheduledTaskExecutor>(
         task_environment_.GetMockClock());
     scheduled_task_executor_ = task_executor.get();
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
     auto notifications_scheduler =
         std::make_unique<FakeRebootNotificationsScheduler>(
             task_environment_.GetMockClock(),
-            task_environment_.GetMockTickClock());
+            task_environment_.GetMockTickClock(), prefs_.get());
     notifications_scheduler_ = notifications_scheduler.get();
+    RebootNotificationsScheduler::RegisterProfilePrefs(prefs_->registry());
     device_scheduled_reboot_handler_ =
         std::make_unique<DeviceScheduledRebootHandlerForTest>(
             ash::CrosSettings::Get(), std::move(task_executor),
@@ -173,6 +177,7 @@ class DeviceScheduledRebootHandlerTest : public testing::Test {
   std::unique_ptr<DeviceScheduledRebootHandlerForTest>
       device_scheduled_reboot_handler_;
   ash::ScopedTestingCrosSettings cros_settings_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   device::TestWakeLockProvider wake_lock_provider_;
   FakeRebootNotificationsScheduler* notifications_scheduler_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -408,7 +413,7 @@ TEST_F(DeviceScheduledRebootHandlerTest,
 
 TEST_F(DeviceScheduledRebootHandlerTest,
        CheckIfDailyRebootIsScheduledForLoginScreen) {
-  InitWithFeatureFlag(false /* enable_force_scheduled_reboots */);
+  InitWithFeatureFlag(true /* enable_force_scheduled_reboots */);
   EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
       .WillRepeatedly(testing::Return(false));
 
@@ -448,6 +453,45 @@ TEST_F(DeviceScheduledRebootHandlerTest,
   // After the reboot, the current handler is destroyed and the new one is
   // created which will schedule reboot for the next day. Check that current
   // handler is not scheduling any more reboots.
+  task_environment_.FastForwardBy(base::Days(1));
+  EXPECT_TRUE(CheckStats(expected_scheduled_reboots, expected_reboot_requests));
+}
+
+TEST_F(DeviceScheduledRebootHandlerTest,
+       VerifyLoginScreenRebootIsGuardedByFeatureFlag) {
+  // Disable the feature. Reboot should not occur.
+  InitWithFeatureFlag(false /* enable_force_scheduled_reboots */);
+  EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
+      .WillRepeatedly(testing::Return(false));
+
+  // Schedule reboot in 30 minutes. Reboot should not occur because the flag is
+  // disabled.
+  base::TimeDelta delay_from_now = base::Minutes(30);
+  auto policy_and_next_reboot_time = scheduled_task_test_util::CreatePolicy(
+      scheduled_task_executor_->GetTimeZone(),
+      scheduled_task_executor_->GetCurrentTime(), delay_from_now,
+      ScheduledTaskExecutor::Frequency::kDaily, kRebootTaskTimeFieldName);
+
+  // Set a new scheduled reboot, fast forward to right before the
+  // expected reboot and then verify reboot timer has not yet expired.
+  const base::TimeDelta small_delay = base::Milliseconds(1);
+  cros_settings_.device_settings()->Set(
+      ash::kDeviceScheduledReboot,
+      std::move(policy_and_next_reboot_time.first));
+  int expected_scheduled_reboots = 0;
+  int expected_reboot_requests = 0;
+  task_environment_.FastForwardBy(delay_from_now - small_delay);
+  EXPECT_TRUE(CheckStats(expected_scheduled_reboots, expected_reboot_requests));
+
+  // Fast forward to the expected reboot time and then check if the
+  // reboot timer has expired and the reboot is not executed.
+  expected_scheduled_reboots += 1;
+  task_environment_.FastForwardBy(small_delay);
+  EXPECT_TRUE(CheckStats(expected_scheduled_reboots, expected_reboot_requests));
+
+  // Fast forward to the next day and then check if the reboot is scheduled
+  // again, but not executed.
+  expected_scheduled_reboots += 1;
   task_environment_.FastForwardBy(base::Days(1));
   EXPECT_TRUE(CheckStats(expected_scheduled_reboots, expected_reboot_requests));
 }
@@ -493,6 +537,7 @@ TEST_F(DeviceScheduledRebootHandlerTest,
   InitWithFeatureFlag(true /* enable_force_scheduled_reboots */);
   EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
       .WillRepeatedly(testing::Return(true));
+  EXPECT_FALSE(prefs_->GetBoolean(ash::prefs::kShowPostRebootNotification));
 
   // Set device uptime to 10 minutes and schedule reboot in 30 minutes. Apply
   // grace time - reboot should not occur.
@@ -535,6 +580,9 @@ TEST_F(DeviceScheduledRebootHandlerTest,
   EXPECT_TRUE(CheckNotificationStats(expected_notification_count,
                                      expected_dialog_count));
   EXPECT_TRUE(CheckStats(expected_scheduled_reboots, expected_reboot_requests));
+
+  // Verify post reboot notification flag is set.
+  EXPECT_TRUE(prefs_->GetBoolean(ash::prefs::kShowPostRebootNotification));
 }
 
 TEST_F(DeviceScheduledRebootHandlerTest, SimulateNotificationButtonClick) {
@@ -570,6 +618,9 @@ TEST_F(DeviceScheduledRebootHandlerTest, SimulateNotificationButtonClick) {
   notifications_scheduler_->SimulateRebootButtonClick();
   expected_reboot_requests += 1;
   EXPECT_TRUE(CheckStats(expected_scheduled_reboots, expected_reboot_requests));
+
+  // Verify post reboot notification flag is not set.
+  EXPECT_FALSE(prefs_->GetBoolean(ash::prefs::kShowPostRebootNotification));
 }
 
 }  // namespace policy

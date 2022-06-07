@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Passarel·la</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Ajusta a l'àrea d'escaneig</translation>
+<translation id="1367951781824006909">Trieu un fitxer</translation>
 <translation id="1387854245479784695">És una agregació de tots els nuclis</translation>
 <translation id="1394661041439318933">La funda del dispositiu té un <ph name="BATTERY_PERCENTAGE" />% de bateria.</translation>
 <translation id="1397738625398125236">Es pot fer ping a la passarel·la</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Revisió de maquinari</translation>
 <translation id="1905710495812624430">S'ha superat el nombre màxim d'intents permesos.</translation>
 <translation id="1908234395526491708">Errors en la sol·licitud d'UDP</translation>
-<translation id="1930797645656624981">Servei del mètode d'introducció de text a Chrome OS</translation>
 <translation id="1947737735496445907">Imprès</translation>
 <translation id="1951012854035635156">Assistent</translation>
+<translation id="1977994649430373166">Foto de perfil de Google</translation>
 <translation id="1979103255016296513">Canvi de contrasenya vençut</translation>
 <translation id="1999615961760456652">Portal captiu</translation>
 <translation id="2006864819935886708">Connectivitat</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">S'ha de seleccionar un àlbum de la galeria d'art com a mínim</translation>
 <translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Commutador del teclat amb retroil·luminació</translation>
 <translation id="2240366984605217732">Canvi de disseny</translation>
 <translation id="225692081236532131">Estat d'activació</translation>
 <translation id="2287186687001756809">No hi ha cap imatge disponible. Per afegir fotos, ves a <ph name="LINK" />.</translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">Precisió de la coma flotant</translation>
 <translation id="2448312741937722512">Tipus</translation>
 <translation id="2461822463642141190">Actual</translation>
+<translation id="2491955442992294626">Les tecles no es proven quan fas servir una altra finestra</translation>
 <translation id="2493126929778606526">Les teves millors fotos, seleccionades automàticament</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> (<ph name="SOURCE_LANGUAGE_NAME" />)</translation>
 <translation id="2505327257735685095">Actualitza la imatge actual del fons de pantalla</translation>
@@ -148,12 +151,12 @@
 <translation id="2536159006530886390">No es pot connectar a Internet.</translation>
 <translation id="2570743873672969996">S'està executant la prova <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">Per configurar-la, ves a Configuració</translation>
-<translation id="2585245331261708204">Novetats de Chrome OS</translation>
 <translation id="2619761439309613843">Actualització diària</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2640549051766135490">S'ha seleccionat l'àlbum <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="2695514675076754339">Introdueix el codi de desbloqueig de 8 caràcters</translation>
 <translation id="2712812801627182647">Clau d'autenticació TLS</translation>
+<translation id="2717139507051041123">Activa el mode de color fosc</translation>
 <translation id="2740531572673183784">D'acord</translation>
 <translation id="2751739896257479635">Autenticació de fase 2 d'EAP</translation>
 <translation id="2783010256799387990">SUPERADA</translation>
@@ -220,6 +223,7 @@
 <translation id="3604713164406837697">Canvia el fons de pantalla</translation>
 <translation id="360565022852130722">La xarxa Wi-Fi està protegida amb el protocol dèbil WEP 802.1x</translation>
 <translation id="3606583719724308068">Latència alta als llocs web HTTPS</translation>
+<translation id="3621202678540785336">Entrada</translation>
 <translation id="3632579075709132555">Commutador de la pantalla de privadesa</translation>
 <translation id="3689839747745352263">Prova <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">S'està carregant...</translation>
@@ -244,6 +248,7 @@
 <translation id="3954678691475912818">El tipus de dispositiu és desconegut.</translation>
 <translation id="3966286471246132217">Per obtenir uns resultats més precisos, tanca totes les aplicacions fins que la prova hagi finalitzat.</translation>
 <translation id="3967822245660637423">S'ha completat la baixada</translation>
+<translation id="3969602104473960991">S'ha actualitzat la contrasenya de Chrome OS</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="39823212440917567">Se suprimiran les tasques d'impressió amb una antiguitat superior a <ph name="NUMBER_OF_DAYS" /> dies</translation>
 <translation id="3993704782688964914">El dispositiu <ph name="DEVICE_NAME" /> s'acaba d'actualitzar</translation>
@@ -319,7 +324,6 @@
 <translation id="4731797938093519117">Accés parental</translation>
 <translation id="473775607612524610">Actualitza</translation>
 <translation id="4744944742468440486">Informació relacionada amb la teva selecció</translation>
-<translation id="475869545581454722">S'ha actualitzat la contrasenya de Chrome OS</translation>
 <translation id="4773299976671772492">En pausa</translation>
 <translation id="4782311465517282004">Obtén definicions, traduccions o conversions d'unitats quan mantinguis premut el text o quan hi facis clic amb el botó dret</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> foto</translation>
@@ -376,6 +380,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="5234764350956374838">Ignora</translation>
 <translation id="5252456968953390977">Itinerància</translation>
+<translation id="5257811368506016604">Activa el mode de color clar</translation>
 <translation id="5264277876637023664">Executa la prova de CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5275828089655680674">Torna a executar les rutines</translation>
@@ -458,6 +463,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6113701710518389813">Fletxa amunt</translation>
 <translation id="6117895505466548728"><ph name="TITLE" /> i <ph name="NUMBER" /> àlbums més</translation>
 <translation id="6122191549521593678">En línia</translation>
+<translation id="6122277663991249694">Servei del mètode d'introducció de text a Chrome OS</translation>
 <translation id="6137767437444130246">Certificat d'usuari</translation>
 <translation id="6146993107019042706">Per acabar, introdueix la contrasenya nova</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -486,6 +492,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="641081527798843608">Coincidència d'assumpte</translation>
 <translation id="6423239382391657905">VPN oberta</translation>
 <translation id="6439505561246192797">Feble (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="6447630859861661624">Ves a la configuració del compte</translation>
 <translation id="6456394469623773452">Bona</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Vols tornar a escanejar la pàgina?}=1{Vols tornar a escanejar la pàgina {PAGE_NUMBER}?}other{Vols tornar a escanejar les pàgines {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
@@ -548,6 +555,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7143207342074048698">Connectant</translation>
 <translation id="7144878232160441200">Torna-ho a provar</translation>
 <translation id="714876143603641390">Connectivitat de la LAN</translation>
+<translation id="7155171745945906037">Foto existent de la càmera o d'un fitxer</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7172721935181587524">1 imatge</translation>
 <translation id="7175037578838465313">Configura <ph name="NAME" /></translation>
@@ -569,6 +577,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7343649194310845056">Dispositius de xarxa</translation>
 <translation id="7359657277149375382">Tipus de fitxer</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378886533986123738">Canvia l'estalvi de pantalla</translation>
 <translation id="741244894080940828">conversió</translation>
 <translation id="7415801143053185905">La latència d'HTTP és molt alta</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -591,6 +600,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7648838807254605802">La latència d'HTTPS és alta</translation>
 <translation id="7656388927906093505">El dispositiu és un ratolí.</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
+<translation id="7665800271478495366">Canvia l'avatar</translation>
 <translation id="7690294790491645610">Confirma la contrasenya nova</translation>
 <translation id="7701040980221191251">Cap</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -618,7 +628,9 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7994702968232966508">Mètode EAP</translation>
 <translation id="802154636333426148">Error de baixada</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
+<translation id="80398733265834479">Activa el mode de color automàtic</translation>
 <translation id="8041089156583427627">Envia suggeriments</translation>
+<translation id="8045012663542226664">Silenci del micròfon</translation>
 <translation id="8075838845814659848">Càrrega restant</translation>
 <translation id="8082366717211101304">No es pot resoldre el DNS des d'aplicacions d'Android</translation>
 <translation id="808894953321890993">Canvia la contrasenya</translation>
@@ -650,6 +662,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="8398927464629426868">El percentatge al qual s'està carregant o descarregant el dispositiu actualment</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Teclat intern</translation>
+<translation id="8431300646573772016">Novetats de Chrome OS</translation>
 <translation id="843568408673868420">Connectivitat a Internet</translation>
 <translation id="844521431886043384">No s'ha configurat el DNS</translation>
 <translation id="8461329675984532579">Nom del proveïdor domèstic</translation>
@@ -729,6 +742,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="917720651393141712">Prova</translation>
 <translation id="9204237731135241582">No es pot contactar amb la passarel·la des d'aplicacions d'Android</translation>
 <translation id="9211490828691860325">Tots els escriptoris</translation>
+<translation id="932327136139879170">Inici</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">No activat</translation>
 <translation id="960719561871045870">Codi d'operador</translation>

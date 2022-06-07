@@ -31,7 +31,7 @@ class MockControllerObserver : public ControllerObserver {
                     Metrics::DropOutReason reason));
   MOCK_METHOD2(OnUserDataChanged,
                void(const UserData& user_data,
-                    UserData::FieldChange field_change));
+                    UserDataFieldChange field_change));
   MOCK_METHOD3(OnTouchableAreaChanged,
                void(const RectF& visual_viewport,
                     const std::vector<RectF>& touchable_areas,
@@ -46,6 +46,7 @@ class MockControllerObserver : public ControllerObserver {
   MOCK_METHOD0(OnStop, void());
   MOCK_METHOD0(OnResetState, void());
   MOCK_METHOD1(OnUiShownChanged, void(bool shown));
+  MOCK_METHOD1(OnShutdown, void(Metrics::DropOutReason reason));
 };
 
 }  // namespace autofill_assistant

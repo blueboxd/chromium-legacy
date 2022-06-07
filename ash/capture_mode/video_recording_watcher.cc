@@ -225,14 +225,9 @@ VideoRecordingWatcher::VideoRecordingWatcher(
   window_being_recorded_->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kAccessibility);
 
-  // Check if there's a camera disconnection that happened before recording
-  // starts. In this case, we don't want the camera preview to show, even if the
-  // camera reconnects within the allowed grace period.
   auto* camera_controller = controller_->camera_controller();
-  if (camera_controller && camera_controller->selected_camera().is_valid() &&
-      !camera_controller->camera_preview_widget()) {
-    camera_controller->SetShouldShowPreview(false);
-  }
+  if (camera_controller)
+    camera_controller->OnRecordingStarted(is_in_projector_mode_);
 
   if (is_in_projector_mode_) {
     recording_overlay_controller_ =
@@ -283,9 +278,9 @@ void VideoRecordingWatcher::ShutDown() {
   auto to_be_removed_request = std::move(non_root_window_capture_request_);
   window_being_recorded_->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
-  // Set the value for `SetShouldShowPreview` to false when recording ends.
-  if (controller_->camera_controller())
-    controller_->camera_controller()->SetShouldShowPreview(false);
+  if (controller_->camera_controller()) {
+    controller_->camera_controller()->OnRecordingEnded();
+  }
 }
 
 aura::Window* VideoRecordingWatcher::GetCameraPreviewParentWindow() const {
@@ -352,7 +347,7 @@ void VideoRecordingWatcher::OnWindowBoundsChanged(
   // window being recorded is changed.
   auto* camera_controller = controller_->camera_controller();
   if (camera_controller)
-    camera_controller->MaybeUpdatePreviewWidgetBounds();
+    camera_controller->MaybeUpdatePreviewWidget();
 }
 
 void VideoRecordingWatcher::OnWindowOpacitySet(
@@ -474,7 +469,7 @@ void VideoRecordingWatcher::OnDisplayMetricsChanged(
   // handled in `OnWindowBoundsChanged`;
   auto* camera_controller = controller_->camera_controller();
   if (camera_controller && recording_source_ != CaptureModeSource::kWindow)
-    camera_controller->MaybeUpdatePreviewWidgetBounds();
+    camera_controller->MaybeUpdatePreviewWidget();
 
   // We don't show a dimming overlay when recording a fullscreen.
   if (recording_source_ == CaptureModeSource::kFullscreen)

@@ -52,7 +52,7 @@
 <translation id="1251750620252348585">Siguiente encabezado de nivel 6</translation>
 <translation id="1268366246392928616">No hay expresiones matemáticas anteriores</translation>
 <translation id="1273314450961659276">Configuración de texto a voz</translation>
-<translation id="1275718070701477396">Seleccionado</translation>
+<translation id="1275718070701477396">Seleccionada</translation>
 <translation id="1284576163386164372">Si quieres ver los instructivos en cualquier momento, presiona la pantalla con cuatro dedos para abrir los menús. Luego, activa el instructivo en la sección "ChromeVox".</translation>
 <translation id="1291286136605998134">Botón de activación</translation>
 <translation id="1299774449519412690">Azul cielo claro</translation>
@@ -684,6 +684,8 @@
 <translation id="5623842676595125836">Registro</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Símbolo gráfico</translation>
+<translation id="5648939288050772726">¡Felicitaciones! Aprendiste los conceptos básicos para usar ChromeVox de forma correcta. Presiona Búsqueda + punto para abrir el menú de comandos de ChromeVox en cualquier momento. Para obtener más información sobre ChromeVox y Chrome OS, visita los siguientes artículos.
+    Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerrar y, luego, haz clic en él.</translation>
 <translation id="5653397561111110475">Usar las funciones de accesibilidad de la pantalla táctil de Chromebook</translation>
 <translation id="5655682562155942719">Comandos de salto</translation>
 <translation id="56637627897541303">Área de texto</translation>
@@ -966,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Voz natural</translation>
 <translation id="7714340021005120797">No hay cuadros combinados siguientes</translation>
-<translation id="772146615414628379">Felicitaciones. Aprendiste los conceptos básicos para usar ChromeVox de forma correcta. Presiona Búsqueda + punto para abrir el menú de comandos de ChromeVox en cualquier momento. Para obtener más información sobre ChromeVox y el Sistema operativo Chrome, visita los siguientes artículos.
-    Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerrar y, luego, haz clic en él.</translation>
 <translation id="7724603315864178912">Cortar</translation>
 <translation id="7731785449856576010">No hay widgets multimedia siguientes</translation>
 <translation id="7735498529470878067">La exploración táctil te permite hacerte una idea rápidamente de lo que aparece en la pantalla.</translation>

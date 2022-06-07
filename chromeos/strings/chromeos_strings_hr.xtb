@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Pristupnik</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Prilagodi području skeniranja</translation>
+<translation id="1367951781824006909">Odaberite datoteku</translation>
 <translation id="1387854245479784695">Ovo je agregacija svih jezgri</translation>
 <translation id="1394661041439318933">Uređaj ima <ph name="BATTERY_PERCENTAGE" />% baterije za kutijicu.</translation>
 <translation id="1397738625398125236">Pristupnik se može pingati</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Hardverska revizija</translation>
 <translation id="1905710495812624430">Premašen je maksimalan dopušteni broj pokušaja.</translation>
 <translation id="1908234395526491708">Neuspješni UDP zahtjevi</translation>
-<translation id="1930797645656624981">Usluga načina unosa OS-a Chrome</translation>
 <translation id="1947737735496445907">Ispisano</translation>
 <translation id="1951012854035635156">Asistent</translation>
+<translation id="1977994649430373166">Fotografija Google profila</translation>
 <translation id="1979103255016296513">Zakašnjela promjena zaporke</translation>
 <translation id="1999615961760456652">Zaštitni portal</translation>
 <translation id="2006864819935886708">Povezivost</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Potrebno je odabrati najmanje jedan album iz umjetničke galerije</translation>
 <translation id="2230005943220647148">Celzij</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Prekidač za pozadinsko osvjetljenje tipkovnice</translation>
 <translation id="2240366984605217732">Prekidač rasporeda</translation>
 <translation id="225692081236532131">Status aktivacije</translation>
 <translation id="2287186687001756809">Slika nije dostupna. Da biste dodali fotografije, posjetite <ph name="LINK" /></translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">Točnost pomičnog zareza</translation>
 <translation id="2448312741937722512">Vrsta</translation>
 <translation id="2461822463642141190">Trenutačno</translation>
+<translation id="2491955442992294626">Tipke se ne testiraju kada upotrebljavate drugi prozor</translation>
 <translation id="2493126929778606526">Vaše najbolje automatski odabrane fotografije</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Osvježi trenutačnu sliku pozadine</translation>
@@ -148,7 +151,6 @@
 <translation id="2536159006530886390">Povezivanje s internetom nije uspjelo.</translation>
 <translation id="2570743873672969996">Pokretanje testa <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">Da biste postavili mrežu, otvorite postavke</translation>
-<translation id="2585245331261708204">Novo u OS-u Chrome</translation>
 <translation id="2619761439309613843">Dnevno osvježavanje</translation>
 <translation id="2620436844016719705">Sustav</translation>
 <translation id="2640549051766135490">Odabran je album <ph name="TITLE" /> <ph name="DESC" /></translation>
@@ -221,6 +223,7 @@
 <translation id="3604713164406837697">Promjena pozadinske slike</translation>
 <translation id="360565022852130722">Wi-Fi mreža zaštićena je slabim protokolom WEP 802.1x</translation>
 <translation id="3606583719724308068">Visoka latencija do HTTPS web-lokacija</translation>
+<translation id="3621202678540785336">Ulaz</translation>
 <translation id="3632579075709132555">Prekidač zaslona privatnosti</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Učitavanje...</translation>
@@ -245,6 +248,7 @@
 <translation id="3954678691475912818">Vrsta uređaja nije poznata.</translation>
 <translation id="3966286471246132217">Da biste dobili preciznije rezultate, zatvorite sve aplikacije dok test ne završi.</translation>
 <translation id="3967822245660637423">Preuzimanje dovršeno</translation>
+<translation id="3969602104473960991">Zaporka za Chrome OS je ažurirana</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="39823212440917567">Uklonit će se zadaci ispisa stariji od <ph name="NUMBER_OF_DAYS" /> dana</translation>
 <translation id="3993704782688964914">Uređaj <ph name="DEVICE_NAME" /> je ažuriran</translation>
@@ -320,7 +324,6 @@
 <translation id="4731797938093519117">Roditeljski pristup</translation>
 <translation id="473775607612524610">Ažuriraj</translation>
 <translation id="4744944742468440486">Informacije o vašem odabiru</translation>
-<translation id="475869545581454722">Zaporka za OS Chrome je ažurirana</translation>
 <translation id="4773299976671772492">Zaustavljeno</translation>
 <translation id="4782311465517282004">Pronađite definicije, prijevode ili pretvorbe jedinica kada tekst kliknete desnom tipkom ili ga dodirnete i držite</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> fotografija</translation>
@@ -446,7 +449,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="6034694447310538551">Omogući automatsko mjesečno poništavanje</translation>
 <translation id="6037291330010597344">Ulagač dokumenata u skener je prazan. Dodajte dokumente i pokušajte ponovo.</translation>
 <translation id="6040143037577758943">Zatvori</translation>
-<translation id="6040852767465482106">Anoniman identitet</translation>
+<translation id="6040852767465482106">Anonimni identitet</translation>
 <translation id="604124094241169006">Automatski</translation>
 <translation id="6048107060512778456">Nije uspjelo – zaglavljeni papir</translation>
 <translation id="6050189528197190982">Sivi tonovi</translation>
@@ -460,6 +463,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="6113701710518389813">Strelica prema gore</translation>
 <translation id="6117895505466548728"><ph name="TITLE" /> i još <ph name="NUMBER" /> album/albuma</translation>
 <translation id="6122191549521593678">Na mreži</translation>
+<translation id="6122277663991249694">Usluga načina unosa Chrome OS-a</translation>
 <translation id="6137767437444130246">Korisnički certifikat</translation>
 <translation id="6146993107019042706">Za dovršetak unesite novu zaporku</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -551,6 +555,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="7143207342074048698">Povezivanje</translation>
 <translation id="7144878232160441200">Pokušaj ponovno</translation>
 <translation id="714876143603641390">LAN povezivost</translation>
+<translation id="7155171745945906037">Postojeća fotografija s fotoaparata ili iz datoteke</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7172721935181587524">1 slika</translation>
 <translation id="7175037578838465313">Konfiguriraj <ph name="NAME" /></translation>
@@ -625,6 +630,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Omogućite način automatske boje</translation>
 <translation id="8041089156583427627">Slanje povratnih informacija</translation>
+<translation id="8045012663542226664">Mikrofon isključen</translation>
 <translation id="8075838845814659848">Preostala razina napunjenosti</translation>
 <translation id="8082366717211101304">Razrješavanje DNS-a iz Android aplikacija nije uspjelo</translation>
 <translation id="808894953321890993">Promjena zaporke</translation>
@@ -656,6 +662,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="8398927464629426868">Brzina punjenja ili pražnjenja uređaja</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Interna tipkovnica</translation>
+<translation id="8431300646573772016">Novo u Chrome OS-u</translation>
 <translation id="843568408673868420">Povezivanje s internetom</translation>
 <translation id="844521431886043384">DNS nije postavljen</translation>
 <translation id="8461329675984532579">Naziv davatelja usluge kućne mreže</translation>
@@ -735,6 +742,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="917720651393141712">Test</translation>
 <translation id="9204237731135241582">Kontaktiranje pristupnika iz Android aplikacija nije uspjelo</translation>
 <translation id="9211490828691860325">Sve radne površine</translation>
+<translation id="932327136139879170">Početna stranica</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Nije aktivirano</translation>
 <translation id="960719561871045870">Kôd operatera</translation>

@@ -184,18 +184,18 @@ std::unique_ptr<views::View> DownloadToolbarButtonView::GetPrimaryView() {
 }
 
 void DownloadToolbarButtonView::OpenPrimaryDialog() {
-  switcher_view_->RemoveAllChildViews();
-  switcher_view_->AddChildView(GetPrimaryView());
-  bubble_delegate_->SizeToContents();
+  primary_view_->SetVisible(true);
+  security_view_->SetVisible(false);
+  ResizeDialog();
 }
 
 void DownloadToolbarButtonView::OpenSecurityDialog(
-    DownloadUIModel::DownloadUIModelPtr download,
-    DownloadUIModel::BubbleUIInfo info) {
-  switcher_view_->RemoveAllChildViews();
-  switcher_view_->AddChildView(std::make_unique<DownloadBubbleSecurityView>(
-      std::move(download), info, bubble_controller_.get(), this));
-  bubble_delegate_->SizeToContents();
+    DownloadBubbleRowView* download_row_view) {
+  security_view_->UpdateSecurityView(download_row_view);
+  primary_view_->SetVisible(false);
+  security_view_->SetVisible(true);
+  security_view_->UpdateAccessibilityTextAndFocus();
+  ResizeDialog();
 }
 
 void DownloadToolbarButtonView::CloseDialog(
@@ -204,14 +204,20 @@ void DownloadToolbarButtonView::CloseDialog(
 }
 
 void DownloadToolbarButtonView::ResizeDialog() {
-  bubble_delegate_->SizeToContents();
+  // Resize may be called when there is no delegate, e.g. during bubble
+  // construction.
+  if (bubble_delegate_)
+    bubble_delegate_->SizeToContents();
 }
 
 void DownloadToolbarButtonView::OnBubbleDelegateDeleted() {
   bubble_delegate_ = nullptr;
-  switcher_view_ = nullptr;
+  primary_view_ = nullptr;
+  security_view_ = nullptr;
 }
 
+// TODO(bhatiarohit): Remove the margin around the bubble.
+// Hover button should be visible from end to end of the bubble.
 void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
     std::unique_ptr<View> bubble_contents_view) {
   if (!bubble_contents_view)
@@ -219,17 +225,24 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
   std::unique_ptr<views::BubbleDialogDelegate> bubble_delegate =
       std::make_unique<views::BubbleDialogDelegate>(
           this, views::BubbleBorder::TOP_RIGHT);
+  bubble_delegate->SetTitle(
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_HEADER_TEXT));
   bubble_delegate->SetShowTitle(false);
   bubble_delegate->SetShowCloseButton(false);
   bubble_delegate->SetButtons(ui::DIALOG_BUTTON_NONE);
   bubble_delegate->RegisterDeleteDelegateCallback(
       base::BindOnce(&DownloadToolbarButtonView::OnBubbleDelegateDeleted,
                      weak_factory_.GetWeakPtr()));
-  switcher_view_ =
+  auto* switcher_view =
       bubble_delegate->SetContentsView(std::make_unique<views::View>());
-  switcher_view_->SetLayoutManager(std::make_unique<views::FlexLayout>())
+  switcher_view->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
-  switcher_view_->AddChildView(std::move(bubble_contents_view));
+  primary_view_ = switcher_view->AddChildView(std::move(bubble_contents_view));
+  // raw ptr for this is safe as Toolbar Button view owns the Bubble.
+  security_view_ =
+      switcher_view->AddChildView(std::make_unique<DownloadBubbleSecurityView>(
+          bubble_controller_.get(), this));
+  security_view_->SetVisible(false);
   bubble_delegate->set_fixed_width(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
@@ -259,7 +272,8 @@ std::unique_ptr<views::View> DownloadToolbarButtonView::CreateRowListView(
   if (is_primary_partial_view_ && model_list.empty())
     return nullptr;
 
-  auto row_list_view = std::make_unique<DownloadBubbleRowListView>();
+  auto row_list_view =
+      std::make_unique<DownloadBubbleRowListView>(is_primary_partial_view_);
   for (DownloadUIModel::DownloadUIModelPtr& model : model_list) {
     // raw pointer is safe as the toolbar owns the bubble, which owns an
     // individual row view.

@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Gateway</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Tilpass til skanneområdet</translation>
+<translation id="1367951781824006909">Velg en fil</translation>
 <translation id="1387854245479784695">Dette er en sammenstilling av alle kjernene</translation>
 <translation id="1394661041439318933">Enheten har <ph name="BATTERY_PERCENTAGE" /> % batteri i etuiet.</translation>
 <translation id="1397738625398125236">Gatewayen kan pinges</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Maskinvareversjon</translation>
 <translation id="1905710495812624430">Du har overskredet maksimumsgrensen for antall forsøk.</translation>
 <translation id="1908234395526491708">Mislykkede UDP-forespørsler</translation>
-<translation id="1930797645656624981">Tjeneste for Chrome OS-inndatametode</translation>
 <translation id="1947737735496445907">Skrevet ut</translation>
 <translation id="1951012854035635156">Assistent</translation>
+<translation id="1977994649430373166">Google-profilbilde</translation>
 <translation id="1979103255016296513">Det er på høy tid å endre passordet</translation>
 <translation id="1999615961760456652">Obligatorisk side</translation>
 <translation id="2006864819935886708">Tilkobling</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Minst ett Kunst-gallerialbum må velges</translation>
 <translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Slå av/på bakgrunnsbelysning for tastaturet</translation>
 <translation id="2240366984605217732">Oppsettsbytte</translation>
 <translation id="225692081236532131">Aktiveringsstatus</translation>
 <translation id="2287186687001756809">Ingen bilder er tilgjengelige. For å legge til bilder, gå til <ph name="LINK" /></translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">Nøyaktighet av flytende desimalpunkt</translation>
 <translation id="2448312741937722512">Type</translation>
 <translation id="2461822463642141190">Nåværende</translation>
+<translation id="2491955442992294626">Taster blir ikke testet når du bruker andre vinduer</translation>
 <translation id="2493126929778606526">De beste bildene dine, valgt automatisk</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Last inn det nåværende bakgrunnsbildet på nytt</translation>
@@ -148,12 +151,12 @@
 <translation id="2536159006530886390">Kan ikke koble til internett.</translation>
 <translation id="2570743873672969996">Kjører test av <ph name="TEST_NAME" /> …</translation>
 <translation id="2584559707064218956">For å konfigurere nettverket, gå til Innstillinger</translation>
-<translation id="2585245331261708204">Dette er nytt i Chrome OS</translation>
 <translation id="2619761439309613843">Daglig oppdatering</translation>
 <translation id="2620436844016719705">System</translation>
 <translation id="2640549051766135490">Albumet <ph name="TITLE" /> med <ph name="DESC" /> er valgt</translation>
 <translation id="2695514675076754339">Oppgi den 8-sifrede opplåsingskoden</translation>
 <translation id="2712812801627182647">TLS-autentiseringsnøkkel</translation>
+<translation id="2717139507051041123">Slå på modus for mørke farger</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">Fase 2-autentisering av EAP</translation>
 <translation id="2783010256799387990">BESTÅTT</translation>
@@ -220,6 +223,7 @@
 <translation id="3604713164406837697">Endre bakgrunn</translation>
 <translation id="360565022852130722">Wi-Fi-nettverket er sikret med den svake protokollen WEP 802.1x</translation>
 <translation id="3606583719724308068">Høy tidsforsinkelse til HTTPS-nettsteder</translation>
+<translation id="3621202678540785336">Inndata</translation>
 <translation id="3632579075709132555">Personvernskjerm av/på</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />test</translation>
 <translation id="370665806235115550">Laster inn ...</translation>
@@ -244,6 +248,7 @@
 <translation id="3954678691475912818">Enhetstypen er ukjent.</translation>
 <translation id="3966286471246132217">For å få mer nøyaktige resultater, lukk alle apper frem til testen er fullført.</translation>
 <translation id="3967822245660637423">Nedlasting fullført</translation>
+<translation id="3969602104473960991">ChromeOS-passordet er oppdatert</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="39823212440917567">Utskriftsjobber som er eldre enn <ph name="NUMBER_OF_DAYS" /> dager, blir fjernet</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> er nå oppdatert</translation>
@@ -319,7 +324,6 @@
 <translation id="4731797938093519117">Foreldretilgang</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="4744944742468440486">Informasjon om det du har markert</translation>
-<translation id="475869545581454722">Chrome OS-passordet er oppdatert</translation>
 <translation id="4773299976671772492">Stoppet</translation>
 <translation id="4782311465517282004">Få definisjoner, oversettelser eller enhetskonverteringer når du høyreklikker eller trykker og holder inne på tekst</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> bilde</translation>
@@ -376,6 +380,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="5234764350956374838">Lukk</translation>
 <translation id="5252456968953390977">Datastreifing</translation>
+<translation id="5257811368506016604">Slå på modus for lyse farger</translation>
 <translation id="5264277876637023664">Kjør prosessortest</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5275828089655680674">Kjør rutinene på nytt</translation>
@@ -458,6 +463,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6113701710518389813">Oppoverpil</translation>
 <translation id="6117895505466548728"><ph name="TITLE" /> og <ph name="NUMBER" /> album til</translation>
 <translation id="6122191549521593678">Pålogget</translation>
+<translation id="6122277663991249694">Tjeneste for ChromeOS-inndatametode</translation>
 <translation id="6137767437444130246">Brukersertifikat</translation>
 <translation id="6146993107019042706">For å fullføre passordendringen, skriv inn det nye passordet</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -486,6 +492,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="641081527798843608">Emnetreff</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Svak (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="6447630859861661624">Gå til kontoinnstillingene</translation>
 <translation id="6456394469623773452">Grei</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Vil du skanne siden på nytt?}=1{Vil du skanne side {PAGE_NUMBER} på nytt?}other{Vil du skanne side {PAGE_NUMBER} på nytt?}}</translation>
 <translation id="6472207088655375767">Engangspassord</translation>
@@ -548,6 +555,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="714876143603641390">LAN-tilkobling</translation>
+<translation id="7155171745945906037">Eksisterende bilde fra kamera eller fil</translation>
 <translation id="7162487448488904999">Galleri</translation>
 <translation id="7172721935181587524">1 bilde</translation>
 <translation id="7175037578838465313">Konfigurer <ph name="NAME" /></translation>
@@ -556,7 +564,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7191009787982536050">Skjermspareranimasjon</translation>
 <translation id="7212734716605298123">Fastvareoppdateringer for eksterne enheter</translation>
 <translation id="7216409898977639127">Mobiloperatør</translation>
-<translation id="7271040990581020067">Skanneren er i bruk for øyeblikket. Prøv igjen senere.</translation>
+<translation id="7271040990581020067">Skanneren er i bruk for øyeblikket. Prøv på nytt senere.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">Kjenn brisen</translation>
 <translation id="7287310195820267359">Samlinger av bakgrunnsbilder</translation>
@@ -569,6 +577,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7343649194310845056">Nettverksenheter</translation>
 <translation id="7359657277149375382">Filtype</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378886533986123738">Bytt skjermsparer</translation>
 <translation id="741244894080940828">omregning</translation>
 <translation id="7415801143053185905">Svært høy HTTP-tidsforsinkelse</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -591,6 +600,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7648838807254605802">Høy HTTPS-tidsforsinkelse</translation>
 <translation id="7656388927906093505">Enheten er en mus.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
+<translation id="7665800271478495366">Bytt brukerbilde</translation>
 <translation id="7690294790491645610">Bekreft det nye passordet</translation>
 <translation id="7701040980221191251">Ingen</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -618,7 +628,9 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7994702968232966508">EAP-metode</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
+<translation id="80398733265834479">Slå på automatisk fargemodus</translation>
 <translation id="8041089156583427627">Send tilbakemelding</translation>
+<translation id="8045012663542226664">Kutt mikrofonlyden</translation>
 <translation id="8075838845814659848">Gjenværende batteri</translation>
 <translation id="8082366717211101304">Kan ikke foreta DNS-oppslag fra Android-apper</translation>
 <translation id="808894953321890993">Endre passord</translation>
@@ -650,6 +662,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8398927464629426868">Hvor raskt enheten lades eller utlades for øyeblikket</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Internt tastatur</translation>
+<translation id="8431300646573772016">Dette er nytt i ChromeOS</translation>
 <translation id="843568408673868420">Internettilkobling</translation>
 <translation id="844521431886043384">DNS er ikke konfigurert</translation>
 <translation id="8461329675984532579">Navn på leverandøren for hjemmeenheten</translation>
@@ -729,6 +742,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="917720651393141712">Test</translation>
 <translation id="9204237731135241582">Kan ikke kontakte gatewayen fra Android-apper</translation>
 <translation id="9211490828691860325">Alle skrivebord</translation>
+<translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Ikke aktivert</translation>
 <translation id="960719561871045870">Operatørkode</translation>

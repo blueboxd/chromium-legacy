@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Deurgang</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Pas op skandeergebied</translation>
+<translation id="1367951781824006909">Kies 'n lêer</translation>
 <translation id="1387854245479784695">Dit is 'n samevoeging van alle kerns</translation>
 <translation id="1394661041439318933">Toestel het <ph name="BATTERY_PERCENTAGE" />% batterykrag in houer.</translation>
 <translation id="1397738625398125236">Deurgang kan gepieng word</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Hardewarehersiening</translation>
 <translation id="1905710495812624430">Maksimum toegelate pogings is oorskry.</translation>
 <translation id="1908234395526491708">Mislukte UDP-versoeke</translation>
-<translation id="1930797645656624981">Chrome-bedryfstelsel se invoermetodediens</translation>
 <translation id="1947737735496445907">Gedruk</translation>
 <translation id="1951012854035635156">Assistent</translation>
+<translation id="1977994649430373166">Google-profielfoto</translation>
 <translation id="1979103255016296513">Wagwoord moes al verander geword het</translation>
 <translation id="1999615961760456652">Kontroleringsportaal</translation>
 <translation id="2006864819935886708">Konnektiwiteit</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Jy moet 'n minimum van een kunsgalery-album kies</translation>
 <translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Sleutelbordagterligwisselaar</translation>
 <translation id="2240366984605217732">Uitlegomskakelaar</translation>
 <translation id="225692081236532131">Aktiveringstatus</translation>
 <translation id="2287186687001756809">Geen prent is beskikbaar nie. Gaan na <ph name="LINK" /> om foto's by te voeg</translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">Akkuraatheid van wisselpunt</translation>
 <translation id="2448312741937722512">Soort</translation>
 <translation id="2461822463642141190">Huidig</translation>
+<translation id="2491955442992294626">Sleutels word nie getoets wanneer jy ’n ander venster gebruik nie</translation>
 <translation id="2493126929778606526">Jou beste foto's, outomaties gekies</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Herlaai die huidige muurpapierprent</translation>
@@ -148,7 +151,6 @@
 <translation id="2536159006530886390">Kan nie aan die internet koppel nie.</translation>
 <translation id="2570743873672969996">Laat loop tans <ph name="TEST_NAME" />-toets …</translation>
 <translation id="2584559707064218956">Gaan na Instellings om dit op te stel</translation>
-<translation id="2585245331261708204">Wat's nuut in Chrome OS</translation>
 <translation id="2619761439309613843">Herlaai daagliks</translation>
 <translation id="2620436844016719705">Stelsel</translation>
 <translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> is gekies</translation>
@@ -221,6 +223,7 @@
 <translation id="3604713164406837697">Verander muurpapier</translation>
 <translation id="360565022852130722">Wi-Fi-netwerk is met swak protokol WEP 802.1x beveilig</translation>
 <translation id="3606583719724308068">Hoë traagheid na HTTPS-webwerwe</translation>
+<translation id="3621202678540785336">Invoer</translation>
 <translation id="3632579075709132555">Privaatheidskermwisselaar</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />-toets</translation>
 <translation id="370665806235115550">Laai tans …</translation>
@@ -245,6 +248,7 @@
 <translation id="3954678691475912818">Toesteltipe is onbekend.</translation>
 <translation id="3966286471246132217">Vir meer akkurate resultate moet jy alle programme toemaak totdat die toets voltooi is.</translation>
 <translation id="3967822245660637423">Aflaai is voltooi</translation>
+<translation id="3969602104473960991">Chrome-bedryfstelselwagwoord is opgedateer</translation>
 <translation id="397105322502079400">Bereken tans …</translation>
 <translation id="39823212440917567">Druktake ouer as <ph name="NUMBER_OF_DAYS" /> dae sal verwyder word</translation>
 <translation id="3993704782688964914">Jou <ph name="DEVICE_NAME" /> is nou bygewerk</translation>
@@ -320,7 +324,6 @@
 <translation id="4731797938093519117">Ouertoegang</translation>
 <translation id="473775607612524610">Dateer op</translation>
 <translation id="4744944742468440486">Inligting wat met jou keuse verband hou</translation>
-<translation id="475869545581454722">Chrome-bedryfstelselwagwoord is opgedateer</translation>
 <translation id="4773299976671772492">Gestop</translation>
 <translation id="4782311465517282004">Kry definisies, vertalings of eenheidomskakelings wanneer jy regsklik of teks raak en hou</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> foto</translation>
@@ -460,6 +463,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="6113701710518389813">Oppyl</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, + nog <ph name="NUMBER" /> albums</translation>
 <translation id="6122191549521593678">Aanlyn</translation>
+<translation id="6122277663991249694">Chrome-bedryfstelsel se invoermetodediens</translation>
 <translation id="6137767437444130246">Gebruikersertifikaat</translation>
 <translation id="6146993107019042706">Voer jou nuwe wagwoord in om dit te voltooi</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -551,6 +555,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="7143207342074048698">Koppel tans</translation>
 <translation id="7144878232160441200">Probeer weer</translation>
 <translation id="714876143603641390">LAN-konnektiwiteit</translation>
+<translation id="7155171745945906037">Bestaande foto in kamera of lêer</translation>
 <translation id="7162487448488904999">Galery</translation>
 <translation id="7172721935181587524">1 prent</translation>
 <translation id="7175037578838465313">Stel <ph name="NAME" /> op</translation>
@@ -625,6 +630,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Aktiveer outokleurmodus</translation>
 <translation id="8041089156583427627">Stuur terugvoer</translation>
+<translation id="8045012663542226664">Demp mikrofoon</translation>
 <translation id="8075838845814659848">Oorblywende batterykrag</translation>
 <translation id="8082366717211101304">Kan nie DNS van Android-programme af oplos nie</translation>
 <translation id="808894953321890993">Verander wagwoord</translation>
@@ -656,6 +662,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="8398927464629426868">Die koers waarteen die toestel tans laai of ontlaai</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Interne sleutelbord</translation>
+<translation id="8431300646573772016">Wat's nuut in ChromeOS</translation>
 <translation id="843568408673868420">Internetkonnektiwiteit</translation>
 <translation id="844521431886043384">DNS is nie opgestel nie</translation>
 <translation id="8461329675984532579">Tuisverskaffernaam</translation>
@@ -735,6 +742,7 @@ Probeer die mikrofoon tik om my enigiets te vra.</translation>
 <translation id="917720651393141712">Toets</translation>
 <translation id="9204237731135241582">Kan nie die deurgang van Android-programme af kontak nie</translation>
 <translation id="9211490828691860325">Alle lessenaars</translation>
+<translation id="932327136139879170">Tuis</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Nie geaktiveer nie</translation>
 <translation id="960719561871045870">Diensverskafferkode</translation>

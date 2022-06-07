@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_mojo.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
@@ -37,7 +38,7 @@ const char kSessionId[] = "sessionId";
 bool ShouldInterruptForMethod(const String& method) {
   return method != "Debugger.evaluateOnCallFrame" &&
          method != "Runtime.evaluate" && method != "Runtime.callFunctionOn" &&
-         method != "Runtime.runScript";
+         method != "Runtime.getProperties" && method != "Runtime.runScript";
 }
 
 std::vector<uint8_t> Get8BitStringFrom(v8_inspector::StringBuffer* msg) {

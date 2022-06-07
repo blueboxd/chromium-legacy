@@ -86,19 +86,7 @@ class FakeSuggesterSwitch : public AssistiveSuggesterSwitch {
       : enabled_suggestions_(enabled_suggestions) {}
   ~FakeSuggesterSwitch() override = default;
 
-  // AssistiveSuggesterDelegate overrides
-  bool IsEmojiSuggestionAllowed() override {
-    return enabled_suggestions_.emoji_suggestions;
-  }
-
-  bool IsMultiWordSuggestionAllowed() override {
-    return enabled_suggestions_.multi_word_suggestions;
-  }
-
-  bool IsPersonalInfoSuggestionAllowed() override {
-    return enabled_suggestions_.personal_info_suggestions;
-  }
-
+  // AssistiveSuggesterSwitch overrides
   void FetchEnabledSuggestionsThen(
       FetchEnabledSuggestionsCallback callback) override {
     std::move(callback).Run(enabled_suggestions_);
@@ -1099,17 +1087,6 @@ TEST_F(AssistiveSuggesterEmojiTest, ShouldReturnPrefixBasedEmojiSuggestions) {
 
   EXPECT_TRUE(suggestion_handler_->GetShowingSuggestion());
   EXPECT_EQ(suggestion_handler_->GetSuggestionText(), u"←");
-}
-
-TEST_F(AssistiveSuggesterEmojiTest, ShouldNotSuggestWhenLacrosEnabled) {
-  feature_list_.Reset();
-  feature_list_.InitAndEnableFeature(features::kLacrosSupport);
-  assistive_suggester_->OnActivate(kUsEnglishEngineId);
-  assistive_suggester_->OnFocus(5);
-
-  assistive_suggester_->OnSurroundingTextChanged(u"arrow ", 6, 6);
-
-  EXPECT_FALSE(suggestion_handler_->GetShowingSuggestion());
 }
 }  // namespace input_method
 }  // namespace ash

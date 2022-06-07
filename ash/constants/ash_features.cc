@@ -674,7 +674,7 @@ const base::Feature kFilesExtractArchive{"FilesExtractArchive",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the System Web App (SWA) version of file manager.
-const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables partitioning of removable disks in file manager.
 const base::Feature kFilesSinglePartitionFormat{
@@ -1028,6 +1028,7 @@ const base::Feature kOnDeviceGrammarCheck{"OnDeviceGrammarCheck",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether the device supports on-device speech recognition.
+// Forwarded to LaCrOS as BrowserInitParams::is_ondevice_speech_supported.
 const base::Feature kOnDeviceSpeechRecognition{
     "OnDeviceSpeechRecognition", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1049,6 +1050,11 @@ const base::Feature kOobeQuickStart{"OobeQuickStart",
 // If enabled, the new recommend apps screen is shown.
 const base::Feature kOobeNewRecommendApps{"OobeNewRecommendApps",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Removes "Shut down" button from OOBE, except first login screen and
+// successful enrollment step.
+const base::Feature kOobeRemoveShutdownButton{
+    "OobeRemoveShutdownButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the feedback tool new UX on Chrome OS.
 // This tool under development will be rolled out via Finch.
@@ -1145,14 +1151,20 @@ const base::Feature kProjectorExcludeTranscript{
 // Controls whether Projector's tutorial videos are displayed.
 const base::Feature kProjectorTutorialVideoView(
     "ProjectorTutorialVideoView",
-    base::FEATURE_DISABLED_BY_DEFAULT);
+    base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether Projector use custom thumbnail in gallery page.
 const base::Feature kProjectorCustomThumbnail("kProjectorCustomThumbnail",
                                               base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls whether to ignore policy setting for enabling Projector for managed
+// users.
+const base::Feature kProjectorManagedUserIgnorePolicy(
+    "ProjectorManagedUserIgnorePolicy",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether the quick dim prototype is enabled.
-const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kQuickDim{"QuickDim", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
@@ -1270,6 +1282,12 @@ const base::Feature kSimLockPolicy{"SimLockPolicy",
 const base::Feature kSmartDimExperimentalComponent{
     "SmartDimExperimentalComponent", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Deprecates Sign in with Smart Lock feature. Hides Smart Lock at the sign in
+// screen, removes the Smart Lock subpage in settings, and shows a one-time
+// notification for users who previously had this feature enabled.
+const base::Feature kSmartLockSignInRemoved{"SmartLockSignInRemoved",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Replaces Smart Lock UI in lock screen password box with new UI similar to
 // fingerprint auth. Adds Smart Lock to "Lock screen and sign-in" section of
 // settings.
@@ -1277,14 +1295,14 @@ const base::Feature kSmartLockUIRevamp{"SmartLockUIRevamp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This feature:
-// - Categorizes all sync data types into two large categories:
-//     - OS-related sync data types (WiFi passwords and OS preferences, etc.).
-//       Can be configured from OS Sync Settings.
-//     - Browser-related sync data types (bookmarks, browser preferences, etc.).
-//       Can be configured from Browser Sync Settings.
-// - Changes a bunch of UIs to accommodate for this categorization.
+// - Creates a new "Sync your settings" section in Chrome OS settings
+// - Moves app, wallpaper and Wi-Fi sync to OS settings
+// - Provides a separate toggle for OS preferences, distinct from browser
+//   preferences
+// - Makes the OS ModelTypes run in sync transport mode, controlled by a single
+//   pref for the entire OS sync feature
 const base::Feature kSyncSettingsCategorization{
-    "SyncSettingsCategorization", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SyncSettingsCategorization", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables battery indicator for styluses in the palette tray
 const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
@@ -1331,13 +1349,10 @@ const base::Feature kTerminalSSH{"TerminalSSH",
 const base::Feature kTerminalTmuxIntegration{"TerminalTmuxIntegration",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the TrafficCountersHandler class to handle traffic counter resets.
-const base::Feature kTrafficCountersHandlerEnabled{
-    "TrafficCountersHandlerEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the Settings UI to show data usage for cellular networks.
-const base::Feature kTrafficCountersSettingsUi{
-    "TrafficCountersSettingsUi", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables the TrafficCountersHandler class to auto-reset traffic counters
+// and shows Data Usage in the Celluar Settings UI.
+const base::Feature kTrafficCountersEnabled{"TrafficCountersEnabled",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables trilinear filtering.
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
@@ -1346,7 +1361,7 @@ const base::Feature kTrilinearFiltering{"TrilinearFiltering",
 // Unblock the UsbPeripheralNotificationController class in ash to display
 // USB related notifications from the type-c daemon in Chrome OS.
 const base::Feature kUsbNotificationController{
-    "UsbNotificationController", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UsbNotificationController", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Uses new  AuthSession-based API in cryptohome to authenticate users during
 // sign-in.
@@ -1925,6 +1940,10 @@ bool IsOobeNewRecommendAppsEnabled() {
   return base::FeatureList::IsEnabled(kOobeNewRecommendApps);
 }
 
+bool IsOobeRemoveShutdownButtonEnabled() {
+  return base::FeatureList::IsEnabled(kOobeRemoveShutdownButton);
+}
+
 bool IsOobeThemeSelectionEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeThemeSelection);
 }
@@ -2014,6 +2033,10 @@ bool IsProjectorCustomThumbnailEnabled() {
   return base::FeatureList::IsEnabled(kProjectorCustomThumbnail);
 }
 
+bool IsProjectorManagedUserIgnorePolicyEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorManagedUserIgnorePolicy);
+}
+
 bool IsQuickDimEnabled() {
   return base::FeatureList::IsEnabled(kQuickDim) && ash::switches::HasHps();
 }
@@ -2068,6 +2091,11 @@ bool IsShimlessRMAFlowEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAFlow);
 }
 
+bool IsShimlessRMAStandaloneAppEnabled() {
+  return base::FeatureList::IsEnabled(kShimlessRMAEnableStandalone) &&
+         IsShimlessRMAFlowEnabled();
+}
+
 bool IsSimLockPolicyEnabled() {
   return base::FeatureList::IsEnabled(kSimLockPolicy);
 }
@@ -2092,8 +2120,8 @@ bool IsTouchscreenInDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kEnableTouchscreensInDiagnosticsApp);
 }
 
-bool IsTrafficCountersHandlerEnabled() {
-  return base::FeatureList::IsEnabled(kTrafficCountersHandlerEnabled);
+bool IsTrafficCountersEnabled() {
+  return base::FeatureList::IsEnabled(kTrafficCountersEnabled);
 }
 
 bool IsTrilinearFilteringEnabled() {

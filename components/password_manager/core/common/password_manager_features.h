@@ -23,6 +23,7 @@ namespace password_manager::features {
 
 extern const base::Feature kBiometricTouchToFill;
 extern const base::Feature kDetectFormSubmissionOnFormClear;
+extern const base::Feature kForceEnablePasswordDomainCapabilities;
 extern const base::Feature kEnableFaviconForPasswords;
 extern const base::Feature kEnableOverwritingPlaceholderUsernames;
 extern const base::Feature kEnablePasswordsAccountStorage;
@@ -63,6 +64,7 @@ extern const base::Feature kTouchToFillPasswordSubmission;
 extern const base::Feature kUnifiedCredentialManagerDryRun;
 extern const base::Feature kUnifiedPasswordManagerAndroid;
 extern const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly;
+extern const base::Feature kPasswordEditDialogWithDetails;
 #endif
 extern const base::Feature kUnifiedPasswordManagerDesktop;
 extern const base::Feature kUsernameFirstFlow;

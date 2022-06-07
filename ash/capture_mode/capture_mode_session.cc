@@ -12,6 +12,7 @@
 #include "ash/capture_mode/capture_label_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
+#include "ash/capture_mode/capture_mode_camera_preview_view.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_menu_group.h"
@@ -421,6 +422,7 @@ bool IsWidgetOverlappedWithCameraPreview(views::Widget* widget) {
     return false;
 
   return camera_preview_widget->IsVisible() &&
+         camera_preview_widget->GetLayer()->GetTargetOpacity() > 0.f &&
          camera_preview_widget->GetWindowBoundsInScreen().Intersects(
              widget->GetWindowBoundsInScreen());
 }
@@ -978,11 +980,8 @@ aura::Window* CaptureModeSession::GetCameraPreviewParentWindow() const {
     case CaptureModeSource::kFullscreen:
       return menu_container;
     case CaptureModeSource::kRegion:
-      return controller_->user_capture_region().IsEmpty() ||
-                     (is_drag_in_progress_ &&
-                      fine_tune_position_ != FineTunePosition::kCenter)
-                 ? unparented_container
-                 : menu_container;
+      return controller_->user_capture_region().IsEmpty() ? unparented_container
+                                                          : menu_container;
     case CaptureModeSource::kWindow:
       aura::Window* selected_window = GetSelectedWindow();
       return selected_window ? selected_window : unparented_container;
@@ -1011,6 +1010,30 @@ gfx::Rect CaptureModeSession::GetCameraPreviewConfineBounds() const {
       return capture_region;
     }
   }
+}
+
+bool CaptureModeSession::CalculateCameraPreviewTargetVisibility() const {
+  // A screenshot-only-session opened during recording should not affect the
+  // visibility of a camera preview created for that on-going recording.
+  if (controller_->is_recording_in_progress())
+    return true;
+
+  // For fullscreen and window sources, the visibility of the camera preview is
+  // determined by the preview's size specs, and whether there's a window source
+  // selected. We only care about region sources here, since the visibility of
+  // the preview in this case depends on what's happening to the region during
+  // this session.
+  if (controller_->source() != CaptureModeSource::kRegion)
+    return true;
+
+  if (controller_->user_capture_region().IsEmpty())
+    return false;
+
+  // Adjusting the region from any of its affordance points should result in
+  // hiding the preview. However, dragging it around from its center should not
+  // change the visibility.
+  return !is_drag_in_progress_ ||
+         fine_tune_position_ == FineTunePosition::kCenter;
 }
 
 void CaptureModeSession::OnPaintLayer(const ui::PaintContext& context) {
@@ -1042,6 +1065,14 @@ void CaptureModeSession::OnKeyEvent(ui::KeyEvent* event) {
   if (folder_selection_dialog_controller_) {
     if (folder_selection_dialog_controller_->ShouldConsumeEvent(event))
       event->StopPropagation();
+    return;
+  }
+
+  auto* camera_controller = controller_->camera_controller();
+  auto* camera_preview_view =
+      camera_controller ? camera_controller->camera_preview_view() : nullptr;
+  if (camera_preview_view && camera_preview_view->MaybeHandleKeyEvent(event)) {
+    event->StopPropagation();
     return;
   }
 
@@ -1213,7 +1244,7 @@ void CaptureModeSession::OnDisplayMetricsChanged(
   if (controller_->camera_controller() &&
       controller_->source() == CaptureModeSource::kFullscreen &&
       !controller_->is_recording_in_progress()) {
-    controller_->camera_controller()->MaybeUpdatePreviewWidgetBounds();
+    controller_->camera_controller()->MaybeUpdatePreviewWidget();
   }
 
   if (capture_label_widget_)
@@ -1463,7 +1494,7 @@ void CaptureModeSession::OnCameraPreviewDragEnded(
   UpdateCursor(screen_location, is_touch);
 }
 
-void CaptureModeSession::OnCameraPreviewBoundsChanged() {
+void CaptureModeSession::OnCameraPreviewBoundsOrVisibilityChanged() {
   MaybeUpdateCaptureUisOpacity();
 }
 
@@ -1999,7 +2030,7 @@ void CaptureModeSession::OnLocatedEventPressed(
   base::ScopedClosureRunner deferred_runner;
   if (!is_event_on_capture_bar_or_menu) {
     UpdateCaptureBarWidgetOpacity(0.f, /*on_release=*/false);
-    // Run `MaybeReparentCameraPreviewWidget` at the exit of this function's
+    // Run `MaybeUpdateCameraPreviewBounds` at the exit of this function's
     // scope if the user presses anywhere outside of the capture bar or menu,
     // since the camera preview should be hidden if user is dragging to update
     // the capture region. The reason we want to run it at the exit of this
@@ -2007,7 +2038,7 @@ void CaptureModeSession::OnLocatedEventPressed(
     // `fine_tune_position_` to be updated first since it can affect whether we
     // should hide camera preview or not.
     deferred_runner.ReplaceClosure(
-        base::BindOnce(&CaptureModeSession::MaybeReparentCameraPreviewWidget,
+        base::BindOnce(&CaptureModeSession::MaybeUpdateCameraPreviewBounds,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -2108,7 +2139,7 @@ void CaptureModeSession::OnLocatedEventReleased(
   // Do a repaint to show the affordance circles.
   RepaintRegion();
 
-  // Run `MaybeReparentCameraPreviewWidget` when user releases the drag at
+  // Run `MaybeUpdateCameraPreviewBounds` when user releases the drag at
   // the exit of this function's scope to show the camera preview which may have
   // been hidden in `OnLocatedEventPressed`. Please notice, we should call
   // `MaybeReparentCameraPreviewWidget` no matter if the event is on the capture
@@ -2119,7 +2150,7 @@ void CaptureModeSession::OnLocatedEventReleased(
   // updated since capture label's opacity may need to be updated based on if
   // it's overlapped with camera preview or not.
   base::ScopedClosureRunner deferred_runner(
-      base::BindOnce(&CaptureModeSession::MaybeReparentCameraPreviewWidget,
+      base::BindOnce(&CaptureModeSession::MaybeUpdateCameraPreviewBounds,
                      weak_ptr_factory_.GetWeakPtr()));
 
   if (!is_selecting_region_)
@@ -2748,6 +2779,12 @@ void CaptureModeSession::MaybeReparentCameraPreviewWidget() {
   auto* camera_controller = controller_->camera_controller();
   if (camera_controller && !controller_->is_recording_in_progress())
     camera_controller->MaybeReparentPreviewWidget();
+}
+
+void CaptureModeSession::MaybeUpdateCameraPreviewBounds() {
+  auto* camera_controller = controller_->camera_controller();
+  if (camera_controller && !controller_->is_recording_in_progress())
+    camera_controller->MaybeUpdatePreviewWidget(/*animate=*/false);
 }
 
 }  // namespace ash

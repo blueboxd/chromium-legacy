@@ -19,7 +19,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
-#include "media/base/media_switches.h"
 #include "media/capture/video_capture_types.h"
 #include "media/webrtc/constants.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -1421,17 +1421,6 @@ MediaStreamSource* UserMediaProcessor::InitializeAudioSourceObject(
   return source;
 }
 
-// TODO(crbug.com/1313841): Remove this after M107 branch point, and simply
-// call IsScreenCaptureMediaType as before.
-bool IsScreenCaptureMediaTypeOrDisplayAudioIfEnabled(
-    mojom::blink::MediaStreamType type) {
-  if (type == mojom::blink::MediaStreamType::DISPLAY_AUDIO_CAPTURE) {
-    return base::FeatureList::IsEnabled(
-        media::kDisplayAudioUseLocalAudioSource);
-  }
-  return blink::IsScreenCaptureMediaType(type);
-}
-
 std::unique_ptr<blink::MediaStreamAudioSource>
 UserMediaProcessor::CreateAudioSource(
     const MediaStreamDevice& device,
@@ -1447,7 +1436,7 @@ UserMediaProcessor::CreateAudioSource(
   blink::AudioProcessingProperties audio_processing_properties =
       current_request_info_->audio_capture_settings()
           .audio_processing_properties();
-  if (blink::IsScreenCaptureMediaTypeOrDisplayAudioIfEnabled(device.type) ||
+  if (blink::IsScreenCaptureMediaType(device.type) ||
       !blink::MediaStreamAudioProcessor::WouldModifyAudio(
           audio_processing_properties)) {
     SendLogMessage(

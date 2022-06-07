@@ -574,9 +574,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrerenderFallbackToPreconnect;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kPrivacyAdvisor;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrivacyGuide;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -636,11 +633,6 @@ extern const base::Feature kSecurityKeyAttestationPrompt;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSharesheetCopyToClipboard;
 #endif
-
-#if BUILDFLAG(IS_MAC)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kShow10_10ObsoleteInfobar;
-#endif  // BUILDFLAG(IS_MAC)
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSitePerProcess;
 

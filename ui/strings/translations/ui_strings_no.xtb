@@ -33,7 +33,7 @@
 <translation id="1901303067676059328">Marker &amp;alt</translation>
 <translation id="19085484004813472">Dette er en ny funksjon</translation>
 <translation id="2006524834898217237">Kontrollér at enheten er koblet til internett.</translation>
-<translation id="208586643495776849">Prøv igjen</translation>
+<translation id="208586643495776849">Prøv på nytt</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2161656808144014275">Tekst</translation>
@@ -52,6 +52,7 @@
 <translation id="2445449901874883781">Bruk høy tetthet</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2497284189126895209">Alle filer</translation>
+<translation id="2498950423397131220">Løsne</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibreringen er ferdig</translation>
 <translation id="252373100621549798">Ukjent skjerm</translation>

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace ash {
@@ -17,20 +18,16 @@ namespace chromeos {
 
 // Interface for dependency injection between
 // ActiveDirectoryPasswordChangeScreen and its WebUI representation.
-class ActiveDirectoryPasswordChangeView {
+class ActiveDirectoryPasswordChangeView
+    : public base::SupportsWeakPtr<ActiveDirectoryPasswordChangeView> {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"ad-password-change"};
+  inline static constexpr StaticOobeScreenId kScreenId{
+      "ad-password-change", "ActiveDirectoryPasswordChangeScreen"};
 
-  virtual ~ActiveDirectoryPasswordChangeView() {}
+  virtual ~ActiveDirectoryPasswordChangeView() = default;
 
   // Shows the contents of the screen.
   virtual void Show(const std::string& username, int error) = 0;
-
-  // Binds `screen` to the view.
-  virtual void Bind(ash::ActiveDirectoryPasswordChangeScreen* screen) = 0;
-
-  // Unbinds the screen from the view.
-  virtual void Unbind() = 0;
 
   // Shows sign-in error bubble.
   virtual void ShowSignInError(const std::string& error_text) = 0;
@@ -55,23 +52,10 @@ class ActiveDirectoryPasswordChangeScreenHandler
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void InitializeDeprecated() override;
-
-  // WebUIMessageHandler implementation:
-  void RegisterMessages() override;
 
   // ActiveDirectoryPasswordChangeView:
   void Show(const std::string& username, int error) override;
-  void Bind(ash::ActiveDirectoryPasswordChangeScreen* screen) override;
-  void Unbind() override;
   void ShowSignInError(const std::string& error_text) override;
-
- private:
-  // WebUI message handlers.
-  void HandleComplete(const std::string& old_password,
-                      const std::string& new_password);
-
-  ash::ActiveDirectoryPasswordChangeScreen* screen_ = nullptr;
 };
 
 }  // namespace chromeos

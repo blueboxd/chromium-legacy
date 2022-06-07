@@ -296,10 +296,11 @@ PowerMetricsReporter::PowerMetricsReporter(
     long_usage_scenario_data_store_ =
         long_usage_scenario_tracker_->data_store();
   }
-
+        
+  // Unretained() is safe here because |this| outlive |battery_level_provider_|.
   battery_level_provider_->GetBatteryState(
       base::BindOnce(&PowerMetricsReporter::OnFirstBatteryStateSampled,
-                     weak_factory_.GetWeakPtr()));
+                     base::Unretained(this)));
 
 #if BUILDFLAG(IS_MAC)
   iopm_power_source_sampling_event_source_.Start(
@@ -334,9 +335,10 @@ void PowerMetricsReporter::OnAggregatedMetricsSampled(
     const ProcessMonitor::Metrics& metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Unretained() is safe here because |this| outlive |battery_level_provider_|.
   battery_level_provider_->GetBatteryState(base::BindOnce(
       &PowerMetricsReporter::OnBatteryAndAggregatedProcessMetricsSampled,
-      weak_factory_.GetWeakPtr(), metrics,
+      base::Unretained(this), metrics,
       /* battery_sample_begin_time=*/base::TimeTicks::Now()));
 
 #if BUILDFLAG(IS_MAC)
@@ -438,13 +440,13 @@ void PowerMetricsReporter::ReportBatteryHistograms(
 
   for (const char* suffix : suffixes) {
     base::UmaHistogramEnumeration(
-        base::JoinString({kBatteryDischargeModeHistogramName, suffix}, ""),
+        base::StrCat({kBatteryDischargeModeHistogramName, suffix}),
         battery_discharge.mode);
 
     if (battery_discharge.mode == BatteryDischargeMode::kDischarging) {
       DCHECK(battery_discharge.rate.has_value());
       base::UmaHistogramCounts1000(
-          base::JoinString({kBatteryDischargeRateHistogramName, suffix}, ""),
+          base::StrCat({kBatteryDischargeRateHistogramName, suffix}),
           *battery_discharge.rate);
     }
   }

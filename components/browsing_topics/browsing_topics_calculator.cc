@@ -14,11 +14,51 @@
 #include "components/privacy_sandbox/canonical_topic.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "content/public/browser/browsing_topics_site_data_manager.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace browsing_topics {
 
 namespace {
+
+void RecordCalculatorResultMetrics(
+    const BrowsingTopicsCalculator::CalculatorResultStatus& status,
+    const EpochTopics& epoch_topics) {
+  base::UmaHistogramEnumeration(
+      "BrowsingTopics.EpochTopicsCalculation.CalculatorResultStatus", status);
+
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  ukm::builders::BrowsingTopics_EpochTopicsCalculationResult builder(
+      ukm::NoURLSourceId());
+
+  if (status == BrowsingTopicsCalculator::CalculatorResultStatus::kSuccess) {
+    const std::vector<TopicAndDomains>& topics =
+        epoch_topics.top_topics_and_observing_domains();
+
+    if (topics.size() > 0 && topics[0].IsValid())
+      builder.SetTopTopic0(topics[0].topic().value());
+
+    if (topics.size() > 1 && topics[1].IsValid())
+      builder.SetTopTopic1(topics[1].topic().value());
+
+    if (topics.size() > 2 && topics[2].IsValid())
+      builder.SetTopTopic2(topics[2].topic().value());
+
+    if (topics.size() > 3 && topics[3].IsValid())
+      builder.SetTopTopic3(topics[3].topic().value());
+
+    if (topics.size() > 4 && topics[4].IsValid())
+      builder.SetTopTopic4(topics[4].topic().value());
+
+    builder.SetTaxonomyVersion(epoch_topics.taxonomy_version())
+        .SetModelVersion(epoch_topics.model_version())
+        .SetPaddedTopicsStartIndex(
+            epoch_topics.padded_top_topics_start_index());
+  }
+
+  builder.Record(ukm_recorder->Get());
+}
 
 // Derive the mapping from hosts to topics and the mapping from topics to hosts.
 // Precondition: the annotation didn't fail in general (e.g. `ModelInfo` is
@@ -37,15 +77,15 @@ void DeriveHostTopicsMapAndTopicHostsMap(
     const optimization_guide::BatchAnnotationResult& result = results[i];
     const std::string raw_host = raw_hosts[i];
 
-    // As long as the annotation didn't fail in general, the individual
-    // `result.topics()` should always be valid.
-    const std::vector<optimization_guide::WeightedIdentifier>&
-        annotation_result_topics = result.topics().value();
+    const absl::optional<std::vector<optimization_guide::WeightedIdentifier>>&
+        annotation_result_topics = result.topics();
+    if (!annotation_result_topics)
+      continue;
 
     HashedHost host = HashMainFrameHostForStorage(raw_host);
 
     for (const optimization_guide::WeightedIdentifier& annotation_result_topic :
-         annotation_result_topics) {
+         *annotation_result_topics) {
       // Note that `annotation_result_topic.weight()` is ignored. This is the
       // intended use of the model for the Topics API.
       Topic topic = Topic(annotation_result_topic.value());
@@ -147,7 +187,12 @@ void BrowsingTopicsCalculator::DeriveTopTopics(
   // topics (https://github.com/jkarlin/topics/issues/42).
   std::map<Topic, size_t> topics_count;
   for (auto const& [host, host_count] : history_hosts_count) {
-    const std::set<Topic>& topics = host_topics_map.at(host);
+    // A host wouldn't be found if there were no topics associated with it.
+    auto it = host_topics_map.find(host);
+    if (it == host_topics_map.end())
+      continue;
+
+    const std::set<Topic>& topics = it->second;
     for (const Topic& topic : topics) {
       topics_count[topic] += host_count;
     }
@@ -379,8 +424,7 @@ void BrowsingTopicsCalculator::OnCalculateCompleted(
     EpochTopics epoch_topics) {
   DCHECK(status != CalculatorResultStatus::kSuccess || !epoch_topics.empty());
 
-  base::UmaHistogramEnumeration(
-      "BrowsingTopics.EpochTopicsCalculation.CalculatorResultStatus", status);
+  RecordCalculatorResultMetrics(status, epoch_topics);
 
   std::move(calculate_completed_callback_).Run(std::move(epoch_topics));
 

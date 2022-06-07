@@ -280,6 +280,7 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
 
   // Prepare ukm::SourceId that is based on outermost page's navigation ID.
   ukm::SourceId source_id = ukm::kInvalidSourceId;
+  base::WeakPtr<PageLoadTracker> parent_tracker;
   if (navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsInPrerenderedMainFrame()) {
     // Primary and Prerender pages use own page's navigation ID.
@@ -289,22 +290,24 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
              content::FrameType::kFencedFrameRoot) {
     // For FencedFrames, use the primary page's ukm::SourceId. `primary_page_`
     // can be nullptr if the main frame is in data URL or so.
-    if (primary_page_)
+    if (primary_page_) {
       source_id = primary_page_->GetPageUkmSourceId();
+      parent_tracker = primary_page_->GetWeakPtr();
+    }
   } else {
     NOTREACHED();
   }
 
-  // Passing raw pointers to `observers_` and `embedder_interface_` is safe
-  // because the MetricsWebContentsObserver owns them both list and they are
-  // torn down after the PageLoadTracker. The PageLoadTracker does not hold on
-  // to `primary_page_` or `navigation_handle` beyond the scope of the
-  // constructor.
+  // Passing raw pointers to `embedder_interface_` is safe because the
+  // MetricsWebContentsObserver owns them both list and they are torn down after
+  // the PageLoadTracker. The PageLoadTracker does not hold on to
+  // `navigation_handle` beyond the scope of the constructor.
   auto insertion_result = provisional_loads_.insert(std::make_pair(
       navigation_handle,
       std::make_unique<PageLoadTracker>(
           in_foreground, embedder_interface_.get(), currently_committed_url,
-          !has_navigated_, navigation_handle, user_initiated_info, source_id)));
+          !has_navigated_, navigation_handle, user_initiated_info, source_id,
+          parent_tracker)));
   DCHECK(insertion_result.second)
       << "provisional_loads_ already contains NavigationHandle.";
   for (auto& observer : lifecycle_observers_)
@@ -541,8 +544,6 @@ void MetricsWebContentsObserver::DidFinishNavigation(
         GetPageLoadTracker(navigation_handle->GetParentFrame());
     if (tracker) {
       tracker->DidFinishSubFrameNavigation(navigation_handle);
-      tracker->metrics_update_dispatcher()->DidFinishSubFrameNavigation(
-          navigation_handle);
     }
     return;
   }
@@ -618,6 +619,8 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   }
 
   if (navigation_handle->HasCommitted()) {
+    navigation_handle_tracker->SetPageMainFrame(
+        navigation_handle->GetRenderFrameHost());
     HandleCommittedNavigationForTrackedLoad(
         navigation_handle, std::move(navigation_handle_tracker));
   } else {
@@ -904,16 +907,22 @@ void MetricsWebContentsObserver::PrimaryMainFrameRenderProcessGone(
   // currently committed load. We don't know if the pending navs or aborted
   // pending navs are associated w/ the render process that died, so we can't be
   // sure the info should propagate to them.
+  const auto now = base::TimeTicks::Now();
   if (primary_page_) {
     primary_page_->NotifyPageEnd(END_RENDER_PROCESS_GONE,
-                                 UserInitiatedInfo::NotUserInitiated(),
-                                 base::TimeTicks::Now(), true);
+                                 UserInitiatedInfo::NotUserInitiated(), now,
+                                 true);
+  }
+  for (const auto& kv : active_pages_) {
+    kv.second->NotifyPageEnd(END_RENDER_PROCESS_GONE,
+                             UserInitiatedInfo::NotUserInitiated(), now, true);
   }
 
   // If this is a crash, eagerly log the aborted provisional loads and the
   // committed load. `provisional_loads_` don't need to be destroyed here
   // because their lifetime is tied to the NavigationHandle.
   primary_page_.reset();
+  active_pages_.clear();
   aborted_provisional_loads_.clear();
 }
 
@@ -1010,11 +1019,11 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   }
 
   if (tracker) {
-    tracker->metrics_update_dispatcher()->UpdateMetrics(
-        render_frame_host, std::move(timing), std::move(metadata),
-        std::move(new_features), resources, std::move(render_data),
-        std::move(cpu_timing), std::move(input_timing_delta),
-        std::move(mobile_friendliness));
+    tracker->UpdateMetrics(render_frame_host, std::move(timing),
+                           std::move(metadata), std::move(new_features),
+                           resources, std::move(render_data),
+                           std::move(cpu_timing), std::move(input_timing_delta),
+                           std::move(mobile_friendliness));
   }
 }
 

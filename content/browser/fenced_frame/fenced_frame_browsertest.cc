@@ -8,13 +8,16 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/fenced_frame/fenced_frame.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
 #include "content/public/browser/frame_type.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -556,6 +559,37 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, GetPageUkmSourceId_NestedFrame) {
   EXPECT_EQ(iframe_rfh->GetPageUkmSourceId(), nav_request_id);
 }
 
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
+                       DocumentUKMSourceIdShouldNotBeAssociatedWithURL) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  ukm::SourceId fenced_frame_document_ukm_source_id = ukm::kInvalidSourceId;
+  DidFinishNavigationObserver observer(
+      web_contents(),
+      base::BindLambdaForTesting([&fenced_frame_document_ukm_source_id](
+                                     NavigationHandle* navigation_handle) {
+        if (navigation_handle->GetNavigatingFrameType() !=
+            FrameType::kFencedFrameRoot)
+          return;
+        NavigationRequest* request = NavigationRequest::From(navigation_handle);
+        fenced_frame_document_ukm_source_id =
+            request->commit_params().document_ukm_source_id;
+      }));
+  const GURL fenced_frame_url =
+      https_server()->GetURL("b.test", "/fenced_frames/title1.html");
+  RenderFrameHostImplWrapper fenced_frame_rfh(
+      fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
+                                                   fenced_frame_url));
+  ASSERT_TRUE(fenced_frame_rfh);
+  ASSERT_NE(ukm::kInvalidSourceId, fenced_frame_document_ukm_source_id);
+  EXPECT_EQ(nullptr,
+            recorder.GetSourceForSourceId(fenced_frame_document_ukm_source_id));
+}
+
 // Test that FrameTree::CollectNodesForIsLoading doesn't include inner
 // WebContents nodes.
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NodesForIsLoading) {
@@ -1013,9 +1047,11 @@ class FencedFrameNestedFrameBrowserTest
  protected:
   FencedFrameNestedFrameBrowserTest() {
     if (std::get<1>(GetParam())) {
-      feature_list_.InitAndEnableFeatureWithParameters(
-          blink::features::kFencedFrames,
-          {{"implementation_type", "shadow_dom"}});
+      feature_list_.InitWithFeaturesAndParameters(
+          {{blink::features::kFencedFrames,
+            {{"implementation_type", "shadow_dom"}}},
+           {features::kPrivacySandboxAdsAPIsOverride, {}}},
+          {/* disabled_features */});
     } else {
       fenced_frame_helper_ = std::make_unique<test::FencedFrameTestHelper>();
     }
@@ -1162,9 +1198,11 @@ class FencedFrameNestedModesTest
  protected:
   FencedFrameNestedModesTest() {
     if (std::get<2>(GetParam())) {
-      feature_list_.InitAndEnableFeatureWithParameters(
-          blink::features::kFencedFrames,
-          {{"implementation_type", "shadow_dom"}});
+      feature_list_.InitWithFeaturesAndParameters(
+          {{blink::features::kFencedFrames,
+            {{"implementation_type", "shadow_dom"}}},
+           {features::kPrivacySandboxAdsAPIsOverride, {}}},
+          {/* disabled_features */});
     } else {
       fenced_frame_test_helper_ =
           std::make_unique<test::FencedFrameTestHelper>();

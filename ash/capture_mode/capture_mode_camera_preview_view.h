@@ -42,7 +42,6 @@ class CameraPreviewView
   CameraPreviewView(
       CaptureModeCameraController* camera_controller,
       const CameraId& camera_id,
-      const gfx::Size& preferred_size,
       mojo::Remote<video_capture::mojom::VideoSource> camera_video_source,
       const media::VideoCaptureFormat& capture_format);
   CameraPreviewView(const CameraPreviewView&) = delete;
@@ -51,6 +50,19 @@ class CameraPreviewView
 
   const CameraId& camera_id() const { return camera_id_; }
   CaptureModeButton* resize_button() const { return resize_button_; }
+  bool is_collapsible() const { return is_collapsible_; }
+
+  // Sets this camera preview collapsability to the given `value`, which will
+  // update the resize button visibility.
+  void SetIsCollapsible(bool value);
+
+  // Returns true if the `event` has been handled by CameraPrevieView. It
+  // happens if it is control+arrow keys, which will be used to move the camera
+  // preview to different snap positions.
+  bool MaybeHandleKeyEvent(const ui::KeyEvent* event);
+
+  // Called to update visibility of the `resize_button_` when necessary.
+  void RefreshResizeButtonVisibility();
 
   // views::View:
   void AddedToWidget() override;
@@ -91,10 +103,6 @@ class CameraPreviewView
   // `camera_video_host_view_` and all the native windows it is hosting.
   void DisableEventHandlingInCameraVideoHostHierarchy();
 
-  // Gets called by the `resize_button_hide_timer_` to refresh the visibility of
-  // the `resize_button_` when necessary.
-  void RefreshResizeButtonVisibility();
-
   // Fades in or out the `resize_button_` and updates its visibility
   // accordingly.
   void FadeInResizeButton();
@@ -103,6 +111,9 @@ class CameraPreviewView
   // Called when the mouse exits the camera preview or after the latest tap
   // inside the camera preview to start the `resize_button_hide_timer_`.
   void ScheduleRefreshResizeButtonVisibility();
+
+  // Returns the target opacity for resize button.
+  float CalculateResizeButtonTargetOpacity();
 
   CaptureModeCameraController* const camera_controller_;
 
@@ -122,6 +133,13 @@ class CameraPreviewView
   // inside the camera preview. Runs RefreshResizeButtonVisibility() to fade out
   // the resize button if possible.
   base::OneShotTimer resize_button_hide_timer_;
+
+  // True if the size of the preview in the expanded state is big enough to
+  // allow it to be collapsible.
+  bool is_collapsible_ = true;
+
+  // True only while handling a gesture tap event on this view.
+  bool has_been_tapped_ = false;
 
   base::WeakPtrFactory<CameraPreviewView> weak_ptr_factory_{this};
 };

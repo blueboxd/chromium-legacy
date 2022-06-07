@@ -92,6 +92,7 @@ void AddStrings(content::WebUIDataSource* source) {
       {"managedSetting", IDS_PERSONALIZATION_APP_MANAGED_SETTING},
       {"ariaLabelChangeWallpaper",
        IDS_PERSONALIZATION_APP_ARIA_LABEL_CHANGE_WALLPAPER},
+      {"ariaLabelHome", IDS_PERSONALIZATION_APP_ARIA_LABEL_HOME},
 
       // Theme related strings.
       {"themeLabel", IDS_PERSONALIZATION_APP_THEME_LABEL},
@@ -116,6 +117,11 @@ void AddStrings(content::WebUIDataSource* source) {
        IDS_PERSONALIZATION_APP_ARIA_LABEL_CHANGE_AVATAR},
       {"ariaLabelGoToAccountSettings",
        IDS_PERSONALIZATION_APP_ARIA_LABEL_GO_TO_ACCOUNT_SETTINGS},
+      {"googleProfilePhoto",
+       IDS_PERSONALIZATION_APP_AVATAR_GOOGLE_PROFILE_PHOTO},
+      {"chooseAFile", IDS_PERSONALIZATION_APP_AVATAR_CHOOSE_A_FILE},
+      {"lastExternalImageTitle",
+       IDS_PERSONALIZATION_APP_AVATAR_LAST_EXTERNAL_IMAGE},
 
       // Ambient mode related string.
       {"screensaverLabel", IDS_PERSONALIZATION_APP_SCREENSAVER_LABEL},

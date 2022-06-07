@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/webrtc/peer_connection_remote_audio_source.h"
 #include "third_party/blink/renderer/platform/webrtc/track_observer.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -101,10 +103,9 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
   auto source = std::make_unique<PeerConnectionRemoteAudioSource>(
       observed_track().get(), main_thread);
   auto* source_ptr = source.get();
-  // TODO(crbug.com/1302689): Create and pass a MediaStreamAudioTrack here,
-  // rather than relying on the source to create and set it in ConnectToTrack().
-  InitializeTrack(MediaStreamSource::kTypeAudio, std::move(source),
-                  /*platform_track=*/nullptr);
+  InitializeTrack(
+      MediaStreamSource::kTypeAudio, std::move(source),
+      std::make_unique<PeerConnectionRemoteAudioTrack>(observed_track().get()));
 
   MediaStreamSource::Capabilities capabilities;
   capabilities.device_id = id();
@@ -117,7 +118,7 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
   };
   track()->Source()->SetCapabilities(capabilities);
 
-  source_ptr->ConnectToTrack(track());
+  source_ptr->ConnectToInitializedTrack(track());
 }
 
 void RemoteAudioTrackAdapter::OnChanged() {

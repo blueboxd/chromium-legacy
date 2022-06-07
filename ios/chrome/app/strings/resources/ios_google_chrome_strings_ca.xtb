@@ -12,6 +12,7 @@
 <translation id="1917964099031477364">Aquest compte i totes les dades que no s'hagin desat se suprimiran de Chrome i de la resta d'aplicacions de Google instal·lades en aquest dispositiu.</translation>
 <translation id="1968388653333775699">Fes més coses amb Chrome</translation>
 <translation id="2009224836393115614">Chrome no ha pogut comprovar les teves contrasenyes. Comprova la connexió a Internet.</translation>
+<translation id="2056123005618757196">Augmenta la teva productivitat amb un Google Chrome senzill, segur i més ràpid que mai.</translation>
 <translation id="2147651015520127414">Chrome ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>
 <translation id="2199719347983604670">Dades de la sincronització de Chrome</translation>
 <translation id="2313070403598893276">Google Chrome és senzill, segur i més ràpid que mai</translation>
@@ -38,6 +39,7 @@
 <translation id="3345341804167540816">Utilitzeu Chrome a tot arreu</translation>
 <translation id="3522659714780527202">Per veure les pestanyes des de tots els llocs on facis servir Chrome, activa la sincronització</translation>
 <translation id="3533694711092285624">No hi ha cap contrasenya desada. Chrome pot comprovar les teves contrasenyes quan les deses.</translation>
+<translation id="3641179212828090796">Utilitza la contrasenya que has desat a Chrome per iniciar la sessió més ràpidament</translation>
 <translation id="3655656110921623717">Això vol dir que Chrome sol·licitarà el lloc web per a mòbils cada vegada.</translation>
 <translation id="3706101708757577809">Ara pots utilitzar Chrome cada vegada que toquis enllaços en missatges, documents i altres aplicacions</translation>
 <translation id="3720541637541300822">Bloqueja les pestanyes d'incògnit després de tancar Chrome</translation>
@@ -54,6 +56,7 @@
 <translation id="4523886039239821078">Alguns complements fan que Chrome falli. Desinstal·la'ls.</translation>
 <translation id="4633328489441962921">Chrome no pot cercar actualitzacions</translation>
 <translation id="4698415050768537821">Chrome no ha pogut comprovar totes les contrasenyes. Torna-ho a provar demà o <ph name="BEGIN_LINK" />comprova les contrasenyes desades al teu Compte de Google<ph name="END_LINK" />.</translation>
+<translation id="4819268619367838612">Per ajudar a millorar l'aplicació, Chrome envia les dades d'ús i de bloqueig a Google. <ph name="BEGIN_LINK" />Gestiona<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">No s'admeten a la versió beta de Chrome</translation>
 <translation id="5030102366287574140">Chrome pot ajudar a protegir-te de violacions de les dades, de llocs web no segurs i més.</translation>
 <translation id="5108659628347594808">Millora Chrome</translation>
@@ -73,6 +76,7 @@
 <translation id="6181930887571472871">Canvia a Chrome</translation>
 <translation id="6238746320622508509">Deixa que Chrome bloquegi les teves pestanyes d'incògnit.</translation>
 <translation id="6387994324662817823">Les contrasenyes es desen al gestor de contrasenyes de Google només en aquest dispositiu.</translation>
+<translation id="6412673304250309937">Compara els URL amb una llista de llocs web no segurs emmagatzemada a Chrome. Si un lloc web prova de robar-te la contrasenya o si baixes un fitxer maliciós, és possible que Chrome també n'enviï els URL, inclosos fragments de contingut de les pàgines, a Navegació segura.</translation>
 <translation id="6427126399757991875">La teva organització està configurant Chrome...</translation>
 <translation id="6600954340915313787">Copiada de Chrome</translation>
 <translation id="6634107063912726160">Quan tanquis la sessió, Chrome no sincronitzarà cap dada nova amb el teu Compte de Google. Les dades sincronitzades prèviament romandran al compte.</translation>
@@ -118,6 +122,13 @@
 <translation id="8736550665979974340">Protegeix-te amb Google Chrome</translation>
 <translation id="8772179140489533211">Mostra sol·licituds per iniciar la sessió a Chrome.</translation>
 <translation id="8788269841521769222">No caldrà que recordis aquesta contrasenya. Es desarà al gestor de contrasenyes de Google per a <ph name="EMAIL" /></translation>
+<translation id="8969290730818637510">Quan aquesta opció està activada:
+<ph name="BEGIN_INDENT" />  • Ajuda a millorar Chrome per a les persones que el fan servir igual que tu.<ph name="END_INDENT" />
+
+Aspectes que cal tenir en compte:
+<ph name="BEGIN_INDENT" />  • S'envia informació a Google sobre l'ús que fas de Chrome, però no es relaciona amb tu.
+  • Si Chrome falla, els detalls sobre el bloqueig poden incloure informació personal.
+  • Si actives la sincronització, les mètriques també poden incloure informació sobre els URL que visites.<ph name="END_INDENT" /></translation>
 <translation id="9112744793181547300">Vols establir Chrome com a predeterminat?</translation>
 <translation id="9122931302567044771">Això vol dir que Chrome sol·licitarà el lloc web per a ordinadors cada vegada.</translation>
 </translationbundle>

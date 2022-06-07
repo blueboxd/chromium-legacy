@@ -45,6 +45,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/fenced_frame_test_utils.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/base/escape.h"
 #include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/mock_host_resolver.h"
@@ -815,9 +816,11 @@ class InterestGroupFencedFrameBrowserTest
   InterestGroupFencedFrameBrowserTest() {
     // Tests are run with both the ShadowDOM and MPArch ("Multi-Page
     // Architecture") fenced frames implementations.
-    feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kFencedFrames,
-        {{"implementation_type", GetFencedFrameFeatureParam()}});
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kFencedFrames,
+          {{"implementation_type", GetFencedFrameFeatureParam()}}},
+         {features::kPrivacySandboxAdsAPIsOverride, {}}},
+        {/* disabled_features */});
   }
 
   const char* GetFencedFrameFeatureParam() const {
@@ -949,10 +952,11 @@ class InterestGroupFencedFrameBrowserTest
   void RunBasicAuctionWithAdComponents(const GURL& ad_component_url,
                                        GURL* component_ad_urn = nullptr) {
     GURL test_url =
-        https_server_->GetURL("a.test", "/fenced_frames/basic.html");
+        https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
     ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
-    GURL ad_url = https_server_->GetURL("c.test", "/fenced_frames/nested.html");
+    GURL ad_url =
+        https_server_->GetURL("c.test", "/fenced_frames/opaque_ads.html");
     EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
         /*owner=*/url::Origin::Create(test_url),
         /*name=*/"cars",
@@ -2441,7 +2445,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL("a.test",
                             "/interest_group/bidding_logic_loop_forever.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -2456,7 +2460,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL("a.test",
                             "/interest_group/bidding_logic_throws.js"),
       /*bidding_wasm_helper_url=*/absl::nullopt,
-      /*update_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
       /*trusted_bidding_signals_url=*/absl::nullopt,
       /*trusted_bidding_signals_keys=*/absl::nullopt,
       /*user_bidding_signals=*/absl::nullopt,
@@ -2512,7 +2516,8 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        RunAdAuctionWithWinner) {
   URLLoaderMonitor url_loader_monitor;
 
-  GURL test_url = https_server_->GetURL("a.test", "/fenced_frames/basic.html");
+  GURL test_url =
+      https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
   url::Origin test_origin = url::Origin::Create(test_url);
 
@@ -2640,6 +2645,240 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
                 ->trusted_params->isolation_info.network_isolation_key(),
             url_loader_monitor.GetRequestInfo(kExpectedReportUrls[1])
                 ->trusted_params->isolation_info.network_isolation_key());
+}
+
+// Runs two ad auctions with fenced frames enabled. Both auctions should
+// succeed and are then loaded in separate fenced frames. Both auctions try to
+// leave the interest group, but only the one whose ad matches the joining
+// origin should succeed.
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
+                       RunTwoAdAuctionWithWinnerLeaveGroup) {
+  URLLoaderMonitor url_loader_monitor;
+
+  GURL test_url = https_server_->GetURL(
+      "a.test",
+      base::StringPrintf(
+          "/cross_site_iframe_factory.html?a(%s,%s)",
+          net::EscapeUrlEncodedData(
+              https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html")
+                  .spec(),
+              /*use_plus=*/false)
+              .c_str(),
+          net::EscapeUrlEncodedData(
+              https_server_->GetURL("b.test", "/fenced_frames/opaque_ads.html")
+                  .spec(),
+              /*use_plus=*/false)
+              .c_str()));
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+
+  RenderFrameHost* rfh1 = ChildFrameAt(web_contents()->GetMainFrame(), 0);
+  ASSERT_TRUE(rfh1);
+  RenderFrameHost* rfh2 = ChildFrameAt(web_contents()->GetMainFrame(), 1);
+  ASSERT_TRUE(rfh2);
+  url::Origin test_origin = url::Origin::Create(test_url);
+
+  AttachInterestGroupObserver();
+  GURL ad_url = https_server_->GetURL(
+      "a.test", "/fenced_frames/ad_that_leaves_interest_group.html");
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      blink::InterestGroup(
+          /*expiry=*/base::Time(),
+          /*owner=*/test_origin,
+          /*name=*/"cars",
+          /*priority=*/0.0,
+          /*bidding_url=*/
+          https_server_->GetURL(
+              "a.test",
+              // Using bidding_logic_stop_bidding_after_win.js ensures the
+              // "cars" interest group wins the first auction (whose
+              // leaveAdInterestGroup call succeeds).
+              "/interest_group/bidding_logic_stop_bidding_after_win.js"),
+          /*bidding_wasm_helper_url=*/absl::nullopt,
+          /*daily_update_url=*/absl::nullopt,
+          /*trusted_bidding_signals_url=*/
+          https_server_->GetURL("a.test",
+                                "/interest_group/trusted_bidding_signals.json"),
+          /*trusted_bidding_signals_keys=*/{{"key1"}},
+          /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
+          {{{ad_url, "{ad:'metadata', here:[1,2]}"}}},
+          /*ad_components=*/absl::nullopt),
+      rfh1));
+
+  GURL ad_url2 = https_server_->GetURL(
+      "b.test", "/fenced_frames/ad_that_leaves_interest_group.html");
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      blink::InterestGroup(
+          /*expiry=*/base::Time(),
+          /*owner=*/test_origin,
+          /*name=*/"trucks",
+          /*priority=*/0.0,
+          /*bidding_url=*/
+          https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
+          /*bidding_wasm_helper_url=*/absl::nullopt,
+          /*daily_update_url=*/absl::nullopt,
+          /*trusted_bidding_signals_url=*/
+          https_server_->GetURL("a.test",
+                                "/interest_group/trusted_bidding_signals.json"),
+          /*trusted_bidding_signals_keys=*/{{"key1"}},
+          /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
+          {{{ad_url2, "{ad:'metadata', here:[1,2]}"}}},
+          /*ad_components=*/absl::nullopt),
+      rfh1));
+
+  ASSERT_NO_FATAL_FAILURE(RunAuctionAndNavigateFencedFrame(
+      ad_url,
+      JsReplace(
+          R"({
+seller: $1,
+decisionLogicUrl: $2,
+interestGroupBuyers: [$1],
+auctionSignals: {x: 1},
+sellerSignals: {yet: 'more', info: 1},
+perBuyerSignals: {$1: {even: 'more', x: 4.5}}
+                  })",
+          test_origin,
+          https_server_->GetURL("a.test", "/interest_group/decision_logic.js")),
+      rfh1));
+
+  ASSERT_NO_FATAL_FAILURE(RunAuctionAndNavigateFencedFrame(
+      ad_url2,
+      JsReplace(
+          R"({
+seller: $1,
+decisionLogicUrl: $2,
+interestGroupBuyers: [$1],
+auctionSignals: {x: 1},
+sellerSignals: {yet: 'more', info: 1},
+perBuyerSignals: {$1: {even: 'more', x: 4.5}}
+                  })",
+          test_origin,
+          https_server_->GetURL("a.test", "/interest_group/decision_logic.js")),
+      rfh2));
+
+  // InterestGroupAccessObserver should see the join, auction, and implicit
+  // leave. Note that the implicit leave for "trucks" does not succeed because
+  // leaveAdInterestGroup is not called from the Interest Group owner's frame.
+  ExpectAccessObserved(
+      {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "trucks"},
+       {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kBid, test_origin.Serialize(), "trucks"},
+       {InterestGroupTestObserver::kWin, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kLeave, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kBid, test_origin.Serialize(), "trucks"},
+       {InterestGroupTestObserver::kWin, test_origin.Serialize(), "trucks"}});
+
+  // The ad should have left the "cars" interest group when the page was shown.
+  auto groups = GetAllInterestGroups();
+  ASSERT_EQ(1u, groups.size());
+  EXPECT_EQ("trucks", groups[0].second);
+}
+
+// Runs ad auction with fenced frames enabled. The auction should succeed and
+// be loaded in a fenced frames. The displayed ad leaves the interest group
+// from a nested iframe.
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
+                       RunAdAuctionWithWinnerNestedLeaveGroup) {
+  URLLoaderMonitor url_loader_monitor;
+
+  GURL test_url =
+      https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+
+  AttachInterestGroupObserver();
+  GURL inner_url = https_server_->GetURL(
+      "a.test", "/fenced_frames/ad_that_leaves_interest_group.html");
+  GURL ad_url = https_server_->GetURL(
+      "b.test", "/fenced_frames/outer_inner_frame_as_param.html");
+  GURL::Replacements rep;
+  std::string query = "innerFrame=" + net::EscapeUrlEncodedData(
+                                          inner_url.spec(), /*use_plus=*/false);
+  rep.SetQueryStr(query);
+  ad_url = ad_url.ReplaceComponents(rep);
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
+      /*expiry=*/base::Time(),
+      /*owner=*/test_origin,
+      /*name=*/"cars",
+      /*priority=*/0.0,
+      /*bidding_url=*/
+      https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
+      /*bidding_wasm_helper_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
+      /*trusted_bidding_signals_url=*/
+      https_server_->GetURL("a.test",
+                            "/interest_group/trusted_bidding_signals.json"),
+      /*trusted_bidding_signals_keys=*/{{"key1"}},
+      /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
+      {{{ad_url, "{ad:'metadata', here:[1,2]}"}}},
+      /*ad_components=*/absl::nullopt)));
+
+  ASSERT_NO_FATAL_FAILURE(RunAuctionAndNavigateFencedFrame(
+      ad_url, JsReplace(
+                  R"({
+seller: $1,
+decisionLogicUrl: $2,
+interestGroupBuyers: [$1],
+auctionSignals: {x: 1},
+sellerSignals: {yet: 'more', info: 1},
+perBuyerSignals: {$1: {even: 'more', x: 4.5}}
+                  })",
+                  test_origin,
+                  https_server_->GetURL("a.test",
+                                        "/interest_group/decision_logic.js"))));
+
+  // InterestGroupAccessObserver should see the join, auction, and implicit
+  // leave.
+  ExpectAccessObserved(
+      {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kWin, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kLeave, test_origin.Serialize(), "cars"}});
+
+  // The ad should have left the interest group when the page was shown.
+  EXPECT_EQ(0u, GetAllInterestGroups().size());
+}
+
+// Creates a Fenced Frame and then tries to use the leaveAdInterestGroup API.
+// Leaving the interest group should silently fail.
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
+                       LeaveAdInterestGroupNoAuction) {
+  URLLoaderMonitor url_loader_monitor;
+
+  GURL test_url = https_server_->GetURL("a.test", "/fenced_frames/basic.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+
+  GURL ad_url = https_server_->GetURL(
+      "a.test", "/fenced_frames/ad_that_leaves_interest_group.html");
+  AttachInterestGroupObserver();
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
+      /*expiry=*/base::Time(),
+      /*owner=*/test_origin,
+      /*name=*/"cars",
+      /*priority=*/0.0,
+      /*bidding_url=*/
+      https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
+      /*bidding_wasm_helper_url=*/absl::nullopt,
+      /*daily_update_url=*/absl::nullopt,
+      /*trusted_bidding_signals_url=*/
+      https_server_->GetURL("a.test",
+                            "/interest_group/trusted_bidding_signals.json"),
+      /*trusted_bidding_signals_keys=*/{{"key1"}},
+      /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
+      {{{ad_url, "{ad:'metadata', here:[1,2]}"}}},
+      /*ad_components=*/absl::nullopt)));
+
+  // Navigate fenced frame with no ad.
+  ASSERT_NO_FATAL_FAILURE(NavigateFencedFrameAndWait(ad_url, ad_url, shell()));
+
+  // InterestGroupAccessObserver should see the join.
+  ExpectAccessObserved(
+      {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"}});
+
+  // The ad should not have left the interest group when the page was shown.
+  EXPECT_EQ(1u, GetAllInterestGroups().size());
 }
 
 // Use different origins for publisher, bidder, and seller, and make sure
@@ -2906,7 +3145,7 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, Iframe) {
       kTopFrameHost,
       base::StringPrintf(
           "/cross_site_iframe_factory.html?%s(%s)", kTopFrameHost,
-          https_server_->GetURL(kIframeHost, "/fenced_frames/basic.html")
+          https_server_->GetURL(kIframeHost, "/fenced_frames/opaque_ads.html")
               .spec()
               .c_str()));
   ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
@@ -3598,14 +3837,16 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithInvalidAdUrl) {
 // Test that when there are no ad components, an array of ad components is still
 // available, and they're all mapped to about:blank.
 IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, NoAdComponents) {
-  GURL test_url = https_server_->GetURL("a.test", "/fenced_frames/basic.html");
+  GURL test_url =
+      https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
   // Trying to retrieve the adAuctionComponents of the main frame should throw
   // an exception.
   EXPECT_FALSE(GetAdAuctionComponentsInJS(shell(), 1));
 
-  GURL ad_url = https_server_->GetURL("c.test", "/fenced_frames/nested.html");
+  GURL ad_url =
+      https_server_->GetURL("c.test", "/fenced_frames/opaque_ads.html");
   EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
       /*owner=*/url::Origin::Create(test_url),
       /*name=*/"cars",
@@ -3685,7 +3926,7 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, AdComponents) {
 IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        AdComponentsNotLeaked) {
   GURL ad_component_url =
-      https_server_->GetURL("d.test", "/fenced_frames/nested.html");
+      https_server_->GetURL("d.test", "/fenced_frames/opaque_ads.html");
   ASSERT_NO_FATAL_FAILURE(RunBasicAuctionWithAdComponents(ad_component_url));
 
   // The top frame should have no ad components.
@@ -3743,6 +3984,29 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
   EXPECT_FALSE(GetAdAuctionComponentsInJS(ad_frame, 1));
 }
 
+// Test with an ad component that tries to leave the group. Verify that leaving
+// the group from within an ad component has no effect
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, AdComponentsLeave) {
+  url::Origin test_origin =
+      url::Origin::Create(https_server_->GetURL("a.test", "/"));
+  GURL ad_component_url = https_server_->GetURL(
+      "d.test", "/fenced_frames/ad_that_leaves_interest_group.html");
+  AttachInterestGroupObserver();
+
+  ASSERT_NO_FATAL_FAILURE(RunBasicAuctionWithAdComponents(ad_component_url));
+
+  // InterestGroupAccessObserver should see the join and auction, but not the
+  // implicit leave since it was blocked.
+  ExpectAccessObserved(
+      {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
+       {InterestGroupTestObserver::kWin, test_origin.Serialize(), "cars"}});
+
+  // The ad shouldn't have left the interest group when the component ad was
+  // shown.
+  EXPECT_EQ(1u, GetAllInterestGroups().size());
+}
+
 // Test navigating multiple fenced frames to the same render URL from a single
 // auction, when the winning bid included ad components. All fenced frames
 // navigated to the URL should get ad component URLs from the winning bid.
@@ -3750,10 +4014,12 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                        AdComponentsMainAdLoadedInMultipleFrames) {
   GURL ad_component_url = https_server_->GetURL(
       "d.test", "/set-header?Supports-Loading-Mode: fenced-frame");
-  GURL test_url = https_server_->GetURL("a.test", "/fenced_frames/basic.html");
+  GURL test_url =
+      https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
-  GURL ad_url = https_server_->GetURL("c.test", "/fenced_frames/nested.html");
+  GURL ad_url =
+      https_server_->GetURL("c.test", "/fenced_frames/opaque_ads.html");
   EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
       /*owner=*/url::Origin::Create(test_url),
       /*name=*/"cars",
@@ -3785,10 +4051,11 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
   // original fenced frame, the next two use a new one that replaces the first.
   for (int i = 0; i < 4; ++i) {
     if (i == 2) {
-      EXPECT_TRUE(ExecJs(
-          shell(),
-          "document.querySelector('fencedframe').remove();"
-          "document.body.appendChild(document.createElement('fencedframe'));"));
+      EXPECT_TRUE(ExecJs(shell(),
+                         "document.querySelector('fencedframe').remove();"
+                         "const ff = document.createElement('fencedframe');"
+                         "ff.mode = 'opaque-ads';"
+                         "document.body.appendChild(ff);"));
     }
     ClearReceivedRequests();
     NavigateFencedFrameAndWait(urn_url, ad_url, shell());
@@ -3822,7 +4089,8 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
        "[3, {'4': 'five'}]"},
   };
 
-  GURL test_url = https_server_->GetURL("a.test", "/fenced_frames/basic.html");
+  GURL test_url =
+      https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
   // Register bidding script that validates interestGroup.adComponents and
@@ -3851,7 +4119,8 @@ return {
       https_server_->GetURL("a.test", "/generated_bidding_logic.js");
   network_responder_->RegisterBidderScript(bidding_url.path(), bidding_script);
 
-  GURL ad_url = https_server_->GetURL("c.test", "/fenced_frames/nested.html");
+  GURL ad_url =
+      https_server_->GetURL("c.test", "/fenced_frames/opaque_ads.html");
   EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
       /*owner=*/url::Origin::Create(test_url),
       /*name=*/"cars", /*priority=*/0.0, bidding_url,

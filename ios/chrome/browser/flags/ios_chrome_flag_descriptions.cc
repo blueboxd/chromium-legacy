@@ -443,11 +443,6 @@ const char kScreenTimeIntegrationName[] = "Enables ScreenTime Integration";
 const char kScreenTimeIntegrationDescription[] =
     "Enables integration with ScreenTime in iOS 14.0 and above.";
 
-const char kSearchHistoryLinkIOSName[] = "Enables Search History Link";
-const char kSearchHistoryLinkIOSDescription[] =
-    "Changes the Clear Browsing Data "
-    "UI to display a link to clear search history on My Google Activity.";
-
 const char kSendTabToSelfSigninPromoName[] = "Send tab to self sign-in promo";
 const char kSendTabToSelfSigninPromoDescription[] =
     "Enables a sign-in promo if the user attempts to share a tab while being "
@@ -512,6 +507,19 @@ const char kSyncTrustedVaultPassphraseRecoveryDescription[] =
     "trusted vault, including logic and APIs for improved account recovery "
     "flows.";
 
+const char kSyncInvalidationsName[] = "Use Sync standalone invalidations";
+const char kSyncInvalidationsDescription[] =
+    "If enabled, Sync will use standalone invalidations instead of topic based "
+    "invalidations (Wallet and Offer data types are enabled by a dedicated "
+    "flag).";
+
+const char kSyncInvalidationsWalletAndOfferName[] =
+    "Use Sync standalone invalidations for Wallet and Offer";
+const char kSyncInvalidationsWalletAndOfferDescription[] =
+    "If enabled, Sync will use standalone invalidations for Wallet and Offer "
+    "data types. Takes effect only when Sync standalone invalidations are "
+    "enabled.";
+
 const char kStartSurfaceName[] = "Start Surface";
 const char kStartSurfaceDescription[] =
     "Enable showing the Start Surface when launching Chrome via clicking the "
@@ -532,6 +540,12 @@ const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
+
+extern const char kUIViewWindowObservingName[] =
+    "Support KVO on UIView's window property.";
+extern const char kUIViewWindowObservingDescription[] =
+    "When enabled, all instances of UIView can be observed with KVO on thei "
+    "`window` property.";
 
 const char kUpdateHistoryEntryPointsInIncognitoName[] =
     "Update history entry points in Incognito.";

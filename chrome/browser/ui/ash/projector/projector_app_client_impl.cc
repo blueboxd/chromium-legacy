@@ -55,6 +55,9 @@ void ProjectorAppClientImpl::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(ash::prefs::kProjectorAllowByPolicy,
                                 /*default_value=*/false);
+  registry->RegisterBooleanPref(
+      ash::prefs::kProjectorDogfoodForFamilyLinkEnabled,
+      /*default_value=*/false);
 }
 
 ProjectorAppClientImpl::ProjectorAppClientImpl()
@@ -139,12 +142,6 @@ void ProjectorAppClientImpl::OnSodaInstallError() {
 void ProjectorAppClientImpl::OnSodaInstalled() {
   for (auto& observer : observers_)
     observer.OnSodaInstalled();
-}
-
-bool ProjectorAppClientImpl::IsSpeechRecognitionAvailable() {
-  return soda_installation_controller_ &&
-         soda_installation_controller_->IsSodaAvailable(
-             GetLocaleLanguageCode());
 }
 
 void ProjectorAppClientImpl::OpenFeedbackDialog() {

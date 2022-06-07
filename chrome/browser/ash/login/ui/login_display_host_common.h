@@ -44,6 +44,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // LoginDisplayHost:
   void BeforeSessionStart() final;
+  bool IsFinalizing() final;
   void Finalize(base::OnceClosure completion_callback) final;
   void FinalizeImmediately() final;
   KioskLaunchController* GetKioskLaunchController() final;
@@ -82,6 +83,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
       EncryptionMigrationMode migration_mode,
       base::OnceCallback<void(const UserContext&)> on_skip_migration) final;
   void ShowSigninError(SigninError error, const std::string& details) final;
+  void SAMLConfirmPassword(::login::StringList scraped_passwords,
+                           std::unique_ptr<UserContext> user_context) final;
   WizardContext* GetWizardContextForTesting() final;
 
   // BrowserListObserver:

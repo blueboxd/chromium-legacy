@@ -18,7 +18,7 @@ import './print_preview_vars_css.js';
 import './provisional_destination_resolver.js';
 import '../strings.m.js';
 import './throbber_css.js';
-import './destination_list_item.js';
+import './destination_list_item_cros.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -34,7 +34,7 @@ import {DestinationSearchBucket, MetricsContext} from '../metrics.js';
 import {NativeLayerImpl} from '../native_layer.js';
 
 import {getTemplate} from './destination_dialog_cros.html.js';
-import {PrintPreviewDestinationListItemElement} from './destination_list_item.js';
+import {PrintPreviewDestinationListItemElement} from './destination_list_item_cros.js';
 import {PrintPreviewSearchBoxElement} from './print_preview_search_box.js';
 import {PrintPreviewProvisionalDestinationResolverElement} from './provisional_destination_resolver.js';
 
@@ -207,7 +207,7 @@ export class PrintPreviewDestinationDialogCrosElement extends
     // Filter out the 'Save to Drive' option so it is not shown in the
     // list of available options.
     return this.destinationStore.destinations().filter(
-        destination => destination.id !== GooglePromotedDestinationId.DOCS &&
+        destination =>
             destination.id !== GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS);
   }
 

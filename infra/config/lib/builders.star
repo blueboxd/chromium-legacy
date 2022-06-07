@@ -65,33 +65,7 @@ os = struct(
     LINUX_TRUSTY = os_enum("Ubuntu-14.04", os_category.LINUX),
     LINUX_XENIAL = os_enum("Ubuntu-16.04", os_category.LINUX),
     LINUX_BIONIC = os_enum("Ubuntu-18.04", os_category.LINUX),
-    # xenial -> bionic migration
-    # * If a builder does not already explicitly set an os value, use
-    #   LINUX_BIONIC_REMOVE or LINUX_XENIAL_OR_BIONIC_REMOVE
-    # * If a builder explicitly sets LINUX_DEFAULT, use
-    #   LINUX_BIONIC_SWITCH_TO_DEFAULT or
-    #   LINUX_XENIAL_OR_BIONIC_SWITCH_TO_DEFAULT
-    #
-    # When the migration is complete, LINUX_DEFAULT can be switched to
-    # Ubunutu-18.04, all instances of LINUX_BIONIC_REMOVE can be removed and all
-    # instances of LINUX_BIONIC_SWITCH_TO_DEFAULT can be replaced with
-    # LINUX_DEFAULT, the only changes to the generated files should be
-    # Ubuntu-16.04|Ubuntu-18.04 -> Ubuntu-18.04
-    LINUX_DEFAULT = os_enum("Ubuntu-16.04", os_category.LINUX),
-    # 100% switch to bionic
-    LINUX_BIONIC_REMOVE = os_enum("Ubuntu-18.04", os_category.LINUX),
-    LINUX_BIONIC_SWITCH_TO_DEFAULT = os_enum("Ubuntu-18.04", os_category.LINUX),
-    # Staged switch to bionic: we can gradually shift the matching capacity
-    # towards bionic and the builder will continue to run on whatever is
-    # available
-    LINUX_XENIAL_OR_BIONIC_REMOVE = os_enum(
-        "Ubuntu-16.04|Ubuntu-18.04",
-        os_category.LINUX,
-    ),
-    LINUX_XENIAL_OR_BIONIC_SWITCH_TO_DEFAULT = os_enum(
-        "Ubuntu-16.04|Ubuntu-18.04",
-        os_category.LINUX,
-    ),
+    LINUX_DEFAULT = os_enum("Ubuntu-18.04", os_category.LINUX),
     MAC_10_12 = os_enum("Mac-10.12", os_category.MAC),
     MAC_10_13 = os_enum("Mac-10.13", os_category.MAC),
     MAC_10_14 = os_enum("Mac-10.14", os_category.MAC),
@@ -280,9 +254,10 @@ def _code_coverage_property(
 def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service, publish_trace, cache_silo, ensure_verified):
     reclient = {}
     instance = defaults.get_value("reclient_instance", instance)
-    if instance:
-        reclient["instance"] = instance
-        reclient["metrics_project"] = "chromium-reclient-metrics"
+    if not instance:
+        return None
+    reclient["instance"] = instance
+    reclient["metrics_project"] = "chromium-reclient-metrics"
     service = defaults.get_value("reclient_service", service)
     if service:
         reclient["service"] = service
@@ -553,18 +528,23 @@ def builder(
             instance for re-client to use.
         reclient_service: a string indicating the RBE service to dial via gRPC.
             By default, this is "remotebuildexecution.googleapis.com:443" (set
-            in the reclient recipe module).
+            in the reclient recipe module). Has no effect if reclient_instance
+            is not set.
         reclient_jobs: an integer indicating the number of concurrent
-            compilations to run when using re-client as the compiler.
+            compilations to run when using re-client as the compiler. Has no
+            effect if reclient_instance is not set.
         reclient_rewrapper_env: a map that sets the rewrapper flags via the
             environment variables. All such vars must start with the "RBE_"
-            prefix.
+            prefix. Has no effect if reclient_instance is not set.
         reclient_profiler_service: a string indicating service name for
-            re-client's cloud profiler.
-        reclient_publish_trace: If True, it publish trace by rpl2cloudtrace.
+            re-client's cloud profiler. Has no effect if reclient_instance is
+            not set.
+        reclient_publish_trace: If True, it publish trace by rpl2cloudtrace. Has
+            no effect if reclient_instance is not set.
         reclient_cache_silo: A string indicating a cache siling key to use for
-            remote caching.
-        reclient_ensure_verified: If True, it verifies build artifacts.
+            remote caching. Has no effect if reclient_instance is not set.
+        reclient_ensure_verified: If True, it verifies build artifacts. Has no
+            effect if reclient_instance is not set.
         **kwargs: Additional keyword arguments to forward on to `luci.builder`.
 
     Returns:
@@ -579,8 +559,8 @@ def builder(
 
     if builder_spec and mirrors:
         fail("Only one of builder_spec or mirrors can be set")
-    if try_settings and not mirrors:
-        fail("try_settings can only be set if mirrors is set")
+    if try_settings and not (builder_spec or mirrors):
+        fail("try_settings can only be set if builder_spec or mirrors is set")
 
     dimensions = {}
 

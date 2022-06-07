@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_MANAGER_IMPL_H_
 
+#include <stddef.h>
 #include <memory>
 #include <vector>
 
@@ -22,6 +23,7 @@
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_report_scheduler.h"
 #include "content/browser/attribution_reporting/attribution_report_sender.h"
+#include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -63,6 +65,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
   static std::unique_ptr<AttributionManagerImpl> CreateForTesting(
       const base::FilePath& user_data_directory,
+      size_t max_pending_events,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       std::unique_ptr<AttributionStorageDelegate> storage_delegate,
       std::unique_ptr<AttributionCookieChecker> cookie_checker,
@@ -113,6 +116,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   AttributionManagerImpl(
       StoragePartitionImpl* storage_partition,
       const base::FilePath& user_data_directory,
+      size_t max_pending_events,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       std::unique_ptr<AttributionStorageDelegate> storage_delegate,
       std::unique_ptr<AttributionCookieChecker> cookie_checker,
@@ -137,9 +141,6 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void PrepareToSendReport(AttributionReport report,
                            bool is_debug_report,
                            ReportSentCallback callback);
-  void SendReport(AttributionReport report,
-                  bool is_debug_report,
-                  ReportSentCallback callback);
   void OnReportSent(base::OnceClosure done,
                     AttributionReport report,
                     SendResult info);
@@ -154,6 +155,8 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       AggregationService::AssemblyStatus status);
   void MarkReportCompleted(AttributionReport::Id report_id);
 
+  void OnSourceStored(StorableSource source,
+                      AttributionStorage::StoreSourceResult result);
   void OnReportStored(AttributionTrigger trigger, CreateReportResult result);
 
   void MaybeSendDebugReport(AttributionReport&&);
@@ -181,6 +184,10 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   // requirement in the future so that there are conceptually separate queues
   // per <source origin, destination origin, reporting origin>.
   base::circular_deque<SourceOrTrigger> pending_events_;
+
+  // Controls the maximum size of `pending_events_` to avoid unbounded memory
+  // growth with adversarial input.
+  size_t max_pending_events_;
 
   base::SequenceBound<AttributionStorage> attribution_storage_;
 

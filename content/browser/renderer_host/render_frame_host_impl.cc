@@ -73,6 +73,7 @@
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/idle/idle_manager_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl.h"
+#include "content/browser/interest_group/ad_auction_document_data.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -6611,9 +6612,11 @@ void RenderFrameHostImpl::ShowContextMenu(
   ContextMenuParams validated_params(params);
   // Freshly constructed ContextMenuParams have empty `page_url` and `frame_url`
   // - populate them based on trustworthy, browser-side data.
-  validated_params.page_url = GetMainFrame()->GetLastCommittedURL();
-  if (GetParent())  // Only populate |frame_url| for subframes.
+  validated_params.page_url = GetOutermostMainFrame()->GetLastCommittedURL();
+  if (GetParentOrOuterDocument()) {
+    // Only populate |frame_url| for subframes and fencedframes.
     validated_params.frame_url = GetLastCommittedURL();
+  }
 
   // We don't validate |unfiltered_link_url| so that this field can be used
   // when users want to copy the original link URL.
@@ -6824,9 +6827,9 @@ void RenderFrameHostImpl::OpenURL(blink::mojom::OpenURLParamsPtr params) {
       GetProcess()->GetID(), params->initiator_origin, params->post_body,
       params->extra_headers, params->referrer.To<content::Referrer>(),
       params->disposition, params->should_replace_current_entry,
-      params->user_gesture, params->triggering_event_info,
-      params->href_translate, std::move(blob_url_loader_factory),
-      params->impression);
+      params->user_gesture, params->is_unfenced_top_navigation,
+      params->triggering_event_info, params->href_translate,
+      std::move(blob_url_loader_factory), params->impression);
 }
 
 void RenderFrameHostImpl::DidStopLoading() {
@@ -11135,6 +11138,12 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
           GetPage().fenced_frame_urls_map());
     }
 
+    if (navigation_request->ad_auction_data()) {
+      AdAuctionDocumentData::CreateForCurrentDocument(
+          this, navigation_request->ad_auction_data()->interest_group_owner,
+          navigation_request->ad_auction_data()->interest_group_name);
+    }
+
     // Continue observing the events for the committed navigation.
     for (auto& receiver : navigation_request->TakeCookieObservers()) {
       cookie_observers_.Add(this, std::move(receiver));
@@ -11150,11 +11159,14 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
     ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
 
-    // Associate the blink::Document source id to the URL. Only URLs on main
-    // frames can be recorded.
-    if (is_main_frame() && document_ukm_source_id != ukm::kInvalidSourceId)
+    // Associate the blink::Document source id to the URL. Only URLs on primary
+    // main frames can be recorded.
+    // TODO(crbug.com/1245014): For prerendering pages, record the source url
+    // after activation.
+    if (frame_tree_node()->GetFrameType() == FrameType::kPrimaryMainFrame &&
+        document_ukm_source_id != ukm::kInvalidSourceId) {
       ukm_recorder->UpdateSourceURL(document_ukm_source_id, params->url);
-
+    }
     RecordDocumentCreatedUkmEvent(params->origin, document_ukm_source_id,
                                   ukm_recorder);
   }
@@ -12872,6 +12884,10 @@ void RenderFrameHostImpl::EnableMojoJsBindingsWithBroker(
   // called before the WebUI object is created.
   DCHECK(GetWebUI());
   GetFrameBindingsControl()->EnableMojoJsBindingsWithBroker(std::move(broker));
+}
+
+bool RenderFrameHostImpl::IsOutermostMainFrame() const {
+  return !GetParentOrOuterDocument();
 }
 
 BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {

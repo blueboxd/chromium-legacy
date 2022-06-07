@@ -123,6 +123,8 @@ extern const char kWebBluetoothBondOnDemandDescription[];
 extern const char kEnableDrDcName[];
 extern const char kEnableDrDcDescription[];
 
+extern const char kEnableDrDcVulkanName[];
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 extern const char kWebFilterInterstitialRefreshName[];
 extern const char kWebFilterInterstitialRefreshDescription[];
@@ -208,6 +210,9 @@ extern const char kAutofillEnableUnmaskCardRequestSetInstrumentIdDescription[];
 
 extern const char kAutofillEnableUpdateVirtualCardEnrollmentName[];
 extern const char kAutofillEnableUpdateVirtualCardEnrollmentDescription[];
+
+extern const char kAutofillEnableVirtualCardFidoEnrollmentName[];
+extern const char kAutofillEnableVirtualCardFidoEnrollmentDescription[];
 
 extern const char kAutofillEnableVirtualCardName[];
 extern const char kAutofillEnableVirtualCardDescription[];
@@ -1014,6 +1019,9 @@ extern const char kOmniboxSiteSearchStarterPackDescription[];
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
+extern const char kOmniboxRetainSuggestionsWithHeadersName[];
+extern const char kOmniboxRetainSuggestionsWithHeadersDescription[];
+
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
@@ -1112,6 +1120,9 @@ extern const char kPasswordDomainCapabilitiesFetchingDescription[];
 extern const char kPasswordScriptsFetchingName[];
 extern const char kPasswordScriptsFetchingDescription[];
 
+extern const char kForceEnablePasswordDomainCapabilitiesName[];
+extern const char kForceEnablePasswordDomainCapabilitiesDescription[];
+
 extern const char kPdfOcrName[];
 extern const char kPdfOcrDescription[];
 
@@ -1168,9 +1179,6 @@ extern const char kOmniboxTriggerForPrerender2Description[];
 
 extern const char kSupportSearchSuggestionForPrerender2Name[];
 extern const char kSupportSearchSuggestionForPrerender2Description[];
-
-extern const char kPrivacyAdvisorName[];
-extern const char kPrivacyAdvisorDescription[];
 
 extern const char kPrivacyGuideName[];
 extern const char kPrivacyGuideDescription[];
@@ -1332,9 +1340,6 @@ extern const char kSplitCacheByNetworkIsolationKeyDescription[];
 extern const char kStoragePressureEventName[];
 extern const char kStoragePressureEventDescription[];
 
-extern const char kStoreHoursAndroidName[];
-extern const char kStoreHoursAndroidDescription[];
-
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
 
@@ -1361,6 +1366,12 @@ extern const char kSyncTrustedVaultPassphrasePromoDescription[];
 
 extern const char kSyncTrustedVaultPassphraseRecoveryName[];
 extern const char kSyncTrustedVaultPassphraseRecoveryDescription[];
+
+extern const char kSyncInvalidationsName[];
+extern const char kSyncInvalidationsDescription[];
+
+extern const char kSyncInvalidationsWalletAndOfferName[];
+extern const char kSyncInvalidationsWalletAndOfferDescription[];
 
 extern const char kSystemProxyForSystemServicesName[];
 extern const char kSystemProxyForSystemServicesDescription[];
@@ -2061,6 +2072,9 @@ extern const char kWebNotesDynamicTemplatesDescription[];
 extern const char kOmniboxPedalsAndroidBatch1Name[];
 extern const char kOmniboxPedalsAndroidBatch1Description[];
 
+extern const char kPasswordEditDialogWithDetailsName[];
+extern const char kPasswordEditDialogWithDetailsDescription[];
+
 // Non-Android ----------------------------------------------------------------
 
 #else  // !BUILDFLAG(IS_ANDROID)
@@ -2287,7 +2301,7 @@ extern const char kUseAngleGL[];
 
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
-// Chrome OS ------------------------------------------------------------------
+// ChromeOS -------------------------------------------------------------------
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -2488,6 +2502,9 @@ extern const char kCrostiniVirtualKeyboardSupportDescription[];
 
 extern const char kBruschettaName[];
 extern const char kBruschettaDescription[];
+
+extern const char kCompactBubbleLauncherName[];
+extern const char kCompactBubbleLauncherDescription[];
 
 extern const char kCryptAuthV2DedupDeviceLastActivityTimeName[];
 extern const char kCryptAuthV2DedupDeviceLastActivityTimeDescription[];
@@ -2998,6 +3015,9 @@ extern const char kShowTouchHudDescription[];
 extern const char kSimLockPolicyName[];
 extern const char kSimLockPolicyDescription[];
 
+extern const char kSmartLockSignInRemovedName[];
+extern const char kSmartLockSignInRemovedDescription[];
+
 extern const char kSmartLockUIRevampName[];
 extern const char kSmartLockUIRevampDescription[];
 
@@ -3034,11 +3054,8 @@ extern const char kTetherDescription[];
 extern const char kTouchscreenCalibrationName[];
 extern const char kTouchscreenCalibrationDescription[];
 
-extern const char kTrafficCountersHandlerEnabledName[];
-extern const char kTrafficCountersHandlerEnabledDescription[];
-
-extern const char kTrafficCountersSettingsUiName[];
-extern const char kTrafficCountersSettingsUiDescription[];
+extern const char kTrafficCountersEnabledName[];
+extern const char kTrafficCountersEnabledDescription[];
 
 extern const char kUiDevToolsName[];
 extern const char kUiDevToolsDescription[];
@@ -3272,6 +3289,11 @@ extern const char kForcePasswordInitialSyncWhenDecryptionFailsDescription[];
 extern const char kSkipUndecryptablePasswordsName[];
 extern const char kSkipUndecryptablePasswordsDescription[];
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_MAC)
+extern const char kForce60HzName[];
+extern const char kForce60HzDescription[];
+#endif  // BUILDFLAG(IS_MAC)
 
 // Feature flags --------------------------------------------------------------
 

@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -245,15 +244,7 @@ class MODULES_EXPORT RTCPeerConnection final
   MediaStream* getRemoteStreamById(const String&) const;
   bool IsRemoteStream(MediaStream* stream) const;
 
-  void addStream(ScriptState*,
-                 MediaStream*,
-                 const ScriptValue& media_constraints,
-                 ExceptionState&);
   void addStream(ScriptState*, MediaStream*, ExceptionState&);
-  void AddStream(ScriptState*,
-                 MediaStream*,
-                 const Dictionary& media_constraints,
-                 ExceptionState&);
 
   void removeStream(MediaStream*, ExceptionState&);
 

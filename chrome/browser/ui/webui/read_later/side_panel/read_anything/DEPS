@@ -1,8 +1,0 @@
-specific_include_rules = {
-  "read_anything_container_view.cc": [
-    "+chrome/browser/ui/views",
-  ],
-  "read_anything_container_view.h": [
-    "+chrome/browser/ui/views",
-  ],
-}

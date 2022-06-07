@@ -30,11 +30,13 @@
 <translation id="1146678959555564648">VRஐ உள்ளிடு</translation>
 <translation id="114825011539563458">மிக முக்கியமான தனியுரிமை &amp; பாதுகாப்புக் கட்டுப்பாடுகள் - ஒரே இடத்தில்</translation>
 <translation id="1149401351239820326">காலாவதியாகும் மாதம்</translation>
+<translation id="1150263420752757504"><ph name="APP_NAME" /> Chromeமில் திறக்கப்படும். தொடர்வதன் மூலம் <ph name="BEGIN_LINK1" />Google சேவை விதிமுறைகள்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Google Chrome &amp; ChromeOS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_LINK2" /> ஆகியவற்றை ஏற்கிறீர்கள்.</translation>
 <translation id="1154704303112745282">பக்கம் ஆஃப்லைனில் கிடைக்கவில்லை: <ph name="VIOLATED_URL" /></translation>
 <translation id="1171770572613082465">"பிரபலமானவை" பட்டனைத் தட்டி பிரபல இணையதளங்களைப் பாருங்கள்</translation>
 <translation id="1173894706177603556">மறுபெயரிடு</translation>
 <translation id="1177863135347784049">பிரத்தியேகம்</translation>
 <translation id="1181037720776840403">அகற்று</translation>
+<translation id="1193729455103054076">வலிமையான கடவுச்சொல்லைப் பயன்படுத்தவா?</translation>
 <translation id="1197267115302279827">புத்தகக்குறிகளை நகர்த்து</translation>
 <translation id="1201402288615127009">அடுத்து</translation>
 <translation id="1202892408424955784">கண்காணிக்கப்படும் தயாரிப்புகள்</translation>
@@ -89,6 +91,7 @@
 <translation id="1409879593029778104">ஃபைல் ஏற்கனவே இருப்பதால் <ph name="FILE_NAME" /> இன் பதிவிறக்கம் தடுக்கப்பட்டது.</translation>
 <translation id="1414981605391750300">Googleஐத் தொடர்புகொள்கிறது. இதற்குச் சில வினாடிகள் ஆகலாம்…</translation>
 <translation id="1416550906796893042">ஆப்ஸின் பதிப்பு</translation>
+<translation id="1428770807407000502">ஒத்திசைவை முடக்கவா?</translation>
 <translation id="1430915738399379752">அச்சிடுக</translation>
 <translation id="1436784010935106834">அகற்றப்பட்டது</translation>
 <translation id="1448440926884431741">நீங்கள் கண்காணிக்கும் தயாரிப்புகளை Bookmarksஸில் ஒழுங்கமைக்கலாம்</translation>
@@ -146,7 +149,6 @@
 <translation id="1779766957982586368">சாளரத்தை மூடுக</translation>
 <translation id="1791662854739702043">நிறுவப்பட்டது</translation>
 <translation id="1792959175193046959">எப்போது வேண்டுமானாலும் இயல்புப் பதிவிறக்க இடத்தை மாற்றலாம்</translation>
-<translation id="1795251344124198516">Chrome &amp; Chrome OS தொடர்பான கூடுதல் சேவை விதிமுறைகள்</translation>
 <translation id="1807246157184219062">வெளிச்சம்</translation>
 <translation id="1810845389119482123">ஒத்திசைவின் முதற்கட்ட அமைவு நிறைவடையவில்லை</translation>
 <translation id="1829244130665387512">இந்தப் பக்கத்தில் தேடு</translation>
@@ -183,7 +185,6 @@
 <translation id="2000419248597011803">முகவரிப் பட்டியிலிருந்தும், தேடல் பெட்டியிலிருந்தும் சில குக்கீகளையும் தேடல்களையும் உங்கள் இயல்புத் தேடல் இன்ஜினுக்கு அனுப்பும்</translation>
 <translation id="200114059308480249">சுற்றியுள்ள வார்த்தைகளையும் Google தேடல்களில் சேர்க்கவா?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ஃபைல்}other{# ஃபைல்கள் }}</translation>
-<translation id="2015836039326522978"><ph name="APP_NAME" /> ஆப்ஸ் Chromeமில் திறக்கப்படும். தொடர்வதன் மூலம் <ph name="BEGIN_LINK1" />Google சேவை விதிமுறைகள்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Google Chrome &amp; Chrome OS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_LINK2" /> ஆகியவற்றை ஏற்கிறீர்கள். <ph name="BEGIN_LINK3" />தனியுரிமைக் கொள்கையையும்<ph name="END_LINK3" /> ஏற்கிறீர்கள்.</translation>
 <translation id="2020309681647789787">ஒத்திசைக்கப்பட்டுள்ள சாதனங்கள் அனைத்திலும் உங்கள் தேடல் விவரங்கள் சேமிக்கப்படுவதால் விட்ட இடத்திலிருந்து செயல்பாட்டைத் தொடரலாம்</translation>
 <translation id="2021896219286479412">முழுத் திரை தளக் கட்டுப்பாடுகள்</translation>
 <translation id="2038563949887743358">டெஸ்க்டாப் தளத்திற்கான கோரிக்கையை இயக்கு</translation>
@@ -208,6 +209,7 @@
 <translation id="2126426811489709554">Chromeஇல் இயங்குகிறது</translation>
 <translation id="2132122640199389833">இணைக்கப்பட்டுள்ள சாதனங்கள் அனைத்தையும் அகற்று</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> மூடப்பட்டது</translation>
+<translation id="2134927169889348449">Chromeமைப் பயன்படுத்துவதன் மூலம் <ph name="BEGIN_TOS_LINK" />Google சேவை விதிமுறைகள்<ph name="END_TOS_LINK" />, <ph name="BEGIN_ATOS_LINK" />Google Chrome &amp; ChromeOS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_ATOS_LINK" /> ஆகியவற்றை ஏற்கிறீர்கள்.</translation>
 <translation id="2139186145475833000">முகப்புத் திரையில் சேர்</translation>
 <translation id="2141396931810938595">உங்கள் உபயோகத்தின் அடிப்படையில்</translation>
 <translation id="214888715418183969">Chromeமுடன் எதையெல்லாம் பகிரலாம் என்பதைத் தேர்வுசெய்யுங்கள். Chromeமின் அம்சங்கள், செயல்திறன், நிலைப்புத்தன்மை ஆகியவற்றை மேம்படுத்த இந்த அளவீடுகள் பயன்படுத்தப்படும்.</translation>
@@ -392,6 +394,7 @@
 <translation id="3062802207422175757">உங்களுக்குப் பிடித்த கட்டுரைகளை Chromeமில் படிக்கலாம்</translation>
 <translation id="3066573403916685335">கீழே நகர்த்து</translation>
 <translation id="3070005020161560471">தானாக மொழிபெயர்க்க வேண்டியவை</translation>
+<translation id="3072980200212375806"><ph name="APP_NAME" /> Chromeமில் திறக்கப்படும். தொடர்வதன் மூலம் <ph name="BEGIN_LINK1" />Google சேவை விதிமுறைகள்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Google Chrome &amp; ChromeOS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_LINK2" /> ஆகியவற்றை ஏற்கிறீர்கள். <ph name="BEGIN_LINK3" />தனியுரிமைக் கொள்கையையும்<ph name="END_LINK3" /> ஏற்கிறீர்கள்.</translation>
 <translation id="3091010850649238832">கிளிப்போர்டில் உள்ளவற்றைக் காட்டும்</translation>
 <translation id="3098745985164956033">உங்களுக்கான விளக்கங்களை மேம்படுத்த, படங்கள் Googleளுக்கு அனுப்பப்படும்</translation>
 <translation id="3114507951000454849">இன்றைய செய்திகளைப் படியுங்கள் <ph name="NEWS_ICON" /></translation>
@@ -460,7 +463,6 @@
 <translation id="3493531032208478708">பரிந்துரைக்கப்படும் உள்ளடக்கம் பற்றி <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="3495219333887281978">உள்நுழைவதற்கான கீழ்ப்புறச் சீட்டு பாதித் திரையில் திறக்கப்பட்டுள்ளது.</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
-<translation id="3502647154914451322">Chromeமைப் பயன்படுத்துவதன் மூலம் <ph name="BEGIN_TOS_LINK" />Google சேவை விதிமுறைகள்<ph name="END_TOS_LINK" />, <ph name="BEGIN_ATOS_LINK" />Google Chrome மற்றும் Chrome OS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_ATOS_LINK" /> ஆகியவற்றை ஏற்கிறீர்கள்.</translation>
 <translation id="3507132249039706973">நிலையான பாதுகாப்பு இயக்கப்பட்டுள்ளது</translation>
 <translation id="3509330069915219067">ஆஃப்லைன். Chrome உலாவியால் புதுப்பிப்புகள் உள்ளனவா எனப் பார்க்க முடியவில்லை.</translation>
 <translation id="3513704683820682405">ஆக்மென்ட்டட் ரியாலிட்டி</translation>
@@ -584,9 +586,11 @@
 <translation id="4269820728363426813">இணைப்பு முகவரியை நகலெடு</translation>
 <translation id="4290281343757112331">பின்னர் பதிவிறக்கவா?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android அமைப்புகளில் திரைப் பூட்டு அம்சத்தை இயக்கவும்<ph name="END_LINK" /></translation>
+<translation id="4293476595220860475">Chromeமைப் பயன்படுத்துவதன் மூலம் <ph name="BEGIN_TOS_LINK" />Google சேவை விதிமுறைகள்<ph name="END_TOS_LINK" />, <ph name="BEGIN_ATOS_LINK" />Google Chrome &amp; ChromeOS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_ATOS_LINK" /> ஆகியவற்றை ஏற்கிறீர்கள். <ph name="BEGIN_PRIVACY_LINK" />தனியுரிமைக் கொள்கையையும்<ph name="END_PRIVACY_LINK" /> ஏற்கிறீர்கள்.</translation>
 <translation id="4296252229500326964">புதிய மறைநிலைத் தாவல்</translation>
 <translation id="4298388696830689168">இணைக்கப்பட்டுள்ள தளங்கள்</translation>
 <translation id="4303044213806199882">chrome_ஸ்கிரீன்ஷாட்_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
+<translation id="4304713468139749426">கடவுச்சொல் நிர்வாகி</translation>
 <translation id="4307992518367153382">அடிப்படைகள்</translation>
 <translation id="4320177379694898372">இணைய இணைப்பு இல்லை</translation>
 <translation id="4321739720395210191">கேமராவைத் திறக்க முடியவில்லை. சாதனத்தை மீண்டும் தொடங்கி மறுபடியும் முயலவும்.</translation>
@@ -955,7 +959,6 @@
 <translation id="6345878117466430440">படித்ததாகக் குறி</translation>
 <translation id="6363990818884053551">ஒத்திசைவைத் தொடங்க, இது நீங்கள்தான் என உறுதிசெய்யவும்</translation>
 <translation id="6364438453358674297">வரலாற்றிலிருந்து பரிந்துரையை அகற்றவா?</translation>
-<translation id="6379829913050047669"><ph name="APP_NAME" /> Chromeமில் திறக்கும். தொடர்வதன் மூலம் <ph name="BEGIN_LINK1" />Google சேவை விதிமுறைகளையும்<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />Google Chrome மற்றும் Chrome OS தொடர்பான கூடுதல் சேவை விதிமுறைகளையும்<ph name="END_LINK2" /> ஏற்கிறீர்கள்.</translation>
 <translation id="6380100320871303656">நீங்கள் பார்வையிடக்கூடும் என Chrome கணிக்கும் பக்கங்களைப் பெரும்பாலும் முன்கூட்டியே ஏற்றும். இந்த அமைப்பின் காரணமாக டேட்டா உபயோகம் அதிகரிக்கக்கூடும்.</translation>
 <translation id="6385407407546870227">பரிசோதனைக் காலம் செயலில் இருக்கும்போது, மோசடி அபாயங்களுக்கு எதிராகச் செயல்படவும் ரோபோக்களுக்கும் நபர்களுக்கும் இடையே உள்ள வித்தியாசத்தைக் கண்டறியவும் தளங்களுக்கு உதவ, ‘ஸ்பேம் &amp; மோசடி குறைப்பு’ அம்சம் டிரஸ்ட் டோக்கன்களைச் சார்ந்துள்ளது.
 
@@ -1029,7 +1032,7 @@
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 மற்றும் <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> தொடர்பு}other{<ph name="CONTACT_PREVIEW" />\u2026 மற்றும் <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> தொடர்புகள்}}</translation>
 <translation id="6649642165559792194">மாதிரிக்காட்சி <ph name="BEGIN_NEW" />புதிது<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">கடவுச்சொல்</translation>
-<translation id="6659594942844771486">தாவல்</translation>
+<translation id="6659594942844771486">உலாவிப் பக்கம்</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> இல் திற</translation>
 <translation id="6671495933530132209">படத்தை நகலெடு</translation>
 <translation id="6674044799624355221">புதிய அச்சுறுத்தல்களைக் கண்டறிய உதவும் வகையில் பக்கங்கள், பதிவிறக்கங்கள், நீட்டிப்புச் செயல்பாடு, சிஸ்டம் தகவல் போன்ற சிலவற்றை அனுப்பும்</translation>
@@ -1049,6 +1052,7 @@
 <translation id="6767294960381293877">தாவலைப் பகிர்வதற்கான சாதனங்களின் பட்டியல் திரையின் பாதி அளவிற்குத் திறக்கப்பட்டுள்ளது.</translation>
 <translation id="6770602306803890733">உங்களுக்கும் வலையைப் பயன்படுபடுத்துகின்ற அனைவருக்குமான பாதுகாப்பையும் மேம்படுத்தும்</translation>
 <translation id="6783942555455976443">இதைப் பின்னர் பார்ப்பதற்குச் சேமித்து அதற்கான நினைவூட்டலைப் பெறலாம்</translation>
+<translation id="6785476624617658922">Chrome &amp; ChromeOS தொடர்பான கூடுதல் சேவை விதிமுறைகள்</translation>
 <translation id="6795633245022906657">புதிய தாவலை உடனடியாகத் திறக்கலாம். இந்த ஷார்ட்கட்டை மாற்ற அமைப்புகளுக்குச் செல்லவும்.</translation>
 <translation id="6802555630140434547">சாளரம் மூடப்படும்</translation>
 <translation id="6811034713472274749">பக்கத்தைப் பார்க்கலாம்</translation>
@@ -1125,7 +1129,6 @@
 <translation id="7208109991155904980">உணர்வு வெளிப்பாடு நகர்த்தப்பட்டது</translation>
 <translation id="7222235798733126207">தளங்களுக்கிடையே குறைவான பகிர்வு</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{ஒரு பதிவிறக்கம் நிலுவையில் உள்ளது}other{# பதிவிறக்கங்கள் நிலுவையில் உள்ளன}}</translation>
-<translation id="7237045078887540010">Chromeமைப் பயன்படுத்துவதன் மூலம் <ph name="BEGIN_TOS_LINK" />Google சேவை விதிமுறைகள்<ph name="END_TOS_LINK" />, <ph name="BEGIN_ATOS_LINK" />Google Chrome &amp; Chrome OS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_ATOS_LINK" /> ஆகியவற்றை ஏற்கிறீர்கள். மேலும், <ph name="BEGIN_PRIVACY_LINK" />தனியுரிமைக் கொள்கையையும்<ph name="END_PRIVACY_LINK" /> ஏற்கிறீர்கள்.</translation>
 <translation id="7242755609445462077">மெருகூட்டப்பட்ட ஹைலைட் <ph name="CURRENT_DATE" /></translation>
 <translation id="7248069434667874558">Chromeமில் <ph name="TARGET_DEVICE_NAME" /> சாதன ஒத்திசைவு ஆன் செய்யப்பட்டுள்ளதை உறுதி செய்யவும்</translation>
 <translation id="7252076891734325316">கம்யூட்டருக்கு அருகில் உங்கள் மொபைலை வைக்கவும்</translation>

@@ -43,6 +43,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/data_saver/data_saver.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/device_api/device_service_impl.h"
@@ -2512,7 +2513,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   ThreadProfilerConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
       command_line);
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(https://crbug.com/1316129): Re-enable for Lacros.
   // Processes may only query perf_event_open with the BPF sandbox disabled.
   if (browser_command_line.HasSwitch(switches::kEnableThreadInstructionCount) &&
       command_line->HasSwitch(sandbox::policy::switches::kNoSandbox)) {
@@ -2560,9 +2562,7 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
   if (!browser_context || browser_context->IsOffTheRecord())
     return false;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  return profile && data_reduction_proxy::DataReductionProxySettings::
-                        IsDataSaverEnabledByUser(profile->IsOffTheRecord());
+  return data_saver::IsDataSaverEnabled(browser_context);
 }
 
 void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
@@ -4636,6 +4636,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       static_cast<ChromeNavigationUIData*>(navigation_ui_data);
 
   url_param_filter::UrlParamFilterThrottle::MaybeCreateThrottle(
+      profile->GetPrefs()->GetBoolean(
+          policy::policy_prefs::kUrlParamFilterEnabled),
       wc_getter.Run(), request, &result);
 
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
@@ -6136,7 +6138,7 @@ void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   enterprise_connectors::ContentAnalysisDelegate::Data dialog_data;
   if (enterprise_connectors::ContentAnalysisDelegate::IsEnabled(
-          profile, url, &dialog_data,
+          profile, web_contents->GetLastCommittedURL(), &dialog_data,
           enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY)) {
     dialog_data.text.push_back(data);
     enterprise_connectors::ContentAnalysisDelegate::CreateForWebContents(

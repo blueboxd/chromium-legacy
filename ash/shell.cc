@@ -76,6 +76,7 @@
 #include "ash/login_status.h"
 #include "ash/marker/marker_controller.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/metrics/feature_discovery_duration_reporter_impl.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
@@ -571,6 +572,9 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
       locale_update_controller_(std::make_unique<LocaleUpdateControllerImpl>()),
       parent_access_controller_(std::make_unique<ParentAccessControllerImpl>()),
       session_controller_(std::make_unique<SessionControllerImpl>()),
+      feature_discover_reporter_(
+          std::make_unique<FeatureDiscoveryDurationReporterImpl>(
+              session_controller_.get())),
       shell_delegate_(std::move(shell_delegate)),
       shutdown_controller_(std::make_unique<ShutdownControllerImpl>()),
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
@@ -816,6 +820,9 @@ Shell::~Shell() {
   ScreenAsh::CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
+  // Needs to be destructed before `ime_controler_`.
+  rgb_keyboard_manager_.reset();
+
   // These members access Shell in their destructors.
   wallpaper_controller_.reset();
   accessibility_controller_.reset();
@@ -929,8 +936,6 @@ Shell::~Shell() {
 
   usb_peripheral_notification_controller_.reset();
 
-  rgb_keyboard_manager_.reset();
-
   message_center_ash_impl_.reset();
 
   // Destroys the MessageCenter singleton, so must happen late.
@@ -1009,7 +1014,8 @@ void Shell::Init(
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
   if (::features::IsRgbKeyboardEnabled()) {
-    rgb_keyboard_manager_ = std::make_unique<RgbKeyboardManager>();
+    rgb_keyboard_manager_ =
+        std::make_unique<RgbKeyboardManager>(ime_controller_.get());
   }
 
   // Observes the tablet mode controller if any hps feature is enabled.

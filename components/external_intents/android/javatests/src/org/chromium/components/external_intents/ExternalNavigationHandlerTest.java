@@ -47,6 +47,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.MaxAndroidSdkLevel;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.IntentToAutofillAllowingAppResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingAsyncActionType;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -413,11 +414,13 @@ public class ExternalNavigationHandlerTest {
         // the URL results in a redirect.
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(PageTransition.TYPED)
+                .withIsRendererInitiated(false)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
 
         // http://crbug.com/162106 - Don't show the picker on reload.
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(PageTransition.RELOAD)
+                .withIsRendererInitiated(false)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
     }
 
@@ -491,6 +494,7 @@ public class ExternalNavigationHandlerTest {
         // http://crbug.com/169549
         checkUrl("market://1234")
                 .withPageTransition(PageTransition.TYPED)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -498,6 +502,7 @@ public class ExternalNavigationHandlerTest {
         // http://crbug.com/709217
         checkUrl("market://1234")
                 .withPageTransition(PageTransition.FROM_ADDRESS_BAR)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -505,6 +510,7 @@ public class ExternalNavigationHandlerTest {
         // http://crbug.com/143118
         checkUrl("market://1234")
                 .withPageTransition(PageTransition.TYPED)
+                .withIsRendererInitiated(false)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
     }
 
@@ -517,11 +523,13 @@ public class ExternalNavigationHandlerTest {
         // http://crbug.com/149218
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRendererInitiated(false)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
 
         // http://crbug.com/170925
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -530,6 +538,7 @@ public class ExternalNavigationHandlerTest {
         mDelegate.setIsChromeAppInForeground(false);
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withChromeAppInForegroundRequired(true)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -547,6 +556,7 @@ public class ExternalNavigationHandlerTest {
         // http://crbug.com/1310795
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withChromeAppInForegroundRequired(true)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
@@ -610,6 +620,7 @@ public class ExternalNavigationHandlerTest {
                 OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
         checkUrl(mobileUrl)
                 .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
     }
@@ -633,6 +644,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0, false);
         checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
@@ -644,6 +656,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0, false);
         checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -656,6 +669,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0, false);
         checkUrl("intent://myownurl")
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -679,6 +693,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0, false);
         checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
@@ -690,6 +705,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0, false);
         checkUrl("market://1234")
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -712,6 +728,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0, false);
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
 
@@ -724,6 +741,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0, false);
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
@@ -738,6 +756,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0, false);
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -751,6 +770,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0, false);
         checkUrl(YOUTUBE_URL)
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
@@ -789,6 +809,7 @@ public class ExternalNavigationHandlerTest {
         mDelegate.setCanHandleWithInstantApp(true);
         checkUrl("http://instantappenabled.com")
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
@@ -850,6 +871,7 @@ public class ExternalNavigationHandlerTest {
         mDelegate.setCanHandleWithInstantApp(true);
         checkUrl("http://goo.gl/1234")
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
@@ -858,6 +880,7 @@ public class ExternalNavigationHandlerTest {
         mDelegate.setCanHandleWithInstantApp(false);
         checkUrl("http://goo.gl/1234")
                 .withPageTransition(transTypeLinkFromIntent)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
@@ -1364,11 +1387,11 @@ public class ExternalNavigationHandlerTest {
         mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME));
 
         RedirectHandler redirectHandler = RedirectHandler.create();
-        redirectHandler.updateNewUrlLoading(PageTransition.AUTO_SUBFRAME, true, true, 0, 0, false);
+        redirectHandler.updateNewUrlLoading(PageTransition.AUTO_SUBFRAME, true, false, 0, 0, false);
 
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withIsMainFrame(false)
-                .withHasUserGesture(true)
+                .withHasUserGesture(false)
                 .withRedirectHandler(redirectHandler)
                 .withPageTransition(PageTransition.AUTO_SUBFRAME)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -1453,6 +1476,7 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0, false);
         checkUrl("http://goo.gl/abcdefg")
                 .withPageTransition(PageTransition.TYPED)
+                .withIsRendererInitiated(false)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
 
@@ -1513,12 +1537,14 @@ public class ExternalNavigationHandlerTest {
         redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0, false);
         checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(PageTransition.TYPED)
+                .withIsRendererInitiated(false)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
 
         redirectHandler.updateNewUrlLoading(PageTransition.TYPED, true, false, 0, 0, false);
         checkUrl(YOUTUBE_MOBILE_URL)
                 .withPageTransition(PageTransition.TYPED)
+                .withIsRendererInitiated(false)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
@@ -1581,6 +1607,8 @@ public class ExternalNavigationHandlerTest {
         ExternalNavigationParams params =
                 new ExternalNavigationParams.Builder(new GURL(YOUTUBE_MOBILE_URL), false)
                         .setOpenInNewTab(true)
+                        .setIsMainFrame(true)
+                        .setIsRendererInitiated(true)
                         .build();
         OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
         Assert.assertEquals(
@@ -1808,6 +1836,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SuppressLint("SdCardPath")
     @SmallTest
+    @MaxAndroidSdkLevel(Build.VERSION_CODES.S)
     public void testFileAccess() {
         String fileUrl = "file:///sdcard/Downloads/test.html";
 
@@ -1816,15 +1845,18 @@ public class ExternalNavigationHandlerTest {
         checkUrl(fileUrl).expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
         checkUrl(fileUrl)
                 .withPageTransition(PageTransition.RELOAD)
+                .withIsRendererInitiated(false)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
         checkUrl(fileUrl)
                 .withPageTransition(PageTransition.AUTO_TOPLEVEL)
+                .withIsRendererInitiated(false)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
 
         mUrlHandler.mShouldRequestFileAccess = true;
         // Verify that the file intent action is triggered if file access is not allowed.
         checkUrl(fileUrl)
                 .withPageTransition(PageTransition.AUTO_TOPLEVEL)
+                .withIsRendererInitiated(false)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION,
                         OverrideUrlLoadingAsyncActionType.UI_GATING_BROWSER_NAVIGATION, START_FILE);
     }
@@ -1956,6 +1988,7 @@ public class ExternalNavigationHandlerTest {
         int transitionTypeIncomingIntent = PageTransition.LINK | PageTransition.FROM_API;
         checkUrl(WEBAPK_SCOPE)
                 .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRendererInitiated(false)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
     }
 
@@ -1971,6 +2004,7 @@ public class ExternalNavigationHandlerTest {
         int transitionTypeIncomingIntent = PageTransition.LINK | PageTransition.FROM_API;
         checkUrl(WEBAPK_SCOPE)
                 .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRendererInitiated(false)
                 .expecting(
                         OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
     }
@@ -2412,6 +2446,23 @@ public class ExternalNavigationHandlerTest {
         checkUrl(YOUTUBE_URL).expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
     }
 
+    @Test
+    @SmallTest
+    public void testEmbedderInitiatedNavigationsLeaveBrowser() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
+        checkUrl(YOUTUBE_URL)
+                .withIsRendererInitiated(false)
+                .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+
+        mDelegate.setShouldEmbedderInitiatedNavigationsStayInBrowser(false);
+
+        checkUrl(YOUTUBE_URL)
+                .withIsRendererInitiated(false)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
     private static List<ResolveInfo> makeResolveInfos(ResolveInfo... infos) {
         return Arrays.asList(infos);
     }
@@ -2794,6 +2845,11 @@ public class ExternalNavigationHandlerTest {
             return mShouldAvoidDisambiguationDialog;
         }
 
+        @Override
+        public boolean shouldEmbedderInitiatedNavigationsStayInBrowser() {
+            return mShouldEmbedderInitiatedNavigationsStayInBrowser;
+        }
+
         public void reset() {
             startIncognitoIntentCalled = false;
         }
@@ -2879,6 +2935,10 @@ public class ExternalNavigationHandlerTest {
             mWillResolveToDisambiguationDialog = value;
         }
 
+        public void setShouldEmbedderInitiatedNavigationsStayInBrowser(boolean value) {
+            mShouldEmbedderInitiatedNavigationsStayInBrowser = value;
+        }
+
         public boolean startIncognitoIntentCalled;
         public boolean maybeSetRequestMetadataCalled;
         public Callback<Boolean> incognitoDialogUserDecisionCallback;
@@ -2903,6 +2963,7 @@ public class ExternalNavigationHandlerTest {
         private boolean mShouldAvoidDisambiguationDialog;
         private boolean mWillResolveToDisambiguationDialog;
         private Context mContext;
+        private boolean mShouldEmbedderInitiatedNavigationsStayInBrowser = true;
     }
 
     private void checkIntentSanity(Intent intent, String name) {
@@ -2928,7 +2989,7 @@ public class ExternalNavigationHandlerTest {
         private boolean mIntentLaunchesAllowedInBackgroundTabs;
         private boolean mHasUserGesture;
         private RedirectHandler mRedirectHandler;
-        private boolean mIsRendererInitiated;
+        private boolean mIsRendererInitiated = true;
         private boolean mIsMainFrame = true;
 
         private ExternalNavigationTestParams(String url) {

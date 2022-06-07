@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Lüüs</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Sobita skannitava alaga</translation>
+<translation id="1367951781824006909">Vali fail</translation>
 <translation id="1387854245479784695">See on kõigi tuumade koondväärtus</translation>
 <translation id="1394661041439318933">Seadme ümbrise aku laetus on <ph name="BATTERY_PERCENTAGE" />%.</translation>
 <translation id="1397738625398125236">Lüüsi saab pingida</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Riistvara redaktsioon</translation>
 <translation id="1905710495812624430">Katsete maksimaalne arv on ületatud.</translation>
 <translation id="1908234395526491708">UDP-taotluste vead</translation>
-<translation id="1930797645656624981">Chrome OS sisestusmeetodi teenus</translation>
 <translation id="1947737735496445907">Prinditud</translation>
 <translation id="1951012854035635156">Assistent</translation>
+<translation id="1977994649430373166">Google'i profiilifoto</translation>
 <translation id="1979103255016296513">Parooli muutmise tähtaeg on möödunud</translation>
 <translation id="1999615961760456652">Hõiveportaal</translation>
 <translation id="2006864819935886708">Ühenduvus</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Valima peab vähemalt ühe kunstigalerii albumi</translation>
 <translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Klaviatuuri taustavalguse lüliti</translation>
 <translation id="2240366984605217732">Paigutuse lüliti</translation>
 <translation id="225692081236532131">Aktiveerimise olek</translation>
 <translation id="2287186687001756809">Pilte pole saadaval. Fotode lisamiseks minge saidile <ph name="LINK" /></translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">Ujukoma täpsus</translation>
 <translation id="2448312741937722512">Tüüp</translation>
 <translation id="2461822463642141190">Praegune</translation>
+<translation id="2491955442992294626">Klahve ei testita, kui kasutate teist akent</translation>
 <translation id="2493126929778606526">Teie parimad fotod, valitud automaatselt</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Praeguse taustapildi värskendamine</translation>
@@ -148,12 +151,12 @@
 <translation id="2536159006530886390">Internetiga ei õnnestu ühendust luua.</translation>
 <translation id="2570743873672969996">Testi <ph name="TEST_NAME" /> käitamine …</translation>
 <translation id="2584559707064218956">Seadistamiseks avage leht Seaded</translation>
-<translation id="2585245331261708204">Mis on Chrome OS-is uut?</translation>
 <translation id="2619761439309613843">Igapäevane värskendamine</translation>
 <translation id="2620436844016719705">Süsteem</translation>
 <translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> on valitud</translation>
 <translation id="2695514675076754339">Sisestage kaheksakohaline avamiskood</translation>
 <translation id="2712812801627182647">TLS-i autentimisvõti</translation>
+<translation id="2717139507051041123">Luba tume värvirežiim</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2751739896257479635">EAP 2. etapi autentimine</translation>
 <translation id="2783010256799387990">LÄBITUD</translation>
@@ -220,6 +223,7 @@
 <translation id="3604713164406837697">Taustapildi muutmine</translation>
 <translation id="360565022852130722">WiFi-võrk on kaitstud nõrga protokolliga (WEP 802.1x)</translation>
 <translation id="3606583719724308068">Pikk latentsusaeg HTTPS-veebisaitide puhul</translation>
+<translation id="3621202678540785336">Sisend</translation>
 <translation id="3632579075709132555">Privaatsuskuva lüliti</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Laadimine...</translation>
@@ -244,6 +248,7 @@
 <translation id="3954678691475912818">Seadme tüüp pole teada.</translation>
 <translation id="3966286471246132217">Täpsemate tulemuste saamiseks sulgege kõik rakendused, kuni test on lõpetatud.</translation>
 <translation id="3967822245660637423">Allalaadimine on lõpule viidud</translation>
+<translation id="3969602104473960991">Chrome OS-i parooli värskendati</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="39823212440917567">Prinditööd, mis on vanemad kui <ph name="NUMBER_OF_DAYS" /> päeva, eemaldatakse</translation>
 <translation id="3993704782688964914">Teie <ph name="DEVICE_NAME" /> on nüüd ajakohane</translation>
@@ -319,7 +324,6 @@
 <translation id="4731797938093519117">Vanema juurdepääs</translation>
 <translation id="473775607612524610">Värskenda</translation>
 <translation id="4744944742468440486">Teie valikuga seotud teave</translation>
-<translation id="475869545581454722">Chrome OS-i parooli värskendati</translation>
 <translation id="4773299976671772492">Peatatud</translation>
 <translation id="4782311465517282004">Hankige tekstil paremklõpsates või seda pikalt puudutades definitsioone, tõlkeid või ühikute teisendusi.</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> foto(t)</translation>
@@ -376,6 +380,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="5234764350956374838">Loobu</translation>
 <translation id="5252456968953390977">Rändlus</translation>
+<translation id="5257811368506016604">Luba hele värvirežiim</translation>
 <translation id="5264277876637023664">Käita protsessori test</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5275828089655680674">Taaskäita rutiinid</translation>
@@ -458,6 +463,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="6113701710518389813">Ülesnool</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, + veel <ph name="NUMBER" /> albumit</translation>
 <translation id="6122191549521593678">Onlain</translation>
+<translation id="6122277663991249694">Chrome OS sisestusmeetodi teenus</translation>
 <translation id="6137767437444130246">Kasutaja sertifikaat</translation>
 <translation id="6146993107019042706">Toimingu lõpuleviimiseks sisestage oma uus parool</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -486,6 +492,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="641081527798843608">Teema vaste</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Nõrk (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="6447630859861661624">Ava konto seaded</translation>
 <translation id="6456394469623773452">Hea</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Kas skannida leht uuesti?}=1{Kas skannida {PAGE_NUMBER}. leht uuesti?}other{Kas skannida {PAGE_NUMBER}. leht uuesti?}}</translation>
 <translation id="6472207088655375767">Ühekordne parool</translation>
@@ -548,6 +555,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="7143207342074048698">Ühendamine</translation>
 <translation id="7144878232160441200">Proovi uuesti</translation>
 <translation id="714876143603641390">LAN-i ühenduvus</translation>
+<translation id="7155171745945906037">Olemasolev foto kaamerast või failist</translation>
 <translation id="7162487448488904999">Galerii</translation>
 <translation id="7172721935181587524">1 pilt</translation>
 <translation id="7175037578838465313">Võrgu <ph name="NAME" /> seadistamine</translation>
@@ -569,6 +577,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="7343649194310845056">Võrguseadmed</translation>
 <translation id="7359657277149375382">Faili tüüp</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378886533986123738">Muuda ekraanisäästjat</translation>
 <translation id="741244894080940828">teisendus</translation>
 <translation id="7415801143053185905">Väga pikk HTTP latentsusaeg</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -591,6 +600,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="7648838807254605802">Pikk HTTPS-i latentsusaeg</translation>
 <translation id="7656388927906093505">Seade on hiir.</translation>
 <translation id="7658239707568436148">Tühista</translation>
+<translation id="7665800271478495366">Muuda avatari</translation>
 <translation id="7690294790491645610">Kinnitage uus parool</translation>
 <translation id="7701040980221191251">Pole</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -618,7 +628,9 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="7994702968232966508">EAP meetod</translation>
 <translation id="802154636333426148">Allalaadimine ebaõnnestus</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
+<translation id="80398733265834479">Luba automaatne värvirežiim</translation>
 <translation id="8041089156583427627">Saada tagasiside</translation>
+<translation id="8045012663542226664">Mikrofoni vaigistamise klahv</translation>
 <translation id="8075838845814659848">Aku laetuse tase</translation>
 <translation id="8082366717211101304">Ei saa Androidi rakendustest DNS-i lahendada</translation>
 <translation id="808894953321890993">Muuda parooli</translation>
@@ -650,6 +662,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="8398927464629426868">Praegune seadme laadimise või tühjenemise kiirus</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Sisemine klaviatuur</translation>
+<translation id="8431300646573772016">Mis on Chrome OS-is uut?</translation>
 <translation id="843568408673868420">Interneti ühenduvus</translation>
 <translation id="844521431886043384">DNS ei ole seadistatud</translation>
 <translation id="8461329675984532579">Koduteenuse pakkuja nimi</translation>
@@ -729,6 +742,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="917720651393141712">Testi</translation>
 <translation id="9204237731135241582">Ei saa Androidi rakendustest lüüsiga ühendust</translation>
 <translation id="9211490828691860325">Kõik töölauad</translation>
+<translation id="932327136139879170">Kodu</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Aktiveerimata</translation>
 <translation id="960719561871045870">Operaatori kood</translation>

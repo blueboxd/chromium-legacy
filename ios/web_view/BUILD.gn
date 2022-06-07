@@ -79,6 +79,7 @@ ios_web_view_public_headers = [
   "public/cwv_trusted_vault_provider.h",
   "public/cwv_trusted_vault_utils.h",
   "public/cwv_ui_delegate.h",
+  "public/cwv_unsafe_url_handler.h",
   "public/cwv_user_content_controller.h",
   "public/cwv_user_script.h",
   "public/cwv_web_view.h",
@@ -559,7 +560,6 @@ repack("repack_resources") {
     "$root_gen_dir/components/sync_driver_sync_internals_resources.pak",
     "$root_gen_dir/ios/web/ios_web_resources.pak",
     "$root_gen_dir/ui/resources/webui_generated_resources.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
   output = "$target_gen_dir/web_view_resources.pak"
   copy_data_to_bundle = true

@@ -131,17 +131,6 @@ bool IsCursorCompositingEnabled() {
       ->is_cursor_compositing_enabled();
 }
 
-void TouchOnView(const views::View* view,
-                 ui::test::EventGenerator* event_generator) {
-  DCHECK(view);
-  DCHECK(event_generator);
-
-  const gfx::Point view_center = view->GetBoundsInScreen().CenterPoint();
-  event_generator->MoveTouch(view_center);
-  event_generator->PressTouch();
-  event_generator->ReleaseTouch();
-}
-
 const message_center::Notification* GetPreviewNotification() {
   const message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
@@ -196,15 +185,6 @@ std::unique_ptr<aura::Window> CreateTransientModalChildWindow(
   child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   wm::SetModalParent(child.get(), transient_parent);
   return child;
-}
-
-// To avoid flaky failures due to mouse devices blocking entering tablet mode,
-// we detach all mouse devices. This shouldn't affect testing the cursor
-// status.
-void SwitchToTabletMode() {
-  TabletModeControllerTestApi test_api;
-  test_api.DetachAllMice();
-  test_api.EnterTabletMode();
 }
 
 void LeaveTabletMode() {
@@ -437,13 +417,6 @@ class CaptureModeTest : public AshTestBase {
     session_controller->SwitchActiveUser(AccountId::FromUserEmail(kUserEmail));
   }
 
-  void WaitForSeconds(int seconds) {
-    base::RunLoop loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, loop.QuitClosure(), base::Seconds(seconds));
-    loop.Run();
-  }
-
   base::FilePath CreateFolderOnDriveFS(const std::string& custom_folder_name) {
     auto* test_delegate = CaptureModeController::Get()->delegate_for_testing();
     base::FilePath mount_point_path;
@@ -454,12 +427,6 @@ class CaptureModeTest : public AshTestBase {
     const bool result = base::CreateDirectory(folder_on_drive_fs);
     EXPECT_TRUE(result);
     return folder_on_drive_fs;
-  }
-
-  std::string GetCaptureModeHistogramName(std::string prefix) {
-    prefix.append(Shell::Get()->IsInTabletMode() ? ".TabletMode"
-                                                 : ".ClamshellMode");
-    return prefix;
   }
 
   void OpenSettingsView() {
@@ -3398,7 +3365,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationBasic) {
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
 
   // Tab four times to focus the last source button (window mode button).
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/4);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/4);
   EXPECT_EQ(FocusGroup::kTypeSource, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(4u, test_api.GetCurrentFocusIndex());
 
@@ -3408,7 +3375,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationBasic) {
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
 
   // Shift tab to focus the last source button again.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/true);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(FocusGroup::kTypeSource, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(4u, test_api.GetCurrentFocusIndex());
 
@@ -3451,7 +3418,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationTabThroughWindowsOnMultipleDisplays) {
   // Tab five times, we are now focusing the window mode button on the
   // capture bar.
   auto* event_generator = GetEventGenerator();
-  SendKey(ui::VKEY_TAB, event_generator, false, 5);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/5);
   EXPECT_EQ(FocusGroup::kTypeSource, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(4u, test_api.GetCurrentFocusIndex());
 
@@ -3497,13 +3464,13 @@ TEST_F(CaptureModeTest, KeyboardNavigationTabThroughWindowsOnMultipleDisplays) {
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
 
   // Shift tab to focus |window1| again.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/true);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(2u, test_api.GetCurrentFocusIndex());
   EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
 
   // Shift tab to focus |window1_transient|.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/true);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
   EXPECT_EQ(window1_transient.get(), capture_mode_session->GetSelectedWindow());
@@ -3511,7 +3478,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationTabThroughWindowsOnMultipleDisplays) {
 
   // Shift tab to focus |window2|. Capture mode bar will be moved to display2 as
   // well.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/true);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
   EXPECT_EQ(window2.get(), capture_mode_session->GetSelectedWindow());
@@ -3552,28 +3519,28 @@ TEST_F(CaptureModeTest, KeyboardNavigationSpaceToClickButtons) {
   auto* event_generator = GetEventGenerator();
 
   // Tab to the button which changes the capture type to video and hit space.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, 2);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/2);
   SendKey(ui::VKEY_SPACE, event_generator);
   EXPECT_EQ(CaptureModeType::kVideo, controller->type());
 
   // Shift tab and space to change the capture type back to image.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/true);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
   SendKey(ui::VKEY_SPACE, event_generator);
   EXPECT_EQ(CaptureModeType::kImage, controller->type());
 
   // Tab to the fullscreen button and hit space.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, 2);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/2);
   SendKey(ui::VKEY_SPACE, event_generator);
   EXPECT_EQ(CaptureModeSource::kFullscreen, controller->source());
 
   // Tab to the region button and hit space to return to region capture mode.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false);
+  SendKey(ui::VKEY_TAB, event_generator);
   SendKey(ui::VKEY_SPACE, event_generator);
   EXPECT_EQ(CaptureModeSource::kRegion, controller->source());
 
   // Tab to the capture button and hit space to perform a capture, which exits
   // capture mode.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, 11);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/11);
   SendKey(ui::VKEY_SPACE, event_generator);
   EXPECT_FALSE(controller->IsActive());
 }
@@ -3598,7 +3565,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationSelectRegion) {
   const int arrow_shift = capture_mode::kArrowKeyboardRegionChangeDp;
 
   // Hit tab until the whole region is focused.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/6);
   CaptureModeSessionTestApi test_api(controller->capture_mode_session());
   EXPECT_EQ(CaptureModeSessionFocusCycler::FocusGroup::kSelection,
             test_api.GetCurrentFocusGroup());
@@ -3609,7 +3576,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationSelectRegion) {
   EXPECT_EQ(capture_region.origin() + gfx::Vector2d(arrow_shift, 0),
             controller->user_capture_region().origin());
   EXPECT_EQ(capture_region.size(), controller->user_capture_region().size());
-  SendKey(ui::VKEY_RIGHT, event_generator, /*shift_down=*/true);
+  SendKey(ui::VKEY_RIGHT, event_generator, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(
       capture_region.origin() +
           gfx::Vector2d(
@@ -3631,7 +3598,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationSelectRegion) {
 
   // Tab until we focus the bottom right affordance circle. Left and up keys
   // should shrink the region, right and bottom keys should enlarge the region.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, 4);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/4);
 
   SendKey(ui::VKEY_LEFT, event_generator);
   SendKey(ui::VKEY_UP, event_generator);
@@ -3675,8 +3642,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationDefaultRegion) {
   // region capture mode will make the capture region the default size.
   // SelectRegion removes focus since it uses mouse clicks.
   SelectRegion(gfx::Rect());
-  SendKey(ui::VKEY_TAB, event_generator,
-          /*is_shift_down=*/false,
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE,
           /*count=*/4);
   SendKey(ui::VKEY_SPACE, event_generator);
   EXPECT_EQ(expected_default_region, controller->user_capture_region());
@@ -3685,8 +3651,7 @@ TEST_F(CaptureModeTest, KeyboardNavigationDefaultRegion) {
   // in region capture mode does nothing to the capture region.
   SelectRegion(gfx::Rect());
   ClickOnView(GetWindowToggleButton(), event_generator);
-  SendKey(ui::VKEY_TAB, event_generator,
-          /*is_shift_down=*/false,
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE,
           /*count=*/4);
   ASSERT_EQ(CaptureModeSessionFocusCycler::FocusGroup::kTypeSource,
             test_api.GetCurrentFocusGroup());

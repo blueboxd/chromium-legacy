@@ -21,6 +21,18 @@ void StatusController::set_get_updates_request_types(ModelTypeSet value) {
   model_neutral_.get_updates_request_types = value;
 }
 
+ModelTypeSet StatusController::get_updated_types() const {
+  return model_neutral_.updated_types;
+}
+
+void StatusController::add_updated_type(ModelType type) {
+  model_neutral_.updated_types.Put(type);
+}
+
+void StatusController::clear_updated_types() {
+  model_neutral_.updated_types.Clear();
+}
+
 void StatusController::increment_num_updates_downloaded_by(int value) {
   model_neutral_.num_updates_downloaded_total += value;
 }
@@ -49,10 +61,6 @@ void StatusController::increment_num_successful_bookmark_commits() {
 
 void StatusController::increment_num_successful_commits() {
   model_neutral_.num_successful_commits++;
-}
-
-void StatusController::increment_num_updates_applied_by(int value) {
-  model_neutral_.num_updates_applied += value;
 }
 
 void StatusController::increment_num_encryption_conflicts_by(int value) {
@@ -90,10 +98,6 @@ void StatusController::set_commit_result(const SyncerError result) {
 
 SyncerError StatusController::last_get_key_result() const {
   return model_neutral_.last_get_key_result;
-}
-
-int StatusController::num_updates_applied() const {
-  return model_neutral_.num_updates_applied;
 }
 
 int StatusController::num_server_overwrites() const {

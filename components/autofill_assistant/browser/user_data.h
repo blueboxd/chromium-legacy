@@ -11,8 +11,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/cud_condition.pb.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -192,26 +190,26 @@ struct UserDataMetrics {
   int selected_billing_address_field_bitmask = 0;
 };
 
+enum class UserDataFieldChange {
+  NONE,
+  ALL,
+  CONTACT_PROFILE,
+  PHONE_NUMBER,
+  CARD,
+  SHIPPING_ADDRESS,
+  BILLING_ADDRESS,
+  LOGIN_CHOICE,
+  TERMS_AND_CONDITIONS,
+  ADDITIONAL_VALUES,
+  AVAILABLE_PROFILES,
+  AVAILABLE_PAYMENT_INSTRUMENTS,
+};
+
 // Struct for holding the user data.
 class UserData {
  public:
   UserData();
   ~UserData();
-
-  enum class FieldChange {
-    NONE,
-    ALL,
-    CONTACT_PROFILE,
-    PHONE_NUMBER,
-    CARD,
-    SHIPPING_ADDRESS,
-    BILLING_ADDRESS,
-    LOGIN_CHOICE,
-    TERMS_AND_CONDITIONS,
-    ADDITIONAL_VALUES,
-    AVAILABLE_PROFILES,
-    AVAILABLE_PAYMENT_INSTRUMENTS,
-  };
 
   TermsAndConditionsState terms_and_conditions_ = NOT_SELECTED;
 

@@ -227,6 +227,12 @@ const base::Feature kAutofillEnableSupportForHonorificPrefixes{
     "AutofillEnableSupportForHonorificPrefixes",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, trunk prefix-related phone number types are added to the
+// supported and matching types of |PhoneNumber|.
+const base::Feature kAutofillEnableSupportForPhoneNumberTrunkTypes{
+    "AutofillEnableSupportForPhoneNumberTrunkTypes",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables autofill to function within a FencedFrame, and is disabled by
 // default.
 // TODO(crbug.com/1294378): Remove once launched.
@@ -263,13 +269,6 @@ const base::Feature kAutofillFixFillableFieldTypes{
 const base::Feature kAutofillFixServerQueriesIfPasswordManagerIsEnabled{
     "AutofillFixServerQueriesIfPasswordManagerIsEnabled",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// The autocomplete attribute may prevent Autofill import, crbug/1213301. This
-// feature addresses the issue. For now, the fix only concerns fields with the
-// signature 2281611779.
-// TODO(crbug/1213301): Remove this.
-const base::Feature kAutofillIgnoreAutocompleteForImport{
-    "AutofillIgnoreAutocompleteForImport", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, the Autofill popup ignores second clicks for a certain period
 // (kAutofillIgnoreEarlyClicksOnPopupDuration) after the Autofill popup was

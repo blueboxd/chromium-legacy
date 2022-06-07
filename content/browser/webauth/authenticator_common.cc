@@ -37,6 +37,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
 #include "device/fido/attestation_statement.h"
@@ -67,7 +68,7 @@
 #include "device/fido/mac/credential_metadata.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "device/fido/cros/authenticator.h"
 #endif
 
@@ -435,7 +436,7 @@ std::unique_ptr<device::FidoDiscoveryFactory> MakeDiscoveryFactory(
   }
 #endif  // BUILDFLAG(IS_WIN)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // Ignore the ChromeOS u2fd virtual U2F HID device for WebAuthn requests so
   // that it doesn't collide with the ChromeOS platform authenticator, also
   // implemented in u2fd.
@@ -447,7 +448,7 @@ std::unique_ptr<device::FidoDiscoveryFactory> MakeDiscoveryFactory(
         GetWebAuthenticationDelegate()->GetGenerateRequestIdCallback(
             render_frame_host));
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   return discovery_factory;
 }
@@ -546,7 +547,7 @@ void AuthenticatorCommon::StartGetAssertionRequest(
   request_delegate_->ConfigureCable(caller_origin_,
                                     device::FidoRequestType::kGetAssertion,
                                     cable_pairings, discovery_factory());
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   discovery_factory()->set_get_assertion_request_for_legacy_credential_check(
       *ctap_get_assertion_request_);
 #endif
@@ -631,6 +632,18 @@ void AuthenticatorCommon::MakeCredential(
   make_credential_response_callback_ = std::move(callback);
 
   BeginRequestTimeout(options->timeout);
+
+  if (options->remote_desktop_client_override) {
+    // TODO(crbug.com/1314480): Implement remoteDesktopClientOverride
+    // browser-side.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kWebAuthRemoteDesktopSupport)) {
+      mojo::ReportBadMessage("--webauthn-remote-desktop-support not enabled");
+    }
+    CompleteMakeCredentialRequest(
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    return;
+  }
 
   WebAuthRequestSecurityChecker::RequestType request_type =
       options->is_payment_credential_creation
@@ -921,6 +934,18 @@ void AuthenticatorCommon::GetAssertion(
   DCHECK(get_assertion_response_callback_.is_null());
   get_assertion_response_callback_ = std::move(callback);
 
+  if (options->remote_desktop_client_override) {
+    // TODO(crbug.com/1314480): Implement remoteDesktopClientOverride
+    // browser-side.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kWebAuthRemoteDesktopSupport)) {
+      mojo::ReportBadMessage("--webauthn-remote-desktop-support not enabled");
+    }
+    CompleteGetAssertionRequest(
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    return;
+  }
+
   if (!options->is_conditional) {
     BeginRequestTimeout(options->timeout);
   }
@@ -1175,7 +1200,7 @@ void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
                                      std::move(uma_decorated_callback));
 #elif BUILDFLAG(IS_WIN)
   IsUVPlatformAuthenticatorAvailable(std::move(uma_decorated_callback));
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#elif BUILDFLAG(IS_CHROMEOS)
   IsUVPlatformAuthenticatorAvailable(std::move(uma_decorated_callback));
 #else
   std::move(uma_decorated_callback).Run(false);

@@ -11,6 +11,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_discount_metric_collector.h"
+#include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/commerce/coupons/coupon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
@@ -652,7 +653,7 @@ void CartService::AddCartsWithFakeData() {
   dummy_proto2.set_key(std::string(kFakeDataPrefix) + eTLDPlusOne(dummy_url2));
   dummy_proto2.set_merchant("Cart Bar");
   dummy_proto2.set_merchant_cart_url(dummy_url2.spec());
-  dummy_proto2.set_timestamp(time_now + 5);
+  dummy_proto2.set_timestamp(time_now + 3);
   dummy_proto2.mutable_discount_info()->set_discount_text(
       l10n_util::GetStringFUTF8(IDS_NTP_MODULES_CART_DISCOUNT_CHIP_AMOUNT,
                                 u"20%"));
@@ -693,7 +694,7 @@ void CartService::AddCartsWithFakeData() {
   dummy_proto4.set_key(std::string(kFakeDataPrefix) + eTLDPlusOne(dummy_url4));
   dummy_proto4.set_merchant("Cart Qux");
   dummy_proto4.set_merchant_cart_url(dummy_url4.spec());
-  dummy_proto4.set_timestamp(time_now + 3);
+  dummy_proto4.set_timestamp(time_now + 5);
   dummy_proto4.add_product_image_urls(
       "https://encrypted-tbn0.gstatic.com/"
       "shopping?q=tbn:ANd9GcQyMRYWeM2Yq095nOXTL0-"
@@ -1143,4 +1144,13 @@ void CartService::SetFetchDiscountWorkerForTesting(
 
 void CartService::SetCouponServiceForTesting(CouponService* coupon_service) {
   coupon_service_ = coupon_service;
+}
+
+void CartService::ShowNativeConsentDialog(
+    base::OnceCallback<void(chrome_cart::mojom::ConsentStatus)>
+        consent_status_callback) {
+  // TODO(crbug.com/1317519): Show the native dialog and move the
+  // consent_status_callback to the dialog.
+  std::move(consent_status_callback)
+      .Run(chrome_cart::mojom::ConsentStatus::ACCEPTED);
 }

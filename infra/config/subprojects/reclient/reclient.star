@@ -80,12 +80,38 @@ def fyi_reclient_test_builder(
 
 fyi_reclient_staging_builder(
     name = "Linux Builder reclient staging",
+    builder_spec = builder_config.copy_from(
+        "ci/Linux Builder",
+        lambda spec: structs.evolve(
+            spec,
+            gclient_config = structs.extend(
+                spec.gclient_config,
+                apply_configs = [
+                    "reclient_staging",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
     console_view_category = "linux",
     os = os.LINUX_DEFAULT,
 )
 
 fyi_reclient_test_builder(
     name = "Linux Builder reclient test",
+    builder_spec = builder_config.copy_from(
+        "ci/Linux Builder",
+        lambda spec: structs.evolve(
+            spec,
+            gclient_config = structs.extend(
+                spec.gclient_config,
+                apply_configs = [
+                    "reclient_test",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
     console_view_category = "linux",
     os = os.LINUX_DEFAULT,
 )
@@ -139,7 +165,7 @@ fyi_reclient_test_builder(
 fyi_reclient_staging_builder(
     name = "Simple Chrome Builder reclient staging",
     console_view_category = "linux",
-    os = os.LINUX_BIONIC_REMOVE,
+    os = os.LINUX_DEFAULT,
     builder_spec = builder_config.builder_spec(
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -160,7 +186,7 @@ fyi_reclient_staging_builder(
 fyi_reclient_test_builder(
     name = "Simple Chrome Builder reclient test",
     console_view_category = "linux",
-    os = os.LINUX_BIONIC_REMOVE,
+    os = os.LINUX_DEFAULT,
     builder_spec = builder_config.builder_spec(
         chromium_config = builder_config.chromium_config(
             config = "chromium",

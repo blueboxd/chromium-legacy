@@ -14,10 +14,6 @@
 #include "base/cpu.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#endif
-
 namespace switches {
 
 // Allow users to specify a custom buffer size for debugging purpose.
@@ -256,11 +252,6 @@ const base::Feature kFFmpegDecodeOpaqueVP8{"FFmpegDecodeOpaqueVP8",
 // Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Use a LocalMediaStreamAudioSource for getDisplayMedia captures with audio.
-// TODO(crbug.com/1313841): Remove this after M107 branch point.
-const base::Feature kDisplayAudioUseLocalAudioSource{
-    "DisplayAudioUseLocalAudioSource", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables user control over muting tab audio from the tab strip.
 const base::Feature kEnableTabMuting{"EnableTabMuting",
@@ -1012,38 +1003,6 @@ bool IsChromeWideEchoCancellationEnabled() {
 bool IsHardwareSecureDecryptionEnabled() {
   return base::FeatureList::IsEnabled(kHardwareSecureDecryption) ||
          base::FeatureList::IsEnabled(kHardwareSecureDecryptionExperiment);
-}
-
-bool IsLiveCaptionFeatureEnabled() {
-  if (!base::FeatureList::IsEnabled(media::kLiveCaption))
-    return false;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Some Chrome OS devices do not support on-device speech.
-  if (!base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition))
-    return false;
-#endif
-
-#if BUILDFLAG(IS_LINUX)
-  // Check if the CPU has the required instruction set to run the Speech
-  // On-Device API (SODA) library.
-  static bool has_sse41 = base::CPU().has_sse41();
-  if (!has_sse41)
-    return false;
-#endif
-
-#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
-  // The Speech On-Device API (SODA) component does not support Windows on
-  // arm64.
-  return false;
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Disable Live Caption on LaCrOS. The feature has not been migrated there
-  // yet, and currently fails rather gracelessly (opening a non-existent .so).
-  // TODO(b/223493879): Remove this once it fails more gracefully.
-  return false;
-#else
-  return true;
-#endif
 }
 
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {

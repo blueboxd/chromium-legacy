@@ -24,6 +24,10 @@
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "printing/buildflags/buildflags.h"
 
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#include "chrome/browser/enterprise/connectors/analysis/content_analysis_delegate.h"
+#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
 #include "ui/accessibility/ax_tree_update_forward.h"
 #endif
@@ -65,7 +69,7 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
   // `job_settings`. Runs `callback` with an error string on failure and with an
   // empty string if the print job is started successfully. `rfh` is the render
   // frame host for the preview initiator contents respectively.
-  void PrintForPrintPreview(base::Value job_settings,
+  void PrintForPrintPreview(base::Value::Dict job_settings,
                             scoped_refptr<base::RefCountedMemory> print_data,
                             content::RenderFrameHost* rfh,
                             PrinterHandler::PrintCallback callback);
@@ -99,7 +103,7 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
       GetDefaultPrintSettingsCallback callback) override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void UpdatePrintSettings(int32_t cookie,
-                           base::Value job_settings,
+                           base::Value::Dict job_settings,
                            UpdatePrintSettingsCallback callback) override;
 #endif
   void ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
@@ -157,6 +161,26 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
 
   base::ObserverList<Observer>& GetObservers() { return observers_; }
 
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+  // Helper method for scanning a page by sending requests and launching the
+  // scanning dialog as required. This helper is shared between system print
+  // scans and print preview scans. This method is virtual for testing purposes.
+  virtual void OnGotSnapshotCallback(
+      base::OnceCallback<void(bool should_proceed)> callback,
+      enterprise_connectors::ContentAnalysisDelegate::Data data,
+      content::GlobalRenderFrameHostId rfh_id,
+      mojom::DidPrintDocumentParamsPtr params);
+
+  // Helper method called after the snapshotted page has been composited into a
+  // scannable PDF document. This method is virtual for testing purposes.
+  virtual void OnCompositedForContentAnalysis(
+      base::OnceCallback<void(bool should_proceed)> callback,
+      enterprise_connectors::ContentAnalysisDelegate::Data data,
+      content::GlobalRenderFrameHostId rfh_id,
+      mojom::PrintCompositor::Status status,
+      base::ReadOnlySharedMemoryRegion page_region);
+#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;
 
@@ -181,8 +205,8 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
                         mojom::PrintCompositor::Status status,
                         base::ReadOnlySharedMemoryRegion region);
 
-// Helpers for PrintForPrintPreview();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  // Helpers for PrintForPrintPreview();
   void OnPrintSettingsDone(scoped_refptr<base::RefCountedMemory> print_data,
                            uint32_t page_count,
                            PrinterHandler::PrintCallback callback,
@@ -258,6 +282,17 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
 
   // Notifies `rfh` about whether printing is `enabled`.
   void SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh);
+
+  // Prints the document by calling the `PrintRequestedPages()` renderer API and
+  // notifies observers. This should only be called by `PrintNow()` or
+  // `CompleteContentAnalysis()`.
+  void CompletePrintNow(content::RenderFrameHost* rfh);
+
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+  // Helper for scanning code that calls `CompletePrintNow()` if `allowed` is
+  // true and printing is still possible.
+  void CompleteContentAnalysis(bool allowed);
+#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
   // The current RFH that is printing with a system printing dialog.
   raw_ptr<content::RenderFrameHost> printing_rfh_ = nullptr;

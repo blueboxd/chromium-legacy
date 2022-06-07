@@ -824,10 +824,6 @@ const base::Feature kPrefixWebAppWindowsWithAppName{
 const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables additional contextual entry points to privacy settings.
-const base::Feature kPrivacyAdvisor{"PrivacyAdvisor",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kPrivacyGuide{"PrivacyGuide",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -931,13 +927,6 @@ const base::Feature kSecurityKeyAttestationPrompt{
 const base::Feature kSharesheetCopyToClipboard{
     "SharesheetCopyToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
-
-#if BUILDFLAG(IS_MAC)
-// Enables the "this OS is obsolete" infobar on Mac 10.10.
-// TODO(ellyjones): Remove this after the last 10.10 release.
-const base::Feature kShow10_10ObsoleteInfobar{
-    "Show1010ObsoleteInfobar", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_MAC)
 
 // Alternative to switches::kSitePerProcess, for turning on full site isolation.
 // Launch bug: https://crbug.com/810843.  This is a //chrome-layer feature to

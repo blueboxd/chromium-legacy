@@ -306,6 +306,9 @@ AppListControllerImpl::~AppListControllerImpl() {
     tracked_app_window_ = nullptr;
   }
 
+  if (has_session_started_)
+    RecordMetricsOnSessionEnd();
+
   // If this is being destroyed before the Shell starts shutting down, first
   // remove this from objects it's observing.
   if (!is_shutdown_)
@@ -353,14 +356,12 @@ void AppListControllerImpl::SetActiveModel(int profile_id,
                                            SearchModel* search_model) {
   profile_id_ = profile_id;
   model_provider_->SetActiveModel(model, search_model);
-  badge_controller_->SetActiveModel(model);
   UpdateAssistantVisibility();
 }
 
 void AppListControllerImpl::ClearActiveModel() {
   profile_id_ = kAppListInvalidProfileID;
   model_provider_->ClearActiveModel();
-  badge_controller_->ClearActiveModel();
   UpdateAssistantVisibility();
 }
 
@@ -461,6 +462,9 @@ void AppListControllerImpl::OnActiveUserPrefServiceChanged(
 
 void AppListControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
+  if (state == session_manager::SessionState::ACTIVE)
+    has_session_started_ = true;
+
   if (!IsTabletMode())
     return;
 

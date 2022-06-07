@@ -227,17 +227,15 @@ base::Time GetFileCreationTime(const base::FilePath& filename) {
   return base::Time();
 }
 
-void ReadResourceFilePathAndLastModifiedTime(
+std::pair<base::FilePath, base::Time> ReadResourceFilePathAndLastModifiedTime(
     const extensions::ExtensionResource& resource,
-    const base::FilePath& directory,
-    base::FilePath* file_path,
-    base::Time* last_modified_time) {
+    const base::FilePath& directory) {
   // NOTE: ExtensionResource::GetFilePath() must be called on a sequence which
   // tolerates blocking operations.
-  *file_path = resource.GetFilePath();
-  *last_modified_time = GetFileLastModifiedTime(*file_path);
+  base::FilePath file_path = resource.GetFilePath();
+  base::Time last_modified_time = GetFileLastModifiedTime(file_path);
   base::Time dir_creation_time = GetFileCreationTime(directory);
-  int64_t delta_seconds = (*last_modified_time - dir_creation_time).InSeconds();
+  int64_t delta_seconds = (last_modified_time - dir_creation_time).InSeconds();
   if (delta_seconds >= 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedDelta",
                                 delta_seconds, 1, base::Days(30).InSeconds(),
@@ -247,6 +245,7 @@ void ReadResourceFilePathAndLastModifiedTime(
                                 -delta_seconds, 1, base::Days(30).InSeconds(),
                                 50);
   }
+  return std::make_pair(file_path, last_modified_time);
 }
 
 bool ExtensionCanLoadInIncognito(bool is_main_frame,
@@ -612,6 +611,7 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
         &ExtensionURLLoader::OnMojoDisconnect, base::Unretained(this)));
   }
 
+  // This instance is no longer needed after loader/client unbind.
   void DeleteThis() { delete this; }
 
   void Start() {
@@ -674,17 +674,18 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
   }
 
   static void OnFilePathAndLastModifiedTimeRead(
-      const base::FilePath* read_file_path,
-      const base::Time* last_modified_time,
       network::ResourceRequest request,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ContentVerifier> content_verifier,
       const extensions::ExtensionResource& resource,
-      scoped_refptr<net::HttpResponseHeaders> headers) {
-    request.url = net::FilePathToFileURL(*read_file_path);
+      scoped_refptr<net::HttpResponseHeaders> headers,
+      std::pair<base::FilePath, base::Time> file_path_and_time) {
+    const auto& read_file_path = file_path_and_time.first;
+    const auto& last_modified_time = file_path_and_time.second;
+    request.url = net::FilePathToFileURL(read_file_path);
 
-    AddCacheHeaders(*headers, *last_modified_time);
+    AddCacheHeaders(*headers, last_modified_time);
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&StartVerifyJob, std::move(request), std::move(loader),
@@ -790,30 +791,6 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
       return;
     }
 
-    // This instance is no longer needed after loader/client unbind.
-    StaticLoadExtension(
-        loader_.Unbind(), client_.Unbind(), request_, browser_context_,
-        extension, directory_path, content_security_policy,
-        cross_origin_embedder_policy, cross_origin_opener_policy,
-        send_cors_header, follow_symlinks_anywhere,
-        include_allow_service_worker_header, extension_info_map_);
-    DeleteThis();
-  }
-
-  static void StaticLoadExtension(
-      mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      const network::ResourceRequest& request,
-      content::BrowserContext* browser_context,
-      scoped_refptr<const Extension> extension,
-      base::FilePath directory_path,
-      std::string content_security_policy,
-      const std::string* cross_origin_embedder_policy,
-      const std::string* cross_origin_opener_policy,
-      bool send_cors_header,
-      bool follow_symlinks_anywhere,
-      bool include_allow_service_worker_header,
-      scoped_refptr<extensions::InfoMap> extension_info_map) {
     auto headers =
         BuildHttpHeaders(content_security_policy, cross_origin_embedder_policy,
                          cross_origin_opener_policy, send_cors_header,
@@ -823,37 +800,38 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
     int resource_id = 0;
     const base::FilePath bundle_resource_path =
         ExtensionsBrowserClient::Get()->GetBundleResourcePath(
-            request, directory_path, &resource_id);
+            request_, directory_path, &resource_id);
     if (!bundle_resource_path.empty()) {
       ExtensionsBrowserClient::Get()->LoadResourceFromResourceBundle(
-          request, std::move(loader), bundle_resource_path, resource_id,
-          std::move(headers), std::move(client));
+          request_, loader_.Unbind(), bundle_resource_path, resource_id,
+          std::move(headers), client_.Unbind());
+      DeleteThis();
       return;
     }
 
     base::FilePath relative_path =
-        file_util::ExtensionURLToRelativeFilePath(request.url);
+        file_util::ExtensionURLToRelativeFilePath(request_.url);
 
     // Do not allow requests for resources in the _metadata folder, since any
     // files there are internal implementation details that should not be
     // considered part of the extension.
     if (base::FilePath(kMetadataFolder).IsParent(relative_path)) {
-      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_FILE_NOT_FOUND));
+      client_->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_FILE_NOT_FOUND));
+      DeleteThis();
       return;
     }
 
     // Handle shared resources (extension A loading resources out of extension
     // B).
     std::string extension_id = extension->id();
-    std::string path = request.url.path();
+    std::string path = request_.url.path();
     if (SharedModuleInfo::IsImportedPath(path)) {
       std::string new_extension_id;
       std::string new_relative_path;
       SharedModuleInfo::ParseImportedPath(path, &new_extension_id,
                                           &new_relative_path);
-      ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
+      ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
       const Extension* new_extension =
           registry->enabled_extensions().GetByID(new_extension_id);
       if (SharedModuleInfo::ImportsExtensionById(extension.get(),
@@ -863,9 +841,9 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
         extension_id = new_extension_id;
         relative_path = base::FilePath::FromUTF8Unsafe(new_relative_path);
       } else {
-        mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
-            ->OnComplete(
-                network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_CLIENT));
+        client_->OnComplete(
+            network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_CLIENT));
+        DeleteThis();
         return;
       }
     }
@@ -878,21 +856,17 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
     if (follow_symlinks_anywhere)
       resource.set_follow_symlinks_anywhere();
 
-    base::FilePath* read_file_path = new base::FilePath;
-    base::Time* last_modified_time = new base::Time();
-
     scoped_refptr<ContentVerifier> content_verifier =
-        extension_info_map->content_verifier();
-    base::ThreadPool::PostTaskAndReply(
+        extension_info_map_->content_verifier();
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(&ReadResourceFilePathAndLastModifiedTime, resource,
-                       directory_path, base::Unretained(read_file_path),
-                       base::Unretained(last_modified_time)),
-        base::BindOnce(
-            &OnFilePathAndLastModifiedTimeRead, base::Owned(read_file_path),
-            base::Owned(last_modified_time), request, std::move(loader),
-            std::move(client), std::move(content_verifier), resource,
-            std::move(headers)));
+                       directory_path),
+        base::BindOnce(&OnFilePathAndLastModifiedTimeRead, request_,
+                       loader_.Unbind(), client_.Unbind(),
+                       std::move(content_verifier), resource,
+                       std::move(headers)));
+    DeleteThis();
   }
 
   void OnMojoDisconnect() { DeleteThis(); }

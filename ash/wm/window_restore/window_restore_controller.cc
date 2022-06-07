@@ -498,8 +498,8 @@ void WindowRestoreController::SaveWindowImpl(
     mru_windows =
         Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks);
   }
-  std::unique_ptr<app_restore::WindowInfo> window_info =
-      BuildWindowInfo(window, activation_index, mru_windows);
+  std::unique_ptr<app_restore::WindowInfo> window_info = BuildWindowInfo(
+      window, activation_index, /*for_saved_desks=*/false, mru_windows);
   full_restore::SaveWindowInfo(*window_info);
 
   if (g_save_window_callback_for_testing)
@@ -525,8 +525,8 @@ void WindowRestoreController::RestoreStateTypeAndClearLaunchedKey(
 
       if (*state_type == chromeos::WindowStateType::kPrimarySnapped ||
           *state_type == chromeos::WindowStateType::kSecondarySnapped) {
-        base::AutoReset<bool> auto_reset_is_restoring_snap_state(
-            &is_restoring_snap_state_, true);
+        base::AutoReset<aura::Window*> auto_reset_to_be_snapped(
+            &to_be_snapped_window_, window);
         const WMEvent snap_event(
             *state_type == chromeos::WindowStateType::kPrimarySnapped
                 ? WM_EVENT_SNAP_PRIMARY

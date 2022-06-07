@@ -241,7 +241,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       [self.consumer
           showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
     }
-    [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
+    if ([self.mostVisitedItems count]) {
+      [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
+    }
     if (!ShouldHideShortcutsForStartSurface()) {
       [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
     }
@@ -287,6 +289,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 - (void)setWebState:(web::WebState*)webState {
   _webState = webState;
   self.NTPMetrics.webState = self.webState;
+}
+
+- (void)setShowingStartSurface:(BOOL)showingStartSurface {
+  _showingStartSurface = showingStartSurface;
+  self.NTPMetrics.showingStartSurface = showingStartSurface;
 }
 
 + (NSUInteger)maxSitesShown {
@@ -341,6 +348,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   DCHECK(IsStartSurfaceEnabled());
   if (self.showMostRecentTabStartSurfaceTile) {
     self.showMostRecentTabStartSurfaceTile = NO;
+    self.returnToRecentTabItem = nil;
     if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
       [self.consumer hideReturnToRecentTabTile];
     } else {
@@ -375,6 +383,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     return;
 
   if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
+    [self.NTPMetrics recordContentSuggestionsActionForType:
+                         IOSContentSuggestionsActionType::kShortcuts];
     ContentSuggestionsMostVisitedActionItem* mostVisitedItem =
         base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedActionItem>(
             item);
@@ -452,6 +462,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 - (void)openMostRecentTab {
+  [self.NTPMetrics recordContentSuggestionsActionForType:
+                       IOSContentSuggestionsActionType::kReturnToRecentTab];
   base::RecordAction(
       base::UserMetricsAction("IOS.StartSurface.OpenMostRecentTab"));
   [self hideRecentTabTile];
@@ -459,7 +471,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   web::WebState* web_state =
       StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
           ->most_recent_tab();
-  DCHECK(web_state);
+  if (!web_state) {
+    return;
+  }
   int index = web_state_list->GetIndexOfWebState(web_state);
   web_state_list->ActivateWebStateAt(index);
 }
@@ -711,6 +725,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
                       atIndex:(NSInteger)mostVisitedIndex {
   [self.NTPMetrics
       recordAction:new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY];
+  [self.NTPMetrics recordContentSuggestionsActionForType:
+                       IOSContentSuggestionsActionType::kMostVisitedTile];
   base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
   RecordNTPTileClick(mostVisitedIndex, item.source, item.titleSource,
                      item.attributes, GURL());

@@ -18,8 +18,12 @@
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/passwords/views_utils.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/vector_icons/vector_icons.h"
@@ -43,6 +47,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/table_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
@@ -272,6 +277,11 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
           base::Unretained(this)),
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON)));
 
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    SetFootnoteView(CreateFooterView());
+  }
+
   auto& local_credentials = controller_.local_credentials();
 
   if (local_credentials.empty()) {
@@ -338,6 +348,44 @@ void PasswordItemsView::RecreateLayout() {
   PreferredSizeChanged();
   if (GetBubbleFrameView())
     SizeToContents();
+}
+
+std::unique_ptr<views::View> PasswordItemsView::CreateFooterView() {
+  DCHECK(base::FeatureList::IsEnabled(
+      password_manager::features::kUnifiedPasswordManagerDesktop));
+
+  base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
+      [](PasswordItemsView* dialog) {
+        dialog->controller_.OnGooglePasswordManagerLinkClicked();
+      },
+      base::Unretained(this));
+
+  switch (controller_.GetPasswordSyncState()) {
+    case password_manager::SyncState::kNotSyncing:
+      return CreateGooglePasswordManagerLabel(
+          /*text_message_id=*/
+          IDS_PASSWORD_BUBBLES_FOOTER_SAVING_ON_DEVICE,
+          /*link_message_id=*/
+          IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE,
+          open_password_manager_closure);
+    case password_manager::SyncState::kSyncingNormalEncryption:
+    case password_manager::SyncState::kSyncingWithCustomPassphrase:
+      return CreateGooglePasswordManagerLabel(
+          /*text_message_id=*/
+          IDS_PASSWORD_BUBBLES_FOOTER_SYNCED_TO_ACCOUNT,
+          /*link_message_id=*/
+          IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT,
+          controller_.GetPrimaryAccountEmail(), open_password_manager_closure);
+    case password_manager::SyncState::kAccountPasswordsActiveNormalEncryption:
+      // Account store users have a special footer in the management bubble
+      // since they might have a mix of synced and non-synced passwords.
+      return CreateGooglePasswordManagerLabel(
+          /*text_message_id=*/
+          IDS_PASSWORD_MANAGEMENT_BUBBLE_FOOTER_ACCOUNT_STORE_USERS,
+          /*link_message_id=*/
+          IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT,
+          open_password_manager_closure);
+  }
 }
 
 void PasswordItemsView::NotifyPasswordFormAction(

@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.layouts.components.TintedComposito
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaGestureEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.EventFilter;
@@ -34,6 +35,8 @@ import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.SceneOverlay;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -47,7 +50,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.url.GURL;
 
@@ -57,7 +62,7 @@ import java.util.List;
  * This class handles managing which {@link StripLayoutHelper} is currently active and dispatches
  * all input and model events to the proper destination.
  */
-public class StripLayoutHelperManager implements SceneOverlay {
+public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNativeObserver {
     private static final long FADE_SCRIM_DURATION_MS = 200;
     // Caching Variables
     private final RectF mStripFilterArea = new RectF();
@@ -87,7 +92,9 @@ public class StripLayoutHelperManager implements SceneOverlay {
     private int mOrientation;
     private final CompositorButton mModelSelectorButton;
 
+    private Context mContext;
     private final StripScrim mStripScrim;
+    private boolean mBrowserScrimShowing;
     private ValueAnimator mScrimFadeAnimation;
 
     private TabStripSceneLayer mTabStripTreeProvider;
@@ -106,6 +113,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
             };
 
     private TabModelObserver mTabModelObserver;
+    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
 
     private final String mDefaultTitle;
     private final Supplier<LayerTitleCache> mLayerTitleCacheSupplier;
@@ -188,9 +196,17 @@ public class StripLayoutHelperManager implements SceneOverlay {
         }
 
         private void updateScrimVisibility(boolean visibility) {
+            // Handled by separate scrim over entire browser in the polished version.
+            if (isGridTabSwitcherPolishEnabled()) {
+                // Scrim doesn't actually show if the a11y list switcher is showing.
+                mBrowserScrimShowing =
+                        visibility && !DeviceClassManager.enableAccessibilityLayout(mContext);
+                return;
+            }
+
             if (!isGridTabSwitcherNonPolishEnabled()) return;
 
-            if (mScrimFadeAnimation != null) {
+            if (mScrimFadeAnimation != null && mScrimFadeAnimation.isRunning()) {
                 mScrimFadeAnimation.cancel();
             }
 
@@ -221,22 +237,23 @@ public class StripLayoutHelperManager implements SceneOverlay {
      * @param context The current Android {@link Context}.
      * @param updateHost The parent {@link LayoutUpdateHost}.
      * @param renderHost The {@link LayoutRenderHost}.
-     * @param titleCacheSupplier A supplier of the title cache.
      * @param layerTitleCacheSupplier A supplier of the cache that holds the title textures.
+     * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for registering this class
+     *         to lifecycle events.
      */
     public StripLayoutHelperManager(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, Supplier<LayerTitleCache> layerTitleCacheSupplier) {
+            LayoutRenderHost renderHost, Supplier<LayerTitleCache> layerTitleCacheSupplier,
+            ActivityLifecycleDispatcher lifecycleDispatcher) {
         mUpdateHost = updateHost;
         mLayerTitleCacheSupplier = layerTitleCacheSupplier;
         mTabStripTreeProvider = new TabStripSceneLayer(context);
         mTabStripEventHandler = new TabStripEventHandler();
         mTabSwitcherLayoutObserver = new TabSwitcherLayoutObserver();
+        mLifecycleDispatcher = lifecycleDispatcher;
+        mLifecycleDispatcher.register(this);
         mDefaultTitle = context.getString(R.string.tab_loading_default_title);
         mEventFilter =
                 new AreaGestureEventFilter(context, mTabStripEventHandler, null, false, false);
-
-        mNormalHelper = new StripLayoutHelper(context, updateHost, renderHost, false);
-        mIncognitoHelper = new StripLayoutHelper(context, updateHost, renderHost, true);
 
         CompositorOnClickHandler selectorClickHandler = new CompositorOnClickHandler() {
             @Override
@@ -262,6 +279,12 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
         mStripScrim = new StripScrim(context, mWidth, mHeight);
         mStripScrim.setVisible(false);
+        mBrowserScrimShowing = false;
+
+        mNormalHelper =
+                new StripLayoutHelper(context, updateHost, renderHost, false, mModelSelectorButton);
+        mIncognitoHelper =
+                new StripLayoutHelper(context, updateHost, renderHost, true, mModelSelectorButton);
 
         onContextChanged(context);
     }
@@ -277,10 +300,14 @@ public class StripLayoutHelperManager implements SceneOverlay {
      * Cleans up internal state.
      */
     public void destroy() {
+        if (mScrimFadeAnimation != null) {
+            mScrimFadeAnimation.cancel();
+        }
         mTabStripTreeProvider.destroy();
         mTabStripTreeProvider = null;
         mIncognitoHelper.destroy();
         mNormalHelper.destroy();
+        mLifecycleDispatcher.unregister(this);
         if (mTabModelSelector != null) {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelObserver);
@@ -290,6 +317,17 @@ public class StripLayoutHelperManager implements SceneOverlay {
             mTabModelSelectorTabObserver.destroy();
         }
     }
+
+    @Override
+    public void onResumeWithNative() {
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        if (currentTab == null) return;
+        getStripLayoutHelper(currentTab.isIncognito())
+                .scrollTabToView(LayoutManagerImpl.time(), true);
+    }
+
+    @Override
+    public void onPauseWithNative() {}
 
     private void handleModelSelectorButtonClick() {
         if (mTabModelSelector == null) return;
@@ -386,7 +424,9 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
     @Override
     public void getVirtualViews(List<VirtualView> views) {
-        if (!getStripScrim().isVisible()) getActiveStripLayoutHelper().getVirtualViews(views);
+        if (mBrowserScrimShowing) return;
+
+        if (!mStripScrim.isVisible()) getActiveStripLayoutHelper().getVirtualViews(views);
         if (mModelSelectorButton.isVisible()) views.add(mModelSelectorButton);
     }
 
@@ -517,7 +557,6 @@ public class StripLayoutHelperManager implements SceneOverlay {
                 if (mLayerTitleCacheSupplier.hasValue()) {
                     mLayerTitleCacheSupplier.get().remove(tab.getId());
                 }
-                getStripLayoutHelper(tab.isIncognito()).tabClosureCommited();
             }
 
             @Override
@@ -530,11 +569,6 @@ public class StripLayoutHelperManager implements SceneOverlay {
             public void didCloseTab(Tab tab) {
                 getStripLayoutHelper(tab.isIncognito()).tabClosed(time(), tab.getId());
                 updateModelSwitcherButton();
-            }
-
-            @Override
-            public void willCloseTab(Tab tab, boolean animate) {
-                getStripLayoutHelper(tab.isIncognito()).willCloseTab(tab.getId());
             }
 
             @Override
@@ -567,6 +601,16 @@ public class StripLayoutHelperManager implements SceneOverlay {
         };
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(modelSelector) {
+            @Override
+            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                if (params.getTransitionType() == PageTransition.HOME_PAGE
+                        || (params.getTransitionType() & PageTransition.FROM_ADDRESS_BAR)
+                                == PageTransition.FROM_ADDRESS_BAR) {
+                    getStripLayoutHelper(tab.isIncognito())
+                            .scrollTabToView(LayoutManagerImpl.time(), false);
+                }
+            }
+
             @Override
             public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
                 getStripLayoutHelper(tab.isIncognito()).tabLoadStarted(tab.getId());
@@ -636,6 +680,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
      * @param context The current Android {@link Context}.
      */
     public void onContextChanged(Context context) {
+        mContext = context;
         mNormalHelper.onContextChanged(context);
         mIncognitoHelper.onContextChanged(context);
     }
@@ -680,6 +725,11 @@ public class StripLayoutHelperManager implements SceneOverlay {
             mIncognitoHelper.setEndMargin(endMargin);
             updateStripScrim();
         }
+    }
+
+    private boolean isGridTabSwitcherPolishEnabled() {
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
+                && TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH.getValue();
     }
 
     private boolean isGridTabSwitcherNonPolishEnabled() {

@@ -37,7 +37,9 @@ bool ContainsOnlyAllowedValues(const base::Value& value,
 ClientStatus ExtractFlowReturnValue(
     const DevtoolsClient::ReplyStatus& devtools_reply_status,
     runtime::EvaluateResult* devtools_result,
-    std::unique_ptr<base::Value>& out_flow_result);
+    std::unique_ptr<base::Value>& out_flow_result,
+    int js_line_offset,
+    int num_stack_entries_to_drop);
 
 // Extracts client status and optionally return value from |value|. Expects
 // status and result to be in specific fields (see .cc) Other fields are
@@ -59,6 +61,11 @@ ClientStatus ExtractFlowReturnValue(
 ClientStatus ExtractJsFlowActionReturnValue(
     const base::Value& value,
     std::unique_ptr<base::Value>& out_result_value);
+
+// Converts the processed action result from runNativeAction to the Value that
+// will be returned to the JS sandbox.
+std::unique_ptr<base::Value> NativeActionResultToResultValue(
+    const ProcessedActionProto& processed_action);
 
 }  // namespace js_flow_util
 }  // namespace autofill_assistant

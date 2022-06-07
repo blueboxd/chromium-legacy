@@ -121,7 +121,6 @@ interface MediaDevices : EventTarget
 
 # Because getDisplayMedia() is not supported on Android,
 # dependent features such as Capture Handle are also unsupported.
-interface CaptureHandleChangeEvent : Event
 interface MediaStreamTrack : EventTarget
   getter oncapturehandlechange
   setter oncapturehandlechange
@@ -251,6 +250,10 @@ interface USBInterface
 interface USBAlternateInterface
 interface USBEndpoint
 
+# File Handling API is not implemented in WebView (or Android). crbug.com/829689
+interface LaunchParams
+interface LaunchQueue
+
 [GLOBAL OBJECT]
     method openDatabase
     attribute eventSender                    # test only
@@ -260,6 +263,7 @@ interface USBEndpoint
     attribute textInputController            # test only
     attribute gamepadController              # test only
     attribute GCController                   # test only
+    getter launchQueue                       # PWA File Handling API, crbug.com/829689
     getter speechSynthesis                   # Speech API, crbug.com/487255
     attribute chrome                         # crbug.com/618471
     method gc                                # test only

@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">गेटवे</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">स्कॅन क्षेत्रावर फिट करा</translation>
+<translation id="1367951781824006909">फाइल निवडा</translation>
 <translation id="1387854245479784695">हे सर्व कोअरचे एकत्रीकरण आहे</translation>
 <translation id="1394661041439318933">डिव्हाइसच्या केसच्या बॅटरीची पातळी <ph name="BATTERY_PERCENTAGE" />% आहे.</translation>
 <translation id="1397738625398125236">गेटवेला पिंग करता येते</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">हार्डवेअर पुनरावृत्ती</translation>
 <translation id="1905710495812624430">कमाल अनुमती असलेले प्रयत्न ओलांडले.</translation>
 <translation id="1908234395526491708">UDP विनंती पूर्ण करता आली नाही</translation>
-<translation id="1930797645656624981">Chrome OS इनपुट पद्धत सेवा</translation>
 <translation id="1947737735496445907">प्रिंट केले</translation>
 <translation id="1951012854035635156">Assistant</translation>
+<translation id="1977994649430373166">Google प्रोफाइल फोटो</translation>
 <translation id="1979103255016296513">पासवर्ड बदलण्याची मुदत संपली आहे</translation>
 <translation id="1999615961760456652">कॅप्टिव्ह पोर्टल</translation>
 <translation id="2006864819935886708">कनेक्टिव्हिटी</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">किमान एक आर्ट गॅलरी अल्बम निवडणे आवश्यक आहे</translation>
 <translation id="2230005943220647148">सेल्सियस</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">कीबोर्ड बॅकलाइट टॉगल</translation>
 <translation id="2240366984605217732">लेआउट स्विच</translation>
 <translation id="225692081236532131">सक्रियन स्थिती</translation>
 <translation id="2287186687001756809">इमेज उपलब्ध नाही. फोटो जोडण्यासाठी, <ph name="LINK" /> वर जा</translation>
@@ -149,7 +151,6 @@
 <translation id="2536159006530886390">इंटरनेटशी कनेक्ट करू शकत नाही.</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> चाचणी रन होत आहे...</translation>
 <translation id="2584559707064218956">सेट करण्यासाठी, सेटिंग्ज वर जा</translation>
-<translation id="2585245331261708204">Chrome OS मध्ये नवीन</translation>
 <translation id="2619761439309613843">दैनिक रिफ्रेश</translation>
 <translation id="2620436844016719705">सिस्टम</translation>
 <translation id="2640549051766135490">अल्‍बम <ph name="TITLE" /> <ph name="DESC" /> निवडला</translation>
@@ -222,6 +223,7 @@
 <translation id="3604713164406837697">वॉलपेपर बदला</translation>
 <translation id="360565022852130722">वायफाय नेटवर्क कमकुवत प्रोटोकॉल WEP 802.1x सह सुरक्षित केले गेले आहे</translation>
 <translation id="3606583719724308068">HTTPS वेबसाइटवर लेटन्सी जास्त आहे</translation>
+<translation id="3621202678540785336">इनपुट</translation>
 <translation id="3632579075709132555">गोपनीयता स्क्रीन टॉगल करा</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> चाचणी</translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
@@ -246,6 +248,7 @@
 <translation id="3954678691475912818">डिव्हाइसचा प्रकार अज्ञात आहे.</translation>
 <translation id="3966286471246132217">आणखी अचूक परिणामांसाठी, चाचणी पूर्ण होईपर्यंत सर्व अ‍ॅप्स बंद करा.</translation>
 <translation id="3967822245660637423">पूर्ण डाउनलोड करा</translation>
+<translation id="3969602104473960991">ChromeOS चा पासवर्ड अपडेट केला आहे</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> दिवसांपेक्षा जुने प्रिंट जॉब काढून टाकले जातील</translation>
 <translation id="3993704782688964914">तुमचे <ph name="DEVICE_NAME" /> आता अप टू डेट आहे</translation>
@@ -321,7 +324,6 @@
 <translation id="4731797938093519117">पालक अ‍ॅक्सेस</translation>
 <translation id="473775607612524610">अपडेट करा</translation>
 <translation id="4744944742468440486">तुमच्या निवडीशी संबंधित माहिती</translation>
-<translation id="475869545581454722">Chrome OS चा पासवर्ड अपडेट करण्यात आला</translation>
 <translation id="4773299976671772492">थांबविले</translation>
 <translation id="4782311465517282004">तुम्ही मजकुरावर राइट-क्लिक करता तेव्हा किंवा त्याला स्पर्श करून तो धरून ठेवता तेव्हा व्याख्या, भाषांतरे किंवा युनिट रूपांतरे मिळवा</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> फोटो</translation>
@@ -461,6 +463,7 @@
 <translation id="6113701710518389813">अप अ‍ॅरो</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, + आणखी <ph name="NUMBER" /> अल्बम</translation>
 <translation id="6122191549521593678">ऑनलाइन</translation>
+<translation id="6122277663991249694">ChromeOS इनपुट पद्धत सेवा</translation>
 <translation id="6137767437444130246">वापरकर्ता सर्टिफिकेट</translation>
 <translation id="6146993107019042706">पूर्ण करण्यासाठी, तुमचा नवीन पासवर्ड एंटर करा</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -513,7 +516,7 @@
 <translation id="6647510110698214773">एंक्रिप्शन अल्गोरिदम</translation>
 <translation id="6650062777702288430">काना/वर्णांक स्विच</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
-<translation id="6659594942844771486">टॅब</translation>
+<translation id="6659594942844771486">ब्राउझर टॅब</translation>
 <translation id="6692996468359469499">तुमच्या निवडीशी संबंधित माहिती मिळवा</translation>
 <translation id="6704062477274546131">DNS रिझोल्युशन</translation>
 <translation id="6723839937902243910">सामर्थ्य</translation>
@@ -552,6 +555,7 @@
 <translation id="7143207342074048698">कनेक्ट करत आहे</translation>
 <translation id="7144878232160441200">पुन्हा प्रयत्न करा</translation>
 <translation id="714876143603641390">LAN कनेक्टिव्हिटी</translation>
+<translation id="7155171745945906037">कॅमेरा किंवा फाईल मधील विद्यमान फोटो</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7172721935181587524">एक इमेज</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> कॉंफिगर करा</translation>
@@ -626,6 +630,7 @@
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">ऑटो कलर मोड सुरू करा</translation>
 <translation id="8041089156583427627">अभिप्राय पाठवा</translation>
+<translation id="8045012663542226664">मायक्रोफोन म्यूट</translation>
 <translation id="8075838845814659848">शिल्लक चार्जिंग</translation>
 <translation id="8082366717211101304">Android अ‍ॅप्सवरून DNS चे निराकरण करू शकत नाही</translation>
 <translation id="808894953321890993">पासवर्ड बदला</translation>
@@ -657,6 +662,7 @@
 <translation id="8398927464629426868">ज्या गतीने डिव्हाइस सध्या चार्ज किंवा डिस्चार्ज होत आहे</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">अंतर्गत कीबोर्ड</translation>
+<translation id="8431300646573772016">ChromeOS मध्ये नवीन</translation>
 <translation id="843568408673868420">इंटरनेट कनेक्टिव्हिटी</translation>
 <translation id="844521431886043384">DNS सेट केलेली नाही</translation>
 <translation id="8461329675984532579">होम पुरवठादार नाव</translation>
@@ -736,6 +742,7 @@
 <translation id="917720651393141712">चाचणी करा</translation>
 <translation id="9204237731135241582">Android अ‍ॅप्सवरून गेटवेशी संपर्क साधू शकत नाही</translation>
 <translation id="9211490828691860325">सर्व डेस्क</translation>
+<translation id="932327136139879170">होम</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">सक्रिय नाही</translation>
 <translation id="960719561871045870">ऑपरेटर कोड</translation>

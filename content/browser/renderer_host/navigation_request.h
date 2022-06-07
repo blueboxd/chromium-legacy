@@ -898,6 +898,10 @@ class CONTENT_EXPORT NavigationRequest
     return pending_ad_components_map_;
   }
 
+  const absl::optional<AdAuctionData>& ad_auction_data() const {
+    return ad_auction_data_;
+  }
+
   void RenderFallbackContentForObjectTag();
 
   // Returns the vector of web features used during the navigation, whose
@@ -1928,6 +1932,15 @@ class CONTENT_EXPORT NavigationRequest
   // response. This is set only for a main frame navigation.
   bool was_resource_hints_received_ = false;
 
+  // Set to true when this navigation has created parameters for
+  // NavigationEarlyHintsManager. Used to check whether cross origin redirects
+  // happened after Early Hints responses are received.
+  bool did_create_early_hints_manager_params_ = false;
+
+  // Set to true when an Early Hints response was received before cross origin
+  // redirects during navigation.
+  bool did_receive_early_hints_before_cross_origin_redirect_ = false;
+
   // Observers listening to cookie access notifications for the network requests
   // made by this navigation.
   mojo::ReceiverSet<network::mojom::CookieAccessObserver> cookie_observers_;
@@ -2014,6 +2027,11 @@ class CONTENT_EXPORT NavigationRequest
   // flag. Note that this flag is only relevant for fenced frames based on
   // MPArch.
   const bool is_fenced_frame_opaque_url_ = false;
+
+  // If this navigation is a load in a fenced frame of a URN URL that resulted
+  // from an interest group auction, this contains some information about the
+  // auction that should be attached to the renderer as AdAuctionDocumentData.
+  absl::optional<AdAuctionData> ad_auction_data_;
 
   // If this navigation is a load in a fenced frame of a URN URL that resulted
   // from an interest group auction, this contains the ad component URLs

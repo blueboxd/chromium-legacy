@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">دروازه</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">متناسب با ناحیه اسکن</translation>
+<translation id="1367951781824006909">انتخاب یک فایل</translation>
 <translation id="1387854245479784695">این مجموع تمام هسته‌ها است</translation>
 <translation id="1394661041439318933">باتری قاب دستگاه <ph name="BATTERY_PERCENTAGE" />٪ شارژ دارد.</translation>
 <translation id="1397738625398125236">دروازه را می‌توان پینگ کرد</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">بازبینی سخت‌افزار</translation>
 <translation id="1905710495812624430">به حداکثر تعداد مجاز تلاش رسیده‌اید.</translation>
 <translation id="1908234395526491708">‏خطاهای درخواست UDP</translation>
-<translation id="1930797645656624981">‏سرویس روش ورودی سیستم‌عامل Chrome</translation>
 <translation id="1947737735496445907">چاپ‌شده</translation>
 <translation id="1951012854035635156">دستیار</translation>
+<translation id="1977994649430373166">‏عکس نمایه Google</translation>
 <translation id="1979103255016296513">مهلت تغییر گذرواژه به پایان رسید</translation>
 <translation id="1999615961760456652">درگاه مهمان</translation>
 <translation id="2006864819935886708">قابلیت اتصال</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">باید حداقل یک آلبوم از «گالری هنری» انتخاب شود</translation>
 <translation id="2230005943220647148">سانتی‌گراد</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">روشن/ خاموش کردن نور پس‌زمینه صفحه‌کلید</translation>
 <translation id="2240366984605217732">تغییر طرح‌بندی</translation>
 <translation id="225692081236532131">وضعیت فعال‌سازی</translation>
 <translation id="2287186687001756809">تصویری وجود ندارد. برای افزودن عکس به <ph name="LINK" /> بروید</translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">دقت نقطه شناور</translation>
 <translation id="2448312741937722512">نوع</translation>
 <translation id="2461822463642141190">فعلی</translation>
+<translation id="2491955442992294626">وقتی درحال استفاده از پنجره دیگری هستید، کلیدها آزمایش نمی‌شوند</translation>
 <translation id="2493126929778606526">بهترین عکس‌هایتان که به‌طور خودکار انتخاب شده‌اند</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">بازخوانی کاغذدیواری کنونی</translation>
@@ -148,12 +151,12 @@
 <translation id="2536159006530886390">اتصال به اینترنت ممکن نیست.</translation>
 <translation id="2570743873672969996">درحال اجرای آزمایش <ph name="TEST_NAME" />…</translation>
 <translation id="2584559707064218956">برای راه‌اندازی، به «تنظیمات» بروید</translation>
-<translation id="2585245331261708204">‏ویژگی‌های جدید Chrome OS</translation>
 <translation id="2619761439309613843">بازخوانی روزانه</translation>
 <translation id="2620436844016719705">سیستم</translation>
 <translation id="2640549051766135490">آلبوم <ph name="TITLE" /> <ph name="DESC" /> انتخاب شد</translation>
 <translation id="2695514675076754339">کد قفل‌گشایی ۸ رقمی را وارد کنید</translation>
 <translation id="2712812801627182647">کلید اصالت‌سنجی «امنیت لایه انتقال»</translation>
+<translation id="2717139507051041123">فعال کردن حالت رنگ تیره</translation>
 <translation id="2740531572673183784">تأیید</translation>
 <translation id="2751739896257479635">‏اصالت‌سنجی مرحله ۲ EAP</translation>
 <translation id="2783010256799387990">موفق</translation>
@@ -220,6 +223,7 @@
 <translation id="3604713164406837697">تغییر کاغذدیواری</translation>
 <translation id="360565022852130722">‏شبکه Wi-Fi با پروتکل ضعیف WEP 802.1x ایمن شده است</translation>
 <translation id="3606583719724308068">‏تأخیر بالا در وب‌سایت‌های HTTPS</translation>
+<translation id="3621202678540785336">ورودی</translation>
 <translation id="3632579075709132555">پنهان/ نمایان کردن صفحه حریم‌خصوصی</translation>
 <translation id="3689839747745352263">آزمایش <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">در حال بارکردن…</translation>
@@ -244,6 +248,7 @@
 <translation id="3954678691475912818">نوع دستگاه مشخص نیست.</translation>
 <translation id="3966286471246132217">برای دریافت نتایج دقیق‌تر، تا زمان تکمیل شدن آزمایش، همه برنامه‌ها را ببندید.</translation>
 <translation id="3967822245660637423">بارگیری کامل شد</translation>
+<translation id="3969602104473960991">‏گذرواژه ChromeOS به‌روزرسانی شد</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="39823212440917567">کارهای چاپ قدیمی‌تر از <ph name="NUMBER_OF_DAYS" /> روز برداشته می‌شوند</translation>
 <translation id="3993704782688964914">اکنون <ph name="DEVICE_NAME" /> شما به‌روز است</translation>
@@ -319,7 +324,6 @@
 <translation id="4731797938093519117">دسترسی ولی</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4744944742468440486">اطلاعات مرتبط با انتخاب شما</translation>
-<translation id="475869545581454722">‏گذرواژه Chrome OS به‌روزرسانی شد</translation>
 <translation id="4773299976671772492">متوقف شد</translation>
 <translation id="4782311465517282004">وقتی روی نوشتار کلیک راست می‌کنید یا آن را لمس می‌کنید و نگه می‌دارید، تعاریف، ترجمه‌ها، یا تبدیل واحدها را دریافت می‌کنید</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> عکس</translation>
@@ -376,6 +380,7 @@
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="5234764350956374838">رد کردن</translation>
 <translation id="5252456968953390977">فراگردی</translation>
+<translation id="5257811368506016604">فعال کردن حالت رنگ روشن</translation>
 <translation id="5264277876637023664">اجرای آزمایش واحد پردازش مرکزی</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="ERROR_STATUS" /></translation>
 <translation id="5275828089655680674">اجرای دوباره روال‌ها</translation>
@@ -458,6 +463,7 @@
 <translation id="6113701710518389813">جهت‌نمای بالا</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />، +<ph name="NUMBER" /> آلبوم دیگر</translation>
 <translation id="6122191549521593678">آنلاین</translation>
+<translation id="6122277663991249694">‏سرویس روش ورودی ChromeOS</translation>
 <translation id="6137767437444130246">گواهی کاربر</translation>
 <translation id="6146993107019042706">برای تکمیل کار،‌ گذرواژه جدیدتان را وارد کنید</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -486,6 +492,7 @@
 <translation id="641081527798843608">مطابقت موضوع</translation>
 <translation id="6423239382391657905">‏باز کردن VPN</translation>
 <translation id="6439505561246192797">ضعیف (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="6447630859861661624">رفتن به تنظیمات حساب</translation>
 <translation id="6456394469623773452">عالی</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{صفحه مجدداً اسکن شود؟}=1{{PAGE_NUMBER} صفحه مجدداً اسکن شود؟}one{{PAGE_NUMBER} صفحه مجدداً اسکن شود؟}other{{PAGE_NUMBER} صفحه مجدداً اسکن شود؟}}</translation>
 <translation id="6472207088655375767">OTP</translation>
@@ -548,6 +555,7 @@
 <translation id="7143207342074048698">در حال اتصال</translation>
 <translation id="7144878232160441200">سعی مجدد</translation>
 <translation id="714876143603641390">‏اتصال LAN</translation>
+<translation id="7155171745945906037">عکس موجود از دوربین یا فایل</translation>
 <translation id="7162487448488904999">گالری</translation>
 <translation id="7172721935181587524">یک تصویر</translation>
 <translation id="7175037578838465313">پیکربندی <ph name="NAME" /></translation>
@@ -569,6 +577,7 @@
 <translation id="7343649194310845056">دستگاه‌های شبکه</translation>
 <translation id="7359657277149375382">نوع فایل</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378886533986123738">تغییر محافظ صفحه‌نمایش</translation>
 <translation id="741244894080940828">تبدیل</translation>
 <translation id="7415801143053185905">‏تأخیر خیلی زیاد HTTP</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -591,6 +600,7 @@
 <translation id="7648838807254605802">‏تأخیر بالا در HTTPS</translation>
 <translation id="7656388927906093505">دستگاه موش‌واره است.</translation>
 <translation id="7658239707568436148">لغو</translation>
+<translation id="7665800271478495366">تغییر چهره‌نما</translation>
 <translation id="7690294790491645610">تأیید گذرواژه جدید</translation>
 <translation id="7701040980221191251">هیچ‌کدام</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -618,7 +628,9 @@
 <translation id="7994702968232966508">‏روش EAP</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
+<translation id="80398733265834479">فعال کردن حالت رنگ خودکار</translation>
 <translation id="8041089156583427627">ارسال بازخورد</translation>
+<translation id="8045012663542226664">بی‌صدا کردن میکروفون</translation>
 <translation id="8075838845814659848">شارژ باقی‌مانده</translation>
 <translation id="8082366717211101304">‏نمی‌توان ساناد را از برنامه‌های Android حل‌وفصل کرد</translation>
 <translation id="808894953321890993">تغییر گذرواژه</translation>
@@ -650,6 +662,7 @@
 <translation id="8398927464629426868">سرعت شارژ یا تخلیه شارژ دستگاه درحال‌حاضر</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">صفحه‌کلید داخلی</translation>
+<translation id="8431300646573772016">‏ویژگی‌های جدید ChromeOS</translation>
 <translation id="843568408673868420">اتصال اینترنت</translation>
 <translation id="844521431886043384">ساناد تنظیم نشده است</translation>
 <translation id="8461329675984532579">نام ارائه‌دهنده اصلی</translation>
@@ -729,6 +742,7 @@
 <translation id="917720651393141712">آزمایش کردن</translation>
 <translation id="9204237731135241582">‏نمی‌توان از برنامه‌های Android با دروازه تماس گرفت</translation>
 <translation id="9211490828691860325">همه میزکارها</translation>
+<translation id="932327136139879170">منزل</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">فعال نشد</translation>
 <translation id="960719561871045870">کد اپراتور</translation>

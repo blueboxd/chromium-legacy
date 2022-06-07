@@ -100,7 +100,6 @@
 <translation id="124116460088058876">Περισσότερες γλώσσες</translation>
 <translation id="1243027604378859286">Συντάκτης:</translation>
 <translation id="1246424317317450637">Έντονη γραφή</translation>
-<translation id="1248573052514400575"><ph name="MANAGE_CHROMEOS_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε το πλήκτρο Tab και έπειτα το πλήκτρο Enter για να εξατομικεύσετε τα εργαλεία προσβασιμότητάς σας στις ρυθμίσεις του Chrome OS</translation>
 <translation id="1250759482327835220">Για πιο γρήγορες πληρωμές στο μέλλον, αποθηκεύστε τα στοιχεία της κάρτας σας, το όνομα και τη διεύθυνση χρέωσης στον Λογαριασμό σας Google.</translation>
 <translation id="1252799212227771492">Κουμπί Δημιουργία φύλλου, πατήστε το πλήκτρο Enter για να δημιουργήσετε γρήγορα ένα νέο Φύλλο Google</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (συγχρονισμένο)</translation>
@@ -139,6 +138,7 @@
 <translation id="1323433172918577554">Εμφάνιση περισσότερων</translation>
 <translation id="132390688737681464">Αποθήκευση και συμπλήρωση διευθύνσεων</translation>
 <translation id="1330449323196174374">Αριστερή δίπλωση παράθυρο</translation>
+<translation id="1333745675627230582">Παιχνίδι Chrome Dino</translation>
 <translation id="1333989956347591814">Η δραστηριότητά σας <ph name="BEGIN_EMPHASIS" />μπορεί να εξακολουθήσει να είναι ορατή<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Στους ιστοτόπους που επισκέπτεστε
@@ -302,7 +302,7 @@
 <translation id="1711528724596764268">Μηχανική εκμάθηση και τεχνητή νοημοσύνη</translation>
 <translation id="1712552549805331520">Ο ιστότοπος <ph name="URL" /> θέλει να αποθηκεύσει μόνιμα δεδομένα στον τοπικό υπολογιστή σας</translation>
 <translation id="1713628304598226412">Δίσκος 2</translation>
-<translation id="1715874602234207">F</translation>
+<translation id="1715874602234207">Π</translation>
 <translation id="1717218214683051432">Αισθητήρες κίνησης</translation>
 <translation id="1717494416764505390">Γραμματοκιβώτιο 3</translation>
 <translation id="1718029547804390981">Το έγγραφο είναι πάρα πολύ μεγάλο για σχολιασμό.</translation>
@@ -383,7 +383,6 @@
 <translation id="1919345977826869612">Διαφημίσεις</translation>
 <translation id="1919367280705858090">Λήψη βοήθειας για συγκεκριμένο μήνυμα σφάλματος</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Κανένας}=1{1 ιστότοπος}other{# ιστότοποι}}</translation>
-<translation id="1923390796829649802">Κουμπί Διαχείριση ρυθμίσεων προσβασιμότητας, πατήστε Enter για να εξατομικεύσετε τα εργαλεία προσβασιμότητάς σας στις ρυθμίσεις του Chrome OS.</translation>
 <translation id="1924727005275031552">Νέο</translation>
 <translation id="1927439593081478069">Κουμπί Εκτέλεση ελέγχου ασφαλείας Chrome, πατήστε το πλήκτρο Enter για εκτέλεση του ελέγχου ασφαλείας στις ρυθμίσεις του Chrome</translation>
 <translation id="1939175642807587452">Μπορεί να ζητά να στέλνει ειδοποιήσεις.</translation>
@@ -513,6 +512,7 @@
 <translation id="2298855485018661510">Κουμπί διαχείρισης cookie, πατήστε Enter για να διαχειριστείτε τις προτιμήσεις σας για τα cookie από τις ρυθμίσεις του Chrome</translation>
 <translation id="2300306941146563769">Δεν έγινε μεταφόρτωση</translation>
 <translation id="2310021320168182093">Chou2 (Φάκελος)</translation>
+<translation id="2316159751672436664">Εξατομίκευση εργαλείων προσβασιμότητας στις ρυθμίσεις του Chrome OS</translation>
 <translation id="2316887270356262533">Απελευθερώνει λιγότερο από 1 MB. Ορισμένοι ιστότοποι μπορεί να φορτωθούν πιο αργά κατά την επόμενη επίσκεψή σας.</translation>
 <translation id="2317259163369394535">Ο τομέας <ph name="DOMAIN" /> απαιτεί ένα όνομα χρήστη και έναν κωδικό πρόσβασης.</translation>
 <translation id="2318594867107319532">Τελευταία χρονική σήμανση πολιτικής:</translation>
@@ -642,7 +642,6 @@
 <translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε Tab και έπειτα Enter για εκκαθάριση του ιστορικού περιήγησης, των cookie, της κρυφής μνήμης κ.α. στις ρυθμίσεις του Chrome.</translation>
 <translation id="2650446666397867134">Η πρόσβαση στο αρχείο απορρίφθηκε</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
-<translation id="2659491813326907275">Εξατομίκευση εργαλείων προσβασιμότητας στις ρυθμίσεις του Chrome OS</translation>
 <translation id="2660779039299703961">Συμβάν</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Κανένας}=1{1 κωδικός πρόσβασης (για <ph name="DOMAIN_LIST" />)}=2{2 κωδικοί πρόσβασης (για <ph name="DOMAIN_LIST" />)}other{# κωδικοί πρόσβασης (για <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Κορυφή</translation>
@@ -746,6 +745,7 @@
 <translation id="2972581237482394796">&amp;Επανάληψη ενέργειας</translation>
 <translation id="2977665033722899841">Έχει επιλεγεί ο λογαριασμός <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
 <translation id="2978824962390592855">Όπερα</translation>
+<translation id="2983666748527428214">Άνοιγμα καρτέλας ανώνυμης περιήγησης</translation>
 <translation id="2985306909656435243">Εάν ενεργοποιηθεί, το Chromium θα αποθηκεύσει ένα αντίγραφο της κάρτας σας σε αυτήν τη συσκευή για ταχύτερη συμπλήρωση φορμών.</translation>
 <translation id="2985398929374701810">Εισαγάγετε μια έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="2986368408720340940">Ο τρόπος παραλαβής δεν είναι διαθέσιμος. Δοκιμάστε έναν άλλο τρόπο.</translation>
@@ -860,6 +860,7 @@
 <translation id="3295444047715739395">Δείτε και διαχειριστείτε τους κωδικούς πρόσβασής σας στις ρυθμίσεις του Chrome.</translation>
 <translation id="3303855915957856445">Δεν βρέθηκαν αποτελέσματα αναζήτησης</translation>
 <translation id="3304073249511302126">σάρωση Bluetooth</translation>
+<translation id="33073482541490531">Ο κωδικός πρόσβασης που μόλις χρησιμοποιήσατε εντοπίστηκε σε μια παραβίαση δεδομένων. Ο Διαχειριστής κωδικών πρόσβασης συνιστά την άμεση αλλαγή αυτού του κωδικού πρόσβασης.</translation>
 <translation id="3308006649705061278">Οργανωτική ομάδα (OU)</translation>
 <translation id="3308738399950580893">διαφημίσεις</translation>
 <translation id="3320021301628644560">Προσθήκη διεύθυνσης χρέωσης</translation>
@@ -994,6 +995,7 @@
 <translation id="3658742229777143148">Αναθεώρηση</translation>
 <translation id="3664782872746246217">Λέξεις-κλειδιά:</translation>
 <translation id="3667704023705708645">Επιχειρηματικό κεφάλαιο</translation>
+<translation id="367108335512738711">Σελιδοδείκτες Chrome</translation>
 <translation id="3671540257457995106">Να επιτρέπεται η αλλαγή μεγέθους;</translation>
 <translation id="3675563144891642599">Τρίτο ρολό</translation>
 <translation id="3676592649209844519">Αναγνωριστικό συσκευής:</translation>
@@ -1492,6 +1494,7 @@
 <translation id="5039804452771397117">Επιτρέπεται</translation>
 <translation id="5040262127954254034">Απόρρητο</translation>
 <translation id="5043480802608081735">Σύνδεσμος που αντιγράψατε</translation>
+<translation id="5044545992476246592">Ο κωδικός πρόσβασης που μόλις χρησιμοποιήσατε εντοπίστηκε σε μια παραβίαση δεδομένων. Ο Βοηθός Google μπορεί να αλλάξει αυτόματα τον κωδικό πρόσβασής σας.</translation>
 <translation id="5045550434625856497">Λανθασμένος κωδικός πρόσβασης</translation>
 <translation id="5051305769747448211">Ζωντανή κωμωδία</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{Για να στείλετε αυτό το αρχείο χρησιμοποιώντας την Κοινοποίηση κοντά, ελευθερώστε χώρο (<ph name="DISK_SPACE_SIZE" />) στη συσκευή σας}other{Για να στείλετε αυτά τα αρχεία χρησιμοποιώντας την Κοινοποίηση κοντά, ελευθερώστε χώρο (<ph name="DISK_SPACE_SIZE" />) στη συσκευή σας}}</translation>
@@ -1504,6 +1507,7 @@
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Ελέγξτε τη διεύθυνση του διακομιστή μεσολάβησης<ph name="END_LINK" /></translation>
 <translation id="5070838744279127212">Δέκατο ρολό</translation>
 <translation id="507130231501693183">Γραμματοκιβώτιο 4</translation>
+<translation id="5078060223219502807">Ο κωδικός πρόσβασης που μόλις χρησιμοποιήσατε εντοπίστηκε σε μια παραβίαση δεδομένων. Για την ασφάλεια των λογαριασμών σας, ο Διαχειριστής κωδικών πρόσβασης συνιστά να αλλάξετε άμεσα τον κωδικό πρόσβασης και έπειτα να ελέγξετε τους αποθηκευμένους κωδικούς πρόσβασής σας.</translation>
 <translation id="5086225927071063542">Κατανεμημένα συστήματα πληροφορικής και cloud computing</translation>
 <translation id="5087286274860437796">Το πιστοποιητικό του διακομιστή δεν είναι έγκυρο αυτήν τη στιγμή.</translation>
 <translation id="5087580092889165836">Προσθήκη κάρτας</translation>
@@ -1515,6 +1519,7 @@
 <translation id="5097099694988056070">Στατιστικά στοιχεία συσκευής, όπως χρήση CPU/RAM</translation>
 <translation id="5097501891273180634">A2</translation>
 <translation id="5108881358339761672">Ο ιστότοπος δεν είναι ασφαλής</translation>
+<translation id="5109892411553231226">Διαχείριση τρόπων πληρωμής</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5114288597538800140">Τροφοδότης χαρτιού 18</translation>
 <translation id="5114987907971894280">εικονική πραγματικότητα</translation>
@@ -1669,6 +1674,7 @@
 <translation id="5518670652865028077">Τέχνες και ψυχαγωγία</translation>
 <translation id="5519516356611866228">Με τις αλλαγές σας</translation>
 <translation id="5523118979700054094">Όνομα πολιτικής</translation>
+<translation id="5526617258931667850"><ph name="MANAGE_CHROMEOS_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε το πλήκτρο Tab και έπειτα το πλήκτρο Enter για να εξατομικεύσετε τα εργαλεία προσβασιμότητάς σας στις ρυθμίσεις του Chrome OS</translation>
 <translation id="5528532273234423708">Οικιακός αυτοματισμός</translation>
 <translation id="55293785478302737">Ραφή στο άκρο</translation>
 <translation id="553484882784876924">Prc6 (Φάκελος)</translation>
@@ -1763,6 +1769,7 @@
 <translation id="5789643057113097023">.</translation>
 <translation id="5803412860119678065">Θέλετε να συμπληρωθούν τα στοιχεία της κάρτας <ph name="CARD_DETAIL" />;</translation>
 <translation id="5804241973901381774">Άδειες</translation>
+<translation id="5808435672482059465">Προβολή του Ιστορικού Chrome</translation>
 <translation id="5808542072418270309">Παιχνίδια προσομοίωσης</translation>
 <translation id="5810442152076338065">Η σύνδεσή σας στο <ph name="DOMAIN" /> κρυπτογραφείται χρησιμοποιώντας ένα απαρχαιωμένο πρόγραμμα κρυπτογράφησης.</translation>
 <translation id="5812947184178430888">Όταν επισημαίνονται συμβάντα ασφαλείας από το Chrome, σχετικά δεδομένα για τα συμβάντα αποστέλλονται στον διαχειριστή σας. Σε αυτά ενδέχεται να περιλαμβάνονται τα URL των σελίδων που επισκέπτεστε στο Chrome, ονόματα αρχείων ή μεταδεδομένα και το όνομα χρήστη που χρησιμοποιείτε για τη σύνδεση στη συσκευή σας, στο Chrome και σε εφαρμογές που βασίζονται στον ιστό.</translation>
@@ -2019,6 +2026,7 @@
 <translation id="6579630537141957243">Σύνδεση συσκευής MIDI;</translation>
 <translation id="6579990219486187401">Ανοιχτό ροζ</translation>
 <translation id="6583674473685352014">B6 (Φάκελος)</translation>
+<translation id="6585526963651937128">Ιστορικό Chrome</translation>
 <translation id="6587182488465657433">Το Chrome εντόπισε σε μια παραβίαση δεδομένων τον κωδικό πρόσβασης που μόλις χρησιμοποιήσατε. Για να προστατέψετε τους λογαριασμούς σας, συνιστούμε να τον αλλάξετε άμεσα και έπειτα να ελέγξετε τους αποθηκευμένους κωδικούς πρόσβασής σας.</translation>
 <translation id="6587923378399804057">Σύνδεσμος που αντιγράψατε</translation>
 <translation id="6591833882275308647">Η συσκευή <ph name="DEVICE_TYPE" /> δεν είναι διαχειριζόμενη</translation>
@@ -2042,7 +2050,7 @@
 <translation id="6648524591329069940">Γραμματοσειρά Serif</translation>
 <translation id="6651270836885078973">Η διαχείριση γίνεται από:</translation>
 <translation id="6652101503459149953">Χρήση Windows Hello</translation>
-<translation id="6657585470893396449">Κωδικός Πρόσβασης</translation>
+<translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
 <translation id="6660413144148052430">τοποθεσία</translation>
 <translation id="6662457027866368246">Πρώτο ρολό</translation>
 <translation id="666259744093848177">(x86_64 μεταφρασμένο)</translation>
@@ -2127,6 +2135,7 @@
 <translation id="691024665142758461">Λήψη πολλών αρχείων</translation>
 <translation id="6915804003454593391">Χρήστης</translation>
 <translation id="6916954549222464607">Χρηματοοικονομικός σχεδιασμός και διαχείριση</translation>
+<translation id="6917795328362592458">Ο κωδικός πρόσβασης που μόλις χρησιμοποιήσατε εντοπίστηκε σε μια παραβίαση δεδομένων. Για την ασφάλεια των λογαριασμών σας, ο Διαχειριστής κωδικών πρόσβασης συνιστά να ελέγξετε τους αποθηκευμένους κωδικούς πρόσβασής σας.</translation>
 <translation id="6934672428414710184">Αυτό το όνομα προέρχεται από τον Λογαριασμό σας Google</translation>
 <translation id="6939469646605424232">Τηλεοπτικά δράματα</translation>
 <translation id="6944692733090228304">Καταχωρίσατε τον κωδικό πρόσβασής σας σε έναν ιστότοπο τον οποίο δεν διαχειρίζεται ο οργανισμός <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Για να προστατεύσετε τον λογαριασμό σας, μην χρησιμοποιήσετε ξανά αυτόν τον κωδικό πρόσβασης σε άλλες εφαρμογές και ιστότοπους.</translation>
@@ -2244,6 +2253,7 @@
 <translation id="722454870747268814">Νέα καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="7233592378249864828">Εκτύπωση φύλλου επιβεβαίωσης</translation>
 <translation id="7234638337680728591">Τιμές βενζίνης και καύσιμα οχημάτων</translation>
+<translation id="7237492777898608035">Να μην εμφανιστεί ξανά αυτό το μήνυμα για αυτόν τον ιστότοπο</translation>
 <translation id="7238585580608191973">Αποτύπωμα SHA-256</translation>
 <translation id="7240120331469437312">Εναλλακτικό όνομα υποκειμένου πιστοποιητικού</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />, <ph name="SIGNIN_DATA" /></translation>
@@ -2626,6 +2636,7 @@
 <translation id="8242426110754782860">Συνέχεια</translation>
 <translation id="8249296373107784235">Ματαίωση</translation>
 <translation id="8249463483885748674">Τυποποιημένες και εισαγωγικές εξετάσεις</translation>
+<translation id="8252991034201168845">Κουμπί Διαχείριση ρυθμίσεων προσβασιμότητας, πατήστε το πλήκτρο Enter για να εξατομικεύσετε τα εργαλεία προσβασιμότητάς σας στις ρυθμίσεις του Chrome OS</translation>
 <translation id="8253091569723639551">Απαιτείται διεύθυνση χρέωσης</translation>
 <translation id="8257387598443225809">Αυτή η εφαρμογή έχει σχεδιαστεί για κινητά</translation>
 <translation id="825929999321470778">Εμφάνιση όλων των αποθηκευμένων κωδικών πρόσβασης</translation>
@@ -2806,6 +2817,7 @@
 <translation id="8805819170075074995">Καταχώριση λίστας "<ph name="LANGUAGE_ID" />": Η καταχώριση παραβλέπεται επειδή περιλαμβάνεται επίσης στην πολιτική SpellcheckLanguage.</translation>
 <translation id="8806285662264631610">Προϊόντα μπάνιου και σώματος</translation>
 <translation id="8807160976559152894">Περικοπή μετά από κάθε σελίδα</translation>
+<translation id="8808828119384186784">Ρυθμίσεις του Chrome</translation>
 <translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε Tab και έπειτα Enter για να ενημερώσετε το Chrome από τις ρυθμίσεις του Chrome.</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
 <translation id="882338992931677877">Χειροκίνητη υποδοχή</translation>

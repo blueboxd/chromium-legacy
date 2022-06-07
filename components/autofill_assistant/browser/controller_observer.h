@@ -48,7 +48,7 @@ class ControllerObserver : public base::CheckedObserver {
 
   // Report that a field in |user_data| has changed.
   virtual void OnUserDataChanged(const UserData& user_data,
-                                 UserData::FieldChange field_change) = 0;
+                                 UserDataFieldChange field_change) = 0;
 
   // Updates the area of the visible viewport that is accessible when the
   // overlay state is OverlayState::PARTIAL.
@@ -97,6 +97,9 @@ class ControllerObserver : public base::CheckedObserver {
 
   // Called whenever the UI is shown or hidden.
   virtual void OnUiShownChanged(bool shown) = 0;
+
+  // Called before shutting down the Controller.
+  virtual void OnShutdown(Metrics::DropOutReason reason) = 0;
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_OBSERVER_H_

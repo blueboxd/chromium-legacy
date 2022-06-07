@@ -54,6 +54,9 @@ DisplayManagerScreenAttributes.resetAllowed;
   MIGRATION: 12,
   USER_CREATION: 15,
   ENROLLMENT_CANCEL_ENABLED: 16,
+  ENROLLMENT_SUCCESS: 17,
+  THEME_SELECTION: 18,
+  MARKETING_OPT_IN: 19,
 };
 
 // TODO(crbug.com/1229130) - Refactor/remove these constants.

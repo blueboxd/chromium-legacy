@@ -1082,7 +1082,8 @@
       // Portals, as we require the support of the browser process to fully
       // enable the feature. Enabling this runtime enabled feature alone has no
       // effect.
-      origin_trial_feature_name: "FencedFrames",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
     },
     {
       name: "FetchUploadStreaming",
@@ -1114,8 +1115,7 @@
     },
     {
       name: "FileSystemAccessAccessHandle",
-      origin_trial_feature_name: "FileSystemAccessAccessHandle",
-      status: "experimental",
+      status: "stable",
     },
     {
       // In-development features for the File System Access API.
@@ -1180,9 +1180,6 @@
     {
       // https://github.com/flackr/reduce-motion/blob/main/explainer.md
       name: "ForceReduceMotion",
-    },
-    {
-      name: "ForceSynchronousHTMLParsing",
     },
     {
       name: "ForceTallerSelectPopup",
@@ -1266,8 +1263,14 @@
       status: "stable",
     },
     {
+      // TODO(crbug.com/1315717): This flag is being used to deprecate support for <param> urls within <object> elements. This feature is controlled by blink::features::kHTMLParamElementUrlSupport.
+      name: "HTMLParamElementUrlSupport",
+      status: "stable",
+    },
+    {
       name: "HTMLPopupAttribute",
       status: "experimental",
+      implied_by: ["HTMLSelectMenuElement","HTMLSelectMenuElementUsesPopupAttribute"],
     },
     {
       name: "HTMLPopupElement",
@@ -1277,6 +1280,10 @@
     {
       name: "HTMLSelectMenuElement",
       status: "experimental",
+      implied_by: ["HTMLSelectMenuElementUsesPopupAttribute"],
+    },
+    {
+      name: "HTMLSelectMenuElementUsesPopupAttribute",
     },
     {
       name: "IDBBatchGetAll",
@@ -1569,7 +1576,7 @@
     },
     {
       name: "NavigationApi",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NavigationId",
@@ -2239,8 +2246,6 @@
     },
     {
       name: "SubresourceWebBundles",
-      origin_trial_feature_name: "SubresourceWebBundles",
-      origin_trial_allows_third_party: true,
       status: "experimental"
     },
     {
@@ -2575,6 +2580,9 @@
     {
       name: "WebAuthenticationLargeBlobExtension",
       status: "experimental",
+    },
+    {
+      name: "WebAuthenticationRemoteDesktopSupport",
     },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
     // It is also supported in Windows 10 which is handled in runtime_features.cc

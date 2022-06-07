@@ -43,6 +43,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/frame_accept_header.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
@@ -72,6 +73,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -845,6 +847,10 @@ void PrefetchProxyTabHelper::StartSinglePrefetch() {
       prefetch_container->GetPrefetchType().IsProxyRequired()
           ? prefetch::headers::kSecPurposePrefetchAnonymousClientIpHeaderValue
           : prefetch::headers::kSecPurposePrefetchHeaderValue);
+  request->headers.SetHeader(
+      net::HttpRequestHeaders::kAccept,
+      content::FrameAcceptHeaderValue(/*allow_sxg_responses=*/true, profile_));
+  request->headers.SetHeader("Upgrade-Insecure-Requests", "1");
   // Remove the user agent header if it was set so that the network context's
   // default is used.
   request->headers.RemoveHeader("User-Agent");
@@ -885,6 +891,10 @@ void PrefetchProxyTabHelper::StartSinglePrefetch() {
       loader.get(), prefetch_container->GetUrl()));
   loader->SetAllowHttpErrorResults(true);
   loader->SetTimeoutDuration(PrefetchProxyTimeoutDuration());
+  loader->SetURLLoaderFactoryOptions(
+      network::mojom::kURLLoadOptionSendSSLInfoWithResponse |
+      network::mojom::kURLLoadOptionSniffMimeType |
+      network::mojom::kURLLoadOptionSendSSLInfoForCertificateError);
   loader->DownloadToString(
       GetURLLoaderFactory(prefetch_container->GetUrl()),
       base::BindOnce(&PrefetchProxyTabHelper::OnPrefetchComplete,
@@ -1067,7 +1077,7 @@ void PrefetchProxyTabHelper::HandlePrefetchResponse(
     return;
   }
 
-  if (head->mime_type != "text/html") {
+  if (PrefetchProxyHTMLOnly() && head->mime_type != "text/html") {
     prefetch_container->SetPrefetchStatus(
         PrefetchProxyPrefetchStatus::kPrefetchFailedNotHTML);
     return;

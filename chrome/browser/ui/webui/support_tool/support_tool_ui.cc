@@ -73,6 +73,9 @@ content::WebUIDataSource* CreateSupportToolHTMLSource(const GURL& url) {
       source, base::make_span(kSupportToolResources, kSupportToolResourcesSize),
       IDR_SUPPORT_TOOL_SUPPORT_TOOL_CONTAINER_HTML);
 
+  source->AddResourcePath("url-generator",
+                          IDR_SUPPORT_TOOL_URL_GENERATOR_CONTAINER_HTML);
+
   return source;
 }
 
@@ -124,6 +127,8 @@ void InitDataCollectionModuleFromURLQuery(
   }
 }
 
+// Returns data collector item for `type`. Sets isIncluded field true if
+// `module` contains `type`.
 base::Value::Dict GetDataCollectorItemForType(
     const support_tool::DataCollectionModule& module,
     const support_tool::DataCollectorType& type) {
@@ -132,6 +137,17 @@ base::Value::Dict GetDataCollectorItemForType(
   dict.Set("protoEnum", type);
   dict.Set("isIncluded",
            base::Contains(module.included_data_collectors(), type));
+  return dict;
+}
+
+// Returns data collector item for `type`. Sets isIncluded to false for all data
+// collector items.
+base::Value::Dict GetDataCollectorItemForType(
+    const support_tool::DataCollectorType& type) {
+  base::Value::Dict dict;
+  dict.Set("name", GetDataCollectorName(type));
+  dict.Set("protoEnum", type);
+  dict.Set("isIncluded", false);
   return dict;
 }
 
@@ -144,6 +160,7 @@ base::Value::Dict GetDataCollectorItemForType(
 //  isIncluded: boolean,
 //  protoEnum: number,
 // }
+// Returns only the data collectors that are available for user's device.
 base::Value::List GetDataCollectorItemsInQuery(std::string module_query) {
   base::Value::List data_collector_list;
   support_tool::DataCollectionModule module;
@@ -161,6 +178,29 @@ base::Value::List GetDataCollectorItemsInQuery(std::string module_query) {
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_WITH_HW_DETAILS)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  return data_collector_list;
+}
+
+// Creates base::Value::List according to the format Support Tool UI
+// accepts and fills the contents with all data collectors with isIncluded:
+// false as a default choice. Support Tool UI requests data collector items in
+// format:
+// type DataCollectorItem = {
+//  name: string,
+//  isIncluded: boolean,
+//  protoEnum: number,
+// }
+base::Value::List GetAllDataCollectors() {
+  base::Value::List data_collector_list;
+  for (const auto& type : kDataCollectors) {
+    data_collector_list.Append(GetDataCollectorItemForType(type));
+  }
+  for (const auto& type : kDataCollectorsChromeosAsh) {
+    data_collector_list.Append(GetDataCollectorItemForType(type));
+  }
+  for (const auto& type : kDataCollectorsChromeosHwDetails) {
+    data_collector_list.Append(GetDataCollectorItemForType(type));
+  }
   return data_collector_list;
 }
 
@@ -302,7 +342,7 @@ class SupportToolMessageHandler : public content::WebUIMessageHandler,
   SupportToolMessageHandler& operator=(const SupportToolMessageHandler&) =
       delete;
 
-  ~SupportToolMessageHandler() override = default;
+  ~SupportToolMessageHandler() override;
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -310,6 +350,8 @@ class SupportToolMessageHandler : public content::WebUIMessageHandler,
   void HandleGetEmailAddresses(const base::Value::List& args);
 
   void HandleGetDataCollectors(const base::Value::List& args);
+
+  void HandleGetAllDataCollectors(const base::Value::List& args);
 
   void HandleStartDataCollection(const base::Value::List& args);
 
@@ -342,6 +384,12 @@ class SupportToolMessageHandler : public content::WebUIMessageHandler,
   base::WeakPtrFactory<SupportToolMessageHandler> weak_ptr_factory_{this};
 };
 
+SupportToolMessageHandler::~SupportToolMessageHandler() {
+  if (select_file_dialog_) {
+    select_file_dialog_->ListenerDestroyed();
+  }
+}
+
 void SupportToolMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getEmailAddresses",
@@ -351,6 +399,11 @@ void SupportToolMessageHandler::RegisterMessages() {
       "getDataCollectors",
       base::BindRepeating(&SupportToolMessageHandler::HandleGetDataCollectors,
                           weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "getAllDataCollectors",
+      base::BindRepeating(
+          &SupportToolMessageHandler::HandleGetAllDataCollectors,
+          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "startDataCollection",
       base::BindRepeating(&SupportToolMessageHandler::HandleStartDataCollection,
@@ -410,6 +463,14 @@ void SupportToolMessageHandler::HandleGetDataCollectors(
       callback_id, base::Value(GetDataCollectorItemsInQuery(module_query)));
 }
 
+void SupportToolMessageHandler::HandleGetAllDataCollectors(
+    const base::Value::List& args) {
+  AllowJavascript();
+  CHECK_EQ(1U, args.size());
+  const base::Value& callback_id = args[0];
+  ResolveJavascriptCallback(callback_id, base::Value(GetAllDataCollectors()));
+}
+
 void SupportToolMessageHandler::HandleStartDataCollection(
     const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
@@ -451,6 +512,10 @@ void SupportToolMessageHandler::HandleStartDataExport(
   CHECK_EQ(1U, args.size());
   const base::Value::List* pii_items = args[0].GetIfList();
   DCHECK(pii_items);
+  // Early return if the select file dialog is already active.
+  if (select_file_dialog_)
+    return;
+
   selected_pii_to_keep_ = GetSelectedPIIToKeep(pii_items);
 
   AllowJavascript();

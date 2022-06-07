@@ -61,6 +61,13 @@ constexpr int kAlpha95 = 242;  // 95%
 constexpr int kDarkBackgroundBlendAlpha = 127;   // 50%
 constexpr int kLightBackgroundBlendAlpha = 127;  // 50%
 
+// An array of OOBE screens which currently support dark theme.
+// In the future additional screens will be added. Eventually all screens
+// will support it and this array will not be needed anymore.
+constexpr OobeDialogState kStatesSupportingDarkTheme[] = {
+    OobeDialogState::HIDDEN, OobeDialogState::MARKETING_OPT_IN,
+    OobeDialogState::THEME_SELECTION};
+
 AshColorProvider* g_instance = nullptr;
 
 // Get the corresponding ColorName for |type|. ColorName is an enum in
@@ -206,7 +213,7 @@ void AshColorProvider::OnSessionStateChanged(
     return;
   if (state != session_manager::SessionState::OOBE &&
       state != session_manager::SessionState::LOGIN_PRIMARY) {
-    is_oobe_webui_shown_ = false;
+    force_oobe_light_mode_ = false;
   }
   NotifyDarkModeEnabledPrefChange();
   NotifyColorModeThemedPrefChange();
@@ -246,6 +253,18 @@ std::pair<SkColor, float> AshColorProvider::GetInkDropBaseColorAndOpacity(
   const bool is_dark = color_utils::IsDark(background_color);
   const SkColor base_color = is_dark ? SK_ColorWHITE : SK_ColorBLACK;
   const float opacity = is_dark ? kLightInkDropOpacity : kDarkInkDropOpacity;
+  return std::make_pair(base_color, opacity);
+}
+
+std::pair<SkColor, float>
+AshColorProvider::GetInvertedInkDropBaseColorAndOpacity(
+    SkColor background_color) const {
+  if (background_color == gfx::kPlaceholderColor)
+    background_color = GetBackgroundColor();
+
+  const bool is_light = !color_utils::IsDark(background_color);
+  const SkColor base_color = is_light ? SK_ColorWHITE : SK_ColorBLACK;
+  const float opacity = is_light ? kLightInkDropOpacity : kDarkInkDropOpacity;
   return std::make_pair(base_color, opacity);
 }
 
@@ -295,10 +314,8 @@ bool AshColorProvider::IsDarkModeEnabled() const {
     return false;
 
   if (features::IsDarkLightModeEnabled()) {
-    // Always use the LIGHT theme when OOBE WebUI is show (either as out-of-box
-    // or the WebUI dialog on the login screen). Lots of colors are hard coded
-    // in OOBE WebUI for now.
-    if (is_oobe_webui_shown_)
+    // Always use the LIGHT theme in all OOBE screens except the last two
+    if (force_oobe_light_mode_)
       return false;
 
     // On the login screen use the preference of the focused pod's user if they
@@ -313,6 +330,7 @@ bool AshColorProvider::IsDarkModeEnabled() const {
   // is not enabled.
   if (!active_user_pref_service_ || !features::IsDarkLightModeEnabled())
     return true;
+
   return active_user_pref_service_->GetBoolean(prefs::kDarkModeEnabled);
 }
 
@@ -325,7 +343,7 @@ void AshColorProvider::SetDarkModeEnabledForTest(bool enabled) {
 
 void AshColorProvider::OnOobeDialogStateChanged(OobeDialogState state) {
   auto closure = GetNotifyOnDarkModeChangeClosure();
-  is_oobe_webui_shown_ = state != OobeDialogState::HIDDEN;
+  force_oobe_light_mode_ = !base::Contains(kStatesSupportingDarkTheme, state);
 }
 
 void AshColorProvider::OnFocusPod(const AccountId& account_id) {

@@ -34,11 +34,10 @@
 
   #faviconContainer li {
     display: inline;
-    margin-inline-end: -6px;
+    margin: 2px;
   }
 
   .favicon-image {
-    border: 2px solid var(--ntp-background-override-color);
     border-radius: 50%;
     height: 24px;
     margin-inline-end: auto;
@@ -97,7 +96,7 @@
           as="merchant">
         <li class="favicon">
           <img class="favicon-image" is="cr-auto-img"
-              auto-src="[[getFaviconUrl_(merchant.cartUrl.url)]]"></img>
+              auto-src="[[getFaviconUrl_(merchant.cartUrl.url)]]" alt=""></img>
         </li>
       </template>
     </ul>
@@ -107,7 +106,7 @@
       <template id="consentStepRepeat" is="dom-repeat" items="[[steps_]]"
           as="step">
         <div class="step-container" id="[[step.id]]">
-          <div class="content-container truncate">
+          <div class="content-container truncate" tabindex="0">
             <span class="content">
               [[step.content]]
             </span>
@@ -137,7 +136,7 @@
     </iron-pages>
   </div>
   <template is="dom-if" if="[[showCloseButton_]]" restamp>
-    <cr-icon-button id="close" class="icon-clear"
+    <cr-icon-button id="close" class="icon-clear" aria-label="$i18n{close}"
         on-click="onCloseClick_"></cr-icon-button>
   </template>
 </div>

@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "net/third_party/quiche/src/quiche/quic/platform/api/quic_logging.h"
 
 namespace quiche {
 
@@ -195,14 +195,10 @@ bool TypedQuicheFlagHelper<std::string>::SetFlag(const std::string& s) const {
   return true;
 }
 
-template class EXPORT_TEMPLATE_DEFINE(QUICHE_EXPORT_PRIVATE)
-    TypedQuicheFlagHelper<bool>;
-template class EXPORT_TEMPLATE_DEFINE(QUICHE_EXPORT_PRIVATE)
-    TypedQuicheFlagHelper<uint16_t>;
-template class EXPORT_TEMPLATE_DEFINE(QUICHE_EXPORT_PRIVATE)
-    TypedQuicheFlagHelper<int32_t>;
-template class EXPORT_TEMPLATE_DEFINE(QUICHE_EXPORT_PRIVATE)
-    TypedQuicheFlagHelper<std::string>;
+template class TypedQuicheFlagHelper<bool>;
+template class TypedQuicheFlagHelper<uint16_t>;
+template class TypedQuicheFlagHelper<int32_t>;
+template class TypedQuicheFlagHelper<std::string>;
 
 QuicheFlagRegistry::QuicheFlagRegistry() = default;
 QuicheFlagRegistry::~QuicheFlagRegistry() = default;

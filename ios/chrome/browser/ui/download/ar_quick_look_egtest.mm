@@ -28,9 +28,6 @@ using base::test::ios::kWaitForUIElementTimeout;
 
 namespace {
 
-// Use separate timeout for EG2 tests to accomodate for IPC delays.
-const NSTimeInterval kWaitForARPresentationTimeout = 30.0;
-
 // USDZ landing page and download request handler.
 std::unique_ptr<net::test_server::HttpResponse> GetResponse(
     const net::test_server::HttpRequest& request) {
@@ -90,30 +87,15 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 }
 
 // Tests that QLPreviewController is shown for sucessfully downloaded USDZ file.
-// TODO(crbug.com/1060374): Test fails on iOS15 device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testDownloadUsdz DISABLED_testDownloadUsdz
-#else
-#define MAYBE_testDownloadUsdz testDownloadUsdz
-#endif
-- (void)MAYBE_testDownloadUsdz {
+- (void)testDownloadUsdz {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebStateContainingText:"Good"];
   [ChromeEarlGrey tapWebStateElementWithID:@"good"];
 
-  // QLPreviewController UI is rendered out of host process so EarlGrey matcher
-  // can not find QLPreviewController UI.
-  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
-  // presentation.
-  XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.staticTexts[@"good"];
-#if TARGET_IPHONE_SIMULATOR
-  goodTitle = app.staticTexts[@"Unsupported file format"];
-
-#endif
-  GREYAssert(
-      [goodTitle waitForExistenceWithTimeout:kWaitForARPresentationTimeout],
-      @"AR preview dialog UI was not presented");
+  // Verify QLPreviewControllerView is presented.
+  [[EarlGrey
+      selectElementWithMatcher:grey_kindOfClassName(@"QLPreviewControllerView")]
+      assertWithMatcher:grey_notNil()];
 }
 
 - (void)testDownloadUnauthorized {
@@ -121,19 +103,10 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   [ChromeEarlGrey waitForWebStateContainingText:"Unauthorized"];
   [ChromeEarlGrey tapWebStateElementWithID:@"unauthorized"];
 
-  // QLPreviewController UI is rendered out of host process so EarlGrey matcher
-  // can not find QLPreviewController UI.
-  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
-  // presentation.
-  XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.staticTexts[@"good"];
-#if TARGET_IPHONE_SIMULATOR
-  goodTitle = app.staticTexts[@"Unsupported file format"];
-
-#endif
-  GREYAssertFalse(
-      [goodTitle waitForExistenceWithTimeout:kWaitForARPresentationTimeout],
-      @"AR preview dialog UI was presented");
+  // Verify QLPreviewControllerView is not presented.
+  [[EarlGrey
+      selectElementWithMatcher:grey_kindOfClassName(@"QLPreviewControllerView")]
+      assertWithMatcher:grey_nil()];
 }
 
 - (void)testDownloadForbidden {
@@ -141,18 +114,10 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   [ChromeEarlGrey waitForWebStateContainingText:"Forbidden"];
   [ChromeEarlGrey tapWebStateElementWithID:@"forbidden"];
 
-  // QLPreviewController UI is rendered out of host process so EarlGrey matcher
-  // can not find QLPreviewController UI.
-  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
-  // presentation.
-  XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.staticTexts[@"good"];
-#if TARGET_IPHONE_SIMULATOR
-  goodTitle = app.staticTexts[@"Unsupported file format"];
-#endif
-  GREYAssertFalse(
-      [goodTitle waitForExistenceWithTimeout:kWaitForARPresentationTimeout],
-      @"AR preview dialog UI was presented");
+  // Verify QLPreviewControllerView is not presented.
+  [[EarlGrey
+      selectElementWithMatcher:grey_kindOfClassName(@"QLPreviewControllerView")]
+      assertWithMatcher:grey_nil()];
 }
 
 - (void)testDownloadChangingMimeType {
@@ -160,58 +125,10 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   [ChromeEarlGrey waitForWebStateContainingText:"Changing Mime Type"];
   [ChromeEarlGrey tapWebStateElementWithID:@"changing-mime-type"];
 
-  // QLPreviewController UI is rendered out of host process so EarlGrey matcher
-  // can not find QLPreviewController UI.
-  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
-  // presentation.
-  XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.staticTexts[@"good"];
-#if TARGET_IPHONE_SIMULATOR
-  goodTitle = app.staticTexts[@"Unsupported file format"];
-#endif
-  GREYAssertFalse(
-      [goodTitle waitForExistenceWithTimeout:kWaitForARPresentationTimeout],
-      @"AR preview dialog UI was presented");
-}
-
-// Tests that the visibilitychange event is fired when quicklook is
-// shown/hidden.
-// TODO(crbug.com/1060374): Test fails on iOS15 device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testVisibilitychangeEventFired \
-  DISABLED_testVisibilitychangeEventFired
-#else
-#define MAYBE_testVisibilitychangeEventFired testVisibilitychangeEventFired
-#endif
-- (void)MAYBE_testVisibilitychangeEventFired {
-  [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
-  [ChromeEarlGrey waitForWebStateContainingText:"Good"];
-  [ChromeEarlGrey tapWebStateElementWithID:@"good"];
-
-  [ChromeEarlGrey waitForWebStateContainingText:"hidden"];
-
-  // QLPreviewController UI is rendered out of host process so EarlGrey matcher
-  // can not find QLPreviewController UI.
-  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
-  // presentation.
-  XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.staticTexts[@"good"];
-#if TARGET_IPHONE_SIMULATOR
-  goodTitle = app.staticTexts[@"Unsupported file format"];
-#endif
-  GREYAssert(
-      [goodTitle waitForExistenceWithTimeout:kWaitForARPresentationTimeout],
-      @"AR preview dialog UI was not presented");
-
-  // Close the QuickLook dialog.
-  XCUIElement* doneButton = app.buttons[@"Done"];
-  GREYAssert(
-      [doneButton waitForExistenceWithTimeout:kWaitForARPresentationTimeout],
-      @"Done button not visible");
-  [doneButton tap];
-
-  // Check that the visibilitychange event is triggered.
-  [ChromeEarlGrey waitForWebStateContainingText:"visible"];
+  // Verify QLPreviewControllerView is not presented.
+  [[EarlGrey
+      selectElementWithMatcher:grey_kindOfClassName(@"QLPreviewControllerView")]
+      assertWithMatcher:grey_nil()];
 }
 
 @end

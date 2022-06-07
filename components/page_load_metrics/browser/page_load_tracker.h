@@ -8,7 +8,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
@@ -180,17 +182,17 @@ bool IsNavigationUserInitiated(content::NavigationHandle* handle);
 class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                         public PageLoadMetricsObserverDelegate {
  public:
-  // Caller must guarantee that the embedder_interface pointer outlives this
-  // class. The PageLoadTracker must not hold on to
-  // currently_committed_load_or_null or navigation_handle beyond the scope of
-  // the constructor.
+  // Caller must guarantee that the `embedder_interface` pointer outlives this
+  // class. The PageLoadTracker must not hold on to `navigation_handle` beyond
+  // the scope of the constructor.
   PageLoadTracker(bool in_foreground,
                   PageLoadMetricsEmbedderInterface* embedder_interface,
                   const GURL& currently_committed_url,
                   bool is_first_navigation_in_web_contents,
                   content::NavigationHandle* navigation_handle,
                   UserInitiatedInfo user_initiated_info,
-                  ukm::SourceId source_id);
+                  ukm::SourceId source_id,
+                  base::WeakPtr<PageLoadTracker> parent_tracker);
 
   PageLoadTracker(const PageLoadTracker&) = delete;
   PageLoadTracker& operator=(const PageLoadTracker&) = delete;
@@ -198,6 +200,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   ~PageLoadTracker() override;
 
   // PageLoadMetricsUpdateDispatcher::Client implementation:
+  bool IsPageMainFrame(content::RenderFrameHost* rfh) const override;
   void OnTimingChanged() override;
   void OnSubFrameTimingChanged(content::RenderFrameHost* rfh,
                                const mojom::PageLoadTiming& timing) override;
@@ -327,6 +330,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   base::TimeTicks page_end_time() const { return page_end_time_; }
 
   void AddObserver(std::unique_ptr<PageLoadMetricsObserver> observer);
+  base::WeakPtr<PageLoadMetricsObserver> FindObserver(char const* name);
 
   // If the user performs some abort-like action while we are tracking this page
   // load, notify the tracker. Note that we may not classify this as an abort if
@@ -390,6 +394,28 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   // Called when V8 per-frame memory usage updates are available.
   void OnV8MemoryChanged(const std::vector<MemoryUpdate>& memory_updates);
+
+  // Checks if this tracker is for outermost pages.
+  bool IsOutermostTracker() const { return !parent_tracker_; }
+
+  void UpdateMetrics(
+      content::RenderFrameHost* render_frame_host,
+      mojom::PageLoadTimingPtr new_timing,
+      mojom::FrameMetadataPtr new_metadata,
+      const std::vector<blink::UseCounterFeature>& new_features,
+      const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+      mojom::FrameRenderDataUpdatePtr render_data,
+      mojom::CpuTimingPtr new_cpu_timing,
+      mojom::InputTimingPtr input_timing_delta,
+      const absl::optional<blink::MobileFriendliness>& mobile_friendliness);
+
+  // Set RenderFrameHost for the main frame of the page this tracker instance is
+  // bound. This is called on moving the tracker to the active / inactive
+  // tracker list after the provisional load is committed.
+  void SetPageMainFrame(content::RenderFrameHost* rfh);
+
+  // Obtains a weak pointer for this instance.
+  base::WeakPtr<PageLoadTracker> GetWeakPtr();
 
  private:
   // This function converts a TimeTicks value taken in the browser process
@@ -476,7 +502,13 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Interface to chrome features. Must outlive the class.
   const raw_ptr<PageLoadMetricsEmbedderInterface> embedder_interface_;
 
+  // Holds active PageLoadMetricsObserver instances bound to the tracking page.
   std::vector<std::unique_ptr<PageLoadMetricsObserver>> observers_;
+
+  // Observer's name pointer to instance map. Can be raw_ptr as the instance is
+  // owned `observers` above, and is removed from the map on destruction.
+  base::flat_map<const char*, base::raw_ptr<PageLoadMetricsObserver>>
+      observers_map_;
 
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
 
@@ -484,12 +516,21 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   const raw_ptr<content::WebContents> web_contents_;
 
+  // Holds the RenderFrameHost for the main frame of the page that this tracker
+  // instance is bound. Safe to use raw_ptr as the tracker instance is accessed
+  // via a map that uses the RenderFrameHost as the key while it's valid.
+  raw_ptr<content::RenderFrameHost> page_main_frame_;
+
   const bool is_first_navigation_in_web_contents_;
 
   page_load_metrics::LargestContentfulPaintHandler
       largest_contentful_paint_handler_;
   page_load_metrics::LargestContentfulPaintHandler
       experimental_largest_contentful_paint_handler_;
+
+  const base::WeakPtr<PageLoadTracker> parent_tracker_;
+
+  base::WeakPtrFactory<PageLoadTracker> weak_factory_{this};
 };
 
 }  // namespace page_load_metrics

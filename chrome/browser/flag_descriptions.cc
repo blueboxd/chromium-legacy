@@ -173,6 +173,10 @@ const char kEnableDrDcDescription[] =
     "(raster, webgl, video) "
     " continues using the gpu main thread.";
 
+const char kEnableDrDcVulkanName[] =
+    " Use this flag along with flag enable-drdc to enable DrDc on Vulkan. "
+    " Note that this flag will be a no-op if enable-drdc is disabled. ";
+
 const char kU2FPermissionPromptName[] =
     "Enable a permission prompt for the U2F Security Key API";
 const char kU2FPermissionPromptDescription[] =
@@ -362,6 +366,15 @@ const char kAutofillEnableUpdateVirtualCardEnrollmentDescription[] =
     "enrollment of a credit card through their chrome browser after certain "
     "autofill flows (for example, downstream and upstream), and from the "
     "settings page.";
+
+const char kAutofillEnableVirtualCardFidoEnrollmentName[] =
+    "Enable FIDO enrollment for virtual cards";
+const char kAutofillEnableVirtualCardFidoEnrollmentDescription[] =
+    "When enabled, after a successful authentication to autofill a virtual "
+    "card, the user will be prompted to opt-in to FIDO if the user is not "
+    "currently opted-in, and if the user is opted-in already and the virtual "
+    "card is FIDO eligible the user will be prompted to register the virtual "
+    "card into FIDO.";
 
 const char kAutofillEnableVirtualCardName[] =
     "Offer to use cloud token virtual card in Autofill";
@@ -939,7 +952,8 @@ const char kWinrtGeolocationImplementationDescription[] =
 const char kEnableFencedFramesName[] = "Enable the <fencedframe> element.";
 const char kEnableFencedFramesDescription[] =
     "Fenced frames are an experimental web platform feature that allows "
-    "embedding an isolated top-level page. See "
+    "embedding an isolated top-level page. This requires "
+    "#privacy-sandbox-ads-apis to also be enabled. See "
     "https://github.com/shivanigithub/fenced-frame";
 
 const char kEnableFirmwareUpdaterAppName[] = "Enable firmware updater app";
@@ -1619,7 +1633,7 @@ const char kEnableMachineLearningModelLoaderWebPlatformApiDescription[] =
 const char kSystemProxyForSystemServicesName[] =
     "Enable system-proxy for selected system services";
 const char kSystemProxyForSystemServicesDescription[] =
-    "Enabling this flag will allow Chrome OS system service which require "
+    "Enabling this flag will allow ChromeOS system service which require "
     "network connectivity to use the system-proxy daemon for authentication to "
     "remote HTTP web proxies.";
 
@@ -1808,6 +1822,13 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
+const char kOmniboxRetainSuggestionsWithHeadersName[] =
+    "Retain complete set of suggestions with headers";
+const char kOmniboxRetainSuggestionsWithHeadersDescription[] =
+    "Given a list of suggestions, all suggestions for which a header metadata "
+    "is available will be retained as a whole and not be counted towards the "
+    "limit.";
+
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox switch to tab suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
@@ -1978,6 +1999,12 @@ const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
     "Fetches scripts for password change flows.";
 
+const char kForceEnablePasswordDomainCapabilitiesName[] =
+    "Force enable password change capabilities for domains";
+const char kForceEnablePasswordDomainCapabilitiesDescription[] =
+    "Force enables password change capabilities for every domain, regardless "
+    "of the server response.";
+
 const char kPdfOcrName[] = "Performs OCR on inaccessible PDFs";
 const char kPdfOcrDescription[] =
     "Enables a feature whereby inaccessible (i.e. untagged) PDFs are made "
@@ -2079,10 +2106,6 @@ const char kSupportSearchSuggestionForPrerender2Description[] =
     "Allows Prerender2 to prerender search suggestions provided by the default "
     "search engine. Requires chrome://flags/#enable-prerender2 to be enabled";
 
-const char kPrivacyAdvisorName[] = "Privacy Advisor";
-const char kPrivacyAdvisorDescription[] =
-    "Provides contextual entry points for adjusting privacy settings";
-
 const char kPrivacyGuideName[] = "Privacy Guide";
 const char kPrivacyGuideDescription[] =
     "Shows a new subpage in Settings that helps the user to review various "
@@ -2095,8 +2118,8 @@ const char kPrivacyGuide2Description[] =
 
 const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
 const char kPrivacySandboxAdsAPIsOverrideDescription[] =
-    "Enables Privacy Sandbox APIs: Attribtuion Reporting, Fledge, Topics and "
-    "their associated features.";
+    "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics, "
+    "Fenced Frames and their associated features.";
 
 const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
 const char kPrivacySandboxV3Description[] =
@@ -2364,10 +2387,6 @@ const char kStoragePressureEventDescription[] =
     "If enabled, Chrome will dispatch a DOM event, informing applications "
     "about storage pressure (low disk space)";
 
-const char kStoreHoursAndroidName[] = "Store Hours";
-const char kStoreHoursAndroidDescription[] =
-    "When enabled, shows store hours for stores in tab grid view.";
-
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
 const char kSuggestionsWithSubStringMatchDescription[] =
@@ -2394,6 +2413,19 @@ const char kSyncTrustedVaultPassphraseRecoveryDescription[] =
     "Enables support for an experimental sync passphrase type, referred to as "
     "trusted vault, including logic and APIs for improved account recovery "
     "flows.";
+
+const char kSyncInvalidationsName[] = "Use Sync standalone invalidations";
+const char kSyncInvalidationsDescription[] =
+    "If enabled, Sync will use standalone invalidations instead of topic based "
+    "invalidations (Wallet and Offer data types are enabled by a dedicated "
+    "flag).";
+
+const char kSyncInvalidationsWalletAndOfferName[] =
+    "Use Sync standalone invalidations for Wallet and Offer";
+const char kSyncInvalidationsWalletAndOfferDescription[] =
+    "If enabled, Sync will use standalone invalidations for Wallet and Offer "
+    "data types. Takes effect only when Sync standalone invalidations are "
+    "enabled.";
 
 const char kSystemKeyboardLockName[] = "Experimental system keyboard lock";
 const char kSystemKeyboardLockDescription[] =
@@ -3613,6 +3645,12 @@ const char kOmniboxPedalsAndroidBatch1Name[] = "Omnibox Pedals Android batch 1";
 const char kOmniboxPedalsAndroidBatch1Description[] =
     "Enable the first batch of Omnibox Pedals on Android.";
 
+const char kPasswordEditDialogWithDetailsName[] =
+    "Password edit dialog with details UI";
+const char kPasswordEditDialogWithDetailsDescription[] =
+    "Enables UI which shows the dialog after clicking on save/update password"
+    " with the functionality to choose user account and edit the password.";
+
 // Non-Android -----------------------------------------------------------------
 
 #else  // BUILDFLAG(IS_ANDROID)
@@ -3989,7 +4027,7 @@ const char kUseAngleGL[] = "OpenGL";
 
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
-// Chrome OS -------------------------------------------------------------------
+// ChromeOS -------------------------------------------------------------------
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -4069,12 +4107,12 @@ const char kArcDocumentsProviderUnknownSizeDescription[] =
 const char kArcFilePickerExperimentName[] =
     "Enable file picker experiment for ARC";
 const char kArcFilePickerExperimentDescription[] =
-    "Enables using Chrome OS file picker in ARC.";
+    "Enables using ChromeOS file picker in ARC.";
 
 const char kArcKeyboardShortcutHelperIntegrationName[] =
     "Enable keyboard shortcut helper integration for ARC";
 const char kArcKeyboardShortcutHelperIntegrationDescription[] =
-    "Shows keyboard shortcuts from Android apps in Chrome OS Shortcut Viewer";
+    "Shows keyboard shortcuts from Android apps in ChromeOS Shortcut Viewer";
 
 const char kArcNativeBridgeToggleName[] =
     "Toggle between native bridge implementations for ARC";
@@ -4148,7 +4186,7 @@ const char kAutoFramingOverrideDescription[] =
 
 const char kAutocorrectParamsTuningName[] = "CrOS autocorrect params tuning";
 const char kAutocorrectParamsTuningDescription[] =
-    "Enables params tuning experiment for autocorrect on Chrome OS.";
+    "Enables params tuning experiment for autocorrect on ChromeOS.";
 
 const char kBluetoothFixA2dpPacketSizeName[] = "Bluetooth fix A2DP packet size";
 const char kBluetoothFixA2dpPacketSizeDescription[] =
@@ -4157,14 +4195,14 @@ const char kBluetoothFixA2dpPacketSizeDescription[] =
 
 const char kBluetoothRevampName[] = "Bluetooth Revamp";
 const char kBluetoothRevampDescription[] =
-    "Enables the Chrome OS Bluetooth Revamp, which updates Bluetooth system UI "
+    "Enables the ChromeOS Bluetooth Revamp, which updates Bluetooth system UI "
     "and related infrastructure.";
 
 const char kBluetoothWbsDogfoodName[] = "Bluetooth WBS dogfood";
 const char kBluetoothWbsDogfoodDescription[] =
     "Enables Bluetooth wideband speech mic as default audio option. "
     "Note that flipping this flag makes no difference on most of the "
-    "Chrome OS models, because Bluetooth WBS is either unsupported "
+    "ChromeOS models, because Bluetooth WBS is either unsupported "
     "or fully launched. Only on the few models that Bluetooth WBS is "
     "still stablizing this flag will take effect.";
 
@@ -4263,7 +4301,7 @@ const char kContextualNudgesDescription[] =
 
 const char kCroshSWAName[] = "Crosh System Web App";
 const char kCroshSWADescription[] =
-    "When enabled, crosh (Chrome OS Shell) will run as a tabbed System Web App "
+    "When enabled, crosh (ChromeOS Shell) will run as a tabbed System Web App "
     "rather than a normal browser tab.";
 
 const char kCrosLanguageSettingsUpdate2Name[] = "Language Settings Update 2";
@@ -4275,9 +4313,9 @@ const char kCrosOnDeviceGrammarCheckName[] = "On-device Grammar Check";
 const char kCrosOnDeviceGrammarCheckDescription[] =
     "Enable new on-device grammar check component.";
 
-const char kSystemExtensionsName[] = "Chrome OS System Extensions";
+const char kSystemExtensionsName[] = "ChromeOS System Extensions";
 const char kSystemExtensionsDescription[] =
-    "Enable the Chrome OS System Extension platform.";
+    "Enable the ChromeOS System Extension platform.";
 
 const char kEnableServiceWorkersForChromeUntrustedName[] =
     "Enable chrome-untrusted:// Service Workers";
@@ -4332,6 +4370,11 @@ const char kCrostiniVirtualKeyboardSupportDescription[] =
 const char kBruschettaName[] = "Enable the third party VMs feature";
 const char kBruschettaDescription[] =
     "Enables UI support for third party/generic VMs";
+
+const char kCompactBubbleLauncherName[] = "Make bubble launcher more compact";
+
+const char kCompactBubbleLauncherDescription[] =
+    "Decreases the width of clamshell mode productivity (bubble) launcher.";
 
 const char kCryptAuthV2DedupDeviceLastActivityTimeName[] =
     "Dedup devices by last activity time";
@@ -4479,7 +4522,7 @@ const char kDnsProxyEnableDOHName[] =
     "Enable DNS-over-HTTPS in the DNS proxy service";
 const char kDnsProxyEnableDOHDescription[] =
     "When enabled, the DNS proxy will perform DNS-over-HTTPS in accordance "
-    "with the Chrome OS SecureDNS settings.";
+    "with the ChromeOS SecureDNS settings.";
 
 const char kEnableExternalKeyboardsInDiagnosticsAppName[] =
     "Enable external keyboards in the Diagnostics App";
@@ -4489,7 +4532,7 @@ const char kEnableExternalKeyboardsInDiagnosticsAppDescription[] =
 
 const char kEnableHostnameSettingName[] = "Enable setting the device hostname";
 const char kEnableHostnameSettingDescription[] =
-    "Enables the ability to set the Chrome OS hostname, the name of the device "
+    "Enables the ability to set the ChromeOS hostname, the name of the device "
     "that is exposed to the local network";
 
 const char kEnableGesturePropertiesDBusServiceName[] =
@@ -4833,7 +4876,7 @@ const char kFrameThrottleFps30[] = "30 fps";
 
 const char kFullRestoreForLacrosName[] = "Full restore lacros support";
 const char kFullRestoreForLacrosDescription[] =
-    "Chrome OS full restore lacros support";
+    "ChromeOS full restore lacros support";
 
 const char kFuseBoxName[] = "Enable ChromeOS FuseBox service";
 const char kFuseBoxDescription[] = "ChromeOS FuseBox service.";
@@ -4948,12 +4991,12 @@ const char kLacrosAvailabilityIgnoreDescription[] =
 
 const char kLacrosOnlyName[] = "Lacros is the only browser";
 const char kLacrosOnlyDescription[] =
-    "Use Lacros-chrome as the only web browser on Chrome OS. "
+    "Use Lacros-chrome as the only web browser on ChromeOS. "
     "This flag is ignored if Lacros support or primary is disabled.";
 
 const char kLacrosPrimaryName[] = "Lacros as the primary browser";
 const char kLacrosPrimaryDescription[] =
-    "Use Lacros-chrome as the primary web browser on Chrome OS. "
+    "Use Lacros-chrome as the primary web browser on ChromeOS. "
     "This flag is ignored if Lacros support is disabled.";
 
 const char kLacrosStabilityName[] = "Lacros stability";
@@ -5009,7 +5052,7 @@ const char kListAllDisplayModesDescription[] =
 
 const char kLocalWebApprovalsName[] = "Local web approvals";
 const char kLocalWebApprovalsDescription[] =
-    "Enable local web approvals for Family Link users on Chrome OS. Web filter "
+    "Enable local web approvals for Family Link users on ChromeOS. Web filter "
     "interstitial refresh needs to also be enabled.";
 
 const char kEnableHardwareMirrorModeName[] = "Enable Hardware Mirror Mode";
@@ -5048,7 +5091,7 @@ const char kMicrophoneMuteSwitchDeviceDescription[] =
 
 const char kMultilingualTypingName[] = "Multilingual typing on CrOS";
 const char kMultilingualTypingDescription[] =
-    "Enables support for multilingual assistive typing on Chrome OS.";
+    "Enables support for multilingual assistive typing on ChromeOS.";
 
 const char kNearbySharingArcName[] = "ARC Nearby Sharing";
 const char kNearbySharingArcDescription[] =
@@ -5094,7 +5137,7 @@ const char kNearbySharingWifiLanDescription[] =
 
 const char kOobeHidDetectionRevampName[] = "OOBE HID Detection Revamp";
 const char kOobeHidDetectionRevampDescription[] =
-    "Enables the Chrome OS HID Detection Revamp, which updates OOBE HID "
+    "Enables the ChromeOS HID Detection Revamp, which updates OOBE HID "
     "detection screen UI and related infrastructure.";
 
 const char kPcieBillboardNotificationName[] = "Pcie billboard notification";
@@ -5144,7 +5187,7 @@ const char kForceShowContinueSectionDescription[] =
 const char kReleaseNotesNotificationAllChannelsName[] =
     "Release Notes Notification All Channels";
 const char kReleaseNotesNotificationAllChannelsDescription[] =
-    "Enables the release notes notification for all Chrome OS channels";
+    "Enables the release notes notification for all ChromeOS channels";
 
 const char kArcGhostWindowName[] = "Enable ARC ghost window";
 const char kArcGhostWindowDescription[] =
@@ -5164,10 +5207,10 @@ const char kSecondaryGoogleAccountUsageName[] =
     "Enable Secondary Google account usage policy.";
 const char kSecondaryGoogleAccountUsageDescription[] =
     "Add restrictions on a managed account's usage as a secondary account on "
-    "Chrome OS.";
+    "ChromeOS.";
 
 const char kSharesheetCopyToClipboardName[] =
-    "Enable copy to clipboard in the Chrome OS Sharesheet.";
+    "Enable copy to clipboard in the ChromeOS Sharesheet.";
 const char kSharesheetCopyToClipboardDescription[] =
     "Enables a share action in the sharesheet that copies the selected data to "
     "the clipboard.";
@@ -5211,6 +5254,12 @@ const char kShowTouchHudDescription[] =
     "Shows a trail of colored dots for the last few touch points. Pressing "
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
+
+const char kSmartLockSignInRemovedName[] = "Remove Sign in with Smart Lock";
+const char kSmartLockSignInRemovedDescription[] =
+    "Deprecates Sign in with Smart Lock feature. Hides Smart Lock on the sign "
+    "in screen, removes the Smart Lock subpage in settings, and shows a "
+    "one-time notification for users who previously had this feature enabled.";
 
 const char kSmartLockUIRevampName[] = "Enable Smart Lock UI Revamp";
 const char kSmartLockUIRevampDescription[] =
@@ -5278,15 +5327,10 @@ const char kTouchscreenCalibrationDescription[] =
     "If enabled, the user can calibrate the touch screen displays in "
     "chrome://settings/display.";
 
-const char kTrafficCountersHandlerEnabledName[] =
-    "Traffic counters handler enabled";
-const char kTrafficCountersHandlerEnabledDescription[] =
-    "If enabled, the TrafficCountersHandler class will handle traffic counter "
-    "resets.";
-
-const char kTrafficCountersSettingsUiName[] = "Traffic Counters Settings UI";
-const char kTrafficCountersSettingsUiDescription[] =
-    "If enabled, the SettingsUI will show data usage for cellular networks";
+const char kTrafficCountersEnabledName[] = "Traffic counters enabled";
+const char kTrafficCountersEnabledDescription[] =
+    "If enabled, data usage will be visible in the Cellular Settings UI and "
+    "traffic counters will be automatically reset if that setting is enabled.";
 
 const char kUseFakeDeviceForMediaStreamName[] = "Use fake video capture device";
 const char kUseFakeDeviceForMediaStreamDescription[] =
@@ -5313,7 +5357,7 @@ const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 const char kUsbNotificationControllerName[] =
     "Enable USB Notification Controller";
 const char kUsbNotificationControllerDescription[] =
-    "Enables USB related notifications from the Chrome OS type-c daemon.";
+    "Enables USB related notifications from the ChromeOS type-c daemon.";
 
 const char kVaapiJpegImageDecodeAccelerationName[] =
     "VA-API JPEG decode acceleration for images";
@@ -5361,13 +5405,13 @@ const char kWifiConnectMacAddressRandomizationDescription[] =
 const char kWifiSyncAllowDeletesName[] =
     "Sync removal of Wi-Fi network configurations";
 const char kWifiSyncAllowDeletesDescription[] =
-    "Enables the option to sync deletions of Wi-Fi networks to other Chrome OS "
+    "Enables the option to sync deletions of Wi-Fi networks to other ChromeOS "
     "devices when Wi-Fi Sync is enabled.";
 
 const char kWifiSyncAndroidName[] =
     "Sync Wi-Fi network configurations with Android";
 const char kWifiSyncAndroidDescription[] =
-    "Enables the option to sync Wi-Fi network configurations between Chrome OS "
+    "Enables the option to sync Wi-Fi network configurations between ChromeOS "
     "devices and a connected Android phone";
 
 const char kWindowControlMenu[] = "Float current active window";
@@ -5448,12 +5492,12 @@ extern const char kLacrosScreenCoordinatesDescription[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[] =
-    "Allow default web app migration for Chrome OS managed users";
+    "Allow default web app migration for ChromeOS managed users";
 const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription[] =
     "The web app migration flags "
     "(chrome://flags/#enable-migrate-default-chrome-app-to-web-apps-gsuite and "
     "chrome://flags/#enable-migrate-default-chrome-app-to-web-apps-non-gsuite) "
-    "are ignored for managed Chrome OS users unless this feature is enabled.";
+    "are ignored for managed ChromeOS users unless this feature is enabled.";
 
 const char kBluetoothAdvertisementMonitoringName[] =
     "Bluetooth Advertisement Monitoring";
@@ -5566,7 +5610,7 @@ const char kChromeOSDirectVideoDecoderDescription[] =
     "--platform-disallows-chromeos-direct-video-decoder command line switch "
     "which is added for platforms where said direct VideoDecoder does not work "
     "or is not well tested (see the disable_cros_video_decoder USE flag in "
-    "Chrome OS)";
+    "ChromeOS)";
 #if defined(ARCH_CPU_ARM_FAMILY)
 const char kPreferLibYuvImageProcessorName[] = "Prefer libYUV image processor";
 const char kPreferLibYuvImageProcessorDescription[] =
@@ -5665,6 +5709,12 @@ const char kSkipUndecryptablePasswordsDescription[] =
     "Makes the decryptable passwords available in the password manager when "
     "there are undecryptable ones.";
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_MAC)
+const char kForce60HzName[] = "Use 60hz instead of 120hz";
+const char kForce60HzDescription[] =
+    "If enabled, on devices with a refresh rate of 120hz, 60hz is used.";
+#endif  // BUILDFLAG(IS_MAC)
 
 // Feature flags --------------------------------------------------------------
 
@@ -5800,13 +5850,13 @@ const char kChromeKioskEnableLacrosName[] =
     "Enables Lacros in the chrome app Kiosk";
 const char kChromeKioskEnableLacrosDescription[] =
     "Uses Lacros-chrome as the web browser in the chrome app Kiosk session on "
-    "Chrome OS. When disabled, the Ash-chrome will be used";
+    "ChromeOS. When disabled, the Ash-chrome will be used";
 
 const char kWebKioskEnableLacrosName[] =
     "Enables Lacros in the web (PWA) Kiosk";
 const char kWebKioskEnableLacrosDescription[] =
     "Uses Lacros-chrome as the web browser in the web (PWA) Kiosk session on "
-    "Chrome OS. When disabled, the Ash-chrome will be used";
+    "ChromeOS. When disabled, the Ash-chrome will be used";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // ============================================================================

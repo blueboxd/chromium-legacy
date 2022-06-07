@@ -11,6 +11,7 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/autofill_assistant/browser/actions/action_test_utils.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/fake_script_executor_ui_delegate.h"
@@ -518,7 +519,7 @@ TEST_F(ScriptExecutorTest, SlowConnectionWarningNotShownIfSlowWebsiteFirst) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   ActionsResponseProto tell2;
   tell2.add_actions()->mutable_tell()->set_message("2");
@@ -619,7 +620,7 @@ TEST_F(ScriptExecutorTest, SlowWebsiteWarningTriggersOnlyOnce) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element2"}), _, _))
       .WillOnce(DoAll(Delay(&task_environment_, 2000),
@@ -673,7 +674,7 @@ TEST_F(ScriptExecutorTest, SlowWebsiteWarningNotShownIfSlowConnectionFirst) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(
@@ -734,7 +735,7 @@ TEST_F(ScriptExecutorTest, SlowWarningsBothShownIfConfigured) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr)))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(mock_service_, GetNextActions)
       .WillOnce(DoAll(
@@ -1035,7 +1036,7 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(executor_callback_, Run(_));
   task_environment_.FastForwardBy(base::Seconds(1));
@@ -1208,7 +1209,7 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfPreconditionsDontMatch) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(mock_web_controller_,
               FindElement(Selector({"interrupt_trigger"}), _, _))
@@ -1366,7 +1367,7 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
               FindElement(Selector({"interrupt_trigger"}), _, _))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }))
       .WillRepeatedly(
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
@@ -1374,7 +1375,7 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"end_prompt"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
 
   EXPECT_CALL(mock_service_, GetNextActions)
@@ -1464,13 +1465,13 @@ TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
               FindElement(Selector({"interrupt_trigger"}), _, _))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }))
       .WillOnce(
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }))
       .WillRepeatedly(
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
@@ -1488,7 +1489,7 @@ TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
           RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
 
   EXPECT_CALL(mock_service_, GetNextActions)
@@ -1677,7 +1678,14 @@ TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
   EXPECT_EQ("pre-interrupt status", ui_delegate_.GetStatusMessage());
 }
 
-TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
+#if BUILDFLAG(IS_ANDROID) && defined(ADDRESS_SANITIZER)
+// This test fails on Android ASAN: https://crbug.com/1315701
+#define MAYBE_PauseWaitForDomWhileNavigating \
+  DISABLED_PauseWaitForDomWhileNavigating
+#else
+#define MAYBE_PauseWaitForDomWhileNavigating PauseWaitForDomWhileNavigating
+#endif
+TEST_F(ScriptExecutorTest, MAYBE_PauseWaitForDomWhileNavigating) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
   wait_for_dom->set_timeout_ms(2000);
@@ -1712,7 +1720,7 @@ TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   EXPECT_CALL(executor_callback_, Run(_));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
@@ -1847,7 +1855,7 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillOnce(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   task_environment_.FastForwardBy(base::Seconds(1));
 
@@ -1857,7 +1865,14 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   EXPECT_TRUE(processed_actions_capture[0].navigation_info().ended());
 }
 
-TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
+#if BUILDFLAG(IS_ANDROID) && defined(ADDRESS_SANITIZER)
+// This test fails on Android ASAN: https://crbug.com/1315701
+#define MAYBE_ReportUnexpectedNavigationStart \
+  DISABLED_ReportUnexpectedNavigationStart
+#else
+#define MAYBE_ReportUnexpectedNavigationStart ReportUnexpectedNavigationStart
+#endif
+TEST_F(ScriptExecutorTest, MAYBE_ReportUnexpectedNavigationStart) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
   *wait_for_dom->mutable_wait_condition()->mutable_match() =
@@ -1886,7 +1901,7 @@ TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
@@ -1896,7 +1911,14 @@ TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
   EXPECT_TRUE(processed_actions_capture[0].navigation_info().unexpected());
 }
 
-TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
+#if BUILDFLAG(IS_ANDROID) && defined(ADDRESS_SANITIZER)
+// This test fails on Android ASAN: https://crbug.com/1315701
+#define MAYBE_ReportExpectedNavigationStart \
+  DISABLED_ReportExpectedNavigationStart
+#else
+#define MAYBE_ReportExpectedNavigationStart ReportExpectedNavigationStart
+#endif
+TEST_F(ScriptExecutorTest, MAYBE_ReportExpectedNavigationStart) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_expect_navigation();
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
@@ -1926,7 +1948,7 @@ TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
   EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
       .WillRepeatedly(WithArgs<2>([](auto&& callback) {
         std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
+                                std::make_unique<ElementFinderResult>());
       }));
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 

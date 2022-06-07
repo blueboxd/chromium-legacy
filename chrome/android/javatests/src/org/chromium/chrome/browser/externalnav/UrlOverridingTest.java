@@ -67,8 +67,11 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResultType;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 import org.chromium.components.external_intents.RedirectHandler;
+import org.chromium.content_public.browser.GlobalRenderFrameHostId;
+import org.chromium.content_public.browser.LifecycleState;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -137,6 +140,8 @@ public class UrlOverridingTest {
             BASE_PATH + "navigation_from_bfcache-1.html";
     private static final String NAVIGATION_FROM_PRERENDER =
             BASE_PATH + "navigation_from_prerender.html";
+    private static final String NAVIGATION_FROM_FENCED_FRAME =
+            BASE_PATH + "navigation_from_fenced_frame.html";
 
     private static final String OTHER_BROWSER_PACKAGE = "com.other.browser";
     private static final String NON_BROWSER_PACKAGE = "not.a.browser";
@@ -229,6 +234,7 @@ public class UrlOverridingTest {
 
     @Before
     public void setUp() throws Exception {
+        mActivityTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
         filter.addCategory(Intent.CATEGORY_BROWSABLE);
         filter.addDataScheme("externalappscheme");
@@ -599,7 +605,7 @@ public class UrlOverridingTest {
         mActivityTestRule.loadUrlInNewTab("chrome://about/", /**incognito**/ true);
 
         String fallbackUrl = mTestServer.getURL(FALLBACK_LANDING_PATH);
-        String fallbackUrlWithoutScheme = fallbackUrl.replace("http://", "");
+        String fallbackUrlWithoutScheme = fallbackUrl.replace("https://", "");
         String originalUrl = mTestServer.getURL(NAVIGATION_TO_CCT_FROM_INTENT_URI + "?replace_text="
                 + Base64.encodeToString(
                         ApiCompatibilityUtils.getBytesUtf8("PARAM_FALLBACK_URL"), Base64.URL_SAFE)
@@ -862,5 +868,54 @@ public class UrlOverridingTest {
             Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(1));
         }, 10000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         ApplicationTestUtils.waitForActivityState(activity, Stage.DESTROYED);
+    }
+
+    @Test
+    @LargeTest
+    @Features.EnableFeatures({"FencedFrames<Study,PrivacySandboxAdsAPIsOverride"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:implementation_type/mparch"})
+    public void
+    testNavigationFromFencedFrame() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        final CallbackHelper frameFinishCallback = new CallbackHelper();
+        WebContentsObserver observer = new WebContentsObserver() {
+            @Override
+            public void documentLoadedInFrame(GlobalRenderFrameHostId rfhId,
+                    boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {
+                if (!isInPrimaryMainFrame) frameFinishCallback.notifyCalled();
+            }
+        };
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tab.getWebContents().addObserver(observer); });
+
+        try {
+            // Note for posterity: This depends on
+            // navigation_from_user_gesture.html.mock-http-headers to work.
+            mActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_FENCED_FRAME));
+
+            frameFinishCallback.waitForCallback(0);
+        } finally {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> { tab.getWebContents().removeObserver(observer); });
+        }
+
+        // Click page to launch app. There's no easy way to know when an out of process subframe is
+        // ready to receive input, even if the document is loaded and javascript runs. If the click
+        // fails the first time, try a second time.
+        try {
+            TouchCommon.singleClickView(tab.getView());
+
+            CriteriaHelper.pollUiThread(
+                    () -> { Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(1)); });
+        } catch (Throwable e) {
+            TouchCommon.singleClickView(tab.getView());
+
+            CriteriaHelper.pollUiThread(
+                    () -> { Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(1)); });
+        }
     }
 }

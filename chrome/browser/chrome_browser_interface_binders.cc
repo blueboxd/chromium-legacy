@@ -53,6 +53,7 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/feed/buildflags.h"
 #include "components/history_clusters/core/history_clusters_buildflags.h"
+#include "components/live_caption/caption_util.h"
 #include "components/live_caption/pref_names.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_processor_impl.h"
@@ -157,18 +158,17 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page_third_party/new_tab_page_third_party_ui.h"
-#include "chrome/browser/ui/webui/read_later/read_later.mojom.h"
-#include "chrome/browser/ui/webui/read_later/read_later_ui.h"
-#include "chrome/browser/ui/webui/read_later/side_panel/bookmarks_side_panel_ui.h"
-#include "chrome/browser/ui/webui/read_later/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
+#include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks_side_panel_ui.h"
+#include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_ui.h"
+#include "chrome/browser/ui/webui/side_panel/reading_list/reading_list.mojom.h"
+#include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/search/ntp_features.h"
-#include "media/base/media_switches.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
@@ -543,7 +543,7 @@ void BindSpeechRecognitionContextHandler(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionContext> receiver) {
   Profile* profile = Profile::FromBrowserContext(
       frame_host->GetProcess()->GetBrowserContext());
-  if (media::IsLiveCaptionFeatureEnabled()) {
+  if (captions::IsLiveCaptionFeatureSupported()) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     CrosSpeechRecognitionServiceFactory::GetForProfile(profile)->Create(
         std::move(receiver));
@@ -558,7 +558,7 @@ void BindSpeechRecognitionClientBrowserInterfaceHandler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<media::mojom::SpeechRecognitionClientBrowserInterface>
         receiver) {
-  if (media::IsLiveCaptionFeatureEnabled()) {
+  if (captions::IsLiveCaptionFeatureSupported()) {
     Profile* profile = Profile::FromBrowserContext(
         frame_host->GetProcess()->GetBrowserContext());
 
@@ -575,7 +575,7 @@ void BindSpeechRecognitionRecognizerClientHandler(
       frame_host->GetProcess()->GetBrowserContext());
   PrefService* profile_prefs = profile->GetPrefs();
   if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled) &&
-      media::IsLiveCaptionFeatureEnabled()) {
+      captions::IsLiveCaptionFeatureSupported()) {
     captions::LiveCaptionSpeechRecognitionHost::Create(frame_host,
                                                        std::move(receiver));
   }
@@ -589,7 +589,7 @@ void BindMediaFoundationRendererNotifierHandler(
       frame_host->GetProcess()->GetBrowserContext());
   PrefService* profile_prefs = profile->GetPrefs();
   if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled) &&
-      media::IsLiveCaptionFeatureEnabled()) {
+      captions::IsLiveCaptionFeatureSupported()) {
     captions::LiveCaptionUnavailabilityNotifier::Create(frame_host,
                                                         std::move(receiver));
   }
@@ -861,8 +861,8 @@ void PopulateChromeWebUIFrameBinders(
         task_module::mojom::TaskModuleHandler, NewTabPageUI>(map);
   }
 
-  RegisterWebUIControllerInterfaceBinder<read_later::mojom::PageHandlerFactory,
-                                         ReadLaterUI>(map);
+  RegisterWebUIControllerInterfaceBinder<
+      reading_list::mojom::PageHandlerFactory, ReadingListUI>(map);
 
   if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
     RegisterWebUIControllerInterfaceBinder<
@@ -870,7 +870,7 @@ void PopulateChromeWebUIFrameBinders(
         map);
   } else {
     RegisterWebUIControllerInterfaceBinder<
-        side_panel::mojom::BookmarksPageHandlerFactory, ReadLaterUI>(map);
+        side_panel::mojom::BookmarksPageHandlerFactory, ReadingListUI>(map);
   }
 
   if (features::IsReadAnythingEnabled()) {
@@ -879,7 +879,7 @@ void PopulateChromeWebUIFrameBinders(
           read_anything::mojom::PageHandlerFactory, ReadAnythingUI>(map);
     } else {
       RegisterWebUIControllerInterfaceBinder<
-          read_anything::mojom::PageHandlerFactory, ReadLaterUI>(map);
+          read_anything::mojom::PageHandlerFactory, ReadingListUI>(map);
     }
   }
 

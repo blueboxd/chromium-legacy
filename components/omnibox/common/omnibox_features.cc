@@ -61,6 +61,10 @@ const base::Feature kDisplayTitleForCurrentUrl{
 const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
     "OmniboxRemoveSuggestionsFromClipboard", enabled_by_default_android_only};
 
+// Auxiliary search for Android. See http://crbug/1310100 for more details.
+const base::Feature kAndroidAuxiliarySearch{
+    "AndroidAuxiliarySearch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Demotes the relevance scores when comparing suggestions based on the
 // suggestion's |AutocompleteMatchType| and the user's |PageClassification|.
 // This feature's main job is to contain the DemoteByType parameter.
@@ -329,5 +333,10 @@ const base::Feature kReportAssistedQueryStats{"OmniboxReportAssistedQueryStats",
 // Search Results Page URL.
 extern const base::Feature kReportSearchboxStats{
     "OmniboxReportSearchboxStats", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, retains all suggestions with headers to be presented entirely.
+// Disabling the feature trims the suggestions list to the predefined limit.
+extern const base::Feature kRetainSuggestionsWithHeaders{
+    "OmniboxRetainSuggestionsWithHeaders", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox

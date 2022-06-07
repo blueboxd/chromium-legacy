@@ -174,7 +174,7 @@ void PrintJobWorker::GetSettingsFromUser(uint32_t document_page_count,
                           std::move(callback));
 }
 
-void PrintJobWorker::SetSettings(base::Value new_settings,
+void PrintJobWorker::SetSettings(base::Value::Dict new_settings,
                                  SettingsCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -197,13 +197,13 @@ void PrintJobWorker::SetSettingsFromPOD(
 }
 #endif
 
-void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
+void PrintJobWorker::UpdatePrintSettings(base::Value::Dict new_settings,
                                          SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<crash_keys::ScopedPrinterInfo> crash_key;
   mojom::PrinterType type = static_cast<mojom::PrinterType>(
-      new_settings.FindIntKey(kSettingPrinterType).value());
+      new_settings.FindInt(kSettingPrinterType).value());
   if (type == mojom::PrinterType::kLocal) {
 #if BUILDFLAG(IS_WIN)
     // Blocking is needed here because Windows printer drivers are oftentimes
@@ -212,7 +212,7 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
 #endif
     scoped_refptr<PrintBackend> print_backend =
         PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
-    std::string printer_name = *new_settings.FindStringKey(kSettingDeviceName);
+    std::string printer_name = *new_settings.FindString(kSettingDeviceName);
     crash_key = std::make_unique<crash_keys::ScopedPrinterInfo>(
         print_backend->GetPrinterDriverInfo(printer_name));
 
@@ -220,12 +220,11 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
     PrinterBasicInfo basic_info;
     if (print_backend->GetPrinterBasicInfo(printer_name, &basic_info) ==
         mojom::ResultCode::kSuccess) {
-      base::Value advanced_settings(base::Value::Type::DICTIONARY);
+      base::Value::Dict advanced_settings;
       for (const auto& pair : basic_info.options)
-        advanced_settings.SetStringKey(pair.first, pair.second);
+        advanced_settings.Set(pair.first, pair.second);
 
-      new_settings.SetKey(kSettingAdvancedSettings,
-                          std::move(advanced_settings));
+      new_settings.Set(kSettingAdvancedSettings, std::move(advanced_settings));
     }
 #endif  // BUILDFLAG(IS_LINUX) && defined(USE_CUPS)
   }
@@ -428,7 +427,8 @@ void PrintJobWorker::OnNewPage() {
       PostWaitForPage();
       return;
     }
-    SpoolDocument();
+    if (!SpoolDocument())
+      return;
   }
 
   OnDocumentDone();
@@ -455,7 +455,8 @@ bool PrintJobWorker::OnNewPageHelperGdi() {
       return false;
     }
     // The page is there, print it.
-    SpoolPage(page.get());
+    if (!SpoolPage(page.get()))
+      return false;
     ++page_number_;
     if (page_number_ == PageNumber::npos())
       break;
@@ -525,7 +526,7 @@ void PrintJobWorker::FinishDocumentDone(int job_id) {
 }
 
 #if BUILDFLAG(IS_WIN)
-void PrintJobWorker::SpoolPage(PrintedPage* page) {
+bool PrintJobWorker::SpoolPage(PrintedPage* page) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_NE(page_number_, PageNumber::npos());
 
@@ -533,7 +534,7 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
   if (document_->RenderPrintedPage(*page, printing_context_.get()) !=
       mojom::ResultCode::kSuccess) {
     OnFailure();
-    return;
+    return false;
   }
 
   // Signal everyone that the page is printed.
@@ -542,10 +543,11 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
       FROM_HERE,
       base::BindOnce(&PrintJob::OnPageDone, base::RetainedRef(print_job_.get()),
                      base::RetainedRef(page)));
+  return true;
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-void PrintJobWorker::SpoolDocument() {
+bool PrintJobWorker::SpoolDocument() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   mojom::ResultCode result =
       document_->RenderPrintedDocument(printing_context_.get());
@@ -553,7 +555,9 @@ void PrintJobWorker::SpoolDocument() {
     PRINTER_LOG(ERROR) << "Failure to render printed document - error "
                        << result;
     OnFailure();
+    return false;
   }
+  return true;
 }
 
 void PrintJobWorker::OnFailure() {

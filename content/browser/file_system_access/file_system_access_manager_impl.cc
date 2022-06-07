@@ -15,7 +15,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -530,6 +529,16 @@ void FileSystemAccessManagerImpl::SetDefaultPathAndShowPicker(
     suggested_name_path =
         net::GenerateFileName(GURL(), std::string(), std::string(),
                               suggested_name, std::string(), std::string());
+
+    auto suggested_extension = suggested_name_path.Extension();
+    // Our version of `IsShellIntegratedExtension()` is more stringent than
+    // the version used in `net::GenerateFileName()`. See
+    // `FileSystemChooser::IsShellIntegratedExtension()` for details.
+    if (FileSystemChooser::IsShellIntegratedExtension(suggested_extension)) {
+      suggested_extension = FILE_PATH_LITERAL("download");
+      suggested_name_path =
+          suggested_name_path.ReplaceExtension(suggested_extension);
+    }
   }
 
   FileSystemChooser::Options file_system_chooser_options(
@@ -1165,9 +1174,6 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
     std::vector<FileSystemChooser::ResultEntry> entries,
     SensitiveDirectoryResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::UmaHistogramEnumeration(
-      "NativeFileSystemAPI.SensitiveDirectoryAccessResult", result);
-
   if (result == SensitiveDirectoryResult::kAbort) {
     std::move(callback).Run(
         file_system_access_error::FromStatus(
@@ -1283,9 +1289,6 @@ void FileSystemAccessManagerImpl::DidChooseDirectory(
     const SharedHandleState& shared_handle_state,
     FileSystemAccessPermissionGrant::PermissionRequestOutcome outcome) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::UmaHistogramEnumeration(
-      "NativeFileSystemAPI.ConfirmReadDirectoryResult",
-      shared_handle_state.read_grant->GetStatus());
 
   std::vector<blink::mojom::FileSystemAccessEntryPtr> result_entries;
   if (shared_handle_state.read_grant->GetStatus() !=

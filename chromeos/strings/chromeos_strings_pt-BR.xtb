@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Gateway</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Ajustar à área de digitalização</translation>
+<translation id="1367951781824006909">Escolher um arquivo</translation>
 <translation id="1387854245479784695">Isso é uma agregação de todos os núcleos</translation>
 <translation id="1394661041439318933">O estojo tem <ph name="BATTERY_PERCENTAGE" />% de bateria.</translation>
 <translation id="1397738625398125236">O gateway pode receber um ping</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Revisão do hardware</translation>
 <translation id="1905710495812624430">O número máximo de tentativas permitidas foi excedido.</translation>
 <translation id="1908234395526491708">Falhas de solicitações UDP</translation>
-<translation id="1930797645656624981">Serviço de método de entrada do Chrome OS</translation>
 <translation id="1947737735496445907">Impresso</translation>
 <translation id="1951012854035635156">Assistente</translation>
+<translation id="1977994649430373166">Foto do perfil do Google</translation>
 <translation id="1979103255016296513">O prazo para a alteração de senha foi ultrapassado</translation>
 <translation id="1999615961760456652">Portal cativo</translation>
 <translation id="2006864819935886708">Conectividade</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Você precisa selecionar pelo menos um álbum da galeria de arte</translation>
 <translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Alternar luz de fundo do teclado</translation>
 <translation id="2240366984605217732">Alternar layout</translation>
 <translation id="225692081236532131">Status da ativação</translation>
 <translation id="2287186687001756809">Nenhuma imagem disponível. Para adicionar fotos, acesse <ph name="LINK" /></translation>
@@ -149,7 +151,6 @@
 <translation id="2536159006530886390">Não é possível se conectar à Internet.</translation>
 <translation id="2570743873672969996">Executando o teste <ph name="TEST_NAME" />…</translation>
 <translation id="2584559707064218956">Para definir, acesse as Configurações</translation>
-<translation id="2585245331261708204">Novidades do Chrome OS</translation>
 <translation id="2619761439309613843">Atualização diária</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2640549051766135490">Álbum <ph name="TITLE" /> <ph name="DESC" /> selecionado</translation>
@@ -222,6 +223,7 @@
 <translation id="3604713164406837697">Mudar plano de fundo</translation>
 <translation id="360565022852130722">A rede Wi-Fi é protegida pelo protocolo fraco WEP 802.1x</translation>
 <translation id="3606583719724308068">Alta latência em sites HTTPS</translation>
+<translation id="3621202678540785336">Entrada</translation>
 <translation id="3632579075709132555">Alternar Tela de privacidade</translation>
 <translation id="3689839747745352263">Teste de <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Carregando...</translation>
@@ -246,6 +248,7 @@
 <translation id="3954678691475912818">O tipo do dispositivo é desconhecido.</translation>
 <translation id="3966286471246132217">Para resultados mais precisos, feche todos os apps até que o teste seja concluído.</translation>
 <translation id="3967822245660637423">Download concluído</translation>
+<translation id="3969602104473960991">Senha do ChromeOS atualizada</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="39823212440917567">Trabalhos de impressão enviados há mais de <ph name="NUMBER_OF_DAYS" /> dias serão removidos</translation>
 <translation id="3993704782688964914">O <ph name="DEVICE_NAME" /> está atualizado</translation>
@@ -291,7 +294,7 @@
 <translation id="445059817448385655">Senha antiga</translation>
 <translation id="4453205916657964690">Máscara de sub-rede</translation>
 <translation id="4454245904991689773">Salvar em</translation>
-<translation id="4472575034687746823">Primeiros passos</translation>
+<translation id="4472575034687746823">Vamos começar</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Falha no ping do gateway de rede não padrão</translation>
 <translation id="4485626319513081846">Selecione esta opção caso o dispositivo volte para o estoque ou seja recondicionado e distribuído para um novo cliente.</translation>
@@ -321,7 +324,6 @@
 <translation id="4731797938093519117">Acesso do familiar responsável</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4744944742468440486">Informações relacionadas à sua seleção</translation>
-<translation id="475869545581454722">Senha do Chrome OS atualizada</translation>
 <translation id="4773299976671772492">Interrompida</translation>
 <translation id="4782311465517282004">Veja definições, traduções ou conversões de unidades ao clicar com o botão direito do mouse no texto ou tocar nele e mantê-lo pressionado</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> foto</translation>
@@ -461,6 +463,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6113701710518389813">Seta para cima</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, mais <ph name="NUMBER" /> álbuns</translation>
 <translation id="6122191549521593678">On-line</translation>
+<translation id="6122277663991249694">Serviço de método de entrada do ChromeOS</translation>
 <translation id="6137767437444130246">Certificado do usuário</translation>
 <translation id="6146993107019042706">Para concluir, insira a nova senha</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -552,6 +555,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
 <translation id="714876143603641390">Conectividade LAN</translation>
+<translation id="7155171745945906037">Foto existente na câmera ou em arquivo</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7172721935181587524">1 imagem</translation>
 <translation id="7175037578838465313">Configurar a rede <ph name="NAME" /></translation>
@@ -626,6 +630,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Ativar o modo de cor automático</translation>
 <translation id="8041089156583427627">Enviar comentários</translation>
+<translation id="8045012663542226664">Desativar o microfone</translation>
 <translation id="8075838845814659848">Carga restante</translation>
 <translation id="8082366717211101304">Não foi possível resolver o DNS em apps Android</translation>
 <translation id="808894953321890993">Alterar senha</translation>
@@ -657,6 +662,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8398927464629426868">A velocidade em que o dispositivo carrega ou descarrega atualmente</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Teclado interno</translation>
+<translation id="8431300646573772016">Novidades do ChromeOS</translation>
 <translation id="843568408673868420">Conectividade com a Internet</translation>
 <translation id="844521431886043384">O DNS não foi definido</translation>
 <translation id="8461329675984532579">Nome do provedor doméstico</translation>
@@ -736,6 +742,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="917720651393141712">Testar</translation>
 <translation id="9204237731135241582">Não foi possível entrar em contato com o gateway em apps Android</translation>
 <translation id="9211490828691860325">Todos os espaços de trabalho</translation>
+<translation id="932327136139879170">Início</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Desativado</translation>
 <translation id="960719561871045870">Código da operadora</translation>

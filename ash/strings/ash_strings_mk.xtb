@@ -87,6 +87,7 @@
 <translation id="1351937230027495976">Собери го менито</translation>
 <translation id="1364382257761975320">За да го отклучите вашиот Chromebook, користете го отпечатокот</translation>
 <translation id="1364618750746929654">Не може да се добие транскрипција</translation>
+<translation id="1372545819342940910">Зачувај ја работната површина за подоцна</translation>
 <translation id="1383597849754832576">Не може да се преземат датотеките за говор. Обидете се повторно подоцна.</translation>
 <translation id="1383876407941801731">Барај</translation>
 <translation id="1391102559483454063">Вклучено</translation>
@@ -200,6 +201,7 @@
 <translation id="2107914222138020205">Вашиот USB-C не поддржува Thunderbolt. Изведбата на уредот може да биде ограничена.</translation>
 <translation id="2108303511227308752">Кратенката од тастатура Alt + Backspace се промени. За да го користите копчето Delete, притиснете го копчето <ph name="LAUNCHER_KEY_NAME" /> + Backspace.</translation>
 <translation id="211328683600082144">ВКЛУЧИ ГО МИКРОФОНОТ</translation>
+<translation id="2123115117533398272">Chrome OS прикажува предлози за нови содржини за разгледување. Статистикa за подобрување на квалитетот се испраќа само ако сте одбрале споделување на податоците за користење. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">Нов работен простор</translation>
 <translation id="2127372758936585790">Полнач со ниско напојување</translation>
 <translation id="2132302418721800944">Снимање цел екран</translation>
@@ -270,6 +272,7 @@
 <translation id="2620436844016719705">Систем</translation>
 <translation id="2621713457727696555">Заштитена</translation>
 <translation id="263399434338050016">„Избери сѐ“</translation>
+<translation id="2645435784669275700">Chrome OS</translation>
 <translation id="2653019840645008922">Снимање прозорец</translation>
 <translation id="2653659639078652383">Испрати</translation>
 <translation id="2658778018866295321">Кликни и повлечи</translation>
@@ -366,7 +369,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Поврзан со уред}one{Поврзан со # уред}other{Поврзан со # уреди}}</translation>
 <translation id="320207200541803018">Постави тајмер</translation>
 <translation id="3203405173652969239">„Пристапот со прекинувачи“ е овозможен</translation>
-<translation id="3207953481422525583">Поставки на корисникот</translation>
+<translation id="3207953481422525583">Кориснички поставки</translation>
 <translation id="3208321278970793882">Апликација</translation>
 <translation id="3217205077783620295">Јачината на звук е вклучена. Ако смените, ќе се исклучи звукот на аудиото.</translation>
 <translation id="3226991577105957773">и уште <ph name="COUNT" /></translation>
@@ -395,6 +398,7 @@
 <translation id="3375634426936648815">Поврзано</translation>
 <translation id="3378442621503952303">Се поврзува со профилот. Почекајте неколку минути.</translation>
 <translation id="3386978599540877378">лупа за цел екран</translation>
+<translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3400357268283240774">Дополнителни поставки</translation>
 <translation id="3410336247007142655">Прикажи ги поставките за темната тема</translation>
 <translation id="3413817803639110246">Сѐ уште нема што да се види</translation>
@@ -523,6 +527,7 @@
 <translation id="4095366824370681039">Пенкало со мастило</translation>
 <translation id="4112140312785995938">Премотај наназад</translation>
 <translation id="4114315158543974537">Вклучете ја Phone Hub</translation>
+<translation id="4115378294792113321">Магента</translation>
 <translation id="412298498316631026">прозорец</translation>
 <translation id="4123259114412175274">За да го отклучите вашиот Chromebook, уверете се дека Bluetooth на телефонот е вклучен</translation>
 <translation id="4129129681837227511">За да гледате известувања на заклучениот екран, отклучете за да ја промените поставката</translation>
@@ -562,7 +567,6 @@
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Ја притиснавте кратенката од тастатура за висок контраст. Дали сакате да ја вклучите?</translation>
 <translation id="4322742403972824594">Кратенката од тастатура Ctrl + Alt + Стрелка нагоре се промени. За да го користите копчето Home, притиснете го копчето <ph name="LAUNCHER_KEY_NAME" /> + Стрелка налево.</translation>
-<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4333628967105022692">Lacros не е поддржан кога се најавени повеќе корисници.</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">„Помошникот“ се вчитува…</translation>
@@ -795,7 +799,6 @@
 <translation id="5788127256798019331">Датотеки на Play</translation>
 <translation id="5790085346892983794">Успешно</translation>
 <translation id="5805809050170488595">Кликнете за активирање на <ph name="NETWORK_NAME" /></translation>
-<translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5825969630400862129">Поставки за поврзани уреди</translation>
 <translation id="583281660410589416">Непознат</translation>
 <translation id="5837036133683224804">Престани со емитување на <ph name="ROUTE_TITLE" /> на <ph name="RECEIVER_NAME" /></translation>
@@ -1147,7 +1150,6 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /> управуваат со сметката</translation>
 <translation id="793716872548410480">Притиснете <ph name="SHORTCUT_KEY_NAME" /> + V за да ја видите привремената меморија. Последните 5 ставки што сте ги копирале се зачувани во привремената меморија.</translation>
 <translation id="7942349550061667556">Црвена</translation>
-<translation id="7952747673138230804">Chrome OS прикажува предлози за нови содржини за разгледување. Статистикa за подобрување на квалитетот се испраќа само ако сте одбрале споделување на податоците за користење. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7955885781510802139">Режим на висок контраст</translation>
 <translation id="7968693143708939792">Изберете папка…</translation>
 <translation id="7977927628060636163">Се пребаруваат мобилни мрежи…</translation>

@@ -8,10 +8,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -78,8 +78,10 @@ class HistoryClustersService : public base::SupportsUserData,
   using IncompleteVisitMap =
       std::map<int64_t, IncompleteVisitContextAnnotations>;
 
-  using KeywordSet = base::flat_set<std::u16string>;
-  using URLKeywordSet = base::flat_set<std::string>;
+  // Use std::unordered_set here because we have ~1000 elements at the 99th
+  // percentile, and we do synchronous lookups as the user types in the omnibox.
+  using KeywordSet = std::unordered_set<std::u16string>;
+  using URLKeywordSet = std::unordered_set<std::string>;
 
   // `url_loader_factory` is allowed to be nullptr, like in unit tests.
   // In that case, HistoryClustersService will never instantiate a clustering
@@ -171,9 +173,11 @@ class HistoryClustersService : public base::SupportsUserData,
   // keystroke, the cache may be ready and return true then.
   bool DoesQueryMatchAnyCluster(const std::string& query);
 
-  // Returns true if `stripped_url` is part of a significant cluster. This may
-  // kick off a cache refresh while still immediately returning false.
-  bool DoesURLMatchAnyCluster(const std::string& stripped_url);
+  // Returns true if `url_keyword` matches a URL in a significant cluster. This
+  // may kick off a cache refresh while still immediately returning false.
+  // `url_keyword` is derived from a given URL by ComputeURLKeywordForLookup().
+  // SRP URLs canonicalized by TemplateURLService should be passed in directly.
+  bool DoesURLMatchAnyCluster(const std::string& url_keyword);
 
   // Clears `all_keywords_cache_` and cancels any pending tasks to populate it.
   void ClearKeywordCache();
@@ -191,8 +195,8 @@ class HistoryClustersService : public base::SupportsUserData,
   void PopulateClusterKeywordCache(
       base::ElapsedTimer total_latency_timer,
       base::Time begin_time,
-      std::unique_ptr<std::vector<std::u16string>> keyword_accumulator,
-      std::unique_ptr<std::vector<std::string>> url_keyword_accumulator,
+      std::unique_ptr<KeywordSet> keyword_accumulator,
+      std::unique_ptr<URLKeywordSet> url_keyword_accumulator,
       KeywordSet* cache,
       URLKeywordSet* url_cache,
       std::vector<history::Cluster> clusters,

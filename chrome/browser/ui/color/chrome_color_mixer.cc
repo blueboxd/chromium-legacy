@@ -239,11 +239,14 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       ui::SelectBasedOnDarkInput(kColorToolbar, gfx::kGoogleGreen300,
                                  gfx::kGoogleGreen700),
       kColorToolbar, color_utils::kMinimumReadableContrastRatio);
-  mixer[kColorDownloadItemProgressRingBackground] = {
-      ui::kColorThrobberPreconnect};
+  mixer[kColorDownloadItemProgressRingBackground] = ui::SetAlpha(
+      kColorDownloadItemProgressRingForeground, gfx::kGoogleGreyAlpha400);
   mixer[kColorDownloadItemProgressRingForeground] = {ui::kColorThrobber};
   mixer[kColorDownloadShelfBackground] = {kColorToolbar};
   mixer[kColorDownloadShelfButtonBackground] = {kColorDownloadShelfBackground};
+  mixer[kColorDownloadShelfButtonIcon] = {kColorToolbarButtonIcon};
+  mixer[kColorDownloadShelfButtonIconDisabled] = {
+      kColorToolbarButtonIconDisabled};
   mixer[kColorDownloadShelfButtonText] =
       ui::PickGoogleColor(ui::kColorAccent, kColorDownloadShelfBackground,
                           color_utils::kMinimumReadableContrastRatio);
@@ -282,6 +285,10 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       kColorFeaturePromoBubbleBackground};
   mixer[kColorFeaturePromoBubbleForeground] = {SK_ColorWHITE};
   mixer[kColorFindBarBackground] = {ui::kColorTextfieldBackground};
+  mixer[kColorFindBarButtonIcon] =
+      ui::DeriveDefaultIconColor(ui::kColorTextfieldForeground);
+  mixer[kColorFindBarButtonIconDisabled] =
+      ui::DeriveDefaultIconColor(ui::kColorTextfieldForegroundDisabled);
   mixer[kColorFindBarForeground] = {ui::kColorTextfieldForeground};
   mixer[kColorFindBarMatchCount] = {ui::kColorSecondaryForeground};
   mixer[kColorFindBarSeparator] = {ui::kColorSeparator};
@@ -293,6 +300,8 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorFrameCaptionInactive] =
       ui::GetColorWithMaxContrast({ui::kColorFrameInactive});
   mixer[kColorInfoBarBackground] = {kColorToolbar};
+  mixer[kColorInfoBarButtonIcon] = {kColorToolbarButtonIcon};
+  mixer[kColorInfoBarButtonIconDisabled] = {kColorToolbarButtonIconDisabled};
   mixer[kColorInfoBarContentAreaSeparator] =
       ui::AlphaBlend(kColorToolbarButtonIcon, kColorInfoBarBackground, 0x3A);
   mixer[kColorInfoBarForeground] = {kColorToolbarText};
@@ -327,8 +336,6 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       ui::kColorButtonBackgroundProminent};
   mixer[kColorOmniboxAnswerIconForeground] = {
       ui::kColorButtonForegroundProminent};
-  mixer[kColorOmniboxBackground] = {dark_mode ? gfx::kGoogleGrey900
-                                              : gfx::kGoogleGrey100};
   mixer[kColorOmniboxChipBackgroundLowVisibility] = {
       kColorTabBackgroundActiveFrameActive};
   mixer[kColorOmniboxChipBackgroundNormalVisibility] = {
@@ -337,8 +344,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       kColorTabForegroundActiveFrameActive};
   mixer[kColorOmniboxChipForegroundNormalVisibility] = {
       ui::kColorButtonForeground};
-  mixer[kColorOmniboxText] =
-      ui::GetColorWithMaxContrast(kColorOmniboxBackground);
+  mixer[kColorPageInfoChosenObjectDeleteButtonIcon] = {ui::kColorIcon};
+  mixer[kColorPageInfoChosenObjectDeleteButtonIconDisabled] = {
+      ui::kColorIconDisabled};
   mixer[kColorPaymentsFeedbackTipBackground] = {
       ui::kColorSubtleEmphasisBackground};
   mixer[kColorPaymentsFeedbackTipBorder] = {ui::kColorBubbleFooterBorder};
@@ -360,6 +368,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       kColorPaymentsPromoCodeForegroundHovered};
   mixer[kColorPaymentsPromoCodeInkDrop] = {dark_mode ? gfx::kGoogleGreen300
                                                      : gfx::kGoogleGreen600};
+  mixer[kColorPaymentsRequestBackArrowButtonIcon] = {ui::kColorIcon};
+  mixer[kColorPaymentsRequestBackArrowButtonIconDisabled] = {
+      ui::kColorIconDisabled};
   mixer[kColorPaymentsRequestRowBackgroundHighlighted] = {
       SkColorSetA(SK_ColorBLACK, 0x0D)};
   mixer[kColorPipWindowBackToTabButtonBackground] = {
@@ -557,6 +568,8 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorTabstripLoadingProgressForeground] = {ui::kColorAccent};
   mixer[kColorTabstripScrollContainerShadow] =
       ui::SetAlpha(ui::kColorShadowBase, 0x4D);
+  mixer[kColorTabThrobber] = {ui::kColorThrobber};
+  mixer[kColorTabThrobberPreconnect] = {ui::kColorThrobberPreconnect};
   mixer[kColorThumbnailTabBackground] = ui::BlendForMinContrast(
       ui::kColorAccent, ui::kColorFrameActive, absl::nullopt,
       color_utils::kMinimumVisibleContrastRatio);
@@ -571,6 +584,8 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorToolbarButtonIcon] = {kColorToolbarButtonIconDefault};
   mixer[kColorToolbarButtonIconDefault] = ui::HSLShift(
       gfx::kGoogleGrey700, GetThemeTint(ThemeProperties::TINT_BUTTONS, key));
+  mixer[kColorToolbarButtonIconDisabled] =
+      ui::SetAlpha(kColorToolbarButtonIcon, gfx::kDisabledControlAlpha);
   mixer[kColorToolbarButtonIconHovered] = {kColorToolbarButtonIcon};
   mixer[kColorToolbarButtonIconInactive] = {
       ui::SetAlpha(kColorToolbarButtonIcon, gfx::kGoogleGreyAlpha500)};
@@ -590,14 +605,20 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorToolbarText] = {kColorToolbarTextDefault};
   mixer[kColorToolbarTextDefault] = {dark_mode ? SK_ColorWHITE
                                                : gfx::kGoogleGrey800};
+  mixer[kColorToolbarTextDisabled] = {kColorToolbarTextDisabledDefault};
+  mixer[kColorToolbarTextDisabledDefault] =
+      ui::SetAlpha(kColorToolbarText, gfx::kDisabledControlAlpha);
   mixer[kColorToolbarTopSeparatorFrameActive] =
       GetToolbarTopSeparatorColorTransform(kColorToolbar,
                                            ui::kColorFrameActive);
   mixer[kColorToolbarTopSeparatorFrameInactive] =
       GetToolbarTopSeparatorColorTransform(kColorToolbar,
                                            ui::kColorFrameInactive);
+  mixer[kColorWebAuthnBackArrowButtonIcon] = {ui::kColorIcon};
+  mixer[kColorWebAuthnBackArrowButtonIconDisabled] = {ui::kColorIconDisabled};
   mixer[kColorWebAuthnPinTextfieldBottomBorder] = {ui::kColorAccent};
-  mixer[kColorWebAuthnProgressRingBackground] = {ui::kColorThrobberPreconnect};
+  mixer[kColorWebAuthnProgressRingBackground] = ui::SetAlpha(
+      kColorWebAuthnProgressRingForeground, gfx::kGoogleGreyAlpha400);
   mixer[kColorWebAuthnProgressRingForeground] = {ui::kColorThrobber};
   mixer[kColorWebContentsBackground] = {kColorNewTabPageBackground};
   mixer[kColorWebContentsBackgroundLetterboxing] =

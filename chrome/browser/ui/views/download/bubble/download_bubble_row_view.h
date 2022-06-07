@@ -16,20 +16,19 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
-#include "ui/views/view_targeter_delegate.h"
 
 namespace views {
 class ImageView;
 class Label;
 class MdTextButton;
 class ProgressBar;
+class FlexLayoutView;
 }  // namespace views
 
 class DownloadShelfContextMenuView;
 class DownloadBubbleUIController;
 
-class DownloadBubbleRowView : public HoverButton,
-                              public views::ViewTargeterDelegate,
+class DownloadBubbleRowView : public views::View,
                               public views::ContextMenuController,
                               public DownloadUIModel::Observer {
  public:
@@ -47,6 +46,8 @@ class DownloadBubbleRowView : public HoverButton,
   // Overrides views::View:
   void AddedToWidget() override;
   void OnThemeChanged() override;
+  void Layout() override;
+  Views GetChildrenInZOrder() override;
 
   // Overrides DownloadUIModel::Observer:
   void OnDownloadOpened() override;
@@ -58,24 +59,24 @@ class DownloadBubbleRowView : public HoverButton,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
 
-  // views::ViewTargeterDelegate:
-  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
+  DownloadUIModel* model() { return model_.get(); }
+
+  DownloadUIModel::BubbleUIInfo& ui_info() { return ui_info_; }
 
  protected:
   // Overrides ui::LayerDelegate:
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
-  // HoverButton:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-  gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int w) const override;
 
  private:
+  raw_ptr<views::MdTextButton> AddMainPageButton(
+      DownloadCommands::Command command,
+      const std::u16string& button_string);
+
   // If there is any change in state, update UI info.
   void UpdateBubbleUIInfo();
-  void UpdateUIForInProgressItems();
-  void UpdateUIForWarnings();
+  void UpdateButtonsForItems();
+  void UpdateProgressBar();
   void UpdateLabels();
 
   // Load the icon, from the cache or from IconManager::LoadIcon.
@@ -93,6 +94,7 @@ class DownloadBubbleRowView : public HoverButton,
   // The icon for the file. We get platform-specific icons from IconLoader.
   raw_ptr<views::ImageView> icon_ = nullptr;
   raw_ptr<views::ImageView> subpage_icon_ = nullptr;
+  raw_ptr<views::FlexLayoutView> subpage_icon_holder_ = nullptr;
 
   // The primary label.
   raw_ptr<views::Label> primary_label_ = nullptr;
@@ -100,17 +102,17 @@ class DownloadBubbleRowView : public HoverButton,
   // The secondary label.
   raw_ptr<views::Label> secondary_label_ = nullptr;
 
-  // The cancel button for in-progress downloads.
+  // Buttons on the main page.
   raw_ptr<views::MdTextButton> cancel_button_ = nullptr;
-
-  // The primary button for dangerous downloads.
-  raw_ptr<views::MdTextButton> primary_button_ = nullptr;
-
-  // Main row of the download row, everything above the progress bar.
-  raw_ptr<views::View> main_row_ = nullptr;
+  raw_ptr<views::MdTextButton> discard_button_ = nullptr;
+  raw_ptr<views::MdTextButton> keep_button_ = nullptr;
+  raw_ptr<views::MdTextButton> scan_button_ = nullptr;
+  raw_ptr<views::MdTextButton> open_now_button_ = nullptr;
+  raw_ptr<views::FlexLayoutView> main_button_holder_ = nullptr;
 
   // The progress bar for in-progress downloads.
   raw_ptr<views::ProgressBar> progress_bar_ = nullptr;
+  raw_ptr<views::FlexLayoutView> progress_bar_holder_ = nullptr;
 
   // Device scale factor, used to load icons.
   float current_scale_ = 1.0f;
@@ -137,8 +139,10 @@ class DownloadBubbleRowView : public HoverButton,
   DownloadUIModel::BubbleUIInfo ui_info_;
 
   const gfx::VectorIcon* last_overriden_icon_ = nullptr;
-  base::FilePath last_used_file_path_;
   bool already_set_default_icon_ = false;
+
+  // HoverButton for main button click and inkdrop animations.
+  raw_ptr<HoverButton> hover_button_ = nullptr;
 
   base::WeakPtrFactory<DownloadBubbleRowView> weak_factory_{this};
 };

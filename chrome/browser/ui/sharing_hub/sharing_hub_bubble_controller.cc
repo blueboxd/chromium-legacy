@@ -145,7 +145,11 @@ Profile* SharingHubBubbleController::GetProfile() const {
 }
 
 bool SharingHubBubbleController::ShouldOfferOmniboxIcon() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return !GetProfile()->IsIncognitoProfile() && !GetProfile()->IsGuestSession();
+#else
   return SharingHubOmniboxEnabled(GetWebContents().GetBrowserContext());
+#endif
 }
 
 std::vector<SharingHubAction>
@@ -278,9 +282,9 @@ void SharingHubBubbleController::ShowSharesheet(
       &GetWebContents(), std::move(intent),
       sharesheet::LaunchSource::kOmniboxShare,
       base::BindOnce(&SharingHubBubbleController::OnShareDelivered,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     AsWeakPtr()),
       base::BindOnce(&SharingHubBubbleController::OnSharesheetClosed,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     AsWeakPtr()));
 
   // Save the window in order to close the sharesheet if the tab is closed. This
   // will return the incorrect window if called later.

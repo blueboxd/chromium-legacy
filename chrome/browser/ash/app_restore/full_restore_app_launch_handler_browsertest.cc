@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/autotest_desks_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/split_view_test_api.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/device_scheduled_reboot/reboot_notification_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -58,6 +60,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_test.h"
@@ -66,6 +69,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/types/display_constants.h"
@@ -142,7 +146,8 @@ void CreateAndSaveWindowInfo(int desk_id,
                              const gfx::Rect& current_bounds,
                              chromeos::WindowStateType window_state_type,
                              ui::WindowShowState pre_minimized_show_state,
-                             int32_t window_id) {
+                             int32_t window_id,
+                             uint32_t snap_percentage) {
   // A window is needed for SaveWindowInfo, but all it needs is a layer and
   // kWindowIdKey to be set. `window` needs to be alive when save is called for
   // SaveWindowInfo to work.
@@ -161,14 +166,13 @@ void CreateAndSaveWindowInfo(int desk_id,
     window_info.pre_minimized_show_state_type = pre_minimized_show_state;
   }
 
-  ::full_restore::SaveWindowInfo(window_info);
-}
+  if (window_state_type == chromeos::WindowStateType::kPrimarySnapped ||
+      window_state_type == chromeos::WindowStateType::kSecondarySnapped) {
+    DCHECK_GT(snap_percentage, 0);
+    window_info.snap_percentage = snap_percentage;
+  }
 
-void CreateAndSaveWindowInfo(int desk_id,
-                             const gfx::Rect& current_bounds,
-                             chromeos::WindowStateType window_state_type) {
-  CreateAndSaveWindowInfo(desk_id, current_bounds, window_state_type,
-                          ui::SHOW_STATE_DEFAULT, kWindowId1);
+  ::full_restore::SaveWindowInfo(window_info);
 }
 
 void SaveWindowInfo(aura::Window* window) {
@@ -295,6 +299,14 @@ class FullRestoreAppLaunchHandlerBrowserTest
     return message_center_notification.has_value();
   }
 
+  void VerifyPostRebootNotificationTitle(const std::string& notification_id) {
+    absl::optional<message_center::Notification> message_center_notification =
+        display_service()->GetNotification(notification_id);
+    ASSERT_TRUE(message_center_notification.has_value());
+    EXPECT_EQ(message_center_notification.value().title(),
+              l10n_util::GetStringUTF16(IDS_POLICY_DEVICE_POST_REBOOT_TITLE));
+  }
+
   void SimulateClick(const std::string& notification_id,
                      RestoreNotificationButtonIndex action_index) {
     FullRestoreService::GetForProfile(profile())->Click(
@@ -377,9 +389,9 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
           apps::mojom::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::NEW_WINDOW, display::kDefaultDisplayId,
           std::vector<base::FilePath>{}, nullptr));
-  CreateAndSaveWindowInfo(kDeskId, kCurrentBounds,
-                          chromeos::WindowStateType::kMinimized,
-                          ui::SHOW_STATE_MAXIMIZED, kWindowId2);
+  CreateAndSaveWindowInfo(
+      kDeskId, kCurrentBounds, chromeos::WindowStateType::kMinimized,
+      ui::SHOW_STATE_MAXIMIZED, kWindowId2, /*snap_percentage=*/0);
 
   WaitForAppLaunchInfoSaved();
 
@@ -480,6 +492,45 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest, NotRestore) {
   // Verify there is no new browser launched.
   EXPECT_EQ(count, BrowserList::GetInstance()->size());
   EXPECT_FALSE(FindWebAppWindow());
+}
+
+// Verify simple post reboot notification is shown when
+// |kShowPostRebootNotification| pref is set and restore notification is not
+// shown.
+IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
+                       NotRestoreAndShowSimplePostRebootNotification) {
+  // Add app launch infos.
+  ::full_restore::SaveAppLaunchInfo(
+      profile()->GetPath(), std::make_unique<::app_restore::AppLaunchInfo>(
+                                app_constants::kChromeAppId, kWindowId1));
+  ::full_restore::SaveAppLaunchInfo(
+      profile()->GetPath(),
+      std::make_unique<::app_restore::AppLaunchInfo>(
+          kAppId, kWindowId2,
+          apps::mojom::LaunchContainer::kLaunchContainerWindow,
+          WindowOpenDisposition::NEW_WINDOW, display::kDefaultDisplayId,
+          std::vector<base::FilePath>{}, nullptr));
+
+  WaitForAppLaunchInfoSaved();
+
+  size_t count = BrowserList::GetInstance()->size();
+
+  // Set the pref for showing post reboot notification.
+  profile()->GetPrefs()->SetBoolean(prefs::kShowPostRebootNotification, true);
+
+  // Create FullRestoreAppLaunchHandler.
+  auto app_launch_handler =
+      std::make_unique<FullRestoreAppLaunchHandler>(profile());
+  app_launch_handler->LaunchBrowserWhenReady(/*first_run_full_restore=*/false);
+
+  CreateWebApp();
+
+  content::RunAllTasksUntilIdle();
+
+  // Verify there is no new browser launched.
+  EXPECT_EQ(count, BrowserList::GetInstance()->size());
+  EXPECT_FALSE(FindWebAppWindow());
+  EXPECT_TRUE(HasNotificationFor(ash::kPostRebootNotificationId));
 }
 
 IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
@@ -625,6 +676,46 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
   EXPECT_EQ(count + 2, BrowserList::GetInstance()->size());
 }
 
+// Verify the restore notification is shown with post reboot notification title
+// when |kShowPostRebootNotification| pref is set.
+IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
+                       RestoreWithPostRebootTitle) {
+  // Add the chrome browser launch info.
+  ::full_restore::SaveAppLaunchInfo(
+      profile()->GetPath(), std::make_unique<::app_restore::AppLaunchInfo>(
+                                app_constants::kChromeAppId, kWindowId1));
+
+  auto app_launch_info = std::make_unique<::app_restore::AppLaunchInfo>(
+      app_constants::kChromeAppId, kWindowId2);
+  app_launch_info->app_type_browser = true;
+  ::full_restore::SaveAppLaunchInfo(profile()->GetPath(),
+                                    std::move(app_launch_info));
+
+  WaitForAppLaunchInfoSaved();
+  ::full_restore::FullRestoreSaveHandler::GetInstance()->ClearForTesting();
+
+  // Set the restore pref setting as 'Ask every time'.
+  profile()->GetPrefs()->SetInteger(
+      kRestoreAppsAndPagesPrefName,
+      static_cast<int>(RestoreOption::kAskEveryTime));
+  // Set the pref for showing post reboot notification.
+  profile()->GetPrefs()->SetBoolean(prefs::kShowPostRebootNotification, true);
+
+  // Create FullRestoreAppLaunchHandler to simulate the system startup.
+  auto* full_restore_service = FullRestoreService::GetForProfile(profile());
+  full_restore_service->SetAppLaunchHandlerForTesting(
+      std::make_unique<FullRestoreAppLaunchHandler>(
+          profile(), /*should_init_service=*/true));
+  auto* app_launch_handler1 = full_restore_service->app_launch_handler();
+
+  app_launch_handler1->LaunchBrowserWhenReady(/*first_run_full_restore=*/false);
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_TRUE(HasNotificationFor(kRestoreNotificationId));
+  VerifyPostRebootNotificationTitle(kRestoreNotificationId);
+  EXPECT_FALSE(HasNotificationFor(ash::kPostRebootNotificationId));
+}
+
 IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
                        RestoreAndNoBrowserLaunchInfo) {
   size_t count = BrowserList::GetInstance()->size();
@@ -767,7 +858,9 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
       profile()->GetPath(), std::make_unique<::app_restore::AppLaunchInfo>(
                                 app_constants::kChromeAppId, kWindowId1));
 
-  CreateAndSaveWindowInfo(kDeskId, kCurrentBounds, kWindowStateType);
+  constexpr uint32_t kSnapPercentage = 75;
+  CreateAndSaveWindowInfo(kDeskId, kCurrentBounds, kWindowStateType,
+                          ui::SHOW_STATE_DEFAULT, kWindowId1, kSnapPercentage);
   WaitForAppLaunchInfoSaved();
 
   // Launch the browser.
@@ -786,6 +879,7 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
   EXPECT_EQ(kDeskId, *stored_window_info->desk_id);
   EXPECT_EQ(kCurrentBounds, *stored_window_info->current_bounds);
   EXPECT_EQ(kWindowStateType, *stored_window_info->window_state_type);
+  EXPECT_EQ(kSnapPercentage, *stored_window_info->snap_percentage);
 }
 
 // The PRE phase of the FullRestoreOverridesSessionRestoreTest. Creates a
@@ -824,9 +918,9 @@ IN_PROC_BROWSER_TEST_F(FullRestoreAppLaunchHandlerBrowserTest,
   ::full_restore::SaveAppLaunchInfo(
       profile()->GetPath(), std::make_unique<::app_restore::AppLaunchInfo>(
                                 app_constants::kChromeAppId, kRestoreId));
-  CreateAndSaveWindowInfo(kDeskId, kCurrentBounds,
-                          chromeos::WindowStateType::kNormal,
-                          ui::SHOW_STATE_DEFAULT, kRestoreId);
+  CreateAndSaveWindowInfo(
+      kDeskId, kCurrentBounds, chromeos::WindowStateType::kNormal,
+      ui::SHOW_STATE_DEFAULT, kRestoreId, /*snap_percentage=*/0);
   WaitForAppLaunchInfoSaved();
 
   // Launch the browser.

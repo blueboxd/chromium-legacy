@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">เกตเวย์</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">พอดีกับพื้นที่สแกน</translation>
+<translation id="1367951781824006909">เลือกไฟล์</translation>
 <translation id="1387854245479784695">นี่เป็นการรวม Core ทั้งหมด</translation>
 <translation id="1394661041439318933">อุปกรณ์มีระดับแบตเตอรี่ของเคส <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1397738625398125236">ปิงเกตเวย์ได้</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">การแก้ไขฮาร์ดแวร์</translation>
 <translation id="1905710495812624430">ลองทำเกินจำนวนครั้งที่กำหนดไว้แล้ว</translation>
 <translation id="1908234395526491708">ขอ UDP ไม่สำเร็จ</translation>
-<translation id="1930797645656624981">บริการวิธีการป้อนข้อมูลของ Chrome OS</translation>
 <translation id="1947737735496445907">พิมพ์แล้ว</translation>
 <translation id="1951012854035635156">ผู้ช่วย</translation>
+<translation id="1977994649430373166">รูปโปรไฟล์ Google</translation>
 <translation id="1979103255016296513">เลยเวลาเปลี่ยนรหัสผ่านแล้ว</translation>
 <translation id="1999615961760456652">แคพทีฟพอร์ทัล</translation>
 <translation id="2006864819935886708">การเชื่อมต่อ</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">ต้องเลือกอัลบั้มแกลเลอรีศิลปะอย่างน้อย 1 อัลบั้ม</translation>
 <translation id="2230005943220647148">เซลเซียส</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">ปุ่มเปิดปิดไฟแบ็กไลต์ของแป้นพิมพ์</translation>
 <translation id="2240366984605217732">สลับเลย์เอาต์</translation>
 <translation id="225692081236532131">สถานะการเปิดใช้งาน</translation>
 <translation id="2287186687001756809">ไม่มีรูปภาพ ไปที่ <ph name="LINK" /> เพื่อเพิ่มรูปภาพ</translation>
@@ -149,7 +151,6 @@
 <translation id="2536159006530886390">เชื่อมต่ออินเทอร์เน็ตไม่ได้</translation>
 <translation id="2570743873672969996">กำลังทำการทดสอบ <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">ไปที่การตั้งค่าเพื่อตั้งค่า</translation>
-<translation id="2585245331261708204">มีอะไรใหม่ใน Chrome OS</translation>
 <translation id="2619761439309613843">รีเฟรชทุกวัน</translation>
 <translation id="2620436844016719705">ระบบ</translation>
 <translation id="2640549051766135490">เลือกอัลบั้ม <ph name="TITLE" /> <ph name="DESC" /> อยู่</translation>
@@ -222,6 +223,7 @@
 <translation id="3604713164406837697">เปลี่ยนวอลเปเปอร์</translation>
 <translation id="360565022852130722">เครือข่าย WiFi มีการรักษาความปลอดภัยด้วยโปรโตคอล WEP 802.1x ที่ไม่รัดกุม</translation>
 <translation id="3606583719724308068">เวลาในการตอบสนองไปยังเว็บไซต์ HTTPS สูง</translation>
+<translation id="3621202678540785336">อินพุต</translation>
 <translation id="3632579075709132555">เปิด/ปิดหน้าจอความเป็นส่วนตัว</translation>
 <translation id="3689839747745352263">การทดสอบ <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">กำลังโหลด ...</translation>
@@ -246,6 +248,7 @@
 <translation id="3954678691475912818">อุปกรณ์เป็นประเภทที่ไม่รู้จัก</translation>
 <translation id="3966286471246132217">ปิดแอปทั้งหมดจนกว่าการทดสอบจะเสร็จสมบูรณ์เพื่อให้ได้ผลลัพธ์ที่ถูกต้องยิ่งขึ้น</translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
+<translation id="3969602104473960991">อัปเดตรหัสผ่าน Chrome OS แล้ว</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="39823212440917567">ระบบจะนำงานพิมพ์ที่เก่ากว่า <ph name="NUMBER_OF_DAYS" /> วันออก</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> เป็นเวอร์ชันล่าสุดแล้ว</translation>
@@ -321,7 +324,6 @@
 <translation id="4731797938093519117">การเข้าถึงของผู้ปกครอง</translation>
 <translation id="473775607612524610">อัปเดต</translation>
 <translation id="4744944742468440486">ข้อมูลที่เกี่ยวข้องกับสิ่งที่คุณเลือก</translation>
-<translation id="475869545581454722">อัปเดตรหัสผ่าน Chrome OS แล้ว</translation>
 <translation id="4773299976671772492">หยุดแล้ว</translation>
 <translation id="4782311465517282004">รับคำจำกัดความ คำแปล หรือการแปลงหน่วยเมื่อคุณคลิกขวาหรือแตะข้อความค้างไว้</translation>
 <translation id="4791000909649665275">รูปภาพ <ph name="NUMBER" /> รูป</translation>
@@ -461,6 +463,7 @@
 <translation id="6113701710518389813">ลูกศรขึ้น</translation>
 <translation id="6117895505466548728"><ph name="TITLE" /> และอีก <ph name="NUMBER" /> อัลบั้ม</translation>
 <translation id="6122191549521593678">ออนไลน์</translation>
+<translation id="6122277663991249694">บริการวิธีการป้อนข้อมูลของ Chrome OS</translation>
 <translation id="6137767437444130246">ใบรับรองของผู้ใช้</translation>
 <translation id="6146993107019042706">ป้อนรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -552,6 +555,7 @@
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
 <translation id="714876143603641390">การเชื่อมต่อ LAN</translation>
+<translation id="7155171745945906037">รูปภาพที่มีอยู่จากกล้องหรือไฟล์</translation>
 <translation id="7162487448488904999">แกลเลอรี</translation>
 <translation id="7172721935181587524">1 ภาพ</translation>
 <translation id="7175037578838465313">กำหนดค่า <ph name="NAME" /></translation>
@@ -626,6 +630,7 @@
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">เปิดใช้โหมดปรับสีอัตโนมัติ</translation>
 <translation id="8041089156583427627">ส่งความคิดเห็น</translation>
+<translation id="8045012663542226664">ปุ่มปิดเสียงไมโครโฟน</translation>
 <translation id="8075838845814659848">การชาร์จที่เหลือ</translation>
 <translation id="8082366717211101304">ไม่สามารถแปลง DNS จากแอป Android</translation>
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
@@ -657,6 +662,7 @@
 <translation id="8398927464629426868">อัตราการชาร์จหรือการคายประจุของอุปกรณ์ในปัจจุบัน</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">แป้นพิมพ์ภายใน</translation>
+<translation id="8431300646573772016">มีอะไรใหม่ใน Chrome OS</translation>
 <translation id="843568408673868420">การเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="844521431886043384">ไม่ได้ตั้งค่า DNS</translation>
 <translation id="8461329675984532579">ชื่อผู้ให้บริการหน้าแรก</translation>
@@ -736,6 +742,7 @@
 <translation id="917720651393141712">ทดสอบ</translation>
 <translation id="9204237731135241582">ไม่สามารถติดต่อกับเกตเวย์จากแอป Android</translation>
 <translation id="9211490828691860325">เดสก์ทั้งหมด</translation>
+<translation id="932327136139879170">หน้าแรก</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">ไม่ได้เปิดการใช้งาน</translation>
 <translation id="960719561871045870">รหัสผู้ให้บริการ</translation>

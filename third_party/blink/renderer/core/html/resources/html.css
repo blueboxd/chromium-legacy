@@ -1288,6 +1288,12 @@ a:-webkit-any-link:focus-visible {
   outline-offset: 1px;
 }
 
+/* ensure that selected links are underlined.*/
+a:-webkit-any-link::target-text {
+    text-decoration:underline;
+    background-color:#E9D2FD;
+}
+
 /* HTML5 ruby elements */
 
 ruby, rt {
@@ -1320,7 +1326,9 @@ iframe {
 }
 
 fencedframe {
-    border: 2px inset
+    border: 2px inset;
+    object-fit: contain !important;
+    object-position: 50% 50% !important;
 }
 
 details {

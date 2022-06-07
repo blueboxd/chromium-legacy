@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/sequenced_task_runner.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
@@ -71,6 +72,17 @@ bool LoginDatabaseAsyncHelper::Initialize(
       static_cast<PasswordStoreSync*>(this),
       std::move(sync_enabled_or_disabled_cb));
 
+// On Windows encryption capability is expected to be available by default.
+// On MacOS encrpytion is also expected to be available unless the user didn't
+// unlock the Keychain.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  // Check that the backend works.
+  if (success && !OSCrypt::IsEncryptionAvailable()) {
+    success = false;
+    LOG(ERROR) << "Encryption is not available.";
+  }
+#endif
+
   return success;
 }
 
@@ -122,17 +134,26 @@ LoginsResult LoginDatabaseAsyncHelper::GetAutofillableLogins(
 
 LoginsResult LoginDatabaseAsyncHelper::FillMatchingLogins(
     const std::vector<PasswordFormDigest>& forms,
-    bool include_psl) {
+    bool include_psl,
+    PasswordStoreBackendMetricsRecorder metrics_recorder) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<std::unique_ptr<PasswordForm>> results;
+  bool success = false;
   for (const auto& form : forms) {
     std::vector<std::unique_ptr<PasswordForm>> matched_forms;
     if (login_db_ && !login_db_->GetLogins(form, include_psl, &matched_forms))
       continue;
+    success = true;
     results.insert(results.end(),
                    std::make_move_iterator(matched_forms.begin()),
                    std::make_move_iterator(matched_forms.end()));
   }
+  metrics_recorder.RecordMetrics(
+      success,
+      /*error=*/success
+          ? absl::nullopt
+          : absl::optional<ErrorFromPasswordStoreOrAndroidBackend>(
+                PasswordStoreBackendError::kUnrecoverable));
   return results;
 }
 

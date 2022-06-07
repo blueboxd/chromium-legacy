@@ -21,8 +21,10 @@ class LacrosExtensionAppsController;
 class LacrosExtensionAppsPublisher;
 class KioskSessionServiceLacros;
 class FieldTrialObserver;
+class QuickAnswersController;
 class StandaloneBrowserTestController;
 class SyncExplicitPassphraseClientLacros;
+class WebAuthnRequestRegistrarLacros;
 
 namespace arc {
 class ArcIconCacheDelegateProvider;
@@ -127,6 +129,13 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Responsible for sharing sync explicit passphrase between Ash and Lacros.
   std::unique_ptr<SyncExplicitPassphraseClientLacros>
       sync_explicit_passphrase_client_;
+
+  // Handles WebAuthn request id generation.
+  std::unique_ptr<WebAuthnRequestRegistrarLacros>
+      webauthn_request_registrar_lacros_;
+
+  // Handles Quick answers requests from the Lacros browser.
+  std::unique_ptr<QuickAnswersController> quick_answers_controller_;
 };
 
 #endif  // CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_

@@ -132,34 +132,6 @@ std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
       base::FilePath(cdm_data_directory), cdm_data_quota_bytes);
 }
 
-// Implements the fuchsia.web.FrameHost protocol using a ContextImpl with
-// incognito browser context.
-class FrameHostImpl final : public fuchsia::web::FrameHost {
- public:
-  explicit FrameHostImpl(
-      inspect::Node inspect_node,
-      WebEngineDevToolsController* devtools_controller,
-      network::NetworkQualityTracker* network_quality_tracker)
-      : context_(
-            WebEngineBrowserContext::CreateIncognito(network_quality_tracker),
-            std::move(inspect_node),
-            devtools_controller) {}
-  ~FrameHostImpl() override = default;
-
-  FrameHostImpl(const FrameHostImpl&) = delete;
-  FrameHostImpl& operator=(const FrameHostImpl&) = delete;
-
-  // fuchsia.web.FrameHost implementation.
-  void CreateFrameWithParams(
-      fuchsia::web::CreateFrameParams params,
-      fidl::InterfaceRequest<fuchsia::web::Frame> request) override {
-    context_.CreateFrameWithParams(std::move(params), std::move(request));
-  }
-
- private:
-  ContextImpl context_;
-};
-
 // Checks the supported ozone platform with Scenic if no arg is specified
 // already.
 void MaybeSetOzonePlatformArg(base::CommandLine* launch_args) {
@@ -184,6 +156,12 @@ void MaybeSetOzonePlatformArg(base::CommandLine* launch_args) {
 }
 
 }  // namespace
+
+void FrameHostImpl::CreateFrameWithParams(
+    fuchsia::web::CreateFrameParams params,
+    fidl::InterfaceRequest<fuchsia::web::Frame> request) {
+  context_.CreateFrameWithParams(std::move(params), std::move(request));
+}
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
     content::ContentBrowserClient* browser_client,
@@ -300,14 +278,8 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
       fidl::InterfaceRequestHandler<fuchsia::web::FrameHost>(fit::bind_member(
           this, &WebEngineBrowserMainParts::HandleFrameHostRequest)));
 
-  // Publish the fuchsia.process.lifecycle.Lifecycle service to allow graceful
-  // teardown. If there is a |ui_task| then this is a browser-test and graceful
-  // shutdown is not required.
-  if (!parameters_.ui_task) {
-    lifecycle_ = std::make_unique<base::ProcessLifecycle>(
-        base::BindOnce(&WebEngineBrowserMainParts::BeginGracefulShutdown,
-                       base::Unretained(this)));
-  }
+  // TODO(crbug.com/1315601): Create a base::ProcessLifecycle instance here, to
+  // trigger graceful shutdown on component stop, when migrated to CFv2.
 
   // Manage network-quality signals and send them to renderers. Provides input
   // for networking-related Client Hints.
@@ -360,8 +332,18 @@ void WebEngineBrowserMainParts::SetContextRequestForTest(
 }
 
 ContextImpl* WebEngineBrowserMainParts::context_for_test() const {
-  DCHECK_EQ(context_bindings_.size(), 1u);
+  if (context_bindings_.size() == 0)
+    return nullptr;
   return context_bindings_.bindings().front()->impl().get();
+}
+
+std::vector<FrameHostImpl*> WebEngineBrowserMainParts::frame_hosts_for_test()
+    const {
+  std::vector<FrameHostImpl*> frame_host_impls;
+  for (auto& binding : frame_host_bindings_.bindings()) {
+    frame_host_impls.push_back(binding->impl().get());
+  }
+  return frame_host_impls;
 }
 
 void WebEngineBrowserMainParts::HandleContextRequest(

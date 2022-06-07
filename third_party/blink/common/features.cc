@@ -25,6 +25,13 @@ const base::Feature kAutomaticLazyFrameLoadingToAds{
 const base::Feature kAutomaticLazyFrameLoadingToEmbeds{
     "AutomaticLazyFrameLoadingToEmbeds", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Define the allowed websites to use LazyEmbeds. The allowed websites need to
+// be defined separately from kAutomaticLazyFrameLoadingToEmbeds because we want
+// to gather Blink.AutomaticLazyLoadFrame.LazyEmbedFrameCount UKM data even when
+// kAutomaticLazyFrameLoadingToEmbeds is disabled.
+const base::Feature kAutomaticLazyFrameLoadingToEmbedUrls{
+    "AutomaticLazyFrameLoadingToEmbedUrls", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows pages with DedicatedWorker to stay eligible for the back/forward
 // cache.
 const base::Feature kBackForwardCacheDedicatedWorker{
@@ -124,9 +131,6 @@ const base::Feature kDisplayLocking{"DisplayLocking",
 
 const base::Feature kJSONModules{"JSONModules",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kForceSynchronousHTMLParsing{
-    "ForceSynchronousHTMLParsing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDeferredFontShaping{"DeferredShaping",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -453,8 +457,14 @@ const base::Feature kCssSelectorFragmentAnchor{
     "CssSelectorFragmentAnchor", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // File handling integration. https://crbug.com/829689
-const base::Feature kFileHandlingAPI{"FileHandlingAPI",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFileHandlingAPI {
+  "FileHandlingAPI",
+#if BUILDFLAG(IS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // File handling icons. https://crbug.com/1218213
 const base::Feature kFileHandlingIcons{"FileHandlingIcons",
@@ -1140,6 +1150,9 @@ const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode{
     &kDelayLowPriorityRequestsAccordingToNetworkState,
     "MaxNumOfThrottleableRequestsInTightMode", 5};
 
+const base::Feature kHTMLParamElementUrlSupport{
+    "HTMLParamElementUrlSupport", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::FeatureParam<base::TimeDelta> kHttpRttThreshold{
     &kDelayLowPriorityRequestsAccordingToNetworkState, "HttpRttThreshold",
     base::Milliseconds(450)};
@@ -1368,6 +1381,8 @@ const base::Feature kOptimizeViewportConstrainedPaintInvalidation{
 
 const base::Feature kReduceUserAgentMinorVersion{
     "ReduceUserAgentMinorVersion", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<std::string> kUserAgentFrozenBuildVersion{
+    &kReduceUserAgentMinorVersion, "build_version", "0"};
 
 const base::Feature kReportFCPOnlyOnSuccessfulCommit{
     "ReportFCPOnlyOnSuccessfulCommit", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1412,6 +1427,15 @@ const base::FeatureParam<bool> kPrewarmFantasy = {&kPrewarmDefaultFontFamilies,
 // Enable `save-data` client hint.
 const base::Feature kClientHintsSaveData{"ClientHintsSaveData",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kEstablishGpuChannelAsync{
+    "EstablishGpuChannelAsync", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDeferBeginMainFrameDuringLoading{
+    "DeferBeginMainFrameDuringLoading", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<base::TimeDelta> kRecentBeginMainFrameCutoff = {
+    &kDeferBeginMainFrameDuringLoading, "recent_begin_main_frame_cutoff",
+    base::Milliseconds(150)};
 
 }  // namespace features
 }  // namespace blink

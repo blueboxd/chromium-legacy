@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include "base/base_export.h"
+#include "base/check.h"
 #include "base/containers/span.h"
 #include "base/unguessable_token.h"
 
@@ -228,7 +229,7 @@ class BASE_EXPORT WritableSharedMemoryMapping : public SharedMemoryMapping {
  private:
   friend WritableSharedMemoryMapping MapAtForTesting(
       subtle::PlatformSharedMemoryRegion* region,
-      off_t offset,
+      uint64_t offset,
       size_t size);
   friend class ReadOnlySharedMemoryRegion;
   friend class WritableSharedMemoryRegion;

@@ -360,6 +360,23 @@ void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
   data->should_show_in_shelf_ = should_show;
 }
 
+bool DownloadItemModel::ShouldShowInBubble() const {
+  // Downloads blocked by local policies should be notified, otherwise users
+  // won't get any feedback that the download has failed.
+  bool should_notify =
+      download_->GetLastReason() ==
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED &&
+      download_->GetMixedContentStatus() !=
+          download::DownloadItem::MixedContentStatus::SILENT_BLOCK;
+
+  // Wait until the target path is determined.
+  if (download_->GetTargetFilePath().empty() && !should_notify) {
+    return false;
+  }
+
+  return DownloadUIModel::ShouldShowInBubble();
+}
+
 bool DownloadItemModel::ShouldNotifyUI() const {
   if (download_->IsTransient())
     return false;
@@ -718,6 +735,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::BYPASS_DEEP_SCANNING:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       CompleteSafeBrowsingScan();
+      SetOpenWhenComplete(true);
 #endif
       [[fallthrough]];
     case DownloadCommands::KEEP:
@@ -729,6 +747,9 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
       }
       if (IsMixedContent()) {
         download_->ValidateMixedContentDownload();
+        break;
+      }
+      if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
         break;
       }
       DCHECK(IsDangerous());

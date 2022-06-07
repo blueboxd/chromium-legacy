@@ -993,23 +993,35 @@ bool LayoutObject::IsFixedPositionObjectInPagedMedia() const {
 }
 
 PhysicalRect LayoutObject::ScrollRectToVisible(
-    const PhysicalRect& rect,
+    const PhysicalRect& absolute_rect,
     mojom::blink::ScrollIntoViewParamsPtr params) {
   NOT_DESTROYED();
   LayoutBox* enclosing_box = EnclosingBox();
   if (!enclosing_box)
-    return rect;
+    return absolute_rect;
 
-  GetDocument().GetFrame()->GetSmoothScrollSequencer().AbortAnimations();
-  GetDocument().GetFrame()->GetSmoothScrollSequencer().SetScrollType(
-      params->type);
+  GetFrame()->GetSmoothScrollSequencer().AbortAnimations();
+  GetFrame()->GetSmoothScrollSequencer().SetScrollType(params->type);
   params->is_for_scroll_sequence |=
       params->type == mojom::blink::ScrollType::kProgrammatic;
-  PhysicalRect new_location =
-      enclosing_box->ScrollRectToVisibleRecursive(rect, std::move(params));
-  GetDocument().GetFrame()->GetSmoothScrollSequencer().RunQueuedAnimations();
+  PhysicalRect updated_absolute_rect =
+      enclosing_box->ScrollRectToVisibleLocally(absolute_rect, params);
 
-  return new_location;
+  // Continue the scroll via IPC if there's a remote ancestor.
+  // TODO(bokan): This probably needs to happen fenced frames in at least some
+  // cases. crbug.com/1314858.
+  LocalFrame& local_root = GetFrame()->LocalFrameRoot();
+  if (!local_root.IsMainFrame()) {
+    LocalFrameView* view = local_root.View();
+    if (view->AllowedToPropagateScrollIntoView(params)) {
+      view->ScrollRectToVisibleInRemoteParent(updated_absolute_rect,
+                                              std::move(params));
+    }
+  }
+
+  GetFrame()->GetSmoothScrollSequencer().RunQueuedAnimations();
+
+  return updated_absolute_rect;
 }
 
 LayoutBox* LayoutObject::EnclosingBox() const {
@@ -1632,26 +1644,6 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   NOT_DESTROYED();
   if (!style)
     return false;
-  // The LayoutView is always a container of fixed positioned descendants. In
-  // addition, SVG foreignObjects become such containers, so that descendants
-  // of a foreignObject cannot escape it. Similarly, text controls let authors
-  // select elements inside that are created by user agent shadow DOM, and we
-  // have (C++) code that assumes that the elements are indeed contained by the
-  // text control. So just make sure this is the case.
-  if (IsA<LayoutView>(this) || IsSVGForeignObject() ||
-      IsTextControlIncludingNG())
-    return true;
-  // SVG elements other than foreignObject should never be fixed-position
-  // containing blocks; see https://github.com/w3c/fxtf-drafts/issues/307.
-  // Checking this here also avoids getting inconsistent results from IsInline()
-  // below because this function is sometimes called before IsInline() return
-  // the correct result.
-  // TODO(crbug.com/1312217): This doesn't completely prevent SVG elements other
-  // than foreignObject from being positioned containing blocks, since it
-  // doesn't affect the result of
-  // LayoutObject::CanContainAbsolutePositionObjects.
-  if (IsSVG())
-    return false;
   bool is_document_element = IsDocumentElement();
   // https://www.w3.org/TR/filter-effects-1/#FilterProperty
   if (!is_document_element && style->HasNonInitialFilter())
@@ -1661,7 +1653,17 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
   if (!is_document_element && style->HasNonInitialBackdropFilter())
     return true;
+  // The LayoutView is always a container of fixed positioned descendants. In
+  // addition, SVG foreignObjects become such containers, so that descendants
+  // of a foreignObject cannot escape it. Similarly, text controls let authors
+  // select elements inside that are created by user agent shadow DOM, and we
+  // have (C++) code that assumes that the elements are indeed contained by the
+  // text control. So just make sure this is the case.
+  if (IsA<LayoutView>(this) || IsSVGForeignObject() ||
+      IsTextControlIncludingNG())
+    return true;
   // https://www.w3.org/TR/css-transforms-1/#containing-block-for-all-descendants
+
   // For transform-style specifically, we want to consider the computed
   // value rather than the used value.
   if (style->HasTransformRelatedProperty() ||

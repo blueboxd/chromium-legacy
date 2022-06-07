@@ -22,6 +22,7 @@
 <translation id="1081015718268701546">目前並未支援 Linux 應用程式。系統將會儲存其他應用程式。</translation>
 <translation id="108486256082349153">流動裝置：<ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426"><ph name="GIVEN_NAME" />，午安：</translation>
+<translation id="1088231044944504242">搜尋<ph name="CATEGORY" />、檔案、應用程式和其他內容，可使用方向鍵瀏覽應用程式。</translation>
 <translation id="109942774857561566">我好悶</translation>
 <translation id="1104084341931202936">顯示無障礙功能設定</translation>
 <translation id="1104621072296271835">連結您的裝置，以獲得更佳的體驗</translation>
@@ -86,6 +87,7 @@
 <translation id="1351937230027495976">摺埋選單</translation>
 <translation id="1364382257761975320">如要解鎖 Chromebook，請使用指紋</translation>
 <translation id="1364618750746929654">無法產生轉錄文字</translation>
+<translation id="1372545819342940910">儲存桌面以便日後使用</translation>
 <translation id="1383597849754832576">無法下載即時字幕檔案，請稍後再試。</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1391102559483454063">已開啟</translation>
@@ -179,6 +181,7 @@
 <translation id="1990046457226896323">已下載即時字幕檔案</translation>
 <translation id="1993072747612765854">進一步瞭解有關 <ph name="SYSTEM_APP_NAME" /> 的更新</translation>
 <translation id="1998100899771863792">目前的桌面</translation>
+<translation id="2001444736072756133">搜尋<ph name="CATEGORY" />、檔案、應用程式和其他內容。</translation>
 <translation id="2016340657076538683">輸入訊息</translation>
 <translation id="2018630726571919839">講笑話</translation>
 <translation id="2021864487439853900">按一下即可解鎖</translation>
@@ -198,6 +201,7 @@
 <translation id="2107914222138020205">USB-C 連接線不支援 Thunderbolt。裝置效能可能受到限制。</translation>
 <translation id="2108303511227308752">「Alt + Backspace 鍵」的鍵盤快速鍵已變更。如要使用 Delete 鍵，請按下<ph name="LAUNCHER_KEY_NAME" />鍵 + Backspace 鍵。</translation>
 <translation id="211328683600082144">開啟麥克風</translation>
+<translation id="2123115117533398272">Chrome OS 會顯示新內容建議以供探索。只有在您選擇分享使用情況資料時，系統才會傳送統計資料以改善服務質素。<ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">新增虛擬桌面</translation>
 <translation id="2127372758936585790">低功率充電器</translation>
 <translation id="2132302418721800944">錄影全螢幕</translation>
@@ -224,6 +228,7 @@
 <translation id="2302092602801625023">此帳戶由 Family Link 管理</translation>
 <translation id="2303600792989757991">切換視窗總覽</translation>
 <translation id="2318576281648121272">今日 <ph name="TODAY_DATE" /></translation>
+<translation id="2322065293366551060"><ph name="CATEGORY" />，搜尋結果類別</translation>
 <translation id="2322173485024759474">往後一個字母</translation>
 <translation id="2339073806695260576">輕按捷徑列的觸控按鈕即可寫筆記、擷取螢幕畫面，並使用雷射筆或放大鏡。</translation>
 <translation id="2341729377289034582">已鎖定為垂直</translation>
@@ -263,9 +268,11 @@
 <translation id="2595239820337756193">5 公里等於幾多英里</translation>
 <translation id="2596078834055697711">擷取視窗螢幕畫面</translation>
 <translation id="2607678425161541573">需要網上登入</translation>
+<translation id="2620016719323068571">搜尋<ph name="CATEGORY" />、檔案、應用程式和其他內容…</translation>
 <translation id="2620436844016719705">系統</translation>
 <translation id="2621713457727696555">已受保護</translation>
 <translation id="263399434338050016">「全選」</translation>
+<translation id="2645435784669275700">Chrome OS</translation>
 <translation id="2653019840645008922">視窗擷取</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2658778018866295321">按一下並拖曳</translation>
@@ -391,6 +398,7 @@
 <translation id="3375634426936648815">已連線</translation>
 <translation id="3378442621503952303">正在連線至設定檔。請等候幾分鐘。</translation>
 <translation id="3386978599540877378">全螢幕放大鏡</translation>
+<translation id="3387527074123400161">Chromium 作業系統</translation>
 <translation id="3400357268283240774">其他設定</translation>
 <translation id="3410336247007142655">顯示深色主題背景設定</translation>
 <translation id="3413817803639110246">目前尚未有任何通知</translation>
@@ -518,6 +526,7 @@
 <translation id="4095366824370681039">墨水筆</translation>
 <translation id="4112140312785995938">向後回轉</translation>
 <translation id="4114315158543974537">開啟 Phone Hub</translation>
+<translation id="4115378294792113321">洋紅色</translation>
 <translation id="412298498316631026">視窗</translation>
 <translation id="4123259114412175274">如要解鎖 Chromebook，請確保手機的藍牙已開啟</translation>
 <translation id="4129129681837227511">如要在上鎖畫面上查看通知，請將裝置解鎖並變更相關設定</translation>
@@ -557,7 +566,6 @@
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">您已按下高對比度的鍵盤快速鍵。確定要旋轉螢幕嗎？</translation>
 <translation id="4322742403972824594">「Ctrl + Alt + 向上箭咀」的鍵盤快速鍵已變更。如要使用 Home 鍵，請按下<ph name="LAUNCHER_KEY_NAME" />鍵 + 向左箭咀。</translation>
-<translation id="4331809312908958774">Chrome 作業系統</translation>
 <translation id="4333628967105022692">有多位使用者登入時不支援 Lacros 瀏覽器。</translation>
 <translation id="4338109981321384717">放大鏡</translation>
 <translation id="4351433414020964307">正在載入小幫手…</translation>
@@ -620,6 +628,9 @@
 <translation id="4633185660152240791">{0,plural, =1{在 1 天內將裝置回復為先前的版本}other{在 # 天內將裝置回復為先前的版本}}</translation>
 <translation id="4642092649622328492">擷取部分螢幕畫面</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />，推薦應用程式</translation>
+<translation id="4657775630156561295">以下建議會從帳戶的建議記錄中永久移除：
+
+<ph name="QUERY" /></translation>
 <translation id="4659419629803378708">已啟用 ChromeVox</translation>
 <translation id="4665114317261903604">切換「請勿騷擾」模式。<ph name="STATE_TEXT" /></translation>
 <translation id="4667099493359681081">下載緊 <ph name="FILENAME" /></translation>
@@ -786,7 +797,6 @@
 <translation id="5788127256798019331">Play 檔案</translation>
 <translation id="5790085346892983794">成功</translation>
 <translation id="5805809050170488595">按一下即可啟用 <ph name="NETWORK_NAME" /></translation>
-<translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="5825969630400862129">已連接裝置設定</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5837036133683224804">停止喺<ph name="RECEIVER_NAME" />投放 <ph name="ROUTE_TITLE" /></translation>
@@ -919,6 +929,7 @@
 <translation id="6629480180092995136"><ph name="APP_NAME" /> 要求使用麥克風</translation>
 <translation id="6637729079642709226">變更時間</translation>
 <translation id="6641720045729354415">切換「即時字幕」。<ph name="STATE_TEXT" /></translation>
+<translation id="6643169293433369663">根據名稱復原排列次序</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> 要求確認您的身分</translation>
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入這個密碼金鑰：<ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">密碼</translation>
@@ -939,6 +950,7 @@
 <translation id="6751052314767925245">由管理員強制執行</translation>
 <translation id="6751826523481687655">效能追蹤已啟用</translation>
 <translation id="6752912906630585008">已移除桌面 <ph name="REMOVED_DESK" />，並與桌面 <ph name="RECEIVE_DESK" /> 合併</translation>
+<translation id="6753390234084146956">分頁</translation>
 <translation id="6754441615189976839">六</translation>
 <translation id="6757237461819837179">目前沒有播放任何媒體</translation>
 <translation id="6777216307882431711">正在為已連接的 USB-C 裝置充電</translation>
@@ -1044,6 +1056,7 @@
 <translation id="743058460480092004">相機和麥克風正在使用中。</translation>
 <translation id="7434543979546293336">已標記為重要想法</translation>
 <translation id="7452560014878697800">某個應用程式正在使用攝錄機</translation>
+<translation id="7453330308669753048">移除咗搜尋記錄結果</translation>
 <translation id="7461924472993315131">Pin</translation>
 <translation id="746232733191930409">螢幕錄影模式</translation>
 <translation id="7466449121337984263">請輕觸感應器</translation>
@@ -1100,6 +1113,7 @@
 <translation id="7749443890790263709">桌面數量已達上限。</translation>
 <translation id="7749640678855296659">麥克風目前已關閉</translation>
 <translation id="776344839111254542">按一下即可查看更新詳情</translation>
+<translation id="7780094051999721182">捷徑</translation>
 <translation id="7780159184141939021">旋轉螢幕</translation>
 <translation id="7796353162336583443">輕按捷徑列的觸控按鈕即可寫筆記、擷取螢幕畫面，並使用「Google 助理」、雷射筆或放大鏡。</translation>
 <translation id="7796735576426975947">已隱藏新通知</translation>
@@ -1133,7 +1147,6 @@
 <translation id="79341161159229895">帳戶由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
 <translation id="793716872548410480">按下<ph name="SHORTCUT_KEY_NAME" /> + V 鍵即可查看剪貼簿。您最後複製的 5 個項目會儲存至剪貼簿。</translation>
 <translation id="7942349550061667556">紅色</translation>
-<translation id="7952747673138230804">Chrome 作業系統會顯示新內容建議以供探索。只有在您選擇分享使用情況資料時，系統才會傳送統計資料以改善服務質素。<ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7955885781510802139">高對比模式</translation>
 <translation id="7968693143708939792">選取資料夾…</translation>
 <translation id="7977927628060636163">正在搜尋流動網絡…</translation>
@@ -1162,6 +1175,7 @@
 <translation id="8120151603115102514">您的手機沒有上鎖畫面。如要解鎖 Chromebook，請輸入密碼。</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />°C</translation>
 <translation id="8131740175452115882">確定</translation>
+<translation id="8131994907636310308">閂排序資訊框</translation>
 <translation id="8132487352815776550">停用字幕</translation>
 <translation id="8132793192354020517">已連線至 <ph name="NAME" /></translation>
 <translation id="813913629614996137">正在初始化…</translation>
@@ -1225,6 +1239,8 @@
 <translation id="8513108775083588393">自動旋轉</translation>
 <translation id="851458219935658693">顯示目前桌面嘅視窗，揀咗圓形按鈕</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
+<translation id="8535393432370007982">根據顏色復原排列次序</translation>
+<translation id="8546059259582788728">成功復原排序</translation>
 <translation id="8551588720239073785">日期和時間設定</translation>
 <translation id="8553395910833293175">已指派給所有桌面。</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> 建議您更新 <ph name="DEVICE_TYPE" /></translation>

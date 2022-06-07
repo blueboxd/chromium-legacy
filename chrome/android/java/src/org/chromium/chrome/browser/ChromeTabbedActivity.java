@@ -349,6 +349,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      * Whether the StartSurface is shown when Chrome is launched.
      */
     private boolean mOverviewShownOnStart;
+    // Whether the activity is staring from a resumption. False if the activity is starting from
+    // onCreate(), a cold startup.
+    private boolean mFromResumption;
 
     private NextTabPolicySupplier mNextTabPolicySupplier;
 
@@ -663,7 +666,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 public void didAddTab(
                         Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
                     if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
-                            && !DeviceClassManager.enableAnimations()) {
+                            || type == TabLaunchType.FROM_RECENT_TABS
+                                    && !DeviceClassManager.enableAnimations()) {
                         Toast.makeText(ChromeTabbedActivity.this, R.string.open_in_new_tab_toast,
                                      Toast.LENGTH_SHORT)
                                 .show();
@@ -730,7 +734,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     mStartSurfaceSupplier.get(), getTabContentManagerSupplier(),
                     mOverviewModeBehaviorSupplier,
                     mRootUiCoordinator::getTopUiThemeColorProvider, mJankTracker, tabSwitcherViewHolder,
-                    mRootUiCoordinator.getScrimCoordinator());
+                    mRootUiCoordinator.getScrimCoordinator(), getLifecycleDispatcher());
             mLayoutStateProviderOneshotSupplier.set(mLayoutManager);
             // clang-format on
             mOverviewModeController = mLayoutManager;
@@ -982,6 +986,17 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public void onResumeWithNative() {
+        // On warm startup, call setInitialOverviewState in onResume() instead of onStart(). This is
+        // because onResume() is guaranteed to called after onNewIntent() and thus have the updated
+        // Intent which is used by shouldShowOverviewPageOnStart(). See https://crbug.com/1321607.
+        if (mFromResumption) {
+            setInitialOverviewState();
+        } else {
+            // Set mFromResumption to be true to skip the call of setInitialOverviewState() in
+            // onStart() when the next time onStart() is called, since it is no longer a cold start.
+            mFromResumption = true;
+        }
+
         super.onResumeWithNative();
 
         IncognitoStartup.onResumeWithNative(
@@ -1034,9 +1049,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         mMainIntentMetrics.logLaunchBehavior();
         super.onStartWithNative();
 
-        // Don't call setInitialOverviewState if we're waiting for the tab's creation or we risk
-        // showing a glimpse of the tab selector during start up.
-        if (!mPendingInitialTabCreation) {
+        // Don't call setInitialOverviewState if 1) we're waiting for the tab's creation or we risk
+        // showing a glimpse of the tab selector during start up. 2) on warm startup from an
+        // resumption. Defer it to onResumeWitheNative() since it needs to check the latest Intent
+        // which is only guaranteed to be updated onResume() if onNewIntent() is called.
+        if (!mPendingInitialTabCreation && !mFromResumption) {
             setInitialOverviewState();
         }
 
@@ -1809,7 +1826,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      * an LayoutManagerChrome object, add overview mode observer and so on.
      */
     private void prepareToShowStartPagePreNative() {
-        assert isInstantStartEnabled() && !hadWarmStart();
+        assert isInstantStartEnabled() && !hadWarmStart() && !mFromResumption;
         try (TraceEvent e =
                         TraceEvent.scoped("ChromeTabbedActivity.prepareToShowStartPagePreNative")) {
             setupCompositorContentPreNativeForPhone();
@@ -2248,33 +2265,32 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // If we aren't in the overview mode, we handle the Tab with launchType
         // TabLaunchType.FROM_START_SURFACE or has "OpenedFromStart" property.
         if (!mOverviewModeController.overviewVisible()
-                && (type == TabLaunchType.FROM_START_SURFACE
-                        || StartSurfaceUserData.isOpenedFromStart(currentTab))) {
+                && ReturnToChromeExperimentsUtil.isTabFromStartSurface(currentTab)) {
+            // If current tab is an incognito one, we need to change tab model to non-incognito for
+            // showing non-incognito start surface homepage.
+            if (currentTab.isIncognito()) mTabModelSelector.selectModel(/*incognito=*/false);
+
             if (StartSurfaceUserData.getKeepTab(currentTab)
                     || StartSurfaceUserData.isOpenedFromStart(currentTab)) {
                 // If the current tab is created from the start surface with the keepTab property,
                 // shows the Start surface non-incognito homepage to prevent a loop between the
                 // current tab and previous overview mode. Once in the Start surface, it will close
                 // Chrome if back button is tapped again.
-                if (currentTab.isIncognito()) {
-                    if (!currentTab.isClosing()) {
-                        mTabModelSelector.getModel(true).closeTab(currentTab);
-                    }
-                    mTabModelSelector.selectModel(/*incognito=*/false);
-                }
                 showOverview(StartSurfaceState.SHOWING_HOMEPAGE);
-                if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
-                        && !StartSurfaceUserData.getKeepTab(currentTab)) {
-                    getCurrentTabModel().closeTab(currentTab);
-                }
             } else {
-                // Otherwise, clicking the back button should close the tab and go back to the
-                // previous overview mode.
+                // Otherwise, clicking the back button should go back to the previous overview mode.
                 showOverview(StartSurfaceState.SHOWING_PREVIOUS);
-                if (!currentTab.isClosing()) {
-                    getCurrentTabModel().closeTab(currentTab);
-                }
             }
+
+            if (currentTab.isClosing()) return true;
+            // If current tab is incognito, or it shouldn't be kept and it's not from restore, close
+            // the tab.
+            if (currentTab.isIncognito()
+                    || (!StartSurfaceUserData.getKeepTab(currentTab)
+                            && type != TabLaunchType.FROM_RESTORE)) {
+                closeTabAfterStartSurfaceLayoutIsShown(currentTab);
+            }
+
             return true;
         }
 
@@ -2323,6 +2339,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND
                 || type == TabLaunchType.FROM_LONGPRESS_INCOGNITO
                 || type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                || type == TabLaunchType.FROM_RECENT_TABS
                 || (type == TabLaunchType.FROM_RESTORE
                         && CriticalPersistedTabData.from(tab).getParentId() != Tab.INVALID_TAB_ID);
     }
@@ -2827,5 +2844,17 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     @VisibleForTesting
     public ChromeNextTabPolicySupplier getNextTabPolicySupplier() {
         return (ChromeNextTabPolicySupplier) mNextTabPolicySupplier;
+    }
+
+    private void closeTabAfterStartSurfaceLayoutIsShown(Tab currentTab) {
+        // Closing tab should be called after StartSurfaceLayout finishes showing.
+        getLayoutManager().addObserver(new LayoutStateProvider.LayoutStateObserver() {
+            @Override
+            public void onFinishedShowing(int layoutType) {
+                assert layoutType == LayoutType.TAB_SWITCHER;
+                mTabModelSelector.getModel(currentTab.isIncognito()).closeTab(currentTab);
+                getLayoutManager().removeObserver(this);
+            }
+        });
     }
 }

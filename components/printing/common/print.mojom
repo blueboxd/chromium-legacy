@@ -317,6 +317,12 @@ interface PrintRenderFrame {
   // Tells the RenderFrame to initiate printing or print preview for a
   // particular node, depending on which mode the RenderFrame is in.
   PrintNodeUnderContextMenu();
+
+  // Prints the content as a snapshot of the page to be analyzed for sensitive
+  // content.
+  [EnableIf=enable_print_content_analysis]
+  SnapshotForContentAnalysis()
+      => (DidPrintDocumentParams params);
 };
 
 // Browser process interface exposed to the renderer to handle the general
@@ -354,7 +360,7 @@ interface PrintManagerHost {
   [EnableIf=enable_print_preview, Sync]
   UpdatePrintSettings(
       int32 cookie,
-      mojo_base.mojom.DeprecatedDictionaryValue job_settings)
+      mojo_base.mojom.DictionaryValue job_settings)
       => (PrintPagesParams current_settings, bool canceled);
 
   // Tells the browser to set up the print preview requested by the script. It

@@ -20,7 +20,6 @@
 #include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_generated_resources.h"
-#include "ui/resources/grit/webui_resources.h"
 #include "url/gurl.h"
 
 namespace {
@@ -51,8 +50,9 @@ CreateSampleBubbleParameters() {
   primary_account.picture_url = small_png;
   primary_account.hosted_domain = kNoHostedDomainFound;
 
-  return {DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser,
-          intercepted_account, primary_account, SK_ColorMAGENTA};
+  return DiceWebSigninInterceptor::Delegate::BubbleParameters(
+      DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser,
+      intercepted_account, primary_account, SK_ColorMAGENTA);
 }
 
 }  // namespace

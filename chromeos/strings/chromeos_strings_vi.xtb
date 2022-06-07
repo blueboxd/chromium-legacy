@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Cổng vào</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Vừa với vùng quét</translation>
+<translation id="1367951781824006909">Chọn tệp</translation>
 <translation id="1387854245479784695">Đây là số liệu tổng hợp của tất cả lõi</translation>
 <translation id="1394661041439318933">Hộp đựng còn <ph name="BATTERY_PERCENTAGE" />% pin.</translation>
 <translation id="1397738625398125236">Có thể ping cổng vào</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Hiệu chỉnh phần cứng</translation>
 <translation id="1905710495812624430">Đã vượt quá số lần thử tối đa được phép.</translation>
 <translation id="1908234395526491708">Không gửi được yêu cầu UDP</translation>
-<translation id="1930797645656624981">Dịch vụ cung cấp phương thức nhập trên Chrome OS</translation>
 <translation id="1947737735496445907">Đã in</translation>
 <translation id="1951012854035635156">Trợ lý</translation>
+<translation id="1977994649430373166">Ảnh hồ sơ trên Google</translation>
 <translation id="1979103255016296513">Đã quá hạn thay đổi mật khẩu</translation>
 <translation id="1999615961760456652">Trang xác thực</translation>
 <translation id="2006864819935886708">Kết nối</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Cần chọn tối thiểu một album trong Phòng tranh</translation>
 <translation id="2230005943220647148">Độ C</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Bật/tắt đèn nền bàn phím</translation>
 <translation id="2240366984605217732">Chuyển bố cục</translation>
 <translation id="225692081236532131">Trạng thái kích hoạt</translation>
 <translation id="2287186687001756809">Không có hình ảnh nào. Để thêm ảnh, hãy truy cập <ph name="LINK" /></translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">Độ chính xác của dấu phẩy động</translation>
 <translation id="2448312741937722512">Loại</translation>
 <translation id="2461822463642141190">Hiện tại</translation>
+<translation id="2491955442992294626">Không thể thử phím khi bạn đang dùng một cửa sổ khác</translation>
 <translation id="2493126929778606526">Những ảnh đẹp nhất của bạn được chọn tự động</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Làm mới hình nền hiện tại</translation>
@@ -148,12 +151,12 @@
 <translation id="2536159006530886390">Không thể kết nối Internet.</translation>
 <translation id="2570743873672969996">Đang chạy kiểm tra <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">Để thiết lập, hãy chuyển tới phần Cài đặt</translation>
-<translation id="2585245331261708204">Chrome OS có gì mới</translation>
 <translation id="2619761439309613843">Làm mới hàng ngày</translation>
 <translation id="2620436844016719705">Hệ thống</translation>
 <translation id="2640549051766135490">Đã chọn album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="2695514675076754339">Nhập mã mở khoá gồm 8 ký tự</translation>
 <translation id="2712812801627182647">Khoá xác thực TLS</translation>
+<translation id="2717139507051041123">Bật chế độ màu tối</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2751739896257479635">Xác thực EAP giai đoạn 2</translation>
 <translation id="2783010256799387990">ĐÃ ĐẠT</translation>
@@ -209,6 +212,7 @@
 <translation id="3488065109653206955">Được kích hoạt một phần</translation>
 <translation id="3527036260304016759">Không thành công – Lỗi không xác định</translation>
 <translation id="3532980081107202182">Còn khoảng <ph name="MIN_REMAINING" /> phút nữa</translation>
+<translation id="3557205324756024651">Nhận dạng cục bộ (tuỳ chọn)</translation>
 <translation id="3565064564551103223">IP được phép</translation>
 <translation id="3577473026931028326">Đã xảy ra lỗi. Hãy thử lại.</translation>
 <translation id="357889014807611375">mạng Wi‑Fi có giới hạn dữ liệu</translation>
@@ -219,10 +223,11 @@
 <translation id="3604713164406837697">Thay đổi hình nền</translation>
 <translation id="360565022852130722">Mạng Wi-Fi được bảo mật bằng giao thức yếu WEP 802.1x</translation>
 <translation id="3606583719724308068">Đường kết nối đến các trang web HTTPS có độ trễ cao</translation>
+<translation id="3621202678540785336">Thiết bị vào</translation>
 <translation id="3632579075709132555">Bật/tắt Màn hình bảo vệ quyền riêng tư</translation>
 <translation id="3689839747745352263">Kiểm tra <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Đang tải...</translation>
-<translation id="3708186454126126312">Từng được kết nối</translation>
+<translation id="3708186454126126312">Đã kết nối trước đây</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> bài đánh giá)</translation>
 <translation id="3748026146096797577">Chưa được kết nối</translation>
 <translation id="3749289110408117711">Tên tệp</translation>
@@ -243,6 +248,7 @@
 <translation id="3954678691475912818">Không xác định được loại thiết bị.</translation>
 <translation id="3966286471246132217">Để có kết quả chính xác hơn, hãy đóng tất cả các ứng dụng cho đến khi quá trình kiểm tra hoàn tất.</translation>
 <translation id="3967822245660637423">Đã tải xuống xong</translation>
+<translation id="3969602104473960991">Đã cập nhật mật khẩu ChromeOS</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="39823212440917567">Các lệnh in quá <ph name="NUMBER_OF_DAYS" /> ngày sẽ bị xóa</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> của bạn hiện đã cập nhật</translation>
@@ -318,7 +324,6 @@
 <translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="4744944742468440486">Thông tin liên quan đến nội dung bạn chọn</translation>
-<translation id="475869545581454722">Đã cập nhật mật khẩu Chrome OS</translation>
 <translation id="4773299976671772492">Đã dừng</translation>
 <translation id="4782311465517282004">Xem định nghĩa, bản dịch hoặc kết quả chuyển đổi đơn vị bằng cách nhấp chuột phải hoặc chạm và giữ văn bản</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> ảnh</translation>
@@ -375,6 +380,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="5234764350956374838">Bỏ qua</translation>
 <translation id="5252456968953390977">Đang chuyển vùng</translation>
+<translation id="5257811368506016604">Bật chế độ màu sáng</translation>
 <translation id="5264277876637023664">Chạy quá trình Kiểm tra CPU</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5275828089655680674">Chạy lại quy trình</translation>
@@ -432,6 +438,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5866840822086176774">Rất mạnh</translation>
 <translation id="588258955323874662">Toàn màn hình</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
+<translation id="5903200662178656908">Thiết bị là một bộ chuột và bàn phím.</translation>
 <translation id="5916084858004523819">Bị cấm</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Tệp của bạn đã được quét thành công và lưu vào <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Các tệp của bạn đã được quét thành công và lưu vào <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
@@ -452,9 +459,11 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6104112872696127344">Đã hủy quá trình quét</translation>
 <translation id="6106186594183574873">Để hoàn tất, hãy nhập mật khẩu cũ của bạn</translation>
 <translation id="6108689792487843350">Không thể kết nối với cổng</translation>
+<translation id="6112878310391905610">Quản trị viên của bạn quản lý chế độ cài đặt này</translation>
 <translation id="6113701710518389813">Mũi tên lên</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> album khác</translation>
 <translation id="6122191549521593678">Trực tuyến</translation>
+<translation id="6122277663991249694">Dịch vụ cung cấp phương thức nhập trên ChromeOS</translation>
 <translation id="6137767437444130246">Chứng chỉ người dùng</translation>
 <translation id="6146993107019042706">Để hoàn tất, hãy nhập mật khẩu mới của bạn</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -483,6 +492,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="641081527798843608">Khớp với chủ đề</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Yếu (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="6447630859861661624">Chuyển đến phần cài đặt tài khoản</translation>
 <translation id="6456394469623773452">Tốt</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Quét lại trang?}=1{Quét lại trang {PAGE_NUMBER}?}other{Quét lại trang {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
@@ -525,6 +535,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6910312834584889076">Nắp của máy quét đang mở. Hãy đóng nắp máy quét rồi thử lại.</translation>
 <translation id="6911383237894364323">Không thể kết nối với máy chủ phương tiện</translation>
 <translation id="6935486296377631201">Trình bảo vệ màn hình</translation>
+<translation id="6943893908656559156">Nhận dạng từ xa (tuỳ chọn)</translation>
 <translation id="6957231940976260713">Tên dịch vụ</translation>
 <translation id="6961170852793647506">Hãy đặt tài liệu của bạn lên máy quét để bắt đầu</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -544,6 +555,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7144878232160441200">Thử lại</translation>
 <translation id="714876143603641390">Khả năng kết nối với mạng LAN</translation>
+<translation id="7155171745945906037">Ảnh hiện có từ máy ảnh hoặc tệp</translation>
 <translation id="7162487448488904999">Thư viện</translation>
 <translation id="7172721935181587524">1 hình ảnh</translation>
 <translation id="7175037578838465313">Định cấu hình <ph name="NAME" /></translation>
@@ -565,6 +577,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7343649194310845056">Thiết bị mạng</translation>
 <translation id="7359657277149375382">Loại tệp</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378886533986123738">Thay đổi trình bảo vệ màn hình</translation>
 <translation id="741244894080940828">chuyển đổi</translation>
 <translation id="7415801143053185905">Yêu cầu HTTP có độ trễ rất cao</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -587,6 +600,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7648838807254605802">Yêu cầu HTTPS có độ trễ cao</translation>
 <translation id="7656388927906093505">Thiết bị là chuột.</translation>
 <translation id="7658239707568436148">Hủy</translation>
+<translation id="7665800271478495366">Thay đổi hình đại diện</translation>
 <translation id="7690294790491645610">Xác nhận mật khẩu mới</translation>
 <translation id="7701040980221191251">Không có</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -614,7 +628,9 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7994702968232966508">Phương pháp EAP</translation>
 <translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
+<translation id="80398733265834479">Bật chế độ màu tự động</translation>
 <translation id="8041089156583427627">Gửi ý kiến phản hồi</translation>
+<translation id="8045012663542226664">Tắt micrô</translation>
 <translation id="8075838845814659848">Mức pin còn lại</translation>
 <translation id="8082366717211101304">Không thể phân giải DNS từ các ứng dụng Android</translation>
 <translation id="808894953321890993">Đổi mật khẩu</translation>
@@ -646,6 +662,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8398927464629426868">Tốc độ sạc hoặc xả pin hiện tại của thiết bị</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Bàn phím tích hợp sẵn</translation>
+<translation id="8431300646573772016">ChromeOS có gì mới</translation>
 <translation id="843568408673868420">Tình trạng kết nối Internet</translation>
 <translation id="844521431886043384">Chưa thiết lập DNS</translation>
 <translation id="8461329675984532579">Tên nhà mạng nội hạt</translation>
@@ -725,6 +742,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="917720651393141712">Kiểm tra</translation>
 <translation id="9204237731135241582">Không thể kết nối với cổng vào từ các ứng dụng Android</translation>
 <translation id="9211490828691860325">Tất cả các không gian làm việc</translation>
+<translation id="932327136139879170">Trang chủ</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Chưa được kích hoạt</translation>
 <translation id="960719561871045870">Mã của nhà mạng</translation>

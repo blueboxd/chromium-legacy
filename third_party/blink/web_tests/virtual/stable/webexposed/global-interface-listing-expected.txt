@@ -146,6 +146,7 @@ interface AudioBufferSourceNode : AudioScheduledSourceNode
 interface AudioContext : BaseAudioContext
     attribute @@toStringTag
     getter baseLatency
+    getter outputLatency
     method close
     method constructor
     method createMediaElementSource
@@ -900,10 +901,6 @@ interface CanvasRenderingContext2D
     setter textBaseline
     setter textRendering
     setter wordSpacing
-interface CaptureHandleChangeEvent : Event
-    attribute @@toStringTag
-    method captureHandle
-    method constructor
 interface ChannelMergerNode : AudioNode
     attribute @@toStringTag
     method constructor
@@ -2216,6 +2213,7 @@ interface FileSystemFileHandle : FileSystemHandle
     method constructor
     method createWritable
     method getFile
+    method move
 interface FileSystemHandle
     attribute @@toStringTag
     getter kind
@@ -3139,7 +3137,7 @@ interface HTMLImageElement : HTMLElement
     getter crossOrigin
     getter currentSrc
     getter decoding
-    getter fetchpriority
+    getter fetchPriority
     getter height
     getter hspace
     getter isMap
@@ -3165,7 +3163,7 @@ interface HTMLImageElement : HTMLElement
     setter border
     setter crossOrigin
     setter decoding
-    setter fetchpriority
+    setter fetchPriority
     setter height
     setter hspace
     setter isMap
@@ -3307,7 +3305,7 @@ interface HTMLLinkElement : HTMLElement
     getter charset
     getter crossOrigin
     getter disabled
-    getter fetchpriority
+    getter fetchPriority
     getter href
     getter hreflang
     getter imageSizes
@@ -3327,7 +3325,7 @@ interface HTMLLinkElement : HTMLElement
     setter charset
     setter crossOrigin
     setter disabled
-    setter fetchpriority
+    setter fetchPriority
     setter href
     setter hreflang
     setter imageSizes
@@ -3644,7 +3642,7 @@ interface HTMLScriptElement : HTMLElement
     getter crossOrigin
     getter defer
     getter event
-    getter fetchpriority
+    getter fetchPriority
     getter htmlFor
     getter integrity
     getter noModule
@@ -3658,7 +3656,7 @@ interface HTMLScriptElement : HTMLElement
     setter crossOrigin
     setter defer
     setter event
-    setter fetchpriority
+    setter fetchPriority
     setter htmlFor
     setter integrity
     setter noModule
@@ -4181,7 +4179,7 @@ interface Image
     getter crossOrigin
     getter currentSrc
     getter decoding
-    getter fetchpriority
+    getter fetchPriority
     getter height
     getter hspace
     getter isMap
@@ -4207,7 +4205,7 @@ interface Image
     setter border
     setter crossOrigin
     setter decoding
-    setter fetchpriority
+    setter fetchPriority
     setter height
     setter hspace
     setter isMap
@@ -4376,6 +4374,14 @@ interface LargestContentfulPaint : PerformanceEntry
     getter url
     method constructor
     method toJSON
+interface LaunchParams
+    attribute @@toStringTag
+    getter files
+    method constructor
+interface LaunchQueue
+    attribute @@toStringTag
+    method constructor
+    method setConsumer
 interface LayoutShift : PerformanceEntry
     attribute @@toStringTag
     getter hadRecentInput
@@ -4827,6 +4833,67 @@ interface NamedNodeMap
     method removeNamedItemNS
     method setNamedItem
     method setNamedItemNS
+interface NavigateEvent : Event
+    attribute @@toStringTag
+    getter canTransition
+    getter destination
+    getter downloadRequest
+    getter formData
+    getter hashChange
+    getter info
+    getter navigationType
+    getter signal
+    getter userInitiated
+    method constructor
+    method restoreScroll
+    method transitionWhile
+interface Navigation : EventTarget
+    attribute @@toStringTag
+    getter canGoBack
+    getter canGoForward
+    getter currentEntry
+    getter oncurrententrychange
+    getter onnavigate
+    getter onnavigateerror
+    getter onnavigatesuccess
+    getter transition
+    method back
+    method constructor
+    method entries
+    method forward
+    method navigate
+    method reload
+    method traverseTo
+    method updateCurrentEntry
+    setter oncurrententrychange
+    setter onnavigate
+    setter onnavigateerror
+    setter onnavigatesuccess
+interface NavigationCurrentEntryChangeEvent : Event
+    attribute @@toStringTag
+    getter from
+    getter navigationType
+    method constructor
+interface NavigationDestination
+    attribute @@toStringTag
+    getter id
+    getter index
+    getter key
+    getter sameDocument
+    getter url
+    method constructor
+    method getState
+interface NavigationHistoryEntry : EventTarget
+    attribute @@toStringTag
+    getter id
+    getter index
+    getter key
+    getter ondispose
+    getter sameDocument
+    getter url
+    method constructor
+    method getState
+    setter ondispose
 interface NavigationPreloadManager
     attribute @@toStringTag
     method constructor
@@ -4834,6 +4901,12 @@ interface NavigationPreloadManager
     method enable
     method getState
     method setHeaderValue
+interface NavigationTransition
+    attribute @@toStringTag
+    getter finished
+    getter from
+    getter navigationType
+    method constructor
 interface Navigator
     attribute @@toStringTag
     getter appCodeName
@@ -10181,12 +10254,14 @@ namespace CSS
     getter innerHeight
     getter innerWidth
     getter isSecureContext
+    getter launchQueue
     getter length
     getter localStorage
     getter location
     getter locationbar
     getter menubar
     getter name
+    getter navigation
     getter navigator
     getter offscreenBuffering
     getter onabort
@@ -10400,6 +10475,7 @@ namespace CSS
     setter locationbar
     setter menubar
     setter name
+    setter navigation
     setter offscreenBuffering
     setter onabort
     setter onafterprint

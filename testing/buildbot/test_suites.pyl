@@ -2742,6 +2742,24 @@
       },
     },
 
+    'gpu_dawn_telemetry_cts_asan_tests': {
+      'webgpu_cts': {
+        'args': [
+          '--extra-browser-args=--force_high_performance_gpu',
+          '--retry-limit=3',
+        ],
+        'linux_args': [
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
+    },
+
     'gpu_dawn_telemetry_cts_tests': {
       'webgpu_cts': {
         'args': [
@@ -2755,29 +2773,8 @@
           'has_native_resultdb_integration',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 14,
         },
-      },
-    },
-
-    'gpu_dawn_telemetry_cts_tests_with_partial_validation': {
-      'webgpu_cts_with_validation': {
-        'args': [
-          '--extra-browser-args=--force_high_performance_gpu',
-          '--is-backend-validation',
-          '--override-timeout=30',
-          '--retry-limit=3',
-        ],
-        'linux_args': [
-          '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
-        ],
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-        'telemetry_test_name': 'webgpu_cts',
       },
     },
 
@@ -2785,8 +2782,7 @@
       'webgpu_cts_with_validation': {
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
-          '--is-backend-validation',
-          '--override-timeout=30',
+          '--enable-dawn-backend-validation',
           '--retry-limit=3',
         ],
         'linux_args': [
@@ -2796,7 +2792,7 @@
           'has_native_resultdb_integration',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 14,
         },
         'telemetry_test_name': 'webgpu_cts',
       },
@@ -3243,11 +3239,6 @@
           'has_native_resultdb_integration',
         ],
         'telemetry_test_name': 'pixel',
-      },
-    },
-
-    'gpu_swiftshader_gtests': {
-      'swiftshader_unittests': {
       },
     },
 
@@ -3812,9 +3803,6 @@
           'webgpu_cts',
           'skia_gold_test',
         ],
-        'swarming': {
-          'shards': 4,
-        },
       },
     },
 
@@ -3838,9 +3826,6 @@
           'webgpu_cts',
           'skia_gold_test',
         ],
-        'swarming': {
-          'shards': 4,
-        },
       },
     },
 
@@ -3859,9 +3844,6 @@
           'webgpu_cts',
           'skia_gold_test',
         ],
-        'swarming': {
-          'shards': 4,
-        },
       },
     },
 
@@ -4326,20 +4308,12 @@
       'mac_signing_tests': {},
     },
 
-    'mojo_chromiumos_specific_gtests': {
-      'wayland_client_perftests': {},
-    },
-
     'mojo_python_unittests_isolated_scripts': {
       'mojo_python_unittests': {
         'resultdb': {
           'enable': True,
         },
       },
-    },
-
-    'mojo_windows_specific_gtests': {
-      'services_unittests': {},
     },
 
     'monochrome_public_apk_checker_isolated_script': {
@@ -5361,7 +5335,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC',
+              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
             }
           ]
         },
@@ -5398,7 +5372,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC',
+              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
             }
           ]
         },
@@ -5416,7 +5390,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC',
+              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
             }
           ]
         },
@@ -6298,9 +6272,8 @@
       'gpu_webgpu_integration_partial_backend_validation_isolated_scripts',
     ],
 
-    'gpu_dawn_telemetry_cts_regular_and_partial_validation': [
+    'gpu_dawn_telemetry_cts_regular': [
       'gpu_dawn_telemetry_cts_tests',
-      'gpu_dawn_telemetry_cts_tests_with_partial_validation',
     ],
 
     'gpu_dawn_telemetry_cts_regular_and_validation': [
@@ -6363,10 +6336,6 @@
       # TODO(crbug.com/1087563): Enable once tab_capture_end2end_tests passes
       # on CrOS.
       # 'gpu_desktop_specific_gtests',
-      # CrOS should always have GL, and thus not fall back to SwiftShader. It's
-      # currently unclear if we want to bother running any SwiftShader tests on
-      # CrOS since it should never actually get used.
-      # 'gpu_swiftshader_gtests',
     ],
 
     # TODO(crbug.com/1080424): Merge with an existing set of tests such as
@@ -6391,7 +6360,6 @@
     'gpu_fyi_linux_debug_gtests': [
       'gpu_common_gtests_passthrough',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_linux_debug_telemetry_tests': [
@@ -6402,7 +6370,6 @@
 
     'gpu_fyi_linux_optional_gtests': [
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_linux_release_gtests': [
@@ -6410,7 +6377,6 @@
       'gpu_common_gtests_passthrough',
       'gpu_desktop_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_linux_release_telemetry_tests': [
@@ -6441,7 +6407,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_mac_debug_telemetry_tests': [
@@ -6456,7 +6421,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_mac_pro_release_telemetry_tests': [
@@ -6475,7 +6439,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_mac_release_telemetry_tests': [
@@ -6540,7 +6503,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_win7_gtests': [
@@ -6550,7 +6512,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_win7_nvidia_amd_release_telemetry_tests': [
@@ -6590,7 +6551,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
       'gpu_vulkan_gtests',
     ],
 
@@ -6617,7 +6577,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_win_optional_isolated_scripts': [
@@ -6794,22 +6753,6 @@
       'components_perftests_isolated_scripts',
       'telemetry_android_minidump_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts_android',
-    ],
-
-    'mojo_android_gtests': [
-    ],
-
-    'mojo_chromiumos_fyi_gtests': [
-      'aura_gtests',
-      'mojo_chromiumos_specific_gtests',
-    ],
-
-    'mojo_linux_gtests': [
-    ],
-
-    'mojo_windows_gtests': [
-      'mojo_windows_specific_gtests',
-      'network_service_fyi_gtests',
     ],
 
     'monochrome_public_apk_checker_isolated_script_and_sizes': [
@@ -7550,6 +7493,241 @@
           'LACROS_VERSION_SKEW_BETA',
           'LACROS_VERSION_SKEW_STABLE',
         ]
+      },
+    },
+
+    'linux_optional_gpu_tests_rel_gpu_telemetry_tests': {
+      'gpu_common_and_optional_telemetry_tests': {
+        'variants': [
+          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_mediapipe_passthrough_telemetry_tests': {
+        'variants': [
+          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webcodecs_telemetry_test': {
+        'variants': [
+          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
+        'variants': [
+          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
+        'variants': [
+          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+    },
+
+    'linux_optional_gpu_tests_rel_gtests': {
+      'gpu_gles2_conform_gtests': {
+        'variants': [
+          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+    },
+
+    'linux_optional_gpu_tests_rel_isolated_scripts': {
+      'test_buildbucket_api_gpu_use_cases': {
+        'variants': [
+          'LINUX_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+    },
+
+    'mac_optional_gpu_tests_rel_gpu_telemetry_tests': {
+      'gpu_common_and_optional_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_mediapipe_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_mediapipe_validating_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webcodecs_telemetry_test': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl2_conformance_validating_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_metal_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+    },
+
+    'mac_optional_gpu_tests_rel_gtests': {
+      'gpu_fyi_and_optional_non_linux_gtests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_fyi_mac_specific_gtests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_gles2_conform_gtests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+    },
+
+    'win_optional_gpu_tests_rel_gpu_telemetry_tests': {
+      'gpu_common_and_optional_telemetry_tests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_mediapipe_passthrough_telemetry_tests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webcodecs_telemetry_test': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests': {
+        'variants': [
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_win_intel_specific_telemetry_tests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+        ],
+      },
+    },
+
+    'win_optional_gpu_tests_rel_gtests': {
+      'gpu_default_and_optional_win_specific_gtests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_fyi_and_optional_non_linux_gtests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_fyi_and_optional_win_specific_gtests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+      'gpu_gles2_conform_gtests': {
+        'variants': [
+          'WIN10_INTEL_HD_630_STABLE',
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+    },
+
+    'win_optional_gpu_tests_rel_isolated_scripts': {
+      'gpu_command_buffer_perf_passthrough_isolated_scripts': {
+        'variants': [
+          'WIN10_NVIDIA_GTX_1660_STABLE',
+        ],
       },
     },
   }

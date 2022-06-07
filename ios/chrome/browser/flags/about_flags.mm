@@ -82,6 +82,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/util/features.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/app_utils/app_utils_api.h"
@@ -606,9 +607,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillParseMerchantPromoCodeFields)},
-    {"search-history-link-ios", flag_descriptions::kSearchHistoryLinkIOSName,
-     flag_descriptions::kSearchHistoryLinkIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kSearchHistoryLinkIOS)},
     {"interest-feed-v2-clicks-and-views-cond-upload",
      flag_descriptions::kInterestFeedV2ClickAndViewActionsConditionalUploadName,
      flag_descriptions::
@@ -854,6 +852,17 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"download-calendar", flag_descriptions::kDownloadCalendarName,
      flag_descriptions::kDownloadCalendarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDownloadCalendar)},
+    {"uiview-window-observing", flag_descriptions::kUIViewWindowObservingName,
+     flag_descriptions::kUIViewWindowObservingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUIViewWindowObserving)},
+    {"sync-standalone-invalidations", flag_descriptions::kSyncInvalidationsName,
+     flag_descriptions::kSyncInvalidationsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidations)},
+    {"sync-standalone-invalidations-wallet-and-offer",
+     flag_descriptions::kSyncInvalidationsWalletAndOfferName,
+     flag_descriptions::kSyncInvalidationsWalletAndOfferDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidationsForWalletAndOffer)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

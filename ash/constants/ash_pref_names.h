@@ -439,6 +439,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kProjectorAllowByPolicy[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kProjectorDogfoodForFamilyLinkEnabled[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kChromadToCloudMigrationEnabled[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppFolderShortcuts[];
@@ -450,6 +453,7 @@ extern const char kLoginScreenWebUILazyLoading[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFloatingWorkspaceEnabled[];
 
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowPostRebootNotification[];
 }  // namespace prefs
 }  // namespace ash
 

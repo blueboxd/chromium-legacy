@@ -684,6 +684,8 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="5623842676595125836">लॉग</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ग्राफ़िक्स चिह्न</translation>
+<translation id="5648939288050772726">बधाई हो! आपने ChromeVox के इस्तेमाल से जुड़ी ज़रूरी बातें सीख ली हैं. याद रखें कि Search+Period दबाकर, किसी भी समय ChromeVox का निर्देश मेन्यू खोला जा सकता है. ChromeVox और ChromeOS के बारे में ज़्यादा जानने के लिए, नीचे दिए गए लेख पढ़ें.
+    अगर आपने ट्यूटोरियल पूरा कर लिया है, तो ChromeVox का इस्तेमाल करके, 'बंद करें' बटन पर जाएं और उस पर क्लिक करें.</translation>
 <translation id="5653397561111110475">Chromebook टच स्क्रीन सुलभता सुविधाओं का इस्तेमाल करें</translation>
 <translation id="5655682562155942719">आदेशों पर जाएं</translation>
 <translation id="56637627897541303">लेख क्षेत्र</translation>
@@ -851,7 +853,7 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="6910211073230771657">हटाया गया</translation>
 <translation id="6910969481785184048">चालू करें, बंद करें और रोकें</translation>
 <translation id="6919104639734799681">तालिकाओं की सूची दिखाएं</translation>
-<translation id="692135145298539227">हटाएं</translation>
+<translation id="692135145298539227">मिटाएं</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6949846980769640811">मध्यम समुद्री हरा</translation>
 <translation id="6951482098621102657">आगे कोई लेवल 5 शीर्षक नहीं है</translation>
@@ -965,8 +967,6 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">अच्छी क्वालिटी वाली आवाज़</translation>
 <translation id="7714340021005120797">आगे कोई कॉम्‍बो बॉक्‍स नहीं है</translation>
-<translation id="772146615414628379">बधाई हो! आपने ChromeVox का इस्तेमाल करने की ज़रूरी बातें सीख ली हैं. याद रखें कि आप Search+Period दबाकर, किसी भी समय ChromeVox का निर्देश मेन्यू खोल सकते हैं. ChromeVox और Chrome OS के बारे में और भी ज़्यादा जानने के लिए, नीचे दिए गए लेखों पर जाएं.
-    अगर आपने ट्यूटोरियल पूरा कर लिया है, तो ChromeVox का इस्तेमाल करके, 'बंद करें' बटन पर जाएं और उस पर क्लिक करें.</translation>
 <translation id="7724603315864178912">काटें</translation>
 <translation id="7731785449856576010">आगे कोई मीडिया विजेट नहीं है</translation>
 <translation id="7735498529470878067">छूकर, उससे जुड़ी जानकारी सुनकर, आप तुरंत यह जान सकते हैं कि स्क्रीन पर क्या जानकारी दी गई है.</translation>
@@ -1148,7 +1148,7 @@ Chrome ब्राउज़र मेन्यू खोलने के लि
 <translation id="9077305471618729969">हल्का समुद्री हरा</translation>
 <translation id="9080299285199342830">सीधे आखिरी हिस्से पर जाएं</translation>
 <translation id="9089864840575085222">टाइपिंग इको को चक्रित करें</translation>
-<translation id="9099429023611373837">चुने गए टेक्स्ट को कट करें</translation>
+<translation id="9099429023611373837">कट करें</translation>
 <translation id="9108370397979208512">गणित</translation>
 <translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{प्रतिशत}one{# प्रतिशत चिह्न}other{# प्रतिशत चिह्न}}</translation>

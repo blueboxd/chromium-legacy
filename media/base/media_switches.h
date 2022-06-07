@@ -133,7 +133,6 @@ MEDIA_EXPORT extern const base::FeatureParam<bool>
     kChromeWideEchoCancellationMinimizeResampling;
 #endif
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderUseSharedHandle;
-MEDIA_EXPORT extern const base::Feature kDisplayAudioUseLocalAudioSource;
 MEDIA_EXPORT extern const base::Feature kEnableTabMuting;
 MEDIA_EXPORT extern const base::Feature kExposeSwDecodersToWebRTC;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
@@ -293,7 +292,6 @@ MEDIA_EXPORT std::string GetEffectiveAutoplayPolicy(
 
 MEDIA_EXPORT bool IsChromeWideEchoCancellationEnabled();
 MEDIA_EXPORT bool IsHardwareSecureDecryptionEnabled();
-MEDIA_EXPORT bool IsLiveCaptionFeatureEnabled();
 MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
 
 #if BUILDFLAG(IS_WIN)

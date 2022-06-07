@@ -401,10 +401,6 @@ extern const char kSaveSessionTabsToSeparateFilesDescription[];
 extern const char kScreenTimeIntegrationName[];
 extern const char kScreenTimeIntegrationDescription[];
 
-// Title and description for the flag to enable the Search History Link feature.
-extern const char kSearchHistoryLinkIOSName[];
-extern const char kSearchHistoryLinkIOSDescription[];
-
 // Title and description for the flag to show a sign-in promo if the user tries
 // to use send-tab-to-self while being signed-out.
 extern const char kSendTabToSelfSigninPromoName[];
@@ -466,6 +462,15 @@ extern const char kSyncTrustedVaultPassphrasePromoDescription[];
 extern const char kSyncTrustedVaultPassphraseRecoveryName[];
 extern const char kSyncTrustedVaultPassphraseRecoveryDescription[];
 
+// Title and description for the flag to enable Sync standalone invalidations.
+extern const char kSyncInvalidationsName[];
+extern const char kSyncInvalidationsDescription[];
+
+// Title and description for the flag to enable Sync standalone invalidations
+// for the Wallet and Offer data types.
+extern const char kSyncInvalidationsWalletAndOfferName[];
+extern const char kSyncInvalidationsWalletAndOfferDescription[];
+
 // Title and description for the flag to enable tabs search feature.
 extern const char kTabsSearchName[];
 extern const char kTabsSearchDescription[];
@@ -479,6 +484,10 @@ extern const char kTabsSearchRegularResultsSuggestedActionsDescription[];
 // implementation.
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
+
+// Title and description for the flag to enable -[UIView window] observing.
+extern const char kUIViewWindowObservingName[];
+extern const char kUIViewWindowObservingDescription[];
 
 // Title and description for the flag to enable removing any entry points to the
 // history UI from Incognito mode.

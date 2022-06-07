@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/follow/follow_block_types.h"
 #import "ios/chrome/browser/ui/follow/followed_web_channel.h"
+#import "ios/chrome/browser/ui/ntp/feed_management/follow_management_ui_updater.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/followed_web_channel_item.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/followed_web_channels_data_source.h"
 #include "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
@@ -15,6 +16,8 @@
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/follow/follow_provider.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,7 +38,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface FollowManagementViewController ()
+@interface FollowManagementViewController () <FollowManagementUIUpdater>
 
 // Saved placement of the item that was last attempted to unfollow.
 @property(nonatomic, strong) NSIndexPath* indexPathOfLastUnfollowAttempt;
@@ -52,6 +55,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
   [self configureNavigationBar];
   [self loadModel];
+  // TODO(crbug.com/1264872): keep the model layer object (FollowProvider) out
+  // of this view controller.
+  ios::GetChromeBrowserProvider()
+      .GetFollowProvider()
+      ->AddFollowManagementUIUpdater(self);
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [super viewDidDisappear:animated];
+  // TODO(crbug.com/1264872): keep the model layer object (FollowProvider) out
+  // of this view controller.
+  ios::GetChromeBrowserProvider()
+      .GetFollowProvider()
+      ->RemoveFollowManagementUIUpdater(self);
 }
 
 #pragma mark - UITableView
@@ -117,6 +134,32 @@ typedef NS_ENUM(NSInteger, ItemType) {
                         }];
   return [UISwipeActionsConfiguration
       configurationWithActions:@[ unfollowSwipeAction ]];
+}
+
+#pragma mark - FollowManagementUIUpdater
+
+- (void)removeFollowedWebChannel:(FollowedWebChannel*)channel {
+  for (id cell in self.tableView.visibleCells) {
+    FollowedWebChannelCell* followedWebChannelCell =
+        base::mac::ObjCCastStrict<FollowedWebChannelCell>(cell);
+
+    if ([followedWebChannelCell.followedWebChannel isEqual:channel]) {
+      NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
+      self.lastUnfollowedWebChannelItem =
+          base::mac::ObjCCastStrict<FollowedWebChannelItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath]);
+      self.indexPathOfLastUnfollowAttempt = indexPath;
+      [self deleteItemAtIndexPath:indexPath];
+      return;
+    }
+  }
+}
+
+- (void)addFollowedWebChannel:(FollowedWebChannel*)channel {
+  DCHECK(
+      [self.lastUnfollowedWebChannelItem.followedWebChannel isEqual:channel]);
+  [self addItem:self.lastUnfollowedWebChannelItem
+      AtIndexPath:self.indexPathOfLastUnfollowAttempt];
 }
 
 #pragma mark - Helpers
@@ -218,6 +261,31 @@ typedef NS_ENUM(NSInteger, ItemType) {
                         atIndex:index];
   [self.tableView deleteRowsAtIndexPaths:@[ indexPath ]
                         withRowAnimation:UITableViewRowAnimationAutomatic];
+  [self showOrHideEmptyTableViewBackground];
+}
+
+- (void)addItem:(FollowedWebChannelItem*)item
+    AtIndexPath:(NSIndexPath*)indexPath {
+  TableViewModel* model = self.tableViewModel;
+
+  NSInteger section =
+      [model sectionForSectionIdentifier:DefaultSectionIdentifier];
+  NSInteger itemCount = [model numberOfItemsInSection:section];
+  if (itemCount == 0) {
+    [model addItem:item toSectionWithIdentifier:DefaultSectionIdentifier];
+    [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
+  } else {
+    NSInteger sectionID =
+        [model sectionIdentifierForSectionIndex:indexPath.section];
+    NSUInteger index = [model indexInItemTypeForIndexPath:indexPath];
+
+    [model insertItem:item inSectionWithIdentifier:sectionID atIndex:index];
+    [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
+  }
+  self.lastUnfollowedWebChannelItem = nil;
+  self.indexPathOfLastUnfollowAttempt = nil;
   [self showOrHideEmptyTableViewBackground];
 }
 

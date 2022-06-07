@@ -20,97 +20,99 @@ using base::ASCIIToUTF16;
 
 namespace autofill {
 
-TEST(PhoneNumberTest, Matcher) {
-  AutofillProfile profile;
-  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
-  // Set phone number so country_code == 1, city_code = 650, number = 2345678.
-  std::u16string phone(u"1 [650] 234-5678");
-  PhoneNumber phone_number(&profile);
-  phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone, "US");
+struct MatchingTypesTestCase {
+  std::u16string input;
+  ServerFieldTypeSet expected_types;
+};
+// Constructs a `PhoneNumber` from `number` and verifies that the matching types
+// on `input` equal `expected_type` on every test case in `tests`.
+// If the `number` is provided without a country code, it's region defaults to
+// `country`.
+// `trunk_types_enabled` determines if
+// `kAutofillEnableSupportForPhoneNumberTrunkTypes` is enabled.
+void MatchingTypesTest(const std::u16string& number,
+                       const std::u16string& country,
+                       bool trunk_types_enabled,
+                       const std::vector<MatchingTypesTestCase>& tests) {
+  base::test::ScopedFeatureList trunk_types;
+  trunk_types.InitWithFeatureState(
+      features::kAutofillEnableSupportForPhoneNumberTrunkTypes,
+      trunk_types_enabled);
 
-  ServerFieldTypeSet matching_types;
-  phone_number.GetMatchingTypes(std::u16string(), "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(EMPTY_TYPE) != matching_types.end());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"1", "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(PHONE_HOME_COUNTRY_CODE) !=
-              matching_types.end());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"16", "US", &matching_types);
-  EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(u"165", "US", &matching_types);
-  EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(u"1650", "US", &matching_types);
-  EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(u"16502", "US", &matching_types);
-  EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(u"165023", "US", &matching_types);
-  EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(u"1650234", "US", &matching_types);
-  EXPECT_EQ(0U, matching_types.size());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"16502345678", "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(PHONE_HOME_WHOLE_NUMBER) !=
-              matching_types.end());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"650", "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_CODE) !=
-              matching_types.end());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"2345678", "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"234", "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"5678", "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"2345", "US", &matching_types);
-  EXPECT_EQ(0U, matching_types.size());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"6502345678", "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_AND_NUMBER) !=
-              matching_types.end());
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"(650)2345678", "US", &matching_types);
-  EXPECT_EQ(1U, matching_types.size());
-  EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_AND_NUMBER) !=
-              matching_types.end());
+  AutofillProfile profile;
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, country);
+  // Irrelevant, because `profile` has country information.
+  const std::string locale = "en-US";
+  PhoneNumber phone_number(&profile);
+  phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), number, locale);
+  for (const MatchingTypesTestCase& test : tests) {
+    ServerFieldTypeSet matching_types;
+    phone_number.GetMatchingTypes(test.input, locale, &matching_types);
+    EXPECT_EQ(matching_types, test.expected_types);
+  }
 }
 
+TEST(PhoneNumberTest, Matcher) {
+  // Set phone number so country_code == 1, city_code = 650, number = 2345678.
+  MatchingTypesTest(u"1 [650] 234-5678", u"US",
+                    /*trunk_types_enabled=*/false,
+                    {{std::u16string(), {EMPTY_TYPE}},
+                     {u"1", {PHONE_HOME_COUNTRY_CODE}},
+                     {u"16", {}},
+                     {u"165", {}},
+                     {u"1650", {}},
+                     {u"16502", {}},
+                     {u"165023", {}},
+                     {u"1650234", {}},
+                     {u"16502345678", {PHONE_HOME_WHOLE_NUMBER}},
+                     {u"650", {PHONE_HOME_CITY_CODE}},
+                     {u"2345678", {PHONE_HOME_NUMBER}},
+                     {u"234", {PHONE_HOME_NUMBER}},
+                     {u"5678", {PHONE_HOME_NUMBER}},
+                     {u"2345", {}},
+                     {u"6502345678", {PHONE_HOME_CITY_AND_NUMBER}},
+                     {u"(650)2345678", {PHONE_HOME_CITY_AND_NUMBER}}});
+}
+
+TEST(PhoneNumberTest, Matcher_DisambiguateWholeNumber) {
+  MatchingTypesTest(u"(234) 567-8901", u"US",
+                    /*trunk_types_enabled=*/false,
+                    {{u"2345678901", {PHONE_HOME_CITY_AND_NUMBER}}});
+  MatchingTypesTest(u"(234) 567-8901", u"US",
+                    /*trunk_types_enabled=*/true,
+                    {{u"2345678901",
+                      {PHONE_HOME_CITY_AND_NUMBER,
+                       PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX}}});
+}
+
+// Verify that the derived types of German numbers are correct.
 TEST(PhoneNumberTest, Matcher_DE) {
-  // Verify that the derived types of German numbers are correct.
-  AutofillProfile profile;
-  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
-  PhoneNumber phone_number(&profile);
-  phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), u"+491741234567",
-                       "DE");
+  MatchingTypesTest(u"+491741234567", u"DE",
+                    /*trunk_types_enabled=*/false,
+                    {{u"+491741234567", {PHONE_HOME_WHOLE_NUMBER}},
+                     {u"01741234567", {PHONE_HOME_CITY_AND_NUMBER}},
+                     {u"1234567", {PHONE_HOME_NUMBER}},
+                     {u"174", {PHONE_HOME_CITY_CODE}}});
+}
 
-  ServerFieldTypeSet matching_types;
-  phone_number.GetMatchingTypes(u"+491741234567", "de-DE", &matching_types);
-  EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_WHOLE_NUMBER));
+TEST(PhoneNumberTest, Matcher_TrunkTypes) {
+  MatchingTypesTest(
+      u"1 [650] 234-5678", u"US",
+      /*trunk_types_enabled=*/true,
+      {{u"650", {PHONE_HOME_CITY_CODE, PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX}},
+       {u"6502345678",
+        {PHONE_HOME_CITY_AND_NUMBER,
+         PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX}}});
+}
 
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"01741234567", "de-DE", &matching_types);
-  EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_CITY_AND_NUMBER));
-
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"1234567", "de-DE", &matching_types);
-  EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_NUMBER));
-
-  // TODO(crbug.com/638795) This is incorrect and should be 0174.
-  matching_types.clear();
-  phone_number.GetMatchingTypes(u"174", "de-DE", &matching_types);
-  EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_CITY_CODE));
+TEST(PhoneNumberTest, Matcher_TrunkTypes_DE) {
+  MatchingTypesTest(
+      u"+491741234567", u"DE",
+      /*trunk_types_enabled=*/true,
+      {{u"174", {PHONE_HOME_CITY_CODE}},
+       {u"0174", {PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX}},
+       {u"1741234567", {PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX}},
+       {u"01741234567", {PHONE_HOME_CITY_AND_NUMBER}}});
 }
 
 // Verify that PhoneNumber::SetInfo() correctly formats the incoming number.
@@ -261,6 +263,65 @@ TEST(PhoneNumberTest, InternationalPhoneHomeCityAndNumber_DE) {
   // PHONE_HOME_CITY_AND_NUMBER should start with a 0.
   EXPECT_EQ(u"01741234567",
             phone_number.GetInfo(PHONE_HOME_CITY_AND_NUMBER, "en-US"));
+}
+
+TEST(PhoneNumberTest, TrunkPrefix) {
+  AutofillProfile profile;
+
+  // Constructs a `PhoneNumber` object from `number` and verifies that the
+  // city-code and city-and-number types with and without trunk prefix are
+  // computed correctly.
+  auto TestNumber = [&](const std::u16string& number,
+                        const std::u16string& city_code_with_trunk,
+                        const std::u16string& city_code_without_trunk,
+                        const std::u16string& city_number_with_trunk,
+                        const std::u16string& city_number_without_trunk) {
+    // Irrelevant, as the `profile` has country information.
+    const std::string locale = "en-US";
+    PhoneNumber phone_number(&profile);
+    phone_number.SetInfo(PHONE_HOME_WHOLE_NUMBER, number, locale);
+    EXPECT_EQ(
+        city_code_with_trunk,
+        phone_number.GetInfo(PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX, locale));
+    EXPECT_EQ(city_code_without_trunk,
+              phone_number.GetInfo(PHONE_HOME_CITY_CODE, locale));
+    EXPECT_EQ(city_number_with_trunk,
+              phone_number.GetInfo(PHONE_HOME_CITY_AND_NUMBER, locale));
+    EXPECT_EQ(city_number_without_trunk,
+              phone_number.GetInfo(
+                  PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX, locale));
+  };
+
+  // US: No trunk prefixes used.
+  {
+    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
+    TestNumber(u"+1 (650) 234-5678", u"650", u"650", u"6502345678",
+               u"6502345678");
+    TestNumber(u"800-555-0199", u"800", u"800", u"8005550199", u"8005550199");
+  }
+
+  // DE: Trunk prefix used in international format.
+  {
+    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
+    TestNumber(u"+49 (174) 12 34 567", u"0174", u"174", u"01741234567",
+               u"1741234567");
+    TestNumber(u"0 1578 7912345", u"01578", u"1578", u"015787912345",
+               u"15787912345");
+  }
+
+  // IT: A leading zero, which is not a trunk prefix, is used in national and
+  // international format for landline number. Mobile numbers are never prefixed
+  // with a 0.
+  {
+    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"IT");
+    // Landline.
+    TestNumber(u"+39 06 85870848", u"06", u"06", u"0685870848", u"0685870848");
+    TestNumber(u"06 85870848", u"06", u"06", u"0685870848", u"0685870848");
+    // Mobile.
+    TestNumber(u"+39 338 1234567", u"338", u"338", u"3381234567",
+               u"3381234567");
+    TestNumber(u"338 1234567", u"338", u"338", u"3381234567", u"3381234567");
+  }
 }
 
 // Tests whether the |PHONE_HOME_COUNTRY_CODE| is added to the set of matching

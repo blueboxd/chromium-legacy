@@ -111,7 +111,7 @@
 <translation id="1639634871799530612">{COUNT,plural, =1{større end}one{# større end-tegn}other{# større end-tegn}}</translation>
 <translation id="1653266918374749391">Forrige niveau 3-overskrift</translation>
 <translation id="1657616855184033958">Vis filtre for begivenhedsstreaming</translation>
-<translation id="1659072772017912254">Ikke kontrolleret</translation>
+<translation id="1659072772017912254">Ikke markeret</translation>
 <translation id="1666326070478924810">Indstillinger for Tekstoplæsning</translation>
 <translation id="1674262202423278359">Navigation i ChromeVox</translation>
 <translation id="16777221443363124">Menulinje</translation>
@@ -259,7 +259,7 @@
 <translation id="2723001399770238859">lyd</translation>
 <translation id="27349076983469322">Lys baggrund</translation>
 <translation id="2737898226590637227">Der er ikke flere ARIA-orienteringspunkter</translation>
-<translation id="2749275490991666823">Kontrolleret</translation>
+<translation id="2749275490991666823">Markeret</translation>
 <translation id="27527859628328957">Gå til næste element, der kan fokuseres på</translation>
 <translation id="2756452585631602151">Angiv en tilpasset etiket</translation>
 <translation id="2766299274563946262">Der er ingen celle til venstre</translation>
@@ -684,6 +684,8 @@
 <translation id="5623842676595125836">Log</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Grafiksymbol</translation>
+<translation id="5648939288050772726">Tillykke! Nu har du lært det vigtigste om ChromeVox. Husk, at du til enhver tid kan åbne ChromeVox-kommandomenuen ved at trykke på Søg+punktum. Du kan få flere oplysninger om ChromeVox og Chrome OS i følgende artikler.
+    Hvis du er færdig med selvstudiet, kan du bruge ChromeVox til at gå til knappen Luk og klikke på den.</translation>
 <translation id="5653397561111110475">Brug hjælpefunktioner til touchskærm på Chromebook</translation>
 <translation id="5655682562155942719">Hopkommandoer</translation>
 <translation id="56637627897541303">Tekstområde</translation>
@@ -714,7 +716,7 @@
 <translation id="5847883414085148048">Dedikation</translation>
 <translation id="5850707923114094062">Panorer tilbage</translation>
 <translation id="5851548754964597211">Faneliste</translation>
-<translation id="5866042630553435010">Delvist kontrolleret</translation>
+<translation id="5866042630553435010">Delvist markeret</translation>
 <translation id="5866210856231860256">Tryk på søgetasten+højrepil eller på søgetasten+venstrepil for at gennemse lektioner til dette emne</translation>
 <translation id="5867591286054666064">Undervejs i dette selvstudie kan du trykke på en given tast for at høre, hvad den hedder.</translation>
 <translation id="5869546221129391014">Gitter</translation>
@@ -966,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Naturlig stemme</translation>
 <translation id="7714340021005120797">Der er ikke flere kombifelter</translation>
-<translation id="772146615414628379">Tillykke! Nu har du lært det vigtigste om ChromeVox. Husk, at du til enhver tid kan åbne ChromeVox-kommandomenuen ved at trykke på Søg+punktum. Du kan få flere oplysninger om ChromeVox og Chrome OS i følgende artikler.
-    Hvis du er færdig med selvstudiet, kan du bruge ChromeVox til at gå til knappen Luk og klikke på den.</translation>
 <translation id="7724603315864178912">Klip</translation>
 <translation id="7731785449856576010">Der er ikke flere mediewidgets</translation>
 <translation id="7735498529470878067">Tryk for at høre kan hjælpe dig med hurtigt at få en fornemmelse af, hvad der foregår på skærmen.</translation>

@@ -520,7 +520,7 @@
 <translation id="4432896207833262240">Kandungan bertanda</translation>
 <translation id="4437615272777527928">Taip untuk mencari dalam menu. Gunakan anak panah ke atas dan ke bawah untuk pergi ke setiap hasil carian. Gunakan anak panah ke kiri dan ke kanan untuk melaraskan karet teks dan bergerak daripada satu menu kepada menu yang lain.</translation>
 <translation id="4457472090507035117">Pilih suara semasa:</translation>
-<translation id="4476183483923481720">garisan baharu</translation>
+<translation id="4476183483923481720">baris baharu</translation>
 <translation id="4479068155583208887">Merah Bata Api</translation>
 <translation id="4482330759234983253">Jadual sebelumnya</translation>
 <translation id="4491109536499578614">Imej</translation>
@@ -684,6 +684,8 @@
 <translation id="5623842676595125836">Log</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Simbol grafik</translation>
+<translation id="5648939288050772726">Tahniah! Anda telah berjaya mempelajari langkah asas untuk menggunakan ChromeVox. Ingat bahawa anda boleh membuka menu perintah ChromeVox pada bila-bila masa dengan menekan Search+Noktah. Untuk mengetahui lebih lanjut tentang ChromeVox dan Chrome OS, lawati artikel berikut.
+    Jika anda sudah selesai menggunakan tutorial, gunakan ChromeVox untuk mendapatkan butang Tutup dan klik butang itu.</translation>
 <translation id="5653397561111110475">Gunakan ciri kebolehaksesan skrin sentuh Chromebook</translation>
 <translation id="5655682562155942719">Perintah Melangkau</translation>
 <translation id="56637627897541303">Kawasan teks</translation>
@@ -793,7 +795,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{titik bertindih}other{# titik bertindih}}</translation>
 <translation id="6444046323172968959">Dialog makluman</translation>
 <translation id="6452403590345320472">Kandungan</translation>
-<translation id="6457542714329819968">jenis</translation>
+<translation id="6457542714329819968">taip</translation>
 <translation id="6468049171101508116">Butang seterusnya</translation>
 <translation id="646954774886932461">Indeks</translation>
 <translation id="6475604559827479857">Warna untuk serlahan perkataan:</translation>
@@ -966,8 +968,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Suara semula jadi</translation>
 <translation id="7714340021005120797">Tiada kotak kombo seterusnya</translation>
-<translation id="772146615414628379">Tahniah! Anda telah berjaya mempelajari langkah asas untuk menggunakan ChromeVox. Ingat bahawa anda boleh membuka menu perintah ChromeVox pada bila-bila masa dengan menekan Search+Noktah. Untuk mengetahui lebih lanjut tentang ChromeVox dan OS Chrome, lawati artikel berikut.
-    Jika anda sudah selesai menggunakan tutorial, gunakan ChromeVox untuk mendapatkan butang Tutup dan klik butang itu.</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7731785449856576010">Tiada widget media seterusnya</translation>
 <translation id="7735498529470878067">Penerokaan melalui sentuhan boleh membantu anda mendapatkan gambaran tentang perkara yang dipaparkan pada skrin dengan pantas.</translation>

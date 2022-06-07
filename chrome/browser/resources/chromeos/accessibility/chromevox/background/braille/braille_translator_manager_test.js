@@ -12,8 +12,14 @@ GEN_INCLUDE(['../../testing/chromevox_e2e_test_base.js']);
  */
 ChromeVoxBrailleTranslatorManagerTest = class extends ChromeVoxE2ETest {
   /** @override */
-  setUp() {
-    super.setUp();
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule(
+        'BrailleTable', '/chromevox/background/braille/braille_table.js');
+    await importModule(
+        'BrailleTranslatorManager',
+        '/chromevox/background/braille/braille_translator_manager.js');
+
     this.liblouis = new FakeLibLouis();
     this.manager = new BrailleTranslatorManager(this.liblouis);
     this.liblouis.translatorManager = this.manager;

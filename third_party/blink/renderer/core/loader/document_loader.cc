@@ -33,6 +33,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/containers/flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/public/common/scheme_registry.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
@@ -127,8 +129,10 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -320,6 +324,7 @@ struct SameSizeAsDocumentLoader
   std::unique_ptr<CodeCacheHost> code_cache_host;
   HashSet<KURL> early_hints_preloaded_resources;
   absl::optional<Vector<KURL>> ad_auction_components;
+  mojom::blink::FencedFrameReportingPtr fenced_frame_reporting;
   bool anonymous;
   bool waiting_for_document_loader;
   bool waiting_for_code_cache;
@@ -485,6 +490,18 @@ DocumentLoader::DocumentLoader(
       ad_auction_components_->emplace_back(KURL(url));
     }
   }
+
+  if (params_->fenced_frame_reporting) {
+    fenced_frame_reporting_ = mojom::blink::FencedFrameReporting::New();
+    for (const auto& [destination, metadata] :
+         params_->fenced_frame_reporting->metadata) {
+      HashMap<String, KURL> data;
+      for (const auto& [event_type, url] : metadata) {
+        data.insert(event_type, url);
+      }
+      fenced_frame_reporting_->metadata.insert(destination, std::move(data));
+    }
+  }
 }
 
 std::unique_ptr<WebNavigationParams>
@@ -560,6 +577,18 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
     params->ad_auction_components.emplace();
     for (const KURL& url : *ad_auction_components_) {
       params->ad_auction_components->emplace_back(KURL(url));
+    }
+  }
+  if (fenced_frame_reporting_) {
+    params->fenced_frame_reporting.emplace();
+    for (const auto& [destination, metadata] :
+         fenced_frame_reporting_->metadata) {
+      base::flat_map<WebString, WebURL> data;
+      for (const auto& [event_type, url] : metadata) {
+        data.emplace(event_type, url);
+      }
+      params->fenced_frame_reporting->metadata.emplace(destination,
+                                                       std::move(data));
     }
   }
   return params;
@@ -2828,11 +2857,33 @@ bool DocumentLoader::ConsumeTextFragmentToken() {
 }
 
 void DocumentLoader::NotifyPrerenderingDocumentActivated(
-    base::TimeTicks activation_start) {
+    const mojom::blink::PrerenderPageActivationParams& params) {
   DCHECK(!frame_->GetDocument()->IsPrerendering());
   DCHECK(is_prerendering_);
   is_prerendering_ = false;
-  GetTiming().MarkActivationStart(activation_start);
+
+  // A prerendered document won't have user activation, but when it gets moved
+  // to the primary frame, the primary frame might have sticky user activation.
+  // In that case, propagate the sticky user activation to the activated
+  // prerendered document
+  bool had_sticky_activation =
+      params.was_user_activated == mojom::blink::WasActivatedOption::kYes;
+  if (frame_->IsMainFrame() && had_sticky_activation) {
+    DCHECK(!had_sticky_activation_);
+    had_sticky_activation_ = had_sticky_activation;
+
+    // Update Frame::had_sticky_user_activation_before_nav_. On regular
+    // navigation, this is updated on DocumentLoader::CommitNavigation, but
+    // that function is not called on prerender page activation.
+    DCHECK(!frame_->HadStickyUserActivationBeforeNavigation());
+    frame_->SetHadStickyUserActivationBeforeNavigation(had_sticky_activation);
+
+    // Unlike CommitNavigation, there's no need to call
+    // HadStickyUserActivationBeforeNavigationChanged here as the browser
+    // process already knows it.
+  }
+
+  GetTiming().MarkActivationStart(params.activation_start);
 }
 
 HashSet<KURL> DocumentLoader::GetEarlyHintsPreloadedResources() {

@@ -49,10 +49,6 @@ SendTabToSelfEntry::SendTabToSelfEntry(
       opened_(false) {
   DCHECK(!guid_.empty());
   DCHECK(url_.is_valid());
-  DCHECK(base::IsStringUTF8(guid_));
-  DCHECK(base::IsStringUTF8(title_));
-  DCHECK(base::IsStringUTF8(target_device_sync_cache_guid_));
-  DCHECK(base::IsStringUTF8(device_name_));
 }
 
 SendTabToSelfEntry::~SendTabToSelfEntry() {}

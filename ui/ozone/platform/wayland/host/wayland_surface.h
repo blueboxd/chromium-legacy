@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/files/scoped_file.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -34,7 +35,7 @@ class WaylandBufferHandle;
 class WaylandSurface {
  public:
   using ExplicitReleaseCallback =
-      base::RepeatingCallback<void(wl_buffer*, absl::optional<int32_t>)>;
+      base::RepeatingCallback<void(wl_buffer*, base::ScopedFD)>;
 
   WaylandSurface(WaylandConnection* connection, WaylandWindow* ro_window);
   WaylandSurface(const WaylandSurface&) = delete;
@@ -238,6 +239,14 @@ class WaylandSurface {
     gfx::OverlayPriorityHint priority_hint = gfx::OverlayPriorityHint::kRegular;
   };
 
+  // Tracks the last sent src and dst values across wayland protocol s.t. we
+  // skip resending them when possible.
+  wl_fixed_t src_set_[4] = {wl_fixed_from_int(-1), wl_fixed_from_int(-1),
+                            wl_fixed_from_int(-1), wl_fixed_from_int(-1)};
+  float dst_set_[2] = {-1.f, -1.f};
+  // Tracks the last sent surface_scale value s.t. we skip resending.
+  int32_t surface_scale_set_ = 1;
+
   wl::Object<wl_region> CreateAndAddRegion(
       const std::vector<gfx::Rect>& region_px,
       int32_t buffer_scale);
@@ -281,7 +290,7 @@ class WaylandSurface {
   std::vector<uint32_t> entered_outputs_;
 
   void ExplicitRelease(struct zwp_linux_buffer_release_v1* linux_buffer_release,
-                       absl::optional<int32_t> fence);
+                       base::ScopedFD fence);
 
   // wl_surface_listener
   static void Enter(void* data,

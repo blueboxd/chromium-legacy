@@ -30,11 +30,10 @@ import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {createRecentDestinationKey, Destination, GooglePromotedDestinationId, makeRecentDestination, RecentDestination} from '../data/destination.js';
+import {createRecentDestinationKey, Destination, isPdfPrinter, makeRecentDestination, PrinterType, RecentDestination} from '../data/destination.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 import {SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from '../data/destination.js';
 // </if>
-import {getPrinterTypeForDestination, PrinterType} from '../data/destination_match.js';
 import {DestinationErrorType, DestinationStore, DestinationStoreEventType} from '../data/destination_store.js';
 import {Error, State} from '../data/state.js';
 
@@ -278,7 +277,7 @@ export class PrintPreviewDestinationSettingsElement extends
         return numDestinationsToDisplay;
       }
       // If a destination is pinned, increment numDestinationsToDisplay.
-      if (this.destinationIsDriveOrPdf_(recentDestinations[i])) {
+      if (isPdfPrinter(recentDestinations[i].id)) {
         numDestinationsToDisplay++;
       }
     }
@@ -331,19 +330,6 @@ export class PrintPreviewDestinationSettingsElement extends
     }
   }
 
-  /**
-   * @return Whether the destination is Save as PDF or Save to Drive.
-   */
-  private destinationIsDriveOrPdf_(destination: RecentDestination): boolean {
-    // <if expr="chromeos_ash or chromeos_lacros">
-    if (destination.id === GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS) {
-      return true;
-    }
-    // </if>
-
-    return destination.id === GooglePromotedDestinationId.SAVE_AS_PDF;
-  }
-
   private updateRecentDestinations_() {
     if (!this.destination) {
       return;
@@ -370,7 +356,7 @@ export class PrintPreviewDestinationSettingsElement extends
         isVisible = numUnpinnedChecked < NUM_UNPINNED_DESTINATIONS;
         break;
       }
-      if (!this.destinationIsDriveOrPdf_(recent)) {
+      if (!isPdfPrinter(recent.id)) {
         numUnpinnedChecked++;
       }
     }
@@ -397,8 +383,7 @@ export class PrintPreviewDestinationSettingsElement extends
 
     // The dropdown needs to be updated if a new printer or one not currently
     // visible in the dropdown has been added.
-    if (!this.destinationIsDriveOrPdf_(newDestination) &&
-        (isNew || !isVisible)) {
+    if (!isPdfPrinter(newDestination.id) && (isNew || !isVisible)) {
       this.updateDropdownDestinations_();
     }
   }
@@ -409,7 +394,7 @@ export class PrintPreviewDestinationSettingsElement extends
     const updatedDestinations: Destination[] = [];
     let numDestinationsChecked = 0;
     for (const recent of recentDestinations) {
-      if (this.destinationIsDriveOrPdf_(recent)) {
+      if (isPdfPrinter(recent.id)) {
         continue;
       }
       numDestinationsChecked++;
@@ -440,8 +425,7 @@ export class PrintPreviewDestinationSettingsElement extends
         this.destinationState === DestinationState.UPDATED ||
         (this.destinationState === DestinationState.SET && !!this.destination &&
          (!!this.destination.capabilities ||
-          getPrinterTypeForDestination(this.destination) ===
-              PrinterType.PDF_PRINTER));
+          this.destination.type === PrinterType.PDF_PRINTER));
   }
 
   // <if expr="chromeos_ash or chromeos_lacros">

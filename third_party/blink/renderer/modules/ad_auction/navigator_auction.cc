@@ -16,6 +16,7 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_usvstring_usvstringsequence.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ad_properties.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ad_request_config.h"
@@ -28,9 +29,11 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/ad_auction/ads.h"
 #include "third_party/blink/renderer/modules/ad_auction/validate_blink_interest_group.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_coordinates.h"
@@ -934,6 +937,28 @@ void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
   ad_auction_service_->LeaveInterestGroup(owner, group->name());
 }
 
+void NavigatorAuction::leaveAdInterestGroupForDocument(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  LocalDOMWindow* window = GetSupplementable()->DomWindow();
+
+  if (!window) {
+    exception_state.ThrowSecurityError(
+        "May not leaveAdInterestGroup from a Document that is not fully "
+        "active");
+    return;
+  }
+  if (!window->GetFrame()->IsInFencedFrameTree()) {
+    exception_state.ThrowTypeError(
+        "owner and name are required outside of a fenced frame.");
+    return;
+  }
+  // The renderer does not have enough information to verify that this document
+  // is the result of a FLEDGE auction. The browser will silently ignore
+  // this request if this document is not the result of a FLEDGE auction.
+  ad_auction_service_->LeaveInterestGroupForDocument();
+}
+
 /* static */
 void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
                                             Navigator& navigator,
@@ -955,8 +980,18 @@ void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
                                "leaveAdInterestGroup");
   }
 
-  return From(ExecutionContext::From(script_state), navigator)
+  return From(context, navigator)
       .leaveAdInterestGroup(script_state, group, exception_state);
+}
+
+/* static */
+void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
+                                            Navigator& navigator,
+                                            ExceptionState& exception_state) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  // According to the spec, implicit leave bypasses permission policy.
+  return From(context, navigator)
+      .leaveAdInterestGroupForDocument(script_state, exception_state);
 }
 
 void NavigatorAuction::updateAdInterestGroups() {
@@ -1123,8 +1158,8 @@ ScriptPromise NavigatorAuction::createAdRequest(
   ScriptPromise promise = resolver->Promise();
   ad_auction_service_->CreateAdRequest(
       std::move(mojo_config),
-      WTF::Bind(&NavigatorAuction::AdsRequested, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      resolver->WrapCallbackInScriptScope(
+          WTF::Bind(&NavigatorAuction::AdsRequested, WrapPersistent(this))));
   return promise;
 }
 
@@ -1140,12 +1175,9 @@ ScriptPromise NavigatorAuction::createAdRequest(
 
 void NavigatorAuction::AdsRequested(ScriptPromiseResolver* resolver,
                                     const WTF::String&) {
-  if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed())
-    return;
-
   // TODO(https://crbug.com/1249186): Add full impl of methods.
-  resolver->Reject(MakeGarbageCollected<DOMException>(
+  resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+      resolver->GetScriptState()->GetIsolate(),
       DOMExceptionCode::kNotSupportedError,
       "createAdRequest API not yet implemented"));
 }
@@ -1180,8 +1212,8 @@ ScriptPromise NavigatorAuction::finalizeAd(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   ad_auction_service_->FinalizeAd(
       ads->GetGuid(), std::move(mojo_config),
-      WTF::Bind(&NavigatorAuction::FinalizeAdComplete, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      resolver->WrapCallbackInScriptScope(WTF::Bind(
+          &NavigatorAuction::FinalizeAdComplete, WrapPersistent(this))));
   return promise;
 }
 
@@ -1198,14 +1230,12 @@ ScriptPromise NavigatorAuction::finalizeAd(ScriptState* script_state,
 void NavigatorAuction::FinalizeAdComplete(
     ScriptPromiseResolver* resolver,
     const absl::optional<KURL>& creative_url) {
-  if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed())
-    return;
   if (creative_url) {
     resolver->Resolve(creative_url);
   } else {
     // TODO(https://crbug.com/1249186): Add full impl of methods.
-    resolver->Reject(MakeGarbageCollected<DOMException>(
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        resolver->GetScriptState()->GetIsolate(),
         DOMExceptionCode::kNotSupportedError,
         "finalizeAd API not yet implemented"));
   }

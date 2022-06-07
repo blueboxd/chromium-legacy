@@ -332,6 +332,7 @@ const char kEnableCaretBrowsing[] = "enable-caret-browsing";
 //   net::features::kSameSiteDefaultChecksMethodRigorously
 //   net::features::kSchemefulSameSite
 //   net::features::kCookieSameSiteConsidersRedirectChain
+//   net::features::kPartitionedCookies
 const char kEnableExperimentalCookieFeatures[] =
     "enable-experimental-cookie-features";
 
@@ -837,6 +838,12 @@ const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 
 // Flag used by WebUI test runners to wait for debugger to be attached.
 const char kWaitForDebuggerWebUI[] = "wait-for-debugger-webui";
+
+// Allows trusted remote desktop clients to make WebAuthn requests on behalf of
+// other origins. This switch only controls availability of the
+// `remoteDesktopClientOverride` extension but doesn't by itself enable any
+// origin to use it.
+const char kWebAuthRemoteDesktopSupport[] = "webauthn-remote-desktop-support";
 
 // Set the antialiasing method used for webgl. (none, explicit, implicit)
 const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";

@@ -9,6 +9,7 @@
 #include "ash/components/login/auth/cryptohome_key_constants.h"
 #include "ash/components/login/auth/key.h"
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -33,27 +34,15 @@ enum class ActiveDirectoryPasswordChangeErrorState {
 }  // namespace
 
 ActiveDirectoryPasswordChangeScreen::ActiveDirectoryPasswordChangeScreen(
-    ActiveDirectoryPasswordChangeView* view,
+    base::WeakPtr<TView> view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(ActiveDirectoryPasswordChangeView::kScreenId,
-                 OobeScreenPriority::DEFAULT),
+    : BaseScreen(TView::kScreenId, OobeScreenPriority::DEFAULT),
       authpolicy_login_helper_(std::make_unique<AuthPolicyHelper>()),
-      view_(view),
-      exit_callback_(exit_callback) {
-  if (view_)
-    view_->Bind(this);
-}
+      view_(std::move(view)),
+      exit_callback_(exit_callback) {}
 
-ActiveDirectoryPasswordChangeScreen::~ActiveDirectoryPasswordChangeScreen() {
-  if (view_)
-    view_->Unbind();
-}
-
-void ActiveDirectoryPasswordChangeScreen::OnViewDestroyed(
-    ActiveDirectoryPasswordChangeView* view) {
-  if (view_ == view)
-    view_ = nullptr;
-}
+ActiveDirectoryPasswordChangeScreen::~ActiveDirectoryPasswordChangeScreen() =
+    default;
 
 void ActiveDirectoryPasswordChangeScreen::SetUsername(
     const std::string& username) {
@@ -61,23 +50,32 @@ void ActiveDirectoryPasswordChangeScreen::SetUsername(
 }
 
 void ActiveDirectoryPasswordChangeScreen::ShowImpl() {
-  if (view_)
-    view_->Show(
-        username_,
-        static_cast<int>(ActiveDirectoryPasswordChangeErrorState::NO_ERROR));
+  if (!view_)
+    return;
+  view_->Show(
+      username_,
+      static_cast<int>(ActiveDirectoryPasswordChangeErrorState::NO_ERROR));
 }
 
 void ActiveDirectoryPasswordChangeScreen::HideImpl() {
   username_.clear();
 }
 
-void ActiveDirectoryPasswordChangeScreen::OnUserActionDeprecated(
-    const std::string& action_id) {
+void ActiveDirectoryPasswordChangeScreen::OnUserAction(
+    const base::Value::List& args) {
+  const std::string& action_id = args[0].GetString();
   if (action_id == kUserActionCancel) {
     HandleCancel();
-  } else {
-    BaseScreen::OnUserActionDeprecated(action_id);
+    return;
   }
+  if (action_id == "changePassword") {
+    CHECK_EQ(3, args.size());
+    const std::string& old_password = args[1].GetString();
+    const std::string& new_password = args[2].GetString();
+    HandleChangePassword(old_password, new_password);
+    return;
+  }
+  BaseScreen::OnUserAction(args);
 }
 
 void ActiveDirectoryPasswordChangeScreen::HandleCancel() {
@@ -85,7 +83,7 @@ void ActiveDirectoryPasswordChangeScreen::HandleCancel() {
   exit_callback_.Run();
 }
 
-void ActiveDirectoryPasswordChangeScreen::ChangePassword(
+void ActiveDirectoryPasswordChangeScreen::HandleChangePassword(
     const std::string& old_password,
     const std::string& new_password) {
   DCHECK(!old_password.empty() && !new_password.empty())
@@ -129,26 +127,31 @@ void ActiveDirectoryPasswordChangeScreen::OnAuthFinished(
       break;
     }
     case authpolicy::ERROR_BAD_PASSWORD:
-      view_->Show(
-          username_,
-          static_cast<int>(
-              ActiveDirectoryPasswordChangeErrorState::WRONG_OLD_PASSWORD));
+      if (view_) {
+        view_->Show(
+            username_,
+            static_cast<int>(
+                ActiveDirectoryPasswordChangeErrorState::WRONG_OLD_PASSWORD));
+      }
       break;
     case authpolicy::ERROR_PASSWORD_REJECTED:
-      view_->Show(
-          username_,
-          static_cast<int>(
-              ActiveDirectoryPasswordChangeErrorState::NEW_PASSWORD_REJECTED));
-      view_->ShowSignInError(l10n_util::GetStringUTF8(
-          IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_REJECTED_LONG_ERROR));
+      if (view_) {
+        view_->Show(username_,
+                    static_cast<int>(ActiveDirectoryPasswordChangeErrorState::
+                                         NEW_PASSWORD_REJECTED));
+        view_->ShowSignInError(l10n_util::GetStringUTF8(
+            IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_REJECTED_LONG_ERROR));
+      }
       break;
     default:
       NOTREACHED() << "Unhandled error: " << error;
-      view_->Show(
-          username_,
-          static_cast<int>(ActiveDirectoryPasswordChangeErrorState::NO_ERROR));
-      view_->ShowSignInError(
-          l10n_util::GetStringUTF8(IDS_AD_AUTH_UNKNOWN_ERROR));
+      if (view_) {
+        view_->Show(username_,
+                    static_cast<int>(
+                        ActiveDirectoryPasswordChangeErrorState::NO_ERROR));
+        view_->ShowSignInError(
+            l10n_util::GetStringUTF8(IDS_AD_AUTH_UNKNOWN_ERROR));
+      }
   }
 }
 

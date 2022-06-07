@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Vārteja</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Ietilpināt skenēšanas apgabalā</translation>
+<translation id="1367951781824006909">Izvēlēties failu</translation>
 <translation id="1387854245479784695">Visu kodolu apkopojums</translation>
 <translation id="1394661041439318933">Futrāļa akumulatora uzlādes līmenis: <ph name="BATTERY_PERCENTAGE" />%.</translation>
 <translation id="1397738625398125236">Vārteju var ehotestēt</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Aparatūras pārskatījums</translation>
 <translation id="1905710495812624430">Ir pārsniegts maksimālais atļautais mēģinājumu skaits.</translation>
 <translation id="1908234395526491708">UDP pieprasījumu kļūmes</translation>
-<translation id="1930797645656624981">Chrome OS ievades metodes pakalpojums</translation>
 <translation id="1947737735496445907">Izdrukāts</translation>
 <translation id="1951012854035635156">Asistents</translation>
+<translation id="1977994649430373166">Google profila fotoattēls</translation>
 <translation id="1979103255016296513">Paroles maiņa ir nokavēta</translation>
 <translation id="1999615961760456652">Caurlaides lapa</translation>
 <translation id="2006864819935886708">Savienojamība</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Jāatlasa vismaz viens mākslas galerijas albums</translation>
 <translation id="2230005943220647148">Celsija skala</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Tastatūras fona apgaismojuma slēdzis</translation>
 <translation id="2240366984605217732">Izkārtojuma slēdzis</translation>
 <translation id="225692081236532131">Aktivizācijas statuss</translation>
 <translation id="2287186687001756809">Nav pieejams neviens attēls. Lai pievienotu fotoattēlus, pārejiet uz vietni <ph name="LINK" />.</translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">Peldošā punkta precizitāte</translation>
 <translation id="2448312741937722512">Tips</translation>
 <translation id="2461822463642141190">Šobrīd</translation>
+<translation id="2491955442992294626">Taustiņi netiek pārbaudīti, ja ir fokusēts cits logs.</translation>
 <translation id="2493126929778606526">Jūsu labākie fotoattēli (atlasīti automātiski)</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> — <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Atsvaidzināt pašreizējo fona tapetes attēlu</translation>
@@ -148,12 +151,12 @@
 <translation id="2536159006530886390">Nevar izveidot savienojumu ar internetu.</translation>
 <translation id="2570743873672969996">Notiek testa “<ph name="TEST_NAME" />” izpilde...</translation>
 <translation id="2584559707064218956">Lai iestatītu, pārejiet uz iestatījumiem.</translation>
-<translation id="2585245331261708204">Chrome OS jaunumi</translation>
 <translation id="2619761439309613843">Nomainīt katru dienu</translation>
 <translation id="2620436844016719705">Sistēma</translation>
 <translation id="2640549051766135490">Atlasīts albums <ph name="TITLE" />: <ph name="DESC" /></translation>
 <translation id="2695514675076754339">Ievadiet 8 rakstzīmju atbloķēšanas kodu</translation>
 <translation id="2712812801627182647">TLS autentifikācijas atslēga</translation>
+<translation id="2717139507051041123">Atspējot tumšo krāsu režīmu</translation>
 <translation id="2740531572673183784">Labi</translation>
 <translation id="2751739896257479635">EAP 2. fāzes autentificēšana</translation>
 <translation id="2783010256799387990">NOKĀRTOTS</translation>
@@ -220,6 +223,7 @@
 <translation id="3604713164406837697">Fona tapetes mainīšana</translation>
 <translation id="360565022852130722">Wi-Fi tīklu sargā nedrošs protokols WEP 802.1x</translation>
 <translation id="3606583719724308068">Augsts latentums HTTPS vietnēs</translation>
+<translation id="3621202678540785336">Ievade</translation>
 <translation id="3632579075709132555">Konfidencialitātes ekrāna slēdzis</translation>
 <translation id="3689839747745352263">Pārbaude: <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Notiek ielāde...</translation>
@@ -244,6 +248,7 @@
 <translation id="3954678691475912818">Ierīces veids nav zināms.</translation>
 <translation id="3966286471246132217">Lai iegūtu precīzākus rezultātus, līdz pārbaudes beigām aizveriet visas lietotnes.</translation>
 <translation id="3967822245660637423">Lejupielāde pabeigta</translation>
+<translation id="3969602104473960991">Chrome OS parole ir atjaunināta</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
 <translation id="39823212440917567">Drukas uzdevumi, kas ir vecāki par <ph name="NUMBER_OF_DAYS" /> dienām, tiks noņemti</translation>
 <translation id="3993704782688964914">Jūsu ierīce “<ph name="DEVICE_NAME" />” tagad ir atjaunināta</translation>
@@ -319,7 +324,6 @@
 <translation id="4731797938093519117">Vecāku piekļuve</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="4744944742468440486">Ar atlasīto saturu saistīta informācija</translation>
-<translation id="475869545581454722">Chrome OS parole ir atjaunināta</translation>
 <translation id="4773299976671772492">Pārtraukts</translation>
 <translation id="4782311465517282004">Iegūstiet definīcijas vai tulkojumus vai izsakiet vērtības citās mērvienībās, noklikšķinot uz teksta ar peles labo pogu vai pieskaroties tekstam un to turot</translation>
 <translation id="4791000909649665275">Fotoattēlu skaits: <ph name="NUMBER" /></translation>
@@ -376,6 +380,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
 <translation id="5234764350956374838">Nerādīt</translation>
 <translation id="5252456968953390977">Viesabonēšana</translation>
+<translation id="5257811368506016604">Iespējot gaišo krāsu režīmu</translation>
 <translation id="5264277876637023664">Veikt centrālā procesora pārbaudi</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />: <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5275828089655680674">Atkārtoti izpildīt darbību secību</translation>
@@ -458,6 +463,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6113701710518389813">Augšupvērstais bulttaustiņš</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, vēl <ph name="NUMBER" /> albumi</translation>
 <translation id="6122191549521593678">Tiešsaistē</translation>
+<translation id="6122277663991249694">Chrome OS ievades metodes pakalpojums</translation>
 <translation id="6137767437444130246">Lietotāja sertifikāts</translation>
 <translation id="6146993107019042706">Lai pabeigtu, ievadiet savu jauno paroli</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -486,6 +492,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="641081527798843608">Temata atbilstība</translation>
 <translation id="6423239382391657905">Atvērt VPN</translation>
 <translation id="6439505561246192797">Vājš (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="6447630859861661624">Pāriet uz konta iestatījumiem</translation>
 <translation id="6456394469623773452">Apmierinošs</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Vai atkārtoti skenēt lapu?}=1{Vai atkārtoti skenēt {PAGE_NUMBER}. lapu?}zero{Vai atkārtoti skenēt {PAGE_NUMBER}. lapu?}one{Vai atkārtoti skenēt {PAGE_NUMBER}. lapu?}other{Vai atkārtoti skenēt {PAGE_NUMBER}. lapu?}}</translation>
 <translation id="6472207088655375767">VRP</translation>
@@ -548,6 +555,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7143207342074048698">Notiek savienojuma izveide</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="714876143603641390">LAN savienojamība</translation>
+<translation id="7155171745945906037">Esošs fotoattēls no kameras vai faila</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7172721935181587524">1 attēls</translation>
 <translation id="7175037578838465313">Tīkla “<ph name="NAME" />” konfigurēšana</translation>
@@ -569,6 +577,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7343649194310845056">Tīkla ierīces</translation>
 <translation id="7359657277149375382">Faila tips</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378886533986123738">Mainīt ekrānsaudzētāju</translation>
 <translation id="741244894080940828">izteikšana citās mērvienībās</translation>
 <translation id="7415801143053185905">Ļoti liels HTTP latentums</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -591,6 +600,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7648838807254605802">Liels HTTPS latentums</translation>
 <translation id="7656388927906093505">Ierīce ir pele.</translation>
 <translation id="7658239707568436148">Atcelt</translation>
+<translation id="7665800271478495366">Mainīt iemiesojumu</translation>
 <translation id="7690294790491645610">Apstipriniet jauno paroli</translation>
 <translation id="7701040980221191251">Nav</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -618,7 +628,9 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7994702968232966508">EAP metode</translation>
 <translation id="802154636333426148">Lejupielāde neizdevās</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
+<translation id="80398733265834479">Iespējot automātisko krāsu režīmu</translation>
 <translation id="8041089156583427627">Sūtīt atsauksmes</translation>
+<translation id="8045012663542226664">Mikrofona izslēgšana</translation>
 <translation id="8075838845814659848">Atlikusī akumulatora enerģija</translation>
 <translation id="8082366717211101304">Nevar atrast DNS no Android lietotnēm</translation>
 <translation id="808894953321890993">Mainīt paroli</translation>
@@ -650,6 +662,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8398927464629426868">Ātrums, ar kādu pašlaik notiek ierīces uzlāde vai izlāde.</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Iekšējā tastatūra</translation>
+<translation id="8431300646573772016">Chrome OS jaunumi</translation>
 <translation id="843568408673868420">Interneta savienojamība</translation>
 <translation id="844521431886043384">DNS nav iestatīts</translation>
 <translation id="8461329675984532579">Mājas pakalpojumu sniedzēja nosaukums</translation>
@@ -729,6 +742,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="917720651393141712">Testēt</translation>
 <translation id="9204237731135241582">Nevar sazināties ar vārteju no Android lietotnēm</translation>
 <translation id="9211490828691860325">Visas darbvietas</translation>
+<translation id="932327136139879170">Sākums</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Neaktivizēts</translation>
 <translation id="960719561871045870">Operatora kods</translation>

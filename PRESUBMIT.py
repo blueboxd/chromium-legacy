@@ -2585,7 +2585,7 @@ def _GetIDLParseError(input_api, filename):
                                             'tools', 'json_schema_compiler',
                                             'idl_schema.py')
         process = input_api.subprocess.Popen(
-            [input_api.python_executable, idl_schema],
+            [input_api.python3_executable, idl_schema],
             stdin=input_api.subprocess.PIPE,
             stdout=input_api.subprocess.PIPE,
             stderr=input_api.subprocess.PIPE,
@@ -4850,8 +4850,8 @@ def CheckForIncludeGuards(input_api, output_api):
                     # We allow existing files to use include guards whose names
                     # don't match the chromium style guide, but new files should
                     # get it right.
-                    if not f.OldContents():
-                        if guard_name != expected_guard:
+                    if guard_name != expected_guard:
+                        if not f.OldContents():
                             errors.append(
                                 output_api.PresubmitPromptWarning(
                                     'Header using the wrong include guard name %s'
@@ -5490,8 +5490,6 @@ def CheckStableMojomChanges(input_api, output_api):
 
     delta = []
     for mojom in changed_mojoms:
-        old_contents = ''.join(mojom.OldContents()) or None
-        new_contents = ''.join(mojom.NewContents()) or None
         delta.append({
             'filename': mojom.LocalPath(),
             'old': '\n'.join(mojom.OldContents()) or None,
@@ -5499,7 +5497,7 @@ def CheckStableMojomChanges(input_api, output_api):
         })
 
     process = input_api.subprocess.Popen([
-        input_api.python_executable,
+        input_api.python3_executable,
         input_api.os_path.join(
             input_api.PresubmitLocalPath(), 'mojo', 'public', 'tools', 'mojom',
             'check_stable_mojom_compatibility.py'), '--src-root',

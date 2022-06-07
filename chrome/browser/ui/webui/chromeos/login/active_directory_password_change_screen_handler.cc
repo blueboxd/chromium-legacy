@@ -18,29 +18,16 @@ constexpr char kErrorKey[] = "error";
 
 }  // namespace
 
-constexpr StaticOobeScreenId ActiveDirectoryPasswordChangeView::kScreenId;
-
 ActiveDirectoryPasswordChangeScreenHandler::
     ActiveDirectoryPasswordChangeScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_user_acted_method_path_deprecated(
-      "login.ActiveDirectoryPasswordChangeScreen.userActed");
-}
+    : BaseScreenHandler(kScreenId) {}
 
 ActiveDirectoryPasswordChangeScreenHandler::
-    ~ActiveDirectoryPasswordChangeScreenHandler() {}
+    ~ActiveDirectoryPasswordChangeScreenHandler() = default;
 
 void ActiveDirectoryPasswordChangeScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("adPassChangeMessage", IDS_AD_PASSWORD_CHANGE_MESSAGE);
-}
-
-void ActiveDirectoryPasswordChangeScreenHandler::InitializeDeprecated() {}
-
-void ActiveDirectoryPasswordChangeScreenHandler::RegisterMessages() {
-  BaseScreenHandler::RegisterMessages();
-  AddCallback("login.ActiveDirectoryPasswordChangeScreen.changePassword",
-              &ActiveDirectoryPasswordChangeScreenHandler::HandleComplete);
 }
 
 void ActiveDirectoryPasswordChangeScreenHandler::Show(
@@ -52,27 +39,9 @@ void ActiveDirectoryPasswordChangeScreenHandler::Show(
   ShowInWebUI(std::move(data));
 }
 
-void ActiveDirectoryPasswordChangeScreenHandler::Bind(
-    ActiveDirectoryPasswordChangeScreen* screen) {
-  screen_ = screen;
-  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
-}
-
-void ActiveDirectoryPasswordChangeScreenHandler::Unbind() {
-  screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
-}
-
 void ActiveDirectoryPasswordChangeScreenHandler::ShowSignInError(
     const std::string& error_text) {
-  CallJS("login.ActiveDirectoryPasswordChangeScreen.showErrorDialog",
-         error_text);
-}
-
-void ActiveDirectoryPasswordChangeScreenHandler::HandleComplete(
-    const std::string& old_password,
-    const std::string& new_password) {
-  screen_->ChangePassword(old_password, new_password);
+  CallExternalAPI("showErrorDialog", error_text);
 }
 
 }  // namespace chromeos

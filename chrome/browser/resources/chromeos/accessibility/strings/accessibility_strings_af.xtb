@@ -574,7 +574,7 @@
 <translation id="4866956062845190338">radiokieslysitem</translation>
 <translation id="4867316986324544967">Aktiveer TTS-aantekening</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4892105484979139179">Donker blougroen</translation>
+<translation id="4892105484979139179">Donker siaan</translation>
 <translation id="489907760999452556">Interne skakel</translation>
 <translation id="4909019435900810068">Beweeg een woord terug</translation>
 <translation id="4911349081560453449">Geen vorige merkblokkie nie</translation>
@@ -684,6 +684,8 @@
 <translation id="5623842676595125836">Loglêer</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Grafiese simbool</translation>
+<translation id="5648939288050772726">Geluk! Jy het die noodsaaklike dinge geleer om ChromeVox suksesvol te gebruik. Onthou dat jy enige tyd Search+punt kan druk om die ChromeVox-opdragkieslys oop te maak. Lees die volgende artikels om selfs meer oor ChromeVox en Chrome-bedryfstelsel te wete te kom.
+    Gebruik ChromeVox om na die Maak Toe-knoppie toe te gaan en klik dit as jy klaar is met die tutoriaal.</translation>
 <translation id="5653397561111110475">Gebruik Chromebook-raakskerm se toeganklikheidkenmerke</translation>
 <translation id="5655682562155942719">Springbevele</translation>
 <translation id="56637627897541303">Teksgebied</translation>
@@ -736,7 +738,7 @@
 <translation id="5963413905009737549">Afdeling</translation>
 <translation id="5968607524793740041">Wys kontekskieslys</translation>
 <translation id="597121107011153418">{COUNT,plural, =1{met # item}other{met # items}}</translation>
-<translation id="5981446804259161541">Ligte blougroen</translation>
+<translation id="5981446804259161541">Ligte siaan</translation>
 <translation id="5983179082906765664">Verhoog navigasie-korrelrigheid</translation>
 <translation id="5992285135956208197">Grafiese dokument</translation>
 <translation id="5999630716831179808">Stemme</translation>
@@ -966,8 +968,6 @@
 <translation id="7701196182766842984">outolys</translation>
 <translation id="7713139339518499741">Natuurlike stem</translation>
 <translation id="7714340021005120797">Geen volgende kombinasiekassie nie</translation>
-<translation id="772146615414628379">Geluk! Jy het die noodsaaklike dinge geleer om ChromeVox suksesvol te kan gebruik. Onthou dat jy op enige tydstip Search+Punt kan druk om die ChromeVox-bevelkieslys oop te maak. Lees die volgende artikels om selfs nog meer oor ChromeVox en Chrome-bedryfstelsel te wete te kom.
-    Gebruik ChromeVox om na die Maak Toe-knoppie toe te gaan en klik dit as jy klaar is met die tutoriaal.</translation>
 <translation id="7724603315864178912">Knip</translation>
 <translation id="7731785449856576010">Geen volgende medialegstuk nie</translation>
 <translation id="7735498529470878067">Verken-met-aanraking kan jou help om vinnig 'n gevoel te kry van wat op die skerm is.</translation>

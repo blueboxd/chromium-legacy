@@ -7094,6 +7094,10 @@ bool AXPlatformNodeWin::IsNameExposed() const {
   }
 }
 
+bool AXPlatformNodeWin::IsPlatformDocumentWithContent() const {
+  return IsPlatformDocument() && GetChildCount();
+}
+
 bool AXPlatformNodeWin::IsUIAControl() const {
   // UIA provides multiple "views": raw, content and control. We only want to
   // populate the content and control views with items that make sense to
@@ -7327,11 +7331,12 @@ int AXPlatformNodeWin::MSAAState() const {
   // Map the ax::mojom::State to MSAA state. Note that some of the states are
   // not currently handled.
 
+  // TODO(accessibility): https://crbug.com/1292018
+  // Exposing the busy state on the root web area means the NVDA user will end
+  // up without a virtualBuffer until the page fully loads. So if we have
+  // content, don't expose the busy state.
   if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
-      GetRole() != ax::mojom::Role::kRootWebArea) {
-    // TODO(accessibility): https://crbug.com/1292018
-    // Exposing the busy state on the root web area means the NVDA user will end
-    // up without a virtualBuffer until the page fully loads.
+      !IsPlatformDocumentWithContent()) {
     msaa_state |= STATE_SYSTEM_BUSY;
   }
 
@@ -7901,7 +7906,7 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
 
     case UIA_TablePatternId:
-      // Despite the following documentation (as of August 2021)
+      // Despite the following documentation (as of April 2022)
       //     https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nn-uiautomationcore-itableprovider
       // which mentions that ITableProvider must expose column and/or row
       // headers, we should expose the Table pattern on all table-like roles.
@@ -7912,18 +7917,14 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
 
     case UIA_TableItemPatternId:
-      // https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nn-uiautomationcore-itableitemprovider
-      // This control pattern is analogous to IGridItemProvider with the
-      // distinction that any control implementing ITableItemProvider must
-      // expose the relationship between the individual cell and its row and
-      // column information.
-      if (IsCellOrTableHeader(GetRole())) {
-        absl::optional<bool> table_has_headers =
-            GetDelegate()->GetTableHasColumnOrRowHeaderNode();
-        if (table_has_headers.has_value() && table_has_headers.value()) {
-          return &PatternProvider<ITableItemProvider>;
-        }
-      }
+      // Despite the following documentation (as of April 2022)
+      //     https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nn-uiautomationcore-itableprovider
+      // which mentions that ITableProvider must expose column and/or row
+      // headers, we should expose the Table pattern on all table-like roles.
+      // This will allow clients to detect such constructs as tables and expose
+      // row/column counts and navigation along with Table semantics.
+      if (IsCellOrTableHeader(GetRole()))
+        return &PatternProvider<ITableProvider>;
       break;
 
     case UIA_TextChildPatternId:

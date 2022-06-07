@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">Гэйтвэй</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Скан хийх хэсэгт тааруулах</translation>
+<translation id="1367951781824006909">Файлыг сонгоно уу</translation>
 <translation id="1387854245479784695">Энэ нь бүх цөмийн хуримтлал юм</translation>
 <translation id="1394661041439318933">Төхөөрөмжийн гэрийн батарей <ph name="BATTERY_PERCENTAGE" />% байна.</translation>
 <translation id="1397738625398125236">Гэйтвэйд пин илгээх боломжтой</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">Техник хангамжийн шалгалт</translation>
 <translation id="1905710495812624430">Оролдлогын тоо дээд хэмжээнээс хэтэрсэн.</translation>
 <translation id="1908234395526491708">UDP хүсэлтийн алдаа</translation>
-<translation id="1930797645656624981">Chrome OS-н оруулах аргын үйлчилгээ</translation>
 <translation id="1947737735496445907">Хэвлэсэн</translation>
 <translation id="1951012854035635156">Туслах</translation>
+<translation id="1977994649430373166">Google профайл зураг</translation>
 <translation id="1979103255016296513">Нууц үг солих хугацаа хэтэрсэн</translation>
 <translation id="1999615961760456652">Дамжих портал</translation>
 <translation id="2006864819935886708">Холболт</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">Дор хаяж нэг Уран зургийн галерейн цомгийг сонгосон байх шаардлагатай</translation>
 <translation id="2230005943220647148">Цельс</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">Гарын арын гэрлийг асаах/унтраах</translation>
 <translation id="2240366984605217732">Бүдүүвчийг сэлгэх</translation>
 <translation id="225692081236532131">Идэвхжүүлэх статус</translation>
 <translation id="2287186687001756809">Боломжтой зураг байхгүй. Зураг нэмэхийн тулд <ph name="LINK" /> руу очно уу</translation>
@@ -149,12 +151,12 @@
 <translation id="2536159006530886390">Интернэтэд холбогдох боломжгүй байна.</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> тестийг ажиллуулж байна...</translation>
 <translation id="2584559707064218956">Тохируулахын тулд Тохиргоо руу очно уу</translation>
-<translation id="2585245331261708204">Chrome OS-н шинэ зүйлс</translation>
 <translation id="2619761439309613843">Өдөр тутам сэргээх</translation>
 <translation id="2620436844016719705">Систем</translation>
 <translation id="2640549051766135490"><ph name="TITLE" /> цомгийг <ph name="DESC" /> сонгосон</translation>
 <translation id="2695514675076754339">8 тэмдэгттэй түгжээг тайлах кодыг оруулна уу</translation>
 <translation id="2712812801627182647">TLS баталгаажуулалтын түлхүүр</translation>
+<translation id="2717139507051041123">Бараан өнгөний горимыг идэвхжүүлэх</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">EAP 2-р шатны баталгаажуулалт</translation>
 <translation id="2783010256799387990">ДАВСАН</translation>
@@ -221,6 +223,7 @@
 <translation id="3604713164406837697">Дэлгэцийн зураг солих</translation>
 <translation id="360565022852130722">WiFi сүлжээ WEP 802.1x-н сул протоколоор хамгаалагдсан байна</translation>
 <translation id="3606583719724308068">HTTPS вебсайтууд руу өндөр хоцролттой</translation>
+<translation id="3621202678540785336">Оролт</translation>
 <translation id="3632579075709132555">Нууцлалын дэлгэцийг асаах/унтраах</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> тест</translation>
 <translation id="370665806235115550">Уншиж байна...</translation>
@@ -245,6 +248,7 @@
 <translation id="3954678691475912818">Төхөөрөмжийн төрөл тодорхойгүй байна.</translation>
 <translation id="3966286471246132217">Илүү нарийвчилсан илэрц авах бол туршилт дуусах хүртэл бүх аппыг хаана уу.</translation>
 <translation id="3967822245660637423">Татаж авч дууслаа</translation>
+<translation id="3969602104473960991">ChromeOS-н нууц үгийг шинэчилсэн</translation>
 <translation id="397105322502079400">Тооцоолж байна ...</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> хоногоос дээш хугацаагаар хадгалсан хэвлэлийн ажлуудыг хасах болно</translation>
 <translation id="3993704782688964914">Таны <ph name="DEVICE_NAME" /> одоо шинэчлэгдсэн</translation>
@@ -320,7 +324,6 @@
 <translation id="4731797938093519117">Эцэг эхийн хандалт</translation>
 <translation id="473775607612524610">Шинэчлэх</translation>
 <translation id="4744944742468440486">Таны сонголттой холбоотой мэдээлэл</translation>
-<translation id="475869545581454722">Chrome үйлдлийн системийн нууц үгийг шинэчилсэн</translation>
 <translation id="4773299976671772492">Зогссон</translation>
 <translation id="4782311465517282004">Та баруун талыг товших эсвэл текстийг удаан дарах үедээ тодорхойлолт, орчуулга эсвэл нэгж хөрвүүлэлт аваарай</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> зураг</translation>
@@ -377,6 +380,7 @@
 <translation id="5222676887888702881">Гарах</translation>
 <translation id="5234764350956374838">Хэрэгсэхгүй болго</translation>
 <translation id="5252456968953390977">Роуминг</translation>
+<translation id="5257811368506016604">Цайвар өнгөний горимыг идэвхжүүлэх</translation>
 <translation id="5264277876637023664">Төв процессорын нэгжийн туршилтыг ажиллуулах</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5275828089655680674">Хэвшлийг дахин ажиллуулах</translation>
@@ -459,6 +463,7 @@
 <translation id="6113701710518389813">Дээш сум</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, өөр +<ph name="NUMBER" /> цомог</translation>
 <translation id="6122191549521593678">Онлайн</translation>
+<translation id="6122277663991249694">ChromeOS-н оруулах аргын үйлчилгээ</translation>
 <translation id="6137767437444130246">Хэрэглэгчийн сертификат</translation>
 <translation id="6146993107019042706">Дуусгахын тулд шинэ нууц үгээ оруулна уу</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -487,6 +492,7 @@
 <translation id="641081527798843608">Субъект тохируулах</translation>
 <translation id="6423239382391657905">VPN-г нээх</translation>
 <translation id="6439505561246192797">Сул (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="6447630859861661624">Бүртгэлийн тохиргоо хэсэгт очих</translation>
 <translation id="6456394469623773452">Сайн</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Хуудсыг дахин скан хийх үү?}=1{{PAGE_NUMBER}-р хуудсыг дахин скан хийх үү?}other{{PAGE_NUMBER}-р хуудсыг дахин скан хийх үү?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
@@ -510,7 +516,7 @@
 <translation id="6647510110698214773">Шифрлэлтийн алгоритм</translation>
 <translation id="6650062777702288430">Кана/үсэг тоон шилжүүлэгч</translation>
 <translation id="6657585470893396449">Нууц үг</translation>
-<translation id="6659594942844771486">Цонх</translation>
+<translation id="6659594942844771486">Таб</translation>
 <translation id="6692996468359469499">Сонголттойгоо холбоотой мэдээлэл авах</translation>
 <translation id="6704062477274546131">DNS-н тайлал</translation>
 <translation id="6723839937902243910">Эрчим хүч</translation>
@@ -549,6 +555,7 @@
 <translation id="7143207342074048698">Холбож байна</translation>
 <translation id="7144878232160441200">Дахин оролдох</translation>
 <translation id="714876143603641390">Lan-н холболт</translation>
+<translation id="7155171745945906037">Камер эсвэл файлд байгаа зураг</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7172721935181587524">1 зураг</translation>
 <translation id="7175037578838465313"><ph name="NAME" />-г тохируулах</translation>
@@ -570,6 +577,7 @@
 <translation id="7343649194310845056">Сүлжээний төхөөрөмжүүд</translation>
 <translation id="7359657277149375382">Файлын төрөл</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378886533986123738">Дэлгэц амраагчийг өөрчлөх</translation>
 <translation id="741244894080940828">хөрвүүлэлт</translation>
 <translation id="7415801143053185905">HTTP-н маш өндөр хоцролт</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -592,6 +600,7 @@
 <translation id="7648838807254605802">Өндөр HTTPS хоцролт</translation>
 <translation id="7656388927906093505">Төхөөрөмж нь хулгана байна.</translation>
 <translation id="7658239707568436148">Болих</translation>
+<translation id="7665800271478495366">Аватар өөрчлөх</translation>
 <translation id="7690294790491645610">Шинэ нууц үг баталгаажуулна уу</translation>
 <translation id="7701040980221191251">Тодорхойгүй</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -619,7 +628,9 @@
 <translation id="7994702968232966508">EAP арга</translation>
 <translation id="802154636333426148">Татаж чадсангүй</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
+<translation id="80398733265834479">Автомат өнгөний горимыг идэвхжүүлэх</translation>
 <translation id="8041089156583427627">Санал хүсэлт илгээх</translation>
+<translation id="8045012663542226664">Микрофоны дууг хаах</translation>
 <translation id="8075838845814659848">Үлдсэн цэнэг</translation>
 <translation id="8082366717211101304">Android аппуудаас DNS-г шийдвэрлэх боломжгүй</translation>
 <translation id="808894953321890993">Нууц үгийг солих</translation>
@@ -651,6 +662,7 @@
 <translation id="8398927464629426868">Төхөөрөмжийн одоогийн цэнэглэгдэж эсвэл цэнэгээ алдаж байгаа хувь</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Дотоод гар</translation>
+<translation id="8431300646573772016">ChromeOS-н шинэ зүйлс</translation>
 <translation id="843568408673868420">Интернэт холболт</translation>
 <translation id="844521431886043384">DNS-г тохируулаагүй байна</translation>
 <translation id="8461329675984532579">Нүүр хуудас бэлтгэх нэр</translation>
@@ -730,6 +742,7 @@
 <translation id="917720651393141712">Шалгалт</translation>
 <translation id="9204237731135241582">Android аппуудаас гэйтвэйтэй холбогдох боломжгүй</translation>
 <translation id="9211490828691860325">Бүх дэлгэц</translation>
+<translation id="932327136139879170">Нүүр хуудас</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Идэвхжээгүй байна</translation>
 <translation id="960719561871045870">Операторын код</translation>

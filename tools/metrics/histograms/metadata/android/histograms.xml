@@ -126,7 +126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ActivityStop.PercentageOfTabsUsed" units="%"
-    expires_after="2022-07-31">
+    expires_after="2022-10-09">
   <owner>gauravjj@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -370,7 +370,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.AutofillAssistant.PaymentRequest.AutofillChanged"
     enum="AutofillAssistantPaymentRequestAutofillInfoChanged"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>arbesser@google.com</owner>
   <owner>mcarlen@chromium.org</owner>
   <summary>
@@ -381,7 +381,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AutofillAssistant.PaymentRequest.FirstNameOnly"
-    enum="Boolean" expires_after="2022-08-07">
+    enum="Boolean" expires_after="2022-10-09">
   <owner>arbesser@google.com</owner>
   <owner>mcarlen@chromium.org</owner>
   <summary>
@@ -408,7 +408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AutofillAssistant.PaymentRequest.Prefilled"
-    enum="AutofillAssistantPaymentRequestPrefilled" expires_after="2022-08-07">
+    enum="AutofillAssistantPaymentRequestPrefilled" expires_after="2022-10-09">
   <owner>arbesser@google.com</owner>
   <owner>mcarlen@chromium.org</owner>
   <summary>
@@ -513,7 +513,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative.ReducedMode"
-    enum="BackgroundTaskId" expires_after="2022-07-03">
+    enum="BackgroundTaskId" expires_after="2022-10-09">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -564,6 +564,29 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded when a UI surface/flow in Chrome on Android chooses to re-auth the
     user via biometrics. It records that surface/flow which made the request.
+  </summary>
+</histogram>
+
+<histogram name="Android.ChildMismatch.AppInfoError" enum="ChildAppInfoError"
+    expires_after="2022-11-01">
+  <owner>torne@chromium.org</owner>
+  <owner>boliu@chromium.org</owner>
+  <summary>
+    Records what error (if any) was encountered verifying the child process's
+    app info each time a child process is started via ChildProcessConnection.
+  </summary>
+</histogram>
+
+<histogram name="Android.ChildMismatch.BrowserVersionChanged"
+    enum="BooleanChanged" expires_after="2022-11-01">
+  <owner>torne@chromium.org</owner>
+  <owner>boliu@chromium.org</owner>
+  <summary>
+    Records if the installed browser version appears to have changed since the
+    browser process was launched. Recorded each time a child process is started
+    via ChildProcessConnection, but only if the child's ApplicationInfo did not
+    match (i.e. when Android.ChildMismatch.AppInfoError is recorded as something
+    other than no error).
   </summary>
 </histogram>
 
@@ -2645,7 +2668,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.Changed" enum="SiteLayout"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -2687,8 +2710,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RestoreResult" enum="AndroidRestoreResult"
-    expires_after="M81">
-  <owner>aberent@chromium.org</owner>
+    expires_after="M107">
+  <owner>triploblastic@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
   <summary>
     Whether Chrome tried to restore its settings from a previous device or
     installation, and what happened when it did. Only recorded on first run.
@@ -2963,7 +2987,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Survey.DownloadAttemptsBeforeAccepted" units="units"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -3033,7 +3057,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Survey.ShowSurveyStatus"
-    enum="SurveyPresentationStatusCode" expires_after="2022-08-07">
+    enum="SurveyPresentationStatusCode" expires_after="2022-10-09">
   <owner>aishwaryarj@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -3117,6 +3141,16 @@ chromium-metrics-reviews@google.com.
     strip scroll. In the event of multiple back-to-back scrolls, this metric is
     recorded so long as the sequence of scrolls occur within 60 seconds of each
     other and is capped at 3 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Android.TabSwitcher.IncognitoClickedIsEmpty" enum="Boolean"
+    expires_after="2022-09-01">
+  <owner>sideyilmaz@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    Emitted every time a user uses Incognito button on Tab Switcher. Records
+    whether or not there is any Incognito tab when Incognito button is clicked.
   </summary>
 </histogram>
 
@@ -3688,6 +3722,16 @@ chromium-metrics-reviews@google.com.
     Result is enum that represent three flags: did we called invalidate this
     frame, did renderer submitted compositor frame and whether DrawParams from
     Android HWUI changed. This is logged once per WebView draw functor call.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.InputStreamTime" units="ms"
+    expires_after="2022-08-28">
+  <owner>jam@chromium.org</owner>
+  <owner>cduvall@chromium.org</owner>
+  <summary>
+    Measures how long InputStreams take from creation to completion. This is
+    emitted for all streams whether they succeed or fail.
   </summary>
 </histogram>
 

@@ -12,6 +12,7 @@
 <translation id="1917964099031477364">บัญชีนี้และข้อมูลที่ไม่ได้บันทึกจะถูกนำออกจาก Chrome และแอปอื่นๆ ของ Google ในอุปกรณ์นี้</translation>
 <translation id="1968388653333775699">ทำสิ่งต่างๆ ได้มากขึ้นด้วย Chrome</translation>
 <translation id="2009224836393115614">Chrome ตรวจสอบรหัสผ่านของคุณไม่ได้ โปรดลองตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
+<translation id="2056123005618757196">ทำสิ่งต่างๆ ได้มากขึ้นด้วย Google Chrome ที่ใช้งานง่าย ปลอดภัย และรวดเร็วกว่าที่เคย</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="2199719347983604670">ข้อมูลจากการซิงค์ของ Chrome</translation>
 <translation id="2313070403598893276">Google Chrome ที่ใช้งานง่าย ปลอดภัย และรวดเร็วกว่าที่เคย</translation>
@@ -38,6 +39,7 @@
 <translation id="3345341804167540816">ใช้ Chrome ในทุกที่</translation>
 <translation id="3522659714780527202">เปิดการซิงค์เพื่อดูแท็บที่เปิดไว้จากอุปกรณ์ที่คุณใช้ Chrome</translation>
 <translation id="3533694711092285624">ไม่มีรหัสผ่านที่บันทึกไว้ Chrome จะตรวจสอบรหัสผ่านได้เมื่อคุณบันทึกรหัสผ่านไว้</translation>
+<translation id="3641179212828090796">ใช้รหัสผ่านที่คุณบันทึกไว้ใน Chrome เพื่อลงชื่อเข้าใช้ได้เร็วขึ้น</translation>
 <translation id="3655656110921623717">ซึ่งหมายความว่า Chrome จะขอเว็บไซต์ในอุปกรณ์เคลื่อนที่ทุกครั้ง</translation>
 <translation id="3706101708757577809">ตอนนี้คุณจะใช้ Chrome ทุกครั้งที่แตะลิงก์ในข้อความ เอกสาร และแอปอื่นๆ</translation>
 <translation id="3720541637541300822">ล็อกแท็บที่ไม่ระบุตัวตนเมื่อปิด Chrome</translation>
@@ -54,6 +56,7 @@
 <translation id="4523886039239821078">ส่วนเสริมบางรายการทำให้ Chrome ขัดข้อง โปรดถอนการติดตั้ง</translation>
 <translation id="4633328489441962921">Chrome ตรวจหาอัปเดตไม่ได้</translation>
 <translation id="4698415050768537821">Chrome ตรวจสอบรหัสผ่านได้ไม่ครบทั้งหมด โปรดลองอีกครั้งในวันพรุ่งนี้หรือ<ph name="BEGIN_LINK" />ตรวจสอบรหัสผ่านในบัญชี Google<ph name="END_LINK" /></translation>
+<translation id="4819268619367838612">Chrome จะส่งข้อมูลการใช้งานและข้อขัดข้องไปยัง Google เพื่อช่วยปรับปรุงแอป <ph name="BEGIN_LINK" />จัดการ<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">ไม่รองรับใน Chrome เบต้า</translation>
 <translation id="5030102366287574140">Chrome ช่วยให้คุณปลอดภัยจากการละเมิดข้อมูล เว็บไซต์ที่ไม่ปลอดภัย และอื่นๆ ได้</translation>
 <translation id="5108659628347594808">ปรับปรุง Chrome ให้ดีขึ้น</translation>
@@ -73,6 +76,7 @@
 <translation id="6181930887571472871">เปลี่ยนไปใช้ Chrome</translation>
 <translation id="6238746320622508509">ให้ Chrome ล็อกแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="6387994324662817823">รหัสผ่านจะบันทึกอยู่ในเครื่องมือจัดการรหัสผ่านของ Google ในอุปกรณ์นี้เท่านั้น</translation>
+<translation id="6412673304250309937">ตรวจสอบ URL กับรายการเว็บไซต์ที่ไม่ปลอดภัยซึ่งจัดเก็บไว้ใน Chrome หากเว็บไซต์พยายามขโมยรหัสผ่าน หรือคุณดาวน์โหลดไฟล์ที่เป็นอันตราย Chrome อาจส่ง URL รวมถึงเนื้อหาบางส่วนในหน้าไปยัง Google Safe Browsing ด้วย</translation>
 <translation id="6427126399757991875">องค์กรของคุณกำลังตั้งค่า Chrome...</translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
 <translation id="6634107063912726160">Chrome จะไม่ซิงค์ข้อมูลใหม่กับบัญชี Google ของคุณเมื่อออกจากระบบ แต่ข้อมูลที่ซิงค์ไว้ก่อนหน้านี้จะยังอยู่ในบัญชี</translation>
@@ -118,6 +122,13 @@
 <translation id="8736550665979974340">ปลอดภัยเสมอด้วย Google Chrome</translation>
 <translation id="8772179140489533211">แสดงข้อความแจ้งให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="8788269841521769222">คุณไม่จำเป็นต้องจำรหัสผ่านนี้ เพราะระบบจะบันทึกไว้ในเครื่องมือจัดการรหัสผ่านของ Google สำหรับ <ph name="EMAIL" /></translation>
+<translation id="8969290730818637510">เมื่อเปิดไว้ จะมีประโยชน์ดังนี้
+<ph name="BEGIN_INDENT" />  • ช่วยปรับปรุง Chrome ให้ดีขึ้นสำหรับผู้ที่ใช้งานแบบคุณ<ph name="END_INDENT" />
+
+ข้อควรพิจารณามีดังนี้
+<ph name="BEGIN_INDENT" />  • ระบบจะส่งข้อมูลเกี่ยวกับการใช้งาน Chrome ของคุณไปยัง Google แต่จะไม่มีการเชื่อมโยงกับคุณ
+  • หาก Chrome ขัดข้อง รายละเอียดเกี่ยวกับการขัดข้องอาจมีข้อมูลส่วนบุคคลบางอย่างรวมอยู่ด้วย
+  • หากคุณเปิดการซิงค์ เมตริกต่างๆ อาจมีข้อมูลเกี่ยวกับ URL ที่คุณเข้าชมด้วย<ph name="END_INDENT" /></translation>
 <translation id="9112744793181547300">ตั้งค่า Chrome เป็นค่าเริ่มต้นไหม</translation>
 <translation id="9122931302567044771">ซึ่งหมายความว่า Chrome จะขอเว็บไซต์ในเดสก์ท็อปทุกครั้ง</translation>
 </translationbundle>

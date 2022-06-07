@@ -5,14 +5,10 @@
 /**
  * @fileoverview Keeps track of the current braille translators.
  */
+import {BrailleTable} from './braille_table.js';
+import {ExpandingBrailleTranslator} from './expanding_braille_translator.js';
 
-goog.provide('BrailleTranslatorManager');
-
-goog.require('BrailleTable');
-goog.require('ExpandingBrailleTranslator');
-goog.require('LibLouis');
-
-BrailleTranslatorManager = class {
+export class BrailleTranslatorManager {
   /**
    * @param {LibLouis=} opt_liblouisForTest Liblouis instance to use
    *     for testing.
@@ -237,4 +233,4 @@ BrailleTranslatorManager = class {
   async loadTablesForTest() {
     await this.fetchTables_();
   }
-};
+}

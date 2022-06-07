@@ -20,6 +20,8 @@ namespace features {
 BLINK_COMMON_EXPORT extern const base::Feature kAutomaticLazyFrameLoadingToAds;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAutomaticLazyFrameLoadingToEmbeds;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kAutomaticLazyFrameLoadingToEmbedUrls;
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingDownloadsInAdFrameWithoutUserActivation;
@@ -45,7 +47,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kFrequencyCappingForLargeStickyAdDetection;
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
 BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
-BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
 BLINK_COMMON_EXPORT extern const base::Feature kDeferredFontShaping;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
@@ -541,6 +542,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kIncludeBackgroundSVGInLCP;
 BLINK_COMMON_EXPORT
 extern const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode;
 
+// TODO(crbug.com/1315717): This flag is being used to deprecate support for
+// <param> urls within <object> elements. This feature is controlled by
+// blink::features::kHTMLParamElementUrlSupport.
+BLINK_COMMON_EXPORT extern const base::Feature kHTMLParamElementUrlSupport;
+
 // The HTTP RTT threshold: decide whether the
 // `kDelayLowPriorityRequestsAccordingToNetworkState` feature can take effect
 // practically according to the network connection state.
@@ -671,6 +677,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 // If enabled, the minor version of the User-Agent string will be reduced.
 BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentMinorVersion;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kUserAgentFrozenBuildVersion;
 
 // If enabled, we only report FCP if there’s a successful commit to the
 // compositor. Otherwise, FCP may be reported if first BeginMainFrame results in
@@ -703,6 +711,17 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool> kPrewarmFantasy;
 #endif
 
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsSaveData;
+
+// Enables establishing the GPU channel asnchronously when requesting a new
+// layer tree frame sink.
+BLINK_COMMON_EXPORT extern const base::Feature kEstablishGpuChannelAsync;
+
+// If enabled, the parser may continue parsing if BeginMainFrame was
+// recently called.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kDeferBeginMainFrameDuringLoading;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kRecentBeginMainFrameCutoff;
 
 }  // namespace features
 }  // namespace blink

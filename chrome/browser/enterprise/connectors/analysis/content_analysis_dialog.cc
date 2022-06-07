@@ -75,14 +75,9 @@ base::TimeDelta success_dialog_timeout_ = base::Seconds(1);
 // A simple background class to show a colored circle behind the side icon once
 // the scanning is done.
 // TODO(pkasting): This is copy and pasted from ThemedSolidBackground.  Merge.
-class CircleBackground : public views::Background, public views::ViewObserver {
+class CircleBackground : public views::Background {
  public:
-  explicit CircleBackground(views::View* view, ui::ColorId color_id)
-      : color_id_(color_id) {
-    observation_.Observe(view);
-    if (view->GetWidget())
-      OnViewThemeChanged(view);
-  }
+  explicit CircleBackground(ui::ColorId color_id) : color_id_(color_id) {}
 
   CircleBackground(const CircleBackground&) = delete;
   CircleBackground& operator=(const CircleBackground&) = delete;
@@ -100,19 +95,12 @@ class CircleBackground : public views::Background, public views::ViewObserver {
     canvas->DrawCircle(center, radius, flags);
   }
 
-  // views::ViewObserver:
   void OnViewThemeChanged(views::View* view) override {
     SetNativeControlColor(view->GetColorProvider()->GetColor(color_id_));
     view->SchedulePaint();
   }
 
-  void OnViewIsDeleting(views::View* view) override {
-    DCHECK(observation_.IsObservingSource(view));
-    observation_.Reset();
-  }
-
  private:
-  base::ScopedObservation<views::View, ViewObserver> observation_{this};
   ui::ColorId color_id_;
 };
 
@@ -170,8 +158,10 @@ class DeepScanningSideIconImageView : public DeepScanningBaseView,
                                             dialog()->GetSideImageLogoColor(),
                                             kSideImageSize));
     if (dialog()->is_result()) {
-      SetBackground(std::make_unique<CircleBackground>(
-          this, dialog()->GetSideImageBackgroundColor()));
+      ui::ColorId color = dialog()->GetSideImageBackgroundColor();
+      SetBackground(std::make_unique<CircleBackground>(color));
+      GetBackground()->SetNativeControlColor(
+          GetColorProvider()->GetColor(color));
     }
   }
 
@@ -900,13 +890,15 @@ ui::ColorId ContentAnalysisDialog::GetSideImageLogoColor() const {
 
   switch (dialog_state_) {
     case State::PENDING:
-      // Match the spinner in the pending state.
-      return ui::kColorThrobberPreconnect;
+      // In the dialog's pending state, the side image is just an enterprise
+      // logo surrounded by a throbber, so we use the throbber color for it.
+      return ui::kColorThrobber;
     case State::SUCCESS:
     case State::FAILURE:
     case State::WARNING:
-      // In a result state the background will have the result's color, so the
-      // logo should have the same color as the background.
+      // In a result state, the side image is a circle colored with the result's
+      // color and an enterprise logo in front of it, so the logo should have
+      // the same color as the dialog's overall background.
       return ui::kColorDialogBackground;
   }
 }

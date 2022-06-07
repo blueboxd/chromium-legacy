@@ -14,7 +14,7 @@ ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     pool = ci.DEFAULT_POOL,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
@@ -183,7 +183,7 @@ ci.builder(
     triggered_by = ["android-x86-fyi-rel"],
 )
 
-# TODO(crbug.com/1137474): Remove this builder once there are no associated
+# TODO(crbug.com/1137474, crbug.com/1250464): Remove this builder once there are no associated
 # disabled tests.
 ci.builder(
     name = "android-11-x86-fyi-rel",
@@ -191,10 +191,9 @@ ci.builder(
         category = "emulator|x86|rel",
         short_name = "11",
     ),
-    # Set to an empty list to avoid chromium-gitiles-trigger triggering new
-    # builds. Also we don't set any `schedule` since this builder is for
-    # reference only and should not run any new builds.
-    triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(

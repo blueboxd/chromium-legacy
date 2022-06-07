@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/debug/alias.h"
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/crash_logging.h"
@@ -1073,6 +1074,20 @@ void FillMiscNavigationParams(
       navigation_params->ad_auction_components->push_back(blink::WebURL(urn));
     }
   }
+
+  if (commit_params.fenced_frame_reporting_metadata) {
+    navigation_params->fenced_frame_reporting.emplace();
+    for (const auto& [destination, metadata] :
+         commit_params.fenced_frame_reporting_metadata->metadata) {
+      base::flat_map<blink::WebString, blink::WebURL> data;
+      for (const auto& [event_type, url] : metadata) {
+        data.emplace(blink::WebString::FromUTF8(event_type),
+                     blink::WebURL(url));
+      }
+      navigation_params->fenced_frame_reporting->metadata.emplace(
+          destination, std::move(data));
+    }
+  }
 }
 
 // Fills in the origin policy associated with this response, if any is present.
@@ -1707,14 +1722,20 @@ void RenderFrameImpl::CreateFrame(
 
   // We now have a WebLocalFrame for the new frame. The next step is to make
   // a RenderWidget (aka WebWidgetClient) for it, if it is a local root.
+  // TODO(crbug.com/419087): Can we merge this `is_main_frame` block with
+  // RenderFrameImpl::CreateMainFrame()?
   if (is_main_frame) {
     // Main frames are always local roots, so they should always have a
     // |widget_params| (and it always comes with a routing id).
     DCHECK(widget_params);
     DCHECK_NE(widget_params->routing_id, MSG_ROUTING_NONE);
 
-    // TODO(crbug.com/419087): Can we merge this code with
-    // RenderFrameImpl::CreateMainFrame()?
+    // TODO(bokan): Portals sometimes set this value on the WebFrameWidget from
+    // WebViewImpl::SetInsidePortal - can we remove that path? Even better,
+    // could the WebFrameWidget delegate to WebView/Page for this information?
+    // https://crbug.com/1316535.
+    bool is_for_nested_main_frame =
+        render_view->GetWebView()->IsFencedFrameRoot();
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). The RenderViewImpl has a RenderWidget already, but not a
@@ -1725,7 +1746,7 @@ void RenderFrameImpl::CreateFrame(
         std::move(widget_params->widget_host), std::move(widget_params->widget),
         viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                          widget_params->routing_id),
-        /*is_for_nested_main_frame=*/false,
+        is_for_nested_main_frame,
         /*hidden=*/true);
     web_frame_widget->InitializeCompositing(
         agent_scheduling_group.agent_group_scheduler(),
@@ -4315,7 +4336,10 @@ void RenderFrameImpl::WillSendRequestInternal(
   auto* url_request_extra_data = static_cast<blink::WebURLRequestExtraData*>(
       request.GetURLRequestExtraData().get());
   url_request_extra_data->set_custom_user_agent(custom_user_agent);
-  url_request_extra_data->set_is_main_frame(IsMainFrame());
+  // TODO(bokan): This will need to be reevaluated for portals.
+  // https://crbug.com/1254770.
+  url_request_extra_data->set_is_outermost_main_frame(IsMainFrame() &&
+                                                      !IsInFencedFrameTree());
   url_request_extra_data->set_transition_type(transition_type);
   bool is_for_no_state_prefetch =
       GetContentClient()->renderer()->IsPrefetchOnly(this);
@@ -5172,6 +5196,12 @@ void RenderFrameImpl::BeginNavigation(
   }
 #endif
 
+  // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+  if (info->is_unfenced_top_navigation) {
+    OpenURL(std::move(info));
+    return;
+  }
+
   // If the browser is interested, then give it a chance to look at the request.
   if (IsTopLevelNavigation(frame_) &&
       GetWebView()
@@ -5495,6 +5525,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
       GetWebView()->HistoryBackListCount() +
           GetWebView()->HistoryForwardListCount() + 1;
   params->user_gesture = info->has_transient_user_activation;
+  params->is_unfenced_top_navigation = info->is_unfenced_top_navigation;
   params->initiator_policy_container_keep_alive_handle =
       std::move(info->initiator_policy_container_keep_alive_handle);
 

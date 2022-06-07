@@ -1208,16 +1208,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // RenderFrameHostImpl::ValidateDidCommitParams. By the time we get here, some
   // effects of the navigation have already occurred.
 
-  if (ShouldMaintainTrivialSessionHistory(rfh->frame_tree_node()) &&
-      GetLastCommittedEntry()) {
-    // Ensure that this navigation does not add a navigation entry, since
-    // ShouldMaintainTrivialSessionHistory() means we should not add an entry
-    // beyond the last committed one. Therefore, `should_replace_current_entry`
-    // should be set, which replaces the current entry, or this should be a
-    // reload, which does not create a new entry.
-    DCHECK(params.should_replace_current_entry ||
-           navigation_request->GetReloadType() != ReloadType::NONE);
-  }
   is_initial_navigation_ = false;
 
   // Save the previous state before we clobber it.
@@ -1340,6 +1330,24 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params, navigation_request);
+
+  if (ShouldMaintainTrivialSessionHistory(rfh->frame_tree_node()) &&
+      GetLastCommittedEntry()) {
+    // Ensure that this navigation does not add a navigation entry, since
+    // ShouldMaintainTrivialSessionHistory() means we should not add an entry
+    // beyond the last committed one. Therefore, `should_replace_current_entry`
+    // should be set, which replaces the current entry, or this should be a
+    // reload, which does not create a new entry.
+    // In shadowDOM fenced frames, on a history/tab-restore navigation, any
+    // navigation that is restored will not be creating a new entry anyways, so
+    // exclude that case by checking NAVIGATION_TYPE_AUTO_SUBFRAME.
+    // TODO(crbug.com/1319919): Consider adjusting the dcheck for more cases as
+    // pointed out in the issue.
+    DCHECK(params.should_replace_current_entry ||
+           navigation_request->GetReloadType() != ReloadType::NONE ||
+           details->type == NAVIGATION_TYPE_AUTO_SUBFRAME);
+  }
+
   if (GetLastCommittedEntry() && GetLastCommittedEntry()->IsInitialEntry()) {
     if (rfh->GetParent()) {
       // This is a subframe navigation on the initial empty document, which used
@@ -2063,7 +2071,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
       }
     }
   } else {
-    // This is renderer-initiated. The only kinds of renderer-initated
+    // This is renderer-initiated. The only kinds of renderer-initiated
     // navigations that are EXISTING_ENTRY are same-document navigations that
     // result in replacement (e.g. history.replaceState(), location.replace(),
     // forced replacements for trivial session history contexts). For these
@@ -3418,7 +3426,7 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
   }
 
   // navigation_ui_data should only be present for main frame navigations.
-  DCHECK(node->IsMainFrame() || !params.navigation_ui_data);
+  DCHECK(node->IsOutermostMainFrame() || !params.navigation_ui_data);
 
   // This will be used to set the Navigation Timing API navigationStart
   // parameter for browser navigations in new tabs (intents, tabs opened through
@@ -3603,7 +3611,10 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   // For main frames, rewrite the URL if necessary and compute the virtual URL
   // that should be shown in the address bar.
-  if (node->IsMainFrame()) {
+  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
+  // so IsMainFrame should not be used to identify subframes. Follow up to
+  // confirm correctness.
+  if (node->IsOutermostMainFrame()) {
     bool ignored_reverse_on_redirect = false;
     RewriteUrlForNavigation(params.url, browser_context_, &url_to_load,
                             &virtual_url, &ignored_reverse_on_redirect);
@@ -3642,13 +3653,14 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     return nullptr;
   }
 
-  if (!IsValidURLForNavigation(node->IsMainFrame(), virtual_url, url_to_load))
+  if (!IsValidURLForNavigation(node->IsOutermostMainFrame(), virtual_url,
+                               url_to_load))
     return nullptr;
 
   if (!DoesURLMatchOriginForNavigation(
           url_to_load, origin_to_commit,
           frame_entry->subresource_web_bundle_navigation_info(), entry,
-          node->IsMainFrame())) {
+          node->IsOutermostMainFrame())) {
     DCHECK(false) << " url:" << url_to_load
                   << " origin:" << origin_to_commit.value();
     return nullptr;
@@ -3810,7 +3822,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     return nullptr;
   }
 
-  if (!IsValidURLForNavigation(frame_tree_node->IsMainFrame(),
+  if (!IsValidURLForNavigation(frame_tree_node->IsOutermostMainFrame(),
                                entry->GetVirtualURL(), dest_url)) {
     return nullptr;
   }
@@ -3818,7 +3830,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   if (!DoesURLMatchOriginForNavigation(
           dest_url, origin_to_commit,
           frame_entry->subresource_web_bundle_navigation_info(), entry,
-          frame_tree_node->IsMainFrame())) {
+          frame_tree_node->IsOutermostMainFrame())) {
     DCHECK(false) << " url:" << dest_url
                   << " base_url_for_data_url: " << entry->GetBaseURLForDataURL()
                   << " origin:" << origin_to_commit.value();
@@ -4412,7 +4424,8 @@ NavigationControllerImpl::GetNavigationApiHistoryEntryVectors(
   bool will_create_new_entry = false;
   if (!request ||
       NavigationTypeUtils::IsReload(request->common_params().navigation_type) ||
-      request->common_params().should_replace_current_entry) {
+      request->common_params().should_replace_current_entry ||
+      request->common_params().is_history_navigation_in_new_child_frame) {
     entry_index = GetLastCommittedEntryIndex();
   } else if (entry_index == -1) {
     will_create_new_entry = true;

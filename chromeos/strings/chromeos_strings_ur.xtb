@@ -37,6 +37,7 @@
 <translation id="1327977588028644528">گیٹ وے</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">اسکین کرنے کی جگہ تک فٹ کریں</translation>
+<translation id="1367951781824006909">ایک فائل منتخب کریں</translation>
 <translation id="1387854245479784695">یہ سبھی کورز کا مجموعہ ہے</translation>
 <translation id="1394661041439318933">آلے کے کیس میں <ph name="BATTERY_PERCENTAGE" />فیصد بیٹری ہے۔</translation>
 <translation id="1397738625398125236">گیٹ وے کو پنگ کیا جا سکتا ہے</translation>
@@ -92,9 +93,9 @@
 <translation id="1887850431809612466">ہارڈ ویئر سے متعلق نظر ثانی</translation>
 <translation id="1905710495812624430">زیادہ سے زیادہ مجاز کوششوں سے تجاوز کرگیا۔</translation>
 <translation id="1908234395526491708">‏UDP درخواست کی ناکامیاں</translation>
-<translation id="1930797645656624981">‏Chrome OS اندراج کے طریقہ کی سروس</translation>
 <translation id="1947737735496445907">پرنٹ ہو گیا</translation>
 <translation id="1951012854035635156">اسسٹنٹ</translation>
+<translation id="1977994649430373166">‏Google پروفائل کی تصویر</translation>
 <translation id="1979103255016296513">پاس ورڈ تبدیل کرنے میں تاخیر ہو گئی ہے</translation>
 <translation id="1999615961760456652">کیپٹو پورٹل</translation>
 <translation id="2006864819935886708">کنیکٹویٹی</translation>
@@ -121,6 +122,7 @@
 <translation id="222447520299472966">کم از کم ایک آرٹ گیلری البم کو منتخب کرنے کی ضرورت ہے</translation>
 <translation id="2230005943220647148">سیلسیئس</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">کی بورڈ بیک لائٹ ٹوگل کریں</translation>
 <translation id="2240366984605217732">لے آؤٹ کو سوئچ کرنے کی کلید</translation>
 <translation id="225692081236532131">فعالیت کی صورتحال</translation>
 <translation id="2287186687001756809">کوئی تصویر دستیاب نہیں ہے۔ تصاویر شامل کرنے کے لیے، <ph name="LINK" /> پر جائیں</translation>
@@ -140,6 +142,7 @@
 <translation id="2446553403094072641">فلوٹنگ پوائنٹ کی درستگی</translation>
 <translation id="2448312741937722512">قسم</translation>
 <translation id="2461822463642141190">حالیہ</translation>
+<translation id="2491955442992294626">آپ کے دوسری ونڈو کا استعمال کرنے کے دوران کلیدوں کی جانچ نہیں کی جاتی ہیں</translation>
 <translation id="2493126929778606526">آپ کی بہترین تصاویر، خودکار طور پر منتخب کی گئیں</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">وال پیپر کی موجودہ تصویر کو ریفریش کریں</translation>
@@ -148,12 +151,12 @@
 <translation id="2536159006530886390">انٹرنیٹ سے منسلک نہیں کر سکتے۔</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> ٹیسٹ چل رہا ہے...</translation>
 <translation id="2584559707064218956">سیٹ اپ کرنے کیلئے، ترتیبات پر جائیں</translation>
-<translation id="2585245331261708204">‏Chrome OS میں نیا کیا ہے</translation>
 <translation id="2619761439309613843">روزانہ ریفریش کریں</translation>
 <translation id="2620436844016719705">سسٹم</translation>
 <translation id="2640549051766135490">البم <ph name="TITLE" /> <ph name="DESC" /> منتخب کیا گیا</translation>
 <translation id="2695514675076754339">8 حروف والا غیر مقفل کرنے کا کوڈ درج کریں</translation>
 <translation id="2712812801627182647">‏TLS تصدیقی کلید</translation>
+<translation id="2717139507051041123">گہرے رنگ کے موڈ کو فعال کریں</translation>
 <translation id="2740531572673183784">ٹھیک ہے</translation>
 <translation id="2751739896257479635">‏EAP مرحلہ 2 توثیق</translation>
 <translation id="2783010256799387990">پاس ہو گیا</translation>
@@ -220,6 +223,7 @@
 <translation id="3604713164406837697">وال پیپر تبدیل کریں</translation>
 <translation id="360565022852130722">‏WiFi نیٹ ورک کمزور پروٹوکول WEP 802.1x کے ساتھ محفوظ ہے</translation>
 <translation id="3606583719724308068">‏HTTPS ویب سائٹس پر زیادہ تاخیر</translation>
+<translation id="3621202678540785336">ان پٹ</translation>
 <translation id="3632579075709132555">رازداری کی اسکرین کو ٹوگل کرنے کی کلید</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> ٹیسٹ</translation>
 <translation id="370665806235115550">لوڈ ہو رہے ہیں…</translation>
@@ -244,6 +248,7 @@
 <translation id="3954678691475912818">ڈیوائس کی قسم نامعلوم ہے۔</translation>
 <translation id="3966286471246132217">مزید درست نتائج کیلئے، ٹیسٹ مکمل ہونے تک تمام ایپس کو بند کریں۔</translation>
 <translation id="3967822245660637423">ڈاؤن لوڈ مکمل ہوگیا ہے</translation>
+<translation id="3969602104473960991">‏ChromeOS پاس ورڈ اپ ڈیٹ کیا گيا</translation>
 <translation id="397105322502079400">حساب لگایا جا رہا ہے…</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> دن سے پرانی پرنٹ جابز کو ہٹا دیا جائے گا</translation>
 <translation id="3993704782688964914">آپ کا <ph name="DEVICE_NAME" /> اب اپ ٹو ڈیٹ ہے</translation>
@@ -319,7 +324,6 @@
 <translation id="4731797938093519117">والدین کی رسائی</translation>
 <translation id="473775607612524610">اپ ڈيٹ کریں</translation>
 <translation id="4744944742468440486">آپ کے انتخاب سے متعلقہ معلومات</translation>
-<translation id="475869545581454722">‏Chrome OS پاس ورڈ اپ ڈیٹ کیا گيا</translation>
 <translation id="4773299976671772492">روک دیا گیا</translation>
 <translation id="4782311465517282004">جب آپ دائیں طرف کلک کرنے یا ٹیکسٹ کو ٹچ کریں اور دبائے رکھیں تو تعریفیں، ترجمے یونٹ کی تبدیلیاں حاصل کریں</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> تصویر</translation>
@@ -375,6 +379,7 @@
 <translation id="5222676887888702881">سائن آؤٹ</translation>
 <translation id="5234764350956374838">برخاست کریں</translation>
 <translation id="5252456968953390977">رومنگ</translation>
+<translation id="5257811368506016604">ہلکے رنگ کے موڈ کو فعال کریں</translation>
 <translation id="5264277876637023664">‏CPU ٹیسٹ چلائیں</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5275828089655680674">روٹینز کو دوبارہ چلائیں</translation>
@@ -457,6 +462,7 @@
 <translation id="6113701710518389813">اوپر تیر کا نشان</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />، +<ph name="NUMBER" /> مزید البمز</translation>
 <translation id="6122191549521593678">آن لائن</translation>
+<translation id="6122277663991249694">‏ChromeOS اندراج کے طریقہ کی سروس</translation>
 <translation id="6137767437444130246">صارف کا سرٹیفیکیٹ</translation>
 <translation id="6146993107019042706">مکمل کرنے کے لئے اپنا نیا پاس ورڈ درج کریں</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -485,6 +491,7 @@
 <translation id="641081527798843608">موضوع کی مماثلت</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">کمزور (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="6447630859861661624">اکاؤنٹ کی ترتیبات پر جائیں</translation>
 <translation id="6456394469623773452">لطیف</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{صفحہ دوبارہ اسکین کریں؟}=1{{PAGE_NUMBER} صفحہ دوبارہ اسکین کریں؟}other{{PAGE_NUMBER} صفحہ دوبارہ اسکین کریں؟}}</translation>
 <translation id="6472207088655375767">OTP</translation>
@@ -508,7 +515,7 @@
 <translation id="6647510110698214773">مرموز کاری الگورتھم</translation>
 <translation id="6650062777702288430">کانا/الفانیومیرک کو سوئچ کرنے کی کلید</translation>
 <translation id="6657585470893396449">پاس ورڈ</translation>
-<translation id="6659594942844771486">ٹیب</translation>
+<translation id="6659594942844771486">براؤزر ٹیب</translation>
 <translation id="6692996468359469499">اپنے انتخاب سے متعلق معلومات حاصل کریں</translation>
 <translation id="6704062477274546131">‏DNS ریزولیوشن</translation>
 <translation id="6723839937902243910">پاور</translation>
@@ -547,6 +554,7 @@
 <translation id="7143207342074048698">منسلک ہو رہا ہے</translation>
 <translation id="7144878232160441200">دوبارہ کوشش کریں</translation>
 <translation id="714876143603641390">‏Lan کنیکٹوٹی</translation>
+<translation id="7155171745945906037">کیمرے یا فائل سے موجودہ تصویر</translation>
 <translation id="7162487448488904999">گیلری</translation>
 <translation id="7172721935181587524">1 تصویر</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> کنفیگر کریں</translation>
@@ -568,6 +576,7 @@
 <translation id="7343649194310845056">نیٹ ورک کے آلات</translation>
 <translation id="7359657277149375382">فائل کی قسم</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378886533986123738">اسکرین سیور تبدیل کریں</translation>
 <translation id="741244894080940828">تبدیلی</translation>
 <translation id="7415801143053185905">‏بہت زیادہ HTTPS تاخیر</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -590,6 +599,7 @@
 <translation id="7648838807254605802">‏زیادہ HTTPS تاخیر</translation>
 <translation id="7656388927906093505">آلہ ایک ماؤس ہے۔</translation>
 <translation id="7658239707568436148">منسوخ کریں</translation>
+<translation id="7665800271478495366">اوتار تبدیل کریں</translation>
 <translation id="7690294790491645610">نئے پاس ورڈ کی توثیق کریں</translation>
 <translation id="7701040980221191251">کوئی نہیں</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -617,7 +627,9 @@
 <translation id="7994702968232966508">‏EAP طریقہ</translation>
 <translation id="802154636333426148">ڈاؤن لوڈ ناکام ہوگیا</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
+<translation id="80398733265834479">خودکار رنگ موڈ کو فعال کریں</translation>
 <translation id="8041089156583427627">تاثرات بھیجیں</translation>
+<translation id="8045012663542226664">مائیکروفون خاموش ہے</translation>
 <translation id="8075838845814659848">باقی چارج</translation>
 <translation id="8082366717211101304">‏Android ایپس سے DNS کو حل نہیں کیا جا سکتا</translation>
 <translation id="808894953321890993">پاس ورڈ تبدیل کریں</translation>
@@ -649,6 +661,7 @@
 <translation id="8398927464629426868">آلے کی فی الحال چارج ہونے یا چارج ختم ہونے کی شرح</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">پہلے سے شامل کی بورڈ</translation>
+<translation id="8431300646573772016">‏ChromeOS میں نیا کیا ہے</translation>
 <translation id="843568408673868420">انٹرنیٹ کنیکٹویٹی</translation>
 <translation id="844521431886043384">‏DNS سیٹ اپ نہیں ہے</translation>
 <translation id="8461329675984532579">گھر فراہم کرنے والے کا نام</translation>
@@ -728,6 +741,7 @@
 <translation id="917720651393141712">ٹیسٹ</translation>
 <translation id="9204237731135241582">‏Android ایپس سے گیٹ وے رابطے کو منسلک نہیں کیا جا سکتا</translation>
 <translation id="9211490828691860325">تمام ڈیسکس</translation>
+<translation id="932327136139879170">ھوم</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">فعال نہیں ہے</translation>
 <translation id="960719561871045870">آپریٹر کوڈ</translation>

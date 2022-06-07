@@ -79,9 +79,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Shows the Translate bubble. Returns the newly created bubble's Widget or
   // nullptr in cases when the bubble already exists or when the bubble is not
   // created.
-  //
-  // |is_user_gesture| is true when the bubble is shown on the user's deliberate
-  // action.
   static views::Widget* ShowBubble(views::View* anchor_view,
                                    views::Button* highlighted_button,
                                    content::WebContents* web_contents,
@@ -94,7 +91,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Closes the current bubble if it exists.
   static void CloseCurrentBubble();
 
-  // Returns the bubble view currently shown. This may return NULL.
+  // Returns the bubble view currently shown. This may return nullptr.
   static TranslateBubbleView* GetCurrentBubble();
 
   TranslateBubbleModel* model() { return model_.get(); }
@@ -213,7 +210,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // takes ownership of the returned view.
   std::unique_ptr<views::View> CreateViewAdvancedSource();
 
-  // Creates source language label and combobox for Tab UI advanced view. Caller
+  // Creates target language label and combobox for Tab UI advanced view. Caller
   // takes ownership of the returned view.
   std::unique_ptr<views::View> CreateViewAdvancedTarget();
 

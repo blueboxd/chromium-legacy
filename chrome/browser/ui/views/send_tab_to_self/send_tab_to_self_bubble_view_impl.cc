@@ -106,8 +106,7 @@ void SendTabToSelfBubbleViewImpl::DeviceButtonPressed(
   if (!controller_)
     return;
 
-  controller_->OnDeviceSelected(device_button->device_name(),
-                                device_button->device_guid());
+  controller_->OnDeviceSelected(device_button->device_guid());
 
   GetViewAccessibility().AnnounceText(l10n_util::GetStringFUTF16(
       IDS_SEND_TAB_TO_SELF_SENDING_ANNOUNCE,
@@ -201,7 +200,7 @@ void SendTabToSelfBubbleViewImpl::CreateDevicesScrollView() {
 void SendTabToSelfBubbleViewImpl::CreateManageDevicesLink() {
   auto* container = AddChildView(std::make_unique<views::View>());
   container->SetBackground(views::CreateThemedSolidBackground(
-      container, ui::kColorMenuItemBackgroundHighlighted));
+      ui::kColorMenuItemBackgroundHighlighted));
 
   auto* provider = ChromeLayoutProvider::Get();
   gfx::Insets margins = provider->GetInsetsMetric(views::INSETS_DIALOG);

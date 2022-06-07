@@ -33,12 +33,12 @@ namespace printing {
 namespace {
 
 mojom::PrintTargetType DeterminePrintTargetType(
-    const base::Value& job_settings) {
+    const base::Value::Dict& job_settings) {
 #if BUILDFLAG(IS_MAC)
-  if (job_settings.FindKey(kSettingOpenPDFInPreview))
+  if (job_settings.contains(kSettingOpenPDFInPreview))
     return mojom::PrintTargetType::kExternalPreview;
 #endif
-  if (job_settings.FindBoolKey(kSettingShowSystemDialog).value_or(false))
+  if (job_settings.FindBool(kSettingShowSystemDialog).value_or(false))
     return mojom::PrintTargetType::kSystemDialog;
   return mojom::PrintTargetType::kDirectToDevice;
 }
@@ -47,6 +47,11 @@ mojom::PrintTargetType DeterminePrintTargetType(
 
 PrintJobWorkerOop::PrintJobWorkerOop(content::GlobalRenderFrameHostId rfh_id)
     : PrintJobWorker(rfh_id) {}
+
+PrintJobWorkerOop::PrintJobWorkerOop(content::GlobalRenderFrameHostId rfh_id,
+                                     bool simulate_spooling_memory_errors)
+    : PrintJobWorker(rfh_id),
+      simulate_spooling_memory_errors_(simulate_spooling_memory_errors) {}
 
 PrintJobWorkerOop::~PrintJobWorkerOop() {
   DCHECK(!service_manager_client_id_.has_value());
@@ -209,7 +214,7 @@ void PrintJobWorkerOop::OnDidDocumentDone(int job_id,
 }
 
 #if BUILDFLAG(IS_WIN)
-void PrintJobWorkerOop::SpoolPage(PrintedPage* page) {
+bool PrintJobWorkerOop::SpoolPage(PrintedPage* page) {
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
   DCHECK_NE(page_number(), PageNumber::npos());
 
@@ -221,9 +226,13 @@ void PrintJobWorkerOop::SpoolPage(PrintedPage* page) {
   DCHECK(metafile);
   base::MappedReadOnlyRegion region_mapping =
       metafile->GetDataAsSharedMemoryRegion();
-  if (!region_mapping.IsValid()) {
-    OnFailure();
-    return;
+  if (simulate_spooling_memory_errors_ || !region_mapping.IsValid()) {
+    PRINTER_LOG(ERROR) << "Spooling page failed due to shared memory error.";
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&PrintJobWorkerOop::NotifyFailure,
+                                  ui_weak_factory_.GetWeakPtr(),
+                                  mojom::ResultCode::kFailed));
+    return false;
   }
 
   VLOG(1) << "Spooling page " << page_number() << " to print via service";
@@ -233,19 +242,25 @@ void PrintJobWorkerOop::SpoolPage(PrintedPage* page) {
                      ui_weak_factory_.GetWeakPtr(), base::RetainedRef(page),
                      metafile->GetDataType(),
                      std::move(region_mapping.region)));
+  return true;
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-void PrintJobWorkerOop::SpoolDocument() {
+bool PrintJobWorkerOop::SpoolDocument() {
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
   const MetafilePlayer* metafile = document()->GetMetafile();
   DCHECK(metafile);
   base::MappedReadOnlyRegion region_mapping =
       metafile->GetDataAsSharedMemoryRegion();
-  if (!region_mapping.IsValid()) {
-    OnFailure();
-    return;
+  if (simulate_spooling_memory_errors_ || !region_mapping.IsValid()) {
+    PRINTER_LOG(ERROR)
+        << "Spooling document failed due to shared memory error.";
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&PrintJobWorkerOop::NotifyFailure,
+                                  ui_weak_factory_.GetWeakPtr(),
+                                  mojom::ResultCode::kFailed));
+    return false;
   }
 
   VLOG(1) << "Spooling job to print via service";
@@ -254,6 +269,7 @@ void PrintJobWorkerOop::SpoolDocument() {
       base::BindOnce(&PrintJobWorkerOop::SendRenderPrintedDocument,
                      ui_weak_factory_.GetWeakPtr(), metafile->GetDataType(),
                      std::move(region_mapping.region)));
+  return true;
 }
 
 void PrintJobWorkerOop::OnDocumentDone() {
@@ -298,14 +314,12 @@ void PrintJobWorkerOop::InvokeGetSettingsWithUI(uint32_t document_page_count,
 #endif
 }
 
-void PrintJobWorkerOop::UpdatePrintSettings(base::Value new_settings,
+void PrintJobWorkerOop::UpdatePrintSettings(base::Value::Dict new_settings,
                                             SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Don't use as a const reference, since that reference into `new_settings`
-  // isn't safe after TakeDictDeprecated() destroys the internal dictionary for
-  // it.
-  std::string device_name = *new_settings.FindStringKey(kSettingDeviceName);
+  // Do not take a const reference, as `new_settings` will be modified below.
+  std::string device_name = *new_settings.FindString(kSettingDeviceName);
 
   // Save the print target type from the settings, since this will be needed
   // later when printing is started.
@@ -316,7 +330,7 @@ void PrintJobWorkerOop::UpdatePrintSettings(base::Value new_settings,
       PrintBackendServiceManager::GetInstance();
 
   service_mgr.UpdatePrintSettings(
-      device_name, std::move(new_settings).TakeDictDeprecated(),
+      device_name, std::move(new_settings),
       base::BindOnce(&PrintJobWorkerOop::OnDidUpdatePrintSettings,
                      ui_weak_factory_.GetWeakPtr(), device_name,
                      std::move(callback)));

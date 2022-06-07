@@ -16,44 +16,12 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
 namespace {
-
-// Simple adapter to allow a user to specify two callbacks instead of a command
-// class.
-class CommandCallbackAdapter : public WebAppCommand {
- public:
-  CommandCallbackAdapter(absl::optional<AppId> app_id,
-                         WebAppCommandManager::CallbackCommand command,
-                         WebAppCommandManager::CommandResultCallback complete)
-      : WebAppCommand(app_id),
-        command_(std::move(command)),
-        complete_(std::move(complete)) {}
-  ~CommandCallbackAdapter() override = default;
-
-  void Start() override {
-    DCHECK(command_);
-    DCHECK(complete_);
-    CommandResult result = std::move(command_).Run();
-    SignalCompletionAndSelfDestruct(
-        result, base::BindOnce(std::move(complete_), result), {});
-  }
-
-  void OnBeforeForcedUninstallFromSync() override {}
-
-  void OnShutdown() override {}
-
-  base::Value ToDebugValue() const override {
-    return base::Value("CommandCallbackAdapter");
-  }
-
- private:
-  WebAppCommandManager::CallbackCommand command_;
-  WebAppCommandManager::CommandResultCallback complete_;
-};
 
 base::Value CreateLogValue(const WebAppCommand& command,
                            absl::optional<CommandResult> result) {
@@ -122,19 +90,6 @@ void WebAppCommandManager::EnqueueCommand(
   MaybeRunNextCommand(queue_id);
 }
 
-void WebAppCommandManager::EnqueueCallback(
-    const absl::optional<AppId>& queue_id,
-    CallbackCommand command,
-    CommandResultCallback complete) {
-  auto command_adapter = std::make_unique<CommandCallbackAdapter>(
-      queue_id, std::move(command), std::move(complete));
-  if (is_in_shutdown_) {
-    AddValueToLog(CreateLogValue(*command_adapter, CommandResult::kShutdown));
-    return;
-  }
-  EnqueueCommand(std::move(command_adapter));
-}
-
 void WebAppCommandManager::Shutdown() {
   DCHECK(!is_in_shutdown_);
   is_in_shutdown_ = true;
@@ -151,7 +106,7 @@ void WebAppCommandManager::Shutdown() {
 }
 
 void WebAppCommandManager::NotifyBeforeSyncUninstalls(
-    std::vector<AppId> app_ids) {
+    const std::vector<AppId>& app_ids) {
   if (is_in_shutdown_)
     return;
 

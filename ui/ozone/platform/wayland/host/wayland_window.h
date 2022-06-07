@@ -325,8 +325,9 @@ class WaylandWindow : public PlatformWindow,
   const WaylandConnection* connection() const { return connection_; }
   PlatformWindowDelegate* delegate() { return delegate_; }
 
-  // [Deprecatd] Sets bounds in dip. This will be replaced with SetBoundsInDIP.
-  void SetBoundsDip(const gfx::Rect& bounds_dip);
+  // Update the bounds of the window in DIP. Unlike SetBoundInDIP, it will not
+  // send a request to the compositor even if the screen coordinate is enabled.
+  void UpdateBoundsInDIP(const gfx::Rect& bounds_dip);
 
   void set_ui_scale(float ui_scale) { ui_scale_ = ui_scale; }
 
@@ -336,9 +337,14 @@ class WaylandWindow : public PlatformWindow,
   // Processes the pending bounds in dip.
   void ProcessPendingBoundsDip(uint32_t serial);
 
-  // If the given |bounds_px| violate size constraints set for this window,
-  // fixes them so they wouldn't.
+  // [Deprecated]
+  // If the given |bounds_px| violates size constraints set for this window,
+  // fixes them so they don't.
   gfx::Rect AdjustBoundsToConstraintsPx(const gfx::Rect& bounds_px);
+
+  // If the given |bounds_dip| violates size constraints set for this window,
+  // fixes them so they don't.
+  gfx::Rect AdjustBoundsToConstraintsDIP(const gfx::Rect& bounds_dip);
 
   // Processes the size information form visual size update and returns true if
   // any pending configure is fulfilled.
@@ -367,17 +373,7 @@ class WaylandWindow : public PlatformWindow,
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
 
-  void UpdateCursorPositionFromEvent(std::unique_ptr<Event> event);
-
-  // Adjusts the |location| to account for the offset of a popup window. If this
-  // is the root window, the location is unchanged.
-  gfx::PointF TranslateLocationToRootWindow(const gfx::PointF& location);
-
-  // Returns |location| in the local coordinate space, Window local pixels.
-  // |location| is assumed to be in Wayland coordinate which are DP unless
-  // surface_submission_in_pixel_coordinates is active. Also adjusts for popup
-  // offset if necessary.
-  gfx::PointF ToRootWindowPixel(const gfx::PointF& location);
+  void UpdateCursorPositionFromEvent(const Event* event);
 
   uint32_t DispatchEventToDelegate(const PlatformEvent& native_event);
 

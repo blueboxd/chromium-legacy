@@ -10,6 +10,7 @@
 #include "ash/rgb_keyboard/rgb_keyboard_util.h"
 #include "ash/shell.h"
 #include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
+#include "ash/system/keyboard_brightness/keyboard_backlight_color_nudge_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/check.h"
@@ -57,6 +58,13 @@ void PersonalizationAppKeyboardBacklightProviderImpl::
 
   // Call it once to get the status of color preset.
   NotifyBacklightColorChanged();
+
+  // Bind wallpaper observer now that rgb keyboard section is ready and visible
+  // to users.
+  if (!wallpaper_controller_observation_.IsObserving())
+    wallpaper_controller_observation_.Observe(WallpaperController::Get());
+  // Call it once to get the wallpaper extracted color.
+  OnWallpaperColorsChanged();
 }
 
 void PersonalizationAppKeyboardBacklightProviderImpl::SetBacklightColor(
@@ -68,8 +76,19 @@ void PersonalizationAppKeyboardBacklightProviderImpl::SetBacklightColor(
   }
   DVLOG(4) << __func__ << " backlight_color=" << backlight_color;
   GetKeyboardBacklightColorController()->SetBacklightColor(backlight_color);
+  GetKeyboardBacklightColorController()
+      ->keyboard_backlight_color_nudge_controller()
+      ->SetUserPerformedAction();
 
   NotifyBacklightColorChanged();
+}
+
+void PersonalizationAppKeyboardBacklightProviderImpl::
+    OnWallpaperColorsChanged() {
+  DCHECK(keyboard_backlight_observer_remote_.is_bound());
+  keyboard_backlight_observer_remote_->OnWallpaperColorChanged(
+      ConvertBacklightColorToSkColor(
+          personalization_app::mojom::BacklightColor::kWallpaper));
 }
 
 void PersonalizationAppKeyboardBacklightProviderImpl::

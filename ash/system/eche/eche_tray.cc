@@ -124,11 +124,6 @@ void EcheTray::EventInterceptor::OnKeyEvent(ui::KeyEvent* event) {
     event->StopPropagation();
     return;
   }
-  if (AcceleratorController::Get()->IsRegistered(accelerator)) {
-    views::ViewsDelegate::GetInstance()->ProcessAcceleratorWhileMenuShowing(
-        accelerator);
-    event->StopPropagation();
-  }
 }
 
 EcheTray::EcheTray(Shelf* shelf)
@@ -419,7 +414,6 @@ void EcheTray::InitBubble() {
   const gfx::Size eche_size = CalculateSizeForEche();
   init_params.preferred_width = eche_size.width();
   init_params.close_on_deactivate = false;
-  init_params.has_shadow = false;
   init_params.translucent = true;
   init_params.reroute_event_handler = false;
   init_params.corner_radius = kTrayItemCornerRadius;

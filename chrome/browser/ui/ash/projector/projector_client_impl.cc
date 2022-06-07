@@ -13,6 +13,7 @@
 #include "ash/webui/projector_app/projector_app_client.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "base/bind.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -22,8 +23,6 @@
 #include "chrome/browser/ui/ash/projector/projector_utils.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -271,11 +270,11 @@ void ProjectorClientImpl::MaybeSwitchDriveIntegrationServiceObservation() {
 
 void ProjectorClientImpl::OnEnablementPolicyChanged() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  web_app::SystemWebAppManager& manager =
-      web_app::WebAppProvider::GetForSystemWebApps(profile)
-          ->system_web_app_manager();
+  ash::SystemWebAppManager* swa_manager =
+      ash::SystemWebAppManager::Get(profile);
   const bool is_installed =
-      manager.IsSystemWebApp(ash::kChromeUITrustedProjectorSwaAppId);
+      swa_manager &&
+      swa_manager->IsSystemWebApp(ash::kChromeUITrustedProjectorSwaAppId);
   // We can't enable or disable the app if it's not already installed.
   if (!is_installed)
     return;
@@ -287,11 +286,7 @@ void ProjectorClientImpl::OnEnablementPolicyChanged() {
   if (!is_enabled)
     CloseProjectorApp();
 
-  absl::optional<web_app::AppId> app_id = web_app::GetAppIdForSystemWebApp(
-      profile, ash::SystemWebAppType::PROJECTOR);
-  if (!app_id)
-    return;
-
   auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(profile);
-  web_app_provider->sync_bridge().SetAppIsDisabled(app_id.value(), !is_enabled);
+  web_app_provider->sync_bridge().SetAppIsDisabled(
+      ash::kChromeUITrustedProjectorSwaAppId, !is_enabled);
 }

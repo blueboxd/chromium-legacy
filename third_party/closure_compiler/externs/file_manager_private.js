@@ -311,6 +311,7 @@ chrome.fileManagerPrivate.IOTaskState = {
   IN_PROGRESS: 'in_progress',
   SUCCESS: 'success',
   ERROR: 'error',
+  NEED_PASSWORD: 'need_password',
   CANCELLED: 'cancelled',
 };
 
@@ -684,6 +685,7 @@ chrome.fileManagerPrivate.GetVolumeRootOptions;
 /**
  * @typedef {{
  *   destinationFolder: (DirectoryEntry|undefined),
+ *   password: (string|undefined),
  * }}
  */
 chrome.fileManagerPrivate.IOTaskParams;
@@ -918,6 +920,15 @@ chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
  */
 chrome.fileManagerPrivate.getDisallowedTransfers = function(
     entries, destinationEntry, callback) {};
+
+/**
+ * Returns a list of files that are restricted by any Data Leak Prevention
+ * (DLP) rule. |entries| list of source entries to be checked.
+ * @param {!Array<!Entry>} entries
+ * @param {!Array<!Entry>} callback Entries of files that are restricted
+ * by at least one DLP rule.
+ */
+chrome.fileManagerPrivate.getFilesRestrictedByDlp = function(entries, callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done
@@ -1185,9 +1196,10 @@ chrome.fileManagerPrivate.getDirectorySize = function(entry, callback) {};
  * Gets recently modified files across file systems.
  * @param {string} restriction
  * @param {string} fileType
+ * @param {boolean} invalidateCache
  * @param {function((!Array<!FileEntry>))} callback
  */
-chrome.fileManagerPrivate.getRecentFiles = function(restriction, fileType, callback) {};
+chrome.fileManagerPrivate.getRecentFiles = function(restriction, fileType, invalidateCache, callback) {};
 
 /**
  * Requests the root directory of a volume. The ID of the volume must be
@@ -1405,8 +1417,10 @@ chrome.fileManagerPrivate.sendFeedback = function() {};
  * @param {!chrome.fileManagerPrivate.IOTaskType} type
  * @param {!Array<!Entry>} entries
  * @param {!chrome.fileManagerPrivate.IOTaskParams} params
+ * @param {(function(number): void)=} callback Returns the task ID.
  */
-chrome.fileManagerPrivate.startIOTask = function(type, entries, params) {};
+chrome.fileManagerPrivate.startIOTask = function(
+    type, entries, params, callback) {};
 
 /**
  * Cancels an I/O task by id. Task ids are communicated to the Files App in

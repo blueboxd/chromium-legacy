@@ -73,8 +73,6 @@
 #include "components/content_capture/common/content_capture_features.h"
 #include "components/content_capture/renderer/content_capture_sender.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/contextual_search/buildflags.h"
-#include "components/contextual_search/content/renderer/overlay_js_render_frame_observer.h"
 #include "components/continuous_search/renderer/search_result_extractor_impl.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
@@ -155,6 +153,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
+#include "third_party/blink/public/web/web_script_controller.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -431,13 +430,19 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(subresource_filter_ruleset_dealer_.get());
   thread->AddObserver(phishing_model_setter_.get());
 
-  thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
+  blink::WebScriptController::RegisterExtension(
+      extensions_v8::LoadTimesExtension::Get());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(variations::switches::kEnableBenchmarking))
-    thread->RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
-  if (command_line->HasSwitch(switches::kEnableNetBenchmarking))
-    thread->RegisterExtension(extensions_v8::NetBenchmarkingExtension::Get());
+  if (command_line->HasSwitch(variations::switches::kEnableBenchmarking)) {
+    blink::WebScriptController::RegisterExtension(
+        extensions_v8::BenchmarkingExtension::Get());
+  }
+
+  if (command_line->HasSwitch(switches::kEnableNetBenchmarking)) {
+    blink::WebScriptController::RegisterExtension(
+        extensions_v8::NetBenchmarkingExtension::Get());
+  }
 
   // chrome: is also to be permitted to embeds https:// things and have them
   // treated as first-party.
@@ -624,11 +629,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
     // DistillabilityDriver in the browser process.
     new dom_distiller::DistillabilityAgent(render_frame, DCHECK_IS_ON());
   }
-
-#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
-  // Set up a mojo service to test if this page is a contextual search page.
-  new contextual_search::OverlayJsRenderFrameObserver(render_frame, registry);
-#endif
 
   blink::AssociatedInterfaceRegistry* associated_interfaces =
       render_frame_observer->associated_interfaces();
@@ -1683,16 +1683,20 @@ blink::WebFrame* ChromeContentRendererClient::FindFrame(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
-bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
+bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& from_url,
+                                                       const GURL& to_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
+  if (to_url.SchemeIs(extensions::kExtensionScheme)) {
     const extensions::Extension* extension =
-        extensions::RendererExtensionRegistry::Get()->GetByID(url.host());
+        extensions::RendererExtensionRegistry::Get()->GetByID(to_url.host());
     if (!extension)
       return false;
     // TODO(solomonkinard): Use initiator_origin and add tests.
-    return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-        extension, url.path(), absl::optional<url::Origin>());
+    if (extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
+            extension, to_url.path(), absl::optional<url::Origin>())) {
+      return true;
+    }
+    return extension->guid() == from_url.host();
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return true;

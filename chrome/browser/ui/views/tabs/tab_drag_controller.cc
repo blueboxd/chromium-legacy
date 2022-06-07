@@ -640,7 +640,8 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
         did_restore_window_ = true;
         // When all tabs in a maximized browser are dragged the browser gets
         // restored during the drag and maximized back when the drag ends.
-        const int tab_area_width = attached_context_->GetTabDragAreaWidth();
+        const int previous_tab_area_width =
+            attached_context_->GetTabDragAreaWidth();
         std::vector<gfx::Rect> drag_bounds =
             attached_context_->CalculateBoundsForDraggedViews(attached_views_);
         OffsetX(GetAttachedDragPoint(point_in_screen).x(), &drag_bounds);
@@ -653,8 +654,9 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
         widget->Restore();
         widget->SetBounds(new_bounds);
         drag_offset = GetWindowOffset(point_in_screen);
-        AdjustBrowserAndTabBoundsForDrag(tab_area_width, point_in_screen,
-                                         &drag_offset, &drag_bounds);
+        AdjustBrowserAndTabBoundsForDrag(previous_tab_area_width,
+                                         point_in_screen, &drag_offset,
+                                         &drag_bounds);
         widget->SetVisibilityChangedAnimationsEnabled(true);
       } else {
         new_bounds =
@@ -1477,7 +1479,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
     return;
   }
 
-  const int tab_area_width = attached_context_->GetTabDragAreaWidth();
+  const int previous_tab_area_width = attached_context_->GetTabDragAreaWidth();
   std::vector<gfx::Rect> drag_bounds =
       attached_context_->CalculateBoundsForDraggedViews(attached_views_);
   OffsetX(GetAttachedDragPoint(point_in_screen).x(), &drag_bounds);
@@ -1517,7 +1519,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   DetachAndAttachToNewContext(
       release_capture, dragged_browser_view->tabstrip()->GetDragContext(),
       gfx::Point());
-  AdjustBrowserAndTabBoundsForDrag(tab_area_width, point_in_screen,
+  AdjustBrowserAndTabBoundsForDrag(previous_tab_area_width, point_in_screen,
                                    &drag_offset, &drag_bounds);
   browser->window()->Show();
   dragged_widget->SetVisibilityChangedAnimationsEnabled(true);
@@ -1977,8 +1979,7 @@ void TabDragController::CompleteDrag() {
       }
 
       // If source window was maximized - maximize the new window as well.
-#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX) && \
-    !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_MAC)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_MAC)
       // Keeping maximized state breaks snap to Grid on Windows when dragging
       // tabs from maximized windows. TODO:(crbug.com/727051) Explore doing this
       // for other desktop OS's. kMaximizedStateRetainedOnTabDrag in
@@ -1987,13 +1988,9 @@ void TabDragController::CompleteDrag() {
       // macOS opts out since this maps maximize to fullscreen, which can
       // violate user expectations and interacts poorly with some window
       // management actions.
-      //
-      // TODO(https://crbug.com/1252941): Remove the lacros if-clause above when
-      // lacros understands the snapped window state types (eg
-      // chromeos::WindowStateType::kPrimarySnapped|kSecondarySnapped).
       if (was_source_maximized_ || was_source_fullscreen_)
         MaximizeAttachedWindow();
-#endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX)
+#endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_MAC)
     }
     attached_context_->StoppedDragging(
         GetViewsMatchingDraggedContents(attached_context_),
@@ -2226,38 +2223,54 @@ gfx::Rect TabDragController::CalculateNonMaximizedDraggedBrowserBounds(
 }
 
 void TabDragController::AdjustBrowserAndTabBoundsForDrag(
-    int tab_area_width,
+    int previous_tab_area_width,
     const gfx::Point& point_in_screen,
     gfx::Vector2d* drag_offset,
     std::vector<gfx::Rect>* drag_bounds) {
   attached_context_->ForceLayout();
-  const int dragged_context_width = attached_context_->GetTabDragAreaWidth();
+  const int current_tab_area_width = attached_context_->GetTabDragAreaWidth();
 
-  // If the new tabstrip region is smaller than the old, resize the tabs.
-  if (dragged_context_width < tab_area_width) {
+  // If the new tabstrip region is smaller than the old, resize and reposition
+  // the tabs to provide a sense of continuity.
+  if (current_tab_area_width < previous_tab_area_width) {
+    // TODO(https://crbug.com/1324577): Fix the case where the source window
+    // spans two monitors horizontally, and IsRTL is true.
+
+    // `leading_ratio` is the proportion of the previous tab area width which is
+    // ahead of the first dragged tab's previous position.
     const float leading_ratio =
-        drag_bounds->front().x() / static_cast<float>(tab_area_width);
+        drag_bounds->front().x() / static_cast<float>(previous_tab_area_width);
     *drag_bounds =
         attached_context_->CalculateBoundsForDraggedViews(attached_views_);
 
-    if (drag_bounds->back().right() < dragged_context_width) {
-      const int delta_x = std::min(
-          static_cast<int>(leading_ratio * dragged_context_width),
-          dragged_context_width -
-              (drag_bounds->back().right() - drag_bounds->front().x()));
-      OffsetX(delta_x, drag_bounds);
+    // If the tabs can fit within the new tab area with room to spare, align
+    // them within it so the leading tab is in the same position as it was in
+    // the previous tab area, proportionally speaking.
+    if (drag_bounds->back().right() < current_tab_area_width) {
+      // The tabs must stay within the tabstrip.
+      const int maximum_tab_x =
+          current_tab_area_width -
+          (drag_bounds->back().right() - drag_bounds->front().x());
+      const int leading_tab_x =
+          std::min(static_cast<int>(leading_ratio * current_tab_area_width),
+                   maximum_tab_x);
+      OffsetX(leading_tab_x, drag_bounds);
     }
 
     // Reposition the restored window such that the tab that was dragged remains
     // under the mouse cursor.
-    gfx::Rect tab_bounds = (*drag_bounds)[source_view_index_];
-    gfx::Point offset(
-        base::ClampRound(tab_bounds.width() * offset_to_width_ratio_) +
-            tab_bounds.x(),
+    gfx::Rect source_tab_bounds = (*drag_bounds)[source_view_index_];
+
+    int cursor_offset_within_tab =
+        base::ClampRound(source_tab_bounds.width() * offset_to_width_ratio_);
+    gfx::Point cursor_offset_in_widget(
+        attached_context_->AsView()->GetMirroredXInView(
+            source_tab_bounds.x() + cursor_offset_within_tab),
         0);
-    views::View::ConvertPointToWidget(attached_context_->AsView(), &offset);
+    attached_context_->AsView()->ConvertPointToWidget(
+        attached_context_->AsView(), &cursor_offset_in_widget);
     gfx::Rect bounds = GetAttachedBrowserWidget()->GetWindowBoundsInScreen();
-    bounds.set_x(point_in_screen.x() - offset.x());
+    bounds.set_x(point_in_screen.x() - cursor_offset_in_widget.x());
     GetAttachedBrowserWidget()->SetBounds(bounds);
     *drag_offset = point_in_screen - bounds.origin();
   }
@@ -2503,10 +2516,23 @@ TabDragController::GetTabGroupForTargetIndex(const std::vector<int>& selected) {
   int left_most_selected_x_position =
       left_most_selected_tab->x() + tab_left_inset;
 
-  if ((left_most_selected_x_position <= left_edge - buffer) &&
-      left_group.has_value() &&
+  if (left_group.has_value() &&
       !attached_model->IsGroupCollapsed(left_group.value())) {
-    return left_group;
+    // Take the dragged tabs out of left_group if they are at the rightmost edge
+    // of the tabstrip. This happens when the tabstrip is full and the dragged
+    // tabs are as far right as they can go without being pulled out into a new
+    // window. In this case, since the dragged tabs can't move further right in
+    // the tabstrip, it will never go "beyond" the left_group and therefore
+    // never leave it unless we add this check. See crbug.com/1134376.
+    // TODO(crbug/1329344): Update this to work better with Tab Scrolling once
+    // dragging near the end of the tabstrip is cleaner.
+    if (attached_context_->GetTabAt(selected.back())->bounds().right() >=
+        attached_context_->TabDragAreaEndX()) {
+      return absl::nullopt;
+    }
+
+    if (left_most_selected_x_position <= left_edge - buffer)
+      return left_group;
   }
   if ((left_most_selected_x_position >= left_edge + buffer) &&
       right_group.has_value() &&

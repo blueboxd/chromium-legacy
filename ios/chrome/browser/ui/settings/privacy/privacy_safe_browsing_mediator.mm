@@ -6,6 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -68,10 +70,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // policies.
 @property(nonatomic, assign, readonly) PrefService* userPrefService;
 
-// Local pref service used to check if a specific pref is managed by enterprise
-// policies.
-@property(nonatomic, assign, readonly) PrefService* localPrefService;
-
 // Boolean to check if safe browsing is controlled by enterprise.
 @property(nonatomic, readonly) BOOL enterpriseEnabled;
 
@@ -81,14 +79,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @synthesize safeBrowsingItems = _safeBrowsingItems;
 
-- (instancetype)initWithUserPrefService:(PrefService*)userPrefService
-                       localPrefService:(PrefService*)localPrefService {
+- (instancetype)initWithUserPrefService:(PrefService*)userPrefService {
   self = [super init];
   if (self) {
     DCHECK(userPrefService);
-    DCHECK(localPrefService);
     _userPrefService = userPrefService;
-    _localPrefService = localPrefService;
     _safeBrowsingEnhancedProtectionPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:prefs::kSafeBrowsingEnhanced];
@@ -110,23 +105,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  // Show checkmark for selected item and update associated preference value.
+  // Show checkmark for selected item and update associated preference value by
+  // setting the SafeBrowsingState.
+  safe_browsing::SafeBrowsingState safeBrowsingState =
+      safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING;
   switch (type) {
     case ItemTypeSafeBrowsingEnhancedProtection:
-      self.safeBrowsingEnhancedProtectionPreference.value = YES;
-      self.safeBrowsingStandardProtectionPreference.value = YES;
+      safeBrowsingState = safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION;
       break;
     case ItemTypeSafeBrowsingStandardProtection:
-      self.safeBrowsingStandardProtectionPreference.value = YES;
-      self.safeBrowsingEnhancedProtectionPreference.value = NO;
+      safeBrowsingState = safe_browsing::SafeBrowsingState::STANDARD_PROTECTION;
       break;
     case ItemTypeSafeBrowsingNoProtection:
-      self.safeBrowsingStandardProtectionPreference.value = NO;
-      self.safeBrowsingEnhancedProtectionPreference.value = NO;
+      safeBrowsingState = safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING;
       break;
     default:
+      NOTREACHED();
       break;
   }
+  safe_browsing::SetSafeBrowsingState(self.userPrefService, safeBrowsingState);
+
   [self updatePrivacySafeBrowsingSectionAndNotifyConsumer:YES];
 }
 
@@ -227,20 +225,30 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return infoButtonItem;
 }
 
-// Returns whether an ItemType should have a checkmark based on its related
-// preference value.
+// Returns whether an ItemType should have a checkmark based on its
+// SafeBrowsingState.
 - (BOOL)shouldItemTypeHaveCheckmark:(NSInteger)itemType {
   ItemType type = static_cast<ItemType>(itemType);
-  if (self.safeBrowsingEnhancedProtectionPreference.value) {
-    return type == ItemTypeSafeBrowsingEnhancedProtection;
-  } else if (self.safeBrowsingStandardProtectionPreference.value) {
-    return type == ItemTypeSafeBrowsingStandardProtection;
+  safe_browsing::SafeBrowsingState safeBrowsingState =
+      safe_browsing::GetSafeBrowsingState(*self.userPrefService);
+  switch (type) {
+    case ItemTypeSafeBrowsingEnhancedProtection:
+      return safeBrowsingState ==
+             safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION;
+    case ItemTypeSafeBrowsingStandardProtection:
+      return safeBrowsingState ==
+             safe_browsing::SafeBrowsingState::STANDARD_PROTECTION;
+    case ItemTypeSafeBrowsingNoProtection:
+      return safeBrowsingState ==
+             safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING;
+    default:
+      NOTREACHED();
+      return NO;
   }
-  return type == ItemTypeSafeBrowsingNoProtection;
 }
 
 // Updates the privacy safe browsing section according to the user consent. If
-// |notifyConsumer| is YES, the consumer is notified about model changes.
+// `notifyConsumer` is YES, the consumer is notified about model changes.
 - (void)updatePrivacySafeBrowsingSectionAndNotifyConsumer:(BOOL)notifyConsumer {
   for (TableViewItem* item in self.safeBrowsingItems) {
     TableViewInfoButtonItem* infoButtonItem =
@@ -270,22 +278,32 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemType type = static_cast<ItemType>(item.type);
   if (type == ItemTypeSafeBrowsingEnhancedProtection) {
     if ([self shouldItemTypeHaveCheckmark:type]) {
+      base::RecordAction(base::UserMetricsAction(
+          "SafeBrowsing.Settings.EnhancedProtectionExpandArrowClicked"));
       [self.handler showSafeBrowsingEnhancedProtection];
     } else {
+      base::RecordAction(base::UserMetricsAction(
+          "SafeBrowsing.Settings.EnhancedProtectionClicked"));
       [self selectSettingItem:item];
     }
   }
 
   if (type == ItemTypeSafeBrowsingStandardProtection) {
     if ([self shouldItemTypeHaveCheckmark:type]) {
+      base::RecordAction(base::UserMetricsAction(
+          "SafeBrowsing.Settings.StandardProtectionExpandArrowClicked"));
       [self.handler showSafeBrowsingStandardProtection];
     } else {
+      base::RecordAction(base::UserMetricsAction(
+          "SafeBrowsing.Settings.StandardProtectionClicked"));
       [self selectSettingItem:item];
     }
   }
 
   if (type == ItemTypeSafeBrowsingNoProtection &&
       ![self shouldItemTypeHaveCheckmark:type]) {
+    base::RecordAction(base::UserMetricsAction(
+        "SafeBrowsing.Settings.DisableSafeBrowsingClicked"));
     [self.handler showSafeBrowsingNoProtectionPopUp:item];
   }
 }
@@ -300,9 +318,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemType type = static_cast<ItemType>(item.type);
   switch (type) {
     case ItemTypeSafeBrowsingEnhancedProtection:
+      base::RecordAction(base::UserMetricsAction(
+          "SafeBrowsing.Settings.EnhancedProtectionExpandArrowClicked"));
       [self.handler showSafeBrowsingEnhancedProtection];
       break;
     case ItemTypeSafeBrowsingStandardProtection:
+      base::RecordAction(base::UserMetricsAction(
+          "SafeBrowsing.Settings.StandardProtectionExpandArrowClicked"));
       [self.handler showSafeBrowsingStandardProtection];
       break;
     default:

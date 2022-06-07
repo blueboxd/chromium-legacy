@@ -315,9 +315,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
   // value in JavaScript.
   // TODO(https://crbug.com/1302249): Don't support Plan B on Fuchsia either,
   // delete Plan B from all of Chromium.
-  // TODO(https://crbug.com/1323237): Also don't support it on CrOS. This is
-  // only temporary.
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_FUCHSIA)
   if (configuration->hasSdpSemantics() &&
       configuration->sdpSemantics() == "plan-b") {
     web_configuration.sdp_semantics = webrtc::SdpSemantics::kPlanB;
@@ -422,11 +420,6 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
     UseCounter::Count(context, WebFeature::kRTCMaxAudioBufferSize);
     web_configuration.audio_jitter_buffer_min_delay_ms =
         static_cast<int>(configuration->rtcAudioJitterBufferMinDelayMs());
-  }
-
-  if (RuntimeEnabledFeatures::RtcAudioJitterBufferRtxHandlingEnabled(context)) {
-    UseCounter::Count(context, WebFeature::kRTCAudioJitterBufferRtxHandling);
-    web_configuration.audio_jitter_buffer_enable_rtx_handling = true;
   }
 
   return web_configuration;

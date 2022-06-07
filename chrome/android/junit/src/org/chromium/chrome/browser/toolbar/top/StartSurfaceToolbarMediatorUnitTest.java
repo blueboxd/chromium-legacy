@@ -29,7 +29,6 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_VIEW_AT_START;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_VIEW_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_VIEW_TEXT_IS_VISIBLE;
-import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.TAB_SWITCHER_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.TRANSLATION_Y;
 
 import android.content.res.Resources;
@@ -65,12 +64,14 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -81,6 +82,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @LooperMode(LooperMode.Mode.LEGACY)
+@DisableFeatures(ChromeFeatureList.ANDROID_SCROLL_OPTIMIZATIONS)
 @EnableFeatures(ChromeFeatureList.ENABLE_IPH)
 public class StartSurfaceToolbarMediatorUnitTest {
     private PropertyModel mPropertyModel;
@@ -146,9 +148,10 @@ public class StartSurfaceToolbarMediatorUnitTest {
                         .with(StartSurfaceToolbarProperties.NEW_TAB_VIEW_AT_START, false)
                         .with(StartSurfaceToolbarProperties.NEW_TAB_VIEW_TEXT_IS_VISIBLE, false)
                         .build();
-        mButtonData = new ButtonDataImpl(false, mDrawable, mOnClickListener, 0, false, null, true);
-        ButtonDataImpl disabledButtonData =
-                new ButtonDataImpl(false, null, null, 0, false, null, true);
+        mButtonData = new ButtonDataImpl(false, mDrawable, mOnClickListener, 0, false, null, true,
+                AdaptiveToolbarButtonVariant.UNKNOWN);
+        ButtonDataImpl disabledButtonData = new ButtonDataImpl(
+                false, null, null, 0, false, null, true, AdaptiveToolbarButtonVariant.UNKNOWN);
         mIdentityDiscStateSupplier = new ObservableSupplierImpl<>();
         mStartSurfaceAsHomepageSupplier = new ObservableSupplierImpl<>();
         mStartSurfaceAsHomepageSupplier.set(true);
@@ -367,9 +370,10 @@ public class StartSurfaceToolbarMediatorUnitTest {
         mMediator.onStartSurfaceStateChanged(StartSurfaceState.SHOWN_HOMEPAGE, true);
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
 
-        mButtonData.setButtonSpec(
-                new ButtonSpec(mDrawable, mOnClickListener, /*contentDescriptionResId=*/5,
-                        /*supportsTinting=*/false, /*iphCommandBuilder=*/null));
+        mButtonData.setButtonSpec(new ButtonSpec(mDrawable, mOnClickListener,
+                /*onLongClickListener*/ null, /*contentDescriptionResId=*/5,
+                /*supportsTinting=*/false, /*iphCommandBuilder=*/null,
+                AdaptiveToolbarButtonVariant.UNKNOWN));
         mButtonData.setCanShow(true);
         mMediator.updateIdentityDisc(mButtonData);
         assertTrue(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
@@ -380,9 +384,10 @@ public class StartSurfaceToolbarMediatorUnitTest {
         Drawable testDrawable2 = mock(Drawable.class);
         doReturn(mMockConstantState).when(testDrawable2).getConstantState();
         doReturn(testDrawable2).when(mMockConstantState).newDrawable();
-        mButtonData.setButtonSpec(
-                new ButtonSpec(testDrawable2, mOnClickListener, /*contentDescriptionResId=*/5,
-                        /*supportsTinting=*/false, /*iphCommandBuilder=*/null));
+        mButtonData.setButtonSpec(new ButtonSpec(testDrawable2, mOnClickListener,
+                /*onLongClickListener*/ null, /*contentDescriptionResId=*/5,
+                /*supportsTinting=*/false, /*iphCommandBuilder=*/null,
+                AdaptiveToolbarButtonVariant.UNKNOWN));
         mMediator.updateIdentityDisc(mButtonData);
         assertEquals(testDrawable2, mPropertyModel.get(IDENTITY_DISC_IMAGE));
 
@@ -419,9 +424,10 @@ public class StartSurfaceToolbarMediatorUnitTest {
         IPHCommandBuilder iphCommandBuilder =
                 new IPHCommandBuilder(mMockResources, "IdentityDisc", 0, 0)
                         .setOnDismissCallback(mDismissedCallback);
-        mButtonData.setButtonSpec(
-                new ButtonSpec(mDrawable, mOnClickListener, /*contentDescriptionResId=*/0,
-                        /*supportsTinting=*/false, /*iphCommandBuilder=*/iphCommandBuilder));
+        mButtonData.setButtonSpec(new ButtonSpec(mDrawable, mOnClickListener,
+                /*onLongClickListener*/ null, /*contentDescriptionResId=*/0,
+                /*supportsTinting=*/false, /*iphCommandBuilder=*/iphCommandBuilder,
+                AdaptiveToolbarButtonVariant.UNKNOWN));
 
         mMediator.updateIdentityDisc(mButtonData);
         assertTrue(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
@@ -486,37 +492,6 @@ public class StartSurfaceToolbarMediatorUnitTest {
         mStartSurfaceHomeButtonIPHController.setIsShowingIPHForTesting(true);
         mPropertyModel.get(HOME_BUTTON_CLICK_HANDLER).onClick(mHomeButtonView);
         verify(mTracker).notifyEvent(EventConstants.START_SURFACE_TAB_SWITCHER_HOME_BUTTON_CLICKED);
-    }
-
-    @Test
-    public void testNewHomeSurface() {
-        createMediator(false, true, true, false);
-        assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
-
-        mMediator.onStartSurfaceStateChanged(StartSurfaceState.SHOWN_HOMEPAGE, true);
-        assertTrue(mPropertyModel.get(IS_VISIBLE));
-        assertTrue(mPropertyModel.get(TAB_SWITCHER_BUTTON_IS_VISIBLE));
-        // Identity disc should be shown at start on homepage.
-        assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
-        mButtonData.setCanShow(true);
-        mButtonData.setButtonSpec(
-                new ButtonSpec(mDrawable, mOnClickListener, /*contentDescriptionResId=*/5,
-                        /*supportsTinting=*/false, /*iphCommandBuilder=*/null));
-        mMediator.updateIdentityDisc(mButtonData);
-        assertTrue(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
-        assertTrue(mPropertyModel.get(IDENTITY_DISC_AT_START));
-
-        mMediator.onStartSurfaceStateChanged(StartSurfaceState.SHOWN_TABSWITCHER, true);
-        assertFalse(mPropertyModel.get(TAB_SWITCHER_BUTTON_IS_VISIBLE));
-        assertTrue(mPropertyModel.get(HOME_BUTTON_IS_VISIBLE));
-        // Change homepage to customized.
-        mStartSurfaceAsHomepageSupplier.set(false);
-        assertFalse(mPropertyModel.get(HOME_BUTTON_IS_VISIBLE));
-        // Disable homepage.
-        mStartSurfaceAsHomepageSupplier.set(true);
-        assertTrue(mPropertyModel.get(HOME_BUTTON_IS_VISIBLE));
-        mHomepageEnabledSupplier.set(false);
-        assertFalse(mPropertyModel.get(HOME_BUTTON_IS_VISIBLE));
     }
 
     @Test

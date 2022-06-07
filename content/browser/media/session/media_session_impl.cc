@@ -108,7 +108,7 @@ size_t ComputeFrameDepth(RenderFrameHost* rfh,
       break;
     }
     ++depth;
-    current_frame = current_frame->GetParent();
+    current_frame = current_frame->GetParentOrOuterDocument();
   }
   (*map_rfh_to_depth)[rfh] = depth;
   return depth;
@@ -1429,16 +1429,6 @@ void MediaSessionImpl::OnServiceDestroyed(MediaSessionServiceImpl* service) {
 
 void MediaSessionImpl::OnMediaSessionPlaybackStateChanged(
     MediaSessionServiceImpl* service) {
-  if (!BackForwardCacheImpl::IsMediaSessionPlaybackStateChangedAllowed()) {
-    // Even though the back-forward cache is allowed at OnServiceCreated, it is
-    // disabled when the playback state is changed as this affects the visible
-    // UI for MediaSession.
-    BackForwardCache::DisableForRenderFrameHost(
-        service->GetRenderFrameHostId(),
-        BackForwardCacheDisable::DisabledReason(
-            BackForwardCacheDisable::DisabledReasonId::kMediaSession));
-  }
-
   if (service != routed_service_)
     return;
 

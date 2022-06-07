@@ -3758,10 +3758,10 @@ TEST_F(StyleEngineTest, DynamicViewportUnitsInMediaQueryMatcher) {
   // See step 10.8 (call to CallMediaQueryListListeners) in
   // ScriptedAnimationController::ServiceScriptedAnimations.
 
-  auto mq_static = MediaQuerySet::Create("(min-width: 50vh)",
-                                         GetDocument().GetExecutionContext());
+  MediaQuerySet* mq_static = MediaQuerySet::Create(
+      "(min-width: 50vh)", GetDocument().GetExecutionContext());
   ASSERT_TRUE(mq_static);
-  matcher.Evaluate(mq_static.get());
+  matcher.Evaluate(mq_static);
   GetDocument().DynamicViewportUnitsChanged();
   SimulateFrame();
   EXPECT_FALSE(listener->notified);
@@ -3769,10 +3769,10 @@ TEST_F(StyleEngineTest, DynamicViewportUnitsInMediaQueryMatcher) {
   // Evaluating a media query with dv* units will mark the MediaQueryMatcher
   // as dependent on such units, hence we should see events when calling
   // DynamicViewportUnitsChanged after that.
-  auto mq_dynamic = MediaQuerySet::Create("(min-width: 50dvh)",
-                                          GetDocument().GetExecutionContext());
+  MediaQuerySet* mq_dynamic = MediaQuerySet::Create(
+      "(min-width: 50dvh)", GetDocument().GetExecutionContext());
   ASSERT_TRUE(mq_dynamic);
-  matcher.Evaluate(mq_dynamic.get());
+  matcher.Evaluate(mq_dynamic);
   GetDocument().DynamicViewportUnitsChanged();
   SimulateFrame();
   EXPECT_TRUE(listener->notified);
@@ -5808,6 +5808,45 @@ TEST_F(StyleEngineTest, RevertLayerWithPresentationalHints) {
   Element* img = GetElementById("img");
   EXPECT_EQ(44, img->OffsetWidth());
   EXPECT_EQ(33, img->OffsetHeight());
+}
+
+TEST_F(StyleEngineSimTest, ResizeWithBlockingSheetTransition) {
+  WebView().MainFrameWidget()->Resize(gfx::Size(500, 500));
+
+  SimRequest html_request("https://example.com/test.html", "text/html");
+  SimSubresourceRequest css_request("https://example.com/slow.css", "text/css");
+
+  LoadURL("https://example.com/test.html");
+  html_request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #trans {
+          transition-duration: 30s;
+          color: red;
+        }
+      </style>
+      <link rel="stylesheet" href="slow.css">
+      <div id="trans"></div>
+  )HTML");
+
+  css_request.Start();
+  WebView().MainFrameWidget()->Resize(gfx::Size(800, 800));
+
+  css_request.Complete(R"CSS(
+    #trans { color: green; }
+  )CSS");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  Element* trans = GetDocument().getElementById("trans");
+  ASSERT_TRUE(trans);
+
+  // Completing the linked stylesheet should not start a transition since the
+  // sheet is render-blocking.
+  EXPECT_EQ(
+      trans->ComputedStyleRef().VisitedDependentColor(GetCSSPropertyColor()),
+      MakeRGB(0, 128, 0));
 }
 
 }  // namespace blink

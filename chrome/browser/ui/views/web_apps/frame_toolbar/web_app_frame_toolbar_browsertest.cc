@@ -260,6 +260,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
   const SkColor original_ink_drop_color =
       views::InkDrop::Get(app_menu_button)->GetBaseColor();
 
+  // Change the theme-color.
   {
     content::ThemeChangeWaiter theme_change_waiter(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents,
@@ -271,10 +272,12 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
               original_ink_drop_color);
   }
 
+  // Change the theme-color back to its original one.
   {
     content::ThemeChangeWaiter theme_change_waiter(web_contents);
-    EXPECT_TRUE(content::ExecJs(
-        web_contents, "document.getElementById('theme-color').remove()"));
+    EXPECT_TRUE(content::ExecJs(web_contents,
+                                "document.getElementById('theme-color')."
+                                "setAttribute('content', '#ace')"));
     theme_change_waiter.Wait();
 
     EXPECT_EQ(views::InkDrop::Get(app_menu_button)->GetBaseColor(),
@@ -663,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
   gfx::Rect new_bounds = helper()->browser_view()->GetLocalBounds();
   new_bounds.set_width(new_bounds.width() + 10);
   content::TitleWatcher title_watcher(web_contents, u"onresize");
-  EXPECT_TRUE(ExecJs(web_contents->GetMainFrame(), kTestScript));
+  EXPECT_TRUE(ExecJs(web_contents->GetPrimaryMainFrame(), kTestScript));
   helper()->browser_view()->GetWidget()->SetBounds(new_bounds);
   title_watcher.AlsoWaitForTitle(u"ongeometrychange");
   EXPECT_EQ(u"onresize", title_watcher.WaitAndGetTitle());
@@ -675,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
   // Validate event is not fired.
   new_bounds.set_width(new_bounds.width() - 10);
   content::TitleWatcher title_watcher2(web_contents, u"onresize");
-  EXPECT_TRUE(ExecJs(web_contents->GetMainFrame(), kTestScript));
+  EXPECT_TRUE(ExecJs(web_contents->GetPrimaryMainFrame(), kTestScript));
   helper()->browser_view()->GetWidget()->SetBounds(new_bounds);
   title_watcher2.AlsoWaitForTitle(u"ongeometrychange");
   EXPECT_EQ(u"onresize", title_watcher2.WaitAndGetTitle());
@@ -698,8 +701,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
   content::WebContents* popup_web_contents =
       popup_browser_view->GetActiveWebContents();
 
-  EXPECT_TRUE(
-      content::WaitForRenderFrameReady(popup_web_contents->GetMainFrame()));
+  EXPECT_TRUE(content::WaitForRenderFrameReady(
+      popup_web_contents->GetPrimaryMainFrame()));
   EXPECT_FALSE(popup_browser_view->IsWindowControlsOverlayEnabled());
   EXPECT_FALSE(EvalJs(popup_web_contents,
                       "window.navigator.windowControlsOverlay.visible")
@@ -729,8 +732,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
       BrowserView::GetBrowserViewForBrowser(popup);
   content::WebContents* popup_web_contents =
       popup_browser_view->GetActiveWebContents();
-  EXPECT_TRUE(
-      content::WaitForRenderFrameReady(popup_web_contents->GetMainFrame()));
+  EXPECT_TRUE(content::WaitForRenderFrameReady(
+      popup_web_contents->GetPrimaryMainFrame()));
 
   // When popup is opened pointing to any other site, it will not know whether
   // the popup app uses WCO or not. This test also ensures it does not crash.
@@ -766,7 +769,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
 
   std::string kCSSTitlebarRect = GetCSSTitlebarRect();
   auto* web_contents = helper()->browser_view()->GetActiveWebContents();
-  EXPECT_TRUE(ExecuteScript(web_contents->GetMainFrame(), kCSSTitlebarRect));
+  EXPECT_TRUE(
+      ExecuteScript(web_contents->GetPrimaryMainFrame(), kCSSTitlebarRect));
 
   const std::string kRectListString =
       "var rect = [titlebarAreaXInt, titlebarAreaYInt, "
@@ -799,7 +803,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
   new_bounds.set_height(new_bounds.height() + 20);
   ResizeWindowBoundsAndWait(new_bounds);
 
-  EXPECT_TRUE(ExecuteScript(web_contents->GetMainFrame(), kCSSTitlebarRect));
+  EXPECT_TRUE(
+      ExecuteScript(web_contents->GetPrimaryMainFrame(), kCSSTitlebarRect));
 
   base::Value::ListStorage updated_rect_list =
       helper()->GetXYWidthHeightListValue(
@@ -823,7 +828,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
 
   std::string kCSSTitlebarRect = GetCSSTitlebarRect();
   auto* web_contents = helper()->browser_view()->GetActiveWebContents();
-  EXPECT_TRUE(ExecuteScript(web_contents->GetMainFrame(), kCSSTitlebarRect));
+  EXPECT_TRUE(
+      ExecuteScript(web_contents->GetPrimaryMainFrame(), kCSSTitlebarRect));
 
   const std::string kRectListString =
       "var rect = [titlebarAreaXInt, titlebarAreaYInt, "
@@ -851,7 +857,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
   new_bounds.set_height(new_bounds.height() + 15);
   ResizeWindowBoundsAndWait(new_bounds);
 
-  EXPECT_TRUE(ExecuteScript(web_contents->GetMainFrame(), kCSSTitlebarRect));
+  EXPECT_TRUE(
+      ExecuteScript(web_contents->GetPrimaryMainFrame(), kCSSTitlebarRect));
 
   base::Value::ListStorage updated_rect_list =
       helper()->GetXYWidthHeightListValue(
@@ -1061,7 +1068,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
       embedded_test_server()->GetURL("/fenced_frames/title1.html");
   content::RenderFrameHost* fenced_frame_rfh =
       fenced_frame_helper_.CreateFencedFrame(
-          browser_view->GetActiveWebContents()->GetMainFrame(),
+          browser_view->GetActiveWebContents()->GetPrimaryMainFrame(),
           fenced_frame_url);
   ASSERT_NE(nullptr, fenced_frame_rfh);
   EXPECT_FALSE(browser_view->ShouldDescendIntoChildForEventHandling(

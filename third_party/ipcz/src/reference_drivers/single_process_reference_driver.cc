@@ -9,9 +9,13 @@
 #include <limits>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
+#include "ipcz/driver_object.h"
+#include "ipcz/driver_transport.h"
 #include "ipcz/ipcz.h"
+#include "ipcz/message.h"
 #include "reference_drivers/object.h"
 #include "reference_drivers/random.h"
 #include "third_party/abseil-cpp/absl/synchronization/mutex.h"
@@ -31,30 +35,97 @@ class TransportWrapper : public RefCounted {
                    IpczTransportActivityHandler activity_handler)
       : transport_(transport), activity_handler_(activity_handler) {}
 
-  IpczResult Notify(absl::Span<const uint8_t> data,
-                    absl::Span<const IpczDriverHandle> handles) {
-    IpczResult result =
-        activity_handler_(transport_, data.data(), data.size(), handles.data(),
-                          handles.size(), IPCZ_NO_FLAGS, nullptr);
-    if (result != IPCZ_RESULT_OK && result != IPCZ_RESULT_UNIMPLEMENTED) {
-      NotifyError();
-    }
-    return result;
+  void Notify(absl::Span<const uint8_t> data,
+              absl::Span<const IpczDriverHandle> handles) {
+    DoNotify(IPCZ_NO_FLAGS, data, handles);
   }
 
-  IpczResult NotifyError() {
-    return activity_handler_(transport_, nullptr, 0, nullptr, 0,
-                             IPCZ_TRANSPORT_ACTIVITY_ERROR, nullptr);
-  }
+  void NotifyError() { DoNotify(IPCZ_TRANSPORT_ACTIVITY_ERROR); }
 
  private:
   ~TransportWrapper() override {
-    activity_handler_(transport_, nullptr, 0, nullptr, 0,
-                      IPCZ_TRANSPORT_ACTIVITY_DEACTIVATED, nullptr);
+    // Since this is destruction, we can safely assume the invocation will be
+    // exclusive. Otherwise someone is mismanaging a reference count or has
+    // a UAF bug.
+    DoNotifyExclusive(IPCZ_TRANSPORT_ACTIVITY_DEACTIVATED, {}, {});
+  }
+
+  // Helper to serialize the invocation of potentially overlapping or reentrant
+  // notifications from this transport.
+  void DoNotify(IpczTransportActivityFlags flags,
+                absl::Span<const uint8_t> data = {},
+                absl::Span<const IpczDriverHandle> handles = {}) {
+    {
+      absl::MutexLock lock(&mutex_);
+      if (in_notification_) {
+        DeferredNotification notification = {.flags = flags};
+        if (!data.empty()) {
+          notification.data = std::vector<uint8_t>(data.begin(), data.end());
+        }
+        if (!handles.empty()) {
+          notification.handles =
+              std::vector<IpczDriverHandle>(handles.begin(), handles.end());
+        }
+        deferred_notifications_.push_back(std::move(notification));
+        return;
+      }
+
+      in_notification_ = true;
+    }
+
+    DoNotifyExclusive(flags, data, handles);
+
+    // Now flush any notifications that queued while this one was in progress.
+    // This continues until we complete an iteration with no new notifications
+    // being queued.
+    for (;;) {
+      std::vector<DeferredNotification> notifications;
+      {
+        absl::MutexLock lock(&mutex_);
+        if (deferred_notifications_.empty()) {
+          in_notification_ = false;
+          return;
+        }
+
+        notifications.swap(deferred_notifications_);
+      }
+
+      for (const auto& n : notifications) {
+        DoNotifyExclusive(n.flags, n.data, n.handles);
+      }
+    }
+  }
+
+  // Invokes the activity handler unguarded. The caller must ensure that this is
+  // mututally exclusive with any other invocation of the method.
+  void DoNotifyExclusive(IpczTransportActivityFlags flags,
+                         absl::Span<const uint8_t> data,
+                         absl::Span<const IpczDriverHandle> handles) {
+    const IpczResult result = activity_handler_(
+        transport_, data.empty() ? nullptr : data.data(), data.size(),
+        handles.empty() ? nullptr : handles.data(), handles.size(), flags,
+        nullptr);
+    if (result != IPCZ_RESULT_OK && result != IPCZ_RESULT_UNIMPLEMENTED) {
+      NotifyError();
+    }
   }
 
   const IpczHandle transport_;
   const IpczTransportActivityHandler activity_handler_;
+
+  // Queues copies of any pending notifications which were issued while another
+  // notification was already in progress, either concurrently or reentrantly.
+  // The queue is always flushed completely as the active notification stack
+  // unwinds.
+  struct DeferredNotification {
+    IpczTransportActivityFlags flags;
+    std::vector<uint8_t> data;
+    std::vector<IpczDriverHandle> handles;
+  };
+  absl::Mutex mutex_;
+  bool in_notification_ ABSL_GUARDED_BY(mutex_) = false;
+  std::vector<DeferredNotification> deferred_notifications_
+      ABSL_GUARDED_BY(mutex_);
 };
 
 struct SavedMessage {
@@ -82,17 +153,42 @@ class InProcessTransport
     Deactivate();
 
     Ref<InProcessTransport> peer;
+    std::vector<SavedMessage> saved_messages;
     {
       absl::MutexLock lock(&mutex_);
       peer = std::move(peer_);
+      saved_messages = std::move(saved_messages_);
     }
 
     if (peer) {
+      // Kind of a hack so we can deserialize messages as if they were read
+      // and deserialized by the peer. We want to do this because the serialized
+      // messages may encode driver objects with live resources that would
+      // otherwise leak. This is particularly problematic in test environments
+      // where we want to exercise various edge cases that can result in
+      // dropped connections and dropped messages, within a single test process
+      // that may run multiple such tests in succession.
+      //
+      // We construct a temporary DriverObject which wraps `this`, as needed
+      // for Message deserialization. This must be released when done, as it
+      // does not actually own a handle to the peer.
+      auto peer_transport = MakeRefCounted<DriverTransport>(
+          DriverObject(kSingleProcessReferenceDriver, peer->handle()));
+      for (SavedMessage& m : saved_messages) {
+        ipcz::Message message;
+        message.DeserializeUnknownType(
+            ipcz::DriverTransport::RawMessage{m.data, m.handles},
+            *peer_transport);
+      }
+
+      std::ignore = peer_transport->Release();
+
       // NOTE: Although nothing should ever call back into `this` after Close(),
       // for consistency with other methods we still take precaution not to call
       // into the peer while holding `mutex_`.
       peer->OnPeerClosed();
     }
+
     return IPCZ_RESULT_OK;
   }
 
@@ -104,13 +200,23 @@ class InProcessTransport
 
   IpczResult Activate(IpczHandle transport,
                       IpczTransportActivityHandler activity_handler) {
+    Ref<TransportWrapper> new_transport =
+        MakeRefCounted<TransportWrapper>(transport, activity_handler);
     Ref<InProcessTransport> peer;
     {
       absl::MutexLock lock(&mutex_);
       ABSL_ASSERT(!transport_);
-      transport_ =
-          MakeRefCounted<TransportWrapper>(transport, activity_handler);
-      peer = peer_;
+      if (!peer_closed_) {
+        transport_ = std::move(new_transport);
+        peer = peer_;
+      }
+    }
+
+    if (new_transport) {
+      // If the wrapper wasn't taken by this object, our peer has already been
+      // closed. Signal a transport error, as peer closure would have done.
+      new_transport->NotifyError();
+      return IPCZ_RESULT_OK;
     }
 
     // Let the peer know that it can now call into us directly. This may
@@ -212,6 +318,7 @@ class InProcessTransport
     {
       absl::MutexLock lock(&mutex_);
       transport = std::move(transport_);
+      peer_closed_ = true;
     }
 
     if (transport) {
@@ -226,6 +333,7 @@ class InProcessTransport
   Ref<InProcessTransport> peer_ ABSL_GUARDED_BY(mutex_);
   Ref<TransportWrapper> transport_ ABSL_GUARDED_BY(mutex_);
   bool peer_active_ ABSL_GUARDED_BY(mutex_) = false;
+  bool peer_closed_ ABSL_GUARDED_BY(mutex_) = false;
   std::vector<SavedMessage> saved_messages_ ABSL_GUARDED_BY(mutex_);
 };
 

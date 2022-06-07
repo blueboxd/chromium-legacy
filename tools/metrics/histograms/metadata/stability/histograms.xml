@@ -22,6 +22,16 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<histogram name="Stability.Android.MinidumpUploadingTime" units="ms"
+    expires_after="2022-11-30">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>src/components/minidump_uploader/OWNERS</owner>
+  <summary>
+    Records the time (uptimeMillis) taken by a minidump uploading task to
+    complete. Recorded when the task finished callback is invoked.
+  </summary>
+</histogram>
+
 <histogram name="Stability.Android.OomKillReverseRank" units="rank"
     expires_after="2022-11-13">
   <owner>boliu@chromium.org</owner>
@@ -65,26 +75,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Android.ProcessedRealMinidumps"
-    enum="AndroidProcessedMinidumps" expires_after="2022-10-16">
-  <owner>mheikal@chromium.org</owner>
-  <owner>smaier@chromium.org</owner>
+    enum="AndroidProcessedMinidumps" expires_after="2023-05-24">
   <owner>wnwen@chromium.org</owner>
+  <owner>src/components/minidump_uploader/OWNERS</owner>
   <summary>
     Records the number of non-simulated minidumps processed by Crashpad, split
     by process type. This metric is similar to one that could be computed
-    server-side based on received crash uploads; but the client-side metric also
-    includes any minidumps that were not successfully uploaded.
-  </summary>
-</histogram>
-
-<histogram name="Stability.Android.ProcessedSimulatedMinidumps"
-    enum="AndroidProcessedMinidumps" expires_after="2022-07-03">
-  <owner>mheikal@chromium.org</owner>
-  <owner>smaier@chromium.org</owner>
-  <owner>wnwen@chromium.org</owner>
-  <summary>
-    Records the number of simulated minidumps processed by Crashpad, split by
-    process type. This metric is similar to one that could be computed
     server-side based on received crash uploads; but the client-side metric also
     includes any minidumps that were not successfully uploaded.
   </summary>
@@ -242,7 +238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.ChildFrameCrash.TabMarkedForReload.Visibility"
-    enum="FrameVisibility" expires_after="2022-08-18">
+    enum="FrameVisibility" expires_after="2022-11-20">
   <owner>alexmos@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>

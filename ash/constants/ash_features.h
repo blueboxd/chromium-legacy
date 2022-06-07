@@ -20,6 +20,8 @@ namespace features {
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAdaptiveCharging;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kAdaptiveChargingForTesting;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAdjustSplitViewForVK;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kAllowAmbientEQ;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -85,6 +87,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAssistPersonalInfoName;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAssistPersonalInfoPhoneNumber;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kAssistantNativeIcons;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kAudioUrl;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAutoNightLight;
@@ -130,15 +134,17 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kClipboardHistoryContextMenuNudge;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kClipboardHistoryNudgeSessionReset;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCloudGamingDevice;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kClipboardHistoryReorder;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kConsumerAutoUpdateToggleAllowed;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDesksCloseAll;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kContextualNudges;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCroshSWA;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kCrosLanguageSettingsUpdateJapanese;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrostiniBullseyeUpgrade;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCrostiniUseDlc;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDesksTemplates;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -189,8 +195,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDisableCryptAuthV1DeviceSync;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kDisableOfficeEditingComponentApp;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDisplayAlignAssist;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDockedMagnifier;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -202,11 +206,13 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDriveFsBidirectionalNativeMessaging;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDriveFsMirroring;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kEapGtcWifiAuthentication;
+extern const base::Feature kDriveFsChromeNetworking;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kEchePhoneHubPermissionsOnboarding;
+extern const base::Feature kEapGtcWifiAuthentication;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWA;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWADebugMode;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kAudioSettingsPage;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableBackgroundBlur;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -258,8 +264,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEnableWireGuard;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnforceAshExtensionKeeplist;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kExtendedOpenVpnSettings;
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEolWarningNotifications;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kESimPolicy;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -283,7 +287,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFastPairSubsequentPairingUX;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFastPairSavedDevices;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesArchivemount;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kFilesAppExperimental;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesArchivemount2;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesExtractArchive;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesSWA;
@@ -393,6 +398,10 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kManagedDeviceUIRedesign;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMediaAppHandlesPdf;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kMediaAppPhotosIntegrationImage;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kMediaAppPhotosIntegrationVideo;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMemoryPressureMetricsDetail;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<int> kMemoryPressureMetricsDetailLogPeriod;
@@ -432,6 +441,8 @@ extern const base::Feature kOobeConsolidatedConsent;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOobeHidDetectionRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kOobeLoginUrl;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOobeQuickStart;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOobeNewRecommendApps;
@@ -440,6 +451,7 @@ extern const base::Feature kOobeRemoveShutdownButton;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOsSettingsAppNotificationsPage;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kOverviewButton;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPartialSplit;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPcieBillboardNotification;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPerDeskShelf;
@@ -516,9 +528,14 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShelfGesturesWithVirtualKeyboard;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShelfLauncherNudge;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShelfParty;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kShelfPalmRejectionSwipeOffset;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kShelfPalmRejectionTouchArea;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShimlessRMAFlow;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShimlessRMAEnableStandalone;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShimlessRMAOsUpdate;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShowBluetoothDebugLogToggle;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShowPlayInDemoMode;
@@ -528,7 +545,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kSimLockPolicy;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSmartDimExperimentalComponent;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kSmartLockBluetoothScanningFixes;
+extern const base::Feature kSmartLockBluetoothScanningBackoff;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kSmartLockBluetoothScreenOffFix;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSmartLockSignInRemoved;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -536,6 +555,8 @@ extern const base::Feature kSmartLockUIRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSnoopingProtection;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kStylusBatteryStatus;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kStartAssistantAudioDecoderOnDemand;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSyncSettingsCategorization;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -551,7 +572,8 @@ extern const base::Feature kSystemProxyForSystemServices;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTabClusterUI;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTelemetryExtension;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTerminalDev;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTerminalSSH;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kTerminalMultiProfile;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kTerminalTmuxIntegration;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -575,8 +597,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kUserActivityPrediction;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kVirtualKeyboardBorderedKey;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kVirtualKeyboardMultitouch;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kVirtualKeyboardRoundCorners;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -609,6 +629,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool AreDesksTrackpadSwipeImprovementsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool AreImprovedScreenCaptureSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool DoWindowsFollowCursor();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdaptiveChargingEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdaptiveChargingForTestingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdjustSplitViewForVKEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAllowAmbientEQEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeAnimationEnabled();
@@ -618,7 +639,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAppNotificationsPageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcInputOverlayEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcNetworkDiagnosticsButtonEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAssistantNativeIconsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAssistiveMultiWordEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAudioSettingsPageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAutoNightLightEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAzureADIntegrationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBackgroundBlurEnabled();
@@ -627,13 +650,14 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBluetoothRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCalendarViewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCalendarModelDebugModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCaptureModeSelfieCameraEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCheckPasswordsAgainstCryptohomeHelperEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsCheckPasswordsAgainstCryptohomeHelperEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLauncherItemColorSyncEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsClipboardHistoryContextMenuNudgeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsClipboardHistoryNudgeSessionResetEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCloudGamingDevice();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsClipboardHistoryReorderEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsConsumerAutoUpdateToggleAllowed();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDesksCloseAllEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoveryFlowEnabled();
@@ -648,13 +672,11 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDragUnpinnedAppToPinEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDragWindowToNewDeskEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDriveFsMirroringEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEapGtcWifiAuthenticationEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEchePhoneHubPermissionsOnboarding();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWADebugModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsESimPolicyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsExperimentalRgbKeyboardPatternsEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsExtendedOpenVpnSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsExternalKeyboardInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFamilyLinkOnSchoolDeviceEnabled();
@@ -664,6 +686,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFastPairSoftwareScanningEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFastPairSubsequentPairingUXEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFastPairSavedDevicesEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFileManagerFuseBoxEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFileManagerFuseBoxDebugEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFileManagerSwaEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFirmwareUpdaterAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFloatingWorkspaceEnabled();
@@ -724,6 +747,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeQuickStartEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeNewRecommendAppsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeRemoveShutdownButtonEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeThemeSelectionEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPartialSplitEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPcieBillboardNotificationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPciguardUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPerDeskShelfEnabled();
@@ -770,10 +794,15 @@ bool IsSettingsAppNotificationSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsSettingsAppThemeChangeAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShelfLauncherNudgeEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShelfPalmRejectionSwipeOffsetEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShelfPalmRejectionTouchAreaEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSimLockPolicyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAStandaloneAppEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAOsUpdateEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSnoopingProtectionEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsStartAssistantAudioDecoderOnDemandEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSyncSettingsCategorizationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTabClusterUIEnabled();

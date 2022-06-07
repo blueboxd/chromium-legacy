@@ -12,6 +12,12 @@
 
 namespace history {
 
+namespace {
+
+static constexpr float kScoreEpsilon = 1e-8;
+
+}  // namespace
+
 // VisitRow --------------------------------------------------------------------
 
 VisitRow::VisitRow() = default;
@@ -32,6 +38,8 @@ VisitRow::VisitRow(URLID arg_url_id,
       opener_visit(arg_opener_visit) {}
 
 VisitRow::~VisitRow() = default;
+
+VisitRow::VisitRow(const VisitRow&) = default;
 
 // QueryResults ----------------------------------------------------------------
 
@@ -203,8 +211,10 @@ QueryURLResult& QueryURLResult::operator=(QueryURLResult&&) noexcept = default;
 
 MostVisitedURL::MostVisitedURL() = default;
 
-MostVisitedURL::MostVisitedURL(const GURL& url, const std::u16string& title)
-    : url(url), title(title) {}
+MostVisitedURL::MostVisitedURL(const GURL& url,
+                               const std::u16string& title,
+                               double score)
+    : url(url), title(title), score(score) {}
 
 MostVisitedURL::MostVisitedURL(const MostVisitedURL& other) = default;
 
@@ -417,15 +427,45 @@ ClusterVisit::ClusterVisit(ClusterVisit&&) = default;
 ClusterVisit& ClusterVisit::operator=(const ClusterVisit&) = default;
 ClusterVisit& ClusterVisit::operator=(ClusterVisit&&) = default;
 
+ClusterKeywordData::ClusterKeywordData() = default;
+ClusterKeywordData::ClusterKeywordData(
+    const std::vector<std::string>& entity_collections)
+    : entity_collections(entity_collections) {}
+ClusterKeywordData::ClusterKeywordData(
+    ClusterKeywordData::ClusterKeywordType type,
+    float score,
+    const std::vector<std::string>& entity_collections)
+    : type(type), score(score), entity_collections(entity_collections) {}
+ClusterKeywordData::ClusterKeywordData(const ClusterKeywordData&) = default;
+ClusterKeywordData::ClusterKeywordData(ClusterKeywordData&&) = default;
+ClusterKeywordData& ClusterKeywordData::operator=(const ClusterKeywordData&) =
+    default;
+ClusterKeywordData& ClusterKeywordData::operator=(ClusterKeywordData&&) =
+    default;
+ClusterKeywordData::~ClusterKeywordData() = default;
+
+bool ClusterKeywordData::operator==(const ClusterKeywordData& data) const {
+  return type == data.type && std::fabs(score - data.score) < kScoreEpsilon &&
+         entity_collections == data.entity_collections;
+}
+
+void ClusterKeywordData::MaybeUpdateKeywordType(
+    ClusterKeywordData::ClusterKeywordType other_type) {
+  if (type < other_type) {
+    type = other_type;
+  }
+}
+
 Cluster::Cluster() = default;
 Cluster::Cluster(int64_t cluster_id,
                  const std::vector<ClusterVisit>& visits,
-                 const std::vector<std::u16string>& keywords,
+                 const base::flat_map<std::u16string, ClusterKeywordData>&
+                     keyword_to_data_map,
                  bool should_show_on_prominent_ui_surfaces,
                  absl::optional<std::u16string> label)
     : cluster_id(cluster_id),
       visits(visits),
-      keywords(keywords),
+      keyword_to_data_map(keyword_to_data_map),
       should_show_on_prominent_ui_surfaces(
           should_show_on_prominent_ui_surfaces),
       label(label) {}
@@ -434,6 +474,14 @@ Cluster::Cluster(Cluster&&) = default;
 Cluster& Cluster::operator=(const Cluster&) = default;
 Cluster& Cluster::operator=(Cluster&&) = default;
 Cluster::~Cluster() = default;
+
+std::vector<std::u16string> Cluster::GetKeywords() const {
+  std::vector<std::u16string> keywords;
+  for (const auto& p : keyword_to_data_map) {
+    keywords.push_back(p.first);
+  }
+  return keywords;
+}
 
 ClusterRow::ClusterRow() = default;
 ClusterRow::ClusterRow(int64_t cluster_id) : cluster_id(cluster_id) {}

@@ -30,7 +30,6 @@
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_manager_provider.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -53,10 +52,6 @@
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/origin.h"
 
-namespace absl {
-class uint128;
-}  // namespace absl
-
 namespace mojo {
 
 template <typename Interface>
@@ -66,7 +61,6 @@ class PendingReceiver;
 
 namespace content {
 
-class AttributionManagerImpl;
 class AttributionObserver;
 class AttributionTrigger;
 
@@ -218,6 +212,7 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   uint64_t SanitizeTriggerData(
       uint64_t trigger_data,
       AttributionSourceType source_type) const override;
+  uint64_t SanitizeSourceEventId(uint64_t source_event_id) const override;
 
   void set_max_attributions_per_source(int max);
 
@@ -253,6 +248,8 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   void set_randomized_response(RandomizedResponse randomized_response);
 
   void set_trigger_data_cardinality(uint64_t navigation, uint64_t event);
+
+  void set_source_event_id_cardinality(uint64_t cardinality);
 
   // Detaches the delegate from its current sequence in preparation for being
   // moved to storage, which runs on its own sequence.
@@ -290,22 +287,9 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
 
   absl::optional<uint64_t> navigation_trigger_data_cardinality_;
   absl::optional<uint64_t> event_trigger_data_cardinality_;
+  absl::optional<uint64_t> source_event_id_cardinality_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-};
-
-// Test manager provider which can be used to inject a fake
-// `AttributionManager`.
-class TestManagerProvider : public AttributionManagerProvider {
- public:
-  explicit TestManagerProvider(AttributionManager* manager)
-      : manager_(manager) {}
-  ~TestManagerProvider() override = default;
-
-  AttributionManager* GetManager(WebContents* web_contents) const override;
-
- private:
-  raw_ptr<AttributionManager> manager_ = nullptr;
 };
 
 class MockAttributionManager : public AttributionManager {
@@ -326,7 +310,8 @@ class MockAttributionManager : public AttributionManager {
   MOCK_METHOD(
       void,
       GetPendingReportsForInternalUse,
-      (AttributionReport::ReportType report_type,
+      (AttributionReport::ReportTypes report_types,
+       int limit,
        base::OnceCallback<void(std::vector<AttributionReport>)> callback),
       (override));
 
@@ -616,21 +601,6 @@ class ReportBuilder {
   std::vector<AggregatableHistogramContribution> contributions_;
 };
 
-// Helper class to construct a `blink::mojom::AttributionAggregatableSource`
-// for testing.
-class AggregatableSourceMojoBuilder {
- public:
-  AggregatableSourceMojoBuilder();
-  ~AggregatableSourceMojoBuilder();
-
-  AggregatableSourceMojoBuilder& AddKey(std::string key_id, absl::uint128 key);
-
-  blink::mojom::AttributionAggregatableSourcePtr Build() const;
-
- private:
-  blink::mojom::AttributionAggregatableSource aggregatable_source_;
-};
-
 bool operator==(const AttributionTrigger::EventTriggerData& a,
                 const AttributionTrigger::EventTriggerData& b);
 
@@ -746,8 +716,7 @@ std::ostream& operator<<(
     const AttributionAggregatableSource& aggregatable_source);
 
 std::vector<AttributionReport> GetAttributionReportsForTesting(
-    AttributionManagerImpl* manager,
-    base::Time max_report_time);
+    AttributionManager* manager);
 
 std::unique_ptr<MockDataHost> GetRegisteredDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host);

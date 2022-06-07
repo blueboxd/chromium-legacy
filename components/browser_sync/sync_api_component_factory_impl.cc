@@ -15,7 +15,6 @@
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/payments/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_profile_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_offer_sync_bridge.h"
@@ -33,6 +32,7 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_type_controller.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_prefs.h"
@@ -193,14 +193,12 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
     // Autofill sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
-      controllers.push_back(
-          std::make_unique<AutofillProfileModelTypeController>(
-              std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-                  db_thread_,
-                  base::BindRepeating(
-                      &AutofillProfileDelegateFromDataService,
-                      base::RetainedRef(web_data_service_on_disk_))),
-              sync_client_->GetPrefService(), sync_service));
+      controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+          syncer::AUTOFILL_PROFILE,
+          std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+              db_thread_, base::BindRepeating(
+                              &AutofillProfileDelegateFromDataService,
+                              base::RetainedRef(web_data_service_on_disk_)))));
     }
 
     // Wallet data sync is enabled by default. Register unless explicitly
@@ -257,7 +255,15 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
     // provided by HistoryService.
     controllers.push_back(
         std::make_unique<history::TypedURLModelTypeController>(
-            sync_service, sync_client_->GetHistoryService(),
+            syncer::TYPED_URLS, sync_service, sync_client_->GetHistoryService(),
+            sync_client_->GetPrefService()));
+  }
+
+  if (!disabled_types.Has(syncer::HISTORY) &&
+      base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
+    controllers.push_back(
+        std::make_unique<history::TypedURLModelTypeController>(
+            syncer::HISTORY, sync_service, sync_client_->GetHistoryService(),
             sync_client_->GetPrefService()));
   }
 

@@ -183,7 +183,7 @@ void EmitTimeInStageHistogram(base::TimeDelta duration,
       name = "Crostini.RestarterTimeInState2.StartContainer";
       break;
     case mojom::InstallerState::kConfigureContainer:
-      NOTREACHED();
+      name = "Crostini.RestarterTimeInState2.ConfigureContainer";
       return;
   }
   base::UmaHistogramCustomTimes(name, duration, base::Milliseconds(10),
@@ -221,9 +221,10 @@ class CrostiniManager::CrostiniRestarter
 
   void AddRequest(RestartRequest request);
 
-  // Start the restart flow. This should only be called once. This cannot be
-  // called directly from the constructor as in some cases it immediately
-  // (synchronously) fails and causes |this| to be deleted.
+  // Start the restart flow. This should called immediately following
+  // construction and only once. This cannot be called directly from the
+  // constructor as in some cases it immediately (synchronously) fails and
+  // causes |this| to be deleted.
   void Restart();
 
   // ash::VmShutdownObserver
@@ -284,6 +285,7 @@ class CrostiniManager::CrostiniRestarter
                                const base::FilePath& result_path);
   // chromeos::SchedulerConfigurationManagerBase::Observer:
   void OnConfigurationSet(bool success, size_t num_cores_disabled) override;
+  void OnConfigureContainerFinished(bool success);
   void OnWaylandServerCreated(guest_os::GuestOsWaylandServer::Result result);
   void StartTerminaVmFinished(bool success);
   void SharePathsFinished(bool success, const std::string& failure_reason);
@@ -299,7 +301,7 @@ class CrostiniManager::CrostiniRestarter
   // restart (deleting |this|), and return true.
   bool MaybeCancelCurrentOperation();
 
-  void LogRestarterResult(CrostiniResult result);
+  void LogRestarterResult(const RestartRequest& request, CrostiniResult result);
 
   base::OneShotTimer stage_timeout_timer_;
   base::TimeTicks stage_start_;
@@ -320,9 +322,9 @@ class CrostiniManager::CrostiniRestarter
       // there's a bit of work that's not covered by heartbeat messages so to be
       // safe set a 5 minute timeout.
       {mojom::InstallerState::kStartContainer, base::Minutes(5)},
-      // ConfigureContainer is special, it's not part of the restarter flow, so
-      // it doesn't have a timeout.
-      {mojom::InstallerState::kConfigureContainer, base::Hours(0)},
+      // Configuration may be slow, making timeout 2 hours at first because some
+      // playbooks are gigantic (e.g. Chromium playbook).
+      {mojom::InstallerState::kConfigureContainer, base::Hours(2)},
   };
 
   Profile* profile_;
@@ -367,8 +369,8 @@ CrostiniManager::CrostiniRestarter::~CrostiniRestarter() {
   if (!requests_.empty()) {
     // This is triggered by logging out when restarts are in progress.
     LOG(WARNING) << "Destroying with outstanding requests.";
-    for (int i = 0; i < requests_.size(); i++) {
-      LogRestarterResult(CrostiniResult::NEVER_FINISHED);
+    for (const auto& request : requests_) {
+      LogRestarterResult(request, CrostiniResult::NEVER_FINISHED);
     }
   }
 }
@@ -383,13 +385,12 @@ void CrostiniManager::CrostiniRestarter::Restart() {
   }
 
   crostini_manager_->AddVmShutdownObserver(this);
-  // TODO(timloh): This is currently false for additional containers created via
-  // settings, but we probably don't want those to be bucketed in the same
-  // histograms as other non-install restarts.
   // TODO(b/205650706): It is possible to invoke a CrostiniRestarter to install
   // Crostini without using the actual installer. We should handle these better.
+  RestartSource restart_source = requests_[0].options.restart_source;
   is_initial_install_ =
-      crostini_manager_->GetCrostiniDialogStatus(DialogType::INSTALLER);
+      restart_source == RestartSource::kInstaller ||
+      restart_source == RestartSource::kMultiContainerCreation;
 
   StartStage(mojom::InstallerState::kStart);
   if (ReturnEarlyIfNeeded()) {
@@ -462,6 +463,8 @@ void CrostiniManager::CrostiniRestarter::Timeout(mojom::InstallerState state) {
       result = CrostiniResult::START_CONTAINER_TIMED_OUT;
       break;
     case mojom::InstallerState::kConfigureContainer:
+      result = CrostiniResult::CONFIGURE_CONTAINER_TIMED_OUT;
+      break;
     case mojom::InstallerState::kStart:
       NOTREACHED();
   }
@@ -476,7 +479,7 @@ void CrostiniManager::CrostiniRestarter::CancelRequest(RestartId restart_id) {
             return request.restart_id == restart_id;
           },
           restart_id),
-      CrostiniResult::RESTART_ABORTED);
+      CrostiniResult::RESTART_REQUEST_CANCELLED);
 
   if (requests_.empty()) {
     // May delete |this|.
@@ -549,6 +552,24 @@ void CrostiniManager::CrostiniRestarter::StartLxdContainerFinished(
   // If arc sideloading is enabled, configure the container for that.
   crostini_manager_->ConfigureForArcSideload();
 
+  // Additional setup might be required in case of default Crostini container
+  // such as installing Ansible in default container and applying
+  // pre-determined configuration to the default container.
+  if (container_id_ == ContainerId::GetDefault() &&
+      ShouldConfigureDefaultContainer(profile_)) {
+    requests_[0].options.ansible_playbook = profile_->GetPrefs()->GetFilePath(
+        prefs::kCrostiniAnsiblePlaybookFilePath);
+  }
+  if (requests_[0].options.ansible_playbook.has_value()) {
+    // Check to see if there's any additional configuration via Ansible
+    // required.
+    StartStage(mojom::InstallerState::kConfigureContainer);
+    AnsibleManagementService::GetForProfile(profile_)->ConfigureContainer(
+        container_id_, requests_[0].options.ansible_playbook.value(),
+        base::BindOnce(&CrostiniRestarter::OnConfigureContainerFinished,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
   // If default termina/penguin, then sshfs mount and reshare folders, else we
   // are finished. Also, a lot of unit tests don't inject a fake container so
   // it's possible in tests to end up here without a running container. Don't
@@ -558,7 +579,6 @@ void CrostiniManager::CrostiniRestarter::StartLxdContainerFinished(
     crostini_manager_->MountCrostiniFiles(container_id_, base::DoNothing(),
                                           true);
   }
-
   FinishRestart(result);
 }
 
@@ -601,13 +621,13 @@ base::OnceClosure CrostiniManager::CrostiniRestarter::ExtractRequests(
       continue;
     }
 
+    LogRestarterResult(*it, result);
+
     crostini_manager_->RemoveRestartId(it->restart_id);
     if (it->observer)
       observer_list_.RemoveObserver(it->observer);
     callbacks.push_back(std::move(it->callback));
     requests_.erase(it);
-
-    LogRestarterResult(result);
   }
 
   return base::BindOnce(
@@ -725,6 +745,20 @@ void CrostiniManager::CrostiniRestarter::OnConfigurationSet(
       ->Get(vm_tools::launch::TERMINA,
             base::BindOnce(&CrostiniRestarter::OnWaylandServerCreated,
                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniManager::CrostiniRestarter::OnConfigureContainerFinished(
+    bool success) {
+  if (ReturnEarlyIfNeeded()) {
+    return;
+  }
+  if (!success) {
+    LOG(ERROR) << "Failed to Configure Lxd Container.";
+    // Failed to configure, time to abort.
+    FinishRestart(CrostiniResult::CONTAINER_CONFIGURATION_FAILED);
+    return;
+  }
+  FinishRestart(CrostiniResult::SUCCESS);
 }
 
 void CrostiniManager::CrostiniRestarter::OnWaylandServerCreated(
@@ -928,13 +962,36 @@ bool CrostiniManager::CrostiniRestarter::MaybeCancelCurrentOperation() {
 }
 
 void CrostiniManager::CrostiniRestarter::LogRestarterResult(
+    const RestartRequest& request,
     CrostiniResult result) {
-  // Separate Crostini installer restarts from already-installed restarts.
-  // The installer has separate histograms in Crostini.SetupResult.
-  // TODO(timloh): The installer histograms are less granular, we might want to
-  // also log something here.
-  if (!is_initial_install_) {
-    base::UmaHistogramEnumeration("Crostini.RestarterResult", result);
+  // Log different histograms depending on the restart source. For an initial
+  // install, only log for the first request. The Crostini installer also has
+  // separate histograms in Crostini.SetupResult.
+  switch (request.options.restart_source) {
+    default:
+      NOTREACHED();
+      [[fallthrough]];
+    case RestartSource::kOther:
+      if (is_initial_install_)
+        return;
+      base::UmaHistogramEnumeration("Crostini.RestarterResult", result);
+      return;
+    case RestartSource::kInstaller:
+      if (!is_initial_install_) {
+        LOG(WARNING)
+            << "Restart request from Crostini installer was not first request.";
+      }
+      base::UmaHistogramEnumeration("Crostini.RestarterResult.Installer",
+                                    result);
+      return;
+    case RestartSource::kMultiContainerCreation:
+      if (!is_initial_install_) {
+        LOG(WARNING) << "Restart request for multi-container creation was not "
+                        "first request.";
+      }
+      base::UmaHistogramEnumeration(
+          "Crostini.RestarterResult.MultiContainerCreation", result);
+      return;
   }
 }
 
@@ -1446,7 +1503,7 @@ void CrostiniManager::StartTerminaVm(std::string name,
   disk_image->set_writable(true);
   disk_image->set_do_mount(false);
 
-  GetConciergeClient()->StartTerminaVm(
+  GetConciergeClient()->StartVm(
       request, base::BindOnce(&CrostiniManager::OnStartTerminaVm,
                               weak_ptr_factory_.GetWeakPtr(), request.name(),
                               std::move(callback)));
@@ -2524,21 +2581,27 @@ void CrostiniManager::OnStartTerminaVm(
     return;
   }
 
-  // Otherwise, record the container start and run the callback after the VM
+  // Otherwise, record the vm start and run the callback after the VM
   // starts.
   DCHECK_EQ(response->status(), vm_tools::concierge::VM_STATUS_STARTING);
-  VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id_ << ", "
-          << vm_name;
+  bool wait_for_tremplin = running_vms_.find(vm_name) == running_vms_.end();
+
   running_vms_[vm_name] =
       VmInfo{VmState::STARTING, std::move(response->vm_info())};
   // If we thought a container was running for this VM, we're wrong. This can
   // happen if the vm was formerly running, then stopped via crosh.
   running_containers_.erase(vm_name);
 
-  tremplin_started_callbacks_.emplace(
-      vm_name, base::BindOnce(&CrostiniManager::OnStartTremplin,
-                              weak_ptr_factory_.GetWeakPtr(), vm_name,
-                              std::move(callback)));
+  if (wait_for_tremplin) {
+    VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id_ << ", "
+            << vm_name;
+    tremplin_started_callbacks_.emplace(
+        vm_name, base::BindOnce(&CrostiniManager::OnStartTremplin,
+                                weak_ptr_factory_.GetWeakPtr(), vm_name,
+                                std::move(callback)));
+  } else {
+    OnStartTremplin(vm_name, std::move(callback));
+  }
 }
 
 void CrostiniManager::OnStartTremplin(std::string vm_name,
@@ -2696,20 +2759,6 @@ void CrostiniManager::OnContainerStarted(
       ContainerInfo(signal.container_name(), signal.container_username(),
                     signal.container_homedir(), signal.ipv4_address()));
 
-  // Additional setup might be required in case of default Crostini container
-  // such as installing Ansible in default container and applying
-  // pre-determined configuration to the default container.
-  if (container_id == ContainerId::GetDefault() &&
-      ShouldConfigureDefaultContainer(profile_)) {
-    AnsibleManagementService::GetForProfile(profile_)->ConfigureContainer(
-        ContainerId::GetDefault(),
-        profile_->GetPrefs()->GetFilePath(
-            prefs::kCrostiniAnsiblePlaybookFilePath),
-        base::BindOnce(&CrostiniManager::OnDefaultContainerConfigured,
-                       weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
   InvokeAndErasePendingContainerCallbacks(
       &start_container_callbacks_, container_id, CrostiniResult::SUCCESS);
 
@@ -2723,17 +2772,6 @@ void CrostiniManager::OnContainerStarted(
   for (auto& observer : container_started_observers_) {
     observer.OnContainerStarted(container_id);
   }
-}
-
-void CrostiniManager::OnDefaultContainerConfigured(bool success) {
-  CrostiniResult result = CrostiniResult::SUCCESS;
-  if (!success) {
-    LOG(ERROR) << "Failed to configure default Crostini container";
-    result = CrostiniResult::CONTAINER_CONFIGURATION_FAILED;
-  }
-
-  InvokeAndErasePendingContainerCallbacks(&start_container_callbacks_,
-                                          ContainerId::GetDefault(), result);
 }
 
 void CrostiniManager::OnGuestFileCorruption(
@@ -2979,6 +3017,9 @@ void CrostiniManager::OnCreateLxdContainer(
                                               std::move(callback));
       break;
     case vm_tools::cicerone::CreateLxdContainerResponse::EXISTS:
+      // Containers are registered in OnContainerCreated() when created via the
+      // UI. But for any created manually also register now (crbug.com/1330168).
+      AddNewLxdContainerToPrefs(profile_, container_id);
       std::move(callback).Run(CrostiniResult::SUCCESS);
       break;
     default:
@@ -3210,6 +3251,14 @@ void CrostiniManager::OnTremplinStarted(
     const vm_tools::cicerone::TremplinStartedSignal& signal) {
   if (signal.owner_id() != owner_id_)
     return;
+
+  // If this VM is not yet known in running_vms_, put it there in state
+  // STARTING. This can happen if tremplin starts up faster than concierge can
+  // finish its other startup work.
+  if (running_vms_.find(signal.vm_name()) == running_vms_.end()) {
+    running_vms_[signal.vm_name()] =
+        VmInfo{VmState::STARTING, vm_tools::concierge::VmInfo{}};
+  }
   // Find the callbacks to call, then erase them from the map.
   auto range = tremplin_started_callbacks_.equal_range(signal.vm_name());
   for (auto it = range.first; it != range.second; ++it) {

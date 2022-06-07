@@ -386,6 +386,7 @@ class AttributionEventHandler : public AttributionObserver {
       case AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins:
       case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
       case AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy:
+      case AttributionTrigger::EventLevelResult::kNoMatchingConfigurations:
         event_level_reason << result.event_level_status();
         break;
     }
@@ -526,13 +527,13 @@ base::Value RunAttributionSimulation(
                    /*expiry_time=*/base::Time::Max()));
 
   for (auto& event : *events) {
-    task_environment.FastForwardBy(GetEventTime(event) - base::Time::Now());
+    task_environment.AdvanceClock(GetEventTime(event) - base::Time::Now());
     handler.Handle(std::move(event));
+    task_environment.RunUntilIdle();
   }
 
   std::vector<AttributionReport> pending_reports =
-      GetAttributionReportsForTesting(manager.get(),
-                                      /*max_report_time=*/base::Time::Max());
+      GetAttributionReportsForTesting(manager.get());
 
   if (!pending_reports.empty()) {
     base::Time last_report_time =

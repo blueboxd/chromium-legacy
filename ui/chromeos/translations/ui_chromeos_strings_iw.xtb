@@ -7,7 +7,6 @@
 <translation id="1056775291175587022">אין רשתות</translation>
 <translation id="1060368002126861100">‏כדי שניתן יהיה לפתוח קבצים באמצעות <ph name="APP_NAME" />, צריך להעתיק אותם לתיקיית קובצי Windows.</translation>
 <translation id="1062407476771304334">החלפה</translation>
-<translation id="1119069657431255176">‏ארכיון TAR מכווץ של Bzip2</translation>
 <translation id="1119447706177454957">שגיאה פנימית</translation>
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">‏מקלדת Programmer Dvorak באנגלית (ארה"ב)</translation>
@@ -121,11 +120,11 @@
 <translation id="1942765061641586207">רזולוציית תמונה</translation>
 <translation id="1972984168337863910">הרחבת חלוניות המשוב של קבצים</translation>
 <translation id="1995337122023280937">מעבר אל מיקום הקובץ</translation>
+<translation id="1996806196681857869">‏ארכיון דחוס מסוג Z</translation>
 <translation id="2001796770603320721">‏ניהול ב-Drive</translation>
 <translation id="2009067268969781306">פירמוט של התקן אחסון מוחק את כל הנתונים שמאוחסנים בו. לא ניתן לבטל את הפעולה הזו.</translation>
 <translation id="2025955442973426285">תיגרינית</translation>
 <translation id="2028997212275086731">‏ארכיון RAR</translation>
-<translation id="2036414735548252477">‏ארכיון TAR דחוס מסוג LZMA</translation>
 <translation id="2037845485764049925">רוסית</translation>
 <translation id="2044023416777079300">המודם אינו רשום</translation>
 <translation id="2046702855113914483">ראמן</translation>
@@ -144,7 +143,6 @@
 <translation id="2163152940313951844">תו לא חוקי: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">‏פורטוגזית עם מקלדת בינלאומית של ארה"ב ל-PC</translation>
 <translation id="2198315389084035571">סינית פשוטה</translation>
-<translation id="2208158072373999562">‏ארכיון Zip</translation>
 <translation id="22085916256174561">קוריאנית</translation>
 <translation id="2208919847696382164">‏התקנה עם Linux</translation>
 <translation id="2225536596944493418"><ph name="NUMBER_OF_ITEMS" /> פריטים יימחקו. להמשיך?</translation>
@@ -449,7 +447,6 @@
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> בייטים</translation>
 <translation id="4880214202172289027">מחוון עוצמת קול</translation>
 <translation id="4881695831933465202">פתיחה</translation>
-<translation id="4886199584824489598">‏ארכיון Bzip2 דחוס</translation>
 <translation id="4900532980794411603">‏שיתוף עם Parallels Desktop</translation>
 <translation id="4902546322522096650">‏רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="NETWORK_NAME" />,‏ <ph name="SECURITY_STATUS" />, עוצמת האות: ‎<ph name="SIGNAL_STRENGTH" />%‎, התחברות</translation>
 <translation id="4905417359854579806">המערכת מוכנה לגיבוי <ph name="FILE_COUNT" /></translation>
@@ -620,6 +617,7 @@
 <translation id="6220423280121890987">פונג'בית</translation>
 <translation id="6224240818060029162">דנית</translation>
 <translation id="6224253798271602650">פירמוט של <ph name="DRIVE_NAME" /></translation>
+<translation id="6224665423283788195">‏ארכיון דחוס מסוג Zstandard</translation>
 <translation id="6227235786875481728">לא ניתן להפעיל קובץ זה.</translation>
 <translation id="6241349547798190358">הולנדית (בלגיה)</translation>
 <translation id="6267547857941397424">‏רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="PHONE_NAME" />, עוצמת האות: ‎<ph name="SIGNAL_STRENGTH" />%‎, סוללת הטלפון: ‎<ph name="BATTERY_STATUS" />%‎, התחברות</translation>
@@ -643,6 +641,7 @@
 <translation id="6423031066725912715">‏וייטנאמית עם מקלדת TCVN</translation>
 <translation id="6485131920355264772">נכשל בקבלת מידע על שטח האחסון</translation>
 <translation id="6495925982925244349">‏רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="NETWORK_NAME" />,‏ <ph name="SECURITY_STATUS" />,‏ <ph name="CONNECTION_STATUS" />, עוצמת האות: ‎<ph name="SIGNAL_STRENGTH" />%‎, הרשת מנוהלת על ידי מנהל המערכת שלך, פרטים</translation>
+<translation id="649877868557234318">מתבצע חילוץ של הקובץ <ph name="FILE_NAME" /> אל <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">‏ביטול הרשאה של שרתי proxy לרשתות משותפות</translation>
 <translation id="6509122719576673235">נורווגית</translation>
 <translation id="6528513914570774834">אישור למשתמשים האחרים במכשיר הזה להשתמש ברשת הזו</translation>
@@ -671,7 +670,6 @@
 <translation id="6806699711453372963">‏ניהול שיתוף ב-Linux</translation>
 <translation id="6806796368146926706">מקלדת אלפאנומרית עם יפנית</translation>
 <translation id="6808193438228982088">שועל</translation>
-<translation id="6820687829547641339">‏ארכיון Gzip מכווץ של Bzip2</translation>
 <translation id="6823166707458800069">כל הקבצים השמורים בתיקייה זו מגובים באופן אוטומטי באינטרנט.</translation>
 <translation id="6825883775269213504">רוסית</translation>
 <translation id="6847101934483209767">הסרת את <ph name="ENTRY_NAME" /> מהבחירה.</translation>
@@ -820,7 +818,6 @@
 <translation id="7925686952655276919">אין להשתמש בנתונים ניידים עבור סנכרון</translation>
 <translation id="7928710562641958568">הוצאת המכשיר</translation>
 <translation id="7943385054491506837">‏ארה"ב – Colemak</translation>
-<translation id="7948417415021769876">‏ארכיון 7z</translation>
 <translation id="7953739707111622108">לא ניתן לפתוח מכשיר זה משום שמערכת הקבצים שלו לא זוהתה.</translation>
 <translation id="7969525169268594403">סלובנית</translation>
 <translation id="7972920761225148017">צרפתית (שוויץ)</translation>
@@ -862,7 +859,6 @@
 <translation id="8297012244086013755">Hangul 3 Set (No Shift)‎</translation>
 <translation id="8299269255470343364">יפנית</translation>
 <translation id="8300849813060516376">‏OTASP נכשל</translation>
-<translation id="8308481408797647857">‏ארכיון TAR דחוס מסוג XZ</translation>
 <translation id="8312871300878166382">הדבקה בתיקייה</translation>
 <translation id="8329978297633540474">טקסט רגיל</translation>
 <translation id="8335587457941836791">ביטול הצמדה למדף</translation>
@@ -884,7 +880,6 @@
 <translation id="8461467696380332069">כדי לגשת במהירות לקבצים שבמדף, יש ללחוץ לחיצה ימנית על הקובץ ולבחור באפשרות "הצמדה למדף".</translation>
 <translation id="8461914792118322307">‏שרת proxy</translation>
 <translation id="8463494891489624050">‏מקלדת וייטנאמית VIQR</translation>
-<translation id="8466234950814670489">‏ארכיון TAR</translation>
 <translation id="8475647382427415476">‏ל-Google Drive אין כרגע אפשרות לסנכרן את "<ph name="FILENAME" />". מערכת Google Drive תנסה זאת שוב מאוחר יותר.</translation>
 <translation id="8477649328507734757">סיבוב</translation>
 <translation id="8484284835977497781">אפשר לבחור פריטים מתוך התמונות האחרונות.</translation>
@@ -973,7 +968,6 @@
 <translation id="943972244133411984">שונה על ידי</translation>
 <translation id="945522503751344254"> שליחת משוב</translation>
 <translation id="947144732524271678">בחרת טווח של <ph name="ENTRY_COUNT" /> פריטים, מ-<ph name="FROM_ENTRY_NAME" /> עד <ph name="TO_ENTRY_NAME" />.</translation>
-<translation id="961973045258256291">‏ארכיון Gzip דחוס</translation>
 <translation id="965477715979482472">אנגלית (דרום אפריקה)</translation>
 <translation id="981121421437150478">לא מקוון</translation>
 <translation id="988685240266037636">כבר קיים קובץ בשם "<ph name="FILE_NAME" />". רוצה להחליף אותו?</translation>

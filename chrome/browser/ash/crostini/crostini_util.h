@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_simple_types.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -36,10 +36,6 @@ class PrefService;
 class Profile;
 
 namespace crostini {
-
-// web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
-//     GURL("chrome-untrusted://terminal/html/terminal.html"))
-extern const char kCrostiniTerminalSystemAppId[];
 
 extern const char kCrostiniImageAliasPattern[];
 extern const char kCrostiniContainerDefaultVersion[];
@@ -107,10 +103,6 @@ bool ShouldAllowContainerUpgrade(Profile* profile);
 // the configuration specified by CrostiniAnsiblePlaybook user policy.
 bool ShouldConfigureDefaultContainer(Profile* profile);
 
-// Returns whether a dialog from Crostini is blocking the immediate launch.
-bool MaybeShowCrostiniDialogBeforeLaunch(Profile* profile,
-                                         CrostiniResult result);
-
 using LaunchArg = absl::variant<storage::FileSystemURL, std::string>;
 
 // Launch a Crostini App with a given set of files, given as absolute paths in
@@ -166,10 +158,6 @@ views::Widget* ShowCrostiniForceCloseDialog(
     const std::string& app_name,
     views::Widget* closable_widget,
     base::OnceClosure force_close_callback);
-// Shows the Crostini Termina Upgrade dialog (for blocking crostini start until
-// Termina version matches).
-void ShowCrostiniUpdateComponentView(Profile* profile,
-                                     CrostiniUISurface ui_surface);
 // Shows the ui with the error message when installing a package fails.
 void ShowCrostiniPackageInstallFailureView(const std::string& error_message);
 
@@ -200,6 +188,9 @@ void ShowCrostiniRecoveryView(Profile* profile,
 
 // Remove duplicate containers in the existing kCrostiniContainers pref.
 void RemoveDuplicateContainerEntries(PrefService* prefs);
+
+// Returns a list of all containers in prefs.
+std::vector<ContainerId> GetContainers(Profile* profile);
 
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,

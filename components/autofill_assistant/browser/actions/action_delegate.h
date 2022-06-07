@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
 #include "components/autofill_assistant/browser/public/external_script_controller.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/tts_button_state.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
 
@@ -316,6 +317,10 @@ class ActionDelegate {
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() const = 0;
 
+  // Get dummy web contents that can be used for JS execution. The web contents
+  // is created on the first call.
+  virtual content::WebContents* GetWebContentsForJsExecution() = 0;
+
   // Get the ElementStore.
   virtual ElementStore* GetElementStore() const = 0;
 
@@ -477,12 +482,17 @@ class ActionDelegate {
   virtual void RequestExternalAction(
       const ExternalActionProto& external_action,
       base::OnceCallback<void()> start_dom_checks_callback,
-      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+      base::OnceCallback<void(const external::Result& result)>
           end_action_callback) = 0;
 
   // Returns whether or not this instance of Autofill Assistant must use a
   // backend endpoint to query data.
   virtual bool MustUseBackendData() const = 0;
+
+  // Maybe sets the previously executed action. JS flow actions are excluded
+  // because they act as a script executor.
+  virtual void MaybeSetPreviousAction(
+      const ProcessedActionProto& processed_action) = 0;
 
   virtual base::WeakPtr<ActionDelegate> GetWeakPtr() const = 0;
 

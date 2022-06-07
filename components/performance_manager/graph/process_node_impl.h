@@ -84,7 +84,8 @@ class ProcessNodeImpl
   void FireBackgroundTracingTrigger(const std::string& trigger_name) override;
 
   void SetProcessExitStatus(int32_t exit_status);
-  void SetProcess(base::Process process, base::Time launch_time);
+  void SetProcessMetricsName(const std::string& metrics_name);
+  void SetProcess(base::Process process, base::TimeTicks launch_time);
 
   // Private implementation properties.
   void set_private_footprint_kb(uint64_t private_footprint_kb) {
@@ -130,13 +131,17 @@ class ProcessNodeImpl
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return process_.value();
   }
-  base::Time launch_time() const {
+  base::TimeTicks launch_time() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return launch_time_;
   }
   absl::optional<int32_t> exit_status() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return exit_status_;
+  }
+  const std::string& metrics_name() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return metrics_name_;
   }
 
   bool main_thread_task_load_is_low() const {
@@ -188,7 +193,7 @@ class ProcessNodeImpl
  protected:
   void SetProcessImpl(base::Process process,
                       base::ProcessId process_id,
-                      base::Time launch_time);
+                      base::TimeTicks launch_time);
 
  private:
   friend class FrozenFrameAggregatorAccess;
@@ -200,8 +205,9 @@ class ProcessNodeImpl
   content::ProcessType GetProcessType() const override;
   base::ProcessId GetProcessId() const override;
   const base::Process& GetProcess() const override;
-  base::Time GetLaunchTime() const override;
+  base::TimeTicks GetLaunchTime() const override;
   absl::optional<int32_t> GetExitStatus() const override;
+  const std::string& GetMetricsName() const override;
   bool VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
   base::flat_set<const FrameNode*> GetFrameNodes() const override;
   base::flat_set<const WorkerNode*> GetWorkerNodes() const override;
@@ -232,8 +238,9 @@ class ProcessNodeImpl
       &ProcessNodeObserver::OnProcessLifetimeChange>
       process_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  base::Time launch_time_ GUARDED_BY_CONTEXT(sequence_checker_);
+  base::TimeTicks launch_time_ GUARDED_BY_CONTEXT(sequence_checker_);
   absl::optional<int32_t> exit_status_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::string metrics_name_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   const content::ProcessType process_type_
       GUARDED_BY_CONTEXT(sequence_checker_);

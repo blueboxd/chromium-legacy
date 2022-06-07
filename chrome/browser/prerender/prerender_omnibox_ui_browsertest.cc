@@ -684,6 +684,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
   EXPECT_TRUE(
       base::Contains(prerender_rfh->GetLastCommittedURL().spec(), "pf=cs"));
 
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.DefaultSearchEngine."
+      "SearchTermExtractorCorrectness",
+      true, 1);
+
   // Ensure there is a search hint.
   auto is_prerender_match = [](const AutocompleteMatch& match) {
     return BaseSearchProvider::ShouldPrerender(match);
@@ -698,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
   EXPECT_TRUE(IsPrerenderingNavigation());
 
   // Wait until the history is updated.
-  ASSERT_EQ(true, content::EvalJs(GetActiveWebContents()->GetMainFrame(),
+  ASSERT_EQ(true, content::EvalJs(GetActiveWebContents()->GetPrimaryMainFrame(),
                                   "historyUpdated;"));
 
   EXPECT_EQ(1, prerender_helper().GetRequestCount(expected_prerender_url));
@@ -759,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
   EXPECT_TRUE(IsPrerenderingNavigation());
 
   // Wait until the history is updated.
-  EXPECT_EQ(true, content::EvalJs(GetActiveWebContents()->GetMainFrame(),
+  EXPECT_EQ(true, content::EvalJs(GetActiveWebContents()->GetPrimaryMainFrame(),
                                   "historyUpdated;"));
 
   // The displayed url shouldn't contain the parameter of pf=cs.
@@ -814,7 +819,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
   EXPECT_TRUE(IsPrerenderingNavigation());
 
   // Wait until the history is updated.
-  EXPECT_EQ(true, content::EvalJs(GetActiveWebContents()->GetMainFrame(),
+  EXPECT_EQ(true, content::EvalJs(GetActiveWebContents()->GetPrimaryMainFrame(),
                                   "historyUpdated;"));
 
   // The displayed url shouldn't contain the parameter of pf=cs.

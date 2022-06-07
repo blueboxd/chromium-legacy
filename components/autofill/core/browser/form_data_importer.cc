@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -250,9 +251,14 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
           std::make_unique<VirtualCardEnrollmentManager>(personal_data_manager,
                                                          payments_client,
                                                          client)) {
+  if (personal_data_manager_)
+    personal_data_manager_->AddObserver(this);
 }
 
-FormDataImporter::~FormDataImporter() = default;
+FormDataImporter::~FormDataImporter() {
+  if (personal_data_manager_)
+    personal_data_manager_->RemoveObserver(this);
+};
 
 void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
                                       bool profile_autofill_enabled,
@@ -1148,7 +1154,7 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
       types_seen.insert(server_field_type);
     }
     // If |field| is an HTML5 month input, handle it as a special case.
-    if (base::LowerCaseEqualsASCII(field->form_control_type, "month")) {
+    if (base::EqualsCaseInsensitiveASCII(field->form_control_type, "month")) {
       DCHECK_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, server_field_type);
       candidate_credit_card.SetInfoForMonthInputType(value);
       continue;
@@ -1306,6 +1312,23 @@ bool FormDataImporter::MergeProfileWithMultiStepCandidates(
     // Remove all profiles that couldn't be merged.
     multistep_candidates_.erase(merge_candidate, multistep_candidates_.end());
     return false;
+  }
+}
+
+void FormDataImporter::OnBrowsingHistoryCleared(
+    const history::DeletionInfo& deletion_info) {
+  // Delete all multi-step import candidates when:
+  // - The entire browsing history is cleared, or
+  // - At least one URL from the same origin as `multistep_candidates_origin_`
+  //   is deleted.
+  if (deletion_info.IsAllHistory() ||
+      (multistep_candidates_origin_.has_value() &&
+       base::Contains(deletion_info.deleted_rows(),
+                      *multistep_candidates_origin_,
+                      [](const history::URLRow& url_row) {
+                        return url::Origin::Create(url_row.url());
+                      }))) {
+    ClearMultiStepImportCandidates();
   }
 }
 

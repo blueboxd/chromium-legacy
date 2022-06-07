@@ -239,7 +239,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kMessageCenterLockScreenModeHideSensitive[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAmbientColorEnabled[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kColorModeThemed[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkModeEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkLightModeNudge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkModeScheduleType[];
@@ -315,6 +314,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSuggestLogoutAfterClosingLastWindow[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUserWallpaperInfo[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kRecentDailyGooglePhotosWallpapers[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kWallpaperColors[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSyncableWallpaperInfo[];
 

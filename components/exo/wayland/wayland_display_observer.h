@@ -68,14 +68,14 @@ class WaylandDisplayHandler : public display::DisplayObserver,
  protected:
   wl_resource* output_resource() const { return output_resource_; }
 
+  // Overridable for testing.
+  virtual void XdgOutputSendLogicalPosition(const gfx::Point& position);
+  virtual void XdgOutputSendLogicalSize(const gfx::Size& size);
+
  private:
   // Overridden from WaylandDisplayObserver:
   bool SendDisplayMetrics(const display::Display& display,
                           uint32_t changed_metrics) override;
-
-  // Returns the transform that a compositor will apply to a surface to
-  // compensate for the rotation of an output device.
-  wl_output_transform OutputTransform(display::Display::Rotation rotation);
 
   // Output.
   WaylandDisplayOutput* output_;

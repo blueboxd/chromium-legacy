@@ -119,8 +119,8 @@ bool VendorCapabilityInvalid(const base::Value& val) {
     return true;
   const base::Value* options_list =
       select_cap->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
-  if (!options_list || options_list->GetListDeprecated().empty() ||
-      GetFilteredList(options_list, ValueIsNull).GetListDeprecated().empty()) {
+  if (!options_list || options_list->GetList().empty() ||
+      GetFilteredList(options_list, ValueIsNull).GetList().empty()) {
     return true;
   }
   return false;
@@ -238,7 +238,7 @@ void StartLocalPrint(base::Value::Dict job_settings,
   }
   print_view_manager->PrintForPrintPreview(
       std::move(job_settings), std::move(print_data),
-      preview_web_contents->GetMainFrame(), std::move(callback));
+      preview_web_contents->GetPrimaryMainFrame(), std::move(callback));
 }
 
 bool ParseSettings(const base::Value::Dict& settings,

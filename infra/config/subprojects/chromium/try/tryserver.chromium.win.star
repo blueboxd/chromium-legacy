@@ -164,6 +164,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "win10_chromium_x64_rel_ng",
+    check_for_flakiness = True,
     compilator = "win10_chromium_x64_rel_ng-compilator",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     mirrors = [
@@ -188,6 +189,7 @@ try_.orchestrator_builder(
 
 try_.compilator_builder(
     name = "win10_chromium_x64_rel_ng-compilator",
+    check_for_flakiness = True,
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     # TODO (crbug.com/1245171): Revert when root issue is fixed
@@ -267,7 +269,7 @@ try_.gpu.optional_tests_builder(
             ".+/[+]/media/mojo/.+",
             ".+/[+]/media/renderers/.+",
             ".+/[+]/media/video/.+",
-            ".+/[+]/testing/buildbot/chromium.gpu.fyi.json",
+            ".+/[+]/testing/buildbot/tryserver.chromium.win.json",
             ".+/[+]/testing/trigger_scripts/.+",
             ".+/[+]/third_party/blink/renderer/modules/vr/.+",
             ".+/[+]/third_party/blink/renderer/modules/mediastream/.+",
@@ -276,6 +278,7 @@ try_.gpu.optional_tests_builder(
             ".+/[+]/third_party/blink/renderer/modules/xr/.+",
             ".+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+",
             ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/tools/mb/mb_config_expectations/tryserver.chromium.win.json",
             ".+/[+]/ui/gl/.+",
         ],
     ),

@@ -15,7 +15,6 @@
 #include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/focus_ring.h"
-#include "ui/views/native_cursor.h"
 
 namespace ash {
 
@@ -87,6 +86,10 @@ bool DesksTextfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   return event.key_code() == ui::VKEY_TAB;
 }
 
+std::u16string DesksTextfield::GetTooltipText(const gfx::Point& p) const {
+  return GetPreferredSize().width() > width() ? GetText() : std::u16string();
+}
+
 void DesksTextfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Textfield::GetAccessibleNodeData(node_data);
   node_data->SetName(GetAccessibleName());
@@ -120,8 +123,8 @@ void DesksTextfield::OnThemeChanged() {
   UpdateFocusRingState();
 }
 
-gfx::NativeCursor DesksTextfield::GetCursor(const ui::MouseEvent& event) {
-  return views::GetNativeIBeamCursor();
+ui::Cursor DesksTextfield::GetCursor(const ui::MouseEvent& event) {
+  return ui::mojom::CursorType::kIBeam;
 }
 
 void DesksTextfield::OnFocus() {

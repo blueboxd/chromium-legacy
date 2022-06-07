@@ -33,8 +33,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/drag_download_item.h"
-#include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
-#include "chrome/browser/enterprise/connectors/analysis/content_analysis_downloads_delegate.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
@@ -135,12 +134,6 @@ constexpr int kTopBottomPadding = 6;
 // The minimum vertical padding above and below contents of the download item.
 // This is only used when the text size is large.
 constexpr int kMinimumVerticalPadding = 2 + kTopBottomPadding;
-
-// The analysis service tag for data loss prevention.
-const char kDlpTag[] = "dlp";
-
-// The analysis service tag for malware.
-const char kMalwareTag[] = "malware";
 
 // A stub subclass of Button that has no visuals.
 class TransparentButton : public views::Button {
@@ -851,34 +844,13 @@ void DownloadItemView::UpdateLabels() {
 }
 
 void DownloadItemView::UpdateButtons() {
-  bool prompt_to_scan = false, prompt_to_discard = false,
-       prompt_to_review = false;
+  bool prompt_to_scan = false, prompt_to_discard = false;
+  bool prompt_to_review = enterprise_connectors::ShouldPromptReviewForDownload(
+      model_->profile(), model_->GetDangerType());
   if (is_download_warning(mode_)) {
     const auto danger_type = model_->GetDangerType();
     prompt_to_scan =
         danger_type == download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING;
-
-    if (danger_type ==
-            download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING ||
-        danger_type == download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
-      prompt_to_review =
-          enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
-              model_->profile())
-              ->HasCustomInfoToDisplay(
-                  enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
-                  kDlpTag);
-    } else if (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
-               danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
-               danger_type ==
-                   download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT) {
-      prompt_to_review =
-          enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
-              model_->profile())
-              ->HasCustomInfoToDisplay(
-                  enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
-                  kMalwareTag);
-    }
-
     prompt_to_discard =
         !prompt_to_review && !prompt_to_scan &&
         !ChromeDownloadManagerDelegate::IsDangerTypeBlocked(danger_type);
@@ -1307,59 +1279,19 @@ void DownloadItemView::DropdownButtonPressed(const ui::Event& event) {
 }
 
 void DownloadItemView::ReviewButtonPressed() {
+  // Disable every button on the download so the user has to use the review
+  // dialog to review their sensitive data/malware violation.
   review_button_->SetEnabled(false);
+  dropdown_button_->SetEnabled(false);
 
-  auto danger_type = model_->GetDangerType();
-  auto state =
-      enterprise_connectors::ContentAnalysisDelegateBase::FinalResult::FAILURE;
-  if (danger_type == download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING) {
-    state = enterprise_connectors::ContentAnalysisDelegateBase::FinalResult::
-        WARNING;
-  }
-
-  const char* tag =
-      (danger_type ==
-                   download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING ||
-               danger_type ==
-                   download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK
-           ? kDlpTag
-           : kMalwareTag);
-
-  auto* connectors_service =
-      enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
-          model_->profile());
-
-  const std::u16string filename = ElidedFilename(*file_name_label_);
-  std::u16string custom_message =
-      connectors_service
-          ->GetCustomMessage(
-              enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED, tag)
-          .value_or(u"");
-  GURL learn_more_url =
-      connectors_service
-          ->GetLearnMoreUrl(
-              enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED, tag)
-          .value_or(GURL());
-
-  bool bypass_justification_required =
-      connectors_service
-          ->GetBypassJustificationRequired(
-              enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED, tag)
-          .value_or(false);
-
-  // This dialog opens itself, and is thereafter owned by constrained window
-  // code.
-  new enterprise_connectors::ContentAnalysisDialog(
-      std::make_unique<enterprise_connectors::ContentAnalysisDownloadsDelegate>(
-          filename, custom_message, learn_more_url,
-          bypass_justification_required,
-          base::BindOnce(&DownloadItemView::ExecuteCommand,
-                         base::Unretained(this), DownloadCommands::KEEP),
-          base::BindOnce(&DownloadItemView::ExecuteCommand,
-                         base::Unretained(this), DownloadCommands::DISCARD),
-          model_->download()),
+  enterprise_connectors::ShowDownloadReviewDialog(
+      ElidedFilename(*file_name_label_), model_->profile(), model_->download(),
       shelf_->browser()->tab_strip_model()->GetActiveWebContents(),
-      safe_browsing::DeepScanAccessPoint::DOWNLOAD, /* file_count */ 1, state);
+      model_->GetDangerType(),
+      base::BindOnce(&DownloadItemView::ExecuteCommand, base::Unretained(this),
+                     DownloadCommands::KEEP),
+      base::BindOnce(&DownloadItemView::ExecuteCommand, base::Unretained(this),
+                     DownloadCommands::DISCARD));
 }
 
 void DownloadItemView::ShowOpenDialog(content::WebContents* web_contents) {

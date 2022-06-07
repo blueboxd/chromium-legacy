@@ -24,7 +24,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 using content::BrowserThread;
@@ -141,6 +141,11 @@ class StartupObserver
   StartupObserver() = default;
 
   void OnStartupComplete() {
+    if (!performance_manager::PerformanceManagerImpl::IsAvailable()) {
+      // Already shutting down before startup finished. Do not notify.
+      return;
+    }
+
     // This should only be called once.
     if (!startup_complete_) {
       startup_complete_ = true;
@@ -214,7 +219,7 @@ void AfterStartupTaskUtils::StartMonitoringStartup() {
 #if !BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // For Lacros, there may not be a Browser created at startup.
-  if (chromeos::LacrosService::Get()->init_params()->initial_browser_action ==
+  if (chromeos::BrowserInitParams::Get()->initial_browser_action ==
       crosapi::mojom::InitialBrowserAction::kDoNotOpenWindow) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&SetBrowserStartupIsComplete));

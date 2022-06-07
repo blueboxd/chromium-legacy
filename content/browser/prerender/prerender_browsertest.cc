@@ -2893,12 +2893,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
       "Prerender.Experimental.PrerenderCancelledUnknownInterface."
       "SpeculationRule",
       InterfaceNameHasher(mojom::PepperHost::Name_), 2);
+
+  // Run JavaScript code to inject a new iframe to load a page, and see if it
+  // correctly runs and results in making a navigation request in the iframe. If
+  // the initiator is still working normally after prerendering cancellation,
+  // this request should arrive.
+  RenderFrameHostImpl* main_frame_host = current_frame_host();
+  EXPECT_TRUE(AddTestUtilJS(main_frame_host));
+  EXPECT_TRUE(ExecJs(main_frame_host, "add_iframe_async('/title1.html')",
+                     EvalJsOptions::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
+  WaitForRequest(GetUrl("/title1.html"), 1);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-// This is a browser test and cannot be upstreamed to WPT because it diverges
-// from the spec by cancelling prerendering in the Notification constructor,
-// whereas the spec says to defer upon use requestPermission().
 #if BUILDFLAG(IS_ANDROID)
 // On Android the Notification constructor throws an exception regardless of
 // whether the page is being prerendered.
@@ -2923,28 +2930,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, NotificationConstructorAndroid) {
       } catch(e) { return false; }
     })();
   )"));
-}
-#else
-// On non-Android the Notification constructor is supported and can be used to
-// show a notification, but if used during prerendering it cancels prerendering.
-// Tests that we will cancel the prerendering if the prerendering page attempts
-// to use notification.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, NotificationConstructor) {
-  base::HistogramTester histogram_tester;
-  const GURL kInitialUrl = GetUrl("/empty.html");
-
-  // Navigate to an initial page.
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  LoadAndWaitForPrerenderDestroyed(web_contents(),
-                                   GetUrl("/prerender/notification.html"),
-                                   prerender_helper());
-
-  ExpectFinalStatusForSpeculationRule(
-      PrerenderHost::FinalStatus::kMojoBinderPolicy);
-  histogram_tester.ExpectUniqueSample(
-      "Prerender.Experimental.PrerenderCancelledInterface.SpeculationRule",
-      PrerenderCancelledInterface::kNotificationService, 1);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -4780,13 +4765,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SkipCrossOriginPrerender) {
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
   test::PrerenderHostRegistryObserver registry_observer(*web_contents_impl());
 
-  // Add a cross-origin prerender.
+  url::Origin initiator_origin = url::Origin::Create(kInitialUrl);
+  url::Origin prerender_origin = url::Origin::Create(kPrerenderingUrl);
+  std::string kConsolePattern = base::StringPrintf(
+      "The SpeculationRules API does not support cross-origin "
+      "prerender yet. (initiator origin: %s, prerender origin: %s). "
+      "https://crbug.com/1176054 tracks cross-origin support.",
+      initiator_origin.Serialize().c_str(),
+      prerender_origin.Serialize().c_str());
+  WebContentsConsoleObserver console_observer(web_contents_impl());
+  console_observer.SetPattern(kConsolePattern);
+
+  // Add a cross-origin prerender rule.
   AddPrerenderAsync(kPrerenderingUrl);
 
   // Wait for PrerenderHostRegistry to receive the cross-origin prerender
   // request, and it should be ignored.
   registry_observer.WaitForTrigger(kPrerenderingUrl);
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
+
+  // A warning message should be sent to console for debugging purpose.
+  console_observer.Wait();
+  EXPECT_EQ(1u, console_observer.messages().size());
 
   ExpectFinalStatusForSpeculationRule(
       PrerenderHost::FinalStatus::kCrossOriginNavigation);

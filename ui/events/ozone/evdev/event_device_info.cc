@@ -392,18 +392,17 @@ bool IsDenylistedAbsoluteMouseDevice(const input_id& id) {
 
 }  // namespace
 
-EventDeviceInfo::EventDeviceInfo() {
-  memset(ev_bits_.data(), 0, sizeof(ev_bits_));
-  memset(key_bits_.data(), 0, sizeof(key_bits_));
-  memset(rel_bits_.data(), 0, sizeof(rel_bits_));
-  memset(abs_bits_.data(), 0, sizeof(abs_bits_));
-  memset(msc_bits_.data(), 0, sizeof(msc_bits_));
-  memset(sw_bits_.data(), 0, sizeof(sw_bits_));
-  memset(led_bits_.data(), 0, sizeof(led_bits_));
-  memset(ff_bits_.data(), 0, sizeof(ff_bits_));
-  memset(prop_bits_.data(), 0, sizeof(prop_bits_));
-  memset(abs_info_.data(), 0, sizeof(abs_info_));
-}
+EventDeviceInfo::EventDeviceInfo()
+    : ev_bits_{},
+      key_bits_{},
+      rel_bits_{},
+      abs_bits_{},
+      msc_bits_{},
+      sw_bits_{},
+      led_bits_{},
+      prop_bits_{},
+      ff_bits_{},
+      abs_info_{} {}
 
 EventDeviceInfo::~EventDeviceInfo() {}
 
@@ -743,20 +742,24 @@ bool IsInKeyboardBlockList(input_id input_id_) {
 }
 
 bool EventDeviceInfo::HasKeyboard() const {
+  return GetKeyboardType() == KeyboardType::VALID_KEYBOARD;
+}
+
+KeyboardType EventDeviceInfo::GetKeyboardType() const {
   if (!HasEventType(EV_KEY))
-    return false;
+    return KeyboardType::NOT_KEYBOARD;
   if (IsInKeyboardBlockList(input_id_))
-    return false;
+    return KeyboardType::IN_BLOCKLIST;
   if (IsStylusButtonDevice())
-    return false;
+    return KeyboardType::STYLUS_BUTTON_DEVICE;
 
   // Check first 31 keys: If we have all of them, consider it a full
   // keyboard. This is exactly what udev does for ID_INPUT_KEYBOARD.
   for (int key = KEY_ESC; key <= KEY_D; ++key)
     if (!HasKeyEvent(key))
-      return false;
+      return KeyboardType::NOT_KEYBOARD;
 
-  return true;
+  return KeyboardType::VALID_KEYBOARD;
 }
 
 bool EventDeviceInfo::HasMouse() const {

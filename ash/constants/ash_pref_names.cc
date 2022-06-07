@@ -481,11 +481,6 @@ const char kMessageCenterLockScreenModeHideSensitive[] = "hideSensitive";
 // A boolean pref storing the enabled status of the ambient color feature.
 const char kAmbientColorEnabled[] = "ash.ambient_color.enabled";
 
-// A boolean pref used when dark light mode feature is enabled to indicate
-// whether the color mode is themed. If true, the background color will be
-// calculated based on extracted wallpaper color.
-const char kColorModeThemed[] = "ash.dark_mode.color_mode_themed";
-
 // A boolean pref that indicates whether dark mode is enabled.
 const char kDarkModeEnabled[] = "ash.dark_mode.enabled";
 
@@ -696,6 +691,11 @@ const char kSuggestLogoutAfterClosingLastWindow[] =
 
 // A dictionary pref that maps usernames to wallpaper info.
 const char kUserWallpaperInfo[] = "user_wallpaper_info";
+
+// An ordered list of hashed representations of IDs of Google Photos recently
+// used as wallpapers for Daily Refresh.
+const char kRecentDailyGooglePhotosWallpapers[] =
+    "recent_daily_google_photos_wallpapers";
 
 // A dictionary pref that maps usernames to wallpaper info.
 // This is for wallpapers that are syncable across devices.

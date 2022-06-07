@@ -25,8 +25,11 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "base/types/pass_key.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink.h"
@@ -220,6 +223,11 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
     return window_features_;
   }
 
+  const absl::optional<features::FencedFramesImplementationType>&
+  FencedFramesImplementationType() const {
+    return fenced_frames_impl_;
+  }
+
   PageScaleConstraintsSet& GetPageScaleConstraintsSet();
   const PageScaleConstraintsSet& GetPageScaleConstraintsSet() const;
 
@@ -353,7 +361,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   void SetMediaFeatureOverride(const AtomicString& media_feature,
                                const String& value);
   const MediaFeatureOverrides* GetMediaFeatureOverrides() const {
-    return media_feature_overrides_.get();
+    return media_feature_overrides_.Get();
   }
   void ClearMediaFeatureOverrides();
 
@@ -428,6 +436,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // breaks this cycle, so the frame is still properly destroyed once no
   // longer needed.
   Member<Frame> main_frame_;
+
+  // The type of fenced frames being used.
+  absl::optional<features::FencedFramesImplementationType> fenced_frames_impl_;
 
   scheduler::WebAgentGroupScheduler& agent_group_scheduler_;
   Member<PageAnimator> animator_;
@@ -505,7 +516,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   std::unique_ptr<PageScheduler> page_scheduler_;
 
   // Overrides for various media features, set from DevTools.
-  std::unique_ptr<MediaFeatureOverrides> media_feature_overrides_;
+  Member<MediaFeatureOverrides> media_feature_overrides_;
 
   // Emulated vision deficiency, set from DevTools.
   VisionDeficiency vision_deficiency_ = VisionDeficiency::kNoVisionDeficiency;

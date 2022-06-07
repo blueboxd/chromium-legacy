@@ -11,11 +11,18 @@
 #include "base/cxx17_backports.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/color/color_mixer.h"
+#include "ui/color/color_provider.h"
+#include "ui/color/color_recipe.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/font_render_params_linux.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/image/image_skia_source.h"
+#include "ui/native_theme/native_theme_base.h"
 #include "ui/qt/qt_interface.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -64,6 +71,17 @@ gfx::FontRenderParams::Hinting QtHintingToGfxHinting(
 }
 
 }  // namespace
+
+// We currently don't render any QT widgets, so this class is just a stub.
+class QtNativeTheme : public ui::NativeThemeBase {
+ public:
+  QtNativeTheme()
+      : ui::NativeThemeBase(/*should_only_use_dark_colors=*/false,
+                            /*is_custom_system_theme=*/true) {}
+  QtNativeTheme(const QtNativeTheme&) = delete;
+  QtNativeTheme& operator=(const QtNativeTheme&) = delete;
+  ~QtNativeTheme() override = default;
+};
 
 QtUi::QtUi() = default;
 
@@ -118,7 +136,9 @@ bool QtUi::Initialize() {
   cmd_line_ = CopyCmdLine(*base::CommandLine::ForCurrentProcess());
   shim_.reset((reinterpret_cast<decltype(&CreateQtInterface)>(
       create_qt_interface)(this, &cmd_line_.argc, cmd_line_.argv.data())));
-
+  native_theme_ = std::make_unique<QtNativeTheme>();
+  ui::ColorProviderManager::Get().AppendColorProviderInitializer(
+      base::BindRepeating(&QtUi::AddNativeColorMixer, base::Unretained(this)));
   FontChanged();
 
   return true;
@@ -169,30 +189,24 @@ base::TimeDelta QtUi::GetCursorBlinkInterval() const {
   return base::TimeDelta();
 }
 
-ui::NativeTheme* QtUi::GetNativeTheme(aura::Window* window) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return ui::NativeTheme::GetInstanceForNativeUi();
-}
-
-ui::NativeTheme* QtUi::GetNativeTheme(bool use_system_theme) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return ui::NativeTheme::GetInstanceForNativeUi();
-}
-
-void QtUi::SetUseSystemThemeCallback(UseSystemThemeCallback callback) {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
-bool QtUi::GetDefaultUsesSystemTheme() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
-}
-
 gfx::Image QtUi::GetIconForContentType(const std::string& content_type,
                                        int size,
                                        float scale) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::Image();
+  Image image =
+      shim_->GetIconForContentType(String(content_type.c_str()), size * scale);
+  if (!image.data_argb.size())
+    return {};
+
+  SkImageInfo image_info = SkImageInfo::Make(
+      image.width, image.height, kBGRA_8888_SkColorType, kPremul_SkAlphaType);
+  SkBitmap bitmap;
+  bitmap.installPixels(
+      image_info, image.data_argb.Take(), image_info.minRowBytes(),
+      [](void* data, void*) { free(data); }, nullptr);
+  gfx::ImageSkia image_skia =
+      gfx::ImageSkia::CreateFromBitmap(bitmap, image.scale);
+  image_skia.MakeThreadSafe();
+  return gfx::Image(image_skia);
 }
 
 QtUi::WindowFrameAction QtUi::GetWindowFrameAction(
@@ -265,6 +279,10 @@ void QtUi::SetSystemThemeByNameForTest(const std::string& theme_name) {
   DCHECK(theme_name.empty());
 }
 
+ui::NativeTheme* QtUi::GetNativeTheme() const {
+  return native_theme_.get();
+}
+
 bool QtUi::MatchEvent(const ui::Event& event,
                       std::vector<ui::TextEditCommandAuraLinux>* commands) {
   // QT doesn't have "key themes" (eg. readline bindings) like GTK.
@@ -304,6 +322,34 @@ void QtUi::FontChanged() {
       // fontconfig for it.
       .subpixel_rendering = fc_params.subpixel_rendering,
   };
+}
+
+void QtUi::AddNativeColorMixer(ui::ColorProvider* provider,
+                               const ui::ColorProviderManager::Key& key) {
+  if (key.system_theme == ui::ColorProviderManager::SystemTheme::kDefault)
+    return;
+
+  ui::ColorMixer& mixer = provider->AddMixer();
+  // These color constants are required by native_chrome_color_mixer_linux.cc
+  struct {
+    ui::ColorId id;
+    SkColor color;
+  } const kMaps[] = {
+      {ui::kColorNativeButtonBorder, gfx::kPlaceholderColor},
+      {ui::kColorNativeHeaderButtonBorderActive, gfx::kPlaceholderColor},
+      {ui::kColorNativeHeaderButtonBorderInactive, gfx::kPlaceholderColor},
+      {ui::kColorNativeHeaderSeparatorBorderActive, gfx::kPlaceholderColor},
+      {ui::kColorNativeHeaderSeparatorBorderInactive, gfx::kPlaceholderColor},
+      {ui::kColorNativeLabelForeground, shim_->GetColor(ColorRole::kWindowFg)},
+      {ui::kColorNativeTabForegroundInactiveFrameActive,
+       gfx::kPlaceholderColor},
+      {ui::kColorNativeTabForegroundInactiveFrameInactive,
+       gfx::kPlaceholderColor},
+      {ui::kColorNativeTextfieldBorderUnfocused, gfx::kPlaceholderColor},
+      {ui::kColorNativeToolbarBackground, gfx::kPlaceholderColor},
+  };
+  for (const auto& map : kMaps)
+    mixer[map.id] = {map.color};
 }
 
 std::unique_ptr<views::LinuxUI> CreateQtUi() {

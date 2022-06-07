@@ -188,6 +188,8 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
     case StyleRule::kScope:
     case StyleRule::kSupports:
     case StyleRule::kViewport:
+    case StyleRule::kPositionFallback:
+    case StyleRule::kTry:
       // TODO(andruud): Handle other descriptor types here.
       NOTREACHED();
       return nullptr;
@@ -367,7 +369,7 @@ bool AtRuleDescriptorParser::ParseAtRule(
     AtRuleDescriptorID id,
     const CSSTokenizedValue& tokenized_value,
     const CSSParserContext& context,
-    HeapVector<CSSPropertyValue, 256>& parsed_descriptors) {
+    HeapVector<CSSPropertyValue, 64>& parsed_descriptors) {
   CSSValue* result = ConsumeDescriptor(rule_type, id, tokenized_value, context);
 
   if (!result)

@@ -40,16 +40,17 @@
 #include "chrome/browser/ash/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/ash/accessibility/dictation.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
+#include "chrome/browser/ash/accessibility/pumpkin_installer.h"
 #include "chrome/browser/ash/accessibility/select_to_speak_event_handler_delegate_impl.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -77,9 +78,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/media_session_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
@@ -275,7 +273,8 @@ AccessibilityManager* AccessibilityManager::Get() {
 void AccessibilityManager::ShowAccessibilityHelp() {
   if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
     crosapi::BrowserManager::Get()->SwitchToTab(
-        GURL(chrome::kChromeAccessibilityHelpURL));
+        GURL(chrome::kChromeAccessibilityHelpURL),
+        /*path_behavior=*/NavigateParams::RESPECT);
     return;
   }
 
@@ -288,8 +287,9 @@ void AccessibilityManager::ShowAccessibilityHelp() {
 AccessibilityManager::AccessibilityManager() {
   session_observation_.Observe(session_manager::SessionManager::Get());
 
-  notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                              content::NotificationService::AllSources());
+  on_app_terminating_subscription_ =
+      browser_shutdown::AddAppTerminatingCallback(base::BindOnce(
+          &AccessibilityManager::OnAppTerminating, base::Unretained(this)));
 
   focus_changed_subscription_ =
       content::BrowserAccessibilityState::GetInstance()
@@ -1512,11 +1512,7 @@ void AccessibilityManager::PlayVolumeAdjustSound() {
   }
 }
 
-void AccessibilityManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+void AccessibilityManager::OnAppTerminating() {
   app_terminating_ = true;
 }
 
@@ -2197,6 +2193,46 @@ speech::LanguageCode AccessibilityManager::GetDictationLanguageCode() {
   DCHECK(profile_);
   return speech::GetLanguageCode(
       profile_->GetPrefs()->GetString(prefs::kAccessibilityDictationLocale));
+}
+
+void AccessibilityManager::InstallPumpkinForDictation(
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK(!callback.is_null());
+  if (!::features::IsExperimentalAccessibilityDictationWithPumpkinEnabled() ||
+      !IsDictationEnabled()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!pumpkin_installer_)
+    pumpkin_installer_ = std::make_unique<PumpkinInstaller>();
+
+  // Save `callback` and run it after the installation succeeds or fails.
+  install_pumpkin_callback_ = std::move(callback);
+  pumpkin_installer_->MaybeInstall(
+      base::BindOnce(&AccessibilityManager::OnPumpkinInstalled,
+                     base::Unretained(this)),
+      base::BindRepeating([](double progress) {}),
+      base::BindOnce(&AccessibilityManager::OnPumpkinError,
+                     base::Unretained(this)));
+}
+
+void AccessibilityManager::OnPumpkinInstalled(bool success) {
+  DCHECK(!install_pumpkin_callback_.is_null());
+  if (!::features::IsExperimentalAccessibilityDictationWithPumpkinEnabled()) {
+    std::move(install_pumpkin_callback_).Run(false);
+    return;
+  }
+
+  std::move(install_pumpkin_callback_).Run(success);
+  is_pumpkin_installed_for_testing_ = success;
+}
+
+void AccessibilityManager::OnPumpkinError(const std::string& error) {
+  DCHECK(!install_pumpkin_callback_.is_null());
+  std::move(install_pumpkin_callback_).Run(false);
+  is_pumpkin_installed_for_testing_ = false;
+  // TODO(akihiroota): Consider showing the error message to the user.
 }
 
 }  // namespace ash

@@ -360,7 +360,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
     bool TransactionInReaders(Transaction* transaction) const;
 
-    raw_ptr<disk_cache::Entry> disk_entry = nullptr;
+    const raw_ptr<disk_cache::Entry> disk_entry;
 
     // Indicates if the disk_entry was opened or not (i.e.: created).
     // It is set to true when a transaction is added to an entry so that other,
@@ -420,7 +420,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   int GetBackendForTransaction(Transaction* transaction);
 
   // Generates the cache key for this request.
-  static std::string GenerateCacheKey(const HttpRequestInfo*);
+  static std::string GenerateCacheKey(const HttpRequestInfo*,
+                                      bool use_single_keyed_cache);
 
   // Dooms the entry selected by |key|, if it is currently in the list of active
   // entries.
@@ -645,18 +646,22 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   static const char kDoubleKeySeparator[];
   static const char kSubframeDocumentResourcePrefix[];
 
+  // Used for single-keyed entries if the cache is split.
+  static const char kSingleKeyPrefix[];
+  static const char kSingleKeySeparator[];
+
   // Variables ----------------------------------------------------------------
 
   raw_ptr<NetLog> net_log_;
 
   // Used when lazily constructing the disk_cache_.
   std::unique_ptr<BackendFactory> backend_factory_;
-  bool building_backend_;
-  bool bypass_lock_for_test_;
-  bool bypass_lock_after_headers_for_test_;
-  bool fail_conditionalization_for_test_;
+  bool building_backend_ = false;
+  bool bypass_lock_for_test_ = false;
+  bool bypass_lock_after_headers_for_test_ = false;
+  bool fail_conditionalization_for_test_ = false;
 
-  Mode mode_;
+  Mode mode_ = NORMAL;
 
   std::unique_ptr<HttpTransactionFactory> network_layer_;
 

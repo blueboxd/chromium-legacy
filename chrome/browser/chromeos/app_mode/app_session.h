@@ -54,7 +54,8 @@ enum class KioskSessionState {
   kStopped = 3,
   kPluginCrashed = 4,
   kPluginHung = 5,
-  kWebWithLacrosStarted = 6,
+  // No longer used, use kWebStarted for lacros platform.
+  // kWebWithLacrosStarted = 6, 
   kRestored = 7,
   kMaxValue = kRestored,
 };
@@ -71,14 +72,11 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Initializes an app session.
+  // Initializes an app session for Chrome App Kiosk.
   virtual void Init(Profile* profile, const std::string& app_id);
 
   // Initializes an app session for Web kiosk.
   virtual void InitForWebKiosk(Browser* browser);
-
-  // Initializes an app session for Web kiosk with lacros.
-  virtual void InitForWebKioskWithLacros(Profile* profile);
 
   // Invoked when GuestViewManager adds a guest web contents.
   void OnGuestAdded(content::WebContents* guest_web_contents);
@@ -98,7 +96,8 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
 
  private:
   // AppWindowHandler watches for app window and exits the session when the
-  // last window of a given app is closed.
+  // last window of a given app is closed. This class is only used for Chrome
+  // App Kiosk.
   class AppWindowHandler;
 
   // BrowserWindowHandler monitors Browser object being created during

@@ -166,22 +166,6 @@ public final class ChromePreferenceKeys {
     public static final String CONTENT_SUGGESTIONS_SHOWN = "content_suggestions_shown";
 
     /**
-     * An encoded set of outcomes of user interaction with Contextual Search, stored as an int.
-     */
-    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES =
-            "contextual_search_previous_interaction_encoded_outcomes";
-    /**
-     * A user interaction event ID for interaction with Contextual Search, stored as a long.
-     */
-    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID =
-            "contextual_search_previous_interaction_event_id";
-    /**
-     * A timestamp indicating when we updated the user interaction with Contextual Search, stored
-     * as a long, with resolution in days.
-     */
-    public static final String CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP =
-            "contextual_search_previous_interaction_timestamp";
-    /**
      * The number of times a tap gesture caused a Contextual Search Quick Answer to be shown since
      * the last time the panel was opened.  Note legacy string value without "open".
      */
@@ -340,19 +324,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED =
             "network_service_warm_up_enabled";
-    /**
-     * Key for whether PrefetchBackgroundTask should load native in service manager only mode.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
-            "service_manager_for_background_prefetch";
-    /**
-     * Key for whether DownloadResumptionBackgroundTask should load native in service manager only
-     * mode.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION =
-            "service_manager_for_download_resumption";
     /**
      * Whether or not the start surface is enabled.
      * Default value is false.
@@ -803,12 +774,6 @@ public final class ChromePreferenceKeys {
     public static final String SIGNIN_AND_SYNC_PROMO_SHOW_COUNT =
             "enhanced_bookmark_signin_promo_show_count";
 
-    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS =
-            "signin_promo_impressions_count_bookmarks";
-    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP =
-            "Chrome.SigninPromo.NTPImpressions";
-    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS =
-            "signin_promo_impressions_count_settings";
     public static final String SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES =
             "signin_promo_last_shown_account_names";
     public static final String SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION =
@@ -1078,7 +1043,6 @@ public final class ChromePreferenceKeys {
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,
                 SHOW_START_SEGMENTATION_RESULT,
-                SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP,
                 SYNC_PROMO_SHOW_COUNT.pattern(),
                 SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME,
                 SIGNIN_PROMO_NTP_LAST_SHOWN_TIME,

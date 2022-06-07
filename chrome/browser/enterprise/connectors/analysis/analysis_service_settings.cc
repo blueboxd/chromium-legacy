@@ -4,6 +4,7 @@
 
 #include "chrome/browser/enterprise/connectors/analysis/analysis_service_settings.h"
 
+#include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/url_matcher/url_util.h"
@@ -22,10 +23,14 @@ AnalysisServiceSettings::AnalysisServiceSettings(
       settings_value.FindStringKey(kKeyServiceProvider);
   if (service_provider_name) {
     service_provider_name_ = *service_provider_name;
-    service_provider_ =
-        service_provider_config.GetServiceProvider(*service_provider_name);
-    if (!service_provider_)
+    if (service_provider_config.count(service_provider_name_)) {
+      analysis_config_ =
+          service_provider_config.at(service_provider_name_).analysis;
+    }
+    if (!analysis_config_) {
+      DLOG(ERROR) << "No analysis config for corresponding service provider";
       return;
+    }
   } else {
     return;
   }
@@ -34,7 +39,7 @@ AnalysisServiceSettings::AnalysisServiceSettings(
   // settings.*_pattern_settings. No enable patterns implies the settings are
   // invalid.
   matcher_ = std::make_unique<url_matcher::URLMatcher>();
-  url_matcher::URLMatcherConditionSet::ID id(0);
+  base::MatcherStringPattern::ID id(0);
   const base::Value* enable = settings_value.FindListKey(kKeyEnable);
   if (enable && enable->is_list() && !enable->GetListDeprecated().empty()) {
     for (const base::Value& value : enable->GetListDeprecated())
@@ -109,7 +114,7 @@ AnalysisServiceSettings::AnalysisServiceSettings(
 absl::optional<AnalysisServiceSettings::URLPatternSettings>
 AnalysisServiceSettings::GetPatternSettings(
     const PatternSettings& patterns,
-    url_matcher::URLMatcherConditionSet::ID match) {
+    base::MatcherStringPattern::ID match) {
   // If the pattern exists directly in the map, return its settings.
   if (patterns.count(match) == 1)
     return patterns.at(match);
@@ -147,7 +152,7 @@ absl::optional<AnalysisSettings> AnalysisServiceSettings::GetAnalysisSettings(
   settings.block_password_protected_files = block_password_protected_files_;
   settings.block_large_files = block_large_files_;
   settings.block_unsupported_file_types = block_unsupported_file_types_;
-  settings.analysis_url = GURL(service_provider_->analysis_url());
+  settings.analysis_url = GURL(analysis_config_->url);
   DCHECK(settings.analysis_url.is_valid());
   settings.minimum_data_size = minimum_data_size_;
   settings.custom_message_data = custom_message_data_;
@@ -195,9 +200,9 @@ absl::optional<bool> AnalysisServiceSettings::GetBypassJustificationRequired(
 void AnalysisServiceSettings::AddUrlPatternSettings(
     const base::Value& url_settings_value,
     bool enabled,
-    url_matcher::URLMatcherConditionSet::ID* id) {
+    base::MatcherStringPattern::ID* id) {
   DCHECK(id);
-  DCHECK(service_provider_);
+  DCHECK(analysis_config_);
   if (enabled)
     DCHECK(disabled_patterns_settings_.empty());
   else
@@ -210,9 +215,11 @@ void AnalysisServiceSettings::AddUrlPatternSettings(
     return;
 
   for (const base::Value& tag : tags->GetListDeprecated()) {
-    if (tag.is_string() &&
-        (service_provider_->analysis_tags().count(tag.GetString()) == 1)) {
-      setting.tags.insert(tag.GetString());
+    if (tag.is_string()) {
+      for (const auto& supported_tag : analysis_config_->supported_tags) {
+        if (tag.GetString() == supported_tag.name)
+          setting.tags.insert(tag.GetString());
+      }
     }
   }
 
@@ -231,10 +238,10 @@ void AnalysisServiceSettings::AddUrlPatternSettings(
 }
 
 std::set<std::string> AnalysisServiceSettings::GetTags(
-    const std::set<url_matcher::URLMatcherConditionSet::ID>& matches) const {
+    const std::set<base::MatcherStringPattern::ID>& matches) const {
   std::set<std::string> enable_tags;
   std::set<std::string> disable_tags;
-  for (const url_matcher::URLMatcherConditionSet::ID match : matches) {
+  for (const base::MatcherStringPattern::ID match : matches) {
     // Enabled patterns need to be checked first, otherwise they always match
     // the first disabled pattern.
     bool enable = true;
@@ -262,7 +269,7 @@ std::set<std::string> AnalysisServiceSettings::GetTags(
 
 bool AnalysisServiceSettings::IsValid() const {
   // The settings are invalid if no provider was given.
-  if (!service_provider_)
+  if (!analysis_config_)
     return false;
 
   // The settings are invalid if no enabled pattern(s) exist since that would

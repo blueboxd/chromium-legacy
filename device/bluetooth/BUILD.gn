@@ -462,7 +462,10 @@ component("bluetooth") {
         ]
         deps += [ "//services/data_decoder/public/mojom" ]
         if (is_chromeos_lacros) {
-          deps += [ "//chromeos/lacros" ]
+          deps += [
+            "//chromeos/lacros",
+            "//chromeos/startup",
+          ]
         }
       } else {
         use_real_dbus_clients = false

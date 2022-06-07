@@ -7,13 +7,14 @@
  * Unifieid polymer testing suite for shimless rma flow.
  *
  * To run all tests in a single instance (default, faster):
- * `browser_tests --gtest_filter=ShimlessRMA*``
+ * `browser_tests --gtest_filter=ShimlessRMABrowserTest*``
  *
  * To run each test in a new instance:
- * `browser_tests --run-manual --gtest_filter=ShimlessRMA.MANUAL_*``
+ * `browser_tests --run-manual --gtest_filter=ShimlessRMABrowserTest.MANUAL_*``
  *
  * To run a single test suite, such as 'AppTest':
- * `browser_tests --run-manual --gtest_filter=ShimlessRMA.MANUAL_AppTest`
+ * `browser_tests --run-manual
+ * --gtest_filter=ShimlessRMABrowserTest.MANUAL_AppTest`
  *
  */
 
@@ -34,7 +35,8 @@ this.ShimlessRMABrowserTest = class extends PolymerTest {
     return {
       enabled: [
         'chromeos::features::kShimlessRMAFlow',
-        'chromeos::features::kShimlessRMAEnableStandalone'
+        'chromeos::features::kShimlessRMAEnableStandalone',
+        'chromeos::features::kShimlessRMAOsUpdate'
       ]
     };
   }

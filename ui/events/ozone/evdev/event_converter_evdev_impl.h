@@ -45,6 +45,7 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdevImpl
 
   // EventConverterEvdev:
   void OnFileCanReadWithoutBlocking(int fd) override;
+  KeyboardType GetKeyboardType() const override;
   bool HasKeyboard() const override;
   bool HasTouchpad() const override;
   bool HasCapsLockLed() const override;
@@ -53,6 +54,7 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdevImpl
   void SetKeyFilter(bool enable_filter,
                     std::vector<DomCode> allowed_keys) override;
   void OnDisabled() override;
+  std::vector<uint64_t> GetKeyboardKeyBits() const override;
 
   void ProcessEvents(const struct input_event* inputs, int count);
 
@@ -83,8 +85,10 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdevImpl
   // Input device file descriptor.
   const base::ScopedFD input_device_fd_;
 
+  // KeyboardType
+  KeyboardType keyboard_type_;
+
   // Input modalities for this device.
-  bool has_keyboard_;
   bool has_touchpad_;
   bool has_numberpad_;
   bool has_stylus_switch_;
@@ -124,6 +128,9 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdevImpl
 
   // Callback to update keyboard devices when valid input is received.
   ReceivedValidInputCallback received_valid_input_callback_;
+
+  // Supported keyboard key bits.
+  std::vector<uint64_t> key_bits_;
 };
 
 }  // namespace ui

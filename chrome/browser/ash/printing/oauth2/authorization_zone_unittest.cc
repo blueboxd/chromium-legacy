@@ -45,9 +45,9 @@ class PrintingOAuth2AuthorizationZoneTest : public testing::Test {
 
   // Simulates Registration Request described in rfc7591, section 3.
   void ProcessRegistrationRequest(const std::string& client_id) {
-    base::flat_map<std::string, base::Value> fields;
+    base::Value::Dict fields;
     EXPECT_EQ("", server_.ReceivePOSTWithJSON(registration_uri_, fields));
-    fields["client_id"] = base::Value(client_id);
+    fields.Set("client_id", client_id);
     server_.ResponseWithJSON(net::HttpStatusCode::HTTP_CREATED, fields);
   }
 
@@ -126,6 +126,21 @@ TEST_F(PrintingOAuth2AuthorizationZoneTest, ParallelInitializations) {
   for (size_t i = 1; i < crs.size(); ++i) {
     EXPECT_EQ(crs[i].status, printing::oauth2::StatusCode::kOK);
   }
+}
+
+TEST_F(PrintingOAuth2AuthorizationZoneTest, PrefixInErrorMessage) {
+  CallbackResult cr;
+  CreateAuthorizationZone("");
+
+  // Respond with error to Metadata Request.
+  authorization_zone_->InitAuthorization("", BindResult(cr));
+  server_.ReceiveGET(metadata_uri_);
+  server_.ResponseWithJSON(net::HttpStatusCode::HTTP_INTERNAL_SERVER_ERROR, {});
+
+  // Check if the error message begins with the URI of the server.
+  EXPECT_EQ(cr.status, printing::oauth2::StatusCode::kServerError);
+  const std::string msg_prefix = "[" + authorization_server_uri_ + "]";
+  EXPECT_EQ(cr.data.substr(0, msg_prefix.length()), msg_prefix);
 }
 
 }  // namespace

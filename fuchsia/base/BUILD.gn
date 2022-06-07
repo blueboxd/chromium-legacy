@@ -13,33 +13,26 @@ source_set("base") {
   visibility = [
     "./test/*",
     "//chromecast/internal/*",
-    "//fuchsia/engine/*",
-    "//fuchsia/runners/*",
+    "//fuchsia_web/runners/*",
+    "//fuchsia_web/webengine/*",
+    "//fuchsia_web/webinstance_host/*",
   ]
   sources = [
-    "config_reader.cc",
-    "feedback_registration.cc",
     "fuchsia_dir_scheme.cc",
     "init_logging.cc",
-    "inspect.cc",
     "string_util.cc",
   ]
   public = [
-    "config_reader.h",
-    "feedback_registration.h",
     "fuchsia_dir_scheme.h",
     "init_logging.h",
-    "inspect.h",
     "string_util.h",
   ]
   deps = [
     "//base",
     "//build:branding_buildflags",
     "//components/version_info",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.feedback",
     "//third_party/fuchsia-sdk/sdk/pkg/fdio",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
-    "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
     "//url",
   ]
 }
@@ -51,8 +44,8 @@ source_set("modular") {
     ":cr_fuchsia_base_unittests__exec",
     "./test/*",
     "//chromecast/internal/*",
-    "//fuchsia/engine/*",
-    "//fuchsia/runners/*",
+    "//fuchsia_web/runners/*",
+    "//fuchsia_web/webengine/*",
   ]
   sources = [
     "agent_impl.cc",
@@ -71,7 +64,7 @@ source_set("modular") {
 
 # FIDL/Mojo adapters for MessagePorts.
 source_set("message_port") {
-  visibility = [ "//fuchsia/engine/*" ]
+  visibility = [ "//fuchsia_web/webengine/*" ]
   sources = [ "message_port.cc" ]
   public = [ "message_port.h" ]
   public_deps = [
@@ -88,31 +81,11 @@ source_set("message_port") {
   ]
 }
 
-source_set("legacymetrics") {
-  visibility = [
-    ":cr_fuchsia_base_unittests__exec",
-    "//chromecast/internal/*",
-    "//fuchsia/engine/*",
-  ]
-  sources = [
-    "legacymetrics_client.cc",
-    "legacymetrics_client.h",
-    "legacymetrics_histogram_flattener.cc",
-    "legacymetrics_histogram_flattener.h",
-    "legacymetrics_user_event_recorder.cc",
-    "legacymetrics_user_event_recorder.h",
-  ]
-  public = [ "legacymetrics_client.h" ]
-  deps = [ "//base" ]
-  public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.legacymetrics" ]
-  friend = [ ":*" ]
-}
-
 static_library("run_all_integration_tests") {
   testonly = true
   visibility = [
-    "//fuchsia/engine/*",
-    "//fuchsia/runners/*",
+    "//fuchsia_web/runners/*",
+    "//fuchsia_web/webengine/*",
   ]
   sources = [ "run_all_integration_tests.cc" ]
   deps = [ "//base/test:test_support" ]
@@ -120,16 +93,8 @@ static_library("run_all_integration_tests") {
 
 # Unit-tests for all //fuchsia/base utilities.
 test("cr_fuchsia_base_unittests") {
-  sources = [
-    "agent_impl_unittest.cc",
-    "config_reader_unittest.cc",
-    "inspect_unittest.cc",
-    "legacymetrics_client_unittest.cc",
-    "legacymetrics_histogram_flattener_unittest.cc",
-    "legacymetrics_user_event_recorder_unittest.cc",
-  ]
+  sources = [ "agent_impl_unittest.cc" ]
   deps = [
-    ":legacymetrics",
     ":modular",
     "//base",
     "//base:testfidl",
@@ -140,6 +105,5 @@ test("cr_fuchsia_base_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
-    "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
   ]
 }

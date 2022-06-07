@@ -63,6 +63,10 @@ class ContentSettingsPattern;
 class ContentSettingsTypeSet;
 class Profile;
 
+namespace ash {
+class SystemWebAppManager;
+}
+
 namespace apps {
 struct AppLaunchParams;
 }
@@ -119,6 +123,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   WebAppPublisherHelper(Profile* profile,
                         WebAppProvider* provider,
+                        ash::SystemWebAppManager* swa_manager,
                         apps::AppType app_type,
                         Delegate* delegate,
                         bool observe_media_requests);
@@ -134,9 +139,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   static webapps::WebappUninstallSource
   ConvertUninstallSourceToWebAppUninstallSource(
       apps::mojom::UninstallSource uninstall_source);
-
-  // Returns true if the app is published as a web app.
-  static bool Accepts(const std::string& app_id);
 
   // Must be called before profile keyed services are destroyed.
   void Shutdown();
@@ -247,11 +249,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   // web_app::RunOnOsLoginMode.
   web_app::RunOnOsLoginMode ConvertOsLoginModeToWebAppConstants(
       apps::mojom::RunOnOsLoginMode login_mode);
-
-  // Converts RunOnOsLoginMode from web_app::RunOnOsLoginMode to
-  // apps::RunOnOsLoginMode.
-  apps::RunOnOsLoginMode ConvertOsLoginMode(
-      web_app::RunOnOsLoginMode login_mode);
 
   void PublishWindowModeUpdate(const std::string& app_id,
                                blink::mojom::DisplayMode display_mode);
@@ -417,6 +414,8 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   const raw_ptr<Profile> profile_;
 
   const raw_ptr<WebAppProvider> provider_;
+  // nullptr for Lacros Chrome, valid pointer otherwise.
+  const raw_ptr<ash::SystemWebAppManager> swa_manager_;
 
   // The app type of the publisher. The app type is kSystemWeb if the web apps
   // are serving from Lacros, and the app type is kWeb for all other cases.

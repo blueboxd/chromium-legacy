@@ -76,8 +76,6 @@ ClientHintToPolicyFeatureMap MakeClientHintToPolicyFeatureMap() {
        mojom::PermissionsPolicyFeature::kClientHintUAFull},
       {network::mojom::WebClientHintsType::kUAWoW64,
        mojom::PermissionsPolicyFeature::kClientHintUAWoW64},
-      {network::mojom::WebClientHintsType::kPartitionedCookies,
-       mojom::PermissionsPolicyFeature::kClientHintPartitionedCookies},
       {network::mojom::WebClientHintsType::kSaveData,
        mojom::PermissionsPolicyFeature::kClientHintSaveData},
   };
@@ -122,10 +120,8 @@ bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
     case network::mojom::WebClientHintsType::kSaveData:
     case network::mojom::WebClientHintsType::kUA:
     case network::mojom::WebClientHintsType::kUAMobile:
-      return true;
     case network::mojom::WebClientHintsType::kUAPlatform:
-      return base::FeatureList::IsEnabled(
-          features::kUACHPlatformEnabledByDefault);
+      return true;
     default:
       return false;
   }

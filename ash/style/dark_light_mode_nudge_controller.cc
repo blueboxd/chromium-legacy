@@ -60,10 +60,17 @@ bool DarkLightModeNudgeController::ShouldShowNudge() const {
   if (!chromeos::features::IsDarkLightModeEnabled())
     return false;
 
+  // Do not show the nudge if it is set to be hidden in the tests.
+  if (hide_nudge_for_testing_)
+    return false;
+
+  auto* session_controller = Shell::Get()->session_controller();
+  if (!session_controller->IsActiveUserSessionStarted())
+    return false;
+
   absl::optional<user_manager::UserType> user_type =
-      Shell::Get()->session_controller()->GetUserType();
-  // This can only be called while a user is logged in, so `user_type` should
-  // never be empty.
+      session_controller->GetUserType();
+  // Must have a `user_type` because of the active user session check above.
   DCHECK(user_type);
   switch (*user_type) {
     case user_manager::USER_TYPE_REGULAR:

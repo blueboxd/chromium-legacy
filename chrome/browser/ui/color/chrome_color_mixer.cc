@@ -289,6 +289,12 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorInfoBarContentAreaSeparator] =
       ui::AlphaBlend(kColorToolbarButtonIcon, kColorInfoBarBackground, 0x3A);
   mixer[kColorInfoBarForeground] = {kColorToolbarText};
+  mixer[kColorIntentPickerItemBackgroundHovered] = ui::SetAlpha(
+      ui::GetColorWithMaxContrast(ui::kColorDialogBackground), 0x0F);  // 6%.
+  // TODO(crbug.com/1330183): Improve selection color.
+  mixer[kColorIntentPickerItemBackgroundSelected] = ui::BlendForMinContrast(
+      ui::kColorDialogBackground, ui::kColorDialogBackground, ui::kColorAccent,
+      1.2);
   mixer[kColorLocationBarBorder] = {SkColorSetA(SK_ColorBLACK, 0x4D)};
   mixer[kColorLocationBarBorderOpaque] =
       ui::GetResultingPaintColor(kColorLocationBarBorder, kColorToolbar);
@@ -323,8 +329,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorNewTabPageHeader] = {SkColorSetRGB(0x96, 0x96, 0x96)};
   mixer[kColorNewTabPageLink] = {dark_mode ? gfx::kGoogleBlue300
                                            : SkColorSetRGB(0x06, 0x37, 0x74)};
-  mixer[kColorNewTabPageLogo] = {kColorNewTabPageLogoUnthemed};
-  mixer[kColorNewTabPageLogoUnthemed] = {SkColorSetRGB(0xEE, 0xEE, 0xEE)};
+  mixer[kColorNewTabPageLogo] = {kColorNewTabPageLogoUnthemedLight};
+  mixer[kColorNewTabPageLogoUnthemedDark] = {gfx::kGoogleGrey700};
+  mixer[kColorNewTabPageLogoUnthemedLight] = {SkColorSetRGB(0xEE, 0xEE, 0xEE)};
   if (dark_mode) {
     mixer[kColorNewTabPageMostVisitedTileBackground] = {gfx::kGoogleGrey900};
   } else {
@@ -401,6 +408,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorQuickAnswersReportQueryButtonForeground] = {ui::kColorAccent};
   mixer[kColorScreenshotCapturedImageBackground] = {ui::kColorBubbleBackground};
   mixer[kColorScreenshotCapturedImageBorder] = {ui::kColorMidground};
+  mixer[kColorSidePanelBackground] = {kColorToolbar};
   mixer[kColorSidePanelContentAreaSeparator] = {
       kColorToolbarContentAreaSeparator};
   mixer[kColorStatusBubbleBackgroundFrameActive] = {

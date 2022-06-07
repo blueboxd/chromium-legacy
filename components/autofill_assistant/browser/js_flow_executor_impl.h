@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/autofill_assistant/browser/client_status.h"
@@ -21,7 +22,8 @@ namespace autofill_assistant {
 class JsFlowExecutorImpl : public JsFlowExecutor {
  public:
   // |delegate| must outlive the JsFlowExecutorImpl.
-  JsFlowExecutorImpl(content::WebContents* web_contents, Delegate* delegate);
+  JsFlowExecutorImpl(content::WebContents* web_contents_for_js_execution,
+                     Delegate* delegate);
   ~JsFlowExecutorImpl() override;
   JsFlowExecutorImpl(const JsFlowExecutorImpl&) = delete;
   JsFlowExecutorImpl& operator=(const JsFlowExecutorImpl&) = delete;
@@ -118,7 +120,7 @@ class JsFlowExecutorImpl : public JsFlowExecutor {
     return true;
   }
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
   int isolated_world_context_id_ = -1;
 

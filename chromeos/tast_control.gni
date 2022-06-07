@@ -79,6 +79,9 @@ tast_disabled_tests_from_chrome_all = [
   "security.NetworkListenersARC",
   "security.SELinuxProcessesARC",
 
+  # https://b/232952603
+  "security.SELinuxProcessesARC.vm",
+
   # https://crbug.com/1282369
   "apps.LaunchHelpAppOffline",
 
@@ -191,9 +194,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1315123
   "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
 
-  # https://crbug.com/1315880
-  "u2fd.WebauthnUsingPassword.tpm1",
-
   # https://crbug.com/1318989
   "assistant.StartupInSignedOutMode",
   "login.ChangePassword",
@@ -205,9 +205,6 @@ tast_disabled_tests_from_chrome_all = [
   "policy.PopupsForURLCheck.allowlist",
 
   # https://crbug.com/1323628
-  "crostini.AppEclipse",
-  "crostini.AppAndroidStudio",
-  "crostini.AppEmacs",
   "crostini.AppVscode",
   "crostini.AppGeditFilesharing",
 
@@ -219,6 +216,38 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1326403
   "policy.AccessibilityPolicies.large_cursor",
+
+  # https://crbug.com/1327171
+  "policy.PopupsForURLCheck.default",
+
+  # https://crbug.com/1327345
+  "policy.ChromePolicyPageStatusTimestamps.ash",
+
+  # https://crbug.com/1327361
+  "policy.FullscreenAllowed",
+
+  # https://crbug.com/1328128
+  "policy.PopupsForURLCheck.blocklist",
+
+  # https://crbug.com/1329734
+  "health.DiagnosticsList",
+  "health.DiagnosticsCancel.urandom",
+
+  # https://crbug.com/1329761
+  "policy.DefaultSerialGuardSetting",
+
+  # b/233264555
+  "inputs.PhysicalKeyboardEmojiSuggestion",
+  "inputs.PhysicalKeyboardEmojiSuggestion.guest",
+  "inputs.PhysicalKeyboardEmojiSuggestion.incognito",
+
+  # http://b/229032436
+  "health.DiagnosticsRun.captive_portal",
+  "health.DiagnosticsRun.cpu_stress",
+  "health.DiagnosticsRun.cpu_cache",
+
+  # http://b234699971
+  "crostini.AppGeditUnshareFolder",
 ]
 
 # To create filters to be used on specific builders add them like this:
@@ -227,4 +256,7 @@ tast_disabled_tests_from_chrome_all = [
 # test config as 'tast_expr_key'
 # To disable a specific test in lacros_all_tast_tests, add it the following
 # list and cite a bug.
-tast_disabled_tests_from_lacros_all = []
+tast_disabled_tests_from_lacros_all = [
+  # https://crbug.com/1329764
+  "policy.HistoryClustersVisible",
+]

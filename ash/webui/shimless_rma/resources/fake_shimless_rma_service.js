@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '/file_path.mojom-lite.js';
+
 import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_resolver.js';
 import {FakeObservables} from 'chrome://resources/ash/common/fake_observables.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -132,7 +134,7 @@ export class FakeShimlessRmaService {
       assert(this.stateIndex_ < this.states_.length);
       const state = this.states_[this.stateIndex_];
       this.setFakeCurrentState_(
-          state.state, state.canCancel, state.canGoBack, state.error);
+          state.state, state.canExit, state.canGoBack, state.error);
     }
     return this.methods_.resolveMethodWithDelay(
         'getCurrentState', this.resolveMethodDelayMs_);
@@ -153,13 +155,13 @@ export class FakeShimlessRmaService {
       assert(this.stateIndex_ < this.states_.length);
       const state = this.states_[this.stateIndex_];
       this.setFakePrevState_(
-          state.state, state.canCancel, state.canGoBack,
+          state.state, state.canExit, state.canGoBack,
           RmadErrorCode.kTransitionFailed);
     } else {
       this.stateIndex_--;
       const state = this.states_[this.stateIndex_];
       this.setFakePrevState_(
-          state.state, state.canCancel, state.canGoBack, state.error);
+          state.state, state.canExit, state.canGoBack, state.error);
     }
     return this.methods_.resolveMethodWithDelay(
         'transitionPreviousState', this.resolveMethodDelayMs_);
@@ -720,6 +722,20 @@ export class FakeShimlessRmaService {
     this.methods_.setResult('getLog', {log: log, error: RmadErrorCode.kOk});
   }
 
+  /**
+   * @return {!Promise<{savePath: !mojoBase.mojom.FilePath, error:
+   *     !RmadErrorCode}>}
+   */
+  saveLog() {
+    return this.methods_.resolveMethod('saveLog');
+  }
+
+  /** @param {!mojoBase.mojom.FilePath} savePath */
+  setSaveLogResult(savePath) {
+    this.methods_.setResult(
+        'saveLog', {savePath: savePath, error: RmadErrorCode.kOk});
+  }
+
   /** @return {!Promise<{powerwashRequired: boolean, error: !RmadErrorCode}>} */
   getPowerwashRequired() {
     return this.methods_.resolveMethod('getPowerwashRequired');
@@ -918,12 +934,16 @@ export class FakeShimlessRmaService {
     if (this.automaticallyTriggerProvisioningObservation_) {
       // Fake progress over 4 seconds.
       this.triggerProvisioningObserver(
-          ProvisioningStatus.kInProgress, 0.25, 1000);
+          ProvisioningStatus.kInProgress, 0.25, ProvisioningError.kUnknown,
+          1000);
       this.triggerProvisioningObserver(
-          ProvisioningStatus.kInProgress, 0.5, 2000);
+          ProvisioningStatus.kInProgress, 0.5, ProvisioningError.kUnknown,
+          2000);
       this.triggerProvisioningObserver(
-          ProvisioningStatus.kInProgress, 0.75, 3000);
-      this.triggerProvisioningObserver(ProvisioningStatus.kComplete, 1.0, 4000);
+          ProvisioningStatus.kInProgress, 0.75, ProvisioningError.kUnknown,
+          3000);
+      this.triggerProvisioningObserver(
+          ProvisioningStatus.kComplete, 1.0, ProvisioningError.kUnknown, 4000);
     }
   }
 
@@ -1038,10 +1058,13 @@ export class FakeShimlessRmaService {
         });
     if (this.automaticallyTriggerFinalizationObservation_) {
       this.triggerFinalizationObserver(
-          FinalizationStatus.kInProgress, 0.25, 1000);
+          FinalizationStatus.kInProgress, 0.25, FinalizationError.kUnknown,
+          1000);
       this.triggerFinalizationObserver(
-          FinalizationStatus.kInProgress, 0.75, 2000);
-      this.triggerFinalizationObserver(FinalizationStatus.kComplete, 1.0, 3000);
+          FinalizationStatus.kInProgress, 0.75, FinalizationError.kUnknown,
+          2000);
+      this.triggerFinalizationObserver(
+          FinalizationStatus.kComplete, 1.0, FinalizationError.kUnknown, 3000);
     }
   }
 
@@ -1108,11 +1131,12 @@ export class FakeShimlessRmaService {
    * Causes the provisioning observer to fire after a delay.
    * @param {!ProvisioningStatus} status
    * @param {number} progress
+   * @param {!ProvisioningError} error
    * @param {number} delayMs
    */
-  triggerProvisioningObserver(status, progress, delayMs) {
+  triggerProvisioningObserver(status, progress, error, delayMs) {
     return this.triggerObserverAfterMs(
-        'ProvisioningObserver_onProvisioningUpdated', [status, progress],
+        'ProvisioningObserver_onProvisioningUpdated', [status, progress, error],
         delayMs);
   }
 
@@ -1154,11 +1178,12 @@ export class FakeShimlessRmaService {
    * Causes the finalization observer to fire after a delay.
    * @param {!FinalizationStatus} status
    * @param {number} progress
+   * @param {!FinalizationError} error
    * @param {number} delayMs
    */
-  triggerFinalizationObserver(status, progress, delayMs) {
+  triggerFinalizationObserver(status, progress, error, delayMs) {
     return this.triggerObserverAfterMs(
-        'FinalizationObserver_onFinalizationUpdated', [status, progress],
+        'FinalizationObserver_onFinalizationUpdated', [status, progress, error],
         delayMs);
   }
 
@@ -1202,6 +1227,7 @@ export class FakeShimlessRmaService {
     // undefined by default.
     this.components_ = [];
     this.setGetLogResult('');
+    this.setSaveLogResult({'path': ''});
   }
 
   /**
@@ -1216,7 +1242,7 @@ export class FakeShimlessRmaService {
 
     this.methods_.register('abortRma');
 
-    this.methods_.register('canCancel');
+    this.methods_.register('canExit');
     this.methods_.register('canGoBack');
 
     this.methods_.register('beginFinalization');
@@ -1283,6 +1309,7 @@ export class FakeShimlessRmaService {
     this.methods_.register('writeProtectManuallyEnabled');
 
     this.methods_.register('getLog');
+    this.methods_.register('saveLog');
     this.methods_.register('getPowerwashRequired');
     this.methods_.register('endRma');
 
@@ -1332,13 +1359,13 @@ export class FakeShimlessRmaService {
       assert(this.stateIndex_ < this.states_.length);
       const state = this.states_[this.stateIndex_];
       this.setFakeStateForMethod_(
-          method, state.state, state.canCancel, state.canGoBack,
+          method, state.state, state.canExit, state.canGoBack,
           RmadErrorCode.kTransitionFailed);
     } else if (this.states_[this.stateIndex_].state !== expectedState) {
       // Error: Called in wrong state.
       const state = this.states_[this.stateIndex_];
       this.setFakeStateForMethod_(
-          method, state.state, state.canCancel, state.canGoBack,
+          method, state.state, state.canExit, state.canGoBack,
           RmadErrorCode.kRequestInvalid);
     } else {
       // Success.
@@ -1350,7 +1377,7 @@ export class FakeShimlessRmaService {
       }
       const state = this.states_[this.stateIndex_];
       this.setFakeStateForMethod_(
-          method, state.state, state.canCancel, state.canGoBack, state.error);
+          method, state.state, state.canExit, state.canGoBack, state.error);
     }
     return this.methods_.resolveMethodWithDelay(
         method, this.resolveMethodDelayMs_);
@@ -1359,28 +1386,28 @@ export class FakeShimlessRmaService {
   /**
    * Sets the value that will be returned when calling getCurrent().
    * @param {!State} state
-   * @param {boolean} canCancel,
+   * @param {boolean} canExit,
    * @param {boolean} canGoBack,
    * @param {!RmadErrorCode} error
    * @private
    */
-  setFakeCurrentState_(state, canCancel, canGoBack, error) {
+  setFakeCurrentState_(state, canExit, canGoBack, error) {
     this.setFakeStateForMethod_(
-        'getCurrentState', state, canCancel, canGoBack, error);
+        'getCurrentState', state, canExit, canGoBack, error);
   }
 
   /**
    * Sets the value that will be returned when calling
    * transitionPreviousState().
    * @param {!State} state
-   * @param {boolean} canCancel,
+   * @param {boolean} canExit,
    * @param {boolean} canGoBack,
    * @param {!RmadErrorCode} error
    * @private
    */
-  setFakePrevState_(state, canCancel, canGoBack, error) {
+  setFakePrevState_(state, canExit, canGoBack, error) {
     this.setFakeStateForMethod_(
-        'transitionPreviousState', state, canCancel, canGoBack, error);
+        'transitionPreviousState', state, canExit, canGoBack, error);
   }
 
   /**
@@ -1388,15 +1415,15 @@ export class FakeShimlessRmaService {
    * that update state. e.g. setSameOwner()
    * @param {string} method
    * @param {!State} state
-   * @param {boolean} canCancel,
+   * @param {boolean} canExit,
    * @param {boolean} canGoBack,
    * @param {!RmadErrorCode} error
    * @private
    */
-  setFakeStateForMethod_(method, state, canCancel, canGoBack, error) {
+  setFakeStateForMethod_(method, state, canExit, canGoBack, error) {
     this.methods_.setResult(method, /** @type {!StateResult} */ ({
                               state: state,
-                              canCancel: canCancel,
+                              canExit: canExit,
                               canGoBack: canGoBack,
                               error: error
                             }));

@@ -307,6 +307,23 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
                                 kContentStats.shared_state_size / 1024, 1);
 }
 
+TEST_F(MetricsReporterTest, ReportsLoadStreamStatusWhenDisabled) {
+  reporter_->OnLoadStream(kForYouStream, LoadStreamStatus::kDataInStoreIsStale,
+                          LoadStreamStatus::kLoadNotAllowedDisabled,
+                          /*is_initial_load=*/true,
+                          /*loaded_new_content_from_network=*/false,
+                          /*stored_content_age=*/base::Days(5), kContentStats,
+                          DefaultRequestMetadata(),
+                          std::make_unique<LoadLatencyTimes>());
+
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.LoadStreamStatus.Initial",
+      LoadStreamStatus::kLoadNotAllowedDisabled, 1);
+  histogram_.ExpectUniqueSample(
+      "ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore",
+      LoadStreamStatus::kDataInStoreIsStale, 1);
+}
+
 TEST_F(MetricsReporterTest, WebFeed_ReportsLoadStreamStatus) {
   reporter_->OnLoadStream(kWebFeedStream, LoadStreamStatus::kDataInStoreIsStale,
                           LoadStreamStatus::kLoadedFromNetwork,
@@ -986,50 +1003,22 @@ TEST_F(MetricsReporterTest, NetworkRequestCompleteReportsUma) {
       123, 1);
 }
 
-TEST_F(MetricsReporterTest, ReportNotice) {
-  reporter_->OnNoticeCreated(kForYouStream, "youtube");
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.NoticeCreated.Youtube",
-                                true, 1);
-
-  reporter_->OnNoticeViewed(kWebFeedStream, "YOUTUBE");
-  histogram_.ExpectUniqueSample(
-      "ContentSuggestions.Feed.WebFeed.NoticeViewed.Youtube", true, 1);
-
-  reporter_->OnNoticeOpenAction(kForYouStream, "youTube");
-  histogram_.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeOpenAction.Youtube", true, 1);
-
-  reporter_->OnNoticeDismissed(kWebFeedStream, "Youtube");
-  histogram_.ExpectUniqueSample(
-      "ContentSuggestions.Feed.WebFeed.NoticeDismissed.Youtube", true, 1);
-
-  reporter_->OnNoticeAcknowledged(kForYouStream, "Youtube",
-                                  NoticeAcknowledgementPath::kViaOpenAction);
-  histogram_.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true, 1);
-  histogram_.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeAcknowledgementPath.Youtube",
-      NoticeAcknowledgementPath::kViaOpenAction, 1);
-
-  // Invalid key.
-  reporter_->OnNoticeAcknowledged(kForYouStream, "Test",
-                                  NoticeAcknowledgementPath::kViaOpenAction);
-  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.InvalidNoticeKey",
-                                true, 1);
-  EXPECT_TRUE(
-      histogram_
-          .GetAllSamples("ContentSuggestions.Feed.NoticeAcknowledged.Test")
-          .empty());
-  EXPECT_TRUE(histogram_
-                  .GetAllSamples(
-                      "ContentSuggestions.Feed.NoticeAcknowledgementPath.Test")
-                  .empty());
+TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedNotEnabled) {
+  reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
+                                   /*isFeedVisible=*/false,
+                                   /*isSignedIn=*/false,
+                                   /*isEnabled=*/false, feedstore::Metadata());
+  histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
+                                UserSettingsOnStart::kFeedNotEnabled, 1);
+  EXPECT_EQ(std::vector<std::string>({"FeedNotEnabled"}),
+            register_feed_user_settings_field_trial_calls_);
 }
 
-TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedNotEnabled) {
+TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedNotEnabledByPolicy) {
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/false,
                                    /*isFeedVisible=*/false,
-                                   /*isSignedIn=*/false, feedstore::Metadata());
+                                   /*isSignedIn=*/false,
+                                   /*isEnabled=*/true, feedstore::Metadata());
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kFeedNotEnabledByPolicy,
                                 1);
@@ -1040,7 +1029,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedNotEnabled) {
 TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedNotVisible_SignedOut) {
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/false,
-                                   /*isSignedIn=*/false, feedstore::Metadata());
+                                   /*isSignedIn=*/false,
+                                   /*isEnabled=*/true, feedstore::Metadata());
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kFeedNotVisibleSignedOut,
                                 1);
@@ -1051,7 +1041,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedNotVisible_SignedOut) {
 TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedNotVisible_SignedIn) {
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/false,
-                                   /*isSignedIn=*/true, feedstore::Metadata());
+                                   /*isSignedIn=*/true,
+                                   /*isEnabled=*/true, feedstore::Metadata());
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kFeedNotVisibleSignedIn,
                                 1);
@@ -1062,7 +1053,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedNotVisible_SignedIn) {
 TEST_F(MetricsReporterTest, UserSettingsOnStart_EnabledSignedOut) {
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/true,
-                                   /*isSignedIn=*/false, feedstore::Metadata());
+                                   /*isSignedIn=*/false,
+                                   /*isEnabled=*/true, feedstore::Metadata());
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kSignedOut, 1);
   EXPECT_EQ(std::vector<std::string>({"SignedOut"}),
@@ -1076,7 +1068,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_WaaOffDpOff) {
       feedstore::ToTimestampMillis(base::Time::Now() - kUserSettingsMaxAge));
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/true,
-                                   /*isSignedIn=*/true, metadata);
+                                   /*isSignedIn=*/true,
+                                   /*isEnabled=*/true, metadata);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kSignedInWaaOffDpOff, 1);
   EXPECT_EQ(std::vector<std::string>({"SignedInWaaOffDpOff"}),
@@ -1091,7 +1084,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_WaaOnDpOff) {
   metadata.set_web_and_app_activity_enabled(true);
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/true,
-                                   /*isSignedIn=*/true, metadata);
+                                   /*isSignedIn=*/true,
+                                   /*isEnabled=*/true, metadata);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kSignedInWaaOnDpOff, 1);
   EXPECT_EQ(std::vector<std::string>({"SignedInWaaOnDpOff"}),
@@ -1109,7 +1103,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_WaaOffDpOn) {
   metadata.set_discover_personalization_enabled(true);
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/true,
-                                   /*isSignedIn=*/true, metadata);
+                                   /*isSignedIn=*/true,
+                                   /*isEnabled=*/true, metadata);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kSignedInWaaOffDpOn, 1);
   EXPECT_EQ(std::vector<std::string>({"SignedInWaaOffDpOn"}),
@@ -1128,7 +1123,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_WaaOnDpOn) {
   metadata.set_web_and_app_activity_enabled(true);
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/true,
-                                   /*isSignedIn=*/true, metadata);
+                                   /*isSignedIn=*/true,
+                                   /*isEnabled=*/true, metadata);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kSignedInWaaOnDpOn, 1);
   EXPECT_EQ(std::vector<std::string>({"SignedInWaaOnDpOn"}),
@@ -1142,7 +1138,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedDataTooOld) {
                                    base::Seconds(1)));
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/true,
-                                   /*isSignedIn=*/true, metadata);
+                                   /*isSignedIn=*/true,
+                                   /*isEnabled=*/true, metadata);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kSignedInNoRecentData, 1);
   EXPECT_EQ(std::vector<std::string>({"SignedInNoRecentData"}),
@@ -1155,7 +1152,8 @@ TEST_F(MetricsReporterTest, UserSettingsOnStart_FeedDataFromFuture) {
       feedstore::ToTimestampMillis(base::Time::Now() + base::Seconds(1)));
   reporter_->OnMetadataInitialized(/*isEnabledByEnterprisePolicy=*/true,
                                    /*isFeedVisible=*/true,
-                                   /*isSignedIn=*/true, metadata);
+                                   /*isSignedIn=*/true,
+                                   /*isEnabled=*/true, metadata);
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kSignedInNoRecentData, 1);
   EXPECT_EQ(std::vector<std::string>({"SignedInNoRecentData"}),

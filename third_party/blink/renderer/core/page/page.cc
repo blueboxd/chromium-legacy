@@ -106,6 +106,7 @@ const int kMaxNumberOfFrames = 1000;
 const int kTenFrames = 10;
 
 bool g_limit_max_frames_to_ten_for_testing = false;
+
 }  // namespace
 
 // Function defined in third_party/blink/public/web/blink.h.
@@ -182,6 +183,11 @@ Page::Page(base::PassKey<Page>,
            bool is_ordinary)
     : SettingsDelegate(std::make_unique<Settings>()),
       main_frame_(nullptr),
+      fenced_frames_impl_(
+          features::IsFencedFramesEnabled()
+              ? absl::optional<features::FencedFramesImplementationType>(
+                    features::kFencedFramesImplementationTypeParam.Get())
+              : absl::nullopt),
       agent_group_scheduler_(agent_group_scheduler),
       animator_(MakeGarbageCollected<PageAnimator>(*this)),
       autoscroll_controller_(MakeGarbageCollected<AutoscrollController>(*this)),
@@ -603,8 +609,9 @@ void CheckFrameCountConsistency(int expected_frame_count, Frame* frame) {
   int actual_frame_count = 0;
 
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-    actual_frame_count += static_cast<int>(
-        DocumentPortals::From(*local_frame->GetDocument()).GetPortals().size());
+    if (auto* portals = DocumentPortals::Get(*local_frame->GetDocument())) {
+      actual_frame_count += static_cast<int>(portals->GetPortals().size());
+    }
   }
 
   for (; frame; frame = frame->Tree().TraverseNext()) {
@@ -613,12 +620,11 @@ void CheckFrameCountConsistency(int expected_frame_count, Frame* frame) {
     // Check the ``DocumentFencedFrames`` on every local frame beneath
     // the ``frame`` to get an accurate count (i.e. if an iframe embeds
     // a fenced frame and creates a new ``DocumentFencedFrames`` object).
-    if (features::IsFencedFramesMPArchBased()) {
-      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-        actual_frame_count += static_cast<int>(
-            DocumentFencedFrames::From(*local_frame->GetDocument())
-                .GetFencedFrames()
-                .size());
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+      if (auto* fenced_frames =
+              DocumentFencedFrames::Get(*local_frame->GetDocument())) {
+        actual_frame_count +=
+            static_cast<int>(fenced_frames->GetFencedFrames().size());
       }
     }
   }
@@ -653,8 +659,10 @@ void Page::SettingsChanged(ChangeType change_type) {
       }
       break;
     case ChangeType::kViewportPaintProperties:
-      GetVisualViewport().SetNeedsPaintPropertyUpdate();
-      GetVisualViewport().InitializeScrollbars();
+      if (GetVisualViewport().IsActiveViewport()) {
+        GetVisualViewport().SetNeedsPaintPropertyUpdate();
+        GetVisualViewport().InitializeScrollbars();
+      }
       if (auto* local_frame = DynamicTo<LocalFrame>(MainFrame())) {
         if (LocalFrameView* view = local_frame->View())
           view->SetNeedsPaintPropertyUpdate();
@@ -933,6 +941,7 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(plugins_changed_observers_);
   visitor->Trace(next_related_page_);
   visitor->Trace(prev_related_page_);
+  visitor->Trace(media_feature_overrides_);
   Supplementable<Page>::Trace(visitor);
 }
 
@@ -1071,10 +1080,8 @@ void Page::SetInsidePortal(bool inside_portal) {
 
   inside_portal_ = inside_portal;
 
-  if (MainFrame() && MainFrame()->IsLocalFrame() &&
-      DeprecatedLocalMainFrame()->GetDocument()) {
-    DeprecatedLocalMainFrame()->GetDocument()->ClearAXObjectCache();
-  }
+  if (MainFrame() && MainFrame()->IsLocalFrame())
+    DeprecatedLocalMainFrame()->PortalStateChanged();
 }
 
 bool Page::InsidePortal() const {
@@ -1094,7 +1101,7 @@ void Page::SetMediaFeatureOverride(const AtomicString& media_feature,
   if (!media_feature_overrides_) {
     if (value.IsEmpty())
       return;
-    media_feature_overrides_ = std::make_unique<MediaFeatureOverrides>();
+    media_feature_overrides_ = MakeGarbageCollected<MediaFeatureOverrides>();
   }
   media_feature_overrides_->SetOverride(media_feature, value);
   if (media_feature == "prefers-color-scheme" ||
@@ -1105,7 +1112,7 @@ void Page::SetMediaFeatureOverride(const AtomicString& media_feature,
 }
 
 void Page::ClearMediaFeatureOverrides() {
-  media_feature_overrides_.reset();
+  media_feature_overrides_ = nullptr;
   SettingsChanged(ChangeType::kMediaQuery);
   SettingsChanged(ChangeType::kColorScheme);
 }

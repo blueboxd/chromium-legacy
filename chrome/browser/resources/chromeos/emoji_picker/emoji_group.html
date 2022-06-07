@@ -4,13 +4,80 @@
     position: relative;
   }
 
+
+  :host([v2-enabled]:not([use-flex-layout])) {
+    --emoji-size: var(--v2-emoji-size);
+    --emoji-spacing: var(--v2-emoji-spacing);
+  }
+
+  /* TODO(b/233268914): Allow adding per emoji category style.
+   * The refactor should make setting styles per emoji category
+   * (e.g. emoji, emoticon, symbol) easy. Also, base styles need to be
+   * defined for common parts of different emoji categories styles.
+   */
+
+  /* Grid layout styles. */
+  :host(:not([use-flex-layout])) #emoji {
+    display: grid;
+    gap: var(--emoji-spacing);
+    grid-auto-rows: max-content;
+    grid-template-columns: repeat(var(--emoji-per-row), 1fr);
+    justify-items: center;
+  }
+
+  :host(:not([use-flex-layout])) {
+    --emoji-button-button-style: {
+      background: var(--emoji-background);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: block;
+      font-family: 'Noto Color Emoji';
+      font-size: 19px;
+      height: 100%;
+      line-height: var(--emoji-size);
+      outline: none;
+      padding: 0;
+      text-align: center;
+      user-select: none;
+      width: 100%;
+    };
+    --emoji-button-height: var(--emoji-size);
+    --emoji-button-width: var(--emoji-size);
+  }
+
+  /* Flex layout styles. */
+  :host([use-flex-layout]) #emoji {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+  }
+
+  :host([use-flex-layout]) {
+    --emoji-button-button-style: {
+      background: var(--emoji-background);
+      border: none;
+      color: var(--cros-text-color-primary);
+      cursor: pointer;
+      font-family: 'Noto Sans CJK JP';
+      font-size: 13px;
+      height: 100%;
+      padding: 6px;
+      width: max-content;
+    };
+    --emoji-button-height: var(--emoji-size);
+    --emoji-button-width: max-content;
+  }
+
   #heading {
     color: var(--cros-text-color-secondary);
     display: flex;
+    /* TODO(b/233133645): The sizes need to match the design. */
     font-size: 10pt;
     padding-bottom: var(--emoji-group-heading-padding-bottom);
     padding-top: var(--emoji-group-heading-padding-top);
   }
+
   #heading:focus,
   #heading:active {
     outline-color: var(--cros-text-color-prominent);
@@ -22,14 +89,6 @@
     line-height: var(--emoji-group-heading-size);
     user-select: none;
     width: 100%;
-  }
-
-  #emoji {
-    display: grid;
-    gap: var(--emoji-spacing);
-    grid-auto-rows: max-content;
-    grid-template-columns: repeat(var(--emoji-per-row), 1fr);
-    justify-items: center;
   }
 
   #show-clear {
@@ -78,17 +137,88 @@
      * border.*/
     padding: 7px 11px 7px 11px;
   }
+
   #clear-recents-hover:hover {
     background-color: var(--cros-button-background-color-secondary-hover);
     border: 2px solid var(--cros-button-background-color-secondary-hover);
   }
 
-  :host([v2-enabled]) {
-    --emoji-size: var(--v2-emoji-size);
-    --emoji-spacing: var(--v2-emoji-spacing);
+  .emoji-button-container {
+    --emoji-background: transparent;
+    /* Fixed height and width are required for buttons that have variants,
+     * Otherwise, when showing variants, buttons' positions will be moved.
+     */
+    height: var(--emoji-button-height);
+    position: relative;
+    width: var(--emoji-button-width);
+  }
+
+  .emoji-button {
+    /* TODO(b/233130994): Remove this CSS mixin and use classes instead. */
+    @apply --emoji-button-button-style;
+  }
+
+  .emoji-button:focus,
+  .emoji-button:active {
+    outline-color: var(--cros-focus-ring-color);
+    outline-style: solid;
+    outline-width: 2px;
+  }
+
+  .emoji-button:disabled {
+    /* chrome makes disabled buttons semitransparent.
+     * we set a solid colour here to prevent that
+     * (exactly which colour is not important).
+     */
+    color: red;
+    cursor: default;
+  }
+
+  .emoji-button:hover {
+    background-color: var(--emoji-hover-background);
+  }
+
+  /* Implement has-variants as ::after so that it still works with hover
+   * ripple.
+   */
+  .has-variants::after {
+    /* 4px grey triangle in bottom-right.
+     * 315 degrees means starting at bottom-right towards top-left.
+     * Manual color here because there isn't something easy to use, but fine
+     * for dark mode since dark mode is the same.
+     */
+    background: linear-gradient(
+        315deg, var(--google-grey-500) 4px,
+        var(--emoji-background) 4px, var(--emoji-background));
+    content: '';
+    display: block;
+    height: var(--emoji-size);
+    position: relative;
+    top: calc(0px - var(--emoji-size));
+    width: var(--emoji-size);
+  }
+
+  paper-tooltip {
+    --paper-tooltip-background: var(--cros-tooltip-background-color);
+    --paper-tooltip-delay-in: var(--emoji-tooltip-delay-in);
+    --paper-tooltip-delay-out: var(--emoji-tooltip-delay-out);
+    --paper-tooltip-duration-in: 0;
+    --paper-tooltip-duration-out: 0;
+    --paper-tooltip-opacity: 1;
+    --paper-tooltip-text-color: var(--cros-tooltip-label-color);
+  }
+
+  paper-tooltip::part(tooltip) {
+    box-shadow: var(--cr-elevation-1);
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+    margin: 4px;
+    padding: 4px 8px 4px 8px;
+    white-space: nowrap;
   }
 </style>
 
+<!-- Add header section. -->
 <template is="dom-if" if="[[group]]">
   <div id="heading" role="heading" aria-level="2" tabindex="-1">
     <div id="heading-left">[[group]]</div>
@@ -99,19 +229,39 @@
     </template>
   </div>
 </template>
-  <template is = "dom-if" if="[[showClearRecents]]">
+<template is = "dom-if" if="[[showClearRecents]]">
   <button id="clear-recents" on-click="onClearRecentsClick">
     <div id="clear-recents-hover">
-    Clear recently used emojis
+      Clear recently used [[category]]s
     </div>
   </button>
 </template>
-<div id="emoji">
+
+<!-- Add emoji buttons.
+  Note that the click and context menu listeners are shared among all the
+  elements to improve efficiency and performance.
+  -->
+<div id="emoji" on-click="onEmojiClick" on-contextmenu="onEmojiContextMenu">
   <div id="fake-focus-target" tabindex="-1"></div>
   <template is="dom-repeat" items="[[data]]">
-    <emoji-button emoji="[[getDisplayEmojiForEmoji(item.base.string)]]"
-      variants="[[item.alternates]]" tooltip="[[getTooltipForEmoji(item.base)]]"
-    >
-    </emoji-button>
+    <div class="emoji-button-container">
+      <button id="[[getEmojiButtonId(index)]]" data-index$="[[index]]"
+        class$="[[getEmojiButtonClassName(item)]]"
+        on-mouseenter="showTooltip" on-focus="showTooltip"
+        aria-label="[[getEmojiAriaLabel(item)]]">
+        [[getDisplayEmojiForEmoji(item.base.string)]]
+      </button>
+      <template is="dom-if"
+        if="[[isEmojiVariantVisible(index,shownEmojiVariantIndex)]]">
+        <emoji-variants
+          id="[[getEmojiVariantId(index)]]"
+          variants="[[item.alternates]]"
+          tooltip="[[item.base.name]]">
+        </emoji-variants>
+      </template>
+    </div>
   </template>
+  <paper-tooltip id='tooltip' fit-to-visible-bounds offset="8">
+    [[focusedEmoji.base.name]]
+  </paper-tooltip>
 </div>

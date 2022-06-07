@@ -11,14 +11,18 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "cc/paint/paint_image.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "pdf/mojom/pdf.mojom.h"
 #include "pdf/pdf_accessibility_action_handler.h"
+#include "pdf/pdf_engine.h"
 #include "pdf/pdf_view_plugin_base.h"
+#include "pdf/pdfium/pdfium_form_filler.h"
 #include "pdf/post_message_receiver.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/v8_value_converter.h"
@@ -27,12 +31,12 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 class WebAssociatedURLLoader;
-class WebLocalFrameClient;
 class WebURL;
 class WebURLRequest;
 struct WebAssociatedURLLoaderOptions;
@@ -65,12 +69,24 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public PostMessageReceiver::Client,
                                public PdfAccessibilityActionHandler {
  public:
+  // Must match `SaveRequestType` in chrome/browser/resources/pdf/constants.ts.
+  enum class SaveRequestType {
+    kAnnotation = 0,
+    kOriginal = 1,
+    kEdited = 2,
+  };
+
   // Provides services from the plugin's container.
   class Client : public V8ValueConverter {
    public:
     virtual ~Client() = default;
 
     virtual base::WeakPtr<Client> GetWeakPtr() = 0;
+
+    // Creates a new `PDFiumEngine`.
+    virtual std::unique_ptr<PDFiumEngine> CreateEngine(
+        PDFEngine::Client* client,
+        PDFiumFormFiller::ScriptOption script_option);
 
     // Passes the plugin container to the client. This is first called in
     // `Initialize()`, and cleared to null in `Destroy()`. The container may
@@ -156,9 +172,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     // Returns whether the plugin container's frame exists.
     virtual bool HasFrame() const = 0;
 
-    // Returns the local frame's client (render frame). May be null in unit
-    // tests.
-    virtual blink::WebLocalFrameClient* GetWebLocalFrameClient() = 0;
+    // Notifies the frame's client that the plugin started loading.
+    virtual void DidStartLoading() = 0;
+
+    // Notifies the frame's client that the plugin stopped loading.
+    virtual void DidStopLoading() = 0;
 
     // Prints the plugin element.
     virtual void Print() {}
@@ -175,10 +193,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
         PdfAccessibilityActionHandler* action_handler);
   };
 
-  PdfViewWebPlugin(
-      std::unique_ptr<Client> client,
-      mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service_remote,
-      const blink::WebPluginParams& params);
+  PdfViewWebPlugin(std::unique_ptr<Client> client,
+                   mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service,
+                   const blink::WebPluginParams& params);
   PdfViewWebPlugin(const PdfViewWebPlugin& other) = delete;
   PdfViewWebPlugin& operator=(const PdfViewWebPlugin& other) = delete;
 
@@ -255,10 +272,15 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
+  std::unique_ptr<UrlLoader> CreateUrlLoader() override;
   std::vector<SearchStringResult> SearchString(const char16_t* string,
                                                const char16_t* term,
                                                bool case_sensitive) override;
+  void DocumentHasUnsupportedFeature(const std::string& feature) override;
+  bool IsPrintPreview() const override;
+  SkColor GetBackgroundColor() const override;
   void CaretChanged(const gfx::Rect& caret_rect) override;
+  void EnteredEditMode() override;
   void SetSelectedText(const std::string& selected_text) override;
   bool IsValidLink(const std::string& url) override;
 
@@ -292,8 +314,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void HandleAccessibilityAction(
       const AccessibilityActionData& action_data) override;
 
-  // Initializes the plugin using the `engine` provided by tests.
-  bool InitializeForTesting(std::unique_ptr<PDFiumEngine> engine);
+  // Initializes the plugin for testing, bypassing certain consistency checks.
+  bool InitializeForTesting();
 
   const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect(); }
 
@@ -301,11 +323,13 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
  protected:
   // PdfViewPluginBase:
+  std::unique_ptr<PDFiumEngine> CreateEngine(
+      PDFEngine::Client* client,
+      PDFiumFormFiller::ScriptOption script_option) override;
+  void LoadUrl(base::StringPiece url, LoadUrlCallback callback) override;
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
-  std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() override;
   void OnDocumentLoadComplete() override;
   void SendMessage(base::Value::Dict message) override;
-  void SaveAs() override;
   void SetFormTextFieldInFocus(bool in_focus) override;
   void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) override;
   void SetAccessibilityPageInfo(AccessibilityPageInfo page_info,
@@ -315,15 +339,13 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void SetAccessibilityViewportInfo(
       AccessibilityViewportInfo viewport_info) override;
   void SetContentRestrictions(int content_restrictions) override;
-  void SetPluginCanSave(bool can_save) override;
-  void PluginDidStartLoading() override;
-  void PluginDidStopLoading() override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
   void InvokePrintDialog() override;
   void NotifySelectionChanged(const gfx::PointF& left,
                               int left_height,
                               const gfx::PointF& right,
                               int right_height) override;
-  void NotifyUnsupportedFeature() override;
   void UserMetricsRecordAction(const std::string& action) override;
   gfx::Vector2d plugin_offset_in_frame() const override;
 
@@ -331,15 +353,24 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Call `Destroy()` instead.
   ~PdfViewWebPlugin() override;
 
-  // Passing in a null `engine_override` allows InitializeCommon() to create a
-  // PDFiumEngine normally. Otherwise, `engine_override` is used.
-  bool InitializeCommon(std::unique_ptr<PDFiumEngine> engine_override);
+  bool InitializeCommon();
 
   // Sends whether to do smooth scrolling.
   void SendSetSmoothScrolling();
 
   // Handles `Open()` result for `form_loader_`.
   void DidFormOpen(int32_t result);
+
+  // Creates a URL loader with universal access.
+  std::unique_ptr<UrlLoader> CreateUrlLoaderInternal();
+
+  // Handles message for saving the PDF.
+  void HandleSaveMessage(const base::Value::Dict& message);
+  void SaveToBuffer(const std::string& token);
+  void SaveToFile(const std::string& token);
+
+  // Handles message for setting the background color.
+  void HandleSetBackgroundColorMessage(const base::Value::Dict& message);
 
   // Recalculates values that depend on scale factors.
   void UpdateScaledValues();
@@ -381,9 +412,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // asynchronously.
   void OnSetAccessibilityViewportInfo(AccessibilityViewportInfo viewport_info);
 
-  // May be null in unit tests.
-  pdf::mojom::PdfService* GetPdfService();
-
   void ResetRecentlySentFindUpdate();
 
   // Records metrics about the document metadata.
@@ -403,8 +431,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   std::unique_ptr<Client> const client_;
 
   // Used to access the services provided by the browser.
-  // May be unbound in unit tests.
-  mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_remote_;
+  mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_;
 
   mojo::Receiver<pdf::mojom::PdfListener> listener_receiver_{this};
 
@@ -447,6 +474,14 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // The plugin rect in CSS pixels.
   gfx::Rect css_plugin_rect_;
 
+  // The background color of the PDF viewer.
+  SkColor background_color_ = SK_ColorTRANSPARENT;
+
+  // If true, the render frame has been notified that we're starting a network
+  // request so that it can start the throbber. It will be notified again once
+  // the document finishes loading.
+  bool did_call_start_loading_ = false;
+
   // Used for submitting forms.
   std::unique_ptr<UrlLoader> form_loader_;
 
@@ -461,8 +496,19 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Stores the tickmarks to be shown for the current find results.
   std::vector<gfx::Rect> tickmarks_;
 
+  // Whether the document is in edit mode.
+  bool edit_mode_ = false;
+
   // Only instantiated when not print previewing.
   std::unique_ptr<MetricsHandler> metrics_handler_;
+
+  // Keeps track of which unsupported features have been reported to avoid
+  // spamming the metrics if a feature shows up many times per document.
+  base::flat_set<std::string> unsupported_features_reported_;
+
+  // Indicates whether the browser has been notified about an unsupported
+  // feature once, which helps prevent the infobar from going up more than once.
+  bool notified_browser_about_unsupported_feature_ = false;
 
   // The metafile in which to save the printed output. Assigned a value only
   // between `PrintBegin()` and `PrintEnd()` calls.
@@ -470,6 +516,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // The indices of pages to print.
   std::vector<int> pages_to_print_;
+
+  // Whether the plugin is loaded in Print Preview.
+  bool is_print_preview_ = false;
 
   base::WeakPtrFactory<PdfViewWebPlugin> weak_factory_{this};
 };

@@ -51,6 +51,7 @@ const Feature kPartitionAllocLargeThreadCacheSize{
 
 const BASE_EXPORT Feature kPartitionAllocLargeEmptySlotSpanRing{
     "PartitionAllocLargeEmptySlotSpanRing", FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 const Feature kPartitionAllocBackupRefPtr {
   "PartitionAllocBackupRefPtr",
@@ -88,7 +89,13 @@ const base::FeatureParam<BackupRefPtrMode> kBackupRefPtrModeParam{
     &kPartitionAllocBackupRefPtr, "brp-mode", BackupRefPtrMode::kEnabled,
     &kBackupRefPtrModeOptions};
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+const base::FeatureParam<bool> kBackupRefPtrAsanEnableDereferenceCheckParam{
+    &kPartitionAllocBackupRefPtr, "asan-enable-dereference-check", true};
+const base::FeatureParam<bool> kBackupRefPtrAsanEnableExtractionCheckParam{
+    &kPartitionAllocBackupRefPtr, "asan-enable-extraction-check",
+    false};  // Not much noise at the moment to enable by default.
+const base::FeatureParam<bool> kBackupRefPtrAsanEnableInstantiationCheckParam{
+    &kPartitionAllocBackupRefPtr, "asan-enable-instantiation-check", true};
 
 // If enabled, switches the bucket distribution to an alternate one. The
 // alternate distribution must have buckets that are a subset of the default
@@ -122,6 +129,10 @@ const Feature kPartitionAllocPCScanStackScanning {
 
 const Feature kPartitionAllocDCScan{"PartitionAllocDCScan",
                                     FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether to sort the active slot spans in PurgeMemory().
+extern const Feature kPartitionAllocSortActiveSlotSpans{
+    "PartitionAllocSortActiveSlotSpans", FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace base

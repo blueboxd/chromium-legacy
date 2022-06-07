@@ -5,6 +5,7 @@
 #include "sandbox/mac/sandbox_logging.h"
 
 #include <errno.h>
+#include <os/log.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,18 +16,6 @@
 #include <string>
 
 #include "build/build_config.h"
-
-#include <AvailabilityMacros.h>
-#if !defined(MAC_OS_X_VERSION_10_12) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12
-#define USE_ASL
-#endif
-
-#if defined(USE_ASL)
-#include <asl.h>
-#else
-#include <os/log.h>
-#endif
 
 #if defined(ARCH_CPU_X86_64)
 #define ABORT()                                                                \
@@ -158,8 +147,6 @@ void SendOsLog(Level level, const char* message) {
   }
 }
 
-#endif  // defined(USE_ASL)
-
 // |error| is strerror(errno) when a P* logging function is called. Pass
 // |nullptr| if no errno is set.
 void DoLogging(Level level,
@@ -170,11 +157,7 @@ void DoLogging(Level level,
   int ret = vsnprintf(message, sizeof(message), fmt, args);
 
   if (ret < 0) {
-#if defined(USE_ASL)
-    SendAslLog(level, "warning: log message could not be formatted");
-#else
     SendOsLog(level, "warning: log message could not be formatted");
-#endif  // defined(USE_ASL)
     return;
   }
 
@@ -185,18 +168,10 @@ void DoLogging(Level level,
   if (error)
     final_message += ": " + *error;
 
-#if defined(USE_ASL)
-  SendAslLog(level, final_message.c_str());
-#else
   SendOsLog(level, final_message.c_str());
-#endif  // defined(USE_ASL)
 
   if (truncated) {
-#if defined(USE_ASL)
-    SendAslLog(level, "warning: previous log message truncated");
-#else
     SendOsLog(level, "warning: previous log message truncated");
-#endif  // defined(USE_ASL)
   }
 }
 

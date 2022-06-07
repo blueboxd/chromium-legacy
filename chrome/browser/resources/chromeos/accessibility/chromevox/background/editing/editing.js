@@ -7,12 +7,14 @@
  * appropriate spoken and braille feedback.
  */
 import {BrailleBackground} from '/chromevox/background/braille/braille_background.js';
+import {ChromeVoxState, ChromeVoxStateObserver} from '/chromevox/background/chromevox_state.js';
 import {Color} from '/chromevox/background/color.js';
 import {EditableLine} from '/chromevox/background/editing/editable_line.js';
+import {ChromeVoxEditableTextBase, TextChangeEvent} from '/chromevox/background/editing/editable_text_base.js';
 import {IntentHandler} from '/chromevox/background/editing/intent_handler.js';
+import {Output} from '/chromevox/background/output/output.js';
 import {AbstractTts} from '/chromevox/common/abstract_tts.js';
 import {ChromeVoxEvent} from '/chromevox/common/custom_automation_event.js';
-import {ChromeVoxEditableTextBase, TextChangeEvent} from '/chromevox/common/editable_text_base.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationIntent = chrome.automation.AutomationIntent;
@@ -391,9 +393,9 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       return true;
     }
     const exited = AutomationUtil.getUniqueAncestors(next, deep);
-    return !!exited.find(function(item) {
+    return Boolean(exited.find(function(item) {
       return item === this.node_;
-    }.bind(this));
+    }.bind(this)));
   }
 
   /** @override */
@@ -409,9 +411,9 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       return true;
     }
     const exited = AutomationUtil.getUniqueAncestors(next, deep);
-    return !!exited.find(function(item) {
+    return Boolean(exited.find(function(item) {
       return item === this.node_;
-    }.bind(this));
+    }.bind(this)));
   }
 
   /** @override */
@@ -475,7 +477,7 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     // CommandHandler). We use the speech end callback to trigger additional
     // speech.
     // Also, skip speech based on the predicate.
-    if (ChromeVoxState.isReadingContinuously ||
+    if (ChromeVoxState.instance.isReadingContinuously ||
         AutomationPredicate.shouldOnlyOutputSelectionChangeInBraille(
             this.node_)) {
       this.updateIntraLineState_(cur);

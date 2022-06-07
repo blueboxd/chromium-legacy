@@ -171,7 +171,8 @@ constexpr char kKeyboardUtilsForInjectionModulePath[] =
 constexpr char kLoginJSPath[] = "login.js";
 constexpr char kOobeJSPath[] = "oobe.js";
 constexpr char kProductLogoPath[] = "product-logo.png";
-// TODO(crbug.com/1261902): Remove.
+// TODO(crbug.com/1261902): Clean-up old implementation once feature is
+// launched.
 constexpr char kRecommendAppOldListViewJSPath[] =
     "recommend_app_old_list_view.js";
 constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
@@ -341,11 +342,6 @@ bool ShouldUsePolymer3Resources(bool is_oobe_flow) {
 content::WebUIDataSource* CreateOobeUIDataSource(
     const base::Value::Dict& localized_strings,
     const std::string& display_type) {
-  // Cannot exist for the lock screen.
-  if (display_type == OobeUI::kLockDisplay) {
-    NOTREACHED();
-  }
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   content::WebUIDataSource* source =
@@ -421,7 +417,6 @@ std::string GetDisplayType(const GURL& url) {
 // static
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
 const char OobeUI::kGaiaSigninDisplay[] = "gaia-signin";
-const char OobeUI::kLockDisplay[] = "lock";
 const char OobeUI::kLoginDisplay[] = "login";
 const char OobeUI::kOobeDisplay[] = "oobe";
 
@@ -765,10 +760,6 @@ void OobeUI::ShowOobeUI(bool show) {
 
   if (show && oobe_display_chooser_)
     oobe_display_chooser_->TryToPlaceUiOnTouchDisplay();
-}
-
-void OobeUI::ForwardAccelerator(std::string accelerator_name) {
-  core_handler_->ForwardAccelerator(accelerator_name);
 }
 
 gfx::NativeView OobeUI::GetNativeView() {

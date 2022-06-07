@@ -9,6 +9,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
@@ -30,9 +31,10 @@ SystemWebAppBrowserTestBase::SystemWebAppBrowserTestBase(bool install_mock) {
 
 SystemWebAppBrowserTestBase::~SystemWebAppBrowserTestBase() = default;
 
-SystemWebAppManager& SystemWebAppBrowserTestBase::GetManager() {
-  return WebAppProvider::GetForSystemWebApps(browser()->profile())
-      ->system_web_app_manager();
+ash::SystemWebAppManager& SystemWebAppBrowserTestBase::GetManager() {
+  auto* swa_manager = ash::SystemWebAppManager::Get(browser()->profile());
+  DCHECK(swa_manager);
+  return *swa_manager;
 }
 
 ash::SystemWebAppType SystemWebAppBrowserTestBase::GetMockAppType() {
@@ -47,7 +49,7 @@ void SystemWebAppBrowserTestBase::WaitForTestSystemAppInstall() {
   } else {
     // Avoid recreating system apps in tests since AppBrowserController keeps a
     // reference to SystemWebAppDelegates.
-    if (!GetManager().GetRegisteredSystemAppsForTesting().empty())
+    if (!GetManager().system_app_delegates().empty())
       return;
     GetManager().InstallSystemAppsForTesting();
   }
@@ -81,12 +83,14 @@ content::WebContents* SystemWebAppBrowserTestBase::LaunchApp(
   DCHECK(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
       browser()->profile()));
 
+  DCHECK(AreSystemWebAppsSupported());
+
   if (!params.launch_files.empty()) {
     // SWA browser tests bypass the code in `WebAppPublisherHelper` that fills
     // in `override_url`, so fill it in here, assuming the file handler action
     // URL matches the start URL.
     params.override_url =
-        WebAppProvider::GetForSystemWebApps(browser()->profile())
+        WebAppProvider::GetForLocalAppsUnchecked(browser()->profile())
             ->registrar()
             .GetAppStartUrl(params.app_id);
   }
@@ -136,9 +140,10 @@ content::WebContents* SystemWebAppBrowserTestBase::LaunchAppWithoutWaiting(
 
 GURL SystemWebAppBrowserTestBase::GetStartUrl(
     const apps::AppLaunchParams& params) {
+  DCHECK(AreSystemWebAppsSupported());
   return params.override_url.is_valid()
              ? params.override_url
-             : WebAppProvider::GetForSystemWebApps(browser()->profile())
+             : WebAppProvider::GetForLocalAppsUnchecked(browser()->profile())
                    ->registrar()
                    .GetAppStartUrl(params.app_id);
 }

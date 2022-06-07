@@ -90,16 +90,6 @@ int CompareCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b) {
   return internal::CompareCaseInsensitiveASCIIT(a, b);
 }
 
-bool EqualsCaseInsensitiveASCII(StringPiece a, StringPiece b) {
-  return a.size() == b.size() &&
-         internal::CompareCaseInsensitiveASCIIT(a, b) == 0;
-}
-
-bool EqualsCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b) {
-  return a.size() == b.size() &&
-         internal::CompareCaseInsensitiveASCIIT(a, b) == 0;
-}
-
 const std::string& EmptyString() {
   static const base::NoDestructor<std::string> s;
   return *s;
@@ -185,8 +175,7 @@ void TruncateUTF8ToByteSize(const std::string& input,
     int32_t prev = char_index;
     base_icu::UChar32 code_point = 0;
     CBU8_NEXT(data, char_index, truncation_length, code_point);
-    if (!IsValidCharacter(code_point) ||
-        !IsValidCodepoint(code_point)) {
+    if (!IsValidCharacter(code_point)) {
       char_index = prev - 1;
     } else {
       break;
@@ -301,24 +290,12 @@ bool EndsWith(StringPiece16 str,
   return internal::EndsWithT(str, search_for, case_sensitivity);
 }
 
-char HexDigitToInt(wchar_t c) {
+char HexDigitToInt(char c) {
   DCHECK(IsHexDigit(c));
   if (c >= '0' && c <= '9')
     return static_cast<char>(c - '0');
-  if (c >= 'A' && c <= 'F')
-    return static_cast<char>(c - 'A' + 10);
-  if (c >= 'a' && c <= 'f')
-    return static_cast<char>(c - 'a' + 10);
-  return 0;
-}
-
-bool IsUnicodeWhitespace(wchar_t c) {
-  // kWhitespaceWide is a NULL-terminated string
-  for (const wchar_t* cur = kWhitespaceWide; *cur; ++cur) {
-    if (*cur == c)
-      return true;
-  }
-  return false;
+  return (c >= 'A' && c <= 'F') ? static_cast<char>(c - 'A' + 10)
+                                : static_cast<char>(c - 'a' + 10);
 }
 
 static const char* const kByteStringsUnlocalized[] = {

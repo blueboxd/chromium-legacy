@@ -12,6 +12,25 @@ HidDetectionManager::HidDetectionManager() {
   DCHECK(ash::features::IsOobeHidDetectionRevampEnabled());
 }
 
-HidDetectionManager::~HidDetectionManager() = default;
+HidDetectionManager::~HidDetectionManager() {
+  DCHECK(!delegate_) << " HID detection must be stopped before "
+                     << "HidDetectionManager is destroyed";
+}
+
+void HidDetectionManager::StartHidDetection(Delegate* delegate) {
+  DCHECK(!delegate_);
+  delegate_ = delegate;
+  PerformStartHidDetection();
+}
+
+void HidDetectionManager::StopHidDetection() {
+  DCHECK(delegate_);
+  PerformStopHidDetection();
+  delegate_ = nullptr;
+}
+
+void HidDetectionManager::NotifyHidDetectionStatusChanged() {
+  delegate_->OnHidDetectionStatusChanged(ComputeHidDetectionStatus());
+}
 
 }  // namespace ash::hid_detection

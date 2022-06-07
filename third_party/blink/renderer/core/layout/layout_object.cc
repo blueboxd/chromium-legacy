@@ -244,6 +244,20 @@ StyleDifference AdjustForBackgroundColorPaint(
 
 static int g_allow_destroying_layout_object_in_finalizer = 0;
 
+void ApplyVisibleOverflowToClipRect(OverflowClipAxes overflow_clip,
+                                    PhysicalRect& clip_rect) {
+  DCHECK_NE(overflow_clip, kOverflowClipBothAxis);
+  const LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
+  if ((overflow_clip & kOverflowClipX) == kNoOverflowClip) {
+    clip_rect.offset.left = infinite_rect.X();
+    clip_rect.size.width = infinite_rect.Width();
+  }
+  if ((overflow_clip & kOverflowClipY) == kNoOverflowClip) {
+    clip_rect.offset.top = infinite_rect.Y();
+    clip_rect.size.height = infinite_rect.Height();
+  }
+}
+
 AllowDestroyingLayoutObjectInFinalizerScope::
     AllowDestroyingLayoutObjectInFinalizerScope() {
   ++g_allow_destroying_layout_object_in_finalizer;
@@ -768,6 +782,31 @@ bool LayoutObject::IsInListMarker() const {
   // List markers are either leaf nodes (legacy LayoutListMarker), or have
   // exactly one leaf child. So there's no need to traverse ancestors.
   return Parent() && Parent()->IsListMarkerIncludingAll();
+}
+
+LayoutObject* LayoutObject::NonCulledParent() const {
+  LayoutObject* parent = Parent();
+  for (; parent; parent = parent->Parent()) {
+    if (const auto* parent_inline_box = DynamicTo<LayoutInline>(parent)) {
+      if (!parent_inline_box->AlwaysCreateLineBoxesForLayoutInline())
+        continue;
+    }
+    return parent;
+  }
+  return nullptr;
+}
+
+bool LayoutObject::IsTextDecorationBoundary(NGStyleVariant variant) const {
+  const LayoutObject* parent = NonCulledParent();
+  if (!parent)
+    return true;
+  const ComputedStyle& style = EffectiveStyle(variant);
+  const ComputedStyle& parent_style = variant == NGStyleVariant::kEllipsis
+                                          ? parent->FirstLineStyleRef()
+                                          : parent->EffectiveStyle(variant);
+  if (!style.IsAppliedTextDecorationsSame(parent_style))
+    return true;
+  return false;
 }
 
 LayoutObject* LayoutObject::NextInPreOrderAfterChildren() const {
@@ -1618,7 +1657,7 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   // select elements inside that are created by user agent shadow DOM, and we
   // have (C++) code that assumes that the elements are indeed contained by the
   // text control. So just make sure this is the case.
-  if (IsA<LayoutView>(this) || IsSVGForeignObject() ||
+  if (IsA<LayoutView>(this) || IsSVGForeignObjectIncludingNG() ||
       IsTextControlIncludingNG())
     return true;
   // https://www.w3.org/TR/css-transforms-1/#containing-block-for-all-descendants
@@ -2786,11 +2825,12 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
                         WebFeature::kHiddenBackfaceWithPossible3D);
       // For consistency with existing code usage, this uses
       // Has3DTransformOperation rather than the slightly narrower
-      // HasNonTrivial3DTransformOperation (which is only web-exposed for
-      // compositing decisions on low-end devices).  However, given the
-      // discussion in https://github.com/w3c/csswg-drafts/issues/3305 it's
-      // possible we may want to tie backface-visibility behavior to something
-      // closer to the latter.
+      // HasNonTrivial3DTransformOperation (which used to exist, and was only
+      // web-exposed for compositing decisions on low-end devices).  However,
+      // given the discussion in
+      // https://github.com/w3c/csswg-drafts/issues/3305 it's possible we may
+      // want to tie backface-visibility behavior to something closer to the
+      // latter.
       if (style_->Has3DTransformOperation()) {
         UseCounter::Count(GetDocument(), WebFeature::kHiddenBackfaceWith3D);
       }
@@ -4807,7 +4847,7 @@ Vector<PhysicalRect> LayoutObject::OutlineRects(
   return outline_rects;
 }
 
-void LayoutObject::SetTextAutoSizedStyle(
+void LayoutObject::SetModifiedStyleOutsideStyleRecalc(
     scoped_refptr<const ComputedStyle> style,
     ApplyStyleChanges apply_changes) {
   NOT_DESTROYED();

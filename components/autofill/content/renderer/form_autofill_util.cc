@@ -1070,32 +1070,45 @@ std::vector<WebFormControlElement> ForEachMatchingFormFieldCommon(
       continue;
     }
 
-    if (element.GetAutofillState() == WebAutofillState::kAutofilled)
+    if (element.GetAutofillState() == WebAutofillState::kAutofilled &&
+        !data.fields[i].force_override) {
       continue;
+    }
 
-    // A text field, with a non-empty value that is entered by the user,
-    // and is NOT the value of the input field's "value" or "placeholder"
-    // attribute, is skipped. Some sites fill the fields with formatting
-    // string. To tell the difference between the values entered by the user
+    const std::u16string current_element_value = element.Value().Utf16();
+
+    // A text field is skipped if it has a non-empty value that is entered by
+    // the user and is NOT the value of the input field's "value" or
+    // "placeholder" attribute. (The "value" attribute in <input value="foo">
+    // indicates the value of the input element at loading time, not its runtime
+    // value after the user entered something into the field.)
+    //
+    // Some sites fill the fields with a formatting string like (___)-___-____.
+    // To tell the difference between the values entered by the user
     // and the site, we'll sanitize the value. If the sanitized value is
     // empty, it means that the site has filled the field, in this case, the
     // field is not skipped. Nevertheless the below condition does not hold
     // for sites set the |kValue| attribute to the user-input value.
+    auto HasAttributeWithValue = [&element](const auto& attribute,
+                                            const auto& value) {
+      return element.HasAttribute(attribute) &&
+             base::i18n::ToLower(element.GetAttribute(attribute).Utf16()) ==
+                 base::i18n::ToLower(value);
+    };
     if ((IsAutofillableInputElement(input_element) ||
          IsTextAreaElement(element)) &&
         element.UserHasEditedTheField() &&
-        !SanitizedFieldIsEmpty(element.Value().Utf16()) &&
-        (!element.HasAttribute(*kValue) ||
-         element.GetAttribute(*kValue) != element.Value()) &&
-        (!element.HasAttribute(*kPlaceholder) ||
-         base::i18n::ToLower(element.GetAttribute(*kPlaceholder).Utf16()) !=
-             base::i18n::ToLower(element.Value().Utf16()))) {
+        !SanitizedFieldIsEmpty(current_element_value) &&
+        !data.fields[i].force_override &&
+        !HasAttributeWithValue(*kValue, current_element_value) &&
+        !HasAttributeWithValue(*kPlaceholder, current_element_value)) {
       continue;
     }
 
     // Check if we should autofill/preview/clear a select element or leave it.
     if (IsSelectElement(element) && element.UserHasEditedTheField() &&
-        !SanitizedFieldIsEmpty(element.Value().Utf16())) {
+        !SanitizedFieldIsEmpty(current_element_value) &&
+        !data.fields[i].force_override) {
       continue;
     }
 
@@ -1183,7 +1196,8 @@ void FillFormField(const FormFieldData& data,
   WebInputElement input_element = field->DynamicTo<WebInputElement>();
 
   if (IsCheckableElement(input_element)) {
-    input_element.SetChecked(IsChecked(data.check_status), true);
+    input_element.SetChecked(IsChecked(data.check_status), true,
+                             WebAutofillState::kAutofilled);
   } else {
     std::u16string value = data.value;
     if (IsTextInput(input_element) || IsMonthInput(input_element)) {
@@ -1191,14 +1205,13 @@ void FillFormField(const FormFieldData& data,
       // returns the default maxlength value.
       TruncateString(&value, input_element.MaxLength());
     }
-    field->SetAutofillValue(blink::WebString::FromUTF16(value));
+    field->SetAutofillValue(blink::WebString::FromUTF16(value),
+                            WebAutofillState::kAutofilled);
   }
   // Setting the form might trigger JavaScript, which is capable of
   // destroying the frame.
   if (!field->GetDocument().GetFrame())
     return;
-
-  field->SetAutofillState(WebAutofillState::kAutofilled);
 
   if (is_initiating_node &&
       ((IsTextInput(input_element) || IsMonthInput(input_element)) ||
@@ -1231,10 +1244,8 @@ void PreviewFormField(const FormFieldData& data,
     // returns the default maxlength value.
     input_element.SetSuggestedValue(blink::WebString::FromUTF16(
         data.value.substr(0, input_element.MaxLength())));
-    input_element.SetAutofillState(WebAutofillState::kPreviewed);
   } else if (IsTextAreaElement(*field) || IsSelectElement(*field)) {
     field->SetSuggestedValue(blink::WebString::FromUTF16(data.value));
-    field->SetAutofillState(WebAutofillState::kPreviewed);
   }
 
   if (is_initiating_node &&
@@ -1877,8 +1888,8 @@ void WebFormControlElementToFormField(
   field->form_control_ax_id = element.GetAxId();
   field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->autocomplete_attribute = GetAutocompleteAttribute(element);
-  if (base::LowerCaseEqualsASCII(element.GetAttribute(*kRole).Utf16(),
-                                 "presentation")) {
+  if (base::EqualsCaseInsensitiveASCII(element.GetAttribute(*kRole).Utf16(),
+                                       "presentation")) {
     field->role = FormFieldData::RoleAttribute::kPresentation;
   }
 

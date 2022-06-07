@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TestGuestOsBrowserProxy} from './test_guest_os_browser_proxy.js';
-import {TestCrostiniBrowserProxy} from './test_crostini_browser_proxy.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flush} from'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {CrostiniBrowserProxyImpl, GuestOsBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-import {eventToPromise, flushTasks, waitAfterNextRender} from 'chrome://test/test_util.js';
-import {GuestOsBrowserProxyImpl, CrostiniBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {eventToPromise, flushTasks, isVisible, waitAfterNextRender} from 'chrome://test/test_util.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+
+import {TestCrostiniBrowserProxy} from './test_crostini_browser_proxy.js';
+import {TestGuestOsBrowserProxy} from './test_guest_os_browser_proxy.js';
 
 /** @type {?SettingsCrostiniPageElement} */
 let crostiniPage = null;
@@ -48,12 +50,17 @@ function setCrostiniPrefs(enabled, optional = {}) {
 }
 
 /**
- * Checks whether a given element is visible to the user.
- * @param {!Element} element
- * @returns {boolean}
+ * @param {!Element} select
+ * @param {number} index
  */
-function isVisible(element) {
-  return !!(element && element.getBoundingClientRect().width > 0);
+function selectContainerByIndex(select, index) {
+  assertTrue(!!select);
+  const mdSelect =
+      select.root.querySelector('select#selectContainer.md-select');
+  assertTrue(!!mdSelect);
+  mdSelect.selectedIndex = index;
+  mdSelect.dispatchEvent(new CustomEvent('change'));
+  flush();
 }
 
 suite('CrostiniPageTests', function() {
@@ -61,9 +68,11 @@ suite('CrostiniPageTests', function() {
     crostiniBrowserProxy = new TestCrostiniBrowserProxy();
     CrostiniBrowserProxyImpl.instance_ = crostiniBrowserProxy;
     guestOsBrowserProxy = new TestGuestOsBrowserProxy();
-    GuestOsBrowserProxyImpl.instance_ = guestOsBrowserProxy;
+    GuestOsBrowserProxyImpl.setInstance(guestOsBrowserProxy);
     PolymerTest.clearBody();
     crostiniPage = document.createElement('settings-crostini-page');
+    crostiniPage.showCrostini = true;
+    crostiniPage.allowCrostini = true;
     document.body.appendChild(crostiniPage);
     testing.Test.disableAnimationsAndTransitions();
   });
@@ -125,6 +134,22 @@ suite('CrostiniPageTests', function() {
   suite('MainPage', function() {
     setup(function() {
       setCrostiniPrefs(false);
+    });
+
+    test('NotSupported', function() {
+      crostiniPage.showCrostini = false;
+      crostiniPage.allowCrostini = false;
+      flush();
+      assertTrue(!!crostiniPage.$$('#enable'));
+      assertFalse(!!crostiniPage.$$('cr-policy-indicator'));
+    });
+
+    test('NotAllowed', function() {
+      crostiniPage.showCrostini = true;
+      crostiniPage.allowCrostini = false;
+      flush();
+      assertTrue(!!crostiniPage.$$('#enable'));
+      assertTrue(!!crostiniPage.$$('cr-policy-indicator'));
     });
 
     test('Enable', function() {
@@ -488,19 +513,43 @@ suite('CrostiniPageTests', function() {
     suite('SubPagePortForwarding', function() {
       /** @type {?SettingsCrostiniPortForwarding} */
       let subpage;
+
+      const allContainers = /** @type {!Array<!ContainerInfo>}*/
+          ([
+            {
+              id: {
+                vm_name: 'termina',
+                container_name: 'penguin',
+              },
+              ipv4: '1.2.3.4',
+            },
+            {
+              id: {
+                vm_name: 'not-termina',
+                container_name: 'not-penguin',
+
+              },
+              ipv4: '1.2.3.5',
+            }
+          ]);
       setup(async function() {
         crostiniBrowserProxy.portOperationSuccess = true;
+        crostiniBrowserProxy.containerInfo = allContainers;
         setCrostiniPrefs(true, {
           forwardedPorts: [
             {
               port_number: 5000,
               protocol_type: 0,
               label: 'Label1',
+              vm_name: 'termina',
+              container_name: 'penguin',
             },
             {
               port_number: 5001,
               protocol_type: 1,
               label: 'Label2',
+              vm_name: 'not-termina',
+              container_name: 'not-penguin',
             },
           ]
         });
@@ -512,12 +561,14 @@ suite('CrostiniPageTests', function() {
         await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         assertTrue(!!subpage);
+        assertEquals(
+            1, crostiniBrowserProxy.getCallCount('requestContainerInfo'));
       });
 
       test('DisplayPorts', async function() {
         // Extra list item for the titles.
         assertEquals(
-            3, subpage.shadowRoot.querySelectorAll('.list-item').length);
+            4, subpage.shadowRoot.querySelectorAll('.list-item').length);
       });
 
       test('AddPortSuccess', async function() {
@@ -527,19 +578,25 @@ suite('CrostiniPageTests', function() {
 
         await flushTasks();
         subpage = subpage.$$('settings-crostini-add-port-dialog');
-        const portNumberInput = subpage.$$('#portNumberInput');
+        const portNumberInput = subpage.root.querySelector('#portNumberInput');
         portNumberInput, focus();
         portNumberInput.value = '5002';
         portNumberInput, blur();
         assertEquals(portNumberInput.invalid, false);
-        const portLabelInput = subpage.$$('#portLabelInput');
+        const portLabelInput = subpage.root.querySelector('#portLabelInput');
         portLabelInput.value = 'Some Label';
-        subpage.$$('cr-dialog cr-button[id="continue"]').click();
+        const select =
+            subpage.root.querySelector('settings-crostini-container-select');
+        selectContainerByIndex(select, 1);
+
+        subpage.root.querySelector('cr-dialog cr-button[id="continue"]')
+            .click();
         assertEquals(
             1, crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
-        assertEquals(
-            4,
-            crostiniBrowserProxy.getArgs('addCrostiniPortForward')[0].length);
+        const args = crostiniBrowserProxy.getArgs('addCrostiniPortForward')[0];
+        assertEquals(4, args.length);
+        assertEquals(args[0].vm_name, 'not-termina');
+        assertEquals(args[0].container_name, 'not-penguin');
       });
 
       test('AddPortFail', async function() {
@@ -549,9 +606,10 @@ suite('CrostiniPageTests', function() {
 
         await flushTasks();
         subpage = subpage.$$('settings-crostini-add-port-dialog');
-        const portNumberInput = subpage.$$('#portNumberInput');
-        const portLabelInput = subpage.$$('#portLabelInput');
-        const continueButton = subpage.$$('cr-dialog cr-button[id="continue"]');
+        const portNumberInput = subpage.root.querySelector('#portNumberInput');
+        const portLabelInput = subpage.root.querySelector('#portLabelInput');
+        const continueButton =
+            subpage.root.querySelector('cr-dialog cr-button[id="continue"]');
 
         assertEquals(portNumberInput.invalid, false);
         portNumberInput.focus();
@@ -575,7 +633,8 @@ suite('CrostiniPageTests', function() {
         portNumberInput.focus();
         portNumberInput.value = '5000';
         portNumberInput.blur();
-        subpage.$$('cr-dialog cr-button[id="continue"]').click();
+        subpage.root.querySelector('cr-dialog cr-button[id="continue"]')
+            .click();
         assertEquals(continueButton.disabled, true);
         assertEquals(portNumberInput.invalid, true);
         assertEquals(
@@ -597,7 +656,7 @@ suite('CrostiniPageTests', function() {
 
         await flushTasks();
         subpage = subpage.$$('settings-crostini-add-port-dialog');
-        subpage.$$('cr-dialog cr-button[id="cancel"]').click();
+        subpage.root.querySelector('cr-dialog cr-button[id="cancel"]').click();
 
         await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
@@ -612,27 +671,34 @@ suite('CrostiniPageTests', function() {
         await flushTasks();
         subpage.$$('#removeAllPortsButton').click();
         assertEquals(
-            1,
+            2,
             crostiniBrowserProxy.getCallCount('removeAllCrostiniPortForwards'));
       });
 
       test('RemoveSinglePort', async function() {
         await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        subpage.$$('#showRemoveSinglePortMenu0').click();
+        subpage.$$('#showRemoveSinglePortMenu0-0').click();
         await flushTasks();
 
         subpage.$$('#removeSinglePortButton').click();
         assertEquals(
             1, crostiniBrowserProxy.getCallCount('removeCrostiniPortForward'));
+        const args =
+            crostiniBrowserProxy.getArgs('removeCrostiniPortForward')[0];
+        assertEquals(3, args.length);
+        assertEquals(args[0].vm_name, 'termina');
+        assertEquals(args[0].container_name, 'penguin');
       });
 
 
-      test('ActivateSinglePortSucess', async function() {
+      test('ActivateSinglePortSuccess', async function() {
         assertFalse(subpage.$$('#errorToast').open);
         await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        subpage.$$('#toggleActivationButton0').click();
+        const crToggle = subpage.$$('#toggleActivationButton0-0');
+        assertFalse(crToggle.disabled);
+        crToggle.click();
 
         await flushTasks();
         assertEquals(
@@ -646,7 +712,9 @@ suite('CrostiniPageTests', function() {
         crostiniBrowserProxy.portOperationSuccess = false;
         assertFalse(subpage.$$('#errorToast').open);
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        const crToggle = subpage.$$('#toggleActivationButton1');
+        const crToggle = subpage.$$('#toggleActivationButton1-0');
+        assertTrue(!!crToggle);
+        assertFalse(crToggle.disabled);
         assertEquals(crToggle.checked, false);
         crToggle.click();
 
@@ -661,7 +729,8 @@ suite('CrostiniPageTests', function() {
       test('DeactivateSinglePort', async function() {
         await flushTasks();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        const crToggle = subpage.$$('#toggleActivationButton0');
+        const crToggle = subpage.$$('#toggleActivationButton0-0');
+        assertFalse(crToggle.disabled);
         crToggle.checked = true;
         crToggle.click();
 
@@ -681,7 +750,7 @@ suite('CrostiniPageTests', function() {
             },
           ]
         });
-        const crToggle = subpage.$$('#toggleActivationButton0');
+        const crToggle = subpage.$$('#toggleActivationButton0-0');
 
         webUIListenerCallback(
             'crostini-port-forwarder-active-ports-changed',
@@ -696,6 +765,13 @@ suite('CrostiniPageTests', function() {
       });
 
       test('PortPrefsChange', async function() {
+        // Default prefs should have list items per port, plus one per
+        // container.
+        assertEquals(
+            4, subpage.shadowRoot.querySelectorAll('.list-item').length);
+
+        // When only one the default container has ports, we lose an item for
+        // the extra container heading.
         setCrostiniPrefs(true, {
           forwardedPorts: [
             {
@@ -706,7 +782,7 @@ suite('CrostiniPageTests', function() {
             {
               port_number: 5001,
               protocol_type: 0,
-              label: 'Label1',
+              label: 'Label2',
             },
           ]
         });
@@ -722,12 +798,12 @@ suite('CrostiniPageTests', function() {
             {
               port_number: 5001,
               protocol_type: 0,
-              label: 'Label1',
+              label: 'Label2',
             },
             {
               port_number: 5002,
               protocol_type: 0,
-              label: 'Label1',
+              label: 'Label3',
             },
           ]
         });
@@ -738,14 +814,20 @@ suite('CrostiniPageTests', function() {
             0, subpage.shadowRoot.querySelectorAll('.list-item').length);
       });
 
-      test('CrostiniStopAndStart', async function() {
-        const crToggle = subpage.$$('#toggleActivationButton0');
+      test('ContainerStopAndStart', async function() {
+        const crToggle = subpage.$$('#toggleActivationButton0-0');
         assertFalse(crToggle.disabled);
 
-        webUIListenerCallback('crostini-status-changed', false);
+        delete allContainers[0].ipv4;
+        webUIListenerCallback(
+            'crostini-container-info', structuredClone(allContainers));
+        await flushTasks();
         assertTrue(crToggle.disabled);
 
-        webUIListenerCallback('crostini-status-changed', true);
+        allContainers[0].ipv4 = '1.2.3.4';
+        webUIListenerCallback(
+            'crostini-container-info', structuredClone(allContainers));
+        await flushTasks();
         assertFalse(crToggle.disabled);
       });
     });

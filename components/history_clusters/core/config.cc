@@ -74,6 +74,21 @@ Config::Config() {
       internal::kOmniboxAction, "omnibox_action_on_noisy_urls",
       omnibox_action_on_noisy_urls);
 
+  omnibox_action_on_navigation_intents =
+      base::GetFieldTrialParamByFeatureAsBool(
+          internal::kOmniboxAction, "omnibox_action_on_navigation_intents",
+          omnibox_action_on_navigation_intents);
+
+  omnibox_action_navigation_intent_score_threshold =
+      base::GetFieldTrialParamByFeatureAsInt(
+          internal::kOmniboxAction,
+          "omnibox_action_on_navigation_intent_score_threshold",
+          omnibox_action_navigation_intent_score_threshold);
+
+  omnibox_action_with_pedals = base::GetFieldTrialParamByFeatureAsBool(
+      internal::kOmniboxAction, "omnibox_action_with_pedals",
+      omnibox_action_with_pedals);
+
   keyword_filter_on_entity_aliases = base::GetFieldTrialParamByFeatureAsBool(
       history_clusters::features::kOnDeviceClusteringKeywordFiltering,
       "keyword_filter_on_entity_aliases", keyword_filter_on_entity_aliases);
@@ -92,6 +107,22 @@ Config::Config() {
   keyword_filter_on_noisy_visits = GetFieldTrialParamByFeatureAsBool(
       history_clusters::features::kOnDeviceClusteringKeywordFiltering,
       "keyword_filter_on_noisy_visits", keyword_filter_on_noisy_visits);
+
+  keyword_filter_on_search_terms = GetFieldTrialParamByFeatureAsBool(
+      history_clusters::features::kOnDeviceClusteringKeywordFiltering,
+      "keyword_filter_on_search_terms", keyword_filter_on_search_terms);
+
+  keyword_filter_on_visit_hosts = GetFieldTrialParamByFeatureAsBool(
+      history_clusters::features::kOnDeviceClusteringKeywordFiltering,
+      "keyword_filter_on_visit_hosts", keyword_filter_on_visit_hosts);
+
+  category_keyword_score_weight = GetFieldTrialParamByFeatureAsDouble(
+      features::kOnDeviceClusteringKeywordFiltering,
+      "category_keyword_score_weight", category_keyword_score_weight);
+
+  max_num_keywords_per_cluster = GetFieldTrialParamByFeatureAsInt(
+      features::kOnDeviceClusteringKeywordFiltering,
+      "max_num_keywords_per_cluster", max_num_keywords_per_cluster);
 
   non_user_visible_debug =
       base::FeatureList::IsEnabled(internal::kNonUserVisibleDebug);

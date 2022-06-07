@@ -18,6 +18,10 @@ class Profile;
 
 namespace crostini {
 
+// web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
+//     GURL("chrome-untrusted://terminal/html/terminal.html"))
+extern const char kCrostiniTerminalSystemAppId[];
+
 extern const char kTerminalHomePath[];
 
 extern const char kShortcutKey[];
@@ -105,11 +109,15 @@ enum class TerminalSetting {
   kMaxValue = kThemeVariations,
 };
 
+// Remove Terminal app id from crostini.registry.<terminal-app-id>.
+void RemoveTerminalFromRegistry(PrefService* prefs);
+
 const std::string& GetTerminalDefaultUrl();
 
 // Generate URL to launch terminal.
 GURL GenerateTerminalURL(
     Profile* profile,
+    const std::string& setings_profile,
     const ContainerId& container_id = ContainerId::GetDefault(),
     const std::string& cwd = "",
     const std::vector<std::string>& terminal_args = {});
@@ -139,8 +147,11 @@ void LaunchTerminalSettings(Profile* profile,
 // Record which terminal settings have been changed by users.
 void RecordTerminalSettingsChangesUMAs(Profile* profile);
 
-// Returns terminal setting 'background-color'.
-std::string GetTerminalSettingBackgroundColor(Profile* profile);
+// Returns terminal setting 'background-color' to use for |url|.
+std::string GetTerminalSettingBackgroundColor(
+    Profile* profile,
+    GURL url,
+    absl::optional<SkColor> opener_background_color);
 
 // Returns terminal setting 'pass-ctrl-w'.
 bool GetTerminalSettingPassCtrlW(Profile* profile);
@@ -149,14 +160,12 @@ bool GetTerminalSettingPassCtrlW(Profile* profile);
 std::string ShortcutIdForSSH(const std::string& profileId);
 
 // Menu shortcut ID for Linux container.
-std::string ShortcutIdFromContainerId(const crostini::ContainerId& id);
+std::string ShortcutIdFromContainerId(Profile* profile,
+                                      const crostini::ContainerId& id);
 
 // Returns list of SSH connections {<profile-id>, <description>}.
 std::vector<std::pair<std::string, std::string>> GetSSHConnections(
     Profile* profile);
-
-// Returns list of Linux containers.
-std::vector<ContainerId> GetLinuxContainers(Profile* profile);
 
 // Add terminal menu items (Settings, Shut down Linux).
 void AddTerminalMenuItems(Profile* profile,

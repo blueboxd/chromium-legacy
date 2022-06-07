@@ -52,7 +52,7 @@ enum TestWritingMode { kLTR, kRTL };
 
 // What kind of scroll into view to invoke, via JavaScript binding
 // (element.scrollIntoView), using the InputHandler
-// ScrollFocusedEditableNodeIntoRect method, or via setting an OSK inset.
+// ScrollFocusedEditableNodeIntoView method, or via setting an OSK inset.
 enum TestInvokeMethod { kJavaScript, kInputHandler, kAuraOnScreenKeyboard };
 
 [[maybe_unused]] std::string DescribeFrameType(
@@ -75,7 +75,7 @@ blink::mojom::FrameWidgetInputHandler* GetInputHandler(FrameTreeNode* node) {
       ->GetFrameWidgetInputHandler();
 }
 
-// Will block from the destructor until a ScrollFocusedEditableNodeIntoRect has
+// Will block from the destructor until a ScrollFocusedEditableNodeIntoView has
 // completed. This must be called with the root frame tree node since that's
 // where the ScrollIntoView and PageScaleAnimation will bubble to.
 class ScopedFocusScrollWaiter {
@@ -157,7 +157,7 @@ class ScrollRectToVisibleInParentFrameInterceptor
 // cross_site_scroll_into_view_factory.html builds a frame tree from its given
 // argument, allowing only a single child frame in each frame. The inner most
 // frame adds an <input> element which can be used to call
-// ScrollFocusedEditableNodeIntoRect.
+// ScrollFocusedEditableNodeIntoView.
 //
 // Each test starts by performing a non-scrolling focus on the <input> element.
 // It then performs a scroll into view (either via JavaScript bindings or
@@ -191,7 +191,8 @@ class ScrollIntoViewBrowserTestBase : public ContentBrowserTest {
     ContentBrowserTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
 
-    // Need this to control page scale factor via script.
+    // Need this to control page scale factor via script or check for root
+    // scroller.
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
   }
 
@@ -473,11 +474,11 @@ class ScrollIntoViewBrowserTestBase : public ContentBrowserTest {
     if (GetInvokeMethod() == kInputHandler ||
         GetInvokeMethod() == kAuraOnScreenKeyboard) {
       // Focus the input for tests that rely on scrolling to a focused element
-      // (i.e. via ScrollFocusedEditableNodeIntoRect).  Use `preventScroll` to
+      // (i.e. via ScrollFocusedEditableNodeIntoView).  Use `preventScroll` to
       // avoid affecting the test via the automatic scrolling caused by focus.
       //
       // Note: normally, an IME (i.e. On-Screen Keyboard) can also attempt to
-      // scroll into view (in fact, using ScrollFocusedEditableNodeIntoRect
+      // scroll into view (in fact, using ScrollFocusedEditableNodeIntoView
       // which we're trying to test). However, in order to reliably test this
       // across platforms this test harness suppresses IME events so that the
       // on-screen keyboard on a platform that uses one will not activate in
@@ -501,10 +502,8 @@ class ScrollIntoViewBrowserTestBase : public ContentBrowserTest {
       case kInputHandler: {
         ScopedFocusScrollWaiter wait_for_scroll_done(RootFrameTreeNode());
 
-        // The gfx::Rect() param is used only to debounce repeated calls, see
-        // the TODO at https://bit.ly/3vIdTsD
         GetInputHandler(InnerMostFrameTreeNode())
-            ->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
+            ->ScrollFocusedEditableNodeIntoView();
       } break;
       case kAuraOnScreenKeyboard: {
         ScopedFocusScrollWaiter wait_for_scroll_done(RootFrameTreeNode());
@@ -538,7 +537,7 @@ class ScrollIntoViewBrowserTestBase : public ContentBrowserTest {
 
 // Runs tests in all combinations of Local/Remote frames,
 // left-to-right/right-to-left writing modes, and scrollIntoView via
-// element.scrollIntoView/InputHandler.ScrollFocusedEditableNodeIntoRect. The
+// element.scrollIntoView/InputHandler.ScrollFocusedEditableNodeIntoView. The
 // kAuraOnScreenKeyboard is intentionally omitted as it is expected to be
 // functionally equivalent to kInputHandler.
 class ScrollIntoViewBrowserTest
@@ -589,7 +588,7 @@ class ScrollIntoViewBrowserTest
         invoke_method = "JavaScript";
       } break;
       case kInputHandler: {
-        invoke_method = "ScrollFocusedEditableNodeIntoRect";
+        invoke_method = "ScrollFocusedEditableNodeIntoView";
       } break;
       case kAuraOnScreenKeyboard: {
         invoke_method = "AuraOnScreenKeyboard";
@@ -678,14 +677,23 @@ IN_PROC_BROWSER_TEST_P(InsetScrollIntoViewBrowserTest,
                        InsetsCauseScrollToFocusedEditable) {
   ASSERT_TRUE(SetupTest("siteA(siteB(siteC))"));
 
+  int contents_height = web_contents()->GetViewBounds().height();
+
+  // Ensure the window height is large enough to accommodate the inset and leave
+  // some space for a caret. Note: we can't just assume 800x600 because some
+  // Windows 7 bots have less than 600px of workspace area available which
+  // results in a smaller window.
+  ASSERT_GT(contents_height, 450);
+
   int visual_viewport_height_before = GetVisualViewport().height;
   int layout_viewport_height_before = GetLayoutViewportRect().height();
 
-  // We expect the window to be 800x600px but allow some fuzziness due to
-  // differing scrollbars and window decorations on different platforms.
+  // We expect the viewport height to match the WebContents but allow some
+  // fuzziness due to differing scrollbars and window decorations on different
+  // platforms.
   const int kEpsilon = 30;
-  EXPECT_NEAR(visual_viewport_height_before, 600, kEpsilon);
-  EXPECT_NEAR(layout_viewport_height_before, 600, kEpsilon);
+  EXPECT_NEAR(visual_viewport_height_before, contents_height, kEpsilon);
+  EXPECT_NEAR(layout_viewport_height_before, contents_height, kEpsilon);
   EXPECT_EQ(1.f, GetVisualViewport().scale);
 
   RunTest();
@@ -713,7 +721,7 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
 
 constexpr double kMobileMinimumScale = 0.25;
 
-// Tests zooming behaviors for ScrollFocusedEditableNodeIntoRect. These tests
+// Tests zooming behaviors for ScrollFocusedEditableNodeIntoView. These tests
 // runs only on Android since that's the only platorm that uses this behavior.
 class ZoomScrollIntoViewBrowserTest
     : public ScrollIntoViewBrowserTestBase,
@@ -744,8 +752,8 @@ IN_PROC_BROWSER_TEST_P(ZoomScrollIntoViewBrowserTest, DesktopViewportMustZoom) {
 // zooming behavior so that "mobile-friendly" pages do not zoom in on input
 // boxes.
 IN_PROC_BROWSER_TEST_P(ZoomScrollIntoViewBrowserTest,
-                       ViewportMetaDisablesZoom) {
-  ASSERT_TRUE(SetupTest("siteA{ViewportMeta}(siteB)"));
+                       MobileViewportDisablesZoom) {
+  ASSERT_TRUE(SetupTest("siteA{MobileViewport}(siteB)"));
 
   EXPECT_EQ(kMobileMinimumScale, GetVisualViewport().scale);
 
@@ -768,6 +776,39 @@ IN_PROC_BROWSER_TEST_P(ZoomScrollIntoViewBrowserTest,
   // touch-action: none must prevent the zooming behavior since the user may
   // not be able to zoom back out.
   EXPECT_EQ(kMobileMinimumScale, GetVisualViewport().scale);
+}
+
+class RootScrollerScrollIntoViewBrowserTest
+    : public ScrollIntoViewBrowserTestBase {
+ public:
+  bool IsForceLocalFrames() const override { return false; }
+  bool IsWritingModeLTR() const override { return true; }
+  TestInvokeMethod GetInvokeMethod() const override { return kInputHandler; }
+};
+
+IN_PROC_BROWSER_TEST_F(RootScrollerScrollIntoViewBrowserTest,
+                       FocusInRootScroller) {
+  ASSERT_TRUE(SetupTest("siteA{RootScroller,MobileViewportNoZoom}"));
+
+  // Root scroller is recomputed after a Blink lifecycle so ensure a frame is
+  // produced to make sure the renderer has had time to evaluate the root
+  // scroller.
+  {
+    base::RunLoop loop;
+    shell()->web_contents()->GetMainFrame()->InsertVisualStateCallback(
+        base::BindLambdaForTesting(
+            [&loop](bool visual_state_updated) { loop.Quit(); }));
+    loop.Run();
+  }
+
+  ASSERT_EQ(1.0, GetVisualViewport().scale);
+  ASSERT_EQ(
+      true,
+      EvalJs(
+          InnerMostFrameTreeNode(),
+          "window.internals.effectiveRootScroller(document).tagName == 'DIV'"));
+
+  RunTest();
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
@@ -840,10 +881,30 @@ IN_PROC_BROWSER_TEST_P(ScrollIntoViewFencedFrameBrowserTest,
   RunTest();
 }
 
-// TODO(https://crbug.com/1325556): Re-enable when flakiness is fixed.
 IN_PROC_BROWSER_TEST_P(ScrollIntoViewFencedFrameBrowserTest,
-                       DISABLED_RemoteFrameInFencedFrame) {
+                       RemoteFrameInFencedFrame) {
   ASSERT_TRUE(SetupTest("siteA{FencedFrame}(siteB(siteC))"));
+
+  // TODO(bokan): This is required due to a race in how page-level focus is
+  // transferred. If the race is won by the page level focus notification then
+  // it'll clobber the <input> focus and reset it to the main frame. In this
+  // case, trying again will work because the fenced frame tree already has
+  // page focus now so focusing it doesn't change page focus. See
+  // https://crbug.com/1327439.
+  {
+    VisualViewport viewport = GetVisualViewport();
+    double page_scale_factor_before = viewport.scale;
+
+    EXPECT_TRUE(ExecJs(InnerMostFrameTreeNode(), R"JS(
+      document.querySelector('input').focus({preventScroll: true});
+    )JS"));
+
+    // The test should start with fresh scroll and scale.
+    ASSERT_EQ(viewport.scale, page_scale_factor_before);
+    ASSERT_EQ(viewport.page_left, 0);
+    ASSERT_EQ(viewport.page_top, 0);
+  }
+
   RunTest();
 }
 

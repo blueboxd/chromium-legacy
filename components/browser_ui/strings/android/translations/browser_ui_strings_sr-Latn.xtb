@@ -54,7 +54,7 @@
 <translation id="2289270750774289114">Pitaj kada sajt želi da otkrije Bluetooth uređaje u blizini (preporučeno)</translation>
 <translation id="2315043854645842844">Operativni sistem ne podržava izbor sertifikata za klijenta.</translation>
 <translation id="2321958826496381788">Prevlačite klizač dok ovo ne budete mogli lako da pročitate. Kada dvaput dodirnete pasus, tekst treba da bude bar ovoliki.</translation>
-<translation id="2359808026110333948">Nastavite</translation>
+<translation id="2359808026110333948">Nastavi</translation>
 <translation id="2379925928934107488">Kada je to moguće, tamna tema se primenjuje za sajtove kada je Chrome koristi</translation>
 <translation id="2387895666653383613">Promena veličine teksta</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -128,6 +128,7 @@
 <translation id="4046123991198612571">Sledeća pesma</translation>
 <translation id="4149994727733219643">Pojednostavljen prikaz veb-stranica</translation>
 <translation id="4165986682804962316">Podešavanja sajta</translation>
+<translation id="4169549551965910670">Povezano sa USB uređajem</translation>
 <translation id="4194328954146351878">Pre nego što dozvolite sajtovima da vide i menjaju informacije na NFC uređajima prikazuje se upit (preporučeno)</translation>
 <translation id="4200726100658658164">Otvorite podešavanja lokacije</translation>
 <translation id="4226663524361240545">Uređaj će vibrirati kada primate obaveštenja</translation>

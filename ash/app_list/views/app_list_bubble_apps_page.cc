@@ -290,11 +290,12 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
   // build a single animation with conditional parts. https://crbug.com/1266020
   const int section_offset = is_side_shelf ? -20 : 20;
   int vertical_offset = 0;
-  if (continue_section_->GetTasksSuggestionsCount() > 0) {
+  if (continue_section_->GetVisible() &&
+      continue_section_->GetTasksSuggestionsCount() > 0) {
     vertical_offset += section_offset;
     SlideViewIntoPosition(continue_section_, vertical_offset, slide_duration);
   }
-  if (recent_apps_->GetItemViewCount() > 0) {
+  if (recent_apps_->GetVisible() && recent_apps_->GetItemViewCount() > 0) {
     vertical_offset += section_offset;
     SlideViewIntoPosition(recent_apps_, vertical_offset, slide_duration);
   }
@@ -319,7 +320,7 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
                           weak_factory_.GetWeakPtr()));
 }
 
-void AppListBubbleAppsPage::AnimateHideLauncher() {
+void AppListBubbleAppsPage::PrepareForHideLauncher() {
   // Remove the gradient mask from the scroll view to improve performance.
   gradient_helper_.reset();
 }

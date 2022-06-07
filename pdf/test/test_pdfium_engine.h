@@ -24,8 +24,11 @@ class TestPDFiumEngine : public PDFiumEngine {
   // Page number.
   static constexpr uint32_t kPageNumber = 13u;
 
-  // Dummy data to save.
-  static constexpr uint8_t kSaveData[] = {'1', '2', '3'};
+  // Dummy loaded data.
+  static constexpr uint8_t kLoadedData[] = {'l', 'o', 'a', 'd', 'e', 'd'};
+
+  // Dummy save data.
+  static constexpr uint8_t kSaveData[] = {'s', 'a', 'v', 'e'};
 
   explicit TestPDFiumEngine(PDFEngine::Client* client);
 
@@ -93,6 +96,8 @@ class TestPDFiumEngine : public PDFiumEngine {
   MOCK_METHOD(void, SetCaretPosition, (const gfx::Point&), (override));
 
   void SetPermissions(const std::vector<DocumentPermission>& permissions);
+
+  MOCK_METHOD(void, OnDocumentCanceled, (), (override));
 
  protected:
   std::vector<DocumentAttachmentInfo>& doc_attachment_info_list() {

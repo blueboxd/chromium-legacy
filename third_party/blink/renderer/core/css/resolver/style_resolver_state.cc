@@ -47,7 +47,7 @@ bool CanCacheBaseStyle(const StyleRequest& style_request) {
 StyleResolverState::StyleResolverState(
     Document& document,
     Element& element,
-    const StyleRecalcContext& style_recalc_context,
+    const StyleRecalcContext* style_recalc_context,
     const StyleRequest& style_request)
     : element_context_(element),
       document_(&document),
@@ -64,7 +64,8 @@ StyleResolverState::StyleResolverState(
       element_type_(style_request.IsPseudoStyleRequest()
                         ? ElementType::kPseudoElement
                         : ElementType::kElement),
-      nearest_container_(style_recalc_context.container),
+      container_unit_context_(
+          style_recalc_context ? style_recalc_context->container : &element),
       originating_element_style_(style_request.originating_element_style),
       is_for_highlight_(IsHighlightPseudoElement(style_request.pseudo_id)),
       is_for_custom_highlight_(style_request.pseudo_id ==
@@ -84,8 +85,9 @@ StyleResolverState::StyleResolverState(
 
   DCHECK(document.IsActive());
 
-  if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
-      is_for_highlight_)
+  if ((RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+       is_for_highlight_) ||
+      is_for_custom_highlight_)
     DCHECK(originating_element_style_);
 }
 
@@ -120,7 +122,7 @@ scoped_refptr<ComputedStyle> StyleResolverState::TakeStyle() {
 void StyleResolverState::UpdateLengthConversionData() {
   css_to_length_conversion_data_ = CSSToLengthConversionData(
       Style(), RootElementStyle(), GetDocument().GetLayoutView(),
-      CSSToLengthConversionData::ContainerSizes(nearest_container_),
+      CSSToLengthConversionData::ContainerSizes(container_unit_context_),
       Style()->EffectiveZoom());
   element_style_resources_.UpdateLengthConversionData(
       &css_to_length_conversion_data_);
@@ -134,7 +136,8 @@ CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData(
       em, rem, &font_style->GetFont(), font_style->EffectiveZoom());
   CSSToLengthConversionData::ViewportSize viewport_size(
       GetDocument().GetLayoutView());
-  CSSToLengthConversionData::ContainerSizes container_sizes(nearest_container_);
+  CSSToLengthConversionData::ContainerSizes container_sizes(
+      container_unit_context_);
 
   return CSSToLengthConversionData(Style(), Style()->GetWritingMode(),
                                    font_sizes, viewport_size, container_sizes,
@@ -226,6 +229,11 @@ Element* StyleResolverState::GetAnimatingElement() const {
     return &GetElement();
   DCHECK_EQ(ElementType::kPseudoElement, element_type_);
   return pseudo_element_;
+}
+
+PseudoElement* StyleResolverState::GetPseudoElement() const {
+  return element_type_ == ElementType::kPseudoElement ? pseudo_element_
+                                                      : nullptr;
 }
 
 const CSSValue& StyleResolverState::ResolveLightDarkPair(

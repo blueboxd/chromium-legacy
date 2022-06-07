@@ -29,6 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "build/build_config.h"
@@ -109,12 +110,14 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "net/cookies/parsed_cookie.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
@@ -147,6 +150,9 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
+#include "third_party/blink/public/common/origin_trials/trial_token.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_result.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/security/address_space_feature.h"
@@ -191,6 +197,14 @@ constexpr base::Feature kHistoryNavigationDoNotUseCacheAblationStudy{
     base::FEATURE_DISABLED_BY_DEFAULT};
 constexpr base::FeatureParam<double> kDoNotUseCacheProbability{
     &kHistoryNavigationDoNotUseCacheAblationStudy, "probability", 0.0};
+
+const char kIsolatedAppCSP[] =
+    "base-uri 'none';"
+    "default-src 'self';"
+    "object-src 'none';"
+    "frame-src 'self' https:;"
+    "connect-src 'self' https:;"
+    "require-trusted-types-for 'script';";
 
 // Corresponds to the "NavigationURLScheme" histogram enumeration type in
 // src/tools/metrics/histograms/enums.xml.
@@ -934,11 +948,10 @@ bool IsOptedInFencedFrame(const net::HttpResponseHeaders& http_headers) {
 }
 
 // If the response does not contain an Accept-CH header, then remove the
-// Sec-CH-UA-Reduced, Sec-CH-UA-Full, or Sec-CH-Partitioned-Cookies, client
-// hint from the Accept-CH cache, if it exists, for the response origin.  The
-// `client_hints` vector also has kUaReduced or kFullUserAgent removed from it
-// if the Accept-CH response header doesn't exist, and cookies are
-// un-partitioned if that feature is enabled.
+// Sec-CH-UA-Reduced or Sec-CH-UA-Full client hint from the Accept-CH cache, if
+// it exists, for the response origin.  The `client_hints` vector also has
+// kUaReduced or kFullUserAgent removed from it if the Accept-CH response header
+// doesn't exist, and cookies are un-partitioned if that feature is enabled.
 void RemoveOriginTrialHintsFromAcceptCH(
     const GURL& url,
     ClientHintsControllerDelegate* delegate,
@@ -950,18 +963,16 @@ void RemoveOriginTrialHintsFromAcceptCH(
   if (!response || response->parsed_headers->accept_ch)
     return;
 
-  // For Chrome to continue to send Sec-CH-UA-Reduced, Sec-CH-UA-Full, or
-  // Sec-CH-Partitioned-Cookies, the server must continue replying with:
+  // For Chrome to continue to send Sec-CH-UA-Reduced or Sec-CH-UA-Full, the
+  // server must continue replying with:
   //  - a valid Origin Trial token.
-  //  - Accept-CH header with Sec-CH-UA-Reduced, Sec-CH-UA-Full, or
-  //  Sec-CH-Partitioned-Cookies as a value.
+  //  - Accept-CH header with Sec-CH-UA-Reduced or Sec-CH-UA-Full as a value.
   //
   // Here, it did not. So it gets removed from the persisted client hints
   // for the next request.
   std::vector<network::mojom::WebClientHintsType> hints_to_remove = {
       network::mojom::WebClientHintsType::kUAReduced,
-      network::mojom::WebClientHintsType::kFullUserAgent,
-      network::mojom::WebClientHintsType::kPartitionedCookies};
+      network::mojom::WebClientHintsType::kFullUserAgent};
   bool need_update_storage = false;
   for (const auto& hint : hints_to_remove) {
     if (base::Contains(client_hints, hint)) {
@@ -974,10 +985,46 @@ void RemoveOriginTrialHintsFromAcceptCH(
                     frame_tree_node->GetParentOrOuterDocument(), delegate,
                     client_hints);
   }
+}
 
-  if (auto* cookie_manager = frame_tree_node->current_frame_host()
-                                 ->GetStoragePartition()
-                                 ->GetCookieManagerForBrowserProcess()) {
+bool IsValidPartitionedCookiesOriginTrial(
+    const GURL& url,
+    const net::HttpResponseHeaders* response_headers) {
+  blink::TrialTokenValidator validator;
+  if (!validator.IsTrialPossibleOnOrigin(url))
+    return false;
+  // Since third-party requests can participate in the CHIPS origin trial and
+  // typically the Origin-Trial header is reserved for requests from the
+  // top-level site, we cannot use validator.RequestEnablesFeature here.
+  url::Origin origin = url::Origin::Create(url);
+  url::Origin third_party_origins[] = {url::Origin::Create(url)};
+  size_t iter = 0;
+  std::string token;
+  base::Time now(base::Time::Now());
+  while (response_headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
+    blink::TrialTokenResult result =
+        validator.ValidateToken(token, origin, third_party_origins, now);
+    if (result.Status() == blink::OriginTrialTokenStatus::kSuccess) {
+      if (result.ParsedToken()->feature_name() == "PartitionedCookies") {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// For the partitioned cookies OT, we check if the response has a Set-Cookie
+// header with a partitioned cookie. If it does, we validate the OT token
+// otherwise we convert the URL's partitioned cookies to unpartitioned.
+void CheckPartitionedCookiesOriginTrial(
+    const network::mojom::URLResponseHead* response,
+    const GURL& url,
+    network::mojom::CookieManager* cookie_manager) {
+  if (!base::FeatureList::IsEnabled(net::features::kPartitionedCookies) ||
+      !response || !cookie_manager || !response->has_partitioned_cookie) {
+    return;
+  }
+  if (!IsValidPartitionedCookiesOriginTrial(url, response->headers.get())) {
     cookie_manager->ConvertPartitionedCookiesToUnpartitioned(url);
   }
 }
@@ -3069,8 +3116,9 @@ bool NavigationRequest::ShouldRequestSiteIsolationForCOOP() {
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
+    case network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties:
     case network::mojom::CrossOriginOpenerPolicyValue::
-        kSameOriginAllowPopupsPlusCoep:
+        kRestrictPropertiesPlusCoep:
       should_header_value_trigger_isolation = true;
       break;
     case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
@@ -3348,8 +3396,8 @@ void NavigationRequest::OnResponseStarted(
   response_should_be_rendered_ =
       !is_download &&
       (!response_head_->headers.get() ||
-       (response_head_->headers->response_code() != 204 &&
-        response_head_->headers->response_code() != 205 &&
+       (response_head_->headers->response_code() != net::HTTP_NO_CONTENT &&
+        response_head_->headers->response_code() != net::HTTP_RESET_CONTENT &&
         !ShouldRenderFallbackContentForResponse(*response_head_->headers)));
 
   // Response that will not commit should be marked as aborted in the
@@ -3553,18 +3601,14 @@ void NavigationRequest::OnResponseStarted(
   subresource_loader_params_ = std::move(subresource_loader_params);
 
   if (render_frame_host_) {
-    // For sites that require a dedicated process, set the site URL now if it
-    // hasn't been set already. This will lock the process to that site, which
-    // will prevent other sites from incorrectly reusing this process. See
+    // Set the site URL now if it hasn't been set already. If the site requires
+    // a dedicated process, this will lock the process to that site, which will
+    // prevent other sites from incorrectly reusing this process. See
     // https://crbug.com/738634.
     SiteInstanceImpl* instance = render_frame_host_->GetSiteInstance();
-    const IsolationContext& isolation_context = instance->GetIsolationContext();
-    UrlInfo url_info = GetUrlInfo();
-    auto site_info = SiteInfo::Create(isolation_context, url_info);
     if (!instance->HasSite() &&
-        SiteInstanceImpl::ShouldAssignSiteForURL(common_params_->url) &&
-        site_info.RequiresDedicatedProcess(isolation_context)) {
-      instance->ConvertToDefaultOrSetSite(url_info);
+        SiteInstanceImpl::ShouldAssignSiteForURL(common_params_->url)) {
+      instance->ConvertToDefaultOrSetSite(GetUrlInfo());
     }
 
     // Since we've made the final pick for the RenderFrameHost above, the picked
@@ -3594,6 +3638,7 @@ void NavigationRequest::OnResponseStarted(
     // will get a SiteInstance (regardless of process isolation) and tracking
     // will be handled by the existing pathway in
     // SiteInstanceImpl::SetSiteInfoInternal().
+    const IsolationContext& isolation_context = instance->GetIsolationContext();
     AddSameProcessOriginAgentClusterOptInIfNecessary(isolation_context,
                                                      GetURL());
 
@@ -3865,6 +3910,14 @@ void NavigationRequest::OnRequestFailedInternal(
               frame_tree_node_->render_manager()->current_frame_host()
           ? AssociatedSiteInstanceType::CURRENT
           : AssociatedSiteInstanceType::SPECULATIVE);
+
+  // Set the site URL now if it hasn't been set already.  It's possible to get
+  // here if we navigate to an error out of an initial "blank" SiteInstance.
+  // Also mark the process as used, since it will be hosting an error page.
+  SiteInstanceImpl* instance = render_frame_host_->GetSiteInstance();
+  if (!instance->HasSite())
+    instance->ConvertToDefaultOrSetSite(GetUrlInfo());
+  render_frame_host_->GetProcess()->SetIsUsed();
 
   // The check for WebUI should be performed only if error page isolation is
   // enabled for this failed navigation. It is possible for subframe error page
@@ -4701,6 +4754,11 @@ void NavigationRequest::CommitNavigation() {
         common_params_->url, client_hints_delegate, response(),
         commit_params_->enabled_client_hints, frame_tree_node_);
   }
+
+  CheckPartitionedCookiesOriginTrial(response(), common_params_->url,
+                                     frame_tree_node_->current_frame_host()
+                                         ->GetStoragePartition()
+                                         ->GetCookieManagerForBrowserProcess());
 
   // Generate a UKM source and track it on NavigationRequest. This will be
   // passed down to the blink::Document to be created, if any, and used for UKM
@@ -7152,7 +7210,8 @@ bool NavigationRequest::CoopCoepSanityCheck() {
   if (coop_value ==
           network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep &&
       !CompatibleWithCrossOriginIsolated(
-          policies.cross_origin_embedder_policy)) {
+          policies.cross_origin_embedder_policy) &&
+      !anonymous_) {
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
     return false;
@@ -7304,9 +7363,25 @@ void NavigationRequest::ComputePoliciesToCommit() {
                               GetContentClient()->browser());
   policy_container_builder_->SetIPAddressSpace(response_address_space);
 
-  if (response_head_ && !devtools_instrumentation::ShouldBypassCSP(*this)) {
-    policy_container_builder_->AddContentSecurityPolicies(
-        mojo::Clone(response_head_->parsed_headers->content_security_policy));
+  if (!devtools_instrumentation::ShouldBypassCSP(*this)) {
+    if (response_head_) {
+      policy_container_builder_->AddContentSecurityPolicies(
+          mojo::Clone(response_head_->parsed_headers->content_security_policy));
+    }
+
+    // TODO(https://crbug.com/1311061): Validate CSP rather than injecting it.
+    BrowserContext* browser_context =
+        frame_tree_node()->navigator().controller().GetBrowserContext();
+    if (SiteIsolationPolicy::ShouldUrlUseApplicationIsolationLevel(
+            browser_context, GetURL())) {
+      // Parsing CSP is allowed in the browser process because it owns the
+      // trusted input.
+      policy_container_builder_->AddContentSecurityPolicies(
+          network::ParseContentSecurityPolicies(
+              kIsolatedAppCSP,
+              network::mojom::ContentSecurityPolicyType::kEnforce,
+              network::mojom::ContentSecurityPolicySource::kHTTP, GetURL()));
+    }
   }
 
   // Use the unchecked / non-sandboxed origin to calculate potential
@@ -7688,7 +7763,7 @@ NavigationRequest::ComputeWebExposedIsolationInfo() {
        network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep) &&
       (coop_status().current_coop().value !=
        network::mojom::CrossOriginOpenerPolicyValue::
-           kSameOriginAllowPopupsPlusCoep)) {
+           kRestrictPropertiesPlusCoep)) {
     return WebExposedIsolationInfo::CreateNonIsolated();
   }
 

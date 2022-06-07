@@ -921,7 +921,7 @@ class DawnWireServer : public dawn::wire::WireServer {
     }
   };
 
-  WebGPUDecoderImpl* decoder_;
+  raw_ptr<WebGPUDecoderImpl> decoder_;
 };
 
 thread_local WebGPUDecoderImpl* DawnWireServer::tls_parent_decoder = nullptr;
@@ -1031,6 +1031,8 @@ bool WebGPUDecoderImpl::IsFeatureExposed(WGPUFeatureName feature) const {
   switch (feature) {
     case WGPUFeatureName_TimestampQuery:
     case WGPUFeatureName_PipelineStatisticsQuery:
+    case WGPUFeatureName_ChromiumExperimentalDp4a:
+    case WGPUFeatureName_DawnMultiPlanarFormats:
       return allow_unsafe_apis_;
     case WGPUFeatureName_Depth24UnormStencil8:
     case WGPUFeatureName_Depth32FloatStencil8:
@@ -1065,7 +1067,7 @@ void WebGPUDecoderImpl::RequestAdapterImpl(
 #if BUILDFLAG(IS_LINUX)
     callback(WGPURequestAdapterStatus_Unavailable, nullptr,
              "WebGPU on Linux requires command-line flag "
-             "--enable-features=Vulkan,UseSkiaRenderer",
+             "--enable-features=Vulkan",
              userdata);
     return;
 #endif  // BUILDFLAG(IS_LINUX)

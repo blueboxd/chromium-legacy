@@ -1295,8 +1295,9 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
                        SpecialSchemeDevtools) {
   EXPECT_TRUE(content::NavigateToURL(
       web_contents(), GURL("devtools://devtools/bundled/devtools_app.html")));
-  EXPECT_TRUE(web_contents()->GetMainFrame()->GetLastCommittedURL().SchemeIs(
-      content::kChromeDevToolsScheme));
+  EXPECT_TRUE(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL().SchemeIs(
+          content::kChromeDevToolsScheme));
 
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
   GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
@@ -1315,8 +1316,9 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
                        SpecialSchemeChromeSearch) {
   EXPECT_TRUE(content::NavigateToURL(
       web_contents(), GURL("chrome-search://most-visited/title.html")));
-  ASSERT_TRUE(web_contents()->GetMainFrame()->GetLastCommittedURL().SchemeIs(
-      chrome::kChromeSearchScheme));
+  ASSERT_TRUE(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL().SchemeIs(
+          chrome::kChromeSearchScheme));
 
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
   GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
@@ -1374,8 +1376,9 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   const GURL url = extension->GetResourceURL(kPageFile);
 
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
-  ASSERT_TRUE(web_contents()->GetMainFrame()->GetLastCommittedURL().SchemeIs(
-      extensions::kExtensionScheme));
+  ASSERT_TRUE(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL().SchemeIs(
+          extensions::kExtensionScheme));
 
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
   GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
@@ -1419,8 +1422,9 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   dom_distiller::DistilledPageObserver(web_contents())
       .WaitUntilFinishedLoading();
 
-  EXPECT_TRUE(web_contents()->GetMainFrame()->GetLastCommittedURL().SchemeIs(
-      dom_distiller::kDomDistillerScheme));
+  EXPECT_TRUE(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL().SchemeIs(
+          dom_distiller::kDomDistillerScheme));
 
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
   GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
@@ -1499,8 +1503,15 @@ class PrivateNetworkAccessAutoReloadBrowserTest
 // This test verifies that when a document in the `local` address space fails to
 // load due to a transient network error, it is auto-reloaded a short while
 // later and that fetch is not blocked as a private network request.
+//
+// TODO(crbug.com/1326341): Flaky on Linux ChromiumOS MSAN.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_AutoReloadWorks DISABLED_AutoReloadWorks
+#else
+#define MAYBE_AutoReloadWorks AutoReloadWorks
+#endif
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessAutoReloadBrowserTest,
-                       AutoReloadWorks) {
+                       MAYBE_AutoReloadWorks) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url = embedded_test_server()->GetURL("/defaultresponse");
 

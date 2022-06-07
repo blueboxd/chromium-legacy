@@ -10,6 +10,7 @@
 
 #include <list>
 
+#include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -21,6 +22,7 @@
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -35,24 +37,25 @@ namespace {
 // or provisioning profile id) of a ONC-specified client certificate
 // specification for a network
 // (|dict_with_client_cert|) and stores it in |cert_config|.
-void GetClientCertTypeAndDescriptor(onc::ONCSource onc_source,
-                                    const base::Value& dict_with_client_cert,
-                                    ClientCertConfig* cert_config) {
+void GetClientCertTypeAndDescriptor(
+    onc::ONCSource onc_source,
+    const base::Value::Dict& dict_with_client_cert,
+    ClientCertConfig* cert_config) {
   cert_config->onc_source = onc_source;
 
   const std::string* identity =
-      dict_with_client_cert.FindStringKey(::onc::eap::kIdentity);
+      dict_with_client_cert.FindString(::onc::eap::kIdentity);
   if (identity)
     cert_config->policy_identity = *identity;
 
   const std::string* client_cert_type =
-      dict_with_client_cert.FindStringKey(::onc::client_cert::kClientCertType);
+      dict_with_client_cert.FindString(::onc::client_cert::kClientCertType);
   if (client_cert_type)
     cert_config->client_cert_type = *client_cert_type;
 
   if (cert_config->client_cert_type == ::onc::client_cert::kPattern) {
-    const base::Value* pattern_value = dict_with_client_cert.FindKeyOfType(
-        ::onc::client_cert::kClientCertPattern, base::Value::Type::DICTIONARY);
+    const base::Value::Dict* pattern_value =
+        dict_with_client_cert.FindDict(::onc::client_cert::kClientCertPattern);
     if (pattern_value) {
       absl::optional<OncCertificatePattern> pattern =
           OncCertificatePattern::ReadFromONCDictionary(*pattern_value);
@@ -63,15 +66,14 @@ void GetClientCertTypeAndDescriptor(onc::ONCSource onc_source,
       cert_config->pattern = pattern.value();
     }
   } else if (cert_config->client_cert_type == ::onc::client_cert::kRef) {
-    const base::Value* client_cert_ref_key =
-        dict_with_client_cert.FindKeyOfType(::onc::client_cert::kClientCertRef,
-                                            base::Value::Type::STRING);
+    const std::string* client_cert_ref_key =
+        dict_with_client_cert.FindString(::onc::client_cert::kClientCertRef);
     if (client_cert_ref_key)
-      cert_config->guid = client_cert_ref_key->GetString();
+      cert_config->guid = *client_cert_ref_key;
   } else if (cert_config->client_cert_type ==
              ::onc::client_cert::kProvisioningProfileId) {
     const std::string* provisioning_profile_id =
-        dict_with_client_cert.FindStringKey(
+        dict_with_client_cert.FindString(
             ::onc::client_cert::kClientCertProvisioningProfileId);
     if (!provisioning_profile_id) {
       LOG(ERROR) << "ProvisioningProfileId missing";
@@ -106,7 +108,7 @@ std::string GetPkcs11AndSlotIdFromEapCertId(const std::string& cert_id,
   return cert_id.substr(delimiter_pos + 1);
 }
 
-void GetClientCertFromShillProperties(const base::Value& shill_properties,
+void GetClientCertFromShillProperties(const base::Value::Dict& shill_properties,
                                       ConfigType* cert_config_type,
                                       int* tpm_slot,
                                       std::string* pkcs11_id) {
@@ -118,14 +120,15 @@ void GetClientCertFromShillProperties(const base::Value& shill_properties,
   //
   // VPN Provider values are read from the "Provider" dictionary, not the
   // "Provider.Type", etc keys (which are used only to set the values).
-  const base::Value* provider_properties =
-      shill_properties.FindDictKey(shill::kProviderProperty);
+  const base::Value::Dict* provider_properties =
+      shill_properties.FindDict(shill::kProviderProperty);
   if (provider_properties) {
     const std::string* pkcs11_id_str = nullptr;
 
     // Look for OpenVPN specific properties.
+    // Note: OpenVPN does not have a slot property, see crbug.com/769550.
     pkcs11_id_str =
-        provider_properties->FindStringKey(shill::kOpenVPNClientCertIdProperty);
+        provider_properties->FindString(shill::kOpenVPNClientCertIdProperty);
     if (pkcs11_id_str) {
       *pkcs11_id = *pkcs11_id_str;
       *cert_config_type = ConfigType::kOpenVpn;
@@ -133,12 +136,12 @@ void GetClientCertFromShillProperties(const base::Value& shill_properties,
     }
 
     // Look for L2TP-IPsec specific properties.
-    pkcs11_id_str = provider_properties->FindStringKey(
-        shill::kL2TPIPsecClientCertIdProperty);
+    pkcs11_id_str =
+        provider_properties->FindString(shill::kL2TPIPsecClientCertIdProperty);
     if (pkcs11_id_str) {
       *pkcs11_id = *pkcs11_id_str;
 
-      const std::string* cert_slot = provider_properties->FindStringKey(
+      const std::string* cert_slot = provider_properties->FindString(
           shill::kL2TPIPsecClientCertSlotProperty);
       if (cert_slot && !cert_slot->empty() &&
           !base::StringToInt(*cert_slot, tpm_slot)) {
@@ -151,12 +154,12 @@ void GetClientCertFromShillProperties(const base::Value& shill_properties,
 
     // Look for IKEv2 specific properties.
     pkcs11_id_str =
-        provider_properties->FindStringKey(shill::kIKEv2ClientCertIdProperty);
+        provider_properties->FindString(shill::kIKEv2ClientCertIdProperty);
     if (pkcs11_id_str) {
       *pkcs11_id = *pkcs11_id_str;
 
-      const std::string* cert_slot = provider_properties->FindStringKey(
-          shill::kIKEv2ClientCertSlotProperty);
+      const std::string* cert_slot =
+          provider_properties->FindString(shill::kIKEv2ClientCertSlotProperty);
       if (cert_slot && !cert_slot->empty() &&
           !base::StringToInt(*cert_slot, tpm_slot)) {
         LOG(ERROR) << "Cert slot is not an integer: " << *cert_slot << ".";
@@ -171,14 +174,14 @@ void GetClientCertFromShillProperties(const base::Value& shill_properties,
   // Look for EAP specific client certificate properties, which can either be
   // part of a WiFi or EthernetEAP configuration.
   const std::string* cert_id =
-      shill_properties.FindStringKey(shill::kEapCertIdProperty);
+      shill_properties.FindString(shill::kEapCertIdProperty);
   if (cert_id) {
     // Shill requires both CertID and KeyID for TLS connections, despite the
     // fact that by convention they are the same ID, because one identifies
     // the certificate and the other the private key.
     std::string key_id;
     const std::string* key_id_str =
-        shill_properties.FindStringKey(shill::kEapKeyIdProperty);
+        shill_properties.FindString(shill::kEapKeyIdProperty);
     if (key_id_str)
       key_id = *key_id_str;
     // Assume the configuration to be invalid, if the two IDs are not identical.
@@ -194,90 +197,78 @@ void GetClientCertFromShillProperties(const base::Value& shill_properties,
 void SetShillProperties(const ConfigType cert_config_type,
                         const int tpm_slot,
                         const std::string& pkcs11_id,
-                        base::Value* properties) {
+                        base::Value::Dict& properties) {
   switch (cert_config_type) {
     case ConfigType::kNone: {
       return;
     }
     case ConfigType::kOpenVpn: {
-      properties->SetKey(shill::kOpenVPNPinProperty,
-                         base::Value(kDefaultTPMPin));
+      properties.Set(shill::kOpenVPNPinProperty, kDefaultTPMPin);
       // Note: OpenVPN does not have a slot property, see crbug.com/769550.
-      properties->SetKey(shill::kOpenVPNClientCertIdProperty,
-                         base::Value(pkcs11_id));
+      properties.Set(shill::kOpenVPNClientCertIdProperty, pkcs11_id);
       break;
     }
     case ConfigType::kL2tpIpsec: {
-      properties->SetKey(shill::kL2TPIPsecPinProperty,
-                         base::Value(kDefaultTPMPin));
-      properties->SetKey(shill::kL2TPIPsecClientCertSlotProperty,
-                         base::Value(base::NumberToString(tpm_slot)));
-      properties->SetKey(shill::kL2TPIPsecClientCertIdProperty,
-                         base::Value(pkcs11_id));
+      properties.Set(shill::kL2TPIPsecPinProperty, kDefaultTPMPin);
+      properties.Set(shill::kL2TPIPsecClientCertSlotProperty,
+                     base::NumberToString(tpm_slot));
+      properties.Set(shill::kL2TPIPsecClientCertIdProperty, pkcs11_id);
       break;
     }
     case ConfigType::kIkev2: {
       // PIN property is not used by shill for a IKEv2 service since it is a
       // fixed value.
-      properties->SetKey(shill::kIKEv2ClientCertSlotProperty,
-                         base::Value(base::NumberToString(tpm_slot)));
-      properties->SetKey(shill::kIKEv2ClientCertIdProperty,
-                         base::Value(pkcs11_id));
+      properties.Set(shill::kIKEv2ClientCertSlotProperty,
+                     base::NumberToString(tpm_slot));
+      properties.Set(shill::kIKEv2ClientCertIdProperty, pkcs11_id);
       break;
     }
     case ConfigType::kEap: {
-      properties->SetKey(shill::kEapPinProperty, base::Value(kDefaultTPMPin));
+      properties.Set(shill::kEapPinProperty, kDefaultTPMPin);
       std::string key_id =
           base::StringPrintf("%i:%s", tpm_slot, pkcs11_id.c_str());
 
       // Shill requires both CertID and KeyID for TLS connections, despite the
       // fact that by convention they are the same ID, because one identifies
       // the certificate and the other the private key.
-      properties->SetKey(shill::kEapCertIdProperty, base::Value(key_id));
-      properties->SetKey(shill::kEapKeyIdProperty, base::Value(key_id));
+      properties.Set(shill::kEapCertIdProperty, key_id);
+      properties.Set(shill::kEapKeyIdProperty, key_id);
       break;
     }
   }
 }
 
 void SetEmptyShillProperties(const ConfigType cert_config_type,
-                             base::Value* properties) {
+                             base::Value::Dict& properties) {
   switch (cert_config_type) {
     case ConfigType::kNone: {
       return;
     }
     case ConfigType::kOpenVpn: {
-      properties->SetKey(shill::kOpenVPNPinProperty,
-                         base::Value(std::string()));
-      properties->SetKey(shill::kOpenVPNClientCertIdProperty,
-                         base::Value(std::string()));
+      properties.Set(shill::kOpenVPNPinProperty, std::string());
+      properties.Set(shill::kOpenVPNClientCertIdProperty, std::string());
       break;
     }
     case ConfigType::kL2tpIpsec: {
-      properties->SetKey(shill::kL2TPIPsecPinProperty,
-                         base::Value(std::string()));
-      properties->SetKey(shill::kL2TPIPsecClientCertSlotProperty,
-                         base::Value(std::string()));
-      properties->SetKey(shill::kL2TPIPsecClientCertIdProperty,
-                         base::Value(std::string()));
+      properties.Set(shill::kL2TPIPsecPinProperty, std::string());
+      properties.Set(shill::kL2TPIPsecClientCertSlotProperty, std::string());
+      properties.Set(shill::kL2TPIPsecClientCertIdProperty, std::string());
       break;
     }
     case ConfigType::kIkev2: {
       // PIN property is not used by shill for a IKEv2 service since it is a
       // fixed value.
-      properties->SetKey(shill::kIKEv2ClientCertSlotProperty,
-                         base::Value(std::string()));
-      properties->SetKey(shill::kIKEv2ClientCertIdProperty,
-                         base::Value(std::string()));
+      properties.Set(shill::kIKEv2ClientCertSlotProperty, std::string());
+      properties.Set(shill::kIKEv2ClientCertIdProperty, std::string());
       break;
     }
     case ConfigType::kEap: {
-      properties->SetKey(shill::kEapPinProperty, base::Value(std::string()));
+      properties.Set(shill::kEapPinProperty, std::string());
       // Shill requires both CertID and KeyID for TLS connections, despite the
       // fact that by convention they are the same ID, because one identifies
       // the certificate and the other the private key.
-      properties->SetKey(shill::kEapCertIdProperty, base::Value(std::string()));
-      properties->SetKey(shill::kEapKeyIdProperty, base::Value(std::string()));
+      properties.Set(shill::kEapCertIdProperty, std::string());
+      properties.Set(shill::kEapKeyIdProperty, std::string());
       break;
     }
   }
@@ -291,60 +282,152 @@ ClientCertConfig::ClientCertConfig(const ClientCertConfig& other) = default;
 
 ClientCertConfig::~ClientCertConfig() = default;
 
-void OncToClientCertConfig(::onc::ONCSource onc_source,
-                           const base::Value& network_config,
-                           ClientCertConfig* cert_config) {
-  *cert_config = ClientCertConfig();
+ResolvedCert::ResolvedCert(
+    Status status,
+    int slot_id,
+    const std::string& pkcs11_id,
+    base::flat_map<std::string, std::string> variable_expansions)
+    : status_(status),
+      slot_id_(slot_id),
+      pkcs11_id_(pkcs11_id),
+      variable_expansions_(variable_expansions) {}
 
-  const base::Value* dict_with_client_cert = nullptr;
+ResolvedCert::~ResolvedCert() = default;
 
-  const base::Value* wifi =
-      network_config.FindDictKey(::onc::network_config::kWiFi);
+ResolvedCert::ResolvedCert(ResolvedCert&& other) = default;
+
+ResolvedCert& ResolvedCert::operator=(ResolvedCert&& other) = default;
+
+// static
+ResolvedCert ResolvedCert::NotKnownYet() {
+  return ResolvedCert(Status::kNotKnownYet, -1, std::string(), {});
+}
+
+// static
+ResolvedCert ResolvedCert::NothingMatched() {
+  return ResolvedCert(Status::kNothingMatched, -1, std::string(), {});
+}
+
+// static
+ResolvedCert ResolvedCert::CertMatched(
+    int slot_id,
+    const std::string& pkcs11_id,
+    base::flat_map<std::string, std::string> variable_expansions) {
+  return ResolvedCert(Status::kCertMatched, slot_id, pkcs11_id,
+                      std::move(variable_expansions));
+}
+
+ResolvedCert::Status ResolvedCert::status() const {
+  return status_;
+}
+
+int ResolvedCert::slot_id() const {
+  DCHECK_EQ(status(), Status::kCertMatched);
+  return slot_id_;
+}
+
+const std::string& ResolvedCert::pkcs11_id() const {
+  DCHECK_EQ(status(), Status::kCertMatched);
+  return pkcs11_id_;
+}
+
+const base::flat_map<std::string, std::string>
+ResolvedCert::variable_expansions() const {
+  DCHECK_EQ(status(), Status::kCertMatched);
+  return variable_expansions_;
+}
+
+bool operator==(const ResolvedCert& lhs, const ResolvedCert& rhs) {
+  return lhs.status() == rhs.status() && lhs.slot_id() == rhs.slot_id() &&
+         lhs.pkcs11_id() == rhs.pkcs11_id() &&
+         lhs.variable_expansions() == rhs.variable_expansions();
+}
+
+// Uses a template type to easily implement a const and a non-const version.
+template <typename DictType>
+DictType* GetOncClientCertConfigDict(DictType& network_config,
+                                     ConfigType* out_config_type) {
+  DictType* wifi = network_config.FindDict(::onc::network_config::kWiFi);
   if (wifi) {
-    const base::Value* eap = wifi->FindDictKey(::onc::wifi::kEAP);
+    DictType* eap = wifi->FindDict(::onc::wifi::kEAP);
     if (!eap)
-      return;
-
-    dict_with_client_cert = eap;
-    cert_config->location = ConfigType::kEap;
+      return nullptr;
+    if (out_config_type)
+      *out_config_type = ConfigType::kEap;
+    return eap;
   }
 
-  const base::Value* vpn =
-      network_config.FindDictKey(::onc::network_config::kVPN);
+  DictType* ethernet =
+      network_config.FindDict(::onc::network_config::kEthernet);
+  if (ethernet) {
+    DictType* eap = ethernet->FindDict(::onc::wifi::kEAP);
+    if (!eap)
+      return nullptr;
+    if (out_config_type)
+      *out_config_type = ConfigType::kEap;
+    return eap;
+  }
+
+  DictType* vpn = network_config.FindDict(::onc::network_config::kVPN);
   if (vpn) {
-    const base::Value* openvpn = vpn->FindDictKey(::onc::vpn::kOpenVPN);
-    const base::Value* ipsec = vpn->FindDictKey(::onc::vpn::kIPsec);
-    const base::Value* l2tp = vpn->FindDictKey(::onc::vpn::kL2TP);
+    DictType* openvpn = vpn->FindDict(::onc::vpn::kOpenVPN);
+    DictType* ipsec = vpn->FindDict(::onc::vpn::kIPsec);
+    DictType* l2tp = vpn->FindDict(::onc::vpn::kL2TP);
     if (openvpn) {
-      dict_with_client_cert = openvpn;
-      cert_config->location = ConfigType::kOpenVpn;
-    } else if (ipsec) {
-      dict_with_client_cert = ipsec;
+      if (out_config_type)
+        *out_config_type = ConfigType::kOpenVpn;
+      return openvpn;
+    }
+    if (ipsec) {
       // Currently we support two kinds of IPsec-based VPN:
       // - L2TP/IPsec: IKE version is 1 and |l2tp| is set;
       // - IKEv2: IKE version is 2 and |l2tp| is not set.
       // Thus we only use |l2tp| to distinguish between these two cases.
-      cert_config->location =
-          l2tp ? ConfigType::kL2tpIpsec : ConfigType::kIkev2;
-    } else {
-      return;
+      if (out_config_type)
+        *out_config_type = l2tp ? ConfigType::kL2tpIpsec : ConfigType::kIkev2;
+      return ipsec;
     }
   }
 
-  const base::Value* ethernet =
-      network_config.FindDictKey(::onc::network_config::kEthernet);
-  if (ethernet) {
-    const base::Value* eap = ethernet->FindDictKey(::onc::wifi::kEAP);
-    if (!eap)
-      return;
-    dict_with_client_cert = eap;
-    cert_config->location = ConfigType::kEap;
-  }
+  return nullptr;
+}
 
+void OncToClientCertConfig(::onc::ONCSource onc_source,
+                           const base::Value::Dict& network_config,
+                           ClientCertConfig* cert_config) {
+  *cert_config = ClientCertConfig();
+
+  const base::Value::Dict* dict_with_client_cert =
+      GetOncClientCertConfigDict(network_config, &(cert_config->location));
   if (dict_with_client_cert) {
     GetClientCertTypeAndDescriptor(onc_source, *dict_with_client_cert,
                                    cert_config);
   }
+}
+
+void SetResolvedCertInOnc(const ResolvedCert& resolved_cert,
+                          base::Value& network_config) {
+  if (resolved_cert.status() == ResolvedCert::Status::kNotKnownYet)
+    return;
+
+  base::Value::Dict* dict_with_client_cert = GetOncClientCertConfigDict(
+      network_config.GetDict(), /*out_config_type=*/nullptr);
+  if (!dict_with_client_cert)
+    return;
+  dict_with_client_cert->Set(::onc::client_cert::kClientCertType,
+                             base::Value(::onc::client_cert::kPKCS11Id));
+  if (resolved_cert.status() == ResolvedCert::Status::kNothingMatched) {
+    // Empty PKCS11Id means that no certificate has been selected and it
+    // should be cleared in shill.
+    dict_with_client_cert->Set(::onc::client_cert::kClientCertPKCS11Id,
+                               std::string());
+  } else {
+    dict_with_client_cert->Set(
+        ::onc::client_cert::kClientCertPKCS11Id,
+        base::Value(base::StringPrintf("%i:%s", resolved_cert.slot_id(),
+                                       resolved_cert.pkcs11_id().c_str())));
+  }
+  dict_with_client_cert->Remove(::onc::client_cert::kClientCertPattern);
 }
 
 }  // namespace client_cert

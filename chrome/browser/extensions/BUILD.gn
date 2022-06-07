@@ -881,7 +881,6 @@ static_library("extensions") {
     "//components/vector_icons",
     "//components/web_modal",
     "//components/zoom",
-    "//content/app/resources",
     "//content/public/common",
     "//crypto",
     "//device/bluetooth",
@@ -956,12 +955,20 @@ static_library("extensions") {
 
   if (is_chromeos) {
     sources += [
+      "api/certificate_provider/certificate_provider_api.cc",
+      "api/certificate_provider/certificate_provider_api.h",
+      "api/document_scan/document_scan_api.cc",
+      "api/document_scan/document_scan_api.h",
       "api/enterprise_device_attributes/enterprise_device_attributes_api.h",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.cc",
       "api/enterprise_networking_attributes/enterprise_networking_attributes_api.h",
       "api/enterprise_platform_keys/enterprise_platform_keys_api.cc",
       "api/enterprise_platform_keys/enterprise_platform_keys_api.h",
+      "api/file_manager/file_browser_handler_api.cc",
       "api/file_manager/file_browser_handler_api.h",
+      "api/file_manager/file_selector.h",
+      "api/file_manager/file_selector_impl.cc",
+      "api/file_manager/file_selector_impl.h",
       "api/messaging/native_message_built_in_host.cc",
       "api/messaging/native_message_built_in_host.h",
       "api/messaging/native_message_echo_host.cc",
@@ -974,6 +981,7 @@ static_library("extensions") {
       "api/platform_keys/verify_trust_api.h",
       "api/printing/print_job_controller.cc",
       "api/printing/print_job_controller.h",
+      "api/shared_storage/shared_storage_private_api.h",
       "clipboard_extension_helper_chromeos.cc",
       "clipboard_extension_helper_chromeos.h",
       "system_display/system_display_serialization.cc",
@@ -999,7 +1007,11 @@ static_library("extensions") {
     deps += [
       "//chrome/browser/chromeos/extensions:constants",
       "//chrome/browser/chromeos/extensions/login_screen",
+      "//chrome/browser/chromeos/extensions/vpn_provider",
+      "//chromeos/components/disks:prefs",
       "//chromeos/components/quick_answers/public/cpp:prefs",
+      "//chromeos/components/security_token_pin",
+      "//chromeos/constants",
       "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
       "//chromeos/dbus/missive:missive",
@@ -1035,8 +1047,6 @@ static_library("extensions") {
 
   if (is_chromeos_ash) {
     sources += [
-      "api/certificate_provider/certificate_provider_api.cc",
-      "api/certificate_provider/certificate_provider_api.h",
       "api/crash_report_private/crash_report_private_api.cc",
       "api/crash_report_private/crash_report_private_api.h",
       "api/enterprise_device_attributes/enterprise_device_attributes_api_ash.cc",
@@ -1072,6 +1082,7 @@ static_library("extensions") {
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h",
       "api/settings_private/generated_time_zone_pref_base.cc",
       "api/settings_private/generated_time_zone_pref_base.h",
+      "api/shared_storage/shared_storage_private_api_ash.cc",
       "api/terminal/crostini_startup_status.cc",
       "api/terminal/crostini_startup_status.h",
       "api/terminal/terminal_private_api.cc",
@@ -1184,6 +1195,7 @@ static_library("extensions") {
       "api/messaging/native_message_host_lacros.cc",
       "api/quick_unlock_private/quick_unlock_private_api_lacros.cc",
       "api/quick_unlock_private/quick_unlock_private_api_lacros.h",
+      "api/shared_storage/shared_storage_private_api_lacros.cc",
       "chrome_kiosk_delegate.cc",
       "preinstalled_apps.cc",
       "preinstalled_apps.h",
@@ -1197,6 +1209,8 @@ static_library("extensions") {
       "//components/enterprise/common/proto:connectors_proto",
       "//components/keep_alive_registry",
     ]
+    allow_circular_includes_from +=
+        [ "//chrome/browser/chromeos/extensions/login_screen" ]
   }
 
   if (use_ozone) {

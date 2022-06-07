@@ -5,11 +5,16 @@
 #include "chrome/browser/ui/views/autofill_assistant/password_change/assistant_side_panel_coordinator_impl.h"
 
 #include "base/bind.h"
-#include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/autofill_assistant/password_change/apc_utils.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
+#include "ui/views/layout/box_layout.h"
+
+namespace {
+constexpr int kAssistantIconSize = 16;
+}  // namespace
 
 std::unique_ptr<AssistantSidePanelCoordinator>
 AssistantSidePanelCoordinator::Create(content::WebContents* web_contents) {
@@ -23,25 +28,28 @@ AssistantSidePanelCoordinator::Create(content::WebContents* web_contents) {
 AssistantSidePanelCoordinatorImpl::AssistantSidePanelCoordinatorImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
-  // TODO(cr/1322419): User a proper assistant icon and style once
-  // available/discovered. For now using dummmy icon.
-
   // TODO(cr/1322419): Check with designers if this string should be "Google
   // Assistant" as it is in other places. Also make make sure whether it should
   // be translated.
   SidePanelRegistry::Get(web_contents)
       ->Register(std::make_unique<SidePanelEntry>(
           SidePanelEntry::Id::kAssistant, u"Assistant",
-          ui::ImageModel::FromVectorIcon(kKeyIcon, ui::kColorIcon, 16),
+          ui::ImageModel::FromVectorIcon(GetAssistantIconOrFallback(),
+                                         ui::kColorIcon, kAssistantIconSize),
           base::BindRepeating(
               &AssistantSidePanelCoordinatorImpl::CreateSidePanelView,
               base::Unretained(this))));
-  AddObserver(this);
-  SidePanelCoordinator()->Show(SidePanelEntry::Id::kAssistant);
+
+  // Listen to `OnEntryHidden` events to be able to propagate them outside.
+  GetSidePanelRegistry()
+      ->GetEntryForId(SidePanelEntry::Id::kAssistant)
+      ->AddObserver(this);
+
+  GetSidePanelCoordinator()->Show(SidePanelEntry::Id::kAssistant);
 }
 
 AssistantSidePanelCoordinatorImpl::~AssistantSidePanelCoordinatorImpl() {
-  SidePanelRegistry()->Deregister(SidePanelEntry::Id::kAssistant);
+  GetSidePanelRegistry()->Deregister(SidePanelEntry::Id::kAssistant);
 }
 
 bool AssistantSidePanelCoordinatorImpl::Shown() {
@@ -49,13 +57,13 @@ bool AssistantSidePanelCoordinatorImpl::Shown() {
 }
 
 SidePanelCoordinator*
-AssistantSidePanelCoordinatorImpl::SidePanelCoordinator() {
+AssistantSidePanelCoordinatorImpl::GetSidePanelCoordinator() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   return browser_view->side_panel_coordinator();
 }
 
-SidePanelRegistry* AssistantSidePanelCoordinatorImpl::SidePanelRegistry() {
+SidePanelRegistry* AssistantSidePanelCoordinatorImpl::GetSidePanelRegistry() {
   return SidePanelRegistry::Get(web_contents_);
 }
 
@@ -83,21 +91,27 @@ void AssistantSidePanelCoordinatorImpl::RemoveView() {
   side_panel_view_host_->RemoveAllChildViews();
 }
 
-void AssistantSidePanelCoordinatorImpl::AddObserver(
-    SidePanelEntryObserver* observer) {
-  SidePanelRegistry()
-      ->GetEntryForId(SidePanelEntry::Id::kAssistant)
-      ->AddObserver(observer);
+void AssistantSidePanelCoordinatorImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AssistantSidePanelCoordinatorImpl::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void AssistantSidePanelCoordinatorImpl::OnEntryHidden(SidePanelEntry* entry) {
   side_panel_view_host_ = nullptr;
+
+  for (Observer& observer : observers_)
+    observer.OnHidden();
 }
 
 std::unique_ptr<views::View>
 AssistantSidePanelCoordinatorImpl::CreateSidePanelView() {
   std::unique_ptr<views::View> side_panel_view;
   side_panel_view = std::make_unique<views::View>();
+  side_panel_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   if (side_panel_view_child_) {
     side_panel_view->AddChildView(std::move(side_panel_view_child_));
   }

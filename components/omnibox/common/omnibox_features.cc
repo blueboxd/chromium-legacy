@@ -181,7 +181,7 @@ const base::Feature kOmniboxExperimentalSuggestScoring{
 // over 10% of all shutdown hangs.
 const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile{
     "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
-    enabled_by_default_desktop_only};
+    enabled_by_default_desktop_android};
 
 // If enabled, suggestions from a cgi param name match are scored to 0.
 const base::Feature kDisableCGIParamMatching{"OmniboxDisableCGIParamMatching",
@@ -266,16 +266,6 @@ const base::Feature kNtpRealboxTailSuggest{"NtpRealboxTailSuggest",
 const base::Feature kOmniboxFuzzyUrlSuggestions{
     "OmniboxFuzzyUrlSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable the first batch of Pedals on Android. The Pedals,
-// which will be enabled on Android, should be already enabled on desktop.
-const base::Feature kOmniboxPedalsAndroidBatch1{
-    "OmniboxPedalsAndroidBatch1", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Feature used to enable the third batch of Pedals (Find your phone, etc.)
-// for non-English locales (English locales are 'en' and 'en-GB').
-const base::Feature kOmniboxPedalsBatch3NonEnglish{
-    "OmniboxPedalsBatch3NonEnglish", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, use Assistant for omnibox voice query recognition instead of
 // Android's built-in voice recognition service. Only works on Android.
 const base::Feature kOmniboxAssistantVoiceSearch{
@@ -310,7 +300,8 @@ const base::Feature kUpdatedConnectionSecurityIndicators{
 // https://example.com instead, with fallback to http://example.com if
 // necessary.
 const base::Feature kDefaultTypedNavigationsToHttps{
-    "OmniboxDefaultTypedNavigationsToHttps", base::FEATURE_ENABLED_BY_DEFAULT};
+    "OmniboxDefaultTypedNavigationsToHttps",
+    enabled_by_default_desktop_android};
 // Parameter name used to look up the delay before falling back to the HTTP URL
 // while trying an HTTPS URL. The parameter is treated as a TimeDelta, so the
 // unit must be included in the value as well (e.g. 3s for 3 seconds).

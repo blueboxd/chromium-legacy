@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
@@ -102,7 +102,7 @@ std::unique_ptr<WebAppInstallInfo> UnittestingSystemAppDelegate::GetWebAppInfo()
   return info_factory_.Run();
 }
 
-std::vector<AppId>
+std::vector<std::string>
 UnittestingSystemAppDelegate::GetAppIdsToUninstallAndReplace() const {
   return uninstall_and_replace_;
 }
@@ -156,7 +156,7 @@ bool UnittestingSystemAppDelegate::ShouldHaveReloadButtonInMinimalUi() const {
 bool UnittestingSystemAppDelegate::ShouldAllowScriptsToCloseWindows() const {
   return allow_scripts_to_close_windows_;
 }
-absl::optional<SystemAppBackgroundTaskInfo>
+absl::optional<ash::SystemWebAppBackgroundTaskInfo>
 UnittestingSystemAppDelegate::GetTimerInfo() const {
   return timer_info_;
 }
@@ -251,7 +251,7 @@ void UnittestingSystemAppDelegate::SetShouldAllowScriptsToCloseWindows(
   allow_scripts_to_close_windows_ = value;
 }
 void UnittestingSystemAppDelegate::SetTimerInfo(
-    const SystemAppBackgroundTaskInfo& timer_info) {
+    const ash::SystemWebAppBackgroundTaskInfo& timer_info) {
   timer_info_ = timer_info;
 }
 void UnittestingSystemAppDelegate::SetDefaultBounds(
@@ -541,7 +541,7 @@ TestSystemWebAppInstallation::SetUpAppWithBackgroundTask() {
           GURL("chrome://test-system-app/pwa.html"),
           base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
 
-  SystemAppBackgroundTaskInfo background_task(
+  ash::SystemWebAppBackgroundTaskInfo background_task(
       base::Days(1), GURL("chrome://test-system-app/page2.html"), true);
   delegate->SetTimerInfo(background_task);
 
@@ -780,11 +780,17 @@ TestSystemWebAppInstallation::CreateWebAppProvider(
   }
 
   auto provider = std::make_unique<FakeWebAppProvider>(profile);
-  auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
+  auto system_web_app_manager =
+      std::make_unique<ash::SystemWebAppManager>(profile);
 
   system_web_app_manager->SetSystemAppsForTesting(
       std::move(system_app_delegates_));
   system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
+
+  provider->on_registry_ready().Post(
+      FROM_HERE, base::BindOnce(&ash::SystemWebAppManager::Start,
+                                system_web_app_manager->GetWeakPtr()));
+
   provider->SetSystemWebAppManager(std::move(system_web_app_manager));
   provider->Start();
 
@@ -801,9 +807,15 @@ TestSystemWebAppInstallation::CreateWebAppProviderWithNoSystemWebApps(
     Profile* profile) {
   profile_ = profile;
   auto provider = std::make_unique<FakeWebAppProvider>(profile);
-  auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
+  auto system_web_app_manager =
+      std::make_unique<ash::SystemWebAppManager>(profile);
   system_web_app_manager->SetSystemAppsForTesting({});
   system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
+
+  provider->on_registry_ready().Post(
+      FROM_HERE, base::BindOnce(&ash::SystemWebAppManager::Start,
+                                system_web_app_manager->GetWeakPtr()));
+
   provider->SetSystemWebAppManager(std::move(system_web_app_manager));
   provider->Start();
   return provider;
@@ -811,22 +823,19 @@ TestSystemWebAppInstallation::CreateWebAppProviderWithNoSystemWebApps(
 
 void TestSystemWebAppInstallation::WaitForAppInstall() {
   base::RunLoop run_loop;
-  WebAppProvider::GetForTest(profile_)
-      ->system_web_app_manager()
-      .on_apps_synchronized()
-      .Post(FROM_HERE, base::BindLambdaForTesting([&]() {
-              // Wait one execution loop for on_apps_synchronized() to be
-              // called on all listeners.
-              base::ThreadTaskRunnerHandle::Get()->PostTask(
-                  FROM_HERE, run_loop.QuitClosure());
-            }));
+  ash::SystemWebAppManager::GetForTest(profile_)->on_apps_synchronized().Post(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        // Wait one execution loop for on_apps_synchronized() to be
+        // called on all listeners.
+        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                      run_loop.QuitClosure());
+      }));
   run_loop.Run();
 }
 
 AppId TestSystemWebAppInstallation::GetAppId() {
-  return WebAppProvider::GetForTest(profile_)
-      ->system_web_app_manager()
-      .GetAppIdForSystemApp(type_.value())
+  return ash::SystemWebAppManager::GetForTest(profile_)
+      ->GetAppIdForSystemApp(type_.value())
       .value();
 }
 

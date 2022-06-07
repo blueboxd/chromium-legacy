@@ -231,8 +231,8 @@ uint64_t WebPerformance::ExperimentalLargestImagePaintSize() const {
   return 0u;
 }
 
-mojom::blink::LargestContentfulPaintType
-WebPerformance::LargestContentfulPaintType() const {
+blink::LargestContentfulPaintType WebPerformance::LargestContentfulPaintType()
+    const {
   return private_->timing()->LargestContentfulPaintType();
 }
 
@@ -263,6 +263,11 @@ absl::optional<base::TimeDelta> WebPerformance::FirstInputDelay() const {
 
 absl::optional<base::TimeDelta> WebPerformance::FirstInputTimestamp() const {
   return private_->timing()->FirstInputTimestamp();
+}
+
+absl::optional<base::TimeTicks>
+WebPerformance::FirstInputTimestampAsMonotonicTime() const {
+  return private_->timing()->FirstInputTimestampAsMonotonicTime();
 }
 
 absl::optional<base::TimeDelta> WebPerformance::LongestInputDelay() const {

@@ -62,6 +62,11 @@ const base::Feature kExcludeLowEntropyImagesFromLCP{
 const base::FeatureParam<double> kMinimumEntropyForLCP{
     &kExcludeLowEntropyImagesFromLCP, "min_bpp", 2};
 
+// Used as a binding for controlling the runtime enabled blink feature
+// "FixedElementsDontOverscroll". This is needed for experimentation.
+const base::Feature kFixedElementsDontOverscroll{
+    "FixedElementsDontOverscroll", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -153,14 +158,9 @@ const base::Feature kPrivacySandboxAdsAPIs{"PrivacySandboxAdsAPIs",
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// An experimental replacement for the `User-Agent` header, defined in
-// https://tools.ietf.org/html/draft-west-ua-client-hints.
+// Enables User-Agent Client Hints
 const base::Feature kUserAgentClientHint{"UserAgentClientHint",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable `sec-ch-ua-full-version-list` client hint.
-const base::Feature kUserAgentClientHintFullVersionList{
-    "UserAgentClientHintFullVersionList", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Handle prefers-color-scheme user preference media feature via client hints.
 const base::Feature kPrefersColorSchemeClientHintHeader{
@@ -224,8 +224,9 @@ const base::FeatureParam<FencedFramesImplementationType>
         FencedFramesImplementationType::kShadowDOM,
         &fenced_frame_implementation_types};
 
-// Enable the shared storage API. This base::Feature directly controls the
-// corresponding runtime enabled feature.
+// Enable the shared storage API. Note that enabling this feature does not
+// automatically expose this API to the web, it only allows the element to be
+// enabled by the runtime enabled feature, for origin trials.
 // https://github.com/pythagoraskitty/shared-storage/blob/main/README.md
 const base::Feature kSharedStorageAPI{"SharedStorageAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -713,7 +714,7 @@ const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
 // TODO(crbug.com/920069): Remove this once the feature has
 // landed and no compat issues are reported.
 const base::Feature kOffsetParentNewSpecBehavior{
-    "OffsetParentNewSpecBehavior", base::FEATURE_ENABLED_BY_DEFAULT};
+    "OffsetParentNewSpecBehavior", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Makes form elements cancel previous form submissions made by the same form
 // when the default event handler schedules a form submission.
@@ -962,9 +963,11 @@ const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList{
         &kBackgroundTracingPerformanceMark, "allow_list", ""};
 
-// Controls whether the Sanitizer API is available.
+// Controls whether (and how much of) the Sanitizer API is available.
 const base::Feature kSanitizerAPI{"SanitizerAPI",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSanitizerAPIv0{"SanitizerAPIv0",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the Sanitizer API allows namespaced content (SVG + MathML).
 //
@@ -988,7 +991,7 @@ const base::Feature kManagedConfiguration{"ManagedConfiguration",
 // have their rendering throttled on display:none or zero-area.
 const base::Feature kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes{
     "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the Interest Group API, i.e. if disabled, the
 // API exposure will be disabled regardless of the OT config.
@@ -1122,11 +1125,6 @@ const base::Feature kClipboardCustomFormats{"ClipboardCustomFormats",
 // heuristic where images occupying the full viewport are ignored.
 const base::Feature kUsePageViewportInLCP{"UsePageViewportInLCP",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable `Sec-CH-UA-Platform` client hint and request header to be sent by
-// default
-const base::Feature kUACHPlatformEnabledByDefault{
-    "UACHPlatformEnabledByDefault", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, allow dropping alpha on media streams for rendering sinks if
 // other sinks connected do not use alpha.
@@ -1352,17 +1350,6 @@ const base::Feature kNoForcedFrameUpdatesForWebTests{
 const base::Feature kElementSuperRareData{"ElementSuperRareData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kClientHintsPartitionedCookies{
-    "ClientHintsPartitionedCookies", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, the memory limit used for tiles is scaled by
-// `kScaleTileMemoryLimitFactor`.
-const base::Feature kScaleTileMemoryLimit{"ScaleTileMemoryLimit",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<double> kScaleTileMemoryLimitFactor{
-    &kScaleTileMemoryLimit, "Factor", 1.0};
-
 const base::Feature kDurableClientHintsCache{"DurableClientHintsCache",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -1468,6 +1455,30 @@ const base::Feature kWebRtcExposeNonStandardStats{
 
 const base::Feature kSubstringSetTreeForAttributeBuckets{
     "SubstringSetTreeForAttributeBuckets", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPendingBeaconAPI{"PendingBeaconAPI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+const base::Feature kPrefetchFontLookupTables{
+    "PrefetchFontLookupTables", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+const base::Feature kPrecompileInlineScripts{"PrecompileInlineScripts",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSimulateClickOnAXFocus {
+  "SimulateClickOnAXFocus",
+#if BUILDFLAG(IS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Allow access to WebSQL in non-secure contexts.
+const base::Feature kWebSQLNonSecureContextAccess{
+    "WebSQLNonSecureContextAccess", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

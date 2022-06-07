@@ -121,7 +121,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.OutcomesDuration" units="days"
-    expires_after="M75">
+    expires_after="M104">
+  <obsolete>
+    Removed 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -132,7 +135,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.Ranker.FeaturesAvailable"
-    enum="Boolean" expires_after="M77">
+    enum="Boolean" expires_after="M104">
+  <obsolete>
+    Removed 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -154,7 +160,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.Ranker.NotSuppressed.ResultsSeen"
-    enum="ContextualSearchResultsSeen" expires_after="M77">
+    enum="ContextualSearchResultsSeen" expires_after="M104">
+  <obsolete>
+    Removed 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -164,7 +173,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.Ranker.Recorded" enum="Boolean"
-    expires_after="M77">
+    expires_after="M104">
+  <obsolete>
+    Removed 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -174,7 +186,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.Ranker.RecordedNative" enum="Boolean"
-    expires_after="M77">
+    expires_after="M104">
+  <obsolete>
+    Removed 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -185,7 +200,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.Ranker.Suppressed" enum="Boolean"
-    expires_after="M85">
+    expires_after="M104">
+  <obsolete>
+    Removed 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -234,7 +252,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.Ranker.WasAbleToPredict"
-    enum="Boolean" expires_after="M77">
+    enum="Boolean" expires_after="M104">
+  <obsolete>
+    Removed 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -244,7 +265,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.Ranker.WouldSuppress.ResultsSeen"
-    enum="ContextualSearchResultsSeen" expires_after="M77">
+    enum="ContextualSearchResultsSeen" expires_after="M104">
+  <obsolete>
+    Removed 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -832,7 +856,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchQuickAnswerSeen"
-    enum="ContextualSearchQuickAnswerSeen" expires_after="M77">
+    enum="ContextualSearchQuickAnswerSeen" expires_after="M104">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -842,7 +869,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchRecentScrollSuppression"
-    enum="ContextualSearchTapSuppression" expires_after="M72">
+    enum="ContextualSearchTapSuppression" expires_after="M104">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -945,7 +975,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchSelectionLengthSuppression"
-    enum="ContextualSearchTapSuppression" expires_after="M72">
+    enum="ContextualSearchTapSuppression" expires_after="M104">
+  <obsolete>
+    Removed as of 06/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1311,7 +1344,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.RequestStatus"
-    enum="QueryTilesRequestStatus" expires_after="2022-10-01">
+    enum="QueryTilesRequestStatus" expires_after="2022-12-04">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>

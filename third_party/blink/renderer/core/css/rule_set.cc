@@ -48,10 +48,15 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
-using base::StringPattern;
+using base::MatcherStringPattern;
 using base::SubstringSetMatcher;
 
 namespace blink {
+
+template <class T>
+static void AddRuleToIntervals(const T* value,
+                               unsigned position,
+                               HeapVector<RuleSet::Interval<T>>& intervals);
 
 static inline ValidPropertyFilter DetermineValidPropertyFilter(
     const AddRuleFlags add_rule_flags,
@@ -73,6 +78,13 @@ static inline ValidPropertyFilter DetermineValidPropertyFilter(
         return ValidPropertyFilter::kMarker;
       case CSSSelector::kPseudoSelection:
       case CSSSelector::kPseudoTargetText:
+      case CSSSelector::kPseudoGrammarError:
+      case CSSSelector::kPseudoSpellingError:
+        if (RuntimeEnabledFeatures::HighlightInheritanceEnabled())
+          return ValidPropertyFilter::kHighlight;
+        else
+          return ValidPropertyFilter::kHighlightLegacy;
+      case CSSSelector::kPseudoHighlight:
         return ValidPropertyFilter::kHighlight;
       default:
         break;
@@ -91,41 +103,7 @@ static unsigned DetermineLinkMatchType(const AddRuleFlags add_rule_flags,
   return CSSSelector::kMatchAll;
 }
 
-RuleData* RuleData::MaybeCreate(StyleRule* rule,
-                                unsigned selector_index,
-                                unsigned position,
-                                AddRuleFlags add_rule_flags,
-                                const ContainerQuery* container_query,
-                                const StyleScope* style_scope) {
-  // The selector index field in RuleData is only 13 bits so we can't support
-  // selectors at index 8192 or beyond.
-  // See https://crbug.com/804179
-  if (selector_index >= (1 << RuleData::kSelectorIndexBits))
-    return nullptr;
-  if (position >= (1 << RuleData::kPositionBits))
-    return nullptr;
-  if (container_query || style_scope) {
-    return MakeGarbageCollected<ExtendedRuleData>(
-        base::PassKey<RuleData>(), rule, selector_index, position,
-        add_rule_flags, container_query, style_scope);
-  }
-  return MakeGarbageCollected<RuleData>(rule, selector_index, position,
-                                        add_rule_flags);
-}
-
 RuleData::RuleData(StyleRule* rule,
-                   unsigned selector_index,
-                   unsigned position,
-                   AddRuleFlags add_rule_flags)
-    : RuleData(Type::kNormal,
-               rule,
-               selector_index,
-               position,
-               0 /* extra_specificity */,
-               add_rule_flags) {}
-
-RuleData::RuleData(Type type,
-                   StyleRule* rule,
                    unsigned selector_index,
                    unsigned position,
                    unsigned extra_specificity,
@@ -140,7 +118,6 @@ RuleData::RuleData(Type type,
       valid_property_filter_(
           static_cast<std::underlying_type_t<ValidPropertyFilter>>(
               DetermineValidPropertyFilter(add_rule_flags, Selector()))),
-      type_(static_cast<unsigned>(type)),
       descendant_selector_identifier_hashes_() {
   SelectorFilter::CollectIdentifierHashes(
       Selector(), descendant_selector_identifier_hashes_,
@@ -149,11 +126,11 @@ RuleData::RuleData(Type type,
 
 void RuleSet::AddToRuleSet(const AtomicString& key,
                            RuleMap& map,
-                           const RuleData* rule_data) {
-  Member<HeapVector<Member<const RuleData>>>& rules =
+                           const RuleData& rule_data) {
+  Member<HeapVector<RuleData>>& rules =
       map.insert(key, nullptr).stored_value->value;
   if (!rules)
-    rules = MakeGarbageCollected<HeapVector<Member<const RuleData>>>();
+    rules = MakeGarbageCollected<HeapVector<RuleData>>();
   rules->push_back(rule_data);
 }
 
@@ -268,7 +245,7 @@ static const CSSSelector* ExtractBestSelectorValues(
 }
 
 bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
-                                    RuleData* rule_data) {
+                                    const RuleData& rule_data) {
   AtomicString id;
   AtomicString class_name;
   AtomicString attr_name;
@@ -389,19 +366,24 @@ void RuleSet::AddRule(StyleRule* rule,
                       const ContainerQuery* container_query,
                       const CascadeLayer* cascade_layer,
                       const StyleScope* style_scope) {
-  RuleData* rule_data =
-      RuleData::MaybeCreate(rule, selector_index, rule_count_, add_rule_flags,
-                            container_query, style_scope);
-  if (!rule_data) {
-    // This can happen if selector_index or position is out of range.
+  // The selector index field in RuleData is only 13 bits so we can't support
+  // selectors at index 8192 or beyond.
+  // See https://crbug.com/804179
+  if (selector_index >= (1 << RuleData::kSelectorIndexBits)) {
     return;
   }
+  if (rule_count_ >= (1 << RuleData::kPositionBits)) {
+    return;
+  }
+  const int extra_specificity = style_scope ? style_scope->Specificity() : 0;
+  RuleData rule_data(rule, selector_index, rule_count_, extra_specificity,
+                     add_rule_flags);
   ++rule_count_;
-  if (features_.CollectFeaturesFromRuleData(rule_data) ==
+  if (features_.CollectFeaturesFromRuleData(&rule_data, style_scope) ==
       RuleFeatureSet::kSelectorNeverMatches)
     return;
 
-  if (!FindBestRuleSetAndAdd(rule_data->Selector(), rule_data)) {
+  if (!FindBestRuleSetAndAdd(rule_data.Selector(), rule_data)) {
     // If we didn't find a specialized map to stick it in, file under universal
     // rules.
     universal_rules_.push_back(rule_data);
@@ -412,15 +394,17 @@ void RuleSet::AddRule(StyleRule* rule,
   // effectively split the rule into two: one which covers the situation
   // where we are in an unvisited link (kMatchLink), and another which covers
   // the visited link case (kMatchVisited).
-  if (rule_data->LinkMatchType() == CSSSelector::kMatchLink) {
-    RuleData* visited_dependent = RuleData::MaybeCreate(
-        rule, rule_data->SelectorIndex(), rule_data->GetPosition(),
-        add_rule_flags | kRuleIsVisitedDependent, container_query, style_scope);
-    DCHECK(visited_dependent);
+  if (rule_data.LinkMatchType() == CSSSelector::kMatchLink) {
+    RuleData visited_dependent(rule, rule_data.SelectorIndex(),
+                               rule_data.GetPosition(), extra_specificity,
+                               add_rule_flags | kRuleIsVisitedDependent);
     visited_dependent_rules_.push_back(visited_dependent);
   }
 
-  AddRuleToLayerIntervals(cascade_layer, rule_data->GetPosition());
+  AddRuleToLayerIntervals(cascade_layer, rule_data.GetPosition());
+  AddRuleToIntervals(container_query, rule_data.GetPosition(),
+                     container_query_intervals_);
+  AddRuleToIntervals(style_scope, rule_data.GetPosition(), scope_intervals_);
 }
 
 void RuleSet::AddRuleToLayerIntervals(const CascadeLayer* cascade_layer,
@@ -429,8 +413,8 @@ void RuleSet::AddRuleToLayerIntervals(const CascadeLayer* cascade_layer,
   // interval's layer. Note that the implicit outer layer may also be
   // represented by a nullptr.
   const CascadeLayer* last_interval_layer =
-      layer_intervals_.size() ? layer_intervals_.back().layer.Get()
-                              : implicit_outer_layer_.Get();
+      layer_intervals_.IsEmpty() ? implicit_outer_layer_.Get()
+                                 : layer_intervals_.back().value.Get();
   if (!cascade_layer)
     cascade_layer = implicit_outer_layer_;
   if (cascade_layer == last_interval_layer)
@@ -438,7 +422,21 @@ void RuleSet::AddRuleToLayerIntervals(const CascadeLayer* cascade_layer,
 
   if (!cascade_layer)
     cascade_layer = EnsureImplicitOuterLayer();
-  layer_intervals_.push_back(LayerInterval(cascade_layer, position));
+  layer_intervals_.push_back(Interval<CascadeLayer>(cascade_layer, position));
+}
+
+// Similar to AddRuleToLayerIntervals, but for container queries and @style
+// scopes.
+template <class T>
+static void AddRuleToIntervals(const T* value,
+                               unsigned position,
+                               HeapVector<RuleSet::Interval<T>>& intervals) {
+  const T* last_value =
+      intervals.IsEmpty() ? nullptr : intervals.back().value.Get();
+  if (value == last_value)
+    return;
+
+  intervals.push_back(RuleSet::Interval<T>(value, position));
 }
 
 void RuleSet::AddPageRule(StyleRulePage* rule) {
@@ -474,6 +472,11 @@ void RuleSet::AddFontPaletteValuesRule(StyleRuleFontPaletteValues* rule) {
 void RuleSet::AddScrollTimelineRule(StyleRuleScrollTimeline* rule) {
   need_compaction_ = true;
   scroll_timeline_rules_.push_back(rule);
+}
+
+void RuleSet::AddPositionFallbackRule(StyleRulePositionFallback* rule) {
+  need_compaction_ = true;
+  position_fallback_rules_.push_back(rule);
 }
 
 void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
@@ -523,6 +526,10 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
                    DynamicTo<StyleRuleScrollTimeline>(rule)) {
       scroll_timeline_rule->SetCascadeLayer(cascade_layer);
       AddScrollTimelineRule(scroll_timeline_rule);
+    } else if (auto* position_fallback_rule =
+                   DynamicTo<StyleRulePositionFallback>(rule)) {
+      // TODO(crbug.com/1309178): Handle interaction with cascade layers.
+      AddPositionFallbackRule(position_fallback_rule);
     } else if (auto* supports_rule = DynamicTo<StyleRuleSupports>(rule)) {
       if (supports_rule->ConditionIsSupported()) {
         AddChildRules(supports_rule->ChildRules(), medium, add_rule_flags,
@@ -646,10 +653,9 @@ static wtf_size_t GetMinimumRulesetSizeForSubstringMatcher() {
              : std::numeric_limits<wtf_size_t>::max();
 }
 
-bool RuleSet::CanIgnoreEntireList(
-    const HeapVector<Member<const RuleData>>* list,
-    const AtomicString& key,
-    const AtomicString& value) const {
+bool RuleSet::CanIgnoreEntireList(const HeapVector<RuleData>* list,
+                                  const AtomicString& key,
+                                  const AtomicString& value) const {
   DCHECK_EQ(attr_rules_.find(key)->value, list);
   if (list->size() < GetMinimumRulesetSizeForSubstringMatcher()) {
     // Too small to build up a tree, so always check.
@@ -679,9 +685,9 @@ void RuleSet::CreateSubstringMatchers(
     if (ruleset->size() < GetMinimumRulesetSizeForSubstringMatcher()) {
       continue;
     }
-    std::vector<StringPattern> patterns;
+    std::vector<MatcherStringPattern> patterns;
     int rule_index = 0;
-    for (const Member<const RuleData>& rule : *ruleset) {
+    for (const RuleData& rule : *ruleset) {
       AtomicString id;
       AtomicString class_name;
       AtomicString attr_name;
@@ -690,7 +696,7 @@ void RuleSet::CreateSubstringMatchers(
       AtomicString tag_name;
       AtomicString part_name;
       CSSSelector::PseudoType pseudo_type = CSSSelector::kPseudoUnknown;
-      ExtractBestSelectorValues(rule->Selector(), id, class_name, attr_name,
+      ExtractBestSelectorValues(rule.Selector(), id, class_name, attr_name,
                                 attr_value, custom_pseudo_element_name,
                                 tag_name, part_name, pseudo_type);
       DCHECK(!attr_name.IsEmpty());
@@ -708,7 +714,7 @@ void RuleSet::CreateSubstringMatchers(
       // use the tree for true/false information anyway, we can remove them.
       bool already_exists =
           any_of(patterns.begin(), patterns.end(),
-                 [&pattern](const StringPattern& existing_pattern) {
+                 [&pattern](const MatcherStringPattern& existing_pattern) {
                    return existing_pattern.pattern() == pattern;
                  });
       if (!already_exists) {
@@ -753,6 +759,7 @@ void RuleSet::CompactRules() {
   property_rules_.ShrinkToFit();
   counter_style_rules_.ShrinkToFit();
   scroll_timeline_rules_.ShrinkToFit();
+  position_fallback_rules_.ShrinkToFit();
   layer_intervals_.ShrinkToFit();
 
 #if EXPENSIVE_DCHECKS_ARE_ON()
@@ -769,11 +776,11 @@ template <class RuleList>
 bool IsRuleListSorted(const RuleList& rules) {
   unsigned last_position = 0;
   bool first_rule = true;
-  for (const auto& rule : rules) {
-    if (!first_rule && rule->GetPosition() <= last_position)
+  for (const RuleData& rule : rules) {
+    if (!first_rule && rule.GetPosition() <= last_position)
       return false;
     first_rule = false;
-    last_position = rule->GetPosition();
+    last_position = rule.GetPosition();
   }
   return true;
 }
@@ -808,68 +815,24 @@ bool RuleSet::DidMediaQueryResultsChange(
   return evaluator.DidResultsChange(media_query_set_results_);
 }
 
-const ContainerQuery* RuleData::GetContainerQuery() const {
-  if (auto* extended = DynamicTo<ExtendedRuleData>(this))
-    return extended->container_query_;
-  return nullptr;
-}
-
-const StyleScope* RuleData::GetStyleScope() const {
-  if (auto* extended = DynamicTo<ExtendedRuleData>(this))
-    return extended->style_scope_;
-  return nullptr;
-}
-
 const CascadeLayer* RuleSet::GetLayerForTest(const RuleData& rule) const {
   if (!layer_intervals_.size() ||
       layer_intervals_[0].start_position > rule.GetPosition())
     return implicit_outer_layer_;
   for (unsigned i = 1; i < layer_intervals_.size(); ++i) {
     if (layer_intervals_[i].start_position > rule.GetPosition())
-      return layer_intervals_[i - 1].layer;
+      return layer_intervals_[i - 1].value;
   }
-  return layer_intervals_.back().layer;
+  return layer_intervals_.back().value;
 }
 
 void RuleData::Trace(Visitor* visitor) const {
-  switch (static_cast<Type>(type_)) {
-    case Type::kNormal:
-      TraceAfterDispatch(visitor);
-      break;
-    case Type::kExtended:
-      To<ExtendedRuleData>(*this).TraceAfterDispatch(visitor);
-      break;
-  }
-}
-
-void RuleData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(rule_);
 }
 
-ExtendedRuleData::ExtendedRuleData(base::PassKey<RuleData>,
-                                   StyleRule* rule,
-                                   unsigned selector_index,
-                                   unsigned position,
-                                   AddRuleFlags flags,
-                                   const ContainerQuery* container_query,
-                                   const StyleScope* style_scope)
-    : RuleData(Type::kExtended,
-               rule,
-               selector_index,
-               position,
-               (style_scope ? style_scope->Specificity() : 0),
-               flags),
-      container_query_(container_query),
-      style_scope_(style_scope) {}
-
-void ExtendedRuleData::TraceAfterDispatch(Visitor* visitor) const {
-  RuleData::TraceAfterDispatch(visitor);
-  visitor->Trace(container_query_);
-  visitor->Trace(style_scope_);
-}
-
-void RuleSet::LayerInterval::Trace(Visitor* visitor) const {
-  visitor->Trace(layer);
+template <class T>
+void RuleSet::Interval<T>::Trace(Visitor* visitor) const {
+  visitor->Trace(value);
 }
 
 void RuleSet::Trace(Visitor* visitor) const {
@@ -882,6 +845,7 @@ void RuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(cue_pseudo_rules_);
   visitor->Trace(focus_pseudo_class_rules_);
   visitor->Trace(selector_fragment_anchor_rules_);
+  visitor->Trace(features_);
   visitor->Trace(focus_visible_pseudo_class_rules_);
   visitor->Trace(spatial_navigation_interest_class_rules_);
   visitor->Trace(universal_rules_);
@@ -896,8 +860,12 @@ void RuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(property_rules_);
   visitor->Trace(counter_style_rules_);
   visitor->Trace(scroll_timeline_rules_);
+  visitor->Trace(position_fallback_rules_);
+  visitor->Trace(media_query_set_results_);
   visitor->Trace(implicit_outer_layer_);
   visitor->Trace(layer_intervals_);
+  visitor->Trace(container_query_intervals_);
+  visitor->Trace(scope_intervals_);
 #ifndef NDEBUG
   visitor->Trace(all_rules_);
 #endif
@@ -905,8 +873,8 @@ void RuleSet::Trace(Visitor* visitor) const {
 
 #ifndef NDEBUG
 void RuleSet::Show() const {
-  for (const auto& rule : all_rules_)
-    rule->Selector().Show();
+  for (const RuleData& rule : all_rules_)
+    rule.Selector().Show();
 }
 #endif
 

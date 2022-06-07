@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './menu_container.js';
 import './page_favicon.js';
-import './shared_style.js';
+import './history_clusters_shared_style.css.js';
 import '../../cr_elements/cr_action_menu/cr_action_menu.js';
+import '../../cr_elements/cr_icon_button/cr_icon_button.m.js';
 import '../../cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {CrActionMenuElement} from '../../cr_elements/cr_action_menu/cr_action_menu.js';
+import {CrLazyRenderElement} from '../../cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import {loadTimeData} from '../../js/load_time_data.m.js';
 
 import {Annotation, URLVisit} from './history_clusters.mojom-webui.js';
@@ -39,6 +41,8 @@ declare global {
 
 interface VisitRowElement {
   $: {
+    actionMenu: CrLazyRenderElement<CrActionMenuElement>,
+    actionMenuButton: HTMLElement,
     title: HTMLElement,
     url: HTMLElement,
   };
@@ -56,15 +60,6 @@ class VisitRowElement extends PolymerElement {
   static get properties() {
     return {
       /**
-       * Whether this is a top visit.
-       */
-      isTopVisit: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false,
-      },
-
-      /**
        * The current query for which related clusters are requested and shown.
        */
       query: String,
@@ -80,6 +75,15 @@ class VisitRowElement extends PolymerElement {
       annotations_: {
         type: Object,
         computed: 'computeAnnotations_(visit)',
+      },
+
+      /**
+       * Usually this is true, but this can be false if deleting history is
+       * prohibited by Enterprise policy.
+       */
+      allowDeletingHistory_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('allowDeletingHistory'),
       },
 
       /**
@@ -116,10 +120,10 @@ class VisitRowElement extends PolymerElement {
   // Properties
   //============================================================================
 
-  isTopVisit: boolean;
   query: string;
   visit: URLVisit;
   private annotations_: Array<string>;
+  private allowDeletingHistory_: boolean;
   private debugInfo_: string;
   private unusedTitle_: string;
   private unusedVisibleUrl_: string;
@@ -137,7 +141,7 @@ class VisitRowElement extends PolymerElement {
     }));
   }
 
-  private onClick_(event: MouseEvent) {
+  private onClick_(event: Event) {
     // Ignore previously handled events.
     if (event.defaultPrevented) {
       return;
@@ -161,6 +165,23 @@ class VisitRowElement extends PolymerElement {
     this.onAuxClick_();
 
     OpenWindowProxyImpl.getInstance().open(this.visit.normalizedUrl.url);
+  }
+
+  private onActionMenuButtonClick_(event: Event) {
+    this.$.actionMenu.get().showAt(this.$.actionMenuButton);
+    event.preventDefault();  // Prevent default browser action (navigation).
+  }
+
+  private onRemoveSelfButtonClick_(event: Event) {
+    event.preventDefault();  // Prevent default browser action (navigation).
+
+    this.dispatchEvent(new CustomEvent('remove-visit', {
+      bubbles: true,
+      composed: true,
+      detail: this.visit,
+    }));
+
+    this.$.actionMenu.get().close();
   }
 
   //============================================================================

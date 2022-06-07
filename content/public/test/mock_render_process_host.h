@@ -85,6 +85,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SimulateRenderProcessExit(base::TerminationStatus termination_status,
                                  int exit_code);
 
+  // Simulates async launch happening.
+  void SimulateReady();
+
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
@@ -207,7 +210,11 @@ class MockRenderProcessHost : public RenderProcessHost {
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
-  void BindBucketManagerHost(
+  void BindBucketManagerHostForRenderFrame(
+      const GlobalRenderFrameHostId& render_frame_host_id,
+      mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver)
+      override {}
+  void BindBucketManagerHostForWorker(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver)
       override {}
@@ -310,6 +317,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_for_guests_only_;
   bool is_process_backgrounded_;
   bool is_unused_;
+  bool is_ready_ = false;
   base::Process process;
   int keep_alive_ref_count_;
   int worker_ref_count_;

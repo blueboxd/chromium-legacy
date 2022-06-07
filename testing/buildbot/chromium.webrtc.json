@@ -131,7 +131,13 @@
           "r_webrtc_git": "${webrtc_got_rev}"
         },
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -196,7 +202,15 @@
         },
         "perf_builder_name_alias": "chromium-webrtc-rel-linux",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "builder": "WebRTC Chromium Linux Tester",
+              "os": "Ubuntu-18.04",
+              "pool": "luci.chromium.webrtc"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_id_prefix": "ninja://media/capture:capture_unittests/"
@@ -343,7 +357,14 @@
           "r_webrtc_git": "${webrtc_got_rev}"
         },
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-10.15"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -410,7 +431,16 @@
         },
         "perf_builder_name_alias": "chromium-webrtc-rel-mac",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "builder": "WebRTC Chromium Mac Tester",
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16|Mac-12",
+              "pool": "luci.chromium.webrtc"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_id_prefix": "ninja://media/capture:capture_unittests/"
@@ -562,7 +592,8 @@
           "r_webrtc_git": "${webrtc_got_rev}"
         },
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -617,7 +648,14 @@
         },
         "perf_builder_name_alias": "chromium-webrtc-rel-win10",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "builder": "WebRTC Chromium Win10 Tester",
+              "pool": "luci.chromium.webrtc"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_id_prefix": "ninja://media/capture:capture_unittests/"

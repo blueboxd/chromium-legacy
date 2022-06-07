@@ -218,10 +218,10 @@ function createOSSettingsRoutes() {
   }
 
   // Crostini section.
+  r.CROSTINI =
+      createSection(r.ADVANCED, mojom.CROSTINI_SECTION_PATH, Section.kCrostini);
   if (loadTimeData.valueExists('showCrostini') &&
       loadTimeData.getBoolean('showCrostini')) {
-    r.CROSTINI = createSection(
-        r.ADVANCED, mojom.CROSTINI_SECTION_PATH, Section.kCrostini);
     r.CROSTINI_DETAILS = createSubpage(
         r.CROSTINI, mojom.CROSTINI_DETAILS_SUBPAGE_PATH,
         Subpage.kCrostiniDetails);
@@ -250,6 +250,13 @@ function createOSSettingsRoutes() {
     r.CROSTINI_PORT_FORWARDING = createSubpage(
         r.CROSTINI_DETAILS, mojom.CROSTINI_PORT_FORWARDING_SUBPAGE_PATH,
         Subpage.kCrostiniPortForwarding);
+
+    r.BRUSCHETTA_DETAILS = createSubpage(
+        r.CROSTINI, mojom.BRUSCHETTA_DETAILS_SUBPAGE_PATH,
+        Subpage.kBruschettaDetails);
+    r.BRUSCHETTA_SHARED_USB_DEVICES = createSubpage(
+        r.BRUSCHETTA_DETAILS, mojom.BRUSCHETTA_USB_PREFERENCES_SUBPAGE_PATH,
+        Subpage.kBruschettaUsbPreferences);
   }
 
   // Date and Time section.

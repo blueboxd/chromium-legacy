@@ -16,6 +16,7 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,6 +171,10 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordFailWhenEmptyPassword) {
 TEST_F(SavedPasswordsPresenterTest, AddPasswordUnblocklistsOrigin) {
   PasswordForm form_to_add =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  form_to_add.type = password_manager::PasswordForm::Type::kManuallyAdded;
+  form_to_add.date_created = base::Time::Now();
+  form_to_add.date_password_modified = base::Time::Now();
+
   PasswordForm blocked_form;
   blocked_form.blocked_by_user = true;
   blocked_form.signon_realm = form_to_add.signon_realm;
@@ -393,7 +398,8 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteFirstTime) {
   RunUntilIdle();
 
   PasswordForm expected_updated_form = form;
-  expected_updated_form.note = PasswordNote(kNewNoteValue, base::Time::Now());
+  expected_updated_form.notes = {
+      PasswordNote(kNewNoteValue, base::Time::Now())};
   EXPECT_THAT(
       store().stored_passwords(),
       ElementsAre(Pair(form.signon_realm, ElementsAre(expected_updated_form))));
@@ -418,7 +424,8 @@ TEST_F(SavedPasswordsPresenterTest, EditingNotesShouldNotResetPasswordIssues) {
   RunUntilIdle();
 
   PasswordForm expected_updated_form = form;
-  expected_updated_form.note = PasswordNote(kNewNoteValue, base::Time::Now());
+  expected_updated_form.notes = {
+      PasswordNote(kNewNoteValue, base::Time::Now())};
   EXPECT_THAT(
       store().stored_passwords(),
       ElementsAre(Pair(form.signon_realm, ElementsAre(expected_updated_form))));
@@ -429,7 +436,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
       PasswordNote(u"existing note", base::Time::Now());
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
-  form.note = kExistingNote;
+  form.notes = {kExistingNote};
 
   store().AddLogin(form);
   RunUntilIdle();
@@ -442,7 +449,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
   RunUntilIdle();
 
   PasswordForm expected_updated_form = form;
-  expected_updated_form.note.value = kNewNoteValue;
+  expected_updated_form.notes[0].value = kNewNoteValue;
   EXPECT_THAT(
       store().stored_passwords(),
       ElementsAre(Pair(form.signon_realm, ElementsAre(expected_updated_form))));
@@ -451,7 +458,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
 TEST_F(SavedPasswordsPresenterTest, EditNoteAsEmpty) {
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
-  form.note = PasswordNote(u"existing note", base::Time::Now());
+  form.notes = {PasswordNote(u"existing note", base::Time::Now())};
   std::vector<PasswordForm> forms = {form};
 
   store().AddLogin(form);
@@ -462,7 +469,7 @@ TEST_F(SavedPasswordsPresenterTest, EditNoteAsEmpty) {
   RunUntilIdle();
 
   PasswordForm expected_updated_form = form;
-  expected_updated_form.note.value = u"";
+  expected_updated_form.notes[0].value = u"";
   EXPECT_THAT(
       store().stored_passwords(),
       ElementsAre(Pair(form.signon_realm, ElementsAre(expected_updated_form))));
@@ -664,6 +671,10 @@ TEST_F(SavedPasswordsPresenterTest,
 
   EXPECT_THAT(presenter().GetUniquePasswordForms(),
               UnorderedElementsAre(form, blocked_form, federated_form));
+  EXPECT_THAT(presenter().GetSavedCredentials(),
+              UnorderedElementsAre(CredentialUIEntry(form),
+                                   CredentialUIEntry(blocked_form),
+                                   CredentialUIEntry(federated_form)));
 }
 
 namespace {
@@ -757,6 +768,11 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   // store.
   PasswordForm profile_store_form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore, /*index=*/0);
+  profile_store_form.type =
+      password_manager::PasswordForm::Type::kManuallyAdded;
+  profile_store_form.date_created = base::Time::Now();
+  profile_store_form.date_password_modified = base::Time::Now();
+
   EXPECT_CALL(observer,
               OnSavedPasswordsChanged(ElementsAre(profile_store_form)));
   EXPECT_TRUE(presenter().AddPassword(profile_store_form));
@@ -769,6 +785,11 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   // Now add a password to the account store, check it's added only there too.
   PasswordForm account_store_form =
       CreateTestPasswordForm(PasswordForm::Store::kAccountStore, /*index=*/1);
+  account_store_form.type =
+      password_manager::PasswordForm::Type::kManuallyAdded;
+  account_store_form.date_created = base::Time::Now();
+  account_store_form.date_password_modified = base::Time::Now();
+
   EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
                             profile_store_form, account_store_form)));
   EXPECT_TRUE(presenter().AddPassword(account_store_form));
@@ -790,6 +811,10 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
 
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  form.type = password_manager::PasswordForm::Type::kManuallyAdded;
+  form.date_created = base::Time::Now();
+  form.date_password_modified = base::Time::Now();
+
   EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(form)));
   EXPECT_TRUE(presenter().AddPassword(form));
   RunUntilIdle();
@@ -824,6 +849,10 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
        AddPasswordUnblocklistsOriginInDifferentStore) {
   PasswordForm form_to_add =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  form_to_add.type = password_manager::PasswordForm::Type::kManuallyAdded;
+  form_to_add.date_created = base::Time::Now();
+  form_to_add.date_password_modified = base::Time::Now();
+
   PasswordForm blocked_form;
   blocked_form.blocked_by_user = true;
   blocked_form.signon_realm = form_to_add.signon_realm;
@@ -1049,6 +1078,8 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, GetUniquePasswords) {
       PasswordForm::Store::kProfileStore | PasswordForm::Store::kAccountStore;
 
   EXPECT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(expected_form));
+  EXPECT_THAT(presenter().GetSavedCredentials(),
+              ElementsAre(CredentialUIEntry(expected_form)));
 }
 
 // Prefixes like [m, mobile, www] are considered as "same-site".

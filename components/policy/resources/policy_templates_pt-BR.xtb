@@ -425,6 +425,18 @@ Se você ativar ou não configurar essa política, a rolagem via URL para fragme
 
 Se você desativar a política, essa rolagem será desativada.</translation>
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
+<translation id="1476128579011024193">
+      Se esta política for definida como <ph name="POLICY_VALUE_PRIMARY_ACCOUNT" />, depois de fazer login em uma conta gerenciada sujeita à política, o usuário vai receber uma solicitação para criar um novo perfil para a conta.
+      Se esta política for definida como <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTING_DATA" />, depois de fazer login em uma conta gerenciada sujeita à política, o usuário vai receber uma solicitação para criar um novo perfil para a conta com a opção de manter os dados de navegação existentes. Essa opção tem suporte no Chrome 102 e em versões mais recentes.
+
+      Se esta política for definida como <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT" />, depois de fazer login em uma conta gerenciada sujeita à política, o usuário vai receber uma solicitação para criar um novo perfil para a conta. Este perfil não vai permitir contas secundárias.
+      Se esta política for definida como <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT_KEEP_EXISTING_DATA" />, depois de fazer login em uma conta gerenciada sujeita à política, o usuário vai receber uma solicitação para criar um novo perfil para a conta com a opção de manter os dados de navegação existentes. Este perfil não vai permitir contas secundárias. Essa opção tem suporte no Chrome 102 e em versões mais recentes.
+
+      Se a política for definida como <ph name="POLICY_VALUE_NONE" /> ou for deixada sem definição, as contas gerenciadas não vão ter restrições. Isso pode fazer com a conta gerenciada se torne uma conta secundária. Com isso ela perde a capacidade de receber políticas definidas pelo administrador para a conta.
+
+      Se esta política for definida no dispositivo, todas as contas no navegador vão ficar sujeitas a ela.
+      Se esta política for definida na conta, somente essa conta vai ser afetada no navegador.
+    </translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1479427764273213107">Se a política for definida, será configurada uma lista de dispositivos USB que o usuário pode remover do driver de kernel dele para uso pela API chrome.usb diretamente dentro de um app da Web. As entradas são pares de um identificador de fornecedor e um identificador de produto USB para reconhecer um hardware específico.
 
@@ -1594,7 +1606,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="2625398797484317969">Controla as configurações das Respostas rápidas.</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2633084400146331575">Ativar feedback falado</translation>
+<translation id="2633084400146331575">Ativar resposta falada</translation>
 <translation id="2635872253077105112">Se a política for definida, ela controlará a abertura da lista de sites em um navegador alternativo. Cada item será tratado como uma regra para abrir algo em um navegador alternativo. No <ph name="PRODUCT_NAME" />, essas regras são usadas para determinar se um URL será aberto em um navegador alternativo ou não. Quando o suplemento do <ph name="IE_PRODUCT_NAME" /> estiver ativado, o <ph name="IE_PRODUCT_NAME" /> retornará ao <ph name="PRODUCT_NAME" /> quando não houver correspondência com as regras. Se as regras forem contraditórias, o <ph name="PRODUCT_NAME" /> usará a regra mais específica.
 
       Se a política não for definida, nenhum site será adicionado à lista.
@@ -2977,15 +2989,15 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
       Veja mais detalhes em https://developer.chrome.com/blog/immutable-document-domain/
       (link em inglês).
       </translation>
-<translation id="4169692397912242417">Ativar o recurso de acessibilidade de feedback falado na tela de login.
+<translation id="4169692397912242417">Ativar o recurso de acessibilidade de resposta falada na tela de login.
 
-          Se esta política for definida como verdadeira, o feedback falado sempre ficará ativado na tela de login.
+          Se esta política for definida como verdadeira, a resposta falada vai ficar sempre ativada na tela de login.
 
-          Se esta política for definida como falsa, o feedback falado sempre ficará desativado na tela de login.
+          Se esta política for definida como falsa, a resposta falada vai ficar sempre desativada na tela de login.
 
-          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
+          Se você definir esta política, os usuários não vão poder alterar nem substituir a política.
 
-          Se esta política não for definida, o feedback falado ficará inicialmente desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
+          Se ela não for definida, a resposta falada fica inicialmente desativada na tela de login, mas pode ser ativada pelo usuário a qualquer momento.</translation>
 <translation id="417956245902013347">Ativar o recurso de acessibilidade de destaque de circunflexos na tela de login.
 
           Se esta política for definida como verdadeira, o destaque de circunflexos sempre ficará ativado na tela de login.
@@ -3579,13 +3591,13 @@ Quando a política for definida, o <ph name="PRODUCT_OS_NAME" /> permitirá que 
 
       O valor padrão (0) significa que esse recurso está desativado.</translation>
 <translation id="4940810901775798837">Permitir que sites não seguros façam solicitações para qualquer endpoint da rede</translation>
-<translation id="4942681160308347946">Se esta política for definida como verdadeira, o feedback falado será ativado na tela de login. Se esta política for definida como falsa, o feedback falado será desativado na tela.
+<translation id="4942681160308347946">Se esta política for definida como verdadeira, a resposta falada vai ficar ativado na tela de login. Se ela for definida como falsa, a resposta falada vai ficar desativado na tela.
 
-      Se você definir a política, os usuários poderão ativar ou desativar o feedback falado temporariamente. Quando a tela de login for atualizada ou ficar inativa por um minuto, o feedback falado retornará ao estado original.
+      Se você definir a política, os usuários podem ativar ou desativar A resposta falada temporariamente. Quando a tela de login for atualizada ou ficar inativa por um minuto, A resposta falada vai voltar ao estado original.
 
-      Se a política não for definida o feedback falado será desativado na tela de login. Os usuários podem ativá-lo sempre que quiserem, e o estado na tela de login irá persistir para todos os usuários.
+      Se a política não for definida, a resposta falada vai ser desativada na tela de login. Os usuários podem ativar o recurso sempre que quiserem, e o estado na tela de login vai ser persistente para todos os usuários.
 
-          Observação: se <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> for especificada, ela substituirá esta política.</translation>
+          Observação: se <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> for especificada, ela substitui esta política.</translation>
 <translation id="4945419595339133946">Especifica se as informações do sistema (por exemplo, o número de série
 da versão do ChromeOS ou do dispositivo) serão sempre exibidas ou ocultas na tela de login.
 
@@ -3614,6 +3626,7 @@ da versão do ChromeOS ou do dispositivo) serão sempre exibidas ou ocultas na t
 <translation id="4960597185231686653">Uma sinalização booleana indicando se o teclado na tela pode oferecer entrada de texto por voz.</translation>
 <translation id="4970046075219007744">Permitir que apps da Web solicitem acesso a tipos de arquivos usando a API File Handling</translation>
 <translation id="4970855112942626932">Desativar login no navegador</translation>
+<translation id="4974091268178043378">Modo de cor do ChromeOS</translation>
 <translation id="4976928720873547342">Se esta política for definida, todos os tipos de dados especificados serão excluídos da sincronização, tanto para a <ph name="CHROME_SYNC_NAME" /> quanto para a sincronização de perfil de roaming. Isso pode ajudar a reduzir o tamanho do perfil de roaming ou limitar o tipo de dado que será enviado por upload aos servidores da <ph name="CHROME_SYNC_NAME" />.
 
       Atualmente, os tipos de dados para esta política são: "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" e "wifiConfigurations". Esses nomes têm diferenciação entre letras maiúsculas e minúsculas.</translation>
@@ -3910,7 +3923,7 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 
       Para informações detalhadas sobre padrões de <ph name="URL_LABEL" /> válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.  A política só faz a correspondência com base na origem, então os caminhos no padrão do URL serão ignorados.</translation>
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
-<translation id="5323200200131319468">Ativar o feedback falado na tela de login.</translation>
+<translation id="5323200200131319468">Ativar a resposta falada na tela de login.</translation>
 <translation id="532848608876725157">Ativar DNS sobre HTTPS com substituto inseguro</translation>
 <translation id="5328965694451556034">Informar login/logout</translation>
 <translation id="5329007337159326804">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 75 (aproximadamente em junho de 2019).
@@ -4254,6 +4267,13 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 
           O valor da política só é aplicado quando a <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> está ativada. Caso contrário, ele não é aplicável.</translation>
 <translation id="5697306356229823047">Reporta os usuários do dispositivo</translation>
+<translation id="5698923148503075597">Se a política for ativada, a política de nuvem vai ter precedência caso haja um conflito com a política da plataforma.
+
+      Se a política for desativada ou deixada sem definição, a política da plataforma vai ter precedência caso haja um conflito com a política de nuvem.
+
+      Esta política obrigatória afeta as políticas de nuvem no escopo da máquina.
+
+      Ela está disponível apenas no <ph name="PRODUCT_NAME" /> e não afeta o <ph name="GOOGLE_UPDATE_NAME" />.</translation>
 <translation id="5699770471852263667">Se a política for ativada, o visualizador de PDF interno será desativado no <ph name="PRODUCT_NAME" />, os arquivos PDF serão tratados como downloads e os usuários poderão abrir PDFs com o aplicativo padrão.
 
       Se ela for desativada, os arquivos PDF serão abertos no plug-in, a menos que ele seja desativado pelos usuários.
@@ -4352,7 +4372,7 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 <translation id="5806128552675651249">Permitir impressão apenas sem gráficos de segundo plano</translation>
 <translation id="5809210507920527553">Controla configurações do contêiner Linux (Crostini).</translation>
 <translation id="5809728392451418079">Definir o nome de exibição das contas locais de dispositivo</translation>
-<translation id="5814301096961727113">Definir estado padrão do feedback falado na tela de login</translation>
+<translation id="5814301096961727113">Definir estado padrão da resposta falada na tela de login</translation>
 <translation id="5815129011704381141">Reinicializar automaticamente após a atualização</translation>
 <translation id="5815990343032461023">Comportamento legado: os apps do Chrome para quiosque serão atualizados pelo sistema de extensão usando o URL de atualização do manifesto de extensão e armazenando o gerenciador em cache com o URL definido na política</translation>
 <translation id="582857022372205358">Ativar impressão duplex de borda curta</translation>
@@ -4372,6 +4392,7 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 
       Os usuários não poderão mudar essa configuração.</translation>
 <translation id="5848438019586925019">O algoritmo para gerar pares de chaves.</translation>
+<translation id="5851248808417680865">Usar o tema escuro</translation>
 <translation id="585270638818921943">Impede o uso de apps Android de fontes não confiáveis</translation>
 <translation id="5853547031212075792">Permitir que os usuários ativem o HTTPS-Only Mode</translation>
 <translation id="5859344336338527083">Se definida, a política especificará os URLs que podem instalar extensões, apps e temas. Antes do <ph name="PRODUCT_NAME" /> 21, os usuários podiam clicar em um link para um arquivo *.crx e o <ph name="PRODUCT_NAME" /> se oferecia para instalar o arquivo após alguns avisos. Depois dessa versão, esses arquivos precisam ser transferidos por download e arrastados para a página de configurações do <ph name="PRODUCT_NAME" />. Essa configuração permite que URLs específicos utilizem o fluxo de instalação antigo e mais simples.
@@ -4388,6 +4409,37 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 
       Se a política for definida como falsa ou não for definida, <ph name="PLUGIN_VM_NAME" /> não terá permissão para coletar dados.
       Se ela for definida como verdadeira, <ph name="PLUGIN_VM_NAME" /> poderá coletar dados de uso de <ph name="PLUGIN_VM_NAME" />, que serão combinados e analisados para melhorar a experiência com <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="5874896145772824604">Esta política oferece uma maneira de substituir a lista de conjuntos que o navegador usa para recursos de conjunto primário.
+
+      Cada item na lista do navegador precisa atender aos requisitos de um conjunto primário,
+      que consiste em um site proprietário e um ou mais sites membros. Todos os sites em um conjunto primário precisam
+      ser um domínio registrável exibido por HTTPS, não importando se eles são um site proprietário ou membro.
+      Cada site em um conjunto primário também precisa ser único, o que significa que um site não pode ser proprietário e membro ao mesmo tempo, nem ser
+      listado mais de uma vez como membro de um conjunto primário.
+      Consulte https://github.com/privacycg/first-party-sets (link em inglês) para ver mais informações sobre conjuntos primários.
+
+      Quando esta política recebe um dicionário vazio, o navegador usa a lista pública de conjuntos primários.
+
+      Para todos os sites em um conjunto primário da lista de <ph name="REPLACEMENTS" />, se o site também estiver presente
+      em um conjunto primário na lista do navegador, ele será removido desse último.
+      Em seguida, o conjunto primário da política será adicionado à lista de conjuntos primários do navegador.
+
+      Para todos os sites em um conjunto primário da lista de <ph name="ADDITIONS" />, se um site também estiver presente
+      em um conjunto primário na lista do navegador, esse último será atualizado para que o
+       novo conjunto primário possa ser adicionado à lista do navegador. Depois que a lista do navegador for atualizada,
+       o conjunto primário da política será adicionado à lista de conjuntos primários do navegador.
+
+      A lista de conjuntos primários do navegador exige que nenhum dos sites na lista esteja em
+       mais de um conjunto. Isso também é necessário para as listas de <ph name="REPLACEMENTS" />
+      e <ph name="ADDITIONS" />. Da mesma forma, um site não pode estar tanto na lista de
+      <ph name="REPLACEMENTS" /> quanto na de <ph name="ADDITIONS" />.
+
+      Caracteres curinga (*) não podem ser usados como valor da política nem dentro de conjuntos primários nessas listas.
+
+      Todos os conjuntos fornecidos pela política precisam ser um conjunto primário válido. Se não forem,
+      um erro será gerado.
+
+      Esta política está disponível apenas em: instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" />, instâncias do Windows 10 Pro ou Enterprise registradas no gerenciamento de dispositivos e em instâncias do macOS gerenciadas via MDM ou associadas a um domínio via MCX.</translation>
 <translation id="5875873062228321803">Configura o requisito da versão mínima permitida do <ph name="PRODUCT_OS_NAME" />.
 
       Quando esta política for definida como uma lista não vazia:
@@ -4472,11 +4524,6 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
       Se você definir a política, os usuários não poderão mudá-la. Se ela não for definida, os usuários decidirão se os cabeçalhos e rodapés aparecem ou não.</translation>
 <translation id="5951418260805607969">Mostrar uma notificação quando houver pouco espaço em disco</translation>
 <translation id="5958746038080720143">Permitir otimizações de descoberta automática de proxies da Web (WPAD, na sigla em inglês)</translation>
-<translation id="5959428851851090097">Se a política for definida como "Ativada", a política da nuvem terá precedência caso haja um conflito com a política da plataforma.
-
-      Se a política for definida como "Desativada" ou deixada sem definição, a política da plataforma terá precedência caso haja um conflito com a política da nuvem.
-
-      Esta política obrigatória afeta as políticas da nuvem no escopo da máquina.</translation>
 <translation id="5961137303188584693">Endereço MAC da placa de rede integrada do dispositivo</translation>
 <translation id="5963752574792883406">porta 990 (pode ser desbloqueada até 01/02/2022)</translation>
 <translation id="5966615072639944554">Extensões que podem usar a API de declaração remota</translation>
@@ -4517,6 +4564,7 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 
       Esta política só é eficaz quando a máquina está registrada na <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> do <ph name="PRODUCT_NAME" />.
       Para o <ph name="PRODUCT_OS_NAME" />, ela sempre é eficaz.</translation>
+<translation id="6019162469732742754">Usar o modo automático</translation>
 <translation id="6019606564278029236">Ativar a interação de usuários remotos com janelas elevadas em sessões de assistência remota</translation>
 <translation id="6022948604095165524">Ação na inicialização</translation>
 <translation id="602318745029752898">Permitir as vozes aprimoradas da conversão de texto em voz da rede no Selecionar para ouvir</translation>
@@ -5258,6 +5306,15 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="6786666051053129545">Ativar o fluxo do Voice Match do Google Assistente</translation>
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="6786967369487349613">Configurar o diretório do perfil de roaming</translation>
+<translation id="6789319144568227749">Configura o suporte a cabeçalhos de solicitação de CORS sem caractere curinga.
+
+      A versão 97 do <ph name="PRODUCT_NAME" /> introduz o suporte a cabeçalhos de solicitação de CORS sem caractere curinga. Diante de uma solicitação de rede entre origens usando fetch() e XMLHttpRequest com um cabeçalho Authorization adicionado pelo script, o cabeçalho precisa receber autorização explícita do cabeçalho Access-Control-Allow-Headers na resposta de simulação do CORS. Aqui, "explícita" significa que o caractere curinga "*" não inclui o cabeçalho Authorization. Para ver mais detalhes, consulte <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />.
+
+      Se esta política for deixada sem definição ou for definida como verdadeira, o <ph name="PRODUCT_NAME" /> vai oferecer suporte a cabeçalhos de solicitação de CORS sem caractere curinga e se comportará como descrito acima.
+
+      Se esta política for definida como falsa, o Chrome vai permitir o uso do caractere curinga "*" no cabeçalho Access-Control-Allow-Headers da resposta de simulação do CORS para incluir o cabeçalho Authorization.
+
+      A política corporativa é temporária e será removida no futuro.</translation>
 <translation id="6789422336869764846">Se a política for definida como "Ativada" ou não for definida, o estado da chave do desenvolvedor dos dispositivos registrados durante a inicialização será informado.
 
       Se a política for definida como "Desativada", o estado da chave do desenvolvedor dos dispositivos registrados não será informado.</translation>
@@ -5506,6 +5563,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="7019805045859631636">Rápida</translation>
 <translation id="7025332601572838001">Como configurar o comportamento dos TOS durante a primeira execução do CCT</translation>
 <translation id="7026351325994257733">Permitir que as configurações de rede Wi-Fi sejam sincronizadas entre dispositivos <ph name="PRODUCT_OS_NAME" /> e um smartphone Android conectado.</translation>
+<translation id="7027057540229843762">Usar o tema claro</translation>
 <translation id="7027785306666625591">Configura o gerenciamento de energia no <ph name="PRODUCT_OS_NAME" />.
 
       Essas políticas permitem configurar a forma como o <ph name="PRODUCT_OS_NAME" /> se comporta quando o usuário permanece inativo por um período de tempo específico.</translation>
@@ -6496,15 +6554,6 @@ Se a política não for definida, a tela de privacidade ficará inicialmente des
       Se a política for desativada ou não for definida, o login levará a perfis regulares.</translation>
 <translation id="8151299379693359769">Ativar uma verificação de segurança extra baseada no atestado remoto (opcional, padrão: verdadeiro).</translation>
 <translation id="8151490482515839285">Ativar relatórios para prevenção de vazamento de dados</translation>
-<translation id="8151949408479239790">Configura o suporte a cabeçalhos de solicitação de CORS sem caractere curinga.
-
-      A versão 97 do <ph name="PRODUCT_NAME" /> introduz o suporte a cabeçalhos de solicitação de CORS sem caractere curinga. Diante de uma solicitação de rede entre origens usando fetch() e XMLHttpRequest com um cabeçalho Authorization adicionado pelo script, o cabeçalho precisa receber autorização explícita do cabeçalho Access-Control-Allow-Headers na resposta de simulação do CORS. Ou seja, o caractere curinga "*" não inclui o cabeçalho Authorization. Para ver mais detalhes, consulte <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />.
-
-      Se esta política for deixada sem definição ou for definida como verdadeira, o <ph name="PRODUCT_NAME" /> oferecerá suporte a cabeçalhos de solicitação de CORS sem caractere curinga e se comportará conforme descrito acima.
-
-      Se esta política for definida como falsa, o Chrome permitirá o uso do caractere curinga (*) no cabeçalho Access-Control-Allow-Headers da resposta de simulação do CORS para incluir o cabeçalho Authorization.
-
-      A política corporativa é temporária e será removida após a versão 103 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158758865057576716">Permite a criação de cópias em roaming dos dados de perfil do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158897487095710470">Se a política for definida como verdadeira, a barra de favoritos será exibida no <ph name="PRODUCT_NAME" />. Se ela for definida como falsa, os usuários não poderão ver a barra de favoritos.
 
@@ -6992,9 +7041,9 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
        Se a política for desativada ou não for definida, o Chrome usará o ícone padrão em conexões seguras.</translation>
 <translation id="8650974590712548439">Local do registro do Windows para clientes do Windows:</translation>
 <translation id="8653085952260859632">Envia informações sobre a memória</translation>
-<translation id="8653561013005884087">Se esta política for definida como verdadeira, o feedback falado será ativado. Se esta política for definida como falsa, o feedback falado será desativado.
+<translation id="8653561013005884087">Se esta política for definida como verdadeira, a resposta falada será ativada. Se esta política for definida como falsa, a resposta falada será desativada.
 
-       Se você definir a política, os usuários não poderão mudá-la. Se a política não for definida, o feedback falado será desativado inicialmente, mas os usuários podem mudá-lo a qualquer momento.</translation>
+       Se você definir a política, os usuários não podem mudá-la. Se a política não for definida, a resposta falada é desativada inicialmente, mas os usuários podem mudar isso a qualquer momento.</translation>
 <translation id="8656110680728938054">Ativa o Selecionar para ouvir</translation>
 <translation id="8659843732895043951">Permitir a área de transferência nesses sites</translation>
 <translation id="8661297125441579970">Bloquear migração de dados e ARC.</translation>
@@ -7068,6 +7117,9 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       "http://acme.com/ABC" corresponde apenas no "IESiteListMode".</translation>
 <translation id="8736538322216687231">Aplicar o Modo restrito mínimo do YouTube</translation>
+<translation id="8744844164152340112">Controla o tema usado para renderizar a IU na configuração inicial feita pelo usuário e durante a sessão (escuro/claro/automático).
+      O modo automático troca automaticamente entre os temas claro e escuro ao amanhecer e ao anoitecer.
+      Esta política precisa ser recomendada para dar aos usuários a possibilidade de mudar o tema nas configurações do sistema.</translation>
 <translation id="8745669971728319820">Esta política controla a permissão de fornecimento de informações sobre extensões e plug-ins.
 
       Quando a <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> não for definida ou for desativada, esta política será ignorada.

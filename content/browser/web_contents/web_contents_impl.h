@@ -334,6 +334,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   const GURL& GetVisibleURL() override;
   const GURL& GetLastCommittedURL() override;
   RenderFrameHostImpl* GetMainFrame() override;
+  RenderFrameHostImpl* GetPrimaryMainFrame() override;
   PageImpl& GetPrimaryPage() override;
   RenderFrameHostImpl* GetFocusedFrame() override;
   bool IsPrerenderedFrame(int frame_tree_node_id) override;
@@ -651,6 +652,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHostImpl* rfh,
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options) override;
+#if BUILDFLAG(IS_ANDROID)
+  void UpdateUserGestureCarryoverInfo() override;
+#endif
   bool ShouldRouteMessageEvent(RenderFrameHostImpl* target_rfh) const override;
   void EnsureOpenerProxiesExist(RenderFrameHostImpl* source_rfh) override;
   std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(

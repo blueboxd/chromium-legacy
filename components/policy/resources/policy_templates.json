@@ -9731,7 +9731,7 @@
           'caption': 'Do not allow CRD to execute WebAuthn API requests proxied from a remote host.',
         },
       ],
-      'future_on': ['chrome.*', 'chrome_os'],
+      'supported_on': ['chrome.*:103-', 'chrome_os:103-'],
       'features': {
         'dynamic_refresh': True,
         'internal_only': True,  # Not available outside of Google.
@@ -19326,7 +19326,7 @@
     },
     {
       'name': 'WifiSyncAndroidAllowed',
-      'owners': ['jonmann@chromium.org', 'cvandermerwe@google.com'],
+      'owners': ['jonmann@chromium.org', 'chromeos-cross-device-eng@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:89-'],
@@ -20010,7 +20010,9 @@
 
       Setting the policy to Disabled or leaving it unset means platform policy takes precedence if it conflicts with cloud policy.
 
-      This mandatory policy affects machine scope cloud policies.''',
+      This mandatory policy affects machine scope cloud policies.
+
+      This policy is only available on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>; it has no effect on <ph name="GOOGLE_UPDATE_NAME">Google Update</ph>.''',
     },
     {
       'name': 'CloudUserPolicyOverridesCloudMachinePolicy',
@@ -25568,6 +25570,37 @@
       Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
     },
     {
+      'name': 'RendererAppContainerEnabled',
+      'owners': ['wfh@chromium.org', 'adetaylor@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:104-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'default': True,
+      'example_value': False,
+      'id': 987,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the Renderer App Container sandbox',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the Renderer App Container sandbox',
+        },
+      ],
+      'caption': '''Enable Renderer App Container''',
+      'tags': ['system-security'],
+      'desc': '''Setting the policy to Enabled or leaving it unset means Renderer App Container configuration will be enabled on supported platforms.
+
+      Setting the policy to Disabled has a detrimental effect on the security and stability of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as it will weaken the sandbox that renderer processes use. Only turn off the policy if there are compatibility issues with third-party software that must run inside renderer processes.
+
+      Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
+    },
+    {
       'name': 'BrowserLegacyExtensionPointsBlocked',
       'owners': ['wfh@chromium.org', 'ssmole@microsoft.com'],
       'type': 'main',
@@ -30914,6 +30947,51 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       If this policy is set to Disabled, a warning dialog is not shown when the user is attempting to quit.'''
     },
     {
+      'name': 'OsColorMode',
+      'owners': ['jaflis@google.com', 'cros-oobe@google.com', 'chromeos-wmp@google.com'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'light',
+          'dark',
+          'auto',
+        ],
+      },
+      'items': [
+        {
+          'name': 'light',
+          'value': 'light',
+          'caption': '''Use the Light theme''',
+        },
+        {
+          'name': 'dark',
+          'value': 'dark',
+          'caption': '''Use the Dark theme''',
+        },
+        {
+          'name': 'auto',
+          'value': 'auto',
+          'caption': '''Use the Auto mode''',
+        },
+      ],
+      'future_on': ['chrome_os'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'default': 'light',
+      'default_for_enterprise_users': 'light',
+      'example_value': 'light',
+      'id': 986,
+      'caption': '''ChromeOS color mode''',
+      'tags': [],
+      'desc': '''Controls the theme used to render UI during OOBE and in session (dark/light/auto).
+      The auto mode automatically switches between dark and light themes on sunrise and sunset.
+      This policy should be recommended, giving users the possibility to change the theme in system settings.''',
+    },
+    {
       'name': 'InsightsExtensionEnabled',
       'owners': ['cros-reporting-team@google.com', 'vshenvi@google.com'],
       'type': 'main',
@@ -32053,6 +32131,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 985,
+  'highest_id_currently_used': 987,
   'highest_atomic_group_id_currently_used': 43
 }

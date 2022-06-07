@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
@@ -36,7 +37,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/onc/network_onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -689,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        OnCertificateListsChangedEvent) {
-  ExtensionTestMessageListener listener("eventListenerReady", false);
+  ExtensionTestMessageListener listener("eventListenerReady");
   listener.SetOnSatisfied(base::BindOnce([](const std::string& message) {
     chromeos::NetworkHandler::Get()
         ->network_certificate_handler()
@@ -719,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   service_test()->RemoveService("stub_ethernet");
   service_test()->RemoveService("stub_vpn1");
 
-  ExtensionTestMessageListener listener("notifyPortalDetectorObservers", false);
+  ExtensionTestMessageListener listener("notifyPortalDetectorObservers");
   listener.SetOnSatisfied(
       base::BindLambdaForTesting([&](const std::string& message) {
         service_test()->SetServiceProperty(

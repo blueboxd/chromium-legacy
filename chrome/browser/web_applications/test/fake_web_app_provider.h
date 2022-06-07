@@ -17,6 +17,10 @@
 class KeyedService;
 class Profile;
 
+namespace ash {
+class SystemWebAppManager;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -28,7 +32,6 @@ class WebAppRegistrar;
 class OsIntegrationManager;
 class WebAppInstallFinalizer;
 class ExternallyManagedAppManager;
-class SystemWebAppManager;
 class WebAppInstallManager;
 class WebAppPolicyManager;
 class WebAppIconManager;
@@ -81,7 +84,7 @@ class FakeWebAppProvider : public WebAppProvider {
           externally_managed_app_manager);
   void SetWebAppUiManager(std::unique_ptr<WebAppUiManager> ui_manager);
   void SetSystemWebAppManager(
-      std::unique_ptr<SystemWebAppManager> system_web_app_manager);
+      std::unique_ptr<ash::SystemWebAppManager> system_web_app_manager);
   void SetWebAppPolicyManager(
       std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
   void SetCommandManager(std::unique_ptr<WebAppCommandManager> command_manager);
@@ -93,6 +96,7 @@ class FakeWebAppProvider : public WebAppProvider {
   // A mutable view must be accessible only in tests.
   WebAppRegistrarMutable& GetRegistrarMutable() const;
   WebAppIconManager& GetIconManager() const;
+  WebAppCommandManager& GetCommandManager() const;
   AbstractWebAppDatabaseFactory& GetDatabaseFactory() const;
 
   // Starts this WebAppProvider and its subsystems. It does not wait for systems

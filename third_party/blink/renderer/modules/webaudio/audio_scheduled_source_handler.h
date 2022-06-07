@@ -122,7 +122,7 @@ class AudioScheduledSourceHandler
 
   // m_startTime is the time to start playing based on the context's timeline (0
   // or a time less than the context's current time means "now").
-  double start_time_;  // in seconds
+  double start_time_ = 0;  // in seconds
 
   // m_endTime is the time to stop playing based on the context's timeline (0 or
   // a time less than the context's current time means "now").  If it hasn't
@@ -131,15 +131,13 @@ class AudioScheduledSourceHandler
   double end_time_;  // in seconds
 
   // Magic value indicating that the time (start or end) has not yet been set.
-  static const double kUnknownTime;
+  static constexpr double kUnknownTime = -1.0;
 
   // Number of extra frames to use when determining if a source node can be
   // stopped.  This should be at least one rendering quantum, but we add one
   // more quantum for good measure.  This doesn't need to be extra precise, just
-  // more than one rendering quantum.  See |handleStoppableSourceNode()|.
-  // FIXME: Expose the rendering quantum somehow instead of hardwiring a value
-  // here.
-  static const int kExtraStopFrames = 256;
+  // more than one rendering quantum.  See `HandleStoppableSourceNode()`.
+  static constexpr int kExtraStopFrames = 256;
 
  private:
   // This is accessed by both the main thread and audio thread.  Use the setter

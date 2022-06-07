@@ -21,6 +21,7 @@ class TestTtsSubpageBrowserProxy extends TestBrowserProxy {
       'getTtsExtensions',
       'previewTtsVoice',
       'wakeTtsEngine',
+      'refreshTtsVoices',
     ]);
   }
 
@@ -42,6 +43,11 @@ class TestTtsSubpageBrowserProxy extends TestBrowserProxy {
   /** @override */
   wakeTtsEngine() {
     this.methodCalled('wakeTtsEngine');
+  }
+
+  /** @override */
+  refreshTtsVoices() {
+    this.methodCalled('refreshTtsVoices');
   }
 }
 
@@ -75,7 +81,7 @@ suite('TextToSpeechSubpageTests', function() {
 
   setup(function() {
     browserProxy = new TestTtsSubpageBrowserProxy();
-    TtsSubpageBrowserProxyImpl.instance_ = browserProxy;
+    TtsSubpageBrowserProxyImpl.setInstance(browserProxy);
 
     PolymerTest.clearBody();
     ttsPage = document.createElement('settings-tts-subpage');

@@ -94,9 +94,9 @@ bool IsOriginSessionOnly(
 void RecordCreateReportStatus(CreateReportResult result) {
   static_assert(
       AttributionTrigger::EventLevelResult::kMaxValue ==
-          AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy,
-      "Bump version of Conversions.CreateReportStatus2 histogram.");
-  base::UmaHistogramEnumeration("Conversions.CreateReportStatus2",
+          AttributionTrigger::EventLevelResult::kNoMatchingConfigurations,
+      "Bump version of Conversions.CreateReportStatus3 histogram.");
+  base::UmaHistogramEnumeration("Conversions.CreateReportStatus3",
                                 result.event_level_status());
   base::UmaHistogramEnumeration(
       "Conversions.AggregatableReport.CreateReportStatus2",
@@ -164,12 +164,12 @@ void LogMetricsOnReportCompleted(const AttributionReport& report,
   switch (report.GetReportType()) {
     case AttributionReport::ReportType::kEventLevel:
       base::UmaHistogramEnumeration(
-          "Conversions.ReportSendOutcome2",
+          "Conversions.ReportSendOutcome3",
           ConvertToConversionReportSendOutcome(status));
       break;
     case AttributionReport::ReportType::kAggregatableAttribution:
       base::UmaHistogramEnumeration(
-          "Conversions.AggregatableReport.ReportSendOutcome",
+          "Conversions.AggregatableReport.ReportSendOutcome2",
           ConvertToConversionReportSendOutcome(status));
       break;
   }
@@ -544,12 +544,12 @@ void AttributionManagerImpl::GetActiveSourcesForWebUI(
 }
 
 void AttributionManagerImpl::GetPendingReportsForInternalUse(
-    AttributionReport::ReportType report_type,
+    AttributionReport::ReportTypes report_types,
+    int limit,
     base::OnceCallback<void(std::vector<AttributionReport>)> callback) {
   attribution_storage_.AsyncCall(&AttributionStorage::GetAttributionReports)
       .WithArgs(
-          /*max_report_time=*/base::Time::Max(), /*limit=*/1000,
-          AttributionReport::ReportTypes{report_type})
+          /*max_report_time=*/base::Time::Max(), limit, std::move(report_types))
       .Then(std::move(callback));
 }
 

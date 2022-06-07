@@ -117,22 +117,6 @@ TEST_F('CrSettingsLanguagesPageTest', 'SpellcheckOfficialBuild', function() {
 });
 GEN('#endif');
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_LACROS)');
-var CrSettingsLanguagesPageRestructuredTest =
-    class extends CrSettingsLanguagesPageTest {
-  /** @override */
-  get featureListInternal() {
-    return {enabled: ['language::kDesktopRestructuredLanguageSettings']};
-  }
-};
-TEST_F(
-    'CrSettingsLanguagesPageRestructuredTest', 'RestructuredLanguageSettings',
-    function() {
-      mocha.grep(languages_page_tests.TestNames.RestructuredLanguageSettings)
-          .run();
-    });
-GEN('#endif');
-
 var CrSettingsLanguagesSubpageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -519,8 +503,16 @@ TEST_F(
         runMochaSuite('PrivacyGuidePage');
     });
 
+// TODO(crbug.com/1328037): Flaky on Linux Tests(dbg).
+GEN('#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)');
+GEN('#define MAYBE_PrivacyGuideFragmentMetricsTests \\');
+GEN('  DISABLED_PrivacyGuideFragmentMetricsTests');
+GEN('#else');
+GEN('#define MAYBE_PrivacyGuideFragmentMetricsTests \\');
+GEN('  PrivacyGuideFragmentMetricsTests');
+GEN('#endif');
 TEST_F(
-    'CrSettingsPrivacyGuidePageTest', 'PrivacyGuideFragmentMetricsTests',
+    'CrSettingsPrivacyGuidePageTest', 'MAYBE_PrivacyGuideFragmentMetricsTests',
     function() {
       runMochaSuite('PrivacyGuideFragmentMetrics');
     });
@@ -533,6 +525,12 @@ TEST_F(
 TEST_F('CrSettingsPrivacyGuidePageTest', 'CompletionFragmentTests', function() {
   runMochaSuite('CompletionFragment');
 });
+
+TEST_F(
+    'CrSettingsPrivacyGuidePageTest',
+    'CompletionFragmentPrivacySandboxRestricted', function() {
+      runMochaSuite('CompletionFragmentPrivacySandboxRestricted');
+    });
 
 TEST_F(
     'CrSettingsPrivacyGuidePageTest',

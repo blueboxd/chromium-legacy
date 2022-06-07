@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/features.h"
+#include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
@@ -163,7 +164,9 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   }
   void GetSSLInfo(SSLInfo* ssl_info) override {}
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
-  bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
+  int GetRemoteEndpoint(IPEndPoint* endpoint) override {
+    return ERR_UNEXPECTED;
+  }
   void Drain(HttpNetworkSession* session) override {}
   void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
   void SetPriority(RequestPriority priority) override {}
@@ -189,11 +192,8 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 class MockHttpStreamFactoryForPreconnect : public HttpStreamFactory {
  public:
   explicit MockHttpStreamFactoryForPreconnect(HttpNetworkSession* session)
-      : HttpStreamFactory(session),
-        preconnect_done_(false),
-        waiting_for_preconnect_(false) {}
-
-  ~MockHttpStreamFactoryForPreconnect() override {}
+      : HttpStreamFactory(session) {}
+  ~MockHttpStreamFactoryForPreconnect() override = default;
 
   void WaitForPreconnects() {
     while (!preconnect_done_) {
@@ -211,14 +211,14 @@ class MockHttpStreamFactoryForPreconnect : public HttpStreamFactory {
       loop_.QuitWhenIdle();
   }
 
-  bool preconnect_done_;
-  bool waiting_for_preconnect_;
+  bool preconnect_done_ = false;
+  bool waiting_for_preconnect_ = false;
   base::RunLoop loop_;
 };
 
 class StreamRequestWaiter : public HttpStreamRequest::Delegate {
  public:
-  StreamRequestWaiter() : error_status_(OK) {}
+  StreamRequestWaiter() = default;
 
   StreamRequestWaiter(const StreamRequestWaiter&) = delete;
   StreamRequestWaiter& operator=(const StreamRequestWaiter&) = delete;
@@ -319,7 +319,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   std::unique_ptr<BidirectionalStreamImpl> bidirectional_stream_impl_;
   SSLConfig used_ssl_config_;
   ProxyInfo used_proxy_info_;
-  int error_status_;
+  int error_status_ = OK;
 };
 
 class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
@@ -423,8 +423,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
                                   base::TimeDelta(),
                                   ProxyServer::Direct(),
                                   false /* is_for_websockets */,
-                                  common_connect_job_params),
-        last_num_streams_(-1) {}
+                                  common_connect_job_params) {}
 
   int last_num_streams() const { return last_num_streams_; }
   const ClientSocketPool::GroupId& last_group_id() const {
@@ -457,14 +456,16 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     return ERR_UNEXPECTED;
   }
 
-  void RequestSockets(
+  int RequestSockets(
       const ClientSocketPool::GroupId& group_id,
       scoped_refptr<ClientSocketPool::SocketParams> socket_params,
       const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       int num_sockets,
+      CompletionOnceCallback callback,
       const NetLogWithSource& net_log) override {
     last_num_streams_ = num_sockets;
     last_group_id_ = group_id;
+    return OK;
   }
 
   void CancelRequest(const ClientSocketPool::GroupId& group_id,
@@ -496,7 +497,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
   }
 
  private:
-  int last_num_streams_;
+  int last_num_streams_ = -1;
   ClientSocketPool::GroupId last_group_id_;
 };
 
@@ -946,8 +947,7 @@ class TestBidirectionalDelegate : public BidirectionalStreamImpl::Delegate {
 // Simplify ownership issues and the interaction with the MockSocketFactory.
 class MockQuicData {
  public:
-  explicit MockQuicData(quic::ParsedQuicVersion version)
-      : packet_number_(0), printer_(version) {}
+  explicit MockQuicData(quic::ParsedQuicVersion version) : printer_(version) {}
 
   ~MockQuicData() = default;
 
@@ -977,7 +977,7 @@ class MockQuicData {
   std::vector<std::unique_ptr<quic::QuicEncryptedPacket>> packets_;
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
-  size_t packet_number_;
+  size_t packet_number_ = 0;
   QuicPacketPrinter printer_;
   std::unique_ptr<SequencedSocketData> socket_data_;
 };
@@ -1065,10 +1065,10 @@ int GetHandedOutSocketCount(ClientSocketPool* pool) {
 // Return count of distinct QUIC sessions.
 int GetQuicSessionCount(HttpNetworkSession* session) {
   base::Value dict(session->QuicInfoToValue());
-  base::Value* session_list = dict.FindListKey("sessions");
+  base::Value::List* session_list = dict.GetDict().FindList("sessions");
   if (!session_list)
     return -1;
-  return session_list->GetListDeprecated().size();
+  return session_list->size();
 }
 
 TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
@@ -2086,7 +2086,7 @@ class HttpStreamFactoryBidirectionalQuicTest
   MockHostResolver* host_resolver() { return &host_resolver_; }
 
  private:
-  QuicFlagSaver saver_;
+  quic::test::QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   MockQuicContext quic_context_;

@@ -31,8 +31,7 @@
 #include "net/cert/internal/extended_key_usage.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/x509_util.h"
-#include "net/cert/x509_util_ios_and_mac.h"
-#include "net/cert/x509_util_mac.h"
+#include "net/cert/x509_util_apple.h"
 #include "net/ssl/client_cert_identity_mac.h"
 #include "net/ssl/ssl_platform_key_util.h"
 
@@ -61,16 +60,16 @@ OSStatus CopyCertChain(SecCertificateRef cert_handle,
   DCHECK(out_cert_chain);
 
   // Create an SSL policy ref configured for client cert evaluation.
-  SecPolicyRef ssl_policy;
-  OSStatus result = x509_util::CreateSSLClientPolicy(&ssl_policy);
-  if (result)
-    return result;
-  ScopedCFTypeRef<SecPolicyRef> scoped_ssl_policy(ssl_policy);
+  ScopedCFTypeRef<SecPolicyRef> ssl_policy(
+      SecPolicyCreateSSL(/*server=*/false, /*hostname=*/nullptr));
+  if (!ssl_policy)
+    return errSecNoPolicyModule;
 
   // Create a SecTrustRef.
   ScopedCFTypeRef<CFArrayRef> input_certs(CFArrayCreate(
       NULL, const_cast<const void**>(reinterpret_cast<void**>(&cert_handle)),
       1, &kCFTypeArrayCallBacks));
+  OSStatus result;
   SecTrustRef trust_ref = NULL;
   {
     base::AutoLock lock(crypto::GetMacSecurityServicesLock());

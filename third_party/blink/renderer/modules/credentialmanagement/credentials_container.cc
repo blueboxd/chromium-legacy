@@ -320,7 +320,7 @@ bool IsIconURLNullOrSecure(const KURL& url) {
   if (!url.IsValid())
     return false;
 
-  return network::IsUrlPotentiallyTrustworthy(url);
+  return network::IsUrlPotentiallyTrustworthy(GURL(url));
 }
 
 // Checks if the size of the supplied ArrayBuffer or ArrayBufferView is at most
@@ -1080,7 +1080,8 @@ ScriptPromise CredentialsContainer::get(
         CredentialManagerProxy::From(script_state)->WebOTPService();
     webotp_service->Receive(WTF::Bind(&OnSmsReceive, WrapPersistent(resolver),
                                       base::TimeTicks::Now()));
-    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.Features", WebFeature::kWebOTP);
+
+    UseCounter::Count(context, WebFeature::kWebOTP);
     return promise;
   }
 

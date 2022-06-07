@@ -6,6 +6,10 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/ash/components/network/metrics/connection_info_metrics_logger.h"
+#include "chromeos/ash/components/network/metrics/esim_policy_login_metrics_logger.h"
+#include "chromeos/ash/components/network/metrics/vpn_network_metrics_helper.h"
+#include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/network/auto_connect_handler.h"
 #include "chromeos/network/cellular_connection_handler.h"
 #include "chromeos/network/cellular_esim_installer.h"
@@ -18,9 +22,6 @@
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/managed_cellular_pref_handler.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
-#include "chromeos/network/metrics/connection_info_metrics_logger.h"
-#include "chromeos/network/metrics/esim_policy_login_metrics_logger.h"
-#include "chromeos/network/metrics/vpn_network_metrics_helper.h"
 #include "chromeos/network/network_activation_handler_impl.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_cert_migrator.h"
@@ -35,7 +36,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
-#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/network/stub_cellular_networks_provider.h"
 
 namespace chromeos {

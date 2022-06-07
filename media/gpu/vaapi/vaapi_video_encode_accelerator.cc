@@ -102,19 +102,8 @@ std::unique_ptr<ScopedVASurface> CreateScopedSurface(
     VaapiWrapper& vaapi_wrapper,
     const gfx::Size& encode_size,
     const std::vector<VaapiWrapper::SurfaceUsageHint>& surface_usage_hints) {
-  // iHD driver doesn't align a resolution for encoding properly. Align it only
-  // with encoder driver.
-  // TODO(https://github.com/intel/media-driver/issues/1232): Remove this
-  // workaround of aligning |encode_size|.
-  gfx::Size surface_size = encode_size;
-  if (!base::Contains(surface_usage_hints,
-                      VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite)) {
-    surface_size = gfx::Size(base::bits::AlignUp(encode_size.width(), 16u),
-                             base::bits::AlignUp(encode_size.height(), 16u));
-  }
-
   auto surfaces = vaapi_wrapper.CreateScopedVASurfaces(
-      kVaSurfaceFormat, surface_size, surface_usage_hints, 1u,
+      kVaSurfaceFormat, encode_size, surface_usage_hints, 1u,
       /*visible_size=*/absl::nullopt,
       /*va_fourcc=*/absl::nullopt);
   return surfaces.empty() ? nullptr : std::move(surfaces.front());
@@ -362,6 +351,15 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       if (!IsConfiguredForTesting()) {
         encoder_ = std::make_unique<H264VaapiVideoEncoderDelegate>(
             vaapi_wrapper_, error_cb);
+        // HW encoders on Intel GPUs will not put average QP in slice/tile
+        // header when it is not working at CQP mode. Currently only H264 is
+        // working at non CQP mode.
+        if (VaapiWrapper::GetImplementationType() ==
+                VAImplementation::kIntelI965 ||
+            VaapiWrapper::GetImplementationType() ==
+                VAImplementation::kIntelIHD) {
+          encoder_info_.reports_average_qp = false;
+        }
       }
       break;
     case VideoCodec::kVP8:
@@ -542,6 +540,20 @@ void VaapiVideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK_NE(state_, kUninitialized);
 
+  if (frame) {
+    // |frame| can be nullptr to indicate a flush.
+    const bool is_expected_storage_type =
+        native_input_mode_
+            ? frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER
+            : frame->IsMappable();
+    if (!is_expected_storage_type) {
+      NOTIFY_ERROR(kInvalidArgumentError,
+                   "Unexpected storage: " << VideoFrame::StorageTypeToString(
+                       frame->storage_type()));
+      return;
+    }
+  }
+
   input_queue_.push(
       std::make_unique<InputFrameRef>(std::move(frame), force_keyframe));
   EncodePendingInputs();
@@ -554,14 +566,9 @@ bool VaapiVideoEncodeAccelerator::CreateSurfacesForGpuMemoryBufferEncoding(
     std::vector<scoped_refptr<VASurface>>* reconstructed_surfaces) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK(native_input_mode_);
+  DCHECK_EQ(frame.storage_type(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
   TRACE_EVENT0("media,gpu", "VAVEA::CreateSurfacesForGpuMemoryBuffer");
 
-  if (frame.storage_type() != VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-    NOTIFY_ERROR(kPlatformFailureError,
-                 "Unexpected storage: "
-                     << VideoFrame::StorageTypeToString(frame.storage_type()));
-    return false;
-  }
   if (frame.format() != PIXEL_FORMAT_NV12) {
     NOTIFY_ERROR(
         kPlatformFailureError,

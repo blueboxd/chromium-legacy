@@ -629,6 +629,10 @@ content::WebContents* ScriptExecutor::GetWebContents() const {
   return delegate_->GetWebContents();
 }
 
+content::WebContents* ScriptExecutor::GetWebContentsForJsExecution() {
+  return delegate_->GetWebContentsForJsExecution();
+}
+
 ElementStore* ScriptExecutor::GetElementStore() const {
   return element_store_.get();
 }
@@ -979,12 +983,24 @@ void ScriptExecutor::GetNextActions() {
                      weak_ptr_factory_.GetWeakPtr(), get_next_actions_start));
 }
 
+void ScriptExecutor::MaybeSetPreviousAction(
+    const ProcessedActionProto& processed_action) {
+  const auto action_info_case = processed_action.action().action_info_case();
+
+  // JS flows are themselves a way of executing a script.
+  if (action_info_case == ActionProto::kJsFlow) {
+    return;
+  }
+
+  previous_action_type_ = action_info_case;
+}
+
 void ScriptExecutor::OnProcessedAction(
     base::TimeTicks start_time,
     std::unique_ptr<ProcessedActionProto> processed_action_proto) {
   DCHECK(current_action_);
   base::TimeDelta run_time = base::TimeTicks::Now() - start_time;
-  previous_action_type_ = processed_action_proto->action().action_info_case();
+  MaybeSetPreviousAction(*processed_action_proto);
   processed_actions_.emplace_back(*processed_action_proto);
 
 #ifdef NDEBUG
@@ -1116,7 +1132,7 @@ bool ScriptExecutor::SupportsExternalActions() {
 void ScriptExecutor::RequestExternalAction(
     const ExternalActionProto& external_action,
     base::OnceCallback<void()> start_dom_checks_callback,
-    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+    base::OnceCallback<void(const external::Result& result)>
         end_action_callback) {
   bool prompt = external_action.allow_interrupt() ||
                 external_action.show_touchable_area();
@@ -1140,9 +1156,9 @@ void ScriptExecutor::RequestExternalAction(
 void ScriptExecutor::OnExternalActionFinished(
     const ExternalActionProto& external_action,
     const bool prompt,
-    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+    base::OnceCallback<void(const external::Result& result)>
         end_action_callback,
-    ExternalActionDelegate::ActionResult result) {
+    const external::Result& result) {
   if (prompt) {
     CleanUpAfterPrompt(external_action.show_touchable_area());
   }

@@ -2263,6 +2263,7 @@ TEST_F(ShellSurfaceTest, InitialCenteredBoundsWithConfigure) {
   expected.ClampToCenteredSize(size);
   EXPECT_EQ(expected, shell_surface->GetWidget()->GetWindowBoundsInScreen());
 }
+
 // Test that restore info is set correctly.
 TEST_F(ShellSurfaceTest, SetRestoreInfo) {
   int32_t restore_session_id = 200;
@@ -2283,6 +2284,29 @@ TEST_F(ShellSurfaceTest, SetRestoreInfo) {
   EXPECT_EQ(restore_window_id,
             shell_surface->GetWidget()->GetNativeWindow()->GetProperty(
                 app_restore::kRestoreWindowIdKey));
+}
+
+// Test that restore id is set correctly.
+TEST_F(ShellSurfaceTest, SetRestoreInfoWithWindowIdSource) {
+  int32_t restore_session_id = 200;
+  const std::string app_id = "app_id";
+
+  gfx::Size size(20, 30);
+  auto shell_surface =
+      test::ShellSurfaceBuilder(size).SetNoCommit().BuildShellSurface();
+
+  shell_surface->SetRestoreInfoWithWindowIdSource(restore_session_id, app_id);
+  shell_surface->Restore();
+  shell_surface->root_surface()->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->IsVisible());
+
+  // FetchRestoreWindowId will return 0, because no app with id "app_id" is
+  // installed.
+  EXPECT_EQ(0, shell_surface->GetWidget()->GetNativeWindow()->GetProperty(
+                   app_restore::kRestoreWindowIdKey));
+  EXPECT_EQ(app_id, *shell_surface->GetWidget()->GetNativeWindow()->GetProperty(
+                        app_restore::kAppIdKey));
 }
 
 // Surfaces without non-client view should not crash.
@@ -2322,6 +2346,22 @@ TEST_F(ShellSurfaceTest, SetSystemModal) {
 
   EXPECT_EQ(ui::MODAL_TYPE_SYSTEM, shell_surface->GetModalType());
   EXPECT_FALSE(shell_surface->frame_enabled());
+}
+
+TEST_F(ShellSurfaceTest, PipInitialPosition) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetMaximumSize(gfx::Size(10, 10))
+          .SetUseSystemModalContainer()
+          .SetNoCommit()
+          .BuildShellSurface();
+  shell_surface->SetWindowBounds(gfx::Rect(20, 20, 256, 256));
+  shell_surface->SetPip();
+  shell_surface->root_surface()->Commit();
+  // PIP positioner place the PIP window to the edge that is closer to the given
+  // position
+  EXPECT_EQ(gfx::Rect(8, 20, 256, 256),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen());
 }
 
 }  // namespace exo

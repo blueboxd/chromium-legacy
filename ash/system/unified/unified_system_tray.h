@@ -35,6 +35,7 @@ class CurrentLocaleView;
 class ImeModeView;
 class ManagedDeviceTrayItemView;
 class NetworkTrayView;
+class NotificationGroupingController;
 class NotificationIconsController;
 class PrivacyScreenToastController;
 class SnoopingProtectionView;
@@ -159,6 +160,10 @@ class ASH_EXPORT UnifiedSystemTray
   // is passed in.
   bool FocusQuickSettings(bool reverse);
 
+  // Called by `UnifiedSystemTrayBubble` when it is destroyed with the calendar
+  // view in the foreground.
+  void NotifyLeavingCalendarView();
+
   // Returns true if the user manually expanded the quick settings.
   bool IsQuickSettingsExplicitlyExpanded() const;
 
@@ -211,6 +216,8 @@ class ASH_EXPORT UnifiedSystemTray
   std::u16string GetAccessibleNameForQuickSettingsBubble();
 
   AshMessagePopupCollection* GetMessagePopupCollection();
+
+  NotificationGroupingController* GetNotificationGroupingController();
 
   scoped_refptr<UnifiedSystemTrayModel> model() { return model_; }
   UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }

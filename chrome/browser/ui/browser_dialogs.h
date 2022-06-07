@@ -20,6 +20,7 @@
 #include "content/public/browser/bluetooth_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "extensions/buildflags/buildflags.h"
+#include "extensions/common/extension_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -228,6 +229,15 @@ void ShowPWAInstallBubble(
     AppInstallationAcceptanceCallback callback,
     PwaInProductHelpState iph_state = PwaInProductHelpState::kNotShown);
 
+// Shows the Web App detailed install dialog.
+// The dialog shows app's detailed information including screenshots. Users then
+// confirm or cancel install in this dialog.
+void ShowWebAppDetailedInstallDialog(
+    content::WebContents* web_contents,
+    std::unique_ptr<WebAppInstallInfo> web_app_info,
+    AppInstallationAcceptanceCallback callback,
+    PwaInProductHelpState iph_state = PwaInProductHelpState::kNotShown);
+
 // Sets whether |ShowPWAInstallBubble| should accept immediately without any
 // user interaction.
 void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept);
@@ -296,7 +306,7 @@ void ShowChromeCleanerRebootPrompt(
 // blocked due to policy. It also show additional information from administrator
 // if it exists.
 void ShowExtensionInstallBlockedDialog(
-    const std::string& extension_id,
+    const extensions::ExtensionId& extension_id,
     const std::string& extension_name,
     const std::u16string& custom_error_message,
     const gfx::ImageSkia& icon,

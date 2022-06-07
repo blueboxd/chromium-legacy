@@ -2298,8 +2298,8 @@ TEST_F(StarterFencedFrameTest, NoImplicitTriggeringForFencedFrames) {
   content::RenderFrameHost* fenced_frame_rfh =
       CreateFencedFrame(web_contents()->GetMainFrame());
   std::unique_ptr<content::NavigationSimulator> navigation_simulator =
-      content::NavigationSimulator::CreateForFencedFrame(GURL(kExampleDeeplink),
-                                                         fenced_frame_rfh);
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL(kExampleDeeplink), fenced_frame_rfh);
   navigation_simulator->Start();
 }
 
@@ -2384,6 +2384,41 @@ TEST_F(StarterTest, CanStartSucceeds) {
                      Metrics::AutofillAssistantCaller::UNKNOWN_CALLER,
                      Metrics::AutofillAssistantSource::UNKNOWN_SOURCE,
                      Metrics::AutofillAssistantExperiment::NO_EXPERIMENT}}})));
+}
+
+TEST_F(StarterTest, RegularStartupFailsForSupervisedUser) {
+  SetupPlatformDelegateForFirstTimeUser();
+  fake_platform_delegate_.is_supervised_user_ = true;
+
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+  TriggerContext::Options options;
+  options.initial_url = "https://redirect.com/to/www/example/com";
+  EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
+
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters), options));
+}
+
+TEST_F(StarterTest, RpcTriggerScriptStartupFailsForSupervisedUser) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_supervised_user_ = true;
+
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "false"},
+      {"REQUEST_TRIGGER_SCRIPT", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, Attach).Times(0);
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
+
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters),
+      TriggerContext::Options()));
 }
 
 }  // namespace autofill_assistant

@@ -112,7 +112,7 @@ TouchToFillController::TouchToFillController(
     : password_client_(password_client),
       authenticator_(std::move(authenticator)),
       source_id_(password_client->web_contents()
-                     ->GetMainFrame()
+                     ->GetPrimaryMainFrame()
                      ->GetPageUkmSourceId()) {}
 
 TouchToFillController::~TouchToFillController() {
@@ -199,7 +199,7 @@ void TouchToFillController::OnWebAuthnCredentialSelected(
                                 /*show_virtual_keyboard=*/false);
 
   password_client_->GetWebAuthnCredentialsDelegate()->SelectWebAuthnCredential(
-      credential.id());
+      credential.id().value());
 }
 
 void TouchToFillController::OnManagePasswordsSelected() {

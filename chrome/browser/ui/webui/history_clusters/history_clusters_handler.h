@@ -13,6 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "chrome/browser/history/profile_based_browsing_history_driver.h"
+#include "components/history/core/browser/browsing_history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/history_clusters/core/query_clusters_state.h"
@@ -45,7 +47,8 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
 // Handles bidirectional communication between the history clusters page and the
 // browser.
 class HistoryClustersHandler : public mojom::PageHandler,
-                               public HistoryClustersService::Observer {
+                               public HistoryClustersService::Observer,
+                               public ProfileBasedBrowsingHistoryDriver {
  public:
   HistoryClustersHandler(
       mojo::PendingReceiver<mojom::PageHandler> pending_page_handler,
@@ -64,22 +67,30 @@ class HistoryClustersHandler : public mojom::PageHandler,
   void RemoveVisits(std::vector<mojom::URLVisitPtr> visits,
                     RemoveVisitsCallback callback) override;
   void OpenVisitUrlsInTabGroup(std::vector<mojom::URLVisitPtr> visits) override;
+  void RecordVisitAction(mojom::VisitAction visit_action,
+                         uint32_t visit_index,
+                         mojom::VisitType visit_type) override;
+  void RecordRelatedSearchAction(mojom::RelatedSearchAction action,
+                                 uint32_t related_search_index) override;
+  void RecordClusterAction(mojom::ClusterAction cluster_action,
+                           uint32_t cluster_index) override;
+  void RecordToggledVisibility(bool visible) override;
 
   // HistoryClustersService::Observer:
   void OnDebugMessage(const std::string& message) override;
+
+  // ProfileBasedBrowsingHistoryDriver:
+  void OnRemoveVisitsComplete() override;
+  void OnRemoveVisitsFailed() override;
+  Profile* GetProfile() override;
 
  private:
   // Called with the result of querying clusters. Subsequently, `query_result`
   // is sent to the JS to update the UI.
   void OnClustersQueryResult(mojom::QueryResultPtr query_result);
-  // Called with the set of removed visits. Subsequently, `visits` is sent to
-  // the JS to update the UI.
-  void OnVisitsRemoved(std::vector<mojom::URLVisitPtr> visits);
 
   raw_ptr<Profile> profile_;
   raw_ptr<content::WebContents> web_contents_;
-  // Tracker for remove requests to the HistoryClustersService.
-  base::CancelableTaskTracker remove_task_tracker_;
 
   // Used to observe the service.
   base::ScopedObservation<HistoryClustersService,
@@ -91,6 +102,17 @@ class HistoryClustersHandler : public mojom::PageHandler,
 
   // Encapsulates the currently loaded clusters state on the page.
   std::unique_ptr<QueryClustersState> query_clusters_state_;
+
+  // Used only for deleting History properly, and observing deletions that occur
+  // from other tabs. It's not used for querying History, because we do our
+  // querying with HistoryClustersService.
+  std::unique_ptr<history::BrowsingHistoryService> browsing_history_service_;
+
+  // The following variables hold the visits requested to be deleted and the
+  // callback for the respective request. `BrowsingHistoryService` can only
+  // handle one deletion request at a time.
+  std::vector<mojom::URLVisitPtr> pending_remove_visits_;
+  RemoveVisitsCallback pending_remove_visits_callback_;
 
   base::WeakPtrFactory<HistoryClustersHandler> weak_ptr_factory_{this};
 };

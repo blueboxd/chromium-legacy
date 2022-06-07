@@ -14,6 +14,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/dcheck_is_on.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/character_encoding.h"
 #include "base/memory/raw_ptr.h"
@@ -146,14 +147,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/universal_web_contents_observers.h"
-#include "chrome/browser/url_param_filter/url_param_filter_throttle.h"
 #include "chrome/browser/usb/frame_usb_services.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
-#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_helpers.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/webapps/web_app_offline.h"
 #include "chrome/browser/webauthn/webauthn_pref_names.h"
 #include "chrome/common/buildflags.h"
@@ -248,6 +243,7 @@
 #include "components/site_isolation/site_isolation_policy.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "components/url_param_filter/content/url_param_filter_throttle.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -343,6 +339,7 @@
 #include "chrome/browser/browser_process_platform_part_mac.h"
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/mac/auth_session_request.h"
+#include "chrome/browser/mac/chrome_browser_main_extra_parts_mac.h"
 #include "components/soda/constants.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "sandbox/policy/mac/params.h"
@@ -445,6 +442,10 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/grit/chrome_unscaled_resources.h"  // nogncheck crbug.com/1125897
@@ -879,7 +880,7 @@ blink::mojom::AutoplayPolicy GetAutoplayPolicyForWebContents(
     result = UnifiedAutoplayConfig::ShouldBlockAutoplay(profile)
                  ? blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired
                  : blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
-  } else if (web_contents->GetMainFrame()->IsFeatureEnabled(
+  } else if (web_contents->GetPrimaryMainFrame()->IsFeatureEnabled(
                  blink::mojom::PermissionsPolicyFeature::kAutoplay) &&
              IsAutoplayAllowedByPolicy(web_contents->GetOuterWebContents(),
                                        prefs)) {
@@ -1127,7 +1128,7 @@ void LaunchURL(base::WeakPtr<ChromeContentBrowserClient> client,
                     has_user_gesture);
 
     if (!allowed) {
-      content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+      content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
       if (client) {
         client->LogWebFeatureForCurrentPage(
             rfh, blink::mojom::WebFeature::kExternalProtocolBlockedBySandbox);
@@ -1367,11 +1368,13 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       enterprise::content::kCopyPreventionSettings);
   registry->RegisterIntegerPref(
       prefs::kUserAgentReduction,
-      UserAgentReductionEnterprisePolicyState::kDefault);
+      static_cast<int>(
+          embedder_support::UserAgentReductionEnterprisePolicyState::kDefault));
   registry->RegisterBooleanPref(prefs::kOriginAgentClusterDefaultEnabled, true);
   registry->RegisterIntegerPref(
       prefs::kForceMajorVersionToMinorPositionInUserAgent,
-      embedder_support::ForceMajorVersionToMinorPosition::kDefault);
+      static_cast<int>(
+          embedder_support::ForceMajorVersionToMinorPosition::kDefault));
   registry->RegisterBooleanPref(
       policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed, true);
 }
@@ -1451,6 +1454,10 @@ ChromeContentBrowserClient::CreateBrowserMainParts(bool is_integration_test) {
 #else
   main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsViews>());
 #endif
+#endif
+
+#if BUILDFLAG(IS_MAC)
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsMac>());
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2640,11 +2647,11 @@ void ChromeContentBrowserClient::WillStartServiceWorker(
   DCHECK(context);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!SystemExtensionsProvider::IsEnabled())
+  if (!ash::SystemExtensionsProvider::IsEnabled())
     return;
 
   auto* system_extensions_provider =
-      SystemExtensionsProvider::Get(Profile::FromBrowserContext(context));
+      ash::SystemExtensionsProvider::Get(Profile::FromBrowserContext(context));
   if (system_extensions_provider)
     system_extensions_provider->WillStartServiceWorker(script_url,
                                                        render_process_host);
@@ -3673,7 +3680,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
   UpdatePreferredColorScheme(
-      web_prefs, web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL(),
+      web_prefs,
+      web_contents->GetPrimaryMainFrame()->GetSiteInstance()->GetSiteURL(),
       web_contents, GetWebTheme());
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
@@ -3986,10 +3994,13 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
 #if BUILDFLAG(IS_WIN)
 std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
-    sandbox::mojom::Sandbox sandbox_type) {
+    sandbox::mojom::Sandbox sandbox_type,
+    AppContainerFlags flags) {
   // TODO(wfh): Add support for more process types here. crbug.com/499523
   switch (sandbox_type) {
     case sandbox::mojom::Sandbox::kRenderer:
+      if (flags & AppContainerFlags::kAppContainerFlagDisableAppContainer)
+        return std::wstring();
       return std::wstring(install_static::GetSandboxSidPrefix()) + L"129201922";
     case sandbox::mojom::Sandbox::kUtility:
       return std::wstring();
@@ -4017,6 +4028,19 @@ std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
       CHECK(0);
       return std::wstring();
   }
+}
+
+bool ChromeContentBrowserClient::IsRendererAppContainerDisabled() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  PrefService* local_state = g_browser_process->local_state();
+  const PrefService::Preference* pref =
+      local_state->FindPreference(prefs::kRendererAppContainerEnabled);
+  // App Container is disabled if managed pref is set to false.
+  if (pref && pref->IsManaged() && !pref->GetValue()->GetBool())
+    return true;
+
+  return false;
 }
 
 std::wstring
@@ -4055,7 +4079,7 @@ bool ChromeContentBrowserClient::PreSpawnChild(
   switch (sandbox_type) {
     case sandbox::mojom::Sandbox::kRenderer:
       enforce_code_integrity =
-          ((flags & ChildSpawnFlags::RENDERER_CODE_INTEGRITY) &&
+          ((flags & ChildSpawnFlags::kChildSpawnFlagRendererCodeIntegrity) &&
            base::FeatureList::IsEnabled(kRendererCodeIntegrity));
       break;
     case sandbox::mojom::Sandbox::kNetwork:
@@ -5448,14 +5472,10 @@ ChromeContentBrowserClient::GetNetworkContextsParentDirectory() {
   return network_contexts_parent_directory_;
 }
 
-base::DictionaryValue ChromeContentBrowserClient::GetNetLogConstants() {
-  auto platform_dict = net_log::GetPlatformConstantsForNetLog(
+base::Value::Dict ChromeContentBrowserClient::GetNetLogConstants() {
+  return net_log::GetPlatformConstantsForNetLog(
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
       chrome::GetChannelName(chrome::WithExtendedStable(true)));
-  if (platform_dict)
-    return std::move(*platform_dict);
-  else
-    return base::DictionaryValue();
 }
 
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(
@@ -5901,18 +5921,26 @@ std::string ChromeContentBrowserClient::GetUserAgent() {
 
 std::string ChromeContentBrowserClient::GetUserAgentBasedOnPolicy(
     content::BrowserContext* context) {
+  const PrefService* prefs = Profile::FromBrowserContext(context)->GetPrefs();
   embedder_support::ForceMajorVersionToMinorPosition
-      force_major_version_to_minor = embedder_support::GetMajorToMinorFromPrefs(
-          Profile::FromBrowserContext(context)->GetPrefs());
-  switch (GetUserAgentReductionEnterprisePolicyState(context)) {
-    case UserAgentReductionEnterprisePolicyState::kForceDisabled:
-      return embedder_support::GetFullUserAgent(force_major_version_to_minor);
-    case UserAgentReductionEnterprisePolicyState::kForceEnabled:
+      force_major_version_to_minor =
+          embedder_support::GetMajorToMinorFromPrefs(prefs);
+  embedder_support::UserAgentReductionEnterprisePolicyState
+      user_agent_reduction =
+          embedder_support::GetUserAgentReductionFromPrefs(prefs);
+  switch (user_agent_reduction) {
+    case embedder_support::UserAgentReductionEnterprisePolicyState::
+        kForceDisabled:
+      return embedder_support::GetFullUserAgent(force_major_version_to_minor,
+                                                user_agent_reduction);
+    case embedder_support::UserAgentReductionEnterprisePolicyState::
+        kForceEnabled:
       return embedder_support::GetReducedUserAgent(
           force_major_version_to_minor);
-    case UserAgentReductionEnterprisePolicyState::kDefault:
+    case embedder_support::UserAgentReductionEnterprisePolicyState::kDefault:
     default:
-      return embedder_support::GetUserAgent(force_major_version_to_minor);
+      return embedder_support::GetUserAgent(force_major_version_to_minor,
+                                            user_agent_reduction);
   }
 }
 
@@ -6480,23 +6508,6 @@ bool ChromeContentBrowserClient::ShouldPreconnectNavigation(
       *Profile::FromBrowserContext(browser_context)->GetPrefs());
 }
 
-ChromeContentBrowserClient::UserAgentReductionEnterprisePolicyState
-ChromeContentBrowserClient::GetUserAgentReductionEnterprisePolicyState(
-    content::BrowserContext* context) {
-  int policy = Profile::FromBrowserContext(context)->GetPrefs()->GetInteger(
-      prefs::kUserAgentReduction);
-  switch (policy) {
-    case 0:
-      return UserAgentReductionEnterprisePolicyState::kDefault;
-    case 1:
-      return UserAgentReductionEnterprisePolicyState::kForceDisabled;
-    case 2:
-      return UserAgentReductionEnterprisePolicyState::kForceEnabled;
-  }
-
-  return UserAgentReductionEnterprisePolicyState::kDefault;
-}
-
 bool ChromeContentBrowserClient::ShouldDisableOriginAgentClusterDefault(
     content::BrowserContext* browser_context) {
   // The enterprise policy for kOriginAgentClusterDefaultEnabled defaults to
@@ -6554,6 +6565,7 @@ base::Value::Dict ChromeContentBrowserClient::GetFirstPartySetsOverrides() {
 content::mojom::AlternativeErrorPageOverrideInfoPtr
 ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     const GURL& url,
+    content::RenderFrameHost* render_frame_host,
     content::BrowserContext* browser_context,
     int32_t error_code) {
   if (error_code != net::ERR_INTERNET_DISCONNECTED)
@@ -6567,5 +6579,5 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     return nullptr;
   }
 
-  return web_app::GetOfflinePageInfo(url, browser_context);
+  return web_app::GetOfflinePageInfo(url, render_frame_host, browser_context);
 }

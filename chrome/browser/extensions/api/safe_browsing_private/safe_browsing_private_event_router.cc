@@ -52,7 +52,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/browser_process_platform_part_ash.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #else
@@ -161,7 +161,7 @@ std::unique_ptr<url_matcher::URLMatcher> CreateURLMatcherForOptInEvent(
 
   std::unique_ptr<url_matcher::URLMatcher> matcher =
       std::make_unique<url_matcher::URLMatcher>();
-  url_matcher::URLMatcherConditionSet::ID unused_id(0);
+  base::MatcherStringPattern::ID unused_id(0);
   url_matcher::util::AddFilters(matcher.get(), true, &unused_id, it->second);
 
   return matcher;
@@ -1028,6 +1028,13 @@ SafeBrowsingPrivateEventRouter::InitBrowserReportingClient(
 #else
   std::string client_id =
       policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  Profile* main_profile = enterprise_connectors::GetMainProfileLacros();
+  if (main_profile) {
+    // Prefer the user client id if available.
+    client_id = reporting::GetUserClientId(main_profile).value_or(client_id);
+  }
+#endif
 
   // Make sure DeviceManagementService has been initialized.
   device_management_service->ScheduleInitialization(0);

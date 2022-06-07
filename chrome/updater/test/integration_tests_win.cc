@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <shlobj.h>
 #include <wrl/client.h>
 
 #include <regstr.h>
@@ -12,9 +13,11 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -28,12 +31,14 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
+#include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_variant.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
@@ -50,6 +55,10 @@
 #include "chrome/updater/util.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/task_scheduler.h"
+#include "chrome/updater/win/test/test_executables.h"
+#include "chrome/updater/win/test/test_strings.h"
+#include "chrome/updater/win/ui/l10n_util.h"
+#include "chrome/updater/win/ui/resources/updater_installer_strings.h"
 #include "chrome/updater/win/win_constants.h"
 #include "chrome/updater/win/win_util.h"
 #include "components/crx_file/crx_verifier.h"
@@ -238,10 +247,12 @@ void CheckInstallation(UpdaterScope scope,
                         .HasSwitch(kWakeSwitch));
       }
     } else {
-      for (const wchar_t* key :
-           {kRegKeyCompanyCloudManagement, kRegKeyCompanyEnrollment,
-            UPDATER_POLICIES_KEY}) {
-        EXPECT_FALSE(RegKeyExists(HKEY_LOCAL_MACHINE, key));
+      if (::IsUserAnAdmin()) {
+        for (const wchar_t* key :
+             {kRegKeyCompanyCloudManagement, kRegKeyCompanyEnrollment,
+              UPDATER_POLICIES_KEY}) {
+          EXPECT_FALSE(RegKeyExists(HKEY_LOCAL_MACHINE, key));
+        }
       }
 
       EXPECT_FALSE(RegKeyExists(root, UPDATER_KEY));
@@ -330,6 +341,102 @@ void SleepFor(int seconds) {
   VLOG(2) << "Sleep complete.";
 }
 
+void SetupAppCommand(UpdaterScope scope,
+                     const std::wstring& app_id,
+                     const std::wstring& command_id,
+                     base::ScopedTempDir& temp_dir) {
+  base::FilePath system_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &system_path));
+
+  const wchar_t kCmdExe[] = L"cmd.exe";
+  const base::FilePath from_test_process = system_path.Append(kCmdExe);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+
+  if (scope == UpdaterScope::kUser) {
+    command_line = base::CommandLine(from_test_process);
+  } else {
+    base::FilePath programfiles_path;
+    ASSERT_TRUE(
+        base::PathService::Get(base::DIR_PROGRAM_FILES, &programfiles_path));
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDirUnderPath(programfiles_path));
+    base::FilePath test_process_path = temp_dir.GetPath().Append(kCmdExe);
+
+    ASSERT_TRUE(base::CopyFile(from_test_process, test_process_path));
+    command_line = base::CommandLine(test_process_path);
+  }
+
+  base::win::RegKey command_key;
+  ASSERT_EQ(command_key.Create(UpdaterScopeToHKeyRoot(scope),
+                               base::StrCat({CLIENTS_KEY, app_id, L"\\",
+                                             kRegKeyCommands, command_id})
+                                   .c_str(),
+                               Wow6432(KEY_WRITE)),
+            ERROR_SUCCESS);
+  ASSERT_EQ(
+      command_key.WriteValue(kRegValueCommandLine,
+                             base::StrCat({command_line.GetCommandLineString(),
+                                           L" /c \"exit %1\""})
+                                 .c_str()),
+      ERROR_SUCCESS);
+}
+
+class WindowEnumerator {
+ public:
+  WindowEnumerator(HWND parent,
+                   base::RepeatingCallback<bool(HWND hwnd)> filter,
+                   base::RepeatingCallback<void(HWND hwnd)> action)
+      : parent_(parent), filter_(filter), action_(action) {}
+
+  WindowEnumerator(const WindowEnumerator&) = delete;
+  WindowEnumerator& operator=(const WindowEnumerator&) = delete;
+
+  void Run() const {
+    ::EnumChildWindows(parent_, &OnWindowProc, reinterpret_cast<LPARAM>(this));
+  }
+
+  static std::wstring GetWindowClass(HWND hwnd) {
+    constexpr int kMaxWindowClassNameLength = 256;
+    wchar_t buffer[kMaxWindowClassNameLength + 1] = {0};
+    int name_len = ::GetClassName(hwnd, buffer, std::size(buffer));
+    if (name_len <= 0 || name_len > kMaxWindowClassNameLength)
+      return std::wstring();
+
+    return std::wstring(&buffer[0], name_len);
+  }
+
+  static bool IsSystemDialog(HWND hwnd) {
+    constexpr wchar_t kSystemDialogClass[] = L"#32770";
+    return GetWindowClass(hwnd) == kSystemDialogClass;
+  }
+
+  static std::wstring GetWindowText(HWND hwnd) {
+    const int num_chars = ::GetWindowTextLength(hwnd);
+    if (!num_chars)
+      return std::wstring();
+    std::vector<wchar_t> text(num_chars + 1);
+    if (!::GetWindowText(hwnd, &text.front(), text.size()))
+      return std::wstring();
+    return std::wstring(text.begin(), text.end());
+  }
+
+ private:
+  bool OnWindow(HWND hwnd) const {
+    if (filter_.Run(hwnd))
+      action_.Run(hwnd);
+
+    // Returns true to keep enumerating.
+    return true;
+  }
+
+  static BOOL CALLBACK OnWindowProc(HWND hwnd, LPARAM lparam) {
+    return reinterpret_cast<WindowEnumerator*>(lparam)->OnWindow(hwnd);
+  }
+
+  const HWND parent_;
+  base::RepeatingCallback<bool(HWND hwnd)> filter_;
+  base::RepeatingCallback<void(HWND hwnd)> action_;
+};
+
 }  // namespace
 
 base::FilePath GetSetupExecutablePath() {
@@ -364,9 +471,13 @@ void Clean(UpdaterScope scope) {
   for (const wchar_t* key : {CLIENT_STATE_KEY, CLIENTS_KEY, UPDATER_KEY}) {
     EXPECT_TRUE(DeleteRegKey(root, key));
   }
-  for (const wchar_t* key : {kRegKeyCompanyCloudManagement,
-                             kRegKeyCompanyEnrollment, UPDATER_POLICIES_KEY}) {
-    EXPECT_TRUE(DeleteRegKey(HKEY_LOCAL_MACHINE, key));
+
+  if (::IsUserAnAdmin()) {
+    for (const wchar_t* key :
+         {kRegKeyCompanyCloudManagement, kRegKeyCompanyEnrollment,
+          UPDATER_POLICIES_KEY}) {
+      EXPECT_TRUE(DeleteRegKey(HKEY_LOCAL_MACHINE, key));
+    }
   }
 
   for (const CLSID& clsid :
@@ -423,7 +534,7 @@ void EnterTestMode(const GURL& url) {
                   .SetUseCUP(false)
                   .SetInitialDelay(0.1)
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
-                  .Overwrite());
+                  .Modify());
 }
 
 void ExpectInstalled(UpdaterScope scope) {
@@ -567,7 +678,7 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
                         int expected_final_state,
                         HRESULT expected_error_code) {
   bool done = false;
-  static const base::TimeDelta kExpirationTimeout = base::Minutes(1);
+  static constexpr base::TimeDelta kExpirationTimeout = base::Minutes(1);
   base::ElapsedTimer timer;
 
   EXPECT_TRUE(timer.Elapsed() < kExpirationTimeout);
@@ -792,6 +903,62 @@ void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope) {
   EXPECT_EQ(static_cast<ULONG_PTR>(0), proc_handle);
 }
 
+void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
+                                       const std::string& app_id,
+                                       const std::string& command_id,
+                                       const base::Value::List& parameters,
+                                       int expected_exit_code) {
+  const size_t kMaxParameters = 9;
+  ASSERT_LE(parameters.size(), kMaxParameters);
+
+  base::ScopedTempDir temp_dir;
+  const std::wstring appid = base::UTF8ToWide(app_id);
+  const std::wstring commandid = base::UTF8ToWide(command_id);
+
+  SetupAppCommand(scope, appid, commandid, temp_dir);
+
+  Microsoft::WRL::ComPtr<IAppBundleWeb> bundle;
+  ASSERT_HRESULT_SUCCEEDED(InitializeBundle(scope, bundle));
+  ASSERT_HRESULT_SUCCEEDED(
+      bundle->createInstalledApp(base::win::ScopedBstr(appid).Get()));
+
+  Microsoft::WRL::ComPtr<IDispatch> app_dispatch;
+  ASSERT_HRESULT_SUCCEEDED(bundle->get_appWeb(0, &app_dispatch));
+  Microsoft::WRL::ComPtr<IAppWeb> app;
+  ASSERT_HRESULT_SUCCEEDED(app_dispatch.As(&app));
+
+  Microsoft::WRL::ComPtr<IDispatch> command_dispatch;
+  ASSERT_HRESULT_SUCCEEDED(app->get_command(
+      base::win::ScopedBstr(commandid).Get(), &command_dispatch));
+  Microsoft::WRL::ComPtr<IAppCommandWeb> app_command_web;
+  ASSERT_HRESULT_SUCCEEDED(command_dispatch.As(&app_command_web));
+
+  std::vector<base::win::ScopedVariant> variant_params;
+  variant_params.reserve(kMaxParameters);
+  std::transform(parameters.begin(), parameters.end(),
+                 std::back_inserter(variant_params), [](const auto& param) {
+                   return base::win::ScopedVariant(
+                       base::UTF8ToWide(param.GetString()).c_str());
+                 });
+  for (size_t i = parameters.size(); i < kMaxParameters; ++i)
+    variant_params.emplace_back(base::win::ScopedVariant::kEmptyVariant);
+
+  ASSERT_HRESULT_SUCCEEDED(app_command_web->execute(
+      variant_params[0], variant_params[1], variant_params[2],
+      variant_params[3], variant_params[4], variant_params[5],
+      variant_params[6], variant_params[7], variant_params[8]));
+
+  EXPECT_TRUE(WaitFor(base::BindLambdaForTesting([&]() {
+    UINT status = 0;
+    EXPECT_HRESULT_SUCCEEDED(app_command_web->get_status(&status));
+    return status == COMMAND_STATUS_COMPLETE;
+  })));
+
+  DWORD exit_code = 0;
+  EXPECT_HRESULT_SUCCEEDED(app_command_web->get_exitCode(&exit_code));
+  EXPECT_EQ(exit_code, static_cast<DWORD>(expected_exit_code));
+}
+
 int RunVPythonCommand(const base::CommandLine& command_line) {
   base::CommandLine python_command = command_line;
   python_command.PrependWrapper(FILE_PATH_LITERAL("vpython3.bat"));
@@ -838,11 +1005,10 @@ void InvokeTestServiceFunction(
 }
 
 void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
-  base::FilePath source_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+  base::FilePath exe_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
   base::FilePath old_updater_path =
-      source_path.Append(FILE_PATH_LITERAL("third_party"))
-          .Append(FILE_PATH_LITERAL("updater"));
+      exe_path.Append(FILE_PATH_LITERAL("old_updater"));
 #if BUILDFLAG(CHROMIUM_BRANDING)
 #if defined(ARCH_CPU_X86_64)
   old_updater_path =
@@ -968,6 +1134,127 @@ void UninstallApp(UpdaterScope scope, const std::string& app_id) {
       key.Open(UpdaterScopeToHKeyRoot(scope), CLIENTS_KEY, Wow6432(KEY_WRITE)),
       ERROR_SUCCESS);
   ASSERT_EQ(key.DeleteKey(base::SysUTF8ToWide(app_id).c_str()), ERROR_SUCCESS);
+}
+
+void RunOfflineInstall(UpdaterScope scope) {
+  constexpr wchar_t kTestRegKey[] = L"software\\updater\\test";
+  constexpr wchar_t kTestRegValue[] = L"install_result";
+  constexpr char kManifestFormat[] =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<response protocol=\"3.0\">"
+      "  <app appid=\"{CDABE316-39CD-43BA-8440-6D1E0547AEE6}\" status=\"ok\">"
+      "    <updatecheck status=\"ok\">"
+      "      <manifest version=\"1.2.3.4\">"
+      "        <packages>"
+      "          <package hash_sha256=\"sha256hash_foobar\""
+      "            name=\"reg.exe\" required=\"true\" size=\"%lld\"/>"
+      "        </packages>"
+      "        <actions>"
+      "          <action event=\"install\" needsadmin=\"false\""
+      "            run=\"reg.exe\""
+      "            arguments=\"ADD HKCU\\%ls /t REG_DWORD /v %ls /d 123 /f\"/>"
+      "        </actions>"
+      "      </manifest>"
+      "    </updatecheck>"
+      "    <data index=\"verboselogging\" name=\"install\" status=\"ok\">"
+      "      {\"distribution\": { \"verbose_logging\": true}}"
+      "    </data>"
+      "  </app>"
+      "</response>";
+
+  DeleteRegKey(HKEY_CURRENT_USER, kTestRegKey);
+
+  wchar_t reg_exe_path[MAX_PATH] = {0};
+  DWORD size = ExpandEnvironmentStrings(L"%SystemRoot%\\System32\\reg.exe",
+                                        reg_exe_path, std::size(reg_exe_path));
+  ASSERT_TRUE(size > 0 && size < MAX_PATH);
+  const base::FilePath exe_path(reg_exe_path);
+  ASSERT_TRUE(base::PathExists(exe_path));
+
+  base::ScopedTempDir temp_dir;
+  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath& offline_dir = temp_dir.GetPath();
+
+  // Create manifest file.
+  base::FilePath manifest_path =
+      offline_dir.Append(FILE_PATH_LITERAL("OfflineManifest.gup"));
+  int64_t exe_size = 0;
+  EXPECT_TRUE(base::GetFileSize(exe_path, &exe_size));
+  const std::string manifest =
+      base::StringPrintf(kManifestFormat, exe_size, kTestRegKey, kTestRegValue);
+  EXPECT_TRUE(base::WriteFile(manifest_path, manifest));
+
+  // Copy app installer.
+  ASSERT_TRUE(base::CopyFile(exe_path,
+                             offline_dir.Append(FILE_PATH_LITERAL("reg.exe"))));
+
+  // Trigger offline install.
+  const absl::optional<base::FilePath> updater_exe =
+      GetInstalledExecutablePath(scope);
+  ASSERT_TRUE(updater_exe.has_value());
+  base::CommandLine offline_install_cmd(updater_exe.value());
+
+  offline_install_cmd.AppendSwitch(kEnableLoggingSwitch);
+  offline_install_cmd.AppendSwitchASCII(kLoggingModuleSwitch,
+                                        kLoggingModuleSwitchValue);
+  if (scope == UpdaterScope::kSystem)
+    offline_install_cmd.AppendSwitch(kSystemSwitch);
+
+  offline_install_cmd.AppendSwitchASCII(
+      updater::kHandoffSwitch,
+      "appguid={CDABE316-39CD-43BA-8440-6D1E0547AEE6}&lang=en");
+  offline_install_cmd.AppendSwitchASCII(
+      updater::kSessionIdSwitch, "{E85204C6-6F2F-40BF-9E6C-4952208BB977}");
+  offline_install_cmd.AppendSwitchNative(updater::kOfflineDirSwitch,
+                                         offline_dir.value());
+
+  base::Process process = base::LaunchProcess(offline_install_cmd, {});
+  EXPECT_TRUE(process.IsValid());
+
+  // Dismiss the installation completion dialog, then wait for the process exit.
+  WaitFor(base::BindRepeating(
+      [](const wchar_t* test_key_name, const wchar_t* test_value_name) {
+        // Enumerate the top-level dialogs to find the setup dialog.
+        WindowEnumerator(
+            ::GetDesktopWindow(), base::BindRepeating([](HWND hwnd) {
+              return WindowEnumerator::IsSystemDialog(hwnd) &&
+                     base::Contains(WindowEnumerator::GetWindowText(hwnd),
+                                    GetLocalizedStringF(
+                                        IDS_INSTALLER_DISPLAY_NAME_BASE,
+                                        GetLocalizedString(
+                                            IDS_FRIENDLY_COMPANY_NAME_BASE)));
+            }),
+            base::BindRepeating([](HWND hwnd) {
+              // Enumerates the dialog items to search for installation complete
+              // message. Once found, close the dialog.
+              WindowEnumerator(
+                  hwnd, base::BindRepeating([](HWND hwnd) {
+                    return base::Contains(
+                        WindowEnumerator::GetWindowText(hwnd),
+                        GetLocalizedString(
+                            IDS_BUNDLE_INSTALLED_SUCCESSFULLY_BASE));
+                  }),
+                  base::BindRepeating([](HWND hwnd) {
+                    ::PostMessage(::GetParent(hwnd), WM_CLOSE, 0, 0);
+                  }))
+                  .Run();
+            }))
+            .Run();
+
+        if (IsUpdaterRunning())
+          return false;
+
+        // Wait for the app installer writes the expected reg value.
+        base::win::RegKey key;
+        DWORD value = 0;
+        return (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, test_key_name,
+                                          Wow6432(KEY_QUERY_VALUE)) &&
+                ERROR_SUCCESS == key.ReadValueDW(test_value_name, &value) &&
+                value == 123);
+      },
+      kTestRegKey, kTestRegValue));
+
+  DeleteRegKey(HKEY_CURRENT_USER, kTestRegKey);
 }
 
 }  // namespace test

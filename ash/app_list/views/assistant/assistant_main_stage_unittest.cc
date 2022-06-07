@@ -34,6 +34,16 @@ SkColor GetCenterColor(views::Separator* separator) {
 
 class AssistantMainStageTest : public AssistantAshTestBase {
  public:
+  // AssistantAshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{chromeos::features::kDarkLightMode,
+                               features::kNotificationsRefresh});
+
+    AssistantAshTestBase::SetUp();
+  }
+
   void TearDown() override {
     // NativeTheme instance will be re-used across test cases. Make sure that a
     // test case ends with setting ShouldUseDarkColors to false.
@@ -42,6 +52,9 @@ class AssistantMainStageTest : public AssistantAshTestBase {
 
     AssistantAshTestBase::TearDown();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(AssistantMainStageTest, DarkAndLightTheme) {

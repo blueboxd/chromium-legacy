@@ -44,10 +44,6 @@ const base::Feature kEnableArcNearbyShare{"ArcNearbySharing",
 const base::Feature kEnablePerVmCoreScheduling{
     "ArcEnablePerVmCoreScheduling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether to pass throttling notifications to Android side.
-const base::Feature kEnableThrottlingNotification{
-    "ArcEnableThrottlingNotification", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to use ARC TTS caching to optimize ARC boot.
 const base::Feature kEnableTTSCaching{"ArcEnableTTSCaching",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -97,11 +93,6 @@ const base::FeatureParam<int> kLogdConfigSize{&kLogdConfig, "size", 0};
 const base::Feature kKeyboardShortcutHelperIntegrationFeature{
     "ArcKeyboardShortcutHelperIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls experimental 64-bit native bridge support for ARC on boards that
-// have 64-bit native bridge support available but not yet enabled.
-const base::Feature kNativeBridge64BitSupportExperimentFeature{
-    "ArcNativeBridge64BitSupportExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Toggles between native bridge implementations for ARC.
 // Note, that we keep the original feature name to preserve
 // corresponding metrics.
@@ -145,7 +136,7 @@ const base::Feature kSaveRawFilesOnTracing{"ArcSaveRawFilesOnTracing",
 
 // When enabled, unclaimed USB device will be attached to ARCVM by default.
 const base::Feature kUsbDeviceDefaultAttachToArcVm{
-    "UsbDeviceDefaultAttachToArcVm", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UsbDeviceDefaultAttachToArcVm", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARC USB Storage UI feature.
 // When enabled, chrome://settings and Files.app will ask if the user wants
@@ -235,6 +226,11 @@ const base::FeatureParam<int> kVmBalloonPolicyReclaimKiB{&kVmBalloonPolicy,
 // be killed by low memory killer in ARCVM.
 const base::Feature kVmGmsCoreLowMemoryKillerProtection{
     "ArcVmGmsCoreLowMemoryKillerProtection", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls experimental key to enable pre-ANR handling for BroadcastQueue in
+// ARCVM.
+const base::Feature kVmBroadcastPreNotifyANR{"ArcVmBroadcastPreAnrHandling",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If set, enable responsive balloon sizing. Concierge will listen on a VSOCK
 // for connections from LMKD in Android. When LMKD is about to kill an App, it

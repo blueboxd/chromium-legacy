@@ -43,9 +43,9 @@ class Autofill_CreditCardFill;
 namespace autofill {
 
 class AutofillField;
+class AutofillOfferData;
 class CreditCard;
 class FormEventLoggerBase;
-struct AutofillOfferData;
 
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
@@ -2128,6 +2128,9 @@ int GetFieldTypeUserEditStatusMetric(
     ServerFieldType server_type,
     AutofillMetrics::AutofilledFieldUserEditingStatusMetric metric);
 #endif
+
+const std::string PaymentsRpcResultToMetricsSuffix(
+    AutofillClient::PaymentsRpcResult result);
 
 }  // namespace autofill
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_AUTOFILL_METRICS_H_

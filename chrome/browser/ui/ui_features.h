@@ -33,7 +33,6 @@ extern const base::Feature kChromeTipsInMainMenuNewBadge;
 #endif
 
 extern const base::Feature kChromeWhatsNewUI;
-extern const base::FeatureParam<bool> kChromeWhatsNewUIFeedbackButton;
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const base::Feature kChromeWhatsNewInMainMenuNewBadge;
@@ -46,8 +45,6 @@ extern const base::Feature kAccessCodeCastUI;
 extern const base::Feature kDisplayOpenLinkAsProfile;
 
 extern const base::Feature kEvDetailsInPageInfo;
-
-extern const base::Feature kExtensionsMenuAccessControl;
 
 extern const base::Feature kForceSignInReauth;
 
@@ -62,7 +59,6 @@ extern const base::Feature kScrollableTabStripButtons;
 
 // TODO(pbos): Once kReadLater is cleaned up on Desktop, move definition into
 // ui_features.cc. This is currently temporarily in reading_list_switches.h.
-extern const base::Feature kSidePanelDragAndDrop;
 extern const base::Feature kSidePanelImprovedClobbering;
 
 extern const base::Feature kSidePanelJourneys;
@@ -184,8 +180,6 @@ extern const base::Feature kToolbarUseHardwareBitmapDraw;
 extern const base::Feature kUnifiedSidePanel;
 
 extern const base::Feature kWebUIBubblePerProfilePersistence;
-
-extern const base::Feature kWebUIDownloadShelf;
 
 extern const base::Feature kWebUITabStrip;
 

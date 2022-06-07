@@ -94,7 +94,8 @@ std::string ClientHeadless::GetEmailAddressForAccessTokenAccount() const {
 }
 
 std::string ClientHeadless::GetSignedInEmail() const {
-  return common_dependencies_->GetSignedInEmail(GetWebContents());
+  return common_dependencies_->GetSignedInEmail(
+      GetWebContents()->GetBrowserContext());
 }
 
 absl::optional<std::pair<int, int>> ClientHeadless::GetWindowSize() const {
@@ -122,8 +123,7 @@ autofill::PersonalDataManager* ClientHeadless::GetPersonalDataManager() const {
 }
 
 WebsiteLoginManager* ClientHeadless::GetWebsiteLoginManager() const {
-  // TODO(b/201964911): return instance.
-  return nullptr;
+  return website_login_manager_.get();
 }
 
 password_manager::PasswordChangeSuccessTracker*
@@ -168,6 +168,11 @@ ScriptExecutorUiDelegate* ClientHeadless::GetScriptExecutorUiDelegate() {
 
 bool ClientHeadless::MustUseBackendData() const {
   return false;
+}
+
+void ClientHeadless::GetAnnotateDomModelVersion(
+    base::OnceCallback<void(absl::optional<int64_t>)> callback) const {
+  std::move(callback).Run(absl::nullopt);
 }
 
 void ClientHeadless::Shutdown(Metrics::DropOutReason reason) {}

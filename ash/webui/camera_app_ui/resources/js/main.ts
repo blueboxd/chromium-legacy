@@ -6,11 +6,11 @@ import {
   getDefaultWindowSize,
 } from './app_window.js';
 import {assert, assertInstanceof} from './assert.js';
+import {DEPLOYED_VERSION} from './deployed_version.js';
 import {CameraManager} from './device/index.js';
 import {ModeConstraints} from './device/type.js';
 import * as dom from './dom.js';
 import {reportError} from './error.js';
-import * as focusRing from './focus_ring.js';
 import {GalleryButton} from './gallerybutton.js';
 import {I18nString} from './i18n_string.js';
 import {Intent} from './intent.js';
@@ -19,6 +19,7 @@ import * as filesystem from './models/file_system.js';
 import * as loadTimeData from './models/load_time_data.js';
 import * as localStorage from './models/local_storage.js';
 import {ChromeHelper} from './mojo/chrome_helper.js';
+import {DeviceOperator} from './mojo/device_operator.js';
 import * as nav from './nav.js';
 import {PerfLogger} from './perf.js';
 import {preloadImagesList} from './preload_images.js';
@@ -42,6 +43,7 @@ import {Dialog} from './views/dialog.js';
 import {View} from './views/view.js';
 import {Warning, WarningType} from './views/warning.js';
 import {WaitableEvent} from './waitable_event.js';
+import {windowController} from './window_controller.js';
 
 /**
  * The app window instance which is used for communication with Tast tests. For
@@ -107,11 +109,13 @@ export class App {
       }
     }, {passive: false, capture: true});
 
+    window.addEventListener('resize', () => nav.layoutShownViews());
+    windowController.addListener(() => nav.layoutShownViews());
+
     util.setupI18nElements(document.body);
     this.setupToggles();
     localStorage.cleanup();
     this.setupEffect();
-    focusRing.initialize();
 
     // Set up views navigation by their DOM z-order.
     nav.setup([
@@ -213,6 +217,7 @@ export class App {
    * Starts the app by loading the model and opening the camera-view.
    */
   async start(launchType: metrics.LaunchType): Promise<void> {
+    await DeviceOperator.initializeInstance();
     document.documentElement.dir = loadTimeData.getTextDirection();
     try {
       await filesystem.initialize();
@@ -461,6 +466,15 @@ let instance: App|null = null;
         perfLogger.stop(event, extras);
       }
     });
+  }
+
+  if (DEPLOYED_VERSION !== undefined) {
+    // eslint-disable-next-line no-console
+    console.log(
+        `Local override enabled for CCA (${DEPLOYED_VERSION}). ` +
+        'To disable local override, ' +
+        'remove /etc/camera/cca/js/deployed_version.js on device.');
+    toast.showDebugMessage(`Local override enabled (${DEPLOYED_VERSION})`);
   }
 
   instance = new App({perfLogger, intent, facing, mode});

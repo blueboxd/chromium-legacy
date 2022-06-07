@@ -403,12 +403,15 @@ class CONTENT_EXPORT RenderFrameImpl
                         const int32_t flags) override;
 
   // blink::mojom::ResourceLoadInfoNotifier implementation:
+#if BUILDFLAG(IS_ANDROID)
+  void NotifyUpdateUserGestureCarryoverInfo() override;
+#endif
   void NotifyResourceRedirectReceived(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr redirect_response) override;
   void NotifyResourceResponseReceived(
       int64_t request_id,
-      const GURL& response_url,
+      const url::SchemeHostPort& final_response_url,
       network::mojom::URLResponseHeadPtr head,
       network::mojom::RequestDestination request_destination) override;
   void NotifyResourceTransferSizeUpdated(int64_t request_id,
@@ -571,6 +574,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillFreezePage() override;
   void DidOpenDocumentInputStream(const blink::WebURL& url) override;
   void DidSetPageLifecycleState() override;
+  void NotifyCurrentHistoryItemChanged() override;
   void DidUpdateCurrentHistoryItem() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void AbortClientNavigation() override;
@@ -871,16 +875,6 @@ class CONTENT_EXPORT RenderFrameImpl
       bool save_with_empty_url,
       mojo::PendingRemote<mojom::FrameHTMLSerializerHandler> handler_remote)
       override;
-
-  // IPC message handlers ------------------------------------------------------
-  //
-  // The documentation for these functions should be in
-  // content/common/*_messages.h for the message that the function is handling.
-  void OnShowContextMenu(const gfx::Point& location);
-  void OnMoveCaret(const gfx::Point& point);
-  void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
-  void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
-  void OnSuppressFurtherDialogs();
 
   // Callback scheduled from SerializeAsMHTML for when writing serialized
   // MHTML to the handle has been completed in the file thread.

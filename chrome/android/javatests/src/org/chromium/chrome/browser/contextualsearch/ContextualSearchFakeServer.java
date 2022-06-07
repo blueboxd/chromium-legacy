@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Assert;
 
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
@@ -40,8 +41,6 @@ class ContextualSearchFakeServer
         implements ContextualSearchNetworkCommunicator, OverlayPanelContentFactory {
     private static final String SIMPLE_SERP_URL =
             "/chrome/test/data/android/contextualsearch/simple_serp.html";
-
-    static final long LOGGED_EVENT_ID = 1L << 50; // Arbitrary value larger than 32 bits.
 
     private final ContextualSearchPolicy mPolicy;
 
@@ -71,6 +70,9 @@ class ContextualSearchFakeServer
     private ContextualSearchContext mSearchContext;
 
     private boolean mDidEverCallWebContentsOnShow;
+
+    /** An expected search, to be returned by this fake server when non-null. */
+    private FakeResolveSearch mExpectedFakeResolveSearch;
 
     /**
      * Provides access to the test host so this fake server can drive actions when simulating a
@@ -140,6 +142,10 @@ class ContextualSearchFakeServer
 
     boolean isContentVisible() {
         return mContentsObserver.isVisible();
+    }
+
+    WebContentsObserver getContentsObserver() {
+        return mContentsObserver;
     }
 
     //============================================================================================
@@ -537,6 +543,7 @@ class ContextualSearchFakeServer
         mActuallyLoadALiveSerp = false;
         mIsExactResolve = false;
         mSearchContext = null;
+        mExpectedFakeResolveSearch = null;
     }
 
     /**
@@ -571,6 +578,16 @@ class ContextualSearchFakeServer
     @VisibleForTesting
     ContextualSearchContext getSearchContext() {
         return mSearchContext;
+    }
+
+    /**
+     * Sets the result of the resolve request that this fake server is expected to return.
+     * @param nodeId the node that will trigger this resolve when selected.
+     * @param resolvedSearchTermResponse the response from this fake server to return from
+     *      the fake resolve request.
+     */
+    void setExpectations(String nodeId, ResolvedSearchTerm resolvedSearchTermResponse) {
+        mExpectedFakeResolveSearch = new FakeResolveSearch(nodeId, resolvedSearchTermResponse);
     }
 
     //============================================================================================
@@ -652,6 +669,8 @@ class ContextualSearchFakeServer
         registerFakeResolveSearch(new FakeResolveSearch("term", "Term"));
         registerFakeResolveSearch(new FakeResolveSearch("resolution", "Resolution"));
 
+        // These resolved searches are effectively deprecated.
+        // Use setExpectations() instead.
         ResolvedSearchTerm germanSearchTerm =
                 new ResolvedSearchTerm.Builder(false, 200, "Deutsche", "Deutsche")
                         .setContextLanguage("de")
@@ -669,9 +688,7 @@ class ContextualSearchFakeServer
         // Register a fake tap search that will fake a logged event ID from the server, when
         // a fake tap is done on the intelligence-logged-event-id element in the test file.
         ResolvedSearchTerm searchTermWithId =
-                new ResolvedSearchTerm.Builder(false, 200, "Intelligence", "Intelligence")
-                        .setLoggedEventId(LOGGED_EVENT_ID)
-                        .build();
+                new ResolvedSearchTerm.Builder(false, 200, "Intelligence", "Intelligence").build();
         FakeResolveSearch loggedIdFakeTapSearch =
                 new FakeResolveSearch("intelligence-logged-event-id", searchTermWithId);
         registerFakeResolveSearch(loggedIdFakeTapSearch);
@@ -703,7 +720,13 @@ class ContextualSearchFakeServer
      * @return The FakeResolveSearch with the given ID.
      */
     public FakeResolveSearch getFakeResolveSearch(String id) {
-        return mFakeResolveSearches.get(id);
+        if (mExpectedFakeResolveSearch != null) {
+            Assert.assertEquals("The expectations node ID does not match the given node!",
+                    mExpectedFakeResolveSearch.getNodeId(), id);
+            return mExpectedFakeResolveSearch;
+        } else {
+            return mFakeResolveSearches.get(id);
+        }
     }
 
     /**

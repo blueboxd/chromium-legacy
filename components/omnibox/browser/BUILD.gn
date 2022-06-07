@@ -53,6 +53,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "https_valid_in_chip.icon",
     "incognito.icon",
     "install_desktop.icon",
+    "journeys.icon",
     "keyword_search.icon",
     "offline_pin.icon",
     "page.icon",
@@ -669,6 +670,11 @@ source_set("unit_tests") {
       "//components/omnibox/browser:vector_icons",
       "//components/vector_icons:vector_icons",
     ]
+  }
+
+  if (!is_ios) {
+    sources += [ "actions/history_clusters_action_unittest.cc" ]
+    deps += [ "//components/history_clusters/core:test_support" ]
   }
 }
 

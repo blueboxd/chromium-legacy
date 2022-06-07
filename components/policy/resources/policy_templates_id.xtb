@@ -432,6 +432,18 @@ Jika Anda mengaktifkan atau tidak mengonfigurasi kebijakan ini, scroll halaman w
 
 Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks tertentu melalui URL akan dinonaktifkan.</translation>
 <translation id="1474273443907024088">Nonaktifkan TLS False Start</translation>
+<translation id="1476128579011024193">
+      Jika kebijakan ini disetel ke <ph name="POLICY_VALUE_PRIMARY_ACCOUNT" />, setelah login ke akun terkelola yang tunduk pada kebijakan ini, pengguna akan diminta membuat profil baru untuk akun tersebut.
+      Jika kebijakan ini disetel ke <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTING_DATA" />, setelah login ke akun terkelola yang tunduk pada kebijakan ini, pengguna akan diminta membuat profil baru untuk akun tersebut dengan opsi untuk menyimpan semua data penjelajahan yang ada. Opsi ini didukung di Chrome 102 dan versi yang lebih baru.
+
+      Jika kebijakan ini disetel ke <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT" />, setelah login ke akun terkelola yang tunduk pada kebijakan ini, pengguna akan diminta membuat profil baru untuk akun tersebut. Profil ini tidak akan mengizinkan akun sekunder apa pun.
+      Jika kebijakan ini disetel ke <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT_KEEP_EXISTING_DATA" />, setelah login ke akun terkelola yang tunduk pada kebijakan ini, pengguna akan diminta membuat profil baru untuk akun tersebut dengan opsi untuk menyimpan semua data penjelajahan yang ada. Profil ini tidak akan mengizinkan akun sekunder apa pun. Opsi ini didukung di Chrome 102 dan versi yang lebih baru.
+
+      Jika kebijakan ini disetel ke <ph name="POLICY_VALUE_NONE" /> atau tidak disetel, akun terkelola tidak akan memiliki batasan. Hal ini dapat menyebabkan akun terkelola menjadi akun sekunder, yang akan menonaktifkan kemampuannya untuk menerima kebijakan yang disetel di akun oleh admin.
+
+      Jika kebijakan ini disetel pada tingkat perangkat, semua akun di browser akan tunduk pada kebijakan ini.
+      Jika kebijakan ini disetel pada tingkat akun, hanya akun tersebut yang akan terpengaruh di browser.
+    </translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1479427764273213107">Menyetel kebijakan akan menentukan daftar perangkat USB yang dapat dilepas dari driver kernelnya, agar dapat langsung digunakan melalui chrome.usb API dalam aplikasi web. Entri berupa pasangan ID Vendor USB dan Kode Produk untuk mengidentifikasi hardware tertentu.
 
@@ -3631,6 +3643,7 @@ Jika kebijakan ini disetel, <ph name="PRODUCT_OS_NAME" /> hanya mengizinkan peng
 <translation id="4960597185231686653">Tanda boolean menunjukkan apakah keyboard virtual dapat memberikan input suara.</translation>
 <translation id="4970046075219007744">Izinkan aplikasi web meminta pengguna memberikan akses ke berbagai jenis file melalui File Handling API</translation>
 <translation id="4970855112942626932">Nonaktifkan login browser</translation>
+<translation id="4974091268178043378">Mode warna ChromeOS</translation>
 <translation id="4976928720873547342">Jika kebijakan ini disetel, semua jenis data yang ditentukan akan dikecualikan dari sinkronisasi, baik untuk <ph name="CHROME_SYNC_NAME" /> maupun sinkronisasi profil roaming. Hal ini berguna untuk mengurangi ukuran profil roaming atau membatasi jenis data yang diupload ke Server <ph name="CHROME_SYNC_NAME" />.
 
       Jenis data saat ini untuk kebijakan ini adalah: "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfigurations". Nama-nama tersebut peka huruf besar/kecil.</translation>
@@ -4273,6 +4286,13 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
 
           Nilai kebijakan ini hanya akan berlaku jika kebijakan <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> diaktifkan, dan tidak berlaku jika sebaliknya.</translation>
 <translation id="5697306356229823047">Laporkan pengguna perangkat</translation>
+<translation id="5698923148503075597">Jika kebijakan disetel ke Aktif, kebijakan cloud akan diutamakan jika bertentangan dengan kebijakan platform.
+
+      Jika kebijakan disetel ke Nonaktif atau tidak disetel, kebijakan platform akan diutamakan jika bertentangan dengan kebijakan cloud.
+
+      Kebijakan wajib ini memengaruhi kebijakan cloud cakupan perangkat.
+
+      Kebijakan ini hanya tersedia di <ph name="PRODUCT_NAME" />; dan tidak berpengaruh pada <ph name="GOOGLE_UPDATE_NAME" />.</translation>
 <translation id="5699770471852263667">Jika kebijakan disetel ke Aktif, penampil PDF internal di <ph name="PRODUCT_NAME" /> akan dinonaktifkan, file PDF akan dianggap sebagai hasil download, dan pengguna akan diizinkan membuka PDF dengan aplikasi default.
 
       Jika kebijakan disetel ke Nonaktif, file PDF akan dibuka kecuali jika pengguna menonaktifkan plugin PDF.
@@ -4393,6 +4413,7 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
 
       Pengguna tidak dapat mengubah setelan ini.</translation>
 <translation id="5848438019586925019">Algoritme untuk pembuatan pasangan kunci.</translation>
+<translation id="5851248808417680865">Gunakan Tema gelap</translation>
 <translation id="585270638818921943">Cegah pengguna menggunakan aplikasi Android dari sumber yang tidak tepercaya</translation>
 <translation id="5853547031212075792">Izinkan pengguna mengaktifkan Mode Khusus HTTPS</translation>
 <translation id="5859344336338527083">Menyetel kebijakan akan menentukan URL mana yang dapat menginstal ekstensi, aplikasi, dan tema. Sebelum <ph name="PRODUCT_NAME" /> 21, pengguna dapat mengklik link ke file *.crx, dan <ph name="PRODUCT_NAME" /> akan menawarkan untuk menginstal file setelah menampilkan beberapa peringatan. Setelah itu, file tersebut harus didownload dan ditarik ke halaman setelan <ph name="PRODUCT_NAME" />. Setelan ini memungkinkan URL tertentu menggunakan alur penginstalan lama yang lebih mudah.
@@ -4409,6 +4430,37 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
 
       Jika kebijakan ditetapkan ke salah (false) atau tidak ditetapkan, <ph name="PLUGIN_VM_NAME" /> tidak diizinkan mengumpulkan data.
       Jika ditetapkan ke benar (true), <ph name="PLUGIN_VM_NAME" /> dapat mengumpulkan data penggunaan <ph name="PLUGIN_VM_NAME" /> yang kemudian digabungkan dan dianalisis secara menyeluruh untuk membuat pengalaman <ph name="PLUGIN_VM_NAME" /> jadi lebih baik.</translation>
+<translation id="5874896145772824604">Kebijakan ini memberikan cara untuk mengganti daftar set yang digunakan browser untuk fitur Set Pihak Pertama.
+
+      Setiap set dalam daftar Set Pihak Pertama browser harus memenuhi persyaratan Set Pihak Pertama.
+      Set Pihak Pertama terdiri dari satu pemilik dan satu atau beberapa situs anggota. Semua situs dalam Set Pihak Pertama harus
+      berupa domain yang dapat didaftarkan yang disalurkan melalui HTTPS, terlepas dari apakah situs merupakan pemilik atau anggota.
+      Setiap situs dalam Set Pihak Pertama juga harus unik. Artinya, situs tidak boleh menjadi pemilik dan anggota secara bersamaan, ataupun
+      tercantum sebagai anggota Set Pihak Pertama lebih dari sekali.
+      Lihat https://github.com/privacycg/first-party-sets untuk mendapatkan info selengkapnya terkait Set Pihak Pertama.
+
+      Jika kebijakan ini diberikan kamus kosong, browser akan menggunakan daftar Set Pihak Pertama publik.
+
+      Untuk semua situs dalam Set Pihak Pertama dari daftar <ph name="REPLACEMENTS" />, jika suatu situs juga ada
+      di Set Pihak Pertama dalam daftar browser, situs tersebut akan dihapus dari Set Pihak Pertama browser.
+      Setelahnya, Set Pihak Pertama kebijakan akan ditambahkan ke daftar Set Pihak Pertama browser.
+
+      Untuk semua situs dalam Set Pihak Pertama dari daftar <ph name="ADDITIONS" />, jika suatu situs juga ada
+      di Set Pihak Pertama dalam daftar browser, Set Pihak pertama browser akan diupdate agar
+      Set Pihak Pertama baru dapat ditambahkan ke daftar browser. Setelah daftar browser diupdate,
+      Set Pihak Pertama kebijakan akan ditambahkan ke daftar Set Pihak Pertama browser.
+
+      Daftar Set Pihak Pertama browser mengharuskan semua situs dalam daftarnya tidak ada yang tercantum di
+      lebih dari satu set. Ketentuan ini juga berlaku untuk daftar <ph name="REPLACEMENTS" />
+      dan daftar <ph name="ADDITIONS" />. Situs juga tidak boleh ada dalam daftar
+      <ph name="REPLACEMENTS" /> dan daftar <ph name="ADDITIONS" />.
+
+      Karakter pengganti (*) tidak didukung sebagai nilai kebijakan, ataupun di Set Pihak Pertama dalam daftar ini.
+
+      Semua set yang disediakan oleh kebijakan harus berupa Set Pihak Pertama yang valid. Jika set tidak valid,
+      error yang sesuai akan ditampilkan.
+
+      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat, dan instance macOS yang dikelola melalui MDM atau dihubungkan ke domain melalui MCX.</translation>
 <translation id="5875873062228321803">Mengonfigurasi persyaratan versi minimum <ph name="PRODUCT_OS_NAME" /> yang diizinkan.
 
       Jika kebijakan ini disetel ke daftar tidak kosong:
@@ -4493,11 +4545,6 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
       Jika kebijakan disetel, pengguna tidak dapat mengubahnya. Jika tidak disetel, pengguna akan menentukan apakah header dan footer akan muncul.</translation>
 <translation id="5951418260805607969">Menampilkan notifikasi saat ruang penyimpanan hampir penuh</translation>
 <translation id="5958746038080720143">Aktifkan pengoptimalan Web Proxy Auto-Discovery (WPAD)</translation>
-<translation id="5959428851851090097">Jika kebijakan disetel ke Aktif, kebijakan cloud diutamakan jika bertentangan dengan kebijakan platform.
-
-      Jika kebijakan disetel ke Nonaktif atau tidak disetel, kebijakan platform akan diutamakan jika bertentangan dengan kebijakan cloud.
-
-      Kebijakan wajib ini memengaruhi kebijakan cloud cakupan perangkat.</translation>
 <translation id="5961137303188584693">Alamat MAC NIC bawaan perangkat</translation>
 <translation id="5963752574792883406">port 990 (blokir dapat dibatalkan hingga 01/02/2022)</translation>
 <translation id="5966615072639944554">Ekstensi yang diizinkan untuk menggunakan API pengesahan jarak jauh</translation>
@@ -4538,6 +4585,7 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
 
       Kebijakan ini hanya berlaku saat perangkat didaftarkan dengan <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> untuk <ph name="PRODUCT_NAME" />.
       Kebijakan ini selalu berlaku untuk <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="6019162469732742754">Gunakan Mode otomatis</translation>
 <translation id="6019606564278029236">Izinkan interaksi pengguna jarak jauh dengan jendela administrator di sesi bantuan jarak jauh</translation>
 <translation id="6022948604095165524">Tindakan saat permulaan</translation>
 <translation id="602318745029752898">Mengizinkan suara text-to-speech enhanced network di fitur Klik untuk Diucapkan</translation>
@@ -5282,6 +5330,15 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
 <translation id="6786666051053129545">Mengaktifkan alur Voice Match Asisten Google</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="6786967369487349613">Menyetel direktori profil roaming</translation>
+<translation id="6789319144568227749">Mengonfigurasi dukungan header permintaan non-karakter pengganti CORS.
+
+      <ph name="PRODUCT_NAME" /> versi 97 memperkenalkan dukungan untuk header permintaan non-karakter pengganti CORS. Jika skrip membuat permintaan jaringan lintas asal melalui fetch() dan XMLHttpRequest dengan header Authorization yang ditambah skrip, header tersebut harus diizinkan secara eksplisit oleh header Access-Control-Allow-Headers dalam respons preflight CORS. "Secara eksplisit" di sini berarti simbol karakter pengganti "*" tidak mencakup header Authorization. Lihat <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> untuk mengetahui detail selengkapnya.
+
+      Jika kebijakan ini tidak disetel atau disetel ke Benar (True), <ph name="PRODUCT_NAME" /> akan mendukung header permintaan non-karakter pengganti CORS dan berperilaku seperti yang dijelaskan di atas.
+
+      Jika kebijakan ini disetel ke Salah (False), Chrome akan mengizinkan simbol karakter pengganti ("*") di header Access-Control-Allow-Headers dalam respons preflight CORS untuk mencakup header Authorization.
+
+      Kebijakan Perusahaan ini bersifat sementara dan akan dihapus pada masa mendatang.</translation>
 <translation id="6789422336869764846">Jika kebijakan disetel ke Aktif atau tidak disetel, perangkat yang terdaftar akan melaporkan status tombol dev perangkat saat perangkat di-booting.
 
       Jika kebijakan disetel ke Nonaktif, perangkat yang terdaftar tidak akan melaporkan status tombol dev.</translation>
@@ -5532,6 +5589,7 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
 <translation id="7019805045859631636">Cepat</translation>
 <translation id="7025332601572838001">Mengonfigurasi perilaku ToS saat CCT pertama kali dijalankan</translation>
 <translation id="7026351325994257733">Mengizinkan konfigurasi jaringan Wi-Fi disinkronkan di seluruh perangkat <ph name="PRODUCT_OS_NAME" /> dan ponsel Android yang terhubung.</translation>
+<translation id="7027057540229843762">Gunakan Tema terang</translation>
 <translation id="7027785306666625591">Mengonfigurasi pengelolaan daya di <ph name="PRODUCT_OS_NAME" />.
 
       Kebijakan ini memungkinkan Anda mengonfigurasi cara <ph name="PRODUCT_OS_NAME" /> berperilaku saat pengguna tetap menganggur dalam beberapa waktu.</translation>
@@ -6522,15 +6580,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan,
       Jika kebijakan ini disetel ke nonaktif atau dibiarkan tidak disetel, proses masuk akan mengarahkan ke profil reguler.</translation>
 <translation id="8151299379693359769">Mengaktifkan pemeriksaan keamanan tambahan berdasarkan pengesahan jarak jauh (opsional, default: Benar).</translation>
 <translation id="8151490482515839285">Mengaktifkan pelaporan pencegahan kebocoran data</translation>
-<translation id="8151949408479239790">Mengonfigurasi dukungan header permintaan non-karakter pengganti CORS.
-
-      <ph name="PRODUCT_NAME" /> versi 97 memperkenalkan dukungan untuk header permintaan non-karakter pengganti CORS. Jika skrip membuat permintaan jaringan lintas asal melalui fetch() dan XMLHttpRequest dengan header Authorization yang ditambah skrip, header tersebut harus diizinkan secara eksplisit oleh header Access-Control-Allow-Headers dalam respons preflight CORS. "Secara eksplisit" di sini berarti simbol karakter pengganti "*" tidak mencakup header Authorization. Lihat <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> untuk mengetahui detail selengkapnya.
-
-      Jika kebijakan ini tidak disetel atau disetel ke Benar (True), <ph name="PRODUCT_NAME" /> akan mendukung header permintaan non-karakter pengganti CORS dan berperilaku seperti yang dijelaskan di atas.
-
-      Jika kebijakan ini disetel ke Salah (False), Chrome akan mengizinkan simbol karakter pengganti ("*") di header Access-Control-Allow-Headers dalam respons preflight CORS untuk mencakup header Authorization.
-
-      Kebijakan Perusahaan ini bersifat sementara dan akan dihapus setelah <ph name="PRODUCT_NAME" /> versi 103.</translation>
 <translation id="8158758865057576716">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158897487095710470">Jika kebijakan ditetapkan ke Benar (True), kolom bookmark akan ditampilkan di <ph name="PRODUCT_NAME" />. Jika kebijakan ditetapkan ke Salah (False), pengguna tidak akan melihat kolom bookmark.
 
@@ -7091,6 +7140,9 @@ Kebijakan akan dihapus pada M75.</translation>
 
       "http://acme.com/ABC" hanya cocok dalam mode 'IESiteListMode'.</translation>
 <translation id="8736538322216687231">Memaksa Mode Terbatas YouTube minimum</translation>
+<translation id="8744844164152340112">Mengontrol tema yang digunakan untuk merender UI selama OOBE dan dalam sesi (gelap/terang/otomatis).
+      Mode otomatis akan mengubah tema antara gelap dan terang secara otomatis saat matahari terbit dan tenggelam.
+      Kebijakan ini harus direkomendasikan, sehingga memungkinkan pengguna untuk mengubah tema di setelan sistem.</translation>
 <translation id="8745669971728319820">Kebijakan ini mengontrol apakah informasi ekstensi dan plugin akan dilaporkan atau tidak.
 
       Jika kebijakan <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> tidak disetel atau disetel ke nonaktif, kebijakan ini akan diabaikan.

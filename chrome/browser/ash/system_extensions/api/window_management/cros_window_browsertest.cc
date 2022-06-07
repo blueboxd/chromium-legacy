@@ -4,26 +4,41 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_install_manager.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/console_message.h"
+#include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/service_worker_context_observer.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/aura/window.h"
 
+namespace ash {
+
 namespace {
+
+constexpr SystemExtensionId kTestSystemExtensionId = {1, 2, 3, 4};
 
 static constexpr char kEventListenerCode[] = R"(
   self.addEventListener('message', async (event) => {
@@ -56,10 +71,66 @@ static constexpr char kPostTestStart[] = R"(
   }
 )";
 
+// Used to wait for a message to get added to the Service Worker console.
+// Returns the first message added to the console.
+class ServiceWorkerConsoleObserver
+    : public content::ServiceWorkerContextObserver {
+ public:
+  ServiceWorkerConsoleObserver(Profile* profile, const GURL& scope)
+      : profile_(profile), scope_(scope) {
+    auto* worker_context =
+        profile->GetDefaultStoragePartition()->GetServiceWorkerContext();
+    worker_context->AddObserver(this);
+  }
+  ~ServiceWorkerConsoleObserver() override = default;
+
+  // Get the first message added to the console since the observer was
+  // constructed. Will wait if there are no messages yet.
+  const std::u16string& WaitAndGetNextConsoleMessage() {
+    LOG(ERROR) << "Wainting for console message.";
+    if (!message_.has_value())
+      run_loop_.Run();
+
+    LOG(ERROR) << "Console message received.";
+    return message_.value();
+  }
+
+  void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
+                              const content::ConsoleMessage& message) override {
+    if (scope != scope_)
+      return;
+
+    auto* worker_context =
+        profile_->GetDefaultStoragePartition()->GetServiceWorkerContext();
+    worker_context->RemoveObserver(this);
+
+    // Shouldn't happen because we unregistered as observers.
+    DCHECK(!message_.has_value());
+
+    message_ = message.message;
+    run_loop_.Quit();
+  }
+
+ private:
+  Profile* const profile_;
+  const GURL scope_;
+
+  absl::optional<std::u16string> message_;
+  base::RunLoop run_loop_;
+};
+
+base::FilePath GetWindowManagerExtensionDir() {
+  base::FilePath test_dir;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
+  return test_dir.Append("system_extensions")
+      .Append("window_manager_extension");
+}
+
 class CrosWindowBrowserTest : public InProcessBrowserTest {
  public:
   CrosWindowBrowserTest() {
-    feature_list_.InitAndEnableFeature(ash::features::kSystemExtensions);
+    feature_list_.InitAndEnableFeature(features::kSystemExtensions);
 
     installation_ =
         web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
@@ -71,9 +142,9 @@ class CrosWindowBrowserTest : public InProcessBrowserTest {
   // chrome-untrusted://
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kSystemExtensionsDebug);
+    command_line->AppendSwitch(switches::kSystemExtensionsDebug);
     command_line->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures,
+        ::switches::kEnableBlinkFeatures,
         "BlinkExtensionChromeOS,BlinkExtensionChromeOSWindowManagement");
   }
 
@@ -122,6 +193,19 @@ class CrosWindowBrowserTest : public InProcessBrowserTest {
 
  protected:
   std::unique_ptr<web_app::TestSystemWebAppInstallation> installation_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class CrosWindowExtensionBrowserTest : public InProcessBrowserTest {
+ public:
+  CrosWindowExtensionBrowserTest() {
+    feature_list_.InitWithFeatures(
+        {features::kSystemExtensions,
+         ::features::kEnableServiceWorkersForChromeUntrusted},
+        {});
+  }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -541,6 +625,50 @@ async function cros_test() {
   RunTest(test_code);
 }
 
+IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest,
+                       CrosWindowPendingCallsToGetAllWindowsShouldNotCrash) {
+  const char test_code[] = R"(
+async function cros_test() {
+  let getWindowsPromise = chromeos.windowManagement.getWindows();
+  for (let i = 0; i < 100; i++)
+    chromeos.windowManagement.getWindows();
+  await getWindowsPromise;
+}
+  )";
+
+  RunTest(test_code);
+}
+
+IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest,
+                       CrosWindowPendingCallsToGetWindowShouldNotCrash) {
+  const char test_code[] = R"(
+async function cros_test() {
+  let [window] = await chromeos.windowManagement.getWindows();
+  let movePromise = window.moveTo(0, 0);
+  for (let i = 0; i < 100; i++)
+    window.moveTo(0, 0);
+  await movePromise;
+}
+  )";
+
+  RunTest(test_code);
+}
+
+IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest,
+                       CrosWindowPendingCallsToGetWidgetShouldNotCrash) {
+  const char test_code[] = R"(
+async function cros_test() {
+  let [window] = await chromeos.windowManagement.getWindows();
+  let fullscreenPromise = window.setFullscreen(true);
+  for (let i = 0; i < 100; i++)
+    window.setFullscreen(true);
+  await fullscreenPromise;
+}
+  )";
+
+  RunTest(test_code);
+}
+
 // Tests that the CrosWindowManagement object is an EventTarget.
 IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest, CrosWindowManagementEventTarget) {
   const char test_code[] = R"(
@@ -559,3 +687,49 @@ async function cros_test() {
 
   RunTest(test_code);
 }
+
+IN_PROC_BROWSER_TEST_F(CrosWindowBrowserTest, CrosAcceleratorEventIdl) {
+  const char test_code[] = R"(
+async function cros_test() {
+  assert_true(chromeos.CrosAcceleratorEvent !== undefined, 'event');
+  let accelerator_event = new chromeos.CrosAcceleratorEvent(
+     'acceleratordown', {acceleratorName: 'close-window', repeat: false});
+  assert_equals(accelerator_event.type, 'acceleratordown', 'event type');
+  assert_equals(accelerator_event.acceleratorName, 'close-window');
+  assert_false(accelerator_event.repeat);
+  assert_true(accelerator_event.bubbles, 'bubbles');
+  assert_false(accelerator_event.cancelable, 'cancelable');
+}
+  )";
+
+  RunTest(test_code);
+}
+
+IN_PROC_BROWSER_TEST_F(CrosWindowExtensionBrowserTest, StartEvent) {
+  auto* provider = SystemExtensionsProvider::Get(browser()->profile());
+  auto& install_manager = provider->install_manager();
+
+  // TODO(b/230811571): Rather than using the console to wait for the
+  // observer to get called, we should add support for running async functions
+  // to content::ServiceWorkerContext::ExecuteScriptForTest.
+  ServiceWorkerConsoleObserver sw_console_observer(
+      browser()->profile(),
+      GURL("chrome-untrusted://system-extension-echo-01020304/"));
+
+  base::RunLoop run_loop;
+  LOG(ERROR) << "Starting installation.";
+  install_manager.InstallUnpackedExtensionFromDir(
+      GetWindowManagerExtensionDir(),
+      base::BindLambdaForTesting([&](InstallStatusOrSystemExtensionId result) {
+        ASSERT_TRUE(result.ok());
+        ASSERT_EQ(kTestSystemExtensionId, result.value());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  LOG(ERROR) << "Installation finished.";
+
+  EXPECT_EQ(u"start event fired",
+            sw_console_observer.WaitAndGetNextConsoleMessage());
+}
+
+}  //  namespace ash

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {MultiDeviceBrowserProxyImpl, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubFeatureAccessStatus, Router, routes, setContactManagerForTesting, setNearbyShareSettingsForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -28,8 +29,17 @@ suite('Multidevice', function() {
    * @param {!MultiDevicePageContentData}
    */
   function setPageContentData(newPageContentData) {
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'settings.updateMultidevicePageContentData', newPageContentData);
+    flush();
+  }
+
+  /**
+   * Sets screen lock status via WebUI Listener and flushes.
+   */
+  function setScreenLockStatus(chromeStatus, phoneStatus) {
+    webUIListenerCallback('settings.OnEnableScreenLockChanged', chromeStatus);
+    webUIListenerCallback('settings.OnScreenLockStatusChanged', phoneStatus);
     flush();
   }
 
@@ -199,6 +209,12 @@ suite('Multidevice', function() {
 
     loadTimeData.overrideValues({
       isNearbyShareSupported: true,
+    });
+    loadTimeData.overrideValues({
+      isChromeosScreenLockEnabled: false,
+    });
+    loadTimeData.overrideValues({
+      isPhoneScreenLockEnabled: false,
     });
 
     multidevicePage = document.createElement('settings-multidevice-page');
@@ -753,6 +769,13 @@ suite('Multidevice', function() {
     await fakeSettings.setEnabled(newEnabledState);
     await flushAsync();
     assertEquals(newEnabledState, multidevicePage.get('settings.enabled'));
+  });
+
+  test('Screen lock changes propagate to settings property', () => {
+    setScreenLockStatus(/* chromeStatus= */ true, /* phoneStatus= */ true);
+
+    assertTrue(multidevicePage.isChromeosScreenLockEnabled_);
+    assertTrue(multidevicePage.isPhoneScreenLockEnabled_);
   });
 
   suite('Background Scanning Enabled', function() {

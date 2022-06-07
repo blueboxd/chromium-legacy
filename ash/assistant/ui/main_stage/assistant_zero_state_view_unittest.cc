@@ -8,6 +8,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/colors/assistant_colors.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -24,11 +25,12 @@ namespace {
 using AssistantZeroStateViewUnittest = AssistantAshTestBase;
 
 TEST_F(AssistantZeroStateViewUnittest, Theme) {
-  ASSERT_FALSE(chromeos::features::IsDarkLightModeEnabled());
-
   // ProductivityLauncher uses DarkLightMode colors.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kProductivityLauncher);
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{}, /*disabled_features=*/{
+          chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
+          features::kProductivityLauncher});
 
   ShowAssistantUi();
 

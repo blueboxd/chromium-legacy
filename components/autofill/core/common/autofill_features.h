@@ -45,6 +45,8 @@ extern const base::Feature kAutofillAllowDuplicateFormSubmissions;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillAllowNonHttpActivation;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillInferCountryCallingCode;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillComplementCountryCodeOnImport;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillConsiderPlaceholderForParsing;
@@ -56,6 +58,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillCreateDataForTest;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillFillAndImportFromMoreFields;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillFillCreditCardAsPerFormatString;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillDelayPopupControllerDeletion;
 COMPONENT_EXPORT(AUTOFILL) extern const base::Feature kAutofillDisableFilling;
@@ -72,6 +76,8 @@ extern const base::Feature kAutofillEnableCompatibilitySupportForBirthdates;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableDependentLocalityParsing;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillEnableExtendedAddressFormats;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableImportWhenMultiplePhoneNumbers;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableMultiStepImports;
@@ -80,6 +86,8 @@ extern const base::FeatureParam<bool> kAutofillEnableMultiStepImportComplements;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<base::TimeDelta>
     kAutofillMultiStepImportCandidateTTL;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillEnableParsingEmptyPhoneNumberLabels;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableRankingFormula;
 COMPONENT_EXPORT(AUTOFILL)
@@ -111,6 +119,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillExtractAllDatalists;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableSupportForPhoneNumberTrunkTypes;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillRefillModifiedCreditCardExpirationDates;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillTypeSpecificPopupWidth;
 COMPONENT_EXPORT(AUTOFILL)
@@ -158,6 +168,9 @@ extern const base::Feature kAutofillRemoveInvalidPhoneNumberOnImport;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRemoveInaccessibleProfileValues;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<bool>
+    kAutofillRemoveInaccessibleProfileValuesOnStartup;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRetrieveOverallPredictionsFromCache;
 COMPONENT_EXPORT(AUTOFILL) extern const base::Feature kAutofillSaveAndFillVPA;
 COMPONENT_EXPORT(AUTOFILL)
@@ -168,6 +181,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillSharedAutofill;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool> kAutofillSharedAutofillRelaxedParam;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillShowManualFallbackInContextMenu;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillShowTypePredictions;
 COMPONENT_EXPORT(AUTOFILL)
@@ -226,12 +241,6 @@ extern const char kAutofillUseMobileLabelDisambiguationParameterShowAll[];
 COMPONENT_EXPORT(AUTOFILL)
 bool IsMacViewsAutofillPopupExperimentEnabled();
 #endif  // BUILDFLAG(IS_APPLE)
-
-#if BUILDFLAG(IS_IOS)
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature
-    kAutofillEnableNewAddressProfileCreationInSettingsOnIOS;
-#endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(AUTOFILL)

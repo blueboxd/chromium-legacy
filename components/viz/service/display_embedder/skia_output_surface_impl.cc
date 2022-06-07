@@ -234,10 +234,6 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
   client_ = client;
 }
 
-void SkiaOutputSurfaceImpl::BindFramebuffer() {
-  // TODO(penghuang): remove this method when GLRenderer is removed.
-}
-
 void SkiaOutputSurfaceImpl::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(capabilities().supports_dc_layers);
@@ -628,7 +624,9 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   return current_paint_->recorder()->getCanvas();
 }
 
-void SkiaOutputSurfaceImpl::EndPaint(base::OnceClosure on_finished) {
+void SkiaOutputSurfaceImpl::EndPaint(
+    base::OnceClosure on_finished,
+    base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_paint_);
   auto ddl = current_paint_->recorder()->detach();
@@ -653,7 +651,8 @@ void SkiaOutputSurfaceImpl::EndPaint(base::OnceClosure on_finished) {
         &SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
         base::Unretained(impl_on_gpu_.get()), std::move(ddl),
         std::move(overdraw_ddl), std::move(images_in_current_paint_),
-        resource_sync_tokens_, std::move(on_finished), draw_rectangle_);
+        resource_sync_tokens_, std::move(on_finished),
+        std::move(return_release_fence_cb), draw_rectangle_);
     EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
                    /*make_current=*/true, /*need_framebuffer=*/true);
     draw_rectangle_.reset();
@@ -662,7 +661,8 @@ void SkiaOutputSurfaceImpl::EndPaint(base::OnceClosure on_finished) {
         &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
         base::Unretained(impl_on_gpu_.get()), current_paint_->mailbox(),
         std::move(ddl), std::move(images_in_current_paint_),
-        resource_sync_tokens_, std::move(on_finished));
+        resource_sync_tokens_, std::move(on_finished),
+        std::move(return_release_fence_cb));
     EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
                    /*make_current=*/true, /*need_framebuffer=*/false);
   }
@@ -995,9 +995,6 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
     DCHECK(damage_of_current_buffer_);
   }
 
-  // texture_in_use_responses is used for GLRenderer only.
-  DCHECK(params.texture_in_use_responses.empty());
-
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
   client_->DidReceiveSwapBuffersAck(params.swap_response.timings,
@@ -1176,38 +1173,13 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
   return GrBackendFormat();
 }
 
-uint32_t SkiaOutputSurfaceImpl::GetFramebufferCopyTextureFormat() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  return GL_RGB;
-}
-
 bool SkiaOutputSurfaceImpl::IsDisplayedAsOverlayPlane() const {
   return is_displayed_as_overlay_;
-}
-
-unsigned SkiaOutputSurfaceImpl::GetOverlayTextureId() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return 0;
 }
 
 gpu::Mailbox SkiaOutputSurfaceImpl::GetOverlayMailbox() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return last_swapped_mailbox_;
-}
-
-bool SkiaOutputSurfaceImpl::HasExternalStencilTest() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  return false;
-}
-
-void SkiaOutputSurfaceImpl::ApplyExternalStencil() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-}
-
-unsigned SkiaOutputSurfaceImpl::UpdateGpuFence() {
-  return 0;
 }
 
 void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(

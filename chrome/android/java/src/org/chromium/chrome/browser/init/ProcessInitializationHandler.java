@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.photo_picker.DecoderService;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
@@ -85,7 +86,6 @@ import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity;
 import org.chromium.chrome.browser.signin.SigninCheckerProvider;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
-import org.chromium.chrome.browser.tasks.tab_management.PriceTrackingUtilities;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
 import org.chromium.chrome.browser.usb.UsbNotificationManager;
 import org.chromium.chrome.browser.util.AfterStartupTaskUtils;
@@ -114,7 +114,6 @@ import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.ContactsPicker;
 import org.chromium.content_public.browser.ContactsPickerListener;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.PhotoPicker;
@@ -182,13 +181,6 @@ public class ProcessInitializationHandler {
      * Performs the shared class initialization.
      */
     protected void handlePreNativeInitialization() {
-        if (CachedFeatureFlags.isEnabled(
-                    ChromeFeatureList
-                            .GIVE_JAVA_UI_THREAD_DEFAULT_TASK_TRAITS_USER_BLOCKING_PRIORITY)) {
-            UiThreadTaskTraits.DEFAULT
-                    .setTaskPriorityToUserBlockingForUiThreadDefaultTaskPriorityExperiment();
-        }
-
         BrowserTaskExecutor.register();
         // This function controls whether BrowserTaskExecutor posts pre-native bootstrap tasks at
         // the front or back of the Looper's queue.
@@ -474,7 +466,7 @@ public class ProcessInitializationHandler {
             new OptimizationGuideBridgeFactory(registeredTypesAllowList)
                     .create()
                     .onDeferredStartup();
-            if (PriceTrackingUtilities.isPriceTrackingEligible()
+            if (PriceTrackingFeatures.isPriceTrackingEligible()
                     && ShoppingPersistedTabData.isPriceTrackingWithOptimizationGuideEnabled()) {
                 ShoppingPersistedTabData.onDeferredStartup();
             }

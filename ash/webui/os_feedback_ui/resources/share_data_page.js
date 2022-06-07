@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import './os_feedback_shared_css.js';
+import './file_attachment.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -80,9 +81,10 @@ export class ShareDataPageElement extends PolymerElement {
    * @protected
    */
   handleSendButtonClicked_(e) {
+    this.getElement_('#buttonSend').disabled = true;
+
     e.stopPropagation();
-    // TODO(xiangdongkong): Disable the button to prevent sending the same
-    // report again.
+
     this.dispatchEvent(new CustomEvent('continue-click', {
       composed: true,
       bubbles: true,
@@ -130,6 +132,14 @@ export class ShareDataPageElement extends PolymerElement {
       };
     }
     return report;
+  }
+
+  /**
+   * When starting a new report, the send report button should be
+   * re-enabled.
+   */
+  reEnableSendReportButton() {
+    this.getElement_('#buttonSend').disabled = false;
   }
 }
 

@@ -167,13 +167,13 @@ ClientStatus ExtractJsFlowActionReturnValue(
   return ClientStatus(static_cast<ProcessedActionStatusProto>(*flow_status));
 }
 
-namespace {
-
 std::string SerializeToBase64(const google::protobuf::MessageLite* proto) {
   std::string serialized_result_base64;
   base::Base64Encode(proto->SerializeAsString(), &serialized_result_base64);
   return serialized_result_base64;
 }
+
+namespace {
 
 absl::optional<std::string> SerializeActionResult(
     const ProcessedActionProto& processed_action) {
@@ -214,6 +214,9 @@ absl::optional<std::string> SerializeActionResult(
       break;
     case ProcessedActionProto::kSaveSubmittedPasswordResult:
       proto = &processed_action.save_submitted_password_result();
+      break;
+    case ProcessedActionProto::kExternalActionResult:
+      proto = &processed_action.external_action_result();
       break;
     case ProcessedActionProto::RESULT_DATA_NOT_SET:
       return absl::nullopt;

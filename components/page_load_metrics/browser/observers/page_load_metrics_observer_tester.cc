@@ -279,7 +279,7 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
   }
 
   blink::mojom::ResourceLoadInfo resource_load_info;
-  resource_load_info.final_url = info.origin_of_final_url.GetURL();
+  resource_load_info.final_url = info.final_url.GetURL();
   resource_load_info.was_cached = info.was_cached;
   resource_load_info.raw_body_bytes = info.raw_body_bytes;
   resource_load_info.total_received_bytes =
@@ -313,11 +313,15 @@ void PageLoadMetricsObserverTester::SimulateAppEnterBackground() {
 }
 
 void PageLoadMetricsObserverTester::SimulateMediaPlayed() {
+  SimulateMediaPlayed(web_contents()->GetMainFrame());
+}
+
+void PageLoadMetricsObserverTester::SimulateMediaPlayed(
+    content::RenderFrameHost* rfh) {
   content::WebContentsObserver::MediaPlayerInfo video_type(
       true /* has_video*/, true /* has_audio */);
-  content::RenderFrameHost* render_frame_host = web_contents()->GetMainFrame();
   metrics_web_contents_observer_->MediaStartedPlaying(
-      video_type, content::MediaPlayerId(render_frame_host->GetGlobalId(), 0));
+      video_type, content::MediaPlayerId(rfh->GetGlobalId(), 0));
 }
 
 void PageLoadMetricsObserverTester::SimulateCookieAccess(

@@ -17,6 +17,7 @@
 #include "ash/wm/desks/templates/restore_data_collector.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/guid.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -174,6 +175,10 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   Desk* GetNextDesk(bool use_target_active_desk = true) const;
   Desk* GetPreviousDesk(bool use_target_active_desk = true) const;
 
+  // Returns the desk that matches the desk_uuid, and returns null if no matches
+  // found.
+  Desk* GetDeskByUuid(const base::GUID& desk_uuid) const;
+
   // Creates a new desk. CanCreateDesks() must be checked before calling this.
   void NewDesk(DesksCreationRemovalSource source);
 
@@ -280,6 +285,9 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
 
   int GetDeskIndex(const Desk* desk) const;
 
+  // Fills `out_desks` with all the existing desks.
+  void GetAllDesks(std::vector<const Desk*>& out_desks) const;
+
   // Gets the container of the desk at |desk_index| in a specific screen with a
   // |target_root|. If desk_index is invalid, it returns nullptr.
   aura::Window* GetDeskContainer(aura::Window* target_root, int desk_index);
@@ -321,6 +329,10 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // desks. This is called when desks are added, removed or reordered to update
   // the names based on the desks order.
   void UpdateDesksDefaultNames();
+
+  // Cancels the desk removal toast and then triggers `UndoDeskRemoval()` if
+  // there is a desk removal in progress.
+  void MaybeCancelDeskRemoval();
 
   // ::wm::ActivationChangeObserver:
   void OnWindowActivating(ActivationReason reason,

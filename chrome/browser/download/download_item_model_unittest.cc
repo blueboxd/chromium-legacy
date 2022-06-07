@@ -17,7 +17,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/enterprise/common/download_item_reroute_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -126,12 +128,12 @@ class DownloadItemModelTest : public testing::Test {
                        : DownloadItem::INTERRUPTED));
   }
 
-  void SetupCompletedDownloadItem() {
+  void SetupCompletedDownloadItem(base::TimeDelta time_since_complete) {
     ON_CALL(item_, GetFileExternallyRemoved()).WillByDefault(Return(false));
     EXPECT_CALL(item_, GetState())
         .WillRepeatedly(Return(DownloadItem::COMPLETE));
     base::Time now = base::Time::Now();
-    base::TimeDelta diff = base::Hours(23);
+    base::TimeDelta diff = time_since_complete;
     clock_.SetNow(now);
     model_.set_clock_for_testing(&clock_);
     ON_CALL(item_, GetEndTime()).WillByDefault(Return(now - diff));
@@ -429,7 +431,7 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
        false,
        {},
        "0/2 B, 10 secs left",
-       "\xE2\x86\x93 0/2 B \xE2\x80\xA2 10 secs left"},
+       "\xE2\x86\x93 0/2 B \xE2\x80\xA2 10 seconds left"},
       {1,
        2,
        true,
@@ -437,7 +439,7 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
        false,
        {},
        "1/2 B, 10 secs left",
-       "\xE2\x86\x93 1/2 B \xE2\x80\xA2 10 secs left"},
+       "\xE2\x86\x93 1/2 B \xE2\x80\xA2 10 seconds left"},
       {0,
        0,
        false,
@@ -477,7 +479,7 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
        false,
        {},
        "Opening in 10 secs\xE2\x80\xA6",
-       "\xE2\x86\x93 0/2 B \xE2\x80\xA2 Opening in 10 secs\xE2\x80\xA6"},
+       "\xE2\x86\x93 0/2 B \xE2\x80\xA2 Opening in 10 seconds\xE2\x80\xA6"},
       {1,
        2,
        true,
@@ -485,7 +487,7 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
        false,
        {},
        "Opening in 10 secs\xE2\x80\xA6",
-       "\xE2\x86\x93 1/2 B \xE2\x80\xA2 Opening in 10 secs\xE2\x80\xA6"},
+       "\xE2\x86\x93 1/2 B \xE2\x80\xA2 Opening in 10 seconds\xE2\x80\xA6"},
       {0, 0, false, false, true, {}, "0 B, Paused", "0 B \xE2\x80\xA2 Paused"},
       {1, 0, false, false, true, {}, "1 B, Paused", "1 B \xE2\x80\xA2 Paused"},
       {0,
@@ -590,13 +592,30 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
 
 TEST_F(DownloadItemModelTest, CompletedStatus) {
   SetupDownloadItemDefaults();
-  SetupCompletedDownloadItem();
 
-  SetStatusTextBuilder(/*for_bubble=*/false);
-  EXPECT_TRUE(model().GetStatusText().empty());
+  const struct TimeElapsedTestCase {
+    base::TimeDelta time_since_download_complete;
+    std::string expected_status_message;
+    std::string expected_bubble_status_msg;
+  } kTimeElapsedTestCases[] = {
+      {base::Seconds(10), "", "2 B \xE2\x80\xA2 Done"},
+      {base::Seconds(50), "", "2 B \xE2\x80\xA2 Done"},
+      {base::Seconds(60), "", "2 B \xE2\x80\xA2 1 minute ago"},
+      {base::Hours(23), "", "2 B \xE2\x80\xA2 23 hours ago"},
+  };
+  for (const auto& test_case : kTimeElapsedTestCases) {
+    SetupCompletedDownloadItem(test_case.time_since_download_complete);
+    SetStatusTextBuilder(/*for_bubble=*/false);
+    EXPECT_EQ(base::UTF16ToUTF8(model().GetStatusText()),
+              test_case.expected_status_message);
+    SetStatusTextBuilder(/*for_bubble=*/true);
+    EXPECT_EQ(base::UTF16ToUTF8(model().GetStatusText()),
+              test_case.expected_bubble_status_msg);
+  }
 
-  SetStatusTextBuilder(/*for_bubble=*/true);
-  EXPECT_EQ("2 B \xE2\x80\xA2 23 hours ago",
+  EXPECT_CALL(item(), GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE));
+  EXPECT_EQ("2 B \xE2\x80\xA2 Done, no issues found",
             base::UTF16ToUTF8(model().GetStatusText()));
 
 #if BUILDFLAG(IS_MAC)

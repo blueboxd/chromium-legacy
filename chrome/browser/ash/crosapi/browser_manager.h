@@ -24,6 +24,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
 #include "chrome/browser/ash/crosapi/crosapi_util.h"
 #include "chrome/browser/ash/crosapi/environment_provider.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "components/component_updater/component_updater_service.h"
@@ -165,9 +166,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // mode is enabled.
   void NewGuestWindow();
 
-  // Similar to NewWindow(), but opens a tab, instead.
-  // See crosapi::mojom::BrowserService::NewTab for more details
-  void NewTab();
+  // Similar to NewWindow(), but opens a tab instead if there already is a
+  // window. See crosapi::mojom::BrowserService::NewTab for more details.
+  void NewTab(bool should_trigger_session_restore);
 
   // Opens the specified URL in lacros-chrome. If it is not running,
   // it launches lacros-chrome with the given URL.
@@ -176,8 +177,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // If there's already a tab opening the URL in lacros-chrome, in some window
   // of the primary profile, activate the tab. Otherwise, opens a tab for
-  // the given URL.
-  void SwitchToTab(const GURL& url);
+  // the given URL. `path_behavior` will be assigned to the variable of the same
+  // name in the `NavigateParams` struct that's used to perform the actual
+  // navigation downstream.
+  void SwitchToTab(const GURL& url, NavigateParams::PathBehavior path_behavior);
 
   // Similar to NewWindow(), but restores a tab recently closed.
   // See crosapi::mojom::BrowserService::RestoreTab for more details
@@ -517,7 +520,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void OpenUrlImpl(
       const GURL& url,
       crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition,
-      crosapi::mojom::OpenUrlFrom from);
+      crosapi::mojom::OpenUrlFrom from,
+      NavigateParams::PathBehavior path_behavior);
 
   // Returns true if the crosapi interface of the currently running lacros
   // supports NewGuestWindow API. If lacros is older or lacros is not running,

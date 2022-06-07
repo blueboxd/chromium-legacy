@@ -4,6 +4,7 @@
 
 import {CrPolicyIndicatorType} from '//resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {AboutPageBrowserProxyImpl, BrowserChannel, DeviceNameBrowserProxyImpl, DeviceNameState, LifetimeBrowserProxyImpl, Router, routes, SetDeviceNameResult, UpdateStatus} from 'chrome://os-settings/chromeos/os_settings.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -22,7 +23,10 @@ suite('AboutPageTest', function() {
   /** @type {?TestLifetimeBrowserProxy} */
   let lifetimeBrowserProxy = null;
 
-  const SPINNER_ICON = 'chrome://resources/images/throbber_small.svg';
+  const SPINNER_ICON_LIGHT_MODE =
+      'chrome://resources/images/throbber_small.svg';
+  const SPINNER_ICON_DARK_MODE =
+      'chrome://resources/images/throbber_small_dark.svg';
 
   setup(function() {
     lifetimeBrowserProxy = new TestLifetimeBrowserProxy();
@@ -50,7 +54,7 @@ suite('AboutPageTest', function() {
    */
   function fireStatusChanged(status, opt_options) {
     const options = opt_options || {};
-    cr.webUIListenerCallback('update-status-changed', {
+    webUIListenerCallback('update-status-changed', {
       progress: options.progress === undefined ? 1 : options.progress,
       message: options.message,
       status: status,
@@ -96,54 +100,78 @@ suite('AboutPageTest', function() {
   }
 
   /**
-   * Test that the status icon and status message update according to
-   * incoming 'update-status-changed' events.
+   * @param {boolean} active
    */
-  test('IconAndMessageUpdates', function() {
-    const icon = page.shadowRoot.querySelector('iron-icon');
-    assertTrue(!!icon);
-    const statusMessageEl =
-        page.shadowRoot.querySelector('#updateStatusMessage div');
-    let previousMessageText = statusMessageEl.textContent;
+  function setDarkMode(active) {
+    assertTrue(!!page);
+    page.isDarkModeActive_ = active;
+  }
 
-    fireStatusChanged(UpdateStatus.CHECKING);
-    assertEquals(SPINNER_ICON, icon.src);
-    assertEquals(null, icon.getAttribute('icon'));
-    assertNotEquals(previousMessageText, statusMessageEl.textContent);
-    previousMessageText = statusMessageEl.textContent;
+  ['light', 'dark'].forEach((mode) => {
+    suite(`with ${mode} mode active`, () => {
+      const isDarkMode = mode === 'dark';
 
-    fireStatusChanged(UpdateStatus.UPDATING, {progress: 0});
-    assertEquals(SPINNER_ICON, icon.src);
-    assertEquals(null, icon.getAttribute('icon'));
-    assertFalse(statusMessageEl.textContent.includes('%'));
-    assertNotEquals(previousMessageText, statusMessageEl.textContent);
-    previousMessageText = statusMessageEl.textContent;
+      /**
+       * Test that the OS update status message and icon update according to
+       * incoming 'update-status-changed' events, for light and dark mode
+       * respectively.
+       */
+      test('status message and icon update', () => {
+        setDarkMode(isDarkMode);
+        const icon = page.shadowRoot.querySelector('iron-icon');
+        assertTrue(!!icon);
+        const statusMessageEl =
+            page.shadowRoot.querySelector('#updateStatusMessage div');
+        let previousMessageText = statusMessageEl.textContent;
 
-    fireStatusChanged(UpdateStatus.UPDATING, {progress: 1});
-    assertNotEquals(previousMessageText, statusMessageEl.textContent);
-    assertTrue(statusMessageEl.textContent.includes('%'));
-    previousMessageText = statusMessageEl.textContent;
+        fireStatusChanged(UpdateStatus.CHECKING);
+        if (isDarkMode) {
+          assertEquals(SPINNER_ICON_DARK_MODE, icon.src);
+        } else {
+          assertEquals(SPINNER_ICON_LIGHT_MODE, icon.src);
+        }
+        assertEquals(null, icon.getAttribute('icon'));
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        previousMessageText = statusMessageEl.textContent;
 
-    fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
-    assertEquals(null, icon.src);
-    assertEquals('settings:check-circle', icon.icon);
-    assertNotEquals(previousMessageText, statusMessageEl.textContent);
-    previousMessageText = statusMessageEl.textContent;
+        fireStatusChanged(UpdateStatus.UPDATING, {progress: 0});
+        if (isDarkMode) {
+          assertEquals(SPINNER_ICON_DARK_MODE, icon.src);
+        } else {
+          assertEquals(SPINNER_ICON_LIGHT_MODE, icon.src);
+        }
+        assertEquals(null, icon.getAttribute('icon'));
+        assertFalse(statusMessageEl.textContent.includes('%'));
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        previousMessageText = statusMessageEl.textContent;
 
-    fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
-    assertEquals(null, icon.src);
-    assertEquals('cr20:domain', icon.icon);
-    assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        fireStatusChanged(UpdateStatus.UPDATING, {progress: 1});
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        assertTrue(statusMessageEl.textContent.includes('%'));
+        previousMessageText = statusMessageEl.textContent;
 
-    fireStatusChanged(UpdateStatus.FAILED);
-    assertEquals(null, icon.src);
-    assertEquals('cr:error-outline', icon.icon);
-    assertEquals(0, statusMessageEl.textContent.trim().length);
+        fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
+        assertEquals(null, icon.src);
+        assertEquals('settings:check-circle', icon.icon);
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        previousMessageText = statusMessageEl.textContent;
 
-    fireStatusChanged(UpdateStatus.DISABLED);
-    assertEquals(null, icon.src);
-    assertEquals(null, icon.getAttribute('icon'));
-    assertEquals(0, statusMessageEl.textContent.trim().length);
+        fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
+        assertEquals(null, icon.src);
+        assertEquals('cr20:domain', icon.icon);
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+
+        fireStatusChanged(UpdateStatus.FAILED);
+        assertEquals(null, icon.src);
+        assertEquals('cr:error-outline', icon.icon);
+        assertEquals(0, statusMessageEl.textContent.trim().length);
+
+        fireStatusChanged(UpdateStatus.DISABLED);
+        assertEquals(null, icon.src);
+        assertEquals(null, icon.getAttribute('icon'));
+        assertEquals(0, statusMessageEl.textContent.trim().length);
+      });
+    });
   });
 
   test('ErrorMessageWithHtml', function() {
@@ -1027,7 +1055,7 @@ suite('DetailedBuildInfoTest', function() {
    * @return {!Promise}
    */
   function checkDeviceNameMetadata(testDeviceName, deviceNameState) {
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'settings.updateDeviceNameMetadata',
         {deviceName: testDeviceName, deviceNameState: deviceNameState});
 

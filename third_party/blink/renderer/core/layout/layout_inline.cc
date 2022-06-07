@@ -410,6 +410,14 @@ bool LayoutInline::ComputeInitialShouldCreateBoxFragment(
       style.MayHaveMargin())
     return true;
 
+  // TODO(crbug.com/1008951): This is to force decorating boxes not to be
+  // culled. Probably not sufficient, see |StopPropagateTextDecorations| and
+  // |IsTextDecorationBoundary|. Also better if decorating box can be computed
+  // for culled inline too from the performance perspective.
+  if (RuntimeEnabledFeatures::TextDecoratingBoxEnabled() &&
+      style.GetTextDecorationLine() != TextDecorationLine::kNone)
+    return true;
+
   return ComputeIsAbsoluteContainer(&style) ||
          NGOutlineUtils::HasPaintedOutline(style, GetNode()) ||
          CanBeHitTestTargetPseudoNodeStyle(style);
@@ -1252,7 +1260,8 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
       // up to the fragment itself. Compute this offset.
       const PhysicalOffset child_offset =
           accumulated_offset + item.OffsetInContainerFragment();
-      if (NGBoxFragmentPainter(cursor, item, *box_fragment)
+      NGInlinePaintContext inline_context;
+      if (NGBoxFragmentPainter(cursor, item, *box_fragment, &inline_context)
               .NodeAtPoint(result, hit_test_location, child_offset,
                            accumulated_offset, hit_test_action)) {
         return true;

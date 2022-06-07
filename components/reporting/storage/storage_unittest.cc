@@ -507,6 +507,7 @@ class StorageTest
     }
 
     void ProcessRecord(EncryptedRecord encrypted_record,
+                       ScopedReservation scoped_reservation,
                        base::OnceCallback<void(bool)> processed_cb) override {
       DCHECK_CALLED_ON_VALID_SEQUENCE(test_uploader_checker_);
       auto sequence_information = encrypted_record.sequence_information();
@@ -683,7 +684,7 @@ class StorageTest
   };
 
   StatusOr<scoped_refptr<Storage>> CreateTestStorage(
-      StorageOptions&& options,
+      const StorageOptions& options,
       scoped_refptr<EncryptionModuleInterface> encryption_module) {
     // Initialize Storage with no key.
     test::TestEvent<StatusOr<scoped_refptr<Storage>>> e;
@@ -698,7 +699,7 @@ class StorageTest
   }
 
   void CreateTestStorageOrDie(
-      StorageOptions&& options,
+      const StorageOptions& options,
       scoped_refptr<EncryptionModuleInterface> encryption_module =
           EncryptionModule::Create(
               /*renew_encryption_key_period=*/base::Minutes(30))) {
@@ -720,7 +721,7 @@ class StorageTest
 
     ASSERT_FALSE(storage_) << "TestStorage already assigned";
     StatusOr<scoped_refptr<Storage>> storage_result =
-        CreateTestStorage(std::move(options), encryption_module);
+        CreateTestStorage(options, encryption_module);
     ASSERT_OK(storage_result)
         << "Failed to create TestStorage, error=" << storage_result.status();
     storage_ = std::move(storage_result.ValueOrDie());
@@ -747,7 +748,7 @@ class StorageTest
   }
 
   StatusOr<scoped_refptr<Storage>> CreateTestStorageWithFailedKeyDelivery(
-      StorageOptions&& options,
+      const StorageOptions& options,
       scoped_refptr<EncryptionModuleInterface> encryption_module =
           EncryptionModule::Create(
               /*renew_encryption_key_period=*/base::Minutes(30))) {

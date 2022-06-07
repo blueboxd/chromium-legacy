@@ -80,11 +80,39 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForFileManager() {
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
   info->user_display_mode = web_app::UserDisplayMode::kStandalone;
 
+  // NOTE: when adding new formats to the extension list below, don't
+  // forget to also update file_manager/manifest.json.
+
   // Add File Handlers. NOTE: Order of handlers matters.
   // Archives:
   AppendFileHandler(*info, "mount-archive",
-                    {"7z", "bz2", "crx", "gz", "iso", "rar", "tar", "tbz",
-                     "tbz2", "tgz", "zip"});
+                    {
+                        "7z",     //
+                        "bz",     //
+                        "bz2",    //
+                        "crx",    //
+                        "gz",     //
+                        "iso",    //
+                        "lz",     //
+                        "lzma",   //
+                        "rar",    //
+                        "tar",    //
+                        "taz",    //
+                        "tb2",    //
+                        "tbz",    //
+                        "tbz2",   //
+                        "tgz",    //
+                        "tlz",    //
+                        "tlzma",  //
+                        "txz",    //
+                        "tz",     //
+                        "tz2",    //
+                        "tzst",   //
+                        "xz",     //
+                        "z",      //
+                        "zip",    //
+                        "zst",    //
+                    });
 
   // Drive & Google Docs:
   AppendFileHandler(*info, "open-hosted-generic",
@@ -151,7 +179,7 @@ bool FileManagerSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
   return true;
 }
 
-std::vector<web_app::AppId>
+std::vector<std::string>
 FileManagerSystemAppDelegate::GetAppIdsToUninstallAndReplace() const {
   if (ash::features::IsFileManagerSwaEnabled()) {
     return {extension_misc::kFilesManagerAppId};

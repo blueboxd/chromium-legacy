@@ -62,6 +62,11 @@ const char kHttpServerProperties[] = "net.http_server_properties";
 // 2 - Forced. All pages/sessions are forced into Incognito.
 const char kIncognitoModeAvailability[] = "incognito.mode_availability";
 
+// Boolean that is true when the Incognito interstitial for third-party intents
+// is enabled.
+const char kIncognitoInterstitialEnabled[] =
+    "ios.settings.incognito_interstitial_enabled";
+
 // Caches the folder id of user's position in the bookmark hierarchy navigator.
 const char kIosBookmarkCachedFolderId[] = "ios.bookmark.cached_folder_id";
 
@@ -92,6 +97,16 @@ const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
 // in the settings view.
 const char kIosSettingsSigninPromoDisplayedCount[] =
     "ios.settings.signin_promo_displayed_count";
+
+// Preference that hold a boolean indicating if the user has already dismissed
+// the sign-in promo in the ntp feed top section.
+const char kIosNtpFeedTopPromoAlreadySeen[] =
+    "ios.ntp_feed_top.promo_already_seen";
+
+// Integer to represent the number of time the sign-in promo has been displayed
+// in the ntp feed top section.
+const char kIosNtpFeedTopSigninPromoDisplayedCount[] =
+    "ios.ntp_feed_top.signin_promo_displayed_count";
 
 // Preference that holds a boolean indicating whether the link previews are
 // enabled. Link previews display a live preview of the selected link after a

@@ -11,8 +11,72 @@
 // #import {Oobe} from '../cr_ui.m.js'
 // #import {$} from 'chrome://resources/js/util.m.js';
 // #import './debug_util.js';
+// #import {AssistantNativeIconType} from '../../assistant_optin/utils.m.js';
 
 // #import {MessageType, ProblemType} from 'chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.m.js';
+
+const createAssistantData = (isMinor) => {
+  const data = {};
+  data['valuePropTitle'] =
+      'Value ' + (isMinor ? 'minor ' : 'regular') + ' prop title';
+  data['valuePropNextButton'] = 'Value prop next button';
+  data['valuePropSkipButton'] = 'Value prop skip button';
+  data['valuePropFooter'] = 'Value prop footer';
+  data['equalWeightButtons'] = isMinor;
+  if (isMinor) {
+    data['childName'] = 'Child name';
+  }
+  return data;
+};
+
+const createAssistantZippy = (type, isMinor, isNativeIcons) => {
+  const zippy = {};
+  zippy['isMinorMode'] = isMinor;
+  zippy['title'] = 'Zippy ' + (isMinor ? 'minor ' : 'regular') + ' title';
+  zippy['identity'] = 'Zippy identity';
+  zippy['intro'] = 'Zippy intro';
+  zippy['name'] = 'Zippy ' + type + ' name';
+  zippy['description'] = 'Zippy ' + type + ' description';
+  if (isMinor) {
+    zippy['additionalInfo'] = 'Zippy additional info';
+  }
+  zippy['popupLink'] = 'Zippy popup link';
+  zippy['learnMoreDialogTitle'] = 'Zippy learn more dialog title';
+  zippy['learnMoreDialogContent'] = 'Zippy learn more dialog content';
+  zippy['learnMoreDialogButton'] = 'Zippy learn more dialog button';
+  zippy['useNativeIcons'] = !!isNativeIcons;
+
+  if (isNativeIcons) {
+    if (type === 'WAA') {
+      zippy['nativeIconType'] = AssistantNativeIconType.WAA;
+    } else if (type == 'DA') {
+      zippy['nativeIconType'] = AssistantNativeIconType.DA;
+    } else {
+      console.error('### Uknown zippy type ' + type);
+    }
+  } else {
+    if (type === 'WAA') {
+      if (isMinor) {
+        zippy['iconUri'] =
+            'https://www.gstatic.com/myactivity/icon/icon_fp_history_blue.svg';
+      } else {
+        zippy['iconUri'] =
+            'https://ssl.gstatic.com/identity/boq/consentflowtexts/icon_web_and_app_activity_grey600_72-fb2e66730dca510849d22bee9f0f29ba.png';
+      }
+    } else if (type === 'DA') {
+      if (isMinor) {
+        zippy['iconUri'] =
+            'https://www.gstatic.com/myactivity/icon/icon_fp_chromebook_blue.svg';
+      } else {
+        zippy['iconUri'] =
+            'https://ssl.gstatic.com/identity/boq/consentflowtexts/icon_device_information_vertical_grey600_72-be6f9c8691213019712cfa4106a509e0.png';
+      }
+    } else {
+      console.error('### Uknown zippy type ' + type);
+    }
+  }
+  return zippy;
+};
 
 cr.define('cr.ui.login.debug', function() {
   const DEBUG_BUTTON_STYLE = `
@@ -1209,49 +1273,6 @@ cr.define('cr.ui.login.debug', function() {
         },
       ],
     },
-    // TODO(crbug.com/1261902): Remove.
-    {
-      id: 'recommend-apps-old',
-      kind: ScreenKind.NORMAL,
-      handledSteps: 'list',
-      // Known issue: reset() does not clear list of apps, so loadAppList
-      // will append apps instead of replacing.
-      states: [
-        {
-          id: '2-apps',
-          trigger: (screen) => {
-            screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_OLD_CONTENT);
-            screen.loadAppList([
-              {
-                name: 'Test app 1',
-                package_name: 'test1.app',
-              },
-              {
-                name: 'Test app 2 with some really long name',
-                package_name: 'test2.app',
-              },
-            ]);
-          },
-        },
-        {
-          id: '21-apps',
-          trigger: (screen) => {
-            // There can be up to 21 apps: see recommend_apps_fetcher_impl
-            screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_OLD_CONTENT);
-            const apps = [];
-            for (let i = 1; i <= 21; i++) {
-              apps.push({
-                name: 'Test app ' + i,
-                package_name: 'app.test' + i,
-              });
-            }
-            screen.loadAppList(apps);
-          },
-        },
-      ],
-    },
     {
       id: 'recommend-apps',
       kind: ScreenKind.NORMAL,
@@ -1263,7 +1284,7 @@ cr.define('cr.ui.login.debug', function() {
           id: '2-apps',
           trigger: (screen) => {
             screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_OLD_CONTENT);
             screen.loadAppList([
               {
                 name: 'Test app 1',
@@ -1281,7 +1302,7 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             // There can be up to 21 apps: see recommend_apps_fetcher_impl
             screen.reset();
-            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            screen.setWebview(RECOMMENDED_APPS_OLD_CONTENT);
             const apps = [];
             for (let i = 1; i <= 21; i++) {
               apps.push({
@@ -1309,16 +1330,106 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
-          id: 'related_info skip_activity_control=true',
+          id: 'value_prop',
           trigger: (screen) => {
-            ((screen.$).card.$).relatedInfo.skipActivityControl_ = true;
+            (screen.$).card.onReload();
+            (screen.$).card.showStep('value-prop');
+            (screen.$).card.reloadContent(
+                createAssistantData(/*isMinor=*/ false));
+
+            const zippies = [[]];
+            zippies[0].push(createAssistantZippy(
+                'WAA', /*isMinor=*/ false, /*isNativeIcons=*/ false));
+            zippies[0].push(createAssistantZippy(
+                'DA', /*isMinor=*/ false, /*isNativeIcons=*/ false));
+
+            (screen.$).card.addSettingZippy('settings', zippies);
+          },
+        },
+        {
+          id: 'value_prop_minor',
+          trigger: (screen) => {
+            (screen.$).card.onReload();
+            (screen.$).card.showStep('value-prop');
+            (screen.$).card.reloadContent(
+                createAssistantData(/*isMinor=*/ true));
+
+            const zippies = [[]];
+            zippies[0].push(createAssistantZippy('WAA', /*isMinor=*/ true));
+            zippies[0].push(createAssistantZippy('DA', /*isMinor=*/ true));
+
+            (screen.$).card.addSettingZippy('settings', zippies);
+          },
+        },
+        {
+          id: 'value_prop_native_icons',
+          trigger: (screen) => {
+            (screen.$).card.onReload();
+            (screen.$).card.showStep('value-prop');
+            (screen.$).card.reloadContent(
+                createAssistantData(/*isMinor=*/ false));
+
+            const zippies = [[]];
+            zippies[0].push(createAssistantZippy(
+                'WAA', /*isMinor=*/ false, /*isNativeIcons=*/ true));
+            zippies[0].push(createAssistantZippy(
+                'DA', /*isMinor=*/ false, /*isNativeIcons=*/ true));
+
+            (screen.$).card.addSettingZippy('settings', zippies);
+          },
+        },
+        {
+          id: 'value_prop_minor_native_icons',
+          trigger: (screen) => {
+            (screen.$).card.onReload();
+            (screen.$).card.showStep('value-prop');
+            (screen.$).card.reloadContent(
+                createAssistantData(/*isMinor=*/ false));
+
+            const zippies = [[]];
+            zippies[0].push(createAssistantZippy(
+                'WAA', /*isMinor=*/ true, /*isNativeIcons=*/ true));
+            zippies[0].push(createAssistantZippy(
+                'DA', /*isMinor=*/ true, /*isNativeIcons=*/ true));
+
+            (screen.$).card.addSettingZippy('settings', zippies);
+          },
+        },
+        {
+          id: 'related_info',
+          trigger: (screen) => {
+            const data = createAssistantData(/*isMinor=*/ false);
+            data['activityControlNeeded'] = false;
+            (screen.$).card.reloadContent(data);
             (screen.$).card.showStep('related-info');
           },
         },
         {
-          id: 'related_info skip_activity_control=false',
+          id: 'related_info activityControlNeeded',
           trigger: (screen) => {
-            ((screen.$).card.$).relatedInfo.skipActivityControl_ = false;
+            const data = createAssistantData(/*isMinor=*/ false);
+            data['activityControlNeeded'] = true;
+            (screen.$).card.reloadContent(data);
+            (screen.$).card.showStep('related-info');
+          },
+        },
+        {
+          id: 'related_info native icons',
+          trigger: (screen) => {
+            const data = createAssistantData(/*isMinor=*/ false);
+            data['activityControlNeeded'] = false;
+            data['useNativeIcons'] = true;
+            (screen.$).card.reloadContent(data);
+            (screen.$).card.showStep('related-info');
+          },
+        },
+        {
+          id: 'related_info isMinor nativeIcons',
+          trigger: (screen) => {
+            const data = createAssistantData(/*isMinor=*/ true);
+            data['activityControlNeeded'] = false;
+            data['useNativeIcons'] = true;
+            (screen.$).card.reloadContent(data);
             (screen.$).card.showStep('related-info');
           },
         },

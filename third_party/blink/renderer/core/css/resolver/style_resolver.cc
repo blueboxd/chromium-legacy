@@ -273,6 +273,23 @@ PseudoId GetPseudoId(const Element& element, ElementRuleCollector* collector) {
   return collector ? collector->GetPseudoId() : kPseudoIdNone;
 }
 
+void UseCountLegacyOverlapping(Document& document,
+                               const ComputedStyle& a,
+                               const ComputedStyle& b) {
+  if (a.PerspectiveOrigin() != b.PerspectiveOrigin())
+    document.CountUse(WebFeature::kCSSLegacyPerspectiveOrigin);
+  if (a.GetTransformOrigin() != b.GetTransformOrigin())
+    document.CountUse(WebFeature::kCSSLegacyTransformOrigin);
+  if (a.BorderImage() != b.BorderImage())
+    document.CountUse(WebFeature::kCSSLegacyBorderImage);
+  if ((a.BorderTopWidth() != b.BorderTopWidth()) ||
+      (a.BorderRightWidth() != b.BorderRightWidth()) ||
+      (a.BorderBottomWidth() != b.BorderBottomWidth()) ||
+      (a.BorderLeftWidth() != b.BorderLeftWidth())) {
+    document.CountUse(WebFeature::kCSSLegacyBorderImageWidth);
+  }
+}
+
 }  // namespace
 
 static CSSPropertyValueSet* LeftToRightDeclaration() {
@@ -855,7 +872,7 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
   // The StyleResolverState is where we actually end up accumulating the
   // computed style. It's just a convenient way of not having to send
   // a lot of input/output variables around between the different functions.
-  StyleResolverState state(GetDocument(), *element, style_recalc_context,
+  StyleResolverState state(GetDocument(), *element, &style_recalc_context,
                            style_request);
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
@@ -936,9 +953,7 @@ static bool AllowsInheritance(const StyleRequest& style_request,
 void StyleResolver::ApplyInheritance(Element& element,
                                      const StyleRequest& style_request,
                                      StyleResolverState& state) {
-  if ((RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
-       IsHighlightPseudoElement(style_request.pseudo_id)) ||
-      style_request.pseudo_id == PseudoId::kPseudoIdHighlight) {
+  if (UsesHighlightPseudoInheritance(style_request.pseudo_id)) {
     // When resolving highlight styles for children, we need to default all
     // properties (whether or not defined as inherited) to parent values.
 
@@ -950,6 +965,10 @@ void StyleResolver::ApplyInheritance(Element& element,
 
     state.SetStyle(ComputedStyle::Clone(*state.ParentStyle()));
     state.Style()->SetInsideLink(state.ElementLinkState());
+    state.Style()->SetInForcedColorsMode(
+        style_request.originating_element_style->InForcedColorsMode());
+    state.Style()->SetForcedColorAdjust(
+        style_request.originating_element_style->ForcedColorAdjust());
   } else {
     scoped_refptr<ComputedStyle> style = CreateComputedStyle();
     style->InheritFrom(
@@ -1346,6 +1365,13 @@ void StyleResolver::ApplyBaseStyle(
       state.StyleRef().SetHasExplicitInheritance();
     }
 
+    // Similarly, if a style went from using viewport units to not,
+    // the flags can stick around in the incremental version. This can cause
+    // invalidations when none are needed, but is otherwise harmless.
+    state.StyleRef().SetViewportUnitFlags(
+        state.StyleRef().ViewportUnitFlags() |
+        incremental_style->ViewportUnitFlags());
+
     DCHECK_EQ(g_null_atom, ComputeBaseComputedStyleDiff(incremental_style.get(),
                                                         *state.Style()));
     // The incremental style must not contain BaseData, otherwise we'd risk
@@ -1370,9 +1396,8 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
     double offset) {
   // TODO(alancutter): Avoid creating a StyleResolverState just to apply a
   // single value on a ComputedStyle.
-  // TOOD(crbug.com/1223030): Propagate a real StyleRecalcContext to handle
-  // container relative units.
-  StyleResolverState state(element.GetDocument(), element, StyleRecalcContext(),
+  StyleResolverState state(element.GetDocument(), element,
+                           nullptr /* StyleRecalcContext */,
                            StyleRequest(parent_style));
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
@@ -1400,7 +1425,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
     return initial_style;
 
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
-                           StyleRecalcContext(),
+                           nullptr /* StyleRecalcContext */,
                            StyleRequest(initial_style.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
@@ -1601,7 +1626,6 @@ void StyleResolver::CollectPseudoRulesForElement(
 
   if (rules_to_include & kAuthorCSSRules) {
     collector.SetSameOriginOnly(!(rules_to_include & kCrossOriginCSSRules));
-    collector.SetIncludeEmptyRules(rules_to_include & kEmptyCSSRules);
     MatchAuthorRules(element, ScopedResolverFor(element), collector);
   }
 }
@@ -1653,8 +1677,14 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
     CascadeFilter filter;
     if (state.Style()->StyleType() == kPseudoIdMarker)
       filter = filter.Add(CSSProperty::kValidForMarker, false);
-    if (IsHighlightPseudoElement(state.Style()->StyleType()))
-      filter = filter.Add(CSSProperty::kValidForHighlight, false);
+    if (IsHighlightPseudoElement(state.Style()->StyleType())) {
+      if (StyleResolver::UsesHighlightPseudoInheritance(
+              state.Style()->StyleType())) {
+        filter = filter.Add(CSSProperty::kValidForHighlight, false);
+      } else {
+        filter = filter.Add(CSSProperty::kValidForHighlightLegacy, false);
+      }
+    }
     filter = filter.Add(CSSProperty::kAnimation, true);
 
     cascade.Apply(filter);
@@ -1890,6 +1920,15 @@ bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
   return true;
 }
 
+bool StyleResolver::UsesHighlightPseudoInheritance(PseudoId pseudo_id) {
+  // ::highlight() pseudos use highlight inheritance rather than originating
+  // inheritance even if highlight inheritance is not enabled for the other
+  // pseudos.
+  return ((IsHighlightPseudoElement(pseudo_id) &&
+           RuntimeEnabledFeatures::HighlightInheritanceEnabled()) ||
+          pseudo_id == PseudoId::kPseudoIdHighlight);
+}
+
 const CSSValue* StyleResolver::ComputeValue(
     Element* element,
     const CSSPropertyName& property_name,
@@ -1921,7 +1960,8 @@ FilterOperations StyleResolver::ComputeFilterOperations(
   scoped_refptr<ComputedStyle> parent = CreateComputedStyle();
   parent->SetFont(font);
 
-  StyleResolverState state(GetDocument(), *element, StyleRecalcContext(),
+  StyleResolverState state(GetDocument(), *element,
+                           nullptr /* StyleRecalcContext */,
                            StyleRequest(parent.get()));
 
   state.SetStyle(ComputedStyle::Clone(*parent));
@@ -1940,7 +1980,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
   StyleRecalcContext style_recalc_context =
       StyleRecalcContext::FromAncestors(element);
   StyleRequest style_request;
-  StyleResolverState state(GetDocument(), element, style_recalc_context,
+  StyleResolverState state(GetDocument(), element, &style_recalc_context,
                            style_request);
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
@@ -1995,12 +2035,30 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
   if (cache_success.IsFullCacheHit())
     return;
 
-  if (cache_success.ShouldApplyInheritedOnly()) {
-    cascade.Apply(CascadeFilter(CSSProperty::kInherited, false));
-    if (!cache_success.IsUsableAfterApplyInheritedOnly(state.StyleRef()))
-      cascade.Apply(CascadeFilter(CSSProperty::kInherited, true));
-  } else {
-    cascade.Apply();
+  auto apply = [&state, &cascade, &cache_success](CascadeFilter filter) {
+    if (cache_success.ShouldApplyInheritedOnly()) {
+      cascade.Apply(filter.Add(CSSProperty::kInherited, false));
+      if (!cache_success.IsUsableAfterApplyInheritedOnly(state.StyleRef()))
+        cascade.Apply(filter.Add(CSSProperty::kInherited, true));
+    } else {
+      cascade.Apply(filter);
+    }
+  };
+
+  // In order to use-count whether or not legacy overlapping properties
+  // made a real difference to the ComputedStyle, we first apply the cascade
+  // while filtering out such properties. If the filter did reject
+  // any legacy overlapping properties, we apply all overlapping properties
+  // again to get the correct result.
+  apply(CascadeFilter(CSSProperty::kLegacyOverlapping, true));
+
+  if (state.RejectedLegacyOverlapping()) {
+    scoped_refptr<ComputedStyle> non_legacy_style =
+        ComputedStyle::Clone(state.StyleRef());
+    // Re-apply all overlapping properties (both legacy and non-legacy).
+    apply(CascadeFilter(CSSProperty::kOverlapping, false));
+    UseCountLegacyOverlapping(GetDocument(), *non_legacy_style,
+                              state.StyleRef());
   }
 
   MaybeAddToMatchedPropertiesCache(state, cache_success, result);
@@ -2019,7 +2077,6 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
                                  selector_filter_, match_result, state.Style(),
                                  state.Style()->InsideLink());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
-  collector.SetIncludeEmptyRules(true);
 
   MatchRequest match_request(watched_selectors_rule_set);
   collector.CollectMatchingRules(match_request);
@@ -2049,7 +2106,8 @@ void StyleResolver::ComputeFont(Element& element,
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
-  StyleResolverState state(GetDocument(), element, StyleRecalcContext(),
+  StyleResolverState state(GetDocument(), element,
+                           nullptr /* StyleRecalcContext */,
                            StyleRequest(style));
   state.SetStyle(style);
 
@@ -2408,7 +2466,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForCanvasFormattedText(
     // don't inherit anything from existing elements.
     StyleResolverState state(
         GetDocument(), EnsureElementForCanvasFormattedText(),
-        StyleRecalcContext{},
+        nullptr /* StyleRecalcContext */,
         StyleRequest{parent_style ? parent_style : &InitialStyle()});
     state.SetStyle(style);
 

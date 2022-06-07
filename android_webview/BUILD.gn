@@ -787,6 +787,7 @@ android_library("common_java") {
     "java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java",
     "java/src/org/chromium/android_webview/common/SafeModeAction.java",
     "java/src/org/chromium/android_webview/common/SafeModeController.java",
+    "java/src/org/chromium/android_webview/common/services/ServiceHelper.java",
     "java/src/org/chromium/android_webview/common/services/ServiceNames.java",
   ]
   deps = [
@@ -816,6 +817,8 @@ android_library("common_java") {
 }
 
 android_aidl("common_aidl") {
+  # External code should depend on "common_aidl_java" instead.
+  visibility = [ ":*" ]
   import_include = [ "java/src" ]
   sources = [
     "java/src/org/chromium/android_webview/common/services/ICrashReceiverService.aidl",
@@ -922,12 +925,10 @@ repack("repack_pack") {
 
 repack("repack_100_percent") {
   sources = [
-    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
   ]
   deps = [
-    "//content/app/resources",
     "//third_party/blink/public:scaled_resources_100_percent",
     "//ui/resources",
   ]

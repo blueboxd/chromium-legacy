@@ -282,20 +282,7 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
 
 void PaintLayer::UpdateLayerPositionRecursive(
     const PaintLayer* enclosing_scroller) {
-  auto old_location = location_without_position_offset_;
-  auto old_offset_for_in_flow_rel_position = OffsetForInFlowRelPosition();
   UpdateLayerPosition();
-
-  if (location_without_position_offset_ != old_location) {
-    MarkAncestorChainForFlagsUpdate();
-  } else {
-    // TODO(chrishtr): compute this invalidation in layout instead of here.
-    auto offset_for_in_flow_rel_position =
-        rare_data_ ? rare_data_->offset_for_in_flow_rel_position
-                   : PhysicalOffset();
-    if (offset_for_in_flow_rel_position != old_offset_for_in_flow_rel_position)
-      MarkAncestorChainForFlagsUpdate();
-  }
 
   const PaintLayer* previous_enclosing_scroller =
       AncestorScrollContainerLayer();
@@ -360,7 +347,8 @@ void PaintLayer::UpdateTransformationMatrix() {
     DCHECK(box);
     transform->MakeIdentity();
     box->StyleRef().ApplyTransform(
-        *transform, box->Size(), ComputedStyle::kIncludeTransformOrigin,
+        *transform, box->Size(), ComputedStyle::kIncludeTransformOperations,
+        ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
     if (!box->GetDocument().GetSettings()->GetAcceleratedCompositingEnabled())
@@ -1473,13 +1461,11 @@ HitTestingTransformState PaintLayer::CreateLocalTransformState(
     }
   }
 
-  gfx::Vector2dF offset(-transform_container_fragment.PaintOffset());
-  auto offset_translation = GeometryMapper::SourceToDestinationProjection(
-      local_fragment.PreTransform(), *container_transform);
-  DCHECK(offset_translation.IsIdentityOr2DTranslation());
-  offset += offset_translation.Translation2D();
-  offset += gfx::Vector2dF(local_fragment.PaintOffset());
-  transform_state.Translate(offset);
+  transform_state.Translate(
+      gfx::Vector2dF(-transform_container_fragment.PaintOffset()));
+  transform_state.ApplyTransform(GeometryMapper::SourceToDestinationProjection(
+      local_fragment.PreTransform(), *container_transform));
+  transform_state.Translate(gfx::Vector2dF(local_fragment.PaintOffset()));
 
   if (const auto* properties = local_fragment.PaintProperties()) {
     if (const auto* transform = properties->Transform())
@@ -1508,7 +1494,7 @@ static bool IsHitCandidateForDepthOrder(
   // foreignObject; if it weren't for that case we could test z_offset
   // and then DCHECK(transform_state) inside of it.
   DCHECK(!z_offset || transform_state ||
-         hit_layer->GetLayoutObject().IsSVGForeignObject());
+         hit_layer->GetLayoutObject().IsSVGForeignObjectIncludingNG());
   if (z_offset && transform_state) {
     // This is actually computing our z, but that's OK because the hitLayer is
     // coplanar with us.
@@ -1610,7 +1596,7 @@ PaintLayer* PaintLayer::HitTestLayer(
   // IsReplacedNormalFlowStacking() true for LayoutSVGForeignObject),
   // where the hit_test_rect has already been transformed to local coordinates.
   bool use_transform = false;
-  if (!layout_object.IsSVGForeignObject() &&
+  if (!layout_object.IsSVGForeignObjectIncludingNG() &&
       // Only a layer that can contain all descendants can become a transform
       // container. This excludes layout objects having transform nodes created
       // for animating opacity etc. or for backface-visibility:hidden.
@@ -2044,7 +2030,7 @@ bool PaintLayer::HitTestContents(HitTestResult& result,
 }
 
 bool PaintLayer::IsReplacedNormalFlowStacking() const {
-  return GetLayoutObject().IsSVGForeignObject();
+  return GetLayoutObject().IsSVGForeignObjectIncludingNG();
 }
 
 PaintLayer* PaintLayer::HitTestChildren(
@@ -2163,7 +2149,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
         To<ShapeClipPathOperation>(clip_path_operation);
     float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
     DCHECK(!GetLayoutObject().IsSVGChild() ||
-           GetLayoutObject().IsSVGForeignObject());
+           GetLayoutObject().IsSVGForeignObjectIncludingNG());
     return !clip_path->GetPath(reference_box, zoom).Contains(point);
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::kReference);
@@ -2321,7 +2307,7 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
       return false;
 
     // SVG root and SVG foreign object paint atomically.
-    if (box->IsSVGRoot() || box->IsSVGForeignObject())
+    if (box->IsSVGRoot() || box->IsSVGForeignObjectIncludingNG())
       return true;
 
     // Don't create subsequence for the document element because the subsequence

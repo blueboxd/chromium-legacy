@@ -10,7 +10,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "third_party/blink/public/common/performance/largest_contentful_paint_type.h"
 
 namespace page_load_metrics {
 
@@ -79,8 +78,7 @@ bool IsSubframe(content::RenderFrameHost* subframe_rfh) {
 }
 
 void Reset(ContentfulPaintTimingInfo& timing) {
-  timing.Reset(absl::nullopt, 0u,
-               blink::mojom::LargestContentfulPaintType::kNone,
+  timing.Reset(absl::nullopt, 0u, blink::LargestContentfulPaintType::kNone,
                /*image_bpp=*/0.0);
 }
 
@@ -99,7 +97,7 @@ bool IsSameSite(const GURL& url1, const GURL& url2) {
 ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
     LargestContentTextOrImage text_or_image,
     bool in_main_frame,
-    blink::mojom::LargestContentfulPaintType type)
+    blink::LargestContentfulPaintType type)
     : size_(0),
       text_or_image_(text_or_image),
       type_(type),
@@ -110,7 +108,7 @@ ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
     const LargestContentTextOrImage text_or_image,
     double image_bpp,
     bool in_main_frame,
-    blink::mojom::LargestContentfulPaintType type)
+    blink::LargestContentfulPaintType type)
     : time_(time),
       size_(size),
       text_or_image_(text_or_image),
@@ -131,8 +129,8 @@ ContentfulPaintTimingInfo::DataAsTraceValue() const {
   data->SetBoolean("inMainFrame", InMainFrame());
   data->SetBoolean(
       "isAnimated",
-      (Type() & blink::mojom::LargestContentfulPaintType::kAnimatedImage) ==
-          blink::mojom::LargestContentfulPaintType::kAnimatedImage);
+      (Type() & blink::LargestContentfulPaintType::kAnimatedImage) ==
+          blink::LargestContentfulPaintType::kAnimatedImage);
   return data;
 }
 
@@ -156,7 +154,7 @@ void LargestContentfulPaintHandler::SetTestMode(bool enabled) {
 void ContentfulPaintTimingInfo::Reset(
     const absl::optional<base::TimeDelta>& time,
     const uint64_t& size,
-    blink::mojom::LargestContentfulPaintType type,
+    blink::LargestContentfulPaintType type,
     double image_bpp) {
   size_ = size;
   time_ = time;
@@ -164,7 +162,7 @@ void ContentfulPaintTimingInfo::Reset(
   image_bpp_ = image_bpp;
 }
 ContentfulPaint::ContentfulPaint(bool in_main_frame,
-                                 blink::mojom::LargestContentfulPaintType type)
+                                 blink::LargestContentfulPaintType type)
     : text_(ContentfulPaintTimingInfo::LargestContentTextOrImage::kText,
             in_main_frame,
             type),
@@ -212,15 +210,13 @@ bool LargestContentfulPaintHandler::AssignTimeAndSizeForLargestContentfulPaint(
 }
 
 LargestContentfulPaintHandler::LargestContentfulPaintHandler()
-    : main_frame_contentful_paint_(
-          true /*in_main_frame*/,
-          blink::mojom::LargestContentfulPaintType::kNone),
-      subframe_contentful_paint_(
-          false /*in_main_frame*/,
-          blink::mojom::LargestContentfulPaintType::kNone),
+    : main_frame_contentful_paint_(true /*in_main_frame*/,
+                                   blink::LargestContentfulPaintType::kNone),
+      subframe_contentful_paint_(false /*in_main_frame*/,
+                                 blink::LargestContentfulPaintType::kNone),
       cross_site_subframe_contentful_paint_(
           false /*in_main_frame*/,
-          blink::mojom::LargestContentfulPaintType::kNone) {}
+          blink::LargestContentfulPaintType::kNone) {}
 
 LargestContentfulPaintHandler::~LargestContentfulPaintHandler() = default;
 
@@ -275,60 +271,68 @@ void LargestContentfulPaintHandler::RecordSubframeTiming(
     const base::TimeDelta& navigation_start_offset) {
   UpdateFirstInputOrScrollNotified(first_input_or_scroll_notified_timestamp,
                                    navigation_start_offset);
-  // TODO(iclelland): Use the remainder of the fields from
-  // largest_contentful_paint to construct the ContentfulPaintTimingInfo here
+  DCHECK(!subframe_contentful_paint_.Text().InMainFrame());
+  DCHECK(!subframe_contentful_paint_.Image().InMainFrame());
   ContentfulPaintTimingInfo new_text_candidate(
       AdjustedTime(largest_contentful_paint.largest_text_paint,
                    navigation_start_offset),
       largest_contentful_paint.largest_text_paint_size,
-      subframe_contentful_paint_.Text().TextOrImage(),
-      subframe_contentful_paint_.Text().ImageBPP(),
-      subframe_contentful_paint_.Text().InMainFrame(),
-      subframe_contentful_paint_.Text().Type());
-  MergeForSubframesWithAdjustedTime(&subframe_contentful_paint_.Text(),
-                                    new_text_candidate);
+      ContentfulPaintTimingInfo::LargestContentTextOrImage::kText,
+      /*image_bpp=*/0.0, /*in_main_frame=*/false,
+      static_cast<blink::LargestContentfulPaintType>(
+          largest_contentful_paint.type));
+  if (IsValid(new_text_candidate.Time())) {
+    MergeForSubframesWithAdjustedTime(&subframe_contentful_paint_.Text(),
+                                      new_text_candidate);
+  }
   // TODO(iclelland): Use the remainder of the fields from
   // largest_contentful_paint to construct the ContentfulPaintTimingInfo here
   ContentfulPaintTimingInfo new_image_candidate(
       AdjustedTime(largest_contentful_paint.largest_image_paint,
                    navigation_start_offset),
       largest_contentful_paint.largest_image_paint_size,
-      subframe_contentful_paint_.Image().TextOrImage(),
-      subframe_contentful_paint_.Image().ImageBPP(),
-      subframe_contentful_paint_.Image().InMainFrame(),
-      subframe_contentful_paint_.Image().Type());
-  MergeForSubframesWithAdjustedTime(&subframe_contentful_paint_.Image(),
-                                    new_image_candidate);
+      ContentfulPaintTimingInfo::LargestContentTextOrImage::kImage,
+      largest_contentful_paint.image_bpp, /*in_main_frame=*/false,
+      static_cast<blink::LargestContentfulPaintType>(
+          largest_contentful_paint.type));
+  if (IsValid(new_image_candidate.Time())) {
+    MergeForSubframesWithAdjustedTime(&subframe_contentful_paint_.Image(),
+                                      new_image_candidate);
+  }
 }
 
 void LargestContentfulPaintHandler::RecordCrossSiteSubframeTiming(
     const page_load_metrics::mojom::LargestContentfulPaintTiming&
         largest_contentful_paint,
     const base::TimeDelta& navigation_start_offset) {
-  // TODO(iclelland): Use the remainder of the fields from
-  // largest_contentful_paint to construct the ContentfulPaintTimingInfo here
+  DCHECK(!cross_site_subframe_contentful_paint_.Text().InMainFrame());
+  DCHECK(!cross_site_subframe_contentful_paint_.Image().InMainFrame());
   ContentfulPaintTimingInfo new_text_candidate(
       AdjustedTime(largest_contentful_paint.largest_text_paint,
                    navigation_start_offset),
       largest_contentful_paint.largest_text_paint_size,
-      cross_site_subframe_contentful_paint_.Text().TextOrImage(),
-      cross_site_subframe_contentful_paint_.Text().ImageBPP(),
-      cross_site_subframe_contentful_paint_.Text().InMainFrame(),
-      cross_site_subframe_contentful_paint_.Text().Type());
-  MergeForSubframesWithAdjustedTime(
-      &cross_site_subframe_contentful_paint_.Text(), new_text_candidate);
+      ContentfulPaintTimingInfo::LargestContentTextOrImage::kText,
+      /*image_bpp=*/0.0, /*in_main_frame=*/false,
+      static_cast<blink::LargestContentfulPaintType>(
+          largest_contentful_paint.type));
+  if (IsValid(new_text_candidate.Time())) {
+    MergeForSubframesWithAdjustedTime(
+        &cross_site_subframe_contentful_paint_.Text(), new_text_candidate);
+  }
   // TODO(iclelland): Use the remainder of the fields from
   // largest_contentful_paint to construct the ContentfulPaintTimingInfo here
   ContentfulPaintTimingInfo new_image_candidate(
       AdjustedTime(largest_contentful_paint.largest_image_paint,
                    navigation_start_offset),
       largest_contentful_paint.largest_image_paint_size,
-      cross_site_subframe_contentful_paint_.Image().TextOrImage(),
-      cross_site_subframe_contentful_paint_.Image().ImageBPP(),
-      cross_site_subframe_contentful_paint_.Image().InMainFrame(),
-      cross_site_subframe_contentful_paint_.Image().Type());
-  MergeForSubframesWithAdjustedTime(
-      &cross_site_subframe_contentful_paint_.Image(), new_image_candidate);
+      ContentfulPaintTimingInfo::LargestContentTextOrImage::kImage,
+      largest_contentful_paint.image_bpp, /*in_main_frame=*/false,
+      static_cast<blink::LargestContentfulPaintType>(
+          largest_contentful_paint.type));
+  if (IsValid(new_image_candidate.Time())) {
+    MergeForSubframesWithAdjustedTime(
+        &cross_site_subframe_contentful_paint_.Image(), new_image_candidate);
+  }
 }
 
 void LargestContentfulPaintHandler::RecordMainFrameTiming(
@@ -343,14 +347,16 @@ void LargestContentfulPaintHandler::RecordMainFrameTiming(
     main_frame_contentful_paint_.Text().Reset(
         largest_contentful_paint.largest_text_paint,
         largest_contentful_paint.largest_text_paint_size,
-        blink::mojom::LargestContentfulPaintType::kNone,
+        blink::LargestContentfulPaintType::kNone,
         /*image_bpp=*/0.0);
   }
   if (IsValid(largest_contentful_paint.largest_image_paint)) {
     main_frame_contentful_paint_.Image().Reset(
         largest_contentful_paint.largest_image_paint,
         largest_contentful_paint.largest_image_paint_size,
-        largest_contentful_paint.type, largest_contentful_paint.image_bpp);
+        static_cast<blink::LargestContentfulPaintType>(
+            largest_contentful_paint.type),
+        largest_contentful_paint.image_bpp);
   }
 }
 

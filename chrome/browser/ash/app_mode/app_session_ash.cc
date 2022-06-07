@@ -44,7 +44,8 @@ void AppSessionAsh::InitForWebKiosk(Browser* browser) {
 }
 
 void AppSessionAsh::InitForWebKioskWithLacros(Profile* profile) {
-  chromeos::AppSession::InitForWebKioskWithLacros(profile);
+  SetProfile(profile);
+  CreateBrowserWindowHandler(nullptr);
   StartFloatingAccessibilityMenu();
 }
 

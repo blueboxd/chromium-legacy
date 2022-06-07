@@ -56,8 +56,11 @@ class DriveFsHost::MountState : public DriveFsSession,
         bool{host->account_token_delegate_->GetCachedAccessToken()};
     search_ = std::make_unique<DriveFsSearch>(
         drivefs_interface(), host_->network_connection_tracker_, host_->clock_);
-    http_client_ = std::make_unique<DriveFsHttpClient>(
-        host_->delegate_->GetURLLoaderFactory());
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kDriveFsChromeNetworking)) {
+      http_client_ = std::make_unique<DriveFsHttpClient>(
+          host_->delegate_->GetURLLoaderFactory());
+    }
   }
 
   MountState(const MountState&) = delete;
@@ -87,7 +90,10 @@ class DriveFsHost::MountState : public DriveFsSession,
         auth_delegate->IsMetricsCollectionEnabled(),
         delegate->GetLostAndFoundDirectoryName(),
         base::FeatureList::IsEnabled(chromeos::features::kDriveFsMirroring),
-        delegate->IsVerboseLoggingEnabled()};
+        delegate->IsVerboseLoggingEnabled(),
+        base::FeatureList::IsEnabled(
+            chromeos::features::kDriveFsChromeNetworking),
+    };
     return DriveFsConnection::Create(delegate->CreateMojoListener(),
                                      std::move(config));
   }
@@ -184,6 +190,12 @@ class DriveFsHost::MountState : public DriveFsSession,
   void ExecuteHttpRequest(
       mojom::HttpRequestPtr request,
       mojo::PendingRemote<mojom::HttpDelegate> delegate) override {
+    if (!http_client_) {
+      // The Chrome Network Service <-> DriveFS bridge is not enabled. Ignore
+      // the request and allow the |delegate| to close itself. DriveFS will
+      // pick up on the |delegate| closure and fallback to cURL.
+      return;
+    }
     http_client_->ExecuteHttpRequest(std::move(request), std::move(delegate));
   }
 

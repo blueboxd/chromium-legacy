@@ -157,7 +157,8 @@ void PersonalDataManagerCleaner::RemoveOrphanAutofillTableRows() {
 
 void PersonalDataManagerCleaner::RemoveInaccessibleProfileValues() {
   if (!base::FeatureList::IsEnabled(
-          features::kAutofillRemoveInaccessibleProfileValues)) {
+          features::kAutofillRemoveInaccessibleProfileValues) ||
+      !features::kAutofillRemoveInaccessibleProfileValuesOnStartup.Get()) {
     return;
   }
 
@@ -336,7 +337,7 @@ void PersonalDataManagerCleaner::UpdateCardsBillingAddressReference(
   for (auto* credit_card : personal_data_manager_->GetCreditCards()) {
     // If the credit card is not associated with a billing address, skip it.
     if (credit_card->billing_address_id().empty())
-      break;
+      continue;
 
     // If the billing address profile associated with the card has been merged,
     // replace it by the id of the profile in which it was merged. Repeat the

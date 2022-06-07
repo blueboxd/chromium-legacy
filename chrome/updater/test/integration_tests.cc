@@ -20,6 +20,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -134,6 +135,10 @@ class IntegrationTest : public ::testing::Test {
 
   void EnterTestMode(const GURL& url) { test_commands_->EnterTestMode(url); }
 
+  void SetGroupPolicies(const base::Value::Dict& values) {
+    test_commands_->SetGroupPolicies(values);
+  }
+
   void ExpectVersionActive(const std::string& version) {
     test_commands_->ExpectVersionActive(version);
   }
@@ -158,6 +163,14 @@ class IntegrationTest : public ::testing::Test {
 
   void ExpectLegacyProcessLauncherSucceeds() {
     test_commands_->ExpectLegacyProcessLauncherSucceeds();
+  }
+
+  void ExpectLegacyAppCommandWebSucceeds(const std::string& app_id,
+                                         const std::string& command_id,
+                                         const base::Value::List& parameters,
+                                         int expected_exit_code) {
+    test_commands_->ExpectLegacyAppCommandWebSucceeds(
+        app_id, command_id, parameters, expected_exit_code);
   }
 
   void RunUninstallCmdLine() { test_commands_->RunUninstallCmdLine(); }
@@ -295,6 +308,8 @@ class IntegrationTest : public ::testing::Test {
   void ExpectLastChecked() { test_commands_->ExpectLastChecked(); }
 
   void ExpectLastStarted() { test_commands_->ExpectLastStarted(); }
+
+  void RunOfflineInstall() { test_commands_->RunOfflineInstall(); }
 
   scoped_refptr<IntegrationTestCommands> test_commands_;
 
@@ -484,34 +499,22 @@ TEST_F(IntegrationTest, LegacyUpdate3Web) {
   ExpectNoUpdateSequence(&test_server, kAppId);
   ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_NO_UPDATE, S_OK);
 
+  base::Value::Dict group_policies;
+  group_policies.Set("Updatetest1", kPolicyAutomaticUpdatesOnly);
+  SetGroupPolicies(group_policies);
+  ExpectLegacyUpdate3WebSucceeds(
+      kAppId, STATE_ERROR, GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL);
+
+  group_policies.Set("Updatetest1", kPolicyDisabled);
+  SetGroupPolicies(group_policies);
+  ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_ERROR,
+                                 GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
+
+  group_policies.clear();
+  SetGroupPolicies(group_policies);
   ExpectUpdateSequence(&test_server, kAppId, "", base::Version("0.1"),
                        base::Version("0.2"));
   ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_INSTALL_COMPLETE, S_OK);
-
-  // TODO(crbug.com/1272853) - Need administrative access to be able to write
-  // under the policies key.
-  if (::IsUserAnAdmin()) {
-    base::win::RegKey key(HKEY_LOCAL_MACHINE, UPDATER_POLICIES_KEY,
-                          Wow6432(KEY_ALL_ACCESS));
-
-    EXPECT_EQ(ERROR_SUCCESS,
-              key.WriteValue(
-                  base::StrCat({L"Update", base::UTF8ToWide(kAppId)}).c_str(),
-                  kPolicyAutomaticUpdatesOnly));
-    ExpectLegacyUpdate3WebSucceeds(
-        kAppId, STATE_ERROR, GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL);
-
-    EXPECT_EQ(ERROR_SUCCESS,
-              key.WriteValue(
-                  base::StrCat({L"Update", base::UTF8ToWide(kAppId)}).c_str(),
-                  static_cast<DWORD>(kPolicyDisabled)));
-    ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_ERROR,
-                                   GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
-
-    EXPECT_EQ(ERROR_SUCCESS,
-              base::win::RegKey(HKEY_LOCAL_MACHINE, L"", Wow6432(DELETE))
-                  .DeleteKey(UPDATER_POLICIES_KEY));
-  }
 
   Uninstall();
 }
@@ -519,6 +522,19 @@ TEST_F(IntegrationTest, LegacyUpdate3Web) {
 TEST_F(IntegrationTest, LegacyProcessLauncher) {
   Install();
   ExpectLegacyProcessLauncherSucceeds();
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, LegacyAppCommandWeb) {
+  Install();
+
+  const char kAppId[] = "test1";
+  InstallApp(kAppId);
+
+  base::Value::List parameters;
+  parameters.Append("5432");
+  ExpectLegacyAppCommandWebSucceeds(kAppId, "command1", parameters, 5432);
+
   Uninstall();
 }
 
@@ -755,6 +771,13 @@ TEST_F(IntegrationTest, RecoveryNoUpdater) {
   ExpectInstalled();
   ExpectActiveUpdater();
   ExpectAppVersion(appid, version);
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, OfflineInstall) {
+  Install();
+  ExpectInstalled();
+  RunOfflineInstall();
   Uninstall();
 }
 

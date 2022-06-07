@@ -299,9 +299,9 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeRelativeSelector(
   std::unique_ptr<CSSParserSelector> selector =
       std::make_unique<CSSParserSelector>();
   selector->SetMatch(CSSSelector::kPseudoClass);
-  selector->UpdatePseudoType("-internal-relative-leftmost", *context_,
+  selector->UpdatePseudoType("-internal-relative-anchor", *context_,
                              false /*has_arguments*/, context_->Mode());
-  DCHECK_EQ(selector->GetPseudoType(), CSSSelector::kPseudoRelativeLeftmost);
+  DCHECK_EQ(selector->GetPseudoType(), CSSSelector::kPseudoRelativeAnchor);
 
   CSSSelector::RelationType combinator = ConsumeCombinator(range);
   switch (combinator) {
@@ -342,6 +342,10 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeComplexSelector(
     previous_compound_flags |= ExtractCompoundFlags(*simple, context_->Mode());
 
   if (CSSSelector::RelationType combinator = ConsumeCombinator(range)) {
+    if (is_inside_has_argument_ &&
+        is_inside_logical_combination_in_has_argument_) {
+      found_complex_logical_combinations_in_has_argument_ = true;
+    }
     return ConsumePartialComplexSelector(range, combinator, std::move(selector),
                                          previous_compound_flags);
   }
@@ -564,14 +568,7 @@ bool IsSimpleSelectorValidAfterPseudoElement(
 bool IsPseudoClassValidWithinHasArgument(CSSParserSelector& selector) {
   DCHECK_EQ(selector.Match(), CSSSelector::kPseudoClass);
   switch (selector.GetPseudoType()) {
-    // Limited these logical combinations inside :has() to avoid increasing
-    // the :has() invalidation complexity.
-    // Currently, SelectorChecker supports these cases, but StyleEngine doesn't
-    // support invalidation for these cases yet because it can increase
-    // invalidation complexity.
-    case CSSSelector::kPseudoIs:
-    case CSSSelector::kPseudoWhere:
-    case CSSSelector::kPseudoAny:
+    // Limited nested :has() to avoid increasing :has() invalidation complexity.
     case CSSSelector::kPseudoHas:
       return false;
     default:
@@ -845,7 +842,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       disallow_pseudo_elements_)
     return nullptr;
 
-  if (UNLIKELY(is_inside_has_argument_)) {
+  if (is_inside_has_argument_) {
     DCHECK(disallow_pseudo_elements_);
     if (!IsPseudoClassValidWithinHasArgument(*selector))
       return nullptr;
@@ -868,6 +865,9 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     case CSSSelector::kPseudoIs: {
       DisallowPseudoElementsScope scope(this);
       base::AutoReset<bool> resist_namespace(&resist_default_namespace_, true);
+      base::AutoReset<bool> is_inside_logical_combination_in_has_argument(
+          &is_inside_logical_combination_in_has_argument_,
+          is_inside_has_argument_);
 
       std::unique_ptr<CSSSelectorList> selector_list =
           std::make_unique<CSSSelectorList>();
@@ -880,6 +880,9 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     case CSSSelector::kPseudoWhere: {
       DisallowPseudoElementsScope scope(this);
       base::AutoReset<bool> resist_namespace(&resist_default_namespace_, true);
+      base::AutoReset<bool> is_inside_logical_combination_in_has_argument(
+          &is_inside_logical_combination_in_has_argument_,
+          is_inside_has_argument_);
 
       std::unique_ptr<CSSSelectorList> selector_list =
           std::make_unique<CSSSelectorList>();
@@ -930,6 +933,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
                                                    true);
       base::AutoReset<bool> found_pseudo_in_has_argument(
           &found_pseudo_in_has_argument_, false);
+      base::AutoReset<bool> found_complex_logical_combinations_in_has_argument(
+          &found_complex_logical_combinations_in_has_argument_, false);
 
       std::unique_ptr<CSSSelectorList> selector_list =
           std::make_unique<CSSSelectorList>();
@@ -938,13 +943,18 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
         return nullptr;
 
       selector->SetSelectorList(std::move(selector_list));
-      if (UNLIKELY(found_pseudo_in_has_argument_))
+      if (found_pseudo_in_has_argument_)
         selector->SetContainsPseudoInsideHasPseudoClass();
+      if (found_complex_logical_combinations_in_has_argument_)
+        selector->SetContainsComplexLogicalCombinationsInsideHasPseudoClass();
       return selector;
     }
     case CSSSelector::kPseudoNot: {
       DisallowPseudoElementsScope scope(this);
       base::AutoReset<bool> resist_namespace(&resist_default_namespace_, true);
+      base::AutoReset<bool> is_inside_logical_combination_in_has_argument(
+          &is_inside_logical_combination_in_has_argument_,
+          is_inside_has_argument_);
 
       std::unique_ptr<CSSSelectorList> selector_list =
           std::make_unique<CSSSelectorList>();

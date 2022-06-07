@@ -267,8 +267,8 @@ void NGTextPainter::PaintDecorationsExceptLineThrough(
     bool* has_line_through_decoration) {
   *has_line_through_decoration = false;
 
-  const NGTextDecorationOffset decoration_offset(decoration_info.Style(),
-                                                 text_item.Style(), nullptr);
+  const NGTextDecorationOffset decoration_offset(decoration_info.TargetStyle(),
+                                                 text_item.Style());
 
   if (svg_text_paint_state_.has_value()) {
     GraphicsContextStateSaver state_saver(paint_info.context, false);

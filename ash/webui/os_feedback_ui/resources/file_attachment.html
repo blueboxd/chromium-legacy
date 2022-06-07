@@ -1,0 +1,49 @@
+<style>
+  /* Special attribute to hide elements. */
+  [hidden] {
+    display: none !important;
+  }
+
+  :host {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .file-input {
+    cursor: pointer;
+  }
+
+  #addFileContainer,
+  #replaceFileContainer {
+    width: 248px;
+  }
+
+  #replaceFileContainer {
+    display: flex;
+    flex-direction: row;
+  }
+
+  #selectFileDialog {
+    height: 0;
+    opacity: 0;
+    width: 0;
+  }
+</style>
+<div id="addFileContainer" hidden="[[hasSelectedAFile_]]">
+  <label id="addFileLabel" class="file-input"
+      on-click="handleOpenFileInputClick_">
+    <iron-icon icon="attachment:add-file"></iron-icon>Add file
+  </label>
+</div>
+<input id="selectFileDialog" type="file" on-change="handleFileSelectChange_">
+<div id="replaceFileContainer" hidden="[[!hasSelectedAFile_]]">
+  <input type="checkbox" id="selectFileCheckbox">
+  <div>
+    <div id="selectedFileName"></div>
+    <label id="replaceFileLabel" class="file-input"
+        on-click="handleOpenFileInputClick_">
+      Replace
+    </label>
+  </div>
+</div>

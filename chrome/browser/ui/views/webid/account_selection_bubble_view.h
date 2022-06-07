@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_WEBID_ACCOUNT_SELECTION_BUBBLE_VIEW_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webid/account_selection_view.h"
 #include "components/image_fetcher/core/image_fetcher.h"
@@ -27,8 +28,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
  public:
   METADATA_HEADER(AccountSelectionBubbleView);
   AccountSelectionBubbleView(
-      const std::string& rp_etld_plus_one,
-      const std::string& idp_etld_plus_one,
+      const std::string& rp_for_display,
+      const std::string& idp_for_display,
       base::span<const content::IdentityRequestAccount> accounts,
       const content::IdentityProviderMetadata& idp_metadata,
       const content::ClientIdData& client_data,
@@ -42,7 +43,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
  private:
   // Returns a View containing the logo of the identity provider and the title
   // of the bubble, properly formatted.
-  std::unique_ptr<views::View> CreateHeaderView(const std::u16string& title);
+  std::unique_ptr<views::View> CreateHeaderView(const std::u16string& title,
+                                                bool has_icon);
 
   void CloseBubble();
 
@@ -104,7 +106,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   // Used in various messages so the user is aware of who the IDP is.
-  std::u16string idp_etld_plus_one_;
+  std::u16string idp_for_display_;
 
   // Used in single account chooser to determine the look of the consent button.
   absl::optional<SkColor> brand_text_color_;
@@ -121,16 +123,16 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
   const content::ClientIdData client_data_;
 
   // View containing the logo of the identity provider and the title.
-  views::View* header_view_{nullptr};
+  raw_ptr<views::View> header_view_{nullptr};
 
   // View containing the bubble icon.
-  views::ImageView* bubble_icon_view_{nullptr};
+  raw_ptr<views::ImageView> bubble_icon_view_{nullptr};
 
   // View containing the bubble title.
-  views::Label* title_label_{nullptr};
+  raw_ptr<views::Label> title_label_{nullptr};
 
   // View containing the continue button.
-  views::View* continue_button_{nullptr};
+  raw_ptr<views::View> continue_button_{nullptr};
 
   // Used to differentiate UI dismissal scenarios.
   bool verify_sheet_shown_{false};

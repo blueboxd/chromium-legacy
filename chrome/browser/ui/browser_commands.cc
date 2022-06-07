@@ -189,18 +189,9 @@ translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
       [[fallthrough]];
     case ShowTranslateBubbleResult::SUCCESS:
       return translate::TranslateBubbleUiEvent::BUBBLE_SHOWN;
-    case ShowTranslateBubbleResult::BROWSER_WINDOW_NOT_VALID:
-      return translate::TranslateBubbleUiEvent::
-          BUBBLE_NOT_SHOWN_WINDOW_NOT_VALID;
     case ShowTranslateBubbleResult::BROWSER_WINDOW_MINIMIZED:
       return translate::TranslateBubbleUiEvent::
           BUBBLE_NOT_SHOWN_WINDOW_MINIMIZED;
-    case ShowTranslateBubbleResult::BROWSER_WINDOW_NOT_ACTIVE:
-      return translate::TranslateBubbleUiEvent::
-          BUBBLE_NOT_SHOWN_WINDOW_NOT_ACTIVE;
-    case ShowTranslateBubbleResult::WEB_CONTENTS_NOT_ACTIVE:
-      return translate::TranslateBubbleUiEvent::
-          BUBBLE_NOT_SHOWN_WEB_CONTENTS_NOT_ACTIVE;
     case ShowTranslateBubbleResult::EDITABLE_FIELD_IS_ACTIVE:
       return translate::TranslateBubbleUiEvent::
           BUBBLE_NOT_SHOWN_EDITABLE_FIELD_IS_ACTIVE;
@@ -1127,8 +1118,7 @@ void BookmarkAllTabs(Browser* browser) {
   base::RecordAction(UserMetricsAction("BookmarkAllTabs"));
   RecordBookmarkAllTabsWithTabsCount(browser->profile(),
                                      browser->tab_strip_model()->count());
-  // We record the profile that invoked this option.
-  RecordBookmarksAdded(browser->profile());
+
   chrome::ShowBookmarkAllTabsDialog(browser);
 }
 
@@ -1280,7 +1270,8 @@ void Translate(Browser* browser) {
       web_contents, step, source_language, target_language,
       translate::TranslateErrors::NONE, true);
   if (result != ShowTranslateBubbleResult::SUCCESS)
-    translate::ReportUiAction(TranslateBubbleResultToUiEvent(result));
+    translate::ReportTranslateBubbleUiAction(
+        TranslateBubbleResultToUiEvent(result));
 }
 
 void ManagePasswordsForPage(Browser* browser) {
@@ -1594,8 +1585,7 @@ void ShowAppMenu(Browser* browser) {
 
 void ShowAvatarMenu(Browser* browser) {
   browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, true);
+      /*is_source_accelerator=*/true);
 }
 
 void OpenUpdateChromeDialog(Browser* browser) {

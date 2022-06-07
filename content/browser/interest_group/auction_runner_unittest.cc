@@ -142,6 +142,9 @@ std::string MakeBidScript(const url::Origin& seller,
         throw new Error("wrong interestGroupName");
       if (interestGroup.owner !== interestGroupOwner)
         throw new Error("wrong interestGroupOwner");
+      // The actual priority should be hidden from the worklet.
+      if (interestGroup.priority !== undefined)
+        throw new Error("wrong priority: " + interestGroup.priority);
       // None of these tests set a dailyUpdateUrl. Non-empty values are tested
       // by browser tests.
       if ("dailyUpdateUrl" in interestGroup)
@@ -904,6 +907,8 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
                /*has_bidding_signals_data_version=*/false,
                debug_loss_report_url,
                /*debug_win_report_url=*/absl::nullopt,
+               /*set_priority=*/0,
+               /*has_set_priority=*/false,
                /*errors=*/std::vector<std::string>());
       return;
     }
@@ -914,6 +919,8 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
              bidding_signals_data_version.value_or(0),
              bidding_signals_data_version.has_value(), debug_loss_report_url,
              debug_win_report_url,
+             /*set_priority=*/0,
+             /*has_set_priority=*/false,
              /*errors=*/std::vector<std::string>());
   }
 
@@ -993,7 +1000,7 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
 
   void ScoreAd(const std::string& ad_metadata_json,
                double bid,
-               blink::mojom::AuctionAdConfigNonSharedParamsPtr
+               const blink::AuctionConfig::NonSharedParams&
                    auction_ad_config_non_shared_params,
                auction_worklet::mojom::ComponentAuctionOtherSellerPtr
                    browser_signals_other_seller,
@@ -1032,7 +1039,7 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
   }
 
   void ReportResult(
-      blink::mojom::AuctionAdConfigNonSharedParamsPtr
+      const blink::AuctionConfig::NonSharedParams&
           auction_ad_config_non_shared_params,
       auction_worklet::mojom::ComponentAuctionOtherSellerPtr
           browser_signals_other_seller,
@@ -1453,24 +1460,18 @@ class AuctionRunnerTest : public testing::Test,
   std::string TakeBadMessage() { return std::move(bad_message_); }
 
   // Helper to create an auction config with the specified values.
-  blink::mojom::AuctionAdConfigPtr CreateAuctionConfig(
+  blink::AuctionConfig CreateAuctionConfig(
       const GURL& seller_decision_logic_url,
       absl::optional<std::vector<url::Origin>> buyers) {
-    blink::mojom::AuctionAdConfigPtr auction_config =
-        blink::mojom::AuctionAdConfig::New();
-    auction_config->seller = url::Origin::Create(seller_decision_logic_url);
-    auction_config->decision_logic_url = seller_decision_logic_url;
+    blink::AuctionConfig auction_config;
+    auction_config.seller = url::Origin::Create(seller_decision_logic_url);
+    auction_config.decision_logic_url = seller_decision_logic_url;
 
-    auction_config->auction_ad_config_non_shared_params =
-        blink::mojom::AuctionAdConfigNonSharedParams::New();
-    auction_config->auction_ad_config_non_shared_params->interest_group_buyers =
-        std::move(buyers);
+    auction_config.non_shared_params.interest_group_buyers = std::move(buyers);
 
-    auction_config->auction_ad_config_non_shared_params->seller_signals =
-        base::StringPrintf(R"({"url": "%s"})",
-                           seller_decision_logic_url.spec().c_str());
-    auction_config->auction_ad_config_non_shared_params->seller_timeout =
-        base::Milliseconds(1000);
+    auction_config.non_shared_params.seller_signals = base::StringPrintf(
+        R"({"url": "%s"})", seller_decision_logic_url.spec().c_str());
+    auction_config.non_shared_params.seller_timeout = base::Milliseconds(1000);
 
     base::flat_map<url::Origin, std::string> per_buyer_signals;
     // Use a combination of bidder and seller values, so can make sure bidders
@@ -1478,40 +1479,31 @@ class AuctionRunnerTest : public testing::Test,
     // as a defense against pulling the right values from the wrong places.
     per_buyer_signals[kBidder1] = base::StringPrintf(
         R"({"%sSignals": "%sSignals"})",
-        auction_config->seller.Serialize().c_str(), kBidder1Name.c_str());
+        auction_config.seller.Serialize().c_str(), kBidder1Name.c_str());
     per_buyer_signals[kBidder2] = base::StringPrintf(
         R"({"%sSignals": "%sSignals"})",
-        auction_config->seller.Serialize().c_str(), kBidder2Name.c_str());
-    auction_config->auction_ad_config_non_shared_params->per_buyer_signals =
+        auction_config.seller.Serialize().c_str(), kBidder2Name.c_str());
+    auction_config.non_shared_params.per_buyer_signals =
         std::move(per_buyer_signals);
 
     base::flat_map<url::Origin, base::TimeDelta> per_buyer_timeouts;
     // Any per buyer timeout higher than 500 ms will be clamped to 500 ms by the
     // AuctionRunner.
     per_buyer_timeouts[kBidder1] = base::Milliseconds(1000);
-    auction_config->auction_ad_config_non_shared_params->per_buyer_timeouts =
+    auction_config.non_shared_params.per_buyer_timeouts =
         std::move(per_buyer_timeouts);
-    auction_config->auction_ad_config_non_shared_params->all_buyers_timeout =
+    auction_config.non_shared_params.all_buyers_timeout =
         base::Milliseconds(150);
 
-    auction_config->auction_ad_config_non_shared_params->auction_signals =
-        base::StringPrintf(R"("auctionSignalsFor %s")",
-                           auction_config->seller.Serialize().c_str());
+    auction_config.non_shared_params.auction_signals = base::StringPrintf(
+        R"("auctionSignalsFor %s")", auction_config.seller.Serialize().c_str());
 
-    if (seller_experiment_group_id_.has_value()) {
-      auction_config->has_seller_experiment_group_id = true;
-      auction_config->seller_experiment_group_id =
-          seller_experiment_group_id_.value();
-    }
-
-    if (all_buyer_experiment_group_id_.has_value()) {
-      auction_config->has_all_buyer_experiment_group_id = true;
-      auction_config->all_buyer_experiment_group_id =
-          all_buyer_experiment_group_id_.value();
-    }
+    auction_config.seller_experiment_group_id = seller_experiment_group_id_;
+    auction_config.all_buyer_experiment_group_id =
+        all_buyer_experiment_group_id_;
 
     for (const auto& kv : per_buyer_experiment_group_id_) {
-      auction_config->per_buyer_experiment_group_ids[kv.first] = kv.second;
+      auction_config.per_buyer_experiment_group_ids[kv.first] = kv.second;
     }
 
     return auction_config;
@@ -1529,14 +1521,14 @@ class AuctionRunnerTest : public testing::Test,
                     std::vector<StorageInterestGroup> bidders) {
     auction_complete_ = false;
 
-    blink::mojom::AuctionAdConfigPtr auction_config =
+    auto auction_config =
         CreateAuctionConfig(seller_decision_logic_url, interest_group_buyers_);
 
-    auction_config->trusted_scoring_signals_url = trusted_scoring_signals_url_;
+    auction_config.trusted_scoring_signals_url = trusted_scoring_signals_url_;
 
     for (const auto& component_auction : component_auctions_) {
-      auction_config->auction_ad_config_non_shared_params->component_auctions
-          .emplace_back(component_auction.Clone());
+      auction_config.non_shared_params.component_auctions.push_back(
+          component_auction);
     }
 
     interest_group_manager_ = std::make_unique<InterestGroupManagerImpl>(
@@ -1700,7 +1692,7 @@ class AuctionRunnerTest : public testing::Test,
 
     StorageInterestGroup storage_group;
     storage_group.interest_group = blink::InterestGroup(
-        base::Time::Max(), std::move(owner), std::move(name), /*priority=*/0.0,
+        base::Time::Max(), std::move(owner), std::move(name), /*priority=*/1.0,
         std::move(bidding_url),
         /*bidding_wasm_helper_url=*/absl::nullopt,
         /*update_url=*/absl::nullopt, std::move(trusted_bidding_signals_url),
@@ -1982,7 +1974,7 @@ class AuctionRunnerTest : public testing::Test,
   absl::optional<std::vector<url::Origin>> interest_group_buyers_ = {
       {kBidder1, kBidder2}};
 
-  std::vector<blink::mojom::AuctionAdConfigPtr> component_auctions_;
+  std::vector<blink::AuctionConfig> component_auctions_;
 
   // Origins which are not allowed to take part in auctions, as the
   // corresponding participant types.
@@ -2517,17 +2509,17 @@ TEST_F(AuctionRunnerTest, BasicDebug) {
       TestDevToolsAgentClient::Event breakpoint_hit =
           debug.WaitForMethodNotification("Debugger.paused");
 
-      base::Value* hit_breakpoints =
-          breakpoint_hit.value.FindListPath("params.hitBreakpoints");
+      ASSERT_TRUE(breakpoint_hit.value.is_dict());
+      base::Value::List* hit_breakpoints =
+          breakpoint_hit.value.GetDict().FindListByDottedPath(
+              "params.hitBreakpoints");
       ASSERT_TRUE(hit_breakpoints);
-      base::Value::ConstListView hit_breakpoints_list =
-          hit_breakpoints->GetListDeprecated();
       // This is LE and not EQ to work around
       // https://bugs.chromium.org/p/v8/issues/detail?id=12586
-      ASSERT_LE(1u, hit_breakpoints_list.size());
-      ASSERT_TRUE(hit_breakpoints_list[0].is_string());
+      ASSERT_LE(1u, hit_breakpoints->size());
+      ASSERT_TRUE((*hit_breakpoints)[0].is_string());
       EXPECT_EQ(base::StringPrintf("1:11:0:%s", debug_url.spec().c_str()),
-                hit_breakpoints_list[0].GetString());
+                (*hit_breakpoints)[0].GetString());
 
       // Just resume execution.
       debug.RunCommandAndWaitForResult(
@@ -4401,8 +4393,14 @@ function reportResult(auctionConfig, browserSignals) {
 }
                                          )"));
 
-  // Only accept first bidder's bid. Requests will always be batched non-racily,
-  // since a mock time is in use.
+  // Response body that only accept first bidder's bid.
+  const char kTrustedScoringSignalsBody[] =
+      R"({"renderUrls":{"https://ad1.com/":"accept", "https://ad2.com/":"reject"}})";
+
+  // There may be one merged trusted scoring signals request, or two separate
+  // requests.
+
+  // Response in the case of a single merged trusted scoring signals request.
   auction_worklet::AddVersionedJsonResponse(
       &url_loader_factory_,
       GURL(trusted_scoring_signals_url_->spec() +
@@ -4410,9 +4408,27 @@ function reportResult(auctionConfig, browserSignals) {
            "&renderUrls=https%3A%2F%2Fad1.com%2F,https%3A%2F%2Fad2.com%2F"
            "&adComponentRenderUrls=https%3A%2F%2Fad1.com-component1.com%2F,"
            "https%3A%2F%2Fad2.com-component1.com%2F"),
-      R"(
-{"renderUrls":{"https://ad1.com/":"accept", "https://ad2.com/":"reject"}}
-      )",
+      kTrustedScoringSignalsBody,
+      /*data_version=*/2);
+
+  // Responses in the case of two separate trusted scoring signals requests.
+  // Extra entries in the response dictionary will be ignored, so can use the
+  // same body as in the merged request case.
+  auction_worklet::AddVersionedJsonResponse(
+      &url_loader_factory_,
+      GURL(trusted_scoring_signals_url_->spec() +
+           "?hostname=publisher1.com"
+           "&renderUrls=https%3A%2F%2Fad1.com%2F"
+           "&adComponentRenderUrls=https%3A%2F%2Fad1.com-component1.com%2F"),
+      kTrustedScoringSignalsBody,
+      /*data_version=*/2);
+  auction_worklet::AddVersionedJsonResponse(
+      &url_loader_factory_,
+      GURL(trusted_scoring_signals_url_->spec() +
+           "?hostname=publisher1.com"
+           "&renderUrls=https%3A%2F%2Fad2.com%2F"
+           "&adComponentRenderUrls=https%3A%2F%2Fad2.com-component1.com%2F"),
+      kTrustedScoringSignalsBody,
       /*data_version=*/2);
 
   RunStandardAuction();

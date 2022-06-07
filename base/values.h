@@ -1050,6 +1050,88 @@ class BASE_EXPORT GSL_OWNER Value {
   BASE_EXPORT friend bool operator<=(const Value& lhs, const Value& rhs);
   BASE_EXPORT friend bool operator>=(const Value& lhs, const Value& rhs);
 
+  BASE_EXPORT friend bool operator==(const Value& lhs, bool rhs);
+  friend bool operator==(bool lhs, const Value& rhs) { return rhs == lhs; }
+  friend bool operator!=(const Value& lhs, bool rhs) { return !(lhs == rhs); }
+  friend bool operator!=(bool lhs, const Value& rhs) { return !(lhs == rhs); }
+  template <typename T>
+  friend bool operator==(const Value& lhs, const T* rhs) = delete;
+  template <typename T>
+  friend bool operator==(const T* lhs, const Value& rhs) = delete;
+  template <typename T>
+  friend bool operator!=(const Value& lhs, const T* rhs) = delete;
+  template <typename T>
+  friend bool operator!=(const T* lhs, const Value& rhs) = delete;
+  BASE_EXPORT friend bool operator==(const Value& lhs, int rhs);
+  friend bool operator==(int lhs, const Value& rhs) { return rhs == lhs; }
+  friend bool operator!=(const Value& lhs, int rhs) { return !(lhs == rhs); }
+  friend bool operator!=(int lhs, const Value& rhs) { return !(lhs == rhs); }
+  BASE_EXPORT friend bool operator==(const Value& lhs, double rhs);
+  friend bool operator==(double lhs, const Value& rhs) { return rhs == lhs; }
+  friend bool operator!=(const Value& lhs, double rhs) { return !(lhs == rhs); }
+  friend bool operator!=(double lhs, const Value& rhs) { return !(lhs == rhs); }
+  // Note: StringPiece16 overload intentionally omitted: Value internally stores
+  // strings as UTF-8. While it is possible to implement a comparison operator
+  // that would not require first creating a new UTF-8 string from the UTF-16
+  // string argument, it is simpler to just not implement it at all for a rare
+  // use case.
+  BASE_EXPORT friend bool operator==(const Value& lhs, StringPiece rhs);
+  friend bool operator==(StringPiece lhs, const Value& rhs) {
+    return rhs == lhs;
+  }
+  friend bool operator!=(const Value& lhs, StringPiece rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(StringPiece lhs, const Value& rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator==(const Value& lhs, const char* rhs) {
+    return lhs == StringPiece(rhs);
+  }
+  friend bool operator==(const char* lhs, const Value& rhs) {
+    return rhs == lhs;
+  }
+  friend bool operator!=(const Value& lhs, const char* rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(const char* lhs, const Value& rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator==(const Value& lhs, const std::string& rhs) {
+    return lhs == StringPiece(rhs);
+  }
+  friend bool operator==(const std::string& lhs, const Value& rhs) {
+    return rhs == lhs;
+  }
+  friend bool operator!=(const Value& lhs, const std::string& rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(const std::string& lhs, const Value& rhs) {
+    return !(lhs == rhs);
+  }
+  // Note: Blob support intentionally omitted as an experiment for potentially
+  // wholly removing Blob support from Value itself in the future.
+  BASE_EXPORT friend bool operator==(const Value& lhs, const Value::Dict& rhs);
+  friend bool operator==(const Value::Dict& lhs, const Value& rhs) {
+    return rhs == lhs;
+  }
+  friend bool operator!=(const Value& lhs, const Value::Dict& rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(const Value::Dict& lhs, const Value& rhs) {
+    return !(lhs == rhs);
+  }
+  BASE_EXPORT friend bool operator==(const Value& lhs, const Value::List& rhs);
+  friend bool operator==(const Value::List& lhs, const Value& rhs) {
+    return rhs == lhs;
+  }
+  friend bool operator!=(const Value& lhs, const Value::List& rhs) {
+    return !(lhs == rhs);
+  }
+  friend bool operator!=(const Value::List& lhs, const Value& rhs) {
+    return !(lhs == rhs);
+  }
+
   // Compares if two Value objects have equal contents.
   // DEPRECATED, use `operator==(const Value& lhs, const Value& rhs)` instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
@@ -1098,7 +1180,7 @@ class BASE_EXPORT GSL_OWNER Value {
   //
   // To override this, store the value as an array of 32-bit integers, and
   // perform the appropriate bit casts when reading / writing to it.
-  class DoubleStorage {
+  class BASE_EXPORT DoubleStorage {
    public:
     explicit DoubleStorage(double v);
     DoubleStorage(const DoubleStorage&) = default;
@@ -1174,11 +1256,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   DictionaryValue();
   explicit DictionaryValue(const LegacyDictStorage& in_dict);
   explicit DictionaryValue(LegacyDictStorage&& in_dict) noexcept;
-
-  // Returns true if the current dictionary has a value for the given key.
-  //
-  // DEPRECATED: prefer `Value::Dict::contains()`.
-  bool HasKey(StringPiece key) const;
 
   // Sets the Value associated with the given path starting from this object.
   // A path has the form "<key>" or "<key>.<key>.[...]", where "." indexes
@@ -1348,8 +1425,6 @@ class BASE_EXPORT ListValue : public Value {
   // Appends a Value to the end of the list.
   // DEPRECATED: prefer `Value::List::Append()`.
   using Value::Append;
-  // DEPRECATED: prefer `Value::List::Append()`.
-  void Append(std::unique_ptr<Value> in_value);
   // DEPRECATED: prefer `Value::List::Append()`. Provided to simplify
   // incremental migration and intentionally only defined on ListValue and not
   // Value.
@@ -1383,16 +1458,27 @@ class BASE_EXPORT ListValue : public Value {
 // `Value::List` to a function with a `ValueView` parameter.
 class BASE_EXPORT GSL_POINTER ValueView {
  public:
+  ValueView() = default;
   ValueView(bool value) : data_view_(value) {}
+  template <typename T>
+  ValueView(const T*) = delete;
   ValueView(int value) : data_view_(value) {}
   ValueView(double value)
       : data_view_(absl::in_place_type_t<Value::DoubleStorage>(), value) {}
-  ValueView(const std::string& value) : data_view_(value) {}
+  ValueView(StringPiece value) : data_view_(value) {}
+  ValueView(const char* value) : ValueView(StringPiece(value)) {}
+  ValueView(const std::string& value) : ValueView(StringPiece(value)) {}
+  // Note: UTF-16 is intentionally not supported. ValueView is intended to be a
+  // low-cost view abstraction, but Value internally represents strings as
+  // UTF-8, so it would not be possible to implement this without allocating an
+  // entirely new UTF-8 string.
   ValueView(const Value::BlobStorage& value) : data_view_(value) {}
   ValueView(const Value::Dict& value) : data_view_(value) {}
   ValueView(const Value::List& value) : data_view_(value) {}
   ValueView(const Value& value);
 
+  // This is the only 'getter' method provided as `ValueView` is not intended
+  // to be a general replacement of `Value`.
   template <typename Visitor>
   auto Visit(Visitor&& visitor) const {
     return absl::visit(std::forward<Visitor>(visitor), data_view_);
@@ -1404,11 +1490,16 @@ class BASE_EXPORT GSL_POINTER ValueView {
                     bool,
                     int,
                     Value::DoubleStorage,
-                    std::reference_wrapper<const std::string>,
+                    StringPiece,
                     std::reference_wrapper<const Value::BlobStorage>,
                     std::reference_wrapper<const Value::Dict>,
                     std::reference_wrapper<const Value::List>>;
 
+ public:
+  using DoubleStorageForTest = Value::DoubleStorage;
+  const ViewType& data_view_for_test() const { return data_view_; }
+
+ private:
   ViewType data_view_;
 };
 

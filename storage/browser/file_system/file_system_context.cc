@@ -155,7 +155,6 @@ scoped_refptr<FileSystemContext> FileSystemContext::Create(
     std::vector<std::unique_ptr<FileSystemBackend>> additional_backends,
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
-    const base::FilePath& bucket_base_path,
     const FileSystemOptions& options) {
   bool force_override_incognito = base::FeatureList::IsEnabled(
       features::kIncognitoFileSystemContextForTesting);
@@ -170,8 +169,8 @@ scoped_refptr<FileSystemContext> FileSystemContext::Create(
       std::move(io_task_runner), std::move(file_task_runner),
       std::move(external_mount_points), std::move(special_storage_policy),
       std::move(quota_manager_proxy), std::move(additional_backends),
-      auto_mount_handlers, partition_path, bucket_base_path,
-      maybe_overridden_options, base::PassKey<FileSystemContext>());
+      auto_mount_handlers, partition_path, maybe_overridden_options,
+      base::PassKey<FileSystemContext>());
   context->Initialize();
   return context;
 }
@@ -185,7 +184,6 @@ FileSystemContext::FileSystemContext(
     std::vector<std::unique_ptr<FileSystemBackend>> additional_backends,
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
-    const base::FilePath& bucket_base_path,
     const FileSystemOptions& options,
     base::PassKey<FileSystemContext>)
     : base::RefCountedDeleteOnSequence<FileSystemContext>(io_task_runner),
@@ -197,13 +195,11 @@ FileSystemContext::FileSystemContext(
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       quota_client_(std::make_unique<FileSystemQuotaClient>(this)),
       quota_client_wrapper_(
-          std::make_unique<storage::QuotaClientCallbackWrapper>(
-              quota_client_.get())),
+          std::make_unique<QuotaClientCallbackWrapper>(quota_client_.get())),
       sandbox_delegate_(std::make_unique<SandboxFileSystemBackendDelegate>(
           quota_manager_proxy_.get(),
           default_file_task_runner_.get(),
           partition_path,
-          bucket_base_path,
           special_storage_policy,
           options,
           env_override_.get())),
@@ -212,7 +208,6 @@ FileSystemContext::FileSystemContext(
       plugin_private_backend_(std::make_unique<PluginPrivateFileSystemBackend>(
           default_file_task_runner_,
           partition_path,
-          bucket_base_path,
           std::move(special_storage_policy),
           options,
           env_override_.get())),
@@ -220,7 +215,6 @@ FileSystemContext::FileSystemContext(
       auto_mount_handlers_(auto_mount_handlers),
       external_mount_points_(std::move(external_mount_points)),
       partition_path_(partition_path),
-      bucket_base_path_(bucket_base_path),
       is_incognito_(options.is_incognito()),
       operation_runner_(std::make_unique<FileSystemOperationRunner>(
           base::PassKey<FileSystemContext>(),
@@ -264,18 +258,18 @@ void FileSystemContext::Initialize() {
 
   // QuotaManagerProxy::RegisterClient() must be called synchronously during
   // DatabaseTracker creation until crbug.com/1182630 is fixed.
-  mojo::PendingRemote<storage::mojom::QuotaClient> quota_client_remote;
-  mojo::PendingReceiver<storage::mojom::QuotaClient> quota_client_receiver =
+  mojo::PendingRemote<mojom::QuotaClient> quota_client_remote;
+  mojo::PendingReceiver<mojom::QuotaClient> quota_client_receiver =
       quota_client_remote.InitWithNewPipeAndPassReceiver();
   quota_manager_proxy_->RegisterClient(std::move(quota_client_remote),
-                                       storage::QuotaClientType::kFileSystem,
+                                       QuotaClientType::kFileSystem,
                                        QuotaManagedStorageTypes());
 
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](scoped_refptr<FileSystemContext> self,
-             mojo::PendingReceiver<storage::mojom::QuotaClient> receiver) {
+             mojo::PendingReceiver<mojom::QuotaClient> receiver) {
             if (!self->quota_client_receiver_) {
               // Shutdown() may be called directly on the IO sequence. If that
               // happens, `quota_client_receiver_` may get reset before this
@@ -439,8 +433,8 @@ void FileSystemContext::OpenFileSystem(
     // Ensure default bucket for `storage_key` exists so that Quota API
     // is aware of the usage.
     quota_manager_proxy()->GetOrCreateBucketDeprecated(
-        storage_key, kDefaultBucketName, FileSystemTypeToQuotaStorageType(type),
-        io_task_runner_.get(),
+        BucketInitParams::ForDefaultBucket(storage_key),
+        FileSystemTypeToQuotaStorageType(type), io_task_runner_.get(),
         base::BindOnce(&FileSystemContext::OnGetOrCreateBucket,
                        weak_factory_.GetWeakPtr(), storage_key, type, mode,
                        std::move(callback)));

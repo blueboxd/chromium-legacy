@@ -25,17 +25,6 @@ ExtensionTestMessageListener::ExtensionTestMessageListener(
       extensions::TestApiObserverRegistry::GetInstance());
 }
 
-ExtensionTestMessageListener::ExtensionTestMessageListener(
-    const std::string& expected_message,
-    bool will_reply)
-    : ExtensionTestMessageListener(
-          expected_message,
-          will_reply ? ReplyBehavior::kWillReply : ReplyBehavior::kWontReply) {}
-
-ExtensionTestMessageListener::ExtensionTestMessageListener(bool will_reply)
-    : ExtensionTestMessageListener(will_reply ? ReplyBehavior::kWillReply
-                                              : ReplyBehavior::kWontReply) {}
-
 ExtensionTestMessageListener::~ExtensionTestMessageListener() {
   DCHECK(!function_) << "MessageListener did not reply, but signaled it would.";
 }

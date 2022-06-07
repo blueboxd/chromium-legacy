@@ -24,7 +24,7 @@ class ToggleButton;
 //
 // The class reports back to DisplayOverlayController, who owns this.
 //   +---------------------------------+
-//   | Game Control       [ o]    [x]  |
+//   | Game controls      [ o]    [x]  |
 //   |                                 |
 //   | Key mapping        [Customize]  |
 //   |                                 |
@@ -67,6 +67,8 @@ class InputMenuView : public views::View {
                               int left,
                               int right,
                               int other_spacing) const;
+  // Set |toggle| colors to spec.
+  void SetCustomToggleColor(views::ToggleButton* toggle);
 
   raw_ptr<views::ToggleButton> game_control_toggle_ = nullptr;
   raw_ptr<views::ToggleButton> show_hint_toggle_ = nullptr;

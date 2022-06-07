@@ -4,21 +4,22 @@
 
 #include "chrome/browser/segmentation_platform/default_model/low_user_engagement_model.h"
 
+#include <array>
+
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/segmentation_platform/default_model/metadata_writer.h"
+#include "components/segmentation_platform/internal/metadata/metadata_writer.h"
 
 namespace segmentation_platform {
 
 namespace {
 
-using optimization_guide::proto::OptimizationTarget;
+using proto::SegmentId;
 
 // Default parameters for Chrome Start model.
-constexpr OptimizationTarget kChromeStartOptimizationTarget =
-    OptimizationTarget::
-        OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT;
+constexpr SegmentId kChromeStartSegmentId =
+    SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT;
 constexpr proto::TimeUnit kChromeStartTimeUnit = proto::TimeUnit::DAY;
 constexpr uint64_t kChromeStartBucketDuration = 1;
 constexpr int64_t kChromeStartSignalStorageLength = 28;
@@ -33,7 +34,7 @@ constexpr std::pair<float, int> kDiscreteMappings[] = {
     {kChromeStartDiscreteMappingMinResult, kChromeStartDiscreteMappingRank}};
 
 // InputFeatures.
-constexpr MetadataWriter::UMAFeature kChromeStartUMAFeatures[] = {
+constexpr std::array<MetadataWriter::UMAFeature, 1> kChromeStartUMAFeatures = {
     MetadataWriter::UMAFeature{
         .signal_type = proto::SignalType::HISTOGRAM_VALUE,
         .name = "Session.TotalDuration",
@@ -42,12 +43,10 @@ constexpr MetadataWriter::UMAFeature kChromeStartUMAFeatures[] = {
         .aggregation = proto::Aggregation::BUCKETED_COUNT,
         .enum_ids_size = 0}};
 
-#define ARRAY_SIZE(ar) (sizeof(ar) / sizeof(ar[0]))
-
 }  // namespace
 
 LowUserEngagementModel::LowUserEngagementModel()
-    : ModelProvider(kChromeStartOptimizationTarget) {}
+    : ModelProvider(kChromeStartSegmentId) {}
 
 void LowUserEngagementModel::InitAndFetchModel(
     const ModelUpdatedCallback& model_updated_callback) {
@@ -63,14 +62,14 @@ void LowUserEngagementModel::InitAndFetchModel(
                                    kDiscreteMappings, 1);
 
   // Set features.
-  writer.AddUmaFeatures(kChromeStartUMAFeatures,
-                        ARRAY_SIZE(kChromeStartUMAFeatures));
+  writer.AddUmaFeatures(kChromeStartUMAFeatures.data(),
+                        kChromeStartUMAFeatures.size());
 
   constexpr int kModelVersion = 1;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindRepeating(
-                     model_updated_callback, kChromeStartOptimizationTarget,
-                     std::move(chrome_start_metadata), kModelVersion));
+      FROM_HERE,
+      base::BindRepeating(model_updated_callback, kChromeStartSegmentId,
+                          std::move(chrome_start_metadata), kModelVersion));
 }
 
 void LowUserEngagementModel::ExecuteModelWithInput(

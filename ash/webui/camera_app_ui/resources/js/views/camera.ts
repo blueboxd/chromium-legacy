@@ -273,9 +273,9 @@ export class Camera extends View implements CameraViewUI {
     state.addObserver(state.State.ENABLE_MULTISTREAM_RECORDING, () => {
       this.cameraManager.reconfigure();
     });
-    for (const s of [state.State.EXPERT, state.State.ENABLE_PTZ_FOR_BUILTIN]) {
-      state.addObserver(s, () => this.cameraManager.reconfigure());
-    }
+    state.addObserver(state.State.ENABLE_PTZ_FOR_BUILTIN, () => {
+      this.cameraManager.reconfigure();
+    });
 
     this.initVideoEncoderOptions();
     await this.initScanMode();
@@ -351,7 +351,7 @@ export class Camera extends View implements CameraViewUI {
         onUpdateConfig: () => {
           if (localStorage.getBool(LocalStorageKey.DOC_MODE_DIALOG_SHOWN) ||
               !state.get(Mode.SCAN) ||
-              !this.scanOptions.isDocumentModeEanbled()) {
+              !this.scanOptions.isDocumentModeEnabled()) {
             return;
           }
           localStorage.set(LocalStorageKey.DOC_MODE_DIALOG_SHOWN, true);
@@ -366,7 +366,7 @@ export class Camera extends View implements CameraViewUI {
     // to take document photo with space key as shortcut. See b/196907822.
     const checkRefocus = () => {
       if (!state.get(state.State.CAMERA_CONFIGURING) && state.get(Mode.SCAN) &&
-          this.scanOptions.isDocumentModeEanbled()) {
+          this.scanOptions.isDocumentModeEnabled()) {
         this.focusShutterButton();
       }
     };
@@ -443,7 +443,7 @@ export class Camera extends View implements CameraViewUI {
         // Record and keep the rotation only at the instance the user starts the
         // capture. Users may change the device orientation while taking video.
         const cameraFrameRotation = await (async () => {
-          const deviceOperator = await DeviceOperator.getInstance();
+          const deviceOperator = DeviceOperator.getInstance();
           if (deviceOperator === null) {
             return 0;
           }

@@ -9,6 +9,16 @@
     width: 514px;
   }
 
+  #desciptionHeader {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+  }
+
+  #desciptionHeader a {
+    margin: 0 0 0 auto;
+  }
+
   #helpContentFrame {
     display: flex;
   }
@@ -18,19 +28,24 @@
     font-weight: bold;
   }
 </style>
-<!--TODO(xiangdongkong): use localized strings -->
 <div id="container">
   <div id="header">
     <h1 id="title">[[i18n('pageTitle')]]</h1>
   </div>
   <div id="content">
     <div id="descriptionPane">
-      <p id="descriptionTitle">[[i18n('descriptionLabel')]]</p>
+      <div id="desciptionHeader">
+        <p id="descriptionTitle">[[i18n('descriptionLabel')]]</p>
+        <a id="feedbackWritingGuidance" href="[[feedbackWritingGuidanceUrl_()]]"
+            target="_blank">
+            [[i18n('feedbackHelpLinkLabel')]]
+        </a>
+      </div>
       <textarea id="descriptionText" aria-labelledby="descriptionTitle"
-          aria-required="true" on-input="handleInputChanged_">
+          aria-required="true" on-input="handleInputChanged_" placeholder="[[i18n('descriptionHint')]]">
       </textarea>
       <p id="descriptionEmptyError" aria-hidden="true" hidden>
-        Description is required
+        [[i18n('descriptionRequired')]]
       </p>
     </div>
     <iframe on-load="resolveIframeLoaded_"

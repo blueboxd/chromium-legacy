@@ -369,6 +369,7 @@ source_set("browser_tests") {
       "test/audio_process_high_priority_enabled_browsertest.cc",
       "test/locale_policy_browsertest.cc",
       "test/network_service_sandbox_enabled_browsertest.cc",
+      "test/renderer_app_container_enabled_win_browsertest.cc",
     ]
   }
 
@@ -402,7 +403,7 @@ source_set("browser_tests") {
     sources += [ "test/full_screen_allowed_policy_browsertest.cc" ]
   }
 
-  if (!is_chromeos_ash) {
+  if (!is_chromeos) {
     sources += [
       "cloud/chrome_browser_cloud_management_browsertest.cc",
       "cloud/chrome_browser_cloud_management_browsertest_delegate.h",

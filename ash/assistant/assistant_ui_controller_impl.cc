@@ -99,6 +99,11 @@ bool AssistantUiControllerImpl::HasShownOnboarding() const {
   return has_shown_onboarding_;
 }
 
+void AssistantUiControllerImpl::SetKeyboardTraversalMode(
+    bool keyboard_traversal_mode) {
+  model_.SetKeyboardTraversalMode(keyboard_traversal_mode);
+}
+
 void AssistantUiControllerImpl::ShowUi(AssistantEntryPoint entry_point) {
   // Skip if the opt-in window is active.
   auto* assistant_setup = AssistantSetup::GetInstance();
@@ -145,6 +150,10 @@ absl::optional<base::ScopedClosureRunner> AssistantUiControllerImpl::CloseUi(
           weak_ptr->model_.SetClosed(exit_point);
       },
       weak_factory_for_delayed_visibility_changes_.GetWeakPtr(), exit_point));
+}
+
+void AssistantUiControllerImpl::SetAppListBubbleWidth(int width) {
+  model_.SetAppListBubbleWidth(width);
 }
 
 void AssistantUiControllerImpl::ToggleUi(

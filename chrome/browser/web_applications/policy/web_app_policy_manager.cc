@@ -78,7 +78,6 @@ void WebAppPolicyManager::SetSubsystems(
     ExternallyManagedAppManager* externally_managed_app_manager,
     WebAppRegistrar* app_registrar,
     WebAppSyncBridge* sync_bridge,
-    const ash::SystemWebAppDelegateMap* system_web_apps_delegate_map,
     OsIntegrationManager* os_integration_manager) {
   DCHECK(externally_managed_app_manager);
   DCHECK(app_registrar);
@@ -88,8 +87,12 @@ void WebAppPolicyManager::SetSubsystems(
   externally_managed_app_manager_ = externally_managed_app_manager;
   app_registrar_ = app_registrar;
   sync_bridge_ = sync_bridge;
-  system_web_apps_delegate_map_ = system_web_apps_delegate_map;
   os_integration_manager_ = os_integration_manager;
+}
+
+void WebAppPolicyManager::SetSystemWebAppDelegateMap(
+    const ash::SystemWebAppDelegateMap* system_web_apps_delegate_map) {
+  system_web_apps_delegate_map_ = system_web_apps_delegate_map;
 }
 
 void WebAppPolicyManager::Start() {
@@ -340,6 +343,8 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
   const base::Value* create_desktop_shortcut =
       entry.FindKey(kCreateDesktopShortcutKey);
   const base::Value* fallback_app_name = entry.FindKey(kFallbackAppNameKey);
+  const base::Value* uninstall_and_replace =
+      entry.FindKey(kUninstallAndReplaceKey);
 
   DCHECK(!default_launch_container ||
          default_launch_container->GetString() ==
@@ -378,6 +383,18 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
   // as the permanent name for Web Apps without a manifest.
   if (fallback_app_name)
     install_options.fallback_app_name = fallback_app_name->GetString();
+
+  // Used by default Chrome app policy migration to force install web apps and
+  // uninstall the old Chrome app equivalents.
+  if (uninstall_and_replace) {
+    const base::Value::List* list = uninstall_and_replace->GetIfList();
+    if (list) {
+      for (const base::Value& item : *list) {
+        if (item.is_string())
+          install_options.uninstall_and_replace.push_back(item.GetString());
+      }
+    }
+  }
 
 #if BUILDFLAG(IS_CHROMEOS)
   const base::Value* custom_name = entry.FindKey(kCustomNameKey);
@@ -637,6 +654,7 @@ void WebAppPolicyManager::PopulateDisabledWebAppsIdsLists() {
     }
   }
 
+  DCHECK(system_web_apps_delegate_map_);
   for (const ash::SystemWebAppType& app_type : disabled_system_apps_) {
     absl::optional<AppId> app_id = GetAppIdForSystemApp(
         *app_registrar_, *system_web_apps_delegate_map_, app_type);

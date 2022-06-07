@@ -148,6 +148,31 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Reflects the pin number sub-dialog property.
+     * @private
+     */
+    isPinNumberDialogShowing_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    isChromeosScreenLockEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isChromeosScreenLockEnabled');
+      }
+    },
+
+    /** @private */
+    isPhoneScreenLockEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isPhoneScreenLockEnabled');
+      }
+    },
   },
 
   listeners: {
@@ -167,6 +192,12 @@ Polymer({
     this.addWebUIListener(
         'settings.updateMultidevicePageContentData',
         (data) => this.onPageContentDataChanged_(data));
+    this.addWebUIListener(
+        'settings.OnEnableScreenLockChanged',
+        this.onEnableScreenLockChanged_.bind(this));
+    this.addWebUIListener(
+        'settings.OnScreenLockStatusChanged',
+        this.onScreenLockStatusChanged_.bind(this));
 
     this.browserProxy_.getPageContentData().then(
         (data) => this.onInitialPageContentDataFetched_(data));
@@ -303,7 +334,7 @@ Polymer({
   /** @private */
   handleItemClick_(event) {
     // We do not open the subpage if the click was on a link.
-    if (event.path[0].tagName === 'A') {
+    if (event.composedPath()[0].tagName === 'A') {
       event.stopPropagation();
       return;
     }
@@ -338,7 +369,7 @@ Polymer({
 
   onDialogClose_(event) {
     event.stopPropagation();
-    if (event.path.some(
+    if (event.composedPath().some(
             element => element.id === 'multidevicePasswordPrompt')) {
       this.onPasswordPromptDialogClose_();
     }
@@ -657,11 +688,23 @@ Polymer({
 
   /** @private */
   onHidePhonePermissionsSetupDialog_() {
+    // Don't close the main dialog if the pin number sub-dialog is open.
+    if (this.isPinNumberDialogShowing_) {
+      this.isPinNumberDialogShowing_ = false;
+      return;
+    }
     // Don't close the main dialog if the password sub-dialog is open.
     if (this.isPasswordDialogShowing_) {
+      this.isPasswordDialogShowing_ = false;
       return;
     }
     this.showPhonePermissionSetupDialog_ = false;
+  },
+
+  /** @private */
+  onPinNumberSelected_(e) {
+    assert(typeof e.detail.isPinNumberSelected === 'boolean');
+    this.isPinNumberDialogShowing_ = e.detail.isPinNumberSelected;
   },
 
   /** @private */
@@ -708,5 +751,27 @@ Polymer({
    */
   isCombinedSetupSupported_() {
     return this.pageContentData.isPhoneHubFeatureCombinedSetupSupported;
+  },
+
+  /**
+   * Due to loadTimeData is not guaranteed to be consistent between page
+   * refreshes, use FireWebUIListener() to update dynamic value of screen lock
+   * setting.
+   * @param {boolean} enabled
+   * @private
+   */
+  onEnableScreenLockChanged_(enabled) {
+    this.isChromeosScreenLockEnabled_ = enabled;
+  },
+
+  /**
+   * Due to loadTimeData is not guaranteed to be consistent between page
+   * refreshes, use FireWebUIListener() to update dynamic value of screen lock
+   * status of phone.
+   * @param {boolean} enabled
+   * @private
+   */
+  onScreenLockStatusChanged_(enabled) {
+    this.isPhoneScreenLockEnabled_ = enabled;
   },
 });

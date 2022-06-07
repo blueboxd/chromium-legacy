@@ -48,6 +48,8 @@ bool IsFillableFieldType(ServerFieldType field_type) {
     case EMAIL_ADDRESS:
     case USERNAME_AND_EMAIL_ADDRESS:
     case PHONE_HOME_NUMBER:
+    case PHONE_HOME_NUMBER_PREFIX:
+    case PHONE_HOME_NUMBER_SUFFIX:
     case PHONE_HOME_CITY_CODE:
     case PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX:
     case PHONE_HOME_COUNTRY_CODE:
@@ -219,6 +221,10 @@ base::StringPiece FieldTypeToStringPiece(ServerFieldType type) {
       return "EMAIL_ADDRESS";
     case PHONE_HOME_NUMBER:
       return "PHONE_HOME_NUMBER";
+    case PHONE_HOME_NUMBER_PREFIX:
+      return "PHONE_HOME_NUMBER_PREFIX";
+    case PHONE_HOME_NUMBER_SUFFIX:
+      return "PHONE_HOME_NUMBER_SUFFIX";
     case PHONE_HOME_CITY_CODE:
       return "PHONE_HOME_CITY_CODE";
     case PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX:

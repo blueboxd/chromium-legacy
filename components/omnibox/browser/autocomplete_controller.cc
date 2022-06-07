@@ -323,10 +323,7 @@ AutocompleteController::AutocompleteController(
   // doing its thing by the time the HistoryURLProvider task runs.
   // (And hope that it completes before AutocompleteController::Start() is
   // called the next time.)
-  // ClipboardURLProvider take a reference to HistoryURLProvider. If we're going
-  // to need it, we should initialize history_url_provider_.
-  if (provider_types & (AutocompleteProvider::TYPE_HISTORY_URL |
-                        AutocompleteProvider::TYPE_CLIPBOARD)) {
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
     history_url_provider_ =
         new HistoryURLProvider(provider_client_.get(), this);
     if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL)
@@ -381,18 +378,14 @@ AutocompleteController::AutocompleteController(
     // create a ClipboardRecentContent as above (for both Chrome and tests).
     if (ClipboardRecentContent::GetInstance()) {
       clipboard_provider_ = new ClipboardProvider(
-          provider_client_.get(), this, history_url_provider_,
-          ClipboardRecentContent::GetInstance());
+          provider_client_.get(), this, ClipboardRecentContent::GetInstance());
       providers_.push_back(clipboard_provider_.get());
     }
   }
-
   if (provider_types & AutocompleteProvider::TYPE_QUERY_TILE)
     providers_.push_back(new QueryTileProvider(provider_client_.get(), this));
-
   if (provider_types & AutocompleteProvider::TYPE_VOICE_SUGGEST) {
-    voice_suggest_provider_ =
-        new VoiceSuggestProvider(provider_client_.get(), this);
+    voice_suggest_provider_ = new VoiceSuggestProvider(provider_client_.get());
     providers_.push_back(voice_suggest_provider_.get());
   }
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_FUZZY) {
@@ -770,7 +763,7 @@ void AutocompleteController::UpdateResult(
   old_matches_to_reuse.Swap(&result_);
 
   for (const auto& provider : providers_)
-    result_.AppendMatches(input_, provider->matches());
+    result_.AppendMatches(provider->matches());
 
   bool perform_tab_match = true;
 #if BUILDFLAG(IS_ANDROID)
@@ -954,13 +947,21 @@ void AutocompleteController::UpdateKeywordDescriptions(
         const TemplateURL* template_url =
             i->GetTemplateURL(template_url_service_, false);
         if (template_url) {
-          // For extension keywords, just make the description the extension
-          // name -- don't assume that the normal search keyword description is
-          // applicable.
-          i->description = template_url->AdjustedShortNameForLocaleDirection();
-          if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION) {
-            i->description = l10n_util::GetStringFUTF16(
-                IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
+          if (OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
+              template_url->starter_pack_id() > 0) {
+            i->description =
+                TemplateURLStarterPackData::GetDestinationUrlForStarterPackID(
+                    template_url->starter_pack_id());
+          } else {
+            // For extension keywords, just make the description the extension
+            // name -- don't assume that the normal search keyword description
+            // is applicable.
+            i->description =
+                template_url->AdjustedShortNameForLocaleDirection();
+            if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION) {
+              i->description = l10n_util::GetStringFUTF16(
+                  IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
+            }
           }
           i->description_class.push_back(
               ACMatchClassification(0, ACMatchClassification::DIM));

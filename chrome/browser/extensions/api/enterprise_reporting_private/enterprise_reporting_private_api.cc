@@ -198,7 +198,7 @@ EnterpriseReportingPrivateGetPersistentSecretFunction::Run() {
 void EnterpriseReportingPrivateGetPersistentSecretFunction::OnDataRetrieved(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const std::string& data,
-    long int status) {
+    int32_t status) {
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -208,7 +208,7 @@ void EnterpriseReportingPrivateGetPersistentSecretFunction::OnDataRetrieved(
 
 void EnterpriseReportingPrivateGetPersistentSecretFunction::SendResponse(
     const std::string& data,
-    long int status) {
+    int32_t status) {
   if (status == 0) {  // Success.
     VLOG(1) << "The Endpoint Verification secret was retrieved.";
     Respond(OneArgument(base::Value(base::Value::BlobStorage(
@@ -216,7 +216,7 @@ void EnterpriseReportingPrivateGetPersistentSecretFunction::SendResponse(
         reinterpret_cast<const uint8_t*>(data.data() + data.size())))));
   } else {
     VLOG(1) << "Endpoint Verification secret retrieval error: " << status;
-    Respond(Error(base::StringPrintf("%ld", static_cast<long int>(status))));
+    Respond(Error(base::StringPrintf("%d", status)));
   }
 }
 
@@ -544,6 +544,11 @@ bool EnterpriseReportingPrivateEnqueueRecordFunction::TryParseParams(
       reinterpret_cast<const char*>(params->request.record_data.data());
   if (!record.ParseFromArray(record_data, params->request.record_data.size())) {
     // Invalid record payload
+    return false;
+  }
+
+  if (!record.has_timestamp_us()) {
+    // Missing record timestamp
     return false;
   }
 

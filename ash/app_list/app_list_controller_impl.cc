@@ -520,7 +520,7 @@ bool AppListControllerImpl::GetTargetVisibility(
     const absl::optional<int64_t>& display_id) const {
   return last_target_visible_ &&
          (!display_id.has_value() ||
-          display_id.value() == last_visible_display_id_);
+          display_id.value() == last_target_visible_display_id_);
 }
 
 void AppListControllerImpl::Show(int64_t display_id,
@@ -1166,6 +1166,7 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
     return;
 
   keyboard_traversal_engaged_ = engaged;
+  AssistantUiController::Get()->SetKeyboardTraversalMode(engaged);
 
   // No need to schedule paint for bubble presenter.
   if (features::IsProductivityLauncherEnabled() &&
@@ -1470,6 +1471,10 @@ bool AppListControllerImpl::ShouldDismissImmediately() {
   if (should_dismiss_immediately_)
     return true;
 
+  if (features::IsProductivityLauncherEnabled())
+    return false;
+
+  // Dismiss immediately if the peeking launcher is below the shelf's top edge.
   DCHECK(Shell::HasInstance());
   const int ideal_shelf_y =
       Shelf::ForWindow(

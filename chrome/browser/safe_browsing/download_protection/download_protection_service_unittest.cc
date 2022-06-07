@@ -51,7 +51,6 @@
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/safe_browsing/chrome_user_population_helper.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
@@ -201,10 +200,12 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
     return it->second;
   }
 
-  void SendSerializedDownloadReport(Profile* profile,
-                                    const std::string& report) override {
+  PingManager::ReportThreatDetailsResult SendDownloadReport(
+      Profile* profile,
+      std::unique_ptr<ClientSafeBrowsingReportRequest> report) override {
+    report->SerializeToString(&latest_report_);
     download_report_count_++;
-    latest_report_ = report;
+    return PingManager::ReportThreatDetailsResult::SUCCESS;
   }
 
   network::TestURLLoaderFactory* GetTestURLLoaderFactory(Profile* profile) {
@@ -619,7 +620,7 @@ class DownloadProtectionServiceTestBase
         ->TestDidReceiveMouseDownEvent();
     std::unique_ptr<content::NavigationSimulator> navigation =
         content::NavigationSimulator::CreateRendererInitiated(
-            url, web_contents()->GetMainFrame());
+            url, web_contents()->GetPrimaryMainFrame());
 
     navigation->SetTransition(ui::PAGE_TRANSITION_LINK);
     navigation->Commit();
@@ -2706,7 +2707,7 @@ TEST_F(DownloadProtectionServiceTest,
   std::vector<base::FilePath::StringType> alternate_extensions{
       FILE_PATH_LITERAL(".tmp"), FILE_PATH_LITERAL(".asdfasdf")};
   download_service_->CheckPPAPIDownloadRequest(
-      GURL("http://example.com/foo"), web_contents->GetMainFrame(),
+      GURL("http://example.com/foo"), web_contents->GetPrimaryMainFrame(),
       default_file_path, alternate_extensions, profile(),
       base::BindOnce(&DownloadProtectionServiceTest::SyncCheckDoneCallback,
                      base::Unretained(this)));
@@ -2757,8 +2758,6 @@ TEST_F(DownloadProtectionServiceTest,
     expected_report.set_url(GURL::EmptyGURL().spec());
     expected_report.set_type(
         ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_OPENED);
-    *expected_report.mutable_population() =
-        safe_browsing::GetUserPopulationForProfile(profile());
     expected_report.set_download_verdict(ClientDownloadResponse::SAFE);
     expected_report.set_did_proceed(true);
     expected_report.set_token(token);

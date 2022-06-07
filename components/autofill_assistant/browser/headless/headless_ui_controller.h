@@ -81,8 +81,10 @@ class HeadlessUiController : public ScriptExecutorUiDelegate {
   void ExecuteExternalAction(
       const external::Action& external_action,
       base::OnceCallback<void()> start_dom_checks_callback,
-      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+      base::OnceCallback<void(const external::Result& result)>
           end_action_callback) override;
+  void OnInterruptStarted() override;
+  void OnInterruptFinished() override;
 
  private:
   const raw_ptr<ExternalActionDelegate> action_extension_delegate_;

@@ -326,7 +326,7 @@ void DlpContentManager::ScreenShareInfo::Resume() {
   // here explicitly.
   if (media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS &&
       web_contents_ && source_callback_) {
-    content::RenderFrameHost* main_frame = web_contents_->GetMainFrame();
+    content::RenderFrameHost* main_frame = web_contents_->GetPrimaryMainFrame();
     DCHECK(main_frame);
     source_callback_.Run(content::DesktopMediaID(
         content::DesktopMediaID::TYPE_WEB_CONTENTS,
@@ -570,7 +570,8 @@ DlpContentManager::GetScreenShareConfidentialContentsInfoForWebContents(
     info.restriction_info =
         GetConfidentialRestrictions(web_contents)
             .GetRestrictionLevelAndUrl(DlpContentRestriction::kScreenShare);
-    info.confidential_contents.Add(web_contents);
+    if (info.restriction_info.level != DlpRulesManager::Level::kNotSet)
+      info.confidential_contents.Add(web_contents);
   }
   return info;
 }
@@ -688,6 +689,7 @@ void DlpContentManager::CheckRunningScreenShares() {
                   info.restriction_info.level, reporting_manager_);
     }
 
+    // TODO(crbug.com/1326541): Fix for new tab shares.
     if (screen_share->GetLatestRestriction() == info.restriction_info &&
         screen_share->GetConfidentialContents() == info.confidential_contents) {
       // No change in restrictions that apply to this screen share.

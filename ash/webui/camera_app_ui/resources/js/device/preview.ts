@@ -38,7 +38,6 @@ import {
 } from '../type.js';
 import * as util from '../util.js';
 import {WaitableEvent} from '../waitable_event.js';
-import {windowController} from '../window_controller.js';
 
 import {
   StreamConstraints,
@@ -101,10 +100,6 @@ export class Preview {
    * @param onNewStreamNeeded Callback to request new stream.
    */
   constructor(private readonly onNewStreamNeeded: () => Promise<void>) {
-    window.addEventListener('resize', () => this.onWindowStatusChanged());
-
-    windowController.addListener(() => this.onWindowStatusChanged());
-
     for (const s of [state.State.EXPERT, state.State.SHOW_METADATA]) {
       state.addObserver(s, () => this.updateShowMetadata());
     }
@@ -170,7 +165,7 @@ export class Preview {
   }
 
   private async updatePTZ() {
-    const deviceOperator = await DeviceOperator.getInstance();
+    const deviceOperator = DeviceOperator.getInstance();
     const {pan, tilt, zoom} = this.getVideoTrack().getCapabilities();
 
     this.isSupportPTZInternal = await (async () => {
@@ -325,7 +320,7 @@ export class Preview {
       this.updateShowMetadata();
       await this.updatePTZ();
 
-      const deviceOperator = await DeviceOperator.getInstance();
+      const deviceOperator = DeviceOperator.getInstance();
       if (deviceOperator !== null) {
         const {deviceId} = getVideoTrackSettings(this.getVideoTrack());
         const isSuccess =
@@ -363,7 +358,7 @@ export class Preview {
       const track = this.getVideoTrack();
       const {deviceId} = getVideoTrackSettings(track);
       track.stop();
-      const deviceOperator = await DeviceOperator.getInstance();
+      const deviceOperator = DeviceOperator.getInstance();
       if (deviceOperator !== null) {
         deviceOperator.dropConnection(deviceId);
       }
@@ -555,7 +550,7 @@ export class Preview {
       };
     })();
 
-    const deviceOperator = await DeviceOperator.getInstance();
+    const deviceOperator = DeviceOperator.getInstance();
     if (!deviceOperator) {
       return;
     }
@@ -648,11 +643,6 @@ export class Preview {
       return;
     }
 
-    const deviceOperator = await DeviceOperator.getInstance();
-    if (!deviceOperator) {
-      return;
-    }
-
     closeEndpoint(this.metadataObserver);
     this.metadataObserver = null;
 
@@ -663,18 +653,11 @@ export class Preview {
   }
 
   /**
-   * Handles the the window state or window size changed.
-   */
-  private onWindowStatusChanged() {
-    nav.onWindowStatusChanged();
-  }
-
-  /**
    * Handles changed intrinsic size (first loaded or orientation changes).
    */
   private async onIntrinsicSizeChanged(): Promise<void> {
-    if (this.video.videoWidth && this.video.videoHeight) {
-      this.onWindowStatusChanged();
+    if (this.video.videoWidth !== 0 && this.video.videoHeight !== 0) {
+      nav.layoutShownViews();
     }
     this.cancelFocus();
   }

@@ -48,7 +48,7 @@ TEST_F(
       const site = `<input type="range"></input>`;
       const root = await this.runWithLoadedTree(site);
       const slider = root.find({role: RoleType.SLIDER});
-      assertTrue(!!slider);
+      assertTrue(Boolean(slider));
 
       let sliderValue = '50%';
       Object.defineProperty(slider, 'value', {get: () => sliderValue});
@@ -89,7 +89,7 @@ TEST_F(
     'ChromeVoxDesktopAutomationHandlerTest', 'TaskManagerTableView',
     function() {
       const mockFeedback = this.createMockFeedback();
-      this.runWithLoadedDesktop((desktop) => {
+      this.runWithLoadedDesktop(desktop => {
         mockFeedback
             .call(() => {
               EventGenerator.sendKeyPress(KeyCode.ESCAPE, {search: true});
@@ -148,7 +148,7 @@ TEST_F(
       const site = `<button>Hello world</button>`;
       const root = await this.runWithLoadedTree(site);
       const button = root.find({role: RoleType.BUTTON});
-      assertTrue(!!button);
+      assertTrue(Boolean(button));
       const event = new CustomAutomationEvent(EventType.ALERT, button);
       mockFeedback
           .call(() => {
@@ -183,7 +183,7 @@ TEST_F(
         role: RoleType.TEXT_FIELD_WITH_COMBO_BOX,
         attributes: {name: 'Choose one'}
       });
-      assertTrue(!!combobox);
+      assertTrue(Boolean(combobox));
       combobox.focus();
       await new Promise(r => combobox.addEventListener(EventType.FOCUS, r));
 

@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
@@ -124,7 +125,7 @@ enum class NetworkSandboxState {
   kMaxValue = kDisabledBecauseOfFailedLaunch
 };
 
-// The global instance of the SystemNetworkContextmanager.
+// The global instance of the SystemNetworkContextManager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 
 // Whether or not any instance of the system network context manager has
@@ -216,7 +217,7 @@ bool ShouldUseBuiltinCertVerifier(PrefService* local_state) {
 #endif
   // Note: intentionally checking the feature state here rather than falling
   // back to CertVerifierImpl::kDefault, as browser-side network context
-  // initializition for TrialComparisonCertVerifier depends on knowing which
+  // initialization for TrialComparisonCertVerifier depends on knowing which
   // verifier will be used.
   return base::FeatureList::IsEnabled(
       net::features::kCertVerifierBuiltinFeature);
@@ -229,7 +230,7 @@ bool ShouldUseBuiltinCertVerifier(PrefService* local_state) {
 bool ShouldUseChromeRootStore(PrefService* local_state) {
   // Note: intentionally checking the feature state here rather than falling
   // back to ChromeRootImpl::kRootDefault, as browser-side network context
-  // initializition for TrialComparisonCertVerifier depends on knowing which
+  // initialization for TrialComparisonCertVerifier depends on knowing which
   // verifier will be used.
   return base::FeatureList::IsEnabled(net::features::kChromeRootStoreUsed);
 }
@@ -396,6 +397,13 @@ SystemNetworkContextManager::GetSharedURLLoaderFactory() {
 // static
 SystemNetworkContextManager* SystemNetworkContextManager::CreateInstance(
     PrefService* pref_service) {
+#if DCHECK_IS_ON()
+  // Check that this function is not reentrant.
+  static bool inside_this_function = false;
+  DCHECK(!inside_this_function);
+  base::AutoReset now_inside_this_function(&inside_this_function, true);
+#endif
+
   DCHECK(!g_system_network_context_manager);
   g_system_network_context_manager =
       new SystemNetworkContextManager(pref_service);

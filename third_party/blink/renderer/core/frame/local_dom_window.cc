@@ -1064,6 +1064,15 @@ void LocalDOMWindow::SchedulePostMessage(PostedMessage* posted_message) {
                                       source->GetStorageKey(), UkmSourceID(),
                                       GetStorageKey(), UkmRecorder());
 
+  // Notify the host if the message contained a delegated capability. That state
+  // should be tracked by the browser, and messages from remote hosts already
+  // signal the browser via RemoteFrameHost's RouteMessageEvent.
+  if (posted_message->delegated_capability !=
+      mojom::blink::DelegatedCapability::kNone) {
+    GetFrame()->GetLocalFrameHostRemote().ReceivedDelegatedCapability(
+        posted_message->delegated_capability);
+  }
+
   // Convert the posted message to a MessageEvent so it can be unpacked for
   // local dispatch.
   MessageEvent* event = MessageEvent::Create(
@@ -1191,7 +1200,6 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
           mojom::blink::DelegatedCapability::kFullscreenRequest) {
     UseCounter::Count(this,
                       WebFeature::kCapabilityDelegationOfFullscreenRequest);
-    // TODO(crbug.com/1293083): Activate a corresponding token in the browser.
     fullscreen_request_token_.Activate();
   }
 
@@ -2056,8 +2064,10 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
                                 const AtomicString& target,
                                 const String& features,
                                 ExceptionState& exception_state) {
-  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
   LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
+
+  if (!IsCurrentlyDisplayedInFrame())
+    return nullptr;
 
   // If the bindings implementation is 100% correct, the current realm and the
   // entered realm should be same origin-domain. However, to be on the safe
@@ -2065,25 +2075,25 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   // as well here.
   if (!BindingSecurity::ShouldAllowAccessTo(entered_window, this,
                                             exception_state)) {
+    // Trigger DCHECK() failure, while gracefully failing on release builds.
+    NOTREACHED();
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kWindowOpenRealmMismatch);
     return nullptr;
   }
 
-  if (!IsCurrentlyDisplayedInFrame())
-    return nullptr;
-  if (!incumbent_window->GetFrame() || !entered_window->GetFrame())
+  if (!entered_window->GetFrame())
     return nullptr;
 
-  UseCounter::Count(*incumbent_window, WebFeature::kDOMWindowOpen);
+  UseCounter::Count(*entered_window, WebFeature::kDOMWindowOpen);
   if (!features.IsEmpty())
-    UseCounter::Count(*incumbent_window, WebFeature::kDOMWindowOpenFeatures);
+    UseCounter::Count(*entered_window, WebFeature::kDOMWindowOpenFeatures);
 
   KURL completed_url = url_string.IsEmpty()
                            ? KURL(g_empty_string)
                            : entered_window->CompleteURL(url_string);
   if (!completed_url.IsEmpty() && !completed_url.IsValid()) {
-    UseCounter::Count(incumbent_window, WebFeature::kWindowOpenWithInvalidURL);
+    UseCounter::Count(entered_window, WebFeature::kWindowOpenWithInvalidURL);
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "Unable to open a window with invalid URL '" +
@@ -2092,14 +2102,14 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   }
 
   WebWindowFeatures window_features =
-      GetWindowFeaturesFromString(features, incumbent_window);
+      GetWindowFeaturesFromString(features, entered_window);
 
   // In fenced frames, we should always use `noopener`.
   if (GetFrame()->IsInFencedFrameTree()) {
     window_features.noopener = true;
   }
 
-  FrameLoadRequest frame_request(incumbent_window,
+  FrameLoadRequest frame_request(entered_window,
                                  ResourceRequest(completed_url));
   frame_request.SetFeaturesForWindowOpen(window_features);
 
@@ -2110,9 +2120,9 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   // for generating an embedder-initiated navigation's referrer, so we need to
   // ensure the proper referrer is set now.
   Referrer referrer = SecurityPolicy::GenerateReferrer(
-      incumbent_window->GetReferrerPolicy(), completed_url,
+      entered_window->GetReferrerPolicy(), completed_url,
       window_features.noreferrer ? Referrer::NoReferrer()
-                                 : incumbent_window->OutgoingReferrer());
+                                 : entered_window->OutgoingReferrer());
   frame_request.GetResourceRequest().SetReferrerString(referrer.referrer);
   frame_request.GetResourceRequest().SetReferrerPolicy(
       referrer.referrer_policy);
@@ -2134,7 +2144,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (window_features.x_set || window_features.y_set) {
     // This runs after FindOrCreateFrameForNavigation() so blocked popups are
     // not counted.
-    UseCounter::Count(*incumbent_window,
+    UseCounter::Count(*entered_window,
                       WebFeature::kDOMWindowOpenPositioningFeatures);
 
     // Coarsely measure whether coordinates may be requesting another screen.
@@ -2144,7 +2154,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
                            window_features.width, window_features.height);
     if (!screen.Contains(window)) {
       UseCounter::Count(
-          *incumbent_window,
+          *entered_window,
           WebFeature::kDOMWindowOpenPositioningFeaturesCrossScreen);
     }
   }
@@ -2174,9 +2184,11 @@ DOMWindow* LocalDOMWindow::openPictureInPictureWindow(
     v8::Isolate* isolate,
     const WebPictureInPictureWindowOptions& options,
     ExceptionState& exception_state) {
-  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
   LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
   DCHECK(isSecureContext());
+
+  if (!IsCurrentlyDisplayedInFrame())
+    return nullptr;
 
   // If the bindings implementation is 100% correct, the current realm and the
   // entered realm should be same origin-domain. However, to be on the safe
@@ -2184,17 +2196,17 @@ DOMWindow* LocalDOMWindow::openPictureInPictureWindow(
   // as well here.
   if (!BindingSecurity::ShouldAllowAccessTo(entered_window, this,
                                             exception_state)) {
+    // Trigger DCHECK() failure, while gracefully failing on release builds.
+    NOTREACHED();
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kWindowOpenRealmMismatch);
     return nullptr;
   }
 
-  if (!IsCurrentlyDisplayedInFrame())
-    return nullptr;
-  if (!incumbent_window->GetFrame() || !entered_window->GetFrame())
+  if (!entered_window->GetFrame())
     return nullptr;
 
-  FrameLoadRequest frame_request(incumbent_window,
+  FrameLoadRequest frame_request(entered_window,
                                  ResourceRequest(KURL(g_empty_string)));
   frame_request.SetPictureInPictureWindowOptions(options);
 

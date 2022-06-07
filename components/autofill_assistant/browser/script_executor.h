@@ -210,6 +210,7 @@ class ScriptExecutor : public ActionDelegate,
   password_manager::PasswordChangeSuccessTracker*
   GetPasswordChangeSuccessTracker() const override;
   content::WebContents* GetWebContents() const override;
+  content::WebContents* GetWebContentsForJsExecution() override;
   ElementStore* GetElementStore() const override;
   WebController* GetWebController() const override;
   std::string GetEmailAddressForAccessTokenAccount() const override;
@@ -270,9 +271,11 @@ class ScriptExecutor : public ActionDelegate,
   void RequestExternalAction(
       const ExternalActionProto& external_action,
       base::OnceCallback<void()> start_dom_checks_callback,
-      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+      base::OnceCallback<void(const external::Result& result)>
           end_action_callback) override;
   bool MustUseBackendData() const override;
+  void MaybeSetPreviousAction(
+      const ProcessedActionProto& processed_action) override;
 
  private:
   // TODO(b/220079189): remove this friend declaration.
@@ -347,9 +350,8 @@ class ScriptExecutor : public ActionDelegate,
   void OnExternalActionFinished(
       const ExternalActionProto& external_action,
       const bool prompt,
-      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-          callback,
-      ExternalActionDelegate::ActionResult result);
+      base::OnceCallback<void(const external::Result& result)> callback,
+      const external::Result& result);
 
   // Maybe shows the message specified in a callout, depending on the current
   // state and client settings.

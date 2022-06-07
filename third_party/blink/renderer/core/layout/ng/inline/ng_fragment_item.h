@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEM_H_
 
+#include "base/check_op.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
@@ -81,8 +82,6 @@ class CORE_EXPORT NGFragmentItem final {
   // (e.g., <span>text</span>) and atomic inlines.
   struct BoxItem {
     DISALLOW_NEW();
-    // This copy constructor looks up the "post-layout" fragment.
-    BoxItem(const BoxItem&);
     BoxItem(const NGPhysicalBoxFragment*, wtf_size_t descendants_count);
 
     // If this item is an inline box, its children are stored as following
@@ -225,6 +224,7 @@ class CORE_EXPORT NGFragmentItem final {
   const PhysicalOffset& OffsetInContainerFragment() const {
     return rect_.offset;
   }
+  const PhysicalOffset ContentOffsetInContainerFragment() const;
   const PhysicalSize& Size() const { return rect_.size; }
   PhysicalRect LocalRect() const { return {PhysicalOffset(), Size()}; }
   void SetOffset(const PhysicalOffset& offset) { rect_.offset = offset; }
@@ -332,9 +332,7 @@ class CORE_EXPORT NGFragmentItem final {
     return MutableForPainting(*this);
   }
 
-  // Out-of-flow in nested block fragmentation may require us to replace a
-  // fragment on a line.
-  class MutableForOOFFragmentation {
+  class MutableForCloning {
     STACK_ALLOCATED();
 
    public:
@@ -345,14 +343,14 @@ class CORE_EXPORT NGFragmentItem final {
 
    private:
     friend class NGFragmentItem;
-    explicit MutableForOOFFragmentation(const NGFragmentItem& item)
+    explicit MutableForCloning(const NGFragmentItem& item)
         : item_(const_cast<NGFragmentItem&>(item)) {}
 
     NGFragmentItem& item_;
   };
 
-  MutableForOOFFragmentation GetMutableForOOFFragmentation() const {
-    return MutableForOOFFragmentation(*this);
+  MutableForCloning GetMutableForCloning() const {
+    return MutableForCloning(*this);
   }
 
   bool IsHorizontal() const {
@@ -510,6 +508,8 @@ class CORE_EXPORT NGFragmentItem final {
   // This returns Style().GetFont() for an NGFragmentItem not for
   // LayoutSVGInlineText.
   const Font& ScaledFont() const;
+
+  bool IsTextDecorationBoundary() const;
 
   // Get a description of |this| for the debug purposes.
   String ToString() const;

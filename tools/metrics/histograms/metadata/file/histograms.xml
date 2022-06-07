@@ -110,17 +110,30 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="Extension">
     <variant name="7z"/>
+    <variant name="bz"/>
     <variant name="bz2"/>
     <variant name="crx"/>
     <variant name="gz"/>
     <variant name="iso"/>
+    <variant name="lz"/>
+    <variant name="lzma"/>
     <variant name="rar"/>
     <variant name="tar"/>
+    <variant name="taz"/>
+    <variant name="tb2"/>
     <variant name="tbz"/>
     <variant name="tbz2"/>
     <variant name="tgz"/>
+    <variant name="tlz"/>
+    <variant name="tlzma"/>
+    <variant name="txz"/>
+    <variant name="tz"/>
+    <variant name="tz2"/>
+    <variant name="tzst"/>
     <variant name="xz"/>
+    <variant name="z"/>
     <variant name="zip"/>
+    <variant name="zst"/>
   </token>
 </histogram>
 
@@ -273,6 +286,13 @@ chromium-metrics-reviews@google.com.
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success rate of pinning files in Drive.</summary>
+</histogram>
+
+<histogram name="FileBrowser.ExtractTask.Status"
+    enum="FileManagerExtractStatus" expires_after="M113">
+  <owner>adanilo@chromium.org</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>Tracks success/error rate of extracting archive contents.</summary>
 </histogram>
 
 <histogram name="FileBrowser.FileSystemProviderMounted"
@@ -627,7 +647,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.FilterByType"
-    enum="FileManagerRecentFilterType" expires_after="2022-07-20">
+    enum="FileManagerRecentFilterType" expires_after="2022-11-27">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -856,15 +876,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Time for the execution of a zipping task. Times are only reported on
     success.
-  </summary>
-</histogram>
-
-<histogram name="FileReaderSync.WorkerType" enum="FileReaderSyncWorkerType"
-    expires_after="M85">
-  <owner>mek@chromium.org</owner>
-  <summary>
-    For each FileReaderSync instance records the type of the web worker that
-    created the instance.
   </summary>
 </histogram>
 

@@ -6,7 +6,7 @@ import '//resources/cr_elements/cr_button/cr_button.m.js';
 import '//resources/cr_elements/cr_link_row/cr_link_row.js';
 import '//resources/cr_elements/shared_vars_css.m.js';
 import '../../settings_shared_css.js';
-import '../../settings_vars_css.js';
+import '../../settings_vars.css.js';
 import './multidevice_combined_setup_item.js';
 import './multidevice_feature_item.js';
 import './multidevice_feature_toggle.js';
@@ -201,8 +201,7 @@ Polymer({
       case PhoneHubFeatureAccessProhibitedReason.WORK_PROFILE:
         return this.i18n('multideviceNotificationAccessProhibitedTooltip');
       case PhoneHubFeatureAccessProhibitedReason.DISABLED_BY_PHONE_POLICY:
-        return this.i18n(
-            'multideviceNotificationAccessProhibitedDisabledByAdminTooltip');
+        return this.i18n('multideviceItemDisabledByPhoneAdminTooltip');
       default:
         return this.i18n('multideviceNotificationAccessProhibitedTooltip');
     }
@@ -215,7 +214,7 @@ Polymer({
     if (!this.isPhoneHubAppsAccessProhibited()) {
       return '';
     }
-    return this.i18n('multideviceAppsAccessProhibitedDisabledByAdminTooltip');
+    return this.i18n('multideviceItemDisabledByPhoneAdminTooltip');
   },
 
   /**

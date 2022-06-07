@@ -13,8 +13,9 @@
 namespace chromeos {
 
 // Fake implementation of MissiveClient. This is currently a no-op fake.
-class FakeMissiveClient : public MissiveClient,
-                          public MissiveClient::TestInterface {
+class COMPONENT_EXPORT(MISSIVE) FakeMissiveClient
+    : public MissiveClient,
+      public MissiveClient::TestInterface {
  public:
   FakeMissiveClient();
   ~FakeMissiveClient() override;
@@ -22,7 +23,7 @@ class FakeMissiveClient : public MissiveClient,
   FakeMissiveClient(const FakeMissiveClient& other) = delete;
   FakeMissiveClient& operator=(const FakeMissiveClient& other) = delete;
 
-  void Init();
+  void Init() override;
 
   // MissiveClient implementation:
   void EnqueueRecord(

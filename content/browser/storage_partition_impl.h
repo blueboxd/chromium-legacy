@@ -65,7 +65,7 @@ class SharedStorageManager;
 namespace content {
 
 class AggregationServiceImpl;
-class AttributionManagerImpl;
+class AttributionManager;
 class BackgroundFetchContext;
 class BlobRegistryWrapper;
 class BluetoothAllowedDevicesMap;
@@ -142,13 +142,14 @@ class CONTENT_EXPORT StoragePartitionImpl
           shared_storage_worklet_host_manager);
   void OverrideAggregationServiceForTesting(
       std::unique_ptr<AggregationServiceImpl> aggregation_service);
+  void OverrideAttributionManagerForTesting(
+      std::unique_ptr<AttributionManager> attribution_manager);
 
   // Returns the StoragePartitionConfig that represents this StoragePartition.
   const StoragePartitionConfig& GetConfig();
 
   // StoragePartition interface.
   base::FilePath GetPath() override;
-  base::FilePath GetBucketBasePath() override;
   network::mojom::NetworkContext* GetNetworkContext() override;
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() override;
@@ -248,7 +249,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   FileSystemAccessManagerImpl* GetFileSystemAccessManager();
   BucketManager* GetBucketManager();
   QuotaContext* GetQuotaContext();
-  AttributionManagerImpl* GetAttributionManager();
+  AttributionManager* GetAttributionManager();
   void SetFontAccessManagerForTesting(
       std::unique_ptr<FontAccessManager> font_access_manager);
   ComputePressureManager* GetComputePressureManager();
@@ -654,7 +655,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       proto_database_provider_;
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
   scoped_refptr<NativeIOContextImpl> native_io_context_;
-  std::unique_ptr<AttributionManagerImpl> attribution_manager_;
+  std::unique_ptr<AttributionManager> attribution_manager_;
   std::unique_ptr<FontAccessManager> font_access_manager_;
   std::unique_ptr<InterestGroupManagerImpl> interest_group_manager_;
   std::unique_ptr<BrowsingTopicsSiteDataManager>

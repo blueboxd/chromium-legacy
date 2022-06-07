@@ -40,7 +40,7 @@ class LibassistantFactoryImpl : public LibassistantFactory {
   // LibassistantFactory implementation:
   std::unique_ptr<assistant_client::AssistantManager> CreateAssistantManager(
       const std::string& lib_assistant_config) override {
-    if (!dlc_library_.is_valid()) {
+    if (!IsDlcLibraryValid()) {
       return base::WrapUnique(assistant_client::AssistantManager::Create(
           platform_api_, lib_assistant_config));
     }
@@ -55,7 +55,7 @@ class LibassistantFactoryImpl : public LibassistantFactory {
 
   assistant_client::AssistantManagerInternal* UnwrapAssistantManagerInternal(
       assistant_client::AssistantManager* assistant_manager) override {
-    if (!dlc_library_.is_valid()) {
+    if (!IsDlcLibraryValid()) {
       return assistant_client::UnwrapAssistantManagerInternal(
           assistant_manager);
     }
@@ -68,14 +68,29 @@ class LibassistantFactoryImpl : public LibassistantFactory {
     return assistant_manager_internal;
   }
 
-  void LoadLibassistantLibraryFromDlc(const std::string& dlc_path) override {
-    base::FilePath path = GetLibassisantPath(dlc_path);
+  void LoadLibassistantLibraryFromDlc(
+      const absl::optional<std::string>& dlc_path) override {
+    if (!dlc_path.has_value()) {
+      DVLOG(3) << "libassistant DLC is not mounted.";
+      dlc_library_.reset();
+      return;
+    }
+
+    if (dlc_path_ == dlc_path) {
+      DVLOG(3) << "Skip loading libassistant DLC with the same root path.";
+      return;
+    }
+    dlc_path_ = dlc_path;
+
+    base::FilePath path = GetLibassisantPath(dlc_path.value());
+    // Self-resets are not allowed on unique_ptr.
+    // We should only load the DLC once.
     dlc_library_ = base::ScopedNativeLibrary(path);
-    if (!dlc_library_.is_valid()) {
-      LOG(ERROR) << "Failed to load libassistant shared library from: " << path
-                 << ", error: " << dlc_library_.GetError()->ToString();
+    if (IsDlcLibraryValid()) {
+      DVLOG(3) << "Loaded libassistant shared library from: " << path;
     } else {
-      DVLOG(1) << "Loaded libassistant shared library from: " << path;
+      DVLOG(1) << "Failed to load libassistant shared library from: " << path
+               << ", error: " << dlc_library_.GetError()->ToString();
     }
   }
 
@@ -93,7 +108,10 @@ class LibassistantFactoryImpl : public LibassistantFactory {
         c_entrypoint);
   }
 
+  bool IsDlcLibraryValid() const { return dlc_library_.is_valid(); }
+
   assistant_client::PlatformApi* const platform_api_;
+  absl::optional<std::string> dlc_path_;
   base::ScopedNativeLibrary dlc_library_;
 };
 

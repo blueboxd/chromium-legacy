@@ -50,6 +50,12 @@ namespace {
 
 namespace mojom = ::ash::ime::mojom;
 
+struct InputFieldContext {
+  bool lacros_enabled = false;
+  bool multiword_enabled = false;
+  bool multiword_allowed = false;
+};
+
 // These are persisted to logs. Entries should not be renumbered. Numeric values
 // should not be reused. Must stay in sync with IMENonAutocorrectDiacriticStatus
 // enum in: tools/metrics/histograms/enums.xml
@@ -399,7 +405,7 @@ mojom::PhysicalKeyEventPtr CreatePhysicalKeyEventFromKeyEvent(
 
 uint32_t Utf16ToCodepoint(const std::u16string& str) {
   int32_t index = 0;
-  uint32_t codepoint = 0;
+  base_icu::UChar32 codepoint = 0;
   base::ReadUnicodeCharacter(str.data(), str.length(), &index, &codepoint);
 
   // Should only contain a single codepoint.
@@ -596,7 +602,7 @@ void NativeInputMethodEngineObserver::ConnectToImeService(
   host_receiver_.Bind(input_method_host.InitWithNewEndpointAndPassReceiver());
 
   ime::mojom::InputMethodSettingsPtr settings =
-      CreateSettingsFromPrefs(*prefs_, engine_id, InputFieldContext{});
+      CreateSettingsFromPrefs(*prefs_, engine_id);
   connection_factory_->ConnectToInputMethod(
       engine_id, input_method_.BindNewEndpointAndPassReceiver(),
       std::move(input_method_host), std::move(settings),
@@ -616,6 +622,7 @@ void NativeInputMethodEngineObserver::OnActivate(const std::string& engine_id) {
   UpdateCandidatesWindow(nullptr);
   ui::ime::InputMethodMenuManager::GetInstance()
       ->SetCurrentInputMethodMenuItemList({});
+  assistive_suggester_->OnActivate(engine_id);
 
   // TODO(b/181077907): Always launch the IME service and let IME service decide
   // whether it should shutdown or not.
@@ -637,8 +644,6 @@ void NativeInputMethodEngineObserver::OnActivate(const std::string& engine_id) {
     ime_base_observer_->OnActivate(engine_id);
   } else if (ShouldRouteToNativeMojoEngine(engine_id)) {
     ConnectToImeService(mojom::ConnectionTarget::kDecoder, engine_id);
-    // Inform the assistive suggester of the new engine activation.
-    assistive_suggester_->OnActivate(engine_id);
   } else {
     // Release the IME service.
     // TODO(b/147709499): A better way to cleanup all.
@@ -707,17 +712,17 @@ void NativeInputMethodEngineObserver::HandleOnFocusAsyncForNativeMojoEngine(
     return;
   }
 
+  // TODO(b/200611333): Make input_method_->OnFocus return the overriding
+  // XKB layout instead of having the logic here in Chromium.
+  ime::mojom::InputMethodSettingsPtr settings =
+      CreateSettingsFromPrefs(*prefs_, engine_id);
+  OverrideXkbLayoutIfNeeded(InputMethodManager::Get()->GetImeKeyboard(),
+                            settings);
+
   InputFieldContext input_field_context =
       features::IsAssistiveMultiWordEnabled()
           ? CreateInputFieldContext(enabled_suggestions)
           : InputFieldContext{};
-  // TODO(b/200611333): Make input_method_->OnFocus return the overriding
-  // XKB layout instead of having the logic here in Chromium.
-  ime::mojom::InputMethodSettingsPtr settings =
-      CreateSettingsFromPrefs(*prefs_, engine_id, input_field_context);
-  OverrideXkbLayoutIfNeeded(InputMethodManager::Get()->GetImeKeyboard(),
-                            settings);
-
   const bool is_normal_screen =
       InputMethodManager::Get()->GetActiveIMEState()->GetUIStyle() ==
       InputMethodManager::UIStyle::kNormal;

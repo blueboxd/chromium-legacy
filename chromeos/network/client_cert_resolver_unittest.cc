@@ -19,6 +19,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/components/onc/onc_test_utils.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
@@ -29,7 +30,6 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
@@ -344,7 +344,8 @@ class ClientCertResolverTest : public testing::Test,
 
     client_cert_config->onc_source = onc_source;
     client_cert_config->client_cert_type = ::onc::client_cert::kPattern;
-    client_cert_config->pattern.ReadFromONCDictionary(*(parsed_json.value));
+    client_cert_config->pattern.ReadFromONCDictionary(
+        parsed_json.value->GetDict());
   }
 
   // Sets up a policy with a certificate pattern that matches any client cert

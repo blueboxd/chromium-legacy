@@ -51,6 +51,7 @@
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/page_impl.h"
+#include "content/browser/renderer_host/pending_beacon_host.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/transient_allow_popup.h"
@@ -100,6 +101,7 @@
 #include "services/network/public/mojom/url_loader_network_service_observer.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/common/frame/fullscreen_request_token.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -191,6 +193,16 @@ class ClipboardFormatType;
 namespace ukm {
 class UkmRecorder;
 }
+
+namespace features {
+
+// Feature to prevent name updates to RenderFrameHost (and by extension its
+// relevant BrowsingContextState) when it is not current (i.e. is in the
+// BackForwardCache or is pending delete). This primarily will affect the
+// non-legacy implementation of BrowsingContextState.
+CONTENT_EXPORT extern const base::Feature
+    kDisableFrameNameUpdateOnNonCurrentRenderFrameHost;
+}  // namespace features
 
 namespace content {
 
@@ -389,7 +401,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
   content::PageVisibilityState GetVisibilityState() override;
   bool IsLastCommitIPAddressPubliclyRoutable() const override;
-  bool IsRenderFrameCreated() override;
   bool IsRenderFrameLive() override;
   LifecycleState GetLifecycleState() override;
   bool IsInLifecycleState(LifecycleState lifecycle_state) override;
@@ -2138,6 +2149,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void DidChangeSrcDoc(const blink::FrameToken& child_frame_token,
                        const std::string& srcdoc_value) override;
+  void ReceivedDelegatedCapability(
+      blink::mojom::DelegatedCapability delegated_capability) override;
 
   // blink::mojom::BackForwardCacheControllerHost:
   void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
@@ -2269,6 +2282,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::mojom::CookieAccessDetailsPtr details) override;
 
   void GetSavableResourceLinksFromRenderer();
+  void GetPendingBeaconHost(
+      mojo::PendingReceiver<blink::mojom::PendingBeaconHost> receiver);
 
   // Helper for checking if a navigation to an error page should be excluded
   // from CanAccessDataForOrigin and/or CanCommitOriginAndUrl security checks.
@@ -2473,6 +2488,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
     kIframeNestedWithinFencedFrame
   };
 
+  using JavaScriptResultAndTypeCallback =
+      base::OnceCallback<void(blink::mojom::JavaScriptExecutionResultType,
+                              base::Value)>;
+
+  // Runs JavaScript in this frame, without restrictions. ONLY FOR TESTS.
+  // This method can optionally trigger a fake user activation notification,
+  // and can wait for returned promises to be resolved.
+  void ExecuteJavaScriptForTests(const std::u16string& javascript,
+                                 bool has_user_gesture,
+                                 bool resolve_promises,
+                                 int32_t world_id,
+                                 JavaScriptResultAndTypeCallback callback);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2640,6 +2668,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest, ExpectedMainWorldOrigin);
   FRIEND_TEST_ALL_PREFIXES(DocumentUserDataTest, CheckInPendingDeletionState);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           BlockNameUpdateForBackForwardCache);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           BlockNameUpdateForPendingDelete);
 
   class SubresourceLoaderFactoriesConfig;
 
@@ -2740,6 +2772,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateState(const blink::PageState& state) override;
   void OpenURL(blink::mojom::OpenURLParamsPtr params) override;
   void DidStopLoading() override;
+
+#if BUILDFLAG(IS_ANDROID)
+  void UpdateUserGestureCarryoverInfo() override;
+#endif
 
   friend class RenderAccessibilityHost;
   void HandleAXEvents(const ui::AXTreeID& tree_id,
@@ -4210,6 +4246,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Manages a transient affordance for this frame or subframes to open a popup.
   TransientAllowPopup transient_allow_popup_;
+
+  // Manages a transient affordance for this frame to request fullscreen.
+  blink::FullscreenRequestToken fullscreen_request_token_;
 
   // Used to avoid sending AXTreeData to the renderer if the renderer has not
   // been told root ID yet. See UpdateAXTreeData() for more details.

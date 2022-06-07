@@ -591,7 +591,10 @@ InspectorCSSAgent::InspectorCSSAgent(
       enable_requested_(&agent_state_, /*default_value=*/false),
       enable_completed_(false),
       coverage_enabled_(&agent_state_, /*default_value=*/false),
-      local_fonts_enabled_(&agent_state_, /*default_value=*/true) {}
+      local_fonts_enabled_(&agent_state_, /*default_value=*/true) {
+  DCHECK(dom_agent);
+  DCHECK(network_agent);
+}
 
 InspectorCSSAgent::~InspectorCSSAgent() = default;
 
@@ -1846,7 +1849,7 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
   }
 
   const MediaQuerySet* queries = media->Queries();
-  const Vector<std::unique_ptr<MediaQuery>>& query_vector =
+  const HeapVector<Member<const MediaQuery>>& query_vector =
       queries->QueryVector();
   LocalFrame* frame = nullptr;
   if (parent_style_sheet) {
@@ -1869,8 +1872,8 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
   MediaValues* media_values = MediaValues::CreateDynamicIfFrameExists(frame);
   bool has_media_query_items = false;
   for (wtf_size_t i = 0; i < query_vector.size(); ++i) {
-    MediaQuery& query = *query_vector.at(i);
-    Vector<MediaQueryExp> expressions;
+    const MediaQuery& query = *query_vector.at(i);
+    HeapVector<MediaQueryExp> expressions;
     if (query.ExpNode())
       query.ExpNode()->CollectExpressions(expressions);
     auto expression_array = std::make_unique<

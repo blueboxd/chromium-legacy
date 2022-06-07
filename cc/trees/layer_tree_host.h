@@ -716,6 +716,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void NotifyThroughputTrackerResults(CustomTrackerResults results);
   void NotifyTransitionRequestsFinished(
       const std::vector<uint32_t>& sequence_ids);
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies);
 
   LayerTreeHostClient* client() {
     DCHECK(IsMainThread());
@@ -848,6 +850,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   [[nodiscard]] base::AutoReset<bool> SimulateSyncingDeltasForTesting() {
     return base::AutoReset<bool>(&syncing_deltas_for_test_, true);
   }
+
+  void IncrementVisualUpdateDuration(base::TimeDelta visual_update_duration);
 
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);

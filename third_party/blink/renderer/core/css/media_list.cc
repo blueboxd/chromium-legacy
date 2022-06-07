@@ -55,13 +55,12 @@ namespace blink {
 
 MediaQuerySet::MediaQuerySet() = default;
 
-MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
-    : queries_(o.queries_.size()) {
-  for (unsigned i = 0; i < queries_.size(); ++i)
-    queries_[i] = o.queries_[i]->Copy();
-}
+MediaQuerySet::MediaQuerySet(const MediaQuerySet&) = default;
 
-scoped_refptr<MediaQuerySet> MediaQuerySet::Create(
+MediaQuerySet::MediaQuerySet(HeapVector<Member<const MediaQuery>> queries)
+    : queries_(std::move(queries)) {}
+
+MediaQuerySet* MediaQuerySet::Create(
     const String& media_string,
     const ExecutionContext* execution_context) {
   if (media_string.IsEmpty())
@@ -70,13 +69,13 @@ scoped_refptr<MediaQuerySet> MediaQuerySet::Create(
   return MediaQueryParser::ParseMediaQuerySet(media_string, execution_context);
 }
 
+void MediaQuerySet::Trace(Visitor* visitor) const {
+  visitor->Trace(queries_);
+}
+
 bool MediaQuerySet::Set(const String& media_string,
                         const ExecutionContext* execution_context) {
-  scoped_refptr<MediaQuerySet> result = Create(media_string, execution_context);
-  // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
-  for (const auto& query : result->queries_) {
-    CHECK(query);
-  }
+  MediaQuerySet* result = Create(media_string, execution_context);
   queries_.swap(result->queries_);
   return true;
 }
@@ -86,25 +85,24 @@ bool MediaQuerySet::Add(const String& query_string,
   // To "parse a media query" for a given string means to follow "the parse
   // a media query list" steps and return "null" if more than one media query
   // is returned, or else the returned media query.
-  scoped_refptr<MediaQuerySet> result = Create(query_string, execution_context);
+  MediaQuerySet* result = Create(query_string, execution_context);
 
   // Only continue if exactly one media query is found, as described above.
   if (result->queries_.size() != 1)
     return false;
 
-  std::unique_ptr<MediaQuery> new_query = std::move(result->queries_[0]);
-  // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
-  CHECK(new_query);
+  const MediaQuery* new_query = result->queries_[0].Get();
+  DCHECK(new_query);
 
   // If comparing with any of the media queries in the collection of media
   // queries returns true terminate these steps.
   for (wtf_size_t i = 0; i < queries_.size(); ++i) {
-    MediaQuery& query = *queries_[i];
+    const MediaQuery& query = *queries_[i];
     if (query == *new_query)
       return false;
   }
 
-  queries_.push_back(std::move(new_query));
+  queries_.push_back(new_query);
   return true;
 }
 
@@ -113,22 +111,20 @@ bool MediaQuerySet::Remove(const String& query_string_to_remove,
   // To "parse a media query" for a given string means to follow "the parse
   // a media query list" steps and return "null" if more than one media query
   // is returned, or else the returned media query.
-  scoped_refptr<MediaQuerySet> result =
-      Create(query_string_to_remove, execution_context);
+  MediaQuerySet* result = Create(query_string_to_remove, execution_context);
 
   // Only continue if exactly one media query is found, as described above.
   if (result->queries_.size() != 1)
     return true;
 
-  std::unique_ptr<MediaQuery> new_query = std::move(result->queries_[0]);
-  // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
-  CHECK(new_query);
+  const MediaQuery* new_query = result->queries_[0];
+  DCHECK(new_query);
 
   // Remove any media query from the collection of media queries for which
   // comparing with the media query returns true.
   bool found = false;
   for (wtf_size_t i = 0; i < queries_.size(); ++i) {
-    MediaQuery& query = *queries_[i];
+    const MediaQuery& query = *queries_[i];
     if (query == *new_query) {
       queries_.EraseAt(i);
       --i;
@@ -137,12 +133,6 @@ bool MediaQuerySet::Remove(const String& query_string_to_remove,
   }
 
   return found;
-}
-
-void MediaQuerySet::AddMediaQuery(std::unique_ptr<MediaQuery> media_query) {
-  // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
-  CHECK(media_query);
-  queries_.push_back(std::move(media_query));
 }
 
 String MediaQuerySet::MediaText() const {
@@ -167,14 +157,12 @@ bool MediaQuerySet::HasUnknown() const {
   return false;
 }
 
-MediaList::MediaList(scoped_refptr<MediaQuerySet> media_queries,
-                     CSSStyleSheet* parent_sheet)
+MediaList::MediaList(MediaQuerySet* media_queries, CSSStyleSheet* parent_sheet)
     : media_queries_(media_queries),
       parent_style_sheet_(parent_sheet),
       parent_rule_(nullptr) {}
 
-MediaList::MediaList(scoped_refptr<MediaQuerySet> media_queries,
-                     CSSRule* parent_rule)
+MediaList::MediaList(MediaQuerySet* media_queries, CSSRule* parent_rule)
     : media_queries_(media_queries),
       parent_style_sheet_(nullptr),
       parent_rule_(parent_rule) {}
@@ -196,7 +184,7 @@ void MediaList::setMediaText(const ExecutionContext* execution_context,
 }
 
 String MediaList::item(unsigned index) const {
-  const Vector<std::unique_ptr<MediaQuery>>& queries =
+  const HeapVector<Member<const MediaQuery>>& queries =
       media_queries_->QueryVector();
   if (index < queries.size())
     return queries[index]->CssText();
@@ -230,16 +218,13 @@ void MediaList::appendMedium(const ExecutionContext* execution_context,
     parent_style_sheet_->DidMutate(CSSStyleSheet::Mutation::kSheet);
 }
 
-void MediaList::Reattach(scoped_refptr<MediaQuerySet> media_queries) {
-  // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
-  CHECK(media_queries);
-  for (const auto& query : media_queries->QueryVector()) {
-    CHECK(query);
-  }
+void MediaList::Reattach(MediaQuerySet* media_queries) {
+  DCHECK(media_queries);
   media_queries_ = media_queries;
 }
 
 void MediaList::Trace(Visitor* visitor) const {
+  visitor->Trace(media_queries_);
   visitor->Trace(parent_style_sheet_);
   visitor->Trace(parent_rule_);
   ScriptWrappable::Trace(visitor);

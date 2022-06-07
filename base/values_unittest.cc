@@ -19,7 +19,6 @@
 #include "base/bits.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
-#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
@@ -1538,8 +1537,8 @@ TEST(ValuesTest, StringValue) {
 
 TEST(ValuesTest, ListDeletion) {
   ListValue list;
-  list.Append(std::make_unique<Value>());
-  EXPECT_FALSE(list.GetListDeprecated().empty());
+  list.Append(Value());
+  EXPECT_FALSE(list.GetList().empty());
   list.ClearList();
   EXPECT_TRUE(list.GetListDeprecated().empty());
 }
@@ -1754,6 +1753,86 @@ TEST(ValuesTest, DeepCopy) {
   EXPECT_TRUE(copy_nested_dictionary->FindKey("key"));
 }
 
+TEST(ValuesTest, SpecializedEquals) {
+  std::vector<Value> values;
+  values.emplace_back(false);
+  values.emplace_back(true);
+  values.emplace_back(0);
+  values.emplace_back(1);
+  values.emplace_back(1.0);
+  values.emplace_back(2.0);
+  values.emplace_back("hello");
+  values.emplace_back("world");
+  base::Value::Dict dict;
+  dict.Set("hello", "world");
+  values.emplace_back(std::move(dict));
+  base::Value::Dict dict2;
+  dict2.Set("world", "hello");
+  values.emplace_back(std::move(dict2));
+  base::Value::List list;
+  list.Append("hello");
+  list.Append("world");
+  values.emplace_back(std::move(list));
+  base::Value::List list2;
+  list2.Append("world");
+  list2.Append("hello");
+  values.emplace_back(std::move(list2));
+
+  for (const Value& outer_value : values) {
+    for (const Value& inner_value : values) {
+      SCOPED_TRACE(::testing::Message()
+                   << "Outer: " << outer_value << "Inner: " << inner_value);
+      const bool should_be_equal = &outer_value == &inner_value;
+      if (should_be_equal) {
+        EXPECT_EQ(outer_value, inner_value);
+        EXPECT_EQ(inner_value, outer_value);
+        EXPECT_FALSE(outer_value != inner_value);
+        EXPECT_FALSE(inner_value != outer_value);
+      } else {
+        EXPECT_NE(outer_value, inner_value);
+        EXPECT_NE(inner_value, outer_value);
+        EXPECT_FALSE(outer_value == inner_value);
+        EXPECT_FALSE(inner_value == outer_value);
+      }
+      // Also test the various overloads for operator== against concrete
+      // subtypes.
+      outer_value.Visit([&](const auto& outer_member) {
+        using T = std::decay_t<decltype(outer_member)>;
+        if constexpr (!std::is_same_v<T, absl::monostate> &&
+                      !std::is_same_v<T, Value::BlobStorage>) {
+          if (should_be_equal) {
+            EXPECT_EQ(outer_member, inner_value);
+            EXPECT_EQ(inner_value, outer_member);
+            EXPECT_FALSE(outer_member != inner_value);
+            EXPECT_FALSE(inner_value != outer_member);
+          } else {
+            EXPECT_NE(outer_member, inner_value);
+            EXPECT_NE(inner_value, outer_member);
+            EXPECT_FALSE(outer_member == inner_value);
+            EXPECT_FALSE(inner_value == outer_member);
+          }
+        }
+      });
+    }
+
+    // A copy of a Value should also compare equal to itself.
+    Value copied_value = outer_value.Clone();
+    EXPECT_EQ(outer_value, copied_value);
+    EXPECT_EQ(copied_value, outer_value);
+    EXPECT_FALSE(outer_value != copied_value);
+    EXPECT_FALSE(copied_value != outer_value);
+  }
+}
+
+// Test that a literal string comparison does not end up using the bool (!!)
+// overload.
+TEST(ValuesTest, LiteralStringEquals) {
+  EXPECT_EQ("hello world", base::Value("hello world"));
+  EXPECT_EQ(base::Value("hello world"), "hello world");
+  EXPECT_NE("hello world", base::Value(true));
+  EXPECT_NE(base::Value(true), "hello world");
+}
+
 TEST(ValuesTest, Equals) {
   auto null1 = std::make_unique<Value>();
   auto null2 = std::make_unique<Value>();
@@ -1775,8 +1854,8 @@ TEST(ValuesTest, Equals) {
   EXPECT_EQ(dv, *copy);
 
   std::unique_ptr<ListValue> list(new ListValue);
-  list->Append(std::make_unique<Value>());
-  list->Append(std::make_unique<DictionaryValue>());
+  list->Append(Value());
+  list->Append(Value(Value::Type::DICTIONARY));
   Value list_copy(list->Clone());
 
   ListValue* list_weak = dv.SetList("f", std::move(list));
@@ -1784,7 +1863,7 @@ TEST(ValuesTest, Equals) {
   copy->SetKey("f", std::move(list_copy));
   EXPECT_EQ(dv, *copy);
 
-  list_weak->Append(std::make_unique<Value>(true));
+  list_weak->Append(true);
   EXPECT_NE(dv, *copy);
 
   // Check if Equals detects differences in only the keys.
@@ -1996,8 +2075,8 @@ TEST(ValuesTest, RemoveEmptyChildren) {
   }
   {
     ListValue inner;
-    inner.Append(std::make_unique<DictionaryValue>());
-    inner.Append(std::make_unique<ListValue>());
+    inner.Append(Value(Value::Type::DICTIONARY));
+    inner.Append(Value(Value::Type::LIST));
     root->SetKey("list_with_empty_children", std::move(inner));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->DictSize());
@@ -2006,8 +2085,8 @@ TEST(ValuesTest, RemoveEmptyChildren) {
   // Nested with siblings.
   {
     ListValue inner;
-    inner.Append(std::make_unique<DictionaryValue>());
-    inner.Append(std::make_unique<ListValue>());
+    inner.Append(Value(Value::Type::DICTIONARY));
+    inner.Append(Value(Value::Type::LIST));
     root->SetKey("list_with_empty_children", std::move(inner));
     DictionaryValue inner2;
     inner2.SetKey("empty_dict", DictionaryValue());
@@ -2020,9 +2099,9 @@ TEST(ValuesTest, RemoveEmptyChildren) {
   // Make sure nested values don't get pruned.
   {
     ListValue inner;
-    auto inner2 = std::make_unique<ListValue>();
-    inner2->Append(std::make_unique<Value>("hello"));
-    inner.Append(std::make_unique<DictionaryValue>());
+    ListValue inner2;
+    inner2.Append("hello");
+    inner.Append(Value(Value::Type::DICTIONARY));
     inner.Append(std::move(inner2));
     root->SetKey("list_with_empty_children", std::move(inner));
     root = root->DeepCopyWithoutEmptyChildren();
@@ -2227,13 +2306,13 @@ TEST(ValuesTest, GetWithNullOutValue) {
   main_dict.SetKey("dict", dict_value.Clone());
   main_dict.SetKey("list", list_value.Clone());
 
-  main_list.Append(std::make_unique<Value>(bool_value.Clone()));
-  main_list.Append(std::make_unique<Value>(int_value.Clone()));
-  main_list.Append(std::make_unique<Value>(double_value.Clone()));
-  main_list.Append(std::make_unique<Value>(string_value.Clone()));
-  main_list.Append(std::make_unique<Value>(binary_value.Clone()));
-  main_list.Append(std::make_unique<Value>(dict_value.Clone()));
-  main_list.Append(std::make_unique<Value>(list_value.Clone()));
+  main_list.Append(bool_value.Clone());
+  main_list.Append(int_value.Clone());
+  main_list.Append(double_value.Clone());
+  main_list.Append(string_value.Clone());
+  main_list.Append(binary_value.Clone());
+  main_list.Append(dict_value.Clone());
+  main_list.Append(list_value.Clone());
 
   EXPECT_TRUE(main_dict.Get("bool", nullptr));
   EXPECT_TRUE(main_dict.Get("int", nullptr));
@@ -2389,5 +2468,90 @@ TEST(ValuesTest, TracingSupport) {
   }
 }
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
+
+TEST(ValueViewTest, BasicConstruction) {
+  {
+    ValueView v = true;
+    EXPECT_EQ(true, absl::get<bool>(v.data_view_for_test()));
+  }
+  {
+    ValueView v = 25;
+    EXPECT_EQ(25, absl::get<int>(v.data_view_for_test()));
+  }
+  {
+    ValueView v = 3.14;
+    EXPECT_DOUBLE_EQ(3.14, absl::get<ValueView::DoubleStorageForTest>(
+                               v.data_view_for_test()));
+  }
+  {
+    ValueView v = StringPiece("hello world");
+    EXPECT_EQ("hello world", absl::get<StringPiece>(v.data_view_for_test()));
+  }
+  {
+    ValueView v = "hello world";
+    EXPECT_EQ("hello world", absl::get<StringPiece>(v.data_view_for_test()));
+  }
+  {
+    std::string str = "hello world";
+    ValueView v = str;
+    EXPECT_EQ("hello world", absl::get<StringPiece>(v.data_view_for_test()));
+  }
+  {
+    Value::Dict dict;
+    dict.Set("hello", "world");
+    ValueView v = dict;
+    EXPECT_EQ(dict, absl::get<std::reference_wrapper<const Value::Dict>>(
+                        v.data_view_for_test()));
+  }
+  {
+    Value::List list;
+    list.Append("hello");
+    list.Append("world");
+    ValueView v = list;
+    EXPECT_EQ(list, absl::get<std::reference_wrapper<const Value::List>>(
+                        v.data_view_for_test()));
+  }
+}
+
+TEST(ValueViewTest, ValueConstruction) {
+  {
+    Value val(true);
+    ValueView v = val;
+    EXPECT_EQ(true, absl::get<bool>(v.data_view_for_test()));
+  }
+  {
+    Value val(25);
+    ValueView v = val;
+    EXPECT_EQ(25, absl::get<int>(v.data_view_for_test()));
+  }
+  {
+    Value val(3.14);
+    ValueView v = val;
+    EXPECT_DOUBLE_EQ(3.14, absl::get<ValueView::DoubleStorageForTest>(
+                               v.data_view_for_test()));
+  }
+  {
+    Value val("hello world");
+    ValueView v = val;
+    EXPECT_EQ("hello world", absl::get<StringPiece>(v.data_view_for_test()));
+  }
+  {
+    Value::Dict dict;
+    dict.Set("hello", "world");
+    Value val(dict.Clone());
+    ValueView v = val;
+    EXPECT_EQ(dict, absl::get<std::reference_wrapper<const Value::Dict>>(
+                        v.data_view_for_test()));
+  }
+  {
+    Value::List list;
+    list.Append("hello");
+    list.Append("world");
+    Value val(list.Clone());
+    ValueView v = val;
+    EXPECT_EQ(list, absl::get<std::reference_wrapper<const Value::List>>(
+                        v.data_view_for_test()));
+  }
+}
 
 }  // namespace base

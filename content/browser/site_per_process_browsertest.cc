@@ -1866,7 +1866,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrashSubframe) {
   EXPECT_FALSE(
       child->current_frame_host()->render_view_host()->IsRenderViewLive());
   EXPECT_FALSE(child->current_frame_host()->IsRenderFrameLive());
-  EXPECT_FALSE(child->current_frame_host()->IsRenderFrameCreated());
 
   // Now crash the top-level page to clear the child frame.
   {
@@ -5531,7 +5530,7 @@ IN_PROC_BROWSER_TEST_P(
             foo_root->effective_frame_policy().sandbox_flags);
   // Check that the sandbox flags for the popup document are correct in the
   // browser process. They should have been inherited.
-  EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
+  EXPECT_EQ(expected_flags,
             foo_root->current_frame_host()->active_sandbox_flags());
 }
 

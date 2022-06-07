@@ -57,6 +57,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -501,7 +502,8 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    public void testPlaceholder() {
+    @ParameterAnnotations.UseMethodParameter(MVTParams.class)
+    public void testPlaceholder(boolean isScrollableMVTEnabled) {
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
         when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
 
@@ -527,6 +529,9 @@ public class NewTabPageTest {
             when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(false);
 
             ntpLayout.onSwitchToForeground(); // Force tile refresh.
+            // Mock to notify the template URL service observer.
+            ntpLayout.getMostVisitedTilesCoordinatorForTesting()
+                    .onTemplateURLServiceChangedForTesting();
         });
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(
@@ -640,6 +645,27 @@ public class NewTabPageTest {
             mNtp.getNewTabPageManagerForTesting().focusSearchBox(
                     /*beginVoiceSearch=*/true, /*pastedText=*/"");
             verify(mFeedReliabilityLogger).onVoiceSearch();
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.FEED_ABLATION)
+    public void testRender_LoadNewTabPageWithDisabledFeed() throws IOException {
+        mRenderTestRule.render(
+                mActivityTestRule.getActivity().getActivityTab().getNativePage().getView(),
+                "feed_is_ablated");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    public void testFeedReliabilityLoggingHideWithBack() throws IOException {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeTabbedActivity activity = (ChromeTabbedActivity) mActivityTestRule.getActivity();
+            activity.handleBackPressed();
+            verify(mFeedReliabilityLogger).onNavigateBack();
         });
     }
 

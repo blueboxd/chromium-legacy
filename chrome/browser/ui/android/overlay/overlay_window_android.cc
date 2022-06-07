@@ -38,13 +38,17 @@ OverlayWindowAndroid::OverlayWindowAndroid(
   surface_layer_->SetIsDrawable(true);
   surface_layer_->SetStretchContentToFillBounds(true);
   surface_layer_->SetMayContainVideo(true);
-  surface_layer_->SetBackgroundColor(SK_ColorBLACK);
+  surface_layer_->SetBackgroundColor(SkColors::kBlack);
+
+  gfx::Rect source_bounds = controller_->GetSourceBounds();
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PictureInPictureActivity_createActivity(
       env, reinterpret_cast<intptr_t>(this),
       TabAndroid::FromWebContents(controller_->GetWebContents())
-          ->GetJavaObject());
+          ->GetJavaObject(),
+      source_bounds.x(), source_bounds.y(), source_bounds.width(),
+      source_bounds.height());
 }
 
 OverlayWindowAndroid::~OverlayWindowAndroid() {

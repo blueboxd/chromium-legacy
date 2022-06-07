@@ -117,7 +117,8 @@ bool ValidateUpgrade(const HttpResponseHeaders* headers,
     return false;
   }
 
-  if (!base::LowerCaseEqualsASCII(value, websockets::kWebSocketLowercase)) {
+  if (!base::EqualsCaseInsensitiveASCII(value,
+                                        websockets::kWebSocketLowercase)) {
     *failure_message =
         "'Upgrade' header value is not 'WebSocket': " + value;
     return false;
@@ -363,11 +364,11 @@ void WebSocketBasicHandshakeStream::GetSSLCertRequestInfo(
   parser()->GetSSLCertRequestInfo(cert_request_info);
 }
 
-bool WebSocketBasicHandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
+int WebSocketBasicHandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   if (!state_.connection() || !state_.connection()->socket())
-    return false;
+    return ERR_SOCKET_NOT_CONNECTED;
 
-  return state_.connection()->socket()->GetPeerAddress(endpoint) == OK;
+  return state_.connection()->socket()->GetPeerAddress(endpoint);
 }
 
 void WebSocketBasicHandshakeStream::PopulateNetErrorDetails(

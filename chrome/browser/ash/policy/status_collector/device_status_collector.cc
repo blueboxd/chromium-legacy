@@ -501,11 +501,6 @@ bool AddCrostiniAppInfo(
         crostini::GetThreeDayWindowStart(last_launch_time).ToJavaTime());
   }
 
-  if (registration.app_id() == crostini::kCrostiniTerminalSystemAppId) {
-    app->set_app_type(em::CROSTINI_APP_TYPE_TERMINAL);
-    // We do not log package information if the App is the terminal:
-    return true;
-  }
   app->set_app_type(em::CROSTINI_APP_TYPE_INTERACTIVE);
 
   const std::string& package_id = registration.PackageId();
@@ -2375,7 +2370,6 @@ bool DeviceStatusCollector::GetNetworkStatus(
       {shill::kStateAssociation, em::NetworkState::ASSOCIATION},
       {shill::kStateConfiguration, em::NetworkState::CONFIGURATION},
       {shill::kStateReady, em::NetworkState::READY},
-      {shill::kStatePortal, em::NetworkState::PORTAL},
       {shill::kStateNoConnectivity, em::NetworkState::PORTAL},
       {shill::kStateRedirectFound, em::NetworkState::PORTAL},
       {shill::kStatePortalSuspected, em::NetworkState::PORTAL},

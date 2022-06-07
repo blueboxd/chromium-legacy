@@ -55,6 +55,7 @@
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -89,7 +90,6 @@
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
@@ -958,7 +958,8 @@ IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest, SetIcon) {
   TestAppWindowIconObserver test_observer(browser()->profile());
 
   int base_shelf_item_count = shelf_model()->item_count();
-  ExtensionTestMessageListener ready_listener("ready", true);
+  ExtensionTestMessageListener ready_listener("ready",
+                                              ReplyBehavior::kWillReply);
   const Extension* extension = LoadAndLaunchPlatformApp("app_icon", "Launched");
   ASSERT_TRUE(extension);
 
@@ -2216,10 +2217,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
 // icon's context menu works as expected.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, CloseSystemAppByShelfContextMenu) {
   // Prepare for launching the setting app.
-  auto& system_web_app_manager =
-      web_app::WebAppProvider::GetForTest(browser()->profile())
-          ->system_web_app_manager();
-  system_web_app_manager.InstallSystemAppsForTesting();
+  ash::SystemWebAppManager::GetForTest(browser()->profile())
+      ->InstallSystemAppsForTesting();
 
   // Record the default shelf item count.
   const int default_item_count = shelf_model()->item_count();
@@ -2394,9 +2393,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
 // Ensure opening settings and task manager windows create new shelf items.
 IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, SettingsAndTaskManagerWindows) {
   // Install the Settings App.
-  web_app::WebAppProvider::GetForTest(browser()->profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
+  ash::SystemWebAppManager::GetForTest(browser()->profile())
+      ->InstallSystemAppsForTesting();
   chrome::SettingsWindowManager* settings_manager =
       chrome::SettingsWindowManager::GetInstance();
 
@@ -2860,8 +2858,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
 
 // Verify that the in-app shelf should be shown when the app icon receives
 // the accessibility focus.
-// TODO(https://crbug.com/1299759): Re-enable once flaky timeouts are fixed.
-IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
+IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
   ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   ash::test::SpeechMonitor speech_monitor;
 
@@ -2880,6 +2877,11 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
                 extension_misc::kChromeVoxExtensionId);
     content::ExecuteScriptAsync(host->host_contents(), script);
   });
+
+  // Wait for an utterance from the browser before the test starts traversal
+  // through shelf to ensure that the browser does not show mid shelf traversal,
+  // and causes the a11y focus to unexpectedly switch to the omnibox mid test.
+  speech_monitor.ExpectSpeech("about:blank");
 
   ash::RootWindowController* controller =
       ash::Shell::GetRootWindowControllerWithDisplayId(
@@ -3110,9 +3112,8 @@ class FilesSystemWebAppPinnedTest : public ShelfPlatformAppBrowserTest {
 
   void WaitForSystemAppsSynchronized() {
     base::RunLoop run_loop;
-    WebAppProvider::GetForSystemWebApps(browser()->profile())
-        ->system_web_app_manager()
-        .on_apps_synchronized()
+    ash::SystemWebAppManager::Get(browser()->profile())
+        ->on_apps_synchronized()
         .Post(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }

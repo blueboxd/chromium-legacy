@@ -65,7 +65,7 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
       l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SCREEN_READ_MORE);
 
   // Set banner.
-  self.bannerImage = [UIImage imageNamed:kSigninBannerName];
+  self.bannerName = kSigninBannerName;
 
   // Set |self.titleText| and |self.subtitleText|.
   switch (self.signinStatus) {
@@ -159,6 +159,13 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
   // Call super after setting up the strings and others, as required per super
   // class.
   [super viewDidLoad];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  [self.delegate logScrollButtonVisible:!self.didReachBottom
+                     withIdentityPicker:!self.identityControl.hidden
+                              andFooter:[self.disclaimerText length] > 0];
 }
 
 #pragma mark - Properties

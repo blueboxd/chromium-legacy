@@ -437,8 +437,6 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
   if (RuntimeEnabledFeatures::PaymentRequestBasicCardEnabled(
           &execution_context) &&
       supported_method == "basic-card") {
-    Deprecation::CountDeprecation(&execution_context,
-                                  WebFeature::kPaymentRequestBasicCard);
     BasicCardHelper::ParseBasiccardData(input, output->supported_networks,
                                         exception_state);
   } else if (supported_method == kSecurePaymentConfirmationMethod &&
@@ -448,7 +446,7 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
                       WebFeature::kSecurePaymentConfirmation);
     output->secure_payment_confirmation =
         SecurePaymentConfirmationHelper::ParseSecurePaymentConfirmationData(
-            input, exception_state);
+            input, execution_context, exception_state);
   }
 }
 
@@ -810,8 +808,8 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
       DomWindow()->IsPaymentRequestTokenActive();
 
   if (!has_transient_user_activation) {
-    Deprecation::CountDeprecation(
-        GetExecutionContext(), WebFeature::kPaymentRequestShowWithoutGesture);
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kPaymentRequestShowWithoutGesture);
 
     if (!payment_request_token_active) {
       UseCounter::Count(GetExecutionContext(),
@@ -1513,6 +1511,10 @@ void PaymentRequest::OnError(PaymentErrorReason error,
 
     case PaymentErrorReason::NOT_ALLOWED_ERROR:
       exception_code = DOMExceptionCode::kNotAllowedError;
+      break;
+
+    case PaymentErrorReason::USER_OPT_OUT:
+      exception_code = DOMExceptionCode::kAbortError;
       break;
 
     case PaymentErrorReason::UNKNOWN:

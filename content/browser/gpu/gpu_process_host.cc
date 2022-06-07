@@ -275,9 +275,6 @@ static const char* const kSwitchNames[] = {
     switches::kVModule,
     switches::kUseAdapterLuid,
     switches::kWebViewDrawFunctorUsesVulkan,
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-    switches::kEnableClearHevcForTesting,
-#endif
 #if BUILDFLAG(IS_MAC)
     sandbox::policy::switches::kEnableSandboxLogging,
     sandbox::policy::switches::kDisableMetalShaderCache,
@@ -310,7 +307,6 @@ static const char* const kSwitchNames[] = {
     switches::kHardwareVideoDecodeFrameRate,
 #endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    switches::kLacrosEnablePlatformEncryptedHevc,
     switches::kLacrosEnablePlatformHevc,
     switches::kLacrosUseChromeosProtectedMedia,
     switches::kLacrosUseChromeosProtectedAv1,
@@ -765,11 +761,6 @@ GpuProcessHost::~GpuProcessHost() {
   // for another GpuProcessHost.
   if (g_gpu_process_hosts[kind_] == this)
     g_gpu_process_hosts[kind_] = nullptr;
-
-#if BUILDFLAG(IS_ANDROID)
-  UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
-                           gpu::GpuSurfaceTracker::Get()->GetSurfaceCount());
-#endif
 
   bool block_offscreen_contexts = true;
   if (!in_process_ && process_launched_) {

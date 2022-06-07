@@ -48,20 +48,21 @@ class ManifestUpdateManager final : public WebAppInstallManagerObserver {
   ManifestUpdateManager();
   ~ManifestUpdateManager() override;
 
-  void SetSubsystems(
-      WebAppInstallManager* install_manager,
-      WebAppRegistrar* registrar,
-      WebAppIconManager* icon_manager,
-      WebAppUiManager* ui_manager,
-      WebAppInstallFinalizer* install_finalizer,
-      const ash::SystemWebAppDelegateMap* system_web_apps_delegate_map,
-      OsIntegrationManager* os_integration_manager,
-      WebAppSyncBridge* sync_bridge);
+  void SetSubsystems(WebAppInstallManager* install_manager,
+                     WebAppRegistrar* registrar,
+                     WebAppIconManager* icon_manager,
+                     WebAppUiManager* ui_manager,
+                     WebAppInstallFinalizer* install_finalizer,
+                     OsIntegrationManager* os_integration_manager,
+                     WebAppSyncBridge* sync_bridge);
+  void SetSystemWebAppDelegateMap(
+      const ash::SystemWebAppDelegateMap* system_web_apps_delegate_map);
+
   void Start();
   void Shutdown();
 
   void MaybeUpdate(const GURL& url,
-                   const AppId& app_id,
+                   const absl::optional<AppId>& app_id,
                    content::WebContents* web_contents);
   bool IsUpdateConsumed(const AppId& app_id);
 
@@ -81,6 +82,8 @@ class ManifestUpdateManager final : public WebAppInstallManagerObserver {
     hang_update_checks_for_testing_ = true;
   }
 
+  void ResetManifestThrottleForTesting(const AppId& app_id);
+
  private:
   bool MaybeConsumeUpdateCheck(const GURL& origin, const AppId& app_id);
   absl::optional<base::Time> GetLastUpdateCheckTime(const AppId& app_id) const;
@@ -90,7 +93,7 @@ class ManifestUpdateManager final : public WebAppInstallManagerObserver {
   void OnUpdateStopped(const ManifestUpdateTask& task,
                        ManifestUpdateResult result);
   void NotifyResult(const GURL& url,
-                    const AppId& app_id,
+                    const absl::optional<AppId>& app_id,
                     ManifestUpdateResult result);
 
   raw_ptr<WebAppRegistrar> registrar_ = nullptr;

@@ -61,6 +61,12 @@ export class ProfileCustomizationAppElement extends
 
       /** Welcome title for the bubble */
       welcomeTitle_: String,
+
+      profileCustomizationInDialogDesign_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('profileCustomizationInDialogDesign'),
+      },
     };
   }
 
@@ -68,6 +74,7 @@ export class ProfileCustomizationAppElement extends
   private profileName_: string;
   private pictureUrl_: string;
   private welcomeTitle_: string;
+  private profileCustomizationInDialogDesign_: boolean;
   private profileCustomizationBrowserProxy_: ProfileCustomizationBrowserProxy =
       ProfileCustomizationBrowserProxyImpl.getInstance();
 
@@ -102,6 +109,10 @@ export class ProfileCustomizationAppElement extends
     this.pictureUrl_ = profileInfo.pictureUrl;
     this.isManaged_ = profileInfo.isManaged;
     this.welcomeTitle_ = profileInfo.welcomeTitle;
+  }
+
+  private getActionContainerClass_(inDialogDesign: boolean): string {
+    return 'action-container' + (inDialogDesign ? ' in-dialog-design' : '');
   }
 }
 

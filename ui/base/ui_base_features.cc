@@ -95,6 +95,10 @@ const base::Feature kLacrosResourcesFileSharing = {
     "LacrosResourcesFileSharing", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Enable or disable multitouch for virtual keyboard on ChromeOS.
+const base::Feature kVirtualKeyboardMultitouch{
+    "VirtualKeyboardMultitouch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Update of the virtual keyboard settings UI as described in
 // https://crbug.com/876901.
 const base::Feature kInputMethodSettingsUiUpdate = {
@@ -377,7 +381,13 @@ bool IsVariableRefreshRateEnabled() {
 }
 
 const base::Feature kWaylandScreenCoordinatesEnabled{
-    "WaylandScreenCoordinatesEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+  "WaylandScreenCoordinatesEnabled",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 bool IsWaylandScreenCoordinatesEnabled() {
   return base::FeatureList::IsEnabled(kWaylandScreenCoordinatesEnabled);

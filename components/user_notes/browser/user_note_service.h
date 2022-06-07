@@ -20,6 +20,8 @@
 #include "components/user_notes/interfaces/user_notes_ui_delegate.h"
 #include "components/user_notes/model/user_note.h"
 
+class UserNoteUICoordinatorTest;
+
 namespace content {
 class RenderFrameHost;
 }  // namespace content
@@ -82,9 +84,12 @@ class UserNoteService : public KeyedService, public UserNotesUIDelegate {
 
   // UserNotesUIDelegate implementation.
   void OnNoteFocused(const base::UnguessableToken& id) override;
+  void OnNoteDeleted(const base::UnguessableToken& id) override;
   void OnNoteCreationDone(const base::UnguessableToken& id,
                           const std::string& note_content) override;
   void OnNoteCreationCancelled(const base::UnguessableToken& id) override;
+  void OnNoteUpdated(const base::UnguessableToken& id,
+                     const std::string& note_content) override;
 
  private:
   struct ModelMapEntry {
@@ -101,7 +106,7 @@ class UserNoteService : public KeyedService, public UserNotesUIDelegate {
   friend class UserNoteBaseTest;
   friend class UserNoteInstanceTest;
   friend class UserNoteUtilsTest;
-  friend class UserNoteUICoordinatorTest;
+  friend class ::UserNoteUICoordinatorTest;
 
   // Source of truth for the in-memory note models. Any note currently being
   // displayed in a tab is stored in this data structure. Each entry also

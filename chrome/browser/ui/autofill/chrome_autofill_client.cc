@@ -18,6 +18,7 @@
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "chrome/browser/autofill/autofill_offer_manager_factory.h"
+#include "chrome/browser/autofill/merchant_promo_code_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -156,6 +157,17 @@ ChromeAutofillClient::GetAutocompleteHistoryManager() {
   return AutocompleteHistoryManagerFactory::GetForProfile(profile);
 }
 
+base::WeakPtr<MerchantPromoCodeManager>
+ChromeAutofillClient::GetMerchantPromoCodeManager() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillFillMerchantPromoCodeFields)) {
+    return nullptr;
+  }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return MerchantPromoCodeManagerFactory::GetForProfile(profile)->GetWeakPtr();
+}
+
 PrefService* ChromeAutofillClient::GetPrefs() {
   return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
 }
@@ -200,7 +212,7 @@ ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
 }
 
 ukm::SourceId ChromeAutofillClient::GetUkmSourceId() {
-  return web_contents()->GetMainFrame()->GetPageUkmSourceId();
+  return web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
 }
 
 AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {
@@ -767,10 +779,10 @@ void ChromeAutofillClient::UpdateOfferNotification(
     bool notification_has_been_shown) {
   DCHECK(offer);
   CreditCard* card =
-      offer->eligible_instrument_id.empty()
+      offer->GetEligibleInstrumentIds().empty()
           ? nullptr
           : GetPersonalDataManager()->GetCreditCardByInstrumentId(
-                offer->eligible_instrument_id[0]);
+                offer->GetEligibleInstrumentIds()[0]);
 
   if (offer->IsCardLinkedOffer() && !card)
     return;

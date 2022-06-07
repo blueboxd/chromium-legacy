@@ -32,10 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.FeatureList;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
-import org.chromium.base.test.params.ParameterProvider;
-import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.Batch;
@@ -86,7 +83,6 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -107,17 +103,6 @@ import java.util.Set;
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @Batch(Batch.PER_CLASS)
 public class ContextualSearchManagerTest extends ContextualSearchInstrumentationBase {
-    /** Parameter provider for enabling/disabling triggering-related Features. */
-    public static class FeatureParamProvider implements ParameterProvider {
-        @Override
-        public Iterable<ParameterSet> getParameters() {
-            return Arrays.asList(new ParameterSet().value(EnabledFeature.NONE).name("default"),
-                    new ParameterSet()
-                            .value(EnabledFeature.TRANSLATIONS)
-                            .name("enableTranslations"));
-        }
-    }
-
     // DOM element IDs in our test page based on what functions they trigger.
     // TODO(donnd): add more, and also the associated Search Term, or build a similar mapping.
     /**
@@ -166,31 +151,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     //============================================================================================
     // Test Cases
     //============================================================================================
-
-    /**
-     * Tests Ranker logging for a simple trigger that resolves.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @DisabledTest(message = "https://crbug.com/1291065")
-    // TODO(donnd): remove with Ranker support.
-    public void testResolvingSearchRankerLogging() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
-        simulateResolveSearch("intelligence");
-        assertLoadedLowPriorityUrl();
-
-        assertLoggedAllExpectedFeaturesToRanker();
-        Assert.assertEquals(
-                true, loggedToRanker(ContextualSearchInteractionRecorder.Feature.IS_LONG_WORD));
-        // The panel must be closed for outcomes to be logged.
-        // Close the panel by clicking far away in order to make sure the outcomes get logged by
-        // the hideContextualSearchUi call to writeRankerLoggerOutcomesAndReset.
-        clickWordNode("states-far");
-        waitForPanelToClose();
-        assertLoggedAllExpectedOutcomesToRanker();
-    }
 
     /**
      * Tests swiping the overlay open, after an initial trigger that activates the peeking card.
@@ -560,45 +520,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     }
 
     /**
-     * Tests that a non-resolve search does trigger translation.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "http://crbug.com/1296677")
-    public void testNonResolveTranslates(@EnabledFeature int enabledFeature) throws Exception {
-        // A non-resolving gesture on any word should trigger a forced translation.
-        simulateNonResolveSearch("search");
-        // Make sure we did try to trigger translate.
-        Assert.assertTrue(mManager.getRequest().isTranslationForced());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    public void testSerpTranslationDisabledWhenPartialTranslationEnabled(
-            @EnabledFeature int enabledFeature) throws Exception {
-        // Resolving a German word should trigger translation.
-        simulateResolveSearch("german");
-        // Simulate a JavaScript translate message from the SERP to the manager
-        TestThreadUtils.runOnUiThreadBlocking(() -> mManager.onSetCaption("caption", true));
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS)) {
-            Assert.assertFalse(
-                    "The SERP Translation caption should not show when Partial Translations "
-                            + "is enabled!",
-                    mPanel.getSearchBarControl().getCaptionVisible());
-        } else {
-            Assert.assertTrue(
-                    "The SERP Translation caption should show without Partial Translations "
-                            + "enabled!",
-                    mPanel.getSearchBarControl().getCaptionVisible());
-        }
-    }
-
-    /**
      * Tests the Translate Caption on a resolve gesture.
      * This test is disabled because it relies on the network and a live search result,
      * which would be flaky for bots.
@@ -749,7 +670,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    // Previously disabled: https://crbug.com/1291558
+    @DisabledTest(message = "https://crbug.com/1291558")
     public void testQuickActionCaptionAndImage(@EnabledFeature int enabledFeature)
             throws Exception {
         CompositorAnimationHandler.setTestingMode(true);
@@ -898,7 +819,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "http://crbug.com/1296677")
+    // Previously disabled: http://crbug.com/1296677
     public void testDictionaryDefinitions(@EnabledFeature int enabledFeature) throws Exception {
         runDictionaryCardTest(CardTag.CT_DEFINITION);
     }
@@ -1147,32 +1068,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> activity2.getCurrentTabModel().closeAllTabs());
         ApplicationTestUtils.finishActivity(activity2);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    // TODO(donnd): Investigate support for logging user interactions for Long-press.
-    public void testLoggedEventId() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-        mFakeServer.reset();
-        simulateResolveSearch("intelligence-logged-event-id");
-        expandPanelAndAssert();
-        closePanel();
-        // Now the event and outcome should be in local storage.
-        simulateResolveSearch("search");
-        // Check that we sent the logged event ID and outcome with the request.
-        Assert.assertEquals(ContextualSearchFakeServer.LOGGED_EVENT_ID,
-                mManager.getContext().getPreviousEventId());
-        closePanel();
-        // Now that we've sent them to the server, the local storage should be clear.
-        simulateResolveSearch("search");
-        Assert.assertEquals(0, mManager.getContext().getPreviousEventId());
-        closePanel();
-        // Make sure a duration was recorded in bucket 0 (due to 0 days duration running this test).
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "Search.ContextualSearch.OutcomesDuration", 0));
     }
 
     // --------------------------------------------------------------------------------------------

@@ -218,8 +218,7 @@ bool* GetAzureADJoinStateStorage() {
     DSREG_JOIN_INFO* join_info = nullptr;
     HRESULT hr = net_get_aad_join_information_function(/*pcszTenantId=*/nullptr,
                                                        &join_info);
-    const bool is_aad_joined =
-        SUCCEEDED(hr) && join_info && join_info->joinType != DSREG_UNKNOWN_JOIN;
+    const bool is_aad_joined = SUCCEEDED(hr) && join_info;
     if (join_info) {
       net_free_aad_join_information_function(join_info);
     }
@@ -704,7 +703,8 @@ bool GetLoadedModulesSnapshot(HANDLE process, std::vector<HMODULE>* snapshot) {
     size_t num_modules = bytes_required / sizeof(HMODULE);
     if (num_modules <= snapshot->size()) {
       // Buffer size was too big, presumably because a module was unloaded.
-      snapshot->erase(snapshot->begin() + num_modules, snapshot->end());
+      snapshot->erase(snapshot->begin() + static_cast<ptrdiff_t>(num_modules),
+                      snapshot->end());
       return true;
     } else if (num_modules == 0) {
       DLOG(ERROR) << "Can't determine the module list size.";

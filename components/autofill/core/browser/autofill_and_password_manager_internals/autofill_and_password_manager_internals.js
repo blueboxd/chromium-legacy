@@ -204,6 +204,10 @@ function setUpMarker() {
     if (scrollAfterInsert) {
       scrollDown();
       // Focus marker div, set caret at end of line.
+      const logDiv = document.getElementById('log-entries');
+      if (!logDiv) {
+        return;
+      }
       const markerNode = logDiv.lastChild;
       const textNode = markerNode.lastChild;
       markerNode.focus();
@@ -255,6 +259,7 @@ function setUpLogDisplayConfig() {
     'AutofillServer',
     'Metrics',
     'AddressProfileFormImport',
+    'WebsiteModifiedFieldValue',
   ];
   const logDiv = document.getElementById('log-entries');
   const autoScrollInput = document.getElementById('enable-autoscroll');

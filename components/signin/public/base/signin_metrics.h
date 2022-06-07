@@ -182,6 +182,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR = 34,
   ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE = 35,
   ACCESS_POINT_SEND_TAB_TO_SELF_PROMO = 36,
+  ACCESS_POINT_NTP_FEED_TOP_PROMO = 37,
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml
   ACCESS_POINT_MAX,  // This must be last.
@@ -556,10 +557,12 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point,
 // Records |Signin_ImpressionWithAccount_From*| user action.
 void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point);
 
+#if !BUILDFLAG(IS_IOS)
 // Records |Signin_Impression{With|No}Account_From*| user action.
 void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     AccessPoint access_point,
     bool with_account);
+#endif  // !BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_IOS)
 // Records |Signin.AccountConsistencyPromoAction| histogram.

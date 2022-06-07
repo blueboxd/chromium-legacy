@@ -45,6 +45,14 @@ enum COMPONENT_EXPORT(EVDEV) EventDeviceType {
   DT_ALL,
 };
 
+// Status of Keyboard Device
+enum COMPONENT_EXPORT(EVDEV) KeyboardType {
+  NOT_KEYBOARD,
+  IN_BLOCKLIST,
+  STYLUS_BUTTON_DEVICE,
+  VALID_KEYBOARD,
+};
+
 // Device information for Linux input devices
 //
 // This stores and queries information about input devices; in
@@ -137,6 +145,9 @@ class COMPONENT_EXPORT(EVDEV) EventDeviceInfo {
   // Has stylus EV_KEY events.
   bool HasStylus() const;
 
+  // Determine status of keyboard device (No keyboard, In blocklist, ect.).
+  KeyboardType GetKeyboardType() const;
+
   // Determine whether there's a keyboard on this device.
   bool HasKeyboard() const;
 
@@ -191,6 +202,10 @@ class COMPONENT_EXPORT(EVDEV) EventDeviceInfo {
 
   // The device type (internal or external.)
   InputDeviceType device_type() const { return device_type_; }
+
+  std::array<unsigned long, EVDEV_BITS_TO_LONGS(KEY_CNT)> GetKeyBits() const {
+    return key_bits_;
+  }
 
   // Determines InputDeviceType from device identification.
   static InputDeviceType GetInputDeviceTypeFromId(input_id id);

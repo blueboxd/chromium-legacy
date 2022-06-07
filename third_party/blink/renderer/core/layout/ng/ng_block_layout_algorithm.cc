@@ -37,6 +37,8 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/core/mathml/mathml_element.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -2240,8 +2242,7 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
     // initial column balancing pass.
     if (const auto* physical_fragment = DynamicTo<NGPhysicalBoxFragment>(
             &layout_result.PhysicalFragment())) {
-      if (const auto* token =
-              To<NGBlockBreakToken>(physical_fragment->BreakToken())) {
+      if (const NGBlockBreakToken* token = physical_fragment->BreakToken()) {
         // TODO(mstensho): Don't apply the margin to all overflowing fragments
         // (if any). It should only be applied after the fragment where we
         // reached the block-end of the node.
@@ -2681,6 +2682,12 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
   if (ConstraintSpace().IsTableCell()) {
     builder.SetIsTableCellChild(true);
+
+    // Always shrink-to-fit children within a <mtd> element.
+    if (Node().GetDOMNode() &&
+        Node().GetDOMNode()->HasTagName(mathml_names::kMtdTag)) {
+      builder.SetInlineAutoBehavior(NGAutoBehavior::kFitContent);
+    }
 
     // Some scrollable percentage-sized children of table-cells use their
     // min-size (instead of sizing normally).

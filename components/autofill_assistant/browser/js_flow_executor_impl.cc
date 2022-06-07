@@ -14,6 +14,9 @@
 #include "components/autofill_assistant/browser/js_flow_util.h"
 #include "components/autofill_assistant/browser/parse_jspb.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 
 namespace autofill_assistant {
 namespace {
@@ -115,11 +118,13 @@ absl::optional<std::string> ConvertActionToBytes(const base::Value* action,
 
 }  // namespace
 
-JsFlowExecutorImpl::JsFlowExecutorImpl(content::WebContents* web_contents,
-                                       Delegate* delegate)
+JsFlowExecutorImpl::JsFlowExecutorImpl(
+    content::WebContents* web_contents_for_js_execution,
+    Delegate* delegate)
     : delegate_(delegate),
       devtools_client_(std::make_unique<DevtoolsClient>(
-          content::DevToolsAgentHost::GetOrCreateFor(web_contents),
+          content::DevToolsAgentHost::GetOrCreateFor(
+              web_contents_for_js_execution),
           base::FeatureList::IsEnabled(
               autofill_assistant::features::
                   kAutofillAssistantFullJsFlowStackTraces))) {}
@@ -387,6 +392,8 @@ void JsFlowExecutorImpl::RunCallback(
   if (!status.ok() && result_value) {
     VLOG(1) << "Flow failed with " << status
             << " and result: " << *result_value;
+  } else if (!status.ok()) {
+    VLOG(1) << "Flow failed with " << status;
   }
 
   std::move(callback_).Run(status, std::move(result_value));

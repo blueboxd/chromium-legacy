@@ -29,7 +29,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -54,8 +53,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
     bool should_trigger_reporting,
     history::HistoryService* history_service,
-    base::RepeatingCallback<ChromeUserPopulation()>
-        get_user_population_callback,
     SafeBrowsingNavigationObserverManager* navigation_observer_manager,
     SafeBrowsingMetricsCollector* metrics_collector,
     TriggerManager* trigger_manager,
@@ -69,11 +66,9 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       threat_details_in_progress_(false),
       threat_source_(unsafe_resources[0].threat_source),
       history_service_(history_service),
-      get_user_population_callback_(get_user_population_callback),
       navigation_observer_manager_(navigation_observer_manager),
       metrics_collector_(metrics_collector),
-      trigger_manager_(trigger_manager),
-      ukm_id_(unsafe_resources[0].ukm_id) {
+      trigger_manager_(trigger_manager) {
   if (unsafe_resources.size() == 1) {
     UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.BlockingPage.RequestDestination",
                               unsafe_resources[0].request_destination);
@@ -105,7 +100,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
           trigger_manager_->StartCollectingThreatDetails(
               TriggerType::SECURITY_INTERSTITIAL, web_contents,
               unsafe_resources[0], url_loader_factory, history_service_,
-              get_user_population_callback_, navigation_observer_manager_,
+              navigation_observer_manager_,
               sb_error_ui()->get_error_display_options());
     }
   }
@@ -132,13 +127,6 @@ void SafeBrowsingBlockingPage::OnInterstitialClosing() {
       metrics_collector_->AddBypassEventToPref(threat_source_);
     }
   }
-
-  if (threat_source_ == ThreatSource::CLIENT_SIDE_DETECTION) {
-    ukm::builders::SBClientPhishing_WarningShown builder(ukm_id_);
-    builder.SetClickedThrough(proceeded());
-    builder.Record(ukm::UkmRecorder::Get());
-  }
-
   BaseBlockingPage::OnInterstitialClosing();
 }
 

@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/script/script_loader.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
@@ -67,7 +68,6 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -174,18 +174,8 @@ void ScriptLoader::Removed() {
 namespace {
 
 // <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
-bool IsValidClassicScriptTypeAndLanguage(
-    const String& type,
-    const String& language,
-    ScriptLoader::LegacyTypeSupport support_legacy_types) {
-  // FIXME: IsLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used
-  // here to maintain backwards compatibility with existing web tests. The
-  // specific violations are:
-  // - Allowing type=javascript. type= should only support MIME types, such as
-  //   text/javascript.
-  // - Allowing a different set of languages for language= and type=. language=
-  //   supports Javascript 1.1 and 1.4-1.6, but type= does not.
-
+bool IsValidClassicScriptTypeAndLanguage(const String& type,
+                                         const String& language) {
   if (type.IsNull()) {
     // <spec step="8">the script element has no type attribute but it has a
     // language attribute and that attribute's value is the empty string,
@@ -202,10 +192,6 @@ bool IsValidClassicScriptTypeAndLanguage(
     // attribute.</spec>
     if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType("text/" + language))
       return true;
-
-    // Not spec'ed.
-    if (MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(language))
-      return true;
   } else if (type.IsEmpty()) {
     // <spec step="8">the script element has a type attribute and its value is
     // the empty string, or</spec>
@@ -217,12 +203,6 @@ bool IsValidClassicScriptTypeAndLanguage(
     // stripped.</spec>
     if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
             type.StripWhiteSpace())) {
-      return true;
-    }
-
-    // Not spec'ed.
-    if (support_legacy_types == ScriptLoader::kAllowLegacyTypeInTypeAttribute &&
-        MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(type)) {
       return true;
     }
   }
@@ -239,10 +219,8 @@ enum class ShouldFireErrorEvent {
 
 ScriptLoader::ScriptTypeAtPrepare ScriptLoader::GetScriptTypeAtPrepare(
     const String& type,
-    const String& language,
-    LegacyTypeSupport support_legacy_types) {
-  if (IsValidClassicScriptTypeAndLanguage(type, language,
-                                          support_legacy_types)) {
+    const String& language) {
+  if (IsValidClassicScriptTypeAndLanguage(type, language)) {
     // <spec step="8">... If the script block's type string is a JavaScript MIME
     // type essence match, the script's type is "classic". ...</spec>
     return ScriptTypeAtPrepare::kClassic;
@@ -321,8 +299,7 @@ bool ShouldBlockSyncScriptForDocumentPolicy(
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
-bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
-                                 LegacyTypeSupport support_legacy_types) {
+bool ScriptLoader::PrepareScript(const TextPosition& script_start_position) {
   // <spec step="1">If the script element is marked as having "already started",
   // then return. The script is not executed.</spec>
   if (already_started_)
@@ -371,8 +348,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // <spec step="7">... Determine the script's type as follows: ...</spec>
   script_type_ = GetScriptTypeAtPrepare(element_->TypeAttributeValue(),
-                                        element_->LanguageAttributeValue(),
-                                        support_legacy_types);
+                                        element_->LanguageAttributeValue());
 
   switch (GetScriptType()) {
     case ScriptTypeAtPrepare::kInvalid:
@@ -532,14 +508,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   DCHECK(!prepared_pending_script_);
 
-  bool has_render_blocking_attr =
-      RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
-      element_->IsExplicitlyRenderBlocking();
+  bool potentially_render_blocking = element_->IsPotentiallyRenderBlocking();
   RenderBlockingBehavior render_blocking_behavior =
-      !has_render_blocking_attr && (non_blocking_ || dynamic_async_ ||
-                                    element_->DeferAttributeValue())
-          ? RenderBlockingBehavior::kNonBlocking
-          : RenderBlockingBehavior::kBlocking;
+      potentially_render_blocking ? RenderBlockingBehavior::kBlocking
+                                  : RenderBlockingBehavior::kNonBlocking;
 
   // <spec step="22">Let options be a script fetch options whose cryptographic
   // nonce is cryptographic nonce, integrity metadata is integrity metadata,
@@ -635,8 +607,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       return false;
     }
 
-    // If the element is render-blocking, block rendering on the element.
-    if (has_render_blocking_attr &&
+    // If the element is potentially render-blocking, block rendering on the
+    // element.
+    if (potentially_render_blocking &&
         element_document.GetRenderBlockingResourceManager()) {
       element_document.GetRenderBlockingResourceManager()->AddPendingScript(
           *element_);
@@ -1117,6 +1090,38 @@ void ScriptLoader::FetchModuleScriptTree(
 PendingScript* ScriptLoader::TakePendingScript(
     ScriptSchedulingType scheduling_type) {
   CHECK(prepared_pending_script_);
+
+  // Record usage histograms per script tag.
+  if (element_->GetDocument().Url().ProtocolIsInHTTPFamily()) {
+    base::UmaHistogramEnumeration("Blink.Script.SchedulingType",
+                                  scheduling_type);
+  }
+
+  // Record usage histograms per page.
+  switch (scheduling_type) {
+    case ScriptSchedulingType::kDefer:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_Defer);
+      break;
+    case ScriptSchedulingType::kParserBlocking:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_ParserBlocking);
+      break;
+    case ScriptSchedulingType::kParserBlockingInline:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_ParserBlockingInline);
+      break;
+    case ScriptSchedulingType::kInOrder:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_InOrder);
+      break;
+    case ScriptSchedulingType::kAsync:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_Async);
+      break;
+    default:
+      break;
+  }
 
   PendingScript* pending_script = prepared_pending_script_;
   prepared_pending_script_ = nullptr;

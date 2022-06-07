@@ -157,6 +157,11 @@ void UserNoteService::OnNoteFocused(const base::UnguessableToken& id) {
   NOTIMPLEMENTED();
 }
 
+void UserNoteService::OnNoteDeleted(const base::UnguessableToken& id) {
+  DCHECK(IsUserNotesEnabled());
+  NOTIMPLEMENTED();
+}
+
 void UserNoteService::OnNoteCreationDone(const base::UnguessableToken& id,
                                          const std::string& note_content) {
   DCHECK(IsUserNotesEnabled());
@@ -170,8 +175,7 @@ void UserNoteService::OnNoteCreationDone(const base::UnguessableToken& id,
   DCHECK(creation_entry_it != creation_map_.end())
       << "Attempted to complete the creation of a note that doesn't exist";
   // TODO(gujen): Call
-  // UserNoteStorage::UpdateNote(entry.model, content, /*is_creation=*/true),
-  // which doesn't exist yet.
+  // UserNoteStorage::UpdateNote(entry.model, content, /*is_creation=*/true).
 
   // TODO(gujen): Make sure to transfer the model from the creation map to the
   // model map in the OnNotesChanged() event sent by the storage layer.
@@ -192,6 +196,12 @@ void UserNoteService::OnNoteCreationCancelled(
          "partial note.";
 
   (*entry_it->second.managers.begin())->RemoveNote(id);
+}
+
+void UserNoteService::OnNoteUpdated(const base::UnguessableToken& id,
+                                    const std::string& note_content) {
+  DCHECK(IsUserNotesEnabled());
+  NOTIMPLEMENTED();
 }
 
 UserNoteService::ModelMapEntry::ModelMapEntry(std::unique_ptr<UserNote> model)

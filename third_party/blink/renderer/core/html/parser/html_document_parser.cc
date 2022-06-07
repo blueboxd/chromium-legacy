@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/html/parser/atomic_html_token.h"
+#include "third_party/blink/renderer/core/html/parser/background_html_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_metrics.h"
 #include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
@@ -456,6 +457,7 @@ void HTMLDocumentParser::Detach() {
   // fast/dom/HTMLScriptElement/script-load-events.html we do.
   preload_scanner_.reset();
   insertion_preload_scanner_.reset();
+  background_scanner_.Reset();
   // Oilpan: It is important to clear token_ to deallocate backing memory of
   // HTMLToken::data_ and let the allocator reuse the memory for
   // HTMLToken::data_ of a next HTMLDocumentParser. We need to clear
@@ -882,6 +884,8 @@ void HTMLDocumentParser::Append(const String& input_source) {
         CreatePreloadScanner(TokenPreloadScanner::ScannerType::kMainDocument);
   }
 
+  ScanInBackground(input_source);
+
   if (GetDocument()->IsPrefetchOnly()) {
     preload_scanner_->AppendToEnd(source);
     if (preloader_) {
@@ -1147,6 +1151,11 @@ void HTMLDocumentParser::ExecuteScriptsWaitingForResources() {
   if (task_runner_state_->WaitingForStylesheets())
     task_runner_state_->SetWaitingForStylesheets(false);
 
+  if (IsStopping()) {
+    AttemptToRunDeferredScriptsAndEnd();
+    return;
+  }
+
   // Document only calls this when the Document owns the DocumentParser so this
   // will not be called in the DocumentFragment case.
   DCHECK(script_runner_);
@@ -1316,6 +1325,16 @@ std::string HTMLDocumentParser::GetPreloadHistogramSuffix() {
   bool have_seen_first_byte = task_runner_state_->SeenFirstByte();
   return base::StrCat({is_outermost_main_frame ? ".MainFrame" : ".Subframe",
                        have_seen_first_byte ? ".NonInitial" : ".Initial"});
+}
+
+void HTMLDocumentParser::ScanInBackground(const String& source) {
+  if (!base::FeatureList::IsEnabled(features::kPrecompileInlineScripts))
+    return;
+
+  if (!background_scanner_)
+    background_scanner_ = BackgroundHTMLScanner::Create(options_, this);
+
+  background_scanner_.AsyncCall(&BackgroundHTMLScanner::Scan).WithArgs(source);
 }
 
 }  // namespace blink

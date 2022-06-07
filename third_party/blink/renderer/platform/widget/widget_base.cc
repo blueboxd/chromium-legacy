@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_settings.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h"
 #include "third_party/blink/renderer/platform/widget/compositing/render_frame_metadata_observer_impl.h"
@@ -188,7 +190,7 @@ void WidgetBase::InitializeCompositing(
       agent_group_scheduler.CompositorTaskRunner();
 
   auto* compositing_thread_scheduler =
-      scheduler::WebThreadScheduler::CompositorThreadScheduler();
+      ThreadScheduler::CompositorThreadScheduler();
   layer_tree_view_ =
       std::make_unique<LayerTreeView>(this, main_thread_scheduler);
 
@@ -205,17 +207,16 @@ void WidgetBase::InitializeCompositing(
   layer_tree_view_->Initialize(
       *settings, main_thread_compositor_task_runner_,
       compositing_thread_scheduler
-          ? compositing_thread_scheduler->DefaultTaskRunner()
+          ? compositing_thread_scheduler->CompositorTaskRunner()
           : nullptr,
       platform->GetTaskGraphRunner());
 
   FrameWidget* frame_widget = client_->FrameWidget();
 
-  // |compositor_thread_scheduler| will be null for a popup (since it has no
-  // FrameWidget) or in tests without a compositor thread.
-  scheduler::WebThreadScheduler* compositor_thread_scheduler =
-      frame_widget ? scheduler::WebThreadScheduler::CompositorThreadScheduler()
-                   : nullptr;
+  // Even if we have a |compositing_thread_scheduler| we do not process input
+  // on the compositor thread for widgets that are not frames. (ie. popups).
+  auto* widget_compositing_thread_scheduler =
+      frame_widget ? compositing_thread_scheduler : nullptr;
 
   // We only use an external input handler for frame widgets because only
   // frames use the compositor for input handling. Other kinds of widgets
@@ -224,8 +225,9 @@ void WidgetBase::InitializeCompositing(
   bool uses_input_handler = frame_widget;
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
       weak_ptr_factory_.GetWeakPtr(), std::move(frame_widget_input_handler),
-      never_composited_, compositor_thread_scheduler, main_thread_scheduler,
-      uses_input_handler, client_->AllowsScrollResampling());
+      never_composited_, widget_compositing_thread_scheduler,
+      agent_group_scheduler.AsAgentGroupScheduler(), uses_input_handler,
+      client_->AllowsScrollResampling());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -376,6 +378,7 @@ void WidgetBase::UpdateVisualProperties(
   //   See also:
   //   https://docs.google.com/document/d/1G_fR1D_0c1yke8CqDMddoKrDGr3gy5t_ImEH4hKNIII/edit#
 
+  base::ElapsedTimer update_timer;
   VisualProperties visual_properties = visual_properties_from_browser;
   auto& screen_info = visual_properties.screen_infos.mutable_current();
 
@@ -404,6 +407,8 @@ void WidgetBase::UpdateVisualProperties(
                              screen_info.device_scale_factor));
 
   client_->UpdateVisualProperties(visual_properties);
+
+  LayerTreeHost()->IncrementVisualUpdateDuration(update_timer.Elapsed());
 }
 
 void WidgetBase::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
@@ -656,6 +661,13 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
         params,
     LayerTreeFrameSinkCallback callback,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  if (Platform::Current()->IsGpuCompositingDisabled()) {
+    // GPU compositing was disabled after the check in
+    // WidgetBase::RequestNewLayerTreeFrameSink(). Fail and let it retry.
+    std::move(callback).Run(nullptr, nullptr);
+    return;
+  }
+
   if (!gpu_channel_host) {
     // Wait and try again. We may hear that the compositing mode has switched
     // to software in the meantime.
@@ -696,13 +708,13 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       Platform::Current()->GetGpuMemoryBufferManager();
 
-  scoped_refptr<viz::ContextProviderCommandBuffer> context_provider(
-      new viz::ContextProviderCommandBuffer(
+  auto context_provider =
+      base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
           gpu_channel_host, gpu_memory_buffer_manager, kGpuStreamIdDefault,
-          kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle, url,
+          kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle, GURL(url),
           automatic_flushes, support_locking, support_grcontext, limits,
           attributes,
-          viz::command_buffer_metrics::ContextType::RENDER_COMPOSITOR));
+          viz::command_buffer_metrics::ContextType::RENDER_COMPOSITOR);
 
 #if BUILDFLAG(IS_ANDROID)
   if (Platform::Current()->IsSynchronousCompositingEnabledForAndroidWebView() &&
@@ -830,6 +842,7 @@ void WidgetBase::SetCompositorVisible(bool visible) {
 }
 
 void WidgetBase::UpdateVisualState() {
+  base::ElapsedTimer update_timer;
   // When recording main frame metrics set the lifecycle reason to
   // kBeginMainFrame, because this is the calller of UpdateLifecycle
   // for the main frame. Otherwise, set the reason to kTests, which is
@@ -840,6 +853,7 @@ void WidgetBase::UpdateVisualState() {
           : DocumentUpdateReason::kTest;
   client_->UpdateLifecycle(WebLifecycleUpdate::kAll, lifecycle_reason);
   client_->SetSuppressFrameRequestsWorkaroundFor704763Only(false);
+  LayerTreeHost()->IncrementVisualUpdateDuration(update_timer.Elapsed());
 }
 
 void WidgetBase::BeginMainFrame(base::TimeTicks frame_time) {

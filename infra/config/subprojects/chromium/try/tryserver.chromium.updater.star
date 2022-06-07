@@ -42,6 +42,10 @@ updater_mac_builder(
 
 updater_mac_builder(
     name = "mac-updater-try-builder-rel",
+    mirrors = [
+        "ci/mac-updater-builder-rel",
+        "ci/mac10.15-updater-tester-rel",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -52,6 +56,10 @@ updater_mac_builder(
 
 updater_windows_builder(
     name = "win-updater-try-builder-dbg",
+    mirrors = [
+        "ci/win-updater-builder-dbg",
+        "ci/win10-updater-tester-dbg",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [

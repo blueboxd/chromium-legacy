@@ -30,14 +30,13 @@
   }
 </style>
 
-<h2>Collect diagnostics data for support</h2>
+<h2>Step 1 of 4: Describe the issue</h2>
 <div class="support-tool-title">Support Case ID</div>
 <cr-input class="support-case-id" value="{{caseId_}}"
   spellcheck="false" maxlength="20">
 </cr-input>
 <div class="support-tool-title">Email</div>
 <select class="md-select" value="{{selectedEmail_::change}}">
-  <option value=""></option>
   <template is="dom-repeat" items="[[emails_]]">
   <option value="[[item]]">[[item]]</option>
   </template>

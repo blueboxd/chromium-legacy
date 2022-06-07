@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/supervised_user/android/website_parent_approval.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "components/url_matcher/url_util.h"
 #include "url/gurl.h"
@@ -32,9 +33,11 @@ WebApprovalsManager::WebApprovalsManager() = default;
 WebApprovalsManager::~WebApprovalsManager() = default;
 
 void WebApprovalsManager::RequestLocalApproval(
+    content::WebContents* web_contents,
     const GURL& url,
     ApprovalRequestInitiatedCallback callback) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(crbug.com/1233615): pass completion_callback.
   chromeos::ParentAccessDialog::ShowError result =
       chromeos::ParentAccessDialog::Show();
 
@@ -43,6 +46,12 @@ void WebApprovalsManager::RequestLocalApproval(
     std::move(callback).Run(false);
     return;
   }
+  std::move(callback).Run(true);
+#elif BUILDFLAG(IS_ANDROID)
+  WebsiteParentApproval::RequestLocalApproval(
+      web_contents, url,
+      base::BindOnce(&WebApprovalsManager::OnLocalApprovalRequestCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
   std::move(callback).Run(true);
 #endif
 }
@@ -111,4 +120,11 @@ void WebApprovalsManager::OnRemoteApprovalRequestIssued(
 
   AddRemoteApprovalRequestInternal(create_request, std::move(callback),
                                    index + 1);
+}
+
+void WebApprovalsManager::OnLocalApprovalRequestCompleted(
+    bool request_approved) {
+  // TODO(crbug.com/1324945): write sync data, output metrics.
+  VLOG(0) << "Local URL approval final result: " << request_approved;
+  NOTIMPLEMENTED();
 }

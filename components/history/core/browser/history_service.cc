@@ -101,12 +101,11 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
-                        const RedirectList& redirects,
                         base::Time visit_time) override {
     service_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&HistoryService::NotifyURLVisited, history_service_,
-                       transition, row, redirects, visit_time));
+                       transition, row, visit_time));
   }
 
   void NotifyURLsModified(const URLRows& changed_urls) override {
@@ -1185,6 +1184,18 @@ HistoryService::GetTypedURLSyncControllerDelegate() {
                           base::Unretained(history_backend_.get())));
 }
 
+std::unique_ptr<syncer::ModelTypeControllerDelegate>
+HistoryService::GetHistorySyncControllerDelegate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Note that a callback is bound for GetHistorySyncControllerDelegate()
+  // because this getter itself must also run in the backend sequence, and the
+  // proxy object below will take care of that.
+  return std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+      backend_task_runner_,
+      base::BindRepeating(&HistoryBackend::GetHistorySyncControllerDelegate,
+                          base::Unretained(history_backend_.get())));
+}
+
 void HistoryService::ProcessLocalDeleteDirective(
     const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1354,11 +1365,10 @@ void HistoryService::OnDBLoaded() {
 
 void HistoryService::NotifyURLVisited(ui::PageTransition transition,
                                       const URLRow& row,
-                                      const RedirectList& redirects,
                                       base::Time visit_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (HistoryServiceObserver& observer : observers_)
-    observer.OnURLVisited(this, transition, row, redirects, visit_time);
+    observer.OnURLVisited(this, transition, row, visit_time);
 }
 
 void HistoryService::NotifyURLsModified(const URLRows& changed_urls) {

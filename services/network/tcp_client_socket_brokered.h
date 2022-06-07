@@ -6,12 +6,12 @@
 #define SERVICES_NETWORK_TCP_CLIENT_SOCKET_BROKERED_H_
 
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/nqe/network_quality_estimator.h"
-#include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/tcp_socket.h"
 #include "net/socket/transport_client_socket.h"
@@ -57,7 +57,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPClientSocketBrokered
   void SetSocketCreatorForTesting(
       base::RepeatingCallback<std::unique_ptr<net::TransportClientSocket>(void)>
           socket_creator) override;
-  net::ConnectionAttempts GetConnectionAttempts() const override;
 
   // StreamSocket implementation.
   void SetBeforeConnectCallback(
@@ -109,9 +108,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPClientSocketBrokered
   // Arguments for creating a new TCPClientSocket
   std::unique_ptr<net::SocketPerformanceWatcher> socket_performance_watcher_;
 
-  net::NetworkQualityEstimator* network_quality_estimator_;
+  raw_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
 
-  net::NetLog* net_log_;
+  raw_ptr<net::NetLog> net_log_;
 
   const net::NetLogSource source_;
 

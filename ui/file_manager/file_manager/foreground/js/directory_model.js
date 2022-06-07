@@ -114,6 +114,12 @@ export class DirectoryModel extends EventTarget {
     this.fileWatcher_.addEventListener(
         'watcher-directory-changed',
         this.onWatcherDirectoryChanged_.bind(this));
+    // For non-watchable directory (e.g. FakeEntry), we need to subscribe to
+    // the IOTask and manually refresh.
+    if (util.isRecentsFilterV2Enabled()) {
+      chrome.fileManagerPrivate.onIOTaskProgressStatus.addListener(
+          this.updateFileListAfterIOTask_.bind(this));
+    }
     util.addEventListenerToBackgroundComponent(
         fileOperationManager, 'entries-changed',
         this.onEntriesChanged_.bind(this));
@@ -250,6 +256,14 @@ export class DirectoryModel extends EventTarget {
   }
 
   /**
+   * @return {boolean} True if the current volume is provided by FuseBox.
+   */
+  isOnFuseBox() {
+    const info = this.getCurrentVolumeInfo();
+    return info ? info.diskFileSystemType === 'fusebox' : false;
+  }
+
+  /**
    * @return {boolean} True if it's on a Linux native volume.
    */
   isOnNative() {
@@ -368,7 +382,7 @@ export class DirectoryModel extends EventTarget {
           });
     } else {
       // Invokes force refresh if the detailed information isn't provided.
-      // This can occur very frequently (e.g. when copying files into Downlaods)
+      // This can occur very frequently (e.g. when copying files into Downloads)
       // and rescan is heavy operation, so we keep some interval for each
       // rescan.
       this.rescanAggregator_.run();
@@ -484,9 +498,12 @@ export class DirectoryModel extends EventTarget {
    * Schedule rescan with short delay.
    * @param {boolean} refresh True to refresh metadata, or false to use cached
    *     one.
+   * @param {boolean=} invalidateCache True to invalidate the backend scanning
+   *     result cache. This param only works if the corresponding backend
+   *     scanning supports cache.
    */
-  rescanSoon(refresh) {
-    this.scheduleRescan(SHORT_RESCAN_INTERVAL, refresh);
+  rescanSoon(refresh, invalidateCache = false) {
+    this.scheduleRescan(SHORT_RESCAN_INTERVAL, refresh, invalidateCache);
   }
 
   /**
@@ -494,9 +511,12 @@ export class DirectoryModel extends EventTarget {
    * notification.
    * @param {boolean} refresh True to refresh metadata, or false to use cached
    *     one.
+   * @param {boolean=} invalidateCache True to invalidate the backend scanning
+   *     result cache. This param only works if the corresponding backend
+   *     scanning supports cache.
    */
-  rescanLater(refresh) {
-    this.scheduleRescan(SIMULTANEOUS_RESCAN_INTERVAL, refresh);
+  rescanLater(refresh, invalidateCache = false) {
+    this.scheduleRescan(SIMULTANEOUS_RESCAN_INTERVAL, refresh, invalidateCache);
   }
 
   /**
@@ -506,8 +526,11 @@ export class DirectoryModel extends EventTarget {
    * @param {number} delay Delay in ms after which the rescan will be performed.
    * @param {boolean} refresh True to refresh metadata, or false to use cached
    *     one.
+   * @param {boolean=} invalidateCache True to invalidate the backend scanning
+   *     result cache. This param only works if the corresponding backend
+   *     scanning supports cache.
    */
-  scheduleRescan(delay, refresh) {
+  scheduleRescan(delay, refresh, invalidateCache = false) {
     if (this.rescanTime_) {
       if (this.rescanTime_ <= Date.now() + delay) {
         return;
@@ -521,7 +544,7 @@ export class DirectoryModel extends EventTarget {
     this.rescanTimeoutId_ = setTimeout(() => {
       this.rescanTimeoutId_ = null;
       if (sequence === this.changeDirectorySequence_) {
-        this.rescan(refresh);
+        this.rescan(refresh, invalidateCache);
       }
     }, delay);
   }
@@ -548,8 +571,11 @@ export class DirectoryModel extends EventTarget {
    *
    * @param {boolean} refresh True to refresh metadata, or false to use cached
    *     one.
+   * @param {boolean=} invalidateCache True to invalidate the backend scanning
+   *     result cache. This param only works if the corresponding backend
+   *     scanning supports cache.
    */
-  rescan(refresh) {
+  rescan(refresh, invalidateCache = false) {
     this.clearRescanTimeout_();
     if (this.runningScan_) {
       this.pendingRescan_ = true;
@@ -571,7 +597,8 @@ export class DirectoryModel extends EventTarget {
     };
 
     this.scan_(
-        dirContents, refresh, successCallback, () => {}, () => {}, () => {});
+        dirContents, refresh, invalidateCache, successCallback, () => {},
+        () => {}, () => {});
   }
 
   /**
@@ -678,7 +705,7 @@ export class DirectoryModel extends EventTarget {
     dispatchSimpleEvent(this, 'scan-started');
     fileList.splice(0, fileList.length);
     this.scan_(
-        this.currentDirContents_, false, onDone, onFailed, onUpdated,
+        this.currentDirContents_, false, true, onDone, onFailed, onUpdated,
         onCancelled);
   }
 
@@ -747,6 +774,7 @@ export class DirectoryModel extends EventTarget {
    *     the scan will be run.
    * @param {boolean} refresh True to refresh metadata, or false to use cached
    *     one.
+   * @param {boolean} invalidateCache True to invalidate scanning result cache.
    * @param {function()} successCallback Callback on success.
    * @param {function(DOMError)} failureCallback Callback on failure.
    * @param {function()} updatedCallback Callback on update. Only on the last
@@ -755,10 +783,8 @@ export class DirectoryModel extends EventTarget {
    * @private
    */
   scan_(
-      dirContents, refresh, successCallback, failureCallback, updatedCallback,
-      cancelledCallback) {
-    const self = this;
-
+      dirContents, refresh, invalidateCache, successCallback, failureCallback,
+      updatedCallback, cancelledCallback) {
     /**
      * Runs pending scan if there is one.
      *
@@ -837,7 +863,7 @@ export class DirectoryModel extends EventTarget {
     dirContents.addEventListener('scan-updated', updatedCallback);
     dirContents.addEventListener('scan-failed', onFailure);
     dirContents.addEventListener('scan-cancelled', onCancelled);
-    dirContents.scan(refresh);
+    dirContents.scan(refresh, invalidateCache);
   }
 
   /**
@@ -1055,6 +1081,14 @@ export class DirectoryModel extends EventTarget {
       this.selectEntry(newDirectory);
       this.fileListSelection_.endChange();
     }
+  }
+
+  /**
+   * Gets the current MyFilesEntry.
+   * @return {FilesAppDirEntry} myFilesEntry
+   */
+  getMyFiles() {
+    return this.myFilesEntry_;
   }
 
   /**
@@ -1591,6 +1625,35 @@ export class DirectoryModel extends EventTarget {
     if (this.onClearSearch_) {
       this.onClearSearch_();
       this.onClearSearch_ = null;
+    }
+  }
+
+  /**
+   * Update the file list when curtain IO task is finished. Fake directory
+   * entries like RecentEntry is not watchable, to keep the file list
+   * refresh, we need to explicitly subscribe to the IO task status event, and
+   * manually refresh.
+   * @param {!chrome.fileManagerPrivate.ProgressStatus} event
+   * @private
+   */
+  updateFileListAfterIOTask_(event) {
+    /** @type {!Set<!chrome.fileManagerPrivate.IOTaskType>} */
+    const eventTypesRequireRefresh = new Set([
+      chrome.fileManagerPrivate.IOTaskType.DELETE,
+      chrome.fileManagerPrivate.IOTaskType.MOVE,
+    ]);
+    /** @type {!Set<?VolumeManagerCommon.RootType>} */
+    const rootTypesRequireRefresh =
+        new Set([VolumeManagerCommon.RootType.RECENT]);
+
+    const currentRootType = this.getCurrentRootType();
+    if (!rootTypesRequireRefresh.has(currentRootType)) {
+      return;
+    }
+    const isIOTaskFinished =
+        event.state === chrome.fileManagerPrivate.IOTaskState.SUCCESS;
+    if (isIOTaskFinished && eventTypesRequireRefresh.has(event.type)) {
+      this.rescanLater(/* refresh= */ false, /* invalidateCache= */ true);
     }
   }
 }

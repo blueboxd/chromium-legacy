@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -50,6 +51,9 @@ void ExpectClean(UpdaterScope scope);
 // Places the updater into test mode (use `url` as the update server and disable
 // CUP).
 void EnterTestMode(const GURL& url);
+
+// Sets the external constants for group policies.
+void SetGroupPolicies(const base::Value::Dict& values);
 
 // Copies the logs to a location where they can be retrieved by ResultDB.
 void CopyLog(const base::FilePath& src_dir);
@@ -161,6 +165,11 @@ void ExpectLegacyUpdate3WebSucceeds(UpdaterScope scope,
                                     int expected_final_state,
                                     int expected_error_code);
 void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope);
+void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
+                                       const std::string& app_id,
+                                       const std::string& command_id,
+                                       const base::Value::List& parameters,
+                                       int expected_exit_code);
 void RunTestServiceCommand(const std::string& sub_command);
 
 // Calls a function defined in test/service/win/rpc_client.py.
@@ -211,6 +220,8 @@ void ExpectLastStarted(UpdaterScope scope);
 void InstallApp(UpdaterScope scope, const std::string& app_id);
 
 void UninstallApp(UpdaterScope scope, const std::string& app_id);
+
+void RunOfflineInstall(UpdaterScope scope);
 
 }  // namespace test
 }  // namespace updater

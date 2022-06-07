@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_script_wrappable_task_id.h"
 #include "third_party/blink/renderer/modules/scheduler/script_wrappable_task_id.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -57,8 +58,18 @@ template <typename F>
 TaskAttributionTracker::AncestorStatus
 TaskAttributionTrackerImpl::IsAncestorInternal(ScriptState* script_state,
                                                F is_ancestor) {
+  DCHECK(script_state);
+  if (!script_state->World().IsMainWorld()) {
+    // As RunningTaskId will not return a TaskId for non-main-world tasks,
+    // there's no point in testing their ancestry.
+    return AncestorStatus::kNotAncestor;
+  }
+
   absl::optional<TaskId> current_task_id = RunningTaskId(script_state);
-  DCHECK(current_task_id);
+  if (!current_task_id) {
+    // TODO(yoav): This should not happen, but does. See crbug.com/1326872.
+    return AncestorStatus::kNotAncestor;
+  }
   if (is_ancestor(current_task_id.value())) {
     return AncestorStatus::kAncestor;
   }
@@ -199,6 +210,7 @@ void TaskAttributionTrackerImpl::V8Adapter::SetValue(
   if (!script_state->ContextIsValid()) {
     return;
   }
+  CHECK(!ScriptForbiddenScope::IsScriptForbidden());
   ScriptState::Scope scope(script_state);
   v8::Isolate* isolate = script_state->GetIsolate();
   DCHECK(isolate);

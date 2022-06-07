@@ -7,7 +7,6 @@
 <translation id="1056775291175587022">Akuna-network</translation>
 <translation id="1060368002126861100">Ukuze uvule amafayela nge-<ph name="APP_NAME" />, wahambise kuqala kufolda lamafayela we-Windows.</translation>
 <translation id="1062407476771304334">Faka esikhundleni</translation>
-<translation id="1119069657431255176">Ingobo yomlando yotiyela wokuminyanisa i-Bzip2</translation>
 <translation id="1119447706177454957">Iphutha langaphakathi</translation>
 <translation id="1120073797882051782">I-Hangul Romaja</translation>
 <translation id="112387589102719461">I-English (US) enekhibhodi yomhleli we-Dvorak</translation>
@@ -121,11 +120,11 @@
 <translation id="1942765061641586207">Ukulungiswa kwesithombe</translation>
 <translation id="1972984168337863910">Nweba amaphaneli wempendulo yamafayela</translation>
 <translation id="1995337122023280937">Iya endaweni yefayela</translation>
+<translation id="1996806196681857869">Ingobo yomlando eminyanisiwe ye-Z</translation>
 <translation id="2001796770603320721">Phatha kuDrayivu</translation>
 <translation id="2009067268969781306">Ukufometha idrayivu kuzosula yonke idatha elondolozwe kuyo. Lesi senzo asikwazi ukuhlehliswa.</translation>
 <translation id="2025955442973426285">Isi-Tigrinya</translation>
 <translation id="2028997212275086731">Ingobo yomlando ye-RAR</translation>
-<translation id="2036414735548252477">Ingobo yomlando yotiyela eminyanisiwe ye-LZMA</translation>
 <translation id="2037845485764049925">Isi-Russian</translation>
 <translation id="2044023416777079300">Imodemu ayibhaliswanga</translation>
 <translation id="2046702855113914483">I-Ramen</translation>
@@ -144,7 +143,6 @@
 <translation id="2163152940313951844">Inhlamvu engavumelekile: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Isi-Portuguese nge-US International PC keyboard</translation>
 <translation id="2198315389084035571">isi-Sipmlified Chinese</translation>
-<translation id="2208158072373999562">Ingobo yomlando yeziphu</translation>
 <translation id="22085916256174561">Isi-Korean</translation>
 <translation id="2208919847696382164">Faka nge-Linux</translation>
 <translation id="2225536596944493418">Ingabe ufuna ukususa izinto ze-<ph name="NUMBER_OF_ITEMS" />?</translation>
@@ -449,7 +447,6 @@
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
 <translation id="4880214202172289027">Isilayida sevolumu</translation>
 <translation id="4881695831933465202">Vula</translation>
-<translation id="4886199584824489598">Ingobo yomlando eminyanisiwe ye-Bzip2</translation>
 <translation id="4900532980794411603">Yabelana ne-Parallels Desktop</translation>
 <translation id="4902546322522096650">Inethiwekhi <ph name="NETWORK_INDEX" /> ye-<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, amandla esignali <ph name="SIGNAL_STRENGTH" />%, Xhuma</translation>
 <translation id="4905417359854579806">Ilungele ukwenza isipele se-<ph name="FILE_COUNT" /></translation>
@@ -618,6 +615,7 @@
 <translation id="6220423280121890987">Isi-Phunjabi</translation>
 <translation id="6224240818060029162">Isi-Danish</translation>
 <translation id="6224253798271602650">Ifomethi <ph name="DRIVE_NAME" /></translation>
+<translation id="6224665423283788195">Ingobo yomlando eminyanisiwe ye-Zstandard</translation>
 <translation id="6227235786875481728">Leli fayela alikwazanga ukudlalwa.</translation>
 <translation id="6241349547798190358">Isi-Dutch (Belgium)</translation>
 <translation id="6267547857941397424">Inethiwekhi <ph name="NETWORK_INDEX" /> ye-<ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, amandla esignali <ph name="SIGNAL_STRENGTH" />%, Ibhethri lefoni <ph name="BATTERY_STATUS" />%, xhuma</translation>
@@ -641,6 +639,7 @@
 <translation id="6423031066725912715">Isi-Vietnamese esinekhibhodi ye-TCVN</translation>
 <translation id="6485131920355264772">Yehlulekile ukuthola ulwazi lesikhala</translation>
 <translation id="6495925982925244349">Inethiwekhi <ph name="NETWORK_INDEX" /> ye-<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, amandla esignali <ph name="SIGNAL_STRENGTH" />%, kuphethwe umlawuli wakho, imininingwane</translation>
+<translation id="649877868557234318">Ikhipha i-<ph name="FILE_NAME" /> ku-<ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Ungavumeli abammeleli kumanethiwekhi abiwe</translation>
 <translation id="6509122719576673235">Isi-Norwegian</translation>
 <translation id="6528513914570774834">Vumela abanye abasebenzisi bale divayisi ukuthi basebenzise le nethiwekhi</translation>
@@ -669,7 +668,6 @@
 <translation id="6806699711453372963">Phatha ukwabelana kwe-Linux</translation>
 <translation id="6806796368146926706">I-Alphanumeric enekhibhodi yesi-Japanese</translation>
 <translation id="6808193438228982088">Impungushe</translation>
-<translation id="6820687829547641339">Ingobo yomlando yotiyela wokuminyanisa i-Gzip</translation>
 <translation id="6823166707458800069">Wonke amafayela alondolozwe kule folda enziwe ikhophi yasenqolabaneni ngokuzenzakalelayo ku-inthanethi.</translation>
 <translation id="6825883775269213504">Isi-Russian</translation>
 <translation id="6847101934483209767">Isusiwe i-<ph name="ENTRY_NAME" /> kusuka okhethweni.</translation>
@@ -818,7 +816,6 @@
 <translation id="7925686952655276919">Ungasebenzisi idatha yeselula ngokuvumelanisa</translation>
 <translation id="7928710562641958568">Khipha idivayisi</translation>
 <translation id="7943385054491506837">I-US Colemak</translation>
-<translation id="7948417415021769876">ingobo yomlando ye-7z</translation>
 <translation id="7953739707111622108">Idivayisi ayikwazi ukuvulwa ngoba isistimu yefayela ayiboniwe.</translation>
 <translation id="7969525169268594403">Isi-Slovenian</translation>
 <translation id="7972920761225148017">Isi-French (Switzerland)</translation>
@@ -860,7 +857,6 @@
 <translation id="8297012244086013755">Isethi ye-Hangul 3 (Akekho u-Shift)</translation>
 <translation id="8299269255470343364">Isi-Japanese</translation>
 <translation id="8300849813060516376">I-OTASP ihlulekile</translation>
-<translation id="8308481408797647857">Ingobo yomlando yotiyela eminyanisiwe ye-XZ</translation>
 <translation id="8312871300878166382">Namathisela kufolda</translation>
 <translation id="8329978297633540474">Umbhalo osobala</translation>
 <translation id="8335587457941836791">Khipha ukuphina kusuka kushelufu</translation>
@@ -882,7 +878,6 @@
 <translation id="8461467696380332069">Chofoza ngakwesokudla kufayela, bese ukhetha okuthi "Phina kushelufu" mayelana nokufinyelela okusheshayo kumafayela akho akushelufu.</translation>
 <translation id="8461914792118322307">Ummeleli</translation>
 <translation id="8463494891489624050">Isi-Vietnamese VIQR</translation>
-<translation id="8466234950814670489">Ingobo yomlando yotiyela</translation>
 <translation id="8475647382427415476">I-Google Drayivu ayikwazanga ukuvumelanisa i-"<ph name="FILENAME" />" manje. I-Google Drayivu izozama futhi emuva kwesikhathi.</translation>
 <translation id="8477649328507734757">Zungelezisa</translation>
 <translation id="8484284835977497781">Khetha kusuka ezithombeni zakho zakamuva.</translation>
@@ -971,7 +966,6 @@
 <translation id="943972244133411984">Kushintshwe ngu-</translation>
 <translation id="945522503751344254">Thumela impendulo</translation>
 <translation id="947144732524271678">Ibanga elikhethiwe lokungenayo kwe-<ph name="ENTRY_COUNT" /> kusuka ku-<ph name="FROM_ENTRY_NAME" /> kuya ku-<ph name="TO_ENTRY_NAME" />.</translation>
-<translation id="961973045258256291">Ingobo yomlando eminyanisiwe ye-Gzip</translation>
 <translation id="965477715979482472">I-English (South Africa)</translation>
 <translation id="981121421437150478">Ayixhunyiwe ku-inthanethi</translation>
 <translation id="988685240266037636">Ifayela elinegama "<ph name="FILE_NAME" />" selivele likhona. Ingabe ufuna ukuyimiselela?</translation>

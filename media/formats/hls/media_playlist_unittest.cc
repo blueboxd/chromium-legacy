@@ -5,6 +5,7 @@
 #include "media/formats/hls/media_playlist.h"
 
 #include <initializer_list>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "media/formats/hls/multivariant_playlist.h"
 #include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/tags.h"
+#include "media/formats/hls/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -50,30 +52,30 @@ TEST(HlsMediaPlaylistTest, XDiscontinuityTag) {
   builder.AppendLine("video.ts");
   builder.ExpectAdditionalSegment();
   builder.ExpectSegment(HasDiscontinuity, false);
+  builder.ExpectSegment(HasDiscontinuitySequenceNumber, 0);
 
   builder.AppendLine("#EXT-X-DISCONTINUITY");
   builder.AppendLine("#EXTINF:9.9,\t");
   builder.AppendLine("video.ts");
   builder.ExpectAdditionalSegment();
   builder.ExpectSegment(HasDiscontinuity, true);
+  builder.ExpectSegment(HasDiscontinuitySequenceNumber, 1);
 
   // The discontinuity tag does not apply to subsequent segments
   builder.AppendLine("#EXTINF:9.9,\t");
   builder.AppendLine("video.ts");
   builder.ExpectAdditionalSegment();
   builder.ExpectSegment(HasDiscontinuity, false);
+  builder.ExpectSegment(HasDiscontinuitySequenceNumber, 1);
 
-  // The discontinuity tag may only appear once per segment
-  {
-    auto fork = builder;
-    fork.AppendLine("#EXT-X-DISCONTINUITY");
-    fork.AppendLine("#EXT-X-DISCONTINUITY");
-    fork.AppendLine("#EXTINF:9.9,\t");
-    fork.AppendLine("video.ts");
-    fork.ExpectAdditionalSegment();
-    fork.ExpectSegment(HasDiscontinuity, true);
-    fork.ExpectError(ParseStatusCode::kPlaylistHasDuplicateTags);
-  }
+  // The discontinuity tag may appear multiple times per segment
+  builder.AppendLine("#EXT-X-DISCONTINUITY");
+  builder.AppendLine("#EXT-X-DISCONTINUITY");
+  builder.AppendLine("#EXTINF:9.9,\t");
+  builder.AppendLine("video.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasDiscontinuity, true);
+  builder.ExpectSegment(HasDiscontinuitySequenceNumber, 3);
 
   builder.ExpectOk();
 }
@@ -573,16 +575,19 @@ TEST(HlsMediaPlaylistTest, XMediaSequenceTag) {
     builder.ExpectAdditionalSegment();
     builder.ExpectSegment(HasUri, GURL("http://localhost/segment0.ts"));
     builder.ExpectSegment(HasMediaSequenceNumber, first_sequence_number);
+    builder.ExpectSegment(HasDiscontinuitySequenceNumber, 0);
 
     builder.AppendLine("#EXTINF:9.8,\t");
     builder.AppendLine("segment1.ts");
     builder.ExpectAdditionalSegment();
     builder.ExpectSegment(HasMediaSequenceNumber, first_sequence_number + 1);
+    builder.ExpectSegment(HasDiscontinuitySequenceNumber, 0);
 
     builder.AppendLine("#EXTINF:9.8,\t");
     builder.AppendLine("segment2.ts");
     builder.ExpectAdditionalSegment();
     builder.ExpectSegment(HasMediaSequenceNumber, first_sequence_number + 2);
+    builder.ExpectSegment(HasDiscontinuitySequenceNumber, 0);
   };
 
   // If the playlist does not contain the EXT-X-MEDIA-SEQUENCE tag, the default
@@ -611,6 +616,485 @@ TEST(HlsMediaPlaylistTest, XMediaSequenceTag) {
   fill_playlist(fork, 9999);
   fork.ExpectPlaylist(HasMediaSequenceTag, true);
   fork.ExpectOk();
+}
+
+TEST(HlsMediaPlaylistTest, XDiscontinuitySequenceTag) {
+  MediaPlaylistTestBuilder builder;
+  builder.AppendLine("#EXTM3U");
+  builder.AppendLine("#EXT-X-TARGETDURATION:10");
+
+  // The EXT-X-DISCONTINUITY-SEQUENCE tag must be a valid DecimalInteger
+  {
+    for (const base::StringPiece x : {"", ":-1", ":{$foo}", ":1.5", ":one"}) {
+      auto fork = builder;
+      fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE", x);
+      fork.ExpectError(ParseStatusCode::kMalformedTag);
+    }
+  }
+  // The EXT-X-DISCONTINUITY-SEQUENCE tag may not appear twice
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:1");
+    fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:1");
+    fork.ExpectError(ParseStatusCode::kPlaylistHasDuplicateTags);
+  }
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:0");
+    fork.AppendLine("#EXT-X-DISCONTINUITY");
+    fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:1");
+    fork.ExpectError(ParseStatusCode::kPlaylistHasDuplicateTags);
+  }
+  // The EXT-X-DISCONTINUITY-SEQUENCE tag must appear before any media segment
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXTINF:9.8,\t");
+    fork.AppendLine("segment0.ts");
+    fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:0");
+    fork.ExpectError(
+        ParseStatusCode::kMediaSegmentBeforeDiscontinuitySequenceTag);
+  }
+  // The EXT-X-DISCONTINUITY-SEQUENCE tag must appear before any
+  // EXT-X-DISCONTINUITY tag
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-DISCONTINUITY");
+    fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:0");
+    fork.AppendLine("#EXTINF:9.8,\t");
+    fork.AppendLine("segment0.ts");
+    fork.ExpectError(
+        ParseStatusCode::kDiscontinuityTagBeforeDiscontinuitySequenceTag);
+  }
+
+  const auto fill_playlist = [](auto& builder, auto first_media_sequence_number,
+                                auto first_discontinuity_sequence_number) {
+    builder.AppendLine("#EXTINF:9.8,\t");
+    builder.AppendLine("segment0.ts");
+    builder.ExpectAdditionalSegment();
+    builder.ExpectSegment(HasUri, GURL("http://localhost/segment0.ts"));
+    builder.ExpectSegment(HasDiscontinuity, false);
+    builder.ExpectSegment(HasMediaSequenceNumber, first_media_sequence_number);
+    builder.ExpectSegment(HasDiscontinuitySequenceNumber,
+                          first_discontinuity_sequence_number);
+
+    builder.AppendLine("#EXT-X-DISCONTINUITY");
+    builder.AppendLine("#EXTINF:9.8,\t");
+    builder.AppendLine("segment1.ts");
+    builder.ExpectAdditionalSegment();
+    builder.ExpectSegment(HasDiscontinuity, true);
+    builder.ExpectSegment(HasMediaSequenceNumber,
+                          first_media_sequence_number + 1);
+    builder.ExpectSegment(HasDiscontinuitySequenceNumber,
+                          first_discontinuity_sequence_number + 1);
+
+    builder.AppendLine("#EXTINF:9.8,\t");
+    builder.AppendLine("segment2.ts");
+    builder.ExpectAdditionalSegment();
+    builder.ExpectSegment(HasDiscontinuity, false);
+    builder.ExpectSegment(HasMediaSequenceNumber,
+                          first_media_sequence_number + 2);
+    builder.ExpectSegment(HasDiscontinuitySequenceNumber,
+                          first_discontinuity_sequence_number + 1);
+  };
+
+  // If the playlist does not contain the EXT-X-DISCONTINUITY-SEQUENCE tag, the
+  // default starting value is 0.
+  auto fork = builder;
+  fill_playlist(fork, 0, 0);
+  fork.ExpectOk();
+
+  fork = builder;
+  fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:10");
+  fill_playlist(fork, 10, 0);
+  fork.ExpectOk();
+
+  // If the playlist has the EXT-X-DISCONTINUITY-SEQUENCE tag, it specifies the
+  // starting value.
+  fork = builder;
+  fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:5");
+  fill_playlist(fork, 0, 5);
+  fork.ExpectOk();
+
+  fork = builder;
+  fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:10");
+  fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:5");
+  fill_playlist(fork, 10, 5);
+  fork.ExpectOk();
+
+  // If the very first segment is a discontinuity, it should still have a
+  // subsequent discontinuity sequence number.
+  fork = builder;
+  fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:10");
+  fork.AppendLine("#EXT-X-DISCONTINUITY");
+  fork.AppendLine("#EXTINF:9.2,\t");
+  fork.AppendLine("segment.ts");
+  fork.ExpectAdditionalSegment();
+  fork.ExpectSegment(HasDiscontinuity, true);
+  fork.ExpectSegment(HasMediaSequenceNumber, 10);
+  fork.ExpectSegment(HasDiscontinuitySequenceNumber, 1);
+  fill_playlist(fork, 11, 1);
+  fork.ExpectOk();
+
+  fork = builder;
+  fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:10");
+  fork.AppendLine("#EXT-X-DISCONTINUITY-SEQUENCE:5");
+  fork.AppendLine("#EXT-X-DISCONTINUITY");
+  fork.AppendLine("#EXTINF:9.2,\t");
+  fork.AppendLine("segment.ts");
+  fork.ExpectAdditionalSegment();
+  fork.ExpectSegment(HasDiscontinuity, true);
+  fork.ExpectSegment(HasMediaSequenceNumber, 10);
+  fork.ExpectSegment(HasDiscontinuitySequenceNumber, 6);
+  fill_playlist(fork, 11, 6);
+  fork.ExpectOk();
+}
+
+TEST(HlsMediaPlaylistTest, XByteRangeTag) {
+  MediaPlaylistTestBuilder builder;
+  builder.AppendLine("#EXTM3U");
+  builder.AppendLine("#EXT-X-TARGETDURATION:10");
+
+  // EXT-X-BYTERANGE content must be a valid ByteRange
+  {
+    for (base::StringPiece x :
+         {"", ":", ": 12@34", ":12@34 ", ":12@", ":12@{$offset}"}) {
+      auto fork = builder;
+      fork.AppendLine("#EXT-X-BYTERANGE", x);
+      fork.AppendLine("#EXTINF:9.2,\t");
+      fork.AppendLine("segment.ts");
+      fork.ExpectError(ParseStatusCode::kMalformedTag);
+    }
+  }
+  // EXT-X-BYTERANGE may not appear twice per-segment.
+  // TODO(https://crbug.com/1328528): Some players support this, using only the
+  // final occurrence.
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:12@34");
+    fork.AppendLine("#EXT-X-BYTERANGE:34@56");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment.ts");
+    fork.ExpectError(ParseStatusCode::kPlaylistHasDuplicateTags);
+  }
+  // Offset is required if this is the first media segment.
+  // TODO(https://crbug.com/1328528): Some players support this, default offset
+  // to 0.
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:12");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeRequiresOffset);
+
+    fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:12@34");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasByteRange, CreateByteRange(12, 34));
+    fork.ExpectOk();
+  }
+  // Offset is required if the previous media segment is not a byterange.
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment.ts");
+    fork.AppendLine("#EXT-X-BYTERANGE:12");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeRequiresOffset);
+
+    fork = builder;
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment.ts"));
+    fork.ExpectSegment(HasByteRange, absl::nullopt);
+    fork.AppendLine("#EXT-X-BYTERANGE:12@34");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment.ts"));
+    fork.ExpectSegment(HasByteRange, CreateByteRange(12, 34));
+    fork.ExpectOk();
+  }
+  // Offset is required if the previous media segment is a byterange of a
+  // different resource.
+  // TODO(https://crbug.com/1328528): Some players support this.
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:12@34");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.AppendLine("#EXT-X-BYTERANGE:56");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment2.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeRequiresOffset);
+
+    fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:12@34");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment1.ts"));
+    fork.ExpectSegment(HasByteRange, CreateByteRange(12, 34));
+    fork.AppendLine("#EXT-X-BYTERANGE:56@78");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment2.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment2.ts"));
+    fork.ExpectSegment(HasByteRange, CreateByteRange(56, 78));
+    fork.ExpectOk();
+  }
+  // Offset is required even if a prior segment is a byterange of the same
+  // resource, but not the immediately previous segment.
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:12@34");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment2.ts");
+    fork.AppendLine("#EXT-X-BYTERANGE:45");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeRequiresOffset);
+
+    fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:12@34");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment1.ts"));
+    fork.ExpectSegment(HasByteRange, CreateByteRange(12, 34));
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment2.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment2.ts"));
+    fork.ExpectSegment(HasByteRange, absl::nullopt);
+    fork.AppendLine("#EXT-X-BYTERANGE:56@78");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment1.ts"));
+    fork.ExpectSegment(HasByteRange, CreateByteRange(56, 78));
+    fork.ExpectOk();
+  }
+  // Offset can be elided if the previous segment is a byterange of the same
+  // resource.
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:12@34");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment1.ts"));
+    fork.ExpectSegment(HasByteRange, CreateByteRange(12, 34));
+    fork.AppendLine("#EXT-X-BYTERANGE:56");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment1.ts"));
+    fork.ExpectSegment(HasByteRange, CreateByteRange(56, 46));
+
+    // If an explicit offset is given (even it it's eligible to be elided), it
+    // must be used.
+    fork.AppendLine("#EXT-X-BYTERANGE:78@99999");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasUri, GURL("http://localhost/segment1.ts"));
+    fork.ExpectSegment(HasByteRange, CreateByteRange(78, 99999));
+    fork.ExpectOk();
+  }
+  // Range given by tag may not be empty or overflow a uint64, even across
+  // segments.
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:0@0");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeInvalid);
+
+    fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:18446744073709551615@1");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeInvalid);
+
+    fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:1@18446744073709551615");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeInvalid);
+
+    fork = builder;
+    fork.AppendLine(
+        "#EXT-X-BYTERANGE:18446744073709551615@18446744073709551615");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeInvalid);
+
+    fork = builder;
+    fork.AppendLine("#EXT-X-BYTERANGE:1@18446744073709551614");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectAdditionalSegment();
+    fork.ExpectSegment(HasByteRange, CreateByteRange(1, 18446744073709551614u));
+    fork.ExpectOk();
+
+    // Since the previous segment ends at uint64_t::max, an additional
+    // contiguous byterange would overflow.
+    fork.AppendLine("#EXT-X-BYTERANGE:1");
+    fork.AppendLine("#EXTINF:9.2,\t");
+    fork.AppendLine("segment1.ts");
+    fork.ExpectError(ParseStatusCode::kByteRangeInvalid);
+  }
+}
+
+TEST(HlsMediaPlaylistTest, XBitrateTag) {
+  MediaPlaylistTestBuilder builder;
+  builder.AppendLine("#EXTM3U");
+  builder.AppendLine("#EXT-X-TARGETDURATION:10");
+
+  // The EXT-X-BITRATE tag must be a valid DecimalInteger
+  {
+    for (base::StringPiece x : {"", ":", ": 1", ":1 ", ":-1", ":{$bitrate}"}) {
+      auto fork = builder;
+      fork.AppendLine("#EXT-X-BITRATE", x);
+      fork.ExpectError(ParseStatusCode::kMalformedTag);
+    }
+  }
+
+  // The EXT-X-BITRATE tag applies only to the segments that it appears after
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment0.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 0);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment0.ts"));
+  builder.ExpectSegment(HasBitRate, absl::nullopt);
+
+  builder.AppendLine("#EXT-X-BITRATE:15");
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment1.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 1);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment1.ts"));
+  builder.ExpectSegment(HasBitRate, 15000);
+
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment2.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 2);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment2.ts"));
+  builder.ExpectSegment(HasBitRate, 15000);
+
+  // The EXT-X-BITRATE tag does not apply to segments that are byteranges
+  builder.AppendLine("#EXT-X-BYTERANGE:1024@0");
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment3.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 3);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment3.ts"));
+  builder.ExpectSegment(HasByteRange, CreateByteRange(1024, 0));
+  builder.ExpectSegment(HasBitRate, absl::nullopt);
+
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment4.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 4);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment4.ts"));
+  builder.ExpectSegment(HasByteRange, absl::nullopt);
+  builder.ExpectSegment(HasBitRate, 15000);
+
+  // The EXT-X-BITRATE tag is allowed to appear twice
+  builder.AppendLine("#EXT-X-BITRATE:20");
+  builder.AppendLine("#EXT-X-BITRATE:21");
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment5.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 5);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment5.ts"));
+  builder.ExpectSegment(HasBitRate, 21000);
+
+  // A value of 0 is tolerated
+  builder.AppendLine("#EXT-X-BITRATE:0");
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment6.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 6);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment6.ts"));
+  builder.ExpectSegment(HasBitRate, 0);
+
+  // Large values should saturate to `DecimalInteger::max`
+  builder.AppendLine("#EXT-X-BITRATE:18446744073709551");
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment7.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 7);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment7.ts"));
+  builder.ExpectSegment(HasBitRate, 18446744073709551000u);
+
+  builder.AppendLine("#EXT-X-BITRATE:18446744073709552");
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment8.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 8);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment8.ts"));
+  builder.ExpectSegment(HasBitRate,
+                        std::numeric_limits<types::DecimalInteger>::max());
+
+  builder.AppendLine("#EXT-X-BITRATE:18446744073709551615");
+  builder.AppendLine("#EXTINF:9.2,");
+  builder.AppendLine("segment9.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasMediaSequenceNumber, 9);
+  builder.ExpectSegment(HasUri, GURL("http://localhost/segment9.ts"));
+  builder.ExpectSegment(HasBitRate,
+                        std::numeric_limits<types::DecimalInteger>::max());
+
+  builder.ExpectOk();
+}
+
+TEST(HlsMediaPlaylistTest, XPartInfTag) {
+  MediaPlaylistTestBuilder builder;
+  builder.AppendLine("#EXTM3U");
+  builder.AppendLine("#EXT-X-TARGETDURATION:10");
+
+  // EXT-X-PART-INF tag must be well-formed
+  for (base::StringPiece x : {"", ":", ":TARGET=1", ":PART-TARGET=two"}) {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-PART-INF", x);
+    fork.ExpectError(ParseStatusCode::kMalformedTag);
+  }
+
+  auto fork = builder;
+  fork.AppendLine("#EXT-X-PART-INF:PART-TARGET=0");
+  fork.ExpectPlaylist(HasPartialSegmentInfo,
+                      MediaPlaylist::PartialSegmentInfo{.target_duration = 0});
+  fork.ExpectOk();
+
+  fork = builder;
+  fork.AppendLine("#EXT-X-PART-INF:PART-TARGET=1");
+  fork.ExpectPlaylist(HasPartialSegmentInfo,
+                      MediaPlaylist::PartialSegmentInfo{.target_duration = 1});
+  fork.ExpectOk();
+
+  fork = builder;
+  fork.AppendLine("#EXT-X-PART-INF:PART-TARGET=1.2");
+  fork.ExpectPlaylist(HasPartialSegmentInfo, MediaPlaylist::PartialSegmentInfo{
+                                                 .target_duration = 1.2});
+  fork.ExpectOk();
+
+  fork = builder;
+  fork.AppendLine("#EXT-X-PART-INF:PART-TARGET=99.99");
+  fork.ExpectPlaylist(HasPartialSegmentInfo, MediaPlaylist::PartialSegmentInfo{
+                                                 .target_duration = 99.99});
+  fork.ExpectOk();
+
+  // The EXT-X-PART-INF tag may not appear twice
+  fork.AppendLine("#EXT-X-PART-INF:PART-TARGET=10");
+  fork.ExpectError(ParseStatusCode::kPlaylistHasDuplicateTags);
 }
 
 }  // namespace media::hls

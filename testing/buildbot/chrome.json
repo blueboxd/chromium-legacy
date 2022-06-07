@@ -175,10 +175,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -212,10 +208,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -255,10 +247,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -292,10 +280,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -412,10 +396,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -491,10 +471,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -528,10 +504,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -567,10 +539,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -605,10 +573,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -642,10 +606,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -684,10 +644,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -722,10 +678,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -759,10 +711,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -801,10 +749,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -856,10 +800,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -897,10 +837,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -935,10 +871,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -972,10 +904,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1015,10 +943,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1053,10 +977,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1090,10 +1010,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1144,10 +1060,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1291,10 +1203,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1384,10 +1292,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1550,10 +1454,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1585,10 +1485,6 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1911,7 +1807,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R104-14829.0.0",
+        "cros_img": "atlas-release/R104-14844.0.0",
         "name": "lacros_all_tast_tests ATLAS_RELEASE_LKGM",
         "resultdb": {
           "enable": true,
@@ -1927,7 +1823,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R103-14794.0.0",
+        "cros_img": "atlas-release/R103-14816.17.0",
         "name": "lacros_all_tast_tests ATLAS_RELEASE_DEV",
         "resultdb": {
           "enable": true,
@@ -1943,7 +1839,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R102-14695.25.0",
+        "cros_img": "atlas-release/R103-14816.41.0",
         "name": "lacros_all_tast_tests ATLAS_RELEASE_BETA",
         "resultdb": {
           "enable": true,
@@ -1958,8 +1854,24 @@
       },
       {
         "args": [],
+        "cros_board": "atlas",
+        "cros_img": "atlas-release/R102-14695.85.0",
+        "name": "lacros_all_tast_tests ATLAS_RELEASE_STABLE",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "ATLAS_RELEASE_STABLE"
+      },
+      {
+        "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R104-14829.0.0",
+        "cros_img": "eve-release/R104-14844.0.0",
         "name": "lacros_all_tast_tests EVE_RELEASE_LKGM",
         "resultdb": {
           "enable": true,
@@ -1991,7 +1903,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R102-14695.25.0",
+        "cros_img": "eve-release/R103-14816.41.0",
         "name": "lacros_all_tast_tests EVE_RELEASE_BETA",
         "resultdb": {
           "enable": true,
@@ -2003,6 +1915,22 @@
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
         "timeout_sec": 10800,
         "variant_id": "EVE_RELEASE_BETA"
+      },
+      {
+        "args": [],
+        "cros_board": "eve",
+        "cros_img": "eve-release/R102-14695.85.0",
+        "name": "lacros_all_tast_tests EVE_RELEASE_STABLE",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "EVE_RELEASE_STABLE"
       }
     ]
   },
@@ -2052,7 +1980,7 @@
       {
         "args": [],
         "cros_board": "hana",
-        "cros_img": "hana-release/R104-14829.0.0",
+        "cros_img": "hana-release/R104-14844.0.0",
         "name": "lacros_all_tast_tests HANA_RELEASE_LKGM",
         "resultdb": {
           "enable": true,
@@ -2068,7 +1996,7 @@
       {
         "args": [],
         "cros_board": "hana",
-        "cros_img": "hana-release/R103-14794.0.0",
+        "cros_img": "hana-release/R103-14816.17.0",
         "name": "lacros_all_tast_tests HANA_RELEASE_DEV",
         "resultdb": {
           "enable": true,
@@ -2084,7 +2012,7 @@
       {
         "args": [],
         "cros_board": "hana",
-        "cros_img": "hana-release/R102-14695.25.0",
+        "cros_img": "hana-release/R103-14816.41.0",
         "name": "lacros_all_tast_tests HANA_RELEASE_BETA",
         "resultdb": {
           "enable": true,
@@ -2099,8 +2027,24 @@
       },
       {
         "args": [],
+        "cros_board": "hana",
+        "cros_img": "hana-release/R102-14695.85.0",
+        "name": "lacros_all_tast_tests HANA_RELEASE_STABLE",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800,
+        "variant_id": "HANA_RELEASE_STABLE"
+      },
+      {
+        "args": [],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R104-14829.0.0",
+        "cros_img": "jacuzzi-release/R104-14844.0.0",
         "name": "lacros_all_tast_tests JACUZZI_RELEASE_LKGM",
         "resultdb": {
           "enable": true,
@@ -2116,7 +2060,7 @@
       {
         "args": [],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R103-14794.0.0",
+        "cros_img": "jacuzzi-release/R103-14816.17.0",
         "name": "lacros_all_tast_tests JACUZZI_RELEASE_DEV",
         "resultdb": {
           "enable": true,
@@ -2132,7 +2076,7 @@
       {
         "args": [],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R102-14695.25.0",
+        "cros_img": "jacuzzi-release/R103-14816.41.0",
         "name": "lacros_all_tast_tests JACUZZI_RELEASE_BETA",
         "resultdb": {
           "enable": true,
@@ -2150,12 +2094,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.ozone_unittests.filter"
         ],
         "cros_board": "hana",
-        "cros_img": "hana-release/R104-14829.0.0",
+        "cros_img": "hana-release/R104-14844.0.0",
         "name": "ozone_unittests HANA_RELEASE_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -2167,12 +2107,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.ozone_unittests.filter"
         ],
         "cros_board": "hana",
-        "cros_img": "hana-release/R103-14794.0.0",
+        "cros_img": "hana-release/R103-14816.17.0",
         "name": "ozone_unittests HANA_RELEASE_DEV",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -2184,12 +2120,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.ozone_unittests.filter"
         ],
         "cros_board": "hana",
-        "cros_img": "hana-release/R102-14695.25.0",
+        "cros_img": "hana-release/R103-14816.41.0",
         "name": "ozone_unittests HANA_RELEASE_BETA",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -2200,13 +2132,22 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.ozone_unittests.filter"
         ],
+        "cros_board": "hana",
+        "cros_img": "hana-release/R102-14695.85.0",
+        "name": "ozone_unittests HANA_RELEASE_STABLE",
+        "swarming": {},
+        "test": "ozone_unittests",
+        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
+        "timeout_sec": 3600,
+        "variant_id": "HANA_RELEASE_STABLE"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.ozone_unittests.filter"
+        ],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R104-14829.0.0",
+        "cros_img": "jacuzzi-release/R104-14844.0.0",
         "name": "ozone_unittests JACUZZI_RELEASE_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -2218,12 +2159,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.ozone_unittests.filter"
         ],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R103-14794.0.0",
+        "cros_img": "jacuzzi-release/R103-14816.17.0",
         "name": "ozone_unittests JACUZZI_RELEASE_DEV",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -2235,12 +2172,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.ozone_unittests.filter"
         ],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R102-14695.25.0",
+        "cros_img": "jacuzzi-release/R103-14816.41.0",
         "name": "ozone_unittests JACUZZI_RELEASE_BETA",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -2252,12 +2185,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.viz_unittests.filter"
         ],
         "cros_board": "hana",
-        "cros_img": "hana-release/R104-14829.0.0",
+        "cros_img": "hana-release/R104-14844.0.0",
         "name": "viz_unittests HANA_RELEASE_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -2269,12 +2198,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.viz_unittests.filter"
         ],
         "cros_board": "hana",
-        "cros_img": "hana-release/R103-14794.0.0",
+        "cros_img": "hana-release/R103-14816.17.0",
         "name": "viz_unittests HANA_RELEASE_DEV",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -2286,12 +2211,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.viz_unittests.filter"
         ],
         "cros_board": "hana",
-        "cros_img": "hana-release/R102-14695.25.0",
+        "cros_img": "hana-release/R103-14816.41.0",
         "name": "viz_unittests HANA_RELEASE_BETA",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -2302,13 +2223,22 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.viz_unittests.filter"
         ],
+        "cros_board": "hana",
+        "cros_img": "hana-release/R102-14695.85.0",
+        "name": "viz_unittests HANA_RELEASE_STABLE",
+        "swarming": {},
+        "test": "viz_unittests",
+        "test_id_prefix": "ninja://components/viz:viz_unittests/",
+        "timeout_sec": 3600,
+        "variant_id": "HANA_RELEASE_STABLE"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.viz_unittests.filter"
+        ],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R104-14829.0.0",
+        "cros_img": "jacuzzi-release/R104-14844.0.0",
         "name": "viz_unittests JACUZZI_RELEASE_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -2320,12 +2250,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.viz_unittests.filter"
         ],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R103-14794.0.0",
+        "cros_img": "jacuzzi-release/R103-14816.17.0",
         "name": "viz_unittests JACUZZI_RELEASE_DEV",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -2337,12 +2263,8 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros-arm.viz_unittests.filter"
         ],
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R102-14695.25.0",
+        "cros_img": "jacuzzi-release/R103-14816.41.0",
         "name": "viz_unittests JACUZZI_RELEASE_BETA",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
         "swarming": {},
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -2583,29 +2505,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04",
-              "pool": "chrome.tests",
-              "ssd": "0"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "aura_unittests",
-        "test_id_prefix": "ninja://ui/aura:aura_unittests/"
-      },
-      {
-        "args": [
-          "--enable-features=UseSkiaRenderer"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "skia_renderer_aura_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

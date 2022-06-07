@@ -34,8 +34,8 @@ SystemWebAppDelegate::SystemWebAppDelegate(
 
 SystemWebAppDelegate::~SystemWebAppDelegate() = default;
 
-std::vector<web_app::AppId>
-SystemWebAppDelegate::GetAppIdsToUninstallAndReplace() const {
+std::vector<std::string> SystemWebAppDelegate::GetAppIdsToUninstallAndReplace()
+    const {
   return {};
 }
 
@@ -96,7 +96,7 @@ bool SystemWebAppDelegate::ShouldHandleFileOpenIntents() const {
   return ShouldShowInLauncher();
 }
 
-absl::optional<web_app::SystemAppBackgroundTaskInfo>
+absl::optional<SystemWebAppBackgroundTaskInfo>
 SystemWebAppDelegate::GetTimerInfo() const {
   return absl::nullopt;
 }

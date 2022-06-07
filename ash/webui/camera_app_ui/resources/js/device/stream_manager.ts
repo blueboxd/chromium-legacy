@@ -24,7 +24,7 @@ import {
 let instance: StreamManager|null = null;
 
 /**
- * Device information includs MediaDeviceInfo and Camera3DeviceInfo.
+ * Device information includes MediaDeviceInfo and Camera3DeviceInfo.
  */
 export interface DeviceInfo {
   v1Info: MediaDeviceInfo;
@@ -58,8 +58,7 @@ export class StreamManager {
   /**
    * Listeners for real device change event.
    */
-  private readonly realListeners:
-      Array<(devices: DeviceInfo[]) => Promise<void>> = [];
+  private readonly realListeners: Array<(devices: DeviceInfo[]) => void> = [];
 
   /**
    * Latest result of Camera3DeviceInfo of all real video devices.
@@ -115,8 +114,7 @@ export class StreamManager {
    * Registers listener to be called when state of available real devices
    * changes.
    */
-  addRealDeviceChangeListener(
-      listener: (devices: DeviceInfo[]) => Promise<void>): void {
+  addRealDeviceChangeListener(listener: (devices: DeviceInfo[]) => void): void {
     this.realListeners.push(listener);
   }
 
@@ -126,9 +124,9 @@ export class StreamManager {
   async openCaptureStream(constraints: StreamConstraints):
       Promise<MediaStream> {
     const realDeviceId = constraints.deviceId;
-    if (await DeviceOperator.isSupported()) {
+    if (DeviceOperator.isSupported()) {
       try {
-        await this.setMultipleStreamsEnabled(realDeviceId, true);
+        await this.setVirtualDeviceEnabled(realDeviceId, true);
         assert(this.virtualMap !== null);
         constraints.deviceId = this.virtualMap.virtualId;
       } catch (e) {
@@ -146,14 +144,14 @@ export class StreamManager {
    */
   async closeCaptureStream(captureStream: MediaStream): Promise<void> {
     assertExists(captureStream.getVideoTracks()[0]).stop();
-    const deviceOperator = await DeviceOperator.getInstance();
+    const deviceOperator = DeviceOperator.getInstance();
     if (deviceOperator !== null) {
       // We need to cache |virtualId| first since it will be wiped out after
       // disabling multi-stream.
       assert(this.virtualMap !== null);
       const virtualId = this.virtualMap.virtualId;
       try {
-        await this.setMultipleStreamsEnabled(this.virtualMap.realId, false);
+        await this.setVirtualDeviceEnabled(this.virtualMap.realId, false);
       } catch (e) {
         reportError(ErrorType.MULTIPLE_STREAMS_FAILURE, ErrorLevel.ERROR, e);
       }
@@ -263,7 +261,7 @@ export class StreamManager {
   private async queryMojoDevicesInfo(): Promise<DeviceInfo[]|null> {
     const deviceInfos = await this.devicesInfo;
     assert(deviceInfos !== null);
-    const isV3Supported = await DeviceOperator.isSupported();
+    const isV3Supported = DeviceOperator.isSupported();
     return Promise.all(deviceInfos.map(
         async (d) => ({
           v1Info: d,
@@ -274,23 +272,23 @@ export class StreamManager {
   }
 
   /**
-   * Enables/Disables multiple streams on target camera device. The extra
+   * Enables/Disables virtual device on target camera device. The extra
    * stream will be reported as virtual video device from
    * navigator.mediaDevices.enumerateDevices().
    *
    * @param deviceId The id of target camera device.
-   * @param enabled True for eanbling multiple streams.
+   * @param enabled True for enabling virtual device.
    */
-  async setMultipleStreamsEnabled(deviceId: string, enabled: boolean):
+  async setVirtualDeviceEnabled(deviceId: string, enabled: boolean):
       Promise<void> {
-    const deviceOperator = await DeviceOperator.getInstance();
+    const deviceOperator = DeviceOperator.getInstance();
     assert(deviceOperator !== null);
 
     if (enabled) {
       const waitEvent = new WaitableEvent<string>();
       this.waitVirtual = waitEvent;
 
-      await deviceOperator.setMultipleStreamsEnabled(deviceId, enabled);
+      await deviceOperator.setVirtualDeviceEnabled(deviceId, enabled);
       await this.deviceUpdate();
 
       const virtualId = await waitEvent.timedWait(3000);
@@ -299,7 +297,7 @@ export class StreamManager {
       const waitEvent = new WaitableEvent();
       this.waitVirtualRemoved = waitEvent;
 
-      await deviceOperator.setMultipleStreamsEnabled(deviceId, enabled);
+      await deviceOperator.setVirtualDeviceEnabled(deviceId, enabled);
       await this.deviceUpdate();
 
       await waitEvent.timedWait(3000);

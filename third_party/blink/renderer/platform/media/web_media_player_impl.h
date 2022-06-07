@@ -184,7 +184,8 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   void Paint(cc::PaintCanvas* canvas,
              const gfx::Rect& rect,
              cc::PaintFlags& flags) override;
-  scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
+  scoped_refptr<media::VideoFrame> GetCurrentFrameThenUpdate() override;
+  absl::optional<int> CurrentFrameId() const override;
   media::PaintCanvasVideoRenderer* GetPaintCanvasVideoRenderer() override;
 
   // True if the loaded media has a playable video/audio track.

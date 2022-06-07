@@ -120,7 +120,7 @@ void EnterTestMode(const GURL& url) {
                   .SetInitialDelay(0.1)
                   .SetServerKeepAliveSeconds(1)
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
-                  .Overwrite());
+                  .Modify());
 }
 
 absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope) {
@@ -331,10 +331,9 @@ void WaitForUpdaterExit(UpdaterScope /*scope*/) {
 }
 
 void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
-  base::FilePath source_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
-  base::FilePath old_updater_path =
-      source_path.Append("third_party").Append("updater");
+  base::FilePath exe_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
+  base::FilePath old_updater_path = exe_path.Append("old_updater");
 #if BUILDFLAG(CHROMIUM_BRANDING)
 #if defined(ARCH_CPU_ARM64)
   old_updater_path =
@@ -416,6 +415,10 @@ void InstallApp(UpdaterScope scope, const std::string& app_id) {
 void UninstallApp(UpdaterScope scope, const std::string& app_id) {
   SetExistenceCheckerPath(scope, app_id,
                           base::FilePath(FILE_PATH_LITERAL("NONE")));
+}
+
+void RunOfflineInstall(UpdaterScope scope) {
+  // TODO(crbug.com/1286574).
 }
 
 }  // namespace test

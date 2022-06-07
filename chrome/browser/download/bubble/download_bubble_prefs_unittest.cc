@@ -4,19 +4,36 @@
 
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 
+#include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+constexpr char kDownloadConnectorEnabledPref[] = R"([
+  {
+    "service_provider": "google",
+    "enable": [
+      {"url_list": ["*"], "tags": ["malware"]}
+    ]
+  }
+])";
+
+}  // namespace
 
 namespace download {
 
@@ -34,7 +51,7 @@ class DownloadBubblePrefsTest : public testing::Test {
   }
 
  protected:
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile> profile_;
   base::test::ScopedFeatureList feature_list_;
 
  private:
@@ -63,6 +80,15 @@ TEST_F(DownloadBubblePrefsTest, DownloadBubbleEnabledManaged) {
   profile_->GetTestingPrefService()->SetManagedPref(
       prefs::kDownloadBubbleEnabled, std::make_unique<base::Value>(false));
   EXPECT_FALSE(IsDownloadBubbleEnabled(profile_));
+}
+
+TEST_F(DownloadBubblePrefsTest, IsDownloadConnectorEnabled) {
+  EXPECT_FALSE(IsDownloadConnectorEnabled(profile_));
+  profile_->GetPrefs()->Set(
+      enterprise_connectors::ConnectorPref(
+          enterprise_connectors::FILE_DOWNLOADED),
+      *base::JSONReader::Read(kDownloadConnectorEnabledPref));
+  EXPECT_TRUE(IsDownloadConnectorEnabled(profile_));
 }
 
 }  // namespace download

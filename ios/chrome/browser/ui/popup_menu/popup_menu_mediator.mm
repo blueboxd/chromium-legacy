@@ -51,6 +51,7 @@
 #import "ios/chrome/browser/ui/icons/action_icon.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_text_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
@@ -524,23 +525,23 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
         }
         break;
       case PopupMenuTypeNavigationForward:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createNavigationItemsForType:PopupMenuTypeNavigationForward];
         break;
       case PopupMenuTypeNavigationBackward:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createNavigationItemsForType:PopupMenuTypeNavigationBackward];
         break;
       case PopupMenuTypeTabGrid:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createTabGridMenuItems];
         break;
       case PopupMenuTypeTabStripTabGrid:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createTabGridMenuItems];
         break;
       case PopupMenuTypeNewTab:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createSearchMenuItems];
         break;
     }
@@ -655,9 +656,11 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 - (void)updateFollowStatus {
   DCHECK(IsWebChannelsEnabled());
-  RecordAction(self.followStatus ? UserMetricsAction("MobileMenuUnfollow")
-                                 : UserMetricsAction("MobileMenuFollow"));
-  // TODO(crbug.com/1324452): Record histogram.
+  if (self.followStatus) {
+    [self.feedMetricsRecorder recordUnfollowFromMenu];
+  } else {
+    [self.feedMetricsRecorder recordFollowFromMenu];
+  }
   ios::GetChromeBrowserProvider().GetFollowProvider()->UpdateFollowStatus(
       self.webPageURLs, !self.followStatus);
 }

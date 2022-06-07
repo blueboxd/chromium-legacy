@@ -78,7 +78,22 @@ class WaylandPointer {
                            uint32_t axis,
                            int32_t discrete);
 
+  void SetupStylus();
+
+  // zcr_pointer_stylus_v2_listener
+  static void Tool(void* data, struct zcr_pointer_stylus_v2* x, uint32_t y);
+  static void Force(void* data,
+                    struct zcr_pointer_stylus_v2* x,
+                    uint32_t y,
+                    wl_fixed_t z);
+  static void Tilt(void* data,
+                   struct zcr_pointer_stylus_v2* x,
+                   uint32_t y,
+                   wl_fixed_t z,
+                   wl_fixed_t a);
+
   wl::Object<wl_pointer> obj_;
+  wl::Object<zcr_pointer_stylus_v2> zcr_pointer_stylus_v2_;
   WaylandConnection* const connection_;
   Delegate* const delegate_;
 
@@ -106,6 +121,8 @@ class WaylandPointer::Delegate {
   virtual void OnResetPointerFlags() = 0;
   virtual const gfx::PointF& GetPointerLocation() const = 0;
   virtual bool IsPointerButtonPressed(EventFlags button) const = 0;
+  virtual void OnPointerStylusToolChanged(EventPointerType pointer_type) = 0;
+  virtual const WaylandWindow* GetPointerTarget() const = 0;
 };
 
 }  // namespace ui

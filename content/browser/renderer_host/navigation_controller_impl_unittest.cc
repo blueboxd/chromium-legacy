@@ -1302,9 +1302,10 @@ TEST_F(NavigationControllerTest, ReloadWithGuest) {
                                                     url1);
   ASSERT_TRUE(controller.GetVisibleEntry());
 
-  // Make the entry believe its RenderProcessHost is a guest.
+  // Ensure the entry's SiteInstance and RenderProcessHost are for a guest.
   NavigationEntryImpl* entry1 = controller.GetVisibleEntry();
-  ASSERT_EQ(entry1->site_instance(), guest_instance);
+  ASSERT_EQ(entry1->site_instance()->GetStoragePartitionConfig(),
+            kGuestPartitionConfig);
   ASSERT_TRUE(entry1->site_instance()->IsGuest());
   ASSERT_TRUE(entry1->site_instance()->GetProcess()->IsForGuestsOnly());
 
@@ -4556,8 +4557,10 @@ TEST_F(NavigationControllerFencedFrameTest, NoURLRewriteForFencedFrames) {
   RenderFrameHostImpl* fenced_frame_root = main_test_rfh()->AppendFencedFrame();
   // Navigate fenced frame.
   std::unique_ptr<NavigationSimulator> navigation_simulator =
-      NavigationSimulator::CreateForFencedFrame(kUrl2, fenced_frame_root);
+      NavigationSimulator::CreateRendererInitiated(kUrl2, fenced_frame_root);
   navigation_simulator->Commit();
+  fenced_frame_root = static_cast<RenderFrameHostImpl*>(
+      navigation_simulator->GetFinalRenderFrameHost());
 
   // Simulate the fenced frame receiving a request from a RenderFrameProxyHost
   // to navigate to `kTestRewriteURL`.

@@ -73,6 +73,10 @@ class WebAppRegistrar : public ProfileManagerObserver {
   void SetSubsystems(WebAppPolicyManager* policy_manager,
                      WebAppTranslationManager* translation_manager);
 
+  // Returns an AppId if there exists an app inside the registry that
+  // has a specific install_url.
+  absl::optional<AppId> LookUpAppIdByInstallUrl(const GURL& install_url) const;
+
   // Returns whether the app with |app_id| is currently listed in the registry.
   // ie. we have data for web app manifest and icons, and this |app_id| can be
   // used in other registrar methods.
@@ -288,7 +292,15 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   // Returns whether the app is pending successful navigation in order to
   // complete installation via the ExternallyManagedAppManager.
-  bool IsPlaceholderApp(const AppId& app_id) const;
+  bool IsPlaceholderApp(const AppId& app_id,
+                        const WebAppManagement::Type source_type) const;
+
+  // Returns an |app_id| if there is a placeholder app for |install_url|.
+  // Returning a nullopt does not mean that there is no app for |install_url|,
+  // just that there is no *placeholder app*.
+  absl::optional<AppId> LookupPlaceholderAppId(
+      const GURL& install_url,
+      const WebAppManagement::Type source_type) const;
 
   bool IsSystemApp(const AppId& app_id) const;
 
@@ -372,9 +384,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
      private:
       void FilterAndSkipApps() {
-        if (!filter_)
-          return;
-
         while (internal_iter_ != internal_end_ && !filter_(**this))
           ++internal_iter_;
       }
@@ -422,8 +431,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   Registry& registry() { return registry_; }
   void SetRegistry(Registry&& registry);
 
-  AppSet FilterApps(Filter filter) const;
-
   void CountMutation();
 
   // Gets the IDs for all apps in `app_set`.
@@ -455,7 +462,7 @@ class WebAppRegistrarMutable : public WebAppRegistrar {
 
   WebApp* GetAppByIdMutable(const AppId& app_id);
 
-  AppSet FilterAppsMutable(Filter filter);
+  AppSet FilterAppsMutableForTesting(Filter filter);
 
   AppSet GetAppsIncludingStubsMutable();
   AppSet GetAppsMutable();

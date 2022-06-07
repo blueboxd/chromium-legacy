@@ -24,7 +24,7 @@ const base::Feature kEnableDiscoverFeedDiscoFeedEndpoint{
 
 const base::Feature kEnableDiscoverFeedStaticResourceServing{
     "EnableDiscoverFeedStaticResourceServing",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableDiscoverFeedTopSyncPromo{
     "EnableDiscoverFeedTopSyncPromo", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -41,6 +41,11 @@ const base::Feature kNTPViewHierarchyRepair{"NTPViewHierarchyRepair",
 const char kDiscoverFeedTopSyncPromoStyleParam[] = "FeedTopPromoStyle";
 const char kDiscoverFeedTopSyncPromoStyleFullWithTitle[] = "fullWithTitle";
 const char kDiscoverFeedTopSyncPromoStyleCompact[] = "compact";
+const base::Feature kEnableFeedAblation{"FeedAblationEnabled",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDiscoverFeedGhostCardsEnabled{
+    "DiscoverFeedGhostCardsEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsDiscoverFeedPreviewEnabled() {
   return base::FeatureList::IsEnabled(kEnableDiscoverFeedPreview);
@@ -60,4 +65,12 @@ bool IsNTPViewHierarchyRepairEnabled() {
 
 bool IsDiscoverFeedTopSyncPromoEnabled() {
   return base::FeatureList::IsEnabled(kEnableDiscoverFeedTopSyncPromo);
+}
+
+bool IsFeedAblationEnabled() {
+  return base::FeatureList::IsEnabled(kEnableFeedAblation);
+}
+
+bool IsDiscoverFeedGhostCardsEnabled() {
+  return base::FeatureList::IsEnabled(kDiscoverFeedGhostCardsEnabled);
 }

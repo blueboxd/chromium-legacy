@@ -1150,21 +1150,11 @@ const char kSystemProxyUserTrafficHostAndPort[] =
 const char kEduCoexistenceArcMigrationCompleted[] =
     "account_manager.edu_coexistence_arc_migration_completed";
 
-// List pref containing extension IDs that are exempt from the restricted
-// managed guest session clean-up procedure.
-const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[] =
-    "restricted_managed_guest_session_extension_cleanup_exempt_list";
+// Dictionary pref for shared extension storage for device pin.
+const char kSharedStorage[] = "shared_storage";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
-// A pref holding the value of the policy used to disable mounting of external
-// storage for the user.
-const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
-
-// A pref holding the value of the policy used to limit mounting of external
-// storage to read-only mode for the user.
-const char kExternalStorageReadOnly[] = "hardware.external_storage_read_only";
-
 // This boolean controls whether the first window shown on first run should be
 // unconditionally maximized, overriding the heuristic that normally chooses the
 // window size.
@@ -1176,6 +1166,11 @@ const char kOOMKillsDailyCount[] = "oom_kills.daily_count";
 // Integer pref used by the metrics::DailyEvent owned by
 // memory::OOMKillsMonitor.
 const char kOOMKillsDailySample[] = "oomkills.daily_sample";
+
+// List pref containing extension IDs that are exempt from the restricted
+// managed guest session clean-up procedure.
+const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[] =
+    "restricted_managed_guest_session_extension_cleanup_exempt_list";
 
 // Boolean user profile pref that determines whether to show a banner in browser
 // settings that links to OS settings.
@@ -2384,6 +2379,10 @@ const char kDemoModeConfig[] = "demo_mode.config";
 // A string pref holding the value of the current country for demo sessions.
 const char kDemoModeCountry[] = "demo_mode.country";
 
+// A string pref holding the value of the retailer and store id input for demo
+// sessions.
+const char kDemoModeRetailerAndStoreIdInput[] = "demo_mode.retailer_id";
+
 // A string pref holding the value of the default locale for demo sessions.
 const char kDemoModeDefaultLocale[] = "demo_mode.default_locale";
 
@@ -3102,6 +3101,12 @@ const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
 // A boolean value, controlling whether Chrome renderer processes have the CIG
 // mitigation enabled.
 const char kRendererCodeIntegrityEnabled[] = "renderer_code_integrity_enabled";
+
+// A boolean value, controlling whether Chrome renderer processes should have
+// Renderer App Container enabled or not. If this pref is set to false then
+// Renderer App Container is disabled, otherwise Renderer App Container is
+// controlled by the `RendererAppContainer` feature owned by sandbox/policy.
+const char kRendererAppContainerEnabled[] = "renderer_app_container_enabled";
 
 // A boolean that controls whether the Browser process has
 // ProcessExtensionPointDisablePolicy enabled.

@@ -522,47 +522,32 @@ void PostProcessFoundTasks(
 
   std::set<std::string> disabled_actions;
 
-  // kFilesArchivemount and kFilesArchivemount2 controls what subset of
-  // filename extensions listed in ui/file_manager/file_manager/manifest.json
-  // allows the "mount-archive" action.
-  //
-  // If kFilesArchivemount is disabled then only ".rar" and ".zip" are allowed.
-  // This corresponds to the status quo as of milestone M92.
-  //
-  // If kFilesArchivemount is enabled but kFilesArchivemount2 is disabled then
-  // more extensions are allowed, including ".7z" and uncompressed tar (".tar")
-  // but not compressed tar (".tar.bz", ".tar.bz2", ".tar.gz", ".tar.lzma",
-  // ".tar.xz", ".tbz", ".tbz2", ".tgz", ".tlzma", and ".txz") or compressed
-  // general files (".bz2", ".gz", ".lzma", and ".xz").
-  //
-  // If both are enabled then everything listed in manifest.json is allowed.
-  //
-  // TODO(crbug.com/1295892): some time after M98, remove these feature flags
-  // (scheduled to expire in M112) by hard-coding them to true, so that these
-  // if-blocks are never taken and can be deleted.
-  if (!base::FeatureList::IsEnabled(ash::features::kFilesArchivemount)) {
+  // kFilesArchivemount2 controls what subset of filename extensions listed in
+  // ui/file_manager/file_manager/manifest.json allows the "mount-archive"
+  // action. If kFilesArchivemount2 is enabled, everything listed in
+  // manifest.json is allowed.
+  if (!base::FeatureList::IsEnabled(ash::features::kFilesArchivemount2)) {
     for (const auto& entry : entries) {
-      // Allow-list: .rar and .zip.
-      if (!entry.path.MatchesExtension(".rar") &&
-          !entry.path.MatchesExtension(".zip")) {
-        disabled_actions.emplace("mount-archive");
-        break;
-      }
-    }
-  } else if (!base::FeatureList::IsEnabled(
-                 ash::features::kFilesArchivemount2)) {
-    for (const auto& entry : entries) {
-      // Deny-list: various compressed formats.
+      // Deny-list: "slow-mounter" compressed formats.
       if (entry.path.MatchesFinalExtension(".bz") ||
           entry.path.MatchesFinalExtension(".bz2") ||
           entry.path.MatchesFinalExtension(".gz") ||
+          entry.path.MatchesFinalExtension(".lz") ||
           entry.path.MatchesFinalExtension(".lzma") ||
-          entry.path.MatchesFinalExtension(".xz") ||
+          entry.path.MatchesFinalExtension(".taz") ||
+          entry.path.MatchesFinalExtension(".tb2") ||
           entry.path.MatchesFinalExtension(".tbz") ||
           entry.path.MatchesFinalExtension(".tbz2") ||
           entry.path.MatchesFinalExtension(".tgz") ||
+          entry.path.MatchesFinalExtension(".tlz") ||
           entry.path.MatchesFinalExtension(".tlzma") ||
-          entry.path.MatchesFinalExtension(".txz")) {
+          entry.path.MatchesFinalExtension(".txz") ||
+          entry.path.MatchesFinalExtension(".tz") ||
+          entry.path.MatchesFinalExtension(".tz2") ||
+          entry.path.MatchesFinalExtension(".tzst") ||
+          entry.path.MatchesFinalExtension(".xz") ||
+          entry.path.MatchesFinalExtension(".z") ||
+          entry.path.MatchesFinalExtension(".zst")) {
         disabled_actions.emplace("mount-archive");
         break;
       }
@@ -718,7 +703,7 @@ bool GetDefaultTaskFromPrefs(const PrefService& pref_service,
                              const std::string& suffix,
                              TaskDescriptor* task_out) {
   VLOG(1) << "Looking for default for MIME type: " << mime_type
-      << " and suffix: " << suffix;
+          << " and suffix: " << suffix;
   if (!mime_type.empty()) {
     const base::Value* mime_task_prefs =
         pref_service.GetDictionary(prefs::kDefaultTasksByMimeType);
@@ -753,15 +738,13 @@ bool GetDefaultTaskFromPrefs(const PrefService& pref_service,
 std::string MakeTaskID(const std::string& app_id,
                        TaskType task_type,
                        const std::string& action_id) {
-  return base::StringPrintf("%s|%s|%s",
-                            app_id.c_str(),
+  return base::StringPrintf("%s|%s|%s", app_id.c_str(),
                             TaskTypeToString(task_type).c_str(),
                             action_id.c_str());
 }
 
 std::string TaskDescriptorToId(const TaskDescriptor& task_descriptor) {
-  return MakeTaskID(task_descriptor.app_id,
-                    task_descriptor.task_type,
+  return MakeTaskID(task_descriptor.app_id, task_descriptor.task_type,
                     task_descriptor.action_id);
 }
 
@@ -906,10 +889,9 @@ bool ExecuteFileTask(Profile* profile,
   return false;
 }
 
-void FindFileBrowserHandlerTasks(
-    Profile* profile,
-    const std::vector<GURL>& file_urls,
-    std::vector<FullTaskDescriptor>* result_list) {
+void FindFileBrowserHandlerTasks(Profile* profile,
+                                 const std::vector<GURL>& file_urls,
+                                 std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(!file_urls.empty());
   DCHECK(result_list);
 

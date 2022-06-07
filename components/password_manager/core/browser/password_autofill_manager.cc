@@ -419,10 +419,11 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
                      autofill_client_->GetReopenPopupArgs()));
 }
 
-void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
-                                                  int frontend_id,
-                                                  const std::string& backend_id,
-                                                  int position) {
+void PasswordAutofillManager::DidAcceptSuggestion(
+    const std::u16string& value,
+    int frontend_id,
+    const autofill::Suggestion::Payload& payload,
+    int position) {
   using metrics_util::PasswordDropdownSelectedOption;
   if (frontend_id == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
     password_client_->GeneratePassword(PasswordGenerationType::kAutomatic);
@@ -467,7 +468,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
         PasswordDropdownSelectedOption::kWebAuthn,
         password_client_->IsIncognito());
     password_client_->GetWebAuthnCredentialsDelegate()
-        ->SelectWebAuthnCredential(backend_id);
+        ->SelectWebAuthnCredential(absl::holds_alternative<std::string>(payload)
+                                       ? absl::get<std::string>(payload)
+                                       : std::string());
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kPassword,
@@ -666,10 +669,9 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   }
 
   // Add WebAuthn credentials suitable for an ongoing request if available.
-  if (show_webauthn_credentials) {
-    WebAuthnCredentialsDelegate* delegate =
-        password_client_->GetWebAuthnCredentialsDelegate();
-    DCHECK(delegate->IsWebAuthnAutofillEnabled());
+  WebAuthnCredentialsDelegate* delegate =
+      password_client_->GetWebAuthnCredentialsDelegate();
+  if (show_webauthn_credentials && delegate->IsWebAuthnAutofillEnabled()) {
     std::vector<autofill::Suggestion> webauthn_suggestions =
         delegate->GetWebAuthnSuggestions();
     suggestions.insert(suggestions.end(), webauthn_suggestions.begin(),

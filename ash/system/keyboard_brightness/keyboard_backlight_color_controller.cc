@@ -4,19 +4,20 @@
 
 #include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
 
+#include <memory>
+
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 #include "ash/rgb_keyboard/rgb_keyboard_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/keyboard_brightness/keyboard_backlight_color_nudge_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
-#include "base/check_op.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/color_analysis.h"
 
 namespace ash {
 
@@ -28,7 +29,9 @@ PrefService* GetActivePrefService() {
 
 }  // namespace
 
-KeyboardBacklightColorController::KeyboardBacklightColorController() {
+KeyboardBacklightColorController::KeyboardBacklightColorController()
+    : keyboard_backlight_color_nudge_controller_(
+          std::make_unique<KeyboardBacklightColorNudgeController>()) {
   wallpaper_controller_observation_.Observe(WallpaperController::Get());
 }
 
@@ -48,16 +51,7 @@ void KeyboardBacklightColorController::SetBacklightColor(
   DCHECK(rgb_keyboard_manager);
   DVLOG(3) << __func__ << " backlight_color=" << backlight_color;
   switch (backlight_color) {
-    case personalization_app::mojom::BacklightColor::kWallpaper: {
-      auto* wallpaper_controller = Shell::Get()->wallpaper_controller();
-      DCHECK(wallpaper_controller);
-      SkColor color = wallpaper_controller->GetProminentColor(
-          color_utils::ColorProfile(color_utils::LumaRange::NORMAL,
-                                    color_utils::SaturationRange::VIBRANT));
-      rgb_keyboard_manager->SetStaticBackgroundColor(
-          SkColorGetR(color), SkColorGetG(color), SkColorGetB(color));
-      break;
-    }
+    case personalization_app::mojom::BacklightColor::kWallpaper:
     case personalization_app::mojom::BacklightColor::kWhite:
     case personalization_app::mojom::BacklightColor::kRed:
     case personalization_app::mojom::BacklightColor::kYellow:

@@ -4,6 +4,7 @@
 
 #include "ash/system/time/calendar_utils.h"
 
+#include <map>
 #include <string>
 
 #include "ash/components/settings/timezone_settings.h"
@@ -20,6 +21,13 @@
 #include "ui/views/layout/table_layout.h"
 
 namespace ash {
+
+namespace {
+// Map of week index from string to number.
+std::map<std::u16string, int> kDayOfWeekMap = {{u"1", 1}, {u"2", 2}, {u"3", 3},
+                                               {u"4", 4}, {u"5", 5}, {u"6", 6},
+                                               {u"7", 7}};
+}  // namespace
 
 namespace calendar_utils {
 
@@ -60,12 +68,6 @@ ASH_EXPORT std::set<base::Time> GetSurroundingMonthsUTC(
   return months;
 }
 
-base::Time::Exploded GetExplodedLocal(const base::Time& date) {
-  base::Time::Exploded exploded;
-  date.LocalExplode(&exploded);
-  return exploded;
-}
-
 base::Time::Exploded GetExplodedUTC(const base::Time& date) {
   base::Time::Exploded exploded;
   date.UTCExplode(&exploded);
@@ -77,9 +79,21 @@ std::u16string FormatDate(const icu::SimpleDateFormat& formatter,
   return DateHelper::GetInstance()->GetFormattedTime(&formatter, date);
 }
 
+std::u16string FormatInterval(const icu::DateIntervalFormat* formatter,
+                              const base::Time& start_time,
+                              const base::Time& end_time) {
+  return DateHelper::GetInstance()->GetFormattedInterval(formatter, start_time,
+                                                         end_time);
+}
+
 std::u16string GetMonthDayYear(const base::Time date) {
   return calendar_utils::FormatDate(
       DateHelper::GetInstance()->month_day_year_formatter(), date);
+}
+
+std::u16string GetMonthDayYearWeek(const base::Time date) {
+  return calendar_utils::FormatDate(
+      DateHelper::GetInstance()->month_day_year_week_formatter(), date);
 }
 
 std::u16string GetMonthName(const base::Time date) {
@@ -132,6 +146,21 @@ std::u16string GetMonthNameAndYear(const base::Time date) {
       DateHelper::GetInstance()->month_name_year_formatter(), date);
 }
 
+std::u16string FormatTwelveHourClockTimeInterval(const base::Time& start_time,
+                                                 const base::Time& end_time) {
+  return calendar_utils::FormatInterval(
+      DateHelper::GetInstance()->twelve_hour_clock_interval_formatter(),
+      start_time, end_time);
+}
+
+std::u16string FormatTwentyFourHourClockTimeInterval(
+    const base::Time& start_time,
+    const base::Time& end_time) {
+  return calendar_utils::FormatInterval(
+      DateHelper::GetInstance()->twenty_four_hour_clock_interval_formatter(),
+      start_time, end_time);
+}
+
 void SetUpWeekColumns(views::TableLayout* layout) {
   layout->AddPaddingColumn(views::TableLayout::kFixedSize, kColumnSetPadding);
   for (int i = 0; i < calendar_utils::kDateInOneWeek; ++i) {
@@ -150,6 +179,14 @@ int GetMonthsBetween(const base::Time& start_date, const base::Time& end_date) {
          (end_exp.month - start_exp.month) % 12;
 }
 
+base::Time GetMaxTime(const base::Time d1, const base::Time d2) {
+  return (d1 > d2) ? d1 : d2;
+}
+
+base::Time GetMinTime(const base::Time d1, const base::Time d2) {
+  return (d1 < d2) ? d1 : d2;
+}
+
 SkColor GetPrimaryTextColor() {
   const ash::AshColorProvider* color_provider = ash::AshColorProvider::Get();
   return color_provider->GetContentLayerColor(
@@ -160,6 +197,13 @@ SkColor GetSecondaryTextColor() {
   const ash::AshColorProvider* color_provider = ash::AshColorProvider::Get();
   return color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorSecondary);
+}
+
+SkColor GetDisabledTextColor() {
+  const ash::AshColorProvider* color_provider = ash::AshColorProvider::Get();
+  const SkColor primary_color = color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary);
+  return color_provider->GetDisabledColor(primary_color);
 }
 
 base::Time GetFirstDayOfMonth(const base::Time& date) {
@@ -182,6 +226,11 @@ ASH_EXPORT base::Time GetStartOfMonthUTC(const base::Time& date) {
       .UTCMidnight();
 }
 
+base::Time GetNextDayMidnight(base::Time date) {
+  return (date.UTCMidnight() + base::Days(1) + kDurationForAdjustingDST)
+      .UTCMidnight();
+}
+
 ASH_EXPORT base::Time GetStartOfPreviousMonthUTC(base::Time date) {
   return GetStartOfMonthUTC(GetStartOfMonthUTC(date) - base::Days(1));
 }
@@ -198,36 +247,26 @@ bool IsActiveUser() {
          !Shell::Get()->session_controller()->IsUserSessionBlocked();
 }
 
-int GetTimeDifferenceInMinutes(base::Time date) {
-  return DateHelper::GetInstance()->GetTimeDifferenceInMinutes(date);
+base::TimeDelta GetTimeDifference(base::Time date) {
+  return DateHelper::GetInstance()->GetTimeDifference(date);
 }
 
 base::Time GetFirstDayOfWeekLocalMidnight(base::Time date) {
-  base::Time first_day = DateHelper::GetInstance()->GetLocalMidnight(date);
-  std::u16string day_of_week = GetDayOfWeek(first_day);
-  int days = 0;
-  // Find the first day of the week.
-  while (day_of_week != kFirstDayOfWeekString) {
-    // 5 hours ago from midnight should be the previous day.
-    first_day -= base::Hours(5);
-    first_day = DateHelper::GetInstance()->GetLocalMidnight(first_day);
-    day_of_week = GetDayOfWeek(first_day);
-    ++days;
-    // Should already find the first day within 7 times, since there are only 7
-    // days in a week.
-    DCHECK_NE(days, kDateInOneWeek);
-  }
-  return first_day;
+  std::u16string day_of_week = GetDayOfWeek(date);
+  base::Time first_day_of_week =
+      DateHelper::GetInstance()->GetLocalMidnight(date) -
+      base::Days(kDayOfWeekMap[day_of_week] - 1) + kDurationForAdjustingDST;
+  return DateHelper::GetInstance()->GetLocalMidnight(first_day_of_week);
 }
 
 ASH_EXPORT const std::pair<base::Time, base::Time> GetFetchStartEndTimes(
     base::Time start_of_month_local_midnight) {
-  int diff = DateHelper::GetInstance()->GetTimeDifferenceInMinutes(
-      start_of_month_local_midnight);
-  base::Time start = start_of_month_local_midnight - base::Minutes(diff);
+  base::Time start = start_of_month_local_midnight -
+                     DateHelper::GetInstance()->GetTimeDifference(
+                         start_of_month_local_midnight);
   base::Time end =
-      GetStartOfMonthUTC(start_of_month_local_midnight + base::Days(33)) -
-      base::Minutes(diff);
+      GetStartOfMonthUTC(start_of_month_local_midnight + base::Days(33));
+  end -= DateHelper::GetInstance()->GetTimeDifference(end);
   return std::make_pair(start, end);
 }
 

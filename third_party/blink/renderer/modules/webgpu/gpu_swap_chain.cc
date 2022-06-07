@@ -6,6 +6,7 @@
 
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/client/raster_interface.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
@@ -19,20 +20,19 @@
 
 namespace blink {
 
-GPUSwapChain::GPUSwapChain(
-    GPUCanvasContext* context,
-    GPUDevice* device,
-    WGPUTextureUsage usage,
-    WGPUTextureFormat format,
-    cc::PaintFlags::FilterQuality filter_quality,
-    V8GPUCanvasCompositingAlphaMode::Enum compositing_alpha_mode,
-    gfx::Size size)
+GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
+                           GPUDevice* device,
+                           WGPUTextureUsage usage,
+                           WGPUTextureFormat format,
+                           cc::PaintFlags::FilterQuality filter_quality,
+                           V8GPUCanvasAlphaMode::Enum alpha_mode,
+                           gfx::Size size)
     : DawnObjectBase(device->GetDawnControlClient()),
       device_(device),
       context_(context),
       usage_(usage),
       format_(format),
-      compositing_alpha_mode_(compositing_alpha_mode),
+      alpha_mode_(alpha_mode),
       size_(size) {
   // TODO: Use label from GPUObjectDescriptorBase.
   swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
@@ -41,14 +41,14 @@ GPUSwapChain::GPUSwapChain(
 
   // Note: SetContentsOpaque is only an optimization hint. It doesn't
   // actually make the contents opaque.
-  switch (compositing_alpha_mode) {
-    case V8GPUCanvasCompositingAlphaMode::Enum::kOpaque: {
+  switch (alpha_mode) {
+    case V8GPUCanvasAlphaMode::Enum::kOpaque: {
       CcLayer()->SetContentsOpaque(true);
 
       WGPUShaderModuleWGSLDescriptor wgsl_desc = {
           .chain = {.sType = WGPUSType_ShaderModuleWGSLDescriptor},
           .source = R"(
-          @stage(vertex) fn vert_main(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
+          @vertex fn vert_main(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
             var pos = array<vec2<f32>, 3>(
                 vec2<f32>(-1.0, -1.0),
                 vec2<f32>( 3.0, -1.0),
@@ -56,7 +56,7 @@ GPUSwapChain::GPUSwapChain(
             return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
           }
 
-          @stage(fragment) fn frag_main() -> @location(0) vec4<f32> {
+          @fragment fn frag_main() -> @location(0) vec4<f32> {
             return vec4<f32>(1.0);
           }
         )",
@@ -91,7 +91,7 @@ GPUSwapChain::GPUSwapChain(
       GetProcs().shaderModuleRelease(shader_module);
       break;
     }
-    case V8GPUCanvasCompositingAlphaMode::Enum::kPremultiplied:
+    case V8GPUCanvasAlphaMode::Enum::kPremultiplied:
       CcLayer()->SetContentsOpaque(false);
       break;
   }
@@ -377,10 +377,9 @@ GPUTexture* GPUSwapChain::getCurrentTexture() {
 void GPUSwapChain::OnTextureTransferred() {
   DCHECK(texture_);
   // The texture is about to be transferred to the compositor.
-  // For compositing alpha mode Opaque, clear the alpha channel to
-  // 1.0.
-  switch (compositing_alpha_mode_) {
-    case V8GPUCanvasCompositingAlphaMode::Enum::kOpaque: {
+  // For alpha mode Opaque, clear the alpha channel to 1.0.
+  switch (alpha_mode_) {
+    case V8GPUCanvasAlphaMode::Enum::kOpaque: {
       WGPUTextureView attachment_view =
           GetProcs().textureCreateView(texture_->GetHandle(), nullptr);
 
@@ -421,7 +420,7 @@ void GPUSwapChain::OnTextureTransferred() {
       GetProcs().textureViewRelease(attachment_view);
       break;
     }
-    case V8GPUCanvasCompositingAlphaMode::Enum::kPremultiplied:
+    case V8GPUCanvasAlphaMode::Enum::kPremultiplied:
       break;
   }
   texture_ = nullptr;

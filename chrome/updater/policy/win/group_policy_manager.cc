@@ -11,10 +11,12 @@
 #include <userenv.h>
 
 #include "base/enterprise_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/scoped_generic.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "chrome/updater/external_constants.h"
 #include "chrome/updater/policy/manager.h"
 #include "chrome/updater/win/win_constants.h"
 
@@ -75,14 +77,20 @@ using scoped_hpolicy =
 
 }  // namespace
 
-GroupPolicyManager::GroupPolicyManager() {
+GroupPolicyManager::GroupPolicyManager(
+    scoped_refptr<ExternalConstants> external_constants)
+    : external_constants_group_policies_(external_constants->GroupPolicies()) {
   LoadAllPolicies();
 }
 
 GroupPolicyManager::~GroupPolicyManager() = default;
 
 bool GroupPolicyManager::IsManaged() const {
-  return policies_.DictSize() > 0 && base::IsManagedDevice();
+  return !policies_.empty() && IsManagedInternal();
+}
+
+bool GroupPolicyManager::IsManagedInternal() const {
+  return !external_constants_group_policies_.empty() || base::IsManagedDevice();
 }
 
 std::string GroupPolicyManager::source() const {
@@ -181,30 +189,28 @@ bool GroupPolicyManager::GetProxyServer(std::string* proxy_server) const {
 
 bool GroupPolicyManager::GetIntPolicy(const std::string& key,
                                       int* value) const {
-  const base::Value* policy =
-      policies_.FindKeyOfType(key, base::Value::Type::INTEGER);
-  if (policy == nullptr)
+  absl::optional<int> policy = policies_.FindInt(key);
+  if (!policy.has_value())
     return false;
 
-  *value = policy->GetInt();
+  *value = *policy;
   return true;
 }
 
 bool GroupPolicyManager::GetStringPolicy(const std::string& key,
                                          std::string* value) const {
-  const base::Value* policy =
-      policies_.FindKeyOfType(key, base::Value::Type::STRING);
+  const std::string* policy = policies_.FindString(key);
   if (policy == nullptr)
     return false;
 
-  *value = policy->GetString();
+  *value = *policy;
   return true;
 }
 
 void GroupPolicyManager::LoadAllPolicies() {
   scoped_hpolicy policy_lock;
 
-  if (base::IsManagedDevice()) {
+  if (IsManagedInternal()) {
     // GPO rules mandate a call to EnterCriticalPolicySection() before reading
     // policies (and a matching LeaveCriticalPolicySection() call after read).
     // Acquire the lock for managed machines because group policies are
@@ -214,7 +220,12 @@ void GroupPolicyManager::LoadAllPolicies() {
     CHECK(policy_lock.is_valid()) << "Failed to get policy lock.";
   }
 
-  base::Value::DictStorage policy_storage;
+  if (!external_constants_group_policies_.empty()) {
+    policies_ = external_constants_group_policies_.Clone();
+    return;
+  }
+
+  base::Value::Dict policies;
 
   for (base::win::RegistryValueIterator it(HKEY_LOCAL_MACHINE,
                                            UPDATER_POLICIES_KEY);
@@ -222,13 +233,11 @@ void GroupPolicyManager::LoadAllPolicies() {
     const std::string key_name = base::SysWideToUTF8(it.Name());
     switch (it.Type()) {
       case REG_SZ:
-        policy_storage.emplace(key_name,
-                               base::Value(base::SysWideToUTF8(it.Value())));
+        policies.Set(key_name, base::SysWideToUTF8(it.Value()));
         break;
 
       case REG_DWORD:
-        policy_storage.emplace(
-            key_name, base::Value(*(reinterpret_cast<const int*>(it.Value()))));
+        policies.Set(key_name, *(reinterpret_cast<const int*>(it.Value())));
         break;
 
       default:
@@ -237,7 +246,7 @@ void GroupPolicyManager::LoadAllPolicies() {
     }
   }
 
-  policies_ = base::Value(std::move(policy_storage));
+  policies_ = std::move(policies);
 }
 
 }  // namespace updater

@@ -58,6 +58,7 @@ class URLLoaderThrottle;
 namespace content {
 class BrowserContext;
 class QuotaPermissionContext;
+class RenderFrameHost;
 enum class SmsFetchFailureType;
 struct ServiceWorkerVersionBaseInfo;
 }  // namespace content
@@ -431,7 +432,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                      sandbox::mojom::Sandbox sandbox_type,
                      ChildSpawnFlags flags) override;
   std::wstring GetAppContainerSidForSandboxType(
-      sandbox::mojom::Sandbox sandbox_type) override;
+      sandbox::mojom::Sandbox sandbox_type,
+      AppContainerFlags flags) override;
+  bool IsRendererAppContainerDisabled() override;
   std::wstring GetLPACCapabilityNameForNetworkService() override;
   bool IsUtilityCetCompatible(const std::string& utility_sub_type) override;
   bool IsRendererCodeIntegrityEnabled() override;
@@ -572,7 +575,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       cert_verifier::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params) override;
   std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
-  base::DictionaryValue GetNetLogConstants() override;
+  base::Value::Dict GetNetLogConstants() override;
   bool AllowRenderingMhtmlOverHttp(
       content::NavigationUIData* navigation_ui_data) override;
   bool ShouldForceDownloadResource(const GURL& url,
@@ -784,19 +787,15 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldPreconnectNavigation(
       content::BrowserContext* browser_context) override;
 
-  enum UserAgentReductionEnterprisePolicyState {
-    kDefault = 0,
-    kForceDisabled = 1,
-    kForceEnabled = 2,
-  };
-
   bool ShouldDisableOriginAgentClusterDefault(
       content::BrowserContext* browser_context) override;
 
   content::mojom::AlternativeErrorPageOverrideInfoPtr
-  GetAlternativeErrorPageOverrideInfo(const GURL& url,
-                                      content::BrowserContext* browser_context,
-                                      int32_t error_code) override;
+  GetAlternativeErrorPageOverrideInfo(
+      const GURL& url,
+      content::RenderFrameHost* render_frame_host,
+      content::BrowserContext* browser_context,
+      int32_t error_code) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
@@ -883,12 +882,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void OnKeepaliveTimerFired(
       std::unique_ptr<ScopedKeepAlive> keep_alive_handle);
 #endif
-
-  UserAgentReductionEnterprisePolicyState
-  GetUserAgentReductionEnterprisePolicyState(content::BrowserContext* context);
-
-  embedder_support::ForceMajorVersionToMinorPosition
-  GetForceMajorVersionToMinorPosition(content::BrowserContext* context);
 
   // Vector of additional ChromeContentBrowserClientParts.
   // Parts are deleted in the reverse order they are added.

@@ -147,6 +147,8 @@ bool StructTraits<
   if (!data.ReadDatalistLabels(&out->datalist_labels))
     return false;
 
+  out->force_override = data.force_override();
+
   return true;
 }
 
@@ -309,6 +311,14 @@ bool StructTraits<
          data.ReadPasswordRendererId(&out->password_renderer_id) &&
          data.ReadNewPasswordRendererId(&out->new_password_renderer_id) &&
          data.ReadConfirmPasswordRendererId(&out->confirm_password_renderer_id);
+}
+
+bool StructTraits<autofill::mojom::TouchToFillEligibleDataView,
+                  autofill::TouchToFillEligible>::
+    Read(autofill::mojom::TouchToFillEligibleDataView data,
+         autofill::TouchToFillEligible* out) {
+  *out = autofill::TouchToFillEligible(data.eligible());
+  return true;
 }
 
 }  // namespace mojo

@@ -357,7 +357,9 @@ bool IsModeDecoding(VaapiWrapper::CodecMode mode) {
 
 bool IsModeEncoding(VaapiWrapper::CodecMode mode) {
   return mode == VaapiWrapper::CodecMode::kEncodeConstantBitrate ||
-         mode == VaapiWrapper::CodecMode::kEncodeConstantQuantizationParameter;
+         mode ==
+             VaapiWrapper::CodecMode::kEncodeConstantQuantizationParameter ||
+         mode == VaapiWrapper::CodecMode::kEncodeVariableBitrate;
 }
 
 bool GetNV12VisibleWidthBytes(int visible_width,
@@ -439,15 +441,15 @@ const ProfileCodecMap& GetProfileCodecMap() {
           // VaapiWrapper does not support VP9 Profile 1, see b/153680337.
           // {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
           {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
-      // VaapiWrapper does not support Profile 3.
-      //{VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
+          // VaapiWrapper does not support Profile 3.
+          //{VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
           {AV1PROFILE_PROFILE_MAIN, VAProfileAV1Profile0},
         // VaapiWrapper does not support AV1 Profile 1.
         // {AV1PROFILE_PROFILE_HIGH, VAProfileAV1Profile1},
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
           {HEVCPROFILE_MAIN, VAProfileHEVCMain},
           {HEVCPROFILE_MAIN10, VAProfileHEVCMain10},
-#endif
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   });
   return *kMediaToVAProfileMap;
 }
@@ -577,7 +579,7 @@ void VADisplayState::PreSandboxInitialization() {
         version->name,
         base::checked_cast<std::string::size_type>(version->name_len));
     drmFreeVersion(version);
-    if (base::LowerCaseEqualsASCII(version_name, "vgem"))
+    if (base::EqualsCaseInsensitiveASCII(version_name, "vgem"))
       continue;
     VADisplayState::Get()->SetDrmFd(drm_file.GetPlatformFile());
     return;
@@ -816,7 +818,8 @@ std::vector<VAEntrypoint> GetEntryPointsForProfile(const base::Lock* va_lock,
      VAEntrypointEncSliceLP},  // kEncodeConstantBitrate.
     {VAEntrypointEncSlice,
      VAEntrypointEncSliceLP},  // kEncodeConstantQuantizationParameter.
-    {VAEntrypointVideoProc}    // kVideoProcess.
+    {VAEntrypointEncSlice, VAEntrypointEncSliceLP},  // kEncodeVariableBitrate.
+    {VAEntrypointVideoProc}                          // kVideoProcess.
   };
   static_assert(std::size(kAllowedEntryPoints) == VaapiWrapper::kCodecModeMax,
                 "");
@@ -878,6 +881,8 @@ bool GetRequiredAttribs(const base::Lock* va_lock,
     required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CBR});
   if (mode == VaapiWrapper::kEncodeConstantQuantizationParameter)
     required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CQP});
+  if (mode == VaapiWrapper::kEncodeConstantQuantizationParameter)
+    required_attribs->push_back({VAConfigAttribRateControl, VA_RC_VBR});
 
   constexpr VAProfile kSupportedH264VaProfilesForEncoding[] = {
       VAProfileH264ConstrainedBaseline, VAProfileH264Main, VAProfileH264High};
@@ -1051,6 +1056,7 @@ void VASupportedProfiles::FillSupportedProfileInfos(base::Lock* va_lock,
 #endif
     VaapiWrapper::kEncodeConstantBitrate,
     VaapiWrapper::kEncodeConstantQuantizationParameter,
+    VaapiWrapper::kEncodeVariableBitrate,
     VaapiWrapper::kVideoProcess
   };
   static_assert(std::size(kWrapperModes) == VaapiWrapper::kCodecModeMax, "");
@@ -1531,9 +1537,7 @@ VideoEncodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedEncodeProfiles() {
   VideoEncodeAccelerator::SupportedProfiles profiles;
 
-  for (const auto& media_to_va_profile_map_entry : GetProfileCodecMap()) {
-    const VideoCodecProfile media_profile = media_to_va_profile_map_entry.first;
-    const VAProfile va_profile = media_to_va_profile_map_entry.second;
+  for (const auto& [media_profile, va_profile] : GetProfileCodecMap()) {
     DCHECK(va_profile != VAProfileNone);
 
     const VASupportedProfiles::ProfileInfo* profile_info =
@@ -1551,6 +1555,8 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
     constexpr int kMaxEncoderFramerate = 30;
     profile.max_framerate_numerator = kMaxEncoderFramerate;
     profile.max_framerate_denominator = 1;
+    // TODO(b/193680666): remove hard-coding when VBR is supported
+    profile.rate_control_modes = media::VideoEncodeAccelerator::kConstantMode;
     profile.scalability_modes =
         GetSupportedScalabilityModes(media_profile, va_profile);
     profiles.push_back(profile);
@@ -1563,9 +1569,7 @@ VideoDecodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedDecodeProfiles() {
   VideoDecodeAccelerator::SupportedProfiles profiles;
 
-  for (const auto& media_to_va_profile_map_entry : GetProfileCodecMap()) {
-    const VideoCodecProfile media_profile = media_to_va_profile_map_entry.first;
-    const VAProfile va_profile = media_to_va_profile_map_entry.second;
+  for (const auto& [media_profile, va_profile] : GetProfileCodecMap()) {
     DCHECK(va_profile != VAProfileNone);
 
     const VASupportedProfiles::ProfileInfo* profile_info =
@@ -1811,6 +1815,7 @@ VAEntrypoint VaapiWrapper::GetDefaultVaEntryPoint(CodecMode mode,
 #endif
     case VaapiWrapper::kEncodeConstantBitrate:
     case VaapiWrapper::kEncodeConstantQuantizationParameter:
+    case VaapiWrapper::kEncodeVariableBitrate:
       if (profile == VAProfileJPEGBaseline)
         return VAEntrypointEncPicture;
       DCHECK(IsModeEncoding(mode));
@@ -2148,21 +2153,37 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
         sequence_checker_.CalledOnValidSequence());
   const gfx::BufferFormat buffer_format = pixmap->GetBufferFormat();
 
+  const uint32_t va_fourcc = BufferFormatToVAFourCC(buffer_format);
+  if (!va_fourcc) {
+    LOG(ERROR) << "Failed to get the VA fourcc from the buffer format";
+    return nullptr;
+  }
+
+  const size_t num_planes = pixmap->GetNumberOfPlanes();
+
   // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
   const gfx::Size size = pixmap->GetBufferSize();
   VASurfaceAttribExternalBuffers va_attrib_extbuf{};
-  va_attrib_extbuf.pixel_format = BufferFormatToVAFourCC(buffer_format);
-  va_attrib_extbuf.width = size.width();
-  va_attrib_extbuf.height = size.height();
+  va_attrib_extbuf.pixel_format = va_fourcc;
+  va_attrib_extbuf.width = base::checked_cast<uint32_t>(size.width());
+  va_attrib_extbuf.height = base::checked_cast<uint32_t>(size.height());
 
-  const size_t num_planes = pixmap->GetNumberOfPlanes();
+  static_assert(std::size(va_attrib_extbuf.pitches) ==
+                std::size(va_attrib_extbuf.offsets));
+  if (num_planes > std::size(va_attrib_extbuf.pitches)) {
+    LOG(ERROR) << "Too many planes in the NativePixmap; got " << num_planes
+               << " but the maximum number is "
+               << std::size(va_attrib_extbuf.pitches);
+    return nullptr;
+  }
   for (size_t i = 0; i < num_planes; ++i) {
     va_attrib_extbuf.pitches[i] = pixmap->GetDmaBufPitch(i);
-    va_attrib_extbuf.offsets[i] = pixmap->GetDmaBufOffset(i);
+    va_attrib_extbuf.offsets[i] =
+        base::checked_cast<uint32_t>(pixmap->GetDmaBufOffset(i));
     DVLOG(4) << "plane " << i << ": pitch: " << va_attrib_extbuf.pitches[i]
              << " offset: " << va_attrib_extbuf.offsets[i];
   }
-  va_attrib_extbuf.num_planes = num_planes;
+  va_attrib_extbuf.num_planes = base::checked_cast<uint32_t>(num_planes);
 
   const int dma_buf_fd = pixmap->GetDmaBufFd(0);
   if (dma_buf_fd < 0) {
@@ -2191,7 +2212,12 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   DCHECK_EQ(va_attrib_extbuf.flags, 0u);
   DCHECK_EQ(va_attrib_extbuf.private_data, nullptr);
 
-  uint32_t va_format = BufferFormatToVARTFormat(buffer_format);
+  unsigned int va_format =
+      base::strict_cast<unsigned int>(BufferFormatToVARTFormat(buffer_format));
+  if (!va_format) {
+    LOG(ERROR) << "Failed to get the VA RT format from the buffer format";
+    return nullptr;
+  }
 
   if (protected_content) {
     if (GetImplementationType() == VAImplementation::kMesaGallium)
@@ -2666,7 +2692,8 @@ std::unique_ptr<ScopedVABuffer> VaapiWrapper::CreateVABuffer(VABufferType type,
         sequence_checker_.CalledOnValidSequence());
   TRACE_EVENT0("media,gpu", "VaapiWrapper::CreateVABuffer");
   base::AutoLockMaybe auto_lock(va_lock_);
-  TRACE_EVENT0("media,gpu", "VaapiWrapper::CreateVABufferLocked");
+  TRACE_EVENT2("media,gpu", "VaapiWrapper::CreateVABufferLocked", "type", type,
+               "size", size);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   VAContextID context_id = type == VAProtectedSessionExecuteBufferType
                                ? va_protected_session_id_
@@ -2905,9 +2932,6 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
         pipeline_param->rotation_state = VA_ROTATION_270;
         break;
     }
-
-    const VAStatus va_res = mapping.Unmap();
-    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAUnmapBuffer, false);
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3010,6 +3034,10 @@ bool VaapiWrapper::Initialize(VAProfile va_profile,
   if (mode_ == kEncodeConstantQuantizationParameter) {
     DCHECK_NE(va_profile, VAProfileJPEGBaseline)
         << "JPEG Encoding doesn't support CQP bitrate control";
+  }
+  if (mode_ == kEncodeVariableBitrate) {
+    DCHECK_NE(va_profile, VAProfileJPEGBaseline)
+        << "JPEG Encoding doesn't support VBR bitrate control";
   }
 #endif  // DCHECK_IS_ON()
 
@@ -3315,16 +3343,17 @@ bool VaapiWrapper::SubmitBuffer_Locked(const VABufferDescriptor& va_buffer) {
 
   VABufferID buffer_id;
   {
-    TRACE_EVENT0("media,gpu",
-                 "VaapiWrapper::SubmitBuffer_Locked_vaCreateBuffer");
-    const VAStatus va_res =
-        vaCreateBuffer(va_display_, va_context_id_, va_buffer.type,
-                       va_buffer_size, 1, nullptr, &buffer_id);
+    TRACE_EVENT2("media,gpu",
+                 "VaapiWrapper::SubmitBuffer_Locked_vaCreateBuffer", "type",
+                 va_buffer.type, "size", va_buffer_size);
+    // The type of |data| in vaCreateBuffer() is void*, though a driver must not
+    // change the |data| buffer. We execute const_cast to limit the type
+    // mismatch. https://github.com/intel/libva/issues/597
+    const VAStatus va_res = vaCreateBuffer(
+        va_display_, va_context_id_, va_buffer.type, va_buffer_size, 1,
+        const_cast<void*>(va_buffer.data), &buffer_id);
     VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateBuffer, false);
   }
-
-  if (!MapAndCopy_Locked(buffer_id, va_buffer))
-    return false;
 
   pending_va_buffers_.push_back(buffer_id);
   pending_buffers_destroyer_on_failure.ReplaceClosure(base::DoNothing());

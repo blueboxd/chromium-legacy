@@ -245,6 +245,7 @@ target(link_target_type, "renderer") {
     "//cc/mojom",
     "//cc/paint",
     "//components/cast_streaming/public",
+    "//components/cast_streaming/renderer:resource_provider",
     "//components/cast_streaming/renderer:wrapping_renderer_factory_selector",
     "//components/discardable_memory/client",
     "//components/metrics",
@@ -554,7 +555,7 @@ target(link_target_type, "renderer") {
   if (is_chromeos_ash) {
     deps += [ "//chromeos:chromeos_export" ]
     if (target_cpu == "x64") {
-      deps += [ "//chromeos/memory/userspace_swap" ]
+      deps += [ "//chromeos/ash/components/memory/userspace_swap" ]
     }
   }
 

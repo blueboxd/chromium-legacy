@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/notreached.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/system/sys_info.h"
@@ -326,8 +327,8 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
                                                      bool readonly)
     : mem_base_(static_cast<char*>(memory.base)),
       mem_type_(memory.type),
-      mem_size_(static_cast<uint32_t>(size)),
-      mem_page_(static_cast<uint32_t>((page_size ? page_size : size))),
+      mem_size_(checked_cast<uint32_t>(size)),
+      mem_page_(checked_cast<uint32_t>((page_size ? page_size : size))),
 #if BUILDFLAG(IS_NACL)
       vm_page_size_(4096U),  // SysInfo is not built for NACL.
 #else
@@ -646,8 +647,8 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
   }
 
   // Round up the requested size, plus header, to the next allocation alignment.
-  uint32_t size = static_cast<uint32_t>(req_size + sizeof(BlockHeader));
-  size = base::bits::AlignUp(size, kAllocAlignment);
+  uint32_t size = checked_cast<uint32_t>(req_size + sizeof(BlockHeader));
+  size = bits::AlignUp(size, kAllocAlignment);
   if (size <= sizeof(BlockHeader) || size > mem_page_) {
     NOTREACHED();
     return kReferenceNull;
@@ -877,8 +878,10 @@ bool PersistentMemoryAllocator::IsFull() const {
 // having internal dereferences go through this same function, the allocator
 // is hardened against corruption.
 const volatile PersistentMemoryAllocator::BlockHeader*
-PersistentMemoryAllocator::GetBlock(Reference ref, uint32_t type_id,
-                                    uint32_t size, bool queue_ok,
+PersistentMemoryAllocator::GetBlock(Reference ref,
+                                    uint32_t type_id,
+                                    size_t size,
+                                    bool queue_ok,
                                     bool free_ok) const {
   // Handle special cases.
   if (ref == kReferenceQueue && queue_ok)
@@ -928,7 +931,7 @@ void PersistentMemoryAllocator::RecordError(int error) const {
 const volatile void* PersistentMemoryAllocator::GetBlockData(
     Reference ref,
     uint32_t type_id,
-    uint32_t size) const {
+    size_t size) const {
   DCHECK(size > 0);
   const volatile BlockHeader* block =
       GetBlock(ref, type_id, size, false, false);

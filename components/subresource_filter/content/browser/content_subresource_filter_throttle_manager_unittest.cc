@@ -288,15 +288,9 @@ class ContentSubresourceFilterThrottleManagerTest
   void CreateTestNavigation(const GURL& url,
                             content::RenderFrameHost* render_frame_host) {
     DCHECK(render_frame_host);
-    if (render_frame_host->IsFencedFrameRoot()) {
-      navigation_simulator_ =
-          content::NavigationSimulator::CreateForFencedFrame(url,
-                                                             render_frame_host);
-    } else {
-      navigation_simulator_ =
-          content::NavigationSimulator::CreateRendererInitiated(
-              url, render_frame_host);
-    }
+    navigation_simulator_ =
+        content::NavigationSimulator::CreateRendererInitiated(
+            url, render_frame_host);
   }
 
   content::NavigationSimulator* navigation_simulator() {
@@ -1749,6 +1743,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerFencedFrameTest,
             throttle_manager);
 
   navigation_simulator()->Commit();
+  fenced_frame_root = navigation_simulator()->GetFinalRenderFrameHost();
 
   // Committing the fenced frame navigation should not change the Page's
   // throttle manager.

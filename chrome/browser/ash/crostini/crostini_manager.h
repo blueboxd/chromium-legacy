@@ -36,7 +36,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -175,7 +174,7 @@ class CrostiniManager : public KeyedService,
   // Observer class for the Crostini restart flow.
   class RestartObserver {
    public:
-    virtual ~RestartObserver() {}
+    virtual ~RestartObserver() = default;
     virtual void OnStageStarted(mojom::InstallerState stage) {}
     virtual void OnComponentLoaded(CrostiniResult result) {}
     virtual void OnDiskImageCreated(bool success,
@@ -190,15 +189,17 @@ class CrostiniManager : public KeyedService,
   };
 
   struct RestartOptions {
+    RestartSource restart_source = RestartSource::kOther;
     bool start_vm_only = false;
     bool stop_after_lxd_available = false;
     // Paths to share with VM on startup.
     std::vector<base::FilePath> share_paths;
-    // These four options only affect new containers.
+    // These five options only affect new containers.
     absl::optional<std::string> container_username;
     absl::optional<int64_t> disk_size_bytes;
     absl::optional<std::string> image_server_url;
     absl::optional<std::string> image_alias;
+    absl::optional<base::FilePath> ansible_playbook;
 
     RestartOptions();
     ~RestartOptions();
@@ -226,8 +227,7 @@ class CrostiniManager : public KeyedService,
   // enabled.
   void MaybeUpdateCrostini();
 
-  // Installs termina using either component updater or the DLC service
-  // depending on the value of chromeos::features::kCrostiniUseDlc
+  // Installs termina using the DLC service.
   void InstallTermina(CrostiniResultCallback callback, bool is_initial_install);
 
   // Try to cancel a previous InstallTermina call. This is done on a best-effort
@@ -681,7 +681,7 @@ class CrostiniManager : public KeyedService,
       ListVmDisksCallback callback,
       absl::optional<vm_tools::concierge::ListVmDisksResponse> response);
 
-  // Callback for ConciergeClient::StartTerminaVm. Called after the Concierge
+  // Callback for ConciergeClient::StartVm. Called after the Concierge
   // service method finishes.  Updates running containers list then calls the
   // |callback| if the container has already been started, otherwise passes the
   // callback to OnStartTremplin.
@@ -814,9 +814,6 @@ class CrostiniManager : public KeyedService,
   void OnGetContainerSshKeys(
       GetContainerSshKeysCallback callback,
       absl::optional<vm_tools::concierge::ContainerSshKeysResponse> response);
-
-  // Callback for AnsibleManagementService::ConfigureDefaultContainer
-  void OnDefaultContainerConfigured(bool success);
 
   // Helper for CrostiniManager::MaybeUpdateCrostini. Makes blocking calls to
   // check for /dev/kvm.

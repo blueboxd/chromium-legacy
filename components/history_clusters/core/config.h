@@ -74,12 +74,29 @@ struct Config {
   bool omnibox_action = false;
 
   // If enabled, allows the Omnibox Action chip to also appear on URLs. This
-  // does nothing if `omnibox_action` is disabled.
+  // does nothing if `omnibox_action` is disabled. Note, that if you turn this
+  // flag to true, you almost certainly will want to set
+  // `omnibox_action_on_navigation_intents` to true as well, as otherwise your
+  // desired action chips on URLs will almost certainly all be suppressed.
   bool omnibox_action_on_urls = false;
 
   // If enabled, allows the Omnibox Action chip to appear on URLs from noisy
-  // visits. This does nothing if `omnibox_action_on_urls` is false.
+  // visits. This does nothing if `omnibox_action_on_urls` is disabled.
   bool omnibox_action_on_noisy_urls = true;
+
+  // If enabled, allows the Omnibox Action chip to appear when it's likely the
+  // user is intending to perform a navigation. This does not affect which
+  // suggestions are allowed to display the chip. Does nothing if
+  // `omnibox_action` is disabled.
+  bool omnibox_action_on_navigation_intents = false;
+
+  // If `omnibox_action_on_navigation_intents` is enabled, this threshold
+  // helps determine when the user is intending to perform a navigation.
+  int omnibox_action_navigation_intent_score_threshold = 1300;
+
+  // If enabled, allows the Omnibox Action chip to appear when the suggestions
+  // contain pedals. Does nothing if `omnibox_action` is disabled.
+  bool omnibox_action_with_pedals = false;
 
   // If enabled, adds the keywords of aliases for detected entity names to a
   // cluster.
@@ -96,6 +113,19 @@ struct Config {
   // If enabled, adds the keywords of detected entities from noisy visits to a
   // cluster.
   bool keyword_filter_on_noisy_visits = true;
+
+  // If enabled, adds the search terms of the visits that have them.
+  bool keyword_filter_on_search_terms = false;
+
+  // If enabled, adds the keywords of detected entities that may be for
+  // the visit's host.
+  bool keyword_filter_on_visit_hosts = true;
+
+  // The weight for category keyword scores per cluster.
+  float category_keyword_score_weight = 1.0;
+
+  // Maximum number of keywords to keep per cluster.
+  size_t max_num_keywords_per_cluster = 20;
 
   // Enables debug info in non-user-visible surfaces, like Chrome Inspector.
   // Does nothing if `kJourneys` is disabled.

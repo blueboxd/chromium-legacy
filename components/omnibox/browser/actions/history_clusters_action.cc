@@ -4,8 +4,9 @@
 
 #include "components/omnibox/browser/actions/history_clusters_action.h"
 
-#include "base/feature_list.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,69 +29,90 @@
 #include "url/android/gurl_android.h"
 #endif
 
+#if defined(SUPPORT_PEDALS_VECTOR_ICONS)
+#include "components/omnibox/browser/vector_icons.h"  // nogncheck
+#endif
+
 namespace history_clusters {
 
 namespace {
 
-class HistoryClustersAction : public OmniboxAction {
- public:
-  explicit HistoryClustersAction(const std::string& query)
-      : OmniboxAction(
-            OmniboxAction::LabelStrings(
-                IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT,
-                IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS,
-                IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX,
-                IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH),
-            GURL(base::StringPrintf(
-                "chrome://history/journeys?q=%s",
-                base::EscapeQueryParamValue(query, /*use_plus=*/false)
-                    .c_str()))) {
-#if BUILDFLAG(IS_ANDROID)
-    CreateOrUpdateJavaObject(query);
-#endif
-  }
-
-  void RecordActionShown(size_t position, bool executed) const override {
-    base::UmaHistogramExactLinear(
-        "Omnibox.ResumeJourneyShown", position,
-        AutocompleteResult::kMaxAutocompletePositionValue);
-
-    if (executed) {
-      base::UmaHistogramExactLinear(
-          "Omnibox.SuggestionUsed.ResumeJourney", position,
-          AutocompleteResult::kMaxAutocompletePositionValue);
-    }
-
-    base::UmaHistogramBoolean("Omnibox.SuggestionUsed.ResumeJourneyCTR",
-                              executed);
-  }
-
-  int32_t GetID() const override {
-    return static_cast<int32_t>(OmniboxActionId::HISTORY_CLUSTERS);
-  }
-
-#if BUILDFLAG(IS_ANDROID)
-  base::android::ScopedJavaGlobalRef<jobject> GetJavaObject() const override {
-    return j_omnibox_action_;
-  }
-
-  void CreateOrUpdateJavaObject(const std::string& query) {
-    j_omnibox_action_.Reset(BuildHistoryClustersAction(
-        GetID(), strings_.hint, strings_.suggestion_contents,
-        strings_.accessibility_suffix, strings_.accessibility_hint, url_,
-        query));
-  }
-#endif
-
- private:
-  ~HistoryClustersAction() override = default;
-#if BUILDFLAG(IS_ANDROID)
-  base::android::ScopedJavaGlobalRef<jobject> j_omnibox_action_;
-#endif
-};
+// Find the top relevance of either search or navigation matches. Returns 0 if
+// there are no search or navigation matches.
+int TopRelevance(const AutocompleteResult& result, bool search) {
+  DCHECK(!result.empty());
+  return base::ranges::max_element(
+             result, {},
+             [&](const auto& match) {
+               return AutocompleteMatch::IsSearchType(match.type) == search
+                          ? match.relevance
+                          : 0;
+             })
+      ->relevance;
+}
 
 }  // namespace
 
+HistoryClustersAction::HistoryClustersAction(
+    const std::string& query,
+    const history::ClusterKeywordData& matched_keyword_data)
+    : OmniboxAction(
+          OmniboxAction::LabelStrings(
+              IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT,
+              IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS,
+              IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX,
+              IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH),
+          GURL(base::StringPrintf(
+              "chrome://history/journeys?q=%s",
+              base::EscapeQueryParamValue(query, /*use_plus=*/false).c_str()))),
+      matched_keyword_data_(matched_keyword_data) {
+#if BUILDFLAG(IS_ANDROID)
+    CreateOrUpdateJavaObject(query);
+#endif
+}
+
+void HistoryClustersAction::RecordActionShown(size_t position,
+                                              bool executed) const {
+  base::UmaHistogramExactLinear(
+      "Omnibox.ResumeJourneyShown", position,
+      AutocompleteResult::kMaxAutocompletePositionValue);
+
+  if (executed) {
+    base::UmaHistogramExactLinear(
+        "Omnibox.SuggestionUsed.ResumeJourney", position,
+        AutocompleteResult::kMaxAutocompletePositionValue);
+  }
+
+  base::UmaHistogramBoolean("Omnibox.SuggestionUsed.ResumeJourneyCTR",
+                            executed);
+}
+
+int32_t HistoryClustersAction::GetID() const {
+  return static_cast<int32_t>(OmniboxActionId::HISTORY_CLUSTERS);
+}
+
+#if defined(SUPPORT_PEDALS_VECTOR_ICONS)
+const gfx::VectorIcon& HistoryClustersAction::GetVectorIcon() const {
+  return omnibox::kJourneysIcon;
+}
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaGlobalRef<jobject>
+HistoryClustersAction::GetJavaObject() const {
+  return j_omnibox_action_;
+}
+
+void HistoryClustersAction::CreateOrUpdateJavaObject(const std::string& query) {
+  j_omnibox_action_.Reset(BuildHistoryClustersAction(
+      GetID(), strings_.hint, strings_.suggestion_contents,
+      strings_.accessibility_suffix, strings_.accessibility_hint, url_, query));
+}
+#endif
+
+HistoryClustersAction::~HistoryClustersAction() = default;
+
+// Should be invoked after `AutocompleteResult::AttachPedalsToMatches()`.
 void AttachHistoryClustersActions(
     history_clusters::HistoryClustersService* service,
     PrefService* prefs,
@@ -113,6 +135,29 @@ void AttachHistoryClustersActions(
     return;
   }
 
+  if (result.empty())
+    return;
+
+  // If there's a pedal in `result`, don't add a history cluster action to avoid
+  // over-crowding.
+  if (!GetConfig().omnibox_action_with_pedals &&
+      base::ranges::any_of(result,
+                           [](const auto& match) { return match.action; })) {
+    return;
+  }
+
+  // If there's a reasonably clear navigation intent, don't distract the user
+  // with the actions chip.
+  if (!GetConfig().omnibox_action_on_navigation_intents) {
+    int top_search_relevance = TopRelevance(result, true);
+    int top_navigation_relevance = TopRelevance(result, false);
+    if (top_navigation_relevance > top_search_relevance &&
+        top_navigation_relevance >
+            GetConfig().omnibox_action_navigation_intent_score_threshold) {
+      return;
+    }
+  }
+
   for (auto& match : result) {
     // Skip incompatible matches (like entities) or ones with existing actions.
     // TODO(tommycli): Deduplicate this code with Pedals.
@@ -123,8 +168,11 @@ void AttachHistoryClustersActions(
 
     if (AutocompleteMatch::IsSearchType(match.type)) {
       std::string query = base::UTF16ToUTF8(match.contents);
-      if (service->DoesQueryMatchAnyCluster(query)) {
-        match.action = base::MakeRefCounted<HistoryClustersAction>(query);
+      absl::optional<history::ClusterKeywordData> matched_keyword_data =
+          service->DoesQueryMatchAnyCluster(query);
+      if (matched_keyword_data) {
+        match.action = base::MakeRefCounted<HistoryClustersAction>(
+            query, std::move(matched_keyword_data.value()));
       }
     } else if (GetConfig().omnibox_action_on_urls) {
       // We do the URL stripping here, because we need it to both execute the
@@ -133,7 +181,8 @@ void AttachHistoryClustersActions(
       std::string url_keyword =
           history_clusters::ComputeURLKeywordForLookup(match.destination_url);
       if (service->DoesURLMatchAnyCluster(url_keyword)) {
-        match.action = base::MakeRefCounted<HistoryClustersAction>(url_keyword);
+        match.action = base::MakeRefCounted<HistoryClustersAction>(
+            url_keyword, history::ClusterKeywordData());
       }
     }
 

@@ -32,7 +32,6 @@
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/chrome_user_population_helper.h"
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -60,6 +59,8 @@
 using download::DownloadItem;
 using MixedContentStatus = download::DownloadItem::MixedContentStatus;
 using safe_browsing::DownloadFileType;
+using ReportThreatDetailsResult =
+    safe_browsing::PingManager::ReportThreatDetailsResult;
 
 namespace {
 
@@ -787,31 +788,15 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
                 GetDangerType()));
         report->set_url(GetURL().spec());
         report->set_did_proceed(true);
-        *report->mutable_population() =
-            safe_browsing::GetUserPopulationForProfile(profile());
         std::string token =
             safe_browsing::DownloadProtectionService::GetDownloadPingToken(
                 download_);
         if (!token.empty())
           report->set_token(token);
-        std::string serialized_report;
-        if (report->SerializeToString(&serialized_report)) {
-          sb_service->SendSerializedDownloadReport(profile(),
-                                                   serialized_report);
 
-          // The following is to log this ClientSafeBrowsingReportRequest on any
-          // open
-          // chrome://safe-browsing pages.
-          content::GetUIThreadTaskRunner({})->PostTask(
-              FROM_HERE,
-              base::BindOnce(
-                  &safe_browsing::WebUIInfoSingleton::AddToCSBRRsSent,
-                  base::Unretained(
-                      safe_browsing::WebUIInfoSingleton::GetInstance()),
-                  std::move(report)));
-        } else {
-          DCHECK(false) << "Unable to serialize the download warning report.";
-        }
+        ReportThreatDetailsResult result =
+            sb_service->SendDownloadReport(profile(), std::move(report));
+        DCHECK(result == ReportThreatDetailsResult::SUCCESS);
       }
 #endif
       download_->ValidateDangerousDownload();

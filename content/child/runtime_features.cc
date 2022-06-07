@@ -218,7 +218,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableFedCm, features::kFedCm, kSetOnlyIfOverridden},
     {wf::EnableFencedFrames, features::kPrivacySandboxAdsAPIsOverride,
      kSetOnlyIfOverridden},
-    {wf::EnableSharedStorageAPI, blink::features::kSharedStorageAPI},
+    {wf::EnableSharedStorageAPI, features::kPrivacySandboxAdsAPIsOverride,
+     kSetOnlyIfOverridden},
     {wf::EnableForcedColors, features::kForcedColors},
     {wf::EnableFractionalScrollOffsets, features::kFractionalScrollOffsets},
     {wf::EnableGenericSensorExtraClasses, features::kGenericSensorExtraClasses},
@@ -345,6 +346,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"EditContext", blink::features::kEditContext},
           {"ElementSuperRareData", blink::features::kElementSuperRareData},
           {"FileHandling", blink::features::kFileHandlingAPI},
+          {"FixedElementsDontOverscroll",
+           blink::features::kFixedElementsDontOverscroll},
           {"Fledge", blink::features::kFledge, kSetOnlyIfOverridden},
           {"Fledge", features::kPrivacySandboxAdsAPIsOverride,
            kSetOnlyIfOverridden},
@@ -363,10 +366,12 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"OriginPolicy", features::kOriginPolicy},
           {"OriginIsolationHeader", features::kOriginIsolationHeader},
           {"Parakeet", blink::features::kParakeet},
+          {"PendingBeaconAPI", blink::features::kPendingBeaconAPI},
           {"PrefersColorSchemeClientHintHeader",
            blink::features::kPrefersColorSchemeClientHintHeader},
           {"FirstPartySets", features::kFirstPartySets},
           {"SanitizerAPI", blink::features::kSanitizerAPI},
+          {"SanitizerAPIv0", blink::features::kSanitizerAPIv0},
           {"SecureContextFixForWorkers",
            blink::features::kSecureContextFixForWorkers},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI},
@@ -375,6 +380,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
                kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes},
           {"TopicsAPI", features::kPrivacySandboxAdsAPIsOverride,
            kSetOnlyIfOverridden},
+          {"TouchActionEffectiveAtPointerDown",
+           features::kVirtualKeyboardMultitouch},
           {"TrustedDOMTypes", features::kTrustedDOMTypes},
           {"UserAgentClientHint", blink::features::kUserAgentClientHint},
           {"ViewportHeightClientHintHeader",
@@ -393,8 +400,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           // launched and released to stable with no issues.
           {"AutoExpandDetailsElement",
            blink::features::kAutoExpandDetailsElement},
-          {"UserAgentClientHintFullVersionList",
-           blink::features::kUserAgentClientHintFullVersionList},
           {"ClientHintsMetaHTTPEquivAcceptCH",
            blink::features::kClientHintsMetaHTTPEquivAcceptCH},
           {"ClientHintsMetaNameAcceptCH",
@@ -403,13 +408,11 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kClientHintThirdPartyDelegation},
           {"UserAgentReduction", blink::features::kReduceUserAgent},
           {"UserAgentFull", blink::features::kFullUserAgent},
-          {"ClientHintPartitiondCookies",
-           blink::features::kClientHintsPartitionedCookies},
           {"WindowPlacement", blink::features::kWindowPlacement},
           {"WindowPlacementFullscreenOnScreensChange",
            blink::features::kWindowPlacementFullscreenOnScreensChange},
           {"EventPath", blink::features::kEventPath},
-      };
+          {"MediaStreamTrackTransfer", features::kMediaStreamTrackTransfer}};
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
         mapping.chromium_feature, mapping.option, [&mapping](bool enabled) {
@@ -473,8 +476,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableWebGLDraftExtensions, switches::kEnableWebGLDraftExtensions,
        true},
       {wrf::EnableWebGPU, switches::kEnableUnsafeWebGPU, true},
-      {wrf::ForceOverlayFullscreenVideo, switches::kForceOverlayFullscreenVideo,
-       true},
       {wrf::EnableDirectSockets, switches::kIsolatedAppOrigins, true},
   };
   for (const auto& mapping : switchToFeatureMapping) {

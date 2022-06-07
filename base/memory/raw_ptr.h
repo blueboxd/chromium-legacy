@@ -36,10 +36,11 @@
 #if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/tagging.h"
+#include "base/check_op.h"
 #endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
 
 #if BUILDFLAG(IS_WIN)
-#include "base/win/windows_types.h"
+#include "base/win/win_handle_types.h"
 #endif
 
 namespace cc {
@@ -103,7 +104,7 @@ struct RawPtrNoOpImpl {
     return wrapped_ptr;
   }
 
-  // Advance the wrapped pointer by |delta| bytes.
+  // Advance the wrapped pointer by `delta_elems`.
   template <typename T>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elems) {
     return wrapped_ptr + delta_elems;
@@ -151,7 +152,7 @@ struct MTECheckedPtrImplPartitionAllocSupport {
     //
     // TODO(crbug.com/1307514): Allow direct-map buckets.
     return partition_alloc::IsManagedByPartitionAlloc(as_uintptr) &&
-           partition_alloc::IsManagedByNormalBuckets(as_uintptr);
+           partition_alloc::internal::IsManagedByNormalBuckets(as_uintptr);
   }
 
   // Returns pointer to the tag that protects are pointed by |ptr|.
@@ -244,10 +245,10 @@ struct MTECheckedPtrImpl {
     return static_cast<To*>(wrapped_ptr);
   }
 
-  // Advance the wrapped pointer by |delta| bytes.
+  // Advance the wrapped pointer by `delta_elems`.
   template <typename T>
-  static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elem) {
-    return wrapped_ptr + delta_elem;
+  static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elems) {
+    return wrapped_ptr + delta_elems;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion
@@ -421,15 +422,15 @@ struct BackupRefPtrImpl {
     return wrapped_ptr;
   }
 
-  // Advance the wrapped pointer by |delta| bytes.
+  // Advance the wrapped pointer by `delta_elems`.
   template <typename T>
-  static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elem) {
+  static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elems) {
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     uintptr_t address = reinterpret_cast<uintptr_t>(wrapped_ptr);
     if (IsSupportedAndNotNull(address))
-      CHECK(IsValidDelta(address, delta_elem * sizeof(T)));
+      CHECK(IsValidDelta(address, delta_elems * sizeof(T)));
 #endif
-    T* new_wrapped_ptr = WrapRawPtr(wrapped_ptr + delta_elem);
+    T* new_wrapped_ptr = WrapRawPtr(wrapped_ptr + delta_elems);
     ReleaseWrappedPtr(wrapped_ptr);
     return new_wrapped_ptr;
   }
@@ -508,7 +509,7 @@ struct AsanBackupRefPtrImpl {
     return wrapped_ptr;
   }
 
-  // Advance the wrapped pointer by |delta| bytes.
+  // Advance the wrapped pointer by `delta_elems`.
   template <typename T>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, ptrdiff_t delta_elems) {
     return wrapped_ptr + delta_elems;

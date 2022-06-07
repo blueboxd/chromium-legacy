@@ -41,11 +41,19 @@ AttributionAggregatableTriggerData::FromMojo(
     return absl::nullopt;
 
   return AttributionAggregatableTriggerData(
-      mojo->key,
-      base::flat_set<std::string>(
-          std::make_move_iterator(mojo->source_keys.begin()),
-          std::make_move_iterator(mojo->source_keys.end())),
-      std::move(*filters), std::move(*not_filters));
+      mojo->key, std::move(mojo->source_keys), std::move(*filters),
+      std::move(*not_filters));
+}
+
+// static
+AttributionAggregatableTriggerData
+AttributionAggregatableTriggerData::CreateForTesting(
+    absl::uint128 key,
+    base::flat_set<std::string> source_keys,
+    AttributionFilterData filters,
+    AttributionFilterData not_filters) {
+  return AttributionAggregatableTriggerData(
+      key, std::move(source_keys), std::move(filters), std::move(not_filters));
 }
 
 AttributionAggregatableTriggerData::AttributionAggregatableTriggerData() =
@@ -113,6 +121,13 @@ AttributionAggregatableTrigger::FromMojo(
 
   return AttributionAggregatableTrigger(std::move(trigger_data),
                                         std::move(mojo->values));
+}
+
+AttributionAggregatableTrigger AttributionAggregatableTrigger::CreateForTesting(
+    std::vector<AttributionAggregatableTriggerData> trigger_data,
+    Values values) {
+  return AttributionAggregatableTrigger(std::move(trigger_data),
+                                        std::move(values));
 }
 
 AttributionAggregatableTrigger::AttributionAggregatableTrigger() = default;

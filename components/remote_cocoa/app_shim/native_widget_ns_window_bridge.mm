@@ -35,6 +35,7 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#include "ui/base/cocoa/cursor_utils.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
@@ -423,7 +424,7 @@ void NativeWidgetNSWindowBridge::StackAbove(uint64_t sibling_id) {
 }
 
 void NativeWidgetNSWindowBridge::StackAtTop() {
-  [window_ setOrderedIndex:0];
+  [window_ orderWindow:NSWindowAbove relativeTo:0];
 }
 
 void NativeWidgetNSWindowBridge::ShowEmojiPanel() {
@@ -914,6 +915,10 @@ void NativeWidgetNSWindowBridge::SetCursor(NSCursor* cursor) {
   [window_delegate_ setCursor:cursor];
 }
 
+void NativeWidgetNSWindowBridge::SetCursor(const ui::Cursor& cursor) {
+  SetCursor(ui::GetNativeCursor(cursor));
+}
+
 void NativeWidgetNSWindowBridge::OnWindowWillClose() {
   fullscreen_controller_.OnWindowWillClose();
 
@@ -1360,6 +1365,16 @@ void NativeWidgetNSWindowBridge::SetCanAppearInExistingFullscreenSpaces(
 }
 
 void NativeWidgetNSWindowBridge::SetMiniaturized(bool miniaturized) {
+  // In headless mode the platform window is always hidden and WebKit
+  // will not deminiaturize hidden windows. So instead of changing the window
+  // miniaturization state just lie to the upper layer pretending the window did
+  // change its state. We don't need to keep track of the requested state here
+  // because the host will do this.
+  if (headless_mode_window_) {
+    host_->OnWindowMiniaturizedChanged(miniaturized);
+    return;
+  }
+
   if (miniaturized) {
     // Calling performMiniaturize: will momentarily highlight the button, but
     // AppKit will reject it if there is no miniaturize button.
@@ -1455,10 +1470,7 @@ void NativeWidgetNSWindowBridge::SetWindowTitle(const std::u16string& title) {
 }
 
 void NativeWidgetNSWindowBridge::ClearTouchBar() {
-  if (@available(macOS 10.12.2, *)) {
-    if ([bridged_view_ respondsToSelector:@selector(setTouchBar:)])
-      [bridged_view_ setTouchBar:nil];
-  }
+  [bridged_view_ setTouchBar:nil];
 }
 
 void NativeWidgetNSWindowBridge::UpdateTooltip() {
@@ -1517,11 +1529,7 @@ void NativeWidgetNSWindowBridge::OrderChildren() {
     } else {
       if (child_window.parentWindow == window)
         continue;
-      // Attaching a window to be a child window resets the window level, so
-      // restore the window level afterwards.
-      NSInteger level = child_window.level;
       [window addChildWindow:child_window ordered:NSWindowAbove];
-      child_window.level = level;
     }
   }
 }

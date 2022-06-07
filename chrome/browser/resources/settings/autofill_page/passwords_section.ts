@@ -27,7 +27,7 @@ import '../site_favicon.js';
 import './password_list_item.js';
 import './passwords_list_handler.js';
 import './passwords_export_dialog.js';
-import './passwords_shared_css.js';
+import './passwords_shared.css.js';
 import './avatar_icon.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
@@ -242,6 +242,14 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
         type: Boolean,
         computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_, ' +
             'eligibleForAccountStorage_)',
+      },
+
+      isPasswordNotesEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enablePasswordNotes');
+        },
+        reflectToAttribute: true,
       },
 
       isUnifiedPasswordManagerEnabled_: {

@@ -53,7 +53,7 @@ void AutofillOfferManager::UpdateSuggestionsWithOffers(
 
   // Update |offer_label| for each suggestion.
   for (auto& suggestion : suggestions) {
-    std::string id = suggestion.backend_id;
+    std::string id = suggestion.GetPayload<std::string>();
     if (eligible_offers_map.count(id)) {
       suggestion.offer_label =
           l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_CASHBACK);
@@ -109,8 +109,8 @@ void AutofillOfferManager::UpdateEligibleMerchantDomains() {
   std::vector<AutofillOfferData*> offers = personal_data_->GetAutofillOffers();
 
   for (auto* offer : offers) {
-    eligible_merchant_domains_.insert(offer->merchant_origins.begin(),
-                                      offer->merchant_origins.end());
+    eligible_merchant_domains_.insert(offer->GetMerchantOrigins().begin(),
+                                      offer->GetMerchantOrigins().end());
   }
 }
 
@@ -136,8 +136,8 @@ AutofillOfferManager::OffersMap AutofillOfferManager::CreateCardLinkedOffersMap(
       // If card has an offer, add the backend ID to the map. There is currently
       // a one-to-one mapping between cards and offer data, however, this may
       // change in the future.
-      if (std::count(offer->eligible_instrument_id.begin(),
-                     offer->eligible_instrument_id.end(),
+      if (std::count(offer->GetEligibleInstrumentIds().begin(),
+                     offer->GetEligibleInstrumentIds().end(),
                      card->instrument_id())) {
         offers_map[card->guid()] = offer;
       }

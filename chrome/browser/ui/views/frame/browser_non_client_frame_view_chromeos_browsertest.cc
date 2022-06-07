@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -48,6 +49,7 @@
 #include "base/test/test_future.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -86,7 +88,6 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -395,7 +396,9 @@ IN_PROC_BROWSER_TEST_F(
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   BrowserNonClientFrameViewChromeOS* frame_view =
       GetFrameViewChromeOS(browser_view);
-  EXPECT_EQ(0, frame_view->GetBoundsForClientView().y());
+  const int expect_y =
+      frame_view->GetBorder() ? frame_view->GetBorder()->GetInsets().top() : 0;
+  EXPECT_EQ(expect_y, frame_view->GetBoundsForClientView().y());
 
   Widget* widget = browser_view->GetWidget();
   ASSERT_NO_FATAL_FAILURE(
@@ -414,7 +417,9 @@ IN_PROC_BROWSER_TEST_F(
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   BrowserNonClientFrameViewChromeOS* frame_view =
       GetFrameViewChromeOS(browser_view);
-  EXPECT_EQ(0, frame_view->GetBoundsForClientView().y());
+  const int expect_y =
+      frame_view->GetBorder() ? frame_view->GetBorder()->GetInsets().top() : 0;
+  EXPECT_EQ(expect_y, frame_view->GetBoundsForClientView().y());
 
   Widget* widget = browser_view->GetWidget();
   ASSERT_NO_FATAL_FAILURE(
@@ -580,9 +585,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
                        SettingsSystemWebAppHasMinimumWindowSize) {
   // Install the Settings System Web App.
-  web_app::WebAppProvider::GetForTest(browser()->profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
+  ash::SystemWebAppManager::GetForTest(browser()->profile())
+      ->InstallSystemAppsForTesting();
 
   // Open a settings window.
   auto* settings_manager = chrome::SettingsWindowManager::GetInstance();
@@ -749,8 +753,9 @@ class WebAppNonClientFrameViewAshTest
   }
 
   ContentSettingImageView* GrantGeolocationPermission() {
-    content::RenderFrameHost* frame =
-        app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    content::RenderFrameHost* frame = app_browser_->tab_strip_model()
+                                          ->GetActiveWebContents()
+                                          ->GetPrimaryMainFrame();
     content_settings::PageSpecificContentSettings* content_settings =
         content_settings::PageSpecificContentSettings::GetForFrame(
             frame->GetProcess()->GetID(), frame->GetRoutingID());
@@ -1106,9 +1111,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest, TopViewInset) {
   EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
 
   // An immersive reveal shows the top of the frame.
-  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock =
       immersive_mode_controller->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_NO));
+          ImmersiveModeController::ANIMATE_REVEAL_NO);
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
 
@@ -1206,10 +1211,26 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest, AppFrameColor) {
 
   SkColor active_frame_color =
       window->GetProperty(chromeos::kFrameActiveColorKey);
-  EXPECT_EQ(active_frame_color, SkColorSetRGB(0xFD, 0xFE, 0xFF))
-      << "RGB: " << SkColorGetR(active_frame_color) << ", "
-      << SkColorGetG(active_frame_color) << ", "
-      << SkColorGetB(active_frame_color);
+
+  if (!chromeos::features::IsDarkLightModeEnabled()) {
+    // `kDefaultFrameColor` will only be used when dark/light mode feature is
+    // not enabled.
+    EXPECT_EQ(active_frame_color, SkColorSetRGB(0xFD, 0xFE, 0xFF))
+        << "RGB: " << SkColorGetR(active_frame_color) << ", "
+        << SkColorGetG(active_frame_color) << ", "
+        << SkColorGetB(active_frame_color);
+  } else {
+    const bool is_dark_mode_state =
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->GetNativeTheme()
+            ->ShouldUseDarkColors();
+    EXPECT_EQ(active_frame_color, is_dark_mode_state
+                                      ? gfx::kGoogleGrey900
+                                      : SkColorSetRGB(0xFF, 0xFF, 0xFF))
+        << "RGB: " << SkColorGetR(active_frame_color) << ", "
+        << SkColorGetG(active_frame_color) << ", "
+        << SkColorGetB(active_frame_color);
+  }
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1237,9 +1258,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
   EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
 
   // An immersive reveal shows the top of the frame.
-  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock =
       immersive_mode_controller->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_NO));
+          ImmersiveModeController::ANIMATE_REVEAL_NO);
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
 

@@ -166,7 +166,7 @@ void InputMenuView::Init() {
         .SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
 
     auto* menu_title = ash::login_views_utils::CreateBubbleLabel(
-        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_GAME_CONTROL),
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA),
         /*view_defining_max_width=*/nullptr, color,
         /*font_list=*/
         gfx::FontList({kGoogleSansFont}, gfx::Font::FontStyle::NORMAL,
@@ -179,7 +179,7 @@ void InputMenuView::Init() {
             base::BindRepeating(&InputMenuView::OnToggleGameControlPressed,
                                 base::Unretained(this))));
     game_control_toggle_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_GAME_CONTROL));
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA));
     game_control_toggle_->SetIsOn(
         display_overlay_controller_->GetTouchInjectorEnable());
 
@@ -195,14 +195,14 @@ void InputMenuView::Init() {
                           kCloseButtonSide)));
     close_button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
     close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-    // TODO(djacobo): Pick a proper size close button.
     close_button->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_NOTIFICATION_BUTTON_CLOSE));
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_ACCESSIBILITY_ALPHA));
     close_button_ = header_view->AddChildView(std::move(close_button));
     menu_title->SetBorder(views::CreateEmptyBorder(CalculateInsets(
         header_view.get(), /*left=*/20, /*right=*/8, /*other_spacing=*/16)));
     game_control_toggle_->SetBorder(
         views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 0, 16)));
+    SetCustomToggleColor(game_control_toggle_);
 
     AddChildView(std::move(header_view));
     AddChildView(BuildSeparator());
@@ -261,6 +261,7 @@ void InputMenuView::Init() {
     show_hint_toggle_->SetIsOn(
         game_control_toggle_->GetIsOn() &&
         display_overlay_controller_->GetInputMappingViewVisible());
+    SetCustomToggleColor(show_hint_toggle_);
     hint_label->SetBorder(views::CreateEmptyBorder(
         CalculateInsets(hint_view.get(), /*left=*/kSideInset,
                         /*right=*/kSideInset, /*other_spacing=*/0)));
@@ -300,7 +301,7 @@ void InputMenuView::OnToggleGameControlPressed() {
     return;
   const bool enabled = game_control_toggle_->GetIsOn();
   display_overlay_controller_->SetTouchInjectorEnable(enabled);
-  // Adjust |enabled_| and |visible_| properties to match |Game Control|.
+  // Adjust |enabled_| and |visible_| properties to match |Game controls|.
   show_hint_toggle_->SetIsOn(enabled);
   display_overlay_controller_->SetInputMappingVisible(enabled);
   show_hint_toggle_->SetEnabled(enabled);
@@ -349,6 +350,21 @@ gfx::Insets InputMenuView::CalculateInsets(views::View* view,
   int right_inset =
       std::max(0, kMenuWidth - (total_width + left + right + other_spacing));
   return gfx::Insets::TLBR(0, left, 0, right_inset);
+}
+
+void InputMenuView::SetCustomToggleColor(views::ToggleButton* toggle) {
+  auto* color_provider = ash::AshColorProvider::Get();
+  if (!color_provider)
+    return;
+
+  toggle->SetThumbOnColor(color_provider->GetContentLayerColor(
+      ash::AshColorProvider::ContentLayerType::kSwitchKnobColorActive));
+  toggle->SetThumbOffColor(color_provider->GetContentLayerColor(
+      ash::AshColorProvider::ContentLayerType::kSwitchKnobColorInactive));
+  toggle->SetTrackOnColor(color_provider->GetContentLayerColor(
+      ash::AshColorProvider::ContentLayerType::kSwitchTrackColorActive));
+  toggle->SetTrackOffColor(color_provider->GetContentLayerColor(
+      ash::AshColorProvider::ContentLayerType::kSwitchTrackColorInactive));
 }
 
 }  // namespace input_overlay

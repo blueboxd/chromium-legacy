@@ -199,21 +199,29 @@ void StyleCascade::Apply(CascadeFilter filter) {
 
   ApplyCascadeAffecting(resolver);
 
-  // Affects the computed value of 'color', hence needs to happen before
-  // high-priority properties.
-  LookupAndApply(GetCSSPropertyColorScheme(), resolver);
+  if (map_.NativeBitset().Has(CSSPropertyID::kColorScheme)) {
+    // Affects the computed value of 'color', hence needs to happen before
+    // high-priority properties.
+    LookupAndApply(GetCSSPropertyColorScheme(), resolver);
+  }
 
-  // Affects the computed value of 'font-size', hence needs to happen before
-  // high-priority properties.
-  LookupAndApply(GetCSSPropertyMathDepth(), resolver);
+  if (map_.NativeBitset().Has(CSSPropertyID::kMathDepth)) {
+    // Affects the computed value of 'font-size', hence needs to happen before
+    // high-priority properties.
+    LookupAndApply(GetCSSPropertyMathDepth(), resolver);
+  }
 
-  // -webkit-mask-image needs to be applied before -webkit-mask-composite,
-  // otherwise -webkit-mask-composite has no effect.
-  LookupAndApply(GetCSSPropertyWebkitMaskImage(), resolver);
+  if (map_.NativeBitset().Has(CSSPropertyID::kWebkitMaskImage)) {
+    // -webkit-mask-image needs to be applied before -webkit-mask-composite,
+    // otherwise -webkit-mask-composite has no effect.
+    LookupAndApply(GetCSSPropertyWebkitMaskImage(), resolver);
+  }
 
-  // Affects the computed value of color when it is inherited and forced-color-
-  // adjust is set to preserve-parent-color.
-  LookupAndApply(GetCSSPropertyForcedColorAdjust(), resolver);
+  if (map_.NativeBitset().Has(CSSPropertyID::kForcedColorAdjust)) {
+    // Affects the computed value of color when it is inherited and
+    // forced-color- adjust is set to preserve-parent-color.
+    LookupAndApply(GetCSSPropertyForcedColorAdjust(), resolver);
+  }
 
   ApplyHighPriority(resolver);
 
@@ -242,6 +250,8 @@ void StyleCascade::Apply(CascadeFilter filter) {
 
   if (resolver.Flags() & CSSProperty::kAnimation)
     state_.SetCanAffectAnimations();
+  if (resolver.RejectedFlags() & CSSProperty::kLegacyOverlapping)
+    state_.SetRejectedLegacyOverlapping();
 }
 
 std::unique_ptr<CSSBitset> StyleCascade::GetImportantSet() {
@@ -338,15 +348,19 @@ void StyleCascade::AnalyzeMatchResult() {
   int index = 0;
   for (const MatchedProperties& properties :
        match_result_.GetMatchedProperties()) {
-    ExpandCascade(properties, GetDocument(), CascadeFilter(), index++,
-                  [this](CascadePriority cascade_priority,
-                         const CSSProperty& css_property,
-                         const CSSValue& css_value [[maybe_unused]],
-                         uint16_t tree_order [[maybe_unused]]) {
-                    const CSSProperty& property =
-                        ResolveSurrogate(css_property);
-                    map_.Add(property.GetCSSPropertyName(), cascade_priority);
-                  });
+    ExpandCascade(
+        properties, GetDocument(), index++,
+        [this](CascadePriority cascade_priority,
+               const CSSProperty& css_property, const CSSPropertyName& name,
+               const CSSValue& css_value [[maybe_unused]],
+               uint16_t tree_order [[maybe_unused]]) {
+          if (css_property.IsSurrogate()) {
+            const CSSProperty& property = ResolveSurrogate(css_property);
+            map_.Add(property.GetCSSPropertyName(), cascade_priority);
+          } else {
+            map_.Add(name, cascade_priority);
+          }
+        });
   }
 }
 
@@ -394,8 +408,12 @@ void StyleCascade::ApplyCascadeAffecting(CascadeResolver& resolver) {
   auto direction = state_.Style()->Direction();
   auto writing_mode = state_.Style()->GetWritingMode();
 
-  LookupAndApply(GetCSSPropertyDirection(), resolver);
-  LookupAndApply(GetCSSPropertyWritingMode(), resolver);
+  if (map_.NativeBitset().Has(CSSPropertyID::kDirection)) {
+    LookupAndApply(GetCSSPropertyDirection(), resolver);
+  }
+  if (map_.NativeBitset().Has(CSSPropertyID::kWritingMode)) {
+    LookupAndApply(GetCSSPropertyWritingMode(), resolver);
+  }
 
   if (depends_on_cascade_affecting_property_) {
     if (direction != state_.Style()->Direction() ||
@@ -448,30 +466,39 @@ void StyleCascade::ApplyWideOverlapping(CascadeResolver& resolver) {
     }
   };
 
-  if (const CascadePriority* priority =
-          map_.Find(CSSPropertyName(CSSPropertyID::kWebkitBorderImage))) {
-    LookupAndApply(GetCSSPropertyWebkitBorderImage(), resolver);
+  const CSSProperty& webkit_border_image = GetCSSPropertyWebkitBorderImage();
+  if (!resolver.filter_.Rejects(webkit_border_image)) {
+    if (const CascadePriority* priority =
+            map_.Find(webkit_border_image.GetCSSPropertyName())) {
+      LookupAndApply(webkit_border_image, resolver);
 
-    const auto& shorthand = borderImageShorthand();
-    const CSSProperty** longhands = shorthand.properties();
-    for (unsigned i = 0; i < shorthand.length(); ++i) {
-      maybe_skip(*longhands[i], *priority);
+      const auto& shorthand = borderImageShorthand();
+      const CSSProperty** longhands = shorthand.properties();
+      for (unsigned i = 0; i < shorthand.length(); ++i) {
+        maybe_skip(*longhands[i], *priority);
+      }
     }
   }
 
-  if (const CascadePriority* priority =
-          map_.Find(CSSPropertyName(CSSPropertyID::kPerspectiveOrigin))) {
-    LookupAndApply(GetCSSPropertyPerspectiveOrigin(), resolver);
-    maybe_skip(GetCSSPropertyWebkitPerspectiveOriginX(), *priority);
-    maybe_skip(GetCSSPropertyWebkitPerspectiveOriginY(), *priority);
+  const CSSProperty& perspective_origin = GetCSSPropertyPerspectiveOrigin();
+  if (!resolver.filter_.Rejects(perspective_origin)) {
+    if (const CascadePriority* priority =
+            map_.Find(perspective_origin.GetCSSPropertyName())) {
+      LookupAndApply(perspective_origin, resolver);
+      maybe_skip(GetCSSPropertyWebkitPerspectiveOriginX(), *priority);
+      maybe_skip(GetCSSPropertyWebkitPerspectiveOriginY(), *priority);
+    }
   }
 
-  if (const CascadePriority* priority =
-          map_.Find(CSSPropertyName(CSSPropertyID::kTransformOrigin))) {
-    LookupAndApply(GetCSSPropertyTransformOrigin(), resolver);
-    maybe_skip(GetCSSPropertyWebkitTransformOriginX(), *priority);
-    maybe_skip(GetCSSPropertyWebkitTransformOriginY(), *priority);
-    maybe_skip(GetCSSPropertyWebkitTransformOriginZ(), *priority);
+  const CSSProperty& transform_origin = GetCSSPropertyTransformOrigin();
+  if (!resolver.filter_.Rejects(transform_origin)) {
+    if (const CascadePriority* priority =
+            map_.Find(transform_origin.GetCSSPropertyName())) {
+      LookupAndApply(transform_origin, resolver);
+      maybe_skip(GetCSSPropertyWebkitTransformOriginX(), *priority);
+      maybe_skip(GetCSSPropertyWebkitTransformOriginY(), *priority);
+      maybe_skip(GetCSSPropertyWebkitTransformOriginZ(), *priority);
+    }
   }
 }
 
@@ -479,14 +506,7 @@ void StyleCascade::ApplyWideOverlapping(CascadeResolver& resolver) {
 // (e.g. in AnalyzeMatchResult()) and actually apply them. We need to do this
 // in a second phase so that we know which ones actually won the cascade
 // before we start applying, as some properties can affect others.
-//
-// TODO(sesse): See if we can make this more efficient by iterating
-// directly over the BackingVector instead. In particular, that would
-// remove the Find() calls into map_.
 void StyleCascade::ApplyMatchResult(CascadeResolver& resolver) {
-  // We only need to apply the resolver part of the filter here;
-  // the rest have been applied in the previous pass.
-  CascadeFilter filter = resolver.filter_;
   for (CSSPropertyID id : map_.NativeBitset()) {
     CascadePriority* p = map_.FindKnownToExist(id);
     const CascadePriority priority = *p;
@@ -501,14 +521,14 @@ void StyleCascade::ApplyMatchResult(CascadeResolver& resolver) {
     }
 
     const CSSProperty& property = CSSProperty::Get(id);
-    if (filter.Rejects(property)) {
+    if (resolver.Rejects(property)) {
       continue;
     }
     LookupAndApplyDeclaration(property, p, resolver);
   }
 
-  for (const auto& [name, priority_list] : map_.GetCustomMap()) {
-    CascadePriority* p = map_.Find(name);
+  for (auto& [name, priority_list] : map_.GetCustomMap()) {
+    CascadePriority* p = &map_.Top(priority_list);
     CascadePriority priority = *p;
     if (priority.GetGeneration() >= resolver.generation_) {
       continue;
@@ -518,7 +538,7 @@ void StyleCascade::ApplyMatchResult(CascadeResolver& resolver) {
     }
 
     CustomProperty property(name.ToAtomicString(), GetDocument());
-    if (filter.Rejects(property)) {
+    if (resolver.Rejects(property)) {
       continue;
     }
     LookupAndApplyDeclaration(property, p, resolver);
@@ -545,7 +565,7 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
     priority = CascadePriority(priority, resolver.generation_);
 
     CSSPropertyRef ref(name, GetDocument());
-    if (resolver.filter_.Rejects(ref.GetProperty()))
+    if (resolver.Rejects(ref.GetProperty()))
       continue;
 
     const CSSProperty& property = ResolveSurrogate(ref.GetProperty());
@@ -615,7 +635,7 @@ void StyleCascade::LookupAndApply(const CSSProperty& property,
   if (!priority)
     return;
 
-  if (resolver.filter_.Rejects(property))
+  if (resolver.Rejects(property))
     return;
 
   LookupAndApplyValue(property, priority, resolver);
@@ -853,7 +873,7 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
     if (!ResolveTokensInto(shorthand_data->Tokens(), resolver, sequence))
       return cssvalue::CSSUnsetValue::Create();
 
-    HeapVector<CSSPropertyValue, 256> parsed_properties;
+    HeapVector<CSSPropertyValue, 64> parsed_properties;
     const bool important = false;
 
     if (!CSSPropertyParser::ParseValue(

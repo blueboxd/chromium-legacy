@@ -5,12 +5,12 @@
 #include "ash/constants/ash_features.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -59,9 +59,8 @@ IN_PROC_BROWSER_TEST_F(ShowFeedbackPageBrowserTest, UserFeedbackDisallowed) {
 // opened and the os_feedback is used when the feature kOsFeedback is enabled.
 IN_PROC_BROWSER_TEST_F(ShowFeedbackPageBrowserTest,
                        OsFeedbackIsOpenedWhenFeatureEnabled) {
-  web_app::WebAppProvider::GetForTest(browser()->profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
+  ash::SystemWebAppManager::GetForTest(browser()->profile())
+      ->InstallSystemAppsForTesting();
 
   base::HistogramTester histogram_tester;
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());

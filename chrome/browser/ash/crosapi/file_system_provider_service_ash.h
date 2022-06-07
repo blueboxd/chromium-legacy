@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_ASH_CROSAPI_FILE_SYSTEM_PROVIDER_SERVICE_ASH_H_
 
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 class Profile;
 
@@ -24,6 +26,9 @@ class FileSystemProviderServiceAsh : public mojom::FileSystemProviderService {
       delete;
   ~FileSystemProviderServiceAsh() override;
 
+  void BindReceiver(
+      mojo::PendingReceiver<mojom::FileSystemProviderService> receiver);
+
   // crosapi::mojom::FileSystemProviderService:
   void RegisterFileSystemProvider(
       mojo::PendingRemote<mojom::FileSystemProvider> provider) override;
@@ -40,6 +45,18 @@ class FileSystemProviderServiceAsh : public mojom::FileSystemProviderService {
               mojom::FSPChangeType type,
               std::vector<mojom::FSPChangePtr> changes,
               NotifyCallback callback) override;
+  void OperationFinished(mojom::FSPOperationResponse response,
+                         mojom::FileSystemIdPtr file_system_id,
+                         int64_t request_id,
+                         std::vector<base::Value> args,
+                         OperationFinishedCallback callback) override;
+  void ExtensionLoaded(bool configurable,
+                       bool watchable,
+                       bool multiple_mounts,
+                       mojom::FileSystemSource source,
+                       const std::string& name,
+                       const std::string& id) override;
+  void ExtensionUnloaded(const std::string& id, bool due_to_shutdown) override;
 
   // In order to support multi-login in ash, a legacy feature that is going
   // away in Lacros, all methods above are redirected to a variation that
@@ -63,6 +80,21 @@ class FileSystemProviderServiceAsh : public mojom::FileSystemProviderService {
                          std::vector<mojom::FSPChangePtr> changes,
                          NotifyCallback callback,
                          Profile* profile);
+  void OperationFinishedWithProfile(mojom::FSPOperationResponse response,
+                                    mojom::FileSystemIdPtr file_system_id,
+                                    int64_t request_id,
+                                    std::vector<base::Value> args,
+                                    OperationFinishedCallback callback,
+                                    Profile* profile);
+
+  // Exposed so that ash clients can work with Lacros file system providers.
+  mojo::RemoteSet<mojom::FileSystemProvider>& remotes() { return remotes_; }
+
+ private:
+  // Each separate Lacros process owns its own remote.
+  mojo::RemoteSet<mojom::FileSystemProvider> remotes_;
+  // Receives events from Lacros file system provider extensions.
+  mojo::ReceiverSet<mojom::FileSystemProviderService> receivers_;
 };
 
 }  // namespace crosapi

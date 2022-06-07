@@ -168,8 +168,13 @@ void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
   receiver_.reset();
 }
 
+void ProcessNodeImpl::SetProcessMetricsName(const std::string& metrics_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  metrics_name_ = metrics_name;
+}
+
 void ProcessNodeImpl::SetProcess(base::Process process,
-                                 base::Time launch_time) {
+                                 base::TimeTicks launch_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(process.IsValid());
   // Either this is the initial process associated with this process node,
@@ -258,8 +263,9 @@ base::WeakPtr<ProcessNodeImpl> ProcessNodeImpl::GetWeakPtr() {
 
 void ProcessNodeImpl::SetProcessImpl(base::Process process,
                                      base::ProcessId new_pid,
-                                     base::Time launch_time) {
+                                     base::TimeTicks launch_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(process.IsValid());
 
   graph()->BeforeProcessPidChange(this, new_pid);
 
@@ -293,7 +299,7 @@ const base::Process& ProcessNodeImpl::GetProcess() const {
   return process();
 }
 
-base::Time ProcessNodeImpl::GetLaunchTime() const {
+base::TimeTicks ProcessNodeImpl::GetLaunchTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return launch_time();
 }
@@ -301,6 +307,11 @@ base::Time ProcessNodeImpl::GetLaunchTime() const {
 absl::optional<int32_t> ProcessNodeImpl::GetExitStatus() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return exit_status();
+}
+
+const std::string& ProcessNodeImpl::GetMetricsName() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return metrics_name();
 }
 
 bool ProcessNodeImpl::VisitFrameNodes(const FrameNodeVisitor& visitor) const {

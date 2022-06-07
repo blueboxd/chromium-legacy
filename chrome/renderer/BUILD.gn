@@ -39,11 +39,13 @@ grit("resources") {
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",
   ]
+  if (is_chromeos) {
+    deps += [ "//chromeos/components/remote_apps/mojom:mojom_js" ]
+  }
   if (is_chromeos_ash) {
     deps += [
       "//ash/components/enhanced_network_tts/mojom:mojom_js",
       "//ash/services/ime/public/mojom:mojom_js",
-      "//chromeos/components/remote_apps/mojom:mojom_js",
       "//chromeos/services/tts/public/mojom:mojom_js",
     ]
   }
@@ -134,7 +136,6 @@ static_library("renderer") {
     "//components/content_capture/renderer",
     "//components/content_settings/common:mojom",
     "//components/content_settings/renderer",
-    "//components/contextual_search/content:renderer",
     "//components/continuous_search/renderer",
     "//components/dom_distiller/content/renderer",
     "//components/feed:buildflags",
@@ -173,7 +174,6 @@ static_library("renderer") {
     "//components/web_cache/public:features",
     "//components/web_cache/renderer",
     "//components/webapps/renderer",
-    "//content/app/resources",
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
@@ -419,8 +419,8 @@ static_library("renderer") {
       ]
 
       deps += [
-        "//chromeos/memory/userspace_swap",
-        "//chromeos/memory/userspace_swap:mojom",
+        "//chromeos/ash/components/memory/userspace_swap",
+        "//chromeos/ash/components/memory/userspace_swap:mojom",
       ]
     }
   }

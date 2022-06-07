@@ -3195,20 +3195,6 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->common_params().should_replace_current_entry,
       request->force_new_browsing_instance(), reason);
 
-  TRACE_EVENT_INSTANT(
-      "navigation",
-      "RenderFrameHostManager::GetSiteInstanceForNavigationRequest_Result",
-      ChromeTrackEvent::kSiteInstance,
-      *static_cast<SiteInstanceImpl*>(dest_site_instance.get()),
-      ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_,
-      [&](perfetto::EventContext ctx) {
-        auto rvh = frame_tree_node_->frame_tree()->GetRenderViewHost(
-            static_cast<SiteInstanceImpl*>(dest_site_instance.get())->group());
-        if (rvh) {
-          auto* event = ctx.event<ChromeTrackEvent>();
-          rvh->WriteIntoTrace(ctx.Wrap(event->set_render_view_host()));
-        }
-      });
   // If the NavigationRequest's dest_site_instance was present but incorrect,
   // then ensure no sensitive state is kept on the request. This can happen for
   // cross-process redirects, error pages, etc.
@@ -3406,7 +3392,7 @@ void RenderFrameHostManager::CommitPending(
   // 2) a current RenderFrameHost which has just received a commit IPC from the
   //    renderer, so it must have a live connection to its renderer frame in
   //    order to receive the IPC.
-  DCHECK(pending_rfh->IsRenderFrameCreated());
+  DCHECK(pending_rfh->IsRenderFrameLive());
 
   // We should not have a pending bfcache entry unless bfcache or prerendering
   // is enabled. Note that in prerendering, the prerendering page information is

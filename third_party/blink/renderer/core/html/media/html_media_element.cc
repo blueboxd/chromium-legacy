@@ -645,8 +645,12 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   ignore_preload_none_ = false;
   auto new_origin = GetDocument().TopFrameOrigin();
   auto old_origin = old_document.TopFrameOrigin();
+
+  // Experimental: Try to avoid destroying the media player when transferring a
+  // media element to a new document. This is a work in progress, and may cause
+  // security and/or stability issues.
   const bool reuse_player =
-      base::FeatureList::IsEnabled(media::kReuseMediaPlayer) && new_origin &&
+      RuntimeEnabledFeatures::PictureInPictureV2Enabled() && new_origin &&
       old_origin && old_origin->IsSameOriginWith(new_origin.get());
   if (!reuse_player) {
     // Don't worry about notifications from any previous document if we're not
@@ -1731,7 +1735,7 @@ void HTMLMediaElement::NoneSupported(const String& input_message) {
   ScheduleEvent(event_type_names::kError);
 
   // 6 - Reject pending play promises with NotSupportedError.
-  ScheduleRejectPlayPromises(DOMExceptionCode::kNotSupportedError);
+  ScheduleRejectPlayPromises(PlayPromiseError::kNotSupported);
 
   CloseMediaSource();
 
@@ -2741,10 +2745,10 @@ void HTMLMediaElement::pause() {
   DVLOG(2) << "pause(" << *this << ")";
 
   autoplay_policy_->StopAutoplayMutedWhenVisible();
-  PauseInternal();
+  PauseInternal(PlayPromiseError::kPaused_PauseCalled);
 }
 
-void HTMLMediaElement::PauseInternal() {
+void HTMLMediaElement::PauseInternal(PlayPromiseError code) {
   DVLOG(3) << "pauseInternal(" << *this << ")";
 
   if (network_state_ == kNetworkEmpty)
@@ -2763,7 +2767,7 @@ void HTMLMediaElement::PauseInternal() {
     // time to accurately reflect movie time at the moment we paused.
     SetOfficialPlaybackPosition(CurrentPlaybackPosition());
 
-    ScheduleRejectPlayPromises(DOMExceptionCode::kAbortError);
+    ScheduleRejectPlayPromises(code);
   }
 
   UpdatePlayState();
@@ -3000,7 +3004,7 @@ void HTMLMediaElement::PlaybackProgressTimerFired() {
                         WebFeature::kHTMLMediaElementPauseAtFragmentEnd);
       // changes paused to true and fires a simple event named pause at the
       // media element.
-      PauseInternal();
+      PauseInternal(PlayPromiseError::kPaused_EndOfPlayback);
     }
   }
 
@@ -3586,7 +3590,7 @@ void HTMLMediaElement::TimeChanged() {
         // media element.
         paused_ = true;
         ScheduleEvent(event_type_names::kPause);
-        ScheduleRejectPlayPromises(DOMExceptionCode::kAbortError);
+        ScheduleRejectPlayPromises(PlayPromiseError::kPaused_EndOfPlayback);
       }
       // Queue a task to fire a simple event named ended at the media element.
       ScheduleEvent(event_type_names::kEnded);
@@ -4374,7 +4378,7 @@ void HTMLMediaElement::ScheduleResolvePlayPromises() {
                 WrapWeakPersistent(this)));
 }
 
-void HTMLMediaElement::ScheduleRejectPlayPromises(DOMExceptionCode code) {
+void HTMLMediaElement::ScheduleRejectPlayPromises(PlayPromiseError code) {
   // TODO(mlamouri): per spec, we should create a new task but we can't create
   // a new cancellable task without cancelling the previous one. There are two
   // approaches then: cancel the previous task and create a new one with the
@@ -4414,20 +4418,53 @@ void HTMLMediaElement::ResolveScheduledPlayPromises() {
 }
 
 void HTMLMediaElement::RejectScheduledPlayPromises() {
-  // TODO(mlamouri): the message is generated based on the code because
-  // arguments can't be passed to a cancellable task. In order to save space
-  // used by the object, the string isn't saved.
-  DCHECK(play_promise_error_code_ == DOMExceptionCode::kAbortError ||
-         play_promise_error_code_ == DOMExceptionCode::kNotSupportedError);
-  if (play_promise_error_code_ == DOMExceptionCode::kAbortError) {
-    RejectPlayPromisesInternal(DOMExceptionCode::kAbortError,
-                               "The play() request was interrupted by a call "
-                               "to pause(). https://goo.gl/LdLk22");
-  } else {
+  if (play_promise_error_code_ == PlayPromiseError::kNotSupported) {
     RejectPlayPromisesInternal(
         DOMExceptionCode::kNotSupportedError,
         "Failed to load because no supported source was found.");
+    return;
   }
+
+  const char* reason = "";
+  switch (play_promise_error_code_) {
+    case PlayPromiseError::kPaused_Unknown:
+      reason = " because the media paused";
+      break;
+    case PlayPromiseError::kPaused_PauseCalled:
+      reason = " by a call to pause()";
+      break;
+    case PlayPromiseError::kPaused_EndOfPlayback:
+      reason = " by end of playback";
+      break;
+    case PlayPromiseError::kPaused_RemovedFromDocument:
+      reason = " because the media was removed from the document";
+      break;
+    case PlayPromiseError::kPaused_AutoplayAutoPause:
+      reason = " because autoplaying background media was paused to save power";
+      break;
+    case PlayPromiseError::kPaused_BackgroundVideoOptimization:
+      reason = " because video-only background media was paused to save power";
+      break;
+    case PlayPromiseError::kPaused_SuspendedPlayerIdleTimeout:
+      reason = " because the player was been suspended and became idle";
+      break;
+    case PlayPromiseError::kPaused_RemotePlayStateChange:
+      reason = " by a pause request from a remote media player";
+      break;
+    case PlayPromiseError::kPaused_PauseRequestedByUser:
+      reason = " because a pause was requested by the user";
+      break;
+    case PlayPromiseError::kPaused_PauseRequestedInternally:
+      reason = " because a pause was requested by the browser";
+      break;
+    case PlayPromiseError::kNotSupported:
+      NOTREACHED();
+  }
+  RejectPlayPromisesInternal(
+      DOMExceptionCode::kAbortError,
+      String::Format(
+          "The play() request was interrupted%s. https://goo.gl/LdLk22",
+          reason));
 }
 
 void HTMLMediaElement::RejectPlayPromises(DOMExceptionCode code,
@@ -4441,7 +4478,6 @@ void HTMLMediaElement::RejectPlayPromisesInternal(DOMExceptionCode code,
                                                   const String& message) {
   DCHECK(code == DOMExceptionCode::kAbortError ||
          code == DOMExceptionCode::kNotSupportedError);
-
   for (auto& resolver : play_promise_reject_list_)
     resolver->Reject(MakeGarbageCollected<DOMException>(code, message));
 
@@ -4455,7 +4491,7 @@ void HTMLMediaElement::OnRemovedFromDocumentTimerFired(TimerBase*) {
   // Video should not pause when playing in Picture-in-Picture and subsequently
   // removed from the Document.
   if (!PictureInPictureController::IsElementInPictureInPicture(this))
-    PauseInternal();
+    PauseInternal(PlayPromiseError::kPaused_RemovedFromDocument);
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
@@ -4548,8 +4584,20 @@ void HTMLMediaElement::ResumePlayback() {
   PlayInternal();
 }
 
-void HTMLMediaElement::PausePlayback() {
-  PauseInternal();
+void HTMLMediaElement::PausePlayback(PauseReason pause_reason) {
+  switch (pause_reason) {
+    case PauseReason::kUnknown:
+      return PauseInternal(PlayPromiseError::kPaused_Unknown);
+    case PauseReason::kBackgroundVideoOptimization:
+      return PauseInternal(
+          PlayPromiseError::kPaused_BackgroundVideoOptimization);
+    case PauseReason::kSuspendedPlayerIdleTimeout:
+      return PauseInternal(
+          PlayPromiseError::kPaused_SuspendedPlayerIdleTimeout);
+    case PauseReason::kRemotePlayStateChange:
+      return PauseInternal(PlayPromiseError::kPaused_RemotePlayStateChange);
+  }
+  NOTREACHED();
 }
 
 void HTMLMediaElement::DidPlayerStartPlaying() {
@@ -4648,7 +4696,9 @@ void HTMLMediaElement::RequestPause(bool triggered_by_user) {
           frame, mojom::blink::UserActivationNotificationType::kInteraction);
     }
   }
-  PauseInternal();
+  PauseInternal(triggered_by_user
+                    ? PlayPromiseError::kPaused_PauseRequestedByUser
+                    : PlayPromiseError::kPaused_PauseRequestedInternally);
 }
 
 void HTMLMediaElement::RequestSeekForward(base::TimeDelta seek_time) {

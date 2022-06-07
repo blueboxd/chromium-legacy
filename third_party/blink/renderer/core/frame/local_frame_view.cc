@@ -356,14 +356,16 @@ void LocalFrameView::ForAllChildViewsAndPlugins(const Function& function) {
   }
 
   if (Document* document = frame_->GetDocument()) {
-    for (PortalContents* portal :
-         DocumentPortals::From(*document).GetPortals()) {
-      if (Frame* frame = portal->GetFrame())
-        function(*frame->View());
+    if (DocumentPortals* portals = DocumentPortals::Get(*document)) {
+      for (PortalContents* portal : portals->GetPortals()) {
+        if (Frame* frame = portal->GetFrame())
+          function(*frame->View());
+      }
     }
-    if (features::IsFencedFramesMPArchBased()) {
+    if (DocumentFencedFrames* fenced_frames =
+            DocumentFencedFrames::Get(*document)) {
       for (HTMLFencedFrameElement* fenced_frame :
-           DocumentFencedFrames::From(*document).GetFencedFrames()) {
+           fenced_frames->GetFencedFrames()) {
         if (Frame* frame = fenced_frame->ContentFrame())
           function(*frame->View());
       }
@@ -435,16 +437,18 @@ void LocalFrameView::ForAllRemoteFrameViews(const Function& function) {
     }
   }
   if (Document* document = frame_->GetDocument()) {
-    for (PortalContents* portal :
-         DocumentPortals::From(*document).GetPortals()) {
-      if (RemoteFrame* frame = portal->GetFrame()) {
-        if (RemoteFrameView* view = frame->View())
-          function(*view);
+    if (DocumentPortals* portals = DocumentPortals::Get(*document)) {
+      for (PortalContents* portal : portals->GetPortals()) {
+        if (RemoteFrame* frame = portal->GetFrame()) {
+          if (RemoteFrameView* view = frame->View())
+            function(*view);
+        }
       }
     }
-    if (features::IsFencedFramesMPArchBased()) {
+    if (DocumentFencedFrames* fenced_frames =
+            DocumentFencedFrames::Get(*document)) {
       for (HTMLFencedFrameElement* fenced_frame :
-           DocumentFencedFrames::From(*document).GetFencedFrames()) {
+           fenced_frames->GetFencedFrames()) {
         if (RemoteFrame* frame =
                 To<RemoteFrame>(fenced_frame->ContentFrame())) {
           if (RemoteFrameView* view = frame->View())
@@ -1761,6 +1765,9 @@ void LocalFrameView::SetUseColorAdjustBackground(UseColorAdjustBackground use,
   if (use_color_adjust_background_ == use && !color_scheme_changed)
     return;
 
+  if (!frame_->GetDocument())
+    return;
+
   use_color_adjust_background_ = use;
 
   if (GetFrame().IsMainFrame() && ShouldUseColorAdjustBackground()) {
@@ -1800,14 +1807,8 @@ void LocalFrameView::InvokeFragmentAnchor() {
     fragment_anchor_ = nullptr;
 }
 
-void LocalFrameView::DismissFragmentAnchor() {
-  if (!fragment_anchor_)
-    return;
-
-  if (fragment_anchor_->Dismiss()) {
-    FragmentDirectiveUtils::RemoveSelectorsFromUrl(frame_);
-    fragment_anchor_ = nullptr;
-  }
+void LocalFrameView::ClearFragmentAnchor() {
+  fragment_anchor_ = nullptr;
 }
 
 bool LocalFrameView::UpdatePlugins() {
@@ -1936,6 +1937,7 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
       context.SetRequestedState(EContentVisibility::kAuto);
     }
     deferred_to_be_locked_.resize(0);
+    UseCounter::Count(document, WebFeature::kDeferredShapingWorked);
   }
 }
 
@@ -2937,8 +2939,8 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
       visual_viewport_or_overlay_needs_repaint_) {
     GraphicsContext graphics_context(*paint_controller_);
 
-    // Draw the overlay layer (video or WebXR DOM overlay) if present.
-    if (PaintLayer* full_screen_layer = GetFullScreenOverlayLayer()) {
+    // Draw the WebXR DOM overlay if present.
+    if (PaintLayer* full_screen_layer = GetXROverlayLayer()) {
       PaintLayerPainter(*full_screen_layer).Paint(graphics_context);
     } else {
       PaintFrame(graphics_context);
@@ -3052,8 +3054,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
       layer_debug_info_enabled_);
 
   PaintArtifactCompositor::ViewportProperties viewport_properties;
-  // TODO(crbug.com/1254770): revisit this for embedded portals.
-  if (GetFrame().IsOutermostMainFrame()) {
+  const auto& viewport = page->GetVisualViewport();
+  if (GetFrame().IsMainFrame() && viewport.IsActiveViewport()) {
     const auto& viewport = page->GetVisualViewport();
     viewport_properties.overscroll_elasticity_effect =
         viewport.GetOverscrollElasticityEffectNode();
@@ -3252,6 +3254,8 @@ void LocalFrameView::UpdateStyleAndLayout() {
                                    visual_viewport.VisibleHeightCSSPx());
       visual_viewport_size_changed =
           (new_viewport_size != visual_viewport_size);
+      DCHECK(!visual_viewport_size_changed ||
+             visual_viewport.IsActiveViewport());
     }
     SetNeedsUpdateGeometries();
     PerformPostLayoutTasks(visual_viewport_size_changed);
@@ -4294,18 +4298,20 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
                                                              monotonic_time);
   }
 
-  for (PortalContents* portal :
-       DocumentPortals::From(*frame_->GetDocument()).GetPortals()) {
-    if (Frame* frame = portal->GetFrame()) {
-      needs_occlusion_tracking |=
-          frame->View()->UpdateViewportIntersectionsForSubtree(flags,
-                                                               monotonic_time);
+  if (DocumentPortals* portals = DocumentPortals::Get(*frame_->GetDocument())) {
+    for (PortalContents* portal : portals->GetPortals()) {
+      if (Frame* frame = portal->GetFrame()) {
+        needs_occlusion_tracking |=
+            frame->View()->UpdateViewportIntersectionsForSubtree(
+                flags, monotonic_time);
+      }
     }
   }
 
-  if (features::IsFencedFramesMPArchBased()) {
+  if (DocumentFencedFrames* fenced_frames =
+          DocumentFencedFrames::Get(*frame_->GetDocument())) {
     for (HTMLFencedFrameElement* fenced_frame :
-         DocumentFencedFrames::From(*frame_->GetDocument()).GetFencedFrames()) {
+         fenced_frames->GetFencedFrames()) {
       if (Frame* frame = fenced_frame->ContentFrame()) {
         needs_occlusion_tracking |=
             frame->View()->UpdateViewportIntersectionsForSubtree(
@@ -4806,24 +4812,6 @@ StickyAdDetector& LocalFrameView::EnsureStickyAdDetector() {
   return *sticky_ad_detector_.get();
 }
 
-static PaintLayer* GetFullScreenOverlayVideoLayer(Document& document) {
-  // Recursively find the document that is in fullscreen.
-  Document* content_document = &document;
-  Element* fullscreen_element =
-      Fullscreen::FullscreenElementFrom(*content_document);
-  while (auto* frame_owner =
-             DynamicTo<HTMLFrameOwnerElement>(fullscreen_element)) {
-    content_document = frame_owner->contentDocument();
-    if (!content_document)
-      return nullptr;
-    fullscreen_element = Fullscreen::FullscreenElementFrom(*content_document);
-  }
-  auto* video_element = DynamicTo<HTMLVideoElement>(fullscreen_element);
-  if (!video_element || !video_element->UsesOverlayFullscreenVideo())
-    return nullptr;
-  return video_element->GetLayoutBoxModelObject()->Layer();
-}
-
 static PaintLayer* GetXrOverlayLayer(Document& document) {
   // immersive-ar DOM overlay mode is very similar to fullscreen video, using
   // the AR camera image instead of a video element as a background that's
@@ -4865,7 +4853,7 @@ static PaintLayer* GetXrOverlayLayer(Document& document) {
   return object->Layer();
 }
 
-PaintLayer* LocalFrameView::GetFullScreenOverlayLayer() const {
+PaintLayer* LocalFrameView::GetXROverlayLayer() const {
   Document* doc = frame_->GetDocument();
   DCHECK(doc);
 
@@ -4876,10 +4864,7 @@ PaintLayer* LocalFrameView::GetFullScreenOverlayLayer() const {
   if (doc->IsXrOverlay())
     return GetXrOverlayLayer(*doc);
 
-  // Fullscreen overlay video layers are only used for the main frame.
-  if (!frame_->IsMainFrame())
-    return nullptr;
-  return GetFullScreenOverlayVideoLayer(*doc);
+  return nullptr;
 }
 
 void LocalFrameView::RunPaintBenchmark(int repeat_count,

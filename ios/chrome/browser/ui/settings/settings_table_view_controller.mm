@@ -57,6 +57,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
@@ -206,7 +207,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     SyncObserverModelBridge> {
   // The browser where the settings are being displayed.
   Browser* _browser;
-  // The browser state for |_browser|. Never off the record.
+  // The browser state for `_browser`. Never off the record.
   ChromeBrowserState* _browserState;  // weak
   // Bridge for TemplateURLServiceObserver.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserverBridge;
@@ -324,7 +325,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
         IdentityManagerFactory::GetForBrowserState(_browserState);
     _accountManagerService =
         ChromeAccountManagerServiceFactory::GetForBrowserState(_browserState);
-    // It is expected that |identityManager| should never be nil except in
+    // It is expected that `identityManager` should never be nil except in
     // tests. In that case, the tests should be fixed.
     DCHECK(identityManager);
     _identityObserverBridge.reset(
@@ -468,13 +469,16 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
   [model addItem:[self privacyDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
-  if ([_contentSuggestionPolicyEnabled value]) {
-    [model addItem:self.articlesForYouItem
-        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
 
-  } else {
-    [model addItem:self.managedArticlesForYouItem
-        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+  if (!IsFeedAblationEnabled()) {
+    if ([_contentSuggestionPolicyEnabled value]) {
+      [model addItem:self.articlesForYouItem
+          toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+
+    } else {
+      [model addItem:self.managedArticlesForYouItem
+          toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+    }
   }
   [model addItem:[self languageSettingsDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
@@ -1451,7 +1455,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   return !_passwordCheckManager->GetUnmutedCompromisedCredentials().empty();
 }
 
-// Displays a red issue state on |_safetyCheckItem| if there is a reamining
+// Displays a red issue state on `_safetyCheckItem` if there is a reamining
 // issue for any of the checks.
 - (void)setSafetyCheckIssueStateUnsafe:(BOOL)isUnsafe {
   if (isUnsafe && PreviousSafetyCheckIssueFound()) {
@@ -1476,7 +1480,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   [_privacyCoordinator start];
 }
 
-// Sets the NSUserDefaults BOOL |value| for |key|.
+// Sets the NSUserDefaults BOOL `value` for `key`.
 - (void)setBooleanNSUserDefaultsValue:(BOOL)value forKey:(NSString*)key {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setBool:value forKey:key];

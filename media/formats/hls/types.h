@@ -39,10 +39,50 @@ ParseSignedDecimalFloatingPoint(SourceString source_str);
 // height.
 // https://datatracker.ietf.org/doc/html/draft-pantos-hls-rfc8216bis#:~:text=enumerated%2Dstring%2Dlist.%0A%0A%20%20%20o-,decimal%2Dresolution,-%3A%20two%20decimal%2Dintegers
 struct MEDIA_EXPORT DecimalResolution {
+  static ParseStatus::Or<DecimalResolution> Parse(SourceString source_str);
+
   types::DecimalInteger width;
   types::DecimalInteger height;
+};
 
-  static ParseStatus::Or<DecimalResolution> Parse(SourceString source_str);
+// A `ByteRangeExpression` represents the 'length[@offset]' syntax that appears
+// in tags describing byte ranges of a resource.
+// https://datatracker.ietf.org/doc/html/draft-pantos-hls-rfc8216bis#section-4.4.4.2
+struct MEDIA_EXPORT ByteRangeExpression {
+  static ParseStatus::Or<ByteRangeExpression> Parse(SourceString source_str);
+
+  // The length of the sub-range, in bytes.
+  types::DecimalInteger length;
+
+  // If present, the offset in bytes from the beginning of the resource.
+  // If not present, the sub-range begins at the next byte following that of the
+  // previous segment. The previous segment must be a subrange of the same
+  // resource.
+  absl::optional<types::DecimalInteger> offset;
+};
+
+// This is similar to `ByteRangeExpression`, but with a stronger contract:
+// - `length` is non-zero
+// - `offset` is non-optional
+// - `offset+length` may not overflow `types::DecimalInteger`
+class MEDIA_EXPORT ByteRange {
+ public:
+  // Validates that the range given by `[offset,offset+length)` is non-empty and
+  // that `GetEnd()` would not exceed the max value representable by a
+  // `DecimalInteger`.
+  static absl::optional<ByteRange> Validate(DecimalInteger length,
+                                            DecimalInteger offset);
+
+  DecimalInteger GetLength() const { return length_; }
+  DecimalInteger GetOffset() const { return offset_; }
+  DecimalInteger GetEnd() const { return offset_ + length_; }
+
+ private:
+  ByteRange(DecimalInteger length, DecimalInteger offset)
+      : length_(length), offset_(offset) {}
+
+  DecimalInteger length_;
+  DecimalInteger offset_;
 };
 
 // Parses a string surrounded by double-quotes ("), returning the inner string.

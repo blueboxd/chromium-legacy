@@ -109,11 +109,6 @@
       permissions_policy_name: "ch-ect",
     },
     {
-      name: "ClientHintPartitionedCookies",
-      permissions_policy_name: "ch-partitioned-cookies",
-      depends_on: ["PartitionedCookies"],
-    },
-    {
       name: "ClientHintPrefersColorScheme",
       permissions_policy_name: "ch-prefers-color-scheme",
     },
@@ -142,9 +137,7 @@
     {
       name: "ClientHintUAPlatform",
       permissions_policy_name: "ch-ua-platform",
-      default_value_behind_flag: [
-        ["UACHPlatformEnabledByDefault", "EnableForAll"],
-      ],
+      feature_default: "EnableForAll",
     },
     {
       name: "ClientHintUAModel",
@@ -167,7 +160,6 @@
     {
       name: "ClientHintUAFullVersionList",
       permissions_policy_name: "ch-ua-full-version-list",
-      depends_on: ["UserAgentClientHintFullVersionList"],
     },
     {
       name: "ClientHintUAPlatformVersion",
@@ -206,7 +198,6 @@
     {
       name: "CrossOriginIsolated",
       permissions_policy_name: "cross-origin-isolated",
-      depends_on: ["CrossOriginIsolation"],
     },
     {
       name: "DirectSockets",

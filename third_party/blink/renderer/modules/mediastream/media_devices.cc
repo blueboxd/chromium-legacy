@@ -31,9 +31,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
-#include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/modules/mediastream/identifiability_metrics.h"
 #include "third_party/blink/renderer/modules/mediastream/input_device_info.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
@@ -69,8 +67,10 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
         on_success_follow_up_(std::move(on_success_follow_up)) {}
   ~PromiseResolverCallbacks() override = default;
 
-  void OnSuccess(MediaStream* stream) override {
-    DCHECK(stream);
+  void OnSuccess(const MediaStreamVector& streams) override {
+    // TODO(crbug.com/1300883): Generalize to multiple streams.
+    DCHECK_EQ(streams.size(), 1u);
+    MediaStream* stream = streams[0];
 
     MediaStreamTrack* video_track = nullptr;
 
@@ -392,10 +392,9 @@ void MediaDevices::setCaptureHandleConfig(ScriptState* script_state,
       .SetCaptureHandleConfig(std::move(config_ptr));
 }
 
-ScriptPromise MediaDevices::produceCropId(
-    ScriptState* script_state,
-    V8UnionHTMLDivElementOrHTMLIFrameElement* element_union,
-    ExceptionState& exception_state) {
+ScriptPromise MediaDevices::ProduceCropTarget(ScriptState* script_state,
+                                              Element* element,
+                                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
 #if BUILDFLAG(IS_ANDROID)
@@ -418,11 +417,12 @@ ScriptPromise MediaDevices::produceCropId(
     return ScriptPromise();
   }
 
-  auto* element =
-      element_union->IsHTMLDivElement()
-          ? static_cast<Element*>(element_union->GetAsHTMLDivElement())
-          : static_cast<Element*>(element_union->GetAsHTMLIFrameElement());
-  DCHECK(element);
+  if (!element || !element->IsSupportedByRegionCapture()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Support for this subtype is not yet implemented.");
+    return ScriptPromise();
+  }
 
   if (GetExecutionContext() != element->GetExecutionContext()) {
     RecordUma(ProduceCropTargetFunctionResult::

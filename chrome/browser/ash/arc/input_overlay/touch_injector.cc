@@ -175,11 +175,11 @@ void TouchInjector::UnRegisterEventRewriter() {
   observation_.Reset();
 }
 
-void TouchInjector::OnBindingChange(Action* target_action,
-                                    std::unique_ptr<InputElement> input_element,
-                                    DisplayMode mode) {
+void TouchInjector::OnBindingChange(
+    Action* target_action,
+    std::unique_ptr<InputElement> input_element) {
   if (display_overlay_controller_)
-    display_overlay_controller_->RemoveEditErrorMsg();
+    display_overlay_controller_->RemoveEditMessage();
   Action* overlapped_action = nullptr;
   for (auto& action : actions_) {
     if (action.get() == target_action)
@@ -195,7 +195,7 @@ void TouchInjector::OnBindingChange(Action* target_action,
   if (overlapped_action)
     overlapped_action->Unbind(*input_element);
 
-  target_action->PrepareToBind(std::move(input_element), mode);
+  target_action->PrepareToBind(std::move(input_element));
 }
 
 void TouchInjector::OnApplyPendingBinding() {
@@ -237,7 +237,7 @@ void TouchInjector::OnProtoDataAvailable(AppDataProto& proto) {
     auto input_element =
         InputElement::ConvertFromProto(action_proto.input_element());
     DCHECK(input_element);
-    OnBindingChange(action, std::move(input_element), DisplayMode::kView);
+    OnBindingChange(action, std::move(input_element));
   }
   OnApplyPendingBinding();
 }

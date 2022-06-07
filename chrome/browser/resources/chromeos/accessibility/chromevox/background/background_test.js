@@ -33,6 +33,8 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     await importModule(
         'ChromeVoxBackground', '/chromevox/background/classic_background.js');
     await importModule(
+        'ChromeVoxState', '/chromevox/background/chromevox_state.js');
+    await importModule(
         'CustomAutomationEvent',
         '/chromevox/common/custom_automation_event.js');
     await importModule(
@@ -42,6 +44,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     await importModule(
         'GestureCommandHandler',
         '/chromevox/background/gesture_command_handler.js');
+    await importModule('Output', '/chromevox/background/output/output.js');
     await importModule(
         'PageLoadSoundHandler',
         '/chromevox/background/page_load_sound_handler.js');
@@ -1908,7 +1911,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ReinsertedNodeRecovery', async function() {
     <script>
       let div =       document.body.firstElementChild;
       let start =       document.getElementById('start');
-      document.getElementById('hot').addEventListener('focus', (evt) => {
+      document.getElementById('hot').addEventListener('focus', evt => {
         let hot = evt.target;
         hot.remove();
         div.insertAfter(hot, start);
@@ -2567,13 +2570,13 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadWindowTitle', async function() {
     <button id="click"></button>
     <script>
       const button = document.getElementById('click');
-      button.addEventListener('click', _ => document.title = 'bar');
+      button.addEventListener('click', () => document.title = 'bar');
     </script>
   `;
   const root = await this.runWithLoadedTree(site);
   const clickButtonThenReadCurrentTitle = () => {
     const desktop = root.parent.root;
-    desktop.addEventListener(EventType.TREE_CHANGED, (evt) => {
+    desktop.addEventListener(EventType.TREE_CHANGED, evt => {
       if (evt.target.role === RoleType.WINDOW && /bar/.test(evt.target.name)) {
         doCmd('readCurrentTitle')();
       }
@@ -2614,7 +2617,7 @@ TEST_F('ChromeVoxBackgroundTest', 'SetAccessibilityFocus', async function() {
   const node = root.find({role: RoleType.BUTTON});
 
   node.addEventListener(EventType.FOCUS, this.newCallback(function() {
-    chrome.automation.getAccessibilityFocus((focusedNode) => {
+    chrome.automation.getAccessibilityFocus(focusedNode => {
       assertEquals(node, focusedNode);
     });
   }));
@@ -3029,7 +3032,7 @@ TEST_F('ChromeVoxBackgroundTest', 'SwipeLeftRight2', async function() {
   const site = `
     <p id="live" aria-live="polite"</p>
     <script>
-    document.body.addEventListener('keydown', (evt) => {
+    document.body.addEventListener('keydown', evt => {
       document.getElementById('live').textContent = evt.key;
     });
     </script>
@@ -3120,14 +3123,12 @@ TEST_F('ChromeVoxBackgroundTest', 'ImageAnnotations', async function() {
 TEST_F('ChromeVoxBackgroundTest', 'VolumeChanges', async function() {
   const mockFeedback = this.createMockFeedback();
   await this.runWithLoadedTree('<p>test</p>');
-  const bounds = ChromeVoxState.instance.getFocusBounds();
+  const bounds = FocusBounds.get();
   mockFeedback.call(press(KeyCode.VOLUME_UP))
       .expectSpeech('Volume', 'Slider', /\d+%/)
       .call(() => {
         // The bounds should not have changed.
-        assertEquals(
-            JSON.stringify(bounds),
-            JSON.stringify(ChromeVoxState.instance.getFocusBounds()));
+        assertEquals(JSON.stringify(bounds), JSON.stringify(FocusBounds.get()));
       })
       .replay();
 });
@@ -3529,8 +3530,8 @@ TEST_F(
       const clearCurrentRange = ChromeVoxState.instance.setCurrentRange.bind(
           ChromeVoxState.instance, null);
       const toggleTalkBack = () => {
-        ChromeVoxState.instance.talkBackEnabled =
-            !ChromeVoxState.instance.talkBackEnabled;
+        ChromeVoxState.instance.talkBackEnabled_ =
+            !ChromeVoxState.instance.talkBackEnabled_;
       };
 
       mockFeedback
@@ -3555,17 +3556,20 @@ TEST_F(
           .call(clearCurrentRange)
           .call(toggleTalkBack)
           .call(nextObjectKeyboard)
-          .call(() => assertFalse(!!ChromeVoxState.instance.currentRange))
+          .call(
+              () => assertFalse(Boolean(ChromeVoxState.instance.currentRange)))
 
           .call(nextObjectBraille)
-          .call(() => assertFalse(!!ChromeVoxState.instance.currentRange))
+          .call(
+              () => assertFalse(Boolean(ChromeVoxState.instance.currentRange)))
 
           .call(nextObjectGesture)
-          .call(() => assertFalse(!!ChromeVoxState.instance.currentRange))
+          .call(
+              () => assertFalse(Boolean(ChromeVoxState.instance.currentRange)))
 
           .call(toggleTalkBack)
           .call(nextObjectKeyboard)
-          .call(() => assertTrue(!!ChromeVoxState.instance.currentRange))
+          .call(() => assertTrue(Boolean(ChromeVoxState.instance.currentRange)))
 
           .replay();
     });
@@ -3596,9 +3600,9 @@ TEST_F('ChromeVoxBackgroundTest', 'DetailsChanged', async function() {
 
 SYNC_TEST_F('ChromeVoxBackgroundTest', 'PageLoadEarcons', function() {
   const sawEarcons = [];
-  const fakeEarcons = {playEarcon: (earcon) => sawEarcons.push(earcon)};
+  const fakeEarcons = {playEarcon: earcon => sawEarcons.push(earcon)};
   Object.defineProperty(ChromeVox, 'earcons', {get: () => fakeEarcons});
-  AutomationUtil.getTopLevelRoot = (node) => node;
+  AutomationUtil.getTopLevelRoot = node => node;
 
   // Use this specific object to control the load environment.
   const handler = new PageLoadSoundHandler();
@@ -3815,7 +3819,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NewWindowWebSpeech', function() {
   this.newCallback(async () => {
     const speech = [];
     let onSpeech;
-    ChromeVox.tts.speak = (textString) => {
+    ChromeVox.tts.speak = textString => {
       speech.push(textString);
       if (onSpeech) {
         onSpeech(textString);
@@ -3825,7 +3829,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NewWindowWebSpeech', function() {
     chrome.runtime.openOptionsPage();
 
     await new Promise(resolve => {
-      onSpeech = (textString) => {
+      onSpeech = textString => {
         if (textString === 'ChromeVox Options') {
           resolve();
         }

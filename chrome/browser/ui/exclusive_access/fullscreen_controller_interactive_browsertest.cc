@@ -30,6 +30,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
@@ -86,7 +87,7 @@ class FullscreenControllerInteractiveTest : public ExclusiveAccessTest {
     EXPECT_TRUE(browser()->IsMouseLocked() == browser()
                                                   ->tab_strip_model()
                                                   ->GetActiveWebContents()
-                                                  ->GetMainFrame()
+                                                  ->GetPrimaryMainFrame()
                                                   ->GetRenderViewHost()
                                                   ->GetWidget()
                                                   ->GetView()
@@ -146,7 +147,7 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
   do {
     FullscreenNotificationObserver fullscreen_observer(browser());
     if (enter_fullscreen)
-      browser()->EnterFullscreenModeForTab(tab->GetMainFrame(), {});
+      browser()->EnterFullscreenModeForTab(tab->GetPrimaryMainFrame(), {});
     else
       browser()->ExitFullscreenModeForTab(tab);
     fullscreen_observer.Wait();
@@ -206,7 +207,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        RunOrDeferClosureDuringTransition) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  GetFullscreenController()->EnterFullscreenModeForTab(tab->GetMainFrame(), {});
+  GetFullscreenController()->EnterFullscreenModeForTab(
+      tab->GetPrimaryMainFrame(), {});
   ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 
   base::RunLoop run_loop;
@@ -677,12 +679,157 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
 
+// Tests FullscreenController support for fullscreen capability delegation.
+// https://wicg.github.io/capability-delegation/spec.html
+// See related wpt/fullscreen/api/delegate-request.https.sub.tentative.html
+// TODO(crbug.com/1326575): Test opener->popup etc. messaging; add WPT coverage.
+class FullscreenCapabilityDelegationFullscreenControllerInteractiveTest
+    : public FullscreenControllerInteractiveTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  FullscreenCapabilityDelegationFullscreenControllerInteractiveTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    FullscreenControllerInteractiveTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(GetParam()
+                                        ? switches::kEnableBlinkFeatures
+                                        : switches::kDisableBlinkFeatures,
+                                    "CapabilityDelegationFullscreenRequest");
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
+    embedded_test_server()->ServeFilesFromSourceDirectory(
+        "chrome/test/data/capability_delegation");
+  }
+
+  // Returns a popup with `url`, opened via JS from `browser`'s active tab.
+  content::WebContents* OpenPopup(Browser* browser, const GURL& url) {
+    const std::string script = content::JsReplace(
+        "window.open($1, '', 'width=500,height=500');", url.spec());
+    content::ExecuteScriptAsync(
+        browser->tab_strip_model()->GetActiveWebContents(), script);
+    Browser* popup = ui_test_utils::WaitForBrowserToOpen();
+    EXPECT_NE(popup, browser);
+    content::WebContents* popup_contents =
+        popup->tab_strip_model()->GetActiveWebContents();
+    EXPECT_TRUE(WaitForRenderFrameReady(popup_contents->GetPrimaryMainFrame()));
+    EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
+    return popup_contents;
+  }
+
+  // Run `script` on `initiator` with `options`, and compares `expected_result`
+  // with the script result and the `target` browser's fullscreen state.
+  void ExecScriptAndCheckFullscreen(content::WebContents* initiator,
+                                    Browser* target,
+                                    const std::string& script,
+                                    int options,
+                                    bool expected_result) {
+    FullscreenNotificationObserver fullscreen_observer(target);
+    EXPECT_EQ(expected_result, EvalJs(initiator, script, options));
+    if (expected_result)
+      fullscreen_observer.Wait();
+    EXPECT_EQ(expected_result, target->window()->IsFullscreen());
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(
+    FullscreenCapabilityDelegationFullscreenControllerInteractiveTest,
+    CapabilityDelegationSameOriginPopup) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page that requests fullscreen and replies on message receipt.
+  const GURL receiver_url = embedded_test_server()->GetURL(
+      "a.com", "/fullscreen_request_delegation_receiver.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), receiver_url));
+
+  // Open a same-origin popup that delegates fullscreen and reports the result.
+  const GURL initiator_url = embedded_test_server()->GetURL(
+      "a.com", "/fullscreen_request_delegation_initiator.html");
+  content::WebContents* popup = OpenPopup(browser(), initiator_url);
+
+  const std::string targetOrigin =
+      embedded_test_server()->GetOrigin("a.com").Serialize();
+  const std::string script_without_delegation = content::JsReplace(
+      "delegateCapability(window.opener, $1, '')", targetOrigin);
+  const std::string script_with_delegation = content::JsReplace(
+      "delegateCapability(window.opener, $1, 'fullscreen')", targetOrigin);
+
+  // Fullscreen is only granted with user activation and explicit delegation.
+  ExecScriptAndCheckFullscreen(popup, browser(), script_without_delegation,
+                               content::EXECUTE_SCRIPT_NO_USER_GESTURE, false);
+  ExecScriptAndCheckFullscreen(popup, browser(), script_with_delegation,
+                               content::EXECUTE_SCRIPT_NO_USER_GESTURE, false);
+  ExecScriptAndCheckFullscreen(popup, browser(), script_without_delegation,
+                               content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, false);
+  ExecScriptAndCheckFullscreen(popup, browser(), script_with_delegation,
+                               content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                               GetParam());
+}
+
+// TODO(crbug.com/1331074): Flaky.
+IN_PROC_BROWSER_TEST_P(
+    FullscreenCapabilityDelegationFullscreenControllerInteractiveTest,
+    DISABLED_CapabilityDelegationCrossOriginPopup) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page that requests fullscreen and replies on message receipt.
+  const GURL receiver_url = embedded_test_server()->GetURL(
+      "a.com", "/fullscreen_request_delegation_receiver.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), receiver_url));
+
+  // Open a cross-origin popup that delegates fullscreen and reports the result.
+  const GURL initiator_url = embedded_test_server()->GetURL(
+      "b.com", "/fullscreen_request_delegation_initiator.html");
+  content::WebContents* popup = OpenPopup(browser(), initiator_url);
+
+  const std::string targetOrigin =
+      embedded_test_server()->GetOrigin("a.com").Serialize();
+  const std::string script_without_delegation = content::JsReplace(
+      "delegateCapability(window.opener, $1, '')", targetOrigin);
+  const std::string script_with_delegation = content::JsReplace(
+      "delegateCapability(window.opener, $1, 'fullscreen')", targetOrigin);
+
+  // Fullscreen is only granted with user activation and explicit delegation.
+  ExecScriptAndCheckFullscreen(popup, browser(), script_without_delegation,
+                               content::EXECUTE_SCRIPT_NO_USER_GESTURE, false);
+  ExecScriptAndCheckFullscreen(popup, browser(), script_with_delegation,
+                               content::EXECUTE_SCRIPT_NO_USER_GESTURE, false);
+  ExecScriptAndCheckFullscreen(popup, browser(), script_without_delegation,
+                               content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, false);
+  ExecScriptAndCheckFullscreen(popup, browser(), script_with_delegation,
+                               content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                               GetParam());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    FullscreenCapabilityDelegationFullscreenControllerInteractiveTest,
+    ::testing::Bool());
+
 // Tests FullscreenController support of Multi-Screen Window Placement features.
 // Sites with the Window Placement permission can request fullscreen on a
 // specific screen, move fullscreen windows to different displays, and more.
 class MultiScreenFullscreenControllerInteractiveTest
     : public FullscreenControllerInteractiveTest {
  public:
+  void SetUp() override {
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    screen_.display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
+                                      display::DisplayList::Type::PRIMARY);
+    display::Screen::SetScreenInstance(&screen_);
+#endif
+    FullscreenControllerInteractiveTest::SetUp();
+  }
+
+  void TearDown() override {
+    FullscreenControllerInteractiveTest::TearDown();
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    display::Screen::SetScreenInstance(nullptr);
+#endif
+  }
+
   // Perform common setup operations for multi-screen fullscreen testing:
   // Mock a screen with two displays, move the browser onto the first display,
   // and auto-grant the Window Placement permission on its active tab.
@@ -692,12 +839,8 @@ class MultiScreenFullscreenControllerInteractiveTest
     display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
         .UpdateDisplay("0+0-800x800,800+0-800x800");
 #else
-    original_screen_ = display::Screen::GetScreen();
-    screen_.display_list().AddDisplay({1, gfx::Rect(0, 0, 800, 800)},
-                                      display::DisplayList::Type::PRIMARY);
     screen_.display_list().AddDisplay({2, gfx::Rect(800, 0, 800, 800)},
                                       display::DisplayList::Type::NOT_PRIMARY);
-    display::Screen::SetScreenInstance(&screen_);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     EXPECT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
 
@@ -718,14 +861,6 @@ class MultiScreenFullscreenControllerInteractiveTest
         permissions::PermissionRequestManager::ACCEPT_ALL);
 
     return tab;
-  }
-
-  void TearDown() override {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-    if (original_screen_)
-      display::Screen::SetScreenInstance(original_screen_);
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-    FullscreenControllerInteractiveTest::TearDown();
   }
 
   // Wait for a JS content fullscreen change with the given script and options.
@@ -801,14 +936,12 @@ class MultiScreenFullscreenControllerInteractiveTest
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   display::DisplayList& display_list() { return screen_.display_list(); }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
  private:
   base::test::ScopedFeatureList feature_list_{
       blink::features::kWindowPlacement};
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  raw_ptr<display::Screen> original_screen_ = nullptr;
   display::ScreenBase screen_;
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif
 };
 
 // TODO(crbug.com/1034772): Disabled on Windows, where views::FullscreenHandler

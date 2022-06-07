@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        MessagesBeforeAndAfterRenderFrameCreated) {
   // Start with a WebContents that hasn't created its main RenderFrame.
   WebContents* web_contents = shell()->web_contents();
-  ASSERT_FALSE(web_contents->GetMainFrame()->IsRenderFrameCreated());
+  ASSERT_FALSE(web_contents->GetMainFrame()->IsRenderFrameLive());
 
   // An attempt to run script via GetAssociatedLocalFrame will do nothing before
   // the RenderFrame is created, since the message sent to the renderer will get
@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Navigating will create the RenderFrame.
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  ASSERT_TRUE(web_contents->GetMainFrame()->IsRenderFrameCreated());
+  ASSERT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
 
   // Future attempts to run script via GetAssociatedLocalFrame should succeed.
   // This timed out before the fix, since the message was dropped and no value
@@ -4387,7 +4387,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, WebUiReloadAfterCrash) {
   // Execute script in an isolated world to avoid causing a Trusted Types
   // violation due to eval.
   EXPECT_EQ("Graphics Feature Status",
-            EvalJs(main_document, "document.querySelector('h3').textContent",
+            EvalJs(main_document,
+                   "document.querySelector('info-view').shadowRoot"
+                   ".querySelector('h3').textContent",
                    EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
 }
 
@@ -6383,7 +6385,7 @@ class RenderFrameHostImplAnonymousIframeBrowserTest
 };
 
 // This test checks that the initial empty document in an anonymous iframe whose
-// parent document is not anonymous is also not anonymous.
+// parent document is not anonymous is anonymous.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeBrowserTest,
                        InitialEmptyDocumentInAnonymousIframe) {
   GURL main_url = embedded_test_server()->GetURL("/title1.html");
@@ -6405,8 +6407,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeBrowserTest,
   EXPECT_EQ(1U, main_rfh->child_count());
   EXPECT_TRUE(main_rfh->child_at(0)->anonymous());
   EXPECT_FALSE(main_rfh->child_at(0)->current_frame_host()->anonymous());
-  EXPECT_EQ(false, EvalJs(main_rfh->child_at(0)->current_frame_host(),
-                          "window.isAnonymouslyFramed"));
+  EXPECT_EQ(true, EvalJs(main_rfh->child_at(0)->current_frame_host(),
+                         "window.isAnonymouslyFramed"));
   EXPECT_FALSE(main_rfh->child_at(0)
                    ->current_frame_host()
                    ->storage_key()
@@ -6849,5 +6851,183 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowserTestWithStoragePartitioning,
               grandchild_rfh_2->storage_key());
   }
 }
+
+// Tests for clearing window.name on cross-site cross-BrowsingInstance
+// navigations, with swapping BrowsingContextState and clearing window.name both
+// enabled and disabled.
+class RenderFrameHostImplBrowsingContextStateNameTest
+    : public RenderFrameHostImplBrowserTest,
+      public testing::WithParamInterface<testing::tuple<bool, bool>> {
+ public:
+  // Provides meaningful param names instead of /0, /1, ...
+  static std::string DescribeParams(
+      const testing::TestParamInfo<ParamType>& info) {
+    auto [enable_browsing_context_state_swap, disable_frame_name_update] =
+        info.param;
+    return base::StringPrintf(
+        "%s_%s",
+        enable_browsing_context_state_swap
+            ? "NewBrowsingContextStateOnBrowsingContextGroupSwap"
+            : "LegacyOneToOneWithFrameTreeNode",
+        disable_frame_name_update
+            ? "DisableFrameNameUpdateOnNonCurrentRenderFrameHost"
+            : "EnableFrameNameUpdateOnNonCurrentRenderFrameHost");
+  }
+
+ protected:
+  void SetUp() override {
+    if (testing::get<0>(GetParam())) {
+      browsing_context_state_feature_list_.InitAndEnableFeature(
+          features::kNewBrowsingContextStateOnBrowsingContextGroupSwap);
+    } else {
+      browsing_context_state_feature_list_.InitAndDisableFeature(
+          features::kNewBrowsingContextStateOnBrowsingContextGroupSwap);
+    }
+
+    if (testing::get<1>(GetParam())) {
+      disable_name_update_feature_list_.InitAndEnableFeature(
+          features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost);
+    } else {
+      disable_name_update_feature_list_.InitAndDisableFeature(
+          features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost);
+    }
+
+    RenderFrameHostImplBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList browsing_context_state_feature_list_;
+  base::test::ScopedFeatureList disable_name_update_feature_list_;
+};
+
+// Test that, when the RenderFrameHostImpl is in the BackForwardCache, the
+// name update is blocked if kDisableFrameNameUpdateOnNonCurrentRenderFrameHost
+// is enabled
+//
+// TODO(crbug.com/1326943): Flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_BlockNameUpdateForBackForwardCache \
+  DISABLED_BlockNameUpdateForBackForwardCache
+#else
+#define MAYBE_BlockNameUpdateForBackForwardCache \
+  BlockNameUpdateForBackForwardCache
+#endif  // BUILDFLAG(IS_MAC)
+IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
+                       MAYBE_BlockNameUpdateForBackForwardCache) {
+  // Create the RenderFrameHost and store it in the BackForwardCache.
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* render_frame_host = web_contents()->GetMainFrame();
+  EXPECT_TRUE(ExecJs(render_frame_host, "window.name = 'page_name';"));
+  EXPECT_TRUE(ExecJs(render_frame_host, "window.name == 'page_name';"));
+  EXPECT_EQ(render_frame_host->browsing_context_state()->frame_name(),
+            "page_name");
+  EXPECT_EQ(render_frame_host->browsing_context_state()
+                ->current_replication_state()
+                .unique_name,
+            "");
+
+  // Update the name using a pagehide handler to ensure that it occurs while the
+  // RenderFrameHost is in the BackForwardCache. This typically shouldn't occur
+  // and the name update should therefore be blocked.
+  EXPECT_TRUE(ExecJs(
+      render_frame_host,
+      "window.onpagehide = function() { window.name = 'unused_name'; }"));
+
+  // Navigate so that the current RenderFrameHost is cached.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(render_frame_host->IsInBackForwardCache());
+
+  std::string frame_name =
+      render_frame_host->browsing_context_state()->frame_name();
+  std::string unique_name = render_frame_host->browsing_context_state()
+                                ->current_replication_state()
+                                .unique_name;
+
+  if (base::FeatureList::IsEnabled(
+          features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost)) {
+    // Verify that the frame name and unique name haven't been changed, even
+    // though a name change was triggered by the Javascript.
+    EXPECT_EQ(frame_name, "page_name");
+    EXPECT_EQ(unique_name, "");
+  } else {
+    // Verify that the frame name and unique name have been changed, as we are
+    // not disabling the update.
+    EXPECT_EQ(frame_name, "unused_name");
+    EXPECT_EQ(unique_name, "");
+  }
+}
+
+// Test that, when the RenderFrameHostImpl is in a pending delete state, the
+// name update is blocked if kDisableFrameNameUpdateOnNonCurrentRenderFrameHost
+// is enabled
+//
+// TODO(https://crbug.com/1326944): Flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_BlockNameUpdateForPendingDelete \
+  DISABLED_BlockNameUpdateForPendingDelete
+#else
+#define MAYBE_BlockNameUpdateForPendingDelete BlockNameUpdateForPendingDelete
+#endif  // BUILDFLAG(IS_MAC)
+IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
+                       MAYBE_BlockNameUpdateForPendingDelete) {
+  // Disable BackForwardCache so that a pending delete state can be forced.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
+
+  // Create the RenderFrameHost and mark it as a pending delete.
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* render_frame_host = web_contents()->GetMainFrame();
+  LeaveInPendingDeletionState(render_frame_host);
+  EXPECT_TRUE(ExecJs(render_frame_host, "window.name = 'page_name';"));
+  EXPECT_TRUE(ExecJs(render_frame_host, "window.name == 'page_name';"));
+  EXPECT_EQ(render_frame_host->browsing_context_state()->frame_name(),
+            "page_name");
+  EXPECT_EQ(render_frame_host->browsing_context_state()
+                ->current_replication_state()
+                .unique_name,
+            "");
+
+  // Update the name using an unload handler to ensure that it occurs while the
+  // RenderFrameHost is in a pending delete state. This typically shouldn't
+  // occur and the name update should therefore be blocked.
+  EXPECT_TRUE(
+      ExecJs(render_frame_host,
+             "window.onunload = function() { window.name = 'unused_name'; }"));
+
+  // Navigate so that the current RenderFrameHost is marked as pending delete.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(render_frame_host->IsPendingDeletion());
+
+  std::string frame_name =
+      render_frame_host->browsing_context_state()->frame_name();
+  std::string unique_name = render_frame_host->browsing_context_state()
+                                ->current_replication_state()
+                                .unique_name;
+
+  if (base::FeatureList::IsEnabled(
+          features::kDisableFrameNameUpdateOnNonCurrentRenderFrameHost)) {
+    // Verify that the frame name and unique name haven't been changed, even
+    // though a name change was triggered by the Javascript.
+    EXPECT_EQ(frame_name, "page_name");
+    EXPECT_EQ(unique_name, "");
+  } else {
+    // Verify that the frame name and unique name have been changed, as we are
+    // not disabling the update.
+    EXPECT_EQ(frame_name, "unused_name");
+    EXPECT_EQ(unique_name, "");
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    RenderFrameHostImplBrowsingContextStateNameTest,
+    testing::Combine(testing::Bool(), testing::Bool()),
+    RenderFrameHostImplBrowsingContextStateNameTest::DescribeParams);
 
 }  // namespace content

@@ -14,8 +14,8 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionUtil;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.segmentation_platform.SegmentationPlatformServiceFactory;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
-import org.chromium.components.optimization_guide.proto.ModelsProto.OptimizationTarget;
 import org.chromium.components.segmentation_platform.SegmentationPlatformService;
+import org.chromium.components.segmentation_platform.proto.SegmentationProto.SegmentId;
 import org.chromium.ui.permissions.AndroidPermissionDelegate;
 
 /**
@@ -191,8 +191,7 @@ public class AdaptiveToolbarStatePredictor {
         segmentationPlatformService.getSelectedSegment(
                 ADAPTIVE_TOOLBAR_SEGMENTATION_KEY, result -> {
                     callback.onResult(new Pair<>(result.isReady,
-                            getAdaptiveToolbarButtonVariantFromOptimizationTarget(
-                                    result.selectedSegment)));
+                            getAdaptiveToolbarButtonVariantFromSegmentId(result.selectedSegment)));
                 });
     }
 
@@ -218,19 +217,21 @@ public class AdaptiveToolbarStatePredictor {
     }
 
     /**
-     * Conversion method between {@link OptimizationTarget} and {@link
+     * Conversion method between {@link SegmentId} and {@link
      * AdaptiveToolbarButtonVariant}.
      */
     @VisibleForTesting
-    static @AdaptiveToolbarButtonVariant int getAdaptiveToolbarButtonVariantFromOptimizationTarget(
-            OptimizationTarget optimizationTarget) {
-        switch (optimizationTarget) {
+    static @AdaptiveToolbarButtonVariant int getAdaptiveToolbarButtonVariantFromSegmentId(
+            SegmentId segmentId) {
+        switch (segmentId) {
             case OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB:
                 return AdaptiveToolbarButtonVariant.NEW_TAB;
             case OPTIMIZATION_TARGET_SEGMENTATION_SHARE:
                 return AdaptiveToolbarButtonVariant.SHARE;
             case OPTIMIZATION_TARGET_SEGMENTATION_VOICE:
                 return AdaptiveToolbarButtonVariant.VOICE;
+            case CONTEXTUAL_PAGE_ACTIONS_PRICE_TRACKING:
+                return AdaptiveToolbarButtonVariant.PRICE_TRACKING;
             default:
                 return AdaptiveToolbarButtonVariant.UNKNOWN;
         }

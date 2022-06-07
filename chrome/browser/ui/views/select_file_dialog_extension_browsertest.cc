@@ -252,7 +252,7 @@ class BaseSelectFileDialogExtensionBrowserTest
   }
 
   void CheckJavascriptErrors() {
-    content::RenderFrameHost* host = dialog_->GetMainFrame();
+    content::RenderFrameHost* host = dialog_->GetPrimaryMainFrame();
     base::Value value =
         content::ExecuteScriptAndGetValue(host, "window.JSErrorCount");
     int js_error_count = value.GetInt();
@@ -260,7 +260,7 @@ class BaseSelectFileDialogExtensionBrowserTest
   }
 
   void ClickElement(const std::string& selector) {
-    content::RenderFrameHost* frame_host = dialog_->GetMainFrame();
+    content::RenderFrameHost* frame_host = dialog_->GetPrimaryMainFrame();
 
     auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
     CHECK(web_contents);
@@ -297,13 +297,12 @@ class BaseSelectFileDialogExtensionBrowserTest
     }
     // Open the file dialog: Files app will signal that it is loaded via the
     // "ready" chrome.test.sendMessage().
-    const bool will_reply = false;
-    ExtensionTestMessageListener init_listener("ready", will_reply);
+    ExtensionTestMessageListener init_listener("ready");
 
     std::unique_ptr<ExtensionTestMessageListener> additional_listener;
     if (!additional_message.empty()) {
-      additional_listener = std::make_unique<ExtensionTestMessageListener>(
-          additional_message, will_reply);
+      additional_listener =
+          std::make_unique<ExtensionTestMessageListener>(additional_message);
     }
 
     std::u16string title;
@@ -366,7 +365,7 @@ class BaseSelectFileDialogExtensionBrowserTest
   void CloseDialog(DialogButtonType button_type,
                    const gfx::NativeWindow& owning_window) {
     // Inject JavaScript into the dialog to click the dialog |button_type|.
-    content::RenderFrameHost* frame_host = dialog_->GetMainFrame();
+    content::RenderFrameHost* frame_host = dialog_->GetPrimaryMainFrame();
 
     ClickJsButton(frame_host, button_type);
 
@@ -424,7 +423,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest, DestroyListener2) {
                                      base::FilePath(), owning_window, ""));
 
   // Get the Files app WebContents/Framehost, before deleting the dialog_.
-  content::RenderFrameHost* frame_host = dialog_->GetMainFrame();
+  content::RenderFrameHost* frame_host = dialog_->GetPrimaryMainFrame();
 
   // Some users of SelectFileDialog destroy their listener before cleaning
   // up the dialog, delete the `dialog_`, however the
@@ -619,7 +618,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest, FileInputElement) {
   ASSERT_EQ(url, web_contents->GetLastCommittedURL());
 
   // Create a listener for the file dialog's "ready" message.
-  ExtensionTestMessageListener listener("ready", false);
+  ExtensionTestMessageListener listener("ready");
 
   // Click the file <input> element to open the file dialog.
   constexpr auto kButton = blink::WebMouseEvent::Button::kLeft;
@@ -674,7 +673,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionFlagTest, DialogColoredTitle) {
   // Open the file dialog on the default path.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                      base::FilePath(), owning_window, ""));
-  content::RenderFrameHost* frame_host = dialog_->GetMainFrame();
+  content::RenderFrameHost* frame_host = dialog_->GetPrimaryMainFrame();
   aura::Window* dialog_window =
       frame_host->GetNativeView()->GetToplevelWindow();
   auto* color_provider = ash::ColorProvider::Get();
@@ -717,7 +716,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionDarkLightModeEnabledTest,
   // Open the file dialog on the default path.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                      base::FilePath(), owning_window, ""));
-  content::RenderFrameHost* frame_host = dialog_->GetMainFrame();
+  content::RenderFrameHost* frame_host = dialog_->GetPrimaryMainFrame();
   aura::Window* dialog_window =
       frame_host->GetNativeView()->GetToplevelWindow();
 

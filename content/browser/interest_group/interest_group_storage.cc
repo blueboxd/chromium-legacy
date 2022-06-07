@@ -120,18 +120,20 @@ absl::optional<GURL> DeserializeURL(const std::string& serialized_url) {
 }
 
 base::Value ToValue(const blink::InterestGroup::Ad& ad) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("url", ad.render_url.spec());
+  base::Value value(base::Value::Type::DICTIONARY);
+  base::Value::Dict& dict = value.GetDict();
+  dict.Set("url", ad.render_url.spec());
   if (ad.metadata)
-    dict.SetStringKey("metadata", ad.metadata.value());
-  return dict;
+    dict.Set("metadata", ad.metadata.value());
+  return value;
 }
-blink::InterestGroup::Ad FromInterestGroupAdValue(const base::Value* value) {
+blink::InterestGroup::Ad FromInterestGroupAdValue(
+    const base::Value::Dict& dict) {
   blink::InterestGroup::Ad result;
-  const std::string* maybe_url = value->FindStringKey("url");
+  const std::string* maybe_url = dict.FindString("url");
   if (maybe_url)
     result.render_url = GURL(*maybe_url);
-  const std::string* maybe_metadata = value->FindStringKey("metadata");
+  const std::string* maybe_metadata = dict.FindString("metadata");
   if (maybe_metadata)
     result.metadata = *maybe_metadata;
   return result;
@@ -153,8 +155,10 @@ DeserializeInterestGroupAdVector(const std::string& serialized_ads) {
   if (!ads_value || !ads_value->is_list())
     return absl::nullopt;
   std::vector<blink::InterestGroup::Ad> result;
-  for (const auto& ad_value : ads_value->GetListDeprecated()) {
-    result.emplace_back(FromInterestGroupAdValue(&ad_value));
+  for (const auto& ad_value : ads_value->GetList()) {
+    const base::Value::Dict* dict = ad_value.GetIfDict();
+    if (dict)
+      result.emplace_back(FromInterestGroupAdValue(*dict));
   }
   return result;
 }
@@ -1345,6 +1349,28 @@ bool DoDeleteInterestGroupData(
   return transaction.Commit();
 }
 
+bool DoSetInterestGroupPriority(sql::Database& db,
+                                const url::Origin& owner,
+                                const std::string& name,
+                                double priority) {
+  // clang-format off
+  sql::Statement set_priority_sql(
+      db.GetCachedStatement(SQL_FROM_HERE,
+          "UPDATE interest_groups "
+          "SET priority=? "
+          "WHERE owner=? AND name=?"));
+  // clang-format on
+  if (!set_priority_sql.is_valid()) {
+    DLOG(ERROR) << "SetPriority SQL statement did not compile.";
+    return false;
+  }
+  set_priority_sql.Reset(true);
+  set_priority_sql.BindDouble(0, priority);
+  set_priority_sql.BindString(1, Serialize(owner));
+  set_priority_sql.BindString(2, name);
+  return set_priority_sql.Run();
+}
+
 bool DeleteOldJoins(sql::Database& db, base::Time cutoff) {
   sql::Statement del_join_history(db.GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM join_history WHERE join_time <= ?"));
@@ -1825,6 +1851,19 @@ void InterestGroupStorage::DeleteInterestGroupData(
 
   if (!DoDeleteInterestGroupData(*db_, origin_matcher)) {
     DLOG(ERROR) << "Could not delete interest group data: "
+                << db_->GetErrorMessage();
+  }
+}
+
+void InterestGroupStorage::SetInterestGroupPriority(const url::Origin& owner,
+                                                    const std::string& name,
+                                                    double priority) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!EnsureDBInitialized())
+    return;
+
+  if (!DoSetInterestGroupPriority(*db_, owner, name, priority)) {
+    DLOG(ERROR) << "Could not set interest group priority: "
                 << db_->GetErrorMessage();
   }
 }

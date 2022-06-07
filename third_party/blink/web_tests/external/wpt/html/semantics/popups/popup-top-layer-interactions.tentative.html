@@ -19,10 +19,10 @@ const examples = [
   {
     type: types.popup,
     closes: [types.popup],
-    createElement: () => Object.assign(document.createElement('div'), {popup: 'popup'}),
+    createElement: () => Object.assign(document.createElement('div'), {popup: 'auto'}),
     trigger: function() {this.element.showPopup()},
     close: function() {this.element.hidePopup()},
-    isTopLayer: function() {return this.element.matches(':popup-open')},
+    isTopLayer: function() {return this.element.matches(':top-layer')},
   },
   {
     type: types.modalDialog,

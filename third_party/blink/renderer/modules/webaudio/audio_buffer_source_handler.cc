@@ -21,12 +21,20 @@
 
 namespace blink {
 
-const double kDefaultGrainDuration = 0.020;  // 20ms
+namespace {
+
+constexpr double kDefaultGrainDuration = 0.020;  // 20ms
 
 // Arbitrary upper limit on playback rate.
 // Higher than expected rates can be useful when playing back oversampled
 // buffers to minimize linear interpolation aliasing.
-const double kMaxRate = 1024;
+constexpr double kMaxRate = 1024.0;
+
+// Default to mono. A call to setBuffer() will set the number of output
+// channels to that of the buffer.
+constexpr unsigned kDefaultNumberOfOutputChannels = 1;
+
+}  // namespace
 
 AudioBufferSourceHandler::AudioBufferSourceHandler(
     AudioNode& node,
@@ -39,9 +47,7 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(
       playback_rate_(&playback_rate),
       detune_(&detune),
       grain_duration_(kDefaultGrainDuration) {
-  // Default to mono. A call to setBuffer() will set the number of output
-  // channels to that of the buffer.
-  AddOutput(1);
+  AddOutput(kDefaultNumberOfOutputChannels);
 
   Initialize();
 }
@@ -295,9 +301,9 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
       read_index += frames_this_time;
       frames_to_process -= frames_this_time;
 
-      // It can happen that framesThisTime is 0. DCHECK that we will actually
-      // exit the loop in this case.  framesThisTime is 0 only if
-      // readIndex >= endFrame;
+      // It can happen that `frames_this_time` is 0. DCHECK that we will
+      // actually exit the loop in this case.  `frames_this_time` is 0 only if
+      // `read_index` >= `end_frame`.
       DCHECK(frames_this_time ? true : read_index >= end_frame);
 
       // Wrap-around.
@@ -557,8 +563,9 @@ void AudioBufferSourceHandler::StartSource(double when,
   grain_offset_ = grain_offset;
   grain_duration_ = grain_duration;
 
-  // If |when| < currentTime, the source must start now according to the spec.
-  // So just set startTime to currentTime in this case to start the source now.
+  // If `when` < `currentTime()`, the source must start now according to the
+  // spec.  So just set `start_time_` to `currentTime()` in this case to start
+  // the source now.
   start_time_ = std::max(when, Context()->currentTime());
 
   if (Buffer()) {
@@ -571,7 +578,7 @@ void AudioBufferSourceHandler::StartSource(double when,
 void AudioBufferSourceHandler::SetLoop(bool looping) {
   DCHECK(IsMainThread());
 
-  // This synchronizes with |Process()|.
+  // This synchronizes with `Process()`.
   MutexLocker process_locker(process_lock_);
 
   is_looping_ = looping;
@@ -581,7 +588,7 @@ void AudioBufferSourceHandler::SetLoop(bool looping) {
 void AudioBufferSourceHandler::SetLoopStart(double loop_start) {
   DCHECK(IsMainThread());
 
-  // This synchronizes with |Process()|.
+  // This synchronizes with `Process()`.
   MutexLocker process_locker(process_lock_);
 
   loop_start_ = loop_start;
@@ -590,7 +597,7 @@ void AudioBufferSourceHandler::SetLoopStart(double loop_start) {
 void AudioBufferSourceHandler::SetLoopEnd(double loop_end) {
   DCHECK(IsMainThread());
 
-  // This synchronizes with |Process()|.
+  // This synchronizes with `Process()`.
   MutexLocker process_locker(process_lock_);
 
   loop_end_ = loop_end;
@@ -643,13 +650,13 @@ bool AudioBufferSourceHandler::PropagatesSilence() const {
     return true;
   }
 
-  // Protect |shared_buffer_| with tryLock because it can be accessed by the
+  // Protect `shared_buffer_` with tryLock because it can be accessed by the
   // main thread.
   MutexTryLocker try_locker(process_lock_);
   if (try_locker.Locked()) {
     return !shared_buffer_.get();
   } else {
-    // Can't get lock. Assume |shared_buffer_| exists, so return false to
+    // Can't get lock. Assume `shared_buffer_` exists, so return false to
     // indicate this node is (or might be) outputting non-zero samples.
     return false;
   }

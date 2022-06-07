@@ -229,7 +229,6 @@ void HTMLParserScriptRunner::
 //
 // but currently does more than specced, because historically this and
 // ExecutePendingParserBlockingScriptAndDispatchEvent() was the same method.
-// TODO(hiroshige): Make this spec-conformant.
 void HTMLParserScriptRunner::ExecutePendingDeferredScriptAndDispatchEvent(
     PendingScript* pending_script) {
   // Stop watching loads before executeScript to prevent recursion if the script
@@ -243,24 +242,7 @@ void HTMLParserScriptRunner::ExecutePendingDeferredScriptAndDispatchEvent(
     Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
   }
 
-  {
-    // The following code corresponds to:
-    //
-    // <spec href="https://html.spec.whatwg.org/C/#scriptEndTag"
-    // step="B.7">Increment the parser's script nesting level by one (it should
-    // be zero before this step, so this sets it to one).</spec>
-    //
-    // but this shouldn't be executed here according to the
-    // #execute-the-script-block spec.
-    HTMLParserReentryPermit::ScriptNestingLevelIncrementer
-        nesting_level_incrementer =
-            reentry_permit_->IncrementScriptNestingLevel();
-
-    DCHECK(IsExecutingScript());
-    DoExecuteScript(pending_script, DocumentURLForScriptExecution(document_));
-  }
-
-  DCHECK(!IsExecutingScript());
+  DoExecuteScript(pending_script, DocumentURLForScriptExecution(document_));
 }
 
 void HTMLParserScriptRunner::PendingScriptFinished(
@@ -420,14 +402,21 @@ PendingScript* HTMLParserScriptRunner::TryTakeReadyScriptWaitingForParsing(
   // of scripts that will execute when the document has finished parsing has
   // its "ready to be parser-executed" flag set and the parser's Document has
   // no style sheet that is blocking scripts.</spec>
-  //
-  // TODO(hiroshige): Add check for style sheet blocking defer scripts
-  // https://github.com/whatwg/html/issues/3890
-  if (!waiting_scripts->front()->IsReady()) {
-    waiting_scripts->front()->WatchForLoad(this);
-    TraceParserBlockingScript(waiting_scripts->front().Get(),
-                              !document_->IsScriptExecutionReady());
-    waiting_scripts->front()->MarkParserBlockingLoadStartTime();
+  if (!document_->IsScriptExecutionReady())
+    return nullptr;
+  PendingScript* script = waiting_scripts->front();
+  if (!script->IsReady()) {
+    if (!script->IsWatchingForLoad()) {
+      // First time when all the conditions except for
+      // `PendingScript::IsReady()` are satisfied. Note that
+      // `TryTakeReadyScriptWaitingForParsing()` can triggered by script and
+      // stylesheet load completions multiple times, so `IsWatchingForLoad()` is
+      // checked to avoid double execution of this code block. When
+      // `IsWatchingForLoad()` is true, its existing client is always `this`.
+      script->WatchForLoad(this);
+      TraceParserBlockingScript(script, !document_->IsScriptExecutionReady());
+      script->MarkParserBlockingLoadStartTime();
+    }
     return nullptr;
   }
   return waiting_scripts->TakeFirst();

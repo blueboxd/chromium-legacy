@@ -103,7 +103,6 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
     /**
      * @return The {@link BrowserServicesIntentDataProvider} for this {@link CustomTabActivity}.
      */
-    @VisibleForTesting
     public BrowserServicesIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
     }
@@ -184,12 +183,11 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
         BaseCustomTabActivityModule baseCustomTabsModule = overridenBaseCustomTabFactory != null
                 ? overridenBaseCustomTabFactory.create(mIntentDataProvider,
-                        getStartupTabPreloader(), mNightModeStateController,
-                        intentIgnoringCriterion, getTopUiThemeColorProvider(),
-                        new DefaultBrowserProviderImpl())
-                : new BaseCustomTabActivityModule(mIntentDataProvider, getStartupTabPreloader(),
                         mNightModeStateController, intentIgnoringCriterion,
-                        getTopUiThemeColorProvider(), new DefaultBrowserProviderImpl());
+                        getTopUiThemeColorProvider(), new DefaultBrowserProviderImpl())
+                : new BaseCustomTabActivityModule(mIntentDataProvider, mNightModeStateController,
+                        intentIgnoringCriterion, getTopUiThemeColorProvider(),
+                        new DefaultBrowserProviderImpl());
         BaseCustomTabActivityComponent component =
                 ChromeApplicationImpl.getComponent().createBaseCustomTabActivityComponent(
                         commonsModule, baseCustomTabsModule);
@@ -547,6 +545,15 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
      */
     public boolean isInTwaMode() {
         return mTwaCoordinator == null ? false : mTwaCoordinator.shouldUseAppModeUi();
+    }
+
+    /**
+     * @return The package name of the Trusted Web Activity, if the activity is a TWA; null
+     * otherwise.
+     */
+    @Nullable
+    public String getTwaPackage() {
+        return mTwaCoordinator == null ? null : mTwaCoordinator.getTwaPackage();
     }
 
     @Override

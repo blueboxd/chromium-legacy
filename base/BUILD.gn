@@ -78,7 +78,7 @@ declare_args() {
 # Chromecast builds have full control over the platform and ensure that
 # the kernel and glibc versions used have patched the vulnerabilities,
 # so it is safe to use mutex priority inheritance on Chromecast platform.
-assert(!enable_mutex_priority_inheritance || is_castos,
+assert(!enable_mutex_priority_inheritance || is_chromecast,
        "Do not enable PI mutexes without consulting the security team")
 
 assert(!is_nacl || is_nacl_saigo,
@@ -115,11 +115,6 @@ config("todo_buildflag_build_rust_json_parser") {
     "--cfg",
     "buildflag__build_rust_json_parser",
   ]
-}
-
-config("base_implementation") {
-  defines = [ "BASE_IMPLEMENTATION" ]
-  configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 if (is_win) {
@@ -405,6 +400,8 @@ mixed_component("base") {
     "memory/ptr_util.h",
     "memory/raw_ptr.cc",
     "memory/raw_ptr.h",
+    "memory/raw_ptr_asan_service.cc",
+    "memory/raw_ptr_asan_service.h",
     "memory/raw_ptr_exclusion.h",
     "memory/raw_scoped_refptr_mismatch_checker.h",
     "memory/read_only_shared_memory_region.cc",
@@ -649,8 +646,8 @@ mixed_component("base") {
     "strings/utf_string_conversion_utils.h",
     "strings/utf_string_conversions.cc",
     "strings/utf_string_conversions.h",
-    "substring_set_matcher/string_pattern.cc",
-    "substring_set_matcher/string_pattern.h",
+    "substring_set_matcher/matcher_string_pattern.cc",
+    "substring_set_matcher/matcher_string_pattern.h",
     "substring_set_matcher/substring_set_matcher.cc",
     "substring_set_matcher/substring_set_matcher.h",
     "supports_user_data.cc",
@@ -995,8 +992,6 @@ mixed_component("base") {
       "synchronization/waitable_event_posix.cc",
       "synchronization/waitable_event_watcher_posix.cc",
       "system/sys_info_posix.cc",
-      "task/thread_pool/task_tracker_posix.cc",
-      "task/thread_pool/task_tracker_posix.h",
       "threading/platform_thread_internal_posix.cc",
       "threading/platform_thread_internal_posix.h",
       "threading/platform_thread_posix.cc",
@@ -1006,8 +1001,6 @@ mixed_component("base") {
 
     if (!is_nacl && !is_apple) {
       sources += [
-        "cpu_affinity_posix.cc",
-        "cpu_affinity_posix.h",
         "profiler/stack_copier_signal.cc",
         "profiler/stack_copier_signal.h",
         "profiler/stack_sampler_posix.cc",
@@ -1019,11 +1012,11 @@ mixed_component("base") {
 
   if (is_win) {
     sources += [
-      "debug/close_handle_hook_win.cc",
-      "debug/close_handle_hook_win.h",
       "debug/debugger_win.cc",
       "debug/gdi_debug_util_win.cc",
       "debug/gdi_debug_util_win.h",
+      "debug/handle_hooks_win.cc",
+      "debug/handle_hooks_win.h",
       "debug/invalid_access_win.cc",
       "debug/invalid_access_win.h",
       "debug/stack_trace_win.cc",
@@ -1171,6 +1164,7 @@ mixed_component("base") {
       "win/variant_vector.h",
       "win/vector.cc",
       "win/vector.h",
+      "win/win_handle_types.h",
       "win/win_handle_types_list.inc",
       "win/win_util.cc",
       "win/win_util.h",
@@ -1415,15 +1409,19 @@ mixed_component("base") {
   }
 
   all_dependent_configs = []
-  defines = []
+  defines = [ "BASE_IMPLEMENTATION" ]
   data = []
   data_deps = []
   libs = []
   frameworks = []
 
   configs += [
-    ":base_implementation",
     "//build/config:precompiled_headers",
+
+    # TODO(crbug.com/1292951): Enable.
+    # "//build/config/compiler:prevent_unsafe_narrowing",
+
+    "//build/config/compiler:wexit_time_destructors",
     "//build/config/compiler:wglobal_constructors",
   ]
 
@@ -1432,8 +1430,6 @@ mixed_component("base") {
     "//base/third_party/double_conversion",
     "//base/third_party/dynamic_annotations",
     "//build:branding_buildflags",
-    "//build:chromecast_buildflags",
-    "//build:chromeos_buildflags",
     "//build/config/compiler:compiler_buildflags",
     "//third_party/modp_b64",
   ]
@@ -1489,7 +1485,10 @@ mixed_component("base") {
     ":sanitizer_buildflags",
     ":synchronization_buildflags",
     ":tracing_buildflags",
+    "//base/allocator/partition_allocator:buildflags",
     "//base/numerics:base_numerics",
+    "//build:chromecast_buildflags",
+    "//build:chromeos_buildflags",
     "//third_party/abseil-cpp:absl",
   ]
 
@@ -1497,7 +1496,7 @@ mixed_component("base") {
   # building inside the cros_sdk environment - use host_toolchain as a
   # more robust check for this.
   if (!use_sysroot &&
-      (is_android || ((is_linux || is_chromeos) && !is_castos)) &&
+      (is_android || ((is_linux || is_chromeos) && !is_chromecast)) &&
       host_toolchain != "//build/toolchain/cros:host") {
     libs += [ "atomic" ]
   }
@@ -1585,7 +1584,7 @@ mixed_component("base") {
 
   # Allow more direct string conversions on platforms with native utf8
   # strings
-  if (is_apple || is_chromeos || is_castos || is_fuchsia) {
+  if (is_apple || is_chromeos || is_chromecast || is_fuchsia) {
     defines += [ "SYSTEM_NATIVE_UTF8" ]
   }
 
@@ -1847,8 +1846,6 @@ mixed_component("base") {
       "synchronization/waitable_event_posix.cc",
       "synchronization/waitable_event_watcher_posix.cc",
       "system/sys_info_fuchsia.cc",
-      "task/thread_pool/task_tracker_posix.cc",
-      "task/thread_pool/task_tracker_posix.h",
       "threading/platform_thread_fuchsia.cc",
       "threading/platform_thread_posix.cc",
       "threading/thread_local_storage_posix.cc",
@@ -1994,8 +1991,6 @@ mixed_component("base") {
       "system/sys_info_posix.cc",
       "task/thread_pool/initialization_util.cc",
       "task/thread_pool/initialization_util.h",
-      "task/thread_pool/task_tracker_posix.cc",
-      "task/thread_pool/task_tracker_posix.h",
     ]
   } else {
     # Remove NaCl stuff.
@@ -2021,6 +2016,15 @@ mixed_component("base") {
     # partition_alloc code if use_partition_alloc = false because no code uses
     # partition_alloc.
     public_deps += [ "allocator/partition_allocator:partition_alloc" ]
+
+    # PartitionAlloc is not yet built as a standalone component, and
+    # "external" usage of some exported functions causes Win32 component
+    # builds to break (LNK4217). This statement properly belongs _only_
+    # in PA's BUILD.gn, but we need it here to ensure the rest of
+    # `//base` is also considered "inside" the PA implementation.
+    #
+    # TODO(crbug.com/1151236): Remove this when possible.
+    defines += [ "IS_PARTITION_ALLOC_IMPL" ]
   }
 
   # Windows.
@@ -2213,6 +2217,8 @@ mixed_component("base") {
       "mac/scoped_objc_class_swizzler.h",
       "mac/scoped_objc_class_swizzler.mm",
       "mac/scoped_typeref.h",
+      "memory/platform_shared_memory_mapper_mac.cc",
+      "memory/platform_shared_memory_region_mac.cc",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
       "power_monitor/power_monitor_device_source_ios.mm",
@@ -2266,7 +2272,7 @@ mixed_component("base") {
 
   # Android and MacOS have their own custom shared memory handle
   # implementations. e.g. due to supporting both POSIX and native handles.
-  if (is_posix && !is_android && !is_mac) {
+  if (is_posix && !is_android && !is_apple) {
     sources += [
       "memory/platform_shared_memory_mapper_posix.cc",
       "memory/platform_shared_memory_region_posix.cc",
@@ -2282,7 +2288,7 @@ mixed_component("base") {
 
     # TODO(b/167763382) Find an alternate solution for Chromecast devices, since
     # adding the icui18n and icuuc deps significantly increases the binary size.
-    if (!is_castos) {
+    if (!is_chromecast) {
       sources += [ "time/time_exploded_icu.cc" ]
 
       # The ICU dependency is only needed on systems with a 32-bit time_t.
@@ -2459,7 +2465,6 @@ mixed_component("base") {
         [ "//build/config/clang:llvm-symbolizer_data($host_toolchain)" ]
   }
 
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
   if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
@@ -3047,6 +3052,7 @@ test("base_unittests") {
     "environment_unittest.cc",
     "feature_list_unittest.cc",
     "files/file_enumerator_unittest.cc",
+    "files/file_error_or_unittest.cc",
     "files/file_path_unittest.cc",
     "files/file_path_watcher_unittest.cc",
     "files/file_proxy_unittest.cc",
@@ -3502,11 +3508,9 @@ test("base_unittests") {
       "message_loop/fd_watch_controller_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
       "posix/unix_domain_socket_unittest.cc",
-      "task/thread_pool/task_tracker_posix_unittest.cc",
     ]
     if (!is_nacl && !is_apple) {
       sources += [
-        "cpu_affinity_posix_unittest.cc",
         "profiler/stack_copier_signal_unittest.cc",
         "profiler/thread_delegate_posix_unittest.cc",
       ]
@@ -3515,7 +3519,7 @@ test("base_unittests") {
 
   # Allow more direct string conversions on platforms with native utf8
   # strings
-  if (is_apple || is_chromeos || is_castos || is_fuchsia) {
+  if (is_apple || is_chromeos || is_chromecast || is_fuchsia) {
     defines += [ "SYSTEM_NATIVE_UTF8" ]
   }
 
@@ -3652,12 +3656,15 @@ test("base_unittests") {
       "allocator/partition_allocator/memory_reclaimer_unittest.cc",
       "allocator/partition_allocator/page_allocator_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/bits_pa_unittest.cc",
+      "allocator/partition_allocator/partition_alloc_base/component_export_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/cpu_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/cxx17_backports_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/logging_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/rand_util_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/scoped_clear_last_error_pa_unittest.cc",
+      "allocator/partition_allocator/partition_alloc_base/strings/stringprintf_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/sys_byteorder_pa_unittest.cc",
+      "allocator/partition_allocator/partition_alloc_base/thread_annotations_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_unittest.cc",
       "allocator/partition_allocator/partition_lock_unittest.cc",
       "allocator/partition_allocator/starscan/pcscan_scheduling_unittest.cc",
@@ -3667,6 +3674,16 @@ test("base_unittests") {
       "allocator/partition_allocator/starscan/state_bitmap_unittest.cc",
       "allocator/partition_allocator/thread_cache_unittest.cc",
     ]
+
+    if ((is_android || is_linux) && target_cpu == "arm64") {
+      cflags = [
+        "-Xclang",
+        "-target-feature",
+        "-Xclang",
+        "+mte",
+      ]
+    }
+
     if (is_android) {
       sources += [
         "allocator/partition_allocator/partition_alloc_base/files/file_path_pa_unittest.cc",
@@ -3748,7 +3765,6 @@ test("base_unittests") {
       "fuchsia/time_zone_data_unittest.cc",
       "message_loop/fd_watch_controller_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
-      "task/thread_pool/task_tracker_posix_unittest.cc",
     ]
 
     deps += [
@@ -3877,6 +3893,7 @@ action("build_date") {
 if (enable_nocompile_tests) {
   nocompile_test("base_nocompile_tests") {
     sources = [
+      "allocator/partition_allocator/partition_alloc_base/thread_annotations_pa_unittest.nc",
       "bind_unittest.nc",
       "callback_list_unittest.nc",
       "callback_unittest.nc",
@@ -3999,6 +4016,7 @@ if (is_android) {
     sources = [
       "android/base_features.cc",
       "features.cc",
+      "task/task_features.cc",
     ]
     template = "android/java/src/org/chromium/base/BaseFeatures.java.tmpl"
   }
@@ -4066,7 +4084,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/Log.java",
       "android/java/src/org/chromium/base/MathUtils.java",
       "android/java/src/org/chromium/base/MemoryPressureListener.java",
-      "android/java/src/org/chromium/base/NonThreadSafe.java",
       "android/java/src/org/chromium/base/ObserverList.java",
       "android/java/src/org/chromium/base/PackageManagerUtils.java",
       "android/java/src/org/chromium/base/PackageUtils.java",
@@ -4400,7 +4417,6 @@ if (is_android) {
       "android/junit/src/org/chromium/base/FileUtilsTest.java",
       "android/junit/src/org/chromium/base/LifetimeAssertTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
-      "android/junit/src/org/chromium/base/NonThreadSafeTest.java",
       "android/junit/src/org/chromium/base/PiiEliderTest.java",
       "android/junit/src/org/chromium/base/PromiseTest.java",
       "android/junit/src/org/chromium/base/TraceEventTest.java",

@@ -341,6 +341,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -2662,7 +2663,36 @@ void Document::EnsurePaintLocationDataValidForNode(
   if (!node->InActiveDocument())
     return;
 
-  GetDisplayLockDocumentState().UnlockShapingDeferredElements();
+  GetDisplayLockDocumentState().UnlockShapingDeferredElements(*node);
+
+  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
+      node, DisplayLockContext::ForcedPhase::kLayout);
+
+  // For all nodes we must have up-to-date style and have performed layout to do
+  // any location-based calculation.
+  UpdateStyleAndLayout(reason);
+}
+
+void Document::EnsurePaintLocationDataValidForNode(const Node* node,
+                                                   DocumentUpdateReason reason,
+                                                   CSSPropertyID property_id) {
+  DCHECK(node);
+  if (!node->InActiveDocument())
+    return;
+
+  if (RuntimeEnabledFeatures::DeferredShapingEnabled()) {
+    auto& state = GetDisplayLockDocumentState();
+    if (state.LockedDisplayLockCount() !=
+        state.DisplayLockBlockingAllActivationCount()) {
+      UpdateStyleAndLayoutTree();
+      if (node->GetLayoutObject()) {
+        if (property_id == CSSPropertyID::kWidth)
+          state.UnlockToDetermineWidth(*node->GetLayoutObject());
+        else
+          state.UnlockToDetermineHeight(*node->GetLayoutObject());
+      }
+    }
+  }
 
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
       node, DisplayLockContext::ForcedPhase::kLayout);
@@ -3648,10 +3678,12 @@ static bool AllDescendantsAreComplete(Document* document) {
       return false;
   }
 
-  for (PortalContents* portal : DocumentPortals::From(*document).GetPortals()) {
-    auto* portal_frame = portal->GetFrame();
-    if (portal_frame && portal_frame->IsLoading())
-      return false;
+  if (auto* portals = DocumentPortals::Get(*document)) {
+    for (PortalContents* portal : portals->GetPortals()) {
+      auto* portal_frame = portal->GetFrame();
+      if (portal_frame && portal_frame->IsLoading())
+        return false;
+    }
   }
   return true;
 }
@@ -3713,7 +3745,7 @@ bool Document::CheckCompletedInternal() {
 
   // No need to repeat if we've already notified this load as finished.
   if (!Loader()->SentDidFinishLoad()) {
-    if (GetFrame()->IsMainFrame()) {
+    if (GetFrame()->IsOutermostMainFrame()) {
       GetViewportData().GetViewportDescription().ReportMobilePageStats(
           GetFrame());
     }
@@ -5774,8 +5806,7 @@ void Document::setDomain(const String& raw_domain,
   // we'll check both, in order to give warning messages that are more specific
   // about the cause. Note: this means the order of the checks is important.
 
-  if (RuntimeEnabledFeatures::CrossOriginIsolationEnabled() &&
-      Agent::IsCrossOriginIsolated()) {
+  if (Agent::IsCrossOriginIsolated()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kWarning,
@@ -7198,33 +7229,35 @@ bool Document::HintShowing() const {
          (popup_and_hint_stack_.back()->PopupType() == PopupValueType::kHint);
 }
 
-void Document::HideTopmostPopupOrHint() {
+void Document::HideTopmostPopupOrHint(HidePopupFocusBehavior focus_behavior) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   if (popup_and_hint_stack_.IsEmpty())
     return;
-  popup_and_hint_stack_.back()->hidePopup(ASSERT_NO_EXCEPTION);
+  popup_and_hint_stack_.back()->hidePopupInternal(focus_behavior);
 }
 
-void Document::HideAllPopupsUntil(const Element* endpoint) {
+void Document::HideAllPopupsUntil(const Element* endpoint,
+                                  HidePopupFocusBehavior focus_behavior) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   while (!popup_and_hint_stack_.IsEmpty() &&
          popup_and_hint_stack_.back() != endpoint) {
-    popup_and_hint_stack_.back()->hidePopup(ASSERT_NO_EXCEPTION);
+    popup_and_hint_stack_.back()->hidePopupInternal(focus_behavior);
   }
 }
 
-void Document::HidePopupIfShowing(Element* popup) {
+void Document::HidePopupIfShowing(Element* popup,
+                                  HidePopupFocusBehavior focus_behavior) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   DCHECK(popup->HasValidPopupAttribute());
   if (!popup->popupOpen())
     return;
   if (popup->PopupType() == PopupValueType::kAsync) {
-    popup->hidePopup(ASSERT_NO_EXCEPTION);
+    popup->hidePopupInternal(focus_behavior);
   } else {
-    HideAllPopupsUntil(popup);
+    HideAllPopupsUntil(popup, focus_behavior);
     DCHECK(!popup_and_hint_stack_.IsEmpty() &&
            popup_and_hint_stack_.back() == popup);
-    HideTopmostPopupOrHint();
+    HideTopmostPopupOrHint(focus_behavior);
   }
 }
 
@@ -8199,13 +8232,10 @@ void Document::VisionDeficiencyChanged() {
 }
 
 void Document::UpdateForcedColors() {
-  auto* web_theme_engine =
-      RuntimeEnabledFeatures::ForcedColorsEnabled() && Platform::Current()
-          ? Platform::Current()->ThemeEngine()
-          : nullptr;
-  ForcedColors forced_colors = web_theme_engine
-                                   ? web_theme_engine->GetForcedColors()
-                                   : ForcedColors::kNone;
+  ForcedColors forced_colors =
+      RuntimeEnabledFeatures::ForcedColorsEnabled()
+          ? WebThemeEngineHelper::GetNativeThemeEngine()->GetForcedColors()
+          : ForcedColors::kNone;
   in_forced_colors_mode_ = forced_colors != ForcedColors::kNone;
   if (in_forced_colors_mode_)
     GetStyleEngine().EnsureUAStyleForForcedColors();
@@ -8415,6 +8445,11 @@ Document::PendingJavascriptUrl::PendingJavascriptUrl(
     : url(input_url), world(std::move(world)) {}
 
 Document::PendingJavascriptUrl::~PendingJavascriptUrl() = default;
+
+void Document::CheckPartitionedCookiesOriginTrial(
+    const ResourceResponse& response) {
+  cookie_jar_->CheckPartitionedCookiesOriginTrial(response);
+}
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 

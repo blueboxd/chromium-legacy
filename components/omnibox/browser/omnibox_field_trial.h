@@ -356,13 +356,6 @@ int KeywordScoreForSufficientlyCompleteMatch();
 // Returns true if the fuzzy URL suggestions feature is enabled.
 bool IsFuzzyUrlSuggestionsEnabled();
 
-// Returns true if the first batch of Pedals on Android is enabled.
-bool IsPedalsAndroidBatch1Enabled();
-
-// Returns true if the third batch of Pedals is enabled for non-English
-// locales.
-bool IsPedalsBatch3NonEnglishEnabled();
-
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
@@ -564,6 +557,10 @@ extern const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits;
 // prefix-suggest. A duplicative visit is a visit to the same search term in an
 // interval smaller than kAutocompleteDuplicateVisitIntervalThreshold.
 extern const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits;
+
+// Specifies the relevance scores for the Site Search Starter Pack ACMatches
+// (e.g. @bookmarks, @history) provided by the Builtin Provider.
+extern const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore;
 
 // New params should be inserted above this comment and formatted as:
 // - Short comment categorizing the relevant features & params.

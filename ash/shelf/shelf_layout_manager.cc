@@ -272,6 +272,14 @@ bool IsInImmersiveFullscreen() {
   return active_window && active_window->IsInImmersiveFullscreen();
 }
 
+int GetShelfSwipeOffset() {
+  if (!features::IsShelfPalmRejectionSwipeOffsetEnabled())
+    return 0;
+
+  return base::GetFieldTrialParamByFeatureAsInt(
+      ash::features::kShelfPalmRejectionSwipeOffset, "shelf_swipe_offset", 0);
+}
+
 // Forwards gesture events to ShelfLayoutManager to hide the hotseat
 // when it is kExtended.
 class HotseatEventHandler : public ui::EventHandler,
@@ -1955,8 +1963,11 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
-  if (!in_tablet_mode && shelf_widget_->IsShowingAppList())
+  if (auto* app_list_controller = Shell::Get()->app_list_controller();
+      !in_tablet_mode &&
+      app_list_controller->GetTargetVisibility(display_.id())) {
     return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   if (shelf_widget_->status_area_widget() &&
       shelf_widget_->status_area_widget()->ShouldShowShelf()) {
@@ -2144,11 +2155,11 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
 
 float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
   if (Shell::Get()->IsInTabletMode()) {
-    // The shelf should not become transparent during the animation to or from
+    // The shelf should not become transparent during the animation to
     // HomeLauncher.
     auto* app_list_controller = Shell::Get()->app_list_controller();
-    if (app_list_controller->GetTargetVisibility(display_.id()) !=
-        app_list_controller->IsVisible(display_.id())) {
+    if (app_list_controller->GetTargetVisibility(display_.id()) &&
+        !app_list_controller->IsVisible(display_.id())) {
       return 1.0f;
     }
   }
@@ -2409,6 +2420,12 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
     return false;
   }
 
+  if (is_tablet_mode &&
+      !shelf_->hotseat_widget()->IsPointWithinGestureTouchArea(
+          event_in_screen.location())) {
+    return false;
+  }
+
   drag_status_ = kDragInProgress;
   drag_auto_hide_state_ =
       (!Shell::Get()->overview_controller()->InOverviewSession() &&
@@ -2434,7 +2451,10 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
     drag_amount_ = -(shelf_->hotseat_widget()->GetHotseatSize() +
                      ShelfConfig::Get()->hotseat_bottom_padding());
   } else {
-    drag_amount_ = 0.f;
+    // For tablet mode, we allow a certain offset between the drag event offset
+    // and the hotseat location to avoid accidentally extendeing the hotseat in
+    // certain conditions.
+    drag_amount_ = is_tablet_mode ? GetShelfSwipeOffset() : 0;
   }
 
   // If the start location is above the shelf (e.g., on the extended hotseat),

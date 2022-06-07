@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CASCADE_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CASCADE_MAP_H_
 
+#include "base/check_op.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -23,6 +24,8 @@ class CORE_EXPORT CascadeMap {
   STACK_ALLOCATED();
 
  public:
+  class CascadePriorityList;
+
   // Get the CascadePriority for the given CSSPropertyName. If there is no
   // entry for the given name, CascadePriority() is returned.
   CascadePriority At(const CSSPropertyName&) const;
@@ -50,6 +53,8 @@ class CORE_EXPORT CascadeMap {
   // layers below the given priority.
   const CascadePriority* FindRevertLayer(const CSSPropertyName&,
                                          CascadePriority) const;
+  // Similar to Find(), if you already have the right CascadePriorityList.
+  CascadePriority& Top(CascadePriorityList&);
   // Adds an entry to the map if the incoming priority is greater than or equal
   // to the current priority for the same name. Entries must be added in non-
   // decreasing lexicographical order of (origin, tree scope, layer).
@@ -168,6 +173,7 @@ class CORE_EXPORT CascadeMap {
   using CustomMap = HashMap<CSSPropertyName, CascadePriorityList>;
 
   const CustomMap& GetCustomMap() const { return custom_properties_; }
+  CustomMap& GetCustomMap() { return custom_properties_; }
 
  private:
   uint64_t high_priority_ = 0;

@@ -735,8 +735,9 @@ IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
   EXPECT_NE(nullptr, GetSidePanelContentsFor(browser(), 1));
 
   // Simulate a crash in the hosted side panel contents.
-  auto* rph_second_tab =
-      GetSidePanelContentsFor(browser(), 1)->GetMainFrame()->GetProcess();
+  auto* rph_second_tab = GetSidePanelContentsFor(browser(), 1)
+                             ->GetPrimaryMainFrame()
+                             ->GetProcess();
   content::RenderProcessHostWatcher crash_observer_second_tab(
       rph_second_tab,
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
@@ -749,8 +750,9 @@ IN_PROC_BROWSER_TEST_P(SideSearchBrowserControllerTest,
 
   // Simulate a crash in the side panel contents of the first tab which is not
   // currently active.
-  auto* rph_first_tab =
-      GetSidePanelContentsFor(browser(), 0)->GetMainFrame()->GetProcess();
+  auto* rph_first_tab = GetSidePanelContentsFor(browser(), 0)
+                            ->GetPrimaryMainFrame()
+                            ->GetProcess();
   content::RenderProcessHostWatcher crash_observer_first_tab(
       rph_first_tab, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   EXPECT_TRUE(rph_first_tab->Shutdown(content::RESULT_CODE_KILLED));
@@ -1206,8 +1208,8 @@ IN_PROC_BROWSER_TEST_P(SideSearchExtensionsTest,
   NavigateInSideContents(third_url, third_url);
 }
 
-#if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1305891): Test is flaky on Mac bots.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// TODO(crbug.com/1305891): Test is flaky on Mac and Windows bots.
 #define MAYBE_DeclarativeNetRequestInterceptsSidePanelNavigations \
   DISABLED_DeclarativeNetRequestInterceptsSidePanelNavigations
 #else

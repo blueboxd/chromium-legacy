@@ -337,7 +337,12 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, NavigateToPageNoFavicon) {
   gfx::Image default_favicon_image =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_DEFAULT_FAVICON);
+  gfx::Image default_dark_favicon_image =
+      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_DEFAULT_FAVICON_DARK);
   EXPECT_TRUE(gfx::test::AreImagesEqual(default_favicon_image,
+                                        gfx::Image(task->icon())) ||
+              gfx::test::AreImagesEqual(default_dark_favicon_image,
                                         gfx::Image(task->icon())));
 }
 
@@ -378,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagFencedFrameTest,
       embedded_test_server()->GetURL("/fenced_frames/title2.html");
   content::RenderFrameHost* fenced_frame_host =
       fenced_frame_test_helper().CreateFencedFrame(
-          GetWebContents()->GetMainFrame(), kFencedFrameUrl);
+          GetWebContents()->GetPrimaryMainFrame(), kFencedFrameUrl);
   EXPECT_NE(nullptr, fenced_frame_host);
 
   // The navigation in the fenced frame should not change the title of the

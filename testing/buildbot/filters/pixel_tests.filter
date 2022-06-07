@@ -38,6 +38,7 @@ ImportLockDialogViewBrowserTest.*
 InlineLoginHelperBrowserTest.InvokeUi_*
 IntentPickerDialogTest.*
 IntentPickerDialogGridViewTest.*
+InteractionSequenceBrowserUtilInteractiveUiTest.CompareScreenshot_*
 InteractionSequenceBrowserUtilTest.CompareScreenshot_*
 LocalCardMigrationBrowserUiTest.*
 NewTabPageTest.*
@@ -52,7 +53,7 @@ PasswordReuseModalWarningTest.*
 PermissionRequestChipDialogBrowserTest.*
 *PermissionPromptBubbleViewBrowserTest.*
 PrivacySandboxDialogViewBrowserTest.*
-PrivacySandboxNoticeBubbleViewBrowserTest.*
+PrivacySandboxNoticeBubbleBrowserTest.*
 PromptForScanningModalDialogTest.*
 QRCodeGeneratorBubbleBrowserTest.*
 RelaunchRecommendedBubbleViewDialogTest.*

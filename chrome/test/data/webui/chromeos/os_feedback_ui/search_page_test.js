@@ -52,6 +52,22 @@ export function searchPageTestSuite() {
     assertTrue(!!title);
     assertEquals('Send feedback', title.textContent.trim());
 
+    // Verify the descriptionTitle is in the page.
+    const descriptionTitle = page.shadowRoot.querySelector('#descriptionTitle');
+    assertTrue(!!descriptionTitle);
+    assertEquals('Description', descriptionTitle.textContent.trim());
+
+    // Verify the feedback writing guidance link is in the page.
+    const writingGuidanceLink =
+        page.shadowRoot.querySelector('#feedbackWritingGuidance');
+    assertTrue(!!writingGuidanceLink);
+    assertEquals(
+        'Tips on writing feedback', writingGuidanceLink.textContent.trim());
+    assertEquals('_blank', writingGuidanceLink.target);
+    assertEquals(
+        'https://support.google.com/chromebook/answer/2982029',
+        writingGuidanceLink.href);
+
     // Verify the help content is not in the page. For security reason, help
     // contents fetched online can't be displayed in trusted context.
     const helpContent = page.shadowRoot.querySelector('help-content');
@@ -85,8 +101,12 @@ export function searchPageTestSuite() {
     await initializePage();
     textAreaElement = page.shadowRoot.querySelector('#descriptionText');
     assertTrue(!!textAreaElement);
-    // Verify the textarea is empty.
+    // Verify the textarea is empty and hint is showing.
     assertEquals('', textAreaElement.value);
+    assertEquals(
+        'Share your feedback or describe your issue. ' +
+            'If possible, include steps to reproduce your issue.',
+        textAreaElement.placeholder);
 
     // Enter three chars.
     textAreaElement.value = 'abc';
@@ -180,6 +200,8 @@ export function searchPageTestSuite() {
     buttonContinue.click();
     // Verify that the message is not hidden now.
     assertFalse(errorMsg.hidden);
+    assertEquals('Description is required', errorMsg.textContent.trim());
+
     // Verify that the textarea received focus again.
     assertEquals(page.shadowRoot.activeElement, textInput);
 

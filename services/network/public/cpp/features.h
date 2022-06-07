@@ -34,7 +34,7 @@ extern const base::Feature kCrossOriginOpenerPolicy;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginOpenerPolicyByDefault;
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kCoopSameOriginAllowPopupsPlusCoep;
+extern const base::Feature kCoopRestrictProperties;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kSplitAuthCacheByNetworkIsolationKey;
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -61,6 +61,9 @@ extern const base::FeatureParam<bool> kPlatformProvidedTrustTokenIssuance;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kWebSocketReassembleShortMessages;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kAcceptCHFrame;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kSCTAuditingRetryReports;
@@ -108,6 +111,19 @@ extern const base::Feature kOmitCorsClientCert;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kOptimizeNetworkBuffers;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kCacheTransparency;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kPervasivePayloadsList;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<std::string>
+    kCacheTransparencyPervasivePayloads;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kReduceAcceptLanguage;
 
 }  // namespace features
 }  // namespace network

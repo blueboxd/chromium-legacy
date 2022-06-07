@@ -39,7 +39,7 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/check.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
 
 namespace ui {
@@ -75,13 +75,8 @@ bool IsImeEnabled() {
   // Lacros-chrome side, which helps us on releasing.
   // TODO(crbug.com/1159237): In the future, we may want to unify the behavior
   // of ozone/wayland across platforms.
-  const auto* lacros_service = chromeos::LacrosService::Get();
-
-  // Note: |init_params| may be null, if ash-chrome is too old.
-  // TODO(crbug.com/1156033): Clean up the condition, after ash-chrome in the
-  // world becomes new enough.
   const crosapi::mojom::BrowserInitParams* init_params =
-      lacros_service ? lacros_service->init_params() : nullptr;
+      chromeos::BrowserInitParams::Get();
   if (init_params && init_params->exo_ime_support !=
                          crosapi::mojom::ExoImeSupport::kUnsupported) {
     return true;
@@ -209,6 +204,27 @@ void WaylandInputMethodContext::Reset() {
   character_composer_.Reset();
   if (text_input_)
     text_input_->Reset();
+}
+
+void WaylandInputMethodContext::UpdateFocus(bool has_client,
+                                            TextInputType old_type,
+                                            TextInputType new_type) {
+  // TODO(b/226781965): Known issue that this does not work.
+  if (is_simple_) {
+    // simple context can be used in any textfield, including password box, and
+    // even if the focused text input client's text input type is
+    // ui::TEXT_INPUT_TYPE_NONE.
+    if (has_client)
+      Focus();
+    else
+      Blur();
+  } else {
+    // Otherwise We only focus when the focus is in a textfield.
+    if (old_type != TEXT_INPUT_TYPE_NONE)
+      Blur();
+    if (new_type != TEXT_INPUT_TYPE_NONE)
+      Focus();
+  }
 }
 
 void WaylandInputMethodContext::Focus() {

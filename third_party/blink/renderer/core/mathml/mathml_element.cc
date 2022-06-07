@@ -6,12 +6,14 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_table_cell_with_anonymous_mrow.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
@@ -189,6 +191,16 @@ absl::optional<Length> MathMLElement::AddMathLengthToComputedStyle(
        (!value.EndsWith('%') || allow_percentages == AllowPercentages::kNo)))
     return absl::nullopt;
   return parsed_value->ConvertToLength(conversion_data);
+}
+
+LayoutObject* MathMLElement::CreateLayoutObject(const ComputedStyle& style,
+                                                LegacyLayout legacy) {
+  if (RuntimeEnabledFeatures::MathMLCoreEnabled() &&
+      legacy != LegacyLayout::kForce &&
+      Node::HasTagName(mathml_names::kMtdTag) &&
+      style.Display() == EDisplay::kTableCell)
+    return MakeGarbageCollected<LayoutNGTableCellWithAnonymousMrow>(this);
+  return Element::CreateLayoutObject(style, legacy);
 }
 
 }  // namespace blink

@@ -630,6 +630,8 @@ bool WebViewImpl::StartPageScaleAnimation(const gfx::Point& target_position,
   DCHECK(does_composite_);
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
+  DCHECK(visual_viewport.IsActiveViewport());
+
   gfx::Point clamped_point = target_position;
   if (!use_anchor) {
     clamped_point =
@@ -734,6 +736,7 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
     float default_scale_when_already_legible,
     float& scale,
     gfx::Point& scroll) {
+  DCHECK(GetPage()->GetVisualViewport().IsActiveViewport());
   scale = PageScaleFactor();
   scroll = gfx::Point();
 
@@ -1199,7 +1202,7 @@ void WebViewImpl::DidUpdateBrowserControls() {
   // restored by the first commit, since the state is checked in every call to
   // ApplyScrollAndScale().
   WebLocalFrameImpl* main_frame = MainFrameImpl();
-  if (!main_frame || main_frame->IsInFencedFrameTree())
+  if (!main_frame || !main_frame->IsOutermostMainFrame())
     return;
 
   WebFrameWidgetImpl* widget = main_frame->LocalRootFrameWidget();
@@ -1208,6 +1211,7 @@ void WebViewImpl::DidUpdateBrowserControls() {
   widget->SetBrowserControlsParams(GetBrowserControls().Params());
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
+  DCHECK(visual_viewport.IsActiveViewport());
 
   {
     // This object will save the current visual viewport offset w.r.t. the
@@ -1253,10 +1257,12 @@ void WebViewImpl::ResizeViewWhileAnchored(
 
   fullscreen_controller_->UpdateSize();
 
-  // Page scale constraints may need to be updated; running layout now will
-  // do that.
-  MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kLayout,
-                                     DocumentUpdateReason::kSizeChange);
+  if (!scoped_defer_main_frame_update_) {
+    // Page scale constraints may need to be updated; running layout now will
+    // do that.
+    MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kLayout,
+                                       DocumentUpdateReason::kSizeChange);
+  }
 }
 
 void WebViewImpl::ResizeWithBrowserControls(
@@ -1317,7 +1323,12 @@ void WebViewImpl::ResizeWithBrowserControls(
       !fullscreen_controller_->IsFullscreenOrTransitioning();
   size_ = main_frame_widget_size;
 
-  if (is_rotation) {
+  if (!main_frame->IsOutermostMainFrame()) {
+    // Anchoring should not be performed from embedded frames (not even
+    // portals) as anchoring should only be performed when the size/orientation
+    // is user controlled.
+    ResizeViewWhileAnchored(browser_controls_params, visible_viewport_size);
+  } else if (is_rotation) {
     gfx::PointF viewport_anchor_coords(viewportAnchorCoordX,
                                        viewportAnchorCoordY);
     RotationViewportAnchor anchor(*view, visual_viewport,
@@ -1325,6 +1336,7 @@ void WebViewImpl::ResizeWithBrowserControls(
                                   GetPageScaleConstraintsSet());
     ResizeViewWhileAnchored(browser_controls_params, visible_viewport_size);
   } else {
+    DCHECK(visual_viewport.IsActiveViewport());
     ResizeViewportAnchor::ResizeScope resize_scope(*resize_viewport_anchor_);
     ResizeViewWhileAnchored(browser_controls_params, visible_viewport_size);
   }
@@ -1993,6 +2005,7 @@ void WebViewImpl::DidAttachRemoteMainFrame(
   remote_main_frame_host_remote_.Bind(std::move(main_frame_host));
 
   auto& viewport = GetPage()->GetVisualViewport();
+  DCHECK(!viewport.IsActiveViewport());
   viewport.Reset();
 }
 
@@ -2087,25 +2100,28 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
       GetPage()->GlobalRootScrollerController();
   Node* root_scroller = controller.GlobalRootScroller();
 
-  gfx::Rect element_bounds_in_document =
-      MainFrameImpl()->GetFrameView()->RootFrameToDocument(
-          element_bounds_in_root_frame);
-  gfx::Rect caret_bounds_in_document =
-      MainFrameImpl()->GetFrameView()->RootFrameToDocument(
-          caret_bounds_in_root_frame);
+  gfx::Rect element_bounds_in_content;
+  gfx::Rect caret_bounds_in_content;
 
-  gfx::Rect element_bounds_in_content = element_bounds_in_document;
-  gfx::Rect caret_bounds_in_content = caret_bounds_in_document;
-
-  // If the page has a non-default root scroller then we need to scroll that
-  // rather than the "real" viewport. However, the given coordinates are in the
-  // real viewport's document space rather than the root scroller's so we
-  // perform the conversion here.
+  // If the page has a non-default root scroller then we need to put the
+  // "in_content" coordinates into that scroller's coordinate space, rather
+  // than the root frame's.
   if (root_scroller != MainFrameImpl()->GetFrame()->GetDocument() &&
       controller.RootScrollerArea()) {
     ScrollOffset offset = controller.RootScrollerArea()->GetScrollOffset();
+
+    element_bounds_in_content = element_bounds_in_root_frame;
+    caret_bounds_in_content = caret_bounds_in_root_frame;
+
     element_bounds_in_content.Offset(gfx::ToFlooredVector2d(offset));
     caret_bounds_in_content.Offset(gfx::ToFlooredVector2d(offset));
+  } else {
+    element_bounds_in_content =
+        MainFrameImpl()->GetFrameView()->RootFrameToDocument(
+            element_bounds_in_root_frame);
+    caret_bounds_in_content =
+        MainFrameImpl()->GetFrameView()->RootFrameToDocument(
+            caret_bounds_in_root_frame);
   }
 
   if (!zoom_into_legible_scale) {
@@ -3501,6 +3517,7 @@ void WebViewImpl::PageScaleFactorChanged() {
   // Set up the compositor and inform the browser of the PageScaleFactor,
   // which is tracked per-view.
   auto& viewport = GetPage()->GetVisualViewport();
+  DCHECK(viewport.IsActiveViewport());
   MainFrameImpl()->FrameWidgetImpl()->SetPageScaleStateAndLimits(
       viewport.Scale(), viewport.IsPinchGestureActive(),
       MinimumPageScaleFactor(), MaximumPageScaleFactor());
@@ -3630,6 +3647,7 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
   CHECK(page_);
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
+  DCHECK(visual_viewport.IsActiveViewport());
 
   // Store the desired offsets the visual viewport before setting the top
   // controls ratio since doing so will change the bounds and move the
@@ -3686,7 +3704,8 @@ Node* WebViewImpl::FindNodeFromScrollableCompositorElementId(
 }
 
 void WebViewImpl::UpdateDeviceEmulationTransform() {
-  GetPage()->GetVisualViewport().SetNeedsPaintPropertyUpdate();
+  if (GetPage()->GetVisualViewport().IsActiveViewport())
+    GetPage()->GetVisualViewport().SetNeedsPaintPropertyUpdate();
 
   if (auto* main_frame = MainFrameImpl()) {
     // When the device emulation transform is updated, to avoid incorrect

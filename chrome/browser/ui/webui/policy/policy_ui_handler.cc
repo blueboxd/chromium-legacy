@@ -38,6 +38,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/managed_ui.h"
+#include "chrome/browser/ui/webui/policy/status_provider/cloud_policy_core_status_provider.h"
+#include "chrome/browser/ui/webui/policy/status_provider/status_provider_util.h"
+#include "chrome/browser/ui/webui/policy/status_provider/user_cloud_policy_status_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
@@ -91,12 +94,14 @@
 #include "chrome/browser/ash/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/ui/webui/policy/status_provider/device_cloud_policy_status_provider_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/webui/policy/status_provider/device_policy_status_provider_lacros.h"
 #include "chromeos/crosapi/mojom/policy_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/policy/core/common/policy_loader_lacros.h"
@@ -121,122 +126,6 @@
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 namespace em = enterprise_management;
-
-namespace {
-
-// Adds a new entry to |dict| with the affiliation status of the user associated
-// with |profile|. This method shouldn't be called for device scope status.
-void GetUserAffiliationStatus(base::DictionaryValue* dict, Profile* profile) {
-  CHECK(profile);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  const user_manager::User* user =
-      ash::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user)
-    return;
-  dict->SetBoolKey("isAffiliated", user->IsAffiliated());
-#else
-  // Don't show affiliation status if the browser isn't enrolled in CBCM.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!profile->IsMainProfile())
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  {
-    if (!policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid())
-      return;
-  }
-  dict->SetBoolKey("isAffiliated",
-                   chrome::enterprise_util::IsProfileAffiliated(profile));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-}
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-void GetOffHoursStatus(base::DictionaryValue* dict) {
-  policy::off_hours::DeviceOffHoursController* off_hours_controller =
-      ash::DeviceSettingsService::Get()->device_off_hours_controller();
-  if (off_hours_controller) {
-    dict->SetBoolKey("isOffHoursActive",
-                     off_hours_controller->is_off_hours_mode());
-  }
-}
-
-// Adds a new entry to |dict| with the enterprise domain manager of the user
-// associated with |profile|. This method shouldn't be called for device scope
-// status.
-void GetUserManager(base::DictionaryValue* dict, Profile* profile) {
-  CHECK(profile);
-
-  absl::optional<std::string> account_manager =
-      chrome::GetAccountManagerIdentity(profile);
-  if (account_manager) {
-    dict->SetStringKey("enterpriseDomainManager", *account_manager);
-  }
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-void ExtractDomainFromUsername(base::DictionaryValue* dict) {
-  const std::string* username = dict->FindStringKey("username");
-  if (username && !username->empty())
-    dict->SetStringKey("domain", gaia::ExtractDomainName(*username));
-}
-
-// MachineStatus box labels itself as `machine policies` on desktop. In the
-// domain of mobile devices such as iOS or Android we want to label this box as
-// `device policies`. This is a helper function that retrieves the expected
-// labelKey
-std::string GetMachineStatusLegendKey() {
-#if BUILDFLAG(IS_ANDROID)
-  return "statusDevice";
-#else
-  return "statusMachine";
-#endif  // BUILDFLAG(IS_ANDROID)
-}
-
-}  // namespace
-
-// Status provider implementation that pulls cloud policy status from a
-// CloudPolicyCore instance provided at construction time. Also listens for
-// changes on that CloudPolicyCore and reports them through the status change
-// callback.
-class CloudPolicyCoreStatusProvider
-    : public policy::PolicyStatusProvider,
-      public policy::CloudPolicyStore::Observer {
- public:
-  explicit CloudPolicyCoreStatusProvider(policy::CloudPolicyCore* core);
-
-  CloudPolicyCoreStatusProvider(const CloudPolicyCoreStatusProvider&) = delete;
-  CloudPolicyCoreStatusProvider& operator=(
-      const CloudPolicyCoreStatusProvider&) = delete;
-
-  ~CloudPolicyCoreStatusProvider() override;
-
-  // policy::CloudPolicyStore::Observer implementation.
-  void OnStoreLoaded(policy::CloudPolicyStore* store) override;
-  void OnStoreError(policy::CloudPolicyStore* store) override;
-
- protected:
-  // Policy status is read from the CloudPolicyClient, CloudPolicyStore and
-  // CloudPolicyRefreshScheduler hosted by this |core_|.
-  raw_ptr<policy::CloudPolicyCore> core_;
-};
-
-// A cloud policy status provider for user policy.
-class UserCloudPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
- public:
-  explicit UserCloudPolicyStatusProvider(policy::CloudPolicyCore* core,
-                                         Profile* profile);
-
-  UserCloudPolicyStatusProvider(const UserCloudPolicyStatusProvider&) = delete;
-  UserCloudPolicyStatusProvider& operator=(
-      const UserCloudPolicyStatusProvider&) = delete;
-
-  ~UserCloudPolicyStatusProvider() override;
-
-  // CloudPolicyCoreStatusProvider implementation.
-  void GetStatus(base::DictionaryValue* dict) override;
-
- private:
-  raw_ptr<Profile> profile_;
-};
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // A cloud policy status provider for device account.
@@ -285,27 +174,6 @@ class UserCloudPolicyStatusProviderChromeOS
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// A cloud policy status provider for device policy.
-class DeviceCloudPolicyStatusProviderChromeOS
-    : public CloudPolicyCoreStatusProvider {
- public:
-  explicit DeviceCloudPolicyStatusProviderChromeOS(
-      policy::BrowserPolicyConnectorAsh* connector);
-
-  DeviceCloudPolicyStatusProviderChromeOS(
-      const DeviceCloudPolicyStatusProviderChromeOS&) = delete;
-  DeviceCloudPolicyStatusProviderChromeOS& operator=(
-      const DeviceCloudPolicyStatusProviderChromeOS&) = delete;
-
-  ~DeviceCloudPolicyStatusProviderChromeOS() override;
-
-  // CloudPolicyCoreStatusProvider implementation.
-  void GetStatus(base::DictionaryValue* dict) override;
-
- private:
-  std::string enterprise_domain_manager_;
-};
-
 // A cloud policy status provider that reads policy status from the policy core
 // associated with the device-local account specified by |user_id| at
 // construction time. The indirection via user ID and
@@ -408,44 +276,6 @@ class UpdaterStatusProvider : public policy::PolicyStatusProvider {
 };
 #endif
 
-CloudPolicyCoreStatusProvider::CloudPolicyCoreStatusProvider(
-    policy::CloudPolicyCore* core)
-    : core_(core) {
-  core_->store()->AddObserver(this);
-  // TODO(bartfab): Add an observer that watches for client errors. Observing
-  // core_->client() directly is not safe as the client may be destroyed and
-  // (re-)created anytime if the user signs in or out on desktop platforms.
-}
-
-CloudPolicyCoreStatusProvider::~CloudPolicyCoreStatusProvider() {
-  core_->store()->RemoveObserver(this);
-}
-
-void CloudPolicyCoreStatusProvider::OnStoreLoaded(
-    policy::CloudPolicyStore* store) {
-  NotifyStatusChange();
-}
-
-void CloudPolicyCoreStatusProvider::OnStoreError(
-    policy::CloudPolicyStore* store) {
-  NotifyStatusChange();
-}
-
-UserCloudPolicyStatusProvider::UserCloudPolicyStatusProvider(
-    policy::CloudPolicyCore* core,
-    Profile* profile)
-    : CloudPolicyCoreStatusProvider(core), profile_(profile) {}
-
-UserCloudPolicyStatusProvider::~UserCloudPolicyStatusProvider() = default;
-
-void UserCloudPolicyStatusProvider::GetStatus(base::DictionaryValue* dict) {
-  if (!core_->store()->is_managed())
-    return;
-  policy::PolicyStatusProvider::GetStatusFromCore(core_, dict);
-  ExtractDomainFromUsername(dict);
-  GetUserAffiliationStatus(dict, profile_);
-}
-
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 UserPolicyStatusProviderLacros::UserPolicyStatusProviderLacros(
     policy::PolicyLoaderLacros* loader,
@@ -506,24 +336,6 @@ void UserCloudPolicyStatusProviderChromeOS::GetStatus(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-DeviceCloudPolicyStatusProviderChromeOS::
-    DeviceCloudPolicyStatusProviderChromeOS(
-        policy::BrowserPolicyConnectorAsh* connector)
-    : CloudPolicyCoreStatusProvider(
-          connector->GetDeviceCloudPolicyManager()->core()) {
-  enterprise_domain_manager_ = connector->GetEnterpriseDomainManager();
-}
-
-DeviceCloudPolicyStatusProviderChromeOS::
-    ~DeviceCloudPolicyStatusProviderChromeOS() = default;
-
-void DeviceCloudPolicyStatusProviderChromeOS::GetStatus(
-    base::DictionaryValue* dict) {
-  policy::PolicyStatusProvider::GetStatusFromCore(core_, dict);
-  dict->SetStringKey("enterpriseDomainManager", enterprise_domain_manager_);
-  GetOffHoursStatus(dict);
-}
-
 DeviceLocalAccountPolicyStatusProvider::DeviceLocalAccountPolicyStatusProvider(
     const std::string& user_id,
     policy::DeviceLocalAccountPolicyService* service)
@@ -720,9 +532,11 @@ PolicyUIHandler::~PolicyUIHandler() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 void PolicyUIHandler::OnGotDevicePolicy(base::Value device_policy,
                                         base::Value legend_data) {
-  // TODO(crbug.com/1243869): Parse also legend_data and use it.
   if (device_policy != device_policy_) {
     device_policy_ = std::move(device_policy);
+    static_cast<DevicePolicyStatusProviderLacros*>(
+        device_status_provider_.get())
+        ->SetDevicePolicyStatus(std::move(legend_data));
     SendPolicies();
   }
 }
@@ -851,6 +665,11 @@ void PolicyUIHandler::RegisterMessages() {
                  dmTokenStorage->RetrieveClientId(), lastCloudReportSent}));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  device_status_provider_ =
+      std::make_unique<DevicePolicyStatusProviderLacros>();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   ReloadUpdaterPoliciesAndState();
@@ -1094,9 +913,6 @@ base::DictionaryValue PolicyUIHandler::GetStatusValue(bool for_webui) const {
   std::unique_ptr<base::DictionaryValue> device_status(
       new base::DictionaryValue);
   device_status_provider_->GetStatus(device_status.get());
-  if (!device_domain_.empty())
-    device_status->SetStringKey("domain", device_domain_);
-  std::string domain = device_domain_;
   std::unique_ptr<base::DictionaryValue> user_status(new base::DictionaryValue);
   user_status_provider_->GetStatus(user_status.get());
   const std::string* username = user_status->FindStringKey("username");

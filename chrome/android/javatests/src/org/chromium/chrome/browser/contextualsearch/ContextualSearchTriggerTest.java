@@ -230,7 +230,6 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
-        assertLoggedAllExpectedFeaturesToRanker();
         // Avoid issues with double-tap detection by ensuring sequential taps
         // aren't treated as such. Double-tapping can also select words much as
         // longpress, in turn showing the pins and preventing contextual tap
@@ -242,12 +241,9 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
         // for the selection to change.
         clickNode("states-near");
         waitForSelectionToBe("StatesNear");
-        assertLoggedAllExpectedOutcomesToRanker();
-        assertLoggedAllExpectedFeaturesToRanker();
         Thread.sleep(ViewConfiguration.getDoubleTapTimeout());
         clickNode("states");
         waitForSelectionToBe("States");
-        assertLoggedAllExpectedOutcomesToRanker();
     }
 
     //============================================================================================
@@ -279,7 +275,7 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisabledTest(message = "See https://crbug.com/837998")
+    // Previously disabled: https://crbug.com/837998
     public void testLongPressGestureFollowedByTapDoesntSelect() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 

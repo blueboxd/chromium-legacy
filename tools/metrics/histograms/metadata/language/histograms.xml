@@ -67,7 +67,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LanguageSettings.Actions" enum="LanguageSettingsActionType"
-    expires_after="2022-06-30">
+    expires_after="2022-09-11">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -132,7 +132,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LanguageSettings.AppLanguagePrompt.Language"
-    enum="LocaleCodeISO639" expires_after="2022-06-30">
+    enum="LocaleCodeISO639" expires_after="2022-09-11">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -148,6 +148,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="LanguageSettings.AppLanguagePrompt.OpenDuration.{ActionType}"
     units="ms" expires_after="2022-06-30">
+  <obsolete>
+    Deleted May 2022
+  </obsolete>
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -163,6 +166,18 @@ chromium-metrics-reviews@google.com.
     <variant name="Change" summary="OK changing the app language"/>
     <variant name="Same" summary="OK for the current app language"/>
   </token>
+</histogram>
+
+<histogram name="LanguageSettings.AppLanguagePrompt.OtherLanguagesShown"
+    enum="BooleanYesNo" expires_after="2022-09-11">
+  <owner>perrier@chromium.org</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Whether or not the &quot;Other Languages&quot; have been shown for the
+    AppLanguagePrompt was displayed.
+
+    Reported when the AppLanguagePrompt dialog is dismissed for any reason.
+  </summary>
 </histogram>
 
 <histogram name="LanguageSettings.PageImpression"
@@ -275,7 +290,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LanguageUsage.UI.Android.Correctness"
-    enum="LanguageUsage.UI.Android.Correctness" expires_after="2022-06-30">
+    enum="LanguageUsage.UI.Android.Correctness" expires_after="2022-09-11">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -398,7 +413,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LanguageUsage.ULP.Initiation.Status{AccountType}"
-    enum="ULPInitiationStatus" expires_after="2022-06-30">
+    enum="ULPInitiationStatus" expires_after="2022-09-11">
   <owner>jds@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>

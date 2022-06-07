@@ -147,6 +147,14 @@ public class FeedStream implements Stream {
         }
 
         @Override
+        public void navigateCrow(String url) {
+            assert ThreadUtils.runningOnUiThread();
+            FeedStreamJni.get().reportOtherUserAction(
+                    mNativeFeedStream, FeedStream.this, FeedUserActionType.TAPPED_CROW_BUTTON);
+            mActionDelegate.openCrow(url);
+        }
+
+        @Override
         public void showBottomSheet(View view, View actionSourceView) {
             assert ThreadUtils.runningOnUiThread();
             dismissBottomSheet();
@@ -283,8 +291,6 @@ public class FeedStream implements Stream {
         @Override
         public void processThereAndBackAgainData(byte[] data, LoggingParameters loggingParameters) {
             assert ThreadUtils.runningOnUiThread();
-            // TODO(crbug.com/1268575): Forward loggingParameters to FeedApi, and check that they
-            // match the current state.
             FeedStreamJni.get().processThereAndBackAgain(mNativeFeedStream, FeedStream.this, data,
                     FeedLoggingParameters.convertToProto(loggingParameters).toByteArray());
         }
@@ -385,30 +391,6 @@ public class FeedStream implements Stream {
             assert ThreadUtils.runningOnUiThread();
             mSliceViewTracker.watchForFirstVisible(
                     getSliceIdFromView(view), viewedThreshold, runnable);
-        }
-
-        @Override
-        public void reportNoticeCreated(String key) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportNoticeCreated(mNativeFeedStream, FeedStream.this, key);
-        }
-
-        @Override
-        public void reportNoticeViewed(String key) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportNoticeViewed(mNativeFeedStream, FeedStream.this, key);
-        }
-
-        @Override
-        public void reportNoticeOpenAction(String key) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportNoticeOpenAction(mNativeFeedStream, FeedStream.this, key);
-        }
-
-        @Override
-        public void reportNoticeDismissed(String key) {
-            assert ThreadUtils.runningOnUiThread();
-            FeedStreamJni.get().reportNoticeDismissed(mNativeFeedStream, FeedStream.this, key);
         }
 
         @Override
@@ -1281,10 +1263,6 @@ public class FeedStream implements Stream {
         void surfaceClosed(long nativeFeedStream, FeedStream caller);
         int getSurfaceId(long nativeFeedStream, FeedStream caller);
         long getLastFetchTimeMs(long nativeFeedStream, FeedStream caller);
-        void reportNoticeCreated(long nativeFeedStream, FeedStream caller, String key);
-        void reportNoticeViewed(long nativeFeedStream, FeedStream caller, String key);
-        void reportNoticeOpenAction(long nativeFeedStream, FeedStream caller, String key);
-        void reportNoticeDismissed(long nativeFeedStream, FeedStream caller, String key);
         void reportInfoCardTrackViewStarted(long nativeFeedStream, FeedStream caller, int type);
         void reportInfoCardViewed(
                 long nativeFeedStream, FeedStream caller, int type, int minimumViewIntervalSeconds);

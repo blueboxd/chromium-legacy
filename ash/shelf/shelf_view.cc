@@ -431,7 +431,7 @@ void ShelfView::Init() {
   separator_ = new views::Separator();
   separator_->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparatorColor));
-  separator_->SetPreferredHeight(kSeparatorSize);
+  separator_->SetPreferredLength(kSeparatorSize);
   separator_->SetVisible(false);
   ConfigureChildView(separator_, ui::LAYER_TEXTURED);
   AddChildView(separator_);
@@ -1917,7 +1917,19 @@ gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
   if (ShelfItemForView(&source) || !context_menu)
     return source.GetBoundsInScreen();
 
-  const gfx::Rect shelf_bounds_in_screen = GetBoundsInScreen();
+  gfx::Rect shelf_bounds_in_screen;
+  if (ShelfConfig::Get()->is_in_app() && IsTabletModeEnabled()) {
+    // Use the shelf widget background as the menu anchor point in tablet mode
+    // and in app.
+    ShelfWidget* shelf_widget = shelf_->shelf_widget();
+    shelf_bounds_in_screen = shelf_widget->GetOpaqueBackground()->bounds();
+    const gfx::Rect widget_bounds =
+        shelf_widget->GetRootView()->GetBoundsInScreen();
+    shelf_bounds_in_screen.Offset(widget_bounds.x(), widget_bounds.y());
+  } else {
+    shelf_bounds_in_screen = GetBoundsInScreen();
+  }
+
   gfx::Point origin;
   switch (shelf_->alignment()) {
     case ShelfAlignment::kBottom:

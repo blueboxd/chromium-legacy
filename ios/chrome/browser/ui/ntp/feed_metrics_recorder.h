@@ -240,6 +240,12 @@ class Time;
 // the overflow menu.
 - (void)recordFollowRequestedWithType:(FollowRequestType)followRequestType;
 
+// Record metrics for when the user tapped "follow" from menu entry point.
+- (void)recordFollowFromMenu;
+
+// Record metrics for when the user tapped "unfollow" from menu entry point.
+- (void)recordUnfollowFromMenu;
+
 // Record metrics for when the follow confirmation snckbar is shown, according
 // to |followConfirmationType|.
 - (void)recordFollowConfirmationShownWithType:
@@ -262,6 +268,15 @@ class Time;
 // Record metrics for when the user taps "Try Again" on the unfollow error
 // confirmation snackbar in the management UI.
 - (void)recordManagementTappedUnfollowTryAgainOnSnackbar;
+
+// Record metrics for when the first follow sheet is shown.
+- (void)recordFirstFollowShown;
+
+// Record metrics for when the user taps "Go To Feed" on the first follow sheet.
+- (void)recordFirstFollowTappedGoToFeed;
+
+// Record metrics for when the user taps "Got it" on the first follow sheet.
+- (void)recordFirstFollowTappedGotIt;
 
 // Delegate to get the currently selected feed.
 @property(nonatomic, weak) id<FeedControlDelegate> feedControlDelegate;

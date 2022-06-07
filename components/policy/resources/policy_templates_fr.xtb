@@ -428,6 +428,18 @@ Si vous activez cette règle ou ne la configurez pas, le défilement des pages W
 
 Si vous la désactivez, le défilement des pages Web vers des fragments de texte spécifiques via URL sera désactivé.</translation>
 <translation id="1474273443907024088">Désactiver TLS False Start</translation>
+<translation id="1476128579011024193">
+      Si cette règle est définie sur <ph name="POLICY_VALUE_PRIMARY_ACCOUNT" />, après une connexion à un compte géré soumis à cette règle, l'utilisateur sera invité à créer un nouveau profil pour ce compte.
+      Si cette règle est définie sur <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTING_DATA" />, après une connexion à un compte géré soumis à cette règle, l'utilisateur sera invité à créer un nouveau profil pour ce compte et aura la possibilité de conserver ses données de navigation existantes. Cette option est disponible à partir de la version 102 de Chrome.
+
+      Si cette règle est définie sur <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT" />, après une connexion à un compte géré soumis à cette règle, l'utilisateur sera invité à créer un nouveau profil pour ce compte. Ce profil n'autorisera aucun compte secondaire.
+      Si cette règle est définie sur <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT_KEEP_EXISTING_DATA" />, après une connexion à un compte géré soumis à cette règle, l'utilisateur sera invité à créer un nouveau profil pour ce compte et aura la possibilité de conserver ses données de navigation existantes. Ce profil n'autorisera aucun compte secondaire. Cette option est disponible à partir de la version 102 de Chrome.
+
+      Si elle est définie sur <ph name="POLICY_VALUE_NONE" /> ou si elle n'est pas configurée, il n'y aura aucune restriction pour les comptes gérés. Il sera donc possible qu'un compte géré soit un compte secondaire, ce qui l'empêchera de recevoir des règles définies sur le compte par l'administrateur.
+
+      Si cette règle est définie au niveau de l'appareil, tous les comptes du navigateur y seront soumis.
+      Si cette règle est définie au niveau d'un compte, seul ce compte sera affecté dans le navigateur.
+    </translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1479427764273213107">Permet d'établir la liste des appareils USB que les utilisateurs peuvent dissocier de leur pilote de noyau pour les employer via l'API chrome.usb directement au sein d'une application Web. Les entrées sont des paires composées d'un identifiant de fournisseur USB et d'un identifiant produit associé à un appareil spécifique.
 
@@ -3599,6 +3611,7 @@ Lorsque cette règle est définie, <ph name="PRODUCT_OS_NAME" /> n'autorise les 
 <translation id="4960597185231686653">Indicateur booléen spécifiant si la saisie vocale est disponible ou non avec le clavier à l'écran.</translation>
 <translation id="4970046075219007744">Autoriser les applications Web à demander aux utilisateurs l'accès à ces types de fichiers via l'API File Handling</translation>
 <translation id="4970855112942626932">Désactiver la connexion au navigateur</translation>
+<translation id="4974091268178043378">Mode couleur de Chrome OS</translation>
 <translation id="4976928720873547342">Si cette règle est configurée, tous les types de données spécifiés ne seront pas synchronisés avec <ph name="CHROME_SYNC_NAME" /> ni avec le profil itinérant. Cela peut permettre de réduire la taille du profil itinérant ou de limiter les types de données importés sur les serveurs <ph name="CHROME_SYNC_NAME" />.
 
       Les types de données actuels pour cette règle sont : "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" et "wifiConfigurations". Ces noms sont sensibles à la casse.</translation>
@@ -4244,6 +4257,13 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           La valeur de la règle ne s'applique que si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, et pas autrement.</translation>
 <translation id="5697306356229823047">Générer une liste des utilisateurs de l'appareil</translation>
+<translation id="5698923148503075597">Si cette règle est activée, les règles relatives au cloud prévalent en cas de conflit avec celles relatives aux plates-formes.
+
+      Si cette règle est désactivée ou qu'elle n'est pas configurée, les règles relatives aux plates-formes prévalent en cas de conflit avec celles relatives au cloud.
+
+      Cette règle obligatoire a une incidence sur les règles relatives au cloud s'appliquant aux machines.
+
+      Cette règle n'est disponible que sur <ph name="PRODUCT_NAME" />. Elle n'affecte pas <ph name="GOOGLE_UPDATE_NAME" />.</translation>
 <translation id="5699770471852263667">Si cette règle est activée, la visionneuse de PDF interne est désactivée dans <ph name="PRODUCT_NAME" />, les fichiers PDF sont téléchargés, et l'utilisateur peut les ouvrir avec l'application par défaut.
 
       Si cette règle est désactivée, les fichiers PDF sont ouverts, sauf si les utilisateurs ont désactivé le plug-in PDF.
@@ -4363,6 +4383,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Les utilisateurs ne peuvent pas modifier ce paramètre.</translation>
 <translation id="5848438019586925019">Algorithme pour la génération de paires de clés.</translation>
+<translation id="5851248808417680865">Utiliser le thème sombre</translation>
 <translation id="585270638818921943">Empêche l'utilisateur de se servir d'applications Android provenant de sources non approuvées</translation>
 <translation id="5853547031212075792">Autoriser les utilisateurs à activer le mode HTTPS uniquement</translation>
 <translation id="5859344336338527083">Permet de déterminer quelles URL peuvent installer des extensions, des applications et des thèmes. Avant la version 21 de <ph name="PRODUCT_NAME" />, les utilisateurs pouvaient cliquer sur un lien qui renvoyait vers un fichier *.crx, et <ph name="PRODUCT_NAME" /> leur proposait d'installer ce fichier, tout en affichant d'abord quelques avertissements. Depuis, les fichiers de ce type doivent être téléchargés et glissés vers la page des paramètres <ph name="PRODUCT_NAME" />. Cette règle permet d'appliquer à des URL spécifiques l'ancienne procédure d'installation, plus facile à suivre.
@@ -4379,6 +4400,29 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si la règle est définie sur "false" ou n'est pas configurée, <ph name="PLUGIN_VM_NAME" /> n'est pas autorisé à collecter les données.
       Si elle est définie sur "true", <ph name="PLUGIN_VM_NAME" /> peut collecter les données d'utilisation de <ph name="PLUGIN_VM_NAME" />. Elles sont ensuite combinées et analysées en détail afin d'améliorer l'expérience des utilisateurs de <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="5874896145772824604">Cette règle permet de remplacer la liste des ensembles que le navigateur utilise pour les fonctionnalités liées aux ensembles internes.
+
+      Chaque ensemble figurant dans la liste des ensembles internes du navigateur doit respecter les exigences liées aux ensembles internes.
+      Un ensemble interne se compose d'un propriétaire et d'un ou plusieurs sites membres. Tous les sites d'un tel ensemble doivent être
+      des domaines enregistrables diffusés sur HTTPS, qu'il s'agisse de propriétaires ou de sites membres.
+      Chaque site d'un ensemble interne doit également être unique. Cela signifie qu'un site ne peut pas être à la fois un propriétaire et un membre,
+      ni être listé plusieurs fois en tant que membre d'un ensemble interne.
+      Pour en savoir plus sur les ensembles internes, consultez la page https://github.com/privacycg/first-party-sets.
+
+      Lorsqu'un dictionnaire vide est attribué à cette règle, le navigateur utilise la liste publique des ensembles internes.
+
+      Pour tous les sites appartenant à un ensemble interne de la liste <ph name="REPLACEMENTS" /> : si un site apparaît également dans un ensemble interne de la liste du navigateur, il sera supprimé de l'ensemble interne du navigateur.
+      L'ensemble interne de la règle sera alors ajouté à la liste des ensembles internes du navigateur.
+
+      Pour tous les sites appartenant à un ensemble interne de la liste <ph name="ADDITIONS" /> : si un site apparaît également dans un ensemble interne de la liste du navigateur, l'ensemble interne du navigateur est alors mis à jour afin de pouvoir ajouter le nouvel ensemble interne à la liste du navigateur. Lorsque la liste du navigateur a été actualisée, l'ensemble interne de la règle est alors ajouté à la liste des ensembles internes du navigateur.
+
+      La liste des ensembles internes du navigateur impose qu'aucun site qui y figure ne se trouve dans plusieurs ensembles. Cette condition est également requise pour la liste <ph name="REPLACEMENTS" /> et la liste <ph name="ADDITIONS" />. De la même manière, un site ne peut pas figurer à la fois sur la liste <ph name="REPLACEMENTS" /> et la liste <ph name="ADDITIONS" />.
+
+      Le caractère générique (*) ne peut pas être utilisé comme valeur de la règle, ni dans aucun ensemble interne de ces listes.
+
+      Tous les ensembles fournis par cette règle doivent être des ensembles internes valides. Si ce n'est pas le cas, une erreur est renvoyée.
+
+      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise pour lesquelles la gestion des appareils est activée, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="5875873062228321803">Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_OS_NAME" />.
 
       Lorsque cette règle est définie sur des entrées de la liste :
@@ -4463,11 +4507,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier. Si vous ne la configurez pas, l'emplacement des en-têtes et des pieds de page est déterminé par les utilisateurs.</translation>
 <translation id="5951418260805607969">Afficher une notification lorsque l'espace disque est faible</translation>
 <translation id="5958746038080720143">Activer l'optimisation WPAD (Web Proxy Auto-Discovery, découverte automatique du proxy)</translation>
-<translation id="5959428851851090097">Si cette règle est activée, les règles relatives au cloud prévalent en cas de conflit avec celles relatives aux plates-formes.
-
-      Si cette règle est désactivée ou qu'elle n'est pas configurée, les règles relatives aux plates-formes prévalent en cas de conflit avec celles relatives au cloud.
-
-      Cette règle obligatoire a une incidence sur les règles relatives au cloud s'appliquant aux machines.</translation>
 <translation id="5961137303188584693">Adresse MAC de la carte d'interface réseau intégrée de l'appareil</translation>
 <translation id="5963752574792883406">port 990 (peut être débloqué jusqu'au 01/02/2022)</translation>
 <translation id="5966615072639944554">Extensions autorisées à utiliser l'API d'attestation à distance</translation>
@@ -4508,6 +4547,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Cette règle n'est appliquée que si l'ordinateur est enregistré avec la règle <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> pour <ph name="PRODUCT_NAME" />.
       Elle est toujours appliquée pour <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="6019162469732742754">Utiliser le mode Auto</translation>
 <translation id="6019606564278029236">Activer les interactions des utilisateurs distants avec des fenêtres élevées dans les sessions d'assistance à distance</translation>
 <translation id="6022948604095165524">Action au démarrage</translation>
 <translation id="602318745029752898">Autoriser la synthèse vocale améliorée via le réseau pour Sélectionner pour prononcer</translation>
@@ -5234,6 +5274,15 @@ Si vous sélectionnez les options suivantes :
 <translation id="6786666051053129545">Activer la procédure Voice Match pour l'Assistant Google</translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6786967369487349613">Définir le répertoire des profils itinérants</translation>
+<translation id="6789319144568227749">Permet de configurer la prise en charge des en-têtes de requêtes CORS sans caractères génériques.
+
+      La prise en charge des en-têtes de requêtes CORS sans caractères génériques est une nouveauté de <ph name="PRODUCT_NAME" /> version 97. Lorsque des scripts établissent une requête de réseau multi-origine via fetch() et XMLHttpRequest avec un en-tête Authorization ajouté par script, l'en-tête doit être explicitement autorisé par l'en-tête Access-Control-Allow-Headers de la réponse à la requête préliminaire CORS. "Explicitement" signifie que le caractère générique "*" ne couvre pas l'en-tête Authorization. Consultez <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> pour plus de détails.
+
+      Si cette règle n'est pas définie ou qu'elle est définie sur "True", <ph name="PRODUCT_NAME" /> prendra en charge les en-têtes de requêtes CORS sans caractères génériques et se comportera comme décrit ci-dessus.
+
+      Si cette règle est définie sur "False", Chrome autorisera le caractère générique ("*") dans l'en-tête Access-Control-Allow-Headers de la réponse à la requête préliminaire CORS pour couvrir l'en-tête Authorization.
+
+      Cette règle d'entreprise est temporaire et sera normalement supprimée à l'avenir.</translation>
 <translation id="6789422336869764846">Si cette règle est activée ou qu'elle n'est pas configurée, les appareils enregistrés indiquent l'état de l'interrupteur du mode développeur lors du démarrage de la machine.
 
       Si cette règle est désactivée, les appareils enregistrés n'indiquent pas cet état.</translation>
@@ -5484,6 +5533,7 @@ Si vous sélectionnez les options suivantes :
 <translation id="7019805045859631636">Rapide</translation>
 <translation id="7025332601572838001">Configurer le comportement de la boîte de dialogue des conditions d'utilisation la première fois que des onglets personnalisés Chrome sont exécutés</translation>
 <translation id="7026351325994257733">Autoriser la synchronisation des configurations du réseau Wi-Fi entre les appareils <ph name="PRODUCT_OS_NAME" /> et un téléphone Android connecté.</translation>
+<translation id="7027057540229843762">Utiliser le thème clair</translation>
 <translation id="7027785306666625591">Configurer la gestion de l'alimentation dans <ph name="PRODUCT_OS_NAME" />
 
       Ces règles vous permettent de configurer le comportement du système d'exploitation "<ph name="PRODUCT_OS_NAME" />" lorsque l'utilisateur est inactif pendant un certain temps.</translation>
@@ -6483,15 +6533,6 @@ Si cette règle n'est pas définie, l'écran de confidentialité est désactivé
       Si la règle est désactivée ou si elle n'est pas paramétrée, les profils standards sont activés au moment de la connexion.</translation>
 <translation id="8151299379693359769">Activer un contrôle de sécurité supplémentaire basée sur l'attestation à distance (facultatif, par défaut : True).</translation>
 <translation id="8151490482515839285">Activer la création de rapports sur la prévention des fuites de données</translation>
-<translation id="8151949408479239790">Permet de configurer la prise en charge des en-têtes de requêtes CORS sans caractères génériques.
-
-      La prise en charge des en-têtes de requêtes CORS sans caractères génériques est une nouveauté de <ph name="PRODUCT_NAME" /> version 97. Lorsque des scripts établissent une requête de réseau multi-origine via fetch() et XMLHttpRequest avec un en-tête Authorization ajouté par script, l'en-tête doit être explicitement autorisé par l'en-tête Access-Control-Allow-Headers de la réponse à la requête préliminaire CORS. "Explicitement" signifie que le caractère générique "*" ne couvre pas l'en-tête Authorization. Consultez <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> pour plus de détails.
-
-      Si cette règle n'est pas définie ou qu'elle est définie sur "True", <ph name="PRODUCT_NAME" /> prendra en charge les en-têtes de requêtes CORS sans caractères génériques et se comportera comme décrit ci-dessus.
-
-      Si cette règle est définie sur "False", Chrome autorisera le caractère générique ("*") dans l'en-tête Access-Control-Allow-Headers de la réponse à la requête préliminaire CORS pour couvrir l'en-tête Authorization.
-
-      Cette règle d'entreprise est temporaire et sera normalement supprimée après la version 103 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158758865057576716">Permet de créer des copies itinérantes pour les données de profil <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158897487095710470">Si cette règle est définie sur "True", une barre de favoris est affichée dans <ph name="PRODUCT_NAME" />. Si cette règle est définie sur "False", cette barre de favoris n'est jamais affichée.
 
@@ -7048,6 +7089,9 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
       "http://acme.com/ABC" ne correspond qu'en "IESiteListMode".</translation>
 <translation id="8736538322216687231">Appliquer un mode restreint minimal sur YouTube</translation>
+<translation id="8744844164152340112">Contrôle le thème utilisé pour afficher l'UI pendant la configuration initiale et en cours de session (sombre/clair/auto).
+      Le mode Auto alterne automatiquement entre le thème sombre et le thème clair au lever et au coucher du soleil.
+      Cette règle devrait être recommandée, car elle permet aux utilisateurs de modifier le thème dans les paramètres système.</translation>
 <translation id="8745669971728319820">Cette règle détermine si les informations sur les extensions et les plug-ins doivent être enregistrées.
 
       Cette règle est ignorée si la règle <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> n'est pas définie ou si elle est désactivée.

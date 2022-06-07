@@ -72,8 +72,6 @@ extern const base::Feature kAppProvisioningStatic;
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceLoadIconWithoutMojom;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAppServiceExtension;
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_MAC)
@@ -160,6 +158,8 @@ extern const base::Feature kCryptohomeUserDataAuthKillswitch;
 
 #if BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCrosPrivacyHub;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDataLeakPreventionPolicy;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -208,6 +208,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDesktopPWAsDetailedInstallDialog;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsRunOnOsLogin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -228,9 +231,6 @@ extern const base::Feature kChromeAppsDeprecation;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kKeepForceInstalledPreinstalledApps;
 #endif
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDmTokenDeletion;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDnsOverHttps;
@@ -255,11 +255,6 @@ extern const base::Feature kEarlyLibraryLoad;
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks;
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kElideTabPreloadAtStartup;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -302,12 +297,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kFocusMode;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGeoLanguage;
-
-#if BUILDFLAG(IS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature
-    kGiveJavaUiThreadDefaultTaskTraitsUserBlockingPriority;
-#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -434,17 +423,16 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncognitoBrandConsistencyForAndroid;
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncognitoDownloadsWarning;
+#endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncognitoNtpRevamp;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kIncognitoParamFilterEnabled;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIPHInWebUIDemo;
@@ -568,6 +556,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrivacyGuide2;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPrivacyGuideAndroid;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPushMessagingBackgroundMode;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -631,9 +622,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSmartDim;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSoundContentSetting;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSupportTool;
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSysInternals;
@@ -643,6 +631,9 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTPMFirmwareUpdate;
 
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTabMetricsLogging;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSupportTool;
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -837,6 +828,13 @@ extern const base::Feature kOmniboxTriggerForNoStatePrefetch;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSupportsRtcWakeOver24Hours;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// This flag is used to toggle the reading of data from the web_app DB instead
+// of the ExternallyInstalledWebAppPrefs. Data will be written to both storages,
+// and this will be removed in the future once we move to using the web_app DB
+// completely.
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kUseWebAppDBInsteadOfExternalPrefs;
 
 bool PrefServiceEnabled();
 

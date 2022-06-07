@@ -41,11 +41,11 @@ struct CONTENT_EXPORT AggregationServicePayloadContents {
   enum class AggregationMode {
     // Uses a server-side Trusted Execution Environment (TEE) to process the
     // encrypted payloads, see
-    // https://github.com/WICG/conversion-measurement-api/blob/main/AGGREGATION_SERVICE_TEE.md.
+    // https://github.com/WICG/attribution-reporting-api/blob/main/AGGREGATION_SERVICE_TEE.md.
     kTeeBased,
 
     // Implements a protocol similar to poplar VDAF in the PPM Framework, see
-    // https://github.com/WICG/conversion-measurement-api/blob/main/AGGREGATE.md#choosing-among-aggregation-services.
+    // https://github.com/WICG/attribution-reporting-api/blob/main/AGGREGATE.md#choosing-among-aggregation-services.
     kExperimentalPoplar,
 
     kDefault = kTeeBased,
@@ -85,25 +85,30 @@ struct CONTENT_EXPORT AggregatableReportSharedInfo {
   };
 
   AggregatableReportSharedInfo(base::Time scheduled_report_time,
-                               std::string privacy_budget_key,
                                base::GUID report_id,
                                url::Origin reporting_origin,
-                               DebugMode debug_mode);
-  AggregatableReportSharedInfo(const AggregatableReportSharedInfo& other);
+                               DebugMode debug_mode,
+                               base::Value::Dict additional_fields);
+
+  AggregatableReportSharedInfo(const AggregatableReportSharedInfo& other) =
+      delete;
   AggregatableReportSharedInfo& operator=(
-      const AggregatableReportSharedInfo& other);
+      const AggregatableReportSharedInfo& other) = delete;
   AggregatableReportSharedInfo(AggregatableReportSharedInfo&& other);
   AggregatableReportSharedInfo& operator=(AggregatableReportSharedInfo&& other);
   ~AggregatableReportSharedInfo();
+
+  // Creates a deep copy of this object.
+  AggregatableReportSharedInfo Clone() const;
 
   // Serializes to a JSON dictionary, represented as a string.
   std::string SerializeAsJson() const;
 
   base::Time scheduled_report_time;
-  std::string privacy_budget_key;
   base::GUID report_id;  // Used to prevent double counting.
   url::Origin reporting_origin;
   DebugMode debug_mode;
+  base::Value::Dict additional_fields;
 };
 
 // An AggregatableReport contains all the information needed for sending the
@@ -199,9 +204,7 @@ class CONTENT_EXPORT AggregatableReport {
 
   // Returns the JSON representation of this report of the form
   // {
-  //   "shared_info": "{\"scheduled_report_time\":\"[timestamp in
-  //   seconds]\",\"privacy_budget_key\":\"[string]\",\"version\":\"[api
-  //   version]\",\"report_id\":\"[UUID]\",\"reporting_origin\":\"[string]\"}",
+  //   "shared_info": "<shared_info>",
   //   "aggregation_service_payloads": [
   //     {
   //       "payload": "<base64 encoded encrypted data>",
@@ -213,6 +216,18 @@ class CONTENT_EXPORT AggregatableReport {
   //     }
   //   ]
   // }
+  //
+  // Where <shared_info> is the serialization of the JSON (with all whitespace
+  // removed):
+  // {
+  //   "report_id":"[UUID]",
+  //   "reporting_origin":"https://reporter.example"
+  //   "scheduled_report_time":"[timestamp in seconds]",
+  //   "version":"[api version]",
+  // }
+  // Callers may insert API-specific fields into the shared_info dictionary.
+  // In those cases, the keys are inserted in lexicographic order.
+  //
   // If requested, each "aggregation_service_payloads" element has an extra
   // field: `"debug_cleartext_payload": "<base64 encoded payload cleartext>"`.
   // Note that APIs may wish to add additional key-value pairs to this returned
@@ -251,9 +266,7 @@ class CONTENT_EXPORT AggregatableReportRequest {
   // valid for the `payload_contents.aggregation_mode` (see
   // `IsNumberOfHistogramContributionsValid()` above). Also returns
   // `absl::nullopt` if any contribution has a negative value or if
-  // `shared_info.report_id` is not valid. Also returns `absl::nullopt` if
-  // `shared_info.privacy_budget_key` contains any character that isn't
-  // printable ASCII.
+  // `shared_info.report_id` is not valid.
   static absl::optional<AggregatableReportRequest> Create(
       AggregationServicePayloadContents payload_contents,
       AggregatableReportSharedInfo shared_info);
@@ -264,9 +277,7 @@ class CONTENT_EXPORT AggregatableReportRequest {
   // `IsNumberOfHistogramContributionsValid()` and
   // `IsNumberOfProcessingUrlsValid`, respectively). Also returns
   // `absl::nullopt` if any contribution has a negative value or if
-  // `shared_info.report_id` is not valid. Also returns `absl::nullopt` if
-  // `shared_info.privacy_budget_key` contains any character that isn't
-  // printable ASCII.
+  // `shared_info.report_id` is not valid.
   static absl::optional<AggregatableReportRequest> CreateForTesting(
       std::vector<GURL> processing_urls,
       AggregationServicePayloadContents payload_contents,

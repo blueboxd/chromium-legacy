@@ -277,6 +277,8 @@ class LayerTreeHostImplTest : public testing::Test,
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override {}
   void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies) override {}
 
   void DidObserveFirstScrollDelay(
       base::TimeDelta first_scroll_delay,
@@ -679,7 +681,7 @@ class LayerTreeHostImplTest : public testing::Test,
         FakeRasterSource::CreateFromRecordingSource(recording_source.get());
 
     // Create the pending tree.
-    host_impl_->BeginCommit(0);
+    host_impl_->BeginCommit(0, /*trace_id=*/1);
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
     LayerImpl* root = SetupRootLayer<FakePictureLayerImpl>(
         pending_tree, layer_size, raster_source);
@@ -3490,7 +3492,6 @@ class MissingTilesLayer : public LayerImpl {
                    AppendQuadsData* append_quads_data) override {
     append_quads_data->num_missing_tiles += 10;
     append_quads_data->checkerboarded_no_recording_content_area += 200;
-    append_quads_data->checkerboarded_needs_raster_content_area += 200;
     append_quads_data->visible_layer_area += 200;
   }
 };
@@ -6247,7 +6248,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   auto* layer = AddLayer<SolidColorLayerImpl>(host_impl_->active_tree());
   layer->SetBounds(gfx::Size(10, 10));
   layer->SetDrawsContent(true);
-  layer->SetBackgroundColor(SK_ColorRED);
+  layer->SetBackgroundColor(SkColors::kRed);
   CopyProperties(root, layer);
 
   UpdateDrawProperties(host_impl_->active_tree());
@@ -11048,7 +11049,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
 
   layer_tree_host_impl->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
   // This will damage everything.
-  root->SetBackgroundColor(SK_ColorBLACK);
+  root->SetBackgroundColor(SkColors::kBlack);
   args = viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
       base::TimeTicks() + base::Milliseconds(1));
@@ -11255,13 +11256,13 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   auto* root = SetupRootLayer<SolidColorLayerImpl>(host_impl_->active_tree(),
                                                    gfx::Size(10, 10));
   root->SetDrawsContent(true);
-  root->SetBackgroundColor(SK_ColorRED);
+  root->SetBackgroundColor(SkColors::kRed);
 
   // Child layer is in the bottom right corner.
   auto* child = AddLayer<SolidColorLayerImpl>(host_impl_->active_tree());
   child->SetBounds(gfx::Size(1, 1));
   child->SetDrawsContent(true);
-  child->SetBackgroundColor(SK_ColorRED);
+  child->SetBackgroundColor(SkColors::kRed);
   CopyProperties(root, child);
   child->SetOffsetToTransformParent(gfx::Vector2dF(9, 9));
 
@@ -11526,7 +11527,7 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage,
 
   LayerImpl* root = SetupRootLayer<SolidColorLayerImpl>(
       host_impl_->active_tree(), gfx::Size(10, 10));
-  root->SetBackgroundColor(SK_ColorRED);
+  root->SetBackgroundColor(SkColors::kRed);
   UpdateDrawProperties(host_impl_->active_tree());
 
   // RequiresHighResToDraw is set when new output surface is used.
@@ -16173,7 +16174,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   host_impl_->WillBeginImplFrame(begin_frame_args);
 
   // Create the pending tree.
-  host_impl_->BeginCommit(0);
+  host_impl_->BeginCommit(0, /*trace_id=*/1);
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
   auto* root = SetupRootLayer<FakePictureLayerImpl>(pending_tree, layer_size,
                                                     raster_source);

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
@@ -225,6 +226,49 @@ ParseStatus::Or<DecimalResolution> DecimalResolution::Parse(
 
   return DecimalResolution{.width = std::move(width).value(),
                            .height = std::move(height).value()};
+}
+
+ParseStatus::Or<ByteRangeExpression> ByteRangeExpression::Parse(
+    SourceString source_str) {
+  // If this ByteRange has an offset, it will be separated from the length by
+  // '@'.
+  const auto at_index = source_str.Str().find_first_of('@');
+  const auto length_str = source_str.Consume(at_index);
+  auto length = ParseDecimalInteger(length_str);
+  if (length.has_error()) {
+    return ParseStatus(ParseStatusCode::kFailedToParseByteRange)
+        .AddCause(std::move(length).error());
+  }
+
+  // If the offset was present, try to parse it
+  absl::optional<types::DecimalInteger> offset;
+  if (at_index != base::StringPiece::npos) {
+    source_str.Consume(1);
+    auto offset_result = ParseDecimalInteger(source_str);
+    if (offset_result.has_error()) {
+      return ParseStatus(ParseStatusCode::kFailedToParseByteRange)
+          .AddCause(std::move(offset_result).error());
+    }
+
+    offset = std::move(offset_result).value();
+  }
+
+  return ByteRangeExpression{.length = std::move(length).value(),
+                             .offset = offset};
+}
+
+absl::optional<ByteRange> ByteRange::Validate(DecimalInteger length,
+                                              DecimalInteger offset) {
+  if (length == 0) {
+    return absl::nullopt;
+  }
+
+  // Ensure that `length+offset` won't overflow `DecimalInteger`
+  if (std::numeric_limits<DecimalInteger>::max() - offset < length) {
+    return absl::nullopt;
+  }
+
+  return ByteRange(length, offset);
 }
 
 ParseStatus::Or<base::StringPiece> ParseQuotedString(

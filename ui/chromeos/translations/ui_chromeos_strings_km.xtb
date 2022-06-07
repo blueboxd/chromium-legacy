@@ -7,7 +7,6 @@
 <translation id="1056775291175587022">មិនមានបណ្ដាញទេ</translation>
 <translation id="1060368002126861100">ដើម្បីបើកឯកសារដោយប្រើ <ph name="APP_NAME" /> សូមផ្លាស់ទីឯកសារទាំងនោះទៅក្នុងថតឯកសារ Windows ជាមុនសិន។</translation>
 <translation id="1062407476771304334">ជំនួស</translation>
-<translation id="1119069657431255176">Bzip2 បានបង្រួមបណ្ណាសារ tar</translation>
 <translation id="1119447706177454957">កំហុសឆ្គងខាងក្នុង</translation>
 <translation id="1120073797882051782">រ៉ូម៉ាចាហានគុល</translation>
 <translation id="112387589102719461">ភាសា​អង់គ្លេស (សហរដ្ឋអាមេរិក) ដែលប្រើ​ក្ដារចុច Dvorak សម្រាប់អ្នកសរសេរកម្មវិធី</translation>
@@ -36,6 +35,7 @@
 <translation id="1249250836236328755">ប្រភេទ</translation>
 <translation id="1254593899333212300">ការភ្ជាប់អ៊ីនធឺណិតផ្ទាល់</translation>
 <translation id="1272293450992660632">តម្លៃ PIN មិនត្រូវគ្នាទេ។</translation>
+<translation id="127650757582748357">បណ្ណសារ​ដែល​បាន​បង្ហាប់​ដោយ BZIP2</translation>
 <translation id="1280820357415527819">កំពុង​ស្វែងរក​បណ្ដាញ​ទូរសព្ទ​ចល័ត</translation>
 <translation id="1291603679744561561">បានចាក់​សោស៊ីម</translation>
 <translation id="1293556467332435079">ឯកសារ</translation>
@@ -121,11 +121,11 @@
 <translation id="1942765061641586207">កម្រិតភាពច្បាស់នៃរូបភាព</translation>
 <translation id="1972984168337863910">ពង្រីកផ្ទាំង​មតិកែលម្អ​ឯកសារ</translation>
 <translation id="1995337122023280937">ទៅកាន់​ទីតាំង​ឯកសារ</translation>
+<translation id="1996806196681857869">បណ្ណសារ​ដែល​បង្ហាប់​ដោយ Z</translation>
 <translation id="2001796770603320721">គ្រប់គ្រង​ក្នុង​​ថាស</translation>
 <translation id="2009067268969781306">ការសម្អាត​ឧបករណ៍ផ្ទុក USB នឹងលុបទិន្នន័យ​ទាំងអស់​ដែលបានរក្សាទុក​នៅលើវា។ សកម្មភាព​នេះ​មិន​អាច​​ត្រឡប់វិញ​បានទេ។</translation>
 <translation id="2025955442973426285">ភាសាទីរិនយា</translation>
 <translation id="2028997212275086731">ឯកសារបណ្ណាសារ RAR</translation>
-<translation id="2036414735548252477">បណ្ណសារ tar ដែលបង្ហាប់ដោយ LZMA</translation>
 <translation id="2037845485764049925">ភាសា​រុស្ស៊ី</translation>
 <translation id="2044023416777079300">មិនបានចុះឈ្មោះម៉ូដឹមទេ</translation>
 <translation id="2046702855113914483">មីរ៉ាមេន</translation>
@@ -144,7 +144,6 @@
 <translation id="2163152940313951844">តួអក្សរ​មិនត្រឹមត្រូវ៖ <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">ភាសាព័រទុយហ្កាល់​ដែលប្រើ​ក្ដារចុច​កុំព្យូទ័រ​អាមេរិកអន្តរជាតិ</translation>
 <translation id="2198315389084035571">ភាសាចិនសាមញ្ញ</translation>
-<translation id="2208158072373999562">បណ្ណាសារឯកសារបង្រួម</translation>
 <translation id="22085916256174561">ភាសាកូរ៉េ</translation>
 <translation id="2208919847696382164">ដំឡើង​តាមរយៈ Linux</translation>
 <translation id="2225536596944493418">តើអ្នកប្រាកដថា​ចង់លុបធាតុ <ph name="NUMBER_OF_ITEMS" /> ដែរទេ?</translation>
@@ -209,8 +208,10 @@
 <translation id="2771816809568414714">ឈីស</translation>
 <translation id="2781645665747935084">ភាសាប៊ែលស៊ិក</translation>
 <translation id="2782104745158847185">មានបញ្ហាក្នុង​ការដំឡើង​កម្មវិធី Linux</translation>
+<translation id="2788520643285360081">បណ្ណសារ 7-ZIP</translation>
 <translation id="2803375539583399270">បញ្ចូលកូដ PIN</translation>
 <translation id="2820957248982571256">កំពុងស្កេន...</translation>
+<translation id="2822595620066756134">បណ្ណសារ​ដែល​បាន​បង្ហាប់​ដោយ GZIP</translation>
 <translation id="2830077785865012357">ភាសាចិនជូយីន</translation>
 <translation id="2843806747483486897">ប្តូរលំនាំដើម...</translation>
 <translation id="2850124913210091882">បម្រុងទុក</translation>
@@ -302,6 +303,7 @@
 <translation id="357479282490346887">ភាសាលីទុយអានី</translation>
 <translation id="3587482841069643663">ទាំងអស់</translation>
 <translation id="3592251141500063301">មិនអាចទាញយក <ph name="FILE_NAME" /> មកប្រើពេលគ្មានអ៊ីនធឺណិតបានទេ</translation>
+<translation id="3593874215226880809">បណ្ណសារ​ដែល​បាន​បង្ហាប់ដោយ LZIP</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
 <translation id="3603385196401704894">ភាសាបារាំងកាណាដា</translation>
 <translation id="3606220979431771195">តួកគី-F</translation>
@@ -314,6 +316,7 @@
 <translation id="3689865792480713551">បោះបង់ <ph name="ACTIVITY_DESCRIPTION" /> ។</translation>
 <translation id="3690128548376345212">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, បានបិទដំណើរការ, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ព័ត៌មានលម្អិត</translation>
 <translation id="3691184985318546178">ភាសាស៊ីនហាឡា</translation>
+<translation id="3703620396751288986">បណ្ណសារ ZIP</translation>
 <translation id="3726463242007121105">ឧបករណ៍នេះមិនអាចបើកទេ ពីព្រោះប្រព័ន្ធឯកសាររបស់វាមិនត្រូវបានគាំទ្រទេ។</translation>
 <translation id="3727148787322499904">ការផ្លាស់​ប្តូរការ​កំណត់នេះ​នឹង​ប៉ះពាល់​ដល់​បណ្តាញ​ដែល​បានចែករំលែក​ទាំងអស់</translation>
 <translation id="3737576078404241332">លុបចេញពី​របារចំហៀង</translation>
@@ -415,6 +418,7 @@
 <translation id="4646813851450205600">ភាសាឆែក​ដែលប្រើ​ក្ដារចុច Qwerty</translation>
 <translation id="4656777537938206294">កំណត់ឱ្យ​អាចប្រើ​ឯកសារបាន​ពេលគ្មាន​អ៊ីនធឺណិត</translation>
 <translation id="4658782175094886150">មនុស្ស​នៅក្រោម​ព្រិលធ្លាក់</translation>
+<translation id="4661996069183330363">បណ្ណាសារ TAR</translation>
 <translation id="4669606053856530811">សមាជិករបស់ '<ph name="SOURCE_NAME" />' នឹងបាត់បង់សិទ្ធិ​ចូលប្រើ ប្រសិនបើធាតុទាំងនេះ​មិនត្រូវបានចែករំលែកដល់ពួកគេទេ។</translation>
 <translation id="467809019005607715">Google បទបង្ហាញ</translation>
 <translation id="4690246192099372265">ភាសាស៊ុយអែដ</translation>
@@ -449,7 +453,6 @@
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> បៃ</translation>
 <translation id="4880214202172289027">របាររំកិលកម្រិតសំឡេង</translation>
 <translation id="4881695831933465202">បើក</translation>
-<translation id="4886199584824489598">បណ្ណសារដែលបង្ហាប់ដោយ Bzip2</translation>
 <translation id="4900532980794411603">ចែករំលែក​ជាមួយ Parallels Desktop</translation>
 <translation id="4902546322522096650">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ភ្ជាប់</translation>
 <translation id="4905417359854579806">រួចរាល់​ដើម្បី​បម្រុងទុក <ph name="FILE_COUNT" /></translation>
@@ -618,6 +621,7 @@
 <translation id="6220423280121890987">ភាសាពុនចាប៊ី</translation>
 <translation id="6224240818060029162">ភាសា​ដាណឺម៉ាក</translation>
 <translation id="6224253798271602650">សម្អាត <ph name="DRIVE_NAME" /></translation>
+<translation id="6224665423283788195">បណ្ណសារ​ដែល​បង្ហាប់​ដោយ Zstandard</translation>
 <translation id="6227235786875481728">ឯកសារនោះមិនអាចលេងបានទេ។</translation>
 <translation id="6241349547798190358">ភាសា​ហូឡង់ (បែលហ្ស៊ិក)</translation>
 <translation id="6267547857941397424">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, កម្លាំង​រលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ថ្មទូរសព្ទ <ph name="BATTERY_STATUS" />%, ភ្ជាប់</translation>
@@ -641,6 +645,7 @@
 <translation id="6423031066725912715">ភាសាវៀតណាម​ដែលប្រើ​ក្ដារចុច TCVN</translation>
 <translation id="6485131920355264772">បានបរាជ័យក្នុងការទាញត្រលប់ព័ត៌មានចន្លោះផ្ទុក</translation>
 <translation id="6495925982925244349">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ព័ត៌មាន​លម្អិត</translation>
+<translation id="649877868557234318">កំពុងស្រង់ <ph name="FILE_NAME" /> ទៅ <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">មិនអនុញ្ញាតប្រូកស៊ីសម្រាប់បណ្ដាញរួមទេ</translation>
 <translation id="6509122719576673235">ន័រវេស</translation>
 <translation id="6528513914570774834">អនុញ្ញាតឲ្យអ្នកផ្សេងទៀតដែលប្រើប្រាស់ឧបករណ៍នេះប្រើបណ្តាញនេះ</translation>
@@ -669,7 +674,6 @@
 <translation id="6806699711453372963">គ្រប់គ្រង​ការចែករំលែក Linux</translation>
 <translation id="6806796368146926706">អក្សរលាយលេខ​ដែលប្រើក្ដារចុច​ភាសាជប៉ុន</translation>
 <translation id="6808193438228982088">កញ្ជ្រោង</translation>
-<translation id="6820687829547641339">Gzip បានបង្រួមបណ្ណាសារ tar</translation>
 <translation id="6823166707458800069">ឯកសារទាំងអស់​ដែលបានរក្សាទុក​នៅក្នុង​ថតនេះ​ត្រូវបានបម្រុងទុក​នៅលើអ៊ីនធឺណិត​ដោយស្វ័យប្រវត្តិ។</translation>
 <translation id="6825883775269213504">រុស្សី</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> ដែលបានលុបចេញពីការជ្រើសរើស។</translation>
@@ -818,7 +822,6 @@
 <translation id="7925686952655276919">កុំប្រើទិន្នន័យទូរស័ព្ទសម្រាប់ធ្វើសមកម្ម</translation>
 <translation id="7928710562641958568">បញ្ចេញឧបករណ៍</translation>
 <translation id="7943385054491506837">US Colemak</translation>
-<translation id="7948417415021769876">បណ្ណសារ 7z</translation>
 <translation id="7953739707111622108">ឧបករណ៍នេះមិនអាចបើកទេ ពីព្រោះប្រព័ន្ធឯកសាររបស់វាមិនត្រូវបានស្គាល់ទេ។</translation>
 <translation id="7969525169268594403">ភាសាស្លូវ៉ានី</translation>
 <translation id="7972920761225148017">ភាសា​បារាំង (ស្វ៊ីស)</translation>
@@ -860,7 +863,6 @@
 <translation id="8297012244086013755">ហានគុល 3 ឈុត (គ្មាន Shift)</translation>
 <translation id="8299269255470343364">ភាសាជប៉ុន</translation>
 <translation id="8300849813060516376">OTASP បានបរាជ័យ</translation>
-<translation id="8308481408797647857">បណ្ណសារ tar ដែលបង្ហាប់ដោយ XZ</translation>
 <translation id="8312871300878166382">បិទភ្ជាប់ទៅក្នុងថតឯកសារ</translation>
 <translation id="8329978297633540474">អត្ថបទធម្មតា</translation>
 <translation id="8335587457941836791">ដកការដៅចេញពីធ្នើ</translation>
@@ -882,7 +884,6 @@
 <translation id="8461467696380332069">ចុចកណ្ដុរខាងស្ដាំ​លើឯកសារ រួចជ្រើសរើស "ខ្ទាស់ទៅធ្នើ" ដើម្បីចូលប្រើឯកសាររបស់អ្នកនៅក្នុងធ្នើបានយ៉ាងរហ័ស។</translation>
 <translation id="8461914792118322307">ប្រូកស៊ី</translation>
 <translation id="8463494891489624050">ភាសាវៀតណាម VIQR</translation>
-<translation id="8466234950814670489">បណ្ណាសារ tar</translation>
 <translation id="8475647382427415476">Google ថាសមិនអាចធ្វើសមកាលកម្ម "<ph name="FILENAME" />" បានទេឥឡូវនេះ។ Google ថាសនឹងព្យាយាមម្តងទៀតពេលក្រោយ។</translation>
 <translation id="8477649328507734757">Spin</translation>
 <translation id="8484284835977497781">ជ្រើសរើសពី​រូបថតថ្មីៗ​របស់អ្នក។</translation>
@@ -934,6 +935,7 @@
 <translation id="8903931173357132290">និស្សិតបញ្ចប់ការសិក្សា</translation>
 <translation id="8912078710089354287">ឆ្កែកំពុង​បក់កន្ទុយ</translation>
 <translation id="8919081441417203123">ភាសាដាណឺម៉ាក</translation>
+<translation id="8965273390142984105">បណ្ណសារ​ដែល​បាន​បង្ហាប់​ដោយ LZOP</translation>
 <translation id="8965697826696209160">គ្មានចន្លោះផ្ទុកគ្រប់គ្រាន់ទេ។</translation>
 <translation id="8997962250644902079">ភាសាចិន (អក្សរពេញ) ភីងអ៊ីង</translation>
 <translation id="9003940392834790328">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ព័ត៌មាន​លម្អិត</translation>
@@ -971,7 +973,6 @@
 <translation id="943972244133411984">កែសម្រួល​ដោយ</translation>
 <translation id="945522503751344254">ផ្ញើមតិ</translation>
 <translation id="947144732524271678">បានជ្រើសរើសធាតុ <ph name="ENTRY_COUNT" /> ជួរចាប់ពី <ph name="FROM_ENTRY_NAME" /> ដល់ <ph name="TO_ENTRY_NAME" /> ។</translation>
-<translation id="961973045258256291">បណ្ណសារដែលបង្ហាប់ដោយ Gzip</translation>
 <translation id="965477715979482472">អង់គ្លេស (អាហ្វ្រិក​ខាងត្បូង)</translation>
 <translation id="981121421437150478">ក្រៅបណ្តាញ</translation>
 <translation id="988685240266037636">ឯកសារដែលដាក់​ឈ្មោះ "<ph name="FILE_NAME" />" មានរួចហើយ។ តើអ្នកចង់​ជំនួសវា​ដែរទេ?</translation>

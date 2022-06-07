@@ -689,7 +689,8 @@ public class AwContents implements SmartClipProvider {
     //
     private class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate {
         @Override
-        public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle, GURL escapedUrl) {
+        public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle, GURL escapedUrl,
+                boolean applyUserGestureCarryover) {
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
             // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
             // will allow those to run in order.
@@ -960,32 +961,39 @@ public class AwContents implements SmartClipProvider {
                     (int) mRootView.getY() + mRootView.getHeight());
             int rootArea = RectUtils.getRectArea(rootVisibleRect);
 
+            int globalPercentage = 0;
+
             // Note that a scheme could occur more than once at a time.
             List<String> schemes = new ArrayList<>();
             List<Integer> schemePercentages = new ArrayList<>();
 
-            for (AwContents content : mAwContentsList) {
-                // A workaround for a deeper problem: https://crbug.com/1232765#c19
-                if (content.isDestroyed(NO_WARN)) continue;
-                if (content.mIsAttachedToWindow && content.mIsViewVisible
-                        && content.mIsWindowVisible) {
-                    // The result of getGlobalVisibleRect can change underneath us, so take a
-                    // protective copy.
-                    Rect contentRect = new Rect(content.getGlobalVisibleRect());
+            // If the root view has a width or height of 0 then nothing is visible, so leave the
+            // lists empty and pass them on like that. Also, we don't want to divide by 0.
+            if (rootArea > 0) {
+                for (AwContents content : mAwContentsList) {
+                    // A workaround for a deeper problem: https://crbug.com/1232765#c19
+                    if (content.isDestroyed(NO_WARN)) continue;
+                    if (content.mIsAttachedToWindow && content.mIsViewVisible
+                            && content.mIsWindowVisible) {
+                        // The result of getGlobalVisibleRect can change underneath us, so take a
+                        // protective copy.
+                        Rect contentRect = new Rect(content.getGlobalVisibleRect());
 
-                    // If the intersect method returns true then it has modified contentRect.
-                    if (contentRect.intersect(rootVisibleRect)) {
-                        contentRects.add(contentRect);
-                        schemes.add(
-                                AwContentsJni.get().getScheme(content.mNativeAwContents, content));
-                        schemePercentages.add(RectUtils.getRectArea(contentRect) * 100 / rootArea);
+                        // If the intersect method returns true then it has modified contentRect.
+                        if (contentRect.intersect(rootVisibleRect)) {
+                            contentRects.add(contentRect);
+                            schemes.add(AwContentsJni.get().getScheme(
+                                    content.mNativeAwContents, content));
+                            schemePercentages.add(
+                                    RectUtils.getRectArea(contentRect) * 100 / rootArea);
+                        }
                     }
                 }
-            }
 
-            int globalPercentage =
-                    RectUtils.calculatePixelsOfCoverage(rootVisibleRect, contentRects) * 100
-                    / rootArea;
+                globalPercentage =
+                        RectUtils.calculatePixelsOfCoverage(rootVisibleRect, contentRects) * 100
+                        / rootArea;
+            }
 
             AwContentsJni.get().updateScreenCoverage(globalPercentage,
                     schemes.toArray(new String[schemes.size()]), toIntArray(schemePercentages));
@@ -1663,9 +1671,11 @@ public class AwContents implements SmartClipProvider {
             mOnscreenContentProvider = null;
         }
 
-        if (mAutofillProvider != null) {
-            mAutofillProvider.destroy();
-            mAutofillProvider = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (mAutofillProvider != null) {
+                mAutofillProvider.destroy();
+                mAutofillProvider = null;
+            }
         }
 
         if (mAwDarkMode != null) {
@@ -3042,7 +3052,7 @@ public class AwContents implements SmartClipProvider {
 
         RenderFrameHost mainFrame = mWebContents.getMainFrame();
         // If the RenderFrameHost or the RenderFrame doesn't exist we couldn't post the message.
-        if (mainFrame == null || !mainFrame.isRenderFrameCreated()) return;
+        if (mainFrame == null || !mainFrame.isRenderFrameLive()) return;
 
         mWebContents.postMessageToMainFrame(messagePayload, null, targetOrigin, sentPorts);
     }
@@ -3081,6 +3091,7 @@ public class AwContents implements SmartClipProvider {
 
     public void onProvideAutoFillVirtualStructure(ViewStructure structure, int flags) {
         if (TRACE) Log.i(TAG, "%s onProvideAutoFillVirtualStructure", this);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         if (mAutofillProvider != null) {
             mAutofillProvider.onProvideAutoFillVirtualStructure(structure, flags);
         }
@@ -3088,6 +3099,7 @@ public class AwContents implements SmartClipProvider {
 
     public void autofill(final SparseArray<AutofillValue> values) {
         if (TRACE) Log.i(TAG, "%s autofill", this);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         if (mAutofillProvider != null) {
             mAutofillProvider.autofill(values);
         }
@@ -3186,7 +3198,9 @@ public class AwContents implements SmartClipProvider {
             tracker.trackContents(this);
         }
 
-        if (mDisplayCutoutController != null) mDisplayCutoutController.onAttachedToWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (mDisplayCutoutController != null) mDisplayCutoutController.onAttachedToWindow();
+        }
     }
 
     private void detachWindowCoverageTracker() {
@@ -3241,7 +3255,9 @@ public class AwContents implements SmartClipProvider {
      */
     public void onSizeChanged(int w, int h, int ow, int oh) {
         mAwViewMethods.onSizeChanged(w, h, ow, oh);
-        if (mDisplayCutoutController != null) mDisplayCutoutController.onSizeChanged();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (mDisplayCutoutController != null) mDisplayCutoutController.onSizeChanged();
+        }
     }
 
     /**
@@ -3427,8 +3443,10 @@ public class AwContents implements SmartClipProvider {
         if (mAwAutofillClient != null) {
             mAwAutofillClient.hideAutofillPopup();
         }
-        if (mAutofillProvider != null) {
-            mAutofillProvider.hidePopup();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (mAutofillProvider != null) {
+                mAutofillProvider.hidePopup();
+            }
         }
     }
 

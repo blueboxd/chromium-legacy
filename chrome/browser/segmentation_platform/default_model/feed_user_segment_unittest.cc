@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "components/segmentation_platform/internal/database/metadata_utils.h"
+#include "components/segmentation_platform/internal/metadata/metadata_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace segmentation_platform {
@@ -35,43 +35,39 @@ class FeedUserModelTest : public testing::Test {
     loop.Run();
   }
 
-  void OnInitFinishedCallback(
-      base::RepeatingClosure closure,
-      optimization_guide::proto::OptimizationTarget target,
-      proto::SegmentationModelMetadata metadata,
-      int64_t) {
+  void OnInitFinishedCallback(base::RepeatingClosure closure,
+                              proto::SegmentId target,
+                              proto::SegmentationModelMetadata metadata,
+                              int64_t) {
     EXPECT_EQ(metadata_utils::ValidateMetadataAndFeatures(metadata),
               metadata_utils::ValidationResult::kValidationSuccess);
+    fetched_metadata_ = metadata;
     std::move(closure).Run();
   }
 
-  void ExpectExecutionWithInput(const std::vector<float>& inputs,
-                                bool expected_error,
-                                float expected_result) {
+  absl::optional<float> ExpectExecutionWithInput(
+      const std::vector<float>& inputs) {
+    absl::optional<float> result;
     base::RunLoop loop;
     feed_user_model_->ExecuteModelWithInput(
-        inputs, base::BindOnce(&FeedUserModelTest::OnExecutionFinishedCallback,
-                               base::Unretained(this), loop.QuitClosure(),
-                               expected_error, expected_result));
+        inputs,
+        base::BindOnce(&FeedUserModelTest::OnExecutionFinishedCallback,
+                       base::Unretained(this), loop.QuitClosure(), &result));
     loop.Run();
+    return result;
   }
 
   void OnExecutionFinishedCallback(base::RepeatingClosure closure,
-                                   bool expected_error,
-                                   float expected_result,
+                                   absl::optional<float>* output,
                                    const absl::optional<float>& result) {
-    if (expected_error) {
-      EXPECT_FALSE(result.has_value());
-    } else {
-      EXPECT_TRUE(result.has_value());
-      EXPECT_EQ(result.value(), expected_result);
-    }
+    *output = result;
     std::move(closure).Run();
   }
 
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FeedUserSegment> feed_user_model_;
+  absl::optional<proto::SegmentationModelMetadata> fetched_metadata_;
 };
 
 TEST_F(FeedUserModelTest, InitAndFetchModel) {
@@ -79,23 +75,45 @@ TEST_F(FeedUserModelTest, InitAndFetchModel) {
 }
 
 TEST_F(FeedUserModelTest, ExecuteModelWithInput) {
-  std::vector<float> input(9, 0);
+  ExpectInitAndFetchModel();
+  ASSERT_TRUE(fetched_metadata_);
 
-  ExpectExecutionWithInput(input, false, 0);
+  std::vector<float> input(13, 0);
+
+  absl::optional<float> result = ExpectExecutionWithInput(input);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(
+      "NoNTPOrHomeOpened",
+      FeedUserSegment::GetSubsegmentName(metadata_utils::ConvertToDiscreteScore(
+          "feed_user_segment_subsegment", *result, *fetched_metadata_)));
 
   input[4] = 3;
   input[5] = 2;
-  ExpectExecutionWithInput(input, false, 0.5);
+  result = ExpectExecutionWithInput(input);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(
+      "UsedNtpWithoutModules",
+      FeedUserSegment::GetSubsegmentName(metadata_utils::ConvertToDiscreteScore(
+          "feed_user_segment_subsegment", *result, *fetched_metadata_)));
 
   input[3] = 3;
-  ExpectExecutionWithInput(input, false, 0.75);
+  result = ExpectExecutionWithInput(input);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(
+      "MvtOnly",
+      FeedUserSegment::GetSubsegmentName(metadata_utils::ConvertToDiscreteScore(
+          "feed_user_segment_subsegment", *result, *fetched_metadata_)));
 
-  input[0] = 1;
-  input[2] = 2;
-  ExpectExecutionWithInput(input, false, 1);
+  input[10] = 3;
+  result = ExpectExecutionWithInput(input);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(
+      "NtpAndFeedEngagedSimple",
+      FeedUserSegment::GetSubsegmentName(metadata_utils::ConvertToDiscreteScore(
+          "feed_user_segment_subsegment", *result, *fetched_metadata_)));
 
-  ExpectExecutionWithInput({}, true, 0);
-  ExpectExecutionWithInput({1, 2}, true, 0);
+  EXPECT_FALSE(ExpectExecutionWithInput({}));
+  EXPECT_FALSE(ExpectExecutionWithInput({1, 2}));
 }
 
 }  // namespace segmentation_platform

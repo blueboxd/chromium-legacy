@@ -29,6 +29,7 @@
 #include "components/exo/wayland/serial_tracker.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_observer.h"
+#include "components/exo/wayland/wayland_display_util.h"
 #include "components/exo/wayland/wl_output.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/env.h"
@@ -709,6 +710,13 @@ void AuraToplevel::SetRestoreInfo(int32_t restore_session_id,
   shell_surface_->SetRestoreInfo(restore_session_id, restore_window_id);
 }
 
+void AuraToplevel::SetRestoreInfoWithWindowIdSource(
+    int32_t restore_session_id,
+    const std::string& restore_window_id_source) {
+  shell_surface_->SetRestoreInfoWithWindowIdSource(restore_session_id,
+                                                   restore_window_id_source);
+}
+
 void AuraToplevel::OnOriginChange(const gfx::Point& origin) {
   zaura_toplevel_send_origin_change(aura_toplevel_resource_, origin.x(),
                                     origin.y());
@@ -774,90 +782,97 @@ void AuraPopup::SetClientSubmitsSurfacesInPixelCoordinates(bool enable) {
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-namespace {
-
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:
 
-class AuraOutput : public WaylandDisplayObserver {
- public:
-  explicit AuraOutput(wl_resource* resource) : resource_(resource) {}
+AuraOutput::AuraOutput(wl_resource* resource) : resource_(resource) {}
 
-  AuraOutput(const AuraOutput&) = delete;
-  AuraOutput& operator=(const AuraOutput&) = delete;
+AuraOutput::~AuraOutput() = default;
 
-  // Overridden from WaylandDisplayObserver:
-  bool SendDisplayMetrics(const display::Display& display,
-                          uint32_t changed_metrics) override {
-    if (!(changed_metrics &
-          (display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-           display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
-           display::DisplayObserver::DISPLAY_METRIC_ROTATION))) {
-      return false;
-    }
-
-    const WMHelper* wm_helper = WMHelper::GetInstance();
-    const display::ManagedDisplayInfo& display_info =
-        wm_helper->GetDisplayInfo(display.id());
-
-    if (wl_resource_get_version(resource_) >=
-        ZAURA_OUTPUT_SCALE_SINCE_VERSION) {
-      display::ManagedDisplayMode active_mode;
-      bool rv =
-          wm_helper->GetActiveModeForDisplayId(display.id(), &active_mode);
-      DCHECK(rv);
-      const int32_t current_output_scale =
-          std::round(display_info.zoom_factor() * 1000.f);
-      std::vector<float> zoom_factors =
-          display::GetDisplayZoomFactors(active_mode);
-
-      // Ensure that the current zoom factor is a part of the list.
-      auto it = std::find_if(
-          zoom_factors.begin(), zoom_factors.end(),
-          [&display_info](float zoom_factor) -> bool {
-            return std::abs(display_info.zoom_factor() - zoom_factor) <=
-                   std::numeric_limits<float>::epsilon();
-          });
-      if (it == zoom_factors.end())
-        zoom_factors.push_back(display_info.zoom_factor());
-
-      for (float zoom_factor : zoom_factors) {
-        int32_t output_scale = std::round(zoom_factor * 1000.f);
-        uint32_t flags = 0;
-        if (output_scale == 1000)
-          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
-        if (current_output_scale == output_scale)
-          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
-
-        // TODO(malaykeshav): This can be removed in the future when client
-        // has been updated.
-        if (wl_resource_get_version(resource_) < 6)
-          output_scale = std::round(1000.f / zoom_factor);
-
-        zaura_output_send_scale(resource_, flags, output_scale);
-      }
-    }
-
-    if (wl_resource_get_version(resource_) >=
-        ZAURA_OUTPUT_CONNECTION_SINCE_VERSION) {
-      zaura_output_send_connection(resource_,
-                                   display.IsInternal()
-                                       ? ZAURA_OUTPUT_CONNECTION_TYPE_INTERNAL
-                                       : ZAURA_OUTPUT_CONNECTION_TYPE_UNKNOWN);
-    }
-
-    if (wl_resource_get_version(resource_) >=
-        ZAURA_OUTPUT_DEVICE_SCALE_FACTOR_SINCE_VERSION) {
-      zaura_output_send_device_scale_factor(
-          resource_, display_info.device_scale_factor() * 1000);
-    }
-
-    return true;
+bool AuraOutput::SendDisplayMetrics(const display::Display& display,
+                                    uint32_t changed_metrics) {
+  if (!(changed_metrics &
+        (display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+         display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+         display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+         display::DisplayObserver::DISPLAY_METRIC_ROTATION))) {
+    return false;
   }
 
- private:
-  wl_resource* const resource_;
-};
+  const WMHelper* wm_helper = WMHelper::GetInstance();
+  const display::ManagedDisplayInfo& display_info =
+      wm_helper->GetDisplayInfo(display.id());
+
+  if (wl_resource_get_version(resource_) >= ZAURA_OUTPUT_SCALE_SINCE_VERSION) {
+    display::ManagedDisplayMode active_mode;
+    bool rv = wm_helper->GetActiveModeForDisplayId(display.id(), &active_mode);
+    DCHECK(rv);
+    const int32_t current_output_scale =
+        std::round(display_info.zoom_factor() * 1000.f);
+    std::vector<float> zoom_factors =
+        display::GetDisplayZoomFactors(active_mode);
+
+    // Ensure that the current zoom factor is a part of the list.
+    auto it = std::find_if(
+        zoom_factors.begin(), zoom_factors.end(),
+        [&display_info](float zoom_factor) -> bool {
+          return std::abs(display_info.zoom_factor() - zoom_factor) <=
+                 std::numeric_limits<float>::epsilon();
+        });
+    if (it == zoom_factors.end())
+      zoom_factors.push_back(display_info.zoom_factor());
+
+    for (float zoom_factor : zoom_factors) {
+      int32_t output_scale = std::round(zoom_factor * 1000.f);
+      uint32_t flags = 0;
+      if (output_scale == 1000)
+        flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
+      if (current_output_scale == output_scale)
+        flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
+
+      // TODO(malaykeshav): This can be removed in the future when client
+      // has been updated.
+      if (wl_resource_get_version(resource_) < 6)
+        output_scale = std::round(1000.f / zoom_factor);
+
+      zaura_output_send_scale(resource_, flags, output_scale);
+    }
+  }
+
+  if (wl_resource_get_version(resource_) >=
+      ZAURA_OUTPUT_CONNECTION_SINCE_VERSION) {
+    zaura_output_send_connection(
+        resource_, display.IsInternal() ? ZAURA_OUTPUT_CONNECTION_TYPE_INTERNAL
+                                        : ZAURA_OUTPUT_CONNECTION_TYPE_UNKNOWN);
+  }
+
+  if (wl_resource_get_version(resource_) >=
+      ZAURA_OUTPUT_DEVICE_SCALE_FACTOR_SINCE_VERSION) {
+    zaura_output_send_device_scale_factor(
+        resource_, display_info.device_scale_factor() * 1000);
+  }
+
+  if (wl_resource_get_version(resource_) >= ZAURA_OUTPUT_INSETS_SINCE_VERSION)
+    SendInsets(display.bounds().InsetsFrom(display.work_area()));
+
+  if (wl_resource_get_version(resource_) >=
+      ZAURA_OUTPUT_LOGICAL_TRANSFORM_SINCE_VERSION) {
+    SendLogicalTransform(OutputTransform(display.rotation()));
+  }
+
+  return true;
+}
+
+void AuraOutput::SendInsets(const gfx::Insets& insets) {
+  zaura_output_send_insets(resource_, insets.top(), insets.left(),
+                           insets.bottom(), insets.right());
+}
+
+void AuraOutput::SendLogicalTransform(int32_t transform) {
+  zaura_output_send_logical_transform(resource_, transform);
+}
+
+namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_shell_interface:
@@ -1080,6 +1095,15 @@ void aura_toplevel_unset_system_modal(wl_client* client,
   GetUserDataAs<AuraToplevel>(resource)->SetSystemModal(false);
 }
 
+void aura_toplevel_set_restore_info_with_window_id_source(
+    wl_client* client,
+    wl_resource* resource,
+    int32_t restore_session_id,
+    const char* restore_window_id_source) {
+  GetUserDataAs<AuraToplevel>(resource)->SetRestoreInfoWithWindowIdSource(
+      restore_session_id, restore_window_id_source);
+}
+
 const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_set_orientation_lock,
     aura_toplevel_surface_submission_in_pixel_coordinates,
@@ -1088,6 +1112,7 @@ const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_set_restore_info,
     aura_toplevel_set_system_modal,
     aura_toplevel_unset_system_modal,
+    aura_toplevel_set_restore_info_with_window_id_source,
 };
 
 void aura_popup_surface_submission_in_pixel_coordinates(wl_client* client,

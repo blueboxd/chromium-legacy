@@ -624,6 +624,11 @@ void TouchEventManager::HandleTouchPoint(
     return;
   }
 
+  if (!RuntimeEnabledFeatures::TouchActionEffectiveAtPointerDownEnabled() &&
+      event.GetType() == WebInputEvent::Type::kPointerDown) {
+    UpdateTouchAttributeMapsForPointerDown(event, pointer_event_target);
+  }
+
   // We might not receive the down action for a touch point. In that case we
   // would have never added them to |touch_attribute_map_| or hit-tested
   // them. For those just keep them in the map with a null target. Later they

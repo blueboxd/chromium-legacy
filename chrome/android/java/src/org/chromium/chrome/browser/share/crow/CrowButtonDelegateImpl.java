@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.share.crow;
 
-import android.app.Activity;
+import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.VisibleForTesting;
@@ -43,19 +43,19 @@ public class CrowButtonDelegateImpl implements CrowButtonDelegate {
 
     @Override
     public void launchCustomTab(
-            Activity currentActivity, GURL pageUrl, GURL canonicalUrl, boolean isFollowing) {
+            Context currentContext, GURL pageUrl, GURL canonicalUrl, boolean isFollowing) {
         String customTabUrl = buildServerUrl(new GURL(getServerUrl()), pageUrl, canonicalUrl,
                 getPublicationId(pageUrl), areMetricsEnabled(), isFollowing);
 
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setShowTitle(true);
-        builder.setColorScheme(ColorUtils.inNightMode(currentActivity)
+        builder.setColorScheme(ColorUtils.inNightMode(currentContext)
                         ? CustomTabsIntent.COLOR_SCHEME_DARK
                         : CustomTabsIntent.COLOR_SCHEME_LIGHT);
         builder.setShareState(CustomTabsIntent.SHARE_STATE_OFF);
         CustomTabsIntent customTabsIntent = builder.build();
-        customTabsIntent.intent.setClassName(currentActivity, CustomTabActivity.class.getName());
-        customTabsIntent.launchUrl(currentActivity, Uri.parse(customTabUrl));
+        customTabsIntent.intent.setClassName(currentContext, CustomTabActivity.class.getName());
+        customTabsIntent.launchUrl(currentContext, Uri.parse(customTabUrl));
     }
 
     public boolean isCrowEnabled() {
@@ -87,11 +87,19 @@ public class CrowButtonDelegateImpl implements CrowButtonDelegate {
     }
 
     private String getPublicationId(GURL url) {
+        String host = url.getHost();
+
+        // First check the downloaded component.
+        String publicationID = CrowBridge.getPublicationIDForHost(host);
+        if (!publicationID.isEmpty()) {
+            return publicationID;
+        }
+
+        // Then check the experimental Finch config.
         if (mDomainIdMap == null) {
             mDomainIdMap = parseDomainIdMap(ChromeFeatureList.getFieldTrialParamByFeature(
                     ChromeFeatureList.SHARE_CROW_BUTTON, DOMAIN_LIST_URL_PARAM));
         }
-        String host = url.getHost();
         if (!mDomainIdMap.containsKey(host)) {
             return DOMAIN_ID_NONE;
         }

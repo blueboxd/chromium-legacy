@@ -52,7 +52,6 @@ namespace feed {
 namespace feed_stream {
 class UnreadContentNotifier;
 }
-class NoticeCardTracker;
 class FeedNetwork;
 class FeedStore;
 class WebFeedSubscriptionCoordinator;
@@ -169,14 +168,6 @@ class FeedStream : public FeedApi,
   void ReportStreamScrollStart() override;
   void ReportOtherUserAction(const StreamType& stream_type,
                              FeedUserActionType action_type) override;
-  void ReportNoticeCreated(const StreamType& stream_type,
-                           const std::string& key) override;
-  void ReportNoticeViewed(const StreamType& stream_type,
-                          const std::string& key) override;
-  void ReportNoticeOpenAction(const StreamType& stream_type,
-                              const std::string& key) override;
-  void ReportNoticeDismissed(const StreamType& stream_type,
-                             const std::string& key) override;
   void ReportInfoCardTrackViewStarted(const StreamType& stream_type,
                                       int info_card_type) override;
   void ReportInfoCardViewed(const StreamType& stream_type,
@@ -394,6 +385,7 @@ class FeedStream : public FeedApi,
   void ClearAll();
 
   bool IsFeedEnabledByEnterprisePolicy();
+  bool IsFeedEnabled();
 
   bool HasReachedConditionsToUploadActionsWithNoticeCard();
 
@@ -404,8 +396,6 @@ class FeedStream : public FeedApi,
   Stream* FindStream(const StreamType& type);
   const Stream* FindStream(const StreamType& type) const;
   void UpdateExperiments(Experiments experiments);
-
-  NoticeCardTracker& GetNoticeCardTracker(const std::string& key);
 
   RequestMetadata GetCommonRequestMetadata(bool signed_in_request,
                                            bool allow_expired_session_id) const;
@@ -440,7 +430,7 @@ class FeedStream : public FeedApi,
   base::TimeTicks signed_out_for_you_refreshes_until_;
 
   BooleanPrefMember has_stored_data_;
-  BooleanPrefMember enable_snippets_;
+  BooleanPrefMember snippets_enabled_by_policy_;
   BooleanPrefMember articles_list_visible_;
 
   // State loaded at startup:
@@ -457,8 +447,6 @@ class FeedStream : public FeedApi,
   feedui::StreamUpdate forced_stream_update_for_debugging_;
 
   PrivacyNoticeCardTracker privacy_notice_card_tracker_;
-
-  std::map<std::string, NoticeCardTracker> notice_card_trackers_;
 
   InfoCardTracker info_card_tracker_;
 

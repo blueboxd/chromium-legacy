@@ -331,13 +331,15 @@ void ContentAutofillDriver::SelectControlDidChangeImpl(
 }
 
 void ContentAutofillDriver::AskForValuesToFillImpl(
-    int32_t id,
+    int32_t query_id,
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
-    bool autoselect_first_suggestion) {
-  autofill_manager_->OnAskForValuesToFill(id, form, field, bounding_box,
-                                          autoselect_first_suggestion);
+    bool autoselect_first_suggestion,
+    TouchToFillEligible touch_to_fill_eligible) {
+  autofill_manager_->OnAskForValuesToFill(query_id, form, field, bounding_box,
+                                          autoselect_first_suggestion,
+                                          touch_to_fill_eligible);
 }
 
 void ContentAutofillDriver::HidePopupImpl() {
@@ -373,6 +375,13 @@ void ContentAutofillDriver::DidEndTextFieldEditingImpl() {
 void ContentAutofillDriver::SelectFieldOptionsDidChangeImpl(
     const FormData& form) {
   autofill_manager_->SelectFieldOptionsDidChange(form);
+}
+
+void ContentAutofillDriver::JavaScriptChangedAutofilledValueImpl(
+    const FormData& form,
+    const FormFieldData& field,
+    const std::u16string& old_value) {
+  autofill_manager_->JavaScriptChangedAutofilledValue(form, field, old_value);
 }
 
 void ContentAutofillDriver::FillFormForAssistantImpl(
@@ -478,20 +487,21 @@ void ContentAutofillDriver::SelectControlDidChange(
 }
 
 void ContentAutofillDriver::AskForValuesToFill(
-    int32_t id,
+    int32_t query_id,
     const FormData& raw_form,
     const FormFieldData& raw_field,
     const gfx::RectF& bounding_box,
-    bool autoselect_first_suggestion) {
+    bool autoselect_first_suggestion,
+    TouchToFillEligible touch_to_fill_eligible) {
   if (!bad_message::CheckFrameNotPrerendering(render_frame_host_))
     return;
   FormData form = raw_form;
   FormFieldData field = raw_field;
   SetFrameAndFormMetaData(form, &field);
   GetAutofillRouter().AskForValuesToFill(
-      this, id, form, field,
+      this, query_id, form, field,
       TransformBoundingBoxToViewportCoordinates(bounding_box),
-      autoselect_first_suggestion);
+      autoselect_first_suggestion, touch_to_fill_eligible);
 }
 
 void ContentAutofillDriver::HidePopup() {
@@ -545,6 +555,19 @@ void ContentAutofillDriver::SelectFieldOptionsDidChange(
     return;
   GetAutofillRouter().SelectFieldOptionsDidChange(
       this, GetFormWithFrameAndFormMetaData(raw_form));
+}
+
+void ContentAutofillDriver::JavaScriptChangedAutofilledValue(
+    const FormData& raw_form,
+    const FormFieldData& raw_field,
+    const std::u16string& old_value) {
+  if (!bad_message::CheckFrameNotPrerendering(render_frame_host_))
+    return;
+  FormData form = raw_form;
+  FormFieldData field = raw_field;
+  SetFrameAndFormMetaData(form, &field);
+  GetAutofillRouter().JavaScriptChangedAutofilledValue(this, form, field,
+                                                       old_value);
 }
 
 void ContentAutofillDriver::FillFormForAssistant(

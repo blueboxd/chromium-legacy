@@ -101,14 +101,6 @@ const base::Feature kAImageReader{"AImageReader",
 const base::Feature kWebViewVulkan{"WebViewVulkan",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Used to enable/disable zero copy video path on webview for MCVD.
-const base::Feature kWebViewZeroCopyVideo{"WebViewZeroCopyVideo",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// List of devices on which WebViewZeroCopyVideo should be disabled.
-const base::FeatureParam<std::string> kWebViewZeroCopyVideoBlocklist{
-    &kWebViewZeroCopyVideo, "WebViewZeroCopyVideoBlocklist", ""};
-
 // Used to limit AImageReader max queue size to 1 since many devices especially
 // android Tv devices do not support more than 1 images.
 const base::Feature kLimitAImageReaderMaxSizeToOne{
@@ -218,6 +210,10 @@ const base::Feature kVulkan {
 const base::Feature kEnableDrDc{"EnableDrDc",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kForceGpuMainThreadToNormalPriorityDrDc{
+    "ForceGpuMainThreadToNormalPriorityDrDc",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(IS_ANDROID)
 const base::Feature kEnableDrDcVulkan{"EnableDrDcVulkan",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -250,7 +246,7 @@ const base::FeatureParam<std::string> kVulkanBlockListByModel{
 
 const base::FeatureParam<std::string> kVulkanBlockListByBoard{
     &kVulkan, "BlockListByBoard",
-    "RM67*|RM68*|k68*|mt67*|oppo67*|oppo68*|QM215|rk30sdk"};
+    "RM67*|RM68*|k68*|mt6*|oppo67*|oppo68*|QM215|rk30sdk"};
 
 const base::FeatureParam<std::string> kVulkanBlockListByAndroidBuildFP{
     &kVulkan, "BlockListByAndroidBuildFP", ""};
@@ -258,7 +254,7 @@ const base::FeatureParam<std::string> kVulkanBlockListByAndroidBuildFP{
 // crbug.com/1294648
 const base::FeatureParam<std::string> kDrDcBlockListByDevice{
     &kEnableDrDc, "BlockListByDevice", "LF9810_2GB"};
-#endif
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Enable SkiaRenderer Dawn graphics backend. On Windows this will use D3D12,
 // and on Linux this will use Vulkan.
@@ -275,6 +271,11 @@ const base::Feature kEnableVkPipelineCache{"EnableVkPipelineCache",
 // Enable Skia reduceOpsTaskSplitting to reduce render passes.
 const base::Feature kReduceOpsTaskSplitting{
     "ReduceOpsTaskSplitting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enabling this will make the GPU decode path use a mock implementation of
+// discardable memory.
+const base::Feature kNoDiscardableMemoryForGpuDecodePath{
+    "NoDiscardableMemoryForGpuDecodePath", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsUsingVulkan() {
 #if BUILDFLAG(IS_ANDROID)
@@ -361,6 +362,14 @@ bool IsDrDcEnabled() {
 #endif
 }
 
+bool IsGpuMainThreadForcedToNormalPriorityDrDc() {
+  // GPU main thread priority is forced to NORMAL only when DrDc is enabled. In
+  // that case DrDc thread continues to use DISPLAY thread priority and hence
+  // have higher thread priority than GPU main.
+  return IsDrDcEnabled() &&
+         base::FeatureList::IsEnabled(kForceGpuMainThreadToNormalPriorityDrDc);
+}
+
 bool IsUsingThreadSafeMediaForWebView() {
 #if BUILDFLAG(IS_ANDROID)
   // SurfaceTexture can't be thread-safe. Also thread safe media code currently
@@ -429,9 +438,8 @@ bool IsAndroidSurfaceControlEnabled() {
   if (LimitAImageReaderMaxSizeToOne())
     return false;
 
-  // On WebView we also require zero copy or thread-safe media to use
-  // SurfaceControl
-  if (IsWebViewZeroCopyVideoEnabled() || IsUsingThreadSafeMediaForWebView()) {
+  // On WebView we require thread-safe media to use SurfaceControl
+  if (IsUsingThreadSafeMediaForWebView()) {
     // If main feature is not overridden from command line and we're running T+
     // use kWebViewSurfaceControlForT to decide feature status instead so we
     // can target pre-release android to fish out platform side bugs.
@@ -464,19 +472,6 @@ bool LimitAImageReaderMaxSizeToOne() {
                              kLimitAImageReaderMaxSizeToOneBlocklist.Get()));
 }
 
-// Zero copy is disabled if device can not support 3 max images.
-bool IsWebViewZeroCopyVideoEnabled() {
-  const bool limit_max_size_to_one = LimitAImageReaderMaxSizeToOne();
-  if (!IsAImageReaderEnabled() || limit_max_size_to_one)
-    return false;
-
-  if (!base::FeatureList::IsEnabled(kWebViewZeroCopyVideo))
-    return false;
-
-  return !(FieldIsInBlocklist(base::android::BuildInfo::GetInstance()->model(),
-                              kWebViewZeroCopyVideoBlocklist.Get()));
-}
-
 bool IncreaseBufferCountForHighFrameRate() {
   // TODO(crbug.com/1211332): We don't have a way to dynamically adjust number
   // of buffers. So these checks, espeically the RAM one, is to limit the impact
@@ -492,11 +487,6 @@ bool IncreaseBufferCountForHighFrameRate() {
       !IsDeviceBlocked(base::android::BuildInfo::GetInstance()->device(),
                        kDisableIncreaseBufferCountForHighFrameRate.Get());
   return increase;
-}
-
-bool IncreaseBufferCountForWebViewOverlays() {
-  return IsAndroidSurfaceControlEnabled() &&
-         base::FeatureList::IsEnabled(kWebViewSurfaceControl);
 }
 
 #endif

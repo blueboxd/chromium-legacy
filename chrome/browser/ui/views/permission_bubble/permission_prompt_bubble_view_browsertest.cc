@@ -6,6 +6,7 @@
 #include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -136,7 +137,10 @@ class PermissionPromptBubbleViewBrowserTest
   GURL GetTestUrl() { return GURL("https://example.com"); }
 
   content::RenderFrameHost* GetActiveMainFrame() {
-    return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    return browser()
+        ->tab_strip_model()
+        ->GetActiveWebContents()
+        ->GetPrimaryMainFrame();
   }
 
   PermissionChip* GetChip() {
@@ -256,6 +260,24 @@ IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleViewBrowserTest,
   }
 }
 
+// Test switching between PermissionChip and PermissionPromptBubbleView and make
+// sure no crashes.
+IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleViewBrowserTest,
+                       SwitchBetweenChipAndBubble) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  browser_view->GetLocationBarView()->SetVisible(false);
+  ShowUi("geolocation");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
+  permission_request_manager->UpdateAnchor();
+  browser_view->GetLocationBarView()->SetVisible(true);
+  permission_request_manager->UpdateAnchor();
+  browser_view->GetLocationBarView()->SetVisible(false);
+  permission_request_manager->UpdateAnchor();
+}
+
 // Test bubbles showing when tabs move between windows. Simulates a situation
 // that could result in permission bubbles not being dismissed, and a problem
 // referencing a temporary drag window. See http://crbug.com/754552.
@@ -303,7 +325,7 @@ IN_PROC_BROWSER_TEST_P(
   content::RenderViewHost* render_view_host = browser()
                                                   ->tab_strip_model()
                                                   ->GetActiveWebContents()
-                                                  ->GetMainFrame()
+                                                  ->GetPrimaryMainFrame()
                                                   ->GetRenderViewHost();
   content::RenderProcessHost* render_process_host =
       render_view_host->GetProcess();

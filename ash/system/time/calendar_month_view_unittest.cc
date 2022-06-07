@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/calendar_unittest_utils.h"
+#include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/calendar_view_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/time/time.h"
@@ -38,7 +39,7 @@ std::unique_ptr<google_apis::calendar::EventList> CreateMockEventList() {
   event_list->InjectItemForTesting(calendar_test_utils::CreateEvent(
       "id_5", "summary_5", "2 Sep 2021 10:30 GMT", "21 Nov 2021 11:30 GMT"));
   event_list->InjectItemForTesting(calendar_test_utils::CreateEvent(
-      "id_6", "summary_6", "10 Aug 2021 4:30 GMT", "10 Aug 2021 8:30 GMT"));
+      "id_6", "summary_6", "10 Aug 2021 4:30 GMT", "10 Aug 2021 5:30 GMT"));
   event_list->InjectItemForTesting(calendar_test_utils::CreateEvent(
       "id_7", "summary_7", "10 Aug 2021 7:30 GMT", "10 Aug 2021 9:30 GMT"));
   event_list->InjectItemForTesting(calendar_test_utils::CreateEvent(
@@ -68,10 +69,13 @@ class CalendarMonthViewTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  void CreateMonthView(base::Time date) {
+  void CreateMonthView(base::Time date, const std::u16string& timezone) {
     AccountId user_account = AccountId::FromUserEmail("user@test");
     GetSessionControllerClient()->SwitchActiveUser(user_account);
     calendar_month_view_.reset();
+    controller_.reset();
+    ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(timezone);
+    controller_ = std::make_unique<CalendarViewController>();
     controller_->UpdateMonth(date);
     calendar_month_view_ =
         std::make_unique<CalendarMonthView>(date, controller_.get());
@@ -114,7 +118,7 @@ TEST_F(CalendarMonthViewTest, Basics) {
   base::Time date;
   ASSERT_TRUE(base::Time::FromString("1 Aug 2021 10:00 GMT", &date));
 
-  CreateMonthView(date);
+  CreateMonthView(date, u"America/Los_Angeles");
 
   // Randomly checks some dates in this month view.
   EXPECT_EQ(
@@ -136,7 +140,7 @@ TEST_F(CalendarMonthViewTest, Basics) {
   base::Time jun_date;
   ASSERT_TRUE(base::Time::FromString("1 Jun 2021 10:00 GMT", &jun_date));
 
-  CreateMonthView(jun_date);
+  CreateMonthView(jun_date, u"America/Los_Angeles");
 
   // Randomly checks some dates in this month view.
   EXPECT_EQ(
@@ -146,6 +150,48 @@ TEST_F(CalendarMonthViewTest, Basics) {
             static_cast<views::LabelButton*>(month_view()->children()[30])
                 ->GetText());
   EXPECT_EQ(u"3", static_cast<views::LabelButton*>(month_view()->children()[34])
+                      ->GetText());
+}
+
+// Regression test for https://crbug.com/1325533
+// Test the `CalendarMonthView` with time zone that has DST starts from 00:00.
+TEST_F(CalendarMonthViewTest, AzoreSummerTime) {
+  // Create a monthview based on Mar,1st 2022. DST starts from 00:00 on Mar
+  // 27th in 2022 with Azore Summer Time.
+  //
+  // 27, 28, 1 , 2 , 3 , 4 , 5
+  // 6,  7,  8 , 9 , 10, 11, 12
+  // 13, 14, 15, 16, 17, 18, 19
+  // 20, 21, 22, 23, 24, 25, 26
+  // 27, 28, 29, 30, 31, 1 , 2
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("1 Mar 2022 10:00 GMT", &date));
+
+  // Sets the timezone to "Azore Summer Time";
+  CreateMonthView(date, u"Atlantic/Azores");
+
+  base::Time date_without_DST;
+  ASSERT_TRUE(
+      base::Time::FromString("26 Mar 2022 10:00 GMT", &date_without_DST));
+
+  base::Time date_with_DST;
+  ASSERT_TRUE(base::Time::FromString("28 Mar 2022 10:00 GMT", &date_with_DST));
+
+  // Before daylight saving the time difference is 1 hour.
+  EXPECT_EQ(base::Minutes(-60),
+            calendar_utils::GetTimeDifference(date_without_DST));
+
+  // After daylight saving the time difference is 0 hours.
+  EXPECT_EQ(base::Minutes(0), calendar_utils::GetTimeDifference(date_with_DST));
+
+  // Randomly checks some dates in this month view.
+  EXPECT_EQ(
+      u"27",
+      static_cast<views::LabelButton*>(month_view()->children()[0])->GetText());
+  EXPECT_EQ(u"29",
+            static_cast<views::LabelButton*>(month_view()->children()[30])
+                ->GetText());
+  EXPECT_EQ(u"2", static_cast<views::LabelButton*>(month_view()->children()[34])
                       ->GetText());
 }
 
@@ -161,7 +207,7 @@ TEST_F(CalendarMonthViewTest, TodayNotInMonth) {
   base::subtle::ScopedTimeClockOverrides time_override(
       &CalendarMonthViewTest::FakeTimeNow, nullptr, nullptr);
 
-  CreateMonthView(date);
+  CreateMonthView(date, u"America/Los_Angeles");
 
   // Today's row position is not updated.
   EXPECT_EQ(0, controller()->GetTodayRowTopHeight());
@@ -188,7 +234,7 @@ TEST_F(CalendarMonthViewTest, TodayInMonth) {
       &CalendarMonthViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
       /*thread_ticks_override=*/nullptr);
 
-  CreateMonthView(date);
+  CreateMonthView(date, u"America/Los_Angeles");
 
   // Today's row position is updated because today is in this month.
   int top = controller()->GetTodayRowTopHeight();
@@ -213,7 +259,7 @@ TEST_F(CalendarMonthViewTest, UpdateEvents) {
       &CalendarMonthViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
       /*thread_ticks_override=*/nullptr);
 
-  CreateMonthView(date);
+  CreateMonthView(date, u"America/Los_Angeles");
 
   TriggerPaint();
   // Grayed out cell. Sep 2nd is the 33 one in this calendar, which is with
@@ -228,7 +274,7 @@ TEST_F(CalendarMonthViewTest, UpdateEvents) {
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021, 0 events",
+  EXPECT_EQ(u"Wednesday, August 18, 2021, 0 events",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 
@@ -244,7 +290,7 @@ TEST_F(CalendarMonthViewTest, UpdateEvents) {
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021, 0 events",
+  EXPECT_EQ(u"Wednesday, August 18, 2021, 0 events",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 
@@ -262,7 +308,7 @@ TEST_F(CalendarMonthViewTest, UpdateEvents) {
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021, 4 events",
+  EXPECT_EQ(u"Wednesday, August 18, 2021, 4 events",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 }
@@ -281,29 +327,23 @@ TEST_F(CalendarMonthViewTest, TimeZone) {
       /*thread_ticks_override=*/nullptr);
 
   // Sets the timezone to "America/Los_Angeles";
-  ash::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"PST");
-
-  CreateMonthView(date);
+  CreateMonthView(date, u"America/Los_Angeles");
   TriggerPaint();
   UploadEvents();
   month_view()->SchedulePaintChildren();
   TriggerPaint();
 
-  // August is before the daylight saving, time difference between UTC and PST
-  // should be 7 hours.
-  EXPECT_EQ(-420, controller()->time_difference_minutes());
-
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021, 4 events",
+  EXPECT_EQ(u"Wednesday, August 18, 2021, 4 events",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 
   EXPECT_EQ(u"10",
             static_cast<CalendarDateCellView*>(month_view()->children()[9])
                 ->GetText());
-  EXPECT_EQ(u"August 10, 2021, 2 events",
+  EXPECT_EQ(u"Tuesday, August 10, 2021, 2 events",
             static_cast<CalendarDateCellView*>(month_view()->children()[9])
                 ->GetTooltipText());
 
@@ -312,7 +352,7 @@ TEST_F(CalendarMonthViewTest, TimeZone) {
   EXPECT_EQ(u"9",
             static_cast<CalendarDateCellView*>(month_view()->children()[8])
                 ->GetText());
-  EXPECT_EQ(u"August 9, 2021, 1 event",
+  EXPECT_EQ(u"Monday, August 9, 2021, 1 event",
             static_cast<CalendarDateCellView*>(month_view()->children()[8])
                 ->GetTooltipText());
 
@@ -333,7 +373,7 @@ TEST_F(CalendarMonthViewTest, InactiveUserSession) {
       &CalendarMonthViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
       /*thread_ticks_override=*/nullptr);
 
-  CreateMonthView(date);
+  CreateMonthView(date, u"America/Los_Angeles");
   TriggerPaint();
   UploadEvents();
   month_view()->SchedulePaintChildren();
@@ -341,7 +381,7 @@ TEST_F(CalendarMonthViewTest, InactiveUserSession) {
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021, 4 events",
+  EXPECT_EQ(u"Wednesday, August 18, 2021, 4 events",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 
@@ -353,7 +393,7 @@ TEST_F(CalendarMonthViewTest, InactiveUserSession) {
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021",
+  EXPECT_EQ(u"Wednesday, August 18, 2021",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 
@@ -364,7 +404,7 @@ TEST_F(CalendarMonthViewTest, InactiveUserSession) {
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021",
+  EXPECT_EQ(u"Wednesday, August 18, 2021",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 }

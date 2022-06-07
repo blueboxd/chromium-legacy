@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="History.AttemptedToFixProfileError" units="units"
-    expires_after="M77">
+    expires_after="2022-11-20">
   <owner>sky@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -68,7 +68,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.BrowsingDataLifetime.State.BrowserShutdownDeletion"
-    enum="BooleanStartedCompleted" expires_after="2022-10-01">
+    enum="BooleanStartedCompleted" expires_after="2022-12-04">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -324,8 +324,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.ClearBrowsingData.InstalledAppExcluded"
-    units="Boolean" expires_after="2023-03-09">
+<histogram name="History.ClearBrowsingData.InstalledAppExcluded" enum="Boolean"
+    expires_after="2023-03-09">
   <owner>ayui@chromium.org</owner>
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
@@ -352,7 +352,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledAppsDialogShown"
-    units="Boolean" expires_after="2023-04-19">
+    enum="Boolean" expires_after="2023-04-19">
   <owner>ayui@chromium.org</owner>
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
@@ -500,7 +500,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.FinalState"
-    enum="HistoryClustersFinalState" expires_after="2022-09-18">
+    enum="HistoryClustersFinalState" expires_after="2022-05-27">
+  <obsolete>
+    Removed as of 05/2022 in favor of
+    History.Clusters.Actions.FinalState.Outcome
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -519,8 +523,42 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.Clusters.Actions.FinalState.Number{Event}"
+    units="count" expires_after="2022-09-18">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logged when the user closes the chrome://history/journeys page (e.g. closed
+    tab, navigated in the same tab, or closed browser). Logs the number of
+    {Event} over the period of a single visit to the Journeys UI.
+  </summary>
+  <token key="Event">
+    <variant name="ClustersDeleted" summary="cluster deletions"/>
+    <variant name="IndividualVisitsDeleted"
+        summary="single/individual visits deleted"/>
+    <variant name="LinksOpened" summary="links opened"/>
+    <variant name="RelatedSearchesClicked"
+        summary="related search links opened"/>
+    <variant name="VisibilityToggles" summary="Journeys UI toggles on/off"/>
+  </token>
+</histogram>
+
+<histogram name="History.Clusters.Actions.FinalState.WasSuccessful"
+    enum="BooleanSuccess" expires_after="2022-09-18">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Logged when the user closes the chrome://history/journeys page (e.g., closed
+    tab, navigated in the same tab, or closed browser). Logs whether the users
+    interaction with the UI was deemed successful or not. Success is defined as
+    a link was clicked, a cluster was opened, or a deletion event occurred.
+  </summary>
+</histogram>
+
 <histogram name="History.Clusters.Actions.InitialState"
-    enum="HistoryClustersInitialState" expires_after="2022-09-18">
+    enum="HistoryClustersInitialState" expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -533,7 +571,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.LinksOpened" units="links opened"
-    expires_after="2022-09-18">
+    expires_after="2022-11-20">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -545,7 +583,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.NumQueries"
-    units="number queries made" expires_after="2022-09-18">
+    units="number queries made" expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -576,7 +614,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupLatency2" units="ms"
-    expires_after="2022-09-18">
+    expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -590,7 +628,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupSize" units="count"
-    expires_after="2022-09-18">
+    expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -622,7 +660,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.ComputeClusters.ThreadTime"
-    units="ms" expires_after="2022-09-18">
+    units="ms" expires_after="2022-11-20">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -637,7 +675,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.EntityIdGathering.ThreadTime"
-    units="ms" expires_after="2022-09-18">
+    units="ms" expires_after="2022-11-20">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -652,7 +690,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.GetClustersLatency" units="ms"
-    expires_after="2022-09-18">
+    expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -754,7 +792,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumClustersReturned"
-    units="number clusters returned" expires_after="2022-09-18">
+    units="number clusters returned" expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -785,7 +823,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumVisitsToCluster"
-    units="number visits" expires_after="2022-09-18">
+    units="number visits" expires_after="2022-11-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -815,7 +853,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.ProcessBatchOfVisits.ThreadTime"
-    units="ms" expires_after="2022-09-18">
+    units="ms" expires_after="2022-11-20">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -831,7 +869,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.QueryAnnotatedVisits.ThreadTime"
-    units="ms" expires_after="2022-09-25">
+    units="ms" expires_after="2022-11-27">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -860,7 +898,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.Clusters.Backend.WasClusterFiltered.{ClusterFilterReason}"
-    enum="BooleanFiltered" expires_after="2022-05-15">
+    enum="BooleanFiltered" expires_after="2022-11-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -894,7 +932,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.KeywordCache.ThreadTime" units="ms"
-    expires_after="2022-09-25">
+    expires_after="2022-11-27">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -907,7 +945,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.ProcessClustersDuration" units="ms"
-    expires_after="2022-09-25">
+    expires_after="2022-11-27">
   <owner>olivierli@chromium.org</owner>
   <owner>tommycli@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -929,7 +967,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.ServiceLatency" units="ms"
-    expires_after="2022-09-18">
+    expires_after="2022-11-20">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -1026,6 +1064,25 @@ chromium-metrics-reviews@google.com.
         summary="visit to a url other than the default search results page"/>
     <variant name="SRP" summary="visit to the default search results page"/>
   </token>
+</histogram>
+
+<histogram name="History.Clusters.WebUISessionDuration" units="ms"
+    expires_after="2022-11-30">
+  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <summary>
+    Records the amount of time the Journeys WebUI is open.
+
+    This timer is started when the Journeys WebUI is loaded. The Journeys WebUI
+    is loaded when either the user directly goes to the Journeys WebUI, or when
+    the user switches to the Journeys tab from a different tab.
+
+    The timer is stopped and the elapsed time recorded when either the whole
+    WebUI is closed, or if the user disables the Journeys preference, or if the
+    user switches tabs off the Journeys tab onto a different one.
+
+    Elapsed times longer than one hour are recorded as one hour.
+  </summary>
 </histogram>
 
 <histogram name="History.DatabaseAdvancedMetricsTime" units="ms"
@@ -1298,7 +1355,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InitializationFailureStep" enum="HistoryInitStep"
-    expires_after="M77">
+    expires_after="2022-11-20">
   <owner>sky@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -1539,6 +1596,41 @@ chromium-metrics-reviews@google.com.
     Whether the notice about other forms of browsing history was shown in the
     header of the History page when the header was displayed. The header is
     refreshed with every history query.
+  </summary>
+</histogram>
+
+<histogram name="History.SqliteDatabaseError" enum="SqliteLoggedResultCode"
+    expires_after="2022-10-23">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>asully@chromium.org</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    The exact database error encountered when initializing the database, if
+    failed.
+  </summary>
+</histogram>
+
+<histogram name="History.TopSites.SearchTermsExtractedCount" units="counts"
+    expires_after="2022-10-16">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    The number of search terms extracted from the in-memory URLDatabase to
+    produce the most repeated search suggestions. Emitted on NTP load and on
+    omnibox popup shown on Android NTP when repeatable queries are requested to
+    be shown in the Most Visited tiles.
+  </summary>
+</histogram>
+
+<histogram name="History.TopSites.SearchTermsExtractionTime" units="ms"
+    expires_after="2022-10-16">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    The length of time it takes to extract the most repeated search terms from
+    the in-memory URLDatabase and sort by frecency scores. Emitted on NTP load
+    and on omnibox popup shown on Android NTP when repeatable queries are
+    requested to be shown in the Most Visited tiles.
   </summary>
 </histogram>
 

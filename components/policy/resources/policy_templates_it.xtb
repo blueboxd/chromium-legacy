@@ -433,6 +433,18 @@ Se attivi o non configuri questo criterio, viene attivato lo scorrimento della p
 
 Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di testo specifici tramite URL viene disattivato.</translation>
 <translation id="1474273443907024088">Disattiva TLS False Start</translation>
+<translation id="1476128579011024193">
+      Se il criterio viene impostato su <ph name="POLICY_VALUE_PRIMARY_ACCOUNT" />, dopo l'accesso a un account gestito soggetto a questo criterio, all'utente viene chiesto di creare un nuovo profilo per l'account.
+      Se viene impostato su <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTING_DATA" />, dopo l'accesso a un account gestito soggetto a questo criterio, all'utente viene chiesto di creare un nuovo profilo per l'account con la possibilità di mantenere gli eventuali dati di navigazione esistenti. Questa opzione è supportata su Chrome 102 e versioni successive.
+
+      Se il criterio viene impostato su <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT" />, dopo l'accesso a un account gestito soggetto a questo criterio, all'utente viene chiesto di creare un nuovo profilo per l'account. Questo profilo non consente account secondari.
+      Se viene impostato su <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT_KEEP_EXISTING_DATA" />, dopo l'accesso a un account gestito soggetto a questo criterio, all'utente viene chiesto di creare un nuovo profilo per l'account con la possibilità di mantenere gli eventuali dati di navigazione esistenti. Questo profilo non consente account secondari. Questa opzione è supportata su Chrome 102 e versioni successive.
+
+      Se il criterio viene impostato su <ph name="POLICY_VALUE_NONE" /> o se non viene configurato, gli account gestiti non hanno limitazioni. Di conseguenza, un account gestito potrebbe essere un account secondario, il che ne disabilita la capacità di ricevere criteri impostati sull'account da parte dell'amministratore.
+
+      Se il criterio viene configurato a livello di dispositivo, tutti gli account nel browser sono soggetti al criterio.
+      Se viene configurato a livello di account, solo quell'account viene interessato nel browser.
+    </translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1479427764273213107">L'impostazione del criterio consente di definire l'elenco di dispositivi USB che gli utenti possono scollegare dal proprio driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'app web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
 
@@ -492,7 +504,7 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 
       Se il criterio non viene configurato o se viene impostato su Disattivato, non è possibile unire i criteri relativi al cloud a livello di utente ai criteri di altre fonti.</translation>
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
-<translation id="1527298988676981599">La configurazione del criterio consente di elencare i pattern URL che specificano i siti a cui viene concessa automaticamente l'autorizzazione di accesso a un dispositivo USB con gli ID fornitore e prodotto indicati nella schermata di accesso. Perché il criterio sia valido, ogni elemento nell'elenco richiede entrambi i campi <ph name="DEVICES_FIELD_NAME" /> e <ph name="URLS_FIELD_NAME" />. Ogni elemento nel campo <ph name="DEVICES_FIELD_NAME" /> può avere un campo <ph name="VENDOR_ID_FIELD_NAME" /> e un campo <ph name="PRODUCT_ID_FIELD_NAME" />. Se il campo <ph name="VENDOR_ID_FIELD_NAME" /> non viene specificato, il criterio può corrispondere a qualsiasi dispositivo. Se il campo <ph name="PRODUCT_ID_FIELD_NAME" /> non viene specificato, il criterio può corrispondere a qualsiasi dispositivo con l'ID fornitore specificato. Un criterio con un campo <ph name="PRODUCT_ID_FIELD_NAME" /> senza un campo <ph name="VENDOR_ID_FIELD_NAME" /> non è valido.
+<translation id="1527298988676981599">La configurazione del criterio consente di elencare i pattern URL che specificano i siti a cui viene concessa automaticamente l'autorizzazione di accesso a un dispositivo USB con gli ID fornitore e prodotto indicati nella schermata di accesso. Perché il criterio sia valido, ogni elemento nell'elenco richiede entrambi i campi <ph name="DEVICES_FIELD_NAME" /> e <ph name="URLS_FIELD_NAME" />. Ogni elemento nel campo <ph name="DEVICES_FIELD_NAME" /> può avere un campo <ph name="VENDOR_ID_FIELD_NAME" /> e un campo <ph name="PRODUCT_ID_FIELD_NAME" />. Se il campo <ph name="VENDOR_ID_FIELD_NAME" /> non viene specificato, il criterio può corrispondere a qualsiasi dispositivo. Se il campo <ph name="PRODUCT_ID_FIELD_NAME" /> non viene specificato, viene creato un criterio che corrisponde a qualsiasi dispositivo con l'ID fornitore specificato. Un criterio con un campo <ph name="PRODUCT_ID_FIELD_NAME" /> senza un campo <ph name="VENDOR_ID_FIELD_NAME" /> non è valido.
 
       Il modello di autorizzazioni USB consentirà all'URL specificato di accedere al dispositivo USB come origine di primo livello. Se i frame incorporati devono accedere ai dispositivi USB, per concedere l'accesso è necessario usare l'intestazione "usb" del criterio <ph name="FEATURE_POLICY_HEADER_NAME" />. Se l'URL non è valido, il criterio viene ignorato.
 
@@ -778,7 +790,7 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca ist
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="1850439894606905202">Per impostazione predefinita, i documenti vengono inseriti in cluster di agenti in base al sito. La funzione di accesso document.domain rimane configurabile.</translation>
 <translation id="1852294065645015766">Consenti la riproduzione automatica dei contenuti multimediali</translation>
-<translation id="1855963029978337744">La configurazione del criterio consente di elencare gli URL che specificano i siti a cui viene automaticamente concessa l'autorizzazione di accesso a un dispositivo HID con gli ID fornitore e prodotto forniti. Ogni elemento nell'elenco richiede che entrambi i campi <ph name="DEVICES_FIELD_NAME" /> e <ph name="URLS_FIELD_NAME" /> siano validi per l'elemento, altrimenti quest'ultimo viene ignorato. Ogni elemento nel campo <ph name="DEVICES_FIELD_NAME" /> deve avere un campo <ph name="VENDOR_ID_FIELD_NAME" /> e potrebbe avere un campo <ph name="PRODUCT_ID_FIELD_NAME" />. Se il campo <ph name="PRODUCT_ID_FIELD_NAME" /> viene omesso, il criterio può corrispondere a qualsiasi dispositivo con l'ID fornitore specificato. Un elemento con un campo <ph name="PRODUCT_ID_FIELD_NAME" /> senza un campo <ph name="VENDOR_ID_FIELD_NAME" /> non è valido e viene ignorato.
+<translation id="1855963029978337744">La configurazione del criterio consente di elencare gli URL che specificano i siti a cui viene automaticamente concessa l'autorizzazione di accesso a un dispositivo HID con gli ID fornitore e prodotto forniti. Ogni elemento nell'elenco richiede che entrambi i campi <ph name="DEVICES_FIELD_NAME" /> e <ph name="URLS_FIELD_NAME" /> siano validi per l'elemento, altrimenti quest'ultimo viene ignorato. Ogni elemento nel campo <ph name="DEVICES_FIELD_NAME" /> deve avere un campo <ph name="VENDOR_ID_FIELD_NAME" /> e potrebbe avere un campo <ph name="PRODUCT_ID_FIELD_NAME" />. Se il campo <ph name="PRODUCT_ID_FIELD_NAME" /> viene omesso, viene creato un criterio che corrisponde a qualsiasi dispositivo con l'ID fornitore specificato. Un elemento con un campo <ph name="PRODUCT_ID_FIELD_NAME" /> senza un campo <ph name="VENDOR_ID_FIELD_NAME" /> non è valido e viene ignorato.
 
       Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME" />, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
 
@@ -3610,6 +3622,7 @@ Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Blu
 <translation id="4960597185231686653">Un flag booleano che indica se la tastiera sullo schermo può offrire la funzionalità di input vocale.</translation>
 <translation id="4970046075219007744">Consenti alle app web di richiedere all'utente l'accesso ai tipi di file tramite l'API File Handling</translation>
 <translation id="4970855112942626932">Disattiva accesso al browser</translation>
+<translation id="4974091268178043378">Modalità colore di Chrome OS</translation>
 <translation id="4976928720873547342">Se questo criterio viene impostato, tutti i tipi di dati specificati verranno esclusi dalla sincronizzazione sia per <ph name="CHROME_SYNC_NAME" /> sia per la sincronizzazione del profilo di roaming. Questa operazione può essere utile per ridurre le dimensioni del profilo di roaming o per limitare il tipo di dati caricati sui server di <ph name="CHROME_SYNC_NAME" />.
 
       Attualmente i tipi di dati per questo criterio sono: "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfigurations". Tali nomi sono sensibili alle maiuscole.</translation>
@@ -4251,6 +4264,13 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 
           Il valore del criterio viene applicato solo se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> viene attivato e non è applicabile in caso contrario.</translation>
 <translation id="5697306356229823047">Segnala utenti dispositivo</translation>
+<translation id="5698923148503075597">Se il criterio viene impostato su Enabled, in caso di conflitto il criterio relativo al cloud prevale sul criterio relativo alla piattaforma.
+
+      Se il criterio viene impostato su Disabled o se non viene configurato, in caso di conflitto il criterio relativo alla piattaforma prevale sul criterio relativo al cloud.
+
+      Questo criterio obbligatorio interessa i criteri relativi al cloud in ambito macchina.
+
+      Questo criterio è disponibile soltanto su <ph name="PRODUCT_NAME" /> e non ha effetto su <ph name="GOOGLE_UPDATE_NAME" />.</translation>
 <translation id="5699770471852263667">Se il criterio viene impostato su Attivato, il visualizzatore di PDF interno viene disattivato in <ph name="PRODUCT_NAME" />, i file PDF vengono considerati come file scaricati e gli utenti possono aprire i PDF con l'applicazione predefinita.
 
       Se il criterio viene impostato su Disattivato, i file PDF vengono aperti con il plug-in di PDF, a meno che disattivato dagli utenti.
@@ -4360,6 +4380,7 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 
       Gli utenti non possono modificare questa impostazione.</translation>
 <translation id="5848438019586925019">L'algoritmo per la generazione di coppie di chiavi.</translation>
+<translation id="5851248808417680865">Usa il tema scuro</translation>
 <translation id="585270638818921943">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
 <translation id="5853547031212075792">Consenti agli utenti di attivare la Modalità solo HTTPS</translation>
 <translation id="5859344336338527083">Impostare il criterio specifica quali URL sono autorizzati a installare estensioni, app e temi. Prima di <ph name="PRODUCT_NAME" /> 21, gli utenti potevano fare clic su un link a un file *.crx e <ph name="PRODUCT_NAME" /> avrebbe proposto di installare il file dopo alcuni avvisi. Successivamente, tali file devono essere scaricati e trascinati nella pagina delle impostazioni di <ph name="PRODUCT_NAME" />. Questa impostazione consente a URL specifici di utilizzare il precedente flusso di installazione semplificato.
@@ -4376,6 +4397,37 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 
       Se il criterio è impostato su False o se non viene configurato, <ph name="PLUGIN_VM_NAME" /> non è autorizzato a raccogliere i dati.
       Se è impostato su True, <ph name="PLUGIN_VM_NAME" /> potrebbe raccogliere i dati sull'utilizzo di <ph name="PLUGIN_VM_NAME" /> che verranno poi combinati e analizzati nel dettaglio per migliorare l'esperienza di <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="5874896145772824604">Questo criterio fornisce un modo per eseguire l'override dell'elenco di insiemi che il browser utilizza per le funzionalità degli insiemi proprietari.
+
+      Ogni insieme nell'elenco di insiemi proprietari del browser deve soddisfare i requisiti di un insieme proprietario.
+      Un insieme proprietario è composto da un sito proprietario e da uno o più siti membri. Tutti i siti di un insieme proprietario devono
+      avere un dominio registrabile pubblicato su HTTPS, a prescindere dal fatto che si tratti di un sito proprietario o membro.
+      Ciascun sito di un insieme proprietario deve anche essere univoco, ovvero non può essere sia proprietario sia membro, né
+      può essere elencato più di una volta come membro di un insieme proprietario.
+      Consulta la pagina https://github.com/privacycg/first-party-sets per maggiori informazioni sugli insiemi proprietari.
+
+      Quando a questo criterio viene dato un dizionario vuoto, il browser utilizza l'elenco pubblico di insiemi proprietari.
+
+      Per tutti i siti in un insieme proprietario dell'elenco <ph name="REPLACEMENTS" />, se un sito è presente anche
+      in un insieme proprietario nell'elenco del browser, quel sito verrà rimosso dall'insieme proprietario del browser.
+      Dopodiché, l'insieme proprietario del criterio verrà aggiunto all'elenco di insiemi proprietari del browser.
+
+      Per tutti i siti in un insieme proprietario dell'elenco <ph name="ADDITIONS" />, se un sito è presente anche
+      in un insieme proprietario nell'elenco del browser, l'insieme proprietario del browser verrà aggiornato in modo che il
+      nuovo insieme proprietario possa essere aggiunto all'elenco del browser. Una volta aggiornato l'elenco del browser,
+      l'insieme proprietario del criterio verrà aggiunto all'elenco di insiemi proprietari del browser.
+
+      L'elenco di insiemi proprietari del browser richiede che nessuno dei siti al suo interno
+      sia presente in più di un insieme. Questo requisito è valido anche per gli elenchi <ph name="REPLACEMENTS" />
+      e <ph name="ADDITIONS" />. In modo simile, un sito non può essere presente in entrambi gli elenchi
+      <ph name="REPLACEMENTS" /> e <ph name="ADDITIONS" />.
+
+      I caratteri jolly (*) non sono supportati come valore del criterio, neppure all'interno di un insieme proprietario in questi elenchi.
+
+      Tutti gli insiemi forniti da questo criterio devono essere insiemi proprietario validi. Qualora non lo fossero, verrà segnalato
+      un errore adeguato.
+
+      Questo criterio è disponibile esclusivamente per le istanze di Windows aggiunte a un dominio <ph name="MS_AD_NAME" />, per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi e per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="5875873062228321803">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_OS_NAME" />.
 
       Se per questo criterio viene impostato un elenco non vuoto:
@@ -4460,11 +4512,6 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
       Se il criterio viene configurato, gli utenti non possono modificarlo. In caso contrario, gli utenti possono decidere se visualizzare o meno intestazioni e piè di pagina.</translation>
 <translation id="5951418260805607969">Mostra una notifica quando lo spazio sul disco è in esaurimento</translation>
 <translation id="5958746038080720143">Attiva le ottimizzazioni WPAD (Web Proxy Auto-Discovery)</translation>
-<translation id="5959428851851090097">Se il criterio viene impostato su Attivato, in caso di conflitto il criterio relativo al cloud prevale sul criterio relativo alla piattaforma.
-
-      Se il criterio viene impostato su Disattivato o se non viene impostato, in caso di conflitto il criterio relativo alla piattaforma prevale sul criterio relativo al cloud.
-
-      Questo criterio obbligatorio interessa i criteri relativi al cloud in ambito macchina.</translation>
 <translation id="5961137303188584693">Indirizzo MAC NIC integrato del dispositivo</translation>
 <translation id="5963752574792883406">porta 990 (può essere sbloccata fino al 01/02/2022)</translation>
 <translation id="5966615072639944554">Estensioni autorizzate a utilizzare l'API di attestazione da remoto</translation>
@@ -4505,6 +4552,7 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 
       Questo criterio viene applicato soltanto se la macchina viene registrata con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
       Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="6019162469732742754">Usa la Modalità automatica</translation>
 <translation id="6019606564278029236">Attiva l'interazione degli utenti remoti con finestre con privilegi più elevati nelle sessioni di assistenza remota</translation>
 <translation id="6022948604095165524">Azione all'avvio</translation>
 <translation id="602318745029752898">Consenti le voci di sintesi vocale di rete migliorate in di Seleziona per ascoltare</translation>
@@ -5238,6 +5286,15 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 <translation id="6786666051053129545">Attivare il flusso Voice Match dell'Assistente Google</translation>
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
+<translation id="6789319144568227749">Consente di configurare il supporto delle intestazioni delle richieste CORS senza caratteri jolly.
+
+      Nella versione 97 di <ph name="PRODUCT_NAME" /> è stato introdotto il supporto delle intestazioni delle richieste CORS senza caratteri jolly. Quando gli script effettuano una richiesta di rete tra origini tramite fetch() e XMLHttpRequest con un'intestazione Authorization aggiunta tramite script, l'intestazione deve essere consentita esplicitamente dall'intestazione Access-Control-Allow-Headers nella risposta preflight CORS. Con "esplicitamente" qui si intende che il simbolo di carattere jolly "*" non include l'intestazione Authorization. Per maggiori informazioni, visita la pagina <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />.
+
+      Se questo criterio non viene configurato o se viene impostato su True, <ph name="PRODUCT_NAME" /> supporterà le intestazioni delle richieste CORS senza caratteri jolly e si comporterà come descritto in precedenza.
+
+      Se questo criterio viene impostato su False, Chrome consentirà il simbolo di carattere jolly ("*") nell'intestazione Access-Control-Allow-Headers della risposta preflight CORS per includere l'intestazione Authorization.
+
+      Questo criterio aziendale è temporaneo ed è destinato a essere rimosso in futuro.</translation>
 <translation id="6789422336869764846">Se il criterio viene impostato su Attivato o se non viene configurato, i dispositivi registrati segnalano lo stato della modalità sviluppatore del dispositivo all'avvio.
 
       Se il criterio viene impostato su Disattivato, i dispositivi registrati non segnalano lo stato della modalità sviluppatore.</translation>
@@ -5442,7 +5499,7 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
       Se il criterio è impostato su <ph name="BR_UNDER_USER_CONTROL" />, agli utenti viene chiesto di utilizzare il backup e ripristino. Se gli utenti attivano il backup e ripristino, i dati delle app Android vengono caricati sui server di backup di Android e ripristinati durante la reinstallazione delle app.
 
       Dopo la configurazione iniziale, gli utenti possono attivare o disattivare il backup e ripristino.</translation>
-<translation id="6981537713216575858">La configurazione del criterio consente di elencare i pattern URL che specificano i siti a cui viene concessa automaticamente l'autorizzazione di accesso a un dispositivo USB con gli ID fornitore e prodotto indicati. Perché il criterio sia valido, ogni elemento nell'elenco richiede entrambi i campi <ph name="DEVICES_FIELD_NAME" /> e <ph name="URLS_FIELD_NAME" />. Ogni elemento nel campo <ph name="DEVICES_FIELD_NAME" /> può avere un campo <ph name="VENDOR_ID_FIELD_NAME" /> e un campo <ph name="PRODUCT_ID_FIELD_NAME" />. Se il campo <ph name="VENDOR_ID_FIELD_NAME" /> non viene specificato, il criterio può corrispondere a qualsiasi dispositivo. Se il campo <ph name="PRODUCT_ID_FIELD_NAME" /> non viene specificato, il criterio può corrispondere a qualsiasi dispositivo con l'ID fornitore specificato. Un criterio con un campo <ph name="PRODUCT_ID_FIELD_NAME" /> senza un campo <ph name="VENDOR_ID_FIELD_NAME" /> non è valido.
+<translation id="6981537713216575858">La configurazione del criterio consente di elencare i pattern URL che specificano i siti a cui viene concessa automaticamente l'autorizzazione di accesso a un dispositivo USB con gli ID fornitore e prodotto indicati. Perché il criterio sia valido, ogni elemento nell'elenco richiede entrambi i campi <ph name="DEVICES_FIELD_NAME" /> e <ph name="URLS_FIELD_NAME" />. Ogni elemento nel campo <ph name="DEVICES_FIELD_NAME" /> può avere un campo <ph name="VENDOR_ID_FIELD_NAME" /> e un campo <ph name="PRODUCT_ID_FIELD_NAME" />. Se il campo <ph name="VENDOR_ID_FIELD_NAME" /> non viene specificato, viene creato un criterio che corrisponde a qualsiasi dispositivo. Se il campo <ph name="PRODUCT_ID_FIELD_NAME" /> non viene specificato, viene creato un criterio che corrisponde a qualsiasi dispositivo con l'ID fornitore specificato. Un criterio con un campo <ph name="PRODUCT_ID_FIELD_NAME" /> senza un campo <ph name="VENDOR_ID_FIELD_NAME" /> non è valido.
 
       Il modello di autorizzazioni USB consentirà all'URL specificato di accedere al dispositivo USB come origine di primo livello. Se i frame incorporati devono accedere ai dispositivi USB, per concedere l'accesso è necessario usare l'intestazione "usb" del criterio <ph name="FEATURE_POLICY_HEADER_NAME" />. Se l'URL non è valido, il criterio viene ignorato.
 
@@ -5488,6 +5545,7 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 <translation id="7019805045859631636">Veloce</translation>
 <translation id="7025332601572838001">Configurazione del comportamento dei TdS alla prima esecuzione di CCT</translation>
 <translation id="7026351325994257733">Consenti la sincronizzazione delle configurazioni di reti Wi-Fi tra i dispositivi <ph name="PRODUCT_OS_NAME" /> e un telefono Android collegato</translation>
+<translation id="7027057540229843762">Usa il tema chiaro</translation>
 <translation id="7027785306666625591">Configura la gestione dell'alimentazione in <ph name="PRODUCT_OS_NAME" />.
 
       Queste norme consentono di configurare il comportamento di <ph name="PRODUCT_OS_NAME" /> quando l'utente rimane inattivo per un determinato periodo di tempo.</translation>
@@ -6480,15 +6538,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy viene inizial
       Se la norma viene disattivata o non viene impostata, l'accesso rimanda a profili normali.</translation>
 <translation id="8151299379693359769">Consente di attivare un controllo sicurezza aggiuntivo in base all'attestazione da remoto (facoltativo, valore predefinito: Vero).</translation>
 <translation id="8151490482515839285">Attiva la generazione di rapporti sulla prevenzione di fughe di dati</translation>
-<translation id="8151949408479239790">Consente di configurare il supporto delle intestazioni delle richieste CORS senza caratteri jolly.
-
-      Nella versione 97 di <ph name="PRODUCT_NAME" /> è stato introdotto il supporto delle intestazioni delle richieste CORS senza caratteri jolly. Quando gli script effettuano una richiesta di rete tra origini tramite fetch() e XMLHttpRequest con un'intestazione Authorization aggiunta tramite script, l'intestazione deve essere consentita esplicitamente dall'intestazione Access-Control-Allow-Headers nella risposta preflight CORS. Con "esplicitamente" qui si intende che il simbolo di carattere jolly "*" non include l'intestazione Authorization. Per maggiori informazioni, visita la pagina <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />.
-
-      Se questo criterio non viene configurato o se viene impostato su Vero, <ph name="PRODUCT_NAME" /> supporterà le intestazioni delle richieste CORS senza caratteri jolly e si comporterà come descritto in precedenza.
-
-      Se questo criterio viene impostato su Falso, Chrome consentirà il simbolo di carattere jolly ("*") nell'intestazione Access-Control-Allow-Headers della risposta preflight CORS per includere l'intestazione Authorization.
-
-      Questo criterio aziendale è temporaneo ed è destinato a essere rimosso dopo la versione 103 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158758865057576716">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158897487095710470">Se il criterio è impostato su True, una barra dei Preferiti viene visualizzata in <ph name="PRODUCT_NAME" />. Se il criterio è impostato su False, gli utenti non vedono mai la barra dei Preferiti.
 
@@ -6974,7 +7023,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8659843732895043951">Consenti gli appunti su questi siti</translation>
 <translation id="8661297125441579970">Non consentire migrazione dei dati e ARC.</translation>
 <translation id="8665314828727504286">Livello di protezione Navigazione sicura</translation>
-<translation id="8666123502812856425">La configurazione del criterio consente di elencare gli URL che specificano i siti a cui viene automaticamente concessa l'autorizzazione di accesso a un dispositivo HID che contiene una raccolta di livello superiore con l'utilizzo dell'HID specificato. Perché il criterio sia valido, ogni elemento nell'elenco richiede entrambi i campi <ph name="USAGES_FIELD_NAME" /> e <ph name="URLS_FIELD_NAME" />. Ogni elemento nel campo <ph name="USAGES_FIELD_NAME" /> deve avere un campo <ph name="USAGE_PAGE_FIELD_NAME" /> e potrebbe avere un campo <ph name="USAGE_FIELD_NAME" />. Se il campo <ph name="USAGE_FIELD_NAME" /> viene omesso, il criterio può corrispondere a qualsiasi dispositivo che contiene una raccolta di livello superiore con un utilizzo dalla relativa pagina specificata. Un elemento con un campo <ph name="USAGE_FIELD_NAME" /> senza un campo <ph name="USAGE_PAGE_FIELD_NAME" /> non è valido e viene ignorato.
+<translation id="8666123502812856425">La configurazione del criterio consente di elencare gli URL che specificano i siti a cui viene automaticamente concessa l'autorizzazione di accesso a un dispositivo HID che contiene una raccolta di livello superiore con l'utilizzo dell'HID specificato. Perché il criterio sia valido, ogni elemento nell'elenco richiede entrambi i campi <ph name="USAGES_FIELD_NAME" /> e <ph name="URLS_FIELD_NAME" />. Ogni elemento nel campo <ph name="USAGES_FIELD_NAME" /> deve avere un campo <ph name="USAGE_PAGE_FIELD_NAME" /> e potrebbe avere un campo <ph name="USAGE_FIELD_NAME" />. Se il campo <ph name="USAGE_FIELD_NAME" /> viene omesso, viene creato un criterio che corrisponde a qualsiasi dispositivo che contiene una raccolta di livello superiore con un utilizzo dalla relativa pagina specificata. Un elemento con un campo <ph name="USAGE_FIELD_NAME" /> senza un campo <ph name="USAGE_PAGE_FIELD_NAME" /> non è valido e viene ignorato.
 
       Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME" />, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
 
@@ -7043,6 +7092,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       "http://acme.com/ABC" corrisponde soltanto in "IESiteListMode".</translation>
 <translation id="8736538322216687231">Imponi livello minimo della Modalità con restrizioni di YouTube</translation>
+<translation id="8744844164152340112">Consente di stabilire il tema (scuro/chiaro/automatico) usato per eseguire il rendering dell'UI durante l'OOBE e nella sessione.
+      Con la modalità automatica viene effettuato il passaggio automatico tra tema scuro e tema chiaro all'alba e al tramonto.
+      Questo criterio dovrebbe essere consigliato per dare agli utenti la possibilità di cambiare il tema nelle impostazioni di sistema.</translation>
 <translation id="8745669971728319820">Questo criterio consente di stabilire se segnalare o meno le informazioni relative a estensioni e plug-in.
 
       Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.

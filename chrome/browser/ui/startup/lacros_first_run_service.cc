@@ -18,7 +18,9 @@
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lacros/device_settings_lacros.h"
 #include "chrome/browser/lacros/lacros_prefs.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -56,9 +58,11 @@ class RefreshTokensLoadObserver : public signin::IdentityManager::Observer {
   }
 
   void OnRefreshTokensLoaded() override {
+    // We're using a `OnceCallback`, no need to continue observing.
+    scoped_observation_.Reset();
+
     if (callback_)
       std::move(callback_).Run();
-    scoped_observation_.Reset();
   }
 
  private:
@@ -94,6 +98,9 @@ class SilentSyncEnablerDelegate : public TurnSyncOnHelper::Delegate {
     // we get all the way here, we assume that we can proceed with it.
     std::move(callback).Run(LoginUIService::SyncConfirmationUIClosedResult::
                                 SYNC_WITH_DEFAULT_SETTINGS);
+
+    ProfileMetrics::LogLacrosPrimaryProfileFirstRunOutcome(
+        ProfileMetrics::ProfileSignedInFlowOutcome::kSkippedByPolicies);
   }
 
   void ShowSyncDisabledConfirmation(
@@ -103,6 +110,9 @@ class SilentSyncEnablerDelegate : public TurnSyncOnHelper::Delegate {
     // `SYNC_WITH_DEFAULT_SETTINGS` for the sync disable confirmation means
     // "stay signed in". See https://crbug.com/1141341.
     std::move(callback).Run(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
+
+    ProfileMetrics::LogLacrosPrimaryProfileFirstRunOutcome(
+        ProfileMetrics::ProfileSignedInFlowOutcome::kSkippedByPolicies);
   }
 
   void ShowLoginError(const SigninUIError& error) override { NOTREACHED(); }
@@ -142,7 +152,11 @@ bool IsSyncRequired(Profile* profile) {
   if (!profile->GetPrefs()->GetBoolean(prefs::kEnableSyncConsent))
     return true;
 
-  // TODO(crbug.com/1324569): Also support ephemeral users.
+  crosapi::mojom::DeviceSettings* device_settings =
+      g_browser_process->browser_policy_connector()->GetDeviceSettings();
+  if (device_settings->device_ephemeral_users_enabled ==
+      crosapi::mojom::DeviceSettings::OptionalBool::kTrue)
+    return true;
 
   return false;
 }
@@ -223,6 +237,8 @@ void LacrosFirstRunService::TryMarkFirstRunAlreadyFinished(
 
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+    ProfileMetrics::LogLacrosPrimaryProfileFirstRunOutcome(
+        ProfileMetrics::ProfileSignedInFlowOutcome::kSkippedAlreadySyncing);
     SetFirstRunFinished();
     return;
   }

@@ -156,9 +156,10 @@ class SearchProvider::CompareScoredResults {
 SearchProvider::SearchProvider(AutocompleteProviderClient* client,
                                AutocompleteProviderListener* listener)
     : BaseSearchProvider(AutocompleteProvider::TYPE_SEARCH, client),
-      listener_(listener),
       providers_(client->GetTemplateURLService()),
       answers_cache_(10) {
+  AddListener(listener);
+
   TemplateURLService* template_url_service = client->GetTemplateURLService();
 
   // |template_url_service| can be null in tests.
@@ -412,11 +413,11 @@ void SearchProvider::OnTemplateURLServiceChanged() {
   // It's possible the template URL changed without changing associated keyword.
   // Hence, it's always necessary to update matches to use the new template
   // URL.  (One could cache the template URL and only call UpdateMatches() and
-  // OnProviderUpdate() if a keyword was deleted/renamed or the template URL
-  // was changed.  That would save extra calls to these functions.  However,
-  // this is uncommon and not likely to be worth the extra work.)
+  // NotifyListeners() if a keyword was deleted/renamed or the template URL was
+  // changed.  That would save extra calls to these functions.  However, this is
+  // uncommon and not likely to be worth the extra work.)
   UpdateMatches();
-  listener_->OnProviderUpdate(true);  // always pretend something changed
+  NotifyListeners(true);  // always pretend something changed
 }
 
 void SearchProvider::OnURLLoadComplete(
@@ -467,7 +468,7 @@ void SearchProvider::OnURLLoadComplete(
   // Update matches, done status, etc., and send alerts if necessary.
   UpdateMatches();
   if (done_ || results_updated)
-    listener_->OnProviderUpdate(results_updated);
+    NotifyListeners(results_updated);
 }
 
 void SearchProvider::StopSuggest() {
@@ -643,7 +644,7 @@ void SearchProvider::Run(bool query_is_private) {
     UpdateDone();
     // We only need to update the listener if we're actually done.
     if (done_)
-      listener_->OnProviderUpdate(false);
+      NotifyListeners(false);
   } else {
     // Sent at least one request.
     time_suggest_request_sent_ = base::TimeTicks::Now();
@@ -827,9 +828,9 @@ bool SearchProvider::IsQueryPotentiallyPrivate() const {
   // and happens to currently be invalid -- in which case we again want to run
   // our checks below.  Other QUERY cases are less likely to be URLs and thus we
   // assume we're OK.
-  if (!base::LowerCaseEqualsASCII(input_.scheme(), url::kHttpScheme) &&
-      !base::LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
-      !base::LowerCaseEqualsASCII(input_.scheme(), url::kFtpScheme))
+  if (!base::EqualsCaseInsensitiveASCII(input_.scheme(), url::kHttpScheme) &&
+      !base::EqualsCaseInsensitiveASCII(input_.scheme(), url::kHttpsScheme) &&
+      !base::EqualsCaseInsensitiveASCII(input_.scheme(), url::kFtpScheme))
     return (input_.type() != metrics::OmniboxInputType::QUERY);
 
   // Don't send URLs with usernames, queries or refs.  Some of these are
@@ -851,7 +852,7 @@ bool SearchProvider::IsQueryPotentiallyPrivate() const {
   // Don't send anything for https except the hostname.  Hostnames are OK
   // because they are visible when the TCP connection is established, but the
   // specific path may reveal private information.
-  if (base::LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
+  if (base::EqualsCaseInsensitiveASCII(input_.scheme(), url::kHttpsScheme) &&
       parts.path.is_nonempty())
     return true;
 

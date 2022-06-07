@@ -184,6 +184,16 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     has_out_of_flow_fragment_child_ = has_out_of_flow_fragment_child;
   }
 
+  bool HasOutOfFlowInFragmentainerSubtree() const {
+    return has_out_of_flow_in_fragmentainer_subtree_;
+  }
+
+  void SetHasOutOfFlowInFragmentainerSubtree(
+      bool has_out_of_flow_in_fragmentainer_subtree) {
+    has_out_of_flow_in_fragmentainer_subtree_ =
+        has_out_of_flow_in_fragmentainer_subtree;
+  }
+
   void SwapOutOfFlowPositionedCandidates(
       HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates);
 
@@ -341,7 +351,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     has_descendant_that_depends_on_percentage_block_size_ = b;
   }
 
-  const NGConstraintSpace* ConstraintSpace() const { return space_; }
+  const NGConstraintSpace& ConstraintSpace() const { return space_; }
 
   const NGLayoutResult* Abort(NGLayoutResult::EStatus);
 
@@ -356,7 +366,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   NGContainerFragmentBuilder(NGLayoutInputNode node,
                              scoped_refptr<const ComputedStyle> style,
-                             const NGConstraintSpace* space,
+                             const NGConstraintSpace& space,
                              WritingDirectionMode writing_direction)
       : NGFragmentBuilder(std::move(style), writing_direction),
         node_(node),
@@ -384,7 +394,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
           nullptr) const;
 
   NGLayoutInputNode node_;
-  const NGConstraintSpace* space_;
+  const NGConstraintSpace& space_;
 
   LayoutUnit bfc_line_offset_;
   absl::optional<LayoutUnit> bfc_block_offset_;
@@ -442,6 +452,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   bool has_oof_candidate_that_needs_block_offset_adjustment_ = false;
   bool has_out_of_flow_fragment_child_ = false;
+  bool has_out_of_flow_in_fragmentainer_subtree_ = false;
 
 #if DCHECK_IS_ON()
   bool is_may_have_descendant_above_block_start_explicitly_set_ = false;

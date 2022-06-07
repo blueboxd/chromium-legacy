@@ -24,10 +24,16 @@
 class Browser;
 @class BrowserContainerViewController;
 @class BrowserViewControllerDependencyFactory;
+@class BubblePresenter;
 @class CommandDispatcher;
 @protocol CRWResponderInputView;
 @class DefaultBrowserPromoNonModalScheduler;
 @protocol DefaultPromoNonModalPresentationDelegate;
+// TODO(crbug.com/1331229): Remove all use of the download manager coordinator
+// from BVC
+@class DownloadManagerCoordinator;
+// TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
+class PrerenderService;
 @class ToolbarAccessoryPresenter;
 @protocol IncognitoReauthCommands;
 
@@ -54,12 +60,19 @@ class Browser;
 // |dispatcher| is the dispatcher instance this BVC will use.
 // TODO(crbug.com/992582): Remove references to model objects -- including
 //   |browser| and |dispatcher| -- from this class.
+// TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
+// TODO(crbug.com/1331229): Remove all use of the download manager coordinator
+// from BVC
 - (instancetype)initWithBrowser:(Browser*)browser
                  dependencyFactory:
                      (BrowserViewControllerDependencyFactory*)factory
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
                         dispatcher:(CommandDispatcher*)dispatcher
+                  prerenderService:(PrerenderService*)prerenderService
+                   bubblePresenter:(BubblePresenter*)bubblePresenter
+        downloadManagerCoordinator:
+            (DownloadManagerCoordinator*)downloadManagerCoordinator
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
@@ -73,7 +86,9 @@ class Browser;
 // Handler for reauth commands.
 @property(nonatomic, weak) id<IncognitoReauthCommands> reauthHandler;
 
-// Returns whether or not text to speech is playing.
+// TODO(crbug.com/1329104): Move voice search controller/coordinator to
+// BrowserCoordinator, remove this as a public property. Returns whether or not
+// text to speech is playing.
 @property(nonatomic, assign, readonly, getter=isPlayingTTS) BOOL playingTTS;
 
 // The container used for infobar banner overlays.
@@ -127,6 +142,7 @@ class Browser;
 // intended to be called before setWebUsageSuspended:NO in cases where a new tab
 // is about to appear in order to allow the BVC to avoid doing unnecessary work
 // related to showing the previously selected tab.
+// TODO(crbug.com/1329109): Move this to a browser agent or web event mediator.
 - (void)expectNewForegroundTab;
 
 // Shows the voice search UI.

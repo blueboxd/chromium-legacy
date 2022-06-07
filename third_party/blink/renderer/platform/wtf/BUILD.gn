@@ -113,6 +113,7 @@ component("wtf") {
     "text/atomic_string.cc",
     "text/atomic_string.h",
     "text/atomic_string_cf.cc",
+    "text/atomic_string_encoding.h",
     "text/atomic_string_hash.h",
     "text/atomic_string_table.cc",
     "text/atomic_string_table.h",
@@ -237,6 +238,10 @@ component("wtf") {
       "text/string_impl_mac.mm",
       "text/string_mac.mm",
     ]
+  }
+
+  if (!is_mac && (current_cpu == "x86" || current_cpu == "x64")) {
+    sources += [ "text/ascii_fast_path.cc" ]
   }
 
   if (is_win) {

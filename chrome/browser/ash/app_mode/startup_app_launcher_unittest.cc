@@ -290,7 +290,7 @@ class TestKioskLoaderVisitor
   }
   bool OnExternalExtensionUpdateUrlFound(
       const ExternalInstallInfoUpdateUrl& info,
-      bool is_initial_load) override {
+      bool force_update) override {
     if (extension_registry_->GetExtensionById(
             info.extension_id, extensions::ExtensionRegistry::EVERYTHING))
       return false;
@@ -352,7 +352,7 @@ void InitAppWindow(extensions::AppWindow* app_window, const gfx::Rect& bounds) {
       app_window_contents->GetWebContents());
 
   content::RenderFrameHost* main_frame =
-      app_window_contents->GetWebContents()->GetMainFrame();
+      app_window_contents->GetWebContents()->GetPrimaryMainFrame();
   DCHECK(main_frame);
 
   extensions::AppWindow::CreateParams params;

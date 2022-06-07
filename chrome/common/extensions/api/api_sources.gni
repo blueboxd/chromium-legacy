@@ -74,18 +74,25 @@ if (!is_android) {
 
 if (is_chromeos) {
   schema_sources_ += [
+    "certificate_provider.idl",
+    "certificate_provider_internal.idl",
+    "document_scan.idl",
     "echo_private.json",
     "enterprise_device_attributes.idl",
     "enterprise_networking_attributes.idl",
     "enterprise_platform_keys.idl",
     "enterprise_platform_keys_internal.idl",
     "file_browser_handler_internal.json",
+    "file_system_provider.idl",
+    "file_system_provider_internal.idl",
     "login.idl",
     "login_screen_storage.idl",
     "login_state.idl",
     "platform_keys_internal.idl",
     "platform_keys.idl",
     "quick_unlock_private.idl",
+    "shared_storage_private.idl",
+    "vpn_provider.idl",
   ]
 
   if (use_cups) {
@@ -96,14 +103,9 @@ if (is_chromeos) {
 if (is_chromeos_ash) {
   schema_sources_ += [
     "accessibility_private.json",
-    "certificate_provider.idl",
-    "certificate_provider_internal.idl",
-    "document_scan.idl",
     "enterprise_platform_keys_private.json",
     "file_manager_private.idl",
     "file_manager_private_internal.idl",
-    "file_system_provider.idl",
-    "file_system_provider_internal.idl",
     "input_ime.json",
     "input_method_private.json",
     "login_screen_ui.idl",

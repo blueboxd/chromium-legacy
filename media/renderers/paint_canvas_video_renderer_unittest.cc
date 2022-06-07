@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sys_byteorder.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -604,7 +605,13 @@ TEST_F(PaintCanvasVideoRendererTest, Video_Translate_Rotation_270) {
   EXPECT_EQ(SK_ColorBLACK, bitmap.getColor(kWidth / 2, kHeight - 1));
 }
 
-TEST_F(PaintCanvasVideoRendererTest, HighBitDepth) {
+// TODO(crbug.com/1334227): Re-enable this test
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC)
+#define MAYBE_HighBitDepth DISABLED_HighBitDepth
+#else
+#define MAYBE_HighBitDepth HighBitDepth
+#endif
+TEST_F(PaintCanvasVideoRendererTest, MAYBE_HighBitDepth) {
   struct params {
     int bit_depth;
     VideoPixelFormat format;
@@ -1047,7 +1054,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
   using GetColorCallback = base::RepeatingCallback<SkColor(int, int)>;
 
   void SetUp() override {
-    gl::GLSurfaceTestSupport::InitializeOneOff();
+    display_ = gl::GLSurfaceTestSupport::InitializeOneOff();
     enable_pixels_.emplace();
     media_context_ = base::MakeRefCounted<viz::TestInProcessContextProvider>(
         viz::TestContextType::kGpuRaster, /*support_locking=*/false);
@@ -1074,7 +1081,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
     media_context_.reset();
     enable_pixels_.reset();
     viz::TestGpuServiceHolder::ResetInstance();
-    gl::GLSurfaceTestSupport::ShutdownGL();
+    gl::GLSurfaceTestSupport::ShutdownGL(display_);
   }
 
   // Uses CopyVideoFrameTexturesToGLTexture to copy |frame| into a GL texture,
@@ -1237,6 +1244,7 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
   PaintCanvasVideoRenderer renderer_;
   scoped_refptr<VideoFrame> cropped_frame_;
   base::test::TaskEnvironment task_environment_;
+  raw_ptr<gl::GLDisplay> display_ = nullptr;
 };
 
 TEST_F(PaintCanvasVideoRendererWithGLTest, CopyVideoFrameYUVDataToGLTexture) {

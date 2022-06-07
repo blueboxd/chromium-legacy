@@ -9,6 +9,7 @@
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/cpu.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/logging.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -124,11 +125,11 @@ struct FullSlotSpanAllocation {
 // Assumes heap is purged.
 FullSlotSpanAllocation GetFullSlotSpan(ThreadSafePartitionRoot& root,
                                        size_t object_size) {
-  CHECK_EQ(0u, root.get_total_size_of_committed_pages());
+  PA_CHECK(0u == root.get_total_size_of_committed_pages());
 
   const size_t raw_size = root.AdjustSizeForExtrasAdd(object_size);
-  const size_t bucket_index =
-      root.SizeToBucketIndex(raw_size, root.with_denser_bucket_distribution);
+  const size_t bucket_index = root.SizeToBucketIndex(
+      raw_size, root.flags.with_denser_bucket_distribution);
   ThreadSafePartitionRoot::Bucket& bucket = root.buckets[bucket_index];
   const size_t num_slots = (bucket.get_bytes_per_span()) / bucket.slot_size;
 
@@ -643,19 +644,19 @@ TEST_F(PartitionAllocPCScanTest, StackScanning) {
   dangling_reference = nullptr;
 
   // Create and set dangling reference in the global.
-  [this]() NOINLINE {
+  [this]() PA_NOINLINE {
     auto* value = ValueList::Create(root(), nullptr);
     ValueList::Destroy(root(), value);
     dangling_reference = value;
   }();
 
-  [this]() NOINLINE {
+  [this]() PA_NOINLINE {
     // Register the top of the stack to be the current pointer.
     PCScan::NotifyThreadCreated(GetStackPointer());
-    [this]() NOINLINE {
+    [this]() PA_NOINLINE {
       // This writes the pointer to the stack.
       [[maybe_unused]] auto* volatile stack_ref = dangling_reference;
-      [this]() NOINLINE {
+      [this]() PA_NOINLINE {
         // Schedule PCScan but don't scan.
         SchedulePCScan();
         // Enter safepoint and scan from mutator. This will scan the stack.

@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ash/crostini/crostini_package_notification.h"
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/crostini/crostini_package_service.h"
+#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -75,8 +77,10 @@ CrostiniPackageNotification::CrostiniPackageNotification(
       ui::ImageModel(),  // icon
       notification_settings_.source,
       GURL(),  // origin_url
-      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
-                                 kNotifierCrostiniPackageOperation),
+      message_center::NotifierId(
+          message_center::NotifierType::SYSTEM_COMPONENT,
+          kNotifierCrostiniPackageOperation,
+          ash::NotificationCatalogName::kCrostiniPackage),
       rich_notification_data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
           weak_ptr_factory_.GetWeakPtr()));
@@ -290,8 +294,8 @@ void CrostiniPackageNotification::Click(
     return;
 
   if (app_count_ == 0) {
-    LaunchCrostiniApp(profile_, kCrostiniTerminalSystemAppId,
-                      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+    LaunchTerminal(profile_,
+                   display::Screen::GetScreen()->GetPrimaryDisplay().id());
   } else if (app_count_ == 1) {
     DCHECK(!app_id_.empty());
     LaunchCrostiniApp(profile_, app_id_,

@@ -12,6 +12,7 @@
 #include "chrome-color-management-server-protocol.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_output.h"
+#include "components/exo/wayland/wayland_display_util.h"
 #include "components/exo/wayland/zcr_color_manager.h"
 #include "components/exo/wm_helper.h"
 #include "ui/display/display_observer.h"
@@ -139,6 +140,17 @@ void WaylandDisplayHandler::UnsetColorManagementOutputResource() {
   color_management_output_resource_ = nullptr;
 }
 
+void WaylandDisplayHandler::XdgOutputSendLogicalPosition(
+    const gfx::Point& position) {
+  zxdg_output_v1_send_logical_position(xdg_output_resource_, position.x(),
+                                       position.y());
+}
+
+void WaylandDisplayHandler::XdgOutputSendLogicalSize(const gfx::Size& size) {
+  zxdg_output_v1_send_logical_size(xdg_output_resource_, size.width(),
+                                   size.height());
+}
+
 bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
                                                uint32_t changed_metrics) {
   if (!output_resource_)
@@ -205,10 +217,8 @@ bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
                       static_cast<int>(60000));
 
   if (xdg_output_resource_) {
-    const gfx::Size logical_size = ScaleToRoundedSize(
-        physical_size_px, 1.0f / display.device_scale_factor());
-    zxdg_output_v1_send_logical_size(xdg_output_resource_, logical_size.width(),
-                                     logical_size.height());
+    XdgOutputSendLogicalPosition(origin);
+    XdgOutputSendLogicalSize(display.bounds().size());
   } else {
     if (wl_resource_get_version(output_resource_) >=
         WL_OUTPUT_SCALE_SINCE_VERSION) {
@@ -220,25 +230,6 @@ bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
   }
 
   return true;
-}
-
-wl_output_transform WaylandDisplayHandler::OutputTransform(
-    display::Display::Rotation rotation) {
-  // Note: |rotation| describes the counter clockwise rotation that a
-  // display's output is currently adjusted for, which is the inverse
-  // of what we need to return.
-  switch (rotation) {
-    case display::Display::ROTATE_0:
-      return WL_OUTPUT_TRANSFORM_NORMAL;
-    case display::Display::ROTATE_90:
-      return WL_OUTPUT_TRANSFORM_270;
-    case display::Display::ROTATE_180:
-      return WL_OUTPUT_TRANSFORM_180;
-    case display::Display::ROTATE_270:
-      return WL_OUTPUT_TRANSFORM_90;
-  }
-  NOTREACHED();
-  return WL_OUTPUT_TRANSFORM_NORMAL;
 }
 
 }  // namespace wayland

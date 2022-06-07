@@ -18,6 +18,7 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -50,13 +51,17 @@
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
+#include "components/history/core/browser/sync/history_sync_bridge.h"
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/browser/url_utils.h"
+#include "components/sync/base/features.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
+#include "sql/sqlite_result_code.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -312,10 +317,19 @@ void HistoryBackend::Init(
   delegate_->DBLoaded();
 
   typed_url_sync_bridge_ = std::make_unique<TypedURLSyncBridge>(
-      this, db_.get(),
+      this, db_ ? db_->GetTypedURLMetadataDB() : nullptr,
       std::make_unique<ClientTagBasedModelTypeProcessor>(
           syncer::TYPED_URLS, /*dump_stack=*/base::RepeatingClosure()));
   typed_url_sync_bridge_->Init();
+
+  if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
+    // TODO(crbug.com/1318028): Plumb in syncer::ReportUnrecoverableError as the
+    // dump_stack callback.
+    history_sync_bridge_ = std::make_unique<HistorySyncBridge>(
+        this, db_ ? db_->GetHistoryMetadataDB() : nullptr,
+        std::make_unique<ClientTagBasedModelTypeProcessor>(
+            syncer::HISTORY, /*dump_stack=*/base::RepeatingClosure()));
+  }
 
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
       FROM_HERE, base::BindRepeating(&HistoryBackend::OnMemoryPressure,
@@ -722,10 +736,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     if (!is_keyword_generated && request.consider_for_ntp_most_visited) {
       UpdateSegments(request.url, from_visit_id, last_visit_id, t,
                      request.time);
-
-      // Update the referrer's duration.
-      UpdateVisitDuration(from_visit_id, request.time);
     }
+
+    // Update the referrer's duration.
+    UpdateVisitDuration(from_visit_id, request.time);
   } else {
     // Redirect case. Add the redirect chain.
 
@@ -810,10 +824,16 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
 
     for (size_t redirect_index = 0; redirect_index < redirects.size();
          redirect_index++) {
+      constexpr int kRedirectQualifiers = ui::PAGE_TRANSITION_CHAIN_START |
+                                          ui::PAGE_TRANSITION_CHAIN_END |
+                                          ui::PAGE_TRANSITION_IS_REDIRECT_MASK;
+      // Remove any redirect-related qualifiers that `request_transition` may
+      // have (there usually shouldn't be any, except for CLIENT_REDIRECT which
+      // was already handled above), and replace them with the `redirect_info`.
       ui::PageTransition t = ui::PageTransitionFromInt(
-          ui::PageTransitionStripQualifier(request_transition) | redirect_info);
+          (request_transition & ~kRedirectQualifiers) | redirect_info);
 
-      // If this is the last transition, add a CHAIN_END marker
+      // If this is the last transition, add a CHAIN_END marker.
       if (redirect_index == (redirects.size() - 1)) {
         t = ui::PageTransitionFromInt(t | ui::PAGE_TRANSITION_CHAIN_END);
       }
@@ -843,7 +863,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
                          last_visit_id, t, request.time);
         }
 
-        // Update the visit_details for this visit.
+        // Update the referrer's duration.
         UpdateVisitDuration(from_visit_id, request.time);
       }
 
@@ -865,6 +885,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
   // views can keep in sync.
 
   // Add the last visit to the tracker so we can get outgoing transitions.
+  // Keyword-generated visits are artificially generated. They duplicate the
+  // real navigation, and are added to ensure autocompletion in the omnibox
+  // works. As they are artificial they shouldn't be tracked for referral
+  // chains.
   // TODO(evanm): Due to http://b/1194536 we lose the referrers of a subframe
   // navigation anyway, so last_visit_id is always zero for them.  But adding
   // them here confuses main frame history, so we skip them for now.
@@ -1070,11 +1094,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
   // Broadcast a notification of the visit.
   if (visit_id) {
-    RedirectList redirects;
-    // TODO(meelapshah) Disabled due to potential PageCycler regression.
-    // Re-enable this.
-    // QueryRedirectsTo(url, &redirects);
-    NotifyURLVisited(transition, url_info, redirects, time);
+    NotifyURLVisited(transition, url_info, time);
   } else {
     DVLOG(0) << "Failed to build visit insert statement:  "
              << "url_id = " << url_id;
@@ -1345,6 +1365,12 @@ base::WeakPtr<syncer::ModelTypeControllerDelegate>
 HistoryBackend::GetTypedURLSyncControllerDelegate() {
   DCHECK(typed_url_sync_bridge_);
   return typed_url_sync_bridge_->change_processor()->GetControllerDelegate();
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+HistoryBackend::GetHistorySyncControllerDelegate() {
+  DCHECK(history_sync_bridge_);
+  return history_sync_bridge_->change_processor()->GetControllerDelegate();
 }
 
 // Statistics ------------------------------------------------------------------
@@ -1938,7 +1964,8 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count) {
 
   MostVisitedURLList result;
   for (const std::unique_ptr<PageUsageData>& current_data : data)
-    result.emplace_back(current_data->GetURL(), current_data->GetTitle());
+    result.emplace_back(current_data->GetURL(), current_data->GetTitle(),
+                        current_data->GetScore());
 
   UMA_HISTOGRAM_TIMES("History.QueryMostVisitedURLsTime",
                       base::TimeTicks::Now() - begin_time);
@@ -2342,6 +2369,9 @@ void HistoryBackend::ProcessDBTaskImpl() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
+  if (!db_)
+    return;
+
   TRACE_EVENT0("browser", "HistoryBackend::DeleteURLs");
 
   expirer_.DeleteURLs(urls, base::Time::Max());
@@ -2353,6 +2383,9 @@ void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
 }
 
 void HistoryBackend::DeleteURL(const GURL& url) {
+  if (!db_)
+    return;
+
   TRACE_EVENT0("browser", "HistoryBackend::DeleteURL");
 
   expirer_.DeleteURL(url, base::Time::Max());
@@ -2365,6 +2398,9 @@ void HistoryBackend::DeleteURL(const GURL& url) {
 
 void HistoryBackend::DeleteURLsUntil(
     const std::vector<std::pair<GURL, base::Time>>& urls_and_timestamps) {
+  if (!db_)
+    return;
+
   TRACE_EVENT0("browser", "HistoryBackend::DeleteURLsUntil");
 
   for (const auto& pair : urls_and_timestamps) {
@@ -2498,6 +2534,7 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
 
 void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
   if (!scheduled_kill_db_ && sql::IsErrorCatastrophic(error)) {
+    sql::UmaHistogramSqliteResult("History.DatabaseSqliteError", error);
     scheduled_kill_db_ = true;
 
     db_diagnostics_ = db_->GetDiagnosticInfo(error, stmt);
@@ -2519,10 +2556,12 @@ void HistoryBackend::KillHistoryDatabase() {
   if (!db_)
     return;
 
-  // Notify SyncBridge about storage error. It will report failure to sync
-  // engine and stop accepting remote updates.
+  // Notify the sync bridges about storage error. They'll report failures to the
+  // sync engine and stop accepting remote updates.
   if (typed_url_sync_bridge_)
     typed_url_sync_bridge_->OnDatabaseError();
+  if (history_sync_bridge_)
+    history_sync_bridge_->OnDatabaseError();
 
   // Rollback transaction because Raze() cannot be called from within a
   // transaction.
@@ -2558,12 +2597,11 @@ void HistoryBackend::NotifyFaviconsChanged(const std::set<GURL>& page_urls,
 
 void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
                                       const URLRow& row,
-                                      const RedirectList& redirects,
                                       base::Time visit_time) {
   for (HistoryBackendObserver& observer : observers_)
-    observer.OnURLVisited(this, transition, row, redirects, visit_time);
+    observer.OnURLVisited(this, transition, row, visit_time);
 
-  delegate_->NotifyURLVisited(transition, row, redirects, visit_time);
+  delegate_->NotifyURLVisited(transition, row, visit_time);
 }
 
 void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,

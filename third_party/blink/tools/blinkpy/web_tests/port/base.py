@@ -146,6 +146,8 @@ class Port(object):
         ('mac10.15', 'x86'),
         ('mac11', 'x86'),
         ('mac11-arm64', 'arm64'),
+        ('mac12', 'x86_64'),
+        ('mac12-arm64', 'arm64'),
         ('win7', 'x86'),
         ('win10.20h2', 'x86'),
         ('win11', 'x64'),
@@ -154,7 +156,10 @@ class Port(object):
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
-        'mac': ['mac10.13', 'mac10.14', 'mac10.15', 'mac11', 'mac11-arm64'],
+        'mac': [
+            'mac10.13', 'mac10.14', 'mac10.15', 'mac11', 'mac11-arm64',
+            'mac12', 'mac12-arm64'
+        ],
         'win': ['win7', 'win10.20h2', 'win11'],
         'linux': ['trusty'],
         'fuchsia': ['fuchsia'],
@@ -457,8 +462,8 @@ class Port(object):
             # memory usage may also grow over time, up to a certain point.
             # Relaunching the driver periodically helps keep it under control.
             return 40
-        # The default is infinite batch size.
-        return 0
+        # The default batch size now is 100, to battle against resource leak.
+        return 100
 
     def default_child_processes(self):
         """Returns the number of child processes to use for this port."""

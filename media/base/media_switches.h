@@ -88,12 +88,7 @@ MEDIA_EXPORT extern const char kOverrideEnabledCdmInterfaceVersion[];
 MEDIA_EXPORT extern const char kOverrideHardwareSecureCodecsForTesting[];
 MEDIA_EXPORT extern const char kEnableLiveCaptionPrefForTesting[];
 
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-MEDIA_EXPORT extern const char kEnableClearHevcForTesting[];
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS)
-MEDIA_EXPORT extern const char kLacrosEnablePlatformEncryptedHevc[];
 MEDIA_EXPORT extern const char kLacrosEnablePlatformHevc[];
 MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedMedia[];
 MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedAv1[];
@@ -171,15 +166,13 @@ MEDIA_EXPORT extern const base::Feature kMediaPowerExperiment;
 MEDIA_EXPORT extern const base::Feature kMediaSessionWebRTC;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
 MEDIA_EXPORT extern const base::Feature kMultiPlaneVideoCaptureSharedImages;
+MEDIA_EXPORT extern const base::Feature kOpenscreenCastStreamingSession;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;
 MEDIA_EXPORT extern const base::Feature kPictureInPicture;
 MEDIA_EXPORT extern const base::Feature kPlatformAudioEncoder;
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC) &&                                       \
-    (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || \
-     BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX))
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 MEDIA_EXPORT extern const base::Feature kPlatformHEVCDecoderSupport;
-#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC) && (IS_ANDROID || IS_WIN || IS_CROS
-        // || IS_MAC || IS_LINUX)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 MEDIA_EXPORT extern const base::Feature kPlaybackSpeedButton;
 MEDIA_EXPORT extern const base::Feature kPreloadMediaEngagementData;
 MEDIA_EXPORT extern const base::Feature kPreloadMetadataLazyLoad;
@@ -187,7 +180,6 @@ MEDIA_EXPORT extern const base::Feature kPreloadMetadataSuspend;
 MEDIA_EXPORT extern const base::Feature kRecordMediaEngagementScores;
 MEDIA_EXPORT extern const base::Feature kRecordWebAudioEngagement;
 MEDIA_EXPORT extern const base::Feature kResumeBackgroundVideo;
-MEDIA_EXPORT extern const base::Feature kReuseMediaPlayer;
 MEDIA_EXPORT extern const base::Feature kRevokeMediaSourceObjectURLOnAttach;
 MEDIA_EXPORT extern const base::Feature
     kShareThisTabInsteadButtonGetDisplayMedia;
@@ -205,6 +197,7 @@ MEDIA_EXPORT extern const base::Feature kUseR16Texture;
 #if BUILDFLAG(IS_LINUX)
 MEDIA_EXPORT extern const base::Feature kVaapiVideoDecodeLinux;
 MEDIA_EXPORT extern const base::Feature kVaapiVideoEncodeLinux;
+MEDIA_EXPORT extern const base::Feature kVaapiIgnoreDriverChecks;
 #endif  // BUILDFLAG(IS_LINUX)
 MEDIA_EXPORT extern const base::Feature kVaapiAV1Decoder;
 MEDIA_EXPORT extern const base::Feature kVaapiLowPowerEncoderGen9x;
@@ -221,6 +214,7 @@ MEDIA_EXPORT extern const base::Feature kVaapiVp9kSVCHWEncoding;
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 MEDIA_EXPORT extern const base::Feature kVp9kSVCHWDecoding;
 MEDIA_EXPORT extern const base::Feature kWakeLockOptimisationHiddenMuted;
+MEDIA_EXPORT extern const base::Feature kWebContentsCaptureHiDpi;
 MEDIA_EXPORT extern const base::Feature kWebrtcMediaCapabilitiesParameters;
 MEDIA_EXPORT extern const base::Feature kResolutionBasedDecoderPriority;
 MEDIA_EXPORT extern const base::Feature kForceHardwareVideoDecoders;
@@ -243,6 +237,7 @@ MEDIA_EXPORT extern const base::Feature kUseRealColorSpaceForAndroidVideo;
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 MEDIA_EXPORT extern const base::Feature kUseChromeOSDirectVideoDecoder;
+MEDIA_EXPORT extern const base::Feature kLimitConcurrentDecoderInstances;
 #if defined(ARCH_CPU_ARM_FAMILY)
 MEDIA_EXPORT extern const base::Feature kPreferLibYuvImageProcessor;
 #endif  // defined(ARCH_CPU_ARM_FAMILY)

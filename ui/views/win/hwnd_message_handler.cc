@@ -434,12 +434,19 @@ HWNDMessageHandler::~HWNDMessageHandler() {
   ClearUserData();
 }
 
-void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
+void HWNDMessageHandler::Init(HWND parent,
+                              const gfx::Rect& bounds,
+                              bool headless_mode) {
   TRACE_EVENT0("views", "HWNDMessageHandler::Init");
   GetMonitorAndRects(bounds.ToRECT(), &last_monitor_, &last_monitor_rect_,
                      &last_work_area_);
 
   initial_bounds_valid_ = !bounds.IsEmpty();
+
+  // Provide the headless mode window state container.
+  if (headless_mode)
+    headless_mode_window_ = absl::make_optional<HeadlessModeWindow>();
+
   // Create the window.
   WindowImpl::Init(parent, bounds);
 
@@ -540,6 +547,11 @@ gfx::Rect HWNDMessageHandler::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect HWNDMessageHandler::GetRestoredBounds() const {
+  // Headless mode window never goes fullscreen, so just return an empty
+  // rectangle here.
+  if (IsHeadless())
+    return gfx::Rect();
+
   // If we're in fullscreen mode, we've changed the normal bounds to the monitor
   // rect, so return the saved bounds instead.
   if (IsFullscreen())
@@ -655,7 +667,7 @@ void HWNDMessageHandler::Show(ui::WindowShowState show_state,
   // showing it just maintain a local flag to track the expected headless
   // window visibility state.
   if (IsHeadless()) {
-    headless_window_visibility_state_ = true;
+    headless_mode_window_->visibility_state = true;
     return;
   }
 
@@ -733,7 +745,7 @@ void HWNDMessageHandler::Hide() {
   // hiding it just maintain a local flag to track the expected headless
   // window visibility state.
   if (IsHeadless()) {
-    headless_window_visibility_state_ = false;
+    headless_mode_window_->visibility_state = false;
     return;
   }
 
@@ -749,15 +761,30 @@ void HWNDMessageHandler::Hide() {
 }
 
 void HWNDMessageHandler::Maximize() {
+  if (IsHeadless()) {
+    headless_mode_window_->minmax_state = HeadlessModeWindow::kMaximized;
+    return;
+  }
+
   ExecuteSystemMenuCommand(SC_MAXIMIZE);
 }
 
 void HWNDMessageHandler::Minimize() {
+  if (IsHeadless()) {
+    headless_mode_window_->minmax_state = HeadlessModeWindow::kMinimized;
+    return;
+  }
+
   ExecuteSystemMenuCommand(SC_MINIMIZE);
   delegate_->HandleNativeBlur(nullptr);
 }
 
 void HWNDMessageHandler::Restore() {
+  if (IsHeadless()) {
+    headless_mode_window_->minmax_state = HeadlessModeWindow::kNormal;
+    return;
+  }
+
   ExecuteSystemMenuCommand(SC_RESTORE);
 }
 
@@ -792,7 +819,7 @@ bool HWNDMessageHandler::IsVisible() const {
   // In headless mode the platform window is always hidden, so instead of
   // returning the actual window visibility state return the expected visibility
   // state maintained by Show/Hide() calls.
-  return IsHeadless() ? headless_window_visibility_state_
+  return IsHeadless() ? headless_mode_window_->visibility_state
                       : !!::IsWindowVisible(hwnd());
 }
 
@@ -801,15 +828,21 @@ bool HWNDMessageHandler::IsActive() const {
 }
 
 bool HWNDMessageHandler::IsMinimized() const {
-  return !!::IsIconic(hwnd());
+  return IsHeadless() ? headless_mode_window_->IsMinimized()
+                      : !!::IsIconic(hwnd());
 }
 
 bool HWNDMessageHandler::IsMaximized() const {
-  return !!::IsZoomed(hwnd()) && !IsFullscreen();
+  return (IsHeadless() ? headless_mode_window_->IsMaximized()
+                       : !!::IsZoomed(hwnd())) &&
+         !IsFullscreen();
 }
 
 bool HWNDMessageHandler::IsFullscreen() const {
-  return fullscreen_handler_->fullscreen();
+  // In headless mode report the requested window state instead of the actual
+  // one.
+  return IsHeadless() ? headless_mode_window_->fullscreen_state
+                      : fullscreen_handler_->fullscreen();
 }
 
 bool HWNDMessageHandler::IsAlwaysOnTop() const {
@@ -817,7 +850,7 @@ bool HWNDMessageHandler::IsAlwaysOnTop() const {
 }
 
 bool HWNDMessageHandler::IsHeadless() const {
-  return delegate_->IsHeadless();
+  return headless_mode_window_.has_value();
 }
 
 bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset,
@@ -932,9 +965,12 @@ void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
 }
 
 void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
-  // Avoid setting fullscreen mode when in headless mode.
-  if (IsHeadless())
+  // Avoid setting fullscreen mode when in headless mode, but keep track
+  // of the requested state for IsFullscreen() to report.
+  if (IsHeadless()) {
+    headless_mode_window_->fullscreen_state = fullscreen;
     return;
+  }
 
   background_fullscreen_hack_ = false;
   auto ref = msg_handler_weak_factory_.GetWeakPtr();

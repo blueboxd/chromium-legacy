@@ -22,17 +22,27 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.homepage.HomepageManager;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider.LayoutStateObserver;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.segmentation_platform.SegmentationPlatformServiceFactory;
@@ -40,16 +50,19 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
+import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
-import org.chromium.components.optimization_guide.proto.ModelsProto.OptimizationTarget;
 import org.chromium.components.segmentation_platform.SegmentationPlatformService;
+import org.chromium.components.segmentation_platform.proto.SegmentationProto.SegmentId;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -152,6 +165,73 @@ public final class ReturnToChromeUtil {
     private static boolean sGTSFirstMeaningfulPaintRecorded;
 
     private ReturnToChromeUtil() {}
+
+    /**
+     * A helper class to handle the back press related to ReturnToChrome feature. If a tab is opened
+     * from start surface and this tab is unable to be navigated back further, then we trigger
+     * the callback to show overview mode.
+     */
+    public static class ReturnToChromeBackPressHandler implements BackPressHandler {
+        private final ObservableSupplierImpl<Boolean> mBackPressChangedSupplier =
+                new ObservableSupplierImpl<>();
+        private final Supplier<LayoutStateProvider> mLayoutStateProvider;
+        private final Supplier<TabModelSelector> mTabModelSelectorSupplier;
+        private final Runnable mOnBackPressedCallback;
+
+        public ReturnToChromeBackPressHandler(
+                OneshotSupplier<LayoutStateProvider> layoutStateProviderOneshotSupplier,
+                ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
+                Runnable onBackPressedCallback) {
+            mLayoutStateProvider = layoutStateProviderOneshotSupplier;
+            mTabModelSelectorSupplier = tabModelSelectorSupplier;
+            mOnBackPressedCallback = onBackPressedCallback;
+            onBackPressStateChanged();
+            tabModelSelectorSupplier.addObserver(this::onTabModelSelectorAvailable);
+            layoutStateProviderOneshotSupplier.onAvailable(this::onLayoutManagerAvailable);
+        }
+
+        private void onTabModelSelectorAvailable(TabModelSelector tabModelSelector) {
+            onBackPressStateChanged();
+            tabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(
+                    new TabModelObserver() {
+                        @Override
+                        public void didSelectTab(Tab tab, int type, int lastId) {
+                            onBackPressStateChanged();
+                        }
+                    });
+        }
+
+        private void onLayoutManagerAvailable(LayoutStateProvider layoutStateProvider) {
+            onBackPressStateChanged();
+            layoutStateProvider.addObserver(new LayoutStateObserver() {
+                @Override
+                public void onStartedShowing(int layoutType, boolean showToolbar) {
+                    onBackPressStateChanged();
+                }
+            });
+        }
+
+        private void onBackPressStateChanged() {
+            if (mTabModelSelectorSupplier.get() == null || mLayoutStateProvider.get() == null
+                    || mTabModelSelectorSupplier.get().getCurrentTab() == null) {
+                mBackPressChangedSupplier.set(false);
+                return;
+            }
+            mBackPressChangedSupplier.set(
+                    isTabFromStartSurface(mTabModelSelectorSupplier.get().getCurrentTab())
+                    && !mLayoutStateProvider.get().isLayoutVisible(LayoutType.TAB_SWITCHER));
+        }
+
+        @Override
+        public void handleBackPress() {
+            mOnBackPressedCallback.run();
+        }
+
+        @Override
+        public ObservableSupplier<Boolean> getHandleBackPressChangedSupplier() {
+            return mBackPressChangedSupplier;
+        }
+    }
 
     /**
      * Determine if we should show the tab switcher on returning to Chrome.
@@ -762,7 +842,7 @@ public final class ReturnToChromeUtil {
             if (!result.isReady) {
                 resultEnum = ShowChromeStartSegmentationResult.UNINITIALIZED;
             } else if (result.selectedSegment
-                    == OptimizationTarget.OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID) {
+                    == SegmentId.OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID) {
                 resultEnum = ShowChromeStartSegmentationResult.SHOW;
             } else {
                 resultEnum = ShowChromeStartSegmentationResult.DONT_SHOW;
@@ -912,6 +992,33 @@ public final class ReturnToChromeUtil {
                 LAST_VISITED_TAB_IS_SRP_WHEN_OVERVIEW_IS_SHOWN_AT_LAUNCH_UMA,
                 SharedPreferencesManager.getInstance().readBoolean(
                         ChromePreferenceKeys.IS_LAST_VISITED_TAB_SRP, false));
+    }
+
+    /**
+     * Add an observer to keep {@link ChromePreferenceKeys#FEED_ARTICLES_LIST_VISIBLE} consistent
+     * with {@link Pref#ARTICLES_LIST_VISIBLE}.
+     */
+    public static void addFeedVisibilityObserver() {
+        updateFeedVisibility();
+        PrefChangeRegistrar prefChangeRegistrar = new PrefChangeRegistrar();
+        prefChangeRegistrar.addObserver(
+                Pref.ARTICLES_LIST_VISIBLE, ReturnToChromeUtil::updateFeedVisibility);
+    }
+
+    private static void updateFeedVisibility() {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE,
+                FeedFeatures.isFeedEnabled()
+                        && UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .getBoolean(Pref.ARTICLES_LIST_VISIBLE));
+    }
+
+    /**
+     * @return Whether the Feed articles are visible.
+     */
+    public static boolean getFeedArticlesVisibility() {
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, true);
     }
 
     @VisibleForTesting

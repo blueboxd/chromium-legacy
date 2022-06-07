@@ -35,12 +35,14 @@
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
+#include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/geo/alternative_state_name_map_test_utils.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
+#include "components/autofill/core/browser/mock_merchant_promo_code_manager.h"
 #include "components/autofill/core/browser/mock_single_field_form_fill_router.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_strike_database.h"
@@ -158,6 +160,19 @@ class MockAutofillDownloadManager : public TestAutofillDownloadManager {
                const std::string&,
                bool,
                PrefService*),
+              (override));
+};
+
+class MockTouchToFillDelegate : public TouchToFillDelegate {
+ public:
+  MockTouchToFillDelegate() = default;
+  MockTouchToFillDelegate(const MockTouchToFillDelegate&) = delete;
+  MockTouchToFillDelegate& operator=(const MockTouchToFillDelegate&) = delete;
+  ~MockTouchToFillDelegate() override = default;
+
+  MOCK_METHOD(bool,
+              TryToShowTouchToFill,
+              (int query_id, const FormData& form, const FormFieldData& field),
               (override));
 };
 
@@ -367,9 +382,12 @@ class BrowserAutofillManagerTest : public testing::Test {
         /*profile_database=*/database_,
         /*pref_service=*/autofill_client_.GetPrefs(),
         /*is_off_the_record=*/false);
+    merchant_promo_code_manager_ =
+        std::make_unique<NiceMock<MockMerchantPromoCodeManager>>();
+    merchant_promo_code_manager_->Init(&personal_data(),
+                                       /*is_off_the_record=*/false);
 
-    autofill_driver_ =
-        std::make_unique<testing::NiceMock<MockAutofillDriver>>();
+    autofill_driver_ = std::make_unique<NiceMock<MockAutofillDriver>>();
     auto payments_client = std::make_unique<payments::TestPaymentsClient>(
         autofill_driver_->GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data());
@@ -391,7 +409,8 @@ class BrowserAutofillManagerTest : public testing::Test {
 
     auto single_field_form_fill_router =
         std::make_unique<NiceMock<MockSingleFieldFormFillRouter>>(
-            autocomplete_history_manager_.get());
+            autocomplete_history_manager_.get(),
+            merchant_promo_code_manager_.get()->GetWeakPtr());
     single_field_form_fill_router_ = single_field_form_fill_router.get();
     browser_autofill_manager_->set_single_field_form_fill_router_for_test(
         std::move(single_field_form_fill_router));
@@ -408,6 +427,11 @@ class BrowserAutofillManagerTest : public testing::Test {
     external_delegate_ = external_delegate.get();
     browser_autofill_manager_->SetExternalDelegateForTest(
         std::move(external_delegate));
+
+    auto touch_to_fill_delegate = std::make_unique<MockTouchToFillDelegate>();
+    touch_to_fill_delegate_ = touch_to_fill_delegate.get();
+    browser_autofill_manager_->SetTouchToFillDelegateForTest(
+        std::move(touch_to_fill_delegate));
 
     auto test_strike_database = std::make_unique<TestStrikeDatabase>();
     strike_database_ = test_strike_database.get();
@@ -480,12 +504,21 @@ class BrowserAutofillManagerTest : public testing::Test {
                               const FormFieldData& field) {
     browser_autofill_manager_->OnAskForValuesToFill(
         query_id, form, field, gfx::RectF(),
-        /*autoselect_first_suggestion=*/false);
+        /*autoselect_first_suggestion=*/false, TouchToFillEligible(false));
   }
 
   void GetAutofillSuggestions(const FormData& form,
                               const FormFieldData& field) {
     GetAutofillSuggestions(kDefaultPageID, form, field);
+  }
+
+  void TryToShowTouchToFill(int query_id,
+                            const FormData& form,
+                            const FormFieldData& field,
+                            TouchToFillEligible touch_to_fill_eligible) {
+    browser_autofill_manager_->OnAskForValuesToFill(
+        query_id, form, field, gfx::RectF(),
+        /*autoselect_first_suggestion=*/false, touch_to_fill_eligible);
   }
 
   void AutocompleteSuggestionsReturned(
@@ -552,9 +585,10 @@ class BrowserAutofillManagerTest : public testing::Test {
         action, guid, input_query_id, input_form, input_field);
   }
 
-  int MakeFrontendID(const std::string& cc_sid,
+  int MakeFrontendId(const std::string& cc_sid,
                      const std::string& profile_sid) const {
-    return browser_autofill_manager_->MakeFrontendID(cc_sid, profile_sid);
+    return browser_autofill_manager_->suggestion_generator()->MakeFrontendId(
+        cc_sid, profile_sid);
   }
 
   bool WillFillCreditCardNumber(const FormData& form,
@@ -710,7 +744,8 @@ class BrowserAutofillManagerTest : public testing::Test {
 
     auto single_field_form_fill_router =
         std::make_unique<NiceMock<MockSingleFieldFormFillRouter>>(
-            autocomplete_history_manager_.get());
+            autocomplete_history_manager_.get(),
+            merchant_promo_code_manager_.get()->GetWeakPtr());
     single_field_form_fill_router_ = single_field_form_fill_router.get();
     browser_autofill_manager_->set_single_field_form_fill_router_for_test(
         std::move(single_field_form_fill_router));
@@ -726,9 +761,11 @@ class BrowserAutofillManagerTest : public testing::Test {
   std::unique_ptr<MockAutofillDriver> autofill_driver_;
   std::unique_ptr<TestBrowserAutofillManager> browser_autofill_manager_;
   raw_ptr<TestAutofillExternalDelegate> external_delegate_;
+  raw_ptr<MockTouchToFillDelegate> touch_to_fill_delegate_;
   scoped_refptr<AutofillWebDataService> database_;
   raw_ptr<MockAutofillDownloadManager> download_manager_;
   std::unique_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager_;
+  std::unique_ptr<MockMerchantPromoCodeManager> merchant_promo_code_manager_;
   raw_ptr<MockSingleFieldFormFillRouter> single_field_form_fill_router_;
   base::test::ScopedFeatureList scoped_feature_list_;
   raw_ptr<TestStrikeDatabase> strike_database_;
@@ -2503,7 +2540,7 @@ TEST_F(BrowserAutofillManagerTest, FillTriggeredSection) {
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       kDefaultPageID, form, form.fields[index_of_trigger_field],
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   // Extract the sections into individual forms to reduce boiler plate code.
   size_t mid = response_data.fields.size() / 2;
   FormData section1 = response_data;
@@ -3281,7 +3318,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillAddressForm) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -3300,13 +3337,13 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, WillFillCreditCardNumber) {
   FormFieldData* number_field = nullptr;
   FormFieldData* name_field = nullptr;
   FormFieldData* month_field = nullptr;
-  for (size_t i = 0; i < form.fields.size(); ++i) {
-    if (form.fields[i].name == u"cardnumber")
-      number_field = &form.fields[i];
-    else if (form.fields[i].name == u"nameoncard")
-      name_field = &form.fields[i];
-    else if (form.fields[i].name == u"ccmonth")
-      month_field = &form.fields[i];
+  for (auto& field : form.fields) {
+    if (field.name == u"cardnumber")
+      number_field = &field;
+    else if (field.name == u"nameoncard")
+      name_field = &field;
+    else if (field.name == u"ccmonth")
+      month_field = &field;
   }
 
   // Empty form - whole form is Autofilled.
@@ -3355,7 +3392,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormData response_data;
   base::HistogramTester histogram_tester;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   // Cardholder name, card number, expiration data were autofilled but cvc was
   // not be autofilled.
@@ -3375,7 +3412,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillCreditCardForm_Simple) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardFormElvis(response_page_id, response_data,
                                   kDefaultPageID, false);
@@ -3403,7 +3440,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardFormElvis(response_page_id, response_data,
                                   kDefaultPageID, false);
@@ -3432,7 +3469,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardFormElvis(response_page_id, response_data,
                                   kDefaultPageID, false);
@@ -3459,7 +3496,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardYearMonthWithYearMonth(response_page_id, response_data,
                                                kDefaultPageID, false, "", "");
@@ -3486,7 +3523,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardYearMonthWithYearMonth(response_page_id, response_data,
                                                kDefaultPageID, false, "", "04");
@@ -3515,7 +3552,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardYearMonthWithYearMonth(
       response_page_id, response_data, kDefaultPageID, false, "2999", "");
@@ -3542,7 +3579,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledCreditCardYearMonthWithYearMonth(
       response_page_id, response_data, kDefaultPageID, false, "2999", "04");
@@ -3581,7 +3618,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledField("Card Name", "cardname", "Elvis", "text",
                     response_data.fields[0]);
@@ -3633,7 +3670,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledField("Card Name", "cardname", "Elvis", "text",
                     response_data.fields[0]);
@@ -3685,7 +3722,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledField("Card Name", "cardname", "Elvis", "text",
                     response_data.fields[0]);
@@ -3736,7 +3773,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
   ExpectFilledField("Card Name", "cardname", "Elvis", "text",
                     response_data.fields[0]);
@@ -3815,7 +3852,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
 
   // Verify the correct filling of the name entries.
@@ -3868,7 +3905,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   {
     SCOPED_TRACE("Address");
     FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                       MakeFrontendID(std::string(), guid),
+                                       MakeFrontendId(std::string(), guid),
                                        &response_page_id, &response_data);
     ExpectFilledAddressFormElvis(response_page_id, response_data,
                                  kDefaultPageID, true);
@@ -3880,7 +3917,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   response_page_id = 0;
   {
     FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
-                                       MakeFrontendID(guid2, std::string()),
+                                       MakeFrontendId(guid2, std::string()),
                                        &response_page_id, &response_data);
     SCOPED_TRACE("Credit card");
     ExpectFilledCreditCardFormElvis(response_page_id, response_data, kPageID2,
@@ -3917,7 +3954,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       kDefaultPageID, address_form, address_form.fields[0],
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
 
   // The fist and middle names should be filled.
   ExpectFilledField("First name", "firstname", "Elvis", "text",
@@ -3960,7 +3997,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       kDefaultPageID, address_form, address_form.fields[0],
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
 
   // All fields should be filled.
   ExpectFilledField("First name", "firstname", "Elvis", "text",
@@ -4009,7 +4046,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       kDefaultPageID, address_form, *address_form.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
 
   // All the fields should be filled except the company.
   ExpectFilledField("First name", "firstname", "Elvis", "text",
@@ -4051,7 +4088,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormData response_data;
   FillAutofillFormDataAndSaveResults(
       kDefaultPageID, address_form, address_form.fields[0],
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
 
   // All the fields should be filled.
   ExpectFilledField("First name", "firstname", "Elvis", "text",
@@ -4092,7 +4129,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
 
   // The credit card name and number should be filled.
@@ -4125,7 +4162,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
 
   // All fields should be filled.
@@ -4178,7 +4215,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(guid, std::string()),
+                                     MakeFrontendId(guid, std::string()),
                                      &response_page_id, &response_data);
 
   // The credit card name, type and number should be filled.
@@ -4271,7 +4308,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
 
   // All the visible fields should be filled as all the fields belong to the
@@ -4310,7 +4347,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address 1");
@@ -4334,7 +4371,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(
       kPageID2, form, form.fields[kAddressFormSize + 9],
-      MakeFrontendID(std::string(), guid2), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid2), &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address 2");
     ASSERT_EQ(response_data.fields.size(), form.fields.size());
@@ -4425,7 +4462,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[1],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Unnamed section");
@@ -4456,7 +4493,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   const char guid2[] = "00000000-0000-0000-0000-000000000001";
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid2),
+                                     MakeFrontendId(std::string(), guid2),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Billing address");
@@ -4487,7 +4524,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(
       kPageID3, form, form.fields[form.fields.size() - 2],
-      MakeFrontendID(guid3, std::string()), &response_page_id, &response_data);
+      MakeFrontendId(guid3, std::string()), &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card");
     EXPECT_EQ(kPageID3, response_page_id);
@@ -4531,7 +4568,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
 
   // The second email address should be filled.
@@ -4549,8 +4586,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillAutofilledForm) {
   FormData form;
   test::CreateTestAddressFormData(&form);
   // Mark the address fields as autofilled.
-  for (auto iter = form.fields.begin(); iter != form.fields.end(); ++iter) {
-    iter->is_autofilled = true;
+  for (auto& field : form.fields) {
+    field.is_autofilled = true;
   }
 
   CreateTestCreditCardFormData(&form, true, false);
@@ -4562,7 +4599,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillAutofilledForm) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address");
@@ -4576,7 +4613,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillAutofilledForm) {
   const char guid2[] = "00000000-0000-0000-0000-000000000004";
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
-                                     MakeFrontendID(guid2, std::string()),
+                                     MakeFrontendId(guid2, std::string()),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 1");
@@ -4586,15 +4623,15 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillAutofilledForm) {
 
   // Now set the credit card fields to also be auto-filled, and try again to
   // fill the credit card data
-  for (auto iter = form.fields.begin(); iter != form.fields.end(); ++iter) {
-    iter->is_autofilled = true;
+  for (auto& field : form.fields) {
+    field.is_autofilled = true;
   }
 
   const int kPageID3 = 3;
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(
       kPageID3, form, form.fields[form.fields.size() - 2],
-      MakeFrontendID(guid2, std::string()), &response_page_id, &response_data);
+      MakeFrontendId(guid2, std::string()), &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 2");
     ExpectFilledForm(response_page_id, response_data, kPageID3, "", "", "", "",
@@ -4624,7 +4661,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillPartlyAutofilledForm) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address");
@@ -4639,7 +4676,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillPartlyAutofilledForm) {
   const char guid2[] = "00000000-0000-0000-0000-000000000004";
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
-                                     MakeFrontendID(guid2, std::string()),
+                                     MakeFrontendId(guid2, std::string()),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 1");
@@ -4674,7 +4711,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address");
@@ -4690,7 +4727,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   const char guid2[] = "00000000-0000-0000-0000-000000000004";
   response_page_id = 0;
   FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
-                                     MakeFrontendID(guid2, std::string()),
+                                     MakeFrontendId(guid2, std::string()),
                                      &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 1");
@@ -4756,7 +4793,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillPhoneNumber) {
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_us_number_max_length,
       *form_with_us_number_max_length.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data1);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data1);
   EXPECT_EQ(1, response_page_id);
 
   ASSERT_EQ(5U, response_data1.fields.size());
@@ -4771,7 +4808,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillPhoneNumber) {
   FormData response_data2;
   FillAutofillFormDataAndSaveResults(page_id, form_with_autocompletetype,
                                      *form_with_autocompletetype.fields.begin(),
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data2);
   EXPECT_EQ(2, response_page_id);
 
@@ -4794,7 +4831,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillPhoneNumber) {
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_us_number_max_length,
       *form_with_us_number_max_length.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data3);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data3);
   EXPECT_EQ(3, response_page_id);
 
   ASSERT_EQ(5U, response_data3.fields.size());
@@ -4809,7 +4846,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FillPhoneNumber) {
   FormData response_data4;
   FillAutofillFormDataAndSaveResults(page_id, form_with_autocompletetype,
                                      *form_with_autocompletetype.fields.begin(),
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data4);
   EXPECT_EQ(4, response_page_id);
 
@@ -4874,7 +4911,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_componentized_phone_fields,
       *form_with_multiple_componentized_phone_fields.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify only the first complete set of phone number fields are filled.
@@ -4928,7 +4965,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_whole_number_fields,
       *form_with_multiple_whole_number_fields.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify only the first complete set of phone number fields are filled.
@@ -4994,7 +5031,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_componentized_phone_fields,
       *form_with_multiple_componentized_phone_fields.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify only the first complete set of phone number fields are filled,
@@ -5059,7 +5096,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_misclassified_extension,
       *form_with_misclassified_extension.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify the misclassified extension field is not filled.
@@ -5071,7 +5108,10 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   EXPECT_EQ(std::u16string(), response_data.fields[4].value);
 }
 
-// Verify when no complete number can be found, we do best-effort filling.
+// Verify that phone number fields annotated with the autocomplete attribute
+// are filled best-effort.
+// Phone number local heuristics only succeed if a PHONE_HOME_NUMBER field is
+// present.
 TEST_P(BrowserAutofillManagerStructuredProfileTest,
        FillFirstPhoneNumber_BestEfforFilling) {
   AutofillProfile* work_profile = personal_data().GetProfileWithGUID(
@@ -5115,7 +5155,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_no_complete_number,
       *form_with_no_complete_number.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify when there is no complete phone number fields, we do best effort
@@ -5170,7 +5210,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   std::advance(it, 3);
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_whole_number_fields, *it,
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify when the second phone number field is being focused, we fill
@@ -5223,7 +5263,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_whole_number_fields,
       *form_with_multiple_whole_number_fields.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify hidden/non-focusable phone field is set to only_fill_when_focused.
@@ -5288,7 +5328,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   base::HistogramTester histogram_tester;
 
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   histogram_tester.ExpectTotalCount(
       "Autofill.HiddenOrPresentationalSelectFieldsFilled", 2);
@@ -5360,7 +5400,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FillAutofillFormDataAndSaveResults(
       page_id, form_with_multiple_sections,
       *form_with_multiple_sections.fields.begin(),
-      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+      MakeFrontendId(std::string(), guid), &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
   // Verify first section is filled with rationalization.
@@ -5380,7 +5420,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   std::advance(it, 6);  // Pointing to second section.
 
   FillAutofillFormDataAndSaveResults(page_id, form_with_multiple_sections, *it,
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   EXPECT_EQ(1, response_page_id);
 
@@ -5418,7 +5458,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FormChangesRemoveField) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -5448,7 +5488,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FormChangesAddField) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -5491,7 +5531,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
 
   ASSERT_EQ(5U, response_data.fields.size());
@@ -5515,7 +5555,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   const char guid2[] = "00000000-0000-0000-0000-000000000002";
   FillAutofillFormDataAndSaveResults(kDefaultPageID, response_data,
                                      response_data.fields[4],
-                                     MakeFrontendID(std::string(), guid2),
+                                     MakeFrontendId(std::string(), guid2),
                                      &response_page_id, &later_response_data);
   ASSERT_EQ(5U, later_response_data.fields.size());
   ExpectFilledField("First Name", "first_name", "Elvis", "text",
@@ -5543,7 +5583,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FormSubmitted) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -5567,7 +5607,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FormSubmittedSaveData) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -5588,7 +5628,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormData form;
   test::CreateTestAddressFormData(&form);
 
-  EXPECT_CALL(*(single_field_form_fill_router_), OnWillSubmitForm(_, true));
+  EXPECT_CALL(*(single_field_form_fill_router_), OnWillSubmitForm(_, _, true));
   FormSubmitted(form);
 }
 
@@ -6125,7 +6165,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, FormSubmittedServerTypes) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -6152,7 +6192,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
@@ -6235,7 +6275,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[3],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
 
   // Simulate form submission.  We should call into the PDM to try to save the
@@ -7048,7 +7088,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, RemoveProfile) {
   profile.set_guid(guid);
   personal_data().AddProfile(profile);
 
-  int id = MakeFrontendID(std::string(), guid);
+  int id = MakeFrontendId(std::string(), guid);
 
   browser_autofill_manager_->RemoveAutofillProfileOrCreditCard(id);
 
@@ -7062,7 +7102,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest, RemoveCreditCard) {
   credit_card.set_guid(guid);
   personal_data().AddCreditCard(credit_card);
 
-  int id = MakeFrontendID(guid, std::string());
+  int id = MakeFrontendId(guid, std::string());
 
   browser_autofill_manager_->RemoveAutofillProfileOrCreditCard(id);
 
@@ -7352,7 +7392,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
 TEST_P(BrowserAutofillManagerStructuredProfileTest,
        DontSaveCvcInAutocompleteHistory) {
   FormData form_seen_by_ahm;
-  EXPECT_CALL(*(single_field_form_fill_router_), OnWillSubmitForm(_, true))
+  EXPECT_CALL(*(single_field_form_fill_router_), OnWillSubmitForm(_, _, true))
       .WillOnce(SaveArg<0>(&form_seen_by_ahm));
 
   FormData form;
@@ -7398,15 +7438,15 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   PrepareForRealPanResponse(&form, &card);
 
   // Manually fill out |form| so we can use it in OnFormSubmitted.
-  for (size_t i = 0; i < form.fields.size(); ++i) {
-    if (form.fields[i].name == u"cardnumber")
-      form.fields[i].value = u"4012888888881881";
-    else if (form.fields[i].name == u"nameoncard")
-      form.fields[i].value = u"John H Dillinger";
-    else if (form.fields[i].name == u"ccmonth")
-      form.fields[i].value = u"01";
-    else if (form.fields[i].name == u"ccyear")
-      form.fields[i].value = u"2017";
+  for (auto& field : form.fields) {
+    if (field.name == u"cardnumber")
+      field.value = u"4012888888881881";
+    else if (field.name == u"nameoncard")
+      field.value = u"John H Dillinger";
+    else if (field.name == u"ccmonth")
+      field.value = u"01";
+    else if (field.name == u"ccyear")
+      field.value = u"2017";
   }
 
   CardUnmaskDelegate::UserProvidedUnmaskDetails details;
@@ -7449,7 +7489,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
 
   FillAutofillFormData(kDefaultPageID, form, *form.fields.begin(),
-                       MakeFrontendID(std::string(), guid));
+                       MakeFrontendId(std::string(), guid));
 }
 
 TEST_P(BrowserAutofillManagerStructuredProfileTest,
@@ -7486,7 +7526,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
 
   FillAutofillFormData(kDefaultPageID, form, *form.fields.begin(),
-                       MakeFrontendID(guid, std::string()));
+                       MakeFrontendId(guid, std::string()));
 }
 
 TEST_P(BrowserAutofillManagerStructuredProfileTest,
@@ -7665,7 +7705,7 @@ TEST_P(CreditCardSuggestionTest,
   GetAutofillSuggestions(form, field);
   CheckSuggestions(kDefaultPageID,
                    Suggestion("Nancy Drew", visa_label, kVisaCard,
-                              MakeFrontendID(guid, std::string())));
+                              MakeFrontendId(guid, std::string())));
 }
 
 // Verify that typing "lvis" will not match any of the credit card name when
@@ -9262,7 +9302,7 @@ TEST_F(BrowserAutofillManagerTest, PreventOverridingOfPrefilledValues) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
   EXPECT_EQ(response_data.fields[1].value, u"Test City");
@@ -9306,7 +9346,7 @@ TEST_F(BrowserAutofillManagerTest, PreventOverridingOfPrefilledValues) {
       autofill::features::kAutofillPreventOverridingPrefilledValues);
 
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
   EXPECT_EQ(response_data.fields[1].value, u"Memphis");
@@ -9352,12 +9392,41 @@ TEST_F(BrowserAutofillManagerTest, AutofillOverridePrefilledValue) {
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
+                                     MakeFrontendId(std::string(), guid),
                                      &response_page_id, &response_data);
   EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
   EXPECT_EQ(response_data.fields[1].value, u"Test City");
   EXPECT_EQ(response_data.fields[2].value, u"Tennessee");
   EXPECT_EQ(response_data.fields[3].value, u"Test Country");
+}
+
+// Tests that Autofill suggestions are not shown if TTF is eligible and shown.
+TEST_F(BrowserAutofillManagerTest, AutofillSuggestionsOrTouchToFill) {
+  FormData form;
+  CreateTestCreditCardFormData(&form, /*is_https=*/true,
+                               /*use_month_type=*/false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  const FormFieldData& field = form.fields[1];
+  int query_id = 1;
+
+  // TTF not eligible, Autofill suggestions shown.
+  EXPECT_CALL(*touch_to_fill_delegate_, TryToShowTouchToFill(query_id, _, _))
+      .Times(0);
+  TryToShowTouchToFill(query_id++, form, field, TouchToFillEligible(false));
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+
+  // TTF not shown, Autofill suggestions shown.
+  EXPECT_CALL(*touch_to_fill_delegate_, TryToShowTouchToFill(query_id, _, _))
+      .WillOnce(Return(false));
+  TryToShowTouchToFill(query_id++, form, field, TouchToFillEligible(true));
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+
+  // TTF eligible and shown, Autofill suggestions not shown
+  EXPECT_CALL(*touch_to_fill_delegate_, TryToShowTouchToFill(query_id, _, _))
+      .WillOnce(Return(true));
+  TryToShowTouchToFill(query_id++, form, field, TouchToFillEligible(true));
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Desktop only tests.
@@ -9959,5 +10028,140 @@ TEST_P(BrowserAutofillManagerTestForSharingNickname,
           exp_label, kAmericanExpressCard,
           browser_autofill_manager_->GetPackedCreditCardID(2)));
 }
+
+// The following Refill Tests ensure that Autofill can handle the situation
+// where it fills a credit card form with an expiration date like 04/2999
+// and the website tries to reformat the input with whitespaces around the
+// slash and then sacrifices the wrong digits in the expiration date. I.e.,
+// the website replaces "04/2099" with "04 / 20". The tests ensure that this
+// triggers a refill with "04 / 29".
+struct RefillTestCase {
+  // The value that JavaScript owned by the website sets for the expiration
+  // date filed.
+  std::u16string exp_date_from_js;
+  // Whether we expect a refill from in this test case.
+  bool triggers_refill;
+  // What value we expect in the refill.
+  const char* refilled_exp_date = nullptr;
+};
+
+class BrowserAutofillManagerRefillTest
+    : public BrowserAutofillManagerTest,
+      public testing::WithParamInterface<RefillTestCase> {};
+
+TEST_P(BrowserAutofillManagerRefillTest,
+       RefillModifiedCreditCardExpirationDates) {
+  RefillTestCase test_case = GetParam();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillRefillModifiedCreditCardExpirationDates);
+
+  // Set up a CC form with name, cc number and expiration date.
+  FormData form;
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Expiration date", "exp_date", "", "text", &field);
+  form.fields.push_back(field);
+
+  // Notify BrowserAutofillManager of the form.
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Simulate filling and store the data to be filled in |first_fill_data|.
+  const char guid[] = "00000000-0000-0000-0000-000000000004";
+  int response_page_id = 0;
+  FormData first_fill_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendId(guid, std::string()),
+                                     &response_page_id, &first_fill_data);
+  ASSERT_EQ(3u, first_fill_data.fields.size());
+  ExpectFilledField("Name on Card", "nameoncard", "Elvis Presley", "text",
+                    first_fill_data.fields[0]);
+  ExpectFilledField("Card Number", "cardnumber", "4234567890123456", "text",
+                    first_fill_data.fields[1]);
+  ExpectFilledField("Expiration date", "exp_date", "04/2999", "text",
+                    first_fill_data.fields[2]);
+
+  FormData refilled_form;
+  if (test_case.triggers_refill) {
+    // Prepare intercepting the filling operation to the driver and capture
+    // the re-filled form data.
+    EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _))
+        .Times(1)
+        .WillOnce(DoAll(testing::SaveArg<2>(&refilled_form),
+                        testing::Return(std::vector<FieldGlobalId>{})));
+  } else {
+    EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
+  }
+  // Simulate that JavaScript modifies the expiration date field.
+  FormData form_after_js_modification = first_fill_data;
+  form_after_js_modification.fields[2].value = test_case.exp_date_from_js;
+  browser_autofill_manager_->JavaScriptChangedAutofilledValue(
+      form_after_js_modification, form_after_js_modification.fields[2],
+      u"04/2999");
+
+  testing::Mock::VerifyAndClearExpectations(autofill_driver_.get());
+
+  if (test_case.triggers_refill) {
+    ASSERT_EQ(3u, refilled_form.fields.size());
+    ExpectFilledField("Name on Card", "nameoncard", "Elvis Presley", "text",
+                      refilled_form.fields[0]);
+    EXPECT_FALSE(refilled_form.fields[0].force_override);
+    ExpectFilledField("Card Number", "cardnumber", "4234567890123456", "text",
+                      refilled_form.fields[1]);
+    EXPECT_FALSE(refilled_form.fields[1].force_override);
+    ExpectFilledField("Expiration date", "exp_date",
+                      test_case.refilled_exp_date, "text",
+                      refilled_form.fields[2]);
+    EXPECT_TRUE(refilled_form.fields[2].force_override);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    BrowserAutofillManagerRefillTest,
+    testing::Values(
+        // This is the classic case: Autofill filled 04/2999, website overrode
+        // 04 / 29, we need to fix this to 04 / 99.
+        RefillTestCase{.exp_date_from_js = u"04 / 29",
+                       .triggers_refill = true,
+                       .refilled_exp_date = "04 / 99"},
+        // Maybe the website replaced the separator and added whitespaces.
+        RefillTestCase{.exp_date_from_js = u"04 - 29",
+                       .triggers_refill = true,
+                       .refilled_exp_date = "04 - 99"},
+        // Maybe the website only replaced the separator.
+        RefillTestCase{.exp_date_from_js = u"04-29",
+                       .triggers_refill = true,
+                       .refilled_exp_date = "04-99"},
+        // Maybe the website was smart and dropped the correct digits.
+        RefillTestCase{
+            .exp_date_from_js = u"04 / 99",
+            .triggers_refill = false,
+        },
+        // Maybe the website did not modify the values at all.
+        RefillTestCase{
+            .exp_date_from_js = u"04/2999",
+            .triggers_refill = false,
+        },
+        // Maybe the website did something we don't support.
+        RefillTestCase{
+            .exp_date_from_js = u"April / 2999",
+            .triggers_refill = false,
+        },
+        // Maybe the website just added some whitespaces.
+        RefillTestCase{
+            .exp_date_from_js = u"04 / 2999",
+            .triggers_refill = false,
+        },
+        // Don't trigger refill on 3 digit years.
+        RefillTestCase{
+            .exp_date_from_js = u"04 / 299",
+            .triggers_refill = false,
+        }));
 
 }  // namespace autofill

@@ -18,7 +18,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
-#include "components/reporting/util/shared_vector.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/test_support_callbacks.h"
 #include "content/public/test/browser_task_environment.h"
@@ -52,7 +51,7 @@ class TestRecordHandler : public DmServerUploadService::RecordHandler {
   ~TestRecordHandler() override = default;
 
   void HandleRecords(bool need_encryption_key,
-                     std::unique_ptr<std::vector<EncryptedRecord>> records,
+                     std::vector<EncryptedRecord> records,
                      DmServerUploadService::CompletionCallback upload_complete,
                      DmServerUploadService::EncryptionKeyAttachedCallback
                          encryption_key_attached_cb) override {
@@ -63,7 +62,7 @@ class TestRecordHandler : public DmServerUploadService::RecordHandler {
   MOCK_METHOD(void,
               HandleRecords_,
               (bool,
-               std::unique_ptr<std::vector<EncryptedRecord>>&,
+               std::vector<EncryptedRecord>&,
                DmServerUploadService::CompletionCallback,
                DmServerUploadService::EncryptionKeyAttachedCallback));
 };
@@ -72,8 +71,7 @@ class DmServerTest {
  public:
   DmServerTest()
       : sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})),
-        handler_(std::make_unique<TestRecordHandler>()),
-        records_(std::make_unique<std::vector<EncryptedRecord>>()) {}
+        handler_(std::make_unique<TestRecordHandler>()) {}
 
  protected:
   content::BrowserTaskEnvironment task_envrionment_{
@@ -82,7 +80,7 @@ class DmServerTest {
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   std::unique_ptr<TestRecordHandler> handler_;
-  std::unique_ptr<std::vector<EncryptedRecord>> records_;
+  std::vector<EncryptedRecord> records_;
 
   const base::TimeDelta kMaxDelay_ = base::Seconds(1);
 };
@@ -106,7 +104,7 @@ using TestEncryptionKeyAttached = MockFunction<void(SignedEncryptionInfo)>;
 
 TEST_P(DmServerUploaderTest, ProcessesRecord) {
   // Add an empty record.
-  records_->emplace_back();
+  records_.emplace_back();
 
   const bool force_confirm_flag = force_confirm();
   EXPECT_CALL(*handler_, HandleRecords_(_, _, _, _))
@@ -158,7 +156,7 @@ TEST_P(DmServerUploaderTest, ProcessesRecords) {
     sequence_information->set_generation_id(kGenerationId);
     sequence_information->set_sequencing_id(i);
     sequence_information->set_priority(Priority::IMMEDIATE);
-    records_->push_back(std::move(encrypted_record));
+    records_.push_back(std::move(encrypted_record));
   }
 
   const bool force_confirm_flag = force_confirm();
@@ -200,7 +198,7 @@ TEST_P(DmServerUploaderTest, ProcessesRecords) {
 
 TEST_P(DmServerUploaderTest, ReportsFailureToProcess) {
   // Add an empty record.
-  records_->emplace_back();
+  records_.emplace_back();
 
   EXPECT_CALL(*handler_, HandleRecords_(_, _, _, _))
       .WillOnce(WithArgs<2>(
@@ -282,7 +280,7 @@ TEST_P(DmServerUploaderTest, ReprotWithZeroRecords) {
 TEST_P(DmServerFailureTest, ReportsFailureToUpload) {
   const error::Code& error_code = GetParam();
   // Add an empty record.
-  records_->emplace_back();
+  records_.emplace_back();
 
   EXPECT_CALL(*handler_, HandleRecords_(_, _, _, _))
       .WillOnce(WithArgs<2>(Invoke(

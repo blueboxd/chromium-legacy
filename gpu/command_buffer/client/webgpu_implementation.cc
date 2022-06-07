@@ -155,41 +155,6 @@ void WebGPUImplementation::SetAggressivelyFreeResources(
     bool aggressively_free_resources) {
   NOTIMPLEMENTED();
 }
-void WebGPUImplementation::Swap(uint32_t flags,
-                                SwapCompletedCallback complete_callback,
-                                PresentationCallback presentation_callback) {
-  NOTIMPLEMENTED();
-}
-void WebGPUImplementation::SwapWithBounds(
-    const std::vector<gfx::Rect>& rects,
-    uint32_t flags,
-    SwapCompletedCallback swap_completed,
-    PresentationCallback presentation_callback) {
-  NOTIMPLEMENTED();
-}
-void WebGPUImplementation::PartialSwapBuffers(
-    const gfx::Rect& sub_buffer,
-    uint32_t flags,
-    SwapCompletedCallback swap_completed,
-    PresentationCallback presentation_callback) {
-  NOTIMPLEMENTED();
-}
-void WebGPUImplementation::CommitOverlayPlanes(
-    uint32_t flags,
-    SwapCompletedCallback swap_completed,
-    PresentationCallback presentation_callback) {
-  NOTREACHED();
-}
-void WebGPUImplementation::ScheduleOverlayPlane(
-    int plane_z_order,
-    gfx::OverlayTransform plane_transform,
-    unsigned overlay_texture_id,
-    const gfx::Rect& display_bounds,
-    const gfx::RectF& uv_rect,
-    bool enable_blend,
-    unsigned gpu_fence_id) {
-  NOTREACHED();
-}
 uint64_t WebGPUImplementation::ShareGroupTracingGUID() const {
   NOTIMPLEMENTED();
   return 0;
@@ -323,16 +288,6 @@ void WebGPUImplementation::OnGpuControlLostContextMaybeReentrant() {
 }
 void WebGPUImplementation::OnGpuControlErrorMessage(const char* message,
                                                     int32_t id) {
-  NOTIMPLEMENTED();
-}
-void WebGPUImplementation::OnGpuControlSwapBuffersCompleted(
-    const SwapBuffersCompleteParams& params,
-    gfx::GpuFenceHandle release_fence) {
-  NOTIMPLEMENTED();
-}
-void WebGPUImplementation::OnSwapBufferPresented(
-    uint64_t swap_id,
-    const gfx::PresentationFeedback& feedback) {
   NOTIMPLEMENTED();
 }
 void WebGPUImplementation::OnGpuControlReturnData(

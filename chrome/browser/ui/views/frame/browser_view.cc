@@ -97,7 +97,6 @@
 #include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
-#include "chrome/browser/ui/views/download/download_shelf_web_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
@@ -154,6 +153,7 @@
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/translate/translate_bubble_controller.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
@@ -236,7 +236,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/interaction/element_tracker_views.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget.h"
@@ -300,7 +299,6 @@
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
-using views::ColumnSet;
 using web_modal::WebContentsModalDialogHost;
 
 namespace {
@@ -1563,7 +1561,13 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   // Update all the UI bits.
   UpdateTitleBar();
 
-  TranslateBubbleView::CloseCurrentBubble();
+  if (old_contents) {
+    TranslateBubbleController* translate_bubble_controller =
+        TranslateBubbleController::FromWebContents(old_contents);
+
+    if (translate_bubble_controller)
+      translate_bubble_controller->CloseBubble();
+  }
 }
 
 void BrowserView::OnTabDetached(content::WebContents* contents,
@@ -1913,11 +1917,11 @@ void BrowserView::ResetToolbarTabState(content::WebContents* contents) {
 void BrowserView::FocusToolbar() {
   // Temporarily reveal the top-of-window views (if not already revealed) so
   // that the toolbar is visible and is considered focusable. If the
-  // toolbar gains focus, |immersive_mode_controller_| will keep the
+  // toolbar gains focus, `immersive_mode_controller_` will keep the
   // top-of-window views revealed.
-  std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock(
+  std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock =
       immersive_mode_controller_->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_YES));
+          ImmersiveModeController::ANIMATE_REVEAL_YES);
 
   // Start the traversal within the main toolbar. SetPaneFocus stores
   // the current focused view before changing focus.
@@ -2456,12 +2460,13 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
   PageActionIconView* translate_icon =
       toolbar_button_provider()
           ->GetPageActionIconView(PageActionIconType::kTranslate);
-  TranslateBubbleView::ShowBubble(
-      toolbar_button_provider()->GetAnchorView(PageActionIconType::kTranslate),
-      translate_icon, web_contents, step, source_language, target_language,
-      error_type,
-      is_user_gesture ? TranslateBubbleView::USER_GESTURE
-                      : TranslateBubbleView::AUTOMATIC);
+  TranslateBubbleController::GetOrCreate(web_contents)
+      ->ShowTranslateBubble(toolbar_button_provider()->GetAnchorView(
+                                PageActionIconType::kTranslate),
+                            translate_icon, step, source_language,
+                            target_language, error_type,
+                            is_user_gesture ? TranslateBubbleView::USER_GESTURE
+                                            : TranslateBubbleView::AUTOMATIC);
 
   return ShowTranslateBubbleResult::SUCCESS;
 }
@@ -2499,13 +2504,8 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
     return nullptr;
   }
   if (!download_shelf_) {
-    if (base::FeatureList::IsEnabled(features::kWebUIDownloadShelf)) {
-      download_shelf_ = AddChildView(
-          std::make_unique<DownloadShelfWebView>(browser_.get(), this));
-    } else {
-      download_shelf_ = AddChildView(
-          std::make_unique<DownloadShelfView>(browser_.get(), this));
-    }
+    download_shelf_ =
+        AddChildView(std::make_unique<DownloadShelfView>(browser_.get(), this));
     GetBrowserViewLayout()->set_download_shelf(download_shelf_->GetView());
   }
   return download_shelf_;
@@ -2537,9 +2537,9 @@ void BrowserView::ShowAppMenu() {
     return;
 
   // Keep the top-of-window views revealed as long as the app menu is visible.
-  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock =
       immersive_mode_controller_->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_NO));
+          ImmersiveModeController::ANIMATE_REVEAL_NO);
 
   toolbar_button_provider_->GetAppMenuButton()
       ->menu_button_controller()
@@ -3396,9 +3396,9 @@ void BrowserView::RevealTabStripIfNeeded() {
   if (!immersive_mode_controller_->IsEnabled())
     return;
 
-  std::unique_ptr<ImmersiveRevealedLock> revealer(
+  std::unique_ptr<ImmersiveRevealedLock> revealer =
       immersive_mode_controller_->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_YES));
+          ImmersiveModeController::ANIMATE_REVEAL_YES);
   auto delete_revealer = base::BindOnce(
       [](std::unique_ptr<ImmersiveRevealedLock>) {}, std::move(revealer));
   constexpr auto kDefaultDelay = base::Seconds(1);
@@ -4208,28 +4208,14 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 #endif
 }
 
-void BrowserView::ShowAvatarBubbleFromAvatarButton(
-    AvatarBubbleMode mode,
-    signin_metrics::AccessPoint access_point,
-    bool is_source_accelerator) {
+void BrowserView::ShowAvatarBubbleFromAvatarButton(bool is_source_accelerator) {
   // Do not show avatar bubble if there is no avatar menu button.
   views::Button* avatar_button =
       toolbar_button_provider_->GetAvatarToolbarButton();
   if (!avatar_button)
     return;
 
-  profiles::BubbleViewMode bubble_view_mode;
-  profiles::BubbleViewModeFromAvatarBubbleMode(mode, GetProfile(),
-                                               &bubble_view_mode);
-// TODO(https://crbug.com/1260291): Add support for Lacros.
-#if !BUILDFLAG(IS_CHROMEOS)
-  if (SigninViewController::ShouldShowSigninForMode(bubble_view_mode)) {
-    browser_->signin_view_controller()->ShowSignin(bubble_view_mode,
-                                                   access_point);
-    return;
-  }
-#endif
-  ProfileMenuViewBase::ShowBubble(bubble_view_mode, avatar_button, browser(),
+  ProfileMenuViewBase::ShowBubble(avatar_button, browser(),
                                   is_source_accelerator);
 }
 

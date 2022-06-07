@@ -22,7 +22,6 @@
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
-#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_mime_types_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_mime_types_service_factory.h"
@@ -45,6 +44,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -52,10 +52,6 @@
 #include "ui/base/l10n/time_format.h"
 
 namespace crostini {
-
-// web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
-//     GURL("chrome-untrusted://terminal/html/terminal.html"))
-const char kCrostiniTerminalSystemAppId[] = "fhicihalidkgcimdmhpohldehjmcabcf";
 
 const char kCrostiniImageAliasPattern[] = "debian/%s";
 const char kCrostiniContainerDefaultVersion[] = "bullseye";
@@ -239,8 +235,7 @@ ContainerId ContainerId::GetDefault() {
 }
 
 bool IsUninstallable(Profile* profile, const std::string& app_id) {
-  if (!CrostiniFeatures::Get()->IsEnabled(profile) ||
-      app_id == kCrostiniTerminalSystemAppId) {
+  if (!CrostiniFeatures::Get()->IsEnabled(profile)) {
     return false;
   }
   auto* registry_service =
@@ -286,17 +281,6 @@ void AddSpinner(crostini::CrostiniManager::RestartId restart_id,
   }
 }
 
-bool MaybeShowCrostiniDialogBeforeLaunch(Profile* profile,
-                                         CrostiniResult result) {
-  if (result == CrostiniResult::OFFLINE_WHEN_UPGRADE_REQUIRED ||
-      result == CrostiniResult::LOAD_COMPONENT_FAILED) {
-    ShowCrostiniUpdateComponentView(profile, CrostiniUISurface::kAppList);
-    VLOG(1) << "Update Component dialog";
-    return true;
-  }
-  return false;
-}
-
 void LaunchCrostiniAppImpl(
     Profile* profile,
     const std::string& app_id,
@@ -328,10 +312,6 @@ void LaunchCrostiniAppImpl(
                                  "crostini restart to launch app %s failed: %d",
                                  app_id.c_str(), result),
                              result);
-              if (crostini::MaybeShowCrostiniDialogBeforeLaunch(profile,
-                                                                result)) {
-                VLOG(1) << "Crostini restart blocked by dialog";
-              }
               return;
             }
 
@@ -357,27 +337,6 @@ void LaunchCrostiniAppWithIntent(Profile* profile,
   if (!CrostiniFeatures::Get()->IsAllowedNow(profile, &reason)) {
     LOG(ERROR) << "Crostini not allowed: " << reason;
     return std::move(callback).Run(false, "Crostini UI not allowed");
-  }
-
-  if (!base::FeatureList::IsEnabled(ash::features::kTerminalSSH) &&
-      app_id == kCrostiniTerminalSystemAppId) {
-    // Terminal supports a single directory as arg.  If it exists, convert it
-    // to an intent file.
-    // TODO(crbug.com/1028898): This can be deleted when TerminalSSH flag
-    // is removed, and we never register terminal as a crostini app.
-    if (!args.empty() &&
-        absl::holds_alternative<storage::FileSystemURL>(args[0])) {
-      if (!intent) {
-        intent = apps::mojom::Intent::New();
-      }
-      intent->files = std::vector<apps::mojom::IntentFilePtr>{};
-      auto file = apps::mojom::IntentFile::New();
-      file->url = absl::get<storage::FileSystemURL>(args[0]).ToGURL();
-      intent->files->push_back(std::move(file));
-    }
-    LaunchTerminalWithIntent(profile, display_id, std::move(intent),
-                             std::move(callback));
-    return;
   }
 
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
@@ -482,6 +441,21 @@ void RemoveDuplicateContainerEntries(PrefService* prefs) {
       it = containers.erase(it);
     }
   }
+}
+
+std::vector<ContainerId> GetContainers(Profile* profile) {
+  std::vector<ContainerId> result;
+  const base::Value::List& container_list =
+      profile->GetPrefs()
+          ->GetList(crostini::prefs::kCrostiniContainers)
+          ->GetList();
+  for (const auto& container : container_list) {
+    crostini::ContainerId id(container);
+    if (!id.vm_name.empty() && !id.container_name.empty()) {
+      result.push_back(std::move(id));
+    }
+  }
+  return result;
 }
 
 void AddNewLxdContainerToPrefs(Profile* profile,

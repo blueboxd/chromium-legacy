@@ -25,10 +25,17 @@ const base::Feature kEnableUserCloudSigninRestrictionPolicyFetcher{
 
 const base::Feature kActivateMetricsReportingEnabledPolicyAndroid{
     "ActivateMetricsReportingEnabledPolicyAndroid",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableCachedManagementStatus{
     "EnableCachedManagementStatus", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDmTokenDeletion{"DmTokenDeletion",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPolicyScopeDetectionMac{"PolicyScopeDetectionMac",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace policy

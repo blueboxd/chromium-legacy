@@ -205,9 +205,7 @@ static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
       continue;
     // Highlight pseudo styles are stored in StyleHighlightData, and compared
     // like any other inherited field, yielding Difference::kInherited.
-    if ((RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
-         IsHighlightPseudoElement(pseudo_id)) ||
-        pseudo_id == PseudoId::kPseudoIdHighlight)
+    if (StyleResolver::UsesHighlightPseudoInheritance(pseudo_id))
       continue;
     const ComputedStyle* new_pseudo_style =
         new_style.GetCachedPseudoElementStyle(pseudo_id);
@@ -1076,6 +1074,9 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
     diff.SetBlendModeChanged();
 
   if (HasCurrentTransformAnimation() != other.HasCurrentTransformAnimation() ||
+      HasCurrentScaleAnimation() != other.HasCurrentScaleAnimation() ||
+      HasCurrentRotateAnimation() != other.HasCurrentRotateAnimation() ||
+      HasCurrentTranslateAnimation() != other.HasCurrentTranslateAnimation() ||
       HasCurrentOpacityAnimation() != other.HasCurrentOpacityAnimation() ||
       HasCurrentFilterAnimation() != other.HasCurrentFilterAnimation() ||
       HasCurrentBackdropFilterAnimation() !=
@@ -1223,6 +1224,18 @@ static bool IsWillChangeTransformHintProperty(CSSPropertyID property) {
   switch (ResolveCSSPropertyID(property)) {
     case CSSPropertyID::kTransform:
     case CSSPropertyID::kPerspective:
+    case CSSPropertyID::kTransformStyle:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
+static bool IsWillChangeHintForAnyTransformProperty(CSSPropertyID property) {
+  switch (ResolveCSSPropertyID(property)) {
+    case CSSPropertyID::kTransform:
+    case CSSPropertyID::kPerspective:
     case CSSPropertyID::kTranslate:
     case CSSPropertyID::kScale:
     case CSSPropertyID::kRotate:
@@ -1237,7 +1250,7 @@ static bool IsWillChangeTransformHintProperty(CSSPropertyID property) {
 }
 
 static bool IsWillChangeCompositingHintProperty(CSSPropertyID property) {
-  if (IsWillChangeTransformHintProperty(property))
+  if (IsWillChangeHintForAnyTransformProperty(property))
     return true;
   switch (ResolveCSSPropertyID(property)) {
     case CSSPropertyID::kOpacity:
@@ -1264,6 +1277,12 @@ bool ComputedStyle::HasWillChangeTransformHint() const {
   const auto& properties = WillChangeProperties();
   return std::any_of(properties.begin(), properties.end(),
                      IsWillChangeTransformHintProperty);
+}
+
+bool ComputedStyle::HasWillChangeHintForAnyTransformProperty() const {
+  const auto& properties = WillChangeProperties();
+  return std::any_of(properties.begin(), properties.end(),
+                     IsWillChangeHintForAnyTransformProperty);
 }
 
 bool ComputedStyle::RequireTransformOrigin(
@@ -1316,17 +1335,20 @@ void ComputedStyle::LoadDeferredImages(Document& document) const {
 void ComputedStyle::ApplyTransform(
     TransformationMatrix& result,
     const LayoutSize& border_box_size,
+    ApplyTransformOperations apply_operations,
     ApplyTransformOrigin apply_origin,
     ApplyMotionPath apply_motion_path,
     ApplyIndependentTransformProperties apply_independent_transform_properties)
     const {
-  ApplyTransform(result, gfx::RectF(gfx::SizeF(border_box_size)), apply_origin,
-                 apply_motion_path, apply_independent_transform_properties);
+  ApplyTransform(result, gfx::RectF(gfx::SizeF(border_box_size)),
+                 apply_operations, apply_origin, apply_motion_path,
+                 apply_independent_transform_properties);
 }
 
 void ComputedStyle::ApplyTransform(
     TransformationMatrix& result,
     const gfx::RectF& bounding_box,
+    ApplyTransformOperations apply_operations,
     ApplyTransformOrigin apply_origin,
     ApplyMotionPath apply_motion_path,
     ApplyIndependentTransformProperties apply_independent_transform_properties)
@@ -1369,8 +1391,10 @@ void ComputedStyle::ApplyTransform(
   if (apply_motion_path == kIncludeMotionPath)
     ApplyMotionPathTransform(origin_x, origin_y, bounding_box, result);
 
-  for (const auto& operation : Transform().Operations())
-    operation->Apply(result, box_size);
+  if (apply_operations == kIncludeTransformOperations) {
+    for (const auto& operation : Transform().Operations())
+      operation->Apply(result, box_size);
+  }
 
   if (apply_transform_origin) {
     result.Translate3d(-origin_x, -origin_y, -origin_z);
@@ -1927,6 +1951,29 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
   }
 
   return AppliedTextDecorationsInternal()->data;
+}
+
+bool ComputedStyle::IsAppliedTextDecorationsSame(
+    const ComputedStyle& other) const {
+  if (HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal())
+    return false;
+  if (AppliedTextDecorationsInternal().get() ==
+      other.AppliedTextDecorationsInternal().get())
+    return true;
+
+  // Rare but sometimes two instances of |AppliedTextDecorations()| may have the
+  // same items. Check if all items are the same.
+  // e.g., tables/mozilla/bugs/bug126742.html
+  const Vector<AppliedTextDecoration>& decorations = AppliedTextDecorations();
+  const Vector<AppliedTextDecoration>& other_decorations =
+      other.AppliedTextDecorations();
+  if (decorations.size() != other_decorations.size())
+    return false;
+  for (wtf_size_t index = 0; index < decorations.size(); ++index) {
+    if (decorations[index] != other_decorations[index])
+      return false;
+  }
+  return true;
 }
 
 static bool HasInitialVariables(const StyleInitialData* initial_data) {

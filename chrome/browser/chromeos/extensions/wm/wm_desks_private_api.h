@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_WM_WM_DESKS_PRIVATE_API_H_
 
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_function_histogram_value.h"
+#include "extensions/browser/quota_service.h"
 
 namespace ash {
 class DeskTemplate;
+class Desk;
 }
 
 namespace extensions {
@@ -136,9 +139,49 @@ class WmDesksPrivateLaunchDeskTemplateFunction : public ExtensionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnLaunchDeskTemplate(std::string error_string);
+  void OnLaunchDeskTemplate(std::string error_string,
+                            const base::GUID& desk_Id);
 };
 
+class WmDesksPrivateRemoveDeskFunction : public ExtensionFunction {
+ public:
+  WmDesksPrivateRemoveDeskFunction();
+  WmDesksPrivateRemoveDeskFunction(const WmDesksPrivateRemoveDeskFunction&) =
+      delete;
+  WmDesksPrivateRemoveDeskFunction& operator=(
+      const WmDesksPrivateRemoveDeskFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("wmDesksPrivate.removeDeskAndCloseWindows",
+                             WMDESKSPRIVATE_REMOVEDESKANDCLOSEWINDOWS)
+ protected:
+  ~WmDesksPrivateRemoveDeskFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  void OnRemoveDesk(std::string error_string);
+};
+
+class WmDesksPrivateGetAllDesksFunction : public ExtensionFunction {
+ public:
+  WmDesksPrivateGetAllDesksFunction();
+  WmDesksPrivateGetAllDesksFunction(const WmDesksPrivateGetAllDesksFunction&) =
+      delete;
+  WmDesksPrivateGetAllDesksFunction& operator=(
+      const WmDesksPrivateGetAllDesksFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("wmDesksPrivate.getAllDesks",
+                             WMDESKSPRIVATE_GETALLDESKS)
+
+ protected:
+  ~WmDesksPrivateGetAllDesksFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  void OnGetAllDesks(const std::vector<const ash::Desk*>& desks,
+                     std::string error_string);
+};
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WM_WM_DESKS_PRIVATE_API_H_

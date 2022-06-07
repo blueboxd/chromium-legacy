@@ -40,11 +40,14 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
     kFirstInputDelayAfterBackForwardCacheRestore = 1 << 10,
     kLayoutShift = 1 << 11,
     kRequestAnimationFrameAfterBackForwardCacheRestore = 1 << 12,
+    kFirstScrollDelay = 1 << 13,
   };
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
 
   explicit PageLoadMetricsTestWaiter(content::WebContents* web_contents);
+  explicit PageLoadMetricsTestWaiter(content::WebContents* web_contents,
+                                     const char* observer_name_);
 
   ~PageLoadMetricsTestWaiter() override;
 
@@ -132,6 +135,8 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
   virtual void ResetExpectations();
 
  private:
+  const char* observer_name_;
+
   // Manages a bitset of TimingFields.
   class TimingFieldBitSet {
    public:

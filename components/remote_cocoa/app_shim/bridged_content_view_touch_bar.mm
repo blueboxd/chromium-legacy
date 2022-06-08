@@ -34,7 +34,8 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 // NSTouchBarDelegate protocol implementation.
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
-      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
+    API_AVAILABLE(macos(10.12.2)) {
   if (!_bridge)
     return nil;
 

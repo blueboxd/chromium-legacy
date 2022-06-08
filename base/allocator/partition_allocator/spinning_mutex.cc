@@ -49,7 +49,7 @@ void SpinningMutex::Reinit() {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 
-  if (LIKELY(os_unfair_lock_trylock)) {
+  if (PA_LIKELY(os_unfair_lock_trylock)) {
     unfair_lock_ = OS_UNFAIR_LOCK_INIT;
     return;
   }

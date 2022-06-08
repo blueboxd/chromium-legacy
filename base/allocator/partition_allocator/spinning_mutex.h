@@ -260,7 +260,7 @@ PA_ALWAYS_INLINE bool SpinningMutex::Try() {
 #if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
   return os_unfair_lock_trylock(&unfair_lock_);
 #else
-  if (LIKELY(os_unfair_lock_trylock))
+  if (PA_LIKELY(os_unfair_lock_trylock))
     return os_unfair_lock_trylock(&unfair_lock_);
 
   return TrySpinLock();
@@ -272,7 +272,7 @@ PA_ALWAYS_INLINE void SpinningMutex::Release() {
   return os_unfair_lock_unlock(&unfair_lock_);
 #else
   // Always testing trylock(), since the definitions are all or nothing.
-  if (LIKELY(os_unfair_lock_trylock))
+  if (PA_LIKELY(os_unfair_lock_trylock))
     return os_unfair_lock_unlock(&unfair_lock_);
 
   return ReleaseSpinLock();
@@ -283,7 +283,7 @@ PA_ALWAYS_INLINE void SpinningMutex::LockSlow() {
 #if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
   return os_unfair_lock_lock(&unfair_lock_);
 #else
-  if (LIKELY(os_unfair_lock_trylock))
+  if (PA_LIKELY(os_unfair_lock_trylock))
     return os_unfair_lock_lock(&unfair_lock_);
 
   return LockSlowSpinLock();

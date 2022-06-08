@@ -78,7 +78,11 @@ CFStringRef GetTransferFunction(
       return kCMFormatDescriptionTransferFunction_UseGamma;
 
     case media::VideoColorSpace::TransferID::IEC61966_2_1:
-      return kCVImageBufferTransferFunction_sRGB;
+      if (@available(macos 10.13, *))
+        return kCVImageBufferTransferFunction_sRGB;
+      DLOG(WARNING)
+          << "kCVImageBufferTransferFunction_sRGB unsupported prior to 10.13";
+      return nil;
 
     case media::VideoColorSpace::TransferID::SMPTE170M:
     case media::VideoColorSpace::TransferID::BT709:
@@ -91,16 +95,28 @@ CFStringRef GetTransferFunction(
       return kCMFormatDescriptionTransferFunction_ITU_R_2020;
 
     case media::VideoColorSpace::TransferID::SMPTEST2084:
-      return kCMFormatDescriptionTransferFunction_SMPTE_ST_2084_PQ;
+      if (@available(macos 10.13, *))
+        return kCMFormatDescriptionTransferFunction_SMPTE_ST_2084_PQ;
+      DLOG(WARNING) << "kCMFormatDescriptionTransferFunction_SMPTE_ST_2084_PQ "
+                       "unsupported prior to 10.13";
+      return nil;
 
     case media::VideoColorSpace::TransferID::ARIB_STD_B67:
-      return kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG;
+      if (@available(macos 10.13, *))
+        return kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG;
+      DLOG(WARNING) << "kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG "
+                       "unsupported prior to 10.13";
+      return nil;
 
     case media::VideoColorSpace::TransferID::SMPTE240M:
       return kCMFormatDescriptionTransferFunction_SMPTE_240M_1995;
 
     case media::VideoColorSpace::TransferID::SMPTEST428_1:
-      return kCMFormatDescriptionTransferFunction_SMPTE_ST_428_1;
+      if (@available(macos 10.12, *))
+        return kCMFormatDescriptionTransferFunction_SMPTE_ST_428_1;
+      DLOG(WARNING) << "kCMFormatDescriptionTransferFunction_SMPTE_ST_428_1 "
+                       "unsupported prior to 10.12";
+      return nil;
 
     default:
       DLOG(ERROR) << "Unsupported transfer function: "
@@ -137,18 +153,28 @@ CFStringRef GetMatrix(media::VideoColorSpace::MatrixID matrix_id) {
 
 void SetContentLightLevelInfo(const gfx::HDRMetadata& hdr_metadata,
                               NSMutableDictionary<NSString*, id>* extensions) {
-  SetDictionaryValue(extensions,
-                     kCMFormatDescriptionExtension_ContentLightLevelInfo,
-                     base::mac::CFToNSCast(
-                         media::GenerateContentLightLevelInfo(hdr_metadata)));
+  if (@available(macos 10.13, *)) {
+    SetDictionaryValue(extensions,
+                       kCMFormatDescriptionExtension_ContentLightLevelInfo,
+                       base::mac::CFToNSCast(
+                           media::GenerateContentLightLevelInfo(hdr_metadata)));
+  } else {
+    DLOG(WARNING) << "kCMFormatDescriptionExtension_ContentLightLevelInfo "
+                     "unsupported prior to 10.13";
+  }
 }
 
 void SetColorVolumeMetadata(const gfx::HDRMetadata& hdr_metadata,
                             NSMutableDictionary<NSString*, id>* extensions) {
-  SetDictionaryValue(
-      extensions, kCMFormatDescriptionExtension_MasteringDisplayColorVolume,
-      base::mac::CFToNSCast(
-          media::GenerateMasteringDisplayColorVolume(hdr_metadata)));
+  if (@available(macos 10.13, *)) {
+    SetDictionaryValue(
+        extensions, kCMFormatDescriptionExtension_MasteringDisplayColorVolume,
+        base::mac::CFToNSCast(
+            media::GenerateMasteringDisplayColorVolume(hdr_metadata)));
+  } else {
+    DLOG(WARNING) << "kCMFormatDescriptionExtension_"
+                     "MasteringDisplayColorVolume unsupported prior to 10.13";
+  }
 }
 
 void SetVp9CodecConfigurationBox(

@@ -643,11 +643,13 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
     params.set_effects(AudioParameters::NOISE_SUPPRESSION);
   }
 
-  // VoiceProcessingIO cannot be used on aggregate devices, since it creates an
-  // aggregate device itself.  It also only runs in mono, but we allow upmixing
-  // to stereo since we can't claim a device works either in stereo without echo
-  // cancellation or mono with echo cancellation.
-  if ((params.channel_layout() == CHANNEL_LAYOUT_MONO ||
+  // VoiceProcessingIO is only supported on MacOS 10.12 and cannot be used on
+  // aggregate devices, since it creates an aggregate device itself.  It also
+  // only runs in mono, but we allow upmixing to stereo since we can't claim a
+  // device works either in stereo without echo cancellation or mono with echo
+  // cancellation.
+  if (base::mac::IsAtLeastOS10_12() &&
+      (params.channel_layout() == CHANNEL_LAYOUT_MONO ||
        params.channel_layout() == CHANNEL_LAYOUT_STEREO) &&
       core_audio_mac::GetDeviceTransportType(device) !=
           kAudioDeviceTransportTypeAggregate) {

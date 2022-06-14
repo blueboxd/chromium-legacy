@@ -586,7 +586,7 @@ static bool IsValidElementName(Document* document, const String& name) {
 }
 
 static bool AcceptsEditingFocus(const Element& element) {
-  DCHECK(HasEditableStyle(element));
+  DCHECK(IsEditable(element));
 
   return element.GetDocument().GetFrame() && RootEditableElement(element);
 }
@@ -2682,8 +2682,7 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node,
 
   if (RuntimeEnabledFeatures::DeferredShapingEnabled()) {
     auto& state = GetDisplayLockDocumentState();
-    if (state.LockedDisplayLockCount() !=
-        state.DisplayLockBlockingAllActivationCount()) {
+    if (state.HasActivatableLocks()) {
       UpdateStyleAndLayoutTree();
       if (node->GetLayoutObject()) {
         if (property_id == CSSPropertyID::kWidth)

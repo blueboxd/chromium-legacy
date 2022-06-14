@@ -29,6 +29,7 @@
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/status_area_overflow_button_tray.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/date_tray.h"
@@ -351,13 +352,8 @@ void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
           : 0;
 
   // We update visibility of each tray button based on the available width.
-  const int shelf_width =
-      shelf_->shelf_widget()->GetClientAreaBoundsInScreen().width();
-  const int available_width =
-      (force_collapsible
-           ? kStatusAreaForceCollapseAvailableWidth
-           : shelf_width / 2 - kStatusAreaLeftPaddingForOverflow) -
-      stop_recording_button_width;
+  const int available_width = GetCollapseAvailableWidth(force_collapsible) -
+                              stop_recording_button_width;
 
   // First, reset all tray button to be hidden.
   overflow_button_tray_->ResetStateToCollapsed();
@@ -447,11 +443,8 @@ StatusAreaWidget::CollapseState StatusAreaWidget::CalculateCollapseState()
   if (state == CollapseState::COLLAPSED) {
     // We might not need to be collapsed, if there is enough space for all the
     // buttons.
-    const int shelf_width =
-        shelf_->shelf_widget()->GetClientAreaBoundsInScreen().width();
-    const int available_width =
-        force_collapsible ? kStatusAreaForceCollapseAvailableWidth
-                          : shelf_width / 2 - kStatusAreaLeftPaddingForOverflow;
+    const int available_width = GetCollapseAvailableWidth(force_collapsible);
+
     int used_width = 0;
     for (TrayBackgroundView* tray : base::Reversed(tray_buttons_)) {
       // If we reach the final overflow tray button, then all the tray buttons
@@ -610,11 +603,13 @@ void StatusAreaWidget::OnScrollEvent(ui::ScrollEvent* event) {
 
 template <typename TrayButtonT>
 TrayButtonT* StatusAreaWidget::AddTrayButton(
-    std::unique_ptr<TrayButtonT>&& tray_button) {
+    std::unique_ptr<TrayButtonT> tray_button) {
   tray_buttons_.push_back(tray_button.get());
-  return status_area_widget_delegate_->AddChildView(
-      std::forward<std::unique_ptr<TrayButtonT>>(tray_button));
+  return status_area_widget_delegate_->AddChildView(std::move(tray_button));
 }
+// Specialization declared here for use in tests.
+template TrayBackgroundView* StatusAreaWidget::AddTrayButton<
+    TrayBackgroundView>(std::unique_ptr<TrayBackgroundView> tray_button);
 
 StatusAreaWidget::LayoutInputs StatusAreaWidget::GetLayoutInputs() const {
   unsigned int child_visibility_bitmask = 0;
@@ -643,6 +638,23 @@ StatusAreaWidget::LayoutInputs StatusAreaWidget::GetLayoutInputs() const {
   return {target_bounds_, CalculateCollapseState(),
           shelf_->shelf_layout_manager()->GetOpacity(),
           child_visibility_bitmask, should_animate};
+}
+
+int StatusAreaWidget::GetCollapseAvailableWidth(bool force_collapsible) const {
+  const int shelf_width =
+      shelf_->shelf_widget()->GetClientAreaBoundsInScreen().width();
+
+  if (!force_collapsible)
+    return shelf_width / 2 - kStatusAreaLeftPaddingForOverflow;
+
+  int available_width = kStatusAreaForceCollapseAvailableWidth;
+  // If calendar view is enabled, add the date tray width to the collapse
+  // available width.
+  if (features::IsCalendarViewEnabled()) {
+    DCHECK(date_tray_);
+    available_width += date_tray_->tray_container()->GetPreferredSize().width();
+  }
+  return available_width;
 }
 
 }  // namespace ash

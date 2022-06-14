@@ -14,7 +14,9 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
+#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
@@ -120,7 +122,7 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
   // to execute the script because WebUI has a default CSP policy denying
   // "eval()", which is what EvalJs uses under the hood.
   bool ExecJsInWebUI(const std::string& script) {
-    return ExecJs(shell()->web_contents()->GetMainFrame(), script,
+    return ExecJs(shell()->web_contents()->GetPrimaryMainFrame(), script,
                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1);
   }
 
@@ -145,7 +147,7 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
   MockAttributionManager* manager() { return manager_; }
 
  private:
-  raw_ptr<MockAttributionManager> manager_;
+  raw_ptr<MockAttributionManager, DanglingUntriaged> manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
@@ -154,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Execute script to ensure the page has loaded correctly, executing similarly
   // to ExecJsInWebUI().
-  EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetMainFrame(),
+  EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetPrimaryMainFrame(),
                          "document.body.innerHTML.search('Attribution "
                          "Reporting API Internals') >= 0;",
                          EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
@@ -261,8 +263,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                .SetDedupKeys({13, 17})
                .SetFilterData(*AttributionFilterData::FromSourceFilterValues(
                    {{"a", {"b", "c"}}}))
-               .SetAggregatableSource(
-                   *AttributionAggregatableSource::FromKeys({{"a", 1}}))
+               .SetAggregationKeys(
+                   *AttributionAggregationKeys::FromKeys({{"a", 1}}))
                .BuildStored(),
            SourceBuilder(now + base::Hours(2))
                .SetActiveState(StoredSource::ActiveState::
@@ -587,6 +589,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   EXPECT_CALL(*manager(), ClearData)
       .WillOnce([](base::Time delete_begin, base::Time delete_end,
                    base::RepeatingCallback<bool(const url::Origin&)> filter,
+                   bool delete_rate_limit_data,
                    base::OnceClosure done) { std::move(done).Run(); });
 
   // Verify both rows get rendered.
@@ -632,9 +635,11 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   manager()->NotifySourceDeactivated(
       SourceBuilder(now + base::Hours(2)).SetSourceEventId(6).BuildStored());
 
-  EXPECT_CALL(*manager(), ClearData)
+  EXPECT_CALL(*manager(),
+              ClearData(base::Time::Min(), base::Time::Max(), _, true, _))
       .WillOnce([](base::Time delete_begin, base::Time delete_end,
                    base::RepeatingCallback<bool(const url::Origin&)> filter,
+                   bool delete_rate_limit_data,
                    base::OnceClosure done) { std::move(done).Run(); });
 
   // Verify both rows get rendered.
@@ -887,19 +892,20 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               /*not_filters=*/
               AttributionFilterData::CreateForTesting({{"e", {"f"}}})),
       },
-      AttributionAggregatableTrigger::CreateForTesting(
-          {AttributionAggregatableTriggerData::CreateForTesting(
-               /*key=*/345,
-               /*source_keys=*/{"a"},
-               /*filters=*/
-               AttributionFilterData::CreateForTesting({{"c", {"d"}}}),
-               /*not_filters=*/AttributionFilterData()),
-           AttributionAggregatableTriggerData::CreateForTesting(
-               /*key=*/678,
-               /*source_keys=*/{"b"},
-               /*filters=*/AttributionFilterData(),
-               /*not_filters=*/
-               AttributionFilterData::CreateForTesting({{"e", {"f"}}}))},
+      {AttributionAggregatableTriggerData::CreateForTesting(
+           /*key_piece=*/345,
+           /*source_keys=*/{"a"},
+           /*filters=*/
+           AttributionFilterData::CreateForTesting({{"c", {"d"}}}),
+           /*not_filters=*/AttributionFilterData()),
+       AttributionAggregatableTriggerData::CreateForTesting(
+           /*key_piece=*/678,
+           /*source_keys=*/{"b"},
+           /*filters=*/AttributionFilterData(),
+           /*not_filters=*/
+           AttributionFilterData::CreateForTesting({{"e", {"f"}}}))},
+      /*aggregatable_values=*/
+      AttributionAggregatableValues::CreateForTesting(
           {{"a", 123}, {"b", 456}}));
 
   static constexpr char kWantEventTriggerJSON[] =

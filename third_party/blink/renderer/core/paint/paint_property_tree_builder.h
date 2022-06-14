@@ -118,6 +118,14 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // that are baked in PaintOffsetTranslations since we entered the
     // fragmentainer.
     PhysicalOffset paint_offset_for_oof_in_fragmentainer;
+
+    // The fragmentainer index of the nearest ancestor that participates in
+    // block fragmentation. This is updated as we update properties for an
+    // object that participates in block fragmentation. If we enter monolithic
+    // content (legacy or NG), the index will be kept and inherited down the
+    // tree, so that we eventually set the correct "NG" fragment index in the
+    // FragmentData object, rather than using a bogus legacy flow-thread offset.
+    wtf_size_t fragmentainer_idx = WTF::kNotFound;
   };
 
   ContainingBlockContext current;
@@ -361,7 +369,6 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);
   ALWAYS_INLINE bool ObjectTypeMightNeedMultipleFragmentData() const;
   ALWAYS_INLINE bool ObjectTypeMightNeedPaintProperties() const;
-  ALWAYS_INLINE void UpdateCompositedLayerPaginationOffset();
   ALWAYS_INLINE PaintPropertyTreeBuilderFragmentContext
   ContextForFragment(const absl::optional<PhysicalRect>& fragment_clip,
                      LayoutUnit logical_top_in_flow_thread) const;

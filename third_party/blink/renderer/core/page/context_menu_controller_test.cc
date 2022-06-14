@@ -413,7 +413,7 @@ TEST_P(ContextMenuControllerTest, MediaStreamVideoLoaded) {
   MediaStreamComponentVector dummy_components;
   auto* media_stream_descriptor = MakeGarbageCollected<MediaStreamDescriptor>(
       dummy_components, dummy_components);
-  video->SetSrcObject(media_stream_descriptor);
+  video->SetSrcObjectVariant(media_stream_descriptor);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
   SetReadyState(video.Get(), HTMLMediaElement::kHaveMetadata);
@@ -1779,6 +1779,34 @@ TEST_P(ContextMenuControllerTest,
   PhysicalOffset location(LayoutUnit(5), LayoutUnit(5));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceKeyboard));
   EXPECT_EQ(GetDocument()->GetFrame()->Selection().SelectedText(), "is a");
+}
+
+TEST_P(ContextMenuControllerTest, CheckRendererIdFromContextMenuOnInputField) {
+  WebURL url = url_test_helpers::ToKURL("http://www.test.com/");
+  frame_test_helpers::LoadHTMLString(LocalMainFrame(),
+                                     R"(<html><head><style>body
+      {background-color:transparent}</style></head>
+      <form>
+      <label for="name">Name:</label><br>
+      <input type="text" id="name" name="name"><br>
+      </form>
+      <p id="one">This is a test page one</p>
+      </html>
+      )",
+                                     url);
+
+  Document* document = GetDocument();
+  ASSERT_TRUE(IsA<HTMLDocument>(document));
+
+  Element* form_element = document->getElementById("name");
+  EXPECT_TRUE(ShowContextMenuForElement(form_element, kMenuSourceMouse));
+  ContextMenuData context_menu_data = GetWebFrameClient().GetContextMenuData();
+  EXPECT_TRUE(context_menu_data.field_renderer_id);
+
+  Element* non_form_element = document->getElementById("one");
+  EXPECT_TRUE(ShowContextMenuForElement(non_form_element, kMenuSourceMouse));
+  context_menu_data = GetWebFrameClient().GetContextMenuData();
+  EXPECT_FALSE(context_menu_data.field_renderer_id);
 }
 
 // TODO(crbug.com/1184996): Add additional unit test for blocking frame logging.

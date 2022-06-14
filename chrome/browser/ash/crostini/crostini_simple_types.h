@@ -29,6 +29,7 @@ namespace crostini {
 // If you add anything here make sure to also update enums.xml and the plx
 // scripts in
 // https://plx.corp.google.com/home2/home/collections/c16e3c1474497b821
+// and CrostiniResultString in crostini_simple_types.cc.
 enum class CrostiniResult {
   SUCCESS = 0,
   // DBUS_ERROR = 1,
@@ -102,10 +103,15 @@ enum class CrostiniResult {
   CONFIGURE_CONTAINER_TIMED_OUT = 69,
   // Prior to M104, RESTART_ABORTED was used for this.
   RESTART_REQUEST_CANCELLED = 70,
-  kMaxValue = RESTART_REQUEST_CANCELLED,
+  CREATE_DISK_IMAGE_NO_RESPONSE = 71,
+  CREATE_DISK_IMAGE_ALREADY_EXISTS = 72,
+  kMaxValue = CREATE_DISK_IMAGE_ALREADY_EXISTS,
   // When adding a new value, check you've followed the steps in the comment at
   // the top of this enum.
 };
+
+// Returns the string name of the CrostiniResult.
+const char* CrostiniResultString(const CrostiniResult res);
 
 using CrostiniSuccessCallback =
     base::OnceCallback<void(bool success, const std::string& failure_reason)>;

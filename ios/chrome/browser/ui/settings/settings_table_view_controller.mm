@@ -1172,8 +1172,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   switch (itemType) {
     case SettingsItemTypeSignInButton:
       signin_metrics::RecordSigninUserActionForAccessPoint(
-          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
-          signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
       [self showSignInWithIdentity:nil
                        promoAction:signin_metrics::PromoAction::
                                        PROMO_ACTION_NO_SIGNIN_PROMO
@@ -1692,7 +1691,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   self.isSigninInProgress = YES;
   __weak __typeof(self) weakSelf = self;
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
+      initWithOperation:AuthenticationOperationSigninAndSync
                identity:identity
             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
             promoAction:promoAction

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/guid.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/aggregation_service/public_key.h"
@@ -88,7 +89,9 @@ struct CONTENT_EXPORT AggregatableReportSharedInfo {
                                base::GUID report_id,
                                url::Origin reporting_origin,
                                DebugMode debug_mode,
-                               base::Value::Dict additional_fields);
+                               base::Value::Dict additional_fields,
+                               std::string api_version,
+                               std::string api_identifier);
 
   AggregatableReportSharedInfo(const AggregatableReportSharedInfo& other) =
       delete;
@@ -109,6 +112,10 @@ struct CONTENT_EXPORT AggregatableReportSharedInfo {
   url::Origin reporting_origin;
   DebugMode debug_mode;
   base::Value::Dict additional_fields;
+  std::string api_version;
+
+  // Enum string that indicates which API created the report.
+  std::string api_identifier;
 };
 
 // An AggregatableReport contains all the information needed for sending the
@@ -187,7 +194,8 @@ class CONTENT_EXPORT AggregatableReport {
   // protocol unless the ciphertexts are intended to be compatible. This ensures
   // that, even if public keys are reused, the same ciphertext cannot be (i.e.
   // no cross-protocol attacks).
-  static constexpr char kDomainSeparationPrefix[] = "aggregation_service";
+  static constexpr base::StringPiece kDomainSeparationPrefix =
+      "aggregation_service";
 
   AggregatableReport(std::vector<AggregationServicePayload> payloads,
                      std::string shared_info);

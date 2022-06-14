@@ -39,6 +39,7 @@
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "chromeos/crosapi/mojom/app_window_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/arc.mojom.h"
+#include "chromeos/crosapi/mojom/audio_service.mojom.h"
 #include "chromeos/crosapi/mojom/authentication.mojom.h"
 #include "chromeos/crosapi/mojom/automation.mojom.h"
 #include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
@@ -84,6 +85,7 @@
 #include "chromeos/crosapi/mojom/remoting.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/sharesheet.mojom.h"
+#include "chromeos/crosapi/mojom/speech_recognition.mojom.h"
 #include "chromeos/crosapi/mojom/structured_metrics_service.mojom.h"
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
@@ -128,6 +130,9 @@ namespace {
 constexpr char kBrowserManagerReloadBrowserCapability[] = "crbug/1237235";
 // Capability to support shared_storage in prefs.
 constexpr char kSharedStoragePrefsCapability[] = "b/231890240";
+// Capability to register observers for extension controlled prefs via the
+// prefs api.
+constexpr char kExtensionControlledPrefObserversCapability[] = "crbug/1334985";
 
 // Returns the vector containing policy data of the device account. In case of
 // an error, returns nullopt.
@@ -206,7 +211,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 80,
+static_assert(crosapi::mojom::Crosapi::Version_ == 82,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -216,6 +221,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
         chromeos::remote_apps::mojom::RemoteAppsLacrosBridge>(),
     MakeInterfaceVersionEntry<chromeos::sensors::mojom::SensorHalClient>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Arc>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::AudioService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Authentication>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Automation>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AccountManager>(),
@@ -273,6 +279,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::ScreenManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SearchControllerRegistry>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Sharesheet>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::SpeechRecognition>(),
     MakeInterfaceVersionEntry<crosapi::mojom::StructuredMetricsService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SnapshotCapturer>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SyncService>(),
@@ -489,8 +496,9 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
       ash::features::
           IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled();
 
-  params->ash_capabilities = {
-      {kBrowserManagerReloadBrowserCapability, kSharedStoragePrefsCapability}};
+  params->ash_capabilities = {{kBrowserManagerReloadBrowserCapability,
+                               kSharedStoragePrefsCapability,
+                               kExtensionControlledPrefObserversCapability}};
 
   params->is_device_enterprised_managed =
       ash::InstallAttributes::Get()->IsEnterpriseManaged();

@@ -143,7 +143,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     const absl::optional<NetworkTrafficAnnotationTag> proxy_annotation_tag_;
     const NetLogWithSource net_log_;
     const SocketTag socket_tag_;
-    raw_ptr<ConnectJob> job_;
+    raw_ptr<ConnectJob> job_ = nullptr;
   };
 
   TransportClientSocketPool(
@@ -529,7 +529,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // preconnect and decremented when a preconnect is assigned, or when there
     // are fewer than |never_assigned_job_count_| ConnectJobs.  Not incremented
     // when a request is cancelled.
-    size_t never_assigned_job_count_;
+    size_t never_assigned_job_count_ = 0;
 
     std::list<IdleSocket> idle_sockets_;
     JobList jobs_;  // For bookkeeping purposes, there is a copy of the raw
@@ -538,7 +538,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                     // element of |unbound_requests_|.
     std::list<ConnectJob*> unassigned_jobs_;
     RequestQueue unbound_requests_;
-    int active_socket_count_;  // number of active sockets used by clients
+    int active_socket_count_ = 0;  // number of active sockets used by clients
     // A timer for when to start the backup job.
     base::OneShotTimer backup_job_timer_;
 
@@ -553,7 +553,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // rather than reused. Destroying a group will reset the generation number,
     // but as that only happens once there are no outstanding sockets or
     // requests associated with the group, that's harmless.
-    int64_t generation_;
+    int64_t generation_ = 0;
   };
 
   using GroupMap = std::map<GroupId, Group*>;
@@ -764,13 +764,13 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   PendingCallbackMap pending_callback_map_;
 
   // The total number of idle sockets in the system.
-  int idle_socket_count_;
+  int idle_socket_count_ = 0;
 
   // Number of connecting sockets across all groups.
-  int connecting_socket_count_;
+  int connecting_socket_count_ = 0;
 
   // Number of connected sockets we handed out across all groups.
-  int handed_out_socket_count_;
+  int handed_out_socket_count_ = 0;
 
   // The maximum total number of sockets. See ReachedMaxSocketsLimit.
   const int max_sockets_;

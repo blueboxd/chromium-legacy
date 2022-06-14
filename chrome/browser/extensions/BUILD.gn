@@ -773,6 +773,7 @@ static_library("extensions") {
     "//chrome/browser:theme_properties",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/devtools",
+    "//chrome/browser/favicon",
     "//chrome/browser/first_party_sets",
     "//chrome/browser/image_decoder",
     "//chrome/browser/media/router",
@@ -1140,6 +1141,7 @@ static_library("extensions") {
       "//chromeos/components/chromebox_for_meetings/buildflags",
       "//chromeos/components/remote_apps/mojom",
       "//chromeos/dbus",
+      "//chromeos/dbus/cros_disks",
       "//chromeos/dbus/cryptohome",
       "//chromeos/dbus/image_burner",
       "//chromeos/dbus/power",
@@ -1204,6 +1206,7 @@ static_library("extensions") {
     ]
     deps += [
       "//chromeos/lacros",
+      "//chromeos/startup",
       "//chromeos/ui/base",
       "//components/enterprise",
       "//components/enterprise/common/proto:connectors_proto",

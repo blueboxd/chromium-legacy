@@ -296,9 +296,9 @@
       name: "BlinkRuntimeCallStats",
     },
     {
-      // "blocking" attribute on scripts and link resources
+      // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#blocking-attributes
       name: "BlockingAttribute",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "BlockingFocusWithoutUserActivation",
@@ -352,6 +352,7 @@
     },
     {
       name: "CapabilityDelegationFullscreenRequest",
+      status: "stable",
     },
     {
       name: "CaptureHandle",
@@ -384,7 +385,7 @@
     },
     {
       name: "ClipboardCustomFormats",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ClipboardSvg",
@@ -448,7 +449,6 @@
       name: "ConditionalFocus",
       origin_trial_feature_name: "ConditionalFocus",
       status: {"Android": "", "default": "experimental"},
-      implied_by: ["RegionCapture"],
     },
     {
       name: "ConsolidatedMovementXY",
@@ -670,8 +670,7 @@
     },
     {
       name: "CSSObjectViewBox",
-      status: "experimental",
-      implied_by: ["DocumentTransition"],
+      status: "stable",
     },
     {
       name: "CSSOffsetPathRay",
@@ -939,6 +938,7 @@
       // Document transitions, including shared element transitions.
       // See https://github.com/WICG/shared-element-transitions
       name: "DocumentTransition",
+      origin_trial_feature_name: "DocumentTransitionV2",
     },
     {
       name: "DocumentWrite",
@@ -1098,7 +1098,7 @@
     },
     {
       name: "FixedElementsDontOverscroll",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "Fledge",
@@ -1326,6 +1326,8 @@
     {
       // crbug.com/989916
       name: "LayoutNGForeignObject",
+      depends_on: ["LayoutNG"],
+      status: "stable",
     },
     {
       // Block fragmentation support in the grid layout algorithm.
@@ -1488,6 +1490,13 @@
       origin_trial_feature_name: "MediaSourceInWorkers",
     },
     {
+      // Availability of this feature depends on MediaSourceInWorkers also
+      // being enabled. MediaSourceInWorkers is an OT feature, so this cannot
+      // use the "depends_on" key.
+      name: "MediaSourceInWorkersUsingHandle",
+      status: "experimental",
+    },
+    {
       name: "MediaSourceNewAbortAndDuration",
       status: "experimental",
     },
@@ -1527,10 +1536,6 @@
     {
 
       name: "MobileLayoutTheme",
-    },
-    {
-      name: "ModuleServiceWorker",
-      status: "stable",
     },
     {
       name: "MojoJS",
@@ -1673,6 +1678,13 @@
     {
       name: "OriginTrialsSampleAPIExpiryGracePeriod",
       origin_trial_feature_name: "FrobulateExpiryGracePeriod",
+    },
+    // As above. Do not change this flag to stable, as it exists solely to
+    // generate code used by the origin trials sample API implementation.
+    {
+      name: "OriginTrialsSampleAPIExpiryGracePeriodThirdParty",
+      origin_trial_feature_name: "FrobulateExpiryGracePeriodThirdParty",
+      origin_trial_allows_third_party: true,
     },
     // As above. Do not change this flag to stable, as it exists solely to
     // generate code used by the origin trials sample API implementation.
@@ -1951,7 +1963,7 @@
     {
       name: "RegionCapture",
       origin_trial_feature_name: "RegionCapture",
-      status: "experimental",
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "RemotePlayback",
@@ -2150,10 +2162,6 @@
     },
     {
       name: "ServiceWorkerClientLifecycleState",
-      status: "experimental",
-    },
-    {
-      name: "ServiceWorkerFetchEventWorkerTiming",
       status: "experimental",
     },
     {
@@ -2567,7 +2575,7 @@
       name: "WebAppWindowControlsOverlay",
       origin_trial_feature_name: "WebAppWindowControlsOverlay",
       origin_trial_os: ["win", "mac", "linux", "chromeos"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WebAssemblyCSP",

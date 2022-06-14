@@ -506,9 +506,9 @@ String MediaQueryExp::Serialize() const {
   // <mf-plain>  e.g. (width: 100px)
   if (!bounds_.IsRange()) {
     result.Append(name);
-    if (ExpValue().IsValid()) {
+    if (bounds_.right.IsValid()) {
       result.Append(": ");
-      result.Append(ExpValue().CssText());
+      result.Append(bounds_.right.value.CssText());
     }
   } else {
     if (bounds_.left.IsValid()) {
@@ -630,6 +630,34 @@ const MediaQueryExpNode* MediaQueryExpNode::Or(const MediaQueryExpNode* left,
   if (!left || !right)
     return nullptr;
   return MakeGarbageCollected<MediaQueryOrExpNode>(left, right);
+}
+
+bool MediaQueryFeatureExpNode::IsViewportDependent() const {
+  return exp_.IsViewportDependent();
+}
+
+bool MediaQueryFeatureExpNode::IsDeviceDependent() const {
+  return exp_.IsDeviceDependent();
+}
+
+unsigned MediaQueryFeatureExpNode::GetUnitFlags() const {
+  return exp_.GetUnitFlags();
+}
+
+bool MediaQueryFeatureExpNode::IsWidthDependent() const {
+  return exp_.IsWidthDependent();
+}
+
+bool MediaQueryFeatureExpNode::IsHeightDependent() const {
+  return exp_.IsHeightDependent();
+}
+
+bool MediaQueryFeatureExpNode::IsInlineSizeDependent() const {
+  return exp_.IsInlineSizeDependent();
+}
+
+bool MediaQueryFeatureExpNode::IsBlockSizeDependent() const {
+  return exp_.IsBlockSizeDependent();
 }
 
 void MediaQueryFeatureExpNode::SerializeTo(StringBuilder& builder) const {

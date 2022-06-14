@@ -429,6 +429,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
     constexpr int kPaddingWidth = kSeparatorWidth - kThickness;
     constexpr int kLeadingPadding = (kPaddingWidth + 1) / 2;
 
+    SetColorId(kColorBookmarkBarSeparator);
     SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
         0, kLeadingPadding, 0, kPaddingWidth - kLeadingPadding)));
     SetPreferredLength(gfx::kFaviconSize);
@@ -436,12 +437,6 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
   ButtonSeparatorView(const ButtonSeparatorView&) = delete;
   ButtonSeparatorView& operator=(const ButtonSeparatorView&) = delete;
   ~ButtonSeparatorView() override = default;
-
-  void OnThemeChanged() override {
-    views::Separator::OnThemeChanged();
-    SetColor(GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_BOOKMARK_SEPARATOR));
-  }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_SEPARATOR));
@@ -477,9 +472,8 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
   if (browser_view)
     SetBackground(std::make_unique<TopContainerBackground>(browser_view));
 
-  views::SetCascadingThemeProviderColor(
-      this, views::kCascadingBackgroundColor,
-      ThemeProperties::COLOR_BOOKMARK_BAR_BACKGROUND);
+  views::SetCascadingColorProviderColor(this, views::kCascadingBackgroundColor,
+                                        kColorBookmarkBarBackground);
 
   Init();
 }
@@ -1420,7 +1414,7 @@ void BookmarkBarView::ShowContextMenuForViewImpl(
 }
 
 void BookmarkBarView::Init() {
-  // Note that at this point we're not in a hierarchy so GetThemeProvider() will
+  // Note that at this point we're not in a hierarchy so GetColorProvider() will
   // return nullptr.  When we're inserted into a hierarchy, we'll call
   // UpdateAppearanceForTheme(), which will set the appropriate colors for all
   // the objects added in this function.

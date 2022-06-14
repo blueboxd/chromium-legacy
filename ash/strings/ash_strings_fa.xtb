@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">تقویم</translation>
 <translation id="1153356358378277386">دستگاه‌های مرتبط‌شده</translation>
 <translation id="1165712434476988950">دستگاه باید برای اعمال به‌روزرسانی بازراه‌اندازی شود.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />،<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">‏کابل USB-C شما ممکن است نتواند درست به نمایشگرها وصل شود</translation>
 <translation id="1175572348579024023">پیمایش</translation>
 <translation id="1178581264944972037">مکث</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">برنامه‌های اخیر</translation>
 <translation id="1252999807265626933">در حال شارژ شدن از <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">‏?‎What's the weather (آب‌وهوا چطور است؟)</translation>
-<translation id="1262870540683925850">‏<ph name="START_TIME" /> تا 
-        <ph name="END_TIME" />، 
-        <ph name="TIME_ZONE" />، 
-        <ph name="EVENT_SUMMARY" />. برای جزئیات بیشتر در «تقویم Google» انتخاب کنید.</translation>
 <translation id="1267032506238418139">تغییر میان‌بر</translation>
 <translation id="1269405891096105529">دستگاه جانبی در «حالت مهمان» پشتیبانی نمی‌شود</translation>
 <translation id="1270290102613614947">صفحه‌کلید مجازی غیرفعال شد</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1632985212731562677">می‌توانید «دسترسی کلیدی» را در «تنظیمات &gt; دسترس‌پذیری» غیرفعال کنید.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> دستگاه</translation>
+<translation id="1639239467298939599">بارگیری</translation>
 <translation id="1654477262762802994">شروع پُرسمان صوتی</translation>
 <translation id="1668469839109562275">‏VPN داخلی</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2367186422933365202">‏نمی‌توان به سیستم Chromebook وارد شد</translation>
 <translation id="2369165858548251131">‏‎«Hello»‎ in Chinese (سلام به زبان چینی)</translation>
+<translation id="2375445874393996153">‏ویژگی جستجوی محتوای روی صفحه‌نمایش با «دستیار Google» دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="2390318262976603432">تنظیمات منطقه زبانی</translation>
 <translation id="240006516586367791">کنترل‌های رسانه</translation>
 <translation id="2402411679569069051">‏برای باز کردن قفل Chromebook، از اثر انگشت استفاده کنید یا قفل تلفنتان را باز کنید</translation>
@@ -333,7 +332,7 @@
 <translation id="2981684127883932071">نمایش پیشنهادها</translation>
 <translation id="2985148236010982088">دیدن همه برنامه‌ها</translation>
 <translation id="2992327365391326550">دکمه میکروفون دستگاه خاموش است.</translation>
-<translation id="2995447421581609334">نمایش دستگاه‌های ارسال محتوا.</translation>
+<translation id="2995447421581609334">نمایش دستگاه‌های پخش محتوا.</translation>
 <translation id="2996462380875591307">‏«ذره‌بین متصل» فعال شد. برای خاموش کردن آن، Ctrl+Search+D را دوباره فشار دهید.</translation>
 <translation id="3000461861112256445">صدای مونو</translation>
 <translation id="3009178788565917040">خروجی</translation>
@@ -505,6 +504,7 @@
 <translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{تا یک دقیقه دیگر، دستگاه را به نسخه قبلی تغییر دهید}one{تا # دقیقه دیگر، دستگاه را به نسخه قبلی تغییر دهید}other{تا # دقیقه دیگر، دستگاه را به نسخه قبلی تغییر دهید}}</translation>
 <translation id="3923494859158167397">هیچ شبکه تلفن همراهی راه‌اندازی نشده است</translation>
+<translation id="3925540965556789199"><ph name="DATE" />، درحال بار کردن رویدادها.</translation>
 <translation id="3932043219784172185">دستگاهی متصل نیست</translation>
 <translation id="3934456833412894880">«شارژ تطبیقی» روشن است. برای افزایش طول عمر باتری، شارژ باتری روی ۸۰٪ می‌ماند و هرگاه لازم داشته باشید شارژ کامل می‌شود.</translation>
 <translation id="3943857333388298514">جاگذاری</translation>
@@ -576,7 +576,7 @@
 <translation id="4338109981321384717">ذره‌بین</translation>
 <translation id="4351433414020964307">دستیار درحال بار کردن است...</translation>
 <translation id="4356930093361201197">حالت تضاد بالا</translation>
-<translation id="4371348193907997655">تنظیمات ارسال محتوا</translation>
+<translation id="4371348193907997655">تنظیمات پخش محتوا</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" /> درصد</translation>
 <translation id="4378551569595875038">در حال اتصال..</translation>
 <translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
@@ -623,7 +623,7 @@
 <translation id="4578196883126898996">میکروفون شما خاموش است، دکمه میکروفون دستگاهتان را روشن کنید.</translation>
 <translation id="4578906031062871102">منوی تنظیمات باز شد</translation>
 <translation id="4581047786858252841">میکروفون روشن است</translation>
-<translation id="4585337515783392668">توقف ارسال محتوا به گیرنده ناشناس</translation>
+<translation id="4585337515783392668">توقف پخش محتوا به گیرنده ناشناس</translation>
 <translation id="4587299710837179226">میکروفون خاموش است</translation>
 <translation id="4596144739579517758">زمینه تیره خاموش است</translation>
 <translation id="4611292653554630842">ورود به سیستم</translation>
@@ -935,7 +935,7 @@
 <translation id="65320610082834431">اموجی‌ها</translation>
 <translation id="6537924328260219877">قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، باتری تلفن <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">بارگیری <ph name="FILENAME" /> درحال اسکن</translation>
-<translation id="6542521951477560771">ارسال محتوا به <ph name="RECEIVER_NAME" /></translation>
+<translation id="6542521951477560771">پخش محتوا به <ph name="RECEIVER_NAME" /></translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 نصب جدید</translation>
 <translation id="6559976592393364813">سؤال از سرپرست</translation>
@@ -1048,7 +1048,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">بازخوانی</translation>
-<translation id="718361511487535372">‏باز کردن در «تقویم Google»</translation>
 <translation id="7188494361780961876">منو به گوشه راست بالای صفحه منتقل شد.</translation>
 <translation id="7189412385142492784">‏How far is Venus (فاصله سیاره ناهید از ما چقدر است)</translation>
 <translation id="7198435252016571249">دوربین به گوشه پایین سمت راست چسبید. تداخلی با سطح سیستم روی داد.</translation>
@@ -1057,6 +1056,10 @@
 <translation id="7258828758145722155">دیروز ویرایش شده است</translation>
 <translation id="726276584504105859">برای استفاده از تقسیم صفحه، به اینجا بکشید</translation>
 <translation id="7262906531272962081">ایجاد یادآوری</translation>
+<translation id="7297440678881127227">‏<ph name="START_TIME" /> تا
+        <ph name="END_TIME" />،
+        <ph name="TIME_ZONE" />،
+        <ph name="EVENT_SUMMARY" />. برای مشاهده جزئیات بیشتر در «تقویم Google»، انتخاب کنید.</translation>
 <translation id="7302889331339392448">«زیرنویس ناشنوایان زنده» خاموش است.</translation>
 <translation id="7303365578352795231">درحال پاسخ دادن در دستگاه دیگر.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1379,7 +1382,7 @@
 <translation id="9179259655489829027">این ویژگی امکان می‌دهد بدون نیاز به گذرواژه، به هر کاربری که به سیستم واردشده به‌سرعت دسترسی داشته باشید. تنها برای حساب‌های مورد اعتمادتان از این ویژگی استفاده کنید.</translation>
 <translation id="9180906851711123156">‏برای بستن، Ctrl+W را فشار دهید.</translation>
 <translation id="9183456764293710005">ذره‌بین تمام‌صفحه</translation>
-<translation id="9193626018745640770">درحال ارسال محتوا به گیرنده ناشناس</translation>
+<translation id="9193626018745640770">درحال پخش محتوا به گیرنده ناشناس</translation>
 <translation id="9194617393863864469">ورود به سیستم حسابی دیگر...</translation>
 <translation id="9198992156681343238">وضوح <ph name="DISPLAY_NAME" /> به <ph name="RESOLUTION" /> تغییر کرد. برای حفظ تغییرات، روی تأیید کلیک کنید. تنظیمات قبلی <ph name="TIMEOUT_SECONDS" /> دیگر بازیابی خواهد شد.</translation>
 <translation id="9201044636667689546">‏<ph name="NAME" /> را به این Chromebook متصل کنید</translation>

@@ -7,9 +7,6 @@
 
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "ash/components/phonehub/phone_hub_manager.h"
-#include "ash/public/cpp/system/toast_catalog.h"
-#include "ash/public/cpp/system/toast_data.h"
-#include "ash/public/cpp/system/toast_manager.h"
 #include "ash/webui/eche_app_ui/feature_status.h"
 #include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
 #include "base/callback.h"
@@ -22,8 +19,6 @@ class Image;
 
 namespace ash {
 namespace eche_app {
-
-constexpr char kEcheAppToastId[] = "eche_app_toast_id";
 
 // A helper class for launching/closing the app or show a notification.
 class LaunchAppHelper {
@@ -63,15 +58,14 @@ class LaunchAppHelper {
       const absl::optional<std::u16string>& title,
       const absl::optional<std::u16string>& message,
       std::unique_ptr<NotificationInfo> info)>;
-
+  using CloseNotificationFunction =
+      base::RepeatingCallback<void(const std::string& notification_id)>;
   using LaunchEcheAppFunction = base::RepeatingCallback<void(
       const absl::optional<int64_t>& notification_id,
       const std::string& package_name,
       const std::u16string& visible_name,
       const absl::optional<int64_t>& user_id,
       const gfx::Image& icon)>;
-
-  using CloseEcheAppFunction = base::RepeatingCallback<void()>;
 
   // Enum representing potential reasons why an app is forbidden to launch.
   enum class AppLaunchProhibitedReason {
@@ -85,8 +79,8 @@ class LaunchAppHelper {
 
   LaunchAppHelper(phonehub::PhoneHubManager* phone_hub_manager,
                   LaunchEcheAppFunction launch_eche_app_function,
-                  CloseEcheAppFunction close_eche_app_function,
-                  LaunchNotificationFunction launch_notification_function);
+                  LaunchNotificationFunction launch_notification_function,
+                  CloseNotificationFunction close_notification_function);
   virtual ~LaunchAppHelper();
 
   LaunchAppHelper(const LaunchAppHelper&) = delete;
@@ -104,6 +98,10 @@ class LaunchAppHelper {
                                 std::unique_ptr<NotificationInfo> info) const;
 
   // Exposed virtual for testing.
+  // Close the notifiication according to id
+  virtual void CloseNotification(const std::string& notification_id) const;
+
+  // Exposed virtual for testing.
   // Show the native toast message.
   virtual void ShowToast(const std::u16string& text) const;
 
@@ -113,14 +111,12 @@ class LaunchAppHelper {
                      const absl::optional<int64_t>& user_id,
                      const gfx::Image& icon) const;
 
-  void CloseEcheApp() const;
-
  private:
   bool IsScreenLockRequired() const;
   phonehub::PhoneHubManager* phone_hub_manager_;
   LaunchEcheAppFunction launch_eche_app_function_;
-  CloseEcheAppFunction close_eche_app_function_;
   LaunchNotificationFunction launch_notification_function_;
+  CloseNotificationFunction close_notification_function_;
 };
 
 }  // namespace eche_app

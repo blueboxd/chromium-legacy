@@ -163,6 +163,7 @@ Twoja wyszukiwarka to <ph name="DSE_NAME" />. Zapoznaj się z jej instrukcjami,
 <translation id="236977714248711277">Witryny nie mogą używać plików cookie dla Twojej wygody, by na przykład zapamiętać Twoje logowanie lub zawartość koszyka.
 
 Witryny nie mogą używać plików cookie do śledzenia Twojej aktywności związanej z przeglądaniem różnych witryn, na przykład w celu personalizowania reklam.</translation>
+<translation id="2375243552872247702">Zobacz treści dla siebie</translation>
 <translation id="2381405137052800939">Podstawowe</translation>
 <translation id="2386793615875593361">Wybrano: 1</translation>
 <translation id="2421004566762153674">Blokowanie plików cookie innych firm</translation>
@@ -291,6 +292,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="3443810440409579745">Odebrano kartę.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Widok dzielony</translation>
+<translation id="3450502512529866925">Dodaj tę stronę do zakładek</translation>
 <translation id="345565170154308620">Zarządzaj hasłami…</translation>
 <translation id="3469166899695866866">Czy zatrzymać pobieranie?</translation>
 <translation id="3470502288861289375">Kopiuję...</translation>
@@ -403,6 +405,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="4502566650163919158">Sprawdź teraz</translation>
 <translation id="4505980578794259603">Ostatnio sprawdzano <ph name="TIME" /></translation>
 <translation id="4508750114462689118">Zamknij okno zachęcające do logowania</translation>
+<translation id="4511669830082467224">Szukaj grafiki z Google</translation>
 <translation id="4526249700380860531">Wyświetlaj zapisane hasła i zarządzaj nimi na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Przejrzyj synchronizowane dane</translation>
 <translation id="4536418791685807335">Spróbuj zalogować się jeszcze raz.</translation>
@@ -480,6 +483,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5090832849094901128">Usunięcie tego hasła nie spowoduje usunięcia Twojego konta w serwisie <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Możesz zapisywać strony do przeczytania później lub offline. Chrome zapyta, czy chcesz zapisać długie strony.</translation>
 <translation id="5094827893301452931">Tweet opublikowany.</translation>
+<translation id="509789154667432072">Dodaj zakładkę</translation>
 <translation id="5118713593561876160">Zainteresowania</translation>
 <translation id="5118764316110575523">Wyłączono</translation>
 <translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
@@ -600,6 +604,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="6136914049981179737">Przed chwilą</translation>
 <translation id="6144589619057374135">Otwórz ${url} w trybie incognito</translation>
 <translation id="6149061208933997199">Użyj hasła</translation>
+<translation id="6152406514676263192">Włącz synchronizację, aby wyświetlały się treści najlepiej pasujące do Twoich zainteresowań.</translation>
 <translation id="6159839020698489198">opcjonalnie</translation>
 <translation id="6177442314419606057">Szukaj w Chrome</translation>
 <translation id="6184086493125982861">Pokaż karty</translation>
@@ -737,6 +742,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7099761977003084116">Ostatnie karty</translation>
 <translation id="7102005569666697658">Pobieram… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ukryj</translation>
+<translation id="7108762695052995889">Otwórz stronę</translation>
 <translation id="7133798577887235672">Imię i nazwisko</translation>
 <translation id="7136892417564438900">Aparat jest niedostępny</translation>
 <translation id="7153999225810839758">Czas czytania: <ph name="TIME" /> min</translation>
@@ -747,6 +753,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7189598951263744875">Udostępnij...</translation>
 <translation id="7192050974311852563">Uruchom rejestrowanie</translation>
 <translation id="7203585745079012652">Odczytuj odpowiedzi</translation>
+<translation id="7207023858769244910">Włącz synchronizację, aby otrzymywać treści związane ze swoimi zainteresowaniami.</translation>
 <translation id="7207383424303353046">Nowość: ustaw Chrome jako przeglądarkę domyślną, by strony otwierały się w niej automatycznie. <ph name="BEGIN_LINK" />Otwórz ustawienia<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Nieprawidłowa nazwa karty</translation>
 <translation id="722454870747268814">Nowa karta incognito</translation>

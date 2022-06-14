@@ -427,6 +427,14 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     return entry_replaced_by_post_commit_error_ != nullptr;
   }
 
+  // Whether the current call stack includes NavigateToPendingEntry, to avoid
+  // re-entrant calls to NavigateToPendingEntry.
+  // TODO(https://crbug.com/1327907): Don't expose this once we figure out the
+  // root cause for the navigation re-entrancy case in the linked bug.
+  bool in_navigate_to_pending_entry() const {
+    return in_navigate_to_pending_entry_;
+  }
+
  private:
   friend class RestoreHelper;
 
@@ -793,7 +801,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // This may refer to an item in the entries_ list if the pending_entry_index_
   // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
-  raw_ptr<NavigationEntryImpl> pending_entry_ = nullptr;
+  raw_ptr<NavigationEntryImpl, DanglingUntriaged> pending_entry_ = nullptr;
 
   // This keeps track of the NavigationRequests associated with the pending
   // NavigationEntry. When all of them have been deleted, or have stopped

@@ -89,7 +89,7 @@ android_library("incognito_java_tests") {
     "//chrome/browser/settings:javatests",
     "//chrome/browser/settings:test_support_java",
     "//chrome/browser/tabmodel:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_integration_test_support",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/widget/android:java",
     "//content/public/test/android:content_java_test_support",
@@ -106,11 +106,8 @@ android_library("incognito_java_tests") {
   ]
 }
 
-android_library("incognito_junit_tests") {
+robolectric_library("incognito_junit_tests") {
   testonly = true
-
-  # Platform checks are broken for Robolectric. See https://crbug.com/1071638.
-  bypass_platform_checks = true
 
   sources = [
     "android/java/src/org/chromium/chrome/browser/incognito/reauth/IncognitoReauthControllerTest.java",
@@ -130,7 +127,7 @@ android_library("incognito_junit_tests") {
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",
     "//chrome/browser/ui/android/layouts:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_test_runner_java",

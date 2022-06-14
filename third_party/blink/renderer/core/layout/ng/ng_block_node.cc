@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fieldset_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_repeater.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -672,6 +673,67 @@ const NGLayoutResult* NGBlockNode::SimplifiedLayout(
   return result;
 }
 
+const NGLayoutResult* NGBlockNode::LayoutRepeatableRoot(
+    const NGConstraintSpace& constraint_space,
+    const NGBlockBreakToken* break_token) const {
+  // When laying out repeatable content, we cannot at the same time allow it to
+  // break inside.
+  DCHECK(!constraint_space.HasBlockFragmentation());
+
+  // We can't both resume and repeat!
+  DCHECK(!IsResumingLayout(break_token));
+
+  bool is_first = !break_token || !break_token->IsRepeated();
+  const NGLayoutResult* result;
+  if (is_first) {
+    // We're generating the first fragment for repeated content. Perform regular
+    // layout.
+    result = Layout(constraint_space, break_token);
+    DCHECK(!result->PhysicalFragment().BreakToken());
+  } else {
+    // We're repeating. Create a shallow clone of the first result. Once we're
+    // at the last fragment, we'll actually create a deep clone.
+    result = NGLayoutResult::Clone(*box_->GetLayoutResult(0));
+  }
+
+  wtf_size_t index = FragmentIndex(break_token);
+  const auto& fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+  // Unless it's the very last fragment to be generated, we need to create a
+  // special "repeat" break token, which will be the incoming break token when
+  // generating the next fragment. This is needed in order to get the sequence
+  // numbers right, which is important when adding the result to the LayoutBox,
+  // and it's also needed by pre-paint / paint.
+  const NGBlockBreakToken* outgoing_break_token = nullptr;
+  if (constraint_space.IsRepeatable())
+    outgoing_break_token = NGBlockBreakToken::CreateRepeated(*this, index);
+  auto mutator = fragment.GetMutableForCloning();
+  mutator.SetBreakToken(outgoing_break_token);
+  if (!is_first) {
+    mutator.ClearIsFirstForNode();
+    box_->SetLayoutResult(result, index);
+  }
+
+  if (!constraint_space.IsRepeatable()) {
+    // This is the last fragment. It won't be repeated again. We have already
+    // created fragments for the repeated nodes, but the cloning was shallow.
+    // We're now ready to deep-clone the entire subtree for each repeated
+    // fragment, and update the layout result vector in the LayoutBox, including
+    // setting correct break tokens with sequence numbers.
+    wtf_size_t fragment_count = box_->PhysicalFragmentCount();
+    DCHECK_GE(fragment_count, 1u);
+    box_->ClearNeedsLayout();
+    for (wtf_size_t i = 1; i < fragment_count; i++) {
+      const NGPhysicalBoxFragment& fragment = *box_->GetPhysicalFragment(i);
+      bool is_first = i == 1;
+      bool is_last = i + 1 == fragment_count;
+      NGFragmentRepeater repeater(is_first, is_last);
+      repeater.CloneChildFragments(fragment);
+    }
+  }
+
+  return result;
+}
+
 const NGLayoutResult* NGBlockNode::CachedLayoutResultForOutOfFlowPositioned(
     LogicalSize container_content_size) const {
   DCHECK(IsOutOfFlowPositioned());
@@ -837,7 +899,7 @@ void NGBlockNode::StoreResultInLayoutBox(
     // token corresponds with the fragment index in the layout object (off by 1,
     // though). When writing back a layout result, we remove any fragments in
     // the layout box at higher indices than that of the one we're writing back.
-    box_->AddLayoutResult(std::move(result), FragmentIndex(break_token));
+    box_->SetLayoutResult(std::move(result), FragmentIndex(break_token));
   }
 }
 
@@ -1561,7 +1623,12 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
   for (NGInlineCursor cursor(container, items); cursor; cursor.MoveToNext()) {
     if (const NGPhysicalBoxFragment* child = cursor.Current().BoxFragment()) {
       // Replaced elements and inline blocks need Location() set relative to
-      // their block container.
+      // their block container. Similarly for block-in-inline anonymous wrapper
+      // blocks, but those may actually fragment, so we need to make sure that
+      // we only do this when at the first fragment.
+      if (!child->IsFirstForNode())
+        continue;
+
       LayoutObject* layout_object = child->GetMutableLayoutObject();
       if (!layout_object)
         continue;
@@ -1604,7 +1671,13 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
 
 bool NGBlockNode::IsPaginatedRoot() const {
   const auto* view = DynamicTo<LayoutNGView>(box_.Get());
-  return view && view->IsFragmentationContextRoot();
+  if (!view || !view->IsFragmentationContextRoot())
+    return false;
+  if (const LayoutObject* child = view->FirstChild()) {
+    if (child->ForceLegacyLayout())
+      return false;
+  }
+  return true;
 }
 
 bool NGBlockNode::IsInlineFormattingContextRoot(

@@ -5699,6 +5699,7 @@
           "--flag-specific=skia-vulkan-swiftshader",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -7231,8 +7232,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -13968,6 +13971,17 @@
       },
       {
         "isolate_profile_data": true,
+        "name": "build_junit_tests",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "test": "build_junit_tests",
+        "test_id_prefix": "ninja://build/android:build_junit_tests/"
+      },
+      {
+        "isolate_profile_data": true,
         "name": "chrome_java_test_pagecontroller_junit_tests",
         "resultdb": {
           "enable": true,
@@ -14020,17 +14034,6 @@
         "swarming": {},
         "test": "device_junit_tests",
         "test_id_prefix": "ninja://device:device_junit_tests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "name": "incremental_javac_junit_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "test": "incremental_javac_junit_tests",
-        "test_id_prefix": "ninja://build/android/test:incremental_javac_junit_tests/"
       },
       {
         "isolate_profile_data": true,
@@ -22711,6 +22714,1282 @@
         },
         "test": "unit_tests",
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
+      }
+    ]
+  },
+  "fuchsia-fyi-cfv2-script": {
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "accessibility_unittests",
+        "test_id_prefix": "ninja://ui/accessibility:accessibility_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "aura_unittests",
+        "test_id_prefix": "ninja://ui/aura:aura_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "base_unittests",
+        "test_id_prefix": "ninja://base:base_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_common_unittests",
+        "test_id_prefix": "ninja://third_party/blink/common:blink_common_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_fuzzer_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_fuzzer_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_heap_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform/heap:blink_heap_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_platform_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_platform_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/controller:blink_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "boringssl_crypto_tests",
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "boringssl_ssl_tests",
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "capture_unittests",
+        "test_id_prefix": "ninja://media/capture:capture_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cast_runner_browsertests",
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_browsertests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cast_runner_integration_tests",
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_integration_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cast_runner_unittests",
+        "test_id_prefix": "ninja://fuchsia_web/runners:cast_runner_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "cc_unittests",
+        "test_id_prefix": "ninja://cc:cc_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "color_unittests",
+        "test_id_prefix": "ninja://ui/color:color_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "components_browsertests",
+        "test_id_prefix": "ninja://components:components_browsertests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "compositor_unittests",
+        "test_id_prefix": "ninja://ui/compositor:compositor_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "content_unittests",
+        "test_id_prefix": "ninja://content/test:content_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "courgette_unittests",
+        "test_id_prefix": "ninja://courgette:courgette_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cr_fuchsia_base_unittests",
+        "test_id_prefix": "ninja://fuchsia/base:cr_fuchsia_base_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "crypto_unittests",
+        "test_id_prefix": "ninja://crypto:crypto_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "display_unittests",
+        "test_id_prefix": "ninja://ui/display:display_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "events_unittests",
+        "test_id_prefix": "ninja://ui/events:events_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "extensions_unittests",
+        "test_id_prefix": "ninja://extensions:extensions_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "filesystem_service_unittests",
+        "test_id_prefix": "ninja://components/services/filesystem:filesystem_service_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "fuchsia_mojo_unittests",
+        "test_id_prefix": "ninja://mojo/public/cpp/base/fuchsia:fuchsia_mojo_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gcm_unit_tests",
+        "test_id_prefix": "ninja://google_apis/gcm:gcm_unit_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gfx_unittests",
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gin_unittests",
+        "test_id_prefix": "ninja://gin:gin_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "google_apis_unittests",
+        "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gpu_unittests",
+        "test_id_prefix": "ninja://gpu:gpu_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gwp_asan_unittests",
+        "test_id_prefix": "ninja://components/gwp_asan:gwp_asan_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "headless_browsertests",
+        "test_id_prefix": "ninja://headless:headless_browsertests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "headless_unittests",
+        "test_id_prefix": "ninja://headless:headless_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ipc_tests",
+        "test_id_prefix": "ninja://ipc:ipc_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "latency_unittests",
+        "test_id_prefix": "ninja://ui/latency:latency_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "media_unittests",
+        "test_id_prefix": "ninja://media:media_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "message_center_unittests",
+        "test_id_prefix": "ninja://ui/message_center:message_center_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "midi_unittests",
+        "test_id_prefix": "ninja://media/midi:midi_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_core_unittests",
+        "test_id_prefix": "ninja://mojo/core:mojo_core_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_unittests",
+        "test_id_prefix": "ninja://mojo:mojo_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "native_theme_unittests",
+        "test_id_prefix": "ninja://ui/native_theme:native_theme_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
+        },
+        "test": "net_unittests",
+        "test_id_prefix": "ninja://net:net_unittests/"
+      },
+      {
+        "args": [
+          "--child-arg=--ozone-platform=headless"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ozone_gl_unittests",
+        "test_id_prefix": "ninja://ui/ozone/gl:ozone_gl_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ozone_unittests",
+        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "perfetto_unittests",
+        "test_id_prefix": "ninja://third_party/perfetto:perfetto_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "service_manager_unittests",
+        "test_id_prefix": "ninja://services/service_manager/tests:service_manager_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "services_unittests",
+        "test_id_prefix": "ninja://services:services_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "shell_dialogs_unittests",
+        "test_id_prefix": "ninja://ui/shell_dialogs:shell_dialogs_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "skia_unittests",
+        "test_id_prefix": "ninja://skia:skia_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "snapshot_unittests",
+        "test_id_prefix": "ninja://ui/snapshot:snapshot_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "sql_unittests",
+        "test_id_prefix": "ninja://sql:sql_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "storage_unittests",
+        "test_id_prefix": "ninja://storage:storage_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_base_unittests",
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_touch_selection_unittests",
+        "test_id_prefix": "ninja://ui/touch_selection:ui_touch_selection_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "url_unittests",
+        "test_id_prefix": "ninja://url:url_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.views_examples_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "views_examples_unittests",
+        "test_id_prefix": "ninja://ui/views/examples:views_examples_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.views_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "views_unittests",
+        "test_id_prefix": "ninja://ui/views:views_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "viz_unittests",
+        "test_id_prefix": "ninja://components/viz:viz_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "web_engine_browsertests",
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_browsertests/"
+      },
+      {
+        "args": [
+          "--child-arg=--vmodule=test_navigation_listener=1"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "web_engine_integration_tests",
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_integration_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "web_engine_unittests",
+        "test_id_prefix": "ninja://fuchsia_web/webengine:web_engine_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "web_runner_integration_tests",
+        "test_id_prefix": "ninja://fuchsia_web/runners:web_runner_integration_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "wm_unittests",
+        "test_id_prefix": "ninja://ui/wm:wm_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "wtf_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "zlib_unittests",
+        "test_id_prefix": "ninja://third_party/zlib:zlib_unittests/"
       }
     ]
   },
@@ -69428,7 +70707,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69449,7 +70728,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -69463,7 +70742,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests iPad Air 2 16.0",
+        "name": "base_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -69480,7 +70759,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69496,7 +70775,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -69532,7 +70811,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69584,7 +70863,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69636,7 +70915,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69688,7 +70967,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69709,7 +70988,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -69723,7 +71002,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests iPad Air 2 16.0",
+        "name": "components_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -69740,7 +71019,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69756,7 +71035,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -69792,7 +71071,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69844,7 +71123,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69896,7 +71175,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69948,7 +71227,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -69969,7 +71248,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -69983,7 +71262,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests iPad Air 2 16.0",
+        "name": "gfx_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -70000,7 +71279,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70016,7 +71295,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -70052,7 +71331,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70104,7 +71383,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70156,7 +71435,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70209,7 +71488,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70262,7 +71541,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70315,7 +71594,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70368,7 +71647,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70421,7 +71700,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70475,7 +71754,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70529,7 +71808,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70583,7 +71862,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70637,7 +71916,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70691,7 +71970,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70745,7 +72024,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70799,7 +72078,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70853,7 +72132,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70907,7 +72186,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -70961,7 +72240,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71014,7 +72293,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71067,7 +72346,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71120,7 +72399,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71173,7 +72452,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71227,7 +72506,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71281,7 +72560,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71303,7 +72582,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -71317,7 +72596,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests iPad Air 2 16.0",
+        "name": "ios_chrome_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -71334,7 +72613,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71350,7 +72629,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -71386,7 +72665,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71438,7 +72717,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71491,7 +72770,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71544,7 +72823,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71597,7 +72876,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71650,7 +72929,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71702,7 +72981,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71754,7 +73033,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71807,7 +73086,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71860,7 +73139,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71913,7 +73192,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -71966,7 +73245,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72019,7 +73298,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72071,7 +73350,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72092,7 +73371,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -72106,7 +73385,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests iPad Air 2 16.0",
+        "name": "ios_web_inttests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -72123,7 +73402,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72139,7 +73418,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -72175,7 +73454,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72227,7 +73506,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72280,7 +73559,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72333,7 +73612,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72386,7 +73665,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72407,7 +73686,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -72421,7 +73700,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests iPad Air 2 16.0",
+        "name": "ios_web_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -72438,7 +73717,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72454,7 +73733,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -72490,7 +73769,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72542,7 +73821,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72563,7 +73842,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -72577,7 +73856,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests iPad Air 2 16.0",
+        "name": "ios_web_view_inttests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -72594,7 +73873,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72610,7 +73889,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -72646,7 +73925,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72698,7 +73977,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72719,7 +73998,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -72733,7 +74012,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests iPad Air 2 16.0",
+        "name": "ios_web_view_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -72750,7 +74029,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72766,7 +74045,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -72802,7 +74081,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72854,7 +74133,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72906,7 +74185,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72958,7 +74237,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -72979,7 +74258,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -72993,7 +74272,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests iPad Air 2 16.0",
+        "name": "skia_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -73010,7 +74289,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73026,7 +74305,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -73062,7 +74341,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73114,7 +74393,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73166,7 +74445,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73187,7 +74466,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -73201,7 +74480,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests iPad Air 2 16.0",
+        "name": "ui_base_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -73218,7 +74497,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73234,7 +74513,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -73270,7 +74549,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73322,7 +74601,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73374,7 +74653,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73433,7 +74712,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73485,7 +74764,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73537,7 +74816,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73558,7 +74837,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -73572,7 +74851,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests iPad Air 2 16.0",
+        "name": "base_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -73589,7 +74868,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73605,7 +74884,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -73641,7 +74920,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73693,7 +74972,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73745,7 +75024,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73797,7 +75076,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73849,7 +75128,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73901,7 +75180,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -73953,7 +75232,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74005,7 +75284,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74057,7 +75336,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74078,7 +75357,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -74092,7 +75371,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests iPad Air 2 16.0",
+        "name": "components_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -74109,7 +75388,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74125,7 +75404,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -74161,7 +75440,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74213,7 +75492,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74265,7 +75544,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74317,7 +75596,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74369,7 +75648,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74421,7 +75700,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74473,7 +75752,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74494,7 +75773,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -74508,7 +75787,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests iPad Air 2 16.0",
+        "name": "gfx_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -74525,7 +75804,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74541,7 +75820,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -74577,7 +75856,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74629,7 +75908,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74681,7 +75960,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74733,7 +76012,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74785,7 +76064,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74837,7 +76116,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74854,6 +76133,59 @@
         },
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
         "variant_id": "iPhone 8 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_bookmarks_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -74890,7 +76222,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74943,7 +76275,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -74960,59 +76292,6 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_bookmarks_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -75049,7 +76328,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75102,7 +76381,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75155,7 +76434,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75208,7 +76487,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75261,7 +76540,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75314,7 +76593,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75331,6 +76610,60 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
         "variant_id": "iPhone X 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_integration_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 8
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -75367,7 +76700,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75421,7 +76754,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75439,60 +76772,6 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_integration_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_integration_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 8
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -75529,7 +76808,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75583,7 +76862,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75637,7 +76916,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75691,7 +76970,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75745,7 +77024,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75799,7 +77078,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75817,6 +77096,60 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
         "variant_id": "iPhone X 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_settings_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_settings_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -75853,7 +77186,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75907,7 +77240,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -75925,60 +77258,6 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_settings_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_settings_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -76015,7 +77294,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76069,7 +77348,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76123,7 +77402,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76177,7 +77456,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76231,7 +77510,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76285,7 +77564,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76303,6 +77582,60 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
         "variant_id": "iPhone X 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_signin_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 5
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -76339,7 +77672,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76393,7 +77726,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76411,60 +77744,6 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_signin_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_signin_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -76501,7 +77780,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76555,7 +77834,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76609,7 +77888,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76663,7 +77942,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76717,7 +77996,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76771,7 +78050,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76789,6 +78068,59 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
         "variant_id": "iPhone X 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_smoke_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -76825,7 +78157,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76878,7 +78210,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -76895,59 +78227,6 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_smoke_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_smoke_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -76984,7 +78263,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77037,7 +78316,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77090,7 +78369,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77143,7 +78422,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77196,7 +78475,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77249,7 +78528,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77266,6 +78545,60 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
         "variant_id": "iPhone X 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_ui_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 12
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -77302,7 +78635,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77356,7 +78689,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77374,60 +78707,6 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_ui_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_ui_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -77464,7 +78743,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77518,7 +78797,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77572,7 +78851,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77626,7 +78905,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77680,7 +78959,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77734,7 +79013,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77756,7 +79035,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -77770,7 +79049,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests iPad Air 2 16.0",
+        "name": "ios_chrome_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -77787,7 +79066,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77803,7 +79082,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -77839,7 +79118,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77891,7 +79170,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77943,7 +79222,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -77960,6 +79239,59 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
         "variant_id": "iPhone SE (3rd generation) 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_web_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_web_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -77996,7 +79328,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78049,7 +79381,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78066,59 +79398,6 @@
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_web_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_web_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -78155,7 +79434,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78208,7 +79487,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78261,7 +79540,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78314,7 +79593,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78367,7 +79646,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78420,7 +79699,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78472,7 +79751,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78524,7 +79803,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78576,7 +79855,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78628,7 +79907,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78681,7 +79960,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78734,7 +80013,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78787,7 +80066,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78839,7 +80118,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78891,7 +80170,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78908,6 +80187,59 @@
         },
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
         "variant_id": "iPhone 8 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_showcase_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_showcase_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -78944,7 +80276,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -78997,7 +80329,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79014,59 +80346,6 @@
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_showcase_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_showcase_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -79103,7 +80382,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79156,7 +80435,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79209,7 +80488,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79262,7 +80541,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79315,7 +80594,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79368,7 +80647,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79420,7 +80699,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79472,7 +80751,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79524,7 +80803,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79545,7 +80824,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -79559,7 +80838,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests iPad Air 2 16.0",
+        "name": "ios_web_inttests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -79576,7 +80855,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79592,7 +80871,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -79628,7 +80907,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79680,7 +80959,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79732,7 +81011,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79749,6 +81028,59 @@
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
         "variant_id": "iPhone SE (3rd generation) 16.0"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air (3rd generation)",
+          "--version",
+          "16.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14a5228q",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_web_shell_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_web_shell_eg2tests_module iPad Air (3rd generation) 16.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14a5228q",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_16_0",
+              "path": "Runtime-ios-16.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -79785,7 +81117,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79838,7 +81170,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79855,59 +81187,6 @@
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
         "variant_id": "iPad Air 2 15.5"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPad Air 2",
-          "--version",
-          "16.0",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14a5228q",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_web_shell_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_web_shell_eg2tests_module iPad Air 2 16.0",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14a5228q",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_16_0",
-              "path": "Runtime-ios-16.0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPad Air 2 16.0"
       },
       {
         "args": [
@@ -79944,7 +81223,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -79997,7 +81276,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80050,7 +81329,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80103,7 +81382,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80156,7 +81435,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80209,7 +81488,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80230,7 +81509,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -80244,7 +81523,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests iPad Air 2 16.0",
+        "name": "ios_web_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -80261,7 +81540,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80277,7 +81556,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -80313,7 +81592,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80365,7 +81644,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80417,7 +81696,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80438,7 +81717,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -80452,7 +81731,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests iPad Air 2 16.0",
+        "name": "ios_web_view_inttests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -80469,7 +81748,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80485,7 +81764,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -80521,7 +81800,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80573,7 +81852,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80625,7 +81904,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80646,7 +81925,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -80660,7 +81939,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests iPad Air 2 16.0",
+        "name": "ios_web_view_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -80677,7 +81956,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80693,7 +81972,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -80729,7 +82008,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80781,7 +82060,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80833,7 +82112,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80885,7 +82164,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80937,7 +82216,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -80989,7 +82268,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81041,7 +82320,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81093,7 +82372,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81145,7 +82424,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81166,7 +82445,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -81180,7 +82459,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests iPad Air 2 16.0",
+        "name": "skia_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -81197,7 +82476,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81213,7 +82492,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -81249,7 +82528,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81301,7 +82580,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81353,7 +82632,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81405,7 +82684,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81457,7 +82736,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81509,7 +82788,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81530,7 +82809,7 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (3rd generation)",
           "--version",
           "16.0",
           "--out-dir",
@@ -81544,7 +82823,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests iPad Air 2 16.0",
+        "name": "ui_base_unittests iPad Air (3rd generation) 16.0",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -81561,7 +82840,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81577,7 +82856,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPad Air 2 16.0"
+        "variant_id": "iPad Air (3rd generation) 16.0"
       },
       {
         "args": [
@@ -81613,7 +82892,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81665,7 +82944,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81717,7 +82996,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81769,7 +83048,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81821,7 +83100,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -81873,7 +83152,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -84852,9 +86131,11 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--debug"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -85616,8 +86897,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -85655,8 +86938,10 @@
         "args": [
           "--flag-specific=highdpi",
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -86418,8 +87703,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -89802,9 +91089,11 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "isolate_profile_data": true,
         "merge": {
@@ -89952,8 +91241,10 @@
         "args": [
           "--flag-specific=highdpi",
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "isolate_profile_data": true,
         "merge": {
@@ -90010,9 +91301,11 @@
         "args": [
           "--flag-specific=disable-site-isolation-trials",
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "isolate_profile_data": true,
         "merge": {
@@ -90153,6 +91446,7 @@
           "--flag-specific=skia-vulkan-swiftshader",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "isolate_profile_data": true,
         "merge": {
@@ -99171,8 +100465,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -101428,8 +102724,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -101470,8 +102768,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -101510,8 +102810,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -101552,8 +102854,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -101592,8 +102896,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -103967,7 +105273,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10-19042"
+            },
+            {
               "pool": "chromium.tests.finch"
             }
           ],
@@ -103990,7 +105298,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10-19042"
+            },
+            {
               "pool": "chromium.tests.finch"
             }
           ],
@@ -104012,7 +105322,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10-19042"
+            },
+            {
               "pool": "chromium.tests.finch"
             }
           ],
@@ -104034,7 +105346,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10-19042"
+            },
+            {
               "pool": "chromium.tests.finch"
             }
           ],
@@ -104056,7 +105370,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10-19042"
+            },
+            {
               "pool": "chromium.tests.finch"
             }
           ],
@@ -104078,7 +105394,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10-19042"
+            },
+            {
               "pool": "chromium.tests.finch"
             }
           ],
@@ -104108,7 +105426,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10-19042"
+            },
+            {
               "pool": "chromium.tests.finch"
             }
           ],
@@ -104136,7 +105456,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042",
+              "os": "Windows-10-19042"
+            },
+            {
               "pool": "chromium.tests.finch"
             }
           ],
@@ -105501,8 +106823,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -105540,10 +106864,12 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--target",
           "Release_x64"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -105569,45 +106895,6 @@
             }
           ],
           "hard_timeout": 1200,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
-        },
-        "test_id_prefix": "ninja://:blink_web_tests/"
-      }
-    ]
-  },
-  "win7-blink-rel-dummy": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "--num-retries=3",
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "blink_web_tests",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "blink_web_tests",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true
-        },
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-7-SP1"
-            }
-          ],
-          "hard_timeout": 900,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },

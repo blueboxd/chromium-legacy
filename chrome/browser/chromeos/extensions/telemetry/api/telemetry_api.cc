@@ -176,6 +176,78 @@ void OsTelemetryGetOemDataFunction::OnResult(
   Respond(ArgumentList(api::os_telemetry::GetOemData::Results::Create(result)));
 }
 
+// OsTelemetryGetOsVersionInfoFunction -----------------------------------------
+
+OsTelemetryGetOsVersionInfoFunction::OsTelemetryGetOsVersionInfoFunction() =
+    default;
+OsTelemetryGetOsVersionInfoFunction::~OsTelemetryGetOsVersionInfoFunction() =
+    default;
+
+void OsTelemetryGetOsVersionInfoFunction::RunIfAllowed() {
+  auto cb =
+      base::BindOnce(&OsTelemetryGetOsVersionInfoFunction::OnResult, this);
+
+  remote_probe_service_->ProbeTelemetryInfo(
+      {ash::health::mojom::ProbeCategoryEnum::kSystem}, std::move(cb));
+}
+
+void OsTelemetryGetOsVersionInfoFunction::OnResult(
+    ash::health::mojom::TelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->system_result || !ptr->system_result->is_system_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+  auto& system_info = ptr->system_result->get_system_info();
+
+  // os_version is an optional value and might not be present.
+  // TODO(b/234338704): check how to test this.
+  if (!system_info->os_info || !system_info->os_info->os_version) {
+    Respond(Error("API internal error"));
+    return;
+  }
+
+  api::os_telemetry::OsVersionInfo result =
+      converters::ConvertPtr<api::os_telemetry::OsVersionInfo>(
+          std::move(system_info->os_info->os_version));
+
+  Respond(ArgumentList(
+      api::os_telemetry::GetOsVersionInfo::Results::Create(result)));
+}
+
+// OsTelemetryGetStatefulPartitionInfoFunction ---------------------------------
+
+OsTelemetryGetStatefulPartitionInfoFunction::
+    OsTelemetryGetStatefulPartitionInfoFunction() = default;
+OsTelemetryGetStatefulPartitionInfoFunction::
+    ~OsTelemetryGetStatefulPartitionInfoFunction() = default;
+
+void OsTelemetryGetStatefulPartitionInfoFunction::RunIfAllowed() {
+  auto cb = base::BindOnce(
+      &OsTelemetryGetStatefulPartitionInfoFunction::OnResult, this);
+
+  remote_probe_service_->ProbeTelemetryInfo(
+      {ash::health::mojom::ProbeCategoryEnum::kStatefulPartition},
+      std::move(cb));
+}
+
+void OsTelemetryGetStatefulPartitionInfoFunction::OnResult(
+    ash::health::mojom::TelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->stateful_partition_result ||
+      !ptr->stateful_partition_result->is_partition_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+  auto& stateful_part_info =
+      ptr->stateful_partition_result->get_partition_info();
+
+  api::os_telemetry::StatefulPartitionInfo result =
+      converters::ConvertPtr<api::os_telemetry::StatefulPartitionInfo>(
+          std::move(stateful_part_info));
+
+  Respond(ArgumentList(
+      api::os_telemetry::GetStatefulPartitionInfo::Results::Create(result)));
+}
+
 // OsTelemetryGetVpdInfoFunction -----------------------------------------------
 
 OsTelemetryGetVpdInfoFunction::OsTelemetryGetVpdInfoFunction() = default;

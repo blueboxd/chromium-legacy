@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> ਥ੍ਰੈੱਡ, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">ਨਵੀਂ ਵਿਸ਼ੇਸ਼ਤਾ ਉਪਲਬਧ ਹੈ, ਹੋਰ ਜਾਣਨ ਲਈ 'ਉੱਪਰ ਤੀਰ' ਕੁੰਜੀ ਦੀ ਵਰਤੋਂ ਕਰੋ।</translation>
 <translation id="1059913517121127803">ਸਕੈਨ ਕਰਨਾ ਸ਼ੁਰੂ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
+<translation id="1062407476771304334">ਬਦਲੋ</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Firewall ਦਾ ਪਤਾ ਲੱਗਾ</translation>
 <translation id="1075811647922107217">ਪੰਨੇ ਦਾ ਆਕਾਰ</translation>
@@ -15,9 +16,11 @@
 <translation id="1124772482545689468">ਵਰਤੋਂਕਾਰ</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">ਬਾਹਰੀ ਡੀਵਾਈਸਾਂ ਲਈ ਅੱਪਡੇਟ ਫ਼ਰਮਵੇਅਰ ਵਿੰਡੋ ਖੁੱਲ੍ਹੀ ਹੈ। <ph name="NUM_UPDATES" /> ਅੱਪਡੇਟ ਉਪਲਬਧ ਹਨ।</translation>
+<translation id="1165039591588034296">ਗੜਬੜ</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> ਵੱਲੋਂ ਇਸ <ph name="DEVICE_TYPE" /> ਦਾ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।</translation>
 <translation id="1175951029573070619">ਔਸਤ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">ਹਟਾਓ</translation>
+<translation id="1190378975642195988">ਬੇਸ ਐਕਸੈੱਲਰੋਮੀਟਰ</translation>
 <translation id="1195447618553298278">ਅਗਿਆਤ ਗੜਬੜ।</translation>
 <translation id="1196959502276349371">ਵਰਜਨ <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">ਚਲਾਓ/ਰੋਕੋ</translation>
@@ -214,7 +217,6 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> ਸਕਿੰਟਾਂ ਵਿੱਚ <ph name="RATE" /> ਖਤਮ ਹੋਈ।</translation>
 <translation id="291142119251986300">ਅਯੋਗ ਹਿੱਸੇ</translation>
 <translation id="2926057806159140518">ਆਪਣਾ ਵਰਤੋਂਕਾਰ ਨਾਮ ਅਤੇ ਪਾਸਵਰਡ ਦਾਖਲ ਕਰੋ ਜਾਂ ਆਪਣਾ QR ਕੋਡ ਸਕੈਨ ਕਰੋ</translation>
-<translation id="2928420929544864228">ਸਥਾਪਨਾ ਪੂਰੀ ਹੋਈ।</translation>
 <translation id="3008341117444806826">ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
 <translation id="3009958530611748826">ਇੱਥੇ ਰੱਖਿਅਤ ਕਰਨ ਲਈ ਕੋਈ ਫੋਲਡਰ ਚੁਣੋ</translation>
 <translation id="3017079585324758401">ਬੈਕਗ੍ਰਾਊਂਡ</translation>
@@ -268,6 +270,7 @@
 <translation id="3484914941826596830">ਫ਼ਰਮਵੇਅਰ ਦੇ ਅੱਪਡੇਟ ਹੋਣ ਦੌਰਾਨ ਇਸ ਬਾਹਰੀ ਡੀਵਾਈਸ ਨੂੰ ਅਣਪਲੱਗ ਨਾ ਕਰੋ ਜਾਂ ਆਪਣੇ ਕੰਪਿਊਟਰ ਨੂੰ ਬੰਦ ਨਾ ਕਰੋ। ਤੁਸੀਂ ਇਸ ਵਿੰਡੋ ਨੂੰ ਛੋਟਾ ਕਰ ਸਕਦੇ ਹੋ। ਇਸ ਅੱਪਡੇਟ ਵਿੱਚ ਕੁਝ ਮਿੰਟ ਲੱਗ ਸਕਦੇ ਹਨ ਅਤੇ ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਇਸ ਸਮੇਂ ਦੌਰਾਨ ਤੁਹਾਡਾ ਬਾਹਰੀ ਡੀਵਾਈਸ ਕੰਮ ਨਾ ਕਰੇ।</translation>
 <translation id="3486220673238053218">ਪਰਿਭਾਸ਼ਾ</translation>
 <translation id="3488065109653206955">ਅੰਸ਼ਕ ਤੌਰ ਤੇ ਸਕਿਰਿਆ ਕੀਤਾ</translation>
+<translation id="3492982278147736083">ਲਿਡ ਜਾਇਰੋਸਕੋਪ</translation>
 <translation id="3517001332549868749">ChromeOS ਸੰਬੰਧੀ ਅੱਪਡੇਟ</translation>
 <translation id="3527036260304016759">ਅਸਫਲ ਰਹੀ - ਅਗਿਆਤ ਗੜਬੜ</translation>
 <translation id="3532980081107202182">ਲਗਭਗ <ph name="MIN_REMAINING" /> ਮਿੰਟ ਬਾਕੀ</translation>
@@ -301,9 +304,11 @@
 <translation id="3820172043799983114">ਅਵੈਧ ਪਿੰਨ।</translation>
 <translation id="3838338534323494292">ਨਵਾਂ ਪਾਸਵਰਡ</translation>
 <translation id="385051799172605136">ਪਿੱਛੇ</translation>
+<translation id="3856304145690230735">ਬੇਸ ਜਾਇਰੋਸਕੋਪ</translation>
 <translation id="385832974417157471">ਬੰਦ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਆਪਣੇ ਫ਼ੋਨ ਨੂੰ ਪਾਵਰਵਾਸ਼ ਕਰੋ। ਜੇ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਵਿੱਚ ਲਿਡ ਹੈ, ਤਾਂ ਲਿਡ ਨੂੰ ਬੰਦ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਪਾਵਰਵਾਸ਼ ਦੇ ਪੂਰੇ ਹੋਣ ਦੀ ਉਡੀਕ ਕਰੋ। ਪਾਵਰਵਾਸ਼ ਨੂੰ ਪੂਰਾ ਹੋਣ ਵਿੱਚ ਇੱਕ ਮਿੰਟ ਤੱਕ ਦਾ ਸਮਾਂ ਲੱਗ ਸਕਦਾ ਹੈ।</translation>
 <translation id="3858860766373142691">ਨਾਮ</translation>
 <translation id="3865414814144988605">ਰੈਜ਼ੋਲਿਊਸ਼ਨ</translation>
+<translation id="3866249974567520381">ਵਰਣਨ</translation>
 <translation id="387301095347517405">ਤੁਹਾਡੀ ਬੈਟਰੀ ਵੱਲੋਂ ਚਾਰਜ ਹੋਣ ਦੇ ਚੱਕਰ ਨੂੰ ਪੂਰਾ ਕੀਤੇ ਜਾਣ ਦੀ ਗਿਣਤੀ</translation>
 <translation id="3885327323343477505">ਸਕ੍ਰੀਨ ਸੇਵਰ ਬਦਲੋ</translation>
 <translation id="3923184630988645767">ਡਾਟਾ ਵਰਤੋਂ</translation>
@@ -371,6 +376,7 @@
 <translation id="4472575034687746823">ਸ਼ੁਰੂਆਤ ਕਰੋ</translation>
 <translation id="4479639480957787382">ਈਥਰਨੈਟ</translation>
 <translation id="4483049906298469269">ਗੈਰ-ਪੂਰਵ-ਨਿਰਧਾਰਤ ਨੈੱਟਵਰਕ ਗੇਟਵੇ ਨੂੰ ਪਿੰਗ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ</translation>
+<translation id="4500213108254186382">ਲਿਡ ਐਕਸੈੱਲਰੋਮੀਟਰ</translation>
 <translation id="4503223151711056411">ਖੱਬਾ ਤੀਰ</translation>
 <translation id="4511264077854731334">ਪੋਰਟਲ</translation>
 <translation id="4521826082652183069">ਵਿਸ਼ੇ ਸੰਬੰਧੀ ਵਿਕਲਪਿਕ ਨਾਮ ਦਾ ਮਿਲਾਨ</translation>
@@ -382,6 +388,7 @@
 <translation id="4561801978359312462">ਸਿਮ ਅਣਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="4562494484721939086">ਕੋਈ ਸੇਵਾ ਨਹੀਂ</translation>
 <translation id="4568938274596692027">ਸਥਾਪਨਾ ਪੂਰੀ ਹੋਈ। ਮੁੜ-ਸ਼ੁਰੂ ਕਾਰਨ ਲਈ ਤਿਆਰ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
+<translation id="4576943788798178439">ਸਟਾਈਲਸ ਸਹਾਇਤਾ</translation>
 <translation id="458794348635939462">ਸਾਰੇ ਹੋਸਟਾਂ ਨੂੰ ਹੱਲ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ</translation>
 <translation id="4593212453765072419">ਪ੍ਰੌਕਸੀ ਪ੍ਰਮਾਣੀਕਰਨ ਦੀ ਲੋੜ ਹੈ</translation>
 <translation id="4609350030397390689">ਕੀ-ਬੋਰਡ ਦੀ ਚਮਕ ਘਟਾਉਣ ਵਾਲੀ ਕੁੰਜੀ</translation>
@@ -430,6 +437,7 @@
 <translation id="4915052247106771211">ਇਸ ਨਾਲ ਡੀਵਾਈਸ ਫੈਕਟਰੀ ਸੈਟਿੰਗਾਂ (ਪਾਵਰਵਾਸ਼) 'ਤੇ ਰੀਸੈੱਟ ਹੋ ਜਾਵੇਗਾ।</translation>
 <translation id="4917385247580444890">ਮਜ਼ਬੂਤ</translation>
 <translation id="4917889632206600977">ਬੰਦ ਹੋ ਗਿਆ - ਕਾਗਜ਼ ਖਤਮ ਹੋ ਗਏ</translation>
+<translation id="491791267030419270">ਵਿਚਾਰ ਲਿਖਣ ਸੰਬੰਧੀ ਨੁਕਤੇ</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> ਸਕਿੰਟਾਂ ਵਿੱਚ <ph name="RATE" /> ਚਾਰਜ ਹੋਈ।</translation>
 <translation id="4930320165497208503">ਕਿਸੇ ਕਨੈਕਸ਼ਨ ਦਾ ਸੈੱਟਅੱਪ ਕਰਨ ਜਾਂ ਉਸਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਲਈ, <ph name="BEGIN_LINK" />ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> 'ਤੇ ਜਾਓ।</translation>
 <translation id="4932733599132424254">ਤਾਰੀਖ</translation>
@@ -457,6 +465,7 @@
 <translation id="5168185087976003268">ਬੈਟਰੀ ਦੀ ਸਥਿਤੀ</translation>
 <translation id="5170568018924773124">ਫੋਲਡਰ ਵਿੱਚ ਦਿਖਾਓ</translation>
 <translation id="5179530508336824319">ਅਗਲੀ ਸਕ੍ਰੀਨ 'ਤੇ ਜਾਣਾ ਜਾਰੀ ਰੱਖਣ ਲਈ, 'ਲਿਖਣ ਸੰਬੰਧੀ ਸੁਰੱਖਿਆ' ਨੂੰ ਚਾਲੂ ਕਰੋ। ਹਿਦਾਇਤਾਂ ਲਈ ਡੀਵਾਈਸ ਨਿਰਮਾਤਾ ਦੇ ਸਹਾਇਤਾ ਪੰਨੇ 'ਤੇ ਜਾਓ।</translation>
+<translation id="5181140330217080051">ਡਾਊਨਲੋਡ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="5190187232518914472">ਆਪਣੀਆਂ ਮਨਪਸੰਦ ਯਾਦਾਂ ਨੂੰ ਤਾਜ਼ਾ ਕਰੋ। ਐਲਬਮਾਂ ਸ਼ਾਮਲ ਜਾਂ ਉਹਨਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰਨ ਲਈ, <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" /> 'ਤੇ ਜਾਓ।</translation>
 <translation id="5212543919916444558">ਮੈਨੂੰ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ 'ਤੇ ਅਜਿਹਾ ਕੁਝ ਵੀ ਨਹੀਂ ਮਿਲਿਆ ਜਿਸ ਵਿੱਚ ਮੈਂ ਤੁਹਾਡੀ ਮਦਦ ਕਰ ਸਕਾਂ। ਮੇਰੇ ਤੋਂ ਕੁਝ ਵੀ ਪੁੱਛਣ ਲਈ ਮਾਈਕ 'ਤੇ ਟੈਪ ਕਰਕੇ ਦੇਖੋ।</translation>
 <translation id="5212593641110061691">ਪੱਤਰਕਾ</translation>
@@ -512,6 +521,7 @@
 <translation id="5620281292257375798">ਸਿਰਫ਼ ਅੰਦਰੂਨੀ</translation>
 <translation id="5649768706273821470">ਸੁਣਿਆ</translation>
 <translation id="5655283760733841251">ਕੀ-ਬੋਰਡ ਦੀ ਚਮਕ ਵਧਾਉਣ ਵਾਲੀ ਕੁੰਜੀ</translation>
+<translation id="5659593005791499971">ਈਮੇਲ</translation>
 <translation id="5669267381087807207">ਸਕਿਰਿਆ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">ਪਰਿਵਾਰ</translation>
@@ -524,6 +534,7 @@
 <translation id="57838592816432529">ਮਿਊਟ ਕਰੋ</translation>
 <translation id="5784136236926853061">ਜ਼ਿਆਦਾ HTTP ਵਿਲੰਬਤਾ</translation>
 <translation id="578753362485952307">ਜੇ ਤੁਸੀਂ ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ ਵਿੱਚ ਵਰਤਣ ਲਈ ਮੁੱਖ-ਬੋਰਡ 'ਤੇ ਮੁੜ-ਕੰਮ ਕਰ ਰਹੇ ਹੋ, ਤਾਂ <ph name="LINK_BEGIN" />ਮੁੜ-ਕੰਮ ਦੇ ਪ੍ਰਵਾਹ<ph name="LINK_END" /> 'ਤੇ ਜਾਓ।</translation>
+<translation id="5790085346892983794">ਸਫਲਤਾ</translation>
 <translation id="5832805196449965646">ਵਿਅਕਤੀ ਜੋੜੋ</translation>
 <translation id="583281660410589416">ਅਗਿਆਤ</translation>
 <translation id="5843706793424741864">ਫਾਰੇਨਹੀਟ</translation>
@@ -535,6 +546,7 @@
 <translation id="5866840822086176774">ਬਹੁਤ ਮਜ਼ਬੂਤ</translation>
 <translation id="588258955323874662">ਫੁਲਸਕ੍ਰੀਨ</translation>
 <translation id="5895138241574237353">ਰੀਸਟਾਰਟ ਕਰੋ</translation>
+<translation id="5898758006340607522">ਪਾਵਰ ਬਟਨ</translation>
 <translation id="5901630391730855834">ਪੀਲਾ</translation>
 <translation id="5903200662178656908">ਡੀਵਾਈਸ ਕੀ-ਬੋਰਡ ਅਤੇ ਮਾਊਸ ਦਾ ਸੁਮੇਲ ਹੈ।</translation>
 <translation id="5916084858004523819">ਪਾਬੰਦੀ ਲਗਾਈ ਗਈ</translation>
@@ -857,6 +869,7 @@
 <translation id="8919792139048574232">ਦੇਖੋ ਕਿ ਕੀ ਠੀਕ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="8919837981463578619">ਅਸਫਲ ਰਹੀ - ਟ੍ਰੇਅ ਮੌਜੂਦ ਨਹੀਂ ਹੈ</translation>
 <translation id="8923267550422472772">ਰੀਸੈੱਟ ਕਰਨ ਲਈ ਮਹੀਨੇ ਦਾ ਦਿਨ</translation>
+<translation id="8925613211674558308">ਕੈਸ਼ੇ ਵਾਲਾ Vpd</translation>
 <translation id="8928727111548978589">ਅਸਫਲ ਰਹੀ - ਕਾਗਜ਼ ਖਤਮ ਹੋ ਗਏ</translation>
 <translation id="8930521118335213258">ਪੀਅਰ</translation>
 <translation id="8930622219860340959">ਵਾਇਰਲੈੱਸ</translation>
@@ -898,6 +911,7 @@
 <translation id="922179502584117429">ਮੌਜੂਦਾ ਵਰਜਨ <ph name="VERSION_NUMBER" /> ਪੁਰਾਣਾ ਹੋ ਗਿਆ ਹੈ</translation>
 <translation id="932327136139879170">ਹੋਮ</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">ਪ੍ਰਤੀਕਰਮ ਭੇਜੋ</translation>
 <translation id="952992212772159698">ਸਕਿਰਿਆ ਨਹੀਂ ਕੀਤਾ</translation>
 <translation id="960719561871045870">ਓਪਰੇਟਰ ਕੋਡ</translation>
 <translation id="982713511914535780">ਡਿਸਚਾਰਜ ਟੈਸਟ ਚਲਾਓ</translation>

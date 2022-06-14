@@ -34,6 +34,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/ash/android_sms/android_sms_switches.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/fast_checkout/fast_checkout_features.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
@@ -1854,23 +1855,6 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
      std::size(kExploreSitesDenseTitleBottom), nullptr},
     {"Dense Title Right", kExploreSitesDenseTitleRight,
      std::size(kExploreSitesDenseTitleRight), nullptr}};
-const FeatureEntry::FeatureParam kLongpressResolvePreserveTap = {
-    contextual_search::kLongpressResolveParamName,
-    contextual_search::kLongpressResolvePreserveTap};
-const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
-    {"and preserve Tap behavior", &kLongpressResolvePreserveTap, 1, nullptr},
-};
-
-const FeatureEntry::FeatureParam kContextualSearchPromoCardShow3Times = {
-    "promo_card_max_shown", "3"};
-const FeatureEntry::FeatureParam kContextualSearchPromoCardShow100Times = {
-    "promo_card_max_shown", "100"};
-const FeatureEntry::FeatureVariation ContextualSearchNewSettingsVariations[] = {
-    {"with promo show 3 times", &kContextualSearchPromoCardShow3Times, 1,
-     nullptr},
-    {"with promo show 100 times", &kContextualSearchPromoCardShow100Times, 1,
-     nullptr},
-};
 
 const FeatureEntry::FeatureParam kRelatedSearchesUrl = {"stamp", "1Ru"};
 const FeatureEntry::FeatureParam kRelatedSearchesContent = {"stamp", "1Rc"};
@@ -3190,6 +3174,13 @@ const FeatureEntry::FeatureVariation kDesktopSharePreviewVariations[] = {
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_CHROMEOS)
+const FeatureEntry::FeatureParam kDmTokenDeletionParam[] = {{"forced", "true"}};
+const FeatureEntry::FeatureVariation kDmTokenDeletionVariation[] = {
+    {"(Forced)", kDmTokenDeletionParam, std::size(kDmTokenDeletionParam),
+     nullptr}};
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3315,21 +3306,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchForceCaptionName,
      flag_descriptions::kContextualSearchForceCaptionDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchForceCaption)},
-    {"contextual-search-longpress-resolve",
-     flag_descriptions::kContextualSearchLongpressResolveName,
-     flag_descriptions::kContextualSearchLongpressResolveDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kContextualSearchLongpressResolve,
-         kLongpressResolveVariations,
-         "ContextualSearchLongpressResolve")},
-    {"contextual-search-new-settings",
-     flag_descriptions::KContextualSearchNewSettingsName,
-     flag_descriptions::KContextualSearchNewSettingsDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::KContextualSearchNewSettings,
-         ContextualSearchNewSettingsVariations,
-         "ContextualSearchNewSettings")},
     {"contextual-search-translations",
      flag_descriptions::kContextualSearchTranslationsName,
      flag_descriptions::kContextualSearchTranslationsDescription, kOsAndroid,
@@ -4035,11 +4011,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualPageActionsWithPriceTrackingName,
      flag_descriptions::kContextualPageActionsWithPriceTrackingDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(segmentation_platform::features::
-                            kContextualPageActionsWithPriceTracking)},
+     FEATURE_VALUE_TYPE(
+         segmentation_platform::features::kContextualPageActionPriceTracking)},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
+    {"screenshots-for-android-v2",
+     flag_descriptions::kScreenshotsForAndroidV2Name,
+     flag_descriptions::kScreenshotsForAndroidV2Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(share::kScreenshotsForAndroidV2)},
     {"voice-button-in-top-toolbar",
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
@@ -4190,6 +4170,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStrictSiteIsolationDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
 #endif
+    {"enable-isolated-web-apps", flag_descriptions::kEnableIsolatedWebAppsName,
+     flag_descriptions::kEnableIsolatedWebAppsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kIsolatedWebApps)},
     {"install-isolated-apps-at-startup",
      flag_descriptions::kInstallIssolatedAppsAtStartup,
      flag_descriptions::kInstallIssolatedAppsAtStartupDescription, kOsAll,
@@ -5496,13 +5479,19 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
+    {"enable-retail-coupons", flag_descriptions::kRetailCouponsName,
+     flag_descriptions::kRetailCouponsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(commerce::kRetailCoupons)},
+
     {"ntp-cache-one-google-bar", flag_descriptions::kNtpCacheOneGoogleBarName,
      flag_descriptions::kNtpCacheOneGoogleBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kCacheOneGoogleBar)},
 
-    {"ntp-modules", flag_descriptions::kNtpModulesName,
-     flag_descriptions::kNtpModulesDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kModules)},
+    {"ntp-chrome-cart-module", flag_descriptions::kNtpChromeCartModuleName,
+     flag_descriptions::kNtpChromeCartModuleDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpChromeCartModule,
+                                    kNtpChromeCartModuleVariations,
+                                    "DesktopNtpModules")},
 
     {"ntp-drive-module", flag_descriptions::kNtpDriveModuleName,
      flag_descriptions::kNtpDriveModuleDescription, kOsDesktop,
@@ -5515,6 +5504,33 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpDummyModulesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kNtpDummyModules)},
 #endif
+
+    {"ntp-middle-slot-promo-dismissal",
+     flag_descriptions::kNtpMiddleSlotPromoDismissalName,
+     flag_descriptions::kNtpMiddleSlotPromoDismissalDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpMiddleSlotPromoDismissal)},
+
+    {"ntp-modules-drag-and-drop", flag_descriptions::kNtpModulesDragAndDropName,
+     flag_descriptions::kNtpModulesDragAndDropDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesDragAndDrop)},
+
+    {"ntp-modules-first-run-experience",
+     flag_descriptions::kNtpModulesFirstRunExperienceName,
+     flag_descriptions::kNtpModulesFirstRunExperienceDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesFirstRunExperience)},
+
+    {"ntp-modules-redesigned", flag_descriptions::kNtpModulesRedesignedName,
+     flag_descriptions::kNtpModulesRedesignedDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesigned)},
+
+    {"ntp-modules-redesigned-layout",
+     flag_descriptions::kNtpModulesRedesignedLayoutName,
+     flag_descriptions::kNtpModulesRedesignedLayoutDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesignedLayout)},
+
+    {"ntp-modules", flag_descriptions::kNtpModulesName,
+     flag_descriptions::kNtpModulesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kModules)},
 
     {"ntp-photos-module", flag_descriptions::kNtpPhotosModuleName,
      flag_descriptions::kNtpPhotosModuleDescription, kOsDesktop,
@@ -5549,40 +5565,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpRecipeTasksModuleVariations,
                                     "DesktopNtpModules")},
 
-    {"ntp-chrome-cart-module", flag_descriptions::kNtpChromeCartModuleName,
-     flag_descriptions::kNtpChromeCartModuleDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpChromeCartModule,
-                                    kNtpChromeCartModuleVariations,
-                                    "DesktopNtpModules")},
-
-    {"enable-retail-coupons", flag_descriptions::kRetailCouponsName,
-     flag_descriptions::kRetailCouponsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(commerce::kRetailCoupons)},
-
-    {"ntp-safe-browsing-module", flag_descriptions::kNtpSafeBrowsingModuleName,
-     flag_descriptions::kNtpSafeBrowsingModuleDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpSafeBrowsingModule,
-                                    kNtpSafeBrowsingModuleVariations,
-                                    "DesktopNtpModules")},
-
-    {"ntp-modules-drag-and-drop", flag_descriptions::kNtpModulesDragAndDropName,
-     flag_descriptions::kNtpModulesDragAndDropDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesDragAndDrop)},
-
-    {"ntp-modules-first-run-experience",
-     flag_descriptions::kNtpModulesFirstRunExperienceName,
-     flag_descriptions::kNtpModulesFirstRunExperienceDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesFirstRunExperience)},
-
-    {"ntp-modules-redesigned", flag_descriptions::kNtpModulesRedesignedName,
-     flag_descriptions::kNtpModulesRedesignedDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesigned)},
-
-    {"ntp-modules-redesigned-layout",
-     flag_descriptions::kNtpModulesRedesignedLayoutName,
-     flag_descriptions::kNtpModulesRedesignedLayoutDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesignedLayout)},
-
     {"ntp-realbox-match-omnibox-theme",
      flag_descriptions::kNtpRealboxMatchOmniboxThemeName,
      flag_descriptions::kNtpRealboxMatchOmniboxThemeDescription, kOsDesktop,
@@ -5614,6 +5596,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpRealboxUseGoogleGIconName,
      flag_descriptions::kNtpRealboxUseGoogleGIconDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kRealboxUseGoogleGIcon)},
+
+    {"ntp-safe-browsing-module", flag_descriptions::kNtpSafeBrowsingModuleName,
+     flag_descriptions::kNtpSafeBrowsingModuleDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpSafeBrowsingModule,
+                                    kNtpSafeBrowsingModuleVariations,
+                                    "DesktopNtpModules")},
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
@@ -7287,11 +7275,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kSupportForAddPasswordsInSettings)},
 
-    {"mute-compromised-passwords",
-     flag_descriptions::kMuteCompromisedPasswordsName,
-     flag_descriptions::kMuteCompromisedPasswordsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
-
     {"password-notes", flag_descriptions::kPasswordNotesName,
      flag_descriptions::kPasswordNotesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordNotes)},
@@ -7825,15 +7808,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillParseMerchantPromoCodeFields)},
 
-    {"autofill-enable-virtual-cards-risk-based-authentication",
-     flag_descriptions::kAutofillEnableVirtualCardsRiskBasedAuthenticationName,
-     flag_descriptions::
-         kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnableVirtualCardsRiskBasedAuthentication)},
-
     {"autofill-highlight-only-changed-value-in-preview-mode",
      flag_descriptions::kAutofillHighlightOnlyChangedValuesInPreviewModeName,
      flag_descriptions::
@@ -7862,13 +7836,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableInputEventLoggingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableInputEventLogging)},
 #endif
-
-    {"autofill-enable-merchant-bound-virtual-cards",
-     flag_descriptions::kAutofillEnableMerchantBoundVirtualCardsName,
-     flag_descriptions::kAutofillEnableMerchantBoundVirtualCardsDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableMerchantBoundVirtualCards)},
 
     {"autofill-enable-sticky-manual-fallback-for-cards",
      flag_descriptions::kAutofillEnableStickyManualFallbackForCardsName,
@@ -7935,6 +7902,9 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kTouchToFillPasswordSubmission,
          kTouchToFillPasswordSubmissionVariations,
          "TouchToFillPasswordSubmission")},
+    {"fast-checkout", flag_descriptions::kFastCheckoutName,
+     flag_descriptions::kFastCheckoutDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kFastCheckout)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -8249,13 +8219,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kAppDiscoveryForOobe)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_ANDROID)
-    {"request-desktop-site-global",
-     flag_descriptions::kRequestDesktopSiteGlobalName,
-     flag_descriptions::kRequestDesktopSiteGlobalDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kRequestDesktopSiteGlobal)},
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"u2f-security-key-api", flag_descriptions::kU2FSecurityKeyAPIName,
      flag_descriptions::kU2FSecurityKeyAPIDescription, kOsAll,
@@ -8457,6 +8420,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTouchDragAndContextMenuName,
      flag_descriptions::kTouchDragAndContextMenuDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kTouchDragAndContextMenu)},
+
+    {"new-instance-from-dragged-link",
+     flag_descriptions::kNewInstanceFromDraggedLinkName,
+     flag_descriptions::kNewInstanceFromDraggedLinkDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kNewInstanceFromDraggedLink)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"autofill-enable-update-virtual-card-enrollment",
@@ -8488,11 +8456,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kWaylandScreenCoordinatesEnabled)},
 #endif
-
-    {"tailored-security-integration",
-     flag_descriptions::kTailoredSecurityIntegrationName,
-     flag_descriptions::kTailoredSecurityIntegrationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(safe_browsing::kTailoredSecurityIntegration)},
 
 #if !BUILDFLAG(IS_ANDROID)
     {"screen-ai", flag_descriptions::kScreenAIName,
@@ -8786,8 +8749,27 @@ const FeatureEntry kFeatureEntries[] = {
 #if !BUILDFLAG(IS_CHROMEOS)
     {"dm-token-deletion", flag_descriptions::kDmTokenDeletionName,
      flag_descriptions::kDmTokenDeletionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(policy::features::kDmTokenDeletion)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(policy::features::kDmTokenDeletion,
+                                    kDmTokenDeletionVariation,
+                                    "DmTokenDeletion")},
 #endif  // !BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_ANDROID)
+    {"enable-commerce-hint-android",
+     flag_descriptions::kCommerceHintAndroidName,
+     flag_descriptions::kCommerceHintAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(commerce::kCommerceHintAndroid)},
+#endif
+
+    {"autofill-enable-get-details-for-enroll-parsing-in-upload-card-response",
+     flag_descriptions::
+         kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName,
+     flag_descriptions::
+         kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponse)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

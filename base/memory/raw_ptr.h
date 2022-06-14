@@ -1050,6 +1050,37 @@ ALWAYS_INLINE bool operator>=(const raw_ptr<U, I>& lhs,
   return lhs.GetForComparison() >= rhs.GetForComparison();
 }
 
+// Template helpers for working with T* or raw_ptr<T>.
+template <typename T>
+struct IsPointer : std::false_type {};
+
+template <typename T>
+struct IsPointer<T*> : std::true_type {};
+
+template <typename T, typename I>
+struct IsPointer<raw_ptr<T, I>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool IsPointerV = IsPointer<T>::value;
+
+template <typename T>
+struct RemovePointer {
+  using type = T;
+};
+
+template <typename T>
+struct RemovePointer<T*> {
+  using type = T;
+};
+
+template <typename T, typename I>
+struct RemovePointer<raw_ptr<T, I>> {
+  using type = T;
+};
+
+template <typename T>
+using RemovePointerT = typename RemovePointer<T>::type;
+
 }  // namespace base
 
 using base::raw_ptr;
@@ -1064,6 +1095,11 @@ using base::raw_ptr;
 // When using it, please provide a justification about what guarantees it will
 // never be dereferenced after becoming dangling.
 using DisableDanglingPtrDetection = base::RawPtrMayDangle;
+
+// See https://cbug.com/1291138.
+// Annotates known dangling raw_ptr. Those haven't been triaged yet. All the
+// occurrences are meant to be removed.
+using DanglingUntriaged = DisableDanglingPtrDetection;
 
 namespace std {
 

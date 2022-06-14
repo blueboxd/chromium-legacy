@@ -251,6 +251,7 @@ crbug.com/1254497 conformance/misc/type-conversion-test.html [ RetryOnFailure ]
 
 crbug.com/angleproject/4417 [ win angle-d3d11 ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
 crbug.com/angleproject/4417 [ win angle-d3d11 ] conformance2/rendering/framebuffer-render-to-layer-angle-issue.html [ Failure ]
+crbug.com/angleproject/7109 [ win angle-d3d11 ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
 
 # Windows only.
 crbug.com/angleproject/1465 [ win angle-d3d11 ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
@@ -346,6 +347,7 @@ crbug.com/angleproject/7209 [ mac passthrough angle-metal amd ] deqp/functional/
 crbug.com/angleproject/7209 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
 crbug.com/angleproject/7209 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/angleproject/7209 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
+crbug.com/angleproject/7425 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/texstorage3d_format_depth_stencil.html [ Failure ]
 
 # Metal Intel
 crbug.com/angleproject/6430 [ mac passthrough angle-metal intel ] conformance2/textures/canvas/tex-2d-rgb16f-rgb-float.html [ Failure ]
@@ -368,6 +370,7 @@ crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/tr
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
+crbug.com/angleproject/7397 [ mac passthrough angle-metal intel ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
 
 # Metal M1
 # TODO(crbug.com/1276153) uncomment after fix for updated part of test applies
@@ -391,6 +394,7 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-rend
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/texturespecification/basic_copyteximage2d.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/texturespecification/basic_copytexsubimage2d.html [ Failure ]
 crbug.com/1298619 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/occlusionquery_strict.html [ Failure ]
+crbug.com/angleproject/7397 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
 
 ######################################################################
 # Mac failures (mainly OpenGL; some need to be reevaluated on Metal) #
@@ -559,6 +563,7 @@ crbug.com/658724 [ mac intel ] deqp/functional/gles3/framebufferblit/rect_04.htm
 crbug.com/782317 [ mac intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
 crbug.com/1144207 [ mac intel-0x3e9b angle-disabled ] conformance/extensions/webgl-multi-draw.html [ Failure ]
 crbug.com/1191450 [ mac intel-0x3e9b angle-disabled ] conformance2/rendering/instanced-arrays.html [ Failure ]
+crbug.com/1334684 [ monterey intel angle-metal ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
 
 # Mac Passthrough
 crbug.com/angleproject/5223 [ mac passthrough ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
@@ -566,6 +571,7 @@ crbug.com/angleproject/5223 [ mac passthrough ] conformance2/textures/misc/tex-m
 # Mac Passthrough / AMD
 crbug.com/angleproject/5224 [ mac passthrough angle-opengl amd ] conformance2/rendering/instanced-arrays.html [ Failure ]
 crbug.com/angleproject/5225 [ mac passthrough angle-opengl amd ] conformance2/rendering/vertex-id.html [ Failure ]
+crbug.com/angleproject/7412 [ mac passthrough angle-opengl amd ] conformance2/rendering/vertex-id-large-count.html [ Failure ]
 
 crbug.com/1227762 [ bigsur amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_00.html [ Failure ]
 crbug.com/1227762 [ bigsur amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_01.html [ Failure ]
@@ -699,6 +705,7 @@ crbug.com/1092734 [ android android-pixel-2 passthrough ] conformance2/textures/
 crbug.com/1092734 [ android android-pixel-2 passthrough ] conformance2/textures/webgl_canvas/tex-2d-rgb565-rgb-unsigned_byte.html [ Failure ]
 crbug.com/1143323 [ android android-pixel-2 passthrough ] conformance/rendering/draw-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1276186 [ android android-pixel-2 ] conformance2/glsl3/array-equality.html [ Failure ]
+crbug.com/angleproject/7421 [ android android-pixel-2 ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
 
 # Failing test in passthrough mode when experiment DrDc is enabled via fieldtrial_testing_config.json.
 crbug.com/1276552 [ android passthrough ] conformance/canvas/render-after-resize-test.html [ Failure ]
@@ -769,7 +776,6 @@ crbug.com/1215698 [ chromeos chromeos-board-amd64-generic ] deqp/functional/gles
 crbug.com/1218607 [ chromeos chromeos-board-amd64-generic no-passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
 crbug.com/1221362 [ chromeos chromeos-board-amd64-generic ] conformance2/rendering/blitframebuffer-filter-outofbounds.html [ Failure ]
 crbug.com/1221362 [ chromeos chromeos-board-amd64-generic ] conformance2/rendering/blitframebuffer-filter-srgb.html [ Failure ]
-crbug.com/1221365 [ chromeos chromeos-board-amd64-generic ] deqp/data/gles3/shaders/conversions.html [ Failure ]
 crbug.com/1221365 [ chromeos chromeos-board-amd64-generic ] deqp/data/gles3/shaders/swizzles.html [ Failure ]
 crbug.com/1223542 [ chromeos chromeos-board-amd64-generic ] deqp/functional/gles3/framebufferblit/rect_03.html [ Failure ]
 crbug.com/1223542 [ chromeos chromeos-board-amd64-generic ] deqp/functional/gles3/framebufferblit/rect_04.html [ Failure ]

@@ -14,7 +14,7 @@
 <!--TODO(xiangdongkong): use localized strings -->
 <div id="container">
   <div id="header">
-    <h1 id="title">[[getTitle_(sendReportStatus)]]</h1>
+    <h1 class="page-title">[[getTitle_(sendReportStatus)]]</h1>
   </div>
   <div id="content">
     <div id="message">[[getMessage_(sendReportStatus)]]</div>
@@ -22,11 +22,13 @@
       <p id="helpResourcesLabel">Here are some other helpful resources:</p>
       <cr-link-row id="explore" start-icon="help-resources:explore"
           label="Explore app" external
-          sub-label="Find help articles and answers to common Chromebook questions">
+          sub-label="Find help articles and answers to common Chromebook questions"
+          on-click="handleLinkClicked_">
       </cr-link-row>
       <cr-link-row id="diagnostics" start-icon="help-resources:diagnostics"
           label="Diagnostics app" external
-          sub-label="Run tests and troubleshooting for hardware issues">
+          sub-label="Run tests and troubleshooting for hardware issues"
+          on-click="handleLinkClicked_">
       </cr-link-row>
       <cr-link-row id="chromebookCommunity"
           start-icon="help-resources2:chromebook-community"

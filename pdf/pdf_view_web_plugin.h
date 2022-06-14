@@ -32,6 +32,7 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "v8/include/v8.h"
 
@@ -261,6 +262,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void ImeFinishComposingTextForPlugin(bool keep_selection) override;
 
   // PDFEngine::Client:
+  void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void UpdateCursor(ui::mojom::CursorType new_cursor_type) override;
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
@@ -326,6 +328,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   std::unique_ptr<PDFiumEngine> CreateEngine(
       PDFEngine::Client* client,
       PDFiumFormFiller::ScriptOption script_option) override;
+  const PDFiumEngine* engine() const override;
+  PDFiumEngine* engine() override;
+  void set_engine(std::unique_ptr<PDFiumEngine> engine) override;
   void LoadUrl(base::StringPiece url, LoadUrlCallback callback) override;
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
   void OnDocumentLoadComplete() override;
@@ -347,7 +352,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                               const gfx::PointF& right,
                               int right_height) override;
   void UserMetricsRecordAction(const std::string& action) override;
-  gfx::Vector2d plugin_offset_in_frame() const override;
+  bool full_frame() const override;
 
  private:
   // Call `Destroy()` instead.
@@ -396,22 +401,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // the plugin are moved off the main thread.
   void OnInvokePrintDialog();
 
-  // Callback to set the document information in the accessibility tree
-  // asynchronously.
-  void OnSetAccessibilityDocInfo(AccessibilityDocInfo doc_info);
-
-  // Callback to set the page information in the accessibility tree
-  // asynchronously.
-  void OnSetAccessibilityPageInfo(
-      AccessibilityPageInfo page_info,
-      std::vector<AccessibilityTextRunInfo> text_runs,
-      std::vector<AccessibilityCharInfo> chars,
-      AccessibilityPageObjects page_objects);
-
-  // Callback to set the viewport information in the accessibility tree
-  // asynchronously.
-  void OnSetAccessibilityViewportInfo(AccessibilityViewportInfo viewport_info);
-
   void ResetRecentlySentFindUpdate();
 
   // Records metrics about the document metadata.
@@ -434,6 +423,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_;
 
   mojo::Receiver<pdf::mojom::PdfListener> listener_receiver_{this};
+
+  std::unique_ptr<PDFiumEngine> engine_;
+
+  // The current cursor type.
+  ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
 
   // The id of the current find operation, or -1 if no current operation is
   // present.
@@ -474,6 +468,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // The plugin rect in CSS pixels.
   gfx::Rect css_plugin_rect_;
 
+  // True if the plugin occupies the entire frame (not embedded).
+  bool full_frame_ = false;
+
   // The background color of the PDF viewer.
   SkColor background_color_ = SK_ColorTRANSPARENT;
 
@@ -485,7 +482,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Used for submitting forms.
   std::unique_ptr<UrlLoader> form_loader_;
 
-  // May be null in unit tests.
+  // Handler for accessibility data updates.
   std::unique_ptr<PdfAccessibilityDataHandler> const
       pdf_accessibility_data_handler_;
 

@@ -175,16 +175,6 @@ enum class MediaQueryOperator {
   kGe,
 };
 
-class CORE_EXPORT MediaQueryExpValueWrapper
-    : public GarbageCollected<MediaQueryExpValueWrapper> {
- public:
-  explicit MediaQueryExpValueWrapper(MediaQueryExpValue value) : value(value) {}
-
-  void Trace(Visitor* visitor) const { visitor->Trace(value); }
-
-  const MediaQueryExpValue value;
-};
-
 // This represents the following part of a <media-feature> (example):
 //
 //  (width >= 10px)
@@ -278,12 +268,6 @@ class CORE_EXPORT MediaQueryExp {
 
   const String& MediaFeature() const { return media_feature_; }
 
-  // TODO(crbug.com/1034465): Replace with MediaQueryExpBounds.
-  MediaQueryExpValue ExpValue() const {
-    DCHECK(!bounds_.left.IsValid());
-    return bounds_.right.value;
-  }
-
   const MediaQueryExpBounds& Bounds() const { return bounds_; }
 
   bool IsValid() const { return !media_feature_.IsNull(); }
@@ -360,7 +344,16 @@ class CORE_EXPORT MediaQueryFeatureExpNode : public MediaQueryExpNode {
   explicit MediaQueryFeatureExpNode(const MediaQueryExp& exp) : exp_(exp) {}
   void Trace(Visitor*) const override;
 
-  MediaQueryExp Expression() const { return exp_; }
+  const String& Name() const { return exp_.MediaFeature(); }
+  const MediaQueryExpBounds& Bounds() const { return exp_.Bounds(); }
+
+  unsigned GetUnitFlags() const;
+  bool IsViewportDependent() const;
+  bool IsDeviceDependent() const;
+  bool IsWidthDependent() const;
+  bool IsHeightDependent() const;
+  bool IsInlineSizeDependent() const;
+  bool IsBlockSizeDependent() const;
 
   Type GetType() const override { return Type::kFeature; }
   void SerializeTo(StringBuilder&) const override;

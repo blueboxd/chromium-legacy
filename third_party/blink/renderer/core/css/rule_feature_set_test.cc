@@ -40,11 +40,16 @@ class RuleFeatureSetTest : public testing::Test {
     document_->body()->setInnerHTML("<b><i></i></b>");
   }
 
-  HeapVector<MediaQueryExp> ExpressionsFrom(const MediaQuery& query) {
+  HeapVector<Member<const MediaQueryFeatureExpNode>> FeaturesFrom(
+      const MediaQuery& query) {
     HeapVector<MediaQueryExp> expressions;
     if (query.ExpNode())
       query.ExpNode()->CollectExpressions(expressions);
-    return expressions;
+    HeapVector<Member<const MediaQueryFeatureExpNode>> features;
+    for (const MediaQueryExp& exp : expressions) {
+      features.push_back(MakeGarbageCollected<MediaQueryFeatureExpNode>(exp));
+    }
+    return features;
   }
 
   RuleFeatureSet::SelectorPreMatch CollectFeatures(
@@ -289,6 +294,27 @@ class RuleFeatureSetTest : public testing::Test {
     EXPECT_EQ(max_direct_adjacent_selectors,
               sibling_invalidation_set.MaxDirectAdjacentSelectors());
     ASSERT_TRUE(sibling_invalidation_set.SiblingDescendants());
+    HashSet<AtomicString> descendant_classes =
+        ClassSet(*sibling_invalidation_set.SiblingDescendants());
+    EXPECT_EQ(1u, descendant_classes.size());
+    EXPECT_TRUE(descendant_classes.Contains(descendant_name));
+  }
+
+  void ExpectSiblingAndSiblingDescendantInvalidationForLogicalCombinationsInHas(
+      const AtomicString& sibling_name,
+      const AtomicString& sibling_name_for_sibling_descendant,
+      const AtomicString& descendant_name,
+      InvalidationSetVector& invalidation_sets) {
+    EXPECT_EQ(1u, invalidation_sets.size());
+    const auto& sibling_invalidation_set =
+        To<SiblingInvalidationSet>(*invalidation_sets[0]);
+    HashSet<AtomicString> classes = ClassSet(sibling_invalidation_set);
+    EXPECT_EQ(2u, classes.size());
+    EXPECT_TRUE(classes.Contains(sibling_name));
+    EXPECT_TRUE(classes.Contains(sibling_name_for_sibling_descendant));
+    EXPECT_EQ(SiblingInvalidationSet::kDirectAdjacentMax,
+              sibling_invalidation_set.MaxDirectAdjacentSelectors());
+
     HashSet<AtomicString> descendant_classes =
         ClassSet(*sibling_invalidation_set.SiblingDescendants());
     EXPECT_EQ(1u, descendant_classes.size());
@@ -1475,13 +1501,13 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
     RuleFeatureSet set2;
     RuleFeatureSet set3;
     for (const auto& query : min_width1->QueryVector()) {
-      for (const auto& expresssion : ExpressionsFrom(*query)) {
+      for (const auto& feature : FeaturesFrom(*query)) {
         set1.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, true));
+            MediaQueryResult(*feature, true));
         set2.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, true));
+            MediaQueryResult(*feature, true));
         set3.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, false));
+            MediaQueryResult(*feature, false));
       }
     }
     EXPECT_EQ(set1, set2);
@@ -1492,17 +1518,17 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
   {
     RuleFeatureSet set1;
     for (const auto& query : min_width1->QueryVector()) {
-      for (const auto& expresssion : ExpressionsFrom(*query)) {
+      for (const auto& feature : FeaturesFrom(*query)) {
         set1.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, true));
+            MediaQueryResult(*feature, true));
       }
     }
 
     RuleFeatureSet set2;
     for (const auto& query : min_width2->QueryVector()) {
-      for (const auto& expresssion : ExpressionsFrom(*query)) {
+      for (const auto& feature : FeaturesFrom(*query)) {
         set1.ViewportDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, true));
+            MediaQueryResult(*feature, true));
       }
     }
 
@@ -1514,13 +1540,13 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
     RuleFeatureSet set2;
     RuleFeatureSet set3;
     for (const auto& query : min_resolution1->QueryVector()) {
-      for (const auto& expresssion : ExpressionsFrom(*query)) {
+      for (const auto& feature : FeaturesFrom(*query)) {
         set1.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, true));
+            MediaQueryResult(*feature, true));
         set2.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, true));
+            MediaQueryResult(*feature, true));
         set3.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, false));
+            MediaQueryResult(*feature, false));
       }
     }
     EXPECT_EQ(set1, set2);
@@ -1531,17 +1557,17 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
   {
     RuleFeatureSet set1;
     for (const auto& query : min_resolution1->QueryVector()) {
-      for (const auto& expresssion : ExpressionsFrom(*query)) {
+      for (const auto& feature : FeaturesFrom(*query)) {
         set1.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, true));
+            MediaQueryResult(*feature, true));
       }
     }
 
     RuleFeatureSet set2;
     for (const auto& query : min_resolution2->QueryVector()) {
-      for (const auto& expresssion : ExpressionsFrom(*query)) {
+      for (const auto& feature : FeaturesFrom(*query)) {
         set2.DeviceDependentMediaQueryResults().push_back(
-            MediaQueryResult(expresssion, true));
+            MediaQueryResult(*feature, true));
       }
     }
 
@@ -2201,10 +2227,8 @@ TEST_F(RuleFeatureSetTest, isPseudoContainingComplexInsideHas7) {
     InvalidationLists invalidation_lists;
     CollectInvalidationSetsForClass(invalidation_lists, "b");
     ExpectNoInvalidation(invalidation_lists.descendants);
-    ExpectSiblingDescendantInvalidation(
-        SiblingInvalidationSet::kDirectAdjacentMax, "c", "a",
-        invalidation_lists.siblings);
-    // TODO(blee@igalia.com) Need sibling class "a" invalidation
+    ExpectSiblingAndSiblingDescendantInvalidationForLogicalCombinationsInHas(
+        "a", "c", "a", invalidation_lists.siblings);
   }
 
   {
@@ -2237,10 +2261,8 @@ TEST_F(RuleFeatureSetTest, isPseudoContainingComplexInsideHas8) {
     InvalidationLists invalidation_lists;
     CollectInvalidationSetsForClass(invalidation_lists, "b");
     ExpectNoInvalidation(invalidation_lists.descendants);
-    ExpectSiblingDescendantInvalidation(
-        SiblingInvalidationSet::kDirectAdjacentMax, "c", "a",
-        invalidation_lists.siblings);
-    // TODO(blee@igalia.com) Need sibling class "a" invalidation
+    ExpectSiblingAndSiblingDescendantInvalidationForLogicalCombinationsInHas(
+        "a", "c", "a", invalidation_lists.siblings);
   }
 
   {
@@ -2382,10 +2404,8 @@ TEST_F(RuleFeatureSetTest, isPseudoContainingComplexInsideHas13) {
     InvalidationLists invalidation_lists;
     CollectInvalidationSetsForClass(invalidation_lists, "b");
     ExpectNoInvalidation(invalidation_lists.descendants);
-    ExpectSiblingDescendantInvalidation(
-        SiblingInvalidationSet::kDirectAdjacentMax, "c", "a",
-        invalidation_lists.siblings);
-    // TODO(blee@igalia.com) Need sibling class "a" invalidation
+    ExpectSiblingAndSiblingDescendantInvalidationForLogicalCombinationsInHas(
+        "a", "c", "a", invalidation_lists.siblings);
   }
 
   {

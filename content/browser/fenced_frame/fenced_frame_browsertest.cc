@@ -37,6 +37,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
 #include "url/gurl.h"
 
@@ -75,7 +76,7 @@ class FencedFrameBrowserTest : public ContentBrowserTest {
   }
 
   RenderFrameHostImpl* primary_main_frame_host() {
-    return web_contents()->GetMainFrame();
+    return web_contents()->GetPrimaryMainFrame();
   }
 
   test::FencedFrameTestHelper& fenced_frame_test_helper() {
@@ -617,7 +618,8 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NodesForIsLoading) {
           primary_rfh.get()->child_at(0)->current_frame_host()));
   ASSERT_TRUE(NavigateToURLFromRenderer(inner_contents, url_b));
 
-  RenderFrameHostImpl* inner_contents_rfh = inner_contents->GetMainFrame();
+  RenderFrameHostImpl* inner_contents_rfh =
+      inner_contents->GetPrimaryMainFrame();
   FrameTree& inner_contents_primary_frame_tree =
       inner_contents->GetPrimaryFrameTree();
   ASSERT_TRUE(inner_contents_rfh);
@@ -1024,6 +1026,40 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
   EXPECT_EQ(ff_rfh_2->GetProcess(), primary_main_frame_host()->GetProcess());
 }
 
+// Tests to ensure that the owner forced sandbox flags are set when a fenced
+// frame is created, and are kept after the fenced frame is navigated
+// to a page with a CSP sandbox header.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, EnsureSandboxFlagsEnforced) {
+  ASSERT_TRUE(https_server()->Start());
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  ASSERT_TRUE(AreAllSitesIsolatedForTesting());
+
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("a.test", "/fenced_frames/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
+
+  RenderFrameHostImplWrapper ff_rfh(
+      fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
+                                                   fenced_frame_url));
+
+  EXPECT_TRUE(ff_rfh->IsSandboxed(blink::kFencedFrameForcedSandboxFlags));
+
+  TestFrameNavigationObserver observer(ff_rfh.get());
+  GURL new_fenced_frame_url =
+      https_server()->GetURL("a.test", "/fenced_frames/sandbox_flags.html");
+  EXPECT_TRUE(
+      ExecJs(primary_rfh.get(),
+             JsReplace("document.querySelector('fencedframe').src = $1;",
+                       new_fenced_frame_url)));
+  observer.Wait();
+
+  EXPECT_TRUE(!ff_rfh->IsErrorDocument());
+  EXPECT_TRUE(ff_rfh->IsSandboxed(blink::kFencedFrameForcedSandboxFlags));
+}
+
 class FencedFrameWithSiteIsolationDisabledBrowserTest
     : public FencedFrameBrowserTest {
  public:
@@ -1234,8 +1270,8 @@ class FencedFrameNestedFrameBrowserTest
     const GURL main_url =
         https_server()->GetURL(kSameOriginHostName, "/title1.html");
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
-    RenderFrameHostImpl* frame =
-        static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame());
+    RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(
+        web_contents()->GetPrimaryMainFrame());
     int depth = 0;
     for (const auto& type : std::get<0>(GetParam())) {
       ++depth;
@@ -1363,7 +1399,7 @@ class FencedFrameNestedModesTest
   }
 
   RenderFrameHostImpl* primary_main_frame_host() {
-    return web_contents()->GetMainFrame();
+    return web_contents()->GetPrimaryMainFrame();
   }
 
   test::FencedFrameTestHelper& fenced_frame_test_helper() {

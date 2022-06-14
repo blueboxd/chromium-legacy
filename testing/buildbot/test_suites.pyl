@@ -320,6 +320,18 @@
       },
     },
 
+    'ash_pixel_gtests': {
+      'ash_pixeltests': {
+         'args': [
+          '--enable-pixel-output-in-tests',
+        ],
+        'experiment_percentage': 100,
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
+    },
+
     'aura_gtests': {
       'aura_unittests': {},
       'compositor_unittests': {},
@@ -590,10 +602,12 @@
         'args': [
           '--test-type=integration',
         ],
-        'check_flakiness_for_new_tests': False,
         'resultdb': {
           'enable': True,
         },
+        'mixins': [
+          'disable_check_flakiness_web_tests',
+        ],
       },
       'chromedriver_replay_unittests': {},
     },
@@ -982,6 +996,11 @@
           'nougat-x86-emulator',
         ],
       },
+      'build_junit_tests':{
+        'remove_mixins': [
+          'nougat-x86-emulator',
+        ],
+      },
       'chrome_java_test_pagecontroller_junit_tests': {
         'remove_mixins': [
           'nougat-x86-emulator',
@@ -1003,11 +1022,6 @@
         ],
       },
       'device_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
-      'incremental_javac_junit_tests':{
         'remove_mixins': [
           'nougat-x86-emulator',
         ],
@@ -1223,6 +1237,7 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
+          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1232,6 +1247,8 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'mixins': [
+           # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
           'skia_gold_test',
         ],
         'resultdb': {
@@ -1267,6 +1284,7 @@
           # passed, but 0 times when '--test-list' is passed. We want to always
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
+          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1276,6 +1294,8 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
           'skia_gold_test',
         ],
         'resultdb': {
@@ -1295,6 +1315,7 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
+          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1304,6 +1325,8 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
           'skia_gold_test',
         ],
         'resultdb': {
@@ -1516,6 +1539,7 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
+          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1525,6 +1549,8 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
           'skia_gold_test',
         ],
         'resultdb': {
@@ -1607,6 +1633,7 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
+          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1616,6 +1643,8 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
           'skia_gold_test',
         ],
         'resultdb': {
@@ -3704,6 +3733,8 @@
           '--flag-specific=webgpu',
         ],
         'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
           'webgpu_cts',
           'skia_gold_test',
         ],
@@ -3906,6 +3937,16 @@
         'mixins': [
           'has_native_resultdb_integration',
         ],
+      },
+    },
+
+    'lacros_skylab_amd64_fyi': {
+      'lacros_fyi_tast_tests': {
+        'tast_expr': '("group:mainline" && "dep:lacros" && !informational || "name:lacros.VariationSmoke")',
+        'timeout_sec': 10800,
+      },
+      'ozone_unittests': {
+        'timeout_sec': 3600,
       },
     },
 
@@ -4169,6 +4210,7 @@
           # passed, but 0 times when '--test-list' is passed. We want to always
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
+          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -4178,6 +4220,8 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
           'skia_gold_test',
         ],
         'resultdb': {
@@ -4537,45 +4581,11 @@
           'has_native_resultdb_integration',
         ],
       },
-    },
-
-    'rendering_desktop_representative_perf_tests_isolated_scripts': {
-      'rendering_representative_perf_tests': {
-        'isolate_name': 'rendering_representative_perf_tests',
-        'args': [
-          "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop",
+      'unexpected_passes_common_pytype': {
+        'mixins': [
+          'has_native_resultdb_integration',
         ],
-        'check_flakiness_for_new_tests': False,
-        'swarming': {},
-      }
-    },
-
-    'rendering_mobile_representative_perf_tests_isolated_scripts': {
-      'rendering_representative_perf_tests': {
-        'isolate_name': 'rendering_representative_perf_tests_android_chrome',
-        'args': [
-          "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.mobile",
-          "--browser=android-chromium"
-        ],
-        'check_flakiness_for_new_tests': False,
-        'swarming': {},
-      }
-    },
-
-    'rendering_mobile_representative_perf_tests_isolated_scripts_experimental': {
-      'rendering_representative_perf_tests': {
-        'isolate_name': 'rendering_representative_perf_tests_android_chrome',
-        'args': [
-          "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.mobile",
-          "--browser=android-chromium"
-        ],
-        'check_flakiness_for_new_tests': False,
-        'swarming': {},
-        'experiment_percentage': 10,
-      }
+      },
     },
 
     'rust_gtests': {
@@ -4884,11 +4894,13 @@
           '--passthrough',
           '--retry-limit=2',
         ],
-        'check_flakiness_for_new_tests': False,
         'isolate_name': 'telemetry_perf_unittests_android_chrome',
         'resultdb': {
           'enable': True,
         },
+        'mixins': [
+          'disable_check_flakiness_web_tests',
+        ],
       },
       'telemetry_monochrome_minidump_unittests': {
         'args': [
@@ -4914,11 +4926,13 @@
           '--passthrough',
           '--retry-limit=2',
         ],
-        'check_flakiness_for_new_tests': False,
         'isolate_name': 'telemetry_perf_unittests',
         'resultdb': {
           'enable': True,
         },
+        'mixins': [
+          'disable_check_flakiness_web_tests',
+        ],
       },
     },
 
@@ -5108,6 +5122,8 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
           'skia_gold_test',
         ],
         'resultdb': {
@@ -5194,7 +5210,7 @@
       },
     },
 
-    'webrtc_chromium_baremetal_browser_gtests': {
+    'webrtc_chromium_baremetal_gtests': {
       'browser_tests': {
         'args': [
           '--gtest_filter=WebRtcStatsPerfBrowserTest.*:'
@@ -5215,9 +5231,6 @@
           'r_webrtc_git': '${webrtc_got_rev}'
         },
       },
-    },
-
-    'webrtc_chromium_baremetal_capture_gtests_linux': {
       # Run capture unittests as well since our bots have real webcams.
       'capture_unittests': {
         'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
@@ -5225,42 +5238,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'builder': 'WebRTC Chromium Linux Tester',
-              'pool': 'luci.chromium.webrtc',
-            }
-          ],
-        },
-      },
-    },
-
-    'webrtc_chromium_baremetal_capture_gtests_mac': {
-      # Run capture unittests as well since our bots have real webcams.
-      'capture_unittests': {
-        'remove_mixins': ['mac_x64'],
-        'mixins': ['mac_11_or_12_x64'],
-        'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
-                 '--test-launcher-print-test-stdio=always'],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'builder': 'WebRTC Chromium Mac Tester',
-              'pool': 'luci.chromium.webrtc',
-            }
-          ],
-        },
-      },
-    },
-
-    'webrtc_chromium_baremetal_capture_gtests_win': {
-      # Run capture unittests as well since our bots have real webcams.
-      'capture_unittests': {
-        'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
-                 '--test-launcher-print-test-stdio=always'],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'builder': 'WebRTC Chromium Win10 Tester',
-              'pool': 'luci.chromium.webrtc',
+              'pool': 'WebRTC-chromium',
             }
           ],
         },
@@ -6291,10 +6269,6 @@
       'gpu_desktop_specific_gtests',
     ],
 
-    'gpu_desktop_representative_perf_fyi_isolated_scripts': [
-      'rendering_desktop_representative_perf_tests_isolated_scripts',
-    ],
-
     'gpu_fuchsia_telemetry_experimental_tests': [
       'gpu_fuchsia_common_telemetry_tests',
       'gpu_mediapipe_validating_telemetry_tests',
@@ -6521,9 +6495,8 @@
       'gpu_win_intel_specific_telemetry_tests',
     ],
 
-    'gpu_fyi_win_optional_and_representative_perf_isolated_scripts': [
+    'gpu_fyi_win_optional_isolated_scripts': [
       'gpu_command_buffer_perf_passthrough_isolated_scripts',
-      'rendering_desktop_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_fyi_win_release_telemetry_tests': [
@@ -6534,10 +6507,6 @@
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
-    ],
-
-    'gpu_mobile_representative_perf_fyi_isolated_scripts': [
-      'rendering_mobile_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_nexus5x_telemetry_tests': [
@@ -6641,6 +6610,7 @@
       'linux_chromeos_browser_tests_require_lacros',
       'linux_flavor_specific_chromium_gtests',
       'non_android_chromium_gtests',
+      'ash_pixel_gtests',
     ],
 
     'linux_viz_gtests': [
@@ -6693,25 +6663,8 @@
       'webrtc_chromium_simple_gtests',
     ],
 
-    'webrtc_chromium_tests_with_baremetal_tests_linux': [
-      'webrtc_chromium_baremetal_capture_gtests_linux',
-      'webrtc_chromium_baremetal_browser_gtests',
-      'webrtc_chromium_gtests',
-      'webrtc_chromium_simple_baremetal_gtests',
-      'webrtc_chromium_simple_gtests',
-    ],
-
-    'webrtc_chromium_tests_with_baremetal_tests_mac': [
-      'webrtc_chromium_baremetal_capture_gtests_mac',
-      'webrtc_chromium_baremetal_browser_gtests',
-      'webrtc_chromium_gtests',
-      'webrtc_chromium_simple_baremetal_gtests',
-      'webrtc_chromium_simple_gtests',
-    ],
-
-    'webrtc_chromium_tests_with_baremetal_tests_win': [
-      'webrtc_chromium_baremetal_capture_gtests_win',
-      'webrtc_chromium_baremetal_browser_gtests',
+    'webrtc_chromium_tests_with_baremetal_tests': [
+      'webrtc_chromium_baremetal_gtests',
       'webrtc_chromium_gtests',
       'webrtc_chromium_simple_baremetal_gtests',
       'webrtc_chromium_simple_gtests',
@@ -6987,7 +6940,7 @@
         'variants': [
           'SIM_IPHONE_8_PLUS_16_0',
           'SIM_IPHONE_X_16_0',
-          'SIM_IPAD_AIR_2_16_0',
+          'SIM_IPAD_AIR_3RD_GEN_16_0',
         ],
       },
     },
@@ -7009,7 +6962,7 @@
         'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_8_16_0',
-          'SIM_IPAD_AIR_2_16_0',
+          'SIM_IPAD_AIR_3RD_GEN_16_0',
           'SIM_IPHONE_X_16_0',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
@@ -7023,7 +6976,7 @@
         'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_8_16_0',
-          'SIM_IPAD_AIR_2_16_0',
+          'SIM_IPAD_AIR_3RD_GEN_16_0',
           'SIM_IPHONE_X_16_0',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
@@ -7038,7 +6991,7 @@
           'SIM_IPHONE_8_PLUS_16_0',
           'SIM_IPHONE_8_16_0',
           'SIM_IPHONE_SE_3RD_GEN_16_0',
-          'SIM_IPAD_AIR_2_16_0',
+          'SIM_IPAD_AIR_3RD_GEN_16_0',
         ],
       },
     },
@@ -7428,7 +7381,7 @@
     },
 
     'lacros_skylab_tests_amd64_generic_fyi': {
-      'lacros_skylab_poc': {
+      'lacros_skylab_amd64_fyi': {
         'variants': [
           'CROS_OCTOPUS_RELEASE_LKGM',
           'CROS_OCTOPUS_RELEASE_DEV',

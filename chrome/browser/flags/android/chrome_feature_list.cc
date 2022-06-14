@@ -190,6 +190,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableAllowResizeByUserGesture,
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
+    &kCCTRetainingState,
     &kCCTResourcePrefetch,
     &kCCTToolbarCustomizations,
     &kDontAutoHideBrowserControls,
@@ -210,9 +211,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchDebug,
     &kContextualSearchDelayedIntelligence,
     &kContextualSearchForceCaption,
-    &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
-    &KContextualSearchNewSettings,
     &kContextualSearchTapDisableOverride,
     &kContextualSearchThinWebViewImplementation,
     &kContextualSearchTranslations,
@@ -244,6 +243,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kLensOnQuickActionSearchWidget,
     &kLocationBarModelOptimizations,
     &kMostRecentTabOnBackgroundCloseTab,
+    &kNewInstanceFromDraggedLink,
     &kNewWindowAppMenu,
     &kNotificationPermissionVariant,
     &kPageAnnotationsService,
@@ -364,7 +364,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &query_tiles::features::kQueryTilesSegmentation,
     &reading_list::switches::kReadLater,
     &safe_browsing::kCreateSafebrowsingOnStartup,
-    &segmentation_platform::features::kContextualPageActionsWithPriceTracking,
+    &segmentation_platform::features::kContextualPageActions,
+    &segmentation_platform::features::kContextualPageActionPriceTracking,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kPersistShareHubOnAppSwitch,
@@ -492,6 +493,9 @@ const base::Feature kCCTIncognito{"CCTIncognito",
 const base::Feature kCCTIncognitoAvailableToThirdParty{
     "CCTIncognitoAvailableToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCCTPackageNameRecording{"CCTPackageNameRecording",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -518,6 +522,9 @@ const base::Feature kCCTResizableForThirdParties{
 
 const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCCTRetainingState{"CCTRetainingState",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTToolbarCustomizations{"CCTToolbarCustomizations",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -581,14 +588,8 @@ const base::Feature kContextualSearchDelayedIntelligence{
 const base::Feature kContextualSearchForceCaption{
     "ContextualSearchForceCaption", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kContextualSearchLongpressResolve{
-    "ContextualSearchLongpressResolve", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kContextualSearchMlTapSuppression{
     "ContextualSearchMlTapSuppression", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature KContextualSearchNewSettings{
-    "ContextualSearchNewSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -686,6 +687,9 @@ const base::Feature kSearchEnginePromoNewDeviceV2{
 
 const base::Feature kMostRecentTabOnBackgroundCloseTab{
     "MostRecentTabOnBackgroundCloseTab", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewInstanceFromDraggedLink{
+    "NewInstanceFromDraggedLink", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNewWindowAppMenu{"NewWindowAppMenu",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -816,7 +820,7 @@ const base::Feature kTrustedWebActivityLocationDelegation{
 
 const base::Feature kTrustedWebActivityNotificationPermissionDelegation{
     "TrustedWebActivityNotificationPermissionDelegation",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTrustedWebActivityPostMessage{
     "TrustedWebActivityPostMessage", base::FEATURE_DISABLED_BY_DEFAULT};

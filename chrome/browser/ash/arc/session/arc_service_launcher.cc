@@ -37,6 +37,7 @@
 #include "ash/components/arc/session/arc_session.h"
 #include "ash/components/arc/session/arc_session_runner.h"
 #include "ash/components/arc/storage_manager/arc_storage_manager.h"
+#include "ash/components/arc/system_ui/arc_system_ui_bridge.h"
 #include "ash/components/arc/timer/arc_timer_bridge.h"
 #include "ash/components/arc/usb/usb_host_bridge.h"
 #include "ash/components/arc/volume_mounter/arc_volume_mounter_bridge.h"
@@ -211,6 +212,9 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
     return;
   }
 
+  std::string user_id_hash =
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile);
+
   // Instantiate ARC related BrowserContextKeyedService classes which need
   // to be running at the beginning of the container run.
   // Note that, to keep this list as small as possible, services which don't
@@ -255,10 +259,14 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcKioskBridge::GetForBrowserContext(profile);
   ArcLockScreenBridge::GetForBrowserContext(profile);
   ArcMediaSessionBridge::GetForBrowserContext(profile);
-  ArcMetricsService::GetForBrowserContext(profile)->SetHistogramNamer(
-      base::BindRepeating([](const std::string& base_name) {
-        return GetHistogramNameByUserTypeForPrimaryProfile(base_name);
-      }));
+  {
+    auto* metrics_service = ArcMetricsService::GetForBrowserContext(profile);
+    metrics_service->SetHistogramNamer(
+        base::BindRepeating([](const std::string& base_name) {
+          return GetHistogramNameByUserTypeForPrimaryProfile(base_name);
+        }));
+    metrics_service->set_user_id_hash(user_id_hash);
+  }
   ArcMetricsServiceProxy::GetForBrowserContext(profile);
   ArcMidisBridge::GetForBrowserContext(profile);
   ArcNearbyShareBridge::GetForBrowserContext(profile);
@@ -272,8 +280,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcPaymentAppBridge::GetForBrowserContext(profile);
   ArcPipBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);
-  ArcPowerBridge::GetForBrowserContext(profile)->SetUserIdHash(
-      ash::ProfileHelper::GetUserIdHashFromProfile(profile));
+  ArcPowerBridge::GetForBrowserContext(profile)->SetUserIdHash(user_id_hash);
   ArcPrintSpoolerBridge::GetForBrowserContext(profile);
   ArcPrivacyItemsBridge::GetForBrowserContext(profile);
   ArcProcessService::GetForBrowserContext(profile);
@@ -286,6 +293,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcSettingsService::GetForBrowserContext(profile);
   ArcSharesheetBridge::GetForBrowserContext(profile);
   ArcSurveyService::GetForBrowserContext(profile);
+  ArcSystemUIBridge::GetForBrowserContext(profile);
   ArcTimerBridge::GetForBrowserContext(profile);
   ArcTracingBridge::GetForBrowserContext(profile);
   ArcTtsService::GetForBrowserContext(profile);

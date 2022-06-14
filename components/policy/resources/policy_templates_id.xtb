@@ -1858,6 +1858,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Jika kebijakan tidak disetel, kebijakan<ph name="ASK_GEOLOCATION_POLICY_NAME" /> akan berlaku, tetapi pengguna dapat mengubah setelan ini.</translation>
 <translation id="2922511125678964398">Izinkan autentikasi captive portal mengabaikan setelan proxy</translation>
+<translation id="2926813071464307947">Nonaktifkan sandbox Penampung Aplikasi Perender</translation>
 <translation id="2931888116345994552">Mengaktifkan update komponen untuk semua komponen di <ph name="PRODUCT_NAME" /> jika tidak disetel atau disetel ke aktif.
 
       Jika disetel ke nonaktif, update komponen akan dinonaktifkan. Namun, beberapa komponen akan dikecualikan dari kebijakan ini: update komponen apa pun yang tidak berisi kode yang dapat dieksekusi dan yang penting bagi keamanan browser, tidak akan dinonaktifkan.
@@ -2303,6 +2304,11 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
           Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
 <translation id="3329063005964041553">Memblokir File Handling API di aplikasi web ini</translation>
 <translation id="3329401415394648069">Izinkan penggunaan U2F Security Key API.</translation>
+<translation id="3329976499753286262">Jika kebijakan disetel ke Aktif atau tidak disetel, konfigurasi Penampung Aplikasi Perender akan diaktifkan di platform yang didukung.
+
+      Menyetel kebijakan ke Nonaktif akan merugikan keamanan dan stabilitas <ph name="PRODUCT_NAME" /> karena akan melemahkan sandbox yang digunakan proses perender. Nonaktifkan kebijakan hanya jika terdapat masalah kompatibilitas dengan software pihak ketiga yang harus berjalan dalam proses perender.
+
+      Catatan: Baca selengkapnya tentang Kebijakan mitigasi proses ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).</translation>
 <translation id="3339271789059866414">Mengonfigurasi ketersediaan layanan System-proxy dan kredensial proxy untuk layanan sistem.
       Jika kebijakan tidak ditetapkan, layanan System-proxy tidak akan tersedia.</translation>
 <translation id="3348799281602260763">Jika diaktifkan, koneksi pembanding WebRTC dapat mendowngrade ke versi
@@ -3110,14 +3116,6 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
       Kebijakan ini akan diabaikan dan notifikasi akan selalu ditampilkan jika perangkat tidak dikelola atau hanya terdapat satu pengguna.
 
       Jika terdapat beberapa akun pengguna di perangkat terkelola, notifikasi hanya akan ditampilkan saat kebijakan ini diaktifkan.</translation>
-<translation id="4293593564662654474">Kebijakan ini disediakan sebagai cara untuk memblokir fitur Set Pihak Pertama.
-
-                  Jika kebijakan ini tidak disetel atau disetel ke Aktif, fitur Set Pihak Pertama akan diaktifkan.
-
-                  Jika kebijakan ini disetel ke Nonaktif, fitur Set Pihak Pertama akan dinonaktifkan.
-
-                  Status fitur Set Pihak Pertama menentukan apakah Chrome akan mengambil daftar Set Pihak Pertama.
-                  Status tersebut juga mengontrol apakah Chrome akan mendukung fitur terkait Set Pihak Pertama (misalnya, atribut cookie SameParty).</translation>
 <translation id="4311195029067684288">Penuh</translation>
 <translation id="4313767483634435271">Alamat MAC dok yang ditetapkan untuk perangkat</translation>
 <translation id="4314538398999793073">Nonaktifkan pencarian CNAME selama autentikasi Kerberos</translation>
@@ -4224,6 +4222,7 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
 <translation id="5625771176514429288">Aplikasi Chrome akan diizinkan berjalan di platform berikut.</translation>
 <translation id="5630352020869108293">Mengembalikan sesi terakhir</translation>
 <translation id="5633871703004128675">Mengaktifkan fitur aksesibilitas sorotan tanda sisipan</translation>
+<translation id="5634032995857968056">Aktifkan sandbox Penampung Aplikasi Perender</translation>
 <translation id="5639454129004500060">Jika disetel, kebijakan ini akan berisi informasi untuk mendownload file template desktop.  File tersebut berisi template desktop yang akan disediakan untuk pengguna saat ini.
       Jika tidak disetel, template desktop yang dikonfigurasi sebelumnya tidak disertakan dalam daftar template desktop.  Jika kebijakan <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" />
       tidak disetel ke benar (true), kebijakan ini tidak akan berpengaruh.</translation>
@@ -5625,7 +5624,6 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
       Jika kebijakan ini tidak ditetapkan, rak akan ditempatkan di bagian bawah layar secara default dan pengguna dapat mengubah posisi rak.</translation>
 <translation id="7039815268521168329">Tampilkan alur Voice Match Asisten Google selama penyiapan awal</translation>
 <translation id="7040229947030068419">Nilai contoh:</translation>
-<translation id="7041170641363384736">Memungkinkan penyetelan jadwal kustom untuk memulai ulang perangkat. Kebijakan saat ini hanya berlaku pada perangkat yang mengaktifkan peluncuran otomatis aplikasi dalam sesi Kios. Setelah kebijakan disetel ke Benar (True), perangkat akan dimulai ulang sesuai jadwal. Kebijakan harus dihapus untuk membatalkan semua mulai ulang terjadwal lainnya.</translation>
 <translation id="7044883996351280650">Mengontrol layanan pencadangan dan pemulihan Android</translation>
 <translation id="7047495632846973438">Menentukan apakah kebijakan izin perekaman layar dicentang atau dilewati.</translation>
 <translation id="7066292150801784098">Cegah interaksi pengguna jarak jauh dengan jendela administrator di sesi bantuan jarak jauh</translation>
@@ -6595,7 +6593,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan,
           Jika Anda menetapkan kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
 
           Jika kebijakan ini tidak ditetapkan, sorotan kursor mula-mula akan dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
-<translation id="8161536598508377155">Menyetel jadwal kustom untuk memulai ulang perangkat kios</translation>
 <translation id="8164144100557223371">Nonaktifkan entrypoint toolbar fitur eksperimental browser</translation>
 <translation id="8164687848393015214">Jika kebijakan disetel ke Aktif, paket jaringan pemantauan (<ph name="HEARTBEATS_TERM" />) akan dikirim ke server pengelolaan untuk memantau status online, guna memungkinkan server mendeteksi apakah perangkat sedang offline.
 
@@ -7162,6 +7159,7 @@ Kebijakan akan dihapus pada M75.</translation>
 <translation id="8763716376920670835">WebSQL aktif secara default mulai M101, tetapi dapat dinonaktifkan melalui tanda Chrome.
           Jika kebijakan ini disetel ke salah (false) atau tidak disetel, WebSQL dapat dinonaktifkan.
           Jika kebijakan ini disetel ke benar (true), WebSQL tidak dapat dinonaktifkan.</translation>
+<translation id="8766910236040529804">Mengaktifkan Penampung Aplikasi Perender</translation>
 <translation id="8767743923206070405">Jika kebijakan disetel ke Aktif, tombol Beranda akan ditampilkan di toolbar <ph name="PRODUCT_NAME" />. Jika kebijakan disetel ke Nonaktif, tombol Beranda tidak akan muncul.
 
       Jika Anda menyetel kebijakan, pengguna tidak dapat mengubahnya di <ph name="PRODUCT_NAME" />. Jika tidak disetel, pengguna dapat memilih untuk menampilkan tombol Beranda atau tidak.</translation>

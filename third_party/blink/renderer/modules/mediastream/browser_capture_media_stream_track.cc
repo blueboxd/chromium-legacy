@@ -30,10 +30,11 @@ enum class CropToResult {
   kInvalidCropTargetFormat = 2,
   kRejectedWithErrorGeneric = 3,
   kRejectedWithUnsupportedCaptureDevice = 4,
-  kRejectedWithErrorUnknownDeviceId = 5,
+  kRejectedWithErrorUnknownDeviceId_DEPRECATED = 5,
   kRejectedWithNotImplemented = 6,
   kNonIncreasingCropVersion = 7,
-  kMaxValue = kNonIncreasingCropVersion
+  kInvalidCropTarget = 8,
+  kMaxValue = kInvalidCropTarget
 };
 
 void RecordUma(CropToResult result) {
@@ -84,18 +85,18 @@ void ResolveCropPromiseHelper(ScriptPromiseResolver* resolver,
                          "Unknown error.");
       return;
     case media::mojom::CropRequestResult::kUnsupportedCaptureDevice:
+      // Note that this is an unsupported device; not an unsupported Element.
+      // This should essentially not happen. If it happens, it indicates
+      // something in the capture pipeline has been changed.
       RecordUma(CropToResult::kRejectedWithUnsupportedCaptureDevice);
       RaiseCropException(resolver, DOMExceptionCode::kAbortError,
                          "Unsupported device.");
       return;
-    case media::mojom::CropRequestResult::kErrorUnknownDeviceId:
-      RecordUma(CropToResult::kRejectedWithErrorUnknownDeviceId);
-      RaiseCropException(resolver, DOMExceptionCode::kAbortError,
-                         "Unknown device.");
-      return;
     case media::mojom::CropRequestResult::kNotImplemented:
+      // Unimplemented codepath reached, OTHER than lacking support for
+      // a specific Element subtype.
       RecordUma(CropToResult::kRejectedWithNotImplemented);
-      RaiseCropException(resolver, DOMExceptionCode::kAbortError,
+      RaiseCropException(resolver, DOMExceptionCode::kOperationError,
                          "Not implemented.");
       return;
     case media::mojom::CropRequestResult::kNonIncreasingCropVersion:
@@ -107,6 +108,11 @@ void ResolveCropPromiseHelper(ScriptPromiseResolver* resolver,
       RecordUma(CropToResult::kNonIncreasingCropVersion);
       RaiseCropException(resolver, DOMExceptionCode::kAbortError,
                          "Non-increasing crop version.");
+      return;
+    case media::mojom::CropRequestResult::kInvalidCropTarget:
+      RecordUma(CropToResult::kNonIncreasingCropVersion);
+      RaiseCropException(resolver, DOMExceptionCode::kNotAllowedError,
+                         "Invalid CropTarget.");
       return;
   }
 
@@ -152,9 +158,11 @@ void BrowserCaptureMediaStreamTrack::Trace(Visitor* visitor) const {
 
 ScriptPromise BrowserCaptureMediaStreamTrack::cropTo(
     ScriptState* script_state,
-    const String& crop_id,
+    CropTarget* crop_target,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
+
+  const String crop_id(crop_target ? crop_target->GetCropId() : String());
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -166,8 +174,6 @@ ScriptPromise BrowserCaptureMediaStreamTrack::cropTo(
   return promise;
 #else
 
-  // TODO(crbug.com/1298159): Reject cropTo() on clones.
-
   const absl::optional<base::Token> crop_id_token =
       CropIdStringToToken(crop_id);
   if (!crop_id_token.has_value()) {
@@ -176,8 +182,6 @@ ScriptPromise BrowserCaptureMediaStreamTrack::cropTo(
         DOMExceptionCode::kUnknownError, "Invalid crop-ID."));
     return promise;
   }
-
-  pending_promises_.Set(++current_crop_version_, resolver);
 
   // We don't currently instantiate BrowserCaptureMediaStreamTrack for audio
   // tracks. If we do in the future, we'll have to raise an exception if
@@ -190,10 +194,23 @@ ScriptPromise BrowserCaptureMediaStreamTrack::cropTo(
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
 
+  // TODO(crbug.com/1332628): Instead of using GetNextCropVersion(), move the
+  // ownership of the Promises from this->pending_promises_ into native_source.
+  const absl::optional<uint32_t> crop_version =
+      native_source->GetNextCropVersion();
+  if (!crop_version.has_value()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError,
+        "Can't change crop-target while clones exist."));
+    return promise;
+  }
+
+  pending_promises_.Set(crop_version.value(), resolver);
+
   native_source->Crop(
-      crop_id_token.value(), current_crop_version_,
+      crop_id_token.value(), crop_version.value(),
       WTF::Bind(&BrowserCaptureMediaStreamTrack::ResolveCropPromise,
-                WrapPersistent(this), current_crop_version_));
+                WrapPersistent(this), crop_version.value()));
 
   return promise;
 #endif
@@ -208,23 +225,10 @@ BrowserCaptureMediaStreamTrack* BrowserCaptureMediaStreamTrack::clone(
           GetReadyState(), base::DoNothing(), descriptor_id(),
           /*is_clone=*/true);
 
-  // Copy state.
+  // Copy state. (Note: Invokes FocusableMediaStreamTrack::CloneInternal().)
   CloneInternal(cloned_track);
 
   return cloned_track;
-}
-
-void BrowserCaptureMediaStreamTrack::CloneInternal(
-    BrowserCaptureMediaStreamTrack* cloned_track) {
-  // Clone parent classes' state.
-  FocusableMediaStreamTrack::CloneInternal(cloned_track);
-
-  // Clone this class's state.
-#if !BUILDFLAG(IS_ANDROID)
-  // Note that cropTo() cannot be called on a clone, but we still copy,
-  // for completeness' sake.
-  current_crop_version_ = cloned_track->current_crop_version_;
-#endif
 }
 
 #if !BUILDFLAG(IS_ANDROID)

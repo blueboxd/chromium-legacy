@@ -479,14 +479,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
 
-  // This is called when accessibility events arrive from renderer to browser.
-  // This could cause eviction if the page is in back/forward cache. Returns
-  // true if the eviction happens, and otherwise calls
-  // |RenderFrameHost::IsInactiveAndDisallowActivation()| and returns the value
-  // from there.
-  bool IsInactiveAndDisallowActivationForAXEvents(
-      const std::vector<ui::AXEvent>& events);
-
   // Evict the RenderFrameHostImpl with |reason| that causes the eviction. This
   // constructs a flattened list of NotRestoredReasons and calls
   // |EvictFromBackForwardCacheWithFlattenedReasons|.
@@ -2501,6 +2493,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  int32_t world_id,
                                  JavaScriptResultAndTypeCallback callback);
 
+  // Call |HandleAXEvents()| for tests.
+  void HandleAXEventsForTests(const ui::AXTreeID& tree_id,
+                              mojom::AXUpdatesAndEventsPtr updates_and_events,
+                              int32_t reset_token) {
+    HandleAXEvents(tree_id, std::move(updates_and_events), reset_token);
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -4184,9 +4183,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Indicates whether the fenced frame is navigated to an opaque url. This flag
   // can only change when the embedder navigates the fenced frame. Any
-  // subsequent navigation from within the fenced frame tree will keep the same
-  // flag. Note that this flag is only relevant for fenced frames based on
-  // MPArch.
+  // subsequent navigation from the fenced frame root will keep the same flag.
+  // Note that this flag is only relevant for fenced frames based on MPArch.
   bool is_fenced_frame_opaque_url_ = false;
 
   // The PolicyContainerHost for the current document, containing security
@@ -4238,8 +4236,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::OnceClosure did_stop_loading_callback_;
 
   // Used when testing to retrieve that last created Web Bluetooth service.
-  raw_ptr<WebBluetoothServiceImpl> last_web_bluetooth_service_for_testing_ =
-      nullptr;
+  raw_ptr<WebBluetoothServiceImpl, DanglingUntriaged>
+      last_web_bluetooth_service_for_testing_ = nullptr;
 
   BackForwardCacheDisablingFeaturesCallback
       back_forward_cache_disabling_features_callback_for_testing_;

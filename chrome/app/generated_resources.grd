@@ -2573,6 +2573,10 @@ are declared in tools/grit/grit_rule.gni.
                desc="Label for the button prompting to open a download while deep scanning is in progress">
         Open Now
       </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_REVIEW"
+               desc="Label for the button prompting the dialog containing the enterprise administrator's message explaining the violation.">
+        Review
+      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_DISK_FULL"
                desc="Status text for a download item that was interrupted because there is not enough room on the disk to download this file.">
         Out of storage space
@@ -2612,10 +2616,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_BLOCKED_ORGANIZATION"
                desc="Subpage summary text for a download item that was blocked by the organization.">
         Your organization blocked this file because it didn't meet a security policy
-      </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_SUMMARY_BLOCKED_ORGANIZATION"
-               desc="Subpage summary text of warning for download item that was blocked by the organization.">
-        Your organization blocked this file because it has sensitive content
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_WRONG"
                desc="Status text for a download item that had something go wrong.">
@@ -2685,9 +2685,21 @@ are declared in tools/grit/grit_rule.gni.
                desc="Dangerous warning for a file with sensitive content">
         Sensitive content
       </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT"
-               desc="Subpage summary of dangerous warning for a file with sensitive content">
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_WARNING"
+               desc="Subpage summary text of warning for download item that contains sensitive content">
         Your organization recommends deleting this file because it has sensitive content
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_BLOCK"
+               desc="Subpage summary text of warning for download item that was blocked by the organization.">
+        Your organization blocked this file because it has sensitive or dangerous content. Ask its owner to fix.
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ENCRYPTED"
+               desc="Subpage summary of dangerous warning for an encrypted file.">
+        Your organization blocked this file because it is encrypted. Ask its owner to decrypt.
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_TOO_BIG"
+               desc="Subpage summary of warning for a file blocked for being too large.">
+        Your organization blocked this file because it is too big for a security check. You can open files up to 50 MB.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_TRY_AGAIN"
                desc="Retry button when a download is failed">
@@ -3000,6 +3012,12 @@ are declared in tools/grit/grit_rule.gni.
         -->
         <message name="IDS_BLUETOOTH_DEVICE_CREDENTIALS_LABEL" desc="Label of the text prompt for Bluetooth device credentials.">
           Enter Bluetooth Passkey for device <ph name="DEVICE">$1</ph>
+        </message>
+        <message name="IDS_BLUETOOTH_DEVICE_PAIR_CONFIRM_TITLE" desc="Title of the Bluetooth device pair confirmation prompt dialog.">
+          Pair Confirmation
+        </message>
+        <message name="IDS_BLUETOOTH_DEVICE_PAIR_CONFIRM_LABEL" desc="Label of the text prompt for Bluetooth device pair confirmation.">
+          Bluetooth device <ph name="DEVICE">$1</ph> would like permission to pair.
         </message>
       </if>
 
@@ -3741,6 +3759,9 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_CERT_EXTENSION_NON_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is not critical">
           Not Critical
+        </message>
+        <message name="IDS_CERT_DUMP_ERROR" desc="The text displayed in the certificate viewer dialog for a given field which could not be decoded">
+          Error: Unable to decode certificate
         </message>
         <message name="IDS_CERT_EXTENSION_DUMP_ERROR" desc="The text displayed in the certificate details dialog for a given extension which could not be decoded">
           Error: Unable to decode extension
@@ -6688,6 +6709,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_MODULES_PHOTOS_MEMORIES_WELCOME_EXAMPLE" desc="Example of a memory title for the Google Photos module in the new tab page.">
         2 years ago
       </message>
+      <message name="IDS_NTP_MODULES_PHOTOS_BALOON_ILLUSTRATION_TITLE" desc="Memory title for the Baloon illustration shown in Google Photos module in the new tab page.">
+        Your trip
+      </message>
       <message name="IDS_NTP_MODULES_PHOTOS_NEW" desc="Text shown on the header chip of Google Photos module.">
         New
       </message>
@@ -7537,9 +7561,6 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_PASSWORD_MANAGER_TOOLTIP_MOVE" desc="Text for the 'Manage Passwords' icon's 'move password to account' state">
           Move your password
         </message>
-        <message name="IDS_PASSWORD_MANAGER_IMPORT_BUTTON" desc="The label of the button for importing passwords. The button appears next to the list of saved passwords in Chrome's settings.">
-          Import
-        </message>
         <message name="IDS_PASSWORD_MANAGER_IMPORT_DIALOG_TITLE" desc="The title of the file selection dialog for importing passwords">
           Import Passwords To Chrome
         </message>
@@ -8059,10 +8080,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
 
       <!-- Tab Context Menu -->
       <if expr="not use_titlecase">
-        <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="The label of the 'New Tab to the Right' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="The label of the 'New Tab to the Right' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           New tab to the right
         </message>
-        <message name="IDS_TAB_CXMENU_NEWTABTOLEFT" desc="The label of the 'New Tab to the Left' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_NEWTABTOLEFT" desc="The label of the 'New Tab to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           New tab to the left
         </message>
         <message name="IDS_TAB_CXMENU_RELOAD" desc="The label of the 'Reload' Tab context menu item.">
@@ -8077,10 +8098,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
           Close other tabs
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close tabs to the right
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="The label of the 'Close Tabs to the Left' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="The label of the 'Close Tabs to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close tabs to the left
         </message>
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="The label of the 'Focus this tab' Tab context menu item.">
@@ -8156,10 +8177,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </if>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="In Title Case: The label of the 'New Tab to the Right' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="In Title Case: The label of the 'New Tab to the Right' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           New Tab to the Right
         </message>
-        <message name="IDS_TAB_CXMENU_NEWTABTOLEFT" desc="In Title Case: The label of the 'New Tab to the Left' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_NEWTABTOLEFT" desc="In Title Case: The label of the 'New Tab to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           New Tab to the Left
         </message>
         <message name="IDS_TAB_CXMENU_RELOAD" desc="In Title Case: The label of the 'Reload' Tab context menu item.">
@@ -8174,10 +8195,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="In Title Case: The label of the 'Close Other Tabs' Tab context menu item.">
           Close Other Tabs
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close Tabs to the Right
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="In Title Case: The label of the 'Close Tabs to the Left' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="In Title Case: The label of the 'Close Tabs to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close Tabs to the Left
         </message>
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="In Title Case: The label of the 'Focus This Tab' Tab context menu item.">
@@ -12477,6 +12498,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SIDE_SEARCH_PROMO" desc="Promo UI shown next to the side search button to encourage its use.">
         See more search results in side panel
       </message>
+      <message name="IDS_SIDE_SEARCH_ENTRYPOINT_LABEL" desc="The label text that is animated-in when the omnibox entrypoint is first shown.">
+        See more search results
+      </message>
       <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The tooltip for the side search toolbar button when the button is active and the side panel is open.">
         Close search in side panel
       </message>
@@ -13035,6 +13059,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA" desc="Generic feature name during alpha phase, to be displayed in educational and settigns UI.">
         Game controls
       </message>
+      <message name="IDS_INPUT_OVERLAY_EDUCATIONAL_TITLE_ALPHA" desc="Feature title via Educational menu.">
+        Game controls now available
+      </message>
       <message name="IDS_INPUT_OVERLAY_ACCESSIBILITY_ALPHA" desc="Text tied to the close button on Settings menu, readable via Chromevox.">
         Close game controls
       </message>
@@ -13050,8 +13077,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_INPUT_OVERLAY_MENU_CUSTOMIZE_BUTTON" desc="Text displayed to engage in key binding edition.">
         Customize
       </message>
+      <message name="IDS_INPUT_OVERLAY_MENU_EDIT_BUTTON" desc="Text displayed to engage in key binding edition.">
+        Edit
+      </message>
       <message name="IDS_INPUT_OVERLAY_MENU_SHOW_HINT_OVERLAY" desc="Text shown next to the toggle to enable/disable the display overlay to the user.">
         Show hint overlay
+      </message>
+      <message name="IDS_INPUT_OVERLAY_MENU_SHOW_KEY_MAPPING" desc="Text tied to the key-mapping toggle on Settings UI.">
+        Show key mapping
       </message>
       <message name="IDS_INPUT_OVERLAY_MENU_SEND_FEEDBACK" desc="Entry point to send feedback regarding input-overlay.">
         Send feedback
@@ -13083,6 +13116,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_INPUT_OVERLAY_EDUCATIONAL_DESCRIPTION" desc="Text on the educational dialog describing the funcionality introduced by this feature.">
         You’ve been invited to try out keyboard control for this game.
       </message>
+      <message name="IDS_INPUT_OVERLAY_EDUCATIONAL_DESCRIPTION_ALPHA" desc="Text shown on the educational dialog during alpha relase.">
+        Play using your Chromebook keyboard. You can customize keys to specific actions.
+      </message>
       <message name="IDS_INPUT_OVERLAY_EDUCATIONAL_ACCEPT_BUTTON" desc="Educational dialog's accept button text.">
         Got it
       </message>
@@ -13095,8 +13131,23 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_INPUT_OVERLAY_SETTINGS_NUDGE" desc="Label displayed next to the Settings UI's entry point so the user is aware.">
         Click here to customize controls
       </message>
+      <message name="IDS_INPUT_OVERLAY_SETTINGS_NUDGE_ALPHA" desc="Label displayed next to Settings UI's entry point during alpha phase.">
+        Click to customize your game controls
+      </message>
       <message name="IDS_INPUT_OVERLAY_CLOSE_MENU" desc="Accessibility name tied to the close button.">
         Close menu
+      </message>
+      <message name="IDS_INPUT_OVERLAY_EDIT_INSTRUCTIONS" desc="Text presented via a toltip so the user knows how to interact and edit key-bindigs.">
+        Click on any key with your mouse, then press a keyboard key to customize
+      </message>
+      <message name="IDS_INPUT_OVERLAY_EDIT_MISSING_BINDING" desc="Text presented via a toltip so the user is aware of an incomplete key-binding.">
+        Key is missing. Press a keyboard key to customize
+      </message>
+      <message name="IDS_INPUT_OVERLAY_EDIT_RESERVED_KEYS" desc="Text informing the user about keys not available for binding.">
+        The following keys aren’t supported: Tab, Shift, Control, Escape, Caps lock, Volume
+      </message>
+      <message name="IDS_INPUT_OVERLAY_EDIT_FOCUSED_KEY" desc="Text informing the user on how to proceed while having a focused key.">
+        Press a keyboard key to customize
       </message>
     </if>
 
@@ -13118,6 +13169,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION_ESTIMATES_INTERESTS_LINK" desc="This will be inserted as a link in IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION instead of ESTIMATE_INTERESTS_LINK placeholder. * “estimate your interests”: Topics of interest include things like “Live comedy” and “Rock music”. Chrome estimates these interests based on the sites users visit. It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Avoid words like “guess”, “establish”, “define”, etc. (in place of “estimate”). ">
       estimates your interests
+    </message>
+    <message name="IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION_ESTIMATES_INTERESTS_LINK_A11Y_NAME" desc="The accessible text read for IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION_ESTIMATES_INTERESTS_LINK. * “estimate your interests”: Topics of interest include things like “Live comedy” and “Rock music”. Chrome estimates these interests based on the sites users visit. It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Avoid words like “guess”, “establish”, “define”, etc. (in place of “estimate”). ">
+      estimates your interests - Chrome can estimate your interests
     </message>
     <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_BODY_DESCRIPTION_1" desc="* “restrict” means to lessen. We don’t want to suggest that we’re “eliminating” cross-site tracking. * “cross-site tracking”: An example: a user visits site A and then site B. Based on how third-party cookies work today, when that user later visits site C, site C can be aware that the user visited sites A and B, and can even have some sense for what they did on those sites. * “stop ad spam and fraud”:  This feature isn’t really related to restricting cross-site tracking but we combined these features in the same sentence / section for structural reasons.">
       We’re exploring ways to restrict cross-site tracking while enabling sites to stop ad spam and fraud.
@@ -13172,6 +13226,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ONBOARDING_BUTTON_ACCEPT_TEXT" translateable="false" desc="The text on the button that declines the onboarding for Automated Password Change on Desktop.">
         I agree
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_STARTING_SCREEN_TITLE" translateable="false" desc="The title shown on the side panel after an Automated Password Change flow has been started. This message is shown until the first response from a script is received that resets the initial state.">
+        Opening <ph name="URL">$1<ex>www.example.com</ex></ph>...
       </message>
     </if>
   </messages>

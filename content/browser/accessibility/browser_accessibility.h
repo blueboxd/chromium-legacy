@@ -94,11 +94,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // Returns the number of children of this object, or 0 if PlatformIsLeaf()
   // returns true.
-  virtual uint32_t PlatformChildCount() const;
+  virtual size_t PlatformChildCount() const;
 
   // Return a pointer to the child at the given index, or NULL for an
   // invalid index. Returns nullptr if PlatformIsLeaf() returns true.
-  virtual BrowserAccessibility* PlatformGetChild(uint32_t child_index) const;
+  virtual BrowserAccessibility* PlatformGetChild(size_t child_index) const;
 
   BrowserAccessibility* PlatformGetParent() const;
 
@@ -131,7 +131,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
     PlatformChildIterator& operator--(int) override;
     gfx::NativeViewAccessible GetNativeViewAccessible() const override;
     BrowserAccessibility* get() const;
-    int GetIndexInParent() const override;
+    absl::optional<size_t> GetIndexInParent() const override;
     BrowserAccessibility& operator*() const override;
     BrowserAccessibility* operator->() const override;
 
@@ -330,8 +330,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // necessarily reflect the accessibility tree that should be exposed on each
   // platform. Use PlatformChildCount and PlatformGetChild to implement platform
   // accessibility APIs.
-  uint32_t InternalChildCount() const;
-  BrowserAccessibility* InternalGetChild(uint32_t child_index) const;
+  size_t InternalChildCount() const;
+  BrowserAccessibility* InternalGetChild(size_t child_index) const;
   BrowserAccessibility* InternalGetParent() const;
   BrowserAccessibility* InternalGetFirstChild() const;
   BrowserAccessibility* InternalGetLastChild() const;
@@ -458,8 +458,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() const override;
-  int GetChildCount() const override;
-  gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  size_t GetChildCount() const override;
+  gfx::NativeViewAccessible ChildAtIndex(size_t index) override;
   bool HasModalDialog() const override;
   gfx::NativeViewAccessible GetFirstChild() override;
   gfx::NativeViewAccessible GetLastChild() override;
@@ -511,7 +511,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   ui::AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
                                              int32_t id) override;
-  int GetIndexInParent() override;
+  absl::optional<size_t> GetIndexInParent() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
   const std::vector<gfx::NativeViewAccessible> GetUIADirectChildrenInRange(
@@ -564,6 +564,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsMinimized() const override;
   bool IsText() const override;
   bool IsWebContent() const override;
+  bool IsReadOnlySupported() const override;
+  bool IsReadOnlyOrDisabled() const override;
   bool HasVisibleCaretOrSelection() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(
       ax::mojom::IntAttribute attr) override;
@@ -612,7 +614,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // The underlying node. This could change during the lifetime of this object
   // if this object has been reparented, i.e. moved to another part of the tree.
   // Weak, `AXTree` owns this.
-  raw_ptr<ui::AXNode> node_;
+  raw_ptr<ui::AXNode, DanglingUntriaged> node_;
 
   // Protected so that it can't be called directly on a BrowserAccessibility
   // where it could be confused with an id that comes from the node data,

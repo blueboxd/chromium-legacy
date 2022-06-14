@@ -41,6 +41,8 @@ class ChromeOsFeedbackDelegate : public OsFeedbackDelegate {
   void GetScreenshotPng(GetScreenshotPngCallback callback) override;
   void SendReport(os_feedback_ui::mojom::ReportPtr report,
                   SendReportCallback callback) override;
+  void OpenDiagnosticsApp() override;
+  void OpenExploreApp() override;
 
  private:
   void OnSendFeedbackDone(SendReportCallback callback, bool status);

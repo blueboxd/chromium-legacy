@@ -135,12 +135,9 @@ android_resources("java_resources") {
   ]
 }
 
-android_library("junit") {
-  bypass_platform_checks = true
+robolectric_library("junit") {
   testonly = true
   sources = [
-    "junit/src/org/chromium/chrome/browser/ui/signin/ConfirmManagedSyncDataDialogTest.java",
-    "junit/src/org/chromium/chrome/browser/ui/signin/ConfirmSyncDataStateMachineDelegateTest.java",
     "junit/src/org/chromium/chrome/browser/ui/signin/ConfirmSyncDataStateMachineTest.java",
     "junit/src/org/chromium/chrome/browser/ui/signin/SigninPromoControllerTest.java",
     "junit/src/org/chromium/chrome/browser/ui/signin/SigninPromoUtilLaunchSigninPromoTest.java",
@@ -158,7 +155,7 @@ android_library("junit") {
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/signin/services/android:java",
     "//chrome/browser/tab:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/test/android:test_support_java",
     "//components/prefs/android:java",
@@ -181,8 +178,9 @@ android_library("javatests") {
   testonly = true
   sources = [
     "java/src/org/chromium/chrome/browser/ui/signin/ConfirmImportSyncDataDialogTest.java",
-    "java/src/org/chromium/chrome/browser/ui/signin/ConfirmManagedSyncDataDialogIntegrationTest.java",
+    "java/src/org/chromium/chrome/browser/ui/signin/ConfirmManagedSyncDataDialogTest.java",
     "java/src/org/chromium/chrome/browser/ui/signin/ConfirmSyncDataIntegrationTest.java",
+    "java/src/org/chromium/chrome/browser/ui/signin/ConfirmSyncDataStateMachineDelegateTest.java",
     "java/src/org/chromium/chrome/browser/ui/signin/SignOutDialogRenderTest.java",
     "java/src/org/chromium/chrome/browser/ui/signin/SignOutDialogTest.java",
     "java/src/org/chromium/chrome/browser/ui/signin/SigninPromoControllerRenderTest.java",
@@ -201,7 +199,7 @@ android_library("javatests") {
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/signin/services/android:java",
     "//chrome/browser/ui/android/night_mode:night_mode_java_test_support",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_integration_test_support",
     "//components/browser_ui/bottomsheet/android:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/externalauth/android:java",

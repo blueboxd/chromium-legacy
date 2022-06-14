@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" />（<ph name="THREAD_COUNT" /> 个线程，<ph name="CPU_MAX_CLOCK_SPEED" />GHz）</translation>
 <translation id="1047773237499189053">有可用的新功能，使用向上键即可了解详情。</translation>
 <translation id="1059913517121127803">无法启动扫描</translation>
+<translation id="1062407476771304334">替换</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">检测到防火墙</translation>
 <translation id="1075811647922107217">页面大小</translation>
@@ -15,9 +16,11 @@
 <translation id="1124772482545689468">用户</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">“更新外部设备的固件”窗口已打开。有 <ph name="NUM_UPDATES" /> 项可用的更新。</translation>
+<translation id="1165039591588034296">错误</translation>
 <translation id="1175697296044146566">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="1175951029573070619">一般 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">移除</translation>
+<translation id="1190378975642195988">底座加速度计</translation>
 <translation id="1195447618553298278">未知错误。</translation>
 <translation id="1196959502276349371"><ph name="VERSION" /> 版</translation>
 <translation id="1199355487114804640">播放/暂停</translation>
@@ -95,6 +98,7 @@
 <translation id="1717874160321062422">由 <ph name="FIRST_MANAGER" /> 和 <ph name="SECOND_MANAGER" /> 管理</translation>
 <translation id="1726100011689679555">域名服务器</translation>
 <translation id="1731082422893354635">蓝牙触控板</translation>
+<translation id="1745577949879301685">无法加载这些图片。请检查您的网络连接状况，或尝试重新加载这些图片。</translation>
 <translation id="1751249301761991853">个人</translation>
 <translation id="1753496554272155572">退出壁纸预览</translation>
 <translation id="175763766237925754">良好 (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -213,7 +217,6 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> 秒内释放了 <ph name="RATE" /> 的电量。</translation>
 <translation id="291142119251986300">不支持的组件</translation>
 <translation id="2926057806159140518">输入您的用户名和密码，或扫描您的二维码</translation>
-<translation id="2928420929544864228">安装完毕。</translation>
 <translation id="3008341117444806826">刷新</translation>
 <translation id="3009958530611748826">选择要保存到的文件夹</translation>
 <translation id="3017079585324758401">背景</translation>
@@ -267,6 +270,7 @@
 <translation id="3484914941826596830">固件更新期间，请不要拔掉此外部设备的电源插头或关闭您的计算机。您可以最小化此窗口。此更新可能需要几分钟时间，在此期间，您的外部设备可能无法正常使用。</translation>
 <translation id="3486220673238053218">定义</translation>
 <translation id="3488065109653206955">部分激活</translation>
+<translation id="3492982278147736083">盖子陀螺仪</translation>
 <translation id="3517001332549868749">Chrome 操作系统更新</translation>
 <translation id="3527036260304016759">失败 - 不明错误</translation>
 <translation id="3532980081107202182">还剩大约 <ph name="MIN_REMAINING" /> 分钟</translation>
@@ -286,6 +290,7 @@
 <translation id="3621202678540785336">输入</translation>
 <translation id="3632579075709132555">隐私保护屏幕开关</translation>
 <translation id="3643810137582748570">跳过校准</translation>
+<translation id="3651050199673793219">选择温度单位</translation>
 <translation id="3678765385266369662">请选择您想如何关闭写保护</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />测试</translation>
 <translation id="370665806235115550">正在加载...</translation>
@@ -300,9 +305,12 @@
 <translation id="3820172043799983114">PIN 码无效。</translation>
 <translation id="3838338534323494292">新密码</translation>
 <translation id="385051799172605136">返回</translation>
+<translation id="3856304145690230735">底座陀螺仪</translation>
 <translation id="385832974417157471">请先对您的设备执行 Powerwash 操作，然后再关机。如果您的设备配有盖子，请等到 Powerwash 完成后再合上盖子。Powerwash 最多可能需要 1 分钟才能完成。</translation>
 <translation id="3858860766373142691">名称</translation>
+<translation id="3862598938296403232">必须提供说明</translation>
 <translation id="3865414814144988605">分辨率</translation>
+<translation id="3866249974567520381">说明</translation>
 <translation id="387301095347517405">您的电池已经历的完整充电循环次数</translation>
 <translation id="3885327323343477505">更换屏保</translation>
 <translation id="3923184630988645767">流量使用</translation>
@@ -370,6 +378,7 @@
 <translation id="4472575034687746823">开始使用</translation>
 <translation id="4479639480957787382">以太网</translation>
 <translation id="4483049906298469269">未能对非默认网关执行 ping 操作</translation>
+<translation id="4500213108254186382">盖子加速度计</translation>
 <translation id="4503223151711056411">向左</translation>
 <translation id="4511264077854731334">门户网站</translation>
 <translation id="4521826082652183069">主题备用名称匹配</translation>
@@ -381,6 +390,7 @@
 <translation id="4561801978359312462">SIM 卡已解锁</translation>
 <translation id="4562494484721939086">无服务</translation>
 <translation id="4568938274596692027">安装完毕。正在准备重启…</translation>
+<translation id="4576943788798178439">触控笔支持</translation>
 <translation id="458794348635939462">未能解析所有主机</translation>
 <translation id="4593212453765072419">需要验证代理身份</translation>
 <translation id="4609350030397390689">调低键盘亮度</translation>
@@ -429,6 +439,7 @@
 <translation id="4915052247106771211">选择此选项会将设备恢复出厂设置 (Powerwash)。</translation>
 <translation id="4917385247580444890">强</translation>
 <translation id="4917889632206600977">已停止 - 纸张已用完</translation>
+<translation id="491791267030419270">反馈撰写提示</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> 秒内充了 <ph name="RATE" /> 的电量。</translation>
 <translation id="4930320165497208503">若要设置或更新连接，请转到<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
 <translation id="4932733599132424254">日期</translation>
@@ -456,6 +467,7 @@
 <translation id="5168185087976003268">电池寿命</translation>
 <translation id="5170568018924773124">在文件夹中显示</translation>
 <translation id="5179530508336824319">启用写保护即可继续前往下一个屏幕。如需获取说明，请前往设备制造商的支持页面。</translation>
+<translation id="5181140330217080051">正在下载</translation>
 <translation id="5190187232518914472">重现您的美好回忆。如需添加或编辑影集，请转至 <ph name="LINK_BEGIN" />Google 相册<ph name="LINK_END" />。</translation>
 <translation id="5212543919916444558">无法提供与您的屏幕上可以找到的任何内容相关的帮助。
 请尝试通过点按麦克风图标向我提问。</translation>
@@ -512,6 +524,7 @@
 <translation id="5620281292257375798">仅供内部使用</translation>
 <translation id="5649768706273821470">收听</translation>
 <translation id="5655283760733841251">调高键盘亮度</translation>
+<translation id="5659593005791499971">电子邮件</translation>
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">家用</translation>
@@ -524,6 +537,7 @@
 <translation id="57838592816432529">静音</translation>
 <translation id="5784136236926853061">HTTP 延迟时间较长</translation>
 <translation id="578753362485952307">若要对主板进行再加工以用于另一设备，请前往<ph name="LINK_BEGIN" />再加工流程<ph name="LINK_END" />。</translation>
+<translation id="5790085346892983794">成功</translation>
 <translation id="5832805196449965646">添加用户</translation>
 <translation id="583281660410589416">未知</translation>
 <translation id="5843706793424741864">华氏度</translation>
@@ -535,6 +549,7 @@
 <translation id="5866840822086176774">非常强</translation>
 <translation id="588258955323874662">全屏</translation>
 <translation id="5895138241574237353">重新启动</translation>
+<translation id="5898758006340607522">电源按钮</translation>
 <translation id="5901630391730855834">黄色</translation>
 <translation id="5903200662178656908">设备是键盘和鼠标的组合。</translation>
 <translation id="5916084858004523819">已禁止</translation>
@@ -670,6 +685,7 @@
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7144878232160441200">重试</translation>
 <translation id="714876143603641390">LAN 连接性</translation>
+<translation id="7154020516215182599">分享您的反馈或描述您的问题。如果可能的话，请附上重现问题的步骤。</translation>
 <translation id="7155171745945906037">相机或文件中的现有照片</translation>
 <translation id="7162487448488904999">媒体库</translation>
 <translation id="7170236477717446850">个人资料照片</translation>
@@ -857,6 +873,7 @@
 <translation id="8919792139048574232">查看已解决的问题</translation>
 <translation id="8919837981463578619">失败 - 缺少送纸盘</translation>
 <translation id="8923267550422472772">每月重置流量使用情况的日期</translation>
+<translation id="8925613211674558308">已缓存 VPD</translation>
 <translation id="8928727111548978589">失败 - 纸张已用完</translation>
 <translation id="8930521118335213258">对等节点</translation>
 <translation id="8930622219860340959">无线</translation>
@@ -898,6 +915,7 @@
 <translation id="922179502584117429">当前版本 (<ph name="VERSION_NUMBER" />) 已过期</translation>
 <translation id="932327136139879170">首页</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">发送反馈</translation>
 <translation id="952992212772159698">未激活</translation>
 <translation id="960719561871045870">运营商代码</translation>
 <translation id="982713511914535780">运行放电测试</translation>

@@ -2257,6 +2257,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_TITLE" desc="Label for the radio button group of ambient mode weather unit.">
         Weather
       </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_DESCRIPTION_AMBIENT_MODE_WEATHER" desc="Aria description for the radio button group of ambient mode weather unit.">
+        Select a temperature unit
+      </message>
       <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_FAHRENHEIT" desc="Label for the radio button to choose weather unit as Fahrenheit.">
         Fahrenheit
       </message>
@@ -3040,6 +3043,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_UPDATING_OS_VERSION" desc="The message shown while updating the device's OS version.">
         Updating OS version
       </message>
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_ERROR_MESSAGE" desc="The message shown if there were errors while updating the OS.">
+        Couldn't download the update
+      </message>
       <!-- Manually disable wp page -->
       <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS" desc="The text instructions for how to manually disable write-protect on the device.">
         Disable write-protect to continue to the next screen. Go to the device manufacturer's support page for instructions.
@@ -3071,7 +3077,7 @@ Try tapping the mic to ask me anything.
         Turn on Write Protect
       </message>
       <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_INSTRUCTIONS" desc="The text instructions to manually enable write-protect on the device.">
-        Enable write-protect to continue to the next screen. Go to the device manufacturer's support page for instructions. 
+        Enable write-protect to continue to the next screen. Go to the device manufacturer's support page for instructions.
       </message>
       <!-- Confirm device information page -->
       <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_TITLE" desc="The title for the page for confirming the device info.">
@@ -3121,7 +3127,7 @@ Try tapping the mic to ask me anything.
         Install is complete. Preparing to restart...
       </message>
       <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_COMPLETE" desc="The message when firmware installation is complete and the device has rebooted.">
-        Installation complete.
+        Install is complete. You can now remove your USB drive or SD card.
       </message>
       <!-- Onboarding update page -->
       <message name="IDS_SHIMLESS_RMA_ONBOARDING_UPDATE_PROGRESS" translateable="false" desc="The update progress label.">
@@ -3185,6 +3191,31 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION" desc="Label for the option to preserve/save the data on the device.">
         Keep user data
+      </message>
+      <!-- Illustrations -->
+      <message name="IDS_SHIMLESS_RMA_BASE_ON_FLAT_SURFACE_ALT_TEXT" desc="Alt text for illustration showing how to put the device base flat on a surface.">
+        Put base on flat surface
+      </message>
+      <message name="IDS_SHIMLESS_RMA_DOWNLOADING_ALT_TEXT" desc="Alt text for illustration showing a downloading arrow.">
+        Downloading
+      </message>
+      <message name="IDS_SHIMLESS_RMA_ERROR_ALT_TEXT" desc="Alt text for illustration showing an error screen.">
+        Error
+      </message>
+      <message name="IDS_SHIMLESS_RMA_INSERT_USB_ALT_TEXT" desc="Alt text for illustration showing how to insert a USB.">
+        Insert USB
+      </message>
+      <message name="IDS_SHIMLESS_RMA_LID_ON_FLAT_SURFACE_ALT_TEXT" desc="Alt text for illustration showing how to put the device lid flat on a surface.">
+        Put lid on flat surface
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_START_ALT_TEXT" desc="Alt text for illustration showing a person repairing.">
+        Repair start
+      </message>
+      <message name="IDS_SHIMLESS_RMA_SUCCESS_ALT_TEXT" desc="Alt text for illustration showing a success checkmark.">
+        Success
+      </message>
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_ALT_TEXT" desc="Alt text for illustration showing an hourglass representing updating the OS.">
+        Update OS
       </message>
       <!-- Peripheral Firmware Update -->
       <message name="IDS_FIRMWARE_TITLE_TEXT" desc="The title of the Firmware update app.">
@@ -3330,7 +3361,13 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_REPORT_LABEL" desc="Description text of the report query button for the Quick Answers view.">
         Report this query
       </message>
-
+      <!-- ARC SDK Version Labels-->
+      <message name="IDS_ARC_SDK_VERSION_LABEL" desc="Label for Android SDK Version bundled with ARC">
+        SDK Version:
+      </message>
+      <message name="IDS_ARC_SDK_VERSION_UNKNOWN" desc="Message displayed when the Android SDK Version can not be found">
+        Unknown
+      </message>
       <!-- Feedback Tool-->
       <!-- Search Page -->
       <message name="IDS_FEEDBACK_TOOL_CONTINUE_BUTTON_LABEL" desc="Label of the continue button.">
@@ -3339,16 +3376,16 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_DESCRIPTION_LABEL" desc="Label of the text box where users can describe a problem they are having">
         Description
       </message>
-      <message name="IDS_FEEDBACK_TOOL_NO_MATCHED_RESULTS" translateable="false" desc="Label for help content when there are no matched results.">
-        No matched results, see popular help content
+      <message name="IDS_FEEDBACK_TOOL_NO_MATCHED_RESULTS" desc="Label for help content when there are no matched results.">
+        No suggested content. See top help content.
       </message>
       <message name="IDS_FEEDBACK_TOOL_PAGE_TITLE" desc="Label showing the title of the feedback tool before a report has been sent">
         Send feedback
       </message>
-      <message name="IDS_FEEDBACK_TOOL_POPULAR_HELP_CONTENT" translateable="false" desc="Label for help content when there is no query entered yet.">
-        Popular help content
+      <message name="IDS_FEEDBACK_TOOL_POPULAR_HELP_CONTENT" desc="Label for help content when there is no query entered yet.">
+        Top help content
       </message>
-      <message name="IDS_FEEDBACK_TOOL_SUGGESTED_HELP_CONTENT" translateable="false" desc="Label for help content when there are matched results.">
+      <message name="IDS_FEEDBACK_TOOL_SUGGESTED_HELP_CONTENT" desc="Label for help content when there are matched results.">
         Suggested help content
       </message>
       <message name="IDS_FEEDBACK_TOOL_DESCRIPTION_REQUIRED" desc="Label showing error message when clicking continue button without a description.">
@@ -3357,8 +3394,25 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_FEEDBACK_HELP_LINK_LABEL" desc="The text used for the link that navigates to the feedback help webpage.">
         Tips on writing feedback
       </message>
+      <!-- Share Data Page -->
       <message name="IDS_FEEDBACK_TOOL_DESCRIPTION_HINT" desc="Label for the hint in description textarea">
         Share your feedback or describe your issue. If possible, include steps to reproduce your issue.
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_ATTACH_FILES_LABEL" desc="Label for adding a screenshot and/or a filename.">
+        Attach files
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL" desc="Label for replacing a file.">
+        Replace
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported.">
+        Email
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_SHARE_DIAGNOSTIC_DATA_LABEL" desc="Label showing the share diagnostic data.">
+        Share diagnostic data
+      </message>
+      <!-- Confirmation Page -->
+      <message name="IDS_FEEDBACK_TOOL_PAGE_TITLE_AFTER_SENT" desc="Label showing a thank you message as the title of the confirmation page after a report has been sent.">
+        Thanks for your feedback
       </message>
       <!-- End of Feedback Tool -->
     </messages>

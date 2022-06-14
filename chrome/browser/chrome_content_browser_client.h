@@ -780,7 +780,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void OnWebContentsCreated(content::WebContents* web_contents) override;
 
   bool IsFindInPageDisabledForOrigin(const url::Origin& origin) override;
-  bool IsFirstPartySetsEnabled() override;
   bool WillProvidePublicFirstPartySets() override;
   base::Value::Dict GetFirstPartySetsOverrides() override;
 
@@ -796,6 +795,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       content::BrowserContext* browser_context,
       int32_t error_code) override;
+
+  bool OpenExternally(content::RenderFrameHost* opener,
+                      const GURL& url,
+                      WindowOpenDisposition disposition) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

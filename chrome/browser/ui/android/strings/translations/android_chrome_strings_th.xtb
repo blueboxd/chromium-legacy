@@ -348,6 +348,7 @@
 <translation id="2842985007712546952">โฟลเดอร์ระดับบนสุด</translation>
 <translation id="2856503607207334158">ลงชื่อเข้าใช้ไม่สำเร็จ</translation>
 <translation id="2860954141821109167">ตรวจสอบว่ามีการเปิดใช้แอปโทรศัพท์ในอุปกรณ์นี้แล้ว</translation>
+<translation id="2861923151411510142">ฟีเจอร์บางอย่างของ Chrome จะใช้ไม่ได้อีกต่อไป</translation>
 <translation id="2870560284913253234">เว็บไซต์</translation>
 <translation id="2871733351037274014">โหลดหน้าเว็บล่วงหน้า</translation>
 <translation id="2888126860611144412">เกี่ยวกับ Chrome</translation>
@@ -494,7 +495,6 @@
 <translation id="3622349720008044802">จัดการหน้าต่าง</translation>
 <translation id="3631987586758005671">กำลังแชร์กับ <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลเข้าสู่ระบบที่เก็บไว้ เมื่อฟีเจอร์นี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนลงชื่อเข้าใช้เว็บไซต์</translation>
-<translation id="3653111872753786013"><ph name="WEBSITE_TITLE" />: <ph name="WEBSITE_URL" /></translation>
 <translation id="3677911431265050325">ขอเว็บไซต์ในอุปกรณ์เคลื่อนที่</translation>
 <translation id="3687645719033307815">คุณกำลังดูตัวอย่างของหน้านี้</translation>
 <translation id="3690369331356918524">เตือนคุณในกรณีที่รหัสผ่านรั่วไหลจากการละเมิดข้อมูล</translation>
@@ -526,7 +526,6 @@
 <translation id="3845098929839618392">เปิดในแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3856096718352044181">โปรดยืนยันว่านี่เป็นผู้ให้บริการที่ถูกต้องหรือลองอีกครั้งภายหลัง</translation>
 <translation id="3858860766373142691">ชื่อ</translation>
-<translation id="3859206958100234503">ซิงค์เพื่อรับรหัสผ่าน บุ๊กมาร์ก และอีกมากมายในอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="3861633093716975811">วิดีโอยอดนิยม</translation>
 <translation id="3892148308691398805">คัดลอกข้อความ</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
@@ -587,6 +586,7 @@
 <translation id="4227318652298512614">ติดตามเว็บไซต์ที่คุณต้องการ</translation>
 <translation id="4242533952199664413">เปิดการตั้งค่า</translation>
 <translation id="4248098802131000011">รักษารหัสผ่านให้ปลอดภัยจากการละเมิดข้อมูลและปัญหาด้านความปลอดภัยอื่นๆ</translation>
+<translation id="424864128008805179">ต้องการออกจากระบบ Chrome ไหม</translation>
 <translation id="4249955472157341256">จัดเรียงตามล่าสุด</translation>
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="4256782883801055595">ใบอนุญาตโอเพนซอร์ส</translation>
@@ -654,7 +654,6 @@
 <translation id="4594952190837476234">หน้าเว็บออฟไลน์นี้สร้างเมื่อวันที่ <ph name="CREATION_TIME" /> และอาจแตกต่างไปจากเวอร์ชันออนไลน์</translation>
 <translation id="4616150815774728855">เปิด <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">ยืนยันว่าเป็นคุณ</translation>
-<translation id="4627165777145349100">ข้อมูลเพิ่มเติมเกี่ยวกับหน้านี้</translation>
 <translation id="4634124774493850572">ใช้รหัสผ่าน</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{มีรหัสผ่านที่ถูกละเมิด 1 รายการ}other{มีรหัสผ่านที่ถูกละเมิด # รายการ}}</translation>
 <translation id="4650364565596261010">ค่าเริ่มต้นของระบบ</translation>
@@ -790,10 +789,10 @@
 <translation id="5324858694974489420">การตั้งค่าของผู้ปกครอง</translation>
 <translation id="5326921373682845375">เซิร์ฟเวอร์ของ Google จะไม่ได้รับข้อมูลใหม่เมื่อโหลดหน้าเว็บล่วงหน้าแบบส่วนตัว เนื่องจากหน้าเว็บที่โหลดล่วงหน้าจะได้รับการเข้ารหัส และเว็บไซต์ที่ลิงก์ไปยังหน้าดังกล่าวเป็นเว็บไซต์ Google</translation>
 <translation id="5329858041417644019">เบราว์เซอร์ของคุณไม่มีการจัดการ</translation>
+<translation id="5339031667684712858">เว็บไซต์ที่คุณนำออก</translation>
 <translation id="5342314432463739672">คำขอสิทธิ์</translation>
 <translation id="5355191726083956201">การปกป้องที่ปรับปรุงแล้วเปิดอยู่</translation>
 <translation id="5368227114232678694">ลองใช้โหมดไม่ระบุตัวตนเพื่อท่องเว็บอย่างเป็นส่วนตัวในอุปกรณ์นี้</translation>
-<translation id="5371717687506906963">ข้อความแจ้งเกี่ยวกับ Privacy Sandbox</translation>
 <translation id="5375577065097716013">ค้นหาภาพด้วย Google Lens <ph name="BEGIN_NEW" />ใหม่<ph name="END_NEW" /></translation>
 <translation id="5376898820269806588">เปลี่ยนความรู้สึกแล้ว</translation>
 <translation id="5401851137404501592">หากต้องการดำเนินการต่อ <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> จะแชร์ชื่อ อีเมล และรูปโปรไฟล์ของคุณกับเว็บไซต์นี้</translation>
@@ -892,6 +891,7 @@
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="5869789175361934029">ดำเนินการต่อจากอุปกรณ์อื่น</translation>
 <translation id="587735546353481577">หากต้องการติดตามเว็บไซต์ ให้ไปที่เว็บไซต์นั้น เปิดเมนู Chrome แล้วแตะ "ติดตาม"</translation>
+<translation id="5879072387416556377">รับคำแนะนำที่ดีกว่า</translation>
 <translation id="5880748256563468367">ไปที่ฟีด</translation>
 <translation id="5884076754568147479">Google จะได้รับ URL และเนื้อหาของเว็บไซต์ต่างๆ ที่คุณใช้งาน Assistant ด้วย รวมถึงข้อมูลที่คุณส่งผ่าน Assistant เพื่อช่วยทำงานที่ต้องการให้เสร็จสิ้น</translation>
 <translation id="5906513782029855931">หากทราบ URL ของเว็บไซต์ Google Assistant จะช่วยทำงานที่ต้องการให้เสร็จสิ้นได้ คุณปิด Assistant ได้ในการตั้งค่า Chrome</translation>
@@ -1066,6 +1066,7 @@
 <translation id="6751521182688001123">เปิดแท็บใหม่อย่างรวดเร็ว หากต้องการแก้ไขทางลัดนี้ ให้แตะค้างไว้</translation>
 <translation id="6756507620369789050">แชร์ความคิดเห็น</translation>
 <translation id="6767294960381293877">รายการอุปกรณ์ที่จะแชร์แท็บด้วยเปิดอยู่ที่ระดับความสูงครึ่งหนึ่งของหน้าจอ</translation>
+<translation id="6770042910635026163">เว็บไซต์ที่คุณเข้าชมเป็นตัวบอกความสนใจของคุณ</translation>
 <translation id="6770602306803890733">ปรับปรุงความปลอดภัยให้คุณและทุกคนที่ใช้อินเทอร์เน็ต</translation>
 <translation id="6785476624617658922">ข้อกำหนดในการให้บริการเพิ่มเติมของ Chrome และ Chrome OS</translation>
 <translation id="6795633245022906657">เปิดแท็บใหม่อย่างรวดเร็ว ไปที่การตั้งค่าเพื่อแก้ไขทางลัดนี้</translation>
@@ -1234,6 +1235,7 @@
 <translation id="770741401784017797">กำลังสร้าง GIF</translation>
 <translation id="7707922173985738739">ใช้เน็ตมือถือ</translation>
 <translation id="7709094866268987903">ความสนใจที่คุณลบออกจะปรากฏที่นี่</translation>
+<translation id="7709918231054955894">ดูแท็บทั้งหมด</translation>
 <translation id="7725024127233776428">หน้าที่คุณบุ๊กมาร์กไว้จะปรากฏที่นี่</translation>
 <translation id="7757787379047923882">ข้อความที่แชร์จาก <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">เลือกวันที่และเวลา</translation>
@@ -1429,6 +1431,7 @@
 <translation id="8656747343598256512">ลงชื่อเข้าใช้เว็บไซต์นี้และ Chrome ด้วยบัญชี Google คุณเปิดการซิงค์ภายหลังได้</translation>
 <translation id="8659579665266920523">วิธีค้นหาด้วย Chrome</translation>
 <translation id="8662811608048051533">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
+<translation id="8664215986015753476">ใช้ Chrome ในแบบของคุณ</translation>
 <translation id="8664979001105139458">มีชื่อไฟล์นี้อยู่แล้ว</translation>
 <translation id="8666759526542103597">เกี่ยวกับการปรับโฆษณาตามโปรไฟล์ของผู้ใช้ด้วยข้อมูลจากเบราว์เซอร์</translation>
 <translation id="8667760277771450375">เรากำลังพัฒนาวิธีจำกัดการติดตามข้ามเว็บไซต์ ในขณะเดียวกันก็กำลังทำให้เว็บไซต์สามารถหยุดสแปมโฆษณาและการประพฤติมิชอบได้</translation>

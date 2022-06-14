@@ -25,7 +25,9 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
+#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -39,7 +41,6 @@
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -1943,14 +1944,13 @@ TEST_F(AttributionStorageTest, TriggerDebugKey_RoundTrips) {
                                 TriggerDebugKeyIs(33))));
 }
 
-TEST_F(AttributionStorageTest, AttributionAggregatableSource_RoundTrips) {
-  auto aggregatable_source =
-      AttributionAggregatableSource::FromKeys({{"key", 345}});
-  ASSERT_TRUE(aggregatable_source.has_value());
+TEST_F(AttributionStorageTest, AttributionAggregationKeys_RoundTrips) {
+  auto aggregation_keys = AttributionAggregationKeys::FromKeys({{"key", 345}});
+  ASSERT_TRUE(aggregation_keys.has_value());
   storage()->StoreSource(
-      SourceBuilder().SetAggregatableSource(*aggregatable_source).Build());
+      SourceBuilder().SetAggregationKeys(*aggregation_keys).Build());
   EXPECT_THAT(storage()->GetActiveSources(),
-              ElementsAre(AggregatableSourceAre(*aggregatable_source)));
+              ElementsAre(AggregationKeysAre(*aggregation_keys)));
 }
 
 TEST_F(AttributionStorageTest, MaybeCreateAndStoreReport_ReturnsNewReport) {
@@ -2271,7 +2271,8 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
                     AttributionFilterData::ForSourceType(
                         AttributionSourceType::kEvent),
                     /*not_filters=*/AttributionFilterData())},
-                AttributionAggregatableTrigger())));
+                /*aggregatable_trigger_data=*/{},
+                /*aggregatable_values=*/AttributionAggregatableValues())));
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
@@ -2348,11 +2349,12 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
   };
 
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(
-                AttributionTrigger(origin, origin,
-                                   /*filters=*/AttributionFilterData(),
-                                   /*debug_key=*/absl::nullopt, event_triggers,
-                                   AttributionAggregatableTrigger())));
+            MaybeCreateAndStoreEventLevelReport(AttributionTrigger(
+                origin, origin,
+                /*filters=*/AttributionFilterData(),
+                /*debug_key=*/absl::nullopt, event_triggers,
+                /*aggregatable_trigger_data=*/{},
+                /*aggregatable_values=*/AttributionAggregatableValues())));
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()),
               ElementsAre(EventLevelDataIs(
@@ -2365,15 +2367,15 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
 TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
   const auto origin = url::Origin::Create(GURL("https://r.test"));
 
-  auto aggregatable_trigger =
-      blink::mojom::AttributionAggregatableTrigger::New();
-  aggregatable_trigger->trigger_data.push_back(
-      blink::mojom::AttributionAggregatableTriggerData::New(
+  std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data{
+      AttributionAggregatableTriggerData::CreateForTesting(
           absl::MakeUint128(/*high=*/1, /*low=*/0),
-          std::vector<std::string>{"0"},
-          blink::mojom::AttributionFilterData::New(),
-          blink::mojom::AttributionFilterData::New()));
-  aggregatable_trigger->values.emplace("0", 1);
+          /*source_keys=*/{"0"},
+          /*filters=*/AttributionFilterData(),
+          /*not_filters=*/AttributionFilterData())};
+
+  auto aggregatable_values =
+      AttributionAggregatableValues::CreateForTesting({{"0", 1}});
 
   storage()->StoreSource(
       SourceBuilder()
@@ -2381,19 +2383,17 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
           .SetReportingOrigin(origin)
           .SetFilterData(*AttributionFilterData::FromSourceFilterValues(
               {{"abc", {"123"}}}))
-          .SetAggregatableSource(
-              *AttributionAggregatableSource::FromKeys({{"0", 1}}))
+          .SetAggregationKeys(*AttributionAggregationKeys::FromKeys({{"0", 1}}))
           .Build());
 
-  AttributionTrigger trigger1(
-      origin, origin,
-      /*filters=*/
-      *AttributionFilterData::FromTriggerFilterValues({
-          {"abc", {"456"}},
-      }),
-      /*debug_key=*/absl::nullopt,
-      /*event_triggers=*/{},
-      *AttributionAggregatableTrigger::FromMojo(aggregatable_trigger.Clone()));
+  AttributionTrigger trigger1(origin, origin,
+                              /*filters=*/
+                              *AttributionFilterData::FromTriggerFilterValues({
+                                  {"abc", {"456"}},
+                              }),
+                              /*debug_key=*/absl::nullopt,
+                              /*event_triggers=*/{}, aggregatable_trigger_data,
+                              aggregatable_values);
 
   AttributionTrigger trigger2(origin, origin,
                               /*filters=*/
@@ -2402,8 +2402,8 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
                               }),
                               /*debug_key=*/absl::nullopt,
                               /*event_triggers=*/{},
-                              *AttributionAggregatableTrigger::FromMojo(
-                                  std::move(aggregatable_trigger)));
+                              std::move(aggregatable_trigger_data),
+                              std::move(aggregatable_values));
 
   EXPECT_THAT(storage()->MaybeCreateAndStoreReport(trigger1),
               AllOf(CreateReportEventLevelStatusIs(
@@ -2526,31 +2526,24 @@ TEST_F(
 }
 
 TEST_F(AttributionStorageTest, AggregatableReportFiltering) {
-  auto aggregatable_trigger =
-      blink::mojom::AttributionAggregatableTrigger::New();
-  aggregatable_trigger->trigger_data.push_back(
-      blink::mojom::AttributionAggregatableTriggerData::New(
-          absl::MakeUint128(/*high=*/1, /*low=*/0),
-          std::vector<std::string>{"0"},
-          blink::mojom::AttributionFilterData::New(
-              AttributionFilterData::FilterValues{{"abc", {"456"}}}),
-          blink::mojom::AttributionFilterData::New()));
-
   storage()->StoreSource(
       SourceBuilder()
           .SetFilterData(*AttributionFilterData::FromSourceFilterValues(
               {{"abc", {"123"}}}))
-          .SetAggregatableSource(
-              *AttributionAggregatableSource::FromKeys({{"0", 1}}))
+          .SetAggregationKeys(*AttributionAggregationKeys::FromKeys({{"0", 1}}))
           .Build());
 
-  EXPECT_EQ(
-      MaybeCreateAndStoreAggregatableReport(
-          TriggerBuilder()
-              .SetAggregatableTrigger(*AttributionAggregatableTrigger::FromMojo(
-                  std::move(aggregatable_trigger)))
-              .Build()),
-      AttributionTrigger::AggregatableResult::kNoHistograms);
+  EXPECT_EQ(MaybeCreateAndStoreAggregatableReport(
+                TriggerBuilder()
+                    .SetAggregatableTriggerData(
+                        {AttributionAggregatableTriggerData::CreateForTesting(
+                            absl::MakeUint128(/*high=*/1, /*low=*/0),
+                            /*source_keys=*/{"0"},
+                            /*filters=*/
+                            AttributionFilterData(),
+                            /*not_filters=*/AttributionFilterData())})
+                    .Build()),
+            AttributionTrigger::AggregatableResult::kNoHistograms);
 }
 
 }  // namespace content

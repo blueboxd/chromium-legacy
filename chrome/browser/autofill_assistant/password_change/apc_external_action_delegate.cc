@@ -5,13 +5,18 @@
 #include "chrome/browser/autofill_assistant/password_change/apc_external_action_delegate.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill_assistant/password_change/proto/extensions.pb.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/assistant_display_delegate.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_controller.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_display.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 // TODO(crbug.com/1324089): Implement once the side panel and
 // UpdateDesktopSideAction are available.
@@ -25,7 +30,7 @@ ApcExternalActionDelegate::~ApcExternalActionDelegate() = default;
 
 void ApcExternalActionDelegate::OnActionRequested(
     const autofill_assistant::external::Action& action_info,
-    base::OnceCallback<void()> start_dom_checks_callback,
+    base::OnceCallback<void(DomUpdateCallback)> start_dom_checks_callback,
     base::OnceCallback<void(const autofill_assistant::external::Result& result)>
         end_action_callback) {
   autofill_assistant::external::Result result;
@@ -37,8 +42,29 @@ void ApcExternalActionDelegate::SetupDisplay() {
   Show(PasswordChangeRunDisplay::Create(GetWeakPtr(), display_delegate_.get()));
 }
 
-void ApcExternalActionDelegate::OnInterruptStarted() {}
-void ApcExternalActionDelegate::OnInterruptFinished() {}
+void ApcExternalActionDelegate::OnInterruptStarted() {
+  DCHECK(!model_before_interrupt_.has_value());
+  model_before_interrupt_ = model_;
+
+  // Reset the current model. The progress step remains the same, so we do not
+  // touch it.
+  SetTitle(std::u16string());
+  SetDescription(std::u16string());
+}
+
+void ApcExternalActionDelegate::OnInterruptFinished() {
+  DCHECK(model_before_interrupt_.has_value());
+
+  // Restore the state from prior to the interrupt. We reset the model
+  // by calling the setters instead of just restoring state to ensure that
+  // the view is informed about the updates.
+  PasswordChangeRunController::Model model = model_before_interrupt_.value();
+  SetTopIcon(model.top_icon);
+  SetTitle(model.title);
+  SetDescription(model.description);
+
+  model_before_interrupt_.reset();
+}
 
 // PasswordChangeRunController
 void ApcExternalActionDelegate::Show(
@@ -75,14 +101,75 @@ void ApcExternalActionDelegate::SetProgressBarStep(
 }
 
 void ApcExternalActionDelegate::ShowBasePrompt(
-    const autofill_assistant::password_change::BasePrompt& base_prompt) {}
+    const autofill_assistant::password_change::BasePromptSpecification&
+        base_prompt) {
+  // Showing the prompt will override the description, so set the model value
+  // to empty to ensure that it reflects the state of the view.
+  model_.description = std::u16string();
 
-void ApcExternalActionDelegate::OnBasePromptOptionSelected(int option_index) {}
+  std::vector<PasswordChangeRunDisplay::PromptChoice> choices;
+  choices.reserve(base_prompt.choices_size());
+  base_prompt_return_values_.clear();
+  base_prompt_return_values_.reserve(base_prompt.choices_size());
 
-void ApcExternalActionDelegate::ShowSuggestedPasswordPrompt(
-    const std::u16string& suggested_password) {}
+  for (const auto& choice : base_prompt.choices()) {
+    choices.push_back(PasswordChangeRunDisplay::PromptChoice{
+        .text = base::UTF8ToUTF16(choice.text()),
+        .highlighted = choice.highlighted()});
+    base_prompt_return_values_.push_back(choice.tag());
+  }
 
-void ApcExternalActionDelegate::OnSuggestedPasswordSelected(bool selected) {}
+  SetTitle(base::UTF8ToUTF16(base_prompt.title()));
+  password_change_run_display_->ShowBasePrompt(choices);
+}
+
+void ApcExternalActionDelegate::OnBasePromptChoiceSelected(int choice_index) {
+  password_change_run_display_->ClearPrompt();
+
+  // TODO(crbug.com/1331202): Terminate action and send return value.
+}
+
+void ApcExternalActionDelegate::ShowGeneratedPasswordPrompt(
+    const autofill_assistant::password_change::
+        GeneratedPasswordPromptSpecification& password_prompt,
+    const std::u16string& generated_password) {
+  // Showing the prompt will override both the title and the description. Since
+  // they cannot be reconstructed from the model due to the additional field
+  // for the password, we clear the model.
+  model_.title = std::u16string();
+  model_.description = std::u16string();
+  password_change_run_display_->ShowGeneratedPasswordPrompt(
+      base::UTF8ToUTF16(password_prompt.title()), generated_password,
+      base::UTF8ToUTF16(password_prompt.description()),
+      PasswordChangeRunDisplay::PromptChoice{
+          .text = base::UTF8ToUTF16(
+              password_prompt.manual_password_choice().text()),
+          .highlighted =
+              password_prompt.manual_password_choice().highlighted()},
+      PasswordChangeRunDisplay::PromptChoice{
+          .text = base::UTF8ToUTF16(
+              password_prompt.generated_password_choice().text()),
+          .highlighted =
+              password_prompt.generated_password_choice().highlighted()});
+}
+
+void ApcExternalActionDelegate::OnGeneratedPasswordSelected(bool selected) {
+  password_change_run_display_->ClearPrompt();
+  SetTitle(std::u16string());
+
+  // TODO(crbug.com/1331202): Terminate action and send return value.
+}
+
+void ApcExternalActionDelegate::ShowStartingScreen(const GURL& url) {
+  SetTopIcon(
+      autofill_assistant::password_change::TopIcon::TOP_ICON_UNSPECIFIED);
+  SetProgressBarStep(
+      autofill_assistant::password_change::ProgressStep::PROGRESS_STEP_START);
+  SetTitle(l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_STARTING_SCREEN_TITLE,
+      base::UTF8ToUTF16(url.host_piece())));
+  SetDescription(std::u16string());
+}
 
 base::WeakPtr<PasswordChangeRunController>
 ApcExternalActionDelegate::GetWeakPtr() {

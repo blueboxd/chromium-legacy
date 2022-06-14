@@ -10,9 +10,12 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -29,7 +32,8 @@ constexpr char kFontStyle[] = "Google Sans";
 constexpr int kFontSize = 16;
 
 // About colors.
-constexpr SkColor kViewModeBgColor = SkColorSetA(SK_ColorGRAY, 0x99);
+constexpr SkColor kViewModeForeColor = SkColorSetA(SK_ColorBLACK, 0x29);
+constexpr SkColor kViewModeBackColor = SkColorSetA(gfx::kGoogleGrey800, 0xCC);
 constexpr SkColor kEditModeBgColor = SK_ColorWHITE;
 constexpr SkColor kEditedUnboundBgColor = gfx::kGoogleRed300;
 constexpr SkColor kViewTextColor = SK_ColorWHITE;
@@ -43,13 +47,6 @@ constexpr SkColor kFocusRingRedColor = gfx::kGoogleRed300;
 constexpr float kHaloInset = -6;
 // Thickness of focus ring.
 constexpr float kHaloThickness = 4;
-
-// UI strings.
-// TODO(cuicuiruan): move the strings to chrome/app/generated_resources.grd
-// after UX/UI strings are confirmed.
-constexpr base::StringPiece kEditErrorSameKey("Same key");
-constexpr base::StringPiece kEditInfoMessage(
-    "Click on any key, then press a keyboard key to customize");
 
 // Arrow symbols for arrow keys.
 constexpr char kLeftArrow[] = "←";
@@ -188,8 +185,8 @@ void ActionLabel::SetImageActionLabel(MouseAction mouse_action) {
 }
 
 void ActionLabel::SetDisplayMode(DisplayMode mode) {
-  DCHECK(mode != DisplayMode::kMenu);
-  if (mode == DisplayMode::kMenu)
+  DCHECK(mode != DisplayMode::kMenu && mode != DisplayMode::kPreMenu);
+  if (mode == DisplayMode::kMenu || mode == DisplayMode::kPreMenu)
     return;
 
   switch (mode) {
@@ -200,6 +197,8 @@ void ActionLabel::SetDisplayMode(DisplayMode mode) {
     case DisplayMode::kEdit:
       SetToEditMode();
       SetFocusBehavior(FocusBehavior::ALWAYS);
+      static_cast<ActionView*>(parent())->ShowInfoMsg(
+          l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_INSTRUCTIONS), this);
       break;
     case DisplayMode::kEditedSuccess:
       SetToEditFocus();
@@ -211,13 +210,27 @@ void ActionLabel::SetDisplayMode(DisplayMode mode) {
       SetToEditError();
       break;
     case DisplayMode::kRestore:
-      if (!ClearFocus())
-        SetToEditDefault();
+      SetToEditDefault();
       break;
     default:
       NOTREACHED();
       break;
   }
+}
+
+bool ActionLabel::ClearFocus() {
+  auto* focus_manager = GetFocusManager();
+  bool has_focus = false;
+  if (focus_manager) {
+    has_focus = HasFocus();
+    focus_manager->ClearFocus();
+
+    // When it has to clear focus explicitly, set focused view back to its
+    // parent, so it can find the focused view when Tab traversal key is
+    // pressed.
+    focus_manager->SetFocusedView(static_cast<ActionView*>(parent()));
+  }
+  return has_focus;
 }
 
 gfx::Size ActionLabel::CalculatePreferredSize() const {
@@ -231,7 +244,7 @@ bool ActionLabel::OnKeyPressed(const ui::KeyEvent& event) {
   auto code = event.code();
   auto* parent_view = static_cast<ActionView*>(parent());
   if (base::UTF8ToUTF16(GetDisplayText(code)) == GetText()) {
-    parent_view->ShowErrorMsg(kEditErrorSameKey, this);
+    SetDisplayMode(DisplayMode::kEditedError);
   } else {
     parent_view->OnKeyBindingChange(this, code);
   }
@@ -251,26 +264,26 @@ void ActionLabel::OnMouseExited(const ui::MouseEvent& event) {
 void ActionLabel::OnFocus() {
   SetToEditFocus();
   LabelButton::OnFocus();
-  auto* parent_view = static_cast<ActionView*>(parent());
-  parent_view->ShowInfoMsg(kEditInfoMessage, this);
+  if (IsUnbound()) {
+    static_cast<ActionView*>(parent())->ShowErrorMsg(
+        l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_MISSING_BINDING), this);
+  } else {
+    static_cast<ActionView*>(parent())->ShowInfoMsg(
+        l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_FOCUSED_KEY), this);
+  }
 }
 
 void ActionLabel::OnBlur() {
   SetToEditDefault();
   LabelButton::OnBlur();
-}
-
-bool ActionLabel::ClearFocus() {
-  auto* focus_manager = GetFocusManager();
-  bool has_focus = false;
-  if (focus_manager) {
-    has_focus = HasFocus();
-    focus_manager->ClearFocus();
-  }
-  return has_focus;
+  static_cast<ActionView*>(parent())->RemoveMessage();
 }
 
 void ActionLabel::SetToViewMode() {
+  if (IsUnbound()) {
+    SetVisible(false);
+    return;
+  }
   ClearFocus();
   SetInstallFocusRingOnFocus(false);
   label()->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL, kFontSize,
@@ -289,12 +302,17 @@ void ActionLabel::SetToViewMode() {
     }
   }
 
-  SetBackground(
-      views::CreateRoundedRectBackground(kViewModeBgColor, kCornerRadiusView));
+  SetBackground(views::CreateRoundedRectBackground(
+      color_utils::GetResultingPaintColor(kViewModeForeColor,
+                                          kViewModeBackColor),
+      kCornerRadiusView));
   SetPreferredSize(CalculatePreferredSize());
 }
 
 void ActionLabel::SetToEditMode() {
+  if (IsUnbound())
+    SetVisible(true);
+
   SetInstallFocusRingOnFocus(true);
   auto* focus_ring = views::FocusRing::Get(this);
   focus_ring->SetHaloInset(kHaloInset);

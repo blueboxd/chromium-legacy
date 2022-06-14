@@ -7675,6 +7675,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DownloadNotification.Button_Review">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    User pushes &quot;Review&quot; button on download notification to trigger
+    the enterprise download review dialog.
+  </description>
+</action>
+
 <action name="DownloadNotification.Button_ShowInFolder">
   <owner>yoshiki@chromium.org</owner>
   <description>
@@ -10704,6 +10713,15 @@ should be able to be added at any place in this file.
   <owner>djean@chromium.org</owner>
   <description>
     The user dismissed a tailored browser fullscreen promo modal. iOS only.
+  </description>
+</action>
+
+<action name="IOS.ExperienceKit.Calendar.Display">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user triggered the &quot;add-to-calendar&quot;
+    context after a long press on a date.
   </description>
 </action>
 
@@ -26942,6 +26960,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SharingDesktopScreenshot.ScreenshotEdited">
+  <owner>skare@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    User chose to edit a screenshot in the capture bubble.
+  </description>
+</action>
+
 <action name="SharingDesktopScreenshot.ScreenshotSavedViaBubble">
   <owner>skare@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
@@ -27971,6 +27997,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromAvatarBubbleSignin"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -27981,6 +28008,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromBookmarkBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -27991,6 +28019,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromBookmarkManager"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -28001,6 +28030,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromExtensionInstallBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -28023,6 +28053,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromNTPContentSuggestions"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with a default account,
@@ -28033,6 +28064,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromNTPFeedTopPromo"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>mrefaat@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
@@ -28045,6 +28077,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromPasswordBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -28055,6 +28088,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromRecentTabs"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with a default account,
@@ -28076,6 +28110,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromSettings"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with a default account,
@@ -28085,6 +28120,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromTabSwitcher"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with a default account,
@@ -28094,6 +28130,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromAvatarBubbleSignin"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -28104,6 +28141,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromBookmarkBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -28114,6 +28152,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromBookmarkManager"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -28124,6 +28163,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromExtensionInstallBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -28146,6 +28186,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromNTPContentSuggestions"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -28156,6 +28197,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromNTPFeedTopPromo"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -28168,6 +28210,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromPasswordBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -28178,6 +28221,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromRecentTabs"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -28200,6 +28244,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromSettings"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -28209,6 +28254,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromTabSwitcher"
     not_user_triggered="true">
+  <obsolete>Removed in M104.</obsolete>
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -28773,6 +28819,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromAvatarBubbleSignin">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28783,6 +28830,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromBookmarkBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28793,6 +28841,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromBookmarkManager">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -28805,6 +28854,7 @@ should be able to be added at any place in this file.
 
 <action
     name="Signin_SigninNewAccountExistingAccount_FromExtensionInstallBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28828,6 +28878,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromNTPContentSuggestions">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28838,6 +28889,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromNTPFeedTopPromo">
+  <obsolete>Removed in M104.</obsolete>
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -28848,6 +28900,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromPasswordBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28858,6 +28911,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromRecentTabs">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -28882,6 +28936,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromSettings">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -28893,6 +28948,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromTabSwitcher">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -28904,6 +28960,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromAvatarBubbleSignin">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28914,6 +28971,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromBookmarkBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28924,6 +28982,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromBookmarkManager">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -28936,6 +28995,7 @@ should be able to be added at any place in this file.
 
 <action
     name="Signin_SigninNewAccountNoExistingAccount_FromExtensionInstallBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28961,6 +29021,7 @@ should be able to be added at any place in this file.
 
 <action
     name="Signin_SigninNewAccountNoExistingAccount_FromNTPContentSuggestions">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28971,6 +29032,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromNTPFeedTopPromo">
+  <obsolete>Removed in M104.</obsolete>
   <owner>mrefaat@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
@@ -28982,6 +29044,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromPasswordBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -28992,6 +29055,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromRecentTabs">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29017,6 +29081,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromSettings">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29028,6 +29093,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromTabSwitcher">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29168,6 +29234,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromAvatarBubbleSignin">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29178,6 +29245,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromBookmarkBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29188,6 +29256,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromBookmarkManager">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29199,6 +29268,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromExtensionInstallBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29220,6 +29290,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromNTPContentSuggestions">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29230,6 +29301,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromNTPFeedTopPromo">
+  <obsolete>Removed in M104.</obsolete>
   <owner>mrefaat@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
@@ -29241,6 +29313,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromPasswordBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29251,6 +29324,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromRecentTabs">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29275,6 +29349,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromSettings">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29286,6 +29361,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromTabSwitcher">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29307,6 +29383,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromAvatarBubbleSignin">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29317,6 +29394,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromBookmarkBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29327,6 +29405,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromBookmarkManager">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29338,6 +29417,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromExtensionInstallBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29359,6 +29439,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromNTPContentSuggestions">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29369,6 +29450,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromNTPFeedTopPromo">
+  <obsolete>Removed in M104.</obsolete>
   <owner>mrefaat@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
@@ -29380,6 +29462,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromPasswordBubble">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -29390,6 +29473,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromRecentTabs">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29414,6 +29498,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromSettings">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -29425,6 +29510,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromTabSwitcher">
+  <obsolete>Removed in M104.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>

@@ -85,6 +85,7 @@ namespace blink {
 
 namespace {
 
+using mojom::blink::AuthenticatorAttachment;
 using mojom::blink::AuthenticatorStatus;
 using mojom::blink::CredentialInfo;
 using mojom::blink::CredentialInfoPtr;
@@ -1016,6 +1017,17 @@ ScriptPromise CredentialsContainer::get(
               "browser/webauth/uv_preferred.md for details."));
     }
 
+    if (options->publicKey()->hasUserVerification() &&
+        !mojo::ConvertTo<
+            absl::optional<mojom::blink::UserVerificationRequirement>>(
+            options->publicKey()->userVerification())) {
+      resolver->DomWindow()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kJavaScript,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              "Ignoring unknown publicKey.userVerification value"));
+    }
+
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -1391,6 +1403,23 @@ ScriptPromise CredentialsContainer::create(
   }
 
   if (options->publicKey()->hasAuthenticatorSelection() &&
+      options->publicKey()
+          ->authenticatorSelection()
+          ->hasAuthenticatorAttachment()) {
+    absl::optional<String> attachment = options->publicKey()
+                                            ->authenticatorSelection()
+                                            ->authenticatorAttachment();
+    if (!mojo::ConvertTo<absl::optional<AuthenticatorAttachment>>(attachment)) {
+      resolver->DomWindow()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kJavaScript,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              "Ignoring unknown "
+              "publicKey.authenticatorSelection.authnticatorAttachment value"));
+    }
+  }
+
+  if (options->publicKey()->hasAuthenticatorSelection() &&
       !options->publicKey()->authenticatorSelection()->hasUserVerification()) {
     resolver->DomWindow()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
@@ -1405,6 +1434,20 @@ ScriptPromise CredentialsContainer::create(
             "https://chromium.googlesource.com/chromium/src/+/master/content/"
             "browser/webauth/uv_preferred.md for details"));
   }
+
+  if (options->publicKey()->hasAuthenticatorSelection() &&
+      options->publicKey()->authenticatorSelection()->hasUserVerification() &&
+      !mojo::ConvertTo<
+          absl::optional<mojom::blink::UserVerificationRequirement>>(
+          options->publicKey()->authenticatorSelection()->userVerification())) {
+    resolver->DomWindow()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Ignoring unknown "
+            "publicKey.authenticatorSelection.userVerification value"));
+  }
+
   if (options->publicKey()->hasAuthenticatorSelection() &&
       options->publicKey()->authenticatorSelection()->hasResidentKey() &&
       !mojo::ConvertTo<absl::optional<mojom::blink::ResidentKeyRequirement>>(

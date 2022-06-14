@@ -27,6 +27,7 @@
 <translation id="1043382569739532657">Príspevky, štipendiá a finančná pomoc</translation>
 <translation id="1048785276086539861">Keď upravíte poznámky, tento dokument sa vráti na zobrazenie jednej stránky</translation>
 <translation id="1050038467049342496">Zavrite ostatné aplikácie</translation>
+<translation id="1053959602163383901">Na weboch využívajúcich poskytovateľa <ph name="PROVIDER_ORIGIN" /> ste vybrali overenie zariadením s overovateľom. Tento poskytovateľ mohol ukladať informácie o vašom spôsobe platby, o ktorých odstránenie môžete <ph name="LINK_TEXT" />.</translation>
 <translation id="1055184225775184556">&amp;Vrátiť späť pridanie</translation>
 <translation id="1056663316309890343">Softvér na spracovanie fotiek</translation>
 <translation id="1056898198331236512">Upozornenie</translation>
@@ -422,6 +423,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2053111141626950936">Stránky v jazyku <ph name="LANGUAGE" /> nebudú prekladané.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Keď je tento ovládací prvok zapnutý a stav je aktívny, Chrome stanoví, ktorej veľkej skupine ľudí („kohorte“) je vaša nedávna aktivita prehliadania najviac podobná. Inzerenti môžu pre túto skupinu vybrať reklamy a vaša aktivita prehliadania zostane uchovaná v súkromí vo vašom zariadení. Skupina sa aktualizuje každý deň.}=1{Keď je tento ovládací prvok zapnutý a stav je aktívny, Chrome stanoví, ktorej veľkej skupine ľudí („kohorte“) je vaša nedávna aktivita prehliadania najviac podobná. Inzerenti môžu pre túto skupinu vybrať reklamy a vaša aktivita prehliadania zostane uchovaná v súkromí vo vašom zariadení. Skupina sa aktualizuje každý deň.}few{Keď je tento ovládací prvok zapnutý a stav je aktívny, Chrome stanoví, ktorej veľkej skupine ľudí („kohorte“) je vaša nedávna aktivita prehliadania najviac podobná. Inzerenti môžu pre túto skupinu vybrať reklamy a vaša aktivita prehliadania zostane uchovaná v súkromí vo vašom zariadení. Skupina sa aktualizuje každé {NUM_DAYS} dni.}many{Keď je tento ovládací prvok zapnutý a stav je aktívny, Chrome stanoví, ktorej veľkej skupine ľudí („kohorte“) je vaša nedávna aktivita prehliadania najviac podobná. Inzerenti môžu pre túto skupinu vybrať reklamy a vaša aktivita prehliadania zostane uchovaná v súkromí vo vašom zariadení. Skupina sa aktualizuje každého {NUM_DAYS} dňa.}other{Keď je tento ovládací prvok zapnutý a stav je aktívny, Chrome stanoví, ktorej veľkej skupine ľudí („kohorte“) je vaša nedávna aktivita prehliadania najviac podobná. Inzerenti môžu pre túto skupinu vybrať reklamy a vaša aktivita prehliadania zostane uchovaná v súkromí vo vašom zariadení. Skupina sa aktualizuje každých {NUM_DAYS} dní.}}</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 návrh}few{# návrhy}many{# návrhu}other{# návrhov}}</translation>
+<translation id="2066915425250589881">požiadať</translation>
 <translation id="2068528718802935086">Bábätká a batoľatá</translation>
 <translation id="2071156619270205202">Táto karta nespĺňa podmienky na pridelenie čísla virtuálnej karty.</translation>
 <translation id="2071692954027939183">Upozornenia boli automaticky blokované, pretože ich zvyčajne nepovoľujete</translation>
@@ -578,6 +580,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2512101340618156538">Nepovolené (predvolené)</translation>
 <translation id="2512413427717747692">Tlačidlo nastavenia Chromu ako predvoleného prehliadača, stlačením klávesa Enter nastavíte Chrome ako predvolený prehliadač systému v nastaveniach iOS</translation>
 <translation id="2515629240566999685">Skontrolovať signál vo vašej oblasti</translation>
+<translation id="2515761554693942801">Na weboch využívajúcich poskytovateľa <ph name="PROVIDER_ORIGIN" /> ste vybrali overenie pomocou funkcie Touch ID. Tento poskytovateľ mohol ukladať informácie o vašom spôsobe platby, o ktorých odstránenie môžete <ph name="LINK_TEXT" />.</translation>
 <translation id="2521385132275182522">Zošiť spinkou vpravo dolu</translation>
 <translation id="2521736961081452453">Vytvoriť formulár</translation>
 <translation id="2523886232349826891">Uložené iba na tomto zariadení</translation>
@@ -699,7 +702,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2854764410992194509">Poskytovatelia internetu</translation>
 <translation id="2856444702002559011">Útočníci sa môžu pokúsiť ukradnúť vaše informácie z webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (napríklad heslá, správy alebo kreditné karty). <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2859806420264540918">Tento web zobrazuje obťažujúce alebo zavádzajúce reklamy.</translation>
-<translation id="286512204874376891">Virtuálnou kartou sa zamaskuje vaša skutočná karta, čo vás lepšie ochráni pred potenciálnymi podvodmi. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="287596039013813457">Milé</translation>
 <translation id="28761159517501904">Filmy</translation>
 <translation id="2876489322757410363">Ak zaplatíte pomocou externej aplikácie, opustíte režim inkognito. Chcete pokračovať?</translation>
@@ -1323,7 +1325,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="4607603470419975064">Tlačidlo na zobrazenie tipov Chromu, stlačením klávesa Enter získate informácie o funkciách Chromu</translation>
 <translation id="4607608436550361748">Zobraziť tipy Chromu</translation>
 <translation id="4617273035598175554">Grafický a animačný softvér</translation>
-<translation id="4627165777145349100">Viac o tejto stránke</translation>
 <translation id="4627675673814409125">Tieto pravidlá nie je možné nastaviť na úrovni profilu Chromu a budú ignorované.</translation>
 <translation id="4628948037717959914">Fotografia</translation>
 <translation id="4631649115723685955">Funkcia Cashback je prepojená</translation>
@@ -1488,6 +1489,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5051305769747448211">Živé komédie</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{Ak chcete tento súbor poslať pomocou Zdieľania nablízku, uvoľnite vo svojom zariadení priestor (<ph name="DISK_SPACE_SIZE" />)}few{Ak chcete tieto súbory poslať pomocou Zdieľania nablízku, uvoľnite vo svojom zariadení priestor (<ph name="DISK_SPACE_SIZE" />)}many{To send these files using Nearby Share, free up space (<ph name="DISK_SPACE_SIZE" />) on your device}other{Ak chcete tieto súbory poslať pomocou Zdieľania nablízku, uvoľnite vo svojom zariadení priestor (<ph name="DISK_SPACE_SIZE" />)}}</translation>
 <translation id="5056549851600133418">Články pre vás</translation>
+<translation id="5060483733937416656">Na weboch využívajúcich poskytovateľa <ph name="PROVIDER_ORIGIN" /> ste vybrali overenie pomocou funkcie Windows Hello. Tento poskytovateľ mohol ukladať informácie o vašom spôsobe platby, o ktorých odstránenie môžete <ph name="LINK_TEXT" />.</translation>
 <translation id="5061227663725596739">Mysleli ste <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5066056036849835175">História tlače</translation>
 <translation id="5068234115460527047">Hedžové fondy</translation>
@@ -1857,7 +1859,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="6061154937977953833">Zápasenie</translation>
 <translation id="6064217302520318294">Zámka obrazovky</translation>
 <translation id="6064602040258638498">Kupóny a zľavy</translation>
-<translation id="6078813287646374487">Zobraziť ďalšie informácie o tejto stránke</translation>
 <translation id="6080696365213338172">K obsahu ste pristúpili pomocou certifikátu, ktorý poskytol správca. Údaje, ktoré poskytnete doméne <ph name="DOMAIN" /> môžu byť zachytené správcom.</translation>
 <translation id="6087312102907839798">Súvisiace vyhľadávania</translation>
 <translation id="6094273045989040137">Pridať anotáciu</translation>
@@ -2560,6 +2561,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8074253406171541171">10x13 (obálka)</translation>
 <translation id="8075736640322370409">Rýchlo vytvoriť novú tabuľku Google</translation>
 <translation id="8075898834294118863">Spravovať nastavenia webov</translation>
+<translation id="8076492880354921740">Karty</translation>
 <translation id="8078141288243656252">Po otočení dokumentu nie je anotácia možná</translation>
 <translation id="8079031581361219619">Znova načítať web?</translation>
 <translation id="8081087320434522107">Sedany</translation>
@@ -2781,6 +2783,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> je kód pre <ph name="ORIGIN" /></translation>
 <translation id="874918643257405732">Pridať kartu medzi záložky</translation>
 <translation id="8751426954251315517">Skúste to neskôr</translation>
+<translation id="8757526089434340176">K dispozícii je ponuka Google Pay</translation>
 <translation id="8758885506338294482">Súťažné hranie videohier</translation>
 <translation id="8759274551635299824">Platnosť tejto karty vypršala</translation>
 <translation id="87601671197631245">Tento web používa zastaranú konfiguráciu zabezpečenia, ktorá môže odhaliť vaše informácie (napríklad heslá, správy alebo kreditné karty), keď ich naň odošlete.</translation>
@@ -2981,6 +2984,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="988159990683914416">Zostavenie pre vývojárov</translation>
 <translation id="989988560359834682">Úprava adresy</translation>
 <translation id="991413375315957741">senzory pohybu alebo svetla</translation>
+<translation id="992110854164447044">Virtuálnou kartou sa zamaskuje vaša skutočná karta, čo vás lepšie ochráni pred potenciálnymi podvodmi. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">Ružová</translation>
 <translation id="992432478773561401">Softvér <ph name="SOFTWARE_NAME" /> nebol v počítači alebo sieti riadne nainštalovaný:

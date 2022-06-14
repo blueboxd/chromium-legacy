@@ -1184,8 +1184,13 @@ void AshNotificationView::ToggleInlineSettings(const ui::Event& event) {
   NotificationViewBase::ToggleInlineSettings(event);
 
   if (is_grouped_parent_view_) {
-    grouped_notifications_scroll_view_->SetVisible(
-        !should_show_inline_settings);
+    if (shown_in_popup_) {
+      grouped_notifications_scroll_view_->SetVisible(
+          !should_show_inline_settings);
+    } else {
+      grouped_notifications_container_->SetVisible(
+          !should_show_inline_settings);
+    }
   } else {
     // In settings UI, we only show the app icon and header row along with the
     // inline settings UI.
@@ -1457,9 +1462,10 @@ void AshNotificationView::AnimateResizeAfterRemoval(
       grouped_notifications_container_->GetIndexOf(to_be_removed);
   grouped_notifications_container_->RemoveChildViewT(to_be_removed).reset();
 
-  message_center_utils::GetActiveNotificationViewControllerForNotificationView(
-      this)
-      ->AnimateResize();
+  auto* notification_view_controller = message_center_utils::
+      GetActiveNotificationViewControllerForNotificationView(this);
+  if (notification_view_controller)
+    notification_view_controller->AnimateResize();
 
   if (shown_in_popup_) {
     grouped_notifications_scroll_view_->Layout();

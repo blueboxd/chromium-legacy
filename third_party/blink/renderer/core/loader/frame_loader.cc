@@ -660,6 +660,18 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   if (!AllowRequestForThisFrame(request))
     return;
 
+  // Block renderer-initiated loads of filesystem: URLs.
+  if (url.ProtocolIs("filesystem") &&
+      !base::FeatureList::IsEnabled(features::kFileSystemUrlNavigation)) {
+    frame_->GetDocument()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kSecurity,
+            mojom::blink::ConsoleMessageLevel::kError,
+            "Not allowed to navigate to " + url.Protocol() +
+                " URL: " + url.ElidedString()));
+    return;
+  }
+
   // Block renderer-initiated loads of data: and filesystem: URLs in the top
   // frame (unless they are reload requests).
   //
@@ -677,8 +689,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
         network_utils::IsDataURLMimeTypeSupported(url)))) {
     frame_->GetDocument()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kSecurity,
-            mojom::ConsoleMessageLevel::kError,
+            mojom::blink::ConsoleMessageSource::kSecurity,
+            mojom::blink::ConsoleMessageLevel::kError,
             "Not allowed to navigate top frame to " + url.Protocol() +
                 " URL: " + url.ElidedString()));
     return;
@@ -1073,8 +1085,7 @@ void FrameLoader::CommitNavigation(
     // for kRegular commits. Skip them here, too, to ensure we match
     // start/commit message pairs.
     if (commit_reason == CommitReason::kRegular) {
-      frame_->GetFrameScheduler()->DidStartProvisionalLoad(
-          frame_->IsMainFrame());
+      frame_->GetFrameScheduler()->DidStartProvisionalLoad();
       probe::DidStartProvisionalLoad(frame_);
     }
 
@@ -1176,7 +1187,7 @@ bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info) {
   progress_tracker_->ProgressStarted();
   client_navigation_ = std::make_unique<ClientNavigationState>();
   client_navigation_->url = info.url_request.Url();
-  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
+  frame_->GetFrameScheduler()->DidStartProvisionalLoad();
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
   TakeObjectSnapshot();

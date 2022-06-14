@@ -79,15 +79,10 @@ try_.builder(
     builderless = False,
 )
 
-try_.builder(
-    name = "mac-clang-tidy-rel",
-    executable = "recipe:tricium_clang_tidy_wrapper",
-    goma_jobs = goma.jobs.J150,
-)
-
 try_.orchestrator_builder(
     name = "mac-rel",
     compilator = "mac-rel-compilator",
+    check_for_flakiness = True,
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     mirrors = [
         "ci/Mac Builder",
@@ -111,6 +106,7 @@ try_.orchestrator_builder(
 
 try_.compilator_builder(
     name = "mac-rel-compilator",
+    check_for_flakiness = True,
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.MAC_DEFAULT,
@@ -135,6 +131,26 @@ try_.compilator_builder(
     check_for_flakiness = True,
     main_list_view = "try",
     os = os.MAC_DEFAULT,
+    # TODO (crbug.com/1245171): Revert when root issue is fixed
+    grace_period = 4 * time.minute,
+)
+
+try_.orchestrator_builder(
+    name = "mac12-arm64-rel",
+    check_for_flakiness = True,
+    compilator = "mac12-arm64-rel-compilator",
+    mirrors = [
+        "ci/mac-arm64-rel",
+        "ci/mac12-arm64-rel-tests",
+    ],
+    main_list_view = "try",
+)
+
+try_.compilator_builder(
+    name = "mac12-arm64-rel-compilator",
+    check_for_flakiness = True,
+    main_list_view = "try",
+    os = os.MAC_12,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
 )
@@ -238,7 +254,7 @@ try_.builder(
     name = "mac_chromium_dbg_ng",
     mirrors = [
         "ci/Mac Builder (dbg)",
-        "ci/Mac11 Tests (dbg)",
+        "ci/Mac12 Tests (dbg)",
     ],
 )
 
@@ -260,6 +276,9 @@ try_.builder(
 
 ios_builder(
     name = "ios-asan",
+    mirrors = [
+        "ci/ios-asan",
+    ],
 )
 
 ios_builder(
@@ -274,12 +293,6 @@ ios_builder(
     mirrors = [
         "ci/ios-device",
     ],
-)
-
-ios_builder(
-    name = "ios-clang-tidy-rel",
-    executable = "recipe:tricium_clang_tidy_wrapper",
-    goma_jobs = goma.jobs.J150,
 )
 
 ios_builder(

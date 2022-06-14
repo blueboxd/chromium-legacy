@@ -110,6 +110,7 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
 <translation id="1513814250881909472">Sincronizar para acessar suas guias de outros dispositivos</translation>
 <translation id="1513858653616922153">Excluir senha</translation>
+<translation id="1514552811327923157">Solicitação do Sandbox de privacidade aberta no tamanho máximo</translation>
 <translation id="1518421282666914498">GIF de emoticon <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">Ativado hoje</translation>
 <translation id="1538801903729528855">Tenha uma experiência de voz melhor na Web</translation>
@@ -321,6 +322,7 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="2711073837061989559">Testes</translation>
 <translation id="2718352093833049315">Apenas com Wi-Fi</translation>
 <translation id="2718846868787000099">Os sites que você visita podem ver suas preferências para exibir conteúdo nos seus idiomas preferidos</translation>
+<translation id="2722945394406572875">Solicitação do Sandbox de privacidade fechada</translation>
 <translation id="2723001399770238859">áudio</translation>
 <translation id="2732063072010454421">Tenha uma melhor experiência de pesquisa por voz</translation>
 <translation id="2739256783402597439">2G</translation>
@@ -346,6 +348,7 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="2842985007712546952">Pasta mãe</translation>
 <translation id="2856503607207334158">Falha no login</translation>
 <translation id="2860954141821109167">Verifique se há um aplicativo para telefones ativado neste dispositivo</translation>
+<translation id="2861923151411510142">Você vai perder o acesso a alguns dos recursos do Chrome</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871733351037274014">Páginas pré-carregadas</translation>
 <translation id="2888126860611144412">Sobre o Google Chrome</translation>
@@ -492,7 +495,6 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="3622349720008044802">Gerenciar janelas</translation>
 <translation id="3631987586758005671">Compartilhando com <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
-<translation id="3653111872753786013"><ph name="WEBSITE_TITLE" />: <ph name="WEBSITE_URL" /></translation>
 <translation id="3677911431265050325">Solicitar site móvel</translation>
 <translation id="3687645719033307815">Esta é uma visualização dessa página</translation>
 <translation id="3690369331356918524">Avisa caso suas senhas sejam expostas em uma violação de dados</translation>
@@ -524,7 +526,6 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="3845098929839618392">Abrir em guia anônima</translation>
 <translation id="3856096718352044181">Verifique se o provedor é válido ou tente novamente mais tarde</translation>
 <translation id="3858860766373142691">Nome</translation>
-<translation id="3859206958100234503">Sincronize para acessar seus favoritos, senhas e muito mais em todos os dispositivos</translation>
 <translation id="3861633093716975811">Vídeos mais acessados</translation>
 <translation id="3892148308691398805">Copiar texto</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
@@ -585,6 +586,7 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="4227318652298512614">Siga os sites que quiser</translation>
 <translation id="4242533952199664413">Abrir configurações.</translation>
 <translation id="4248098802131000011">Manter suas senhas protegidas contra violações de dados e outros problemas de segurança</translation>
+<translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4249955472157341256">Ordenar por mais recentes</translation>
 <translation id="4250229828105606438">Captura de tela</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
@@ -653,7 +655,6 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="4594952190837476234">Esta página off-line é de <ph name="CREATION_TIME" /> e pode ser diferente da versão on-line.</translation>
 <translation id="4616150815774728855">Abrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Confirmar sua identidade</translation>
-<translation id="4627165777145349100">Mais sobre esta página</translation>
 <translation id="4634124774493850572">Usar senha</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 senha comprometida}one{# senha comprometida}other{# senhas comprometidas}}</translation>
 <translation id="4650364565596261010">Padrão do sistema</translation>
@@ -789,6 +790,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5324858694974489420">Configurações para a família</translation>
 <translation id="5326921373682845375">As páginas pré-carregadas são criptografadas e o link que leva às páginas é de um site do Google. Portanto, os servidores do Google não recebem novas informações quando pré-carregam essas páginas de forma particular.</translation>
 <translation id="5329858041417644019">Seu navegador não é gerenciado</translation>
+<translation id="5339031667684712858">Sites que você removeu</translation>
 <translation id="5342314432463739672">Solicitações de permissão</translation>
 <translation id="5355191726083956201">A Proteção reforçada está ativa</translation>
 <translation id="5368227114232678694">Para navegar com privacidade no dispositivo, use a navegação anônima</translation>
@@ -890,11 +892,13 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5869522115854928033">Senhas salvas</translation>
 <translation id="5869789175361934029">Continuar de outro dispositivo</translation>
 <translation id="587735546353481577">Para seguir um site, acesse-o, abra o menu do Google Chrome e toque em "Seguir".</translation>
+<translation id="5879072387416556377">Receba sugestões melhores</translation>
 <translation id="5880748256563468367">Acessar o feed</translation>
 <translation id="5884076754568147479">Para ajudar você com suas tarefas, o Google receberá os URLs e o conteúdo de sites em que você usa o Assistente, bem como as informações que você envia por ele</translation>
 <translation id="5906513782029855931">Ao saber os URLs de sites, o Google Assistente pode ajudar você a realizar tarefas. É possível desativar o Assistente nas configurações do Chrome.</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5919204609460789179">Atualize <ph name="PRODUCT_NAME" /> para iniciar a sincronização</translation>
+<translation id="593625682991400408">Durante os testes, o Chrome busca maneiras de limitar ocorrências de spam, fraude e compartilhamento entre sites. Além disso, ele faz uma <ph name="BEGIN_LINK" />estimativa dos seus interesses<ph name="END_LINK" />, que os sites podem usar para mostrar anúncios. Você pode gerenciar seus interesses nas configurações.</translation>
 <translation id="5938820472109305350">Adicionar <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Usando o Google para pesquisar</translation>
 <translation id="5945035219773565305">Recomendação atual:  <ph name="RECOMMENDATION" /></translation>
@@ -1063,6 +1067,7 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="6751521182688001123">Abrir rapidamente uma nova guia. Para editar este atalho, toque e mantenha pressionado.</translation>
 <translation id="6756507620369789050">Compartilhar feedback</translation>
 <translation id="6767294960381293877">Lista de dispositivos com os quais é possível compartilhar uma guia aberta na metade da altura.</translation>
+<translation id="6770042910635026163">Sites que você visita que definem seus interesses</translation>
 <translation id="6770602306803890733">Melhora a segurança para você e para todos na Web</translation>
 <translation id="6785476624617658922">Termos de Serviço adicionais do Google Chrome e do ChromeOS</translation>
 <translation id="6795633245022906657">Abrir rapidamente uma nova guia. Para editar esse atalho, acesse as Configurações.</translation>
@@ -1231,6 +1236,7 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="770741401784017797">Criando GIF</translation>
 <translation id="7707922173985738739">Usar dados móveis</translation>
 <translation id="7709094866268987903">Os interesses que você removeu vão aparecer aqui</translation>
+<translation id="7709918231054955894">Acesse todas as suas guias</translation>
 <translation id="7725024127233776428">As páginas favoritas são exibidas aqui</translation>
 <translation id="7757787379047923882">Texto compartilhado por <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Escolher data e hora</translation>
@@ -1426,6 +1432,7 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="8656747343598256512">Faça login neste site e no Chrome com sua Conta do Google. É possível ativar a sincronização mais tarde.</translation>
 <translation id="8659579665266920523">Como pesquisar com o Chrome</translation>
 <translation id="8662811608048051533">Desconecta você da maioria dos sites.</translation>
+<translation id="8664215986015753476">Use o Chrome do seu jeito</translation>
 <translation id="8664979001105139458">O nome do arquivo já existe</translation>
 <translation id="8666759526542103597">Sobre a personalização de anúncios com base no navegador</translation>
 <translation id="8667760277771450375">Estamos desenvolvendo meios para restringir o rastreamento entre sites e também possibilitar que sites evitem anúncios de spam e fraudes.</translation>
@@ -1513,6 +1520,7 @@ Os tokens de confiança melhoram a privacidade na Web e não podem ser usados pa
 <translation id="9106148373857059373">Fluxo para adicionar aos favoritos fechado</translation>
 <translation id="9108312223223904744">Smartphone como um suporte de chave de segurança</translation>
 <translation id="9108808586816295166">DNS seguro pode não estar disponível o tempo todo</translation>
+<translation id="9128984223251192329">Solicitação do Sandbox de privacidade aberta na metade da altura</translation>
 <translation id="9133397713400217035">Navegar off-line</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9148126808321036104">Faça login novamente</translation>

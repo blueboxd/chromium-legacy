@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
+
 import {fakeEmptyFeedbackContext, fakeFeedbackContext} from 'chrome://os-feedback/fake_data.js';
 import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
 import {ShareDataPageElement} from 'chrome://os-feedback/share_data_page.js';
+import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {eventToPromise, flushTasks, isVisible} from '../../test_util.js';
 
 /** @type {string} */
@@ -81,13 +85,25 @@ export function shareDataPageTestSuite() {
   test('shareDataPageLoaded', async () => {
     await initializePage();
     // Verify the title is in the page.
-    assertEquals('Send feedback', getElementContent('#title'));
+    assertEquals('Send feedback', getElementContent('.page-title'));
 
     // Verify the back button is in the page.
     assertEquals('Back', getElementContent('#buttonBack'));
 
     // Verify the send button is in the page.
     assertEquals('Send', getElementContent('#buttonSend'));
+
+    // Verify the attach files label is in the page.
+    assertEquals('Attach files', getElementContent('#attachFilesLabel'));
+
+    // Verify the user email label is in the page.
+    assertEquals('Email', getElementContent('#userEmailLabel'));
+
+    // Verify the share diagnostic data label is in the page.
+    assertTrue(page.i18nExists('shareDiagnosticDataLabel'));
+    assertEquals(
+        'Share diagnostic data',
+        getElementContent('#shareDiagnosticDataLabel'));
 
     // Screenshot elements.
     assertTrue(!!getElement('#screenshotCheckbox'));
@@ -318,5 +334,34 @@ export function shareDataPageTestSuite() {
     const screenshotImage = getElement('#screenshotImage');
     assertTrue(!!screenshotImage.src);
     assertEquals(imgUrl, screenshotImage.src);
+  });
+
+  /**
+   * Test that when when the send button is clicked, the getAttachedFile has
+   * been called.
+   */
+  test('getAttachedFileCalled', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    const fileAttachment = getElement('file-attachment');
+    const fakeFileData = [11, 22, 99];
+    fileAttachment.getAttachedFile = async () => {
+      return {
+        fileName: stringToMojoString16('fake.zip'),
+        fileData: {
+          bytes: fakeFileData,
+        }
+      };
+    };
+
+    const request = (await clickSendAndWait(page)).report;
+
+    const attachedFile = request.attachedFile;
+    assertTrue(!!attachedFile);
+    assertEquals('fake.zip', mojoString16ToString(attachedFile.fileName));
+    assertArrayEquals(
+        fakeFileData,
+        /** @type {!Array<Number>} */ (attachedFile.fileData.bytes));
   });
 }

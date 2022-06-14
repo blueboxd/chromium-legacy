@@ -110,6 +110,7 @@
 <translation id="1513352483775369820">ዕልባቶች እና የድር ታሪክ</translation>
 <translation id="1513814250881909472">የእርስዎን ትሮች ከሌሎች መሣሪያዎችዎ ለማግኘት ያስምሩ</translation>
 <translation id="1513858653616922153">የይለፍ ቃል ሰርዝ</translation>
+<translation id="1514552811327923157">የግላዊነት Sandbox ጥያቄ በሙሉ ቁመት ተከፍቷል</translation>
 <translation id="1518421282666914498">የስሜት GIF <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">ገባሪ ዛሬ</translation>
 <translation id="1538801903729528855">በድር ላይ የተሻለ የድምፅ ተሞክሮ ያግኙ</translation>
@@ -321,6 +322,7 @@
 <translation id="2711073837061989559">ሙከራዎች</translation>
 <translation id="2718352093833049315">በWi-Fi ላይ ብቻ</translation>
 <translation id="2718846868787000099">በመረጡት ቋንቋዎች ውስጥ ይዘትን ለማሳየት፣ የሚጎበኟቸው ጣቢያዎች ምርጫዎችዎን ማየት ይችላሉ</translation>
+<translation id="2722945394406572875">የግላዊነት Sandbox ጥያቄ ተዘግቷል</translation>
 <translation id="2723001399770238859">ድምጽ</translation>
 <translation id="2732063072010454421">የተሻለ የድምፅ ተሞክሮ ያግኙ</translation>
 <translation id="2739256783402597439">2ጂ</translation>
@@ -492,7 +494,6 @@
 <translation id="3622349720008044802">መስኮቶች ያቀናብሩ</translation>
 <translation id="3631987586758005671">ለ <ph name="DEVICE_NAME" /> በማጋራት ላይ</translation>
 <translation id="363596933471559332">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ የድር ጣቢያዎች መለያ ይግቡ። ባህሪው ሲጠፋ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ማረጋገጫ ይጠየቃሉ።</translation>
-<translation id="3653111872753786013"><ph name="WEBSITE_TITLE" />፦ <ph name="WEBSITE_URL" /></translation>
 <translation id="3677911431265050325">የሞባይል ጣቢያ ጠይቅ</translation>
 <translation id="3687645719033307815">የዚህን ገጽ ቅድመ-ዕይታ በማየት ላይ ነዎት</translation>
 <translation id="3690369331356918524">የይለፍ ቃላት በውሂብ ደንብ ጥሰት ተጋላጭ ከሆኑ ያስጠነቅቀዎታል</translation>
@@ -524,7 +525,6 @@
 <translation id="3845098929839618392">ማንነትን በማያሳውቅ ትር ክፈት</translation>
 <translation id="3856096718352044181">ይህ ልክ የሆነ አገልግሎት አቅራቢ መሆኑን እባክዎ ያረጋግጡ ወይም ቆይተው እንደገና ይሞክሩ</translation>
 <translation id="3858860766373142691">ስም</translation>
-<translation id="3859206958100234503">በሁሉም መሣሪያዎችዎ ላይ የእርስዎን የይለፍ ቃላት፣ እልባቶች እና ተጨማሪ ነገሮችን ለማግኘት ያስምሩ።</translation>
 <translation id="3861633093716975811">ታዋቂ ቪዲዮዎች</translation>
 <translation id="3892148308691398805">ጽሑፍ ቅዳ</translation>
 <translation id="3894427358181296146">አቃፊ ያክሉ</translation>
@@ -585,6 +585,7 @@
 <translation id="4227318652298512614">የሚፈልጉትን ማንኛውም ጣቢያዎች ይከተሉ</translation>
 <translation id="4242533952199664413">ቅንብሮችን ክፈት</translation>
 <translation id="4248098802131000011">የይለፍ ቃላትዎን ከውሂብ ጥሰቶች እና ሌሎች የደህንነት ችግሮች ይጠብቁ</translation>
+<translation id="424864128008805179">ከChrome ተዘግቶ ይወጣ?</translation>
 <translation id="4249955472157341256">በጊዜ ቅርበት ደርድር</translation>
 <translation id="4250229828105606438">ቅጽበታዊ ገጽ እይታ</translation>
 <translation id="4256782883801055595">የክፍት ምንጭ ፍቃዶች</translation>
@@ -652,7 +653,6 @@
 <translation id="4594952190837476234">ይህ የ<ph name="CREATION_TIME" />  የመስመር ውጭ ገጽ ከመስመር ላይ ስሪቱ የተለየ ሊሆን ይችላል።</translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" />ን ይክፈቱ</translation>
 <translation id="4619564267100705184">እርስዎ መሆንዎን ያረጋግጡ</translation>
-<translation id="4627165777145349100">ስለዚህ ገጽ ተጨማሪ</translation>
 <translation id="4634124774493850572">የይለፍ ቃል ይጠቀሙ</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 የተጠለፈ የይለፍ ቃል}one{# የተጠለፉ የይለፍ ቃላት}other{# የተጠለፉ የይለፍ ቃላት}}</translation>
 <translation id="4650364565596261010">የሥርዓት ነባሪ</translation>
@@ -788,6 +788,7 @@
 <translation id="5324858694974489420">የወላጅ መቆጣጠሪያዎች</translation>
 <translation id="5326921373682845375">ቅድሚያ የተጫኑ ገጾች የተመሠጠሩ ስለሆኑ እና ከገጾቹ ጋር የሚያገናኘው ጣቢያ የGoogle ጣቢያ ስለሆነ እነዚህ ገጾች በግል ቅድሚያ ሲጫኑ የGoogle አገልጋዮች አዲስ መረጃ አይደርሳቸውም።</translation>
 <translation id="5329858041417644019">የእርስዎ አሳሽ አይተዳደርም</translation>
+<translation id="5339031667684712858">ያስወገዷቸው ጣቢያዎች</translation>
 <translation id="5342314432463739672">የፈቃድ ጥያቄዎች</translation>
 <translation id="5355191726083956201">የተሻሻለ ጥበቃ በርቷል</translation>
 <translation id="5368227114232678694">በዚህ መሳሪያ ላይ በግል ለማሰስ፣ ማንነት የማያሳውቅን ይሞክሩ</translation>
@@ -894,6 +895,7 @@
 <translation id="5906513782029855931">የጣቢያዎችን ዩአርኤሎች ማወቅ Google ረዳት ስራዎችን እንዲያጠናቅቁ እንዲያግዘዎት ያስችለዋል። ረዳትን በChrome ቅንብሮች ላይ ማጥፋት ይችላሉ።</translation>
 <translation id="5916664084637901428">በርቷል</translation>
 <translation id="5919204609460789179">ስምረትን ለመጀመር <ph name="PRODUCT_NAME" />ን ያዘምኑ</translation>
+<translation id="593625682991400408">በሙከራዎች ጊዜ Chrome አይፈለጌ መልዕክትን፣ ማጭበርበርን እና በጣቢያዎች መካከል መጋራትን የሚገድብባቸውን መንገዶች ያስሳል። Chrome እንዲሁም ጣቢያዎች ማስታወቂያዎችን ለእርስዎ ለማሳየት ሊጠቀሙባቸው የሚችሏቸውን <ph name="BEGIN_LINK" />የእርስዎን ዝንባሌዎች ይገምታል<ph name="END_LINK" />። የእርስዎን ዝንባሌዎች በቅንብሮች ውስጥ ማቀናበር ይችላሉ።</translation>
 <translation id="5938820472109305350"><ph name="INTEREST" />ን አክል</translation>
 <translation id="5942872142862698679">ለፍለጋ Googleን መጠቀም</translation>
 <translation id="5945035219773565305">የአሁኑ ምክር፦  <ph name="RECOMMENDATION" /></translation>
@@ -1062,6 +1064,7 @@
 <translation id="6751521182688001123">አዲስ ትርን በፍጥነት ይክፈቱ። ይህን አቋራጭ ለማርትዕ ነክተው ይያዙ።</translation>
 <translation id="6756507620369789050">ግብረመልስ ያጋሩ</translation>
 <translation id="6767294960381293877">በግማሽ ቁመቱ ላይ የተከፈተ ትር የሚጋሩ የመሣሪያዎች ዝርዝር።</translation>
+<translation id="6770042910635026163">የእርስዎ ዝንባሌዎች የሚገልጹ የሚጎበኟቸው ጣቢያዎች</translation>
 <translation id="6770602306803890733">ለእርስዎ እና ለማናቸውም በድር ላይ ያለ ሁሉም ሰው ደህንነትን ያሻሽላል</translation>
 <translation id="6785476624617658922">የChrome እና የChromeOS ተጨማሪ አገልግሎት ውል</translation>
 <translation id="6795633245022906657">አዲስ ትር በፍጥነት ይክፈቱ። ይህን አቋራጭ ለማርትዕ ወደ ቅንብሮች ይሂዱ።</translation>
@@ -1512,6 +1515,7 @@
 <translation id="9106148373857059373">የዕልባት ማስቀመጥ ፍሰት ተዘግቷል</translation>
 <translation id="9108312223223904744">ስልክ እንደ የደህንነት ቁልፍ ድጋፍ</translation>
 <translation id="9108808586816295166">ደህንነቱ የተጠበቀ ዲኤንኤስ ሁልጊዜ ሊገኝ የሚችል ላይሆን ይችላል</translation>
+<translation id="9128984223251192329">የግላዊነት Sandbox ጥያቄ በግማሽ ቁመት ተከፍቷል</translation>
 <translation id="9133397713400217035">ከመስመር ውጭ ያስሱ</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
 <translation id="9148126808321036104">እንደገና ይግቡ</translation>

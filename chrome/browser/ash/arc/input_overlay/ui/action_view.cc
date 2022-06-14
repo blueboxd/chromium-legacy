@@ -5,18 +5,14 @@
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
 
 #include "base/bind.h"
+#include "base/strings/string_piece.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace arc {
 namespace input_overlay {
 namespace {
 constexpr int kMenuEntryOffset = 4;
-
-// UI strings.
-// TODO(cuicuiruan): move the strings to chrome/app/generated_resources.grd
-// after UX/UI strings are confirmed.
-constexpr base::StringPiece kEditErrorUnsupportedKey("Unsupported key");
-constexpr base::StringPiece kEditErrorDuplicatedKey(
-    "Duplicated key in the same action");
 
 // For the keys that are caught by display overlay, check if they are reserved
 // for special use.
@@ -48,8 +44,14 @@ ActionView::ActionView(Action* action,
 ActionView::~ActionView() = default;
 
 void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
-  DCHECK(mode != DisplayMode::kEducation);
-  if ((!editable_ && mode == DisplayMode::kEdit) || mode == DisplayMode::kMenu)
+  DCHECK(mode != DisplayMode::kEducation && mode != DisplayMode::kMenu &&
+         mode != DisplayMode::kPreMenu);
+  if (mode == DisplayMode::kEducation || mode == DisplayMode::kMenu ||
+      mode == DisplayMode::kPreMenu) {
+    return;
+  }
+
+  if (!editable_ && mode == DisplayMode::kEdit)
     return;
   if (mode == DisplayMode::kView) {
     RemoveEditButton();
@@ -98,15 +100,17 @@ void ActionView::RemoveEditMenu() {
 
 void ActionView::ShowErrorMsg(const base::StringPiece& message,
                               ActionLabel* editing_label) {
-  display_overlay_controller_->AddEditMessage(this, message,
-                                              MessageType::kError);
+  display_overlay_controller_->AddEditMessage(message, MessageType::kError);
   SetDisplayMode(DisplayMode::kEditedError, editing_label);
 }
 
 void ActionView::ShowInfoMsg(const base::StringPiece& message,
                              ActionLabel* editing_label) {
-  display_overlay_controller_->AddEditMessage(this, message,
-                                              MessageType::kInfo);
+  display_overlay_controller_->AddEditMessage(message, MessageType::kInfo);
+}
+
+void ActionView::RemoveMessage() {
+  display_overlay_controller_->RemoveEditMessage();
 }
 
 void ActionView::ChangeBinding(Action* action,
@@ -152,22 +156,11 @@ void ActionView::RemoveEditButton() {
 
 bool ActionView::ShouldShowErrorMsg(ui::DomCode code,
                                     ActionLabel* editing_label) {
-  // Check if |code| is duplicated with the keys in its action. For example,
-  // there are four keys involved in the key-bound |ActionMove|.
-  auto& binding = action_->GetCurrentDisplayedBinding();
-  if (IsKeyboardBound(binding)) {
-    for (const auto& key : binding.keys()) {
-      if (key != code)
-        continue;
-      ShowErrorMsg(kEditErrorDuplicatedKey, editing_label);
-      return true;
-    }
-  }
-
   if ((!action_->support_modifier_key() &&
        ModifierDomCodeToEventFlag(code) != ui::EF_NONE) ||
       IsReservedDomCode(code)) {
-    ShowErrorMsg(kEditErrorUnsupportedKey, editing_label);
+    ShowErrorMsg(l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_RESERVED_KEYS),
+                 editing_label);
     return true;
   }
 

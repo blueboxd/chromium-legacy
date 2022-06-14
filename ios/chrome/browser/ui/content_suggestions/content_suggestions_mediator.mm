@@ -367,7 +367,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
     [self.consumer hideWhatsNewView];
   } else {
-    // By reloading data, checking |notificationPromo| will remove the promo
+    // By reloading data, checking `notificationPromo` will remove the promo
     // view.
     [self reloadAllData];
   }
@@ -573,12 +573,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [self.freshMostVisitedItems addObject:item];
   }
 
-  if (!IsSingleNtpEnabled() && [self.mostVisitedItems count] > 0) {
-    // If some content is already displayed to the user, do not update without a
-    // user action.
-    return;
-  }
-
   [self useFreshMostVisited];
 
   if (mostVisited.size() && !self.recordedPageImpression) {
@@ -682,16 +676,22 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       [convertedSuggestions addObjectsFromArray:self.actionButtonItems];
     }
   } else if (sectionInfo == self.singleCellSectionInfo) {
-    self.parentItem = [[ContentSuggestionsParentItem alloc] initWithType:0];
+    if (!self.parentItem) {
+      self.parentItem = [[ContentSuggestionsParentItem alloc] initWithType:0];
+    }
     if (_notificationPromo->CanShow() && !self.shouldHidePromoAfterTap) {
       ContentSuggestionsWhatsNewItem* item =
           [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
       item.icon = _notificationPromo->GetIcon();
       item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
       self.parentItem.whatsNewItem = item;
+    } else {
+      self.parentItem.whatsNewItem = nil;
     }
     if (self.showMostRecentTabStartSurfaceTile) {
       self.parentItem.returnToRecentItem = self.returnToRecentTabItem;
+    } else {
+      self.parentItem.returnToRecentItem = nil;
     }
     self.parentItem.mostVisitedItems = self.mostVisitedItems;
     if (!ShouldHideShortcutsForStartSurface()) {
@@ -703,7 +703,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   return convertedSuggestions;
 }
 
-// Opens the |URL| in a new tab |incognito| or not. |originPoint| is the origin
+// Opens the `URL` in a new tab `incognito` or not. `originPoint` is the origin
 // of the new tab animation if the tab is opened in background, in window
 // coordinates.
 - (void)openNewTabWithURL:(const GURL&)URL
@@ -731,7 +731,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 // Shows a snackbar with an action to undo the removal of the most visited item
-// with a |URL|.
+// with a `URL`.
 - (void)showMostVisitedUndoForURL:(GURL)URL {
   GURL copiedURL = URL;
 

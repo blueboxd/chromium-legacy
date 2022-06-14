@@ -722,6 +722,10 @@ void LayerTreeHostImpl::CommitComplete() {
       mutator_host_->HasSmilAnimation()) {
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
+    if (mutator_host_->HasSharedElementTransition()) {
+      frame_trackers_.StartSequence(
+          FrameSequenceTrackerType::kSETMainThreadAnimation);
+    }
   }
 
   for (const auto& info : mutator_host_->TakePendingThroughputTrackerInfos()) {
@@ -1893,12 +1897,7 @@ TargetColorParams LayerTreeHostImpl::GetTargetColorParams(
     return params;
   }
 
-  // The raster color space should contain sRGB to avoid artifacts during
-  // rasterization.
-  if (CheckColorSpaceContainsSrgb(hdr_color_space)) {
-    params.color_space = hdr_color_space;
-  }
-
+  params.color_space = hdr_color_space;
   return params;
 }
 
@@ -1938,10 +1937,10 @@ size_t LayerTreeHostImpl::GetFrameIndexForImage(const PaintImage& paint_image,
 
 int LayerTreeHostImpl::GetMSAASampleCountForRaster(
     const scoped_refptr<DisplayItemList>& display_list) {
-  constexpr int kMinNumberOfSlowPathsForMSAA = 6;
-  if (display_list->num_slow_paths() < kMinNumberOfSlowPathsForMSAA)
+  if (display_list->num_slow_paths_up_to_min_for_MSAA() <
+      kMinNumberOfSlowPathsForMSAA) {
     return 0;
-
+  }
   if (!can_use_msaa_)
     return 0;
 
@@ -2513,6 +2512,11 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
       !mutator_host_->HasSmilAnimation()) {
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kSETMainThreadAnimation);
+  } else if (!mutator_host_->HasSharedElementTransition()) {
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kSETMainThreadAnimation);
   }
 
   if (lcd_text_metrics_reporter_) {
@@ -4237,6 +4241,14 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
   } else {
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kCompositorAnimation);
+  }
+
+  if (animated && mutator_host_->HasSharedElementTransition()) {
+    frame_trackers_.StartSequence(
+        FrameSequenceTrackerType::kSETCompositorAnimation);
+  } else {
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kSETCompositorAnimation);
   }
 
   // TODO(crbug.com/551138): We could return true only if the animations are on

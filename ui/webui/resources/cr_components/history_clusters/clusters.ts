@@ -11,6 +11,7 @@ import '../../cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 
+import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
@@ -44,6 +45,8 @@ declare global {
   }
 }
 
+const HistoryClustersElementBase = I18nMixin(PolymerElement);
+
 export interface HistoryClustersElement {
   $: {
     clusters: IronListElement,
@@ -53,7 +56,7 @@ export interface HistoryClustersElement {
   };
 }
 
-export class HistoryClustersElement extends PolymerElement {
+export class HistoryClustersElement extends HistoryClustersElementBase {
   static get is() {
     return 'history-clusters';
   }
@@ -64,6 +67,15 @@ export class HistoryClustersElement extends PolymerElement {
 
   static get properties() {
     return {
+      /**
+       * Whether the clusters are in the side panel.
+       */
+      inSidePanel: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false,
+      },
+
       /**
        * The current query for which related clusters are requested and shown.
        */
@@ -110,11 +122,13 @@ export class HistoryClustersElement extends PolymerElement {
   // Properties
   //============================================================================
 
+  inSidePanel: boolean;
   query: string;
   private callbackRouter_: PageCallbackRouter;
   private headerText_: string;
   private onClustersQueryResultListenerId_: number|null = null;
   private onVisitsRemovedListenerId_: number|null = null;
+  private onHistoryDeletedListenerId_: number|null = null;
   private pageHandler_: PageHandlerRemote;
   private placeholderText_: string;
   private result_: QueryResult;
@@ -148,6 +162,9 @@ export class HistoryClustersElement extends PolymerElement {
     this.onVisitsRemovedListenerId_ =
         this.callbackRouter_.onVisitsRemoved.addListener(
             this.onVisitsRemoved_.bind(this));
+    this.onHistoryDeletedListenerId_ =
+        this.callbackRouter_.onHistoryDeleted.addListener(
+            this.onHistoryDeleted_.bind(this));
   }
 
   override disconnectedCallback() {
@@ -319,6 +336,10 @@ export class HistoryClustersElement extends PolymerElement {
       }
     });
     this.showSpinner_ = false;
+
+    if (this.inSidePanel) {
+      this.pageHandler_.showSidePanelUI();
+    }
   }
 
   /**
@@ -345,6 +366,16 @@ export class HistoryClustersElement extends PolymerElement {
     if (removedVisits.length === 1) {
       this.$.confirmationToast.get().show();
     }
+  }
+
+  /**
+   * Called when History is deleted from a different tab.
+   */
+  private onHistoryDeleted_() {
+    // Just re-issue the existing query to "reload" the results and display
+    // the externally deleted History. It would be nice if we could save the
+    // user's scroll position, but History doesn't do that either.
+    this.onQueryChanged_();
   }
 }
 

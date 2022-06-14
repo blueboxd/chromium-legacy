@@ -68,9 +68,7 @@ android_resources("java_resources") {
   ]
 }
 
-java_library("junit") {
-  # Skip platform checks since Robolectric depends on requires_android targets.
-  bypass_platform_checks = true
+robolectric_library("junit") {
   testonly = true
   sources = [ "java/src/org/chromium/chrome/browser/password_edit_dialog/PasswordEditDialogTest.java" ]
 
@@ -80,7 +78,7 @@ java_library("junit") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//chrome/browser/flags:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/hamcrest:hamcrest_library_java",
     "//third_party/junit",
@@ -100,7 +98,7 @@ android_library("javatests") {
   deps = [
     ":java",
     "//base:base_java_test_support",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_integration_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:material_design_java",
     "//third_party/androidx:androidx_test_runner_java",

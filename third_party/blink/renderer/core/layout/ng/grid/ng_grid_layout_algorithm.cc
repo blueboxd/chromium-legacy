@@ -633,6 +633,7 @@ void NGGridLayoutAlgorithm::ComputeGridGeometry(
 
   const auto& container_style = Style();
   const auto& constraint_space = ConstraintSpace();
+  const auto& border_scrollbar_padding = BorderScrollbarPadding();
 
   DCHECK_NE(grid_available_size_.inline_size, kIndefiniteSize);
   layout_data->columns =
@@ -643,8 +644,9 @@ void NGGridLayoutAlgorithm::ComputeGridGeometry(
   std::unique_ptr<NGGridBlockTrackCollection> row_builder_collection;
 
   if (const auto* subgridded_rows = constraint_space.SubgriddedRows()) {
-    layout_data->rows =
-        std::make_unique<NGGridLayoutTrackCollection>(*subgridded_rows);
+    layout_data->rows = std::make_unique<NGGridLayoutTrackCollection>(
+        *subgridded_rows, border_scrollbar_padding,
+        ComputeMarginsForSelf(constraint_space, container_style));
   } else {
     row_builder_collection = std::make_unique<NGGridBlockTrackCollection>(
         container_style, placement_data, kForRows);
@@ -703,8 +705,6 @@ void NGGridLayoutAlgorithm::ComputeGridGeometry(
   };
 
   ComputeGrid();
-
-  const auto& border_scrollbar_padding = BorderScrollbarPadding();
 
   if (contain_intrinsic_block_size_) {
     *intrinsic_block_size = *contain_intrinsic_block_size_;
@@ -937,6 +937,13 @@ LayoutUnit NGGridLayoutAlgorithm::ContributionSizeForGridItem(
     GridItemData* grid_item) const {
   DCHECK(grid_item);
 
+  if (!grid_item->IsConsideredForSizing(track_direction)) {
+    // From https://drafts.csswg.org/css-grid-2/#subgrid-size-contribution:
+    //   The subgrid itself [...] acts as if it was completely empty for track
+    //   sizing purposes in the subgridded dimension.
+    return LayoutUnit();
+  }
+
   const auto& node = grid_item->node;
   const auto& item_style = node.Style();
 
@@ -944,14 +951,6 @@ LayoutUnit NGGridLayoutAlgorithm::ContributionSizeForGridItem(
   const bool is_parallel = IsParallelWritingMode(Style().GetWritingMode(),
                                                  item_style.GetWritingMode());
   const bool is_parallel_with_track_direction = is_for_columns == is_parallel;
-
-  if (grid_item->HasSubgriddedAxis(
-          is_parallel_with_track_direction ? kForColumns : kForRows)) {
-    // From https://drafts.csswg.org/css-grid-2/#subgrid-size-contribution:
-    //   The subgrid itself [...] acts as if it was completely empty for track
-    //   sizing purposes in the subgridded dimension.
-    return LayoutUnit();
-  }
 
   // TODO(ikilpatrick): We'll need to record if any child used an indefinite
   // size for its contribution, such that we can then do the 2nd pass on the
@@ -1221,16 +1220,21 @@ NGGridLayoutAlgorithm::LayoutTrackCollection(
     const NGGridPlacementData& placement_data,
     const GridTrackSizingDirection track_direction,
     GridItems* grid_items) const {
+  const auto& container_style = Style();
+  const auto& constraint_space = ConstraintSpace();
+
   const auto is_for_columns = track_direction == kForColumns;
-
   const auto* subgridded_tracks = is_for_columns
-                                      ? ConstraintSpace().SubgriddedColumns()
-                                      : ConstraintSpace().SubgriddedRows();
-  if (subgridded_tracks)
-    return std::make_unique<NGGridLayoutTrackCollection>(*subgridded_tracks);
+                                      ? constraint_space.SubgriddedColumns()
+                                      : constraint_space.SubgriddedRows();
+  if (subgridded_tracks) {
+    return std::make_unique<NGGridLayoutTrackCollection>(
+        *subgridded_tracks, BorderScrollbarPadding(),
+        ComputeMarginsForSelf(constraint_space, container_style));
+  }
 
-  NGGridBlockTrackCollection track_builder_collection(Style(), placement_data,
-                                                      track_direction);
+  NGGridBlockTrackCollection track_builder_collection(
+      container_style, placement_data, track_direction);
   BuildBlockTrackCollection(grid_items, &track_builder_collection);
 
   const bool is_available_size_indefinite =

@@ -194,6 +194,9 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testNonResolveSwipeExpand(@EnabledFeature int enabledFeature) throws Exception {
+        // Skip when this experimental feature is enabled since it's not yet planned past Beta.
+        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
+
         simulateNonResolveSearch("search");
         assertNoWebContents();
         assertLoadedNoUrl();
@@ -399,7 +402,8 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                 true /* isInPrimaryMainFrame */, false /* isSameDocument*/,
                 true /* isRendererInitiated */, null /* initiatorOrigin */, PageTransition.LINK,
                 false /* isPost */, true /* hasUserGesture */, false /* isRedirect */,
-                true /* isExternalProtocol */, 0 /* navigationId */, false /* isPageActivation */);
+                true /* isExternalProtocol */, 0 /* navigationId */, false /* isPageActivation */,
+                false /* isReload */);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -437,7 +441,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                 false /* isSameDocument*/, true /* isRendererInitiated */,
                 null /* initiatorOrigin */, PageTransition.LINK, false /* isPost */,
                 true /* hasUserGesture */, false /* isRedirect */, false /* isExternalProtocol */,
-                0 /* navigationId */, false /* isPageActivation */);
+                0 /* navigationId */, false /* isPageActivation */, false /* isReload */);
 
         GURL redirectUrl =
                 new GURL("intent://test/#Intent;scheme=test;package=com.chrome.test;end");
@@ -447,7 +451,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                 false /* isSameDocument*/, true /* isRendererInitiated */,
                 null /* initiatorOrigin */, PageTransition.LINK, false /* isPost */,
                 false /* hasUserGesture */, true /* isRedirect */, true /* isExternalProtocol */,
-                0 /* navigationId */, false /* isPageActivation */);
+                0 /* navigationId */, false /* isPageActivation */, false /* isReload */);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -486,7 +490,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                 false /* isSameDocument*/, true /* isRendererInitiated */,
                 null /* initiatorOrigin */, PageTransition.LINK, false /* isPost */,
                 false /* hasUserGesture */, false /* isRedirect */, true /* isExternalProtocol */,
-                0 /* navigationId */, false /* isPageActivation */);
+                0 /* navigationId */, false /* isPageActivation */, false /* isReload */);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -552,15 +556,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         }, 3000 * waitFactor, DEFAULT_POLLING_INTERVAL * waitFactor);
     }
 
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    public void testTranslationsFeatureCanResolveLongpressGesture() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_TRANSLATIONS);
-
-        Assert.assertTrue(mPolicy.canResolveLongpress());
-    }
-
     //============================================================================================
     // END Translate Tests
     //============================================================================================
@@ -607,6 +602,9 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     // Previously flaky on phones: https://crbug.com/765796
     public void testPanelDismissedOnToggleFullscreen(@EnabledFeature int enabledFeature)
             throws Exception {
+        // Skip when this experimental feature is enabled since it's not yet planned past Beta.
+        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
+
         // Simulate a resolving search and assert that the panel peeks.
         simulateResolveSearch("search");
 
@@ -673,6 +671,9 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @DisabledTest(message = "https://crbug.com/1291558")
     public void testQuickActionCaptionAndImage(@EnabledFeature int enabledFeature)
             throws Exception {
+        // Skip when this experimental feature is enabled since it's not yet planned past Beta.
+        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
+
         CompositorAnimationHandler.setTestingMode(true);
 
         // Simulate a resolving search to show the Bar, then set the quick action data.
@@ -834,6 +835,9 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testContextualDictionaryDefinitions(@EnabledFeature int enabledFeature)
             throws Exception {
+        // Skip when this experimental feature is enabled since it's not yet planned past Beta.
+        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
+
         runDictionaryCardTest(CardTag.CT_CONTEXTUAL_DEFINITION);
     }
 
@@ -902,8 +906,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @Feature({"ContextualSearch"})
     // Previously flaky and disabled 4/2021.  https://crbug.com/1058297
     public void testAllInternalStatesVisitedResolvingTap() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
         // Set up a tracking version of the Internal State Controller.
         ContextualSearchInternalStateControllerWrapper internalStateControllerWrapper =
                 ContextualSearchInternalStateControllerWrapper
@@ -936,8 +938,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testAllInternalStatesVisitedResolvingLongpress(@EnabledFeature int enabledFeature)
             throws Exception {
-        if (!mPolicy.canResolveLongpress()) return;
-
         // Set up a tracking version of the Internal State Controller.
         ContextualSearchInternalStateControllerWrapper internalStateControllerWrapper =
                 ContextualSearchInternalStateControllerWrapper

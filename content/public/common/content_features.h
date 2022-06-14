@@ -110,6 +110,7 @@ CONTENT_EXPORT extern const base::Feature kIncludeIpcOverheadInNavigationStart;
 CONTENT_EXPORT extern const base::Feature kInstalledApp;
 CONTENT_EXPORT extern const base::Feature kInstalledAppProvider;
 CONTENT_EXPORT extern const base::Feature kInstalledAppsInCbd;
+CONTENT_EXPORT extern const base::Feature kIsolatedWebApps;
 CONTENT_EXPORT extern const base::Feature kIsolateOrigins;
 CONTENT_EXPORT extern const char kIsolateOriginsFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kIsolateSandboxedIframes;
@@ -296,7 +297,6 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kCoalesceIndependentBeginFrame;
 CONTENT_EXPORT extern const base::Feature kOnDemandAccessibilityEvents;
 CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteExceptions;
-CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteGlobal;
 CONTENT_EXPORT extern const base::Feature kUserMediaScreenCapturing;
 CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
 CONTENT_EXPORT extern const base::Feature kWebNfc;

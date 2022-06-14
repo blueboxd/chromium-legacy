@@ -8,12 +8,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.view.View;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,14 +23,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.CallbackController;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Function;
 import org.chromium.base.Promise;
-import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.history_clusters.HistoryCluster.MatchPosition;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersItemProperties.ItemType;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.SearchDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -62,14 +67,12 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
     private final RoundedIconGenerator mIconGenerator;
     private final LargeIconBridge mLargeIconBridge;
     private final int mFaviconSize;
-    private final Supplier<Tab> mTabSupplier;
     private Promise<HistoryClustersResult> mPromise;
-    private Supplier<Intent> mHistoryActivityIntentFactory;
-    private final boolean mIsSeparateActivity;
-    private Function<GURL, Intent> mOpenUrlIntentCreator;
-    private CallbackController mCallbackController = new CallbackController();
-    private Clock mClock;
+    private final HistoryClustersDelegate mDelegate;
+    private final CallbackController mCallbackController = new CallbackController();
+    private final Clock mClock;
     private final TemplateUrlService mTemplateUrlService;
+    private final SelectionDelegate mSelectionDelegate;
 
     /**
      * Create a new HistoryClustersMediator.
@@ -80,37 +83,30 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
      * @param modelList Model list to which fetched cluster data should be pushed to.
      * @param toolbarModel Model for properties affecting the "full page" toolbar shown in the
      *         history activity.
-     * @param historyActivityIntentFactory Supplier of an intent that targets the History activity.
-     * @param tabSupplier Supplier of the currently active tab. Null in cases where there isn't a
-     *         tab, e.g. when we're operating in a dedicated history activity.
-     * @param isSeparateActivity Whether the Journeys UI this mediator supports is running in a
-     *         separate activity (as opposed to in a tab). This informs, e.g. whether viewing a url
-     *         should launch an intent or directly navigate a tab.
-     * @param openUrlIntentCreator Function that creates an intent that opens the given url in the
-     *         correct main browsing activity.
+     * @param historyClustersDelegate Delegate that provides functionality that must be implemented
+     *         externally, e.g. populating intents targeting activities we can't reference directly.
      * @param clock Provider of the current time in ms relative to the unix epoch.
      * @param templateUrlService Service that allows us to generate a URL for a given search query.
+     * @param selectionDelegate Delegate that gives us information about the currently selected
+     *         items in the list we're displaying.
      */
     HistoryClustersMediator(@NonNull HistoryClustersBridge historyClustersBridge,
             LargeIconBridge largeIconBridge, @NonNull Context context, @NonNull Resources resources,
             @NonNull ModelList modelList, @NonNull PropertyModel toolbarModel,
-            Supplier<Intent> historyActivityIntentFactory, @Nullable Supplier<Tab> tabSupplier,
-            boolean isSeparateActivity, Function<GURL, Intent> openUrlIntentCreator, Clock clock,
-            TemplateUrlService templateUrlService) {
+            HistoryClustersDelegate historyClustersDelegate, Clock clock,
+            TemplateUrlService templateUrlService, SelectionDelegate selectionDelegate) {
         mHistoryClustersBridge = historyClustersBridge;
         mLargeIconBridge = largeIconBridge;
         mModelList = modelList;
         mContext = context;
         mResources = resources;
         mToolbarModel = toolbarModel;
-        mHistoryActivityIntentFactory = historyActivityIntentFactory;
-        mTabSupplier = tabSupplier;
+        mDelegate = historyClustersDelegate;
         mFaviconSize = mResources.getDimensionPixelSize(R.dimen.default_favicon_min_size);
         mIconGenerator = FaviconUtils.createCircularIconGenerator(mContext);
-        mIsSeparateActivity = isSeparateActivity;
-        mOpenUrlIntentCreator = openUrlIntentCreator;
         mClock = clock;
         mTemplateUrlService = templateUrlService;
+        mSelectionDelegate = selectionDelegate;
     }
 
     // SearchDelegate implementation.
@@ -167,7 +163,7 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
     void openHistoryClustersUi(String query) {
         boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
         if (isTablet) {
-            Tab currentTab = mTabSupplier.get();
+            Tab currentTab = mDelegate.getTab();
             if (currentTab == null) return;
             Uri journeysUri =
                     new Uri.Builder()
@@ -182,7 +178,7 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
             return;
         }
 
-        Intent historyActivityIntent = mHistoryActivityIntentFactory.get();
+        Intent historyActivityIntent = mDelegate.getHistoryActivityIntent();
         historyActivityIntent.putExtra(HistoryClustersConstants.EXTRA_SHOW_HISTORY_CLUSTERS, true);
         historyActivityIntent.putExtra(
                 HistoryClustersConstants.EXTRA_HISTORY_CLUSTERS_QUERY, query);
@@ -194,7 +190,29 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
             return;
         }
 
-        navigateToItemUrl(new GURL(mTemplateUrlService.getUrlForSearchQuery(searchQuery)));
+        navigateToUrl(
+                new GURL(mTemplateUrlService.getUrlForSearchQuery(searchQuery)), false, false);
+    }
+
+    void navigateToUrl(GURL gurl, boolean inIncognito, boolean createNewTab) {
+        Context appContext = ContextUtils.getApplicationContext();
+        if (mDelegate.isSeparateActivity()) {
+            appContext.startActivity(mDelegate.getOpenUrlIntent(gurl, inIncognito, createNewTab));
+            return;
+        }
+
+        Tab currentTab = mDelegate.getTab();
+        if (currentTab == null) return;
+
+        if (createNewTab) {
+            TabCreator tabCreator = mDelegate.getTabCreator(currentTab.isIncognito());
+            assert tabCreator != null;
+            tabCreator.createNewTab(
+                    new LoadUrlParams(gurl), TabLaunchType.FROM_CHROME_UI, currentTab);
+        } else {
+            LoadUrlParams loadUrlParams = new LoadUrlParams(gurl);
+            currentTab.loadUrl(loadUrlParams);
+        }
     }
 
     private void queryComplete(HistoryClustersResult result) {
@@ -207,7 +225,8 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
 
         for (HistoryCluster cluster : result.getClusters()) {
             PropertyModel clusterModel = new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
-            clusterModel.set(HistoryClustersItemProperties.TITLE, cluster.getLabel());
+            clusterModel.set(HistoryClustersItemProperties.TITLE,
+                    applyBolding(cluster.getLabel(), cluster.getMatchPositions()));
             Drawable journeysDrawable =
                     AppCompatResources.getDrawable(mContext, R.drawable.ic_journeys);
             clusterModel.set(HistoryClustersItemProperties.ICON_DRAWABLE, journeysDrawable);
@@ -226,10 +245,14 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
             for (ClusterVisit visit : cluster.getVisits()) {
                 PropertyModel visitModel =
                         new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
-                visitModel.set(HistoryClustersItemProperties.TITLE, visit.getTitle());
-                visitModel.set(HistoryClustersItemProperties.URL, visit.getGURL().getHost());
+                visitModel.set(HistoryClustersItemProperties.TITLE,
+                        new SpannableString(
+                                applyBolding(visit.getTitle(), visit.getTitleMatchPositions())));
+                visitModel.set(HistoryClustersItemProperties.URL,
+                        applyBolding(visit.getUrlForDisplay(), visit.getUrlMatchPositions()));
                 visitModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
-                        (v) -> navigateToItemUrl(visit.getGURL()));
+                        (v) -> onClusterVisitClicked((SelectableItemView) v, visit));
+                visitModel.set(HistoryClustersItemProperties.CLUSTER_VISIT, visit);
                 visitModel.set(HistoryClustersItemProperties.VISIBILITY, View.VISIBLE);
                 if (mLargeIconBridge != null) {
                     mLargeIconBridge.getLargeIconForUrl(visit.getGURL(), mFaviconSize,
@@ -262,7 +285,7 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
             mModelList.addAll(visitsAndRelatedSearches);
 
             clusterModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
-                    v -> hideCluster(cluster, clusterModel, visitsAndRelatedSearches));
+                    v -> hideCluster(clusterModel, visitsAndRelatedSearches));
             Drawable chevron = UiUtils.getTintedDrawable(mContext,
                     R.drawable.ic_expand_more_black_24dp, R.color.default_icon_color_tint_list);
             clusterModel.set(HistoryClustersItemProperties.END_BUTTON_DRAWABLE, chevron);
@@ -271,50 +294,45 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         }
     }
 
+    private void onClusterVisitClicked(SelectableItemView view, ClusterVisit clusterVisit) {
+        if (mSelectionDelegate.isSelectionEnabled()) {
+            view.onLongClick(view);
+        } else {
+            navigateToUrl(clusterVisit.getGURL(), false, false);
+        }
+    }
+
     private boolean hasToggleItem() {
         return mModelList.size() > 0 && mModelList.get(0).type == ItemType.TOGGLE;
     }
 
     @VisibleForTesting
-    void hideCluster(
-            HistoryCluster cluster, PropertyModel clusterModel, List<ListItem> itemsToHide) {
+    void hideCluster(PropertyModel clusterModel, List<ListItem> itemsToHide) {
+        int indexOfFirstVisit = mModelList.indexOf(itemsToHide.get(0));
         clusterModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
-                (v) -> showCluster(cluster, clusterModel, itemsToHide));
+                (v) -> showCluster(clusterModel, itemsToHide, indexOfFirstVisit));
         Drawable chevron = UiUtils.getTintedDrawable(mContext, R.drawable.ic_expand_less_black_24dp,
                 R.color.default_icon_color_tint_list);
         clusterModel.set(HistoryClustersItemProperties.END_BUTTON_DRAWABLE, chevron);
 
-        for (ListItem item : itemsToHide) {
-            item.model.set(HistoryClustersItemProperties.VISIBILITY, View.GONE);
+        mModelList.removeRange(indexOfFirstVisit, itemsToHide.size());
+        for (ListItem listItem : itemsToHide) {
+            ClusterVisit clusterVisit =
+                    listItem.model.get(HistoryClustersItemProperties.CLUSTER_VISIT);
+            if (mSelectionDelegate.isItemSelected(clusterVisit)) {
+                mSelectionDelegate.toggleSelectionForItem(clusterVisit);
+            }
         }
     }
 
     @VisibleForTesting
-    void showCluster(
-            HistoryCluster cluster, PropertyModel clusterModel, List<ListItem> itemsToShow) {
+    void showCluster(PropertyModel clusterModel, List<ListItem> itemsToShow, int insertionIndex) {
         clusterModel.set(HistoryClustersItemProperties.CLICK_HANDLER,
-                (v) -> hideCluster(cluster, clusterModel, itemsToShow));
+                (v) -> hideCluster(clusterModel, itemsToShow));
         Drawable chevron = UiUtils.getTintedDrawable(mContext, R.drawable.ic_expand_more_black_24dp,
                 R.color.default_icon_color_tint_list);
         clusterModel.set(HistoryClustersItemProperties.END_BUTTON_DRAWABLE, chevron);
-        for (ListItem item : itemsToShow) {
-            item.model.set(HistoryClustersItemProperties.VISIBILITY, View.VISIBLE);
-        }
-    }
-
-    @VisibleForTesting
-    void navigateToItemUrl(GURL gurl) {
-        Context appContext = ContextUtils.getApplicationContext();
-        if (mIsSeparateActivity) {
-            appContext.startActivity(mOpenUrlIntentCreator.apply(gurl));
-            return;
-        }
-
-        Tab currentTab = mTabSupplier.get();
-        if (currentTab == null) return;
-
-        LoadUrlParams loadUrlParams = new LoadUrlParams(gurl);
-        currentTab.loadUrl(loadUrlParams);
+        mModelList.addAll(itemsToShow, insertionIndex);
     }
 
     @VisibleForTesting
@@ -336,5 +354,16 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         } else {
             return mResources.getString(R.string.just_now);
         }
+    }
+
+    @VisibleForTesting
+    SpannableString applyBolding(String text, List<MatchPosition> matchPositions) {
+        SpannableString spannableString = new SpannableString(text);
+        for (MatchPosition matchPosition : matchPositions) {
+            spannableString.setSpan(new StyleSpan(Typeface.BOLD), matchPosition.mMatchStart,
+                    matchPosition.mMatchEnd, 0);
+        }
+
+        return spannableString;
     }
 }

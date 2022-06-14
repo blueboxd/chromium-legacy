@@ -5988,10 +5988,11 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
     blink::WebSetSinkIdCompleteCallback completion_callback) {
   std::move(
       blink::ConvertToOutputDeviceStatusCB(std::move(completion_callback)))
-      .Run(blink::AudioDeviceFactory::GetOutputDeviceInfo(
-               GetWebFrame()->GetLocalFrameToken(),
-               media::AudioSinkParameters(base::UnguessableToken(),
-                                          sink_id.Utf8()))
+      .Run(blink::AudioDeviceFactory::GetInstance()
+               ->GetOutputDeviceInfo(
+                   GetWebFrame()->GetLocalFrameToken(),
+                   media::AudioSinkParameters(base::UnguessableToken(),
+                                              sink_id.Utf8()))
                .device_status());
 }
 
@@ -6015,8 +6016,9 @@ RenderFrameImpl::CreateURLLoaderFactory() {
             ->Clone();
       }
     }
-    // At this point we can't create anything.
-    NOTREACHED();
+    // At this point we can't create anything. We use CHECK(false) instead of
+    // NOTREACHED() here to catch errors on clusterfuzz and production.
+    CHECK(false);
     return nullptr;
   }
   return std::make_unique<FrameURLLoaderFactory>(weak_factory_.GetWeakPtr());

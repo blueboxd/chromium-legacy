@@ -472,6 +472,14 @@ bool NGPhysicalFragment::IsTextControlPlaceholder() const {
          blink::IsTextControlPlaceholder(layout_object_->GetNode());
 }
 
+base::span<NGPhysicalOutOfFlowPositionedNode>
+NGPhysicalFragment::OutOfFlowPositionedDescendants() const {
+  if (!HasOutOfFlowPositionedDescendants())
+    return base::span<NGPhysicalOutOfFlowPositionedNode>();
+  return {oof_data_->oof_positioned_descendants.data(),
+          oof_data_->oof_positioned_descendants.size()};
+}
+
 NGFragmentedOutOfFlowData* NGPhysicalFragment::FragmentedOutOfFlowData() const {
   if (!has_fragmented_out_of_flow_data_)
     return nullptr;
@@ -786,11 +794,13 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
     NGInlineCursor* cursor) const {
   const auto* const text_combine =
       DynamicTo<LayoutNGTextCombine>(containing_block);
-  for (; *cursor; cursor->MoveToNext()) {
+  while (*cursor) {
     DCHECK(cursor->Current().Item());
     const NGFragmentItem& item = *cursor->Current().Item();
-    if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved()))
+    if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved())) {
+      cursor->MoveToNext();
       continue;
+    }
     switch (item.Type()) {
       case NGFragmentItem::kLine: {
         AddOutlineRectsForDescendant(
@@ -824,10 +834,15 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
           AddOutlineRectsForDescendant(
               {child_box, item.OffsetInContainerFragment()}, outline_rects,
               additional_offset, outline_type, containing_block);
+          // Skip descendants as they were already added.
+          DCHECK(item.IsInlineBox() || item.DescendantsCount() == 1);
+          cursor->MoveToNextSkippingChildren();
+          continue;
         }
         break;
       }
     }
+    cursor->MoveToNext();
   }
 }
 
@@ -947,14 +962,12 @@ void NGPhysicalFragment::AddOutlineRectsForDescendant(
     if (descendant_box->HasLayer()) {
       DCHECK(descendant_layout_object);
       Vector<PhysicalRect> layer_outline_rects;
-      descendant_box->AddOutlineRects(additional_offset, outline_type,
+      descendant_box->AddOutlineRects(PhysicalOffset(), outline_type,
                                       &layer_outline_rects);
 
-      // Don't pass additional_offset because LocalToAncestorRects will itself
-      // apply it.
       descendant_layout_object->LocalToAncestorRects(
           layer_outline_rects, containing_block, PhysicalOffset(),
-          PhysicalOffset());
+          additional_offset);
       outline_rects->AppendVector(layer_outline_rects);
       return;
     }

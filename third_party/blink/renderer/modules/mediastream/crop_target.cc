@@ -12,8 +12,6 @@
 
 namespace blink {
 
-CropTarget::CropTarget() = default;
-
 ScriptPromise CropTarget::fromElement(ScriptState* script_state,
                                       Element* element,
                                       ExceptionState& exception_state) {
@@ -72,6 +70,10 @@ ScriptPromise CropTarget::fromElement(ScriptState* script_state,
   return media_devices->ProduceCropTarget(script_state, element,
                                           exception_state);
 #endif
+}
+
+CropTarget::CropTarget(String crop_id) : crop_id_(std::move(crop_id)) {
+  DCHECK(!crop_id_.IsEmpty());
 }
 
 }  // namespace blink

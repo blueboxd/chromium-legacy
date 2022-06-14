@@ -900,6 +900,110 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.ResumeJourneyShown.ClusterKeywordScore" units="count"
+    expires_after="2022-12-10">
+  <owner>junzou@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Emits the score of matched cluster keyword of any &quot;Resume Journey&quot;
+    omnibox actions shown in the popup.
+
+    Note that these are emitted when the user uses the omnibox to go somewhere.
+    When that happens, one keyword type is emitted per action visible in the
+    popup. These are NOT emitted per-keystroke, in order to make this a suitable
+    denominator for Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordScore.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ResumeJourneyShown.ClusterKeywordType"
+    enum="HistoryClusterKeywordType" expires_after="2022-12-10">
+  <owner>junzou@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Emits the type of the matched cluster keyword of any &quot;Resume
+    Journey&quot; omnibox actions shown in the popup. The types indicate the
+    sources from which the keywords are generated in the history clustering
+    backend.
+
+    Note that these are emitted when the user uses the omnibox to go somewhere.
+    When that happens, one keyword type is emitted per action visible in the
+    popup. These are NOT emitted per-keystroke, in order to make this a suitable
+    denominator for Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordType.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ResumeJourneyShown.PageEntityCollection"
+    enum="OptimizationGuidePageEntityCollection" expires_after="2022-12-08">
+  <owner>junzou@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Emits the top entity collection of any &quot;Resume Journey&quot; omnibox
+    actions shown in the popup. The collections are high-level verticals the
+    keywords belong to.
+
+    Note that these are emitted when the user uses the omnibox to go somewhere.
+    When that happens, one collection is emitted per action visible in the
+    popup. These are NOT emitted per-keystroke, in order to make this a suitable
+    denominator for Omnibox.SuggestionUsed.ResumeJourney.PageEntityCollection.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.RichAutocompletion.Triggered"
+    enum="OmniboxRichAutocompletionType" expires_after="2022-12-08">
+  <owner>manukh@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Measures the number of sessions for which each type of rich autocompletion
+    triggered; does not measure the number of times each type of rich
+    autocompletion triggered.
+
+    As the user types into the omnibox, the omnibox suggestions are updated.
+    Some of those suggestions may have rich autocompletion. No suggestion may
+    have multiple types of rich autocompletion. A type of rich autocompletion is
+    considered triggered only if the default suggestion has rich autocompletion.
+    If a non-default suggestion has rich autocompletion, does not suffice. If
+    any input during the session triggered a rich autocompletion type, that type
+    is considered triggered for the entire session.
+
+    Recorded multiple times per omnibox session (i.e. per user selecting a
+    suggestion). Recorded once for each type of rich autocompletion that
+    triggered during the session (i.e. while the user was typing their input).
+    If a rich autocompletion type triggered multiple times during the session
+    (very common), it will be logged exactly once. Hence, it's impossible for
+    any single bucket's count to be larger than the count of omnibox sessions or
+    Omnibox.RichAutocompletion.Triggered.Any. If multiple rich autocompletion
+    types triggered during the session (less common), each will be logged.
+    Hence, it's possible for the total count of this histogram to be larger than
+    the count of omnibox sessions.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.RichAutocompletion.Triggered.Any" units="Boolean"
+    expires_after="2022-12-08">
+  <owner>manukh@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Measures the number of sessions for which any type of rich autocompletion
+    triggered.
+
+    As the user types into the omnibox, the omnibox suggestions are updated.
+    Some of those suggestions may have rich autocompletion. No suggestion may
+    have multiple types of rich autocompletion. A type of rich autocompletion is
+    considered triggered only if the default suggestion has rich autocompletion.
+    If a non-default suggestion has rich autocompletion, does not suffice. If
+    any input during the session triggered a rich autocompletion type, that type
+    is considered triggered for the entire session.
+
+    The related &quot;Omnibox.RichAutocompletion.Triggered&quot; histogram
+    breaks down the trigger count for each rich autocompletion type.
+
+    Recorded exactly once per omnibox session (i.e. per user selecting a
+    suggestion).
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.Search.OffTheRecord" enum="BooleanOffTheRecord"
     expires_after="2022-08-02">
   <owner>sideyilmaz@chromium.org</owner>
@@ -937,7 +1041,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Omnibox.SearchPrefetch.ClickToNavigationIntercepted"
     units="ms" expires_after="2023-05-02">
   <owner>spelchat@chromium.org</owner>
-  <owner>chrome-brapp-loading@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
     Search Prefetch issues results page requests in response to either the
@@ -982,7 +1086,7 @@ chromium-metrics-reviews@google.com.
     name="Omnibox.SearchPrefetch.NavigationInterceptedToForwardingComplete"
     units="ms" expires_after="2023-05-02">
   <owner>spelchat@chromium.org</owner>
-  <owner>chrome-brapp-loading@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
     Search Prefetch issues results page requests in response to either the
@@ -1292,6 +1396,201 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordScore"
+    units="count" expires_after="2022-12-10">
+  <owner>junzou@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Logs the score of the matched cluster keyword of &quot;Resume Journey&quot;
+    omnibox actions actually selected by the user.
+
+    This can be combined with Omnibox.ResumeJourneyShown.ClusterKeywordScore to
+    compute the precision (or CTR) of the &quot;Resume Journey&quot; omnibox
+    action on a keyword score bucket.
+
+    It's safe to compare the total count of this metric to the total count of
+    Omnibox.ResumeJourneyShown.ClusterKeywordScore because within a single
+    popup, only zero or one &quot;Resume Journey&quot; can be shown. If multiple
+    actions start being shown in the popup, comparing to the total count becomes
+    misleading to interpret as a CTR.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordType"
+    enum="HistoryClusterKeywordType" expires_after="2022-12-10">
+  <owner>junzou@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Logs the type of the matched cluster keyword of &quot;Resume Journey&quot;
+    omnibox actions actually selected by the user.
+
+    This can be combined with Omnibox.ResumeJourneyShown.ClusterKeywordType to
+    compute the precision (or CTR) of the &quot;Resume Journey&quot; omnibox
+    action on a keyword type basis.
+
+    It's safe to compare the total count of this metric to the total count of
+    Omnibox.ResumeJourneyShown.ClusterKeywordType because within a single popup,
+    only zero or one &quot;Resume Journey&quot; can be shown. If multiple
+    actions start being shown in the popup, comparing to the total count becomes
+    misleading to interpret as a CTR.
+  </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordType.{ClusterKeywordTypeLabel}.CTR"
+    enum="BooleanSelected" expires_after="2022-12-10">
+  <owner>junzou@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Emitted when the user uses the omnibox to go somewhere AND the &quot;Resume
+    Journey&quot; chip triggered by {ClusterKeywordTypeLabel} was offered in any
+    position.
+
+    This metric records &quot;Selected&quot; if the offered action chip was
+    selected, and records &quot;Not Selected&quot; if the offered action chip
+    was not selected.
+
+    Therefore the &quot;Selected&quot; bucket proportion is the CTR of the
+    action chip. Higher is better. The count of this bucket matches the
+    {ClusterKeywordTypeLabel} bucket of
+    Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordType.
+
+    The total count of both buckets is how many times we've offered the chip
+    triggered by {ClusterKeywordTypeLabel} in total, and matches the
+    {ClusterKeywordTypeLabel} bucket of
+    Omnibox.ResumeJourneyShown.ClusterKeywordType.
+  </summary>
+  <token key="ClusterKeywordTypeLabel">
+    <variant name="Entity"/>
+    <variant name="EntityAlias"/>
+    <variant name="EntityCategory"/>
+    <variant name="SearchTerms"/>
+    <variant name="Unknown"/>
+  </token>
+</histogram>
+
+<histogram name="Omnibox.SuggestionUsed.ResumeJourney.PageEntityCollection"
+    enum="OptimizationGuidePageEntityCollection" expires_after="2022-12-08">
+  <owner>junzou@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Logs the top entity collection of &quot;Resume Journey&quot; omnibox actions
+    actually selected by the user.
+
+    This can be combined with Omnibox.ResumeJourneyShown.PageEntityCollection to
+    compute the precision (or CTR) of the &quot;Resume Journey&quot; omnibox
+    action on a per-collection basis.
+
+    It's safe to compare the total count of this metric to the total count of
+    Omnibox.ResumeJourneyShown.PageEntityCollection because within a single
+    popup, only zero or one &quot;Resume Journey&quot; can be shown. If multiple
+    actions start being shown in the popup, comparing to the total count becomes
+    misleading to interpret as a CTR.
+  </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.SuggestionUsed.ResumeJourney.PageEntityCollection.{CollectionLabel}.CTR"
+    enum="BooleanSelected" expires_after="2022-12-08">
+  <owner>junzou@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Emitted when the user uses the omnibox to go somewhere AND the &quot;Resume
+    Journey&quot; chip triggered by {CollectionLabel} was offered in any
+    position.
+
+    This metric records &quot;Selected&quot; if the offered action chip was
+    selected, and records &quot;Not Selected&quot; if the offered action chip
+    was not selected.
+
+    Therefore the &quot;Selected&quot; bucket proportion is the CTR of the
+    action chip. Higher is better. The count of this bucket matches the
+    {CollectionLabel} bucket of
+    Omnibox.SuggestionUsed.ResumeJourney.PageEntityCollection.
+
+    The total count of both buckets is how many times we've offered the chip
+    triggered by {CollectionLabel} in total, and matches the {CollectionLabel}
+    bucket of Omnibox.ResumeJourneyShown.PageEntityCollection.
+  </summary>
+  <token key="CollectionLabel">
+    <variant name="Accommodations"/>
+    <variant name="Actors"/>
+    <variant name="Airports"/>
+    <variant name="AnatomicalStructures"/>
+    <variant name="Artworks"/>
+    <variant name="Athletes"/>
+    <variant name="Authors"/>
+    <variant name="BookEditions"/>
+    <variant name="BusinessOperations"/>
+    <variant name="Cars"/>
+    <variant name="CausesOfDeath"/>
+    <variant name="CelestialObjectWithCoordinateSystems"/>
+    <variant name="ChemicalCompounds"/>
+    <variant name="ConsumerProducts"/>
+    <variant name="Cuisines"/>
+    <variant name="CulinaryMeasures"/>
+    <variant name="Currencies"/>
+    <variant name="Diets"/>
+    <variant name="DiseaseOrMedicalConditions"/>
+    <variant name="EducationalInstitutions"/>
+    <variant name="Employers"/>
+    <variant name="Events"/>
+    <variant name="FictionalCharacters"/>
+    <variant name="FilmActors"/>
+    <variant name="Films"/>
+    <variant name="FilmScreeningVenues"/>
+    <variant name="FilmSeries"/>
+    <variant name="Foods"/>
+    <variant name="Garments"/>
+    <variant name="GeoBusinessChain"/>
+    <variant name="GeoEstablishment"/>
+    <variant name="GeoLocality"/>
+    <variant name="GeoNaturalFeature"/>
+    <variant name="GeoPolitical"/>
+    <variant name="Holidays"/>
+    <variant name="HumanLanguages"/>
+    <variant name="JobTitles"/>
+    <variant name="LiterarySeries"/>
+    <variant name="LocalShoppingBuyables"/>
+    <variant name="Materials"/>
+    <variant name="MedicalTreatments"/>
+    <variant name="Models"/>
+    <variant name="MusicalAlbums"/>
+    <variant name="MusicalArtists"/>
+    <variant name="MusicalGenres"/>
+    <variant name="MusicalGroups"/>
+    <variant name="MusicalRecordings"/>
+    <variant name="MusicalReleases"/>
+    <variant name="MusicGroupMembers"/>
+    <variant name="Musicians"/>
+    <variant name="OrganismClassifications"/>
+    <variant name="Organizations"/>
+    <variant name="People"/>
+    <variant name="Periodicals"/>
+    <variant name="Politicians"/>
+    <variant name="RecordingClusters"/>
+    <variant name="Religions"/>
+    <variant name="Restaurants"/>
+    <variant name="RideOfferingServices"/>
+    <variant name="ShoppingCenters"/>
+    <variant name="SocialNetworkServiceWebsites"/>
+    <variant name="Software"/>
+    <variant name="Sports"/>
+    <variant name="SportsTeams"/>
+    <variant name="Structures"/>
+    <variant name="TouristAttractions"/>
+    <variant name="TravelDestinations"/>
+    <variant name="TvActors"/>
+    <variant name="TvEpisodes"/>
+    <variant name="TvPrograms"/>
+    <variant name="Unknown"/>
+    <variant name="Venues"/>
+    <variant name="VideoGames"/>
+    <variant name="Websites"/>
+    <variant name="WrittenWorks"/>
+  </token>
+</histogram>
+
 <histogram name="Omnibox.SuggestionUsed.ResumeJourneyCTR"
     enum="BooleanSelected" expires_after="2022-12-01">
   <owner>tommycli@chromium.org</owner>
@@ -1313,6 +1612,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SuggestionUsed.RichAutocompletion"
+    enum="OmniboxRichAutocompletionType" expires_after="2022-12-08">
+  <owner>manukh@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Measures the number of sessions for which each type of rich autocompletion
+    was used.
+
+    As the user types into the omnibox, the omnibox suggestions are updated.
+    Some of those suggestions may have rich autocompletion. No suggestion may
+    have multiple types of rich autocompletion. A type of rich autocompletion is
+    considered triggered only if the default suggestion has rich autocompletion.
+    If a non-default suggestion has rich autocompletion, does not suffice. If
+    any input during the session triggered a rich autocompletion type, that type
+    is considered triggered for the entire session.
+
+    Recorded exactly once per omnibox session (i.e. per user selecting a
+    suggestion).
+  </summary>
+</histogram>
+
 <histogram
     name="Omnibox.SuggestionUsed.Search.Experimental.NavigationToFirstMeaningfulPaint"
     units="ms" expires_after="2022-10-09">
@@ -1322,6 +1643,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Measures the time from navigation start to first meaningful paint. Only
     recorded for a search query suggestion selected from the omnibox.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestionUsed.Search.InputToNavigationStart"
+    units="ms" expires_after="2022-12-01">
+  <owner>spelchat@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Measures the time from the user selecting the omnibox suggestion and the
+    navigation start time getting ticked. Only recorded for a search query
+    suggestion selected from the omnibox.
   </summary>
 </histogram>
 
@@ -1405,6 +1738,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Measures the time from navigation start to first meaningful paint. Only
     recorded for a URL suggestion selected from the omnibox.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestionUsed.URL.InputToNavigationStart" units="ms"
+    expires_after="2022-12-01">
+  <owner>spelchat@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Measures the time from the user selecting the omnibox suggestion and the
+    navigation start time getting ticked. Only recorded for a URL suggestion
+    selected from the omnibox.
   </summary>
 </histogram>
 

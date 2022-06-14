@@ -1853,6 +1853,7 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 
       Se il criterio non viene configurato, si applica il criterio <ph name="ASK_GEOLOCATION_POLICY_NAME" />, ma gli utenti possono cambiare l'impostazione.</translation>
 <translation id="2922511125678964398">Consenti all'autenticazione captive portal di ignorare le impostazioni del proxy</translation>
+<translation id="2926813071464307947">Disabilita la sandbox del container dell'app del renderer</translation>
 <translation id="2931888116345994552">Se questo criterio non viene configurato o se viene impostato su Attivato, consente gli aggiornamenti di tutti i componenti di <ph name="PRODUCT_NAME" />.
 
       Se viene impostato su Disattivato, gli aggiornamenti dei componenti vengono disattivati. Tuttavia, alcuni componenti sono esclusi da questo criterio: gli aggiornamenti dei componenti che non contengono codice eseguibile e che sono critici per la sicurezza del browser non verranno disattivati.
@@ -2297,6 +2298,11 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se questa norma viene impostata su una stringa non vuota, tale stringa verrà usata come nome della destinazione di <ph name="PRODUCT_NAME" />. In caso contrario, il nome della destinazione sarà quello del dispositivo. Se questa norma non viene impostata, il nome della destinazione sarà il nome del dispositivo, che il proprietario (o un utente del dominio che gestisce il dispositivo) potrà cambiare. Il nome può essere formato da massimo 24 caratteri.</translation>
 <translation id="3329063005964041553">Blocca l'API File Handling su queste app web</translation>
 <translation id="3329401415394648069">Consenti l'utilizzo dell'API U2F Security Key.</translation>
+<translation id="3329976499753286262">Se il criterio viene impostato su Attivato o se non viene configurato, la configurazione del container dell'app del renderer verrà attivata sulle piattaforme supportate.
+
+      Se viene impostato su Disattivato, la sicurezza e la stabilità di <ph name="PRODUCT_NAME" /> diminuiranno, poiché verrà ridotta la sandbox usata dai processi del renderer. Disattivalo solo se si verificano dei problemi di compatibilità con software di terze parti che devono essere eseguiti all'interno dei processi del renderer.
+
+      Nota: scopri di più sui criteri relativi alla mitigazione dei processi (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies).</translation>
 <translation id="3339271789059866414">Consente di configurare la disponibilità del servizio proxy di sistema e le credenziali proxy dei servizi di sistema.
       Se il criterio non viene impostato, il servizio proxy di sistema non sarà disponibile.</translation>
 <translation id="3348799281602260763">Se questo criterio viene attivato, è possibile eseguire il downgrade delle connessioni peer WebRTC a versioni obsolete dei protocolli TLS/DTLS (DTLS 1.0, TLS 1.0 e TLS 1.1).
@@ -3087,14 +3093,6 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
       Se il dispositivo non è gestito o se è presente un solo utente, il criterio viene ignorato e la notifica viene sempre visualizzata.
 
       Se sono presenti diversi account utente su un dispositivo gestito, la notifica viene visualizzata soltanto se il criterio è stato attivato.</translation>
-<translation id="4293593564662654474">Questo criterio consente di disattivare la funzionalità degli insiemi proprietari.
-
-                  Se questo criterio non viene configurato o se viene impostato su Attivato, la funzionalità degli insiemi proprietari viene attivata.
-
-                  Se questo criterio viene impostato su Disattivato, la funzionalità degli insiemi proprietari viene disattivata.
-
-                  Lo stato della funzionalità degli insiemi proprietari stabilisce se Chrome recupera o meno l'elenco di insiemi proprietari.
-                  Stabilisce inoltre se Chrome supporta o meno le funzionalità correlate agli insiemi proprietari (ad esempio l'attributo per i cookie SameParty).</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">Indirizzo MAC designato del dock del dispositivo</translation>
 <translation id="4314538398999793073">Disattiva ricerca CNAME durante l'autenticazione Kerberos</translation>
@@ -4203,6 +4201,7 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
 <translation id="5625771176514429288">Sarà consentita l'esecuzione delle app di Chrome su queste piattaforme</translation>
 <translation id="5630352020869108293">Ripristina l'ultima sessione</translation>
 <translation id="5633871703004128675">Attiva la funzione di accessibilità di evidenziazione del cursore di testo</translation>
+<translation id="5634032995857968056">Abilita la sandbox del container dell'app del renderer</translation>
 <translation id="5639454129004500060">Se viene configurato, questo criterio contiene informazioni per scaricare il file di un modello di scrivania da fornire all'utente corrente.
       Se non viene configurato, nell'elenco di modelli di scrivanie non sarà incluso alcun modello di scrivania preconfigurato.  Se il criterio <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" /> non viene impostato su vero, questo criterio non ha alcun effetto.</translation>
 <translation id="5641279111657132737">Questo criterio è deprecato. Usa il criterio "<ph name="AUTH_SERVER_ALLOWLIST_POLICY_NAME" />".
@@ -5581,7 +5580,6 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
       Se il criterio non viene impostato, la barra delle app verrà posizionata per impostazione predefinita nella parte inferiore dello schermo, ma l'utente potrà cambiare la posizione.</translation>
 <translation id="7039815268521168329">Mostrare il flusso Voice Match dell'Assistente Google durante la configurazione iniziale</translation>
 <translation id="7040229947030068419">Valore di esempio:</translation>
-<translation id="7041170641363384736">Consente di impostare una programmazione personalizzata per il riavvio dei dispositivi. Attualmente il criterio viene applicato soltanto ai dispositivi per cui è stato attivato l'avvio automatico dell'app nella sessione kiosk. Se viene impostato su True, il dispositivo verrà riavviato in base alla programmazione. Il criterio deve essere rimosso per annullare ulteriori riavvii programmati.</translation>
 <translation id="7044883996351280650">Controlla il servizio backup e ripristino di Android</translation>
 <translation id="7047495632846973438">Specifica se i criteri relativi alle autorizzazioni dell'acquisizione del display vengono controllati o saltati.</translation>
 <translation id="7066292150801784098">Disattiva l'interazione degli utenti remoti con finestre con privilegi più elevati nelle sessioni di assistenza remota</translation>
@@ -6553,7 +6551,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy viene inizial
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
-<translation id="8161536598508377155">Imposta una programmazione personalizzata per il riavvio dei dispositivi kiosk</translation>
 <translation id="8164144100557223371">Disattiva il punto di ingresso nella barra degli strumenti delle funzionalità sperimentali del browser</translation>
 <translation id="8164687848393015214">Se il criterio viene impostato su Attivato, i pacchetti di rete di monitoraggio (<ph name="HEARTBEATS_TERM" />) vengono inviati al server di gestione per monitorare lo stato online e consentire al server di rilevare se il dispositivo è offline.
 
@@ -7114,6 +7111,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8763716376920670835">WebSQL è attivo per impostazione predefinita a partire da M101, ma può essere disattivato tramite il flag ti Chrome.
           Se questo criterio viene impostato su falso o se non viene configurato, WebSQL può essere disattivato.
           Se viene impostato su vero, WebSQL non può essere disattivato.</translation>
+<translation id="8766910236040529804">Abilita container dell'app del renderer</translation>
 <translation id="8767743923206070405">Se il criterio viene impostato su Attivato, nella barra degli strumenti di <ph name="PRODUCT_NAME" /> viene mostrato il pulsante Pagina iniziale. Se viene impostato su Disattivato, il pulsante Pagina iniziale non viene mostrato.
 
       Se il criterio viene impostato, gli utenti non possono modificarlo in <ph name="PRODUCT_NAME" />. Se non viene impostato, gli utenti possono decidere se mostrare o meno il pulsante Pagina iniziale.</translation>

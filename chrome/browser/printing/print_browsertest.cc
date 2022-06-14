@@ -204,12 +204,12 @@ mojom::PrintParamsPtr GetPrintParams() {
   return params;
 }
 
-void UpdatePrintSettingsReplyOnIO(
+void OnDidUpdatePrintSettings(
     std::unique_ptr<PrintSettings>& snooped_settings,
     scoped_refptr<PrintQueriesQueue> queue,
     std::unique_ptr<PrinterQuery> printer_query,
     mojom::PrintManagerHost::UpdatePrintSettingsCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(printer_query);
   auto params = mojom::PrintPagesParams::New();
   params->params = mojom::PrintParams::New();
@@ -225,40 +225,13 @@ void UpdatePrintSettingsReplyOnIO(
 
   params->params = GetPrintParams();
 
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
-             mojom::PrintPagesParamsPtr params, bool canceled) {
-            DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-            std::move(callback).Run(std::move(params), canceled);
-          },
-          std::move(callback), std::move(params), canceled));
+  std::move(callback).Run(std::move(params), canceled);
 
   if (printer_query->cookie() && printer_query->settings().dpi()) {
     queue->QueuePrinterQuery(std::move(printer_query));
   } else {
     printer_query->StopWorker();
   }
-}
-
-void UpdatePrintSettingsOnIO(
-    std::unique_ptr<PrintSettings>& snooped_settings,
-    int32_t cookie,
-    mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
-    scoped_refptr<PrintQueriesQueue> queue,
-    base::Value::Dict job_settings) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  std::unique_ptr<PrinterQuery> printer_query = queue->PopPrinterQuery(cookie);
-  if (!printer_query) {
-    printer_query =
-        queue->CreatePrinterQuery(content::GlobalRenderFrameHostId());
-  }
-  auto* printer_query_ptr = printer_query.get();
-  printer_query_ptr->SetSettings(
-      std::move(job_settings),
-      base::BindOnce(&UpdatePrintSettingsReplyOnIO, std::ref(snooped_settings),
-                     queue, std::move(printer_query), std::move(callback)));
 }
 
 class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
@@ -598,11 +571,18 @@ class TestPrintViewManager : public PrintViewManager {
   void UpdatePrintSettings(int32_t cookie,
                            base::Value::Dict job_settings,
                            UpdatePrintSettingsCallback callback) override {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&UpdatePrintSettingsOnIO, std::ref(snooped_settings_),
-                       cookie, std::move(callback), queue_,
-                       std::move(job_settings)));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    std::unique_ptr<PrinterQuery> printer_query =
+        queue_->PopPrinterQuery(cookie);
+    if (!printer_query) {
+      printer_query =
+          queue_->CreatePrinterQuery(content::GlobalRenderFrameHostId());
+    }
+    auto* printer_query_ptr = printer_query.get();
+    printer_query_ptr->SetSettings(
+        std::move(job_settings),
+        base::BindOnce(&OnDidUpdatePrintSettings, std::ref(snooped_settings_),
+                       queue_, std::move(printer_query), std::move(callback)));
   }
 
   std::unique_ptr<PrintSettings> snooped_settings_;
@@ -2443,10 +2423,10 @@ class TestPrintJobWorkerOop : public PrintJobWorkerOop {
 };
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
-class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
+class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest {
  public:
-  PrintBackendPrintBrowserTestBase() = default;
-  ~PrintBackendPrintBrowserTestBase() override = default;
+  SystemAccessProcessPrintBrowserTestBase() = default;
+  ~SystemAccessProcessPrintBrowserTestBase() override = default;
 
   virtual bool UseService() = 0;
 
@@ -2465,56 +2445,58 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
       // Safe to use `base::Unretained(this)` since this testing class
       // necessarily must outlive all interactions from the tests which will
       // run through `TestPrintJobWorkerOop`, the user of these callbacks.
-      test_print_oop_callbacks_.error_check_callback =
-          base::BindRepeating(&PrintBackendPrintBrowserTestBase::ErrorCheck,
-                              base::Unretained(this));
+      test_print_oop_callbacks_.error_check_callback = base::BindRepeating(
+          &SystemAccessProcessPrintBrowserTestBase::ErrorCheck,
+          base::Unretained(this));
       test_print_oop_callbacks_.did_use_default_settings_callback =
           base::BindRepeating(
-              &PrintBackendPrintBrowserTestBase::OnDidUseDefaultSettings,
+              &SystemAccessProcessPrintBrowserTestBase::OnDidUseDefaultSettings,
               base::Unretained(this));
 #if BUILDFLAG(IS_WIN)
       test_print_oop_callbacks_.did_ask_user_for_settings_callback =
           base::BindRepeating(
-              &PrintBackendPrintBrowserTestBase::OnDidAskUserForSettings,
+              &SystemAccessProcessPrintBrowserTestBase::OnDidAskUserForSettings,
               base::Unretained(this));
 #endif
       test_print_oop_callbacks_.did_start_printing_callback =
           base::BindRepeating(
-              &PrintBackendPrintBrowserTestBase::OnDidStartPrinting,
+              &SystemAccessProcessPrintBrowserTestBase::OnDidStartPrinting,
               base::Unretained(this));
 #if BUILDFLAG(IS_WIN)
       test_print_oop_callbacks_.did_render_printed_page_callback =
           base::BindRepeating(
-              &PrintBackendPrintBrowserTestBase::OnDidRenderPrintedPage,
+              &SystemAccessProcessPrintBrowserTestBase::OnDidRenderPrintedPage,
               base::Unretained(this));
 #endif
-      test_print_oop_callbacks_.did_render_printed_document_callback =
-          base::BindRepeating(
-              &PrintBackendPrintBrowserTestBase::OnDidRenderPrintedDocument,
-              base::Unretained(this));
+      test_print_oop_callbacks_
+          .did_render_printed_document_callback = base::BindRepeating(
+          &SystemAccessProcessPrintBrowserTestBase::OnDidRenderPrintedDocument,
+          base::Unretained(this));
       test_print_oop_callbacks_.did_document_done_callback =
           base::BindRepeating(
-              &PrintBackendPrintBrowserTestBase::OnDidDocumentDone,
+              &SystemAccessProcessPrintBrowserTestBase::OnDidDocumentDone,
               base::Unretained(this));
       test_print_oop_callbacks_.did_show_error_dialog = base::BindRepeating(
-          &PrintBackendPrintBrowserTestBase::OnDidShowErrorDialog,
+          &SystemAccessProcessPrintBrowserTestBase::OnDidShowErrorDialog,
           base::Unretained(this));
       test_print_oop_callbacks_.did_stop_callback = base::BindRepeating(
-          &PrintBackendPrintBrowserTestBase::OnDidStop, base::Unretained(this));
+          &SystemAccessProcessPrintBrowserTestBase::OnDidStop,
+          base::Unretained(this));
     } else {
       test_print_callbacks_.did_invoke_use_default_settings_callback =
-          base::BindRepeating(
-              &PrintBackendPrintBrowserTestBase::OnDidInvokeUseDefaultSettings,
-              base::Unretained(this));
+          base::BindRepeating(&SystemAccessProcessPrintBrowserTestBase::
+                                  OnDidInvokeUseDefaultSettings,
+                              base::Unretained(this));
       test_print_callbacks_.did_invoke_get_settings_with_ui_callback =
-          base::BindRepeating(
-              &PrintBackendPrintBrowserTestBase::OnDidInvokeGetSettingsWithUI,
-              base::Unretained(this));
+          base::BindRepeating(&SystemAccessProcessPrintBrowserTestBase::
+                                  OnDidInvokeGetSettingsWithUI,
+                              base::Unretained(this));
       test_print_callbacks_.did_stop_callback = base::BindRepeating(
-          &PrintBackendPrintBrowserTestBase::OnDidStop, base::Unretained(this));
+          &SystemAccessProcessPrintBrowserTestBase::OnDidStop,
+          base::Unretained(this));
     }
     test_create_print_job_worker_callback_ = base::BindRepeating(
-        &PrintBackendPrintBrowserTestBase::CreatePrintJobWorker,
+        &SystemAccessProcessPrintBrowserTestBase::CreatePrintJobWorker,
         base::Unretained(this), UseService());
     PrinterQuery::SetCreatePrintJobWorkerCallbackForTest(
         &test_create_print_job_worker_callback_);
@@ -2923,36 +2905,36 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
   bool stop_invoked_ = false;
 };
 
-class PrintBackendPrintBrowserTestSandboxedService
-    : public PrintBackendPrintBrowserTestBase {
+class SystemAccessProcessSandboxedServicePrintBrowserTest
+    : public SystemAccessProcessPrintBrowserTestBase {
  public:
-  PrintBackendPrintBrowserTestSandboxedService() = default;
-  ~PrintBackendPrintBrowserTestSandboxedService() override = default;
+  SystemAccessProcessSandboxedServicePrintBrowserTest() = default;
+  ~SystemAccessProcessSandboxedServicePrintBrowserTest() override = default;
 
   bool UseService() override { return true; }
   bool SandboxService() override { return true; }
 };
 
-class PrintBackendPrintBrowserTestService
-    : public PrintBackendPrintBrowserTestBase,
+class SystemAccessProcessServicePrintBrowserTest
+    : public SystemAccessProcessPrintBrowserTestBase,
       public testing::WithParamInterface<bool> {
  public:
-  PrintBackendPrintBrowserTestService() = default;
-  ~PrintBackendPrintBrowserTestService() override = default;
+  SystemAccessProcessServicePrintBrowserTest() = default;
+  ~SystemAccessProcessServicePrintBrowserTest() override = default;
 
   bool UseService() override { return true; }
   bool SandboxService() override { return GetParam(); }
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
-                         PrintBackendPrintBrowserTestService,
+                         SystemAccessProcessServicePrintBrowserTest,
                          testing::Bool());
 
-class PrintBackendPrintBrowserTestInBrowser
-    : public PrintBackendPrintBrowserTestBase {
+class SystemAccessProcessInBrowserPrintBrowserTest
+    : public SystemAccessProcessPrintBrowserTestBase {
  public:
-  PrintBackendPrintBrowserTestInBrowser() = default;
-  ~PrintBackendPrintBrowserTestInBrowser() override = default;
+  SystemAccessProcessInBrowserPrintBrowserTest() = default;
+  ~SystemAccessProcessInBrowserPrintBrowserTest() override = default;
 
   bool UseService() override { return false; }
   bool SandboxService() override { return false; }
@@ -2968,12 +2950,12 @@ enum class PrintBackendFeatureVariation {
   kOopUnsandboxedService,
 };
 
-class PrintBackendPrintBrowserTest
-    : public PrintBackendPrintBrowserTestBase,
+class SystemAccessProcessPrintBrowserTest
+    : public SystemAccessProcessPrintBrowserTestBase,
       public testing::WithParamInterface<PrintBackendFeatureVariation> {
  public:
-  PrintBackendPrintBrowserTest() = default;
-  ~PrintBackendPrintBrowserTest() override = default;
+  SystemAccessProcessPrintBrowserTest() = default;
+  ~SystemAccessProcessPrintBrowserTest() override = default;
 
   bool UseService() override {
     return GetParam() != PrintBackendFeatureVariation::kInBrowserProcess;
@@ -2985,12 +2967,13 @@ class PrintBackendPrintBrowserTest
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    PrintBackendPrintBrowserTest,
+    SystemAccessProcessPrintBrowserTest,
     testing::Values(PrintBackendFeatureVariation::kInBrowserProcess,
                     PrintBackendFeatureVariation::kOopSandboxedService,
                     PrintBackendFeatureVariation::kOopUnsandboxedService));
 
-IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTest, UpdatePrintSettings) {
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
+                       UpdatePrintSettings) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
 
@@ -3038,7 +3021,8 @@ IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTest, UpdatePrintSettings) {
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 
-IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService, StartPrinting) {
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
+                       StartPrinting) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
 
@@ -3073,7 +3057,7 @@ IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService, StartPrinting) {
 
 // TODO(crbug.com/1326580):  Enable once multipage printing doesn't get stuck
 // because of insufficient rendered preview pages due to forced N-up.
-IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
                        DISABLED_StartPrintingMultipage) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3114,7 +3098,7 @@ IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
   EXPECT_TRUE(stop_invoked());
 }
 
-IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
                        StartPrintingSpoolingSharedMemoryError) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3145,7 +3129,7 @@ IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
   EXPECT_TRUE(stop_invoked());
 }
 
-IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
+IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartPrintingAccessDenied) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3182,7 +3166,7 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
   EXPECT_TRUE(stop_invoked());
 }
 
-IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
+IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartPrintingRepeatedAccessDenied) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3213,7 +3197,7 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
 }
 
 #if BUILDFLAG(IS_WIN)
-IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
+IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartPrintingRenderPageAccessDenied) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3248,7 +3232,7 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
 
 // TODO(crbug.com/1008222)  Include Windows once XPS print pipeline is added.
 #if !BUILDFLAG(IS_WIN)
-IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
+IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartPrintingRenderDocumentAccessDenied) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3280,7 +3264,7 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
 }
 #endif  // !BUILDFLAG(IS_WIN)
 
-IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
+IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartPrintingDocumentDoneAccessDenied) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3322,7 +3306,8 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestSandboxedService,
 // TODO(crbug.com/809738)  Extend to Linux once Wayland can be made to support
 // a system be modal against an application window in the browser process.
 #if BUILDFLAG(IS_WIN)
-IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService, StartBasicPrint) {
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
+                       StartBasicPrint) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
 
@@ -3357,7 +3342,7 @@ IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService, StartBasicPrint) {
   EXPECT_TRUE(stop_invoked());
 }
 
-IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestInBrowser,
+IN_PROC_BROWSER_TEST_F(SystemAccessProcessInBrowserPrintBrowserTest,
                        StartBasicPrintCancel) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3391,7 +3376,7 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestInBrowser,
   EXPECT_FALSE(print_backend_service_use_detected());
 }
 
-IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
                        StartBasicPrintCancel) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -3422,7 +3407,7 @@ IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
   EXPECT_TRUE(stop_invoked());
 }
 
-IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
                        StartBasicPrintConcurrent) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
@@ -3455,7 +3440,7 @@ IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
 #endif  // BUILDFLAG(IS_WIN)
 
 // https://crbug.com/1320681 flaky.
-IN_PROC_BROWSER_TEST_P(PrintBackendPrintBrowserTestService,
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
                        DISABLED_StartBasicPrintUseDefaultFails) {
   PrimeForFailInUseDefaultSettings();
 

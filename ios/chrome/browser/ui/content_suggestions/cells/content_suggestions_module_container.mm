@@ -15,8 +15,20 @@ namespace {
 // The horizontal inset of the contents to this container when there is a title.
 const float kContentHorizontalInset = 16.0f;
 
+// The vertical spacing between the title and the content of the module.
+const float kContentTitleVerticalSpacing = 10.0f;
+
 // The top inset of the title label to this container.
 const float kTitleTopInset = -11.0f;
+
+// The minimum width of the title label.
+const float kTitleMinimumWidth = 99.0f;
+
+// The minimum height of the title label.
+const float kTitleMinimumHeight = 11.0f;
+
+// The corner radius of the title placeholder view.
+const float kPlaceholderTitleCornerRadius = 2.0f;
 
 // The corner radius of this container.
 const float kCornerRadius = 10;
@@ -35,6 +47,9 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
 @interface ContentSuggestionsModuleContainer ()
 
 @property(nonatomic, assign) ContentSuggestionsModuleType type;
+
+// Title of the Module.
+@property(nonatomic, strong) UILabel* title;
 
 @end
 
@@ -58,19 +73,25 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
 
     NSString* titleString = [self titleString];
     if ([titleString length] > 0) {
-      UILabel* title = [[UILabel alloc] init];
-      title.text = [self titleString];
-      title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-      title.textColor = [UIColor colorNamed:kTextSecondaryColor];
-      title.translatesAutoresizingMaskIntoConstraints = NO;
-      [self addSubview:title];
+      self.title = [[UILabel alloc] init];
+      self.title.text = [self titleString];
+      self.title.font =
+          [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+      self.title.textColor = [UIColor colorNamed:kTextSecondaryColor];
+      self.title.translatesAutoresizingMaskIntoConstraints = NO;
+      [self addSubview:self.title];
       [NSLayoutConstraint activateConstraints:@[
         // Title constraints.
-        [title.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
-                                            constant:kContentHorizontalInset],
-        [title.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-        [self.topAnchor constraintEqualToAnchor:title.topAnchor
+        [self.title.leadingAnchor
+            constraintEqualToAnchor:self.leadingAnchor
+                           constant:kContentHorizontalInset],
+        [self.topAnchor constraintEqualToAnchor:self.title.topAnchor
                                        constant:kTitleTopInset],
+        // Ensures placeholder for title is visible.
+        [self.title.widthAnchor
+            constraintGreaterThanOrEqualToConstant:kTitleMinimumWidth],
+        [self.title.heightAnchor
+            constraintGreaterThanOrEqualToConstant:kTitleMinimumHeight],
         // contentView constraints.
         [contentView.leadingAnchor
             constraintEqualToAnchor:self.leadingAnchor
@@ -79,7 +100,9 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
             constraintEqualToAnchor:self.trailingAnchor
                            constant:-kContentHorizontalInset],
         [contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        [contentView.topAnchor constraintEqualToAnchor:title.bottomAnchor],
+        [contentView.topAnchor
+            constraintEqualToAnchor:self.title.bottomAnchor
+                           constant:kContentTitleVerticalSpacing],
       ]];
     } else {
       [NSLayoutConstraint activateConstraints:@[
@@ -105,6 +128,23 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
     case ContentSuggestionsModuleTypeReturnToRecentTab:
       return @"";
   }
+}
+
+- (void)setIsPlaceholder:(BOOL)isPlaceholder {
+  if (_isPlaceholder == isPlaceholder) {
+    return;
+  }
+  if (isPlaceholder) {
+    self.title.text = @"";
+    self.title.backgroundColor = [UIColor colorNamed:kGrey100Color];
+    self.title.layer.cornerRadius = kPlaceholderTitleCornerRadius;
+    self.title.layer.masksToBounds = YES;
+  } else {
+    self.title.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+    self.title.layer.masksToBounds = NO;
+    self.title.text = [self titleString];
+  }
+  _isPlaceholder = isPlaceholder;
 }
 
 @end

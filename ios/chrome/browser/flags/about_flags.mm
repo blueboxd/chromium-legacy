@@ -44,6 +44,7 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
+#include "components/policy/core/common/features.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/policy_constants.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -76,8 +77,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
-#import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
+#import "ios/chrome/browser/ui/popup_menu/public/features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
@@ -373,6 +374,29 @@ const FeatureEntry::FeatureVariation kBubbleRichIPHVariations[] = {
      std::size(kBubbleRichIPHRichWithSnooze), nullptr},
 };
 
+const FeatureEntry::FeatureParam kPopupMenuBookmarkStringAddABookmark[] = {
+    {kPopupMenuBookmarkStringParamName,
+     kPopupMenuBookmarkStringParamAddABookmark}};
+const FeatureEntry::FeatureParam kPopupMenuBookmarkStringAddToBookmarks[] = {
+    {kPopupMenuBookmarkStringParamName,
+     kPopupMenuBookmarkStringParamAddToBookmarks}};
+const FeatureEntry::FeatureParam kPopupMenuBookmarkStringBookmarkThisPage[] = {
+    {kPopupMenuBookmarkStringParamName,
+     kPopupMenuBookmarkStringParamBookmarkThisPage}};
+
+const FeatureEntry::FeatureVariation kPopupMenuBookmarkStringVarations[] = {
+    {"(Add A Bookmark)", kPopupMenuBookmarkStringAddABookmark,
+     std::size(kPopupMenuBookmarkStringAddABookmark), nullptr},
+    {"(Add To Bookmarks)", kPopupMenuBookmarkStringAddToBookmarks,
+     std::size(kPopupMenuBookmarkStringAddToBookmarks), nullptr},
+    {"(Bookmark This Page)", kPopupMenuBookmarkStringBookmarkThisPage,
+     std::size(kPopupMenuBookmarkStringBookmarkThisPage), nullptr}};
+
+const FeatureEntry::FeatureParam kDmTokenDeletionParam[] = {{"forced", "true"}};
+const FeatureEntry::FeatureVariation kDmTokenDeletionVariation[] = {
+    {"(Forced)", kDmTokenDeletionParam, std::size(kDmTokenDeletionParam),
+     nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -529,10 +553,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(signin::kNewMobileIdentityConsistencyFRE,
                                     kNewMobileIdentityConsistencyFREVariations,
                                     kIOSMICeAndDefaultBrowserTrialName)},
-    {"enable-long-message-duration",
-     flag_descriptions::kEnableLongMessageDurationName,
-     flag_descriptions::kEnableLongMessageDurationDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableLongMessageDuration)},
 #if BUILDFLAG(IOS_SCREEN_TIME_ENABLED)
     {"screen-time-integration-ios",
      flag_descriptions::kScreenTimeIntegrationName,
@@ -747,9 +767,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNTPViewHierarchyRepairName,
      flag_descriptions::kNTPViewHierarchyRepairDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNTPViewHierarchyRepair)},
-    {"single-ntp", flag_descriptions::kSingleNtpName,
-     flag_descriptions::kSingleNtpDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kSingleNtp)},
     {"synthesized-restore-session",
      flag_descriptions::kSynthesizedRestoreSessionName,
      flag_descriptions::kSynthesizedRestoreSessionDescription, flags_ui::kOsIos,
@@ -807,10 +824,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kLeakDetectionUnauthenticated)},
-    {"mute-compromised-passwords",
-     flag_descriptions::kMuteCompromisedPasswordsName,
-     flag_descriptions::kMuteCompromisedPasswordsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
     {"enable-favicon-passwords",
      flag_descriptions::kEnableFaviconForPasswordsName,
      flag_descriptions::kEnableFaviconForPasswordsDescription, flags_ui::kOsIos,
@@ -906,6 +919,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSuggestionsScrollingOnIPadName,
      flag_descriptions::kEnableSuggestionsScrollingOnIPadDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableSuggestionsScrollingOnIPad)},
+    {"enable-expkit-apple-calendar",
+     flag_descriptions::kEnableExpKitAppleCalendarName,
+     flag_descriptions::kEnableExpKitAppleCalendarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableExpKitAppleCalendar)},
     {"experience-kit-calendar", flag_descriptions::kCalendarExperienceKitName,
      flag_descriptions::kCalendarExperienceKitDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCalendarExperienceKit)},
@@ -942,6 +959,23 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultBrowserIntentsShowSettingsName,
      flag_descriptions::kDefaultBrowserIntentsShowSettingsDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDefaultBrowserIntentsShowSettings)},
+    {"enable-discover-feed-ghost-cards",
+     flag_descriptions::kEnableDiscoverFeedGhostCardsName,
+     flag_descriptions::kEnableDiscoverFeedGhostCardsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDiscoverFeedGhostCardsEnabled)},
+    {"bookmark-string-menu", flag_descriptions::kBookmarkStringName,
+     flag_descriptions::kBookmarkStringDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kBookmarkString,
+                                    kPopupMenuBookmarkStringVarations,
+                                    "BookmarkString")},
+    {"dm-token-deletion", flag_descriptions::kDmTokenDeletionName,
+     flag_descriptions::kDmTokenDeletionDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(policy::features::kDmTokenDeletion,
+                                    kDmTokenDeletionVariation,
+                                    "DmTokenDeletion")},
+    {"ios-password-ui-split", flag_descriptions::kIOSPasswordUISplitName,
+     flag_descriptions::kIOSPasswordUISplitDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordUISplit)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

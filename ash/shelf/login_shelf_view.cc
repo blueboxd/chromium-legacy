@@ -750,10 +750,7 @@ void LoginShelfView::SetKioskApps(
   kiosk_apps_button_->SetApps(kiosk_apps);
   UpdateUi();
   if (LockScreen::HasInstance()) {
-    // Consider Kiosk apps button to be present when there are Kiosk apps installed.
-    // TODO(b/234765162): rename the method as the naming is confusing.
-    LockScreen::Get()->SetKioskAppsButtonPresence(
-        kiosk_apps_button_->HasApps());
+    LockScreen::Get()->SetHasKioskApp(kiosk_apps_button_->HasApps());
   }
 }
 
@@ -878,7 +875,7 @@ void LoginShelfView::OnOobeDialogStateChanged(OobeDialogState state) {
 void LoginShelfView::OnDeviceEnterpriseInfoChanged() {
   // If feature is enabled, update the boolean kiosk_license_mode_. Otherwise,
   // it's false by default.
-  if (features::IsKioskEnrollmentInOobeEnabled()) {
+  if (features::IsKioskLoginScreenEnabled()) {
     kiosk_license_mode_ =
         Shell::Get()
             ->system_tray_model()

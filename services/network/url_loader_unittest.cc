@@ -1964,6 +1964,7 @@ mojom::IPAddressSpace ResponseAddressSpace(
     case net::TransportType::kCached:
       return params.endpoint_address_space;
     case net::TransportType::kProxied:
+    case net::TransportType::kCachedFromProxy:
       return mojom::IPAddressSpace::kUnknown;
   }
 }
@@ -2159,6 +2160,31 @@ constexpr URLLoaderFakeTransportInfoTestParams
             mojom::IPAddressSpace::kPrivate,
             mojom::IPAddressSpace::kLocal,
             net::TransportType::kProxied,
+            net::OK,
+        },
+        // TransportType: kCachedFromProxy
+        {
+            mojom::IPAddressSpace::kUnknown,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCachedFromProxy,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCachedFromProxy,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kPrivate,
+            net::TransportType::kCachedFromProxy,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPrivate,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCachedFromProxy,
             net::OK,
         },
         // TransportType: kCached. We only test a local target for brevity.
@@ -3168,13 +3194,6 @@ TEST_F(URLLoaderTest, UploadReadOnceStream) {
       data_pipe_getter.GetDataPipeGetterRemote(),
       ResourceRequestBody::ReadOnlyOnce(true));
 
-  base::HistogramTester tester;
-  std::string histogram_allowh1("Net.Fetch.UploadStreamingProtocolAllowH1");
-  std::string histogram_notallowh1(
-      "Net.Fetch.UploadStreamingProtocolNotAllowH1");
-  tester.ExpectTotalCount(histogram_allowh1, 0);
-  tester.ExpectTotalCount(histogram_notallowh1, 0);
-
   base::RunLoop delete_run_loop;
   mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
@@ -3203,12 +3222,6 @@ TEST_F(URLLoaderTest, UploadReadOnceStream) {
 
   EXPECT_EQ(kRequestBody, ReadBody());
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
-
-  tester.ExpectTotalCount(histogram_allowh1, 1);
-  // From ReportFetchUploadStreamingUMA()
-  constexpr int kHTTP1_1 = 0;
-  tester.ExpectBucketCount(histogram_allowh1, kHTTP1_1, 1);
-  tester.ExpectTotalCount(histogram_notallowh1, 0);
 }
 
 // Tests that SSLInfo is not attached to OnComplete messages or the
@@ -7311,6 +7324,8 @@ TEST_F(URLLoaderTest, HasPartitionedCookie) {
   EXPECT_TRUE(client_.response_head()->has_partitioned_cookie);
 }
 
+using ExtraHeaders = std::vector<std::pair<std::string, std::string>>;
+
 class URLLoaderCacheTransparencyTest : public URLLoaderTest {
  public:
   void SetUp() override {
@@ -7352,7 +7367,9 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
     ResourceRequest request =
         CreateResourceRequest(method_.c_str(), test_server()->GetURL(path));
     request.load_flags = load_flags_;
-    request.headers.AddHeadersFromString(headers_);
+    for (const auto& [key, value] : headers_) {
+      request.headers.SetHeader(key, value);
+    }
 
     base::RunLoop delete_run_loop;
     mojo::Remote<mojom::URLLoader> loader;
@@ -7413,9 +7430,7 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
 
   void set_load_flags(int flags) { load_flags_ = flags; }
 
-  // Headers are in the format accepted by
-  // HttpRequestHeaders::AddHeadersFromString(), ie. "\r\n" delimited.
-  void set_headers(std::string headers) { headers_ = std::move(headers); }
+  void set_headers(ExtraHeaders headers) { headers_ = std::move(headers); }
 
  private:
   static constexpr char kPervasivePayload[] = "/pervasive.js";
@@ -7430,7 +7445,7 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
   bool third_party_cookies_enabled_ = true;
   std::string method_ = "GET";
   int load_flags_ = net::LOAD_NORMAL;
-  std::string headers_;
+  ExtraHeaders headers_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -7471,7 +7486,8 @@ TEST_F(URLLoaderCacheTransparencyTest, IncompatibleLoadFlags) {
 }
 
 TEST_F(URLLoaderCacheTransparencyTest, IncompatibleHeaders) {
-  set_headers("Range: bytes=0-5\r\n");
+  ExtraHeaders headers = {{"Range", "bytes=0-5"}};
+  set_headers(headers);
   SendTwoRequestsWithDifferentOrigins();
   EXPECT_EQ(2, network_request_count());
   ExpectNotUsedReason(

@@ -26,9 +26,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace password_manager {
-class MovePasswordToAccountStoreHelper;
 class PasswordManagerClient;
 struct PasswordForm;
+class PasswordUndoHelper;
 }  // namespace password_manager
 
 class PasswordUIView;
@@ -124,14 +124,6 @@ class PasswordManagerPresenter
       base::OnceCallback<void(absl::optional<std::u16string>)> callback) const;
 #endif
 
-  // Wrapper around |PasswordStore::AddLogin| that adds the corresponding undo
-  // action to |undo_manager_|.
-  void AddLogin(const password_manager::PasswordForm& form);
-
-  // Wrapper around |PasswordStore::RemoveLogin| that adds the corresponding
-  // undo action to |undo_manager_|.
-  void RemoveLogin(const password_manager::PasswordForm& form);
-
  private:
   // Convenience typedef for a map containing PasswordForms grouped into
   // equivalence classes. Each equivalence class corresponds to one entry shown
@@ -142,9 +134,6 @@ class PasswordManagerPresenter
   using PasswordFormMap =
       std::map<std::string,
                std::vector<std::unique_ptr<password_manager::PasswordForm>>>;
-
-  using MovePasswordToAccountStoreHelperList = std::list<
-      std::unique_ptr<password_manager::MovePasswordToAccountStoreHelper>>;
 
   // Attempts to remove the entries corresponding to |index| from |form_map|.
   // This will also add a corresponding undo operation to |undo_manager_|.
@@ -174,15 +163,8 @@ class PasswordManagerPresenter
   void SetPasswordList();
   void SetPasswordExceptionList();
 
-  // Called when the helper pointed by |done_helper_it| has finished the moving
-  // task. Removes it from |move_to_account_helpers_|.
-  void OnMovePasswordToAccountCompleted(
-      MovePasswordToAccountStoreHelperList::iterator done_helper_it);
-
   PasswordFormMap password_map_;
   PasswordFormMap exception_map_;
-
-  UndoManager undo_manager_;
 
   // Whether to show stored passwords or not.
   BooleanPrefMember show_passwords_;
@@ -190,8 +172,8 @@ class PasswordManagerPresenter
   // UI view that owns this presenter.
   raw_ptr<PasswordUIView> password_view_;
 
-  // Contains the helpers currently executing moving tasks.
-  MovePasswordToAccountStoreHelperList move_to_account_helpers_;
+  // Helper for password undo operations.
+  std::unique_ptr<password_manager::PasswordUndoHelper> undo_helper_;
 
   base::WeakPtrFactory<PasswordManagerPresenter> weak_ptr_factory_{this};
 };

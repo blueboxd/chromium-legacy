@@ -28,10 +28,16 @@ class QtShim : public QObject, public QtInterface {
   FontDescription GetFontDescription() const override;
   Image GetIconForContentType(const String& content_type,
                               int size) const override;
-  SkColor GetColor(ColorRole role) const override;
+  SkColor GetColor(ColorType role, ColorState state) const override;
+  Image DrawHeader(int width,
+                   int height,
+                   SkColor default_color,
+                   bool is_active,
+                   bool use_custom_frame) const override;
 
  private slots:
   void FontChanged(const QFont& font);
+  void PaletteChanged(const QPalette& palette);
 
  private:
   QtInterface::Delegate* const delegate_;

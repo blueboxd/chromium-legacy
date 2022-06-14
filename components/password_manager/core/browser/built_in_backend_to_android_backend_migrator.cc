@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
+#include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -451,13 +452,22 @@ void BuiltInBackendToAndroidBackendMigrator::RemoveLoginFromBackend(
 
 void BuiltInBackendToAndroidBackendMigrator::RunCallbackOrAbortMigration(
     base::OnceClosure callback,
-    absl::optional<PasswordStoreChangeList> changelist) {
-  if (!changelist.has_value() || !changelist.value().empty()) {
+    PasswordChangesOrError changes_or_error) {
+  PasswordChanges* changes = absl::get_if<PasswordChanges>(&changes_or_error);
+  if (absl::holds_alternative<PasswordStoreBackendError>(changes_or_error)) {
+    MigrationFinished(/*is_success=*/false);
+    return;
+  }
+
+  // Nullopt changelist is returned on success by the backends that do not
+  // provide exact changelist (e.g. Android). This indicates success operation
+  // as well as non-empty changelist.
+  if (!changes->has_value() || !changes->value().empty()) {
     // The step was successful, continue the migration.
     std::move(callback).Run();
     return;
   }
-  // Migration failed.
+  // Migration failed (changelist is present but empty).
   MigrationFinished(/*is_success=*/false);
 }
 
@@ -471,12 +481,11 @@ void BuiltInBackendToAndroidBackendMigrator::MigrationFinished(
 }
 
 bool BuiltInBackendToAndroidBackendMigrator::ShouldMigrateNonSyncableData() {
-  // 1. Check that feature and prefs state allow migration.
+  // 1. Check that pref state allows migration.
   // 2. Check that the user either needs migration due to a sync setting change,
   // or because sync is enabled and the user needs initial migration of
   // non-syncable data (e.g. after enrolling into the experiment).
-  return features::RequiresMigrationForUnifiedPasswordManager() &&
-         IsMigrationNeeded(prefs_) &&
+  return IsMigrationNeeded(prefs_) &&
          (prefs_->GetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange) ||
           sync_delegate_->IsSyncingPasswordsEnabled());
 }

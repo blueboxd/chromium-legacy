@@ -66,9 +66,7 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
           std::move(sk_image), gfx::Rect(sk_image_size), sk_image_size,
           base::TimeDelta());
       if (sk_image_video_frame) {
-        std::move(callback).Run(
-            ConvertToYUVFrame(std::move(sk_image_video_frame),
-                              /* flip = */ false));
+        std::move(callback).Run(std::move(sk_image_video_frame));
         return;
       }
     }
@@ -86,6 +84,8 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
 
   // Try async reading if image is texture backed.
   if (image->CurrentFrameKnownToBeOpaque() || can_discard_alpha_) {
+    // Split the callback so it can be used for both the GMB frame pool copy and
+    // ReadYUVPixelsAsync fallback paths.
     auto split_callback = base::SplitOnceCallback(std::move(callback));
     if (accelerated_frame_pool_enabled_) {
       if (!accelerated_frame_pool_) {
@@ -93,44 +93,21 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
             std::make_unique<WebGraphicsContext3DVideoFramePool>(
                 context_provider);
       }
-      auto blit_done_lambda =
-          [](base::WeakPtr<StaticBitmapImageToVideoFrameCopier> converter,
-             base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
-                 context_provider,
-             scoped_refptr<StaticBitmapImage> image,
-             FrameReadyCallback callback,
-             scoped_refptr<media::VideoFrame> video_frame) {
-            if (!converter)
-              return;
-            if (video_frame) {
-              converter->OnYUVPixelsReadAsync(video_frame, std::move(callback),
-                                              true);
-            } else if (context_provider) {
-              converter->ReadYUVPixelsAsync(image,
-                                            context_provider->ContextProvider(),
-                                            std::move(callback));
-            }
-          };
-      auto blit_done_callback =
-          WTF::Bind(blit_done_lambda, weak_ptr_factory_.GetWeakPtr(),
-                    context_provider, image, std::move(split_callback.first));
-
       // TODO(https://crbug.com/1224279): This assumes that all
       // StaticBitmapImages are 8-bit sRGB. Expose the color space and pixel
       // format that is backing `image->GetMailboxHolder()`, or, alternatively,
       // expose an accelerated SkImage.
-      accelerated_frame_pool_->CopyRGBATextureToVideoFrame(
-          viz::SkColorTypeToResourceFormat(kRGBA_8888_SkColorType),
-          gfx::Size(image->width(), image->height()),
-          gfx::ColorSpace::CreateSRGB(),
-          image->IsOriginTopLeft() ? kTopLeft_GrSurfaceOrigin
-                                   : kBottomLeft_GrSurfaceOrigin,
-          image->GetMailboxHolder(), gfx::ColorSpace::CreateREC709(),
-          std::move(blit_done_callback));
-      // Early out even if the above fails since it would've already invoked the
-      // FrameReadyCallback with a null VideoFrame to indicate failure, and that
-      // will cause us to the take the fallback path in |blit_done_lambda|.
-      return;
+      if (accelerated_frame_pool_->CopyRGBATextureToVideoFrame(
+              viz::SkColorTypeToResourceFormat(kRGBA_8888_SkColorType),
+              gfx::Size(image->width(), image->height()),
+              gfx::ColorSpace::CreateSRGB(),
+              image->IsOriginTopLeft() ? kTopLeft_GrSurfaceOrigin
+                                       : kBottomLeft_GrSurfaceOrigin,
+              image->GetMailboxHolder(), gfx::ColorSpace::CreateREC709(),
+              std::move(split_callback.first))) {
+        // Early out on success, otherwise fallback to ReadYUVPixelsAsync path.
+        return;
+      }
     }
     ReadYUVPixelsAsync(image, context_provider->ContextProvider(),
                        std::move(split_callback.second));
@@ -168,8 +145,7 @@ void StaticBitmapImageToVideoFrameCopier::ReadARGBPixelsSync(
     DLOG(ERROR) << "Couldn't read pixels from PaintImage";
     return;
   }
-  std::move(callback).Run(
-      ConvertToYUVFrame(std::move(temp_argb_frame), /* flip = */ false));
+  std::move(callback).Run(std::move(temp_argb_frame));
 }
 
 void StaticBitmapImageToVideoFrameCopier::ReadARGBPixelsAsync(
@@ -272,8 +248,51 @@ void StaticBitmapImageToVideoFrameCopier::OnARGBPixelsReadAsync(
     return;
   }
 
-  bool flip = result_origin == kBottomLeft_GrSurfaceOrigin;
-  std::move(callback).Run(ConvertToYUVFrame(std::move(temp_argb_frame), flip));
+  // If a frame comes with BottomLeft origin it's effectively upside down.
+  // Frame consumers are not ready to deal with it. We can swap rows to fix it,
+  // but it would add an extra copy. Instead we set up a wrapper frame that
+  // references the same data but has color planes with negative strides,
+  // it forces all the code that handles frames to process rows bottom-up.
+  auto& coded_size = temp_argb_frame->coded_size();
+  if (result_origin == kBottomLeft_GrSurfaceOrigin && coded_size.height() > 1) {
+    auto pixel_format = temp_argb_frame->format();
+    auto rgb_plane = temp_argb_frame->layout().planes()[0];
+    size_t last_row_offset =
+        rgb_plane.offset + rgb_plane.stride * (coded_size.height() - 1);
+    media::ColorPlaneLayout reverse_rgb_plane(-rgb_plane.stride,
+                                              last_row_offset, rgb_plane.size);
+
+    std::vector<media::ColorPlaneLayout> planes{reverse_rgb_plane};
+    if (temp_argb_frame->layout().planes().size() > 1 && !can_discard_alpha_) {
+      auto alpha_plane = temp_argb_frame->layout().planes()[1];
+      last_row_offset =
+          alpha_plane.offset + alpha_plane.stride * (coded_size.height() - 1);
+      media::ColorPlaneLayout reverse_alpha_plane(
+          -alpha_plane.stride, last_row_offset, alpha_plane.size);
+      planes.push_back(reverse_alpha_plane);
+    } else {
+      // Dropping alpha from pixel format
+      if (pixel_format == media::PIXEL_FORMAT_ARGB)
+        pixel_format = media::PIXEL_FORMAT_XRGB;
+      else if (pixel_format == media::PIXEL_FORMAT_ABGR)
+        pixel_format = media::PIXEL_FORMAT_XBGR;
+    }
+    auto layout = media::VideoFrameLayout::CreateWithPlanes(pixel_format,
+                                                            coded_size, planes)
+                      .value();
+
+    const auto& last_plane = layout.planes()[layout.planes().size() - 1];
+    size_t data_size = last_plane.offset + last_plane.size;
+    auto reverse_stride_frame = media::VideoFrame::WrapExternalDataWithLayout(
+        layout, gfx::Rect(coded_size), coded_size,
+        temp_argb_frame->data(media::VideoFrame::kARGBPlane), data_size,
+        temp_argb_frame->timestamp());
+
+    reverse_stride_frame->AddDestructionObserver(base::BindOnce(
+        [](scoped_refptr<media::VideoFrame>) {}, std::move(temp_argb_frame)));
+    temp_argb_frame = reverse_stride_frame;
+  }
+  std::move(callback).Run(std::move(temp_argb_frame));
 }
 
 void StaticBitmapImageToVideoFrameCopier::OnYUVPixelsReadAsync(
@@ -293,72 +312,6 @@ void StaticBitmapImageToVideoFrameCopier::OnReleaseMailbox(
     scoped_refptr<StaticBitmapImage> image) {
   // All shared image operations have been completed, stop holding the ref.
   image = nullptr;
-}
-
-scoped_refptr<media::VideoFrame>
-StaticBitmapImageToVideoFrameCopier::ConvertToYUVFrame(
-    scoped_refptr<media::VideoFrame> temp_argb_frame,
-    bool flip) {
-  DVLOG(4) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  TRACE_EVENT0("webrtc", "CanvasCaptureHandler::ConvertToYUVFrame");
-
-  const bool skip_alpha =
-      media::IsOpaque(temp_argb_frame->format()) || can_discard_alpha_;
-  const uint8_t* source_ptr =
-      temp_argb_frame->visible_data(media::VideoFrame::kARGBPlane);
-  const gfx::Size image_size = temp_argb_frame->coded_size();
-  const int stride = temp_argb_frame->stride(media::VideoFrame::kARGBPlane);
-
-  scoped_refptr<media::VideoFrame> video_frame = frame_pool_.CreateFrame(
-      skip_alpha ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
-      image_size, gfx::Rect(image_size), image_size, base::TimeDelta());
-  if (!video_frame) {
-    DLOG(ERROR) << "Couldn't allocate video frame";
-    return nullptr;
-  }
-
-  int (*ConvertToI420)(const uint8_t* src_argb, int src_stride_argb,
-                       uint8_t* dst_y, int dst_stride_y, uint8_t* dst_u,
-                       int dst_stride_u, uint8_t* dst_v, int dst_stride_v,
-                       int width, int height) = nullptr;
-  switch (temp_argb_frame->format()) {
-    case media::PIXEL_FORMAT_XBGR:
-    case media::PIXEL_FORMAT_ABGR:
-      ConvertToI420 = libyuv::ABGRToI420;
-      break;
-    case media::PIXEL_FORMAT_XRGB:
-    case media::PIXEL_FORMAT_ARGB:
-      ConvertToI420 = libyuv::ARGBToI420;
-      break;
-    default:
-      NOTIMPLEMENTED() << "Unexpected pixel format.";
-      return nullptr;
-  }
-
-  if (ConvertToI420(source_ptr, stride,
-                    video_frame->visible_data(media::VideoFrame::kYPlane),
-                    video_frame->stride(media::VideoFrame::kYPlane),
-                    video_frame->visible_data(media::VideoFrame::kUPlane),
-                    video_frame->stride(media::VideoFrame::kUPlane),
-                    video_frame->visible_data(media::VideoFrame::kVPlane),
-                    video_frame->stride(media::VideoFrame::kVPlane),
-                    image_size.width(),
-                    (flip ? -1 : 1) * image_size.height()) != 0) {
-    DLOG(ERROR) << "Couldn't convert to I420";
-    return nullptr;
-  }
-  if (!skip_alpha) {
-    // It is ok to use ARGB function because alpha has the same alignment for
-    // both ABGR and ARGB.
-    libyuv::ARGBExtractAlpha(
-        source_ptr, stride,
-        video_frame->visible_data(media::VideoFrame::kAPlane),
-        video_frame->stride(media::VideoFrame::kAPlane), image_size.width(),
-        (flip ? -1 : 1) * image_size.height());
-  }
-
-  return video_frame;
 }
 
 }  // namespace blink

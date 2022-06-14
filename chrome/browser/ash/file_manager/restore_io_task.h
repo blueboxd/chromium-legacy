@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
+#include "chrome/browser/ash/file_manager/trash_common_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -30,7 +31,8 @@ class RestoreIOTask : public IOTask {
  public:
   RestoreIOTask(std::vector<storage::FileSystemURL> file_urls,
                 Profile* profile,
-                scoped_refptr<storage::FileSystemContext> file_system_context);
+                scoped_refptr<storage::FileSystemContext> file_system_context,
+                const base::FilePath base_path);
   ~RestoreIOTask() override;
 
   // Starts restore trask.
@@ -39,7 +41,32 @@ class RestoreIOTask : public IOTask {
   void Cancel() override;
 
  private:
+  // Finalises the RestoreIOTask with the `state`.
+  void Complete(State state);
+
+  // Ensure the metadata file conforms to the following:
+  //   - Has a .trashinfo suffix
+  //   - Resides in an enabled trash directory
+  //   - The file resides in the info directory
+  //   - Has an identical item in the files directory with no .trashinfo suffix
+  void ValidateTrashInfo(size_t idx);
+
+  // Parse the .trashinfo file and ensure it conforms to the XDG specification
+  // before restoring the file.
+  // TODO(b/231830250): Finish implementation of this method.
+  void ParseTrashInfoFile(size_t idx,
+                          const base::FilePath& trash_info_file_path);
+
   scoped_refptr<storage::FileSystemContext> file_system_context_;
+  raw_ptr<Profile> profile_;
+
+  // Represents the parent path that all the source URLs descend from. Used to
+  // work around the fact `FileSystemOperationRunner` requires relative paths
+  // only in testing.
+  base::FilePath base_path_;
+
+  // A map containing paths which are enabled for trashing.
+  TrashPathsMap enabled_trash_locations_;
 
   // Stores the id of the restore operation if one is in progress. Used so the
   // restore can be cancelled.

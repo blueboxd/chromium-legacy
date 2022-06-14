@@ -84,8 +84,10 @@ class DownloadBubbleRowView : public views::View,
   void LoadIcon();
 
   // Called when icon has been loaded by IconManager::LoadIcon.
-  void SetIconFromImage(gfx::Image icon);
-  void SetIconFromImageModel(ui::ImageModel icon);
+  // |use_over_last_override| controls whether icon should be set if
+  // the current icon is an override_icon.
+  void SetIconFromImage(bool use_over_last_override, gfx::Image icon);
+  void SetIconFromImageModel(bool use_over_last_override, ui::ImageModel icon);
 
   void OnCancelButtonPressed();
   void OnDiscardButtonPressed();
@@ -110,6 +112,7 @@ class DownloadBubbleRowView : public views::View,
   raw_ptr<views::MdTextButton> scan_button_ = nullptr;
   raw_ptr<views::MdTextButton> open_now_button_ = nullptr;
   raw_ptr<views::MdTextButton> resume_button_ = nullptr;
+  raw_ptr<views::MdTextButton> review_button_ = nullptr;
   raw_ptr<views::FlexLayoutView> main_button_holder_ = nullptr;
 
   // The progress bar for in-progress downloads.

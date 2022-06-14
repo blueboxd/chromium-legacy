@@ -114,8 +114,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
@@ -211,6 +211,8 @@ void LocationBarView::Init() {
   // to draw outside the parent's bounds.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+
+  CreateChip();
 
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
@@ -817,26 +819,50 @@ bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
       ->ActivateFirstInactiveBubbleForAccessibility();
 }
 
+bool LocationBarView::IsChipActive() {
+  return chip_ && chip_->IsActive();
+}
+
+void LocationBarView::CreateChip() {
+  DCHECK(!chip_);
+
+  if (!browser_)
+    return;
+
+  if (web_app::AppBrowserController::IsWebApp(browser_))
+    return;
+
+  chip_ = AddChildViewAt(std::make_unique<PermissionChip>(), 0);
+}
+
 PermissionChip* LocationBarView::DisplayChip(
     permissions::PermissionPrompt::Delegate* delegate,
     bool should_bubble_start_open) {
   DCHECK(delegate);
-  return AddChip(std::make_unique<PermissionRequestChip>(
+  DCHECK(chip_);
+
+  chip_->SetupChip(std::make_unique<PermissionRequestChip>(
       browser(), delegate, should_bubble_start_open));
+
+  return chip_;
 }
 
 PermissionChip* LocationBarView::DisplayQuietChip(
     permissions::PermissionPrompt::Delegate* delegate,
     bool should_expand) {
   DCHECK(delegate);
-  return AddChip(std::make_unique<PermissionQuietChip>(browser(), delegate,
-                                                       should_expand));
+  DCHECK(chip_);
+
+  chip_->SetupChip(std::make_unique<PermissionQuietChip>(browser(), delegate,
+                                                         should_expand));
+
+  return chip_;
 }
 
 void LocationBarView::FinalizeChip() {
   DCHECK(chip_);
-  RemoveChildViewT(chip_.get());
-  chip_ = nullptr;
+  chip_->Finalize();
+  InvalidateLayout();
 }
 
 void LocationBarView::UpdateWithoutTabRestore() {
@@ -928,13 +954,6 @@ int LocationBarView::GetAvailableDecorationTextHeight() {
       0, LocationBarView::GetAvailableTextHeight() - (bubble_padding * 2));
 }
 
-PermissionChip* LocationBarView::AddChip(std::unique_ptr<PermissionChip> chip) {
-  DCHECK(!chip_);
-  // `chip_` must come first so it's in the correct place in the focus order.
-  chip_ = AddChildViewAt(std::move(chip), 0);
-  return chip_;
-}
-
 int LocationBarView::GetMinimumLeadingWidth() const {
   // If the keyword bubble is showing, the view can collapse completely.
   if (ShouldShowKeywordBubble())
@@ -975,8 +994,7 @@ void LocationBarView::RefreshBackground() {
         OmniboxPartState::HOVERED);
     const double opacity = hover_animation_.GetCurrentValue();
     background_color = gfx::Tween::ColorValueBetween(opacity, normal, hovered);
-    border_color = GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_LOCATION_BAR_BORDER);
+    border_color = GetColorProvider()->GetColor(kColorLocationBarBorder);
   }
 
   if (is_popup_mode_) {
@@ -1182,8 +1200,8 @@ void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {
     return;  // The border is painted by our Background.
 
   gfx::Rect bounds(GetContentsBounds());
-  const SkColor border_color = GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_LOCATION_BAR_BORDER_OPAQUE);
+  const SkColor border_color =
+      GetColorProvider()->GetColor(kColorLocationBarBorderOpaque);
   canvas->DrawLine(gfx::PointF(bounds.x(), bounds.y()),
                    gfx::PointF(bounds.right(), bounds.y()), border_color);
   canvas->DrawLine(gfx::PointF(bounds.x(), bounds.bottom() - 1),
@@ -1423,14 +1441,14 @@ ui::ImageModel LocationBarView::GetLocationIcon(
 }
 
 void LocationBarView::UpdateChipVisibility() {
-  if (!chip_) {
+  if (!IsChipActive()) {
     return;
   }
 
   if (IsEditingOrEmpty()) {
-    chip_->Hide();
-  } else {
-    chip_->Reshow();
+    // If a user starts typing, a permission request should be ignored and the
+    // chip finalized.
+    chip_->Finalize();
   }
 }
 

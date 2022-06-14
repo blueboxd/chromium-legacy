@@ -30,6 +30,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/devicetype.h"
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
@@ -45,7 +46,6 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/cpp/system/toast_catalog.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
@@ -816,7 +816,7 @@ bool CanHandleToggleAppList(
     // toggle the AppList in that case. Check for VKEY_SHIFT because this is
     // used to show fullscreen app list.
     if (key != ui::VKEY_LWIN && key != ui::VKEY_SHIFT &&
-        key != ui::VKEY_BROWSER_SEARCH) {
+        key != ui::VKEY_BROWSER_SEARCH && key != ui::VKEY_ALL_APPLICATIONS) {
       return false;
     }
   }

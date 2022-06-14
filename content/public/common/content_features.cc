@@ -99,7 +99,7 @@ const base::Feature kBackForwardCacheMediaSessionService{
 // Enable back/forward cache for screen reader users. This flag should be
 // removed once the https://crbug.com/1271450 is resolved.
 const base::Feature kEnableBackForwardCacheForScreenReader{
-    "EnableBackForwardCacheForScreenReader", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableBackForwardCacheForScreenReader", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // BackForwardCache is disabled on low memory devices. The threshold is defined
 // via a field trial param: "memory_threshold_for_back_forward_cache_in_mb"
@@ -445,6 +445,13 @@ const base::Feature kInstalledAppProvider{"InstalledAppProvider",
 const base::Feature kInstalledAppsInCbd{"InstalledAppsInCbd",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable support for isolated web apps. This will guard features like serving
+// isolated web apps via the isolated-app:// scheme, and other advanced isolated
+// app functionality. See https://github.com/reillyeon/isolated-web-apps for a
+// general overview.
+const base::Feature kIsolatedWebApps{"IsolatedWebApps",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Alternative to switches::kIsolateOrigins, for turning on origin isolation.
 // List of origins to isolate has to be specified via
 // kIsolateOriginsFieldTrialParamName.
@@ -702,7 +709,7 @@ const base::Feature kPrivateNetworkAccessRespectPreflightResults = {
 // Enables sending CORS preflight requests ahead of private network requests.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 const base::Feature kPrivateNetworkAccessSendPreflights = {
-    "PrivateNetworkAccessSendPreflights", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PrivateNetworkAccessSendPreflights", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the ProactivelySwapBrowsingInstance experiment. A browsing instance
 // represents a set of frames that can script each other. Currently, Chrome does
@@ -1025,7 +1032,7 @@ const base::Feature kV8VmFuture{"V8VmFuture",
 
 // Enable window controls overlays for desktop PWAs
 const base::Feature kWebAppWindowControlsOverlay{
-    "WebAppWindowControlsOverlay", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebAppWindowControlsOverlay", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly baseline compilation (Liftoff).
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
@@ -1181,11 +1188,6 @@ const base::Feature kOnDemandAccessibilityEvents{
 // Refer to the launch bug (https://crbug.com/1244979) for more information.
 const base::Feature kRequestDesktopSiteExceptions{
     "RequestDesktopSiteExceptions", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Request Desktop Site global setting for Android.
-// Refer to the launch bug (https://crbug.com/1244979) for more information.
-const base::Feature kRequestDesktopSiteGlobal{"RequestDesktopSiteGlobal",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Screen Capture API support for Android
 const base::Feature kUserMediaScreenCapturing{

@@ -5,6 +5,9 @@
 /**
  * @fileoverview Provides output services for ChromeVox.
  */
+import {EventSourceState} from '/chromevox/background/event_source.js';
+import {OutputAncestryInfo} from '/chromevox/background/output/output_ancestry_info.js';
+import {EventSourceType} from '/chromevox/common/event_source_type.js';
 
 const AriaCurrentState = chrome.automation.AriaCurrentState;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -55,7 +58,7 @@ export class Output {
     /** @type {function(?)} @private */
     this.speechEndCallback_;
 
-    /** Store output rules */
+    // Store output rules.
     /** @type {!OutputRulesStr} @private */
     this.speechRulesStr_ = new OutputRulesStr('enableSpeechLogging');
     /** @type {!OutputRulesStr} @private */

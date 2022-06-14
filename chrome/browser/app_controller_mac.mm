@@ -62,7 +62,6 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -109,6 +108,7 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/browser/extension_registry.h"
@@ -117,6 +117,8 @@
 #include "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/native_theme/native_theme_mac.h"
+#include "ui/native_theme/native_theme_observer.h"
 #include "url/gurl.h"
 
 namespace {
@@ -140,6 +142,47 @@ class RunInSafeProfileHelper {
   static Profile* GetSafeProfile(Profile* loaded_profile,
                                  Profile::CreateStatus status);
 };
+
+// Waits for the TabRestoreService to have loaded its entries, then calls
+// OpenWindowWithRestoredTabs().
+//
+// Owned by itself.
+class TabRestorer : public sessions::TabRestoreServiceObserver {
+ public:
+  explicit TabRestorer(Profile* profile) : profile_(profile) {}
+  ~TabRestorer() override = default;
+
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override {
+    service->RemoveObserver(this);
+    delete this;
+  }
+
+  void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override {
+    chrome::OpenWindowWithRestoredTabs(profile_);
+    service->RemoveObserver(this);
+    delete this;
+  }
+
+ private:
+  raw_ptr<Profile> profile_;
+};
+
+// TODO(crbug.com/1334721): Single-tab windows get restored as tabs instead of
+// windows, which is confusing.
+void RestoreTab(Profile* profile) {
+  auto* service = TabRestoreServiceFactory::GetForProfile(profile);
+  if (!service)
+    return;
+  if (service->IsLoaded()) {
+    chrome::OpenWindowWithRestoredTabs(profile);
+  } else {
+    // TabRestoreService isn't loaded. Tell it to load entries, and call
+    // OpenWindowWithRestoredTabs() when it's done.
+    service->AddObserver(new TabRestorer(profile));
+    service->LoadTabsFromLastSession();
+  }
+}
 
 // How long we allow a workspace change notification to wait to be
 // associated with a dock activation. The animation lasts 250ms. See
@@ -545,6 +588,25 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 @end
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
+class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
+ public:
+  AppControllerNativeThemeObserver(AppController* app_controller)
+      : app_controller_(app_controller) {
+    native_theme_observation_.Observe(
+        ui::NativeThemeMac::GetInstanceForNativeUi());
+  }
+
+  // NativeThemeObserver:
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override {
+    [app_controller_ nativeThemeDidChange];
+  }
+
+ private:
+  base::ScopedObservation<ui::NativeTheme, ui::NativeThemeObserver>
+      native_theme_observation_{this};
+  AppController* const app_controller_;  // Weak; owns us.
+};
+
 @implementation AppController
 
 @synthesize startupComplete = _startupComplete;
@@ -796,6 +858,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     profile = profile->GetOriginalProfile();
   }
   [self setLastProfile:profile];
+  _lastActiveColorProvider = browser->window()->GetColorProvider();
 }
 
 - (void)activeSpaceDidChange:(NSNotification*)notify {
@@ -919,6 +982,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       std::make_unique<AppControllerProfileObserver>(
           g_browser_process->profile_manager(), self);
 
+  // Observe native theme change (e.g. light and dark mode).
+  _nativeThemeObserver =
+      std::make_unique<AppControllerNativeThemeObserver>(self);
+
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
   if (base::mac::AmIBundled()) {
@@ -939,8 +1006,11 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   Browser* browser = chrome::FindLastActive();
   content::WebContents* activeWebContents = nullptr;
-  if (browser)
+  _lastActiveColorProvider = nullptr;
+  if (browser) {
     activeWebContents = browser->tab_strip_model()->GetActiveWebContents();
+    _lastActiveColorProvider = browser->window()->GetColorProvider();
+  }
   [self updateHandoffManager:activeWebContents];
   [self openStartupUrls];
 
@@ -1060,10 +1130,13 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // Called to determine if we should enable the "restore tab" menu item.
 // Checks with the TabRestoreService to see if there's anything there to
 // restore and returns YES if so.
+//
+// In the zero-profile state, use the value from when the last profile was
+// still loaded (if ever).
 - (BOOL)canRestoreTab {
   Profile* lastProfile = [self lastProfileIfLoaded];
   if (!lastProfile)
-    return NO;
+    return _tabRestoreWasEnabled;
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(lastProfile);
   return service && !service->entries().empty();
@@ -1287,7 +1360,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       CreateBrowser(profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
       break;
     case IDC_RESTORE_TAB:
-      chrome::OpenWindowWithRestoredTabs(profile);
+      RestoreTab(profile);
       break;
     case IDC_OPEN_FILE:
       chrome::ExecuteCommand(CreateBrowser(profile), IDC_OPEN_FILE);
@@ -1714,6 +1787,11 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   if (profile == _lastProfile)
     return;
 
+  // If _lastProfile becomes null, remember the last state of Cmd+Shift+T so the
+  // command can continue working (or stay disabled). This is primarily meant
+  // for the zero-profile state.
+  _tabRestoreWasEnabled = profile == nullptr && [self canRestoreTab];
+
   // Before tearing down the menu controller bridges, return the history menu to
   // its initial state.
   if (_historyMenuBridge)
@@ -1773,14 +1851,19 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
                           _menuState.get(), _lastProfile));
 }
 
-- (const ui::ThemeProvider&)lastActiveThemeProvider {
-  // Themes are only available while a profile is available.
-  DCHECK(_lastProfile);
+- (const ui::ColorProvider&)lastActiveColorProvider {
+  DCHECK(_lastActiveColorProvider);
+  return *_lastActiveColorProvider;
+}
 
-  // AppController is conceptually a root for Chromium Mac. As a result, it is
-  // allowed to refer to the profile to get a theme provider. Non-root UI
-  // concepts should rely on well known roots to obtain a ThemeProvider.
-  return ThemeService::GetThemeProviderForProfile(_lastProfile);
+- (void)nativeThemeDidChange {
+  // Some tests manually notify native theme change without setting
+  // a profile for app controller, so `_lastProfile` will be nullptr.
+  if (_lastProfile) {
+    Browser* browser = chrome::FindBrowserWithProfile(_lastProfile);
+    if (browser && browser->window())
+      _lastActiveColorProvider = browser->window()->GetColorProvider();
+  }
 }
 
 - (BOOL)windowHasBrowserTabs:(NSWindow*)window {
@@ -1954,6 +2037,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 - (void)setLastProfileForTesting:(Profile*)profile {
   _lastProfile = profile;
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+  _lastActiveColorProvider = browser->window()->GetColorProvider();
 }
 
 @end  // @implementation AppController

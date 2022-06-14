@@ -361,6 +361,34 @@ bool IsSameOriginRedirect(const std::vector<GURL>& url_chain) {
   return previous_origin.IsSameOriginWith(url_chain[url_chain.size() - 1]);
 }
 
+#if DCHECK_IS_ON()
+void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
+                              const network::mojom::ParsedHeadersPtr& rhs) {
+  if (mojo::Equals(lhs, rhs))
+    return;
+  DCHECK(
+      mojo::Equals(lhs->content_security_policy, rhs->content_security_policy));
+  DCHECK(mojo::Equals(lhs->allow_csp_from, rhs->allow_csp_from));
+  DCHECK(mojo::Equals(lhs->cross_origin_embedder_policy,
+                      rhs->cross_origin_embedder_policy));
+  DCHECK(mojo::Equals(lhs->cross_origin_opener_policy,
+                      rhs->cross_origin_opener_policy));
+  DCHECK(mojo::Equals(lhs->origin_agent_cluster, rhs->origin_agent_cluster));
+  DCHECK(mojo::Equals(lhs->accept_ch, rhs->accept_ch));
+  DCHECK(mojo::Equals(lhs->critical_ch, rhs->critical_ch));
+  DCHECK(mojo::Equals(lhs->xfo, rhs->xfo));
+  DCHECK(mojo::Equals(lhs->link_headers, rhs->link_headers));
+  DCHECK(mojo::Equals(lhs->timing_allow_origin, rhs->timing_allow_origin));
+  DCHECK(mojo::Equals(lhs->bfcache_opt_in_unload, rhs->bfcache_opt_in_unload));
+  DCHECK(mojo::Equals(lhs->reporting_endpoints, rhs->reporting_endpoints));
+  DCHECK(mojo::Equals(lhs->variants_headers, rhs->variants_headers));
+  DCHECK(mojo::Equals(lhs->content_language, rhs->content_language));
+  NOTREACHED() << "The parsed headers don't match, but we don't know which "
+                  "field does not match. Please add a DCHECK before this one "
+                  "checking for the missing field.";
+}
+#endif
+
 }  // namespace
 
 // TODO(kinuko): Fix the method ordering and move these methods after the ctor.
@@ -1195,7 +1223,7 @@ void NavigationURLLoaderImpl::ParseHeaders(
     auto check = [](base::OnceClosure continuation,
                     network::mojom::URLResponseHead* head,
                     network::mojom::ParsedHeadersPtr parsed_headers) {
-      DCHECK(parsed_headers.Equals(head->parsed_headers));
+      CheckParsedHeadersEquals(parsed_headers, head->parsed_headers);
       std::move(continuation).Run();
     };
     GetNetworkService()->ParseHeaders(
@@ -1352,18 +1380,25 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   }
 
   const std::string storage_domain;
-  // TODO(https://crbug.com/1264405): Determine if we should deprecate
-  // navigation in filesystem: URLs entirely or in 3p contexts; alter the
-  // below as necessary. NOTE: while the logic below is appropriate for
-  // browser-initiated navigations, it is likely incorrect to always use
-  // first-party StorageKeys for renderer-initiated navigations.
-  non_network_url_loader_factories_.emplace(
-      url::kFileSystemScheme,
-      CreateFileSystemURLLoaderFactory(
-          ChildProcessHost::kInvalidUniqueID,
-          frame_tree_node->frame_tree_node_id(),
-          storage_partition_->GetFileSystemContext(), storage_domain,
-          blink::StorageKey(url::Origin::Create(url_))));
+  if (base::FeatureList::IsEnabled(blink::features::kFileSystemUrlNavigation) ||
+      !frame_tree_node->navigation_request()->IsRendererInitiated()) {
+    // TODO(https://crbug.com/256067): Once DevTools has support for sandboxed
+    // file system inspection there isn't much reason anymore to support browser
+    // initiated filesystem: navigations, so remove this entirely at that point.
+
+    // Navigations in to filesystem: URLs are deprecated entirely for
+    // renderer-initiated navigations. The logic below is appropriate for
+    // browser-initiated navigations, but it is incorrect to always use
+    // first-party StorageKeys for renderer-initiated navigations when third
+    // party storage partitioning is enabled.
+    non_network_url_loader_factories_.emplace(
+        url::kFileSystemScheme,
+        CreateFileSystemURLLoaderFactory(
+            ChildProcessHost::kInvalidUniqueID,
+            frame_tree_node->frame_tree_node_id(),
+            storage_partition_->GetFileSystemContext(), storage_domain,
+            blink::StorageKey(url::Origin::Create(url_))));
+  }
 
   non_network_url_loader_factories_.emplace(url::kAboutScheme,
                                             AboutURLLoaderFactory::Create());

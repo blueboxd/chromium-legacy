@@ -178,7 +178,7 @@ LayoutUnit TextFieldIntrinsicInlineSize(const HTMLInputElement& input,
     max_char_width = font.PrimaryFont()->MaxCharWidth();
 
   // For text inputs, IE adds some extra width.
-  if (max_char_width > 0.f)
+  if (max_char_width > char_width)
     float_result += max_char_width - char_width;
 
   LayoutUnit result(ceilf(float_result));
@@ -188,14 +188,21 @@ LayoutUnit TextFieldIntrinsicInlineSize(const HTMLInputElement& input,
             shadow_element_names::kIdSpinButton));
     if (LayoutBox* spin_box =
             spin_button ? spin_button->GetLayoutBox() : nullptr) {
+      const Length& logical_width = spin_box->StyleRef().LogicalWidth();
       result += spin_box->BorderAndPaddingLogicalWidth();
       // Since the width of spin_box is not calculated yet,
       // spin_box->LogicalWidth() returns 0. Use the computed logical
       // width instead.
-      result += spin_box->StyleRef().LogicalWidth().Value();
+      if (logical_width.IsPercent()) {
+        if (logical_width.Value() != 100.f) {
+          result +=
+              result * logical_width.Value() / (100 - logical_width.Value());
+        }
+      } else {
+        result += logical_width.Value();
+      }
     }
   }
-
   return result;
 }
 
@@ -717,15 +724,25 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
       Parent()->StyleRef().IsDisplayFlexibleOrGridBox())
     ClearOverrideSize();
 
-  if (LayoutMultiColumnSpannerPlaceholder* placeholder = SpannerPlaceholder())
-    placeholder->LayoutObjectInFlowThreadStyleDidChange(old_style);
-
   UpdateBackgroundAttachmentFixedStatusAfterStyleChange();
 
   if (old_style) {
-    LayoutFlowThread* flow_thread = FlowThreadContainingBlock();
-    if (flow_thread && flow_thread != this)
-      flow_thread->FlowThreadDescendantStyleDidChange(this, diff, *old_style);
+    // Regular column content (i.e. non-spanners) have a hook into the flow
+    // thread machinery before (StyleWillChange()) and after (here in
+    // StyleDidChange()) the style has changed. Column spanners, on the other
+    // hand, only have a hook here. The LayoutMultiColumnSpannerPlaceholder code
+    // will do all the necessary things, including removing it as a spanner, if
+    // it should no longer be one. Therefore, make sure that we skip
+    // FlowThreadDescendantStyleDidChange() in such cases, as that might trigger
+    // a duplicate flow thread insertion notification, if the spanner no longer
+    // is a spanner.
+    if (LayoutMultiColumnSpannerPlaceholder* placeholder =
+            SpannerPlaceholder()) {
+      placeholder->LayoutObjectInFlowThreadStyleDidChange(old_style);
+    } else if (LayoutFlowThread* flow_thread = FlowThreadContainingBlock()) {
+      if (flow_thread != this)
+        flow_thread->FlowThreadDescendantStyleDidChange(this, diff, *old_style);
+    }
 
     UpdateScrollSnapMappingAfterStyleChange(*old_style);
 
@@ -3273,17 +3290,18 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult* result) {
         .SetFragmentChildrenInvalid();
   }
 
-  AddLayoutResult(std::move(result), 0);
+  SetLayoutResult(std::move(result), 0);
 }
 
-void LayoutBox::AddLayoutResult(const NGLayoutResult* result,
+void LayoutBox::SetLayoutResult(const NGLayoutResult* result,
                                 wtf_size_t index) {
   NOT_DESTROYED();
   DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
+  const auto& box_fragment =
+      To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+
   if (index != WTF::kNotFound && layout_results_.size() > index) {
     if (layout_results_.size() > index + 1) {
-      const auto& box_fragment =
-          To<NGPhysicalBoxFragment>(result->PhysicalFragment());
       // If we have reached the end, remove surplus results from previous
       // layout.
       //
@@ -3316,20 +3334,18 @@ void LayoutBox::AddLayoutResult(const NGLayoutResult* result,
   }
 
   DCHECK(index == layout_results_.size() || index == kNotFound);
-  AddLayoutResult(std::move(result));
+  AppendLayoutResult(result);
+
+  if (!box_fragment.BreakToken())
+    FinalizeLayoutResults();
 }
 
-void LayoutBox::AddLayoutResult(const NGLayoutResult* result) {
+void LayoutBox::AppendLayoutResult(const NGLayoutResult* result) {
   const auto& fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   // |layout_results_| is particularly critical when side effects are disabled.
   DCHECK(!NGDisableSideEffectsScope::IsDisabled());
   layout_results_.push_back(std::move(result));
   CheckDidAddFragment(*this, fragment);
-
-  // If this is the last fragment for the node, and its node establishes an
-  // inline formatting context, we have some finalization to do.
-  if (!fragment.BreakToken() && HasFragmentItems())
-    NGFragmentItems::FinalizeAfterLayout(layout_results_);
 
   if (layout_results_.size() > 1)
     FragmentCountOrSizeDidChange();
@@ -3361,25 +3377,12 @@ void LayoutBox::ReplaceLayoutResult(const NGLayoutResult* result,
   layout_results_[index] = std::move(result);
   CheckDidAddFragment(*this, fragment, index);
 
-  // If this is the last fragment for the node, and its node establishes an
-  // inline formatting context, we have some finalization to do.
-  if (got_new_fragment && !fragment.BreakToken() && HasFragmentItems())
-    NGFragmentItems::FinalizeAfterLayout(layout_results_);
-}
+  if (got_new_fragment && !fragment.BreakToken()) {
+    // If this is the last result, the results vector better agree on that.
+    DCHECK_EQ(index, layout_results_.size() - 1);
 
-void LayoutBox::ReplaceLayoutResult(const NGLayoutResult* result,
-                                    const NGPhysicalBoxFragment& old_fragment) {
-  DCHECK_EQ(this, old_fragment.OwnerLayoutBox());
-  DCHECK_EQ(result->PhysicalFragment().GetSelfOrContainerLayoutObject(),
-            old_fragment.GetSelfOrContainerLayoutObject());
-  // TODO(kojii): |IndexOf| is O(n). Consider if we can avoid this.
-  const wtf_size_t index = PhysicalFragments().IndexOf(old_fragment);
-  if (index != kNotFound) {
-    ReplaceLayoutResult(std::move(result), index);
-    return;
+    FinalizeLayoutResults();
   }
-  NOTREACHED();
-  AddLayoutResult(std::move(result));
 }
 
 void LayoutBox::RestoreLegacyLayoutResults(
@@ -3389,9 +3392,18 @@ void LayoutBox::RestoreLegacyLayoutResults(
   DCHECK(!IsLayoutNGObject());
   measure_result_ = measure_result;
   if (layout_result)
-    AddLayoutResult(layout_result, 0);
+    SetLayoutResult(layout_result, 0);
   else
     DCHECK(layout_results_.IsEmpty());
+}
+
+void LayoutBox::FinalizeLayoutResults() {
+  DCHECK(!layout_results_.IsEmpty());
+  DCHECK(!layout_results_.back()->PhysicalFragment().BreakToken());
+  // If we've added all the results we were going to, and the node establishes
+  // an inline formatting context, we have some finalization to do.
+  if (HasFragmentItems())
+    NGFragmentItems::FinalizeAfterLayout(layout_results_);
 }
 
 void LayoutBox::ClearLayoutResults() {
@@ -6915,6 +6927,11 @@ void LayoutBox::SetLayoutOverflowFromLayoutResults() {
       layout_overflow->UniteEvenIfEmpty(fragment_layout_overflow);
 
     if (const auto* break_token = fragment.BreakToken()) {
+      // The legacy engine doesn't understand our concept of repeated
+      // fragments. Stop now. The overflow rectangle will represent the
+      // fragment(s) generated under the first repeated root.
+      if (break_token->IsRepeated())
+        break;
       consumed_block_size = break_token->ConsumedBlockSize();
     }
   }
@@ -7181,6 +7198,12 @@ void LayoutBox::CopyVisualOverflowFromFragmentsWithoutInvalidations() {
 
     self_rect.Unite(fragment_self_rect);
     contents_rect.Unite(fragment_contents_rect);
+
+    // The legacy engine doesn't understand our concept of repeated
+    // fragments. Stop now. The overflow rectangle will represent the
+    // fragment(s) generated under the first repeated root.
+    if (fragment.BreakToken() && fragment.BreakToken()->IsRepeated())
+      break;
   }
 
   if (!has_overflow) {

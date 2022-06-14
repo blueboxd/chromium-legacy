@@ -14,22 +14,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"
         android:importantForAccessibility="no"
         app:srcCompat="@drawable/sync_promo_illustration"
         style="@style/SigninPromoIllustrationVisibility"/>
-
-    <ImageView
-        android:id="@+id/new_signin_promo_image"
-        android:layout_width="@dimen/new_signin_promo_account_image_size"
-        android:layout_height="@dimen/new_signin_promo_account_image_size"
-        android:layout_gravity="center"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
-        android:importantForAccessibility="no"
-        android:scaleType="fitCenter"
-        android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/signin_promo_image"
@@ -38,7 +27,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"
-        tools:ignore="ContentDescription"
+        android:importantForAccessibility="no"
         android:scaleType="fitCenter"/>
 
     <org.chromium.ui.widget.ChromeImageButton

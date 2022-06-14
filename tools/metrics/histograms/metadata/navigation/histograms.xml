@@ -760,6 +760,19 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram
+    name="Navigation.MainFrame.RendererInitiated.InitiatorFramePresentAtStart"
+    enum="BooleanPresent" expires_after="2023-05-26">
+  <owner>yaoxia@chromium.org</owner>
+  <owner>cammie@chromium.org</owner>
+  <summary>
+    Whether the initiator frame is present when a renderer-initiated primary
+    main frame navigation has started. Recorded for each renderer-initiated
+    primary main frame navigation when the navigation has started (i.e. during
+    WebContentsObserver::DidStartNavigation()).
+  </summary>
+</histogram>
+
 <histogram name="Navigation.MainFrame.SiteEngagementLevel"
     enum="SiteEngagementLevel" expires_after="2022-10-30">
   <owner>meacer@chromium.org</owner>
@@ -1260,6 +1273,22 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram
+    name="Navigation.UrlParamFilter.ApplicableClassificationCount{UrlParamFilterClassificationRole}"
+    units="ms" expires_after="2023-01-02">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>bcl@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
+  <summary>
+    The number of FilterClassification objects received from component updater
+    that are determined to be applicable given experiment settings. This metric
+    is recorded when the component updater parsing is completed.
+  </summary>
+  <token key="UrlParamFilterClassificationRole"
+      variants="UrlParamFilterClassificationRole"/>
+</histogram>
+
 <histogram name="Navigation.UrlParamFilter.ClassificationListValidationResult"
     enum="ClassificationListValidationResult" expires_after="2022-11-20">
   <owner>kaklilu@chromium.org</owner>
@@ -1276,6 +1305,19 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.UrlParamFilter.FilteredParamCount" units="count"
+    expires_after="2023-01-02">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>bcl@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
+  <summary>
+    The number of parameters filtered out of a given request when switching from
+    normal browsing to incognito. Determined by backend classification of
+    parameters.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.UrlParamFilter.FilteredParamCountExperimental"
     units="count" expires_after="2023-01-02">
   <owner>mreichhoff@chromium.org</owner>
@@ -1285,8 +1327,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>
     The number of parameters filtered out of a given request when switching from
     normal browsing to incognito. Determined by backend classification of
-    parameters. The filtering is currently experimental; this metric will be
-    replaced.
+    parameters. This metric tracks parameters filtered based on experimental
+    classification heuristics.
   </summary>
 </histogram>
 

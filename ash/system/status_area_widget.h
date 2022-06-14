@@ -220,7 +220,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   // Any references to the method outside of this compilation unit will fail
   // linking unless a specialization is declared in status_area_widget.cc.
   template <typename TrayButtonT>
-  TrayButtonT* AddTrayButton(std::unique_ptr<TrayButtonT>&& tray_button);
+  TrayButtonT* AddTrayButton(std::unique_ptr<TrayButtonT> tray_button);
 
   // Called when in the collapsed state to calculate and update the visibility
   // of each tray button.
@@ -233,6 +233,11 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   // Calculates and returns the appropriate collapse state depending on
   // current conditions.
   CollapseState CalculateCollapseState() const;
+
+  // Gets the collapse available width based on if the date tray is shown.
+  // If `force_collapsible`, returns a fixed width which is not based on the
+  // shelf width.
+  int GetCollapseAvailableWidth(bool force_collapsible) const;
 
   StatusAreaWidgetDelegate* const status_area_widget_delegate_;
 

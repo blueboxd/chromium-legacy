@@ -42,6 +42,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/media_switches.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
@@ -478,6 +479,17 @@ bool IsVAProfileSupported(VAProfile va_profile) {
                       }) != profiles.end();
 }
 
+bool IsImplementedVbr(VideoCodecProfile codec_profile) {
+  switch (codec_profile) {
+    case H264PROFILE_BASELINE:
+    case H264PROFILE_MAIN:
+    case H264PROFILE_HIGH:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsBlockedDriver(VaapiWrapper::CodecMode mode, VAProfile va_profile) {
   if (!IsModeEncoding(mode)) {
     return va_profile == VAProfileAV1Profile0 &&
@@ -881,7 +893,7 @@ bool GetRequiredAttribs(const base::Lock* va_lock,
     required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CBR});
   if (mode == VaapiWrapper::kEncodeConstantQuantizationParameter)
     required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CQP});
-  if (mode == VaapiWrapper::kEncodeConstantQuantizationParameter)
+  if (mode == VaapiWrapper::kEncodeVariableBitrate)
     required_attribs->push_back({VAConfigAttribRateControl, VA_RC_VBR});
 
   constexpr VAProfile kSupportedH264VaProfilesForEncoding[] = {
@@ -1518,12 +1530,7 @@ std::vector<SVCScalabilityMode> VaapiWrapper::GetSupportedScalabilityModes(
   }
 
   if (media_profile >= H264PROFILE_MIN && media_profile <= H264PROFILE_MAX) {
-    // TODO(b/199487660): Enable H.264 temporal layer encoding on AMD once their
-    // drivers support them.
-    VAImplementation implementation = VaapiWrapper::GetImplementationType();
-    if (base::FeatureList::IsEnabled(kVaapiH264TemporalLayerHWEncoding) &&
-        (implementation == VAImplementation::kIntelI965 ||
-         implementation == VAImplementation::kIntelIHD)) {
+    if (base::FeatureList::IsEnabled(kVaapiH264TemporalLayerHWEncoding)) {
       scalability_modes.push_back(SVCScalabilityMode::kL1T2);
       scalability_modes.push_back(SVCScalabilityMode::kL1T3);
     }
@@ -1555,8 +1562,15 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
     constexpr int kMaxEncoderFramerate = 30;
     profile.max_framerate_numerator = kMaxEncoderFramerate;
     profile.max_framerate_denominator = 1;
-    // TODO(b/193680666): remove hard-coding when VBR is supported
     profile.rate_control_modes = media::VideoEncodeAccelerator::kConstantMode;
+    // This code assumes that the resolutions are the same between CBR and VBR.
+    // This is checked in a test in vaapi_unittest.cc: VbrAndCbrResolutionsMatch
+    if (IsImplementedVbr(media_profile) &&
+        VASupportedProfiles::Get().IsProfileSupported(kEncodeVariableBitrate,
+                                                      va_profile)) {
+      profile.rate_control_modes |=
+          media::VideoEncodeAccelerator::kVariableMode;
+    }
     profile.scalability_modes =
         GetSupportedScalabilityModes(media_profile, va_profile);
     profiles.push_back(profile);

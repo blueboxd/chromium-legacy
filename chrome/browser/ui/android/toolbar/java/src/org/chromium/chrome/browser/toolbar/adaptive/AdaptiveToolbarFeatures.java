@@ -86,8 +86,23 @@ public class AdaptiveToolbarFeatures {
         int VOICE = 4;
         int AUTO = 5;
         int PRICE_TRACKING = 6;
-
         int NUM_ENTRIES = 7;
+    }
+
+    /** @return Whether the button variant is a dynamic action. */
+    public static boolean isDynamicAction(@AdaptiveToolbarButtonVariant int variant) {
+        switch (variant) {
+            case AdaptiveToolbarButtonVariant.UNKNOWN:
+            case AdaptiveToolbarButtonVariant.NONE:
+            case AdaptiveToolbarButtonVariant.NEW_TAB:
+            case AdaptiveToolbarButtonVariant.SHARE:
+            case AdaptiveToolbarButtonVariant.VOICE:
+            case AdaptiveToolbarButtonVariant.AUTO:
+                return false;
+            case AdaptiveToolbarButtonVariant.PRICE_TRACKING:
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -119,6 +134,21 @@ public class AdaptiveToolbarFeatures {
                 ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2,
                 VARIATION_PARAM_MIN_VERSION, 0);
         return minVersion <= VERSION;
+    }
+
+    /** @return Whether the contextual page actions should show the action chip version. */
+    public static boolean shouldShowActionChip() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "action_chip", true);
+    }
+
+    /**
+     * @return Whether contextual page actions are enabled.
+     */
+    public static boolean isContextualPageActionUiEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS)
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "enable_ui", true);
     }
 
     /**

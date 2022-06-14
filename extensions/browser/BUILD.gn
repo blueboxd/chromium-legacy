@@ -798,7 +798,6 @@ source_set("test_support") {
     "//extensions/common",
     "//extensions/common:test_support",
     "//extensions/common/api:api",
-    "//services/data_decoder:lib",
     "//services/data_decoder/public/cpp:test_support",
     "//services/network:test_support",
     "//testing/gmock",
@@ -950,7 +949,6 @@ source_set("unit_tests") {
     "//extensions/strings",
     "//ipc:test_support",
     "//net:test_support",
-    "//services/data_decoder:lib",
     "//services/data_decoder/public/cpp:test_support",
     "//services/device/public/mojom",
     "//services/network:test_support",
@@ -965,6 +963,7 @@ source_set("unit_tests") {
   if (is_chromeos_ash) {
     sources += [
       "api/audio/audio_device_id_calculator_unittest.cc",
+      "api/audio/audio_service_utils_unittest.cc",
       "api/feedback_private/access_rate_limiter_chromeos_unittest.cc",
       "api/feedback_private/feedback_private_api_chromeos_unittest.cc",
       "api/feedback_private/feedback_private_api_unittest_base_chromeos.cc",

@@ -1041,8 +1041,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
       {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
       {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
-      {"import", IDS_PASSWORD_MANAGER_IMPORT_BUTTON},
-      {"exportMenuItem", IDS_SETTINGS_PASSWORDS_EXPORT_MENU_ITEM},
       {"optInAccountStorageLabel",
        IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_LABEL},
       {"optOutAccountStorageLabel",
@@ -1095,6 +1093,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORD_ROW_FEDERATED_MORE_ACTIONS},
       {"passwordRowPasswordDetailPageButton",
        IDS_SETTINGS_PASSWORD_ROW_PASSWORD_DETAIL_PAGE},
+      {"importMenuItem", IDS_SETTINGS_PASSWORDS_IMPORT_MENU_ITEM},
+      {"importPasswordsTitle", IDS_SETTINGS_PASSWORDS_IMPORT_TITLE},
+      {"importPasswordsChooseFile", IDS_SETTINGS_PASSWORDS_IMPORT_CHOOSE_FILE},
+      {"importPasswordsGenericDescrtion",
+       IDS_SETTINGS_PASSWORDS_IMPORT_DESCRIPTION_GENERIC},
+      {"exportMenuItem", IDS_SETTINGS_PASSWORDS_EXPORT_MENU_ITEM},
       {"exportPasswordsTitle", IDS_SETTINGS_PASSWORDS_EXPORT_TITLE},
       {"exportPasswordsDescription", IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION},
       {"exportPasswords", IDS_SETTINGS_PASSWORDS_EXPORT},
@@ -1266,13 +1270,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 
 void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
                              Profile* profile) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  bool is_dice_enabled = false;
-#else
-  bool is_dice_enabled =
-      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile);
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   bool is_main_profile = profile->IsMainProfile();
 #else
@@ -1285,19 +1282,13 @@ void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
         {"syncDisconnectTitle", IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_TITLE},
     };
     html_source->AddLocalizedStrings(kTurnOffStrings);
-  } else if (is_dice_enabled) {
+  } else {
     static constexpr webui::LocalizedString kTurnOffStrings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
          IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
     };
     html_source->AddLocalizedStrings(kTurnOffStrings);
-  } else {
-    static constexpr webui::LocalizedString kSignOutStrings[] = {
-        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
-        {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
-    };
-    html_source->AddLocalizedStrings(kSignOutStrings);
   }
 
   std::string sync_dashboard_url =
@@ -1316,7 +1307,7 @@ void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
          IDS_SETTINGS_SYNC_DISCONNECT_MAIN_PROFILE_EXPLANATION},
     };
     html_source->AddLocalizedStrings(kSyncDisconnectStrings);
-  } else if (is_dice_enabled) {
+  } else {
     static constexpr webui::LocalizedString kSyncDisconnectStrings[] = {
         {"syncDisconnectDeleteProfile",
          IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
@@ -1326,18 +1317,6 @@ void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
          IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION},
     };
     html_source->AddLocalizedStrings(kSyncDisconnectStrings);
-  } else {
-    static constexpr webui::LocalizedString kSyncDisconnectStrings[] = {
-        {"syncDisconnectDeleteProfile",
-         IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE},
-        {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
-    };
-    html_source->AddLocalizedStrings(kSyncDisconnectStrings);
-
-    html_source->AddString(
-        "syncDisconnectExplanation",
-        l10n_util::GetStringFUTF8(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
-                                  base::ASCIIToUTF16(sync_dashboard_url)));
   }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2139,7 +2118,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"cookiePageBlockAllBulTwo", IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_TWO},
     {"cookiePageBlockAllBulThree", IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_THREE},
     {"cookiePageClearOnExit", IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT},
-#if !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"cookiePageClearOnExitDesc", IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT_DESC},
 #endif
     {"cookiePageAllSitesLink", IDS_SETTINGS_COOKIES_ALL_SITES_LINK},

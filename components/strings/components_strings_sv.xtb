@@ -27,6 +27,7 @@
 <translation id="1043382569739532657">Anslag, stipendier och ekonomiskt stöd</translation>
 <translation id="1048785276086539861">När du redigerar kommentarer aktiveras enkelsidig vy igen för dokumentet</translation>
 <translation id="1050038467049342496">Stäng andra appar</translation>
+<translation id="1053959602163383901">Du har valt att verifiera dig med en autentiseringsenhet på webbplatser där<ph name="PROVIDER_ORIGIN" /> används. Den här leverantören kan ha lagrat uppgifter om din betalningsmetod som du kan <ph name="LINK_TEXT" />.</translation>
 <translation id="1055184225775184556">&amp;Ångra Lägg till</translation>
 <translation id="1056663316309890343">Fotoprogramvara</translation>
 <translation id="1056898198331236512">Varning</translation>
@@ -426,6 +427,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2053111141626950936">Sidor på <ph name="LANGUAGE" /> översätts inte.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{När den här inställningen är på och statusen är Aktiv fastställer Chrome vilken grupp, eller kohort, som du tillhör utifrån din senaste webbaktivitet. Annonsörer kan välja annonser för denna grupp och din webbhistorik förblir privat på enheten. Grupptillhörigheten uppdateras dagligen.}=1{När den här inställningen är på och statusen är Aktiv fastställer Chrome vilken grupp, eller kohort, som du tillhör utifrån din senaste webbaktivitet. Annonsörer kan välja annonser för denna grupp och din webbhistorik förblir privat på enheten. Grupptillhörigheten uppdateras dagligen.}other{När den här inställningen är på och statusen är Aktiv fastställer Chrome vilken grupp, eller kohort, som du tillhör utifrån din senaste webbaktivitet. Annonsörer kan välja annonser för denna grupp och din webbhistorik förblir privat på enheten. Grupptillhörigheten uppdateras med {NUM_DAYS} dagars mellanrum.}}</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 förslag}other{# förslag}}</translation>
+<translation id="2066915425250589881">begära ska tas bort</translation>
 <translation id="2068528718802935086">Baby och småbarn</translation>
 <translation id="2071156619270205202">Detta kort uppfyller inte kraven för virtuella kortnummer.</translation>
 <translation id="2071692954027939183">Aviseringar blockerades automatiskt eftersom du vanligtvis inte tillåter dem</translation>
@@ -582,6 +584,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2512101340618156538">Tillåts inte (standard)</translation>
 <translation id="2512413427717747692">Knappen Ställ in Chrome som standardwebbläsare: tryck på Retur om du vill ställa in Chrome som standardwebbläsare i systeminställningarna för iOS</translation>
 <translation id="2515629240566999685">kontrollera mottagningen i området</translation>
+<translation id="2515761554693942801">Du har valt att verifiera dig med Touch ID på webbplatser där <ph name="PROVIDER_ORIGIN" /> används. Den här leverantören kan ha lagrat uppgifter om din betalningsmetod som du kan <ph name="LINK_TEXT" />.</translation>
 <translation id="2521385132275182522">Häfta nere till höger</translation>
 <translation id="2521736961081452453">Skapa formulär</translation>
 <translation id="2523886232349826891">Endast sparat på den här enheten</translation>
@@ -703,7 +706,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2854764410992194509">Internetleverantörer</translation>
 <translation id="2856444702002559011">En angripare kan försöka stjäla dina uppgifter från <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (t.ex. lösenord, meddelanden eller kreditkortsuppgifter). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2859806420264540918">Påträngande eller vilseledande annonser visas på den här webbplatsen.</translation>
-<translation id="286512204874376891">Ett virtuellt kort döljer det riktiga kortet och skyddar dig från eventuella bedrägerier. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="287596039013813457">Vänlig</translation>
 <translation id="28761159517501904">Filmer</translation>
 <translation id="2876489322757410363">Om du betalar i ett externt program sker inte det i inkognitoläge. Vill du fortsätta?</translation>
@@ -1336,7 +1338,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="4607603470419975064">Knappen Visa tips om Chrome: tryck på Retur om du vill läsa mer om funktioner i Chrome</translation>
 <translation id="4607608436550361748">Visa tips om Chrome</translation>
 <translation id="4617273035598175554">Grafik- och animationsprogramvara</translation>
-<translation id="4627165777145349100">Mer om den här sidan</translation>
 <translation id="4627675673814409125">Den här policyn kan inte ställas in på Chrome-profilnivå och kommer att ignoreras.</translation>
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4631649115723685955">Cashback länkad</translation>
@@ -1501,6 +1502,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5051305769747448211">Ståuppkomedi</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{Om du vill skicka den här filen med Närdelning ska du frigöra utrymme (<ph name="DISK_SPACE_SIZE" />) på enheten}other{Om du vill skicka de här filerna med Närdelning ska du frigöra utrymme (<ph name="DISK_SPACE_SIZE" />) på enheten}}</translation>
 <translation id="5056549851600133418">Artiklar för dig</translation>
+<translation id="5060483733937416656">Du har valt att verifiera dig med Windows Hello på webbplatser där <ph name="PROVIDER_ORIGIN" /> används. Den här leverantören kan ha lagrat uppgifter om din betalningsmetod som du kan <ph name="LINK_TEXT" />.</translation>
 <translation id="5061227663725596739">Menade du <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5066056036849835175">Utskriftshistorik</translation>
 <translation id="5068234115460527047">Hedgefonder</translation>
@@ -1870,7 +1872,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="6061154937977953833">Brottning</translation>
 <translation id="6064217302520318294">Skärmlås</translation>
 <translation id="6064602040258638498">Kuponger och rabatterbjudanden</translation>
-<translation id="6078813287646374487">Visa mer information om den här sidan</translation>
 <translation id="6080696365213338172">Du har visat innehåll med hjälp av ett certifikat från en administratör. Det innebär att data som du har angett på <ph name="DOMAIN" /> även kan visas av administratören.</translation>
 <translation id="6087312102907839798">Relaterade sökningar</translation>
 <translation id="6094273045989040137">Annotera</translation>
@@ -2574,6 +2575,7 @@ Mer information.
 <translation id="8074253406171541171">10x13 (kuvert)</translation>
 <translation id="8075736640322370409">Skapa ett nytt Google-kalkylark snabbt</translation>
 <translation id="8075898834294118863">Hantera webbplatsinställningar</translation>
+<translation id="8076492880354921740">Flikar</translation>
 <translation id="8078141288243656252">Det går inte att annotera när dokumentet har roterats</translation>
 <translation id="8079031581361219619">Vill du läsa in webbplatsen igen?</translation>
 <translation id="8081087320434522107">Sedanbilar</translation>
@@ -2795,6 +2797,7 @@ Mer information:
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> är din kod för <ph name="ORIGIN" /></translation>
 <translation id="874918643257405732">Bokmärk den här fliken</translation>
 <translation id="8751426954251315517">Försök igen senare</translation>
+<translation id="8757526089434340176">Ett Google Pay-erbjudande är tillgängligt</translation>
 <translation id="8758885506338294482">E-sport</translation>
 <translation id="8759274551635299824">Kortets giltighetstid har löpt ut</translation>
 <translation id="87601671197631245">Den här webbplatsens säkerhetskonfiguration är inaktuell. Det kan leda till att dina uppgifter (t.ex. lösenord, meddelanden eller kreditkort) exponeras när de skickas till den här webbplatsen.</translation>

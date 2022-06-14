@@ -171,9 +171,6 @@ public final class ProductionSupportedFlagList {
                             + "names and house numberse."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_FIX_FILLABLE_FIELD_TYPES,
                     "Fix how it is determined if a field type is fillable with Autofill"),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_MERCHANT_BOUND_VIRTUAL_CARDS,
-                    "When enabled, merchant bound virtual cards will be offered when users "
-                            + "interact with a payment form."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_AUGMENTED_PHONE_COUNTRY_CODE,
                     "Enables support for phone code number fields with additional text."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENFORCE_DELAYS_IN_STRIKE_DATABASE,
@@ -199,6 +196,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_CONSIDER_PLACEHOLDER_FOR_PARSING,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_SERVER_BEHAVIORS,
+                    "When enabled, Autofill will request experimental "
+                            + "predictions from the Autofill API."),
             Flag.baseFeature(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
                     "When enabled, merchant bound virtual cards will be offered in the keyboard "
                             + "accessory."),
@@ -340,6 +340,11 @@ public final class ProductionSupportedFlagList {
                     "Run tasks in queue for 8ms before before sending a system message."),
             Flag.baseFeature(BlinkFeatures.OFFSET_PARENT_NEW_SPEC_BEHAVIOR,
                     "Enables new HTMLElement.offsetParent behavior to match other browsers."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_RECORD_APP_DATA_DIRECTORY_SIZE,
+                    "Record the size of the embedding app's data directory"),
+            Flag.baseFeature(BlinkFeatures.EARLY_EXIT_ON_NOOP_CLASS_OR_STYLE_CHANGE,
+                    "Early exit when the style or class attribute of a DOM element is set to the"
+                            + " same value as before."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

@@ -209,6 +209,10 @@ public final class ChromePreferenceKeys {
     public static final KeyPrefix CUSTOM_TABS_DEX_LAST_UPDATE_TIME_PREF_PREFIX =
             new KeyPrefix("pref_local_custom_tabs_module_dex_last_update_time_*");
     public static final String CUSTOM_TABS_LAST_URL = "pref_last_custom_tab_url";
+    public static final String CUSTOM_TABS_LAST_CLOSE_TIMESTAMP =
+            "Chrome.CustomTabs.LastCloseTimestamp";
+    public static final String CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION =
+            "Chrome.CustomTabs.LastCloseTabInteraction";
 
     /**
      * Keys used to save whether it is ready to promo.
@@ -884,6 +888,11 @@ public final class ChromePreferenceKeys {
      */
     public static final KeyPrefix WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_TIME_MS_PREFIX =
             new KeyPrefix("Chrome.WebFeed.IntroWebFeedIdShownTimeMs.*");
+    /**
+     * Key used to save the number of times the WebFeed intro for the WebFeed ID was shown.
+     */
+    public static final KeyPrefix WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_COUNT_PREFIX =
+            new KeyPrefix("Chrome.WebFeed.IntroWebFeedIdShownCount.*");
 
     public static final String LOCK_ICON_IN_ADDRESS_BAR_ENABLED =
             "omnibox.lock_icon_in_address_bar_enabled";
@@ -961,6 +970,8 @@ public final class ChromePreferenceKeys {
                 CONTEXT_MENU_SHOP_IMAGE_WITH_GOOGLE_LENS_CLICKED,
                 CONTINUOUS_SEARCH_DISMISSAL_COUNT,
                 CRYPTID_LAST_RENDER_TIMESTAMP,
+                CUSTOM_TABS_LAST_CLOSE_TIMESTAMP,
+                CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION,
                 DEFAULT_BROWSER_PROMO_LAST_DEFAULT_STATE,
                 DEFAULT_BROWSER_PROMO_LAST_PROMO_TIME,
                 DEFAULT_BROWSER_PROMO_PROMOED_BY_SYSTEM_SETTINGS,
@@ -1056,6 +1067,7 @@ public final class ChromePreferenceKeys {
                 VIDEO_TUTORIALS_SHARE_URL_SET,
                 WEB_FEED_INTRO_LAST_SHOWN_TIME_MS,
                 WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_TIME_MS_PREFIX.pattern(),
+                WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_COUNT_PREFIX.pattern(),
                 WEB_SIGNIN_ACCOUNT_PICKER_ACTIVE_DISMISSAL_COUNT
         );
         // clang-format on

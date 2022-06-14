@@ -1737,6 +1737,7 @@ Als je het beleid niet instelt, staat de stroom voor piekuren aanvankelijk uit. 
 <translation id="283478052049914107">Als je het beleid toepast en een niet-standaard poort opgeeft (dat wil zeggen, een andere poort dan 80 of 443), wordt deze poort opgenomen in de gegenereerde Kerberos-SPN.
 
       Als je het beleid niet toepast of niet instelt, bevat de gegenereerde Kerberos-SPN geen poort.</translation>
+<translation id="2835686964326214400">Aangepast schema instellen om apparaten opnieuw op te starten</translation>
 <translation id="2838830882081735096">Gegevensmigratie en ARC niet toestaan</translation>
 <translation id="2839294585867804686">Instellingen voor Network File Shares</translation>
 <translation id="284288632677954003">URL van een XML-bestand dat URL's bevat die nooit overschakeling naar een andere browser veroorzaken.</translation>
@@ -1816,6 +1817,7 @@ Als je het beleid niet instelt, staat de stroom voor piekuren aanvankelijk uit. 
 
       Als je het beleid niet instelt, is het beleid <ph name="ASK_GEOLOCATION_POLICY_NAME" /> van toepassing maar kunnen gebruikers deze instelling wijzigen.</translation>
 <translation id="2922511125678964398">Toestaan dat captive portal-verificatie proxyinstellingen negeert</translation>
+<translation id="2926813071464307947">De sandbox voor de app-container van het weergaveprogramma uitzetten</translation>
 <translation id="2931888116345994552">Hiermee zet je componentupdates voor alle componenten in <ph name="PRODUCT_NAME" /> aan als het beleid wordt toegepast of niet is ingesteld.
 
       Als je het beleid niet toepast, staan updates voor componenten uit. Bepaalde componenten zijn wel uitgesloten van dit beleid. Updates voor componenten worden niet uitgezet als deze geen uitvoerbare code bevatten en essentieel zijn voor de beveiliging van de browser.
@@ -2256,6 +2258,11 @@ Als je dit beleid niet instelt, geldt de standaardwaarde 'niet toegestaan' voor 
           Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt die tekenreeks gebruikt als de naam van de <ph name="PRODUCT_NAME" />-bestemming. Anders wordt de apparaatnaam gebruikt voor de bestemmingsnaam. Als dit beleid niet is ingesteld, is de naam van de bestemming de apparaatnaam en kan de eigenaar van het apparaat (of een gebruiker in het domein dat het apparaat beheert) deze naam wijzigen. De naam mag maximaal 24 tekens lang zijn.</translation>
 <translation id="3329063005964041553">De File Handling API blokkeren voor deze web-apps</translation>
 <translation id="3329401415394648069">Het gebruik van de U2F-beveiligingssleutel-API toestaan.</translation>
+<translation id="3329976499753286262">Als je het beleid toepast of niet instelt, wordt de configuratie van de app-container van het weergaveprogramma aangezet op ondersteunde platforms.
+
+      Als je dit beleid niet toepast, heeft dit een nadelige invloed op de beveiliging en stabiliteit van <ph name="PRODUCT_NAME" />, omdat daardoor de sandbox waarvan de processen van het weergaveprogramma gebruikmaken, minder wordt. Pas het beleid alleen niet toe als er compatibiliteitsproblemen zijn met software van derden die in de processen van het weergaveprogramma moeten worden uitgevoerd.
+
+      Opmerking: Lees meer informatie over het beleid voor procesbeperking (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies).</translation>
 <translation id="3339271789059866414">Configureert de beschikbaarheid van de systeemproxyservice en de proxygegevens voor systeemservices.
       Als het beleid niet is ingesteld, is de systeemproxyservice niet beschikbaar.</translation>
 <translation id="3348799281602260763">Als het beleid is toegepast, kunnen WebRTC-peerverbindingen worden gedowngraded naar verouderde versies van de TLS/DTLS-protocollen (DTLS 1.0, TLS 1.0 en TLS 1.1).
@@ -2958,6 +2965,16 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen s
 
           Als dit beleid niet is ingesteld, staat de markering van het caret-teken in eerste instantie uit op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment aanzetten.</translation>
 <translation id="4183229833636799228">Standaardinstelling voor <ph name="FLASH_PLUGIN_NAME" /></translation>
+<translation id="4186244263855283575">Hiermee kun je een aangepast schema instellen om apparaten opnieuw op te starten. Als dit beleid is ingesteld op True, wordt het apparaat opnieuw opgestart volgens het schema. Het beleid moet worden verwijderd om meer instanties van gepland opnieuw opstarten te annuleren.
+
+      Het volgende geldt voor gebruikerssessies en gastsessies:
+
+* De gebruikers krijgen 1 uur vóór de geplande tijd een melding dat het apparaat opnieuw wordt opgestart. Ze kunnen ervoor kiezen op dat moment opnieuw op te starten of te wachten op het gepland opnieuw opstarten. Gepland opnieuw opstarten kan niet worden uitgesteld.
+
+        * Er is een respijtperiode van 1 uur nadat het apparaat is opgestart. Instanties van gepland opnieuw opstarten worden overgeslagen tijdens deze periode en opnieuw gepland voor de volgende dag, week of maand, afhankelijk van de instelling.
+
+      In kiosksessies is er geen respijtperiode en zijn er geen meldingen over opnieuw opstarten.
+</translation>
 <translation id="4187576366596772431">De WebHID API op deze sites blokkeren</translation>
 <translation id="4192388905594723944">URL voor het valideren van verificatietoken voor client voor externe toegang</translation>
 <translation id="4203055629055264833">Als je dit beleid toepast of niet instelt, kunnen gebruikers de meest recente resultatenpagina van de standaard zoekmachine in een zijvenster tonen door een icoon in de werkbalk aan/uit te zetten.
@@ -3046,14 +3063,6 @@ Zoals wordt vermeld in ons beleid <ph name="SITE_PER_PROCESS_POLICY_NAME" />, zi
       Dit beleid wordt genegeerd en de melding wordt altijd getoond als het apparaat onbeheerd is of er slechts één gebruiker is.
 
       Als er meerdere gebruikersaccounts zijn op een beheerd apparaat, wordt de melding alleen getoond als dit beleid is toegepast.</translation>
-<translation id="4293593564662654474">Dit beleid wordt aangeboden als een manier om je af te melden voor de functie First-Party Sets.
-
-                  Als je dit beleid niet instelt of aanzet, staat de functie First-Party Sets aan.
-
-                  Als je dit beleid uitzet, staat de functie First-Party Sets uit.
-
-                  De status van de functie First-Party Sets bepaalt of Chrome de lijst met First-Party Sets ophaalt.
-                  Het beleid bepaalt ook of Chrome aan First-Party Sets gerelateerde functies ondersteunt (bijvoorbeeld het SameParty-cookiekenmerk).</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">Toegewezen MAC-adres van dock van apparaat</translation>
 <translation id="4314538398999793073">CNAME-lookup tijdens Kerberos-verificatie uitzetten</translation>
@@ -4155,6 +4164,7 @@ Opmerking: Als iOS wordt gebruikt en het beleid wordt aangepast tijdens een sess
 <translation id="5625771176514429288">Chrome-apps kunnen op deze platforms worden uitgevoerd.</translation>
 <translation id="5630352020869108293">De laatste sessie herstellen</translation>
 <translation id="5633871703004128675">Toegankelijkheidsfunctie voor markering van het caret-teken aanzetten</translation>
+<translation id="5634032995857968056">De sandbox voor de app-container van het weergaveprogramma aanzetten</translation>
 <translation id="5639454129004500060">Als dit beleid wordt ingesteld, bevat het informatie om een bureautemplate-bestand te downloaden.  Het bestand bevat een bureautemplate dat aan de huidige gebruiker kan worden geleverd.
       Als het niet wordt ingesteld, bevat de lijst met bureautemplates geen vooraf ingestelde bureautemplate.  Als het beleid <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" /> niet op True wordt ingesteld, heeft dit beleid geen effect.</translation>
 <translation id="5641279111657132737">Dit beleid is beëindigd. Gebruik in plaats daarvan het beleid <ph name="AUTH_SERVER_ALLOWLIST_POLICY_NAME" />.
@@ -5509,7 +5519,6 @@ Als je dit beleid instelt op een lege lijst of niet instelt, zijn er geen URL's 
       Als het beleid niet wordt ingesteld, wordt de plank standaard onderaan het scherm geplaatst en kan de gebruiker de positie van de plank zelf wijzigen.</translation>
 <translation id="7039815268521168329">Voice Match-proces van de Google Assistent laten zien tijdens de eerste installatie</translation>
 <translation id="7040229947030068419">Voorbeeldwaarde:</translation>
-<translation id="7041170641363384736">Hiermee kun je een aangepast schema instellen om apparaten opnieuw op te starten. Het beleid is momenteel alleen van toepassing op apparaten waarop automatisch starten van de app in de kiosksessie aanstaat. Als dit beleid is ingesteld op True, wordt het apparaat opnieuw opgestart volgens het schema. Het beleid moet worden verwijderd om meer gepland opnieuw opstarten te annuleren.</translation>
 <translation id="7044883996351280650">De Android-service 'Back-up maken en terugzetten' beheren</translation>
 <translation id="7047495632846973438">Geeft aan of het rechtenbeleid voor schermopname is aangevinkt of wordt overgeslagen.</translation>
 <translation id="7066292150801784098">Externe gebruikers niet toestaan om vensters met verhoogde bevoegdheid te gebruiken tijdens een sessie voor support op afstand</translation>
@@ -6485,7 +6494,6 @@ Als dit beleid niet is ingesteld, wordt het privacyscherm in eerste instantie ui
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, staat de functie voor cursormarkering in eerste instantie uit, maar kan de gebruiker deze op elk gewenst moment aanzetten.</translation>
-<translation id="8161536598508377155">Aangepast schema instellen om kioskapparaten opnieuw op te starten</translation>
 <translation id="8164144100557223371">Beginpunt voor werkbalk met experimentele browserfuncties uitzetten</translation>
 <translation id="8164687848393015214">Als je het beleid toepast, worden controlenetwerkpakketten (<ph name="HEARTBEATS_TERM" />) naar de beheerserver gestuurd, zodat de server kan waarnemen of het apparaat offline is.
 
@@ -7046,6 +7054,7 @@ Dit beleid geldt per frame en is niet alleen gebaseerd op de oorspronkelijke URL
 <translation id="8763716376920670835">WebSQL staat standaard aan vanaf M101, maar kan worden uitgezet via Chrome-flag.
           Als dit beleid is ingesteld op False of niet is ingesteld, kan WebSQL worden uitgezet.
           Als dit beleid is ingesteld op True, kan WebSQL niet worden uitgezet.</translation>
+<translation id="8766910236040529804">App-container van weergaveprogramma aanzetten</translation>
 <translation id="8767743923206070405">Als je het beleid toepast, wordt de Homepage-knop in de werkbalk van <ph name="PRODUCT_NAME" /> getoond. Als je het beleid niet toepast, wordt de Homepage-knop niet getoond.
 
       Als je het beleid instelt, kunnen gebruikers dit niet wijzigen in <ph name="PRODUCT_NAME" />. Als je het beleid niet instelt, kunnen gebruikers bepalen of ze de Homepage-knop wel of niet willen tonen.</translation>

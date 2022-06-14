@@ -43,13 +43,18 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelLabel {
     // be reused with views::Link.
     using Callback = base::RepeatingCallback<void(const Event& event)>;
 
-    Link(int message_id, Callback callback);
-    Link(int message_id, base::RepeatingClosure closure);
+    Link(int message_id,
+         Callback callback,
+         std::u16string accessible_name = std::u16string());
+    Link(int message_id,
+         base::RepeatingClosure closure,
+         std::u16string accessible_name = std::u16string());
     Link(const Link&);
     ~Link();
 
     const int message_id;
     const Callback callback;
+    const std::u16string accessible_name;
   };
 
   explicit DialogModelLabel(int message_id);
@@ -364,13 +369,32 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelCombobox : public DialogModelField {
 // Ex: [icon] Open URL
 class COMPONENT_EXPORT(UI_BASE) DialogModelMenuItem : public DialogModelField {
  public:
+  class COMPONENT_EXPORT(UI_BASE) Params {
+   public:
+    Params();
+    Params(const Params&) = delete;
+    Params& operator=(const Params&) = delete;
+    ~Params();
+
+    Params& set_is_enabled(bool is_enabled) {
+      is_enabled_ = is_enabled;
+      return *this;
+    }
+
+   private:
+    friend class DialogModelMenuItem;
+
+    bool is_enabled_ = true;
+  };
+
   // Note that this is constructed through a DialogModel which adds it to model
   // fields.
   DialogModelMenuItem(base::PassKey<DialogModel> pass_key,
                       DialogModel* model,
                       ImageModel icon,
                       std::u16string label,
-                      base::RepeatingCallback<void(int)> callback);
+                      base::RepeatingCallback<void(int)> callback,
+                      const Params& params);
   DialogModelMenuItem(const DialogModelMenuItem&) = delete;
   DialogModelMenuItem& operator=(const DialogModelMenuItem&) = delete;
   ~DialogModelMenuItem() override;
@@ -381,11 +405,13 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelMenuItem : public DialogModelField {
   const std::u16string& label(base::PassKey<DialogModelHost>) const {
     return label_;
   }
+  bool is_enabled(base::PassKey<DialogModelHost>) const { return is_enabled_; }
   void OnActivated(base::PassKey<DialogModelHost>, int event_flags);
 
  private:
   const ImageModel icon_;
   const std::u16string label_;
+  const bool is_enabled_;
   base::RepeatingCallback<void(int)> callback_;
 };
 

@@ -143,6 +143,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
       FileSystemContext* context,
       const blink::StorageKey& storage_key,
       FileSystemType type) override;
+  int64_t GetBucketUsageOnFileTaskRunner(FileSystemContext* context,
+                                         const BucketLocator& bucket_locator,
+                                         FileSystemType type) override;
   scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
       const blink::StorageKey& storage_key,
       FileSystemType type) override;
@@ -175,7 +178,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
   const FileSystemOptions file_system_options_;
   const base::FilePath base_path_;
   std::unique_ptr<AsyncFileUtil> file_util_;
-  raw_ptr<FileSystemIDToPluginMap> plugin_map_;  // Owned by file_util_.
+  raw_ptr<FileSystemIDToPluginMap, DanglingUntriaged>
+      plugin_map_;  // Owned by file_util_.
   base::WeakPtrFactory<PluginPrivateFileSystemBackend> weak_factory_{this};
 };
 

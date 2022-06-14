@@ -116,7 +116,6 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
     : io_callback_(base::BindRepeating(&HttpNetworkTransaction::OnIOComplete,
                                        base::Unretained(this))),
       session_(session),
-      request_(nullptr),
       priority_(priority) {}
 
 HttpNetworkTransaction::~HttpNetworkTransaction() {
@@ -1282,7 +1281,9 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 
 int HttpNetworkTransaction::DoReadBody() {
   DCHECK(read_buf_.get());
-  DCHECK_GT(read_buf_len_, 0);
+  // TODO(https://crbug.com/1335423): Change to DCHECK_GT() or remove after bug
+  // is fixed.
+  CHECK_GT(read_buf_len_, 0);
   DCHECK(stream_ != nullptr);
 
   next_state_ = STATE_READ_BODY_COMPLETE;

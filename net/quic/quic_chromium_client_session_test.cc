@@ -138,7 +138,6 @@ class QuicChromiumClientSessionTest
         socket_data_(
             new SequencedSocketData(base::make_span(default_read_.get(), 1),
                                     base::span<MockWrite>())),
-        random_(0),
         helper_(&clock_, &random_),
         transport_security_state_(std::make_unique<TransportSecurityState>()),
         session_key_(kServerHostname,
@@ -161,8 +160,7 @@ class QuicChromiumClientSessionTest
                       &clock_,
                       kServerHostname,
                       quic::Perspective::IS_SERVER,
-                      false),
-        migrate_session_early_v2_(false) {
+                      false) {
     FLAGS_quic_enable_http3_grease_randomness = false;
     quic::QuicEnableVersion(version_);
     // Advance the time, because timers do not like uninitialized times.
@@ -298,7 +296,7 @@ class QuicChromiumClientSessionTest
   std::unique_ptr<MockRead> default_read_;
   std::unique_ptr<SequencedSocketData> socket_data_;
   quic::MockClock clock_;
-  quic::test::MockRandom random_;
+  quic::test::MockRandom random_{0};
   QuicChromiumConnectionHelper helper_;
   quic::test::MockAlarmFactory alarm_factory_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
@@ -314,7 +312,7 @@ class QuicChromiumClientSessionTest
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   ProofVerifyDetailsChromium verify_details_;
-  bool migrate_session_early_v2_;
+  bool migrate_session_early_v2_ = false;
   quic::test::NoopQpackStreamSenderDelegate noop_qpack_stream_sender_delegate_;
 };
 

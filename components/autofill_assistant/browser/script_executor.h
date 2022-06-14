@@ -211,6 +211,7 @@ class ScriptExecutor : public ActionDelegate,
   GetPasswordChangeSuccessTracker() const override;
   content::WebContents* GetWebContents() const override;
   content::WebContents* GetWebContentsForJsExecution() override;
+  const std::string* GetJsFlowLibrary() const override;
   ElementStore* GetElementStore() const override;
   WebController* GetWebController() const override;
   std::string GetEmailAddressForAccessTokenAccount() const override;
@@ -270,7 +271,8 @@ class ScriptExecutor : public ActionDelegate,
   bool SupportsExternalActions() override;
   void RequestExternalAction(
       const ExternalActionProto& external_action,
-      base::OnceCallback<void()> start_dom_checks_callback,
+      base::OnceCallback<void(ExternalActionDelegate::DomUpdateCallback)>
+          start_dom_checks_callback,
       base::OnceCallback<void(const external::Result& result)>
           end_action_callback) override;
   bool MustUseBackendData() const override;

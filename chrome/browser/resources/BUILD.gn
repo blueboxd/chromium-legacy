@@ -117,11 +117,7 @@ group("resources") {
 
 if (enable_js_type_check) {
   group("closure_compile") {
-    deps = [
-      "components:closure_compile",
-      "domain_reliability_internals:closure_compile",
-      "engagement:closure_compile",
-    ]
+    deps = [ "domain_reliability_internals:closure_compile" ]
     if (is_linux || is_chromeos || is_win || is_mac) {
       deps += [
         "bluetooth_internals:closure_compile",
@@ -131,7 +127,6 @@ if (enable_js_type_check) {
         "ntp4:closure_compile",
         "omnibox:closure_compile",
         "settings:closure_compile",
-        "usb_internals:closure_compile",
       ]
     }
     if (is_chromeos_ash) {

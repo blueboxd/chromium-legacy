@@ -186,23 +186,6 @@ std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoEncoderVpx::CreateForVP9() {
   return base::WrapUnique(new WebrtcVideoEncoderVpx(true));
 }
 
-// See
-// https://www.webmproject.org/about/faq/#what-are-the-limits-of-vp8-and-vp9-in-terms-of-resolution-datarate-and-framerate
-// for the limitations of VP8 / VP9 encoders.
-// static
-bool WebrtcVideoEncoderVpx::IsSupportedByVP8(
-    const WebrtcVideoEncoderSelector::Profile& profile) {
-  return profile.resolution.width() <= 16384 &&
-         profile.resolution.height() <= 16384;
-}
-
-// static
-bool WebrtcVideoEncoderVpx::IsSupportedByVP9(
-    const WebrtcVideoEncoderSelector::Profile& profile) {
-  return profile.resolution.width() <= 65536 &&
-         profile.resolution.height() <= 65536;
-}
-
 WebrtcVideoEncoderVpx::~WebrtcVideoEncoderVpx() = default;
 
 void WebrtcVideoEncoderVpx::SetTickClockForTests(
@@ -240,7 +223,7 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
   }
 
   webrtc::DesktopSize previous_frame_size =
-      image_ ? webrtc::DesktopSize(image_->w, image_->h)
+      image_ ? webrtc::DesktopSize(image_->d_w, image_->d_h)
              : webrtc::DesktopSize();
 
   webrtc::DesktopSize frame_size = frame ? frame->size() : previous_frame_size;
@@ -371,7 +354,7 @@ void WebrtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   }
 
   // Tear down |image_| if it doesn't match the new frame size.
-  if (image_ && !size.equals(webrtc::DesktopSize(image_->w, image_->h))) {
+  if (image_ && !size.equals(webrtc::DesktopSize(image_->d_w, image_->d_h))) {
     image_.reset();
   }
 
@@ -493,13 +476,14 @@ void WebrtcVideoEncoderVpx::PrepareImage(
     // aligned. The conversion routines don't require even width & height,
     // so this is safe even if the source dimensions are not even.
     updated_region->IntersectWith(
-        webrtc::DesktopRect::MakeWH(image_->w, image_->h));
+        webrtc::DesktopRect::MakeWH(image_->d_w, image_->d_h));
   } else {
     vpx_img_fmt_t fmt = lossless_color_ ? VPX_IMG_FMT_I444 : VPX_IMG_FMT_YV12;
     image_.reset(vpx_img_alloc(nullptr, fmt, frame->size().width(),
                                frame->size().height(),
                                GetSimdMemoryAlignment()));
-    updated_region->AddRect(webrtc::DesktopRect::MakeWH(image_->w, image_->h));
+    updated_region->AddRect(
+        webrtc::DesktopRect::MakeWH(image_->d_w, image_->d_h));
   }
 
   // Convert the updated region to YUV ready for encoding.
@@ -516,7 +500,7 @@ void WebrtcVideoEncoderVpx::PrepareImage(
     case VPX_IMG_FMT_I444:
       for (webrtc::DesktopRegion::Iterator r(*updated_region); !r.IsAtEnd();
            r.Advance()) {
-        webrtc::DesktopRect rect = GetRowAlignedRect(r.rect(), image_->w);
+        webrtc::DesktopRect rect = GetRowAlignedRect(r.rect(), image_->d_w);
         int rgb_offset =
             rgb_stride * rect.top() + rect.left() * kBytesPerRgbPixel;
         int yuv_offset = uv_stride * rect.top() + rect.left();
@@ -529,7 +513,7 @@ void WebrtcVideoEncoderVpx::PrepareImage(
     case VPX_IMG_FMT_YV12:
       for (webrtc::DesktopRegion::Iterator r(*updated_region); !r.IsAtEnd();
            r.Advance()) {
-        webrtc::DesktopRect rect = GetRowAlignedRect(r.rect(), image_->w);
+        webrtc::DesktopRect rect = GetRowAlignedRect(r.rect(), image_->d_w);
         int rgb_offset =
             rgb_stride * rect.top() + rect.left() * kBytesPerRgbPixel;
         int y_offset = y_stride * rect.top() + rect.left();
@@ -594,7 +578,7 @@ void WebrtcVideoEncoderVpx::UpdateRegionFromActiveMap(
     }
   }
   updated_region->IntersectWith(
-      webrtc::DesktopRect::MakeWH(image_->w, image_->h));
+      webrtc::DesktopRect::MakeWH(image_->d_w, image_->d_h));
 }
 
 }  // namespace remoting

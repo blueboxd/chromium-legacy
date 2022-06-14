@@ -83,16 +83,14 @@ class MockSigninUiDelegate : public SigninUiDelegate {
  public:
   MOCK_METHOD(void,
               ShowSigninUI,
-              (Browser * browser,
-               Profile* profile,
+              (Profile * profile,
                bool enable_sync,
                signin_metrics::AccessPoint access_point,
                signin_metrics::PromoAction promo_action),
               ());
   MOCK_METHOD(void,
               ShowReauthUI,
-              (Browser * browser,
-               Profile* profile,
+              (Profile * profile,
                const std::string& email,
                bool enable_sync,
                signin_metrics::AccessPoint access_point,
@@ -100,8 +98,7 @@ class MockSigninUiDelegate : public SigninUiDelegate {
               ());
   MOCK_METHOD(void,
               ShowTurnSyncOnUI,
-              (Browser * browser,
-               Profile* profile,
+              (Profile * profile,
                signin_metrics::AccessPoint access_point,
                signin_metrics::PromoAction promo_action,
                signin_metrics::Reason signin_reason,
@@ -116,8 +113,7 @@ class MockSigninUiDelegate : public SigninUiDelegateImplDice {
  public:
   MOCK_METHOD(void,
               ShowTurnSyncOnUI,
-              (Browser * browser,
-               Profile* profile,
+              (Profile * profile,
                signin_metrics::AccessPoint access_point,
                signin_metrics::PromoAction promo_action,
                signin_metrics::Reason signin_reason,
@@ -152,7 +148,7 @@ class SigninUiUtilTest : public BrowserWithTestWindowTest {
 
   void EnableSync(const CoreAccountInfo& account_info,
                   bool is_default_promo_account) {
-    EnableSyncFromMultiAccountPromo(browser(), account_info, access_point_,
+    EnableSyncFromMultiAccountPromo(profile(), account_info, access_point_,
                                     is_default_promo_account);
   }
 
@@ -164,8 +160,8 @@ class SigninUiUtilTest : public BrowserWithTestWindowTest {
       TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
     EXPECT_CALL(
         mock_delegate_,
-        ShowTurnSyncOnUI(_, profile(), access_point, promo_action,
-                         signin_reason, account_id, signin_aborted_mode));
+        ShowTurnSyncOnUI(profile(), access_point, promo_action, signin_reason,
+                         account_id, signin_aborted_mode));
   }
 
   void ExpectNoSigninStartedHistograms(
@@ -280,13 +276,6 @@ TEST_F(SigninUiUtilTest, EnableSyncWithExistingAccount) {
     ExpectOneSigninStartedHistograms(histogram_tester, expected_promo_action);
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
-    if (is_default_promo_account) {
-      EXPECT_EQ(1, user_action_tester.GetActionCount(
-                       "Signin_SigninWithDefault_FromBookmarkBubble"));
-    } else {
-      EXPECT_EQ(1, user_action_tester.GetActionCount(
-                       "Signin_SigninNotDefault_FromBookmarkBubble"));
-    }
   }
 }
 
@@ -323,14 +312,6 @@ TEST_F(SigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
 
-    if (is_default_promo_account) {
-      EXPECT_EQ(1, user_action_tester.GetActionCount(
-                       "Signin_SigninWithDefault_FromBookmarkBubble"));
-    } else {
-      EXPECT_EQ(1, user_action_tester.GetActionCount(
-                       "Signin_SigninNotDefault_FromBookmarkBubble"));
-    }
-
     // Verify that the active tab has the correct DICE sign-in URL.
     TabStripModel* tab_strip = browser()->tab_strip_model();
     content::WebContents* active_contents = tab_strip->GetActiveWebContents();
@@ -359,9 +340,6 @@ TEST_F(SigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
                             PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
-  EXPECT_EQ(1,
-            user_action_tester.GetActionCount(
-                "Signin_SigninNewAccountNoExistingAccount_FromBookmarkBubble"));
 
   // Verify that the active tab has the correct DICE sign-in URL.
   content::WebContents* active_contents =
@@ -391,9 +369,6 @@ TEST_F(SigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
       signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
-  EXPECT_EQ(1,
-            user_action_tester.GetActionCount(
-                "Signin_SigninNewAccountExistingAccount_FromBookmarkBubble"));
 }
 
 TEST_F(SigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
@@ -412,9 +387,6 @@ TEST_F(SigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
                             PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
-  EXPECT_EQ(1,
-            user_action_tester.GetActionCount(
-                "Signin_SigninNewAccountNoExistingAccount_FromBookmarkBubble"));
 
   // Verify that the active tab has the correct DICE sign-in URL.
   content::WebContents* active_contents =
@@ -481,7 +453,7 @@ TEST_F(SigninUiUtilTest, ShowReauthTab) {
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
   signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(
-      browser(),
+      profile(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 
   // Verify that the active tab has the correct DICE sign-in URL.
@@ -611,14 +583,14 @@ class MirrorSigninUiUtilTest : public BrowserWithTestWindowTest {
                     bool enable_sync,
                     signin_metrics::AccessPoint access_point,
                     signin_metrics::PromoAction promo_action) {
-    EXPECT_CALL(mock_delegate_, ShowReauthUI(_, profile(), email, enable_sync,
+    EXPECT_CALL(mock_delegate_, ShowReauthUI(profile(), email, enable_sync,
                                              access_point, promo_action));
   }
 
   void ExpectAddAccount(bool enable_sync,
                         signin_metrics::AccessPoint access_point,
                         signin_metrics::PromoAction promo_action) {
-    EXPECT_CALL(mock_delegate_, ShowSigninUI(_, profile(), enable_sync,
+    EXPECT_CALL(mock_delegate_, ShowSigninUI(profile(), enable_sync,
                                              access_point, promo_action));
   }
 
@@ -630,8 +602,8 @@ class MirrorSigninUiUtilTest : public BrowserWithTestWindowTest {
       TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
     EXPECT_CALL(
         mock_delegate_,
-        ShowTurnSyncOnUI(_, profile(), access_point, promo_action,
-                         signin_reason, account_id, signin_aborted_mode));
+        ShowTurnSyncOnUI(profile(), access_point, promo_action, signin_reason,
+                         account_id, signin_aborted_mode));
   }
 
  protected:
@@ -660,7 +632,7 @@ TEST_F(MirrorSigninUiUtilTest, EnableSyncWithExistingAccount) {
         account_info.account_id,
         TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
     EnableSyncFromMultiAccountPromo(
-        browser(), account_info,
+        profile(), account_info,
         signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
         is_default_promo_account);
   }
@@ -682,7 +654,7 @@ TEST_F(MirrorSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
                signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
                signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT);
   EnableSyncFromSingleAccountPromo(
-      browser(), account_info,
+      profile(), account_info,
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 }
 
@@ -693,7 +665,7 @@ TEST_F(MirrorSigninUiUtilTest, EnableSyncForNewAccount) {
       signin_metrics::PromoAction::
           PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT);
   EnableSyncFromMultiAccountPromo(
-      browser(), CoreAccountInfo(),
+      profile(), CoreAccountInfo(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       /*is_default_promo_account=*/false);
 }
@@ -709,7 +681,7 @@ TEST_F(MirrorSigninUiUtilTest, EnableSyncForNewAccountExisting) {
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT);
   EnableSyncFromMultiAccountPromo(
-      browser(), CoreAccountInfo(),
+      profile(), CoreAccountInfo(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       /*is_default_promo_account=*/false);
 }
@@ -730,7 +702,7 @@ TEST_F(MirrorSigninUiUtilTest, ShowReauthDialog) {
                signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
                signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   ShowReauthForPrimaryAccountWithAuthError(
-      browser(),
+      profile(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 }
 

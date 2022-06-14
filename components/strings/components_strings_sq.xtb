@@ -27,6 +27,7 @@
 <translation id="1043382569739532657">Grantet, bursat dhe ndihma financiare</translation>
 <translation id="1048785276086539861">Kur redakton shënimet, ky dokument do të kthehet te pamja me një faqe</translation>
 <translation id="1050038467049342496">Mbyll aplikacionet e tjera</translation>
+<translation id="1053959602163383901">Të zgjodhe që të verifikohesh me një pajisje vërtetimi në sajtet e uebit që përdorin <ph name="PROVIDER_ORIGIN" />. Ky ofrues mund të ketë ruajtur informacione për mënyrën tënde të pagesës, të cilat mund <ph name="LINK_TEXT" />.</translation>
 <translation id="1055184225775184556">&amp;Zhbëj shtimin</translation>
 <translation id="1056663316309890343">Softueri i fotografive</translation>
 <translation id="1056898198331236512">Paralajmërim</translation>
@@ -425,6 +426,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2053111141626950936">Faqet në <ph name="LANGUAGE" /> nuk do të përkthehen.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Kur ky kontroll është aktiv dhe statusi është aktiv, Chrome përcakton se me cilin grup të madh personash (kohortë) është më i ngjashëm aktiviteti yt i shfletimit së fundi. Reklamuesit mund të zgjedhin reklamat për grupin dhe aktiviteti yt i shfletimit mbahet privat në pajisjen tënde. Grupi yt përditësohet çdo ditë.}=1{Kur ky kontroll është aktiv dhe statusi është aktiv, Chrome përcakton se me cilin grup të madh personash (kohortë) është më i ngjashëm aktiviteti yt i shfletimit së fundi. Reklamuesit mund të zgjedhin reklamat për grupin dhe aktiviteti yt i shfletimit mbahet privat në pajisjen tënde. Grupi yt përditësohet çdo ditë.}other{Kur ky kontroll është aktiv dhe statusi është aktiv, Chrome përcakton se me cilin grup të madh personash (kohortë) është më i ngjashëm aktiviteti yt i shfletimit së fundi. Reklamuesit mund të zgjedhin reklamat për grupin dhe aktiviteti yt i shfletimit mbahet privat në pajisjen tënde. Grupi yt përditësohet çdo {NUM_DAYS} ditë.}}</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugjerim}other{# sugjerime}}</translation>
+<translation id="2066915425250589881">të kërkosh që të fshihen</translation>
 <translation id="2068528718802935086">Foshnjat dhe fëmijët e vegjël</translation>
 <translation id="2071156619270205202">Kjo kartë nuk është e përshtatshme për numrin e kartës virtuale.</translation>
 <translation id="2071692954027939183">Njoftimet bllokohen automatikisht sepse ti zakonisht nuk i lejon ato</translation>
@@ -581,6 +583,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2512101340618156538">Nuk lejohet (e parazgjedhur)</translation>
 <translation id="2512413427717747692">Cakto Chrome si butonin e shfletuesit të parazgjedhur; shtyp "Enter" për të caktuar Chrome si shfletuesin e parazgjedhur të sistemit te cilësimet e iOS</translation>
 <translation id="2515629240566999685">Të kontrollosh sinjalin në zonën tënde</translation>
+<translation id="2515761554693942801">Ti zgjodhe që të verifikohesh me Touch ID në sajtet e uebit që përdorin <ph name="PROVIDER_ORIGIN" />. Ky ofrues mund të ketë ruajtur informacione për mënyrën tënde të pagesës, të cilat mund <ph name="LINK_TEXT" />.</translation>
 <translation id="2521385132275182522">Kapje me tel poshtë djathtas</translation>
 <translation id="2521736961081452453">Krijo formular</translation>
 <translation id="2523886232349826891">Ruajtur vetëm në këtë pajisje</translation>
@@ -702,7 +705,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2854764410992194509">Ofruesit e shërbimeve të internetit (ISP-të)</translation>
 <translation id="2856444702002559011">Sulmuesit mund të përpiqen të vjedhin informacionet e tua nga <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (për shembull, fjalëkalimet, mesazhet ose kartat e kreditit). <ph name="BEGIN_LEARN_MORE_LINK" />Mëso më shumë<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2859806420264540918">Ky sajt shfaq reklama ndërhyrëse ose mashtruese.</translation>
-<translation id="286512204874376891">Një kartë virtuale fsheh kartën tënde reale për të të mbrojtur nga mashtrimi i mundshëm.<ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="287596039013813457">Miqësor</translation>
 <translation id="28761159517501904">Filmat</translation>
 <translation id="2876489322757410363">Po del nga modaliteti "i fshehtë" për të paguar nëpërmjet një aplikacioni të jashtëm. Të vazhdohet?</translation>
@@ -1333,7 +1335,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4607603470419975064">Butoni "Shiko këshilla për Chrome", shtyp Enter për të mësuar për veçoritë e Chrome</translation>
 <translation id="4607608436550361748">Shiko këshillat për Chrome</translation>
 <translation id="4617273035598175554">Softuerët për grafika dhe animim</translation>
-<translation id="4627165777145349100">Më shumë rreth kësaj faqeje</translation>
 <translation id="4627675673814409125">Kjo politikë nuk mund të caktohet në nivelin e profilit të Chrome dhe do të shpërfillet.</translation>
 <translation id="4628948037717959914">Fotografia</translation>
 <translation id="4631649115723685955">Oferta e kthimit të parave është e lidhur</translation>
@@ -1498,6 +1499,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5051305769747448211">Komedia e drejtpërdrejtë</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{Për ta dërguar këtë skedar duke përdorur "Ndarjen në afërsi", liro hapësirë (<ph name="DISK_SPACE_SIZE" />) në pajisjen tënde}other{Për ta dërguar këta skedarë duke përdorur "Ndarjen në afërsi", liro hapësirë (<ph name="DISK_SPACE_SIZE" />) në pajisjen tënde}}</translation>
 <translation id="5056549851600133418">Artikujt për ty</translation>
+<translation id="5060483733937416656">Ti zgjodhe që të verifikohesh me Windows Hello në sajtet e uebit që përdorin <ph name="PROVIDER_ORIGIN" />. Ky ofrues mund të ketë ruajtur informacione për mënyrën tënde të pagesës, të cilat mund <ph name="LINK_TEXT" />.</translation>
 <translation id="5061227663725596739">Mos dëshiron të thuash <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5066056036849835175">Historiku i printimeve</translation>
 <translation id="5068234115460527047">Fonde spekulative</translation>
@@ -1867,7 +1869,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6061154937977953833">Mundja</translation>
 <translation id="6064217302520318294">Kyçja e ekranit</translation>
 <translation id="6064602040258638498">Kuponët dhe ofertat e zbritjeve</translation>
-<translation id="6078813287646374487">Shfaq më shumë informacione për këtë faqe</translation>
 <translation id="6080696365213338172">Je qasur në përmbajtje duke përdorur një certifikatë të dhënë nga administratori. Të dhënat që jep për <ph name="DOMAIN" /> mund të zbulohen nga administratori yt.</translation>
 <translation id="6087312102907839798">Kërkime të ngjashme</translation>
 <translation id="6094273045989040137">Shëno</translation>
@@ -2570,6 +2571,7 @@ Detaje shtesë:
 <translation id="8074253406171541171">10x13 (Zarf)</translation>
 <translation id="8075736640322370409">Krijo shpejt një "Fletë të re të Google"</translation>
 <translation id="8075898834294118863">Menaxho cilësimet e sajtit</translation>
+<translation id="8076492880354921740">Skedat</translation>
 <translation id="8078141288243656252">Nuk mund të shënosh kur rrotullohet</translation>
 <translation id="8079031581361219619">Dëshiron të ngarkosh përsëri sajtin?</translation>
 <translation id="8081087320434522107">Veturat</translation>
@@ -2790,6 +2792,7 @@ Detaje shtesë:
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> është kodi për <ph name="ORIGIN" /></translation>
 <translation id="874918643257405732">Shtoje këtë skedë te faqeshënuesit</translation>
 <translation id="8751426954251315517">Provo përsëri herën tjetër</translation>
+<translation id="8757526089434340176">Disponohet ofertë e Google Pay</translation>
 <translation id="8758885506338294482">Videolojërat konkurruese</translation>
 <translation id="8759274551635299824">Kjo kartë ka skaduar</translation>
 <translation id="87601671197631245">Ky sajt përdor një konfigurim të vjetruar të sigurisë, i cili mund t'i ekspozojë informacionet e tua (p.sh. fjalëkalimet, mesazhet ose kartat e kreditit) kur dërgohen te ky sajt.</translation>

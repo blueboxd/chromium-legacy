@@ -14,8 +14,9 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
+#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
@@ -95,6 +96,47 @@ void ReportBadMessageInsecureReportingOrigin() {
       "AttributionDataHost: Reporting origin must be secure.");
 }
 
+absl::optional<std::vector<AttributionAggregatableTriggerData>> FromMojo(
+    std::vector<blink::mojom::AttributionAggregatableTriggerDataPtr> mojo) {
+  if (mojo.size() > blink::kMaxAttributionAggregatableTriggerDataPerTrigger)
+    return absl::nullopt;
+
+  std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data;
+  aggregatable_trigger_data.reserve(mojo.size());
+
+  for (auto& aggregatable_trigger : mojo) {
+    absl::optional<AttributionFilterData> filters =
+        AttributionFilterData::FromTriggerFilterValues(
+            std::move(aggregatable_trigger->filters->filter_values));
+    if (!filters.has_value())
+      return absl::nullopt;
+
+    absl::optional<AttributionFilterData> not_filters =
+        AttributionFilterData::FromTriggerFilterValues(
+            std::move(aggregatable_trigger->not_filters->filter_values));
+    if (!not_filters.has_value())
+      return absl::nullopt;
+
+    absl::optional<AttributionAggregatableTriggerData> data =
+        AttributionAggregatableTriggerData::Create(
+            aggregatable_trigger->key_piece,
+            std::move(aggregatable_trigger->source_keys), std::move(*filters),
+            std::move(*not_filters));
+    if (!data.has_value())
+      return absl::nullopt;
+
+    aggregatable_trigger_data.push_back(std::move(*data));
+  }
+
+  return aggregatable_trigger_data;
+}
+
+enum class RegistrationType {
+  kNone,
+  kSource,
+  kTrigger,
+};
+
 }  // namespace
 
 struct AttributionDataHostManagerImpl::FrozenContext {
@@ -111,12 +153,10 @@ struct AttributionDataHostManagerImpl::FrozenContext {
   // host.
   //
   // For receivers with `source_type` `AttributionSourceType::kEvent`,
-  // initialized to `absl::nullopt`. If the first call is to
-  // `AttributionDataHostManagerImpl::SourceDataAvailable()`, set to the
-  // source's destination. If the first call is to
-  // `AttributionDataHostManagerImpl::TriggerDataAvailable()`, set to an opaque
-  // origin.
-  absl::optional<url::Origin> destination;
+  // this is opaque by default.
+  url::Origin destination;
+
+  RegistrationType registration_type = RegistrationType::kNone;
 
   int num_data_registered = 0;
 
@@ -243,30 +283,23 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
   FrozenContext& context = receivers_.current_context();
   DCHECK(network::IsOriginPotentiallyTrustworthy(context.context_origin));
 
-  switch (context.source_type) {
-    case AttributionSourceType::kNavigation:
-      DCHECK(context.destination.has_value());
-
-      if (net::SchemefulSite(data->destination) !=
-          net::SchemefulSite(*context.destination)) {
-        RecordSourceDataHandleStatus(DataHandleStatus::kContextError);
-        return;
-      }
-      break;
-    case AttributionSourceType::kEvent:
-      if (!context.destination.has_value()) {
-        context.destination = data->destination;
-      } else if (data->destination != *context.destination) {
-        RecordSourceDataHandleStatus(DataHandleStatus::kContextError);
-        if (context.destination->opaque()) {
-          mojo::ReportBadMessage(
-              "AttributionDataHost: Cannot register sources after registering "
-              "a trigger.");
-        }
-        return;
-      }
-      break;
+  if (context.source_type == AttributionSourceType::kNavigation) {
+    if (net::SchemefulSite(data->destination) !=
+        net::SchemefulSite(context.destination)) {
+      RecordSourceDataHandleStatus(DataHandleStatus::kContextError);
+      return;
+    }
   }
+
+  if (context.registration_type == RegistrationType::kTrigger) {
+    RecordSourceDataHandleStatus(DataHandleStatus::kContextError);
+    mojo::ReportBadMessage(
+        "AttributionDataHost: Cannot register sources after registering "
+        "a trigger.");
+    return;
+  }
+
+  context.registration_type = RegistrationType::kSource;
 
   base::Time source_time = base::Time::Now();
 
@@ -283,10 +316,9 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
     return;
   }
 
-  absl::optional<AttributionAggregatableSource> aggregatable_source =
-      AttributionAggregatableSource::FromKeys(
-          std::move(data->aggregation_keys));
-  if (!aggregatable_source.has_value()) {
+  absl::optional<AttributionAggregationKeys> aggregation_keys =
+      AttributionAggregationKeys::FromKeys(std::move(data->aggregation_keys));
+  if (!aggregation_keys.has_value()) {
     RecordSourceDataHandleStatus(DataHandleStatus::kInvalidData);
     mojo::ReportBadMessage("AttributionDataHost: Invalid aggregatable source.");
     return;
@@ -305,7 +337,7 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
       context.source_type, data->priority, std::move(*filter_data),
       data->debug_key ? absl::make_optional(data->debug_key->value)
                       : absl::nullopt,
-      std::move(*aggregatable_source)));
+      std::move(*aggregation_keys)));
 
   attribution_manager_->HandleSource(std::move(storable_source));
 }
@@ -329,15 +361,17 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
     return;
   }
 
-  if (!context.destination.has_value()) {
-    context.destination = url::Origin();
-    OnSourceEligibleDataHostFinished(context.register_time);
-  } else if (!context.destination->opaque()) {
+  if (context.registration_type == RegistrationType::kSource) {
     RecordTriggerDataHandleStatus(DataHandleStatus::kContextError);
     mojo::ReportBadMessage(
-        "AttributionDataHost: Cannot register triggers after registering a "
-        "source.");
+        "AttributionDataHost: Cannot register triggers after registering "
+        "a source.");
     return;
+  }
+
+  if (context.registration_type == RegistrationType::kNone) {
+    OnSourceEligibleDataHostFinished(context.register_time);
+    context.registration_type = RegistrationType::kTrigger;
   }
 
   absl::optional<AttributionFilterData> filters =
@@ -387,13 +421,22 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
         std::move(*filters), std::move(*not_filters));
   }
 
-  absl::optional<AttributionAggregatableTrigger> aggregatable_trigger =
-      AttributionAggregatableTrigger::FromMojo(
-          std::move(data->aggregatable_trigger));
-  if (!aggregatable_trigger.has_value()) {
+  absl::optional<std::vector<AttributionAggregatableTriggerData>>
+      aggregatable_trigger_data =
+          FromMojo(std::move(data->aggregatable_trigger_data));
+  if (!aggregatable_trigger_data.has_value()) {
     RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
     mojo::ReportBadMessage(
-        "AttributionDataHost: Invalid aggregatable trigger.");
+        "AttributionDataHost: Invalid aggregatable trigger data.");
+    return;
+  }
+
+  absl::optional<AttributionAggregatableValues> aggregatable_values =
+      AttributionAggregatableValues::FromValues(
+          std::move(data->aggregatable_values));
+  if (!aggregatable_values.has_value()) {
+    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
+    mojo::ReportBadMessage("AttributionDataHost: Invalid aggregatable values.");
     return;
   }
 
@@ -406,7 +449,8 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
       std::move(data->reporting_origin), std::move(*filters),
       data->debug_key ? absl::make_optional(data->debug_key->value)
                       : absl::nullopt,
-      std::move(event_triggers), std::move(*aggregatable_trigger));
+      std::move(event_triggers), std::move(*aggregatable_trigger_data),
+      std::move(*aggregatable_values));
 
   // Handle the trigger immediately if we're not waiting for any sources to be
   // registered.
@@ -472,9 +516,9 @@ void AttributionDataHostManagerImpl::OnReceiverDisconnected() {
   DCHECK_GE(context.num_data_registered, 0);
 
   if (context.num_data_registered > 0) {
-    DCHECK(context.destination.has_value());
+    DCHECK_NE(context.registration_type, RegistrationType::kNone);
 
-    if (context.destination->opaque()) {
+    if (context.registration_type == RegistrationType::kTrigger) {
       base::UmaHistogramExactLinear("Conversions.RegisteredTriggersPerDataHost",
                                     context.num_data_registered, 101);
     } else {
@@ -484,7 +528,7 @@ void AttributionDataHostManagerImpl::OnReceiverDisconnected() {
   }
 
   // If the receiver was handling triggers, there's nothing to do here.
-  if (context.destination.has_value() && context.destination->opaque())
+  if (context.registration_type == RegistrationType::kTrigger)
     return;
 
   OnSourceEligibleDataHostFinished(context.register_time);

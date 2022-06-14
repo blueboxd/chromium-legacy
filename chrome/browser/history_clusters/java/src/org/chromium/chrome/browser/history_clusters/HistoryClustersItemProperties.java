@@ -33,6 +33,8 @@ class HistoryClustersItemProperties {
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<OnClickListener> CLICK_HANDLER =
             new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<ClusterVisit> CLUSTER_VISIT =
+            new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<Drawable> END_BUTTON_DRAWABLE =
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<Drawable> ICON_DRAWABLE =
@@ -40,10 +42,10 @@ class HistoryClustersItemProperties {
     static final WritableObjectPropertyKey<String> LABEL = new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<List<String>> RELATED_SEARCHES =
             new WritableObjectPropertyKey<>();
-    static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
-    static final WritableObjectPropertyKey<String> URL = new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<CharSequence> TITLE = new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<CharSequence> URL = new WritableObjectPropertyKey<>();
     static final WritableIntPropertyKey VISIBILITY = new WritableIntPropertyKey();
 
-    static final PropertyKey[] ALL_KEYS = {CHIP_CLICK_HANDLER, CLICK_HANDLER, END_BUTTON_DRAWABLE,
-            ICON_DRAWABLE, LABEL, RELATED_SEARCHES, TITLE, URL, VISIBILITY};
+    static final PropertyKey[] ALL_KEYS = {CHIP_CLICK_HANDLER, CLICK_HANDLER, CLUSTER_VISIT,
+            END_BUTTON_DRAWABLE, ICON_DRAWABLE, LABEL, RELATED_SEARCHES, TITLE, URL, VISIBILITY};
 }

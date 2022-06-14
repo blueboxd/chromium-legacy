@@ -56,10 +56,6 @@
 <translation id="1247519845643687288">လတ်တလောသုံး အက်ပ်များ</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />မှ အားသွင်းနေပါသည်</translation>
 <translation id="1255033239764210633">မိုးလေဝသအခြေအနေ ဘယ်လိုရှိလဲ။</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> မှ 
-        <ph name="END_TIME" /> အထိ၊ 
-        <ph name="TIME_ZONE" />၊ 
-        <ph name="EVENT_SUMMARY" />။ နောက်ထပ်အသေးစိတ်များအတွက် Google Calendar တွင်ရွေးပါ။</translation>
 <translation id="1267032506238418139">ဖြတ်လမ်းလင့်ခ် ပြောင်းလဲခြင်း</translation>
 <translation id="1269405891096105529">‘ဧည့်သည်မုဒ်’ တွင် ချိတ်ဆက်ပစ္စည်းကို မပံ့ပိုးပါ</translation>
 <translation id="1270290102613614947">မျက်နှာပြင် ပေါ်က ကီးဘုတ် ပိတ်ထား</translation>
@@ -125,6 +121,7 @@
 <translation id="1620510694547887537">ကင်မရာ</translation>
 <translation id="1632985212731562677">'ဆက်တင်များ' &gt; 'အများသုံးစွဲနိုင်မှု' တွင် 'ခလုတ်သုံးခြင်း' ကို ပိတ်နိုင်သည်။</translation>
 <translation id="1637505162081889933">စက် <ph name="NUM_DEVICES" /> ခု</translation>
+<translation id="1639239467298939599">တင်ပေးနေ</translation>
 <translation id="1654477262762802994">အသံဖြင့် စတင် စုံစမ်းမေးမြန်းရန်</translation>
 <translation id="1668469839109562275">အသင့်ပါသော VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ကျန်ပါသည်</translation>
@@ -507,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" />သို့ ချိတ်ဆက်​ေနေ</translation>
 <translation id="3922427723338465344">{0,plural, =1{စက်ကို ယခင်ဗားရှင်းသို့ 1 မိနစ်အတွင်း ပြောင်းပါ}other{စက်ကို ယခင်ဗားရှင်းသို့ # မိနစ်အတွင်း ပြောင်းပါ}}</translation>
 <translation id="3923494859158167397">မိုဘိုင်းကွန်ရက် စနစ်ထည့်သွင်းမထားပါ</translation>
+<translation id="3925540965556789199"><ph name="DATE" />၊ အစီအစဉ်များ ဖွင့်နေသည်။</translation>
 <translation id="3932043219784172185">ချိတ်ဆက်ထားသော စက်မရှိပါ</translation>
 <translation id="3934456833412894880">အလိုက်သင့်အားသွင်းခြင်းကို ဖွင့်ထားသည်။ သင့်ဘက်ထရီ သက်တမ်းကြာရှည်စေရန် ၈၀% တွင် ရပ်နေမည်ဖြစ်ပြီး အလိုရှိသောအချိန်တွင် အားအပြည့်သွင်းပါမည်။</translation>
 <translation id="3943857333388298514">ကူးဖြည့်ရန်</translation>
@@ -706,6 +704,7 @@
 <translation id="5078796286268621944">မမှန်ကန်သည့် ပင်ကုဒ်</translation>
 <translation id="5083553833479578423">နောက်ထပ် Assistant ဝန်ဆောင်မှုများကို ဖွင့်ပါ</translation>
 <translation id="509790653408515442">သင့်ဖုန်း၏ အက်ပ်များကို တိုက်ရိုက်လွှင့်သောအခါ ၎င်းတို့က ဤနေရာတွင် ပေါ်လာမည်</translation>
+<translation id="5098537242461068432">မျက်နှာပြင်နှင့် ဝင်းဒိုးများ ပြန်ဖွင့်ထားသည်</translation>
 <translation id="5107522548814527560">ဝဘ်</translation>
 <translation id="5117590920725113268">လာမည့် လကို ပြရန်</translation>
 <translation id="5136175204352732067">မတူညီသည့် ကီးဘုတ်ကို ချိတ်ဆက်ထားသည်</translation>
@@ -1050,7 +1049,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">စက္ကန့် <ph name="TIMEOUT_SECONDS" /> အတွင်းမှာ ပြတ်သားမှု အဟောင်းဆီကို ပြန်ပြောင်းမည်</translation>
 <translation id="7180611975245234373">ပြန်လည်စတင်ရန်</translation>
-<translation id="718361511487535372">Google Calendar တွင် ဖွင့်ရန်</translation>
 <translation id="7188494361780961876">မီနူးကို ဖန်သားပြင်၏ ဘယ်ဘက်ထိပ်ထောင့်သို့ ရွှေ့လိုက်သည်။</translation>
 <translation id="7189412385142492784">သောကြာဂြိုဟ်က ဘယ်လောက်ဝေးလဲ</translation>
 <translation id="7198435252016571249">ကင်မရာကို အောက်ညာဘက်ထောင့်သို့ ကပ်ထားသည်။ စနစ်မျက်နှာပြင်နှင့် ငြိနေသည်။</translation>
@@ -1059,6 +1057,10 @@
 <translation id="7258828758145722155">မနေ့က ပြင်ဆင်ထားသည်</translation>
 <translation id="726276584504105859">မျက်နှာပြင် ခွဲခြမ်းပြသခြင်းကို အသုံးပြုရန် ဤနေရာသို့ ဖိဆွဲပါ</translation>
 <translation id="7262906531272962081">သတိပေးချက် ပြုလုပ်ပါ</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> မှ
+        <ph name="END_TIME" /> အထိ၊
+        <ph name="TIME_ZONE" />၊
+        <ph name="EVENT_SUMMARY" />။ နောက်ထပ်အသေးစိတ်များအတွက် Google Calendar တွင်ရွေးပါ။</translation>
 <translation id="7302889331339392448">'တိုက်ရိုက်စာတန်း' ကို ပိတ်ထားသည်။</translation>
 <translation id="7303365578352795231">အခြား ကိရိယာတွင် ဖြေကြားနေသည်။</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1171,6 +1173,7 @@
 <translation id="7904094684485781019">ဤ အကောင့်၏ စီမံခန့်ခွဲသူမှ လက်မှတ်ထိုးဝင်ရာက်မှုများကို ပိတ်ပင်ထားပါသည်။</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">တိုက်ရိုက်စာတန်းကို ယခု စက်အတွင်းမှာပင် လုပ်ဆောင်နေပြီး နှုတ်တိုက်ချပေးခြင်းကို အော့ဖ်လိုင်းသုံးနိုင်ပါပြီ</translation>
+<translation id="7932451802722951285">Google Calendar တွင် ဖွင့်ရန်</translation>
 <translation id="7933084174919150729">Google Assistant သည် ပင်မပရိုဖိုင်အတွက်သာ ရနိုင်ပါသည်။</translation>
 <translation id="79341161159229895">အကောင့်ကို <ph name="FIRST_PARENT_EMAIL" /> နှင့် <ph name="SECOND_PARENT_EMAIL" /> က စီမံပါသည်</translation>
 <translation id="793716872548410480">သင်၏ကလစ်ဘုတ်ကို ကြည့်ရန် <ph name="SHORTCUT_KEY_NAME" /> + V နှိပ်ပါ။ သင်မိတ္တူကူးထားသည့် နောက်ဆုံး ၅ ခုကို သင်၏ကလစ်ဘုတ်တွင် သိမ်းလိုက်သည်။</translation>

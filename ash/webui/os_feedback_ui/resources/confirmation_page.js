@@ -8,16 +8,27 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FeedbackFlowState} from './feedback_flow.js';
-import {SendReportStatus} from './feedback_types.js';
+import {FeedbackServiceProviderInterface, SendReportStatus} from './feedback_types.js';
+import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
 
 /**
  * @fileoverview
  * 'confirmation-page' is the last step of the feedback tool.
  */
-export class ConfirmationPageElement extends PolymerElement {
+
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const ConfirmationPageElementBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
+
+export class ConfirmationPageElement extends ConfirmationPageElementBase {
   static get is() {
     return 'confirmation-page';
   }
@@ -40,6 +51,9 @@ export class ConfirmationPageElement extends PolymerElement {
      * @type {?SendReportStatus}
      */
     this.sendReportStatus;
+
+    /** @private {!FeedbackServiceProviderInterface} */
+    this.feedbackServiceProvider_ = getFeedbackServiceProvider();
   }
 
   /**
@@ -60,7 +74,7 @@ export class ConfirmationPageElement extends PolymerElement {
     if (this.isOffline_()) {
       return 'You are offline now. Feedback will be sent later.';
     }
-    return 'Thanks for your feedback';
+    return this.i18n('confirmationTitleOnline');
   }
 
   /**
@@ -99,6 +113,26 @@ export class ConfirmationPageElement extends PolymerElement {
    */
   handleDoneButtonClicked_() {
     window.close();
+  }
+
+  /**
+   * Open links, including SWA app link and web link.
+   * @param {!Event} e
+   * @protected
+   */
+  handleLinkClicked_(e) {
+    e.stopPropagation();
+
+    switch (e.target.id) {
+      case 'diagnostics':
+        this.feedbackServiceProvider_.openDiagnosticsApp();
+        break;
+      case 'explore':
+        this.feedbackServiceProvider_.openExploreApp();
+        break;
+      default:
+        console.warn('unexpected caller id: ', e.target.id);
+    }
   }
 }
 

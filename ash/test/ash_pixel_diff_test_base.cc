@@ -4,7 +4,9 @@
 
 #include "ash/test/ash_pixel_diff_test_base.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/power/power_status.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/command_line.h"
@@ -64,6 +66,14 @@ AshPixelDiffTestBase::AshPixelDiffTestBase(
 
 AshPixelDiffTestBase::~AshPixelDiffTestBase() = default;
 
+bool AshPixelDiffTestBase::ComparePrimaryFullScreen(
+    const std::string& screenshot_name) {
+  aura::Window* primary_root_window = Shell::Get()->GetPrimaryRootWindow();
+  return pixel_diff_.CompareNativeWindowScreenshot(
+      screenshot_name, primary_root_window,
+      gfx::Rect(primary_root_window->bounds().size()));
+}
+
 void AshPixelDiffTestBase::SetUp() {
   // In ash_pixeltests, we want to take screenshots then compare them with the
   // benchmark images. Therefore, enable pixel output in tests.
@@ -81,6 +91,13 @@ void AshPixelDiffTestBase::SetUp() {
   AshTestBase::SetUp();
 
   SimulateUserLogin(kAccountId_);
+
+  // If the dark/light mode feature is enabled, ensure to use the dark mode.
+  if (features::IsDarkLightModeEnabled()) {
+    auto* color_provider = AshColorProvider::Get();
+    if (!color_provider->IsDarkModeEnabled())
+      color_provider->ToggleColorMode();
+  }
 
   // Set variable UI components in explicit ways to stabilize screenshots.
   SetWallPaper();

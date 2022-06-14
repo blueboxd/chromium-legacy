@@ -189,10 +189,7 @@ DownloadItemModel::~DownloadItemModel() {
 }
 
 ContentId DownloadItemModel::GetContentId() const {
-  bool off_the_record = content::DownloadItemUtils::GetBrowserContext(download_)
-                            ->IsOffTheRecord();
-  return ContentId(OfflineItemUtils::GetDownloadNamespacePrefix(off_the_record),
-                   download_->GetGuid());
+  return OfflineItemUtils::GetContentIdForDownload(download_);
 }
 
 Profile* DownloadItemModel::profile() const {
@@ -675,6 +672,7 @@ bool DownloadItemModel::IsCommandEnabled(
     case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::REVIEW:
       return DownloadUIModel::IsCommandEnabled(download_commands, command);
   }
   NOTREACHED();
@@ -714,6 +712,7 @@ bool DownloadItemModel::IsCommandChecked(
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::REVIEW:
       return false;
   }
   return false;
@@ -829,6 +828,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::PAUSE:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
+    case DownloadCommands::REVIEW:
       DownloadUIModel::ExecuteCommand(download_commands, command);
       break;
     case DownloadCommands::DEEP_SCAN:
@@ -848,7 +848,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
           download_core_service->GetDownloadManagerDelegate();
       DCHECK(delegate);
       enterprise_connectors::AnalysisSettings settings;
-      settings.tags = {"malware"};
+      settings.tags = {{"malware", enterprise_connectors::TagSettings()}};
       protection_service->UploadForDeepScanning(
           download_,
           base::BindRepeating(
@@ -890,6 +890,27 @@ void DownloadItemModel::CompleteSafeBrowsingScan() {
                     kSafeBrowsingUserDataKey));
     state->CompleteDownload();
   }
+}
+
+void DownloadItemModel::ReviewScanningVerdict(
+    content::WebContents* web_contents) {
+  auto command_callback =
+      [](std::unique_ptr<DownloadItemModel> model,
+         std::unique_ptr<DownloadCommands> download_commands,
+         DownloadCommands::Command command) {
+        model->ExecuteCommand(download_commands.get(), command);
+      };
+  enterprise_connectors::ShowDownloadReviewDialog(
+      GetFileNameToReportUser().LossyDisplayName(), profile(), download_,
+      web_contents, download_->GetDangerType(),
+      base::BindOnce(
+          command_callback, std::make_unique<DownloadItemModel>(download_),
+          std::make_unique<DownloadCommands>(DownloadUIModel::GetWeakPtr()),
+          DownloadCommands::KEEP),
+      base::BindOnce(
+          command_callback, std::make_unique<DownloadItemModel>(download_),
+          std::make_unique<DownloadCommands>(DownloadUIModel::GetWeakPtr()),
+          DownloadCommands::DISCARD));
 }
 #endif
 

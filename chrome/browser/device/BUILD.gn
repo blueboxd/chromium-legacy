@@ -20,9 +20,7 @@ android_library("java") {
   ]
 }
 
-android_library("junit") {
-  # Skip platform checks since Robolectric depends on requires_android targets.
-  bypass_platform_checks = true
+robolectric_library("junit") {
   testonly = true
   sources = [
     "android/java/src/org/chromium/chrome/browser/device/DeviceConditionsTest.java",
@@ -34,7 +32,7 @@ android_library("junit") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//net/android:net_java",
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/junit",

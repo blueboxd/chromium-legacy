@@ -667,6 +667,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSetTimeoutWithout1MsClampEnabled,
     policy_prefs::kSetTimeoutWithout1MsClampEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kUnthrottledNestedTimeoutEnabled,
+    policy_prefs::kUnthrottledNestedTimeoutEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kDisablePrintPreview,
     prefs::kPrintPreviewDisabled,
     base::Value::Type::BOOLEAN },
@@ -745,6 +748,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kCloudPrintProxyEnabled,
     prefs::kCloudPrintProxyEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kCloudPrintSubmitEnabled,
+    prefs::kCloudPrintSubmitEnabled,
     base::Value::Type::BOOLEAN },
   { key::kShowAppsShortcutInBookmarkBar,
     bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
@@ -1585,6 +1591,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSecurityKeyPermitAttestation,
     prefs::kSecurityKeyPermitAttestation,
     base::Value::Type::LIST },
+  { key::kU2fSecurityKeyApiEnabled,
+    extensions::pref_names::kU2fSecurityKeyApiEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)

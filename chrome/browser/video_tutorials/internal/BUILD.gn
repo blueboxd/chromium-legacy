@@ -144,9 +144,7 @@ if (is_android) {
     ]
   }
 
-  java_library("junit") {
-    # Skip platform checks since Robolectric depends on requires_android targets.
-    bypass_platform_checks = true
+  robolectric_library("junit") {
     testonly = true
     sources = [
       "android/java/src/org/chromium/chrome/browser/video_tutorials/PlaybackStateObserverUnitTest.java",
@@ -188,7 +186,7 @@ if (is_android) {
       "//chrome/browser/flags:java",
       "//chrome/browser/video_tutorials:java",
       "//chrome/browser/video_tutorials:test_support_java",
-      "//chrome/test/android:chrome_java_test_support",
+      "//chrome/test/android:chrome_java_integration_test_support",
       "//components/thin_webview:java",
       "//content/public/test/android:content_java_test_support",
       "//third_party/android_deps:espresso_java",

@@ -76,6 +76,11 @@ ReadAnythingController::~ReadAnythingController() {
   WebContentsObserver::Observe(nullptr);
 }
 
+void ReadAnythingController::Activate(bool active) {
+  active_ = active;
+  DistillAXTree();
+}
+
 void ReadAnythingController::OnFontChoiceChanged(int new_choice) {
   model_->SetSelectedFontIndex(new_choice);
 }
@@ -93,12 +98,14 @@ void ReadAnythingController::OnTabStripModelChanged(
   DistillAXTree();
 }
 
-void ReadAnythingController::PrimaryPageChanged(content::Page& page) {
+void ReadAnythingController::DidStopLoading() {
   DistillAXTree();
 }
 
 void ReadAnythingController::DistillAXTree() {
   DCHECK(browser_);
+  if (!active_)
+    return;
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)

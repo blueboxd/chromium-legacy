@@ -26,7 +26,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -85,7 +84,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   PdfViewPluginBase& operator=(const PdfViewPluginBase& other) = delete;
 
   // PDFEngine::Client:
-  void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void Invalidate(const gfx::Rect& rect) override;
   void DidScroll(const gfx::Vector2d& offset) override;
   void ScrollToX(int x_screen_coords) override;
@@ -139,10 +137,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Gets the accessibility doc info based on the information from `engine_`.
   AccessibilityDocInfo GetAccessibilityDocInfo() const;
 
-  void InitializeEngineForTesting(std::unique_ptr<PDFiumEngine> engine);
-
-  void set_full_frame_for_testing(bool full_frame) { full_frame_ = full_frame; }
-
   DocumentLoadState document_load_state_for_testing() const {
     return document_load_state_;
   }
@@ -162,29 +156,18 @@ class PdfViewPluginBase : public PDFEngine::Client,
   PdfViewPluginBase();
   ~PdfViewPluginBase() override;
 
-  // Performs initialization common to all implementations of this plugin.
-  // `engine` should be an appropriately-configured PDF engine, while the other
-  // parameters come from the corresponding plugin attributes.
-  void InitializeBase(std::unique_ptr<PDFiumEngine> engine,
-                      base::StringPiece src_url,
-                      base::StringPiece original_url,
-                      bool full_frame);
-
   // Creates a new `PDFiumEngine`.
   virtual std::unique_ptr<PDFiumEngine> CreateEngine(
       PDFEngine::Client* client,
       PDFiumFormFiller::ScriptOption script_option) = 0;
 
-  // Destroys the main `PDFiumEngine`. Subclasses should call this method in
-  // their destructor to ensure the engine is destroyed first.
-  void DestroyEngine();
-
   // Destroys the `PDFiumEngine` used for Print Preview. Subclasses should call
   // this method in their destructor to ensure the engine is destroyed first.
   void DestroyPreviewEngine();
 
-  const PDFiumEngine* engine() const { return engine_.get(); }
-  PDFiumEngine* engine() { return engine_.get(); }
+  virtual const PDFiumEngine* engine() const = 0;
+  virtual PDFiumEngine* engine() = 0;
+  virtual void set_engine(std::unique_ptr<PDFiumEngine> engine) = 0;
 
   // Loads `url`, invoking `callback` on receiving the initial response.
   virtual void LoadUrl(base::StringPiece url, LoadUrlCallback callback) = 0;
@@ -196,9 +179,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   virtual void OnDocumentLoadComplete() = 0;
 
   bool HandleInputEvent(const blink::WebInputEvent& event);
-
-  // Handles `postMessage()` calls from the embedder.
-  void HandleMessage(const base::Value::Dict& message);
 
   // Enqueues a "message" event carrying `message` to the embedder. Messages are
   // guaranteed to be received in the order that they are sent. This method is
@@ -315,14 +295,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Records user actions.
   virtual void UserMetricsRecordAction(const std::string& action) = 0;
 
-  ui::mojom::CursorType cursor_type() const { return cursor_type_; }
-  void set_cursor_type(ui::mojom::CursorType cursor_type) {
-    cursor_type_ = cursor_type;
-  }
+  void set_url(std::string url) { url_ = std::move(url); }
 
   const std::string& link_under_cursor() const { return link_under_cursor_; }
 
-  bool full_frame() const { return full_frame_; }
+  virtual bool full_frame() const = 0;
 
   const gfx::Rect& available_area() const { return available_area_; }
 
@@ -332,15 +309,14 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // `plugin_rect_`, as this exposes the unintuitive "paint offset."
   const gfx::Rect& plugin_rect() const { return plugin_rect_; }
 
-  // Gets the frame-relative offset of the plugin in device pixels.
-  virtual gfx::Vector2d plugin_offset_in_frame() const;
-
   // Sets the new zoom scale.
   void SetZoom(double scale);
 
   double zoom() const { return zoom_; }
 
   float device_scale() const { return device_scale_; }
+
+  void set_last_progress_sent(int progress) { last_progress_sent_ = progress; }
 
   AccessibilityState accessibility_state() const {
     return accessibility_state_;
@@ -350,9 +326,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
     return size > 0 && size <= kMaximumSavedFileSize;
   }
 
-  static base::Value::Dict DictFromRect(const gfx::Rect& rect);
+  // Handles `LoadUrl()` result.
+  void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result);
 
- private:
   // Converts a scroll offset (which is relative to a UI direction-dependent
   // scroll origin) to a scroll position (which is always relative to the
   // top-left corner).
@@ -397,9 +373,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Starts loading accessibility information.
   void LoadAccessibility();
 
-  // Handles `LoadUrl()` result.
-  void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result);
-
   // Handles `LoadUrl()` result for print preview.
   void DidOpenPreview(std::unique_ptr<UrlLoader> loader, int32_t result);
 
@@ -425,20 +398,17 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Converts `frame_coordinates` to PDF coordinates.
   gfx::Point FrameToPdfCoordinates(const gfx::PointF& frame_coordinates) const;
 
-  std::unique_ptr<PDFiumEngine> engine_;
+ private:
+  // TODO(crbug.com/1302059): `PdfViewPluginBase` is being merged into
+  // `PdfViewWebPlugin`, so all methods should be protected or public.
+
   PaintManager paint_manager_{this};
 
   // The URL of the PDF document.
   std::string url_;
 
-  // The current cursor type.
-  ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
-
   // The URL currently under the cursor.
   std::string link_under_cursor_;
-
-  // True if the plugin occupies the entire frame (not embedded).
-  bool full_frame_ = false;
 
   // Image data buffer for painting.
   SkBitmap image_data_;

@@ -182,7 +182,7 @@ namespace {
 
 class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
  public:
-  PriorityGetter() : priority_(0) {}
+  PriorityGetter() = default;
   ~PriorityGetter() override = default;
 
   spdy::SpdyPriority priority() const { return priority_; }
@@ -236,7 +236,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   }
 
  private:
-  spdy::SpdyPriority priority_;
+  spdy::SpdyPriority priority_ = 0;
 };
 
 }  // namespace
@@ -308,28 +308,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
       http_server_properties(std::make_unique<HttpServerProperties>()),
       quic_context(std::make_unique<QuicContext>()),
-      enable_ip_pooling(true),
-      enable_ping(false),
-      enable_user_alternate_protocol_ports(false),
-      enable_quic(false),
-      enable_server_push_cancellation(false),
-      session_max_recv_window_size(kDefaultInitialWindowSize),
-      session_max_queued_capped_frames(kSpdySessionMaxQueuedCappedFrames),
-      time_func(&base::TimeTicks::Now),
-      enable_http2_alternative_service(false),
-      enable_http2_settings_grease(false),
-      http2_end_stream_with_data_frame(false),
-      net_log(nullptr),
-      disable_idle_sockets_close_on_memory_pressure(false),
-      enable_early_data(false),
-      key_auth_cache_server_entries_by_network_isolation_key(false),
-      enable_priority_update(false),
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_IOS)
-      go_away_on_ip_change(true),
-#else
-      go_away_on_ip_change(false),
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_IOS)
-      ignore_ip_address_changes(false) {
+      time_func(&base::TimeTicks::Now) {
   http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       kDefaultInitialWindowSize;
 }

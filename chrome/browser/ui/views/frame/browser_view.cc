@@ -2163,6 +2163,19 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
 
       if (focusable) {
         focusable->RequestFocus();
+#if BUILDFLAG(IS_MAC)
+        // TODO(crbug.com/650859): When a view requests focus on other
+        // platforms, its widget is activated. When doing so in FocusManager on
+        // MacOS a lot of interactive tests fail when the widget is destroyed.
+        // Activating the widget here should be safe as this happens only
+        // after explicit user action (focusing inactive dialog or rotating
+        // panes).
+        views::Widget* const widget = bubble->GetWidget();
+        if (widget && widget->IsVisible() && !widget->IsActive()) {
+          DCHECK(browser_->window()->IsActive());
+          widget->Activate();
+        }
+#endif
         return true;
       }
     }
@@ -2927,7 +2940,7 @@ std::u16string BrowserView::GetAccessibleTabLabel(bool include_app_name,
 
   // Tab has a pending permission request.
   if (toolbar_ && toolbar_->location_bar() &&
-      toolbar_->location_bar()->chip()) {
+      toolbar_->location_bar()->IsChipActive()) {
     return l10n_util::GetStringFUTF16(
         IDS_TAB_AX_LABEL_PERMISSION_REQUESTED_FORMAT, title);
   }
@@ -3420,7 +3433,7 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   // When permission is requested, permission chip must be first pane in the
   // pane traversal order to be easily accessible for keyboard users.
   if (toolbar_ && toolbar_->location_bar() &&
-      toolbar_->location_bar()->chip()) {
+      toolbar_->location_bar()->IsChipActive()) {
     panes->push_back(toolbar_->location_bar()->chip());
   }
   panes->push_back(toolbar_button_provider_->GetAsAccessiblePaneView());

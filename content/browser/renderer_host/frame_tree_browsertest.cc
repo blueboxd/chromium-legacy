@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/shared_storage/shared_storage_originated_document_data.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -145,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
 
   // Ensure the view and frame are live.
   RenderFrameHostImpl* rfh1 = static_cast<RenderFrameHostImpl*>(
-      shell()->web_contents()->GetMainFrame());
+      shell()->web_contents()->GetPrimaryMainFrame());
   RenderViewHostImpl* rvh = rfh1->render_view_host();
   EXPECT_TRUE(rvh->IsRenderViewLive());
   EXPECT_TRUE(rfh1->IsRenderFrameLive());
@@ -155,7 +154,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   ASSERT_TRUE(
-      shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0));
+      shell()->web_contents()->GetPrimaryMainFrame()->GetProcess()->Shutdown(
+          0));
   crash_observer.Wait();
 
   // The frame tree should be cleared.
@@ -297,7 +297,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
   // Navigating to a data URL should set a unique origin.  This is represented
   // as "null" per RFC 6454.
   EXPECT_EQ("null", root->current_origin().Serialize());
-  EXPECT_TRUE(contents->GetMainFrame()->GetLastCommittedOrigin().opaque());
+  EXPECT_TRUE(
+      contents->GetPrimaryMainFrame()->GetLastCommittedOrigin().opaque());
   EXPECT_EQ("null", GetOriginFromRenderer(root));
 
   // Re-navigating to a normal URL should update the origin.
@@ -306,8 +307,10 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
             root->current_origin().Serialize() + '/');
   EXPECT_EQ(
       main_url.DeprecatedGetOriginAsURL().spec(),
-      contents->GetMainFrame()->GetLastCommittedOrigin().Serialize() + '/');
-  EXPECT_FALSE(contents->GetMainFrame()->GetLastCommittedOrigin().opaque());
+      contents->GetPrimaryMainFrame()->GetLastCommittedOrigin().Serialize() +
+          '/');
+  EXPECT_FALSE(
+      contents->GetPrimaryMainFrame()->GetLastCommittedOrigin().opaque());
   EXPECT_EQ(root->current_origin().Serialize(), GetOriginFromRenderer(root));
 }
 
@@ -1028,7 +1031,7 @@ class FencedFrameTreeBrowserTest
   }
 
   RenderFrameHostImpl* primary_main_frame_host() {
-    return web_contents()->GetMainFrame();
+    return web_contents()->GetPrimaryMainFrame();
   }
 
  private:
@@ -1152,20 +1155,10 @@ IN_PROC_BROWSER_TEST_P(
     observer.Wait();
   }
 
-  SharedStorageOriginatedDocumentData*
-      shared_storage_originated_document_data1 =
-          SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-              fenced_frame_root_node1->current_frame_host());
-  SharedStorageOriginatedDocumentData*
-      shared_storage_originated_document_data2 =
-          SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-              fenced_frame_root_node2->current_frame_host());
+  EXPECT_TRUE(fenced_frame_root_node1->FindSharedStorageBudgetMetadata());
 
-  DCHECK_NE(shared_storage_originated_document_data1,
-            shared_storage_originated_document_data2);
-
-  DCHECK_EQ(&shared_storage_originated_document_data1->budget_metadata(),
-            &shared_storage_originated_document_data2->budget_metadata());
+  EXPECT_EQ(fenced_frame_root_node1->FindSharedStorageBudgetMetadata(),
+            fenced_frame_root_node2->FindSharedStorageBudgetMetadata());
 }
 
 // Test the scenario where the FF navigation is deferred and then resumed, and
@@ -1221,10 +1214,9 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_TRUE(url_mapping.HasObserverForTesting(urn_uuid, request));
 
-  SharedStorageOriginatedDocumentData* shared_storage_originated_document_data =
-      SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-          fenced_frame_root_node->current_frame_host());
-  EXPECT_FALSE(shared_storage_originated_document_data);
+  auto* budget_metadata =
+      fenced_frame_root_node->FindSharedStorageBudgetMetadata();
+  EXPECT_FALSE(budget_metadata);
 
   // Trigger the mapping to resume the deferred navigation.
   SimulateSharedStorageURNMappingComplete(
@@ -1240,15 +1232,11 @@ IN_PROC_BROWSER_TEST_P(
       mapped_url,
       fenced_frame_root_node->current_frame_host()->GetLastCommittedURL());
 
-  shared_storage_originated_document_data =
-      SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-          fenced_frame_root_node->current_frame_host());
-  EXPECT_TRUE(shared_storage_originated_document_data);
-  EXPECT_EQ(shared_storage_originated_document_data->budget_metadata().origin,
+  budget_metadata = fenced_frame_root_node->FindSharedStorageBudgetMetadata();
+  EXPECT_TRUE(budget_metadata);
+  EXPECT_EQ(budget_metadata->origin,
             url::Origin::Create(GURL("https://bar.com")));
-  EXPECT_DOUBLE_EQ(shared_storage_originated_document_data->budget_metadata()
-                       .budget_to_charge,
-                   2.0);
+  EXPECT_DOUBLE_EQ(budget_metadata->budget_to_charge, 2.0);
 }
 
 // Test the scenario where the FF navigation is deferred and then resumed, and
@@ -1317,10 +1305,8 @@ IN_PROC_BROWSER_TEST_P(
   observer.Wait();
   EXPECT_EQ(observer.last_net_error_code(), net::ERR_BLOCKED_BY_RESPONSE);
 
-  SharedStorageOriginatedDocumentData* shared_storage_originated_document_data =
-      SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-          fenced_frame_root_node->current_frame_host());
-  EXPECT_FALSE(shared_storage_originated_document_data);
+  auto* metadata = fenced_frame_root_node->FindSharedStorageBudgetMetadata();
+  EXPECT_FALSE(metadata);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -2252,9 +2238,9 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, ShouldIgnoreJsDialog) {
   // Setup test dialog manager and create dialog.
   TestJavaScriptDialogManager dialog_manager;
   web_contents()->SetDelegate(&dialog_manager);
-  web_contents()->RunJavaScriptDialog(web_contents()->GetMainFrame(), u"", u"",
-                                      JAVASCRIPT_DIALOG_TYPE_ALERT, false,
-                                      base::NullCallback());
+  web_contents()->RunJavaScriptDialog(web_contents()->GetPrimaryMainFrame(),
+                                      u"", u"", JAVASCRIPT_DIALOG_TYPE_ALERT,
+                                      false, base::NullCallback());
 
   {
     // Navigate fenced frame.
@@ -3724,9 +3710,10 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   RenderViewHost* rvh = child->current_frame_host()->render_view_host();
   RenderProcessHost* rph = child->current_frame_host()->GetProcess();
 
-  EXPECT_NE(shell()->web_contents()->GetMainFrame()->GetRenderViewHost(), rvh);
+  EXPECT_NE(shell()->web_contents()->GetPrimaryMainFrame()->GetRenderViewHost(),
+            rvh);
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(), child_instance);
-  EXPECT_NE(shell()->web_contents()->GetMainFrame()->GetProcess(), rph);
+  EXPECT_NE(shell()->web_contents()->GetPrimaryMainFrame()->GetProcess(), rph);
 
   // Ensure that the root node has a proxy for the child node's SiteInstance.
   EXPECT_TRUE(root->current_frame_host()
@@ -4270,7 +4257,7 @@ class MPArchFencedFramesFrameTreeBrowserTest : public FrameTreeBrowserTest {
 
   RenderFrameHostImpl* current_frame_host() {
     return static_cast<RenderFrameHostImpl*>(
-        shell()->web_contents()->GetMainFrame());
+        shell()->web_contents()->GetPrimaryMainFrame());
   }
 
  private:

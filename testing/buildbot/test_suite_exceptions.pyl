@@ -136,6 +136,7 @@
       # Times out listing tests crbug.com/1167314
       'android-asan',
       # Does not currently work on Lacros configurations.
+      'linux-lacros-asan-lsan-rel',
       'linux-lacros-code-coverage',
       'linux-lacros-tester-rel',
       'linux-lacros-tester-fyi-rel',
@@ -230,6 +231,7 @@
     'remove_from': [
       'Mac10.11 Tests',
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
+      'Win7 Tests (1)',
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
@@ -301,7 +303,7 @@
           'quickrun_shards': 26,
         },
       },
-      'Mac11 Tests (dbg)': {
+      'Mac12 Tests (dbg)': {
         'experiment_percentage': 100,
         'args': [
           '--debug',
@@ -535,7 +537,7 @@
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
       'Mac10.15 Tests', # https://crbug.com/1042757
-      'Mac11 Tests (dbg)', # https://crbug.com/1201386
+      'Mac12 Tests (dbg)', # https://crbug.com/1201386
       'mac-code-coverage', # https://crbug.com/1201386
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
@@ -663,7 +665,7 @@
       'Mac11 Tests': {
         'ci_only': True,
       },
-      'Mac11 Tests (dbg)': {
+      'Mac12 Tests (dbg)': {
         # crbug.com/1042757
         'swarming': {
           'dimension_sets': [
@@ -788,6 +790,16 @@
         'args': [
           # crbug.com/1262402
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac11-arm64-rel.browser_tests.filter',
+        ],
+        'swarming': {
+          'shards': 30,
+        },
+      },
+      'mac12-arm64-rel-tests': {
+        'ci_only': False,  # https://crbug.com/1234525
+        'args': [
+          # crbug.com/1262402
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac12-arm64-rel.browser_tests.filter',
         ],
         'swarming': {
           'shards': 30,
@@ -1097,6 +1109,15 @@
       }
     }
   },
+  'chrome_public_unit_test_apk': {
+    'modifications': {
+      'android-12-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_unit_test_apk.filter',
+        ],
+      },
+    },
+  },
   'chrome_sizes': {
     'modifications': {
       'lacros-amd64-generic-chrome': {
@@ -1254,7 +1275,7 @@
           'quickrun_shards': 10,
         },
       },
-      'Mac11 Tests (dbg)': { # https://crbug.com/1279504
+      'Mac12 Tests (dbg)': { # https://crbug.com/1279504
         'swarming': {
           'shards': 18,
         },
@@ -1657,39 +1678,6 @@
       },
     },
   },
-  # TODO(crbug.com/1202958): Remove these GLRenderer variants when
-  # SkiaRenderer is fully shipped on Chrome OS.
-  # Don't run these on real devices due to capacity issues.
-  'gl_renderer_context_lost_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
-  'gl_renderer_gpu_process_launch_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
-  'gl_renderer_hardware_accelerated_feature_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
-  'gl_renderer_maps_pixel_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
-  'gl_renderer_pixel_skia_gold_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
   'gl_tests_passthrough': {
     'remove_from': [
       'CFI Linux ToT',
@@ -1850,6 +1838,8 @@
       'Win7 Tests (1)',
       # TODO(https://crbug.com/1267125): Re-enable.
       'mac11-arm64-rel-tests',
+      # TODO(https://crbug.com/1267125): Re-enable.
+      'mac12-arm64-rel-tests',
     ],
   },
   'hardware_accelerated_feature_tests': {
@@ -1913,6 +1903,14 @@
           # Magic substitution happens after regular replacement, so remove it
           # now since we are manually applying the expected device ID above.
           '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
+        },
+      },
+      'Mac FYI Experimental Release (Apple M1)': {
+        'args': {
+          # The GPU information is not yet exposed in swarming, so we can't
+          # explicitly request it and have the JSON generation handle this
+          # automatically.
+          '--expected-vendor-id': '106b',
         },
       },
       'Mac FYI Release (Apple M1)': {
@@ -1999,7 +1997,7 @@
           'quickrun_shards': 6,
         },
       },
-      'Mac11 Tests (dbg)': { # https://crbug.com/1265051
+      'Mac12 Tests (dbg)': { # https://crbug.com/1265051
         'experiment_percentage': 100,
       },
       'ToTLinuxTSan': {
@@ -2553,7 +2551,7 @@
   },
   'performance_test_suite': {
     'modifications': {
-      'Mac11 Tests (dbg)': {
+      'Mac12 Tests (dbg)': {
         'args': [
           '--browser=debug',
         ],
@@ -2666,40 +2664,6 @@
         'swarming': {
           'shards': 2,
         },
-      },
-    },
-  },
-  'rendering_representative_perf_tests': {
-    'modifications': {
-      'Win10 FYI x64 Exp Release (Intel HD 630)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 FYI x64 Exp Release (NVIDIA)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 FYI x64 Release (AMD RX 5500 XT)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 FYI x64 Release (Intel HD 630)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 FYI x64 Release (NVIDIA)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 x64 Release (NVIDIA)': {
-        'args': [
-          '--browser=release_x64',
-        ],
       },
     },
   },
@@ -2982,7 +2946,7 @@
       'Mac10.13 Tests',
       'Mac10.15 Tests',
       # TODO crbug.com/1277277
-      'Mac11 Tests (dbg)',
+      'Mac12 Tests (dbg)',
       'Linux - Future (dbg)',  # client.v8.chromium
       'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
@@ -3002,6 +2966,7 @@
     },
     'remove_from': [
       # TODO(crbug.com/1141234): Restore when there's more DUTs
+      'chromeos-eve-chrome',
       'chromeos-kevin-chrome',
       'chromeos-kevin-rel',
 
@@ -3013,6 +2978,8 @@
 
       # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
       'mac11-arm64-rel-tests',
+      # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
+      'mac12-arm64-rel-tests',
     ],
   },
   'test_buildbucket_api_gpu_use_cases GTX 1660': {
@@ -3026,6 +2993,11 @@
         'experiment_percentage': 100,
       },
     },
+  },
+  'unexpected_passes_common_pytype': {
+    'remove_from': [
+      'linux-code-coverage',
+    ],
   },
   'unit_tests': {
     'remove_from': [
@@ -3064,7 +3036,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.unit_tests_wayland.filter',
         ],
       },
-      'Mac11 Tests (dbg)': {
+      'Mac12 Tests (dbg)': {
         'swarming': {
           'shards': 2,
         },
@@ -3121,8 +3093,24 @@
   },
   'variations_smoke_tests': {
     'modifications': {
+      'linux-chrome': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chrome.tests.finch',
+            },
+          ],
+        },
+      },
       'win-chrome': {
         'experiment_percentage': 100,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chrome.tests.finch',
+            },
+          ],
+        },
       },
     },
   },
@@ -3186,21 +3174,6 @@
   },
   'viz_unittests': {
     'modifications': {
-      'android-11-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.viz_unittests.filter',
-        ],
-      },
-      'android-marshmallow-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
-        ],
-      },
-      'android-pie-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
-        ],
-      },
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.viz_unittests.filter',

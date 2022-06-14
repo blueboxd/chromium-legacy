@@ -9,19 +9,21 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
-#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/monogram_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/webid/fedcm_account_selection_view_desktop.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/platform_locale_settings.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -48,7 +50,7 @@ constexpr int kBubbleWidth = 375;
 // The desired size of the avatars of user accounts.
 constexpr int kDesiredAvatarSize = 30;
 // The desired size of the icon of the identity provider.
-constexpr int kDesiredIconSize = 20;
+constexpr int kDesiredIdpIconSize = 20;
 // The size of the padding used at the top and bottom of the bubble.
 constexpr int kTopBottomPadding = 4;
 // The size of the horizontal padding between the bubble content and the edge of
@@ -90,10 +92,16 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         })");
 
 // A CanvasImageSource that fills a gray circle with a monogram.
-class LetterAvatarImageSkiaSource : public gfx::CanvasImageSource {
+class LetterCircleCroppedImageSkiaSource : public gfx::CanvasImageSource {
  public:
-  LetterAvatarImageSkiaSource(const std::u16string& letter, int size)
+  LetterCircleCroppedImageSkiaSource(const std::u16string& letter, int size)
       : gfx::CanvasImageSource(gfx::Size(size, size)), letter_(letter) {}
+
+  LetterCircleCroppedImageSkiaSource(
+      const LetterCircleCroppedImageSkiaSource&) = delete;
+  LetterCircleCroppedImageSkiaSource& operator=(
+      const LetterCircleCroppedImageSkiaSource&) = delete;
+  ~LetterCircleCroppedImageSkiaSource() override = default;
 
   void Draw(gfx::Canvas* canvas) override {
     monogram::DrawMonogramInCanvas(canvas, size().width(), size().width(),
@@ -102,6 +110,64 @@ class LetterAvatarImageSkiaSource : public gfx::CanvasImageSource {
 
  private:
   const std::u16string letter_;
+};
+
+// A CanvasImageSource that:
+// 1) Applies an optional square center-crop.
+// 2) Resizes the cropped image (while maintaining the image's aspect ratio) to
+//    fit into the target canvas. If no center-crop was applied and the source
+//    image is rectangular, the image is resized so that
+//    `avatar` small edge size == `canvas_edge_size`.
+// 3) Circle center-crops the resized image.
+class CircleCroppedImageSkiaSource : public gfx::CanvasImageSource {
+ public:
+  CircleCroppedImageSkiaSource(gfx::ImageSkia avatar,
+                               absl::optional<int> pre_resize_avatar_crop_size,
+                               int canvas_edge_size)
+      : gfx::CanvasImageSource(gfx::Size(canvas_edge_size, canvas_edge_size)) {
+    int scaled_width = canvas_edge_size;
+    int scaled_height = canvas_edge_size;
+    if (pre_resize_avatar_crop_size) {
+      float avatar_scale =
+          (canvas_edge_size / (float)*pre_resize_avatar_crop_size);
+      scaled_width = floor(avatar.width() * avatar_scale);
+      scaled_height = floor(avatar.height() * avatar_scale);
+    } else {
+      // Resize `avatar` so that it completely fills the canvas.
+      float height_ratio = ((float)avatar.height() / (float)avatar.width());
+      if (height_ratio >= 1.0f)
+        scaled_height = floor(canvas_edge_size * height_ratio);
+      else
+        scaled_width = floor(canvas_edge_size / height_ratio);
+    }
+    avatar_ = gfx::ImageSkiaOperations::CreateResizedImage(
+        avatar, skia::ImageOperations::RESIZE_BEST,
+        gfx::Size(scaled_width, scaled_height));
+  }
+
+  CircleCroppedImageSkiaSource(const CircleCroppedImageSkiaSource&) = delete;
+  CircleCroppedImageSkiaSource& operator=(const CircleCroppedImageSkiaSource&) =
+      delete;
+  ~CircleCroppedImageSkiaSource() override = default;
+
+  // CanvasImageSource override:
+  void Draw(gfx::Canvas* canvas) override {
+    int canvas_edge_size = size().width();
+
+    // Center the avatar in the canvas.
+    int x = (canvas_edge_size - avatar_.width()) / 2;
+    int y = (canvas_edge_size - avatar_.height()) / 2;
+
+    SkPath circular_mask;
+    circular_mask.addCircle(SkIntToScalar(canvas_edge_size / 2),
+                            SkIntToScalar(canvas_edge_size / 2),
+                            SkIntToScalar(canvas_edge_size / 2));
+    canvas->ClipPath(circular_mask, true);
+    canvas->DrawImageInt(avatar_, x, y);
+  }
+
+ private:
+  gfx::ImageSkia avatar_;
 };
 
 void SendAccessibilityEvent(views::Widget* widget,
@@ -192,7 +258,8 @@ std::unique_ptr<views::View> AccountSelectionBubbleView::CreateHeaderView(
     // Show placeholder brand icon prior to brand icon being fetched so that
     // header text wrapping does not change when brand icon is fetched.
     auto image_view = std::make_unique<views::ImageView>();
-    image_view->SetImageSize(gfx::Size(kDesiredIconSize, kDesiredIconSize));
+    image_view->SetImageSize(
+        gfx::Size(kDesiredIdpIconSize, kDesiredIdpIconSize));
     image_view->SetProperty(views::kMarginsKey,
                             gfx::Insets().set_right(kLeftRightPadding));
     bubble_icon_view_ = header->AddChildView(image_view.release());
@@ -428,17 +495,17 @@ void AccountSelectionBubbleView::OnAccountImageFetched(
     const std::u16string& account_name,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
-  ui::ImageModel avatar;
+  gfx::ImageSkia avatar;
   if (image.IsEmpty()) {
     std::u16string letter = account_name;
     if (letter.length() > 0)
       letter = base::i18n::ToUpper(account_name.substr(0, 1));
-    avatar = ui::ImageModel::FromImageSkia(
-        gfx::CanvasImageSource::MakeImageSkia<LetterAvatarImageSkiaSource>(
-            letter, kDesiredAvatarSize));
+    avatar = gfx::CanvasImageSource::MakeImageSkia<
+        LetterCircleCroppedImageSkiaSource>(letter, kDesiredAvatarSize);
   } else {
-    avatar = ui::ImageModel::FromImage(profiles::GetSizedAvatarIcon(
-        image, kDesiredAvatarSize, kDesiredAvatarSize, profiles::SHAPE_CIRCLE));
+    avatar =
+        gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
+            image.AsImageSkia(), absl::nullopt, kDesiredAvatarSize);
   }
   image_view->SetImage(avatar);
 }
@@ -448,9 +515,12 @@ void AccountSelectionBubbleView::OnBrandImageFetched(
     const image_fetcher::RequestMetadata& metadata) {
   if (bubble_icon_view_ != nullptr && image.Width() == image.Height() &&
       image.Width() >= AccountSelectionView::GetBrandIconMinimumSize()) {
-    gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
-        image.AsImageSkia(), skia::ImageOperations::RESIZE_LANCZOS3,
-        gfx::Size(kDesiredIconSize, kDesiredIconSize));
+    gfx::ImageSkia resized_image =
+        gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
+            image.AsImageSkia(),
+            image.Width() *
+                FedCmAccountSelectionView::kMaskableWebIconSafeZoneRatio,
+            kDesiredIdpIconSize);
     bubble_icon_view_->SetImage(resized_image);
   }
 }

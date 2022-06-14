@@ -1859,6 +1859,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 
       Si no se le asigna ningún valor, se aplicará la política <ph name="ASK_GEOLOCATION_POLICY_NAME" />, pero los usuarios podrán cambiar esta opción.</translation>
 <translation id="2922511125678964398">Permitir que la autenticación de portales cautivos ignore la configuración de proxy</translation>
+<translation id="2926813071464307947">Inhabilitar el entorno aislado del contenedor de aplicaciones del renderizador</translation>
 <translation id="2931888116345994552">Si se habilita o no se establece, se habilitarán las actualizaciones de todos los componentes de <ph name="PRODUCT_NAME" />.
 
       Si se inhabilita, se desactivarán las actualizaciones de los componentes. Sin embargo, algunos componentes quedan exentos de esta política: las actualizaciones de los componentes que no contengan código ejecutable o que sean esenciales para proteger la seguridad del navegador no se inhabilitarán.
@@ -2304,6 +2305,11 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
           Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo y su propietario (o un usuario del dominio que gestiona el dispositivo) podrá cambiarlo. El nombre tiene un límite de 24 caracteres.</translation>
 <translation id="3329063005964041553">Bloquear la API File Handling en estas aplicaciones web</translation>
 <translation id="3329401415394648069">Permitir el uso de la API U2F Security Key.</translation>
+<translation id="3329976499753286262">Si se habilita esta política o no se establece, la configuración del contenedor de aplicaciones del renderizador se habilitará en las plataformas compatibles.
+
+      Si se inhabilita esta política, se reducirán la seguridad y la estabilidad de <ph name="PRODUCT_NAME" />, ya que se debilitará el entorno aislado que utilizan los procesos del renderizador. Inhabilita la política solo si hay problemas de compatibilidad con un software de terceros que deba ejecutarse en los procesos del renderizador.
+
+      Nota: Consulta más información sobre las políticas de mitigación de procesos en la página https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies.</translation>
 <translation id="3339271789059866414">Configura la disponibilidad del servicio de proxy del sistema y las credenciales de proxy para los servicios del sistema.
       Si no se establece esta política, el servicio de proxy del sistema no estará disponible.</translation>
 <translation id="3348799281602260763">Si se habilita la política, las conexiones de punto a punto WebRTC podrán cambiar a versiones
@@ -3112,14 +3118,6 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
       Si el dispositivo no está gestionado o solo hay un usuario, esta política se ignorará y siempre se mostrará la notificación.
 
       Si hay varias cuentas de usuario en un dispositivo gestionado, la notificación solo se mostrará si esta política está habilitada.</translation>
-<translation id="4293593564662654474">Esta política se proporciona como método para inhabilitar la función Conjuntos propios.
-
-                  Si esta política se habilita o no se define, se habilitará la función Conjuntos propios.
-
-                  Si esta política se inhabilita, se inhabilitará la función Conjuntos propios.
-
-                  El estado de la función Conjuntos propios determina si Chrome recupera la lista de Conjuntos propios.
-                  También controla si Chrome admite funciones relacionadas con Conjuntos propios (por ejemplo, el atributo de cookies SameParty).</translation>
 <translation id="4311195029067684288">Llena</translation>
 <translation id="4313767483634435271">Dirección MAC designada de la base del dispositivo</translation>
 <translation id="4314538398999793073">Inhabilitar la búsqueda de CNAME durante la autenticación Kerberos</translation>
@@ -4224,6 +4222,7 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 <translation id="5625771176514429288">Se permitirá ejecutar aplicaciones de Chrome en estas plataformas.</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5633871703004128675">Habilitar la función de accesibilidad de resaltado del símbolo de intercalación de texto</translation>
+<translation id="5634032995857968056">Habilitar el entorno aislado del contenedor de aplicaciones del renderizador</translation>
 <translation id="5639454129004500060">Si se establece esta política, contendrá información para descargar un archivo de plantilla de escritorio.  Este archivo contiene una plantilla de escritorio que se proporcionará al usuario actual.
       Si no se establece esta política, no se incluirá ninguna plantilla de escritorio preconfigurada en la lista de plantillas de escritorio.  Si la política <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" />
       no tiene asignado el valor true, no tendrá efecto.</translation>
@@ -5625,7 +5624,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si no le asignas ningún valor, la estantería se colocará en la parte inferior de la pantalla de forma predeterminada y el usuario podrá cambiar su posición.</translation>
 <translation id="7039815268521168329">Mostrar el flujo de Voice Match del Asistente de Google durante la configuración inicial</translation>
 <translation id="7040229947030068419">Valor de ejemplo:</translation>
-<translation id="7041170641363384736">Permite definir un horario personalizado para reiniciar dispositivos. En este momento, la política solo se aplica a los dispositivos que hayan habilitado el inicio automático de aplicaciones en la sesión del kiosco. Cuando se le asigne el valor True, el dispositivo se reiniciará según el horario. Se debe quitar esta política para cancelar el resto de reinicios programados.</translation>
 <translation id="7044883996351280650">Controlar el servicio de copia de seguridad y restauración de Android</translation>
 <translation id="7047495632846973438">Especifica si se comprobará o se saltará la política de permisos mostrar-capturar.</translation>
 <translation id="7066292150801784098">Inhabilitar la interacción de los usuarios remotos con ventanas con permisos de administrador en sesiones de asistencia remota</translation>
@@ -6604,7 +6602,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
           Si se asigna un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 
           Si no se le asigna ningún valor, el resaltado del cursor se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
-<translation id="8161536598508377155">Definir un horario personalizado para reiniciar dispositivos de kiosco</translation>
 <translation id="8164144100557223371">Inhabilitar el punto de entrada de las funciones experimentales de la barra de herramientas del navegador</translation>
 <translation id="8164687848393015214">Si se habilita la política, se enviarán paquetes de red de monitorización (<ph name="HEARTBEATS_TERM" />) al servidor de administración para monitorizar el estado de la conexión y permitir que el servidor detecte si el dispositivo está sin conexión.
 
@@ -7176,6 +7173,7 @@ Si se configura la política, los usuarios no podrán cambiar esta función. Si 
 <translation id="8763716376920670835">WebSQL está habilitado de forma predeterminada desde la versión M101, pero puede inhabilitarse mediante una marca de Chrome.
           Si se asigna el valor false a esta política o no se le asigna ningún valor, WebSQL se podrá inhabilitar.
           Si se le asigna el valor true, WebSQL no se podrá inhabilitar.</translation>
+<translation id="8766910236040529804">Habilitar el contenedor de aplicaciones del renderizador</translation>
 <translation id="8767743923206070405">Si se habilita esta política, se mostrará el botón de página principal en la barra de herramientas de <ph name="PRODUCT_NAME" />. Si se inhabilita esta política, no se mostrará el botón de página principal.
 
       Si se le asigna un valor a esta política, los usuarios no podrán cambiarlo en <ph name="PRODUCT_NAME" />. Si no se le asigna ningún valor, los usuarios podrán decidir si quieren que se muestre el botón de página principal.</translation>

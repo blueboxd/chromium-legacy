@@ -295,7 +295,7 @@ void WaylandWindow::SetBoundsInPixels(const gfx::Rect& bounds_px) {
     return;
   bounds_px_ = adjusted_bounds_px;
 
-  if (update_visual_size_immediately_)
+  if (update_visual_size_immediately_for_testing_)
     UpdateVisualSize(bounds_px.size(), window_scale());
   delegate_->OnBoundsChanged(bounds_px_);
 }
@@ -530,7 +530,7 @@ void WaylandWindow::UpdateVisualSize(const gfx::Size& size_px,
   visual_size_px_ = size_px;
   UpdateWindowMask();
 
-  if (apply_pending_state_on_update_visual_size_) {
+  if (apply_pending_state_on_update_visual_size_for_testing_) {
     root_surface_->ApplyPendingState();
     connection_->ScheduleFlush();
   }
@@ -607,8 +607,10 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   // Update visual size in tests immediately if the test config is set.
   // Otherwise, such tests as interactive_ui_tests fail.
-  if (!update_visual_size_immediately_)
-    set_update_visual_size_immediately(UseTestConfigForPlatformWindows());
+  if (!update_visual_size_immediately_for_testing_) {
+    set_update_visual_size_immediately_for_testing(
+        UseTestConfigForPlatformWindows());
+  }
 
   // Properties contain DIP bounds but the buffer scale is initially 1 so it's
   // OK to assign.  The bounds will be recalculated when the buffer scale
@@ -651,13 +653,17 @@ WaylandWindow* WaylandWindow::GetRootParentWindow() {
 }
 
 void WaylandWindow::OnEnteredOutput() {
-  delegate()->OnMovedToAnotherDisplay();
-
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
   if (AsWaylandPopup())
     return;
+
+  // Notify normal window's delegate only as updating the pixel bounds
+  // may close the popup, and popup will not usually enter new display.
+  // TODO(crbug.com/1306688): Revisit this when wayland implementation
+  // is switced to dip based.
+  delegate()->OnMovedToAnotherDisplay();
 
   UpdateWindowScale(true);
 }
@@ -942,16 +948,16 @@ void WaylandWindow::ProcessPendingBoundsDip(uint32_t serial) {
   } else if (delegate()->ConvertRectToPixels(pending_bounds_dip_) ==
                  GetBoundsInPixels() &&
              pending_configures_.empty()) {
-    // If |pending_bounds_dip_| matches GetBounds(), and |pending_configures_|
-    // is empty, implying that the window is already rendering at
-    // |pending_bounds_dip_|, then a frame matching |pending_bounds_dip_| may
-    // not arrive soon, despite the window delegate receives the updated bounds.
-    // Without a new frame, UpdateVisualSize() is not invoked, leaving this
-    // |configure| unacknowledged.
-    //   E.g. With static window content, |configure| that does not
-    //     change window size will not cause the window to redraw.
-    // Hence, acknowledge this |configure| now to tell the Wayland compositor
-    // that this window has been configured.
+    // If |pending_bounds_dip_| matches the current window bounds, and
+    // |pending_configures_| is empty, which implies that the window is already
+    // rendering at |pending_bounds_dip_|, then a new frame matching it may take
+    // some time to arrive, despite the window delegate receives the updated
+    // bounds. Without a new frame, UpdateVisualSize() is not invoked, leaving
+    // this configure sequence unacknowledged. E.g: With static window content,
+    // a configure sequence that does not change the window size will not cause
+    // the window to redraw. Hence, acknowledge this configure sequence now to
+    // tell the Wayland compositor that the requested configuration for this
+    // window has been applied.
     SetWindowGeometry(pending_bounds_dip_);
     AckConfigure(serial);
     connection()->ScheduleFlush();

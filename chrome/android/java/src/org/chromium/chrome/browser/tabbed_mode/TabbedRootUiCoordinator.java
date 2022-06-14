@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpController;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpControllerFactory;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.bookmarks.TabBookmarker;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
@@ -95,6 +96,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.UndoGroupSnackbarController;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.ToolbarIntentMetadata;
+import org.chromium.chrome.browser.ui.AppLaunchDrawBlocker;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
@@ -249,6 +251,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * @param tabReparentingControllerSupplier Supplier for the {@link TabReparentingController}.
      * @param initializeUiWithIncognitoColors Whether to initialize the UI with incognito colors.
      * @param backPressManager The {@link BackPressManager} handling back press.
+     * @param unblockDrawForOverviewPageRunnable The runnable for unblocking the {@link
+     *                                           AppLaunchDrawBlocker} which is specifically for
+     *                                           blocking draw on launch when overview page
+     *                                           is showing during startup.
      */
     public TabbedRootUiCoordinator(@NonNull AppCompatActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
@@ -256,6 +262,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @NonNull ActivityTabProvider tabProvider,
             @NonNull ObservableSupplier<Profile> profileSupplier,
             @NonNull ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
+            @NonNull ObservableSupplier<TabBookmarker> tabBookmarkerSupplier,
             @NonNull Supplier<ContextualSearchManager> contextualSearchManagerSupplier,
             @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
             @NonNull OneshotSupplier<StartSurface> startSurfaceSupplier,
@@ -287,19 +294,22 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @NonNull Supplier<InsetObserverView> insetObserverViewSupplier,
             @NonNull Function<Tab, Boolean> backButtonShouldCloseTabFn,
             OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
-            boolean initializeUiWithIncognitoColors, @NonNull BackPressManager backPressManager) {
+            boolean initializeUiWithIncognitoColors, @NonNull BackPressManager backPressManager,
+            @NonNull Runnable unblockDrawForOverviewPageRunnable) {
         super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider,
-                profileSupplier, bookmarkBridgeSupplier, contextualSearchManagerSupplier,
-                tabModelSelectorSupplier, startSurfaceSupplier, intentMetadataOneshotSupplier,
-                layoutStateProviderOneshotSupplier, startSurfaceParentTabSupplier,
-                browserControlsManager, windowAndroid, jankTracker, activityLifecycleDispatcher,
-                layoutManagerSupplier, menuOrKeyboardActionController, activityThemeColorSupplier,
-                modalDialogManagerSupplier, appMenuBlocker, supportsAppMenuSupplier,
-                supportsFindInPage, tabCreatorManagerSupplier, fullscreenManager,
-                compositorViewHolderSupplier, tabContentManagerSupplier, snackbarManagerSupplier,
-                activityType, isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
-                statusBarColorProvider, intentRequestTracker, tabReparentingControllerSupplier,
-                ephemeralTabCoordinatorSupplier, initializeUiWithIncognitoColors, backPressManager);
+                profileSupplier, bookmarkBridgeSupplier, tabBookmarkerSupplier,
+                contextualSearchManagerSupplier, tabModelSelectorSupplier, startSurfaceSupplier,
+                intentMetadataOneshotSupplier, layoutStateProviderOneshotSupplier,
+                startSurfaceParentTabSupplier, browserControlsManager, windowAndroid, jankTracker,
+                activityLifecycleDispatcher, layoutManagerSupplier, menuOrKeyboardActionController,
+                activityThemeColorSupplier, modalDialogManagerSupplier, appMenuBlocker,
+                supportsAppMenuSupplier, supportsFindInPage, tabCreatorManagerSupplier,
+                fullscreenManager, compositorViewHolderSupplier, tabContentManagerSupplier,
+                snackbarManagerSupplier, activityType, isInOverviewModeSupplier,
+                isWarmOnResumeSupplier, appMenuDelegate, statusBarColorProvider,
+                intentRequestTracker, tabReparentingControllerSupplier,
+                ephemeralTabCoordinatorSupplier, initializeUiWithIncognitoColors, backPressManager,
+                unblockDrawForOverviewPageRunnable);
         mControlContainerHeightResource = controlContainerHeightResource;
         mInsetObserverViewSupplier = insetObserverViewSupplier;
         mBackButtonShouldCloseTabFn = backButtonShouldCloseTabFn;
@@ -548,7 +558,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
     private boolean isShowingStartSurfaceHomepage() {
         return mStartSurfaceSupplier.get() != null
-                && mStartSurfaceSupplier.get().getController().getStartSurfaceState()
+                && mStartSurfaceSupplier.get().getStartSurfaceState()
                 == StartSurfaceState.SHOWN_HOMEPAGE;
     }
 

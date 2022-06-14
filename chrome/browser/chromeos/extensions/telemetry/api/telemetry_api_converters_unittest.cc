@@ -4,11 +4,13 @@
 
 #include <inttypes.h>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom-forward.h"
 #include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/telemetry_api_converters.h"
 #include "chrome/common/chromeos/extensions/api/telemetry.h"
@@ -228,6 +230,59 @@ TEST(TelemetryApiConverters, BatteryInfo) {
 
   ASSERT_TRUE(result.temperature);
   EXPECT_EQ(kTemperature, static_cast<uint64_t>(*result.temperature));
+}
+
+TEST(TelemetryApiConverters, OsVersion) {
+  constexpr char kReleaseMilestone[] = "87";
+  constexpr char kBuildNumber[] = "13544";
+  constexpr char kPatchNumber[] = "59.0";
+  constexpr char kReleaseChannel[] = "stable-channel";
+
+  auto input = telemetry_service::OsVersion::New(
+      kReleaseMilestone, kBuildNumber, kPatchNumber, kReleaseChannel);
+
+  auto result = ConvertPtr<telemetry_api::OsVersionInfo>(std::move(input));
+  ASSERT_TRUE(result.release_milestone);
+  EXPECT_EQ(*result.release_milestone, kReleaseMilestone);
+
+  ASSERT_TRUE(result.build_number);
+  EXPECT_EQ(*result.build_number, kBuildNumber);
+
+  ASSERT_TRUE(result.patch_number);
+  EXPECT_EQ(*result.patch_number, kPatchNumber);
+
+  ASSERT_TRUE(result.release_channel);
+  EXPECT_EQ(*result.release_channel, kReleaseChannel);
+}
+
+TEST(TelemetryApiConverters, StatefulPartitionInfo) {
+  constexpr uint64_t kAvailableSpace = 3000000000000000;
+  constexpr uint64_t kTotalSpace = 9000000000000000;
+
+  telemetry_service::StatefulPartitionInfoPtr input =
+      telemetry_service::StatefulPartitionInfo::New(
+          telemetry_service::UInt64Value::New(kAvailableSpace),
+          telemetry_service::UInt64Value::New(kTotalSpace));
+
+  auto result =
+      ConvertPtr<telemetry_api::StatefulPartitionInfo>(std::move(input));
+  ASSERT_TRUE(result.available_space);
+  EXPECT_EQ(kAvailableSpace, *result.available_space);
+
+  ASSERT_TRUE(result.total_space);
+  EXPECT_EQ(kTotalSpace, *result.total_space);
+}
+
+TEST(TelemetryApiConverters, StatefulPartitionInfoNullFields) {
+  telemetry_service::StatefulPartitionInfoPtr input =
+      telemetry_service::StatefulPartitionInfo::New<
+          telemetry_service::UInt64ValuePtr, telemetry_service::UInt64ValuePtr>(
+          nullptr, nullptr);
+
+  auto result =
+      ConvertPtr<telemetry_api::StatefulPartitionInfo>(std::move(input));
+  ASSERT_FALSE(result.available_space);
+  ASSERT_FALSE(result.total_space);
 }
 
 }  // namespace converters

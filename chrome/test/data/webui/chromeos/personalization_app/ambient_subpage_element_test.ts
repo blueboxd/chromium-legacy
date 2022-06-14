@@ -32,7 +32,10 @@ suite('AmbientSubpageTest', function() {
   const routerMock = TestBrowserProxy.fromClass(PersonalizationRouter);
 
   setup(() => {
-    loadTimeData.overrideValues({isAmbientModeAllowed: true});
+    loadTimeData.overrideValues({
+      isAmbientModeAllowed: true,
+      isAmbientModeAnimationEnabled: true,
+    });
     const mocks = baseSetup();
     ambientProvider = mocks.ambientProvider;
     personalizationStore = mocks.personalizationStore;
@@ -301,8 +304,8 @@ suite('AmbientSubpageTest', function() {
         assertEquals(
             AnimationTheme.kFeelTheBreeze, feelTheBreeze.animationTheme);
 
-        assertEquals(feelTheBreeze.ariaSelected, 'false');
-        assertEquals(slideshow.ariaSelected, 'true');
+        assertEquals(feelTheBreeze.ariaChecked, 'false');
+        assertEquals(slideshow.ariaChecked, 'true');
 
         personalizationStore.expectAction(
             AmbientActionName.SET_ANIMATION_THEME);

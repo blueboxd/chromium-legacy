@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
@@ -87,7 +88,6 @@ class ElementRareData;
 class ExceptionState;
 class FocusOptions;
 class GetInnerHTMLOptions;
-class HTMLFieldSetElement;
 class HTMLSelectMenuElement;
 class HTMLTemplateElement;
 class Image;
@@ -107,6 +107,7 @@ class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
+class StyleEngine;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
@@ -516,7 +517,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   NamedNodeMap* attributesForBindings() const;
   Vector<AtomicString> getAttributeNames() const;
 
-  enum class AttributeModificationReason { kDirectly, kByParser, kByCloning };
+  enum class AttributeModificationReason {
+    kDirectly,
+    kByParser,
+    kByCloning,
+    kByMoveToNewDocument,
+    kBySynchronizationOfLazyAttribute
+  };
   struct AttributeModificationParams {
     STACK_ALLOCATED();
 
@@ -623,6 +630,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
            NeedsLayoutSubtreeUpdate();
   }
   void RebuildLayoutTree(WhitespaceAttacher&);
+
+  // Reattach layout tree for all children but not the element itself. This is
+  // only used for UpdateStyleAndLayoutTreeForContainer when:
+  // 1. Re-attaching fieldset when the fieldset layout tree changes and the size
+  //    query container is a fieldset.
+  // 2. Re-attaching for legacy box tree when table-* boxes have columns.
+  //
+  // Case 2 is only necessary until table fragmentation is shipped for LayoutNG.
+  //
+  void ReattachLayoutTreeChildren(base::PassKey<StyleEngine>);
+
   void HandleSubtreeModifications();
   void PseudoStateChanged(CSSSelector::PseudoType);
   void PseudoStateChangedForTesting(CSSSelector::PseudoType);
@@ -655,9 +673,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       ShadowRootType,
       FocusDelegation focus_delegation = FocusDelegation::kNone,
       SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kNamed);
-  void InitializeShadowRootInternal(ShadowRoot&,
-                                    FocusDelegation,
-                                    SlotAssignmentMode);
 
   // Returns the shadow root attached to this element if it is a shadow host.
   ShadowRoot* GetShadowRoot() const;
@@ -883,6 +898,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // See StyleRecalcContext for more information.
   scoped_refptr<ComputedStyle> StyleForPseudoElement(const StyleRecalcContext&,
                                                      const StyleRequest&);
+
+  // Returns the ComputedStyle after applying the declarations in the @try block
+  // at the given index. Returns nullptr if the current element doesn't use
+  // position fallback, or if the index is out of bound.
+  // The style is computed on demand and cached on the ComputedStyle of |this|.
+  const ComputedStyle* StyleForPositionFallback(unsigned index);
 
   virtual bool CanGeneratePseudoElement(PseudoId) const;
 
@@ -1239,11 +1260,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void AdjustForceLegacyLayout(const ComputedStyle*,
                                bool* should_force_legacy_layout);
 
-  // Reattach layout tree for all children but not the element itself. This is
-  // only used for reattaching fieldset children when the fieldset is a query
-  // container for size container queries.
-  void ReattachLayoutTreeChildren(base::PassKey<HTMLFieldSetElement>);
-
  private:
   friend class AXObject;
   struct AffectedByPseudoStateChange;
@@ -1373,18 +1389,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual void DidAddUserAgentShadowRoot(ShadowRoot&) {}
   virtual bool AlwaysCreateUserAgentShadowRoot() const { return false; }
 
-  enum SynchronizationOfLazyAttribute {
-    kNotInSynchronizationOfLazyAttribute = 0,
-    kInSynchronizationOfLazyAttribute
-  };
-
   void DidAddAttribute(const QualifiedName&, const AtomicString&);
   void WillModifyAttribute(const QualifiedName&,
                            const AtomicString& old_value,
                            const AtomicString& new_value);
   void DidModifyAttribute(const QualifiedName&,
                           const AtomicString& old_value,
-                          const AtomicString& new_value);
+                          const AtomicString& new_value,
+                          AttributeModificationReason reason);
   void DidRemoveAttribute(const QualifiedName&, const AtomicString& old_value);
 
   void SynchronizeAllAttributes() const;
@@ -1405,15 +1417,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   NodeType getNodeType() const final;
   bool ChildTypeAllowed(NodeType) const final;
 
+  // Returns the attribute's index or `kNotFound` if not found.
+  wtf_size_t FindAttributeIndex(const QualifiedName&);
+
   void SetAttributeInternal(wtf_size_t index,
                             const QualifiedName&,
                             const AtomicString& value,
-                            SynchronizationOfLazyAttribute);
+                            AttributeModificationReason);
   void AppendAttributeInternal(const QualifiedName&,
                                const AtomicString& value,
-                               SynchronizationOfLazyAttribute);
-  void RemoveAttributeInternal(wtf_size_t index,
-                               SynchronizationOfLazyAttribute);
+                               AttributeModificationReason);
+  void RemoveAttributeInternal(wtf_size_t index, AttributeModificationReason);
   SpecificTrustedType ExpectedTrustedTypeForAttribute(
       const QualifiedName&) const;
 

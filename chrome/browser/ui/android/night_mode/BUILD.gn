@@ -89,7 +89,7 @@ android_library("javatests") {
     "//chrome/browser/preferences:java",
     "//chrome/browser/settings:java",
     "//chrome/browser/settings:test_support_java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_integration_test_support",
     "//components/browser_ui/site_settings/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/content_settings/android:content_settings_enums_java",
@@ -104,9 +104,7 @@ android_library("javatests") {
   resources_package = "org.chromium.chrome.browser.night_mode"
 }
 
-android_library("junit") {
-  # Skip platform checks since Robolectric depends on requires_android targets.
-  bypass_platform_checks = true
+robolectric_library("junit") {
   testonly = true
   sources = [
     "java/src/org/chromium/chrome/browser/night_mode/AutoDarkFeedbackSourceUnitTest.java",
@@ -125,7 +123,7 @@ android_library("junit") {
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/site_settings/android:java",
     "//components/content_settings/android:content_settings_enums_java",

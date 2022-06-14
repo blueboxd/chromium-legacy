@@ -6,6 +6,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" />ଟି ଥ୍ରେଡ୍, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">ନୂଆ ଫିଚର୍ ଉପଲବ୍ଧ ଅଛି, ଅଧିକ ଜାଣିବାକୁ ଅପ୍ ତୀର କୀ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="1059913517121127803">ସ୍କାନିଂ ଆରମ୍ଭ କରାଯାଇପାରିଲା ନାହିଁ</translation>
+<translation id="1062407476771304334">ପ୍ରତିସ୍ଥାପନ କରନ୍ତୁ</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">ଫାୟାରୱାଲ୍ ଥିବାର ଚିହ୍ନଟ କରାଯାଇଛି</translation>
 <translation id="1075811647922107217">ପୃଷ୍ଠାର ଆକାର</translation>
@@ -15,9 +16,11 @@
 <translation id="1124772482545689468">ଉପଯୋଗକର୍ତ୍ତା</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">ଏକ୍ସଟର୍ନଲ ଡିଭାଇସଗୁଡ଼ିକ ପାଇଁ ଫାର୍ମୱେର ଅପଡେଟ ୱିଣ୍ଡୋ ଖୋଲା ଅଛି। <ph name="NUM_UPDATES" />ଟି ଅପଡେଟ ଉପଲବ୍ଧ ଅଛି।</translation>
+<translation id="1165039591588034296">ତ୍ରୁଟି</translation>
 <translation id="1175697296044146566">ଏହି <ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି।</translation>
 <translation id="1175951029573070619">ସାଧାରଣ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">କାଢ଼ି ଦିଅନ୍ତୁ</translation>
+<translation id="1190378975642195988">ବେସ ଆକ୍ସିଲେରୋମିଟର</translation>
 <translation id="1195447618553298278">ଅଜ୍ଞାତ ତୃଟି ।</translation>
 <translation id="1196959502276349371">ସଂସ୍କରଣ <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">ଚଲାନ୍ତୁ/ବିରତ କରନ୍ତୁ</translation>
@@ -95,6 +98,7 @@
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" /> ଏବଂ <ph name="SECOND_MANAGER" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି</translation>
 <translation id="1726100011689679555">ନାମ ସର୍ଭର୍</translation>
 <translation id="1731082422893354635">ବ୍ଲୁଟୁଥ ଟଚପ୍ୟାଡ</translation>
+<translation id="1745577949879301685">ଇମେଜଗୁଡ଼ିକୁ ଲୋଡ କରାଯାଇପାରିଲା ନାହିଁ। ଆପଣଙ୍କ ନେଟୱାର୍କ କନେକ୍ସନ ଯାଞ୍ଚ କରନ୍ତୁ କିମ୍ବା ପୁଣି ଇମେଜଗୁଡ଼ିକୁ ଲୋଡ କରିବା ପାଇଁ ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="1751249301761991853">ବ୍ୟକ୍ତିଗତ</translation>
 <translation id="1753496554272155572">ୱାଲପେପର ପ୍ରିଭ୍ୟୁରୁ ବାହାରି ଯାଆନ୍ତୁ</translation>
 <translation id="175763766237925754">ଭଲ (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -213,7 +217,6 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> ସେକେଣ୍ଡରେ <ph name="RATE" /> ଡିସଚାର୍ଜ ହୋଇଛି।</translation>
 <translation id="291142119251986300">ଅଯୋଗ୍ୟ କମ୍ପୋନେଣ୍ଟଗୁଡ଼ିକ</translation>
 <translation id="2926057806159140518">ଆପଣଙ୍କ ଉପଯୋଗକର୍ତ୍ତା ନାମ ଏବଂ ପାସୱାର୍ଡ ଲେଖନ୍ତୁ କିମ୍ବା ଆପଣଙ୍କର QR କୋଡ ସ୍କାନ କରନ୍ତୁ</translation>
-<translation id="2928420929544864228">ଇନଷ୍ଟଲେସନ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି।</translation>
 <translation id="3008341117444806826">ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
 <translation id="3009958530611748826">ଏଥିରେ ସେଭ୍ କରିବାକୁ ଏକ ଫୋଲ୍ଡର୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="3017079585324758401">ପୃଷ୍ଠପଟ</translation>
@@ -267,6 +270,7 @@
 <translation id="3484914941826596830">ଫାର୍ମୱେରକୁ ଅପଡେଟ କରାଯାଉଥିବା ସମୟରେ ଏହି ଏକ୍ସଟର୍ନଲ ଡିଭାଇସକୁ ଅନପ୍ଲଗ କରନ୍ତୁ ନାହିଁ କିମ୍ବା ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟରକୁ ବନ୍ଦ କରନ୍ତୁ ନାହିଁ। ଆପଣ ଏହି ୱିଣ୍ଡୋକୁ ଛୋଟ କରିପାରିବେ। ଏହି ଅପଡେଟ ପାଇଁ କିଛି ସମୟ ଲାଗିପାରେ ଏବଂ ଏହି ସମୟରେ ଆପଣଙ୍କ ଏକ୍ସଟର୍ନଲ ଡିଭାଇସ କାମ କରିନପାରେ।</translation>
 <translation id="3486220673238053218">ସଂଜ୍ଞା</translation>
 <translation id="3488065109653206955">ଆଶିଂକ ଭାବେ ସକ୍ରିୟ କରାଯାଇଛି</translation>
+<translation id="3492982278147736083">ଲିଡ ଜାଇରୋସ୍କୋପ</translation>
 <translation id="3517001332549868749">ChromeOS ଅପଡେଟ</translation>
 <translation id="3527036260304016759">ବିଫଳ ହୋଇଛି - ଅଜଣା ତ୍ରୁଟି</translation>
 <translation id="3532980081107202182">ପ୍ରାୟ <ph name="MIN_REMAINING" /> ମିନିଟ୍ ବାକି ଅଛି</translation>
@@ -300,9 +304,11 @@
 <translation id="3820172043799983114">ଅବୈଧ PIN।</translation>
 <translation id="3838338534323494292">ନୂଆ ପାସ୍‌ୱାର୍ଡ</translation>
 <translation id="385051799172605136">ପଛକୁ</translation>
+<translation id="3856304145690230735">ବେସ ଜାଇରୋସ୍କୋପ</translation>
 <translation id="385832974417157471">ବନ୍ଦ କରିବା ପୂର୍ବରୁ, ଆପଣଙ୍କ ଡିଭାଇସକୁ ପାୱାରୱାସ କରନ୍ତୁ। ଯଦି ଆପଣଙ୍କ ଡିଭାଇସରେ ଏକ ଲିଡ ଥାଏ, ତେବେ ଲିଡ ବନ୍ଦ କରିବା ପୂର୍ବରୁ ପାୱାରୱାସ ସମ୍ପୂର୍ଣ୍ଣ ହେବା ପର୍ଯ୍ୟନ୍ତ ଅପେକ୍ଷା କରନ୍ତୁ। ପାୱାରୱାସ ସମ୍ପୂର୍ଣ୍ଣ ହେବାକୁ ଏକ ମିନିଟ ପର୍ଯ୍ୟନ୍ତ ସମୟ ନେଇପାରେ।</translation>
 <translation id="3858860766373142691">ନାମ</translation>
 <translation id="3865414814144988605">ରିଜୋଲ୍ୟୁଶନ୍</translation>
+<translation id="3866249974567520381">ବିବରଣୀ</translation>
 <translation id="387301095347517405">ଆପଣଙ୍କ ବ୍ୟାଟେରୀ ଯେତେ ଥର ସମ୍ପୂର୍ଣ୍ଣ ରୂପେ ଚାର୍ଜ ହୋଇଛି</translation>
 <translation id="3885327323343477505">ସ୍କ୍ରିନ ସେଭର ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="3923184630988645767">ଡାଟାର ବ୍ୟବହାର</translation>
@@ -370,6 +376,7 @@
 <translation id="4472575034687746823">ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="4479639480957787382">ଇଥର୍‌ନେଟ୍‌</translation>
 <translation id="4483049906298469269">ଡିଫଲ୍ଟ-ନଥିବା ନେଟୱାର୍କ ଗେଟୱେକୁ ପିଙ୍ଗ୍ କରିବାରେ ବିଫଳ ହୋଇଛି</translation>
+<translation id="4500213108254186382">ଲିଡ ଆକ୍ସିଲେରୋମିଟର</translation>
 <translation id="4503223151711056411">ବାମ ତୀର</translation>
 <translation id="4511264077854731334">ପୋର୍ଟାଲ୍</translation>
 <translation id="4521826082652183069">ସବଜେକ୍ଟ ଅଲଟରନେଟିଭ୍ ନେମ୍ ସହ ମେଳ</translation>
@@ -381,6 +388,7 @@
 <translation id="4561801978359312462">SIM ଅନଲକ୍ କରାଯାଇଛି</translation>
 <translation id="4562494484721939086">କୌଣସି ସେବା ନାହିଁ</translation>
 <translation id="4568938274596692027">ଇନଷ୍ଟଲ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି। ରିଷ୍ଟାର୍ଟ ପାଇଁ ପ୍ରସ୍ତୁତ ହେଉଛି...</translation>
+<translation id="4576943788798178439">ଷ୍ଟାଇଲସର ସମର୍ଥନ</translation>
 <translation id="458794348635939462">ହୋଷ୍ଟ ସମ୍ବନ୍ଧିତ ସମସ୍ତ ସମସ୍ୟାର ସମାଧାନ କରିବାରେ ବିଫଳ ହୋଇଛି</translation>
 <translation id="4593212453765072419">ପ୍ରକ୍ସି ପ୍ରାମାଣିକତା ଆବଶ୍ୟକ</translation>
 <translation id="4609350030397390689">କୀବୋର୍ଡର ଉଜ୍ଜ୍ୱଳତା କମ୍ କରନ୍ତୁ</translation>
@@ -429,6 +437,7 @@
 <translation id="4915052247106771211">ଏହା ଡିଭାଇସକୁ ଫ୍ୟାକ୍ଟୋରୀ ସେଟିଂସ (ପାୱାରୱାସ)ରେ ରିସେଟ କରିବ।</translation>
 <translation id="4917385247580444890">ଦୃଢ଼</translation>
 <translation id="4917889632206600977">ବନ୍ଦ ହୋଇଯାଇଛି - କାଗଜ ସରିଯାଇଛି</translation>
+<translation id="491791267030419270">ମତାମତ ଲେଖିବା ବିଷୟରେ ଟିପ୍ସ</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> ସେକେଣ୍ଡରେ <ph name="RATE" /> ଚାର୍ଜ ହୋଇଛି</translation>
 <translation id="4930320165497208503">ଏକ ସଂଯୋଗ ସେଟ ଅପ କିମ୍ବା ଅପଡେଟ କରିବାକୁ, <ph name="BEGIN_LINK" />ସେଟିଂସ<ph name="END_LINK" />କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="4932733599132424254">ତାରିଖ</translation>
@@ -456,6 +465,7 @@
 <translation id="5168185087976003268">ବ୍ୟାଟେରୀ ହେଲ୍ଥ</translation>
 <translation id="5170568018924773124">ଫୋଲ୍ଡରରେ ଦେଖାନ୍ତୁ</translation>
 <translation id="5179530508336824319">ପରବର୍ତ୍ତୀ ସ୍କ୍ରିନକୁ ଯିବା ପାଇଁ ରାଇଟ ପ୍ରୋଟେକ୍ଟକୁ ସକ୍ଷମ କରନ୍ତୁ। ନିର୍ଦ୍ଦେଶାବଳୀ ପାଇଁ ଡିଭାଇସ ନିର୍ମାତାଙ୍କ ସହାୟତା ପୃଷ୍ଠାକୁ ଯାଆନ୍ତୁ।</translation>
+<translation id="5181140330217080051">ଡାଉନ୍‍‍ଲୋଡ୍ ହେଉଛି</translation>
 <translation id="5190187232518914472">ଆପଣଙ୍କର ପ୍ରିୟ ସ୍ମୃତିଗୁଡ଼ିକୁ ପୁନର୍ଜୀବିତ କରନ୍ତୁ। ଆଲବମଗୁଡ଼ିକ ଯୋଗ କରିବା କିମ୍ବା ସେଗୁଡ଼ିକୁ ଏଡିଟ୍ କରିବା ପାଇଁ <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="5212543919916444558">ଆପଣଙ୍କର ସ୍କ୍ରିନ୍‌ରେ ମୁଁ କିଛି ଖୋଜିପାଇଲି ନାହିଁ ଯାହାଦ୍ୱାରା ମୁଁ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିପାରିବି।
 ମୋତେ ଯାହା କିଛି ପଚାରିବା ପାଇଁ ମାଇକ୍‌ ଟାପ୍‌ କରି ଦେଖନ୍ତୁ।</translation>
@@ -512,6 +522,7 @@
 <translation id="5620281292257375798">କେବଳ ଇଣ୍ଟର୍ନଲ୍</translation>
 <translation id="5649768706273821470">ଶୁଣନ୍ତୁ</translation>
 <translation id="5655283760733841251">କୀବୋର୍ଡର ଉଜ୍ଜ୍ୱଳତା ବଢ଼ାନ୍ତୁ</translation>
+<translation id="5659593005791499971">ଇମେଲ୍</translation>
 <translation id="5669267381087807207">ସକ୍ରିୟ ହେଉଛି</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">ଫ୍ୟାମିଲି</translation>
@@ -524,6 +535,7 @@
 <translation id="57838592816432529">ମ୍ୟୁଟ୍‌</translation>
 <translation id="5784136236926853061">HTTPର ଅଧିକ ଲାଟେନ୍ସି</translation>
 <translation id="578753362485952307">ଯଦି ଆପଣ ଅନ୍ୟ ଏକ ଡିଭାଇସରେ ବ୍ୟବହାର କରିବା ପାଇଁ ମେନବୋର୍ଡରେ କୌଣସି ରିୱାର୍କ କରନ୍ତି, ତେବେ <ph name="LINK_BEGIN" />ରିୱାର୍କ ଫ୍ଲୋ<ph name="LINK_END" />କୁ ଯାଆନ୍ତୁ।</translation>
+<translation id="5790085346892983794">ସଫଳ ହୋଇଛି</translation>
 <translation id="5832805196449965646">ଲୋକଙ୍କୁ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="583281660410589416">ଅଜ୍ଞାତ</translation>
 <translation id="5843706793424741864">ଫାରେନହାଇଟ୍</translation>
@@ -535,6 +547,7 @@
 <translation id="5866840822086176774">ଅତି ଦୃଢ଼</translation>
 <translation id="588258955323874662">ପୂର୍ଣ୍ଣସ୍କ୍ରିନ</translation>
 <translation id="5895138241574237353">ପୁନଃଆରମ୍ଭ</translation>
+<translation id="5898758006340607522">ପାୱାର ବଟନ</translation>
 <translation id="5901630391730855834">ହଳଦିଆ</translation>
 <translation id="5903200662178656908">ଡିଭାଇସଟି ଏକ କୀବୋର୍ଡ ଏବଂ ମାଉସର କମ୍ବୋ ଅଟେ।</translation>
 <translation id="5916084858004523819">ନିଷିଦ୍ଧ</translation>
@@ -857,6 +870,7 @@
 <translation id="8919792139048574232">କଣ ସମାଧାନ କରାଯାଇଛି ତାହା ଦେଖନ୍ତୁ</translation>
 <translation id="8919837981463578619">ବିଫଳ ହୋଇଛି - ଟ୍ରେ ଅନୁପଲବ୍ଧ ଅଛି</translation>
 <translation id="8923267550422472772">ରିସେଟ କରିବା ପାଇଁ ମାସର ଦିନ</translation>
+<translation id="8925613211674558308">କ୍ୟାଶ କରାଯାଇଥିବା VPD</translation>
 <translation id="8928727111548978589">ବିଫଳ ହୋଇଛି - କାଗଜ ଶେଷ ହୋଇଯାଇଛି</translation>
 <translation id="8930521118335213258">ପିଅର୍</translation>
 <translation id="8930622219860340959">ୱେୟାରଲେସ୍</translation>
@@ -898,6 +912,7 @@
 <translation id="922179502584117429">ବର୍ତ୍ତମାନର ସଂସ୍କରଣ <ph name="VERSION_NUMBER" /> ପୁରୁଣା ଅଟେ</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">ମତାମତ ପଠାନ୍ତୁ</translation>
 <translation id="952992212772159698">ସକ୍ରିୟ ହୋ‍ଇନାହିଁ</translation>
 <translation id="960719561871045870">ଅପରେଟର୍ କୋଡ୍</translation>
 <translation id="982713511914535780">ବ୍ୟାଟେରୀ ଡିସଚାର୍ଜ ଟେଷ୍ଟ ଚଲାନ୍ତୁ</translation>

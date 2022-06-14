@@ -8,6 +8,7 @@
 #include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_paths.h"
+#include "ash/webui/shimless_rma/shimless_rma.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
@@ -37,6 +38,8 @@
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/ash/components/hibernate/buildflags.h"  // ENABLE_HIBERNATE
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"  // PLATFORM_CFM
+#include "chromeos/dbus/anomaly_detector/anomaly_detector_client.h"
+#include "chromeos/dbus/arc/arc_appfuse_provider_client.h"
 #include "chromeos/dbus/arc/arc_camera_client.h"
 #include "chromeos/dbus/arc/arc_sensor_service_client.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
@@ -108,6 +111,8 @@ void InitializeDBus() {
 
   // NOTE: base::Feature is not initialized yet, so any non MultiProcessMash
   // dbus client initialization for Ash should be done in Shell::Init.
+  InitializeDBusClient<chromeos::AnomalyDetectorClient>(bus);
+  InitializeDBusClient<chromeos::ArcAppfuseProviderClient>(bus);
   InitializeDBusClient<chromeos::ArcCameraClient>(bus);
   InitializeDBusClient<chromeos::ArcQuotaClient>(bus);
   InitializeDBusClient<chromeos::ArcSensorServiceClient>(bus);
@@ -175,7 +180,7 @@ void InitializeFeatureListDependentDBus() {
     InitializeDBusClient<CfmHotlineClient>(bus);
   }
 #endif
-  if (ash::features::IsShimlessRMAFlowEnabled()) {
+  if (ash::shimless_rma::IsShimlessRmaAllowed()) {
     InitializeDBusClient<RmadClient>(bus);
   }
   if (ash::features::IsRgbKeyboardEnabled()) {
@@ -222,7 +227,7 @@ void ShutdownDBus() {
   if (ash::features::IsRgbKeyboardEnabled()) {
     RgbkbdClient::Shutdown();
   }
-  if (ash::features::IsShimlessRMAFlowEnabled()) {
+  if (ash::shimless_rma::IsShimlessRmaAllowed()) {
     RmadClient::Shutdown();
   }
   chromeos::PowerManagerClient::Shutdown();
@@ -257,6 +262,8 @@ void ShutdownDBus() {
   chromeos::AttestationClient::Shutdown();
   chromeos::ArcQuotaClient::Shutdown();
   chromeos::ArcCameraClient::Shutdown();
+  chromeos::ArcAppfuseProviderClient::Shutdown();
+  chromeos::AnomalyDetectorClient::Shutdown();
 
   chromeos::DBusThreadManager::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();

@@ -413,6 +413,10 @@ interface BroadcastChannel : EventTarget
     method postMessage
     setter onmessage
     setter onmessageerror
+interface BrowserCaptureMediaStreamTrack : MediaStreamTrack
+    attribute @@toStringTag
+    method constructor
+    method cropTo
 interface ByteLengthQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -1009,6 +1013,10 @@ interface CredentialsContainer
     method get
     method preventSilentAccess
     method store
+interface CropTarget
+    static method fromElement
+    attribute @@toStringTag
+    method constructor
 interface Crypto
     attribute @@toStringTag
     getter subtle
@@ -3315,6 +3323,7 @@ interface HTMLLegendElement : HTMLElement
 interface HTMLLinkElement : HTMLElement
     attribute @@toStringTag
     getter as
+    getter blocking
     getter charset
     getter crossOrigin
     getter disabled
@@ -3335,6 +3344,7 @@ interface HTMLLinkElement : HTMLElement
     getter type
     method constructor
     setter as
+    setter blocking
     setter charset
     setter crossOrigin
     setter disabled
@@ -3651,6 +3661,7 @@ interface HTMLScriptElement : HTMLElement
     static method supports
     attribute @@toStringTag
     getter async
+    getter blocking
     getter charset
     getter crossOrigin
     getter defer
@@ -3665,6 +3676,7 @@ interface HTMLScriptElement : HTMLElement
     getter type
     method constructor
     setter async
+    setter blocking
     setter charset
     setter crossOrigin
     setter defer
@@ -3744,11 +3756,13 @@ interface HTMLSpanElement : HTMLElement
     method constructor
 interface HTMLStyleElement : HTMLElement
     attribute @@toStringTag
+    getter blocking
     getter disabled
     getter media
     getter sheet
     getter type
     method constructor
+    setter blocking
     setter disabled
     setter media
     setter type
@@ -4968,6 +4982,7 @@ interface Navigator
     getter webdriver
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
+    getter windowControlsOverlay
     getter xr
     method clearAppBadge
     method constructor
@@ -9667,6 +9682,18 @@ interface Window : EventTarget
     attribute @@toStringTag
     attribute PERSISTENT
     attribute TEMPORARY
+    method constructor
+interface WindowControlsOverlay : EventTarget
+    attribute @@toStringTag
+    getter ongeometrychange
+    getter visible
+    method constructor
+    method getTitlebarAreaRect
+    setter ongeometrychange
+interface WindowControlsOverlayGeometryChangeEvent : Event
+    attribute @@toStringTag
+    getter titlebarAreaRect
+    getter visible
     method constructor
 interface Worker : EventTarget
     attribute @@toStringTag

@@ -92,7 +92,9 @@ class WaylandScreenTest : public WaylandTest {
 
     WaylandTest::SetUp();
 
-    mock_zaura_shell_ = std::make_unique<wl::MockZAuraShell>();
+    // Initializing the MockZAuraShell gives ownership to the wl_display.
+    // TODO(fangzhoug): Investigate resulting memory leak.
+    mock_zaura_shell_ = new wl::MockZAuraShell();
     mock_zaura_shell_->Initialize(server_.display());
 
     output_->SetRect({kOutputWidth, kOutputHeight});
@@ -129,8 +131,7 @@ class WaylandScreenTest : public WaylandTest {
     EXPECT_EQ(display_for_widget.id(), expected_display_id);
   }
 
-  std::unique_ptr<wl::MockZAuraShell> mock_zaura_shell_;
-
+  wl::MockZAuraShell* mock_zaura_shell_ = nullptr;
   wl::TestOutput* output_ = nullptr;
   WaylandOutputManager* output_manager_ = nullptr;
 
@@ -498,6 +499,48 @@ TEST_P(WaylandScreenTest, OutputPropertyChangesMissingLogicalSize) {
   EXPECT_EQ(new_display.panel_rotation(), display::Display::ROTATE_270);
   EXPECT_EQ(new_display.rotation(), display::Display::ROTATE_0);
   EXPECT_EQ(new_display.device_scale_factor(), scale);
+
+  platform_screen_->RemoveObserver(&observer);
+}
+
+TEST_P(WaylandScreenTest, OutputPropertyChangesPrimaryDisplayChanged) {
+  TestDisplayObserver observer;
+  platform_screen_->AddObserver(&observer);
+
+  display::Display display1(1, gfx::Rect(0, 0, 800, 600));
+  display::Display display2(2, gfx::Rect(800, 0, 700, 500));
+
+  platform_screen_->OnOutputAddedOrUpdated(
+      display1.id(), display1.bounds().origin(), display1.size(),
+      display1.GetSizeInPixel(), display1.GetWorkAreaInsets(),
+      display1.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
+      WL_OUTPUT_TRANSFORM_NORMAL);
+  platform_screen_->OnOutputAddedOrUpdated(
+      display2.id(), display2.bounds().origin(), display2.size(),
+      display2.GetSizeInPixel(), display2.GetWorkAreaInsets(),
+      display2.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
+      WL_OUTPUT_TRANSFORM_NORMAL);
+
+  EXPECT_EQ(platform_screen_->GetPrimaryDisplay(), display1);
+
+  // Simulate setting display2 as primary by moving its origin to (0,0) and
+  // shifting display1 to its left.
+  display1.set_bounds(gfx::Rect(-800, 0, 800, 600));
+  display2.set_bounds(gfx::Rect(0, 0, 700, 500));
+
+  // Purposely send the output metrics out of order.
+  platform_screen_->OnOutputAddedOrUpdated(
+      display2.id(), display2.bounds().origin(), display2.size(),
+      display2.GetSizeInPixel(), display2.GetWorkAreaInsets(),
+      display2.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
+      WL_OUTPUT_TRANSFORM_NORMAL);
+  platform_screen_->OnOutputAddedOrUpdated(
+      display1.id(), display1.bounds().origin(), display1.size(),
+      display1.GetSizeInPixel(), display1.GetWorkAreaInsets(),
+      display1.device_scale_factor(), WL_OUTPUT_TRANSFORM_NORMAL,
+      WL_OUTPUT_TRANSFORM_NORMAL);
+
+  EXPECT_EQ(platform_screen_->GetPrimaryDisplay(), display2);
 
   platform_screen_->RemoveObserver(&observer);
 }

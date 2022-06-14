@@ -32,7 +32,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "cc/input/snap_selection_strategy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
@@ -133,7 +135,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_controls_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -204,6 +205,14 @@ namespace blink {
 enum class ClassStringContent { kEmpty, kWhiteSpaceOnly, kHasClasses };
 
 namespace {
+
+bool EarlyExitOnNoopClassOrStyleChange() {
+  static const bool is_enabled = base::FeatureList::IsEnabled(
+      features::kEarlyExitOnNoopClassOrStyleChange);
+  DCHECK_EQ(is_enabled, base::FeatureList::IsEnabled(
+                            features::kEarlyExitOnNoopClassOrStyleChange));
+  return is_enabled;
+}
 
 class DisplayLockStyleScope {
   STACK_ALLOCATED();
@@ -803,7 +812,7 @@ Attr* Element::DetachAttribute(wtf_size_t index) {
   } else {
     attr_node = MakeGarbageCollected<Attr>(GetDocument(), attribute.GetName(),
                                            attribute.Value());
-    RemoveAttributeInternal(index, kNotInSynchronizationOfLazyAttribute);
+    RemoveAttributeInternal(index, AttributeModificationReason::kDirectly);
   }
   return attr_node;
 }
@@ -815,18 +824,15 @@ void Element::DetachAttrNodeAtIndex(Attr* attr, wtf_size_t index) {
   const Attribute& attribute = GetElementData()->Attributes().at(index);
   DCHECK(attribute.GetName() == attr->GetQualifiedName());
   DetachAttrNodeFromElementWithValue(attr, attribute.Value());
-  RemoveAttributeInternal(index, kNotInSynchronizationOfLazyAttribute);
+  RemoveAttributeInternal(index, AttributeModificationReason::kDirectly);
 }
 
 void Element::removeAttribute(const QualifiedName& name) {
-  if (!GetElementData())
-    return;
-
-  wtf_size_t index = GetElementData()->Attributes().FindIndex(name);
+  wtf_size_t index = FindAttributeIndex(name);
   if (index == kNotFound)
     return;
 
-  RemoveAttributeInternal(index, kNotInSynchronizationOfLazyAttribute);
+  RemoveAttributeInternal(index, AttributeModificationReason::kDirectly);
 }
 
 void Element::SetBooleanAttribute(const QualifiedName& name, bool value) {
@@ -2343,6 +2349,11 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       GetDocument().GetStyleEngine().IdChangedForElement(old_id, new_id, *this);
     }
   } else if (name == html_names::kClassAttr) {
+    if (params.old_value == params.new_value &&
+        params.reason != AttributeModificationReason::kByMoveToNewDocument &&
+        EarlyExitOnNoopClassOrStyleChange()) {
+      return;
+    }
     ClassAttributeChanged(params.new_value);
     UpdateClassList(params.old_value, params.new_value);
   } else if (name == html_names::kNameAttr) {
@@ -2357,6 +2368,10 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     SynchronizeContentAttributeAndElementReference(name);
   } else if (IsStyledElement()) {
     if (name == html_names::kStyleAttr) {
+      if (params.old_value == params.new_value &&
+          EarlyExitOnNoopClassOrStyleChange()) {
+        return;
+      }
       StyleAttributeChanged(params.new_value, params.reason);
     } else if (IsPresentationAttribute(name)) {
       GetElementData()->SetPresentationAttributeStyleIsDirty(true);
@@ -3417,19 +3432,25 @@ void Element::DetachLayoutTree(bool performing_reattach) {
   }
 }
 
-void Element::ReattachLayoutTreeChildren(base::PassKey<HTMLFieldSetElement>) {
+void Element::ReattachLayoutTreeChildren(base::PassKey<StyleEngine>) {
   DCHECK(NeedsReattachLayoutTree());
   DCHECK(ChildNeedsReattachLayoutTree());
-  DCHECK(!GetShadowRoot());
   DCHECK(GetLayoutObject());
-  DCHECK(GetLayoutObject()->StyleRef().CanMatchSizeContainerQueries(*this));
 
   constexpr bool performing_reattach = true;
 
   DetachPrecedingPseudoElements(performing_reattach);
 
-  for (Node* child = firstChild(); child; child = child->nextSibling())
-    child->DetachLayoutTree(performing_reattach);
+  ShadowRoot* shadow_root = GetShadowRoot();
+
+  if (shadow_root) {
+    shadow_root->DetachLayoutTree(performing_reattach);
+  } else {
+    // Can not use ContainerNode::DetachLayoutTree() because that would also
+    // call Node::DetachLayoutTree for this element.
+    for (Node* child = firstChild(); child; child = child->nextSibling())
+      child->DetachLayoutTree(performing_reattach);
+  }
 
   DetachSucceedingPseudoElements(performing_reattach);
 
@@ -3442,8 +3463,14 @@ void Element::ReattachLayoutTreeChildren(base::PassKey<HTMLFieldSetElement>) {
 
   AttachPrecedingPseudoElements(context);
 
-  for (Node* child = firstChild(); child; child = child->nextSibling())
-    child->AttachLayoutTree(context);
+  if (shadow_root) {
+    shadow_root->AttachLayoutTree(context);
+  } else {
+    // Can not use ContainerNode::DetachLayoutTree() because that would also
+    // call Node::AttachLayoutTree for this element.
+    for (Node* child = firstChild(); child; child = child->nextSibling())
+      child->AttachLayoutTree(context);
+  }
 
   AttachSucceedingPseudoElements(context);
 
@@ -3891,6 +3918,14 @@ StyleRecalcChange Element::RecalcOwnStyle(
     // recalc if the only changed properties are independent. In this case, we
     // can simply clone the old ComputedStyle and set these directly.
     new_style = PropagateInheritedProperties();
+    if (new_style) {
+      // If the child style is copied from the old one, we'll never
+      // reach StyleBuilder::ApplyProperty(), hence we'll
+      // never set the flag on the parent. this is completely analogous
+      // to the code in StyleResolver::ApplyMatchedCache().
+      if (new_style->HasExplicitInheritance())
+        parent_style->SetChildHasExplicitInheritance();
+    }
   }
   if (!new_style && (parent_style || (GetDocument().documentElement() == this &&
                                       LayoutViewCanHaveChildren(*this)))) {
@@ -4599,15 +4634,10 @@ const char* Element::ErrorMessageForAttachShadow() const {
   }
 
   // 4. If shadow host has a non-null shadow root whose "is declarative shadow
-  // root" property is false or it is not a user agent shadow root for
-  // <selectmenu>, then throw an "NotSupportedError" DOMException.
-  if (GetShadowRoot()) {
-    if (!GetShadowRoot()->IsDeclarativeShadowRoot() &&
-        !(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled() &&
-          IsA<HTMLSelectMenuElement>(this) && GetShadowRoot()->IsUserAgent())) {
-      return "Shadow root cannot be created on a host "
-             "which already hosts a shadow tree.";
-    }
+  // root" property is false, then throw an "NotSupportedError" DOMException.
+  if (GetShadowRoot() && !GetShadowRoot()->IsDeclarativeShadowRoot()) {
+    return "Shadow root cannot be created on a host "
+           "which already hosts a shadow tree.";
   }
   return nullptr;
 }
@@ -4706,37 +4736,16 @@ ShadowRoot& Element::AttachShadowRootInternal(
 
   if (auto* shadow_root = GetShadowRoot()) {
     // NEW. If shadow host has a non-null shadow root whose "is declarative
-    // shadow root property" is true or or it is a <selectmenu> with a user
-    // agent shadow root, then remove all of shadow root’s children, in tree
-    // order.
-    DCHECK(shadow_root->IsDeclarativeShadowRoot() ||
-           (RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled() &&
-            IsA<HTMLSelectMenuElement>(this) && shadow_root->IsUserAgent()));
+    // shadow root property is true, then remove all of shadow root’s children,
+    // in tree order. Return shadow host’s shadow root.
+    DCHECK(shadow_root->IsDeclarativeShadowRoot());
     shadow_root->RemoveChildren();
-
-    // Ensure that current shadow root properties are updated for <selectmenu>.
-    if (IsA<HTMLSelectMenuElement>(this)) {
-      shadow_root->UpdateType(type);
-      InitializeShadowRootInternal(*shadow_root, focus_delegation,
-                                   slot_assignment_mode);
-    }
-
     return *shadow_root;
   }
 
   // 5. Let shadow be a new shadow root whose node document is this’s node
   // document, host is this, and mode is init’s mode.
   ShadowRoot& shadow_root = CreateAndAttachShadowRoot(type);
-  InitializeShadowRootInternal(shadow_root, focus_delegation,
-                               slot_assignment_mode);
-  // 8. Set this’s shadow root to shadow.
-  return shadow_root;
-}
-
-void Element::InitializeShadowRootInternal(
-    ShadowRoot& shadow_root,
-    FocusDelegation focus_delegation,
-    SlotAssignmentMode slot_assignment_mode) {
   // 6. Set shadow’s delegates focus to init’s delegatesFocus.
   shadow_root.SetDelegatesFocus(focus_delegation ==
                                 FocusDelegation::kDelegateFocus);
@@ -4751,6 +4760,8 @@ void Element::InitializeShadowRootInternal(
         GetCustomElementState() != CustomElementState::kPreCustomized));
 
   shadow_root.SetSlotAssignmentMode(slot_assignment_mode);
+  // 8. Set this’s shadow root to shadow.
+  return shadow_root;
 }
 
 ShadowRoot* Element::OpenShadowRoot() const {
@@ -4997,9 +5008,8 @@ void Element::setAttributeNS(const AtomicString& namespace_uri,
   setAttribute(parsed_name, value);
 }
 
-void Element::RemoveAttributeInternal(
-    wtf_size_t index,
-    SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
+void Element::RemoveAttributeInternal(wtf_size_t index,
+                                      AttributeModificationReason reason) {
   MutableAttributeCollection attributes =
       EnsureUniqueElementData().Attributes();
   SECURITY_DCHECK(index < attributes.size());
@@ -5007,7 +5017,8 @@ void Element::RemoveAttributeInternal(
   QualifiedName name = attributes[index].GetName();
   AtomicString value_being_removed = attributes[index].Value();
 
-  if (!in_synchronization_of_lazy_attribute) {
+  if (reason !=
+      AttributeModificationReason::kBySynchronizationOfLazyAttribute) {
     if (!value_being_removed.IsNull()) {
       WillModifyAttribute(name, value_being_removed, g_null_atom);
     } else if (GetCustomElementState() == CustomElementState::kCustom) {
@@ -5022,18 +5033,17 @@ void Element::RemoveAttributeInternal(
 
   attributes.Remove(index);
 
-  if (!in_synchronization_of_lazy_attribute)
+  if (reason != AttributeModificationReason::kBySynchronizationOfLazyAttribute)
     DidRemoveAttribute(name, value_being_removed);
 }
 
-void Element::AppendAttributeInternal(
-    const QualifiedName& name,
-    const AtomicString& value,
-    SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
-  if (!in_synchronization_of_lazy_attribute)
+void Element::AppendAttributeInternal(const QualifiedName& name,
+                                      const AtomicString& value,
+                                      AttributeModificationReason reason) {
+  if (reason != AttributeModificationReason::kBySynchronizationOfLazyAttribute)
     WillModifyAttribute(name, g_null_atom, value);
   EnsureUniqueElementData().Attributes().Append(name, value);
-  if (!in_synchronization_of_lazy_attribute)
+  if (reason != AttributeModificationReason::kBySynchronizationOfLazyAttribute)
     DidAddAttribute(name, value);
 }
 
@@ -5452,8 +5462,7 @@ bool Element::IsAutofocusable() const {
 bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
   auto& state = GetDocument().GetDisplayLockDocumentState();
   state.UnlockShapingDeferredElements(*this);
-  if (state.LockedDisplayLockCount() ==
-      state.DisplayLockBlockingAllActivationCount())
+  if (!state.HasActivatableLocks())
     return false;
 
   HeapVector<Member<Element>> activatable_targets;
@@ -5680,16 +5689,16 @@ bool Element::ForceLegacyLayoutInFormattingContext(
     if (style->Display() == EDisplay::kNone)
       break;
 
-    // CSSContainerQueries rely on LayoutNG being fully shipped before shipping.
-    // In the meantime, make sure we do not mark containers for re-attachment
-    // since we might be in the process of laying out the container.
-    if (container_recalc_root == ancestor)
-      break;
-
     found_fc = DefinitelyNewFormattingContext(*ancestor, *style);
     ancestor->SetShouldForceLegacyLayoutForChild(true);
     ancestor->SetNeedsReattachLayoutTree();
     needs_reattach = true;
+
+    if (container_recalc_root == ancestor) {
+      DCHECK(found_fc)
+          << "A size query container is always a formatting context";
+      break;
+    }
   }
   return needs_reattach;
 }
@@ -6243,8 +6252,10 @@ const ComputedStyle* Element::EnsureComputedStyle(
   StyleEngine::InEnsureComputedStyleScope ensure_scope(
       GetDocument().GetStyleEngine());
 
-  if (PseudoElement* element = GetPseudoElement(pseudo_element_specifier))
+  if (PseudoElement* element =
+          GetNestedPseudoElement(pseudo_element_specifier, pseudo_argument)) {
     return element->EnsureComputedStyle();
+  }
 
   if (!InActiveDocument())
     return nullptr;
@@ -6820,7 +6831,7 @@ bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
 }
 
 bool Element::MayTriggerVirtualKeyboard() const {
-  return HasEditableStyle(*this);
+  return IsEditable(*this);
 }
 
 bool Element::matches(const AtomicString& selectors,
@@ -7253,11 +7264,12 @@ void Element::DidAddAttribute(const QualifiedName& name,
 
 void Element::DidModifyAttribute(const QualifiedName& name,
                                  const AtomicString& old_value,
-                                 const AtomicString& new_value) {
+                                 const AtomicString& new_value,
+                                 AttributeModificationReason reason) {
   if (name == html_names::kIdAttr)
     UpdateId(old_value, new_value);
-  AttributeChanged(AttributeModificationParams(
-      name, old_value, new_value, AttributeModificationReason::kDirectly));
+  AttributeChanged(
+      AttributeModificationParams(name, old_value, new_value, reason));
   probe::DidModifyDOMAttr(this, name, new_value);
   // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
@@ -7310,10 +7322,17 @@ void Element::DidMoveToNewDocument(Document& old_document) {
     // element should point to the shareable one.
     EnsureUniqueElementData();
 
-    if (HasID())
-      SetIdAttribute(GetIdAttribute());
-    if (HasClass())
-      setAttribute(html_names::kClassAttr, GetClassAttribute());
+    if (const AtomicString& idAttr = GetIdAttribute())
+      SetIdAttribute(idAttr);
+    if (const AtomicString& classAttr = GetClassAttribute()) {
+      // Going through setAttribute() to synchronize the attribute is only
+      // required when setting the "style" attribute (this sets the "class"
+      // attribute) or for an SVG element (in which case `GetClassAttribute`
+      // above would already have synchronized).
+      SetAttributeInternal(FindAttributeIndex(html_names::kClassAttr),
+                           html_names::kClassAttr, classAttr,
+                           AttributeModificationReason::kByMoveToNewDocument);
+    }
   }
   // TODO(tkent): Even if Documents' modes are same, keeping
   // ShareableElementData owned by old_document isn't right.
@@ -8214,20 +8233,14 @@ std::pair<wtf_size_t, const QualifiedName> Element::LookupAttributeQNameHinted(
 void Element::setAttribute(const QualifiedName& name,
                            const AtomicString& value) {
   SynchronizeAttribute(name);
-  wtf_size_t index = GetElementData()
-                         ? GetElementData()->Attributes().FindIndex(name)
-                         : kNotFound;
-  SetAttributeInternal(index, name, value,
-                       kNotInSynchronizationOfLazyAttribute);
+  SetAttributeInternal(FindAttributeIndex(name), name, value,
+                       AttributeModificationReason::kDirectly);
 }
 
 void Element::setAttribute(const QualifiedName& name,
                            const AtomicString& value,
                            ExceptionState& exception_state) {
   SynchronizeAttribute(name);
-  wtf_size_t index = GetElementData()
-                         ? GetElementData()->Attributes().FindIndex(name)
-                         : kNotFound;
 
   AtomicString trusted_value(
       TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(name), value,
@@ -8235,16 +8248,15 @@ void Element::setAttribute(const QualifiedName& name,
   if (exception_state.HadException())
     return;
 
-  SetAttributeInternal(index, name, trusted_value,
-                       kNotInSynchronizationOfLazyAttribute);
+  SetAttributeInternal(FindAttributeIndex(name), name, trusted_value,
+                       AttributeModificationReason::kDirectly);
 }
 
 void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
                                            const AtomicString& value) {
-  wtf_size_t index = GetElementData()
-                         ? GetElementData()->Attributes().FindIndex(name)
-                         : kNotFound;
-  SetAttributeInternal(index, name, value, kInSynchronizationOfLazyAttribute);
+  SetAttributeInternal(
+      FindAttributeIndex(name), name, value,
+      AttributeModificationReason::kBySynchronizationOfLazyAttribute);
 }
 
 void Element::SetAttributeHinted(AtomicString local_name,
@@ -8271,7 +8283,7 @@ void Element::SetAttributeHinted(AtomicString local_name,
     return;
 
   SetAttributeInternal(index, q_name, trusted_value,
-                       kNotInSynchronizationOfLazyAttribute);
+                       AttributeModificationReason::kDirectly);
 }
 
 void Element::SetAttributeHinted(AtomicString local_name,
@@ -8296,23 +8308,28 @@ void Element::SetAttributeHinted(AtomicString local_name,
   if (exception_state.HadException())
     return;
   SetAttributeInternal(index, q_name, value,
-                       kNotInSynchronizationOfLazyAttribute);
+                       AttributeModificationReason::kDirectly);
+}
+
+wtf_size_t Element::FindAttributeIndex(const QualifiedName& name) {
+  if (GetElementData())
+    return GetElementData()->Attributes().FindIndex(name);
+  return kNotFound;
 }
 
 ALWAYS_INLINE void Element::SetAttributeInternal(
     wtf_size_t index,
     const QualifiedName& name,
     const AtomicString& new_value,
-    SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
+    AttributeModificationReason reason) {
   if (new_value.IsNull()) {
     if (index != kNotFound)
-      RemoveAttributeInternal(index, in_synchronization_of_lazy_attribute);
+      RemoveAttributeInternal(index, reason);
     return;
   }
 
   if (index == kNotFound) {
-    AppendAttributeInternal(name, new_value,
-                            in_synchronization_of_lazy_attribute);
+    AppendAttributeInternal(name, new_value, reason);
     return;
   }
 
@@ -8321,15 +8338,17 @@ ALWAYS_INLINE void Element::SetAttributeInternal(
   AtomicString existing_attribute_value = existing_attribute.Value();
   QualifiedName existing_attribute_name = existing_attribute.GetName();
 
-  if (!in_synchronization_of_lazy_attribute) {
+  if (reason !=
+      AttributeModificationReason::kBySynchronizationOfLazyAttribute) {
     WillModifyAttribute(existing_attribute_name, existing_attribute_value,
                         new_value);
   }
   if (new_value != existing_attribute_value)
     EnsureUniqueElementData().Attributes().at(index).SetValue(new_value);
-  if (!in_synchronization_of_lazy_attribute) {
+  if (reason !=
+      AttributeModificationReason::kBySynchronizationOfLazyAttribute) {
     DidModifyAttribute(existing_attribute_name, existing_attribute_value,
-                       new_value);
+                       new_value, reason);
   }
 }
 
@@ -8393,7 +8412,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   }
 
   SetAttributeInternal(index, attr_node->GetQualifiedName(), value,
-                       kNotInSynchronizationOfLazyAttribute);
+                       AttributeModificationReason::kDirectly);
 
   attr_node->AttachToElement(this, local_name);
   GetTreeScope().AdoptIfNeeded(*attr_node);
@@ -8415,7 +8434,7 @@ void Element::RemoveAttributeHinted(const AtomicString& name,
     return;
   }
 
-  RemoveAttributeInternal(index, kNotInSynchronizationOfLazyAttribute);
+  RemoveAttributeInternal(index, AttributeModificationReason::kDirectly);
 }
 
 bool Element::IsDocumentElement() const {
@@ -8433,6 +8452,26 @@ bool Element::IsReplacedElementRespectingCSSOverflow() const {
   // ink overflow for replaced elements.
   return GetPseudoId() == kPseudoIdPageTransitionIncomingImage ||
          GetPseudoId() == kPseudoIdPageTransitionOutgoingImage;
+}
+
+const ComputedStyle* Element::StyleForPositionFallback(unsigned index) {
+  // @position-fallback style must be computed out of the main style recalc,
+  // after the base style has been computed.
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kStyleClean);
+  const ComputedStyle* base_style = GetComputedStyle();
+  if (!base_style)
+    return nullptr;
+  if (const ComputedStyle* cached_style =
+          base_style->GetCachedPositionFallbackStyle(index))
+    return cached_style;
+
+  scoped_refptr<const ComputedStyle> style =
+      GetDocument().GetStyleResolver().ResolvePositionFallbackStyle(*this,
+                                                                    index);
+  if (!style)
+    return nullptr;
+  return base_style->AddCachedPositionFallbackStyle(std::move(style), index);
 }
 
 }  // namespace blink

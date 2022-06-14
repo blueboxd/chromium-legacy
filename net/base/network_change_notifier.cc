@@ -107,10 +107,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
       public IPAddressObserver {
  public:
   explicit NetworkChangeCalculator(const NetworkChangeCalculatorParams& params)
-      : params_(params),
-        have_announced_(false),
-        last_announced_connection_type_(CONNECTION_NONE),
-        pending_connection_type_(CONNECTION_NONE) {
+      : params_(params) {
     DCHECK(g_network_change_notifier);
     AddConnectionTypeObserver(this);
     AddConnectionCostObserver(this);
@@ -180,11 +177,11 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   const NetworkChangeCalculatorParams params_;
 
   // Indicates if NotifyObserversOfNetworkChange has been called yet.
-  bool have_announced_;
+  bool have_announced_ = false;
   // Last value passed to NotifyObserversOfNetworkChange.
-  ConnectionType last_announced_connection_type_;
+  ConnectionType last_announced_connection_type_ = CONNECTION_NONE;
   // Value to pass to NotifyObserversOfNetworkChange when Notify is called.
-  ConnectionType pending_connection_type_;
+  ConnectionType pending_connection_type_ = CONNECTION_NONE;
   // Used to delay notifications so duplicates can be combined.
   base::OneShotTimer timer_;
 
@@ -222,8 +219,7 @@ class NetworkChangeNotifier::ObserverList {
                 base::ObserverListPolicy::EXISTING_ONLY)),
         default_network_active_observer_list_(
             new base::ObserverListThreadSafe<DefaultNetworkActiveObserver>(
-                base::ObserverListPolicy::EXISTING_ONLY)),
-        connection_cost_observers_added_(false) {}
+                base::ObserverListPolicy::EXISTING_ONLY)) {}
 
   ObserverList(const ObserverList&) = delete;
   ObserverList& operator=(const ObserverList&) = delete;
@@ -257,7 +253,7 @@ class NetworkChangeNotifier::ObserverList {
   // Indicates if connection cost observer was added before
   // network_change_notifier was initialized, if so ConnectionCostObserverAdded
   // is invoked from constructor.
-  std::atomic_bool connection_cost_observers_added_;
+  std::atomic_bool connection_cost_observers_added_ = false;
 };
 
 class NetworkChangeNotifier::SystemDnsConfigObserver

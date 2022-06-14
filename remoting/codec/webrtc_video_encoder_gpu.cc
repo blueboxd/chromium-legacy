@@ -356,9 +356,11 @@ void WebrtcVideoEncoderGpu::Core::BeginInitialization() {
 #endif
 
   VideoPixelFormat input_format = VideoPixelFormat::PIXEL_FORMAT_NV12;
-  // TODO(zijiehe): implement some logical way to set an initial bitrate.
+  // TODO(zijiehe): Implement some logical way to set an initial bitrate.
   // Currently we set the bitrate to 8M bits / 1M bytes per frame, and 30 frames
   // per second.
+  // TODO(joedow): Use the framerate from SessionOptions instead of the constant
+  // framerate value if we decide to make H.264 generally available.
   media::Bitrate initial_bitrate = media::Bitrate::ConstantBitrate(
       static_cast<uint32_t>(kTargetFrameRate * 1024 * 1024 * 8));
 
@@ -403,8 +405,7 @@ std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoEncoderGpu::CreateForH264() {
 }
 
 // static
-bool WebrtcVideoEncoderGpu::IsSupportedByH264(
-    const WebrtcVideoEncoderSelector::Profile& profile) {
+bool WebrtcVideoEncoderGpu::IsSupportedByH264(const Profile& profile) {
 #if BUILDFLAG(IS_WIN)
   // This object is required by Chromium to ensure proper init/uninit of COM on
   // this thread.  The guidance is to match the lifetime of this object to the

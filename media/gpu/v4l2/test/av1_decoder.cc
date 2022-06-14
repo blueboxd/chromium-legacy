@@ -4,9 +4,15 @@
 
 #include "media/gpu/v4l2/test/av1_decoder.h"
 
+#include <linux/media/av1-ctrls.h>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
+#include "media/base/video_types.h"
 #include "media/filters/ivf_parser.h"
+#include "media/gpu/macros.h"
+#include "media/gpu/v4l2/test/av1_pix_fmt.h"
 
 namespace media {
 
@@ -18,14 +24,185 @@ static_assert(kNumberOfBuffersInCaptureQueue <= 16,
               "Too many CAPTURE buffers are used. The number of CAPTURE "
               "buffers is currently assumed to be no larger than 16.");
 
+// TODO(stevecho): Remove this provision when av1-ctrls.h includes linux/bits.h.
+#ifndef BIT
+#define BIT(nr) (1U << (nr))
+#endif
+
+inline void conditionally_set_flags(__u8* flags,
+                                    const bool condition,
+                                    const bool mask) {
+  *flags |= (condition ? mask : 0);
+}
+
+// Section 5.9.11. Loop filter params syntax in AV1 spec.
+// https://aomediacodec.github.io/av1-spec/av1-spec.pdf
+// Note that |update_ref_delta| and |update_mode_delta| flags in the spec
+// are not needed for V4L2 AV1 API.
+// TODO(stevecho): sanity check data structures in libgav1 against the AV1 spec.
+void FillLoopFilterParams(struct v4l2_av1_loop_filter* v4l2_lf,
+                          const libgav1::LoopFilter& lf) {
+  conditionally_set_flags(&v4l2_lf->flags, lf.delta_enabled,
+                          V4L2_AV1_LOOP_FILTER_FLAG_DELTA_ENABLED);
+  conditionally_set_flags(&v4l2_lf->flags, lf.delta_update,
+                          V4L2_AV1_LOOP_FILTER_FLAG_DELTA_UPDATE);
+
+  static_assert(std::size(decltype(v4l2_lf->level){}) == libgav1::kFrameLfCount,
+                "Invalid size of loop filter level (strength) array");
+  for (size_t i = 0; i < libgav1::kFrameLfCount; i++)
+    v4l2_lf->level[i] = base::checked_cast<__u8>(lf.level[i]);
+
+  v4l2_lf->sharpness = lf.sharpness;
+
+  static_assert(std::size(decltype(v4l2_lf->ref_deltas){}) ==
+                    libgav1::kNumReferenceFrameTypes,
+                "Invalid size of ref deltas array");
+  for (size_t i = 0; i < libgav1::kNumReferenceFrameTypes; i++)
+    v4l2_lf->ref_deltas[i] = lf.ref_deltas[i];
+
+  static_assert(std::size(decltype(v4l2_lf->mode_deltas){}) ==
+                    libgav1::kLoopFilterMaxModeDeltas,
+                "Invalid size of mode deltas array");
+  for (size_t i = 0; i < libgav1::kLoopFilterMaxModeDeltas; i++)
+    v4l2_lf->mode_deltas[i] = lf.mode_deltas[i];
+}
+
+// Section 5.9.18. Loop filter delta parameters syntax.
+// Note that |delta_lf_res| in |v4l2_av1_loop_filter| corresponds to
+// |delta_lf.scale| in the frame header defined in libgav1.
+void FillLoopFilterDeltaParams(struct v4l2_av1_loop_filter* v4l2_lf,
+                               const libgav1::Delta& delta_lf) {
+  conditionally_set_flags(&v4l2_lf->flags, delta_lf.present,
+                          V4L2_AV1_LOOP_FILTER_FLAG_DELTA_LF_PRESENT);
+
+  v4l2_lf->delta_lf_res = delta_lf.scale;
+  v4l2_lf->delta_lf_multi = delta_lf.multi;
+}
+
+// Section 5.9.14. Segmentation params syntax
+void FillSegmentationParams(struct v4l2_av1_segmentation* v4l2_seg,
+                            const libgav1::Segmentation& seg) {
+  conditionally_set_flags(&v4l2_seg->flags, seg.enabled,
+                          V4L2_AV1_SEGMENTATION_FLAG_ENABLED);
+  conditionally_set_flags(&v4l2_seg->flags, seg.update_map,
+                          V4L2_AV1_SEGMENTATION_FLAG_UPDATE_MAP);
+  conditionally_set_flags(&v4l2_seg->flags, seg.update_data,
+                          V4L2_AV1_SEGMENTATION_FLAG_TEMPORAL_UPDATE);
+  conditionally_set_flags(&v4l2_seg->flags, seg.temporal_update,
+                          V4L2_AV1_SEGMENTATION_FLAG_UPDATE_DATA);
+  conditionally_set_flags(&v4l2_seg->flags, seg.segment_id_pre_skip,
+                          V4L2_AV1_SEGMENTATION_FLAG_SEG_ID_PRE_SKIP);
+
+  static_assert(
+      std::size(decltype(v4l2_seg->feature_enabled){}) == libgav1::kMaxSegments,
+      "Invalid size of |feature_enabled| array in |v4l2_av1_segmentation| "
+      "struct");
+
+  static_assert(
+      std::size(decltype(v4l2_seg->feature_data){}) == libgav1::kMaxSegments &&
+          std::extent<decltype(v4l2_seg->feature_data), 0>::value ==
+              libgav1::kSegmentFeatureMax,
+      "Invalid size of |feature_data| array in |v4l2_av1_segmentation| struct");
+
+  for (size_t i = 0; i < libgav1::kMaxSegments; ++i) {
+    for (size_t j = 0; j < libgav1::kSegmentFeatureMax; ++j) {
+      v4l2_seg->feature_enabled[i] |= (seg.feature_enabled[i][j] << j);
+      v4l2_seg->feature_data[i][j] = seg.feature_data[i][j];
+    }
+  }
+
+  v4l2_seg->last_active_seg_id = seg.last_active_segment_id;
+}
+
+// Section 5.9.19. CDEF params syntax
+void FillCdefParams(struct v4l2_av1_cdef* v4l2_cdef,
+                    const libgav1::Cdef& cdef,
+                    uint8_t color_bitdepth) {
+  // Damping value parsed in libgav1 is from the spec + (bitdepth - 8).
+  // All the strength values parsed in libgav1 are from the spec and left
+  // shifted by (bitdepth - 8).
+  CHECK_GE(color_bitdepth, 8u);
+  const uint8_t coeff_shift = color_bitdepth - 8u;
+
+  v4l2_cdef->damping_minus_3 =
+      base::checked_cast<uint8_t>(cdef.damping - coeff_shift - 3u);
+
+  v4l2_cdef->bits = cdef.bits;
+
+  static_assert(std::size(decltype(v4l2_cdef->y_pri_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef y_pri_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef->y_sec_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef y_sec_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef->uv_pri_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef uv_pri_strength strength");
+
+  static_assert(std::size(decltype(v4l2_cdef->uv_sec_strength){}) ==
+                    libgav1::kMaxCdefStrengths,
+                "Invalid size of cdef uv_sec_strength strength");
+
+  SafeArrayMemcpy(v4l2_cdef->y_pri_strength, cdef.y_primary_strength);
+  SafeArrayMemcpy(v4l2_cdef->y_sec_strength, cdef.y_secondary_strength);
+  SafeArrayMemcpy(v4l2_cdef->uv_pri_strength, cdef.uv_primary_strength);
+  SafeArrayMemcpy(v4l2_cdef->uv_sec_strength, cdef.uv_secondary_strength);
+}
+
+// 5.9.20. Loop restoration params syntax
+void FillLoopRestorationParams(v4l2_av1_loop_restoration* v4l2_lr,
+                               const libgav1::LoopRestoration& lr) {
+  for (size_t i = 0; i < V4L2_AV1_NUM_PLANES_MAX; i++) {
+    switch (lr.type[i]) {
+      case libgav1::LoopRestorationType::kLoopRestorationTypeNone:
+        v4l2_lr->frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_NONE;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeWiener:
+        v4l2_lr->frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_WIENER;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeSgrProj:
+        v4l2_lr->frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_SGRPROJ;
+        break;
+      case libgav1::LoopRestorationType::kLoopRestorationTypeSwitchable:
+        v4l2_lr->frame_restoration_type[i] = V4L2_AV1_FRAME_RESTORE_SWITCHABLE;
+        break;
+      default:
+        NOTREACHED() << "Invalid loop restoration type";
+    }
+
+    if (v4l2_lr->frame_restoration_type[i] != V4L2_AV1_FRAME_RESTORE_NONE) {
+      conditionally_set_flags(&v4l2_lr->flags, true,
+                              V4L2_AV1_LOOP_RESTORATION_FLAG_USES_LR);
+
+      conditionally_set_flags(&v4l2_lr->flags, i > 0,
+                              V4L2_AV1_LOOP_RESTORATION_FLAG_USES_CHROMA_LR);
+    }
+  }
+
+  DCHECK_GE(lr.unit_size_log2[0], lr.unit_size_log2[1]);
+  DCHECK_LE(lr.unit_size_log2[0] - lr.unit_size_log2[1], 1);
+  v4l2_lr->lr_unit_shift = lr.unit_size_log2[0] - 6;
+  v4l2_lr->lr_uv_shift = lr.unit_size_log2[0] - lr.unit_size_log2[1];
+
+  // AV1 spec (p.52) uses this formula with hard coded value 2.
+  v4l2_lr->loop_restoration_size[0] =
+      V4L2_AV1_RESTORATION_TILESIZE_MAX >> (2 - v4l2_lr->lr_unit_shift);
+  v4l2_lr->loop_restoration_size[1] =
+      v4l2_lr->loop_restoration_size[0] >> v4l2_lr->lr_uv_shift;
+  v4l2_lr->loop_restoration_size[2] =
+      v4l2_lr->loop_restoration_size[0] >> v4l2_lr->lr_uv_shift;
+}
+
 Av1Decoder::Av1Decoder(std::unique_ptr<IvfParser> ivf_parser,
                        std::unique_ptr<V4L2IoctlShim> v4l2_ioctl,
                        std::unique_ptr<V4L2Queue> OUTPUT_queue,
                        std::unique_ptr<V4L2Queue> CAPTURE_queue)
-    : VideoDecoder::VideoDecoder(std::move(ivf_parser),
-                                 std::move(v4l2_ioctl),
+    : VideoDecoder::VideoDecoder(std::move(v4l2_ioctl),
                                  std::move(OUTPUT_queue),
                                  std::move(CAPTURE_queue)),
+      ivf_parser_(std::move(ivf_parser)),
       buffer_pool_(std::make_unique<libgav1::BufferPool>(
           /*on_frame_buffer_size_changed=*/nullptr,
           /*get_frame_buffer=*/nullptr,
@@ -43,11 +220,32 @@ Av1Decoder::~Av1Decoder() {
 
 // static
 std::unique_ptr<Av1Decoder> Av1Decoder::Create(
-    std::unique_ptr<IvfParser> ivf_parser,
-    const media::IvfFileHeader& file_header) {
-  auto v4l2_ioctl = std::make_unique<V4L2IoctlShim>();
-
+    const base::MemoryMappedFile& stream) {
   constexpr uint32_t kDriverCodecFourcc = V4L2_PIX_FMT_AV1_FRAME;
+
+  VLOG(2) << "Attempting to create decoder with codec "
+          << media::FourccToString(kDriverCodecFourcc);
+
+  // Set up video parser.
+  auto ivf_parser = std::make_unique<media::IvfParser>();
+  media::IvfFileHeader file_header{};
+
+  if (!ivf_parser->Initialize(stream.data(), stream.length(), &file_header)) {
+    LOG(ERROR) << "Couldn't initialize IVF parser";
+    return nullptr;
+  }
+
+  const auto driver_codec_fourcc =
+      media::v4l2_test::FileFourccToDriverFourcc(file_header.fourcc);
+
+  if (driver_codec_fourcc != kDriverCodecFourcc) {
+    VLOG(2) << "File fourcc (" << media::FourccToString(driver_codec_fourcc)
+            << ") does not match expected fourcc("
+            << media::FourccToString(kDriverCodecFourcc) << ").";
+    return nullptr;
+  }
+
+  auto v4l2_ioctl = std::make_unique<V4L2IoctlShim>();
 
   // MM21 is an uncompressed opaque format that is produced by MediaTek
   // video decoders.
@@ -257,7 +455,24 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
   }
 
   // TODO(b/228534730): add changes to prepare parameters for V4L2 AV1 stateless
-  // decoding
+  // decoding and make VIDIOC_S_EXT_CTRLS v4l2 ioctl call
+  struct v4l2_ctrl_av1_frame_header v4l2_frame_params = {};
+
+  FillLoopFilterParams(&v4l2_frame_params.loop_filter,
+                       current_frame_header.loop_filter);
+
+  FillLoopFilterDeltaParams(&v4l2_frame_params.loop_filter,
+                            current_frame_header.delta_lf);
+
+  FillSegmentationParams(&v4l2_frame_params.segmentation,
+                         current_frame_header.segmentation);
+
+  const auto color_bitdepth = current_sequence_header_->color_config.bitdepth;
+  FillCdefParams(&v4l2_frame_params.cdef, current_frame_header.cdef,
+                 base::strict_cast<int8_t>(color_bitdepth));
+
+  FillLoopRestorationParams(&v4l2_frame_params.loop_restoration,
+                            current_frame_header.loop_restoration);
 
   if (!v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_))
     LOG(FATAL) << "MEDIA_REQUEST_IOC_QUEUE failed.";

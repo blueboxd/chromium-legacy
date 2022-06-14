@@ -90,7 +90,7 @@ export let PowerManagementSettings;
 
 /**
  * A note app's availability for running as note handler app from lock screen.
- * Mirrors `ash::NoteTakingLockScreenSupport`.
+ * Mirrors `ash::LockScreenAppSupport`.
  * @enum {number}
  */
 export const NoteAppLockScreenSupport = {
@@ -249,7 +249,7 @@ export class DevicePageBrowserProxyImpl {
   }
 
   /** @param {!DevicePageBrowserProxy} obj */
-  static setInstance(obj) {
+  static setInstanceForTesting(obj) {
     instance = obj;
   }
 

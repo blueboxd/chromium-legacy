@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
@@ -102,7 +103,7 @@ struct ExpectedReportWaiter {
     // The embedded test server resolves all urls to 127.0.0.1, so get the real
     // request host from the request headers.
     const net::test_server::HttpRequest& request = *response->http_request();
-    DCHECK(request.headers.find("Host") != request.headers.end());
+    DCHECK(base::Contains(request.headers, "Host"));
     const GURL& request_url = request.GetURL();
     GURL header_url = GURL("https://" + request.headers.at("Host"));
     std::string host = header_url.host();
@@ -139,6 +140,9 @@ struct ExpectedReportWaiter {
     // defined in the headers. This would not match |expected_url| if the host
     // for report url was not set properly.
     EXPECT_EQ(expected_url, request_url.ReplaceComponents(replace_host));
+
+    EXPECT_TRUE(base::Contains(request.headers, "User-Agent"));
+    EXPECT_EQ(request.headers.at("Content-Type"), "application/json");
   }
 };
 
@@ -212,8 +216,9 @@ class AttributionsBrowserTest : public ContentBrowserTest {
   void CreateAndClickSource(WebContents* web_contents,
                             const GURL& href,
                             const GURL& attribution_src) {
-    CreateAndClickSourceInFrame(web_contents, web_contents->GetMainFrame(),
-                                href, attribution_src,
+    CreateAndClickSourceInFrame(web_contents,
+                                web_contents->GetPrimaryMainFrame(), href,
+                                attribution_src,
                                 /*target=*/"_top");
   }
 
@@ -221,7 +226,8 @@ class AttributionsBrowserTest : public ContentBrowserTest {
                                          const GURL& href,
                                          const GURL& attribution_src,
                                          const std::string& target) {
-    return CreateAndClickSourceInFrame(nullptr, web_contents->GetMainFrame(),
+    return CreateAndClickSourceInFrame(nullptr,
+                                       web_contents->GetPrimaryMainFrame(),
                                        href, attribution_src, target);
   }
 
@@ -411,7 +417,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
     let frame= document.getElementById('test_iframe');
     frame.setAttribute('allow', 'attribution-reporting');)"));
   NavigateIframeToURL(web_contents(), "test_iframe", subframe_url);
-  RenderFrameHost* subframe = ChildFrameAt(web_contents()->GetMainFrame(), 0);
+  RenderFrameHost* subframe =
+      ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
 
   GURL conversion_url = https_server()->GetURL(
       "d.test", "/attribution_reporting/page_with_conversion_redirect.html");
@@ -736,8 +743,10 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   expected_report.WaitForReport();
 }
 
-IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
-                       AttributionSrcNavigationSourceAndTrigger_ReportSent) {
+// TODO(crbug.com/1335817): Deflake this test.
+IN_PROC_BROWSER_TEST_F(
+    AttributionsBrowserTest,
+    DISABLED_AttributionSrcNavigationSourceAndTrigger_ReportSent) {
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"

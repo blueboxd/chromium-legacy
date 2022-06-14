@@ -25,6 +25,7 @@
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/scoped_add_feature_flags.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
@@ -82,6 +83,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -90,7 +92,6 @@
 
 #include <algorithm>
 
-#include "base/debug/handle_hooks_win.h"
 #include "base/files/important_file_writer_cleaner.h"
 #include "base/threading/platform_thread_win.h"
 #include "base/win/atl.h"
@@ -891,28 +892,21 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // HandleVerifier detects and reports incorrect handle manipulations. It
   // tracks handle operations on builds that support DCHECK only.
-#if DCHECK_IS_ON()
-  // This portion of the hook setup is just for child processes. Browser part is
-  // in ChromeBrowserMainPartsWin::PostProfileInit.
-  if (!is_browser) {
-    // Performing EAT interception first is safer in the presence of other
-    // threads attempting to call CloseHandle.
-#if defined(ARCH_CPU_32_BITS)
-    // Patching EAT of kernel32.dll is only supported on 32-bit because RVA can
-    // only hold 32-bit values.
-    base::debug::HandleHooks::AddEATPatch();
-#endif
-    // Patch once. Cannot monitor for further modules in a child process as
-    // monitoring needs ModuleWatcher, but likely no more should really load in
-    // a child process from this point on. If we miss any then we will lose some
-    // detection but still generate no false positive crashes.
-    base::debug::HandleHooks::PatchLoadedModules();
-  }
-#else
+#if !DCHECK_IS_ON()
   base::win::DisableHandleVerifier();
 #endif
 
 #endif  // BUILDFLAG(IS_WIN)
+
+  {
+    base::ScopedAddFeatureFlags features(
+        base::CommandLine::ForCurrentProcess());
+
+    // Disable Event.path on Canary and Dev to help the deprecation and removal.
+    // See crbug.com/1277431 for more details.
+    if (chrome::GetChannel() < version_info::Channel::BETA)
+      features.DisableIfNotSet(::blink::features::kEventPath);
+  }
 
   chrome::RegisterPathProvider();
 #if BUILDFLAG(IS_CHROMEOS_ASH)

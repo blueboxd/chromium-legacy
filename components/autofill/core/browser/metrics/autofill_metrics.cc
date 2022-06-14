@@ -1232,6 +1232,9 @@ void AutofillMetrics::LogOfferNotificationBubbleOfferMetric(
     case AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER:
       histogram_name += "CardLinkedOffer";
       break;
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      histogram_name += "GPayPromoCodeOffer";
+      break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       histogram_name += "FreeListingCouponOffer";
       break;
@@ -1254,6 +1257,9 @@ void AutofillMetrics::LogOfferNotificationBubbleResultMetric(
     case AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER:
       histogram_name += "CardLinkedOffer.";
       break;
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      histogram_name += "GPayPromoCodeOffer.";
+      break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       histogram_name += "FreeListingCouponOffer.";
       break;
@@ -1274,6 +1280,9 @@ void AutofillMetrics::LogOfferNotificationBubblePromoCodeButtonClicked(
   // Switch to different sub-histogram depending on offer type being displayed.
   // Card-linked offers do not have a promo code button.
   switch (offer_type) {
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      histogram_name += "GPayPromoCodeOffer";
+      break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       histogram_name += "FreeListingCouponOffer";
       break;
@@ -1292,6 +1301,9 @@ void AutofillMetrics::LogOfferNotificationBubbleSuppressed(
   // Switch to different sub-histogram depending on offer type being suppressed.
   // Card-linked offers will not be suppressed.
   switch (offer_type) {
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      histogram_name += "GPayPromoCodeOffer";
+      break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       histogram_name += "FreeListingCouponOffer";
       break;
@@ -3392,6 +3404,18 @@ void AutofillMetrics::LogPhoneNumberImportParsingResult(
       "Autofill.ProfileImport.PhoneNumberParsingResult",
       static_cast<AutofillMetrics::PhoneNumberImportParsingResult>(
           (with_variation_country_code << 1) | with_app_locale));
+}
+
+// static
+void AutofillMetrics::LogPhoneNumberGrammarMatched(int grammar_id,
+                                                   bool suffix_matched) {
+  // There are 18 phone number grammars.
+  DCHECK(0 <= grammar_id && grammar_id < 18);
+  // Add 1, because UmaHistogramExactLinear is 1-based. Thus, the maximum logged
+  // value becomes 2*17+1 + 1 = 36.
+  base::UmaHistogramExactLinear("Autofill.FieldPrediction.PhoneNumberGrammar",
+                                2 * grammar_id + suffix_matched + 1,
+                                /*exclusive_max=*/37);
 }
 
 void AutofillMetrics::LogVerificationStatusOfNameTokensOnProfileUsage(

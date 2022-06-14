@@ -99,6 +99,16 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kBubbleRichIPHName[];
 extern const char kBubbleRichIPHDescription[];
 
+// Title and description for the flag to change the string of the "Bookmark"
+// action in the overflow menu.
+extern const char kBookmarkStringName[];
+extern const char kBookmarkStringDescription[];
+
+// Title and description for the flag to enable the use of apple calendar in
+// experience kit calendar.
+extern const char kEnableExpKitAppleCalendarName[];
+extern const char kEnableExpKitAppleCalendarDescription[];
+
 // Title and description for the flag to enable experience kit calendar events.
 extern const char kCalendarExperienceKitName[];
 extern const char kCalendarExperienceKitDescription[];
@@ -170,6 +180,10 @@ extern const char kDiscoverFeedInNtpDescription[];
 extern const char kEnableDiscoverFeedTopSyncPromoName[];
 extern const char kEnableDiscoverFeedTopSyncPromoDescription[];
 
+// Title and description for the flag to enable DMToken deletion.
+extern const char kDmTokenDeletionName[];
+extern const char kDmTokenDeletionDescription[];
+
 // Title and description for the flag to enable Calendar support.
 extern const char kDownloadCalendarName[];
 extern const char kDownloadCalendarDescription[];
@@ -209,6 +223,11 @@ extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 extern const char kEnableDiscoverFeedPreviewName[];
 extern const char kEnableDiscoverFeedPreviewDescription[];
 
+// Title and description for the flag to show ghost cards when refreshing the
+// discover feed.
+extern const char kEnableDiscoverFeedGhostCardsName[];
+extern const char kEnableDiscoverFeedGhostCardsDescription[];
+
 // Title and description for the flag to shorten the cache.
 extern const char kEnableDiscoverFeedShorterCacheName[];
 extern const char kEnableDiscoverFeedShorterCacheDescription[];
@@ -239,10 +258,6 @@ extern const char kEnableFREUIModuleIOSDescription[];
 // Title and description for the flag to enable the Fullscreen API.
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
-
-// Title and description for the flag to enable long message duration.
-extern const char kEnableLongMessageDurationName[];
-extern const char kEnableLongMessageDurationDescription[];
 
 // Title and description for the flag to enable the new download API.
 extern const char kEnableNewDownloadAPIName[];
@@ -319,6 +334,11 @@ extern const char kIOS3PIntentsInIncognitoDescription[];
 extern const char kIOSEnablePasswordManagerBrandingUpdateName[];
 extern const char kIOSEnablePasswordManagerBrandingUpdateDescription[];
 
+// Title and description for the flag to split password settings and password
+// management into two separate UIs.
+extern const char kIOSPasswordUISplitName[];
+extern const char kIOSPasswordUISplitDescription[];
+
 // Title and description for the flag to enable Shared Highlighting color
 // change in iOS.
 extern const char kIOSSharedHighlightingColorChangeName[];
@@ -368,11 +388,6 @@ extern const char kMetrickitCrashReportDescription[];
 // implemented tabstrip.
 extern const char kModernTabStripName[];
 extern const char kModernTabStripDescription[];
-
-// Title and description for the flag to enable muting/unmuting compromised
-// passwords in bulk leak check.
-extern const char kMuteCompromisedPasswordsName[];
-extern const char kMuteCompromisedPasswordsDescription[];
 
 // Title and description for the flag to use the new MICe FRE.
 extern const char kNewMobileIdentityConsistencyFREName[];
@@ -507,10 +522,6 @@ extern const char kShowAutofillTypePredictionsDescription[];
 // Suggestions
 extern const char kSingleCellContentSuggestionsName[];
 extern const char kSingleCellContentSuggestionsDescription[];
-
-// Title and description for the flag to use one NTP for all tabs in a Browser.
-extern const char kSingleNtpName[];
-extern const char kSingleNtpDescription[];
 
 // Title and description for the flag to enable smart sorting the new overflow
 // menu.

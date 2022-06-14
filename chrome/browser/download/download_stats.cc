@@ -77,9 +77,9 @@ void RecordDownloadCancelReason(DownloadCancelReason reason) {
   base::UmaHistogramEnumeration("Download.CancelReason", reason);
 }
 
-void RecordDownloadShelfDragEvent(DownloadShelfDragEvent drag_event) {
-  base::UmaHistogramEnumeration("Download.Shelf.DragEvent", drag_event,
-                                DownloadShelfDragEvent::COUNT);
+void RecordDownloadShelfDragInfo(DownloadShelfDragInfo drag_info) {
+  base::UmaHistogramEnumeration("Download.Shelf.DragInfo", drag_info,
+                                DownloadShelfDragInfo::COUNT);
 }
 
 void RecordDownloadStartPerProfileType(Profile* profile) {
@@ -165,5 +165,8 @@ DownloadShelfContextMenuAction DownloadCommandToShelfAction(
       return clicked
                  ? DownloadShelfContextMenuAction::kBypassDeepScanningClicked
                  : DownloadShelfContextMenuAction::kBypassDeepScanningEnabled;
+    case DownloadCommands::Command::REVIEW:
+      return clicked ? DownloadShelfContextMenuAction::kReviewClicked
+                     : DownloadShelfContextMenuAction::kReviewEnabled;
   }
 }

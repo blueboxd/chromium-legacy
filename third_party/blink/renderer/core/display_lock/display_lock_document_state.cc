@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -170,6 +171,10 @@ void DisplayLockDocumentState::ScheduleAnimation() {
 DisplayLockDocumentState::ScopedForceActivatableDisplayLocks
 DisplayLockDocumentState::GetScopedForceActivatableLocks() {
   return ScopedForceActivatableDisplayLocks(this);
+}
+
+bool DisplayLockDocumentState::HasActivatableLocks() const {
+  return LockedDisplayLockCount() != DisplayLockBlockingAllActivationCount();
 }
 
 bool DisplayLockDocumentState::ActivatableDisplayLocksForced() const {
@@ -395,7 +400,7 @@ void DisplayLockDocumentState::NotifyPrintingOrPreviewChanged() {
 void DisplayLockDocumentState::UnlockShapingDeferredElements() {
   if (!RuntimeEnabledFeatures::DeferredShapingEnabled())
     return;
-  if (LockedDisplayLockCount() == DisplayLockBlockingAllActivationCount())
+  if (!HasActivatableLocks())
     return;
 
   size_t count = 0;
@@ -408,6 +413,7 @@ void DisplayLockDocumentState::UnlockShapingDeferredElements() {
   if (count > 0) {
     UseCounter::Count(document_,
                       WebFeature::kDeferredShapingReshapedByForceLayout);
+    DEFERRED_SHAPING_VLOG(1) << "Unlocked all " << count << " elements.";
   }
 }
 
@@ -416,18 +422,18 @@ void DisplayLockDocumentState::UnlockShapingDeferredElements(
     CSSPropertyID property_id) {
   if (!RuntimeEnabledFeatures::DeferredShapingEnabled())
     return;
-  if (LockedDisplayLockCount() == DisplayLockBlockingAllActivationCount())
+  if (!HasActivatableLocks())
     return;
   // Need to update layout tree because we access the tree and style.
   target.GetDocument().UpdateStyleAndLayoutTreeForNode(&target);
-  if (LockedDisplayLockCount() == DisplayLockBlockingAllActivationCount())
+  if (!HasActivatableLocks())
     return;
   LayoutObject* target_object = target.GetLayoutObject();
   if (!target_object)
     return;
 
   UnlockShapingDeferredInclusiveDescendants(*target_object);
-  if (LockedDisplayLockCount() == DisplayLockBlockingAllActivationCount())
+  if (!HasActivatableLocks())
     return;
 
   const ComputedStyle& style = target_object->StyleRef();
@@ -514,7 +520,7 @@ void DisplayLockDocumentState::UnlockToDetermineWidth(
     const LayoutObject& object) {
   if (!RuntimeEnabledFeatures::DeferredShapingEnabled())
     return;
-  if (LockedDisplayLockCount() == DisplayLockBlockingAllActivationCount())
+  if (!HasActivatableLocks())
     return;
 
   if (object.IsInline()) {
@@ -548,7 +554,7 @@ void DisplayLockDocumentState::UnlockToDetermineHeight(
     const LayoutObject& object) {
   if (!RuntimeEnabledFeatures::DeferredShapingEnabled())
     return;
-  if (LockedDisplayLockCount() == DisplayLockBlockingAllActivationCount())
+  if (!HasActivatableLocks())
     return;
 
   if (object.IsInline()) {
@@ -567,7 +573,7 @@ void DisplayLockDocumentState::UnlockToDetermineHeight(
     if ((style.PaddingTop().IsPercent() || style.PaddingBottom().IsPercent()) &&
         object.ContainingBlock()) {
       UnlockToDetermineWidth(*object.ContainingBlock());
-      if (LockedDisplayLockCount() == DisplayLockBlockingAllActivationCount())
+      if (!HasActivatableLocks())
         return;
     }
   }
@@ -582,11 +588,20 @@ void DisplayLockDocumentState::UnlockToDetermineHeight(
 void DisplayLockDocumentState::UnlockShapingDeferredInclusiveDescendants(
     const LayoutObject& ancestor) {
   DCHECK(RuntimeEnabledFeatures::DeferredShapingEnabled());
-  DCHECK_NE(LockedDisplayLockCount(), DisplayLockBlockingAllActivationCount());
+  DCHECK(HasActivatableLocks());
+
+  size_t count = 0;
   for (auto& context : display_lock_contexts_) {
     if (context->IsShapingDeferred() &&
-        context->IsInclusiveDescendantOf(ancestor))
+        context->IsInclusiveDescendantOf(ancestor)) {
       context->SetRequestedState(EContentVisibility::kVisible);
+      ++count;
+    }
+  }
+  if (count > 0) {
+    DEFERRED_SHAPING_VLOG(1)
+        << "Partially unlocked " << count << " elements ==> remaining="
+        << (LockedDisplayLockCount() - DisplayLockBlockingAllActivationCount());
   }
 }
 

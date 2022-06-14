@@ -2766,18 +2766,8 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
     DecrementSkippedContainerRecalc();
   RecalcStyleForContainer(container, change);
 
-  if (UNLIKELY(container.NeedsReattachLayoutTree())) {
-    // Generally, the container itself should not be marked for re-attachment.
-    // In the case where we have a fieldset as a container, the fieldset itself
-    // is marked for re-attachment in HTMLFieldSetElement::DidRecalcStyle to
-    // make sure the rendered legend is appropriately placed in the layout tree.
-    // We cannot re-attach the fieldset itself in this case since we are in the
-    // process of laying it out. Instead we re-attach all children, which should
-    // be sufficient.
-    auto* fieldset = DynamicTo<HTMLFieldSetElement>(container);
-    DCHECK(fieldset)
-        << "Only fieldsets may be marked for re-attachment as query containers";
-    RebuildFieldSetContainer(*fieldset);
+  if (container.NeedsReattachLayoutTree()) {
+    ReattachContainerSubtree(container);
   } else if (container.ChildNeedsReattachLayoutTree()) {
     DCHECK(layout_tree_rebuild_root_.GetRootNode());
     if (layout_tree_rebuild_root_.GetRootNode()->IsDocumentNode()) {
@@ -2902,11 +2892,26 @@ void StyleEngine::RebuildLayoutTree(
   }
 }
 
-void StyleEngine::RebuildFieldSetContainer(HTMLFieldSetElement& fieldset) {
-  DCHECK(fieldset.NeedsReattachLayoutTree());
+void StyleEngine::ReattachContainerSubtree(Element& container) {
+  // Generally, the container itself should not be marked for re-attachment. In
+  // the case where we have a fieldset as a container, the fieldset itself is
+  // marked for re-attachment in HTMLFieldSetElement::DidRecalcStyle to make
+  // sure the rendered legend is appropriately placed in the layout tree. We
+  // cannot re-attach the fieldset itself in this case since we are in the
+  // process of laying it out. Instead we re-attach all children, which should
+  // be sufficient.
+  //
+  // The other case where the query container is marked for re-attachment is
+  // when one of the descendants requires a legacy box tree and the container is
+  // the closest formatting context.
+
+  DCHECK(container.NeedsReattachLayoutTree());
+  DCHECK(DynamicTo<HTMLFieldSetElement>(container) ||
+         container.ShouldForceLegacyLayout());
+
   base::AutoReset<bool> rebuild_scope(&in_layout_tree_rebuild_, true);
-  fieldset.ReattachLayoutTreeChildren();
-  RebuildLayoutTreeForTraversalRootAncestors(&fieldset);
+  container.ReattachLayoutTreeChildren(base::PassKey<StyleEngine>());
+  RebuildLayoutTreeForTraversalRootAncestors(&container);
   layout_tree_rebuild_root_.Clear();
 }
 
@@ -3077,16 +3082,14 @@ void StyleEngine::UpdateColorScheme() {
 
   if (const auto* overrides =
           GetDocument().GetPage()->GetMediaFeatureOverrides()) {
-    MediaQueryExpValue forced_colors_value =
-        overrides->GetOverride("forced-colors");
-    if (forced_colors_value.IsValid())
-      forced_colors_ = CSSValueIDToForcedColors(forced_colors_value.Id());
-
-    MediaQueryExpValue preferred_color_scheme_value =
-        overrides->GetOverride("prefers-color-scheme");
-    if (preferred_color_scheme_value.IsValid()) {
-      preferred_color_scheme_ =
-          CSSValueIDToPreferredColorScheme(preferred_color_scheme_value.Id());
+    if (absl::optional<ForcedColors> forced_color_override =
+            overrides->GetForcedColors()) {
+      forced_colors_ = forced_color_override.value();
+    }
+    if (absl::optional<mojom::blink::PreferredColorScheme>
+            preferred_color_scheme_override =
+                overrides->GetPreferredColorScheme()) {
+      preferred_color_scheme_ = preferred_color_scheme_override.value();
     }
   }
 

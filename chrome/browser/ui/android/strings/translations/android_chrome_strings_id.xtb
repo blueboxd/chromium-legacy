@@ -110,6 +110,7 @@ Jika Anda menghapus histori penjelajahan, baik semua histori maupun histori untu
 <translation id="1513352483775369820">Bookmark dan histori web</translation>
 <translation id="1513814250881909472">Sinkronkan untuk mengakses tab Anda dari perangkat lainnya</translation>
 <translation id="1513858653616922153">Hapus sandi</translation>
+<translation id="1514552811327923157">Perintah Privacy Sandbox terbuka sepenuhnya</translation>
 <translation id="1518421282666914498">GIF Emotikon <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">Aktif hari ini</translation>
 <translation id="1538801903729528855">Dapatkan pengalaman penelusuran suara yang lebih baik di web</translation>
@@ -321,6 +322,7 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="2711073837061989559">Uji coba</translation>
 <translation id="2718352093833049315">Hanya melalui Wi-Fi</translation>
 <translation id="2718846868787000099">Untuk menampilkan konten dalam bahasa pilihan Anda, situs yang dikunjungi dapat melihat preferensi Anda</translation>
+<translation id="2722945394406572875">Perintah Privacy Sandbox ditutup</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732063072010454421">Dapatkan pengalaman suara yang lebih baik</translation>
 <translation id="2739256783402597439">2G</translation>
@@ -492,7 +494,6 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="3622349720008044802">Kelola jendela</translation>
 <translation id="3631987586758005671">Membagikan ke <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Otomatis login ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan dimintai verifikasi setiap kali hendak login ke situs web.</translation>
-<translation id="3653111872753786013"><ph name="WEBSITE_TITLE" />: <ph name="WEBSITE_URL" /></translation>
 <translation id="3677911431265050325">Minta situs seluler</translation>
 <translation id="3687645719033307815">Anda sedang melihat pratinjau halaman ini</translation>
 <translation id="3690369331356918524">Memberikan peringatan jika sandi terekspos saat terjadi pelanggaran data</translation>
@@ -524,7 +525,6 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="3845098929839618392">Buka di tab Samaran</translation>
 <translation id="3856096718352044181">Verifikasi bahwa ini adalah penyedia yang valid atau coba lagi nanti</translation>
 <translation id="3858860766373142691">Nama</translation>
-<translation id="3859206958100234503">Sinkronkan untuk mendapatkan sandi dan bookmark Anda serta data lain di semua perangkat</translation>
 <translation id="3861633093716975811">Video populer</translation>
 <translation id="3892148308691398805">Salin teks</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
@@ -585,6 +585,7 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="4227318652298512614">Ikuti situs yang Anda inginkan</translation>
 <translation id="4242533952199664413">Buka setelan</translation>
 <translation id="4248098802131000011">Amankan sandi Anda dari pelanggaran data dan masalah keamanan lainnya</translation>
+<translation id="424864128008805179">Logout dari Chrome?</translation>
 <translation id="4249955472157341256">Urutkan menurut yang Terbaru</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Lisensi open source</translation>
@@ -652,7 +653,6 @@ Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penel
 <translation id="4594952190837476234">Halaman offline ini dibuat pada <ph name="CREATION_TIME" /> dan mungkin berbeda dengan versi onlinenya.</translation>
 <translation id="4616150815774728855">Buka <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Verifikasi diri Anda</translation>
-<translation id="4627165777145349100">Selengkapnya tentang halaman ini</translation>
 <translation id="4634124774493850572">Gunakan sandi</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 sandi telah dibobol}other{# sandi telah dibobol}}</translation>
 <translation id="4650364565596261010">Default sistem</translation>
@@ -788,6 +788,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="5324858694974489420">Setelan Orang Tua</translation>
 <translation id="5326921373682845375">Karena halaman yang dipramuat terenkripsi dan situs yang ditautkan ke halaman tersebut adalah situs Google, server Google tidak menerima informasi baru saat melakukan pramuat halaman ini secara pribadi.</translation>
 <translation id="5329858041417644019">Browser Anda tidak dikelola</translation>
+<translation id="5339031667684712858">Situs yang Anda hapus</translation>
 <translation id="5342314432463739672">Permintaan izin</translation>
 <translation id="5355191726083956201">Perlindungan yang Ditingkatkan aktif</translation>
 <translation id="5368227114232678694">Untuk menjelajah secara pribadi di perangkat ini, coba mode Samaran</translation>
@@ -894,6 +895,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="5906513782029855931">Dengan mengetahui URL situs, Asisten Google dapat membantu Anda menyelesaikan tugas. Anda dapat menonaktifkan Asisten di setelan Chrome.</translation>
 <translation id="5916664084637901428">Aktif</translation>
 <translation id="5919204609460789179">Perbarui <ph name="PRODUCT_NAME" /> untuk memulai sinkronisasi</translation>
+<translation id="593625682991400408">Selama uji coba, Chrome mengembangkan cara untuk membatasi spam, penipuan, dan berbagi antar-situs. Chrome juga <ph name="BEGIN_LINK" />memperkirakan minat Anda<ph name="END_LINK" /> yang dapat digunakan oleh situs untuk menampilkan iklan kepada Anda. Anda dapat mengubah minat di setelan.</translation>
 <translation id="5938820472109305350">Tambahkan <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Menggunakan Google untuk penelusuran</translation>
 <translation id="5945035219773565305">Rekomendasi saat ini:  <ph name="RECOMMENDATION" /></translation>
@@ -1062,6 +1064,7 @@ Trust token meningkatkan privasi di web dan tidak dapat digunakan untuk menemuka
 <translation id="6751521182688001123">Buka tab baru dengan cepat. Sentuh lama untuk mengedit pintasan ini.</translation>
 <translation id="6756507620369789050">Bagikan masukan</translation>
 <translation id="6767294960381293877">Daftar perangkat yang dapat digunakan untuk berbagi tab terbuka dalam setengah layar.</translation>
+<translation id="6770042910635026163">Situs yang Anda buka yang menentukan minat Anda</translation>
 <translation id="6770602306803890733">Meningkatkan keamanan untuk Anda dan semua orang di web</translation>
 <translation id="6785476624617658922">Persyaratan Layanan Tambahan Chrome &amp; ChromeOS</translation>
 <translation id="6795633245022906657">Buka tab baru dengan cepat. Untuk mengedit pintasan ini, buka Setelan.</translation>
@@ -1512,6 +1515,7 @@ Trust token meningkatkan privasi di web dan tidak dapat digunakan untuk menemuka
 <translation id="9106148373857059373">Alur penyimpanan bookmark ditutup</translation>
 <translation id="9108312223223904744">Dukungan Ponsel sebagai Kunci Keamanan</translation>
 <translation id="9108808586816295166">DNS aman mungkin tidak tersedia sepanjang waktu</translation>
+<translation id="9128984223251192329">Perintah Privacy Sandbox terbuka setengah</translation>
 <translation id="9133397713400217035">Jelajahi Offline</translation>
 <translation id="9137013805542155359">Perlihatkan halaman asli</translation>
 <translation id="9148126808321036104">Login sekali lagi</translation>

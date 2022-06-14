@@ -130,36 +130,40 @@ class HistoryClustersServiceTestBase : public testing::Test {
   // Add hardcoded completed visits with context annotations to the history
   // database.
   void AddHardcodedTestDataToHistoryService() {
-    history::ContextID context_id = reinterpret_cast<history::ContextID>(1);
+    for (auto& visit : GetHardcodedTestVisits())
+      AddCompleteVisit(visit);
+  }
 
-    for (auto& visit : GetHardcodedTestVisits()) {
-      history::HistoryAddPageArgs add_page_args;
-      add_page_args.context_id = context_id;
-      add_page_args.nav_entry_id = next_navigation_id_;
-      add_page_args.url = visit.url_row.url();
-      add_page_args.title = visit.url_row.title();
-      add_page_args.time = visit.visit_row.visit_time;
-      add_page_args.visit_source = visit.source;
-      history_service_->AddPage(add_page_args);
-      history_service_->UpdateWithPageEndTime(
-          context_id, next_navigation_id_, visit.url_row.url(),
-          visit.visit_row.visit_time + visit.visit_row.visit_duration);
+  void AddCompleteVisit(const history::AnnotatedVisit& visit) {
+    static const history::ContextID context_id =
+        reinterpret_cast<history::ContextID>(1);
 
-      auto& incomplete_visit_context_annotations =
-          history_clusters_service_
-              ->GetOrCreateIncompleteVisitContextAnnotations(
-                  next_navigation_id_);
-      incomplete_visit_context_annotations.visit_row = visit.visit_row;
-      incomplete_visit_context_annotations.url_row = visit.url_row;
-      incomplete_visit_context_annotations.context_annotations =
-          visit.context_annotations;
-      incomplete_visit_context_annotations.status.history_rows = true;
-      incomplete_visit_context_annotations.status.navigation_ended = true;
-      incomplete_visit_context_annotations.status.navigation_end_signals = true;
-      history_clusters_service_->CompleteVisitContextAnnotationsIfReady(
-          next_navigation_id_);
-      next_navigation_id_++;
-    }
+    history::HistoryAddPageArgs add_page_args;
+    add_page_args.context_id = context_id;
+    add_page_args.nav_entry_id = next_navigation_id_;
+    add_page_args.url = visit.url_row.url();
+    add_page_args.title = visit.url_row.title();
+    add_page_args.time = visit.visit_row.visit_time;
+    add_page_args.visit_source = visit.source;
+    history_service_->AddPage(add_page_args);
+    history_service_->UpdateWithPageEndTime(
+        context_id, next_navigation_id_, visit.url_row.url(),
+        visit.visit_row.visit_time + visit.visit_row.visit_duration);
+
+    auto& incomplete_visit_context_annotations =
+        history_clusters_service_->GetOrCreateIncompleteVisitContextAnnotations(
+            next_navigation_id_);
+    incomplete_visit_context_annotations.visit_row = visit.visit_row;
+    incomplete_visit_context_annotations.url_row = visit.url_row;
+    incomplete_visit_context_annotations.context_annotations =
+        visit.context_annotations;
+    incomplete_visit_context_annotations.status.history_rows = true;
+    incomplete_visit_context_annotations.status.navigation_ended = true;
+    incomplete_visit_context_annotations.status.navigation_end_signals = true;
+    history_clusters_service_->CompleteVisitContextAnnotationsIfReady(
+        next_navigation_id_);
+
+    next_navigation_id_++;
   }
 
   // Add an incomplete visit context annotations to the in memory incomplete
@@ -313,8 +317,6 @@ TEST_F(HistoryClustersServiceTest, QueryClustersIncompleteAndPersistedVisits) {
   AddIncompleteVisit(7, 7, days_ago(90));
   AddIncompleteVisit(8, 8, days_ago(0));   // Too recent.
   AddIncompleteVisit(9, 9, days_ago(93));  // Too old.
-  AddIncompleteVisit(3, 3, days_ago(90));  // Visit 3 was added to the history
-  // database with source synced.
   AddIncompleteVisit(
       10, 10, days_ago(1),
       ui::PageTransitionFromInt(805306372));  // Non-visible page transition.
@@ -613,17 +615,30 @@ TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyCluster) {
     test_clustering_backend_->WaitForGetClustersCall();
 
     std::vector<history::Cluster> clusters;
-    clusters.push_back(
-        history::Cluster(0,
-                         {
-                             test_clustering_backend_->GetVisitById(5),
-                             test_clustering_backend_->GetVisitById(2),
-                         },
-                         {{u"apples", history::ClusterKeywordData()},
-                          {u"oranges", history::ClusterKeywordData()},
-                          {u"z", history::ClusterKeywordData()},
-                          {u"apples bananas", history::ClusterKeywordData()}},
-                         /*should_show_on_prominent_ui_surfaces=*/true));
+    clusters.push_back(history::Cluster(
+        0,
+        {
+            test_clustering_backend_->GetVisitById(5),
+            test_clustering_backend_->GetVisitById(2),
+        },
+        {{u"apples", history::ClusterKeywordData(
+                         history::ClusterKeywordData::kEntity, 5.0f, {})},
+         {u"oranges", history::ClusterKeywordData()},
+         {u"z", history::ClusterKeywordData()},
+         {u"apples bananas", history::ClusterKeywordData()}},
+        /*should_show_on_prominent_ui_surfaces=*/true));
+    clusters.push_back(history::Cluster(
+        0,
+        {
+            test_clustering_backend_->GetVisitById(5),
+            test_clustering_backend_->GetVisitById(2),
+        },
+        {
+            {u"apples",
+             history::ClusterKeywordData(
+                 history::ClusterKeywordData::kSearchTerms, 100.0f, {})},
+        },
+        /*should_show_on_prominent_ui_surfaces=*/true));
     clusters.push_back(
         history::Cluster(0,
                          {
@@ -659,7 +674,13 @@ TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyCluster) {
   flush_keyword_requests(3);
 
   // Now the exact query should match the populated cache.
-  EXPECT_TRUE(history_clusters_service_->DoesQueryMatchAnyCluster("apples"));
+  const auto keyword_data =
+      history_clusters_service_->DoesQueryMatchAnyCluster("apples");
+  EXPECT_TRUE(keyword_data);
+  // Its keyword data type is kSearchTerms as it has a higher score.
+  EXPECT_EQ(keyword_data,
+            history::ClusterKeywordData(
+                history::ClusterKeywordData::kSearchTerms, 100.0f, {}));
 
   // Check that clusters that shouldn't be shown on prominent UI surfaces don't
   // have their keywords inserted into the keyword bag.
@@ -936,6 +957,16 @@ TEST_F(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
 TEST_F(HistoryClustersServiceTest, QueryVisitsOldestFirst) {
   // Create 5 persisted visits with visit times 2, 1, 1, 60, and 1 days ago.
   AddHardcodedTestDataToHistoryService();
+
+  // Add a sync visit on a day without other visits in order to verify a day
+  // with only sync visits doesn't interrupt `GetAnnotatedVisitsToCluster`'s
+  // intention of iterating until a visit is found.
+  history::AnnotatedVisit sync_visit;
+  sync_visit.url_row.set_id(1);
+  sync_visit.visit_row.visit_id = 10;
+  sync_visit.visit_row.visit_time = base::Time::Now() - base::Days(15);
+  sync_visit.source = history::VisitSource::SOURCE_SYNCED;
+  AddCompleteVisit(sync_visit);
 
   // Helper to repeatedly schedule a `GetAnnotatedVisitsToCluster`, with the
   // continuation time returned from the previous task, and return the visits

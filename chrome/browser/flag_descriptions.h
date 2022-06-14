@@ -115,9 +115,6 @@ extern const char kLeakDetectionUnauthenticatedDescription[];
 extern const char kEditPasswordsInSettingsName[];
 extern const char kEditPasswordsInSettingsDescription[];
 
-extern const char kMuteCompromisedPasswordsName[];
-extern const char kMuteCompromisedPasswordsDescription[];
-
 extern const char kPasswordNotesName[];
 extern const char kPasswordNotesDescription[];
 
@@ -191,8 +188,10 @@ extern const char kAutofillVisualImprovementsForSuggestionUiDescription[];
 extern const char kAutofillTypeSpecificPopupWidthName[];
 extern const char kAutofillTypeSpecificPopupWidthDescription[];
 
-extern const char kAutofillEnableMerchantBoundVirtualCardsName[];
-extern const char kAutofillEnableMerchantBoundVirtualCardsDescription[];
+extern const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[];
+extern const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription[];
 
 extern const char kAutofillEnableManualFallbackForVirtualCardsName[];
 extern const char kAutofillEnableManualFallbackForVirtualCardsDescription[];
@@ -234,10 +233,6 @@ extern const char
 
 extern const char kAutofillEnableVirtualCardMetadataName[];
 extern const char kAutofillEnableVirtualCardMetadataDescription[];
-
-extern const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[];
-extern const char
-    kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription[];
 
 extern const char kAutofillEnforceDelaysInStrikeDatabaseName[];
 extern const char kAutofillEnforceDelaysInStrikeDatabaseDescription[];
@@ -302,6 +297,9 @@ extern const char kBiometricReauthForPasswordFillingDescription[];
 extern const char kTouchToFillPasswordSubmissionName[];
 extern const char kTouchToFillPasswordSubmissionDescription[];
 
+extern const char kFastCheckoutName[];
+extern const char kFastCheckoutDescription[];
+
 extern const char kBorealisBigGlName[];
 extern const char kBorealisBigGlDescription[];
 
@@ -328,6 +326,9 @@ extern const char kCheckOfflineCapabilityDescription[];
 
 extern const char kChromeLabsName[];
 extern const char kChromeLabsDescription[];
+
+extern const char kCommerceHintAndroidName[];
+extern const char kCommerceHintAndroidDescription[];
 
 extern const char kConsolidatedSiteStorageControlsName[];
 extern const char kConsolidatedSiteStorageControlsDescription[];
@@ -648,6 +649,9 @@ extern const char kEnableGamepadButtonAxisEventsDescription[];
 
 extern const char kEnableIphName[];
 extern const char kEnableIphDescription[];
+
+extern const char kEnableIsolatedWebAppsName[];
+extern const char kEnableIsolatedWebAppsDescription[];
 
 extern const char kEnableLensFullscreenSearchFlagId[];
 extern const char kEnableLensFullscreenSearchName[];
@@ -1471,9 +1475,6 @@ extern const char kTabSearchFuzzySearchDescription[];
 extern const char kTabStripImprovementsAndroidName[];
 extern const char kTabStripImprovementsAndroidDescription[];
 
-extern const char kTailoredSecurityIntegrationName[];
-extern const char kTailoredSecurityIntegrationDescription[];
-
 extern const char kTFLiteLanguageDetectionName[];
 extern const char kTFLiteLanguageDetectionDescription[];
 
@@ -1798,12 +1799,6 @@ extern const char kContextualSearchDebugDescription[];
 extern const char kContextualSearchForceCaptionName[];
 extern const char kContextualSearchForceCaptionDescription[];
 
-extern const char kContextualSearchLongpressResolveName[];
-extern const char kContextualSearchLongpressResolveDescription[];
-
-extern const char KContextualSearchNewSettingsName[];
-extern const char KContextualSearchNewSettingsDescription[];
-
 extern const char kContextualSearchTranslationsName[];
 extern const char kContextualSearchTranslationsDescription[];
 
@@ -1945,6 +1940,9 @@ extern const char kMessagesForAndroidUpdatePasswordDescription[];
 extern const char kNetworkServiceInProcessName[];
 extern const char kNetworkServiceInProcessDescription[];
 
+extern const char kNewInstanceFromDraggedLinkName[];
+extern const char kNewInstanceFromDraggedLinkDescription[];
+
 extern const char kNewWindowAppMenuName[];
 extern const char kNewWindowAppMenuDescription[];
 
@@ -2035,11 +2033,11 @@ extern const char kRelatedSearchesUiDescription[];
 extern const char kRequestDesktopSiteExceptionsName[];
 extern const char kRequestDesktopSiteExceptionsDescription[];
 
-extern const char kRequestDesktopSiteGlobalName[];
-extern const char kRequestDesktopSiteGlobalDescription[];
-
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];
+
+extern const char kScreenshotsForAndroidV2Name[];
+extern const char kScreenshotsForAndroidV2Description[];
 
 extern const char kSecurePaymentConfirmationAndroidName[];
 extern const char kSecurePaymentConfirmationAndroidDescription[];
@@ -2183,40 +2181,19 @@ extern const char kMuteNotificationSnoozeActionDescription[];
 extern const char kNtpCacheOneGoogleBarName[];
 extern const char kNtpCacheOneGoogleBarDescription[];
 
-extern const char kNtpModulesName[];
-extern const char kNtpModulesDescription[];
+extern const char kNtpChromeCartModuleName[];
+extern const char kNtpChromeCartModuleDescription[];
 
 extern const char kNtpDriveModuleName[];
 extern const char kNtpDriveModuleDescription[];
-
-extern const char kWebAuthenticationPermitEnterpriseAttestationName[];
-extern const char kWebAuthenticationPermitEnterpriseAttestationDescription[];
 
 #if !defined(OFFICIAL_BUILD)
 extern const char kNtpDummyModulesName[];
 extern const char kNtpDummyModulesDescription[];
 #endif
 
-extern const char kNtpPhotosModuleName[];
-extern const char kNtpPhotosModuleDescription[];
-
-extern const char kNtpPhotosModuleOptInTitleName[];
-extern const char kNtpPhotosModuleOptInTitleDescription[];
-
-extern const char kNtpPhotosModuleOptInArtWorkName[];
-extern const char kNtpPhotosModuleOptInArtWorkDescription[];
-
-extern const char kNtpPhotosModuleSoftOptOutName[];
-extern const char kNtpPhotosModuleSoftOptOutDescription[];
-
-extern const char kNtpRecipeTasksModuleName[];
-extern const char kNtpRecipeTasksModuleDescription[];
-
-extern const char kNtpChromeCartModuleName[];
-extern const char kNtpChromeCartModuleDescription[];
-
-extern const char kNtpSafeBrowsingModuleName[];
-extern const char kNtpSafeBrowsingModuleDescription[];
+extern const char kNtpMiddleSlotPromoDismissalName[];
+extern const char kNtpMiddleSlotPromoDismissalDescription[];
 
 extern const char kNtpModulesDragAndDropName[];
 extern const char kNtpModulesDragAndDropDescription[];
@@ -2224,11 +2201,26 @@ extern const char kNtpModulesDragAndDropDescription[];
 extern const char kNtpModulesFirstRunExperienceName[];
 extern const char kNtpModulesFirstRunExperienceDescription[];
 
+extern const char kNtpModulesName[];
+extern const char kNtpModulesDescription[];
+
 extern const char kNtpModulesRedesignedName[];
 extern const char kNtpModulesRedesignedDescription[];
 
 extern const char kNtpModulesRedesignedLayoutName[];
 extern const char kNtpModulesRedesignedLayoutDescription[];
+
+extern const char kNtpPhotosModuleOptInTitleName[];
+extern const char kNtpPhotosModuleOptInTitleDescription[];
+
+extern const char kNtpPhotosModuleOptInArtWorkName[];
+extern const char kNtpPhotosModuleOptInArtWorkDescription[];
+
+extern const char kNtpPhotosModuleName[];
+extern const char kNtpPhotosModuleDescription[];
+
+extern const char kNtpPhotosModuleSoftOptOutName[];
+extern const char kNtpPhotosModuleSoftOptOutDescription[];
 
 extern const char kNtpRealboxMatchOmniboxThemeName[];
 extern const char kNtpRealboxMatchOmniboxThemeDescription[];
@@ -2247,6 +2239,12 @@ extern const char kNtpRealboxTailSuggestDescription[];
 
 extern const char kNtpRealboxUseGoogleGIconName[];
 extern const char kNtpRealboxUseGoogleGIconDescription[];
+
+extern const char kNtpRecipeTasksModuleName[];
+extern const char kNtpRecipeTasksModuleDescription[];
+
+extern const char kNtpSafeBrowsingModuleName[];
+extern const char kNtpSafeBrowsingModuleDescription[];
 
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
@@ -2268,6 +2266,9 @@ extern const char kSCTAuditingDescription[];
 
 extern const char kSharingDesktopSharePreviewName[];
 extern const char kSharingDesktopSharePreviewDescription[];
+
+extern const char kWebAuthenticationPermitEnterpriseAttestationName[];
+extern const char kWebAuthenticationPermitEnterpriseAttestationDescription[];
 
 #endif  // BUILDFLAG(IS_ANDROID)
 

@@ -7,15 +7,42 @@
  *     chrome://usb-internals/.
  */
 
+import 'chrome://resources/cr_elements/cr_tree/cr_tree.js';
+import 'chrome://resources/cr_elements/cr_tree/cr_tree_item.js';
+
 import {assertInstanceof} from 'chrome://resources/js/assert.m.js';
-import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {Tree, TreeItem} from 'chrome://resources/js/cr/ui/tree.js';
 import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 
 import {DescriptorPanel, renderClassCodeWithDescription} from './descriptor_panel.js';
 import {UsbAlternateInterfaceInfo, UsbConfigurationInfo, UsbDeviceInfo, UsbDeviceRemote, UsbEndpointInfo, UsbInterfaceInfo, UsbTransferDirection, UsbTransferType} from './usb_device.mojom-webui.js';
 import {UsbDeviceManagerRemote} from './usb_manager.mojom-webui.js';
+
+// TODO (rbpotter): Remove these temporary definitions after migrating to TS.
+/**
+ * @typedef {{
+ *   expanded: boolean,
+ *   add: function(CrTreeItemElement): void,
+ *   labelElement: HTMLElement,
+ *   rowElement: HTMLElement,
+ *   forceHoverStyle: function(boolean): void,
+ * }}
+ */
+export let CrTreeItemElement;
+
+/**
+ * @typedef {{
+ *   add: function(CrTreeItemElement): void,
+ *   detail: {payload: Object, children: Object},
+ *   removeTreeItem: function(CrTreeItemElement): void,
+ *   expanded: boolean,
+ *   items: Array<CrTreeItemElement>,
+ *   selectedItem: CrTreeItemElement,
+ * }}
+ */
+export let CrTreeElement;
+
+
 
 /**
  * Page that contains a tab header and a tab panel displaying devices table.
@@ -149,11 +176,10 @@ class DevicePage {
      */
     const treeViewRoot = assertInstanceof(
         tabPanelClone.querySelector('.tree-view'), HTMLElement);
-    decorate(treeViewRoot, Tree);
     treeViewRoot.detail = {payload: {}, children: {}};
     // Clear the tree first before populating it with the new content.
     treeViewRoot.innerText = '';
-    renderDeviceTree(device, treeViewRoot);
+    renderDeviceTree(device, /** @type {CrTreeElement} */ (treeViewRoot));
 
     const tabPanel = assertInstanceof(
         tabPanelClone.querySelector('div[slot=\'panel\']'), HTMLElement);
@@ -200,7 +226,7 @@ class DevicePage {
 /**
  * Renders a tree to display the device's detail information.
  * @param {!UsbDeviceInfo} device
- * @param {!Tree} root
+ * @param {!CrTreeElement} root
  */
 function renderDeviceTree(device, root) {
   root.add(customTreeItem(`USB Version: ${device.usbVersionMajor}.${
@@ -242,9 +268,8 @@ function renderDeviceTree(device, root) {
         customTreeItem(`WebUSB Landing Page: ${device.webusbLandingPage.url}`);
     root.add(urlItem);
 
-    urlItem.querySelector('.tree-label')
-        .addEventListener(
-            'click', () => window.open(device.webusbLandingPage.url, '_blank'));
+    urlItem.labelElement.addEventListener(
+        'click', () => window.open(device.webusbLandingPage.url, '_blank'));
   }
 
   root.add(
@@ -257,7 +282,7 @@ function renderDeviceTree(device, root) {
 /**
  * Renders a tree item to display the device's configuration information.
  * @param {!Array<!UsbConfigurationInfo>} configurationsArray
- * @param {!Tree} root
+ * @param {!CrTreeElement} root
  */
 function renderConfigurationTreeItem(configurationsArray, root) {
   for (const configuration of configurationsArray) {
@@ -279,7 +304,7 @@ function renderConfigurationTreeItem(configurationsArray, root) {
 /**
  * Renders a tree item to display the device's interface information.
  * @param {!Array<!UsbInterfaceInfo>} interfacesArray
- * @param {!TreeItem} root
+ * @param {!CrTreeItemElement} root
  */
 function renderInterfacesTreeItem(interfacesArray, root) {
   for (const currentInterface of interfacesArray) {
@@ -297,7 +322,7 @@ function renderInterfacesTreeItem(interfacesArray, root) {
  * Renders a tree item to display the device's alternate interfaces
  * information.
  * @param {!Array<!UsbAlternateInterfaceInfo>} alternatesArray
- * @param {!TreeItem} root
+ * @param {!CrTreeItemElement} root
  */
 function renderAlternatesTreeItem(alternatesArray, root) {
   for (const alternate of alternatesArray) {
@@ -328,7 +353,7 @@ function renderAlternatesTreeItem(alternatesArray, root) {
 /**
  * Renders a tree item to display the device's endpoints information.
  * @param {!Array<!UsbEndpointInfo>} endpointsArray
- * @param {!TreeItem} root
+ * @param {!CrTreeItemElement} root
  */
 function renderEndpointsTreeItem(endpointsArray, root) {
   for (const endpoint of endpointsArray) {
@@ -439,14 +464,14 @@ function toHex(num) {
 /**
  * Renders a customized TreeItem with the given content and class name.
  * @param {string} itemLabel
- * @return {!TreeItem}
+ * @return {!CrTreeItemElement}
  * @private
  */
 function customTreeItem(itemLabel) {
-  return new TreeItem({
-    label: itemLabel,
-    icon: '',
-  });
+  const item =
+      /** @type {CrTreeItemElement} */ (document.createElement('cr-tree-item'));
+  item.label = itemLabel;
+  return item;
 }
 
 window.deviceListCompleteFn = window.deviceListCompleteFn || function() {};

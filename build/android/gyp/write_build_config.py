@@ -1057,6 +1057,11 @@ def main(argv):
       action='store_true',
       help='True if a java library is not chromium code, used for lint.')
 
+  # robolectric_library options
+  parser.add_option('--is-robolectric',
+                    action='store_true',
+                    help='Whether this is a host side android test library.')
+
   # android library options
   parser.add_option('--dex-path', help='Path to target\'s dex output.')
 
@@ -1316,18 +1321,6 @@ def main(argv):
     # for these libraries will get pulled in along with the resources.
     android_resources_library_deps = _DepsFromPathsWithFilters(
         deps_configs_paths, allowlist=['java_library']).All('java_library')
-  if is_apk_or_module_target:
-    # android_resources deps which had recursive_resource_deps set should not
-    # have the manifests from the recursively collected deps added to this
-    # module. This keeps the manifest declarations in the child DFMs, since they
-    # will have the Java implementations.
-    def ExcludeRecursiveResourcesDeps(config):
-      return not config.get('includes_recursive_resources', False)
-
-    extra_manifest_deps = [
-        GetDepConfig(p) for p in GetAllDepsConfigsInOrder(
-            deps_configs_paths, filter_func=ExcludeRecursiveResourcesDeps)
-    ]
 
   base_module_build_config = None
   if options.base_module_build_config:
@@ -1454,7 +1447,10 @@ def main(argv):
     deps_info['requires_android'] = bool(options.requires_android)
     deps_info['supports_android'] = bool(options.supports_android)
 
-    if not options.bypass_platform_checks:
+    # robolectric is special in that its an android target that runs on host.
+    # You are allowed to depend on both android |deps_require_android| and
+    # non-android |deps_not_support_android| targets.
+    if not options.bypass_platform_checks and not options.is_robolectric:
       deps_require_android = (all_resources_deps +
           [d['name'] for d in all_library_deps if d['requires_android']])
       deps_not_support_android = (
@@ -1529,7 +1525,8 @@ def main(argv):
     if options.res_sources_path:
       deps_info['res_sources_path'] = options.res_sources_path
 
-  if options.requires_android and options.type == 'java_library':
+  if (options.requires_android
+      and options.type == 'java_library') or options.is_robolectric:
     if options.package_name:
       deps_info['package_name'] = options.package_name
 
@@ -1551,6 +1548,8 @@ def main(argv):
       extra_package_names = [
           c['package_name'] for c in all_resources_deps if 'package_name' in c
       ]
+      if options.package_name:
+        extra_package_names += [options.package_name]
 
       # android_resources targets which specified recursive_resource_deps may
       # have extra_package_names.
@@ -2071,16 +2070,6 @@ def main(argv):
         'secondary_abi_loadable_modules':
         secondary_abi_loadable_modules,
     }
-    config['assets'], config['uncompressed_assets'], locale_paks = (
-        _MergeAssets(deps.All('android_assets')))
-
-    deps_info['locales_java_list'] = _CreateJavaLocaleListFromAssets(
-        config['uncompressed_assets'], locale_paks)
-
-    config['extra_android_manifests'] = []
-    for c in extra_manifest_deps:
-      config['extra_android_manifests'].extend(
-          c.get('mergeable_android_manifests', []))
 
     # Collect java resources
     java_resources_jars = [d['java_resources_jar'] for d in all_library_deps
@@ -2093,6 +2082,28 @@ def main(argv):
                              if jar not in tested_apk_resource_jars]
     java_resources_jars.sort()
     config['java_resources_jars'] = java_resources_jars
+
+  if is_apk_or_module_target or options.type == 'junit_binary':
+    # android_resources deps which had recursive_resource_deps set should not
+    # have the manifests from the recursively collected deps added to this
+    # module. This keeps the manifest declarations in the child DFMs, since they
+    # will have the Java implementations.
+    def ExcludeRecursiveResourcesDeps(config):
+      return not config.get('includes_recursive_resources', False)
+
+    extra_manifest_deps = [
+        GetDepConfig(p) for p in GetAllDepsConfigsInOrder(
+            deps_configs_paths, filter_func=ExcludeRecursiveResourcesDeps)
+    ]
+    config['extra_android_manifests'] = []
+    for c in extra_manifest_deps:
+      config['extra_android_manifests'].extend(
+          c.get('mergeable_android_manifests', []))
+
+    config['assets'], config['uncompressed_assets'], locale_paks = (
+        _MergeAssets(deps.All('android_assets')))
+    deps_info['locales_java_list'] = _CreateJavaLocaleListFromAssets(
+        config['uncompressed_assets'], locale_paks)
 
   if options.java_resources_jar_path:
     deps_info['java_resources_jar'] = options.java_resources_jar_path

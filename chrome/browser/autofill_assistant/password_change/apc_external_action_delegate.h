@@ -11,10 +11,16 @@
 #include "chrome/browser/autofill_assistant/password_change/proto/extensions.pb.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_controller.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PasswordChangeRunDisplay;
 class AssistantDisplayDelegate;
 
+// Receives actions from the `ExternalScriptController` and passes them on an
+// implementation of a `PasswordChangeRunDisplay`.
+// Currently `ApcExternalActionDelegate` implements two interfaces. If the
+// class becomes too complex, we may later separate out the
+// `PasswordChangeRunController` implementation and compose it instead.
 class ApcExternalActionDelegate
     : public autofill_assistant::ExternalActionDelegate,
       public PasswordChangeRunController {
@@ -30,16 +36,16 @@ class ApcExternalActionDelegate
   // needs to be called BEFORE starting a script.
   void SetupDisplay();
 
-  // ExternalActionDelegate
+  // ExternalActionDelegate:
   void OnActionRequested(
       const autofill_assistant::external::Action& action_info,
-      base::OnceCallback<void()> start_dom_checks_callback,
+      base::OnceCallback<void(DomUpdateCallback)> start_dom_checks_callback,
       base::OnceCallback<void(const autofill_assistant::external::Result&
                                   result)> end_action_callback) override;
   void OnInterruptStarted() override;
   void OnInterruptFinished() override;
 
-  // PasswordChangeRunController
+  // PasswordChangeRunController:
   void SetTopIcon(
       autofill_assistant::password_change::TopIcon top_icon) override;
   void SetTitle(const std::u16string& title) override;
@@ -47,19 +53,33 @@ class ApcExternalActionDelegate
   void SetProgressBarStep(
       autofill_assistant::password_change::ProgressStep progress_step) override;
   base::WeakPtr<PasswordChangeRunController> GetWeakPtr() override;
-  void ShowBasePrompt(const autofill_assistant::password_change::BasePrompt&
-                          base_prompt) override;
-  void OnBasePromptOptionSelected(int option_index) override;
-  void ShowSuggestedPasswordPrompt(
-      const std::u16string& suggested_password) override;
-  void OnSuggestedPasswordSelected(bool selected) override;
+  void ShowBasePrompt(
+      const autofill_assistant::password_change::BasePromptSpecification&
+          base_prompt) override;
+  void OnBasePromptChoiceSelected(int choice_index) override;
+  void ShowGeneratedPasswordPrompt(
+      const autofill_assistant::password_change::
+          GeneratedPasswordPromptSpecification& password_prompt,
+      const std::u16string& generated_password) override;
+  void OnGeneratedPasswordSelected(bool selected) override;
+  void ShowStartingScreen(const GURL& url) override;
 
  private:
-  // PasswordChangeRunController
+  friend class ApcExternalActionDelegateTest;
+
+  // PasswordChangeRunController:
   void Show(base::WeakPtr<PasswordChangeRunDisplay> password_change_run_display)
       override;
+
   // Stores the UI state of a password change run.
   PasswordChangeRunController::Model model_;
+
+  // Back up for the state before the start of an interrupt.
+  absl::optional<PasswordChangeRunController::Model> model_before_interrupt_;
+
+  // The return values associated with each currently shown base prompt choice.
+  // It is empty when no prompt is being displayed.
+  std::vector<std::string> base_prompt_return_values_;
 
   // The view that renders a password change run flow.
   base::WeakPtr<PasswordChangeRunDisplay> password_change_run_display_ =

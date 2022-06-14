@@ -70,12 +70,12 @@
 </style>
 <div id="container">
   <div id="header">
-    <h1 id="title">Send feedback</h1>
+    <h1 class="page-title">Send feedback</h1>
   </div>
   <div id="content">
     <!-- Attach files -->
     <div id="attachFiles">
-      <p>Attach files</p>
+      <p id="attachFilesLabel">[[i18n('attachFilesLabel')]]</p>
       <div id="attachFilesContainer">
         <!-- Attach a screenshot -->
         <div id="screenshotContainer" class="card-frame">
@@ -95,7 +95,7 @@
     <!-- User e-mail -->
     <div id="userEmail" class="text-field-container"
         hidden$="[[!hasEmail_(feedbackContext)]]">
-      <label id="userEmailLabel">Email</label>
+      <label id="userEmailLabel">[[i18n('userEmailLabel')]]</label>
       <select id="userEmailDropDown" aria-labelledby="userEmailLabel">
         <option value$="[[feedbackContext.email]]">[[feedbackContext.email]]</option>
         <option value="">Don't include email address</option>
@@ -103,7 +103,7 @@
     </div>
     <!-- Diagnostic data -->
     <div id="shareDiagnosticData">
-      <p>Share diagnostic data</p>
+      <p id="shareDiagnosticDataLabel">[[i18n('shareDiagnosticDataLabel')]]</p>
       <!-- URL -->
       <div id="pageUrl" class="checkbox-field-container">
         <input id="pageUrlCheckbox" type="checkbox" aria-labelledby="pageUrlLabel"

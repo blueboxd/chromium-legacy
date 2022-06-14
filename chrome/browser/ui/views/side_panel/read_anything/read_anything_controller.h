@@ -17,10 +17,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/accessibility/ax_node_id_forward.h"
 
-namespace content {
-class Page;
-}
-
 namespace ui {
 struct AXTreeUpdate;
 }
@@ -48,6 +44,11 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   ReadAnythingController& operator=(const ReadAnythingController&) = delete;
   ~ReadAnythingController() override;
 
+  // Called to activate or de-activate Read Anything. The feature is active when
+  // it is currently shown in the side panel.
+  void Activate(bool active);
+  bool IsActiveForTesting() { return active_; }
+
  private:
   // ReadAnythingToolbarView::Delegate:
   void OnFontChoiceChanged(int new_choice) override;
@@ -62,7 +63,7 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
       const TabStripSelectionChange& selection) override;
 
   // content::WebContentsObserver:
-  void PrimaryPageChanged(content::Page& page) override;
+  void DidStopLoading() override;
 
   // Requests a distilled AXTree for the main frame of the currently active
   // web contents.
@@ -79,6 +80,10 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   // ReadAnythingController is owned by ReadAnythingCoordinator which is a
   // browser user data, so this pointer is always valid.
   raw_ptr<Browser> browser_;
+
+  // Whether the Read Anything feature is currently active. The feature is
+  // active when it is currently shown in the Side Panel.
+  bool active_ = false;
 
   base::WeakPtrFactory<ReadAnythingController> weak_pointer_factory_{this};
 };

@@ -40,6 +40,7 @@
               "external/wpt/animation-worklet",
               "external/wpt/css/css-animations",
               "external/wpt/css/css-backgrounds",
+              "external/wpt/css/css-color/animation",
               "external/wpt/css/css-scroll-snap",
               "external/wpt/css/css-transforms/animation",
               "external/wpt/css/css-transforms/individual-transform/animation",
@@ -729,12 +730,6 @@
               "external/wpt/clipboard-apis/clipboard-item.https.html"],
     "args": ["--enable-blink-features=ClipboardCustomFormats",
              "--enable-features=ClipboardCustomFormats"]
-  },
-  {
-    "prefix": "legacy-client-hints",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
-    "args": ["--enable-features=AllowClientHintsToThirdParty"]
   },
   {
     "prefix": "disable-ua-client-hint",

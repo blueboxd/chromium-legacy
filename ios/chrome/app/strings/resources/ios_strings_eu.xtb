@@ -65,6 +65,7 @@
 <translation id="1434356225517321998">Arakatzailea kudeatuta dago. <ph name="BEGIN_LINK" />Xehetasunak<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Ezkutatu pasahitza</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementu</translation>
+<translation id="1450170672351507823">Babes estandarra dago aktibatuta. Segurtasuna areagotzeko, erabili babes hobetua.</translation>
 <translation id="149095475893949513">Webgunea konfigurazio-profil bat deskargatu nahian dabil.</translation>
 <translation id="1491277525950327607">Sakatu birritan ezarpena aldatzeko</translation>
 <translation id="1492417797159476138">Dagoeneko gorde duzu erabiltzaile-izen hau webgune honetarako</translation>
@@ -405,6 +406,7 @@ Jarraitu beheko urratsei:</translation>
 <translation id="4502566650163919158">Egiaztatu</translation>
 <translation id="4505980578794259603">Azken egiaztatze-data: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Itxi saioa hasteko promozioa</translation>
+<translation id="4511669830082467224">Bilatu irudia Google bidez</translation>
 <translation id="4526249700380860531">Ikusi eta kudeatu gordetako pasahitzak <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> estekan.</translation>
 <translation id="452750746583162491">Berrikusi sinkronizatutako datuak</translation>
 <translation id="4536418791685807335">Hasi saioa berriro.</translation>
@@ -740,6 +742,7 @@ Ezkutuko moduan zaudenean, webguneek ezin dituzte erabili cookieak beste webgune
 <translation id="7099761977003084116">Azken fitxak</translation>
 <translation id="7102005569666697658">Deskargatzen… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ezkutatu</translation>
+<translation id="7108762695052995889">Joan webgunera</translation>
 <translation id="7133798577887235672">Izen-abizenak</translation>
 <translation id="7136892417564438900">Kamera ez dago erabilgarri</translation>
 <translation id="7153999225810839758"><ph name="TIME" /> minutu behar dira irakurtzeko</translation>

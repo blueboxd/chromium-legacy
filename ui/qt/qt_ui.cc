@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,6 +23,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_base.h"
 #include "ui/qt/qt_interface.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -72,15 +74,39 @@ gfx::FontRenderParams::Hinting QtHintingToGfxHinting(
 
 }  // namespace
 
-// We currently don't render any QT widgets, so this class is just a stub.
-class QtNativeTheme : public ui::NativeThemeBase {
+class QtNativeTheme : public ui::NativeThemeAura {
  public:
-  QtNativeTheme()
-      : ui::NativeThemeBase(/*should_only_use_dark_colors=*/false,
-                            /*is_custom_system_theme=*/true) {}
+  explicit QtNativeTheme(QtInterface* shim)
+      : ui::NativeThemeAura(/*use_overlay_scrollbars=*/false,
+                            /*should_only_use_dark_colors=*/false,
+                            /*is_custom_system_theme=*/true),
+        shim_(shim) {}
   QtNativeTheme(const QtNativeTheme&) = delete;
   QtNativeTheme& operator=(const QtNativeTheme&) = delete;
   ~QtNativeTheme() override = default;
+
+  // ui::NativeTheme:
+  void PaintFrameTopArea(cc::PaintCanvas* canvas,
+                         State state,
+                         const gfx::Rect& rect,
+                         const FrameTopAreaExtraParams& frame_top_area,
+                         ColorScheme color_scheme) const override {
+    auto image = shim_->DrawHeader(
+        rect.width(), rect.height(), frame_top_area.default_background_color,
+        frame_top_area.is_active, frame_top_area.use_custom_frame);
+    SkImageInfo image_info = SkImageInfo::Make(
+        image.width, image.height, kBGRA_8888_SkColorType, kPremul_SkAlphaType);
+    SkBitmap bitmap;
+    bitmap.installPixels(
+        image_info, image.data_argb.Take(), image_info.minRowBytes(),
+        [](void* data, void*) { free(data); }, nullptr);
+    bitmap.setImmutable();
+    canvas->drawImage(cc::PaintImage::CreateFromBitmap(std::move(bitmap)),
+                      rect.x(), rect.y());
+  }
+
+ private:
+  raw_ptr<QtInterface> const shim_;
 };
 
 QtUi::QtUi() = default;
@@ -136,7 +162,7 @@ bool QtUi::Initialize() {
   cmd_line_ = CopyCmdLine(*base::CommandLine::ForCurrentProcess());
   shim_.reset((reinterpret_cast<decltype(&CreateQtInterface)>(
       create_qt_interface)(this, &cmd_line_.argc, cmd_line_.argv.data())));
-  native_theme_ = std::make_unique<QtNativeTheme>();
+  native_theme_ = std::make_unique<QtNativeTheme>(shim_.get());
   ui::ColorProviderManager::Get().AppendColorProviderInitializer(
       base::BindRepeating(&QtUi::AddNativeColorMixer, base::Unretained(this)));
   FontChanged();
@@ -324,6 +350,10 @@ void QtUi::FontChanged() {
   };
 }
 
+void QtUi::ThemeChanged() {
+  native_theme_->NotifyOnNativeThemeUpdated();
+}
+
 void QtUi::AddNativeColorMixer(ui::ColorProvider* provider,
                                const ui::ColorProviderManager::Key& key) {
   if (key.system_theme == ui::ColorProviderManager::SystemTheme::kDefault)
@@ -333,23 +363,56 @@ void QtUi::AddNativeColorMixer(ui::ColorProvider* provider,
   // These color constants are required by native_chrome_color_mixer_linux.cc
   struct {
     ui::ColorId id;
-    SkColor color;
+    ColorType role;
+    ColorState state = ColorState::kNormal;
   } const kMaps[] = {
-      {ui::kColorNativeButtonBorder, gfx::kPlaceholderColor},
-      {ui::kColorNativeHeaderButtonBorderActive, gfx::kPlaceholderColor},
-      {ui::kColorNativeHeaderButtonBorderInactive, gfx::kPlaceholderColor},
-      {ui::kColorNativeHeaderSeparatorBorderActive, gfx::kPlaceholderColor},
-      {ui::kColorNativeHeaderSeparatorBorderInactive, gfx::kPlaceholderColor},
-      {ui::kColorNativeLabelForeground, shim_->GetColor(ColorRole::kWindowFg)},
-      {ui::kColorNativeTabForegroundInactiveFrameActive,
-       gfx::kPlaceholderColor},
-      {ui::kColorNativeTabForegroundInactiveFrameInactive,
-       gfx::kPlaceholderColor},
-      {ui::kColorNativeTextfieldBorderUnfocused, gfx::kPlaceholderColor},
-      {ui::kColorNativeToolbarBackground, gfx::kPlaceholderColor},
+      // Core colors
+      {ui::kColorAccent, ColorType::kHighlightBg},
+      {ui::kColorDisabledForeground, ColorType::kWindowFg,
+       ColorState::kDisabled},
+      {ui::kColorEndpointBackground, ColorType::kEntryBg},
+      {ui::kColorEndpointForeground, ColorType::kEntryFg},
+      {ui::kColorItemHighlight, ColorType::kHighlightBg},
+      {ui::kColorItemSelectionBackground, ColorType::kHighlightBg},
+      {ui::kColorMenuSelectionBackground, ColorType::kHighlightBg},
+      {ui::kColorMidground, ColorType::kMidground},
+      {ui::kColorPrimaryBackground, ColorType::kWindowBg},
+      {ui::kColorPrimaryForeground, ColorType::kWindowFg},
+      {ui::kColorSecondaryForeground, ColorType::kWindowFg,
+       ColorState::kDisabled},
+      {ui::kColorSubtleAccent, ColorType::kHighlightBg, ColorState::kInactive},
+      {ui::kColorSubtleEmphasisBackground, ColorType::kWindowBg},
+      {ui::kColorTextSelectionBackground, ColorType::kHighlightBg},
+      {ui::kColorTextSelectionForeground, ColorType::kHighlightFg},
+
+      // UI element colors
+      {ui::kColorMenuBackground, ColorType::kEntryBg},
+      {ui::kColorMenuItemBackgroundHighlighted, ColorType::kHighlightBg},
+      {ui::kColorMenuItemBackgroundSelected, ColorType::kHighlightBg},
+      {ui::kColorMenuItemForeground, ColorType::kEntryFg},
+      {ui::kColorMenuItemForegroundHighlighted, ColorType::kHighlightFg},
+      {ui::kColorMenuItemForegroundSelected, ColorType::kHighlightFg},
+
+      // Platform-specific UI elements
+      {ui::kColorNativeButtonBorder,
+       // For flat-styled buttons, QT uses the text color as the button border.
+       ColorType::kWindowFg},
+      {ui::kColorNativeHeaderButtonBorderActive, ColorType::kWindowFg},
+      {ui::kColorNativeHeaderButtonBorderInactive, ColorType::kWindowFg,
+       ColorState::kInactive},
+      {ui::kColorNativeHeaderSeparatorBorderActive, ColorType::kWindowFg},
+      {ui::kColorNativeHeaderSeparatorBorderInactive, ColorType::kWindowFg,
+       ColorState::kInactive},
+      {ui::kColorNativeLabelForeground, ColorType::kWindowFg},
+      {ui::kColorNativeTabForegroundInactiveFrameActive, ColorType::kButtonFg},
+      {ui::kColorNativeTabForegroundInactiveFrameInactive, ColorType::kButtonFg,
+       ColorState::kInactive},
+      {ui::kColorNativeTextfieldBorderUnfocused, ColorType::kWindowFg,
+       ColorState::kInactive},
+      {ui::kColorNativeToolbarBackground, ColorType::kButtonBg},
   };
   for (const auto& map : kMaps)
-    mixer[map.id] = {map.color};
+    mixer[map.id] = {shim_->GetColor(map.role, map.state)};
 }
 
 std::unique_ptr<views::LinuxUI> CreateQtUi() {

@@ -16,6 +16,8 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/extend.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_base.h"
@@ -534,13 +536,16 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
   app->paused = IsPaused(web_app->app_id());
 
   // Add the intent filters for PWAs.
-  base::Extend(app->intent_filters,
-               apps_util::CreateIntentFiltersForWebApp(
-                   web_app->app_id(), IsNoteTakingWebApp(*web_app),
-                   registrar().GetAppScope(web_app->app_id()),
-                   registrar().GetAppShareTarget(web_app->app_id()),
-                   provider_->os_integration_manager().GetEnabledFileHandlers(
-                       web_app->app_id())));
+  base::Extend(
+      app->intent_filters,
+      apps_util::CreateIntentFiltersForWebApp(
+          web_app->app_id(), registrar().GetAppScope(web_app->app_id()),
+          registrar().GetAppShareTarget(web_app->app_id()),
+          provider_->os_integration_manager().GetEnabledFileHandlers(
+              web_app->app_id())));
+
+  if (IsNoteTakingWebApp(*web_app))
+    app->intent_filters.push_back(apps_util::CreateNoteTakingFilter());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (web_app->app_id() == crostini::kCrostiniTerminalSystemAppId) {
@@ -624,13 +629,16 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
                              : apps::mojom::OptionalBool::kFalse;
 
   // Add the intent filters for PWAs.
-  base::Extend(app->intent_filters,
-               apps_util::CreateWebAppIntentFilters(
-                   web_app->app_id(), IsNoteTakingWebApp(*web_app),
-                   registrar().GetAppScope(web_app->app_id()),
-                   registrar().GetAppShareTarget(web_app->app_id()),
-                   provider_->os_integration_manager().GetEnabledFileHandlers(
-                       web_app->app_id())));
+  base::Extend(
+      app->intent_filters,
+      apps_util::CreateWebAppIntentFilters(
+          web_app->app_id(), registrar().GetAppScope(web_app->app_id()),
+          registrar().GetAppShareTarget(web_app->app_id()),
+          provider_->os_integration_manager().GetEnabledFileHandlers(
+              web_app->app_id())));
+
+  if (IsNoteTakingWebApp(*web_app))
+    app->intent_filters.push_back(apps_util::CreateNoteTakingFilterMojom());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (web_app->app_id() == crostini::kCrostiniTerminalSystemAppId) {
@@ -1586,12 +1594,12 @@ std::string WebAppPublisherHelper::GetPolicyId(const WebApp& web_app) {
   GURL install_url;
   if (registrar().HasExternalAppWithInstallSource(
           web_app.app_id(), ExternalInstallSource::kExternalPolicy)) {
-    std::map<AppId, GURL> installed_apps =
+    base::flat_map<AppId, base::flat_set<GURL>> installed_apps =
         registrar().GetExternallyInstalledApps(
             ExternalInstallSource::kExternalPolicy);
-    auto it = installed_apps.find(web_app.app_id());
-    if (it != installed_apps.end()) {
-      install_url = it->second;
+    if (base::Contains(installed_apps, web_app.app_id())) {
+      DCHECK(installed_apps[web_app.app_id()].size() > 0);
+      install_url = *installed_apps[web_app.app_id()].begin();
     }
   }
   return install_url.spec();

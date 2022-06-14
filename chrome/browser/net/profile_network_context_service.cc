@@ -27,6 +27,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
+#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,9 +64,14 @@
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/features.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/remove_stale_data.h"
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/certificate_provider/certificate_provider.h"
@@ -705,6 +711,9 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     network::mojom::NetworkContextParams* network_context_params,
     cert_verifier::mojom::CertVerifierCreationParams*
         cert_verifier_creation_params) {
+  TRACE_EVENT0(
+      "startup",
+      "ProfileNetworkContextService::ConfigureNetworkContextParamsInternal");
   if (profile_->IsOffTheRecord())
     in_memory = true;
   base::FilePath path(GetPartitionPath(relative_partition_path));
@@ -765,6 +774,17 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     network_context_params->file_paths->unsandboxed_data_path = path;
     network_context_params->file_paths->trigger_migration =
         base::FeatureList::IsEnabled(features::kTriggerNetworkDataMigration);
+
+#if BUILDFLAG(IS_ANDROID)
+    // On Android the `data_directory` was used by some wrong builds instead of
+    // `unsandboxed_data_path`. Cleaning it up. See crbug.com/1331809.
+    // The `trigger_migration` has always been false and will remain to be such
+    // on Android, hence not checking for it.
+    DCHECK(!network_context_params->file_paths->trigger_migration);
+    base::android::RemoveStaleDataDirectory(
+        network_context_params->file_paths->data_directory.path());
+#endif  // BUILDFLAG(IS_ANDROID)
+
     // Currently this just contains HttpServerProperties, but that will likely
     // change.
     network_context_params->file_paths->http_server_properties_file_name =
@@ -961,6 +981,22 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   network_context_params->block_trust_tokens =
       !PrivacySandboxSettingsFactory::GetForProfile(profile_)
            ->IsTrustTokensAllowed();
+
+  network_context_params->first_party_sets_access_delegate_params =
+      network::mojom::FirstPartySetsAccessDelegateParams::New();
+  network_context_params->first_party_sets_access_delegate_params->enabled =
+      profile_->GetPrefs()->GetBoolean(
+          first_party_sets::kFirstPartySetsEnabled);
+
+  mojo::Remote<network::mojom::FirstPartySetsAccessDelegate>
+      fps_access_delegate_remote;
+  network_context_params->first_party_sets_access_delegate_receiver =
+      fps_access_delegate_remote.BindNewPipeAndPassReceiver();
+  // TODO(crbug.com/1325050): Call NotifyReady() here for now to match the
+  // existing behavior. NotifyReady() will be called by the remote handle owner
+  // in the follow up change.
+  fps_access_delegate_remote->NotifyReady();
+  fps_access_delegate_remote_set_.Add(std::move(fps_access_delegate_remote));
 }
 
 base::FilePath ProfileNetworkContextService::GetPartitionPath(

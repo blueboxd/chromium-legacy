@@ -91,6 +91,7 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   bool PerformAction(const ui::Event& event) override;
   TrayBubbleView* GetBubbleView() override;
   views::Widget* GetBubbleWidget() const override;
+  void OnVirtualKeyboardVisibilityChanged() override;
 
   // TrayBubbleView::Delegate:
   std::u16string GetAccessibleNameForBubble() override;
@@ -164,6 +165,10 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   // TrayBackgroundView's background inkdrop activate.
   void InitBubble();
 
+  // Starts graceful close to ensure the connection resource is released before
+  // the window is closed.
+  void StartGracefulClose();
+
   // Test helpers
   TrayBubbleWrapper* get_bubble_wrapper_for_test() { return bubble_.get(); }
   AshWebView* get_web_view_for_test() { return web_view_; }
@@ -204,10 +209,6 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView,
   void StopLoadingAnimation();
   void StartLoadingAnimation();
   void SetIconVisibility(bool visibility);
-
-  // Starts graceful close to ensure connection resource is released before
-  // window is closed.
-  void StartGracefulClose();
 
   PhoneHubTray* GetPhoneHubTray();
   EcheIconLoadingIndicatorView* GetLoadingIndicator();

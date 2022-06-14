@@ -65,6 +65,7 @@
 <translation id="1434356225517321998">הדפדפן שלך מנוהל. <ph name="BEGIN_LINK" />פרטים<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">הסתרת סיסמה</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> פריטים</translation>
+<translation id="1450170672351507823">מופעלת הגנה רגילה. כדי להוסיף שכבת אבטחה, ניתן להשתמש בהגנה המשופרת.</translation>
 <translation id="149095475893949513">האתר הזה מנסה להוריד פרופיל של הגדרות אישיות.</translation>
 <translation id="1491277525950327607">יש ללחוץ פעמיים כדי להחליף את מצב ההגדרה</translation>
 <translation id="1492417797159476138">שם המשתמש הזה כבר נשמר לאתר זה</translation>
@@ -162,6 +163,7 @@
 <translation id="236977714248711277">‏אתרים לא יכולים להשתמש בקובצי cookie כדי לשפר את חוויית הגלישה – למשל כדי למנוע את ניתוקך מהחשבון או כדי לזכור את הפריטים שהוספת לעגלת הקניות.
 
 אתרים לא יכולים להשתמש בקובצי cookie כדי לקבל מידע על פעילות הגלישה שלך. המידע הזה דרוש להם לצרכים שונים, למשל לצורך הצגה של מודעות בהתאמה אישית.</translation>
+<translation id="2375243552872247702">הצגת תוכן שרלוונטי לך</translation>
 <translation id="2381405137052800939">הגדרות בסיסיות</translation>
 <translation id="2386793615875593361">נבחרה תמונה אחת</translation>
 <translation id="2421004566762153674">‏חסימת קובצי Cookie של צד שלישי</translation>
@@ -404,6 +406,7 @@
 <translation id="4502566650163919158">לבדיקה עכשיו</translation>
 <translation id="4505980578794259603">בדיקה אחרונה: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">סגירת קידום הכניסה</translation>
+<translation id="4511669830082467224">‏חיפוש התמונה באמצעות Google</translation>
 <translation id="4526249700380860531">‏הצגה וינוהל של סיסמאות שמורות ב-<ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">סקירת הנתונים המסונכרנים</translation>
 <translation id="4536418791685807335">יש לנסות להיכנס שוב.</translation>
@@ -601,6 +604,7 @@
 <translation id="6136914049981179737">שניות</translation>
 <translation id="6144589619057374135">‏פתיחת ${urls} במצב אנונימי</translation>
 <translation id="6149061208933997199">השתמש בסיסמה</translation>
+<translation id="6152406514676263192">סנכרון התוכן הרלוונטי ביותר על סמך תחומי העניין שלך.</translation>
 <translation id="6159839020698489198">אופציונלי</translation>
 <translation id="6177442314419606057">‏חיפוש ב-Chrome</translation>
 <translation id="6184086493125982861">הצגת כרטיסיות</translation>
@@ -738,6 +742,7 @@
 <translation id="7099761977003084116">כרטיסיות אחרונות</translation>
 <translation id="7102005569666697658">ההורדה מתבצעת… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">הסתרה</translation>
+<translation id="7108762695052995889">כניסה לאתר</translation>
 <translation id="7133798577887235672">שם מלא</translation>
 <translation id="7136892417564438900">המצלמה לא זמינה</translation>
 <translation id="7153999225810839758">זמן הקריאה: <ph name="TIME" /> דקות</translation>
@@ -748,6 +753,7 @@
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7192050974311852563">התחלת רישום ביומן</translation>
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
+<translation id="7207023858769244910">סנכרון לקבלת תוכן על סמך תחומי העניין שלך.</translation>
 <translation id="7207383424303353046">‏חדש: אם Chrome יוגדר כאפליקציית הדפדפן בברירת מחדל, אתרים ייפתחו בו באופן אוטומטי. <ph name="BEGIN_LINK" />לפתיחת ההגדרות<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">כינוי הכרטיס לא חוקי</translation>
 <translation id="722454870747268814">כרטיסייה חדשה לגלישה בסתר</translation>

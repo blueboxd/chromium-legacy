@@ -27,6 +27,7 @@
 <translation id="1043382569739532657">Bolsas de estudo, subsídios e ajuda financeira</translation>
 <translation id="1048785276086539861">Quando você editar as anotações, este documento voltará à visualização de uma página</translation>
 <translation id="1050038467049342496">Fechar outros apps</translation>
+<translation id="1053959602163383901">Você escolheu fazer a verificação com um dispositivo autenticador em sites que usam o provedor <ph name="PROVIDER_ORIGIN" />. Esse provedor pode ter armazenado informações sobre sua forma de pagamento, mas você pode <ph name="LINK_TEXT" />.</translation>
 <translation id="1055184225775184556">&amp;Desfazer adicionar</translation>
 <translation id="1056663316309890343">Software para fotografia</translation>
 <translation id="1056898198331236512">Aviso</translation>
@@ -422,6 +423,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2053111141626950936">Páginas em <ph name="LANGUAGE" /> não serão traduzidas.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Quando este controle estiver ligado e o status estiver ativo, o Chrome determinará com qual grupo grande de pessoas, ou "coorte", sua atividade de navegação se parece mais. Os anunciantes podem selecionar anúncios para o grupo e sua atividade de navegação será armazenada no dispositivo de forma particular. Seu grupo é atualizado todos os dias.}=1{Quando este controle estiver ligado e o status estiver ativo, o Chrome determinará com qual grupo grande de pessoas, ou "coorte", sua atividade de navegação se parece mais. Os anunciantes podem selecionar anúncios para o grupo e sua atividade de navegação será armazenada no dispositivo de forma particular. Seu grupo é atualizado todos os dias.}one{Quando este controle estiver ligado e o status estiver ativo, o Chrome determinará com qual grupo grande de pessoas, ou "coorte", sua atividade de navegação se parece mais. Os anunciantes podem selecionar anúncios para o grupo e sua atividade de navegação será armazenada no dispositivo de forma particular. Seu grupo é atualizado a cada {NUM_DAYS} dia.}other{Quando este controle estiver ligado e o status estiver ativo, o Chrome determinará com qual grupo grande de pessoas, ou "coorte", sua atividade de navegação se parece mais. Os anunciantes podem selecionar anúncios para o grupo e sua atividade de navegação será armazenada no dispositivo de forma particular. Seu grupo é atualizado a cada {NUM_DAYS} dias.}}</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugestão}one{# sugestão}other{# sugestões}}</translation>
+<translation id="2066915425250589881">pedir para que elas sejam excluídas</translation>
 <translation id="2068528718802935086">Bebês e crianças</translation>
 <translation id="2071156619270205202">Esse não é um número de cartão virtual.</translation>
 <translation id="2071692954027939183">As notificações foram bloqueadas automaticamente porque você não costuma permiti-las</translation>
@@ -578,6 +580,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2512101340618156538">Sem permissão (padrão)</translation>
 <translation id="2512413427717747692">Botão Definir o Chrome como navegador padrão: pressione Enter para definir o Chrome como o navegador padrão do sistema nas configurações do iOS</translation>
 <translation id="2515629240566999685">Verificar o sinal na sua área</translation>
+<translation id="2515761554693942801">Você escolheu fazer a verificação com o Touch ID em sites que usam o provedor <ph name="PROVIDER_ORIGIN" />. Esse provedor pode ter armazenado informações sobre sua forma de pagamento, mas você pode <ph name="LINK_TEXT" />.</translation>
 <translation id="2521385132275182522">Grampo na parte inferior direita</translation>
 <translation id="2521736961081452453">Criar formulário</translation>
 <translation id="2523886232349826891">Salvo apenas neste dispositivo</translation>
@@ -699,7 +702,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2854764410992194509">Provedores de acesso à Internet (ISPs)</translation>
 <translation id="2856444702002559011">Invasores podem estar tentando roubar suas informações de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por exemplo, senhas, mensagens ou cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2859806420264540918">Neste site, há exibição de anúncios invasivos ou enganosos</translation>
-<translation id="286512204874376891">O cartão virtual mascara o real para proteger você contra possíveis tentativas de fraude. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="287596039013813457">Amigável</translation>
 <translation id="28761159517501904">Filmes</translation>
 <translation id="2876489322757410363">Saindo do modo de navegação anônima para pagar usando um aplicativo externo. Continuar?</translation>
@@ -1327,7 +1329,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4607603470419975064">Botão para ver as dicas do Chrome. Pressione Enter para saber mais sobre os recursos do Chrome</translation>
 <translation id="4607608436550361748">Ver dicas do Chrome</translation>
 <translation id="4617273035598175554">Softwares de animação e gráficos</translation>
-<translation id="4627165777145349100">Mais sobre esta página</translation>
 <translation id="4627675673814409125">Não é possível definir essa política no nível de perfil do Chrome. Ela será ignorada.</translation>
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4631649115723685955">Reembolso vinculado</translation>
@@ -1492,6 +1493,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5051305769747448211">Shows de comédia ao vivo</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{Para enviar este arquivo usando o Compartilhar por proximidade, libere espaço (<ph name="DISK_SPACE_SIZE" />) no seu dispositivo}one{Para enviar este arquivo usando o Compartilhar por proximidade, libere espaço (<ph name="DISK_SPACE_SIZE" />) no seu dispositivo}other{Para enviar estes arquivos usando o Compartilhar por proximidade, libere espaço (<ph name="DISK_SPACE_SIZE" />) no seu dispositivo}}</translation>
 <translation id="5056549851600133418">Artigos para você</translation>
+<translation id="5060483733937416656">Você escolheu fazer a verificação com o Windows Hello em sites que usam o provedor <ph name="PROVIDER_ORIGIN" />. Esse provedor pode ter armazenado informações sobre sua forma de pagamento, mas você pode <ph name="LINK_TEXT" />.</translation>
 <translation id="5061227663725596739">Você quis dizer "<ph name="LOOKALIKE_DOMAIN" />"?</translation>
 <translation id="5066056036849835175">Histórico de impressão</translation>
 <translation id="5068234115460527047">Fundos de cobertura</translation>
@@ -1861,7 +1863,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6061154937977953833">Luta livre</translation>
 <translation id="6064217302520318294">Bloqueio de tela</translation>
 <translation id="6064602040258638498">Cupons e ofertas de descontos</translation>
-<translation id="6078813287646374487">Mostrar mais informações sobre esta página</translation>
 <translation id="6080696365213338172">Você acessou conteúdo usando um certificado fornecido pelo administrador. Os dados fornecidos a <ph name="DOMAIN" /> podem ser interceptados por seu administrador.</translation>
 <translation id="6087312102907839798">Pesquisas relacionadas</translation>
 <translation id="6094273045989040137">Anotar</translation>
@@ -2565,6 +2566,7 @@ Mais detalhes:
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8075736640322370409">Criar rapidamente um novo arquivo do Planilhas Google</translation>
 <translation id="8075898834294118863">Gerenciar configurações do site</translation>
+<translation id="8076492880354921740">Guias</translation>
 <translation id="8078141288243656252">Não é possível fazer anotações em documentos girados</translation>
 <translation id="8079031581361219619">Atualizar o site?</translation>
 <translation id="8081087320434522107">Sedãs</translation>
@@ -2786,6 +2788,7 @@ Mais detalhes:
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> é seu código para <ph name="ORIGIN" /></translation>
 <translation id="874918643257405732">Adicionar esta guia aos favoritos</translation>
 <translation id="8751426954251315517">Tente novamente mais tarde</translation>
+<translation id="8757526089434340176">Oferta do Google Pay disponível</translation>
 <translation id="8758885506338294482">Competições de videogames</translation>
 <translation id="8759274551635299824">Este cartão expirou</translation>
 <translation id="87601671197631245">Este site usa uma configuração de segurança desatualizada que pode expor suas informações (como senhas, mensagens ou números de cartão de crédito) quando elas forem enviadas para o site.</translation>
@@ -2987,6 +2990,7 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="988159990683914416">Versão do desenvolvedor</translation>
 <translation id="989988560359834682">Editar endereço</translation>
 <translation id="991413375315957741">sensores de luz ou movimento</translation>
+<translation id="992110854164447044">O cartão virtual oculta o físico para proteger você contra possíveis tentativas de fraude. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">Rosa</translation>
 <translation id="992432478773561401">O software "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede:

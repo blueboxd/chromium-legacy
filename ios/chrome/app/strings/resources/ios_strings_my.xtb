@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">လက်ရှိဒေတာများကို ဖျက်ပါ</translation>
 <translation id="1147031633655575115"><ph name="USER" /> အဖြစ် လက်မှတ်ထိုးဝင်ထားသည်</translation>
 <translation id="1154984953698510061">အခြားတဘ်များ ကြည့်ရန်</translation>
+<translation id="1161340988127985692">ရုပ်ဖျက်မုဒ်တွင် အခြားအက်ပ်များမှ လင့်ခ်များဖွင့်ရန် တောင်းဆိုပါ</translation>
 <translation id="1164064664035028907">လုံခြုံမှုမြင့်သည့် စကားဝှက်သုံးပါ-</translation>
 <translation id="1165039591588034296">အမှား</translation>
 <translation id="1172898394251786223">ရှေ့ အကွက်</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">တဘ် ရရှိထားသည်။</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> မိနစ်</translation>
 <translation id="3448016392200048164">မျက်နှာပြင်ခွဲပြသည့် မြင်ကွင်း</translation>
+<translation id="3450502512529866925">ဤစာမျက်နှာကို လိပ်စာမှတ်ရန်</translation>
 <translation id="345565170154308620">စကားဝှက်များ စီမံရန်…</translation>
 <translation id="3469166899695866866">ဒေါင်းလုဒ်ကို ရပ်လိုသလား။</translation>
 <translation id="3470502288861289375">ကူးယူနေ...</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">ယခု စစ်ကြည့်ရန်</translation>
 <translation id="4505980578794259603"><ph name="TIME" /> တွင် နောက်ဆုံးစစ်ဆေးခဲ့သည်။</translation>
 <translation id="4508750114462689118">လက်မှတ်ထိုးဝင်ထားသော ပရိုမိုးရှင်းများကို ပိတ်ရန်</translation>
+<translation id="4511669830082467224">Google ဖြင့် ပုံရှာရန်</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> တွင် သိမ်းဆည်းထားသော စကားဝှက်များအား ကြည့်ပြီး စီမံပါ</translation>
 <translation id="452750746583162491">သင်စင့်ခ်လုပ်ထားသည့် ဒေတာများကို ပြန်စစ်ခြင်း</translation>
 <translation id="4536418791685807335">ထပ်မံ၍ လက်မှတ်ထိုးဝင်ကြည့်ပါ။</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">ဤစကားဝှက်ကို ဖျက်ခြင်းဖြင့် <ph name="WEBSITE" /> ရှိ သင့်အကောင့်ကို ဖျက်မည်မဟုတ်ပါ။</translation>
 <translation id="5092117651143801290">စာမျက်နှာများကို နောက်မှဖတ်ရန် (သို့) အော့ဖ်လိုင်းဖတ်ရန် သိမ်းနိုင်သည်။ စာမျက်နှာအရှည်များ သိမ်းလိုခြင်း ရှိ၊ မရှိကို Chrome က မေးပါမည်။</translation>
 <translation id="5094827893301452931">Tweet ပြီးစီးပါပြီ။</translation>
+<translation id="509789154667432072">လိပ်စာထည့်ရန်</translation>
 <translation id="5118713593561876160">စိတ်ဝင်စားမှုများ</translation>
 <translation id="5118764316110575523">ပိတ်ထားသည်</translation>
 <translation id="5127805178023152808">စင့် ပိတ်ထား၏</translation>

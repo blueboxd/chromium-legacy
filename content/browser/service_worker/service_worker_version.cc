@@ -678,7 +678,7 @@ ServiceWorkerExternalRequestResult ServiceWorkerVersion::StartExternalRequest(
       ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST,
       base::BindOnce(&ServiceWorkerVersion::CleanUpExternalRequest, this,
                      request_uuid),
-      request_timeout, KILL_ON_TIMEOUT);
+      request_timeout, CONTINUE_ON_TIMEOUT);
   external_request_uuid_to_request_id_[request_uuid] = request_id;
   return ServiceWorkerExternalRequestResult::kOk;
 }
@@ -1029,12 +1029,15 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
   DCHECK(registration);
   DCHECK(worker_host_);
   DCHECK(service_worker_remote_);
+  blink::mojom::AncestorFrameType ancestor_frame_type =
+      registration->ancestor_frame_type();
   service_worker_remote_->InitializeGlobalScope(
       std::move(service_worker_host_),
       worker_host_->container_host()->CreateServiceWorkerRegistrationObjectInfo(
           std::move(registration)),
       worker_host_->container_host()->CreateServiceWorkerObjectInfoToSend(this),
-      fetch_handler_existence_, std::move(reporting_observer_receiver_));
+      fetch_handler_existence_, std::move(reporting_observer_receiver_),
+      ancestor_frame_type);
 
   is_endpoint_ready_ = true;
 }

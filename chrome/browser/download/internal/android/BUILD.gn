@@ -234,7 +234,7 @@ android_library("javatests") {
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/ui/messages/android:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_integration_test_support",
     "//components/browser_ui/modaldialog/android:java",
     "//components/embedder_support/android:util_java",
     "//components/feature_engagement:feature_engagement_java",
@@ -267,9 +267,7 @@ android_library("javatests") {
   resources_package = "org.chromium.chrome.browser.download.internal"
 }
 
-android_library("junit") {
-  # Skip platform checks since Robolectric depends on requires_android targets.
-  bypass_platform_checks = true
+robolectric_library("junit") {
   testonly = true
   sources = [
     "java/src/org/chromium/chrome/browser/download/home/filter/DeleteUndoOfflineItemFilterTest.java",

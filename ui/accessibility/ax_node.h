@@ -111,7 +111,7 @@ class AX_EXPORT AXNode final {
 
    protected:
     raw_ptr<const NodeType> parent_;
-    raw_ptr<NodeType> child_;
+    raw_ptr<NodeType, DanglingUntriaged> child_;
   };
 
   // The constructor requires a parent, id, and index in parent, but
@@ -701,6 +701,13 @@ class AX_EXPORT AXNode final {
   // Returns false if the |data_| is uninitialized or has been taken. Returns
   // true otherwise.
   bool IsDataValid() const;
+
+  // Returns true if the node supports the read-only attribute.
+  bool IsReadOnlySupported() const;
+
+  // Returns true if the node is marked read-only or is disabled. By default,
+  // all nodes that can't be edited are read-only.
+  bool IsReadOnlyOrDisabled() const;
 
  private:
   AXTableInfo* GetAncestorTableInfo() const;

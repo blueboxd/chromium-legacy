@@ -531,6 +531,24 @@ enum class PasswordEditUpdatedValues {
   kMaxValue = kBoth,
 };
 
+// Used to record usage of the note field in password editing / adding flows in
+// the settings UI. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class PasswordNoteAction {
+  // A new credential is added from settings, with the note field not empty.
+  kNoteAddedInAddDialog = 0,
+  // Note changed from empty to non-empty from the password edit dialog in
+  // settings.
+  kNoteAddedInEditDialog = 1,
+  // Note changed from non-empty to another non-empty from the password edit
+  // dialog in settings.
+  kNoteEditedInEditDialog = 2,
+  // Note changed from non-empty to empty from the password edit dialog in
+  // settings.
+  kNoteRemovedInEditDialog = 3,
+  kMaxValue = kNoteRemovedInEditDialog,
+};
+
 std::string GetPasswordAccountStorageUserStateHistogramSuffix(
     PasswordAccountStorageUserState user_state);
 
@@ -549,6 +567,34 @@ enum class PasswordAccountStorageUsageLevel {
   // The user has enabled Sync.
   kSyncing = 2,
 };
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PasswordViewPageInteractions {
+  // The credential row is clicked in the password list in settings.
+  kCredentialRowClicked = 0,
+  // The user opens the password view page to view an existing credential.
+  kCredentialFound = 1,
+  // The user opens the password view page to view an non-existing credential.
+  // This will close the settings password view page.
+  kCredentialNotFound = 2,
+  // The copy username button in settings password view page is clicked.
+  kUsernameCopyButtonClicked = 3,
+  // The copy password button in settings password view page is clicked.
+  kPasswordCopyButtonClicked = 4,
+  // The show password button in settings password view page is clicked and the
+  // password is revealed.
+  kPasswordShowButtonClicked = 5,
+  // The edit button in settings password view page is clicked.
+  kPasswordEditButtonClicked = 6,
+  // The delete button in settings password view page is clicked.
+  kPasswordDeleteButtonClicked = 7,
+  // The credential's username, password or note is edited in settings password
+  // view page.
+  kCredentialEdited = 8,
+  kMaxValue = kCredentialEdited,
+};
+
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
     PasswordAccountStorageUsageLevel usage_level);
 
@@ -733,6 +779,10 @@ void LogPasswordEditResult(IsUsernameChanged password_changed,
 void LogUserInteractionsWhenAddingCredentialFromSettings(
     AddCredentialFromSettingsUserInteractions
         add_credential_from_settings_user_interaction);
+
+// Log how the user interaction with the note field in password add / edit
+// dialogs.
+void LogPasswordNoteActionInSettings(PasswordNoteAction action);
 
 }  // namespace metrics_util
 

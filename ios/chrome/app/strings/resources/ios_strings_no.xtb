@@ -27,6 +27,7 @@ Søkemotoren din er <ph name="DSE_NAME" />. Se eventuelt instruksjonene deres om
 <translation id="1145536944570833626">Slett eksisterende data.</translation>
 <translation id="1147031633655575115">Pålogget som <ph name="USER" /></translation>
 <translation id="1154984953698510061">Se andre faner</translation>
+<translation id="1161340988127985692">Spør om linker fra andre apper skal åpnes i inkognitomodus</translation>
 <translation id="1164064664035028907">Bruk et sterkt passord:</translation>
 <translation id="1165039591588034296">Feil</translation>
 <translation id="1172898394251786223">Neste felt</translation>
@@ -406,6 +407,7 @@ Følg fremgangsmåten under:</translation>
 <translation id="4502566650163919158">Sjekk nå</translation>
 <translation id="4505980578794259603">Sist sjekket <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Lukk påloggingskampanjen</translation>
+<translation id="4511669830082467224">Søk etter bildet med Google</translation>
 <translation id="4526249700380860531">Se og administrer lagrede passord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Gjennomgå de synkroniserte dataene dine</translation>
 <translation id="4536418791685807335">Prøv å logge på igjen.</translation>

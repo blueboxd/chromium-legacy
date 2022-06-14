@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ash/crostini/crostini_types.mojom-forward.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/crostini/termina_installer.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_terminal_provider_registry.h"
 #include "chrome/browser/ash/vm_shutdown_observer.h"
 #include "chrome/browser/ash/vm_starting_observer.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -178,7 +180,7 @@ class CrostiniManager : public KeyedService,
     virtual void OnStageStarted(mojom::InstallerState stage) {}
     virtual void OnComponentLoaded(CrostiniResult result) {}
     virtual void OnDiskImageCreated(bool success,
-                                    vm_tools::concierge::DiskImageStatus status,
+                                    CrostiniResult result,
                                     int64_t disk_size_bytes) {}
     virtual void OnVmStarted(bool success) {}
     virtual void OnLxdStarted(CrostiniResult result) {}
@@ -243,8 +245,7 @@ class CrostiniManager : public KeyedService,
   // |callback| is called if the arguments are bad, or after the method call
   // finishes.
   using CreateDiskImageCallback =
-      base::OnceCallback<void(bool success,
-                              vm_tools::concierge::DiskImageStatus,
+      base::OnceCallback<void(CrostiniResult result,
                               const base::FilePath& disk_path)>;
   void CreateDiskImage(
       // The path to the disk image, including the name of
@@ -845,6 +846,17 @@ class CrostiniManager : public KeyedService,
   // Removes specified container id from running_containers list.
   void RemoveStoppedContainer(const ContainerId& container_id);
 
+  // Registers a container with GuestOsService's registries. No-op if it's
+  // already registered.
+  void RegisterContainer(const ContainerId& container_id);
+
+  // Unregisters a container from GuestOsService's registries. No-op if it's
+  // not registered.
+  void UnregisterContainer(const ContainerId& container_id);
+
+  // Unregisters all container from GuestOsService's registries.
+  void UnregisterAllContainers();
+
   Profile* profile_;
   std::string owner_id_;
 
@@ -947,6 +959,9 @@ class CrostiniManager : public KeyedService,
   bool install_termina_never_completes_ = false;
 
   std::unique_ptr<CrostiniSshfs> crostini_sshfs_;
+
+  base::flat_map<ContainerId, guest_os::GuestOsTerminalProviderRegistry::Id>
+      terminal_provider_ids_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

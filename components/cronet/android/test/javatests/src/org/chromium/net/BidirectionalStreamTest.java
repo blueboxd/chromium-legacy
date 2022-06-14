@@ -1151,8 +1151,9 @@ public class BidirectionalStreamTest {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
-    @DisabledTest(message = "crbug.com/1334040")
     public void testSimpleGetBufferUpdates() throws Exception {
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
+        mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
         callback.setAutoAdvance(false);
         // Since the method is "GET", the expected response body is also "GET".
@@ -1233,6 +1234,12 @@ public class BidirectionalStreamTest {
         assertEquals(5, readBuffer.limit());
 
         assertEquals(ResponseStep.ON_SUCCEEDED, callback.mResponseStep);
+
+        // TestRequestFinishedListener expects a single call to onRequestFinished. Here we
+        // explicitly wait for the call to happen to avoid a race condition with the other
+        // TestRequestFinishedListener created within runSimpleGetWithExpectedReceivedByteCount.
+        requestFinishedListener.blockUntilDone();
+        mCronetEngine.removeRequestFinishedListener(requestFinishedListener);
 
         // Make sure there are no other pending messages, which would trigger
         // asserts in TestBidirectionalCallback.

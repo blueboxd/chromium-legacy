@@ -133,6 +133,13 @@ template <class enumType>
 uint32_t EnumToBitmask(enumType outcome) {
   return 1 << static_cast<uint8_t>(outcome);
 }
+
+absl::optional<uint64_t> GetRendererId(HitTestResult& result) {
+  if (auto* input = DynamicTo<HTMLInputElement>(result.InnerNode()))
+    return input->UniqueRendererFormControlId();
+  return absl::nullopt;
+}
+
 }  // namespace
 
 ContextMenuController::ContextMenuController(Page* page) : page_(page) {}
@@ -484,12 +491,13 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.alt_text = html_element->AltText().Utf8();
   }
   if (!result.AbsoluteMediaURL().IsEmpty() ||
-      result.GetMediaStreamDescriptor()) {
+      result.GetMediaStreamDescriptor() || result.GetMediaSourceHandle()) {
     if (!result.AbsoluteMediaURL().IsEmpty())
       data.src_url = GURL(result.AbsoluteMediaURL());
 
     // We know that if absoluteMediaURL() is not empty or element has a media
-    // stream descriptor, then this is a media element.
+    // stream descriptor or element has a media source handle, then this is a
+    // media element.
     auto* media_element = To<HTMLMediaElement>(result.InnerNode());
     if (IsA<HTMLVideoElement>(*media_element)) {
       // A video element should be presented as an audio element when it has an
@@ -750,6 +758,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   data.input_field_type = ComputeInputFieldType(result);
   data.selection_rect = ComputeSelectionRect(selected_frame);
   data.source_type = source_type;
+  data.field_renderer_id = GetRendererId(result);
 
   const bool from_touch = source_type == kMenuSourceTouch ||
                           source_type == kMenuSourceLongPress ||

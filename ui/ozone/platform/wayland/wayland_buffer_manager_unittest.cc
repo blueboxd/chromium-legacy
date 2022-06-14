@@ -118,8 +118,8 @@ class WaylandBufferManagerTest : public WaylandTest {
                                     false,
                                     kAugmentedSurfaceNotSupportedVersion);
 
-    window_->set_update_visual_size_immediately(false);
-    window_->set_apply_pending_state_on_update_visual_size(false);
+    window_->set_update_visual_size_immediately_for_testing(false);
+    window_->set_apply_pending_state_on_update_visual_size_for_testing(false);
   }
 
  protected:
@@ -147,22 +147,23 @@ class WaylandBufferManagerTest : public WaylandTest {
     } else {
       EXPECT_CALL(*callback, Run(_))
           .Times(1)
-          .WillRepeatedly(::testing::Invoke([this, callback](
-                                                std::string error_string) {
-            channel_destroyed_error_message_ = error_string;
+          .WillRepeatedly(
+              ::testing::Invoke([this, callback](std::string error_string) {
+                channel_destroyed_error_message_ = error_string;
 
-            manager_host_->OnChannelDestroyed();
+                manager_host_->OnChannelDestroyed();
 
-            manager_host_->SetTerminateGpuCallback(callback->Get());
+                manager_host_->SetTerminateGpuCallback(callback->Get());
 
-            auto interface_ptr = manager_host_->BindInterface();
-            // Recreate the gpu side manager (the production code does the
-            // same).
-            buffer_manager_gpu_ = std::make_unique<WaylandBufferManagerGpu>();
-            buffer_manager_gpu_->Initialize(
-                std::move(interface_ptr), {}, false, true, false,
-                kAugmentedSurfaceNotSupportedVersion);
-          }));
+                auto interface_ptr = manager_host_->BindInterface();
+                // Recreate the gpu side manager (the production code does the
+                // same).
+                buffer_manager_gpu_ =
+                    std::make_unique<WaylandBufferManagerGpu>();
+                buffer_manager_gpu_->Initialize(
+                    std::move(interface_ptr), {}, false, true, false,
+                    kAugmentedSurfaceNotSupportedVersion);
+              }));
     }
   }
 
@@ -1063,9 +1064,15 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
 
     Sync();
 
+    auto* xdg_surface = mock_surface->xdg_surface();
+    ASSERT_TRUE(xdg_surface);
+    ASSERT_FALSE(temp_window->IsSurfaceConfigured());
+
     ProcessCreatedBufferResourcesWithExpectation(1u /* expected size */,
                                                  false /* fail */);
 
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(_, _, _, _)).Times(0);
+    EXPECT_CALL(*xdg_surface, AckConfigure(_)).Times(0);
     EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(0);
     EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
     EXPECT_CALL(*mock_surface, Commit()).Times(0);
@@ -1074,15 +1081,17 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
         widget, kDmabufBufferId, kDmabufBufferId, window_->GetBoundsInPixels(),
         kDefaultScale, window_->GetBoundsInPixels());
     Sync();
+    testing::Mock::VerifyAndClearExpectations(mock_surface);
 
-    DCHECK(mock_surface->xdg_surface());
-    ActivateSurface(mock_surface->xdg_surface());
-
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, 800, 600)).Times(1);
+    EXPECT_CALL(*xdg_surface, AckConfigure(_)).Times(1);
     EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
     EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
     EXPECT_CALL(*mock_surface, Commit()).Times(1);
 
+    ActivateSurface(mock_surface->xdg_surface());
     Sync();
+    testing::Mock::VerifyAndClearExpectations(mock_surface);
 
     window_->SetPointerFocus(false);
     temp_window.reset();

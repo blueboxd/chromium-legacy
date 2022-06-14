@@ -304,11 +304,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kInputTargetClientHighPriority;
 // feature param.
 BLINK_COMMON_EXPORT extern const base::Feature kResamplingScrollEvents;
 
-// Enables the device-memory, resource-width, viewport-width and DPR client
-// hints to be sent to third-party origins if the first-party has opted in to
-// receiving client hints, regardless of Permissions Policy.
-BLINK_COMMON_EXPORT extern const base::Feature kAllowClientHintsToThirdParty;
-
 // Enables filtering of predicted scroll events on compositor thread.
 // Uses the kFilterName* values in ui_base_features.h as the 'filter' feature
 // param.
@@ -598,6 +593,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kMaxUnthrottledTimeoutNestingLevel;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kMaxUnthrottledTimeoutNestingLevelParam;
+BLINK_COMMON_EXPORT void ClearUnthrottledNestedTimeoutOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsMaxUnthrottledTimeoutNestingLevelEnabled();
 BLINK_COMMON_EXPORT int GetMaxUnthrottledTimeoutNestingLevel();
 
@@ -769,6 +765,15 @@ BLINK_COMMON_EXPORT extern const base::Feature kSimulateClickOnAXFocus;
 
 // If enabled, allows the use of WebSQL in non-secure contexts.
 BLINK_COMMON_EXPORT extern const base::Feature kWebSQLNonSecureContextAccess;
+
+// Switch to temporary turn back on file system url navigation.
+// TODO(https://crbug.com/1332598): Remove this feature.
+BLINK_COMMON_EXPORT extern const base::Feature kFileSystemUrlNavigation;
+
+// Early exit when the style or class attribute of an element is set to the same
+// value as before.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kEarlyExitOnNoopClassOrStyleChange;
 
 }  // namespace features
 }  // namespace blink

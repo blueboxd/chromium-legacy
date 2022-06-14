@@ -1941,11 +1941,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
           resource_timing_info_map_.Take(resource)) {
     if (resource->GetResponse().ShouldPopulateResourceTiming()) {
       PopulateAndAddResourceTimingInfo(resource, info, response_end);
-      auto receiver = Context().TakePendingWorkerTimingReceiver(
-          resource->GetResponse().RequestId());
-      info->SetWorkerTimingReceiver(std::move(receiver));
-      if (resource->Options().request_initiator_context == kDocumentContext)
-        Context().AddResourceTiming(*info);
+      Context().AddResourceTiming(*info);
     }
   }
 
@@ -2001,8 +1997,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
     PopulateAndAddResourceTimingInfo(resource, info, finish_time);
-    if (resource->Options().request_initiator_context == kDocumentContext)
-      Context().AddResourceTiming(*info);
+    Context().AddResourceTiming(*info);
   }
 
   resource->VirtualTimePauser().UnpauseVirtualTime();

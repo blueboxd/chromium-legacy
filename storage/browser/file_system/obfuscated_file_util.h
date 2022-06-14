@@ -232,6 +232,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   bool is_incognito() { return is_incognito_; }
 
   ObfuscatedFileUtilDelegate* delegate() { return delegate_.get(); }
+  // Not owned.
+  SandboxFileSystemBackendDelegate* sandbox_delegate() {
+    return sandbox_delegate_;
+  }
 
  private:
   using FileId = SandboxDirectoryDatabase::FileId;
@@ -360,7 +364,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   std::set<std::string> known_type_strings_;
 
   // Not owned.
-  raw_ptr<SandboxFileSystemBackendDelegate> sandbox_delegate_;
+  raw_ptr<SandboxFileSystemBackendDelegate, DanglingUntriaged>
+      sandbox_delegate_;
 
   std::unique_ptr<ObfuscatedFileUtilDelegate> delegate_;
 };

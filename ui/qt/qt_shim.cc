@@ -11,7 +11,10 @@
 #include <QIcon>
 #include <QMimeDatabase>
 #include <QMimeType>
+#include <QPainter>
 #include <QPalette>
+#include <QStyle>
+#include <QStyleOptionTitleBar>
 
 namespace qt {
 
@@ -146,12 +149,56 @@ SkColor BrushColor(const QBrush& brush) {
   }
 }
 
+QPalette::ColorRole ColorTypeToColorRole(ColorType type) {
+  switch (type) {
+    case ColorType::kWindowBg:
+      return QPalette::Window;
+    case ColorType::kWindowFg:
+      return QPalette::WindowText;
+    case ColorType::kHighlightBg:
+      return QPalette::Highlight;
+    case ColorType::kHighlightFg:
+      return QPalette::HighlightedText;
+    case ColorType::kEntryBg:
+      return QPalette::Base;
+    case ColorType::kEntryFg:
+      return QPalette::Text;
+    case ColorType::kButtonBg:
+      return QPalette::Button;
+    case ColorType::kButtonFg:
+      return QPalette::ButtonText;
+    case ColorType::kLight:
+      return QPalette::Light;
+    case ColorType::kMidlight:
+      return QPalette::Midlight;
+    case ColorType::kMidground:
+      return QPalette::Mid;
+    case ColorType::kDark:
+      return QPalette::Dark;
+    case ColorType::kShadow:
+      return QPalette::Shadow;
+  }
+}
+
+QPalette::ColorGroup ColorStateToColorGroup(ColorState state) {
+  switch (state) {
+    case ColorState::kNormal:
+      return QPalette::Normal;
+    case ColorState::kDisabled:
+      return QPalette::Disabled;
+    case ColorState::kInactive:
+      return QPalette::Inactive;
+  }
+}
+
 }  // namespace
 
 QtShim::QtShim(QtInterface::Delegate* delegate, int* argc, char** argv)
     : delegate_(delegate), app_(*argc, argv) {
   connect(&app_, SIGNAL(fontChanged(const QFont&)), this,
           SLOT(FontChanged(const QFont&)));
+  connect(&app_, SIGNAL(paletteChanged(const QPalette&)), this,
+          SLOT(PaletteChanged(const QPalette&)));
 }
 
 QtShim::~QtShim() = default;
@@ -202,18 +249,46 @@ Image QtShim::GetIconForContentType(const String& content_type,
   return {};
 }
 
-SkColor QtShim::GetColor(ColorRole role) const {
-  auto palette = app_.palette();
-  switch (role) {
-    case ColorRole::kWindowBg:
-      return BrushColor(palette.brush(QPalette::ColorRole::Window));
-    case ColorRole::kWindowFg:
-      return BrushColor(palette.brush(QPalette::ColorRole::WindowText));
-  }
+SkColor QtShim::GetColor(ColorType role, ColorState state) const {
+  return BrushColor(app_.palette().brush(ColorStateToColorGroup(state),
+                                         ColorTypeToColorRole(role)));
 }
 
 void QtShim::FontChanged(const QFont& font) {
   delegate_->FontChanged();
+}
+
+void QtShim::PaletteChanged(const QPalette& palette) {
+  delegate_->ThemeChanged();
+}
+
+Image QtShim::DrawHeader(int width,
+                         int height,
+                         SkColor default_color,
+                         bool is_active,
+                         bool use_custom_frame) const {
+  QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
+  image.fill(default_color);
+  QPainter painter(&image);
+  if (use_custom_frame) {
+    // Chrome renders it's own window border, so clip the border out by
+    // rendering the titlebar larger than the image.
+    constexpr int kBorderWidth = 5;
+
+    QStyleOptionTitleBar opt;
+    opt.rect = QRect(-kBorderWidth, -kBorderWidth, width + 2 * kBorderWidth,
+                     height + 2 * kBorderWidth);
+    if (is_active)
+      opt.titleBarState = QStyle::State_Active;
+    app_.style()->drawComplexControl(QStyle::CC_TitleBar, &opt, &painter,
+                                     nullptr);
+  } else {
+    painter.fillRect(
+        0, 0, width, height,
+        app_.palette().brush(is_active ? QPalette::Normal : QPalette::Active,
+                             QPalette::Window));
+  }
+  return {width, height, 1.0f, Buffer(image.bits(), image.sizeInBytes())};
 }
 
 }  // namespace qt

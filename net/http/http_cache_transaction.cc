@@ -161,13 +161,7 @@ static bool HeaderMatches(const HttpRequestHeaders& headers,
 //-----------------------------------------------------------------------------
 
 HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
-    : initial_request_(nullptr),
-      request_(nullptr),
-      priority_(priority),
-      cache_(cache->GetWeakPtr()),
-      entry_(nullptr),
-      new_response_(nullptr),
-      websocket_handshake_stream_base_create_helper_(nullptr) {
+    : priority_(priority), cache_(cache->GetWeakPtr()) {
   TRACE_EVENT1("net", "HttpCacheTransaction::Transaction", "priority",
                RequestPriorityToString(priority));
   static_assert(HttpCache::Transaction::kNumValidationHeaders ==
@@ -316,6 +310,10 @@ bool HttpCache::Transaction::IsReadyToRestartForAuth() {
 int HttpCache::Transaction::Read(IOBuffer* buf,
                                  int buf_len,
                                  CompletionOnceCallback callback) {
+  TRACE_EVENT_WITH_FLOW1(
+      "net", "HttpCacheTransaction::Read", net_log().source().id,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "buf_len", buf_len);
+
   DCHECK_EQ(next_state_, STATE_NONE);
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
@@ -1432,9 +1430,12 @@ int HttpCache::Transaction::DoAddToEntryComplete(int result) {
                          "result", result);
   net_log_.EndEventWithNetErrorCode(NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY,
                                     result);
-  const base::TimeDelta entry_lock_wait =
-      TimeTicks::Now() - entry_lock_waiting_since_;
-  UMA_HISTOGRAM_TIMES("HttpCache.EntryLockWait", entry_lock_wait);
+  if (cache_ && cache_->GetCurrentBackend() &&
+      cache_->GetCurrentBackend()->GetCacheType() != MEMORY_CACHE) {
+    const base::TimeDelta entry_lock_wait =
+        TimeTicks::Now() - entry_lock_waiting_since_;
+    base::UmaHistogramTimes("HttpCache.AddTransactionToEntry", entry_lock_wait);
+  }
 
   entry_lock_waiting_since_ = TimeTicks();
   DCHECK(new_entry_);
@@ -3271,9 +3272,10 @@ int HttpCache::Transaction::DoConnectedCallback() {
     return OK;
   }
 
+  auto type = response_.was_fetched_via_proxy ? TransportType::kCachedFromProxy
+                                              : TransportType::kCached;
   return connected_callback_.Run(
-      TransportInfo(TransportType::kCached, response_.remote_endpoint, ""),
-      io_callback_);
+      TransportInfo(type, response_.remote_endpoint, ""), io_callback_);
 }
 
 int HttpCache::Transaction::DoConnectedCallbackComplete(int result) {

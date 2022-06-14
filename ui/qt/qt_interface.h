@@ -59,9 +59,27 @@ enum class FontHinting {
   kFull,
 };
 
-enum class ColorRole {
+enum class ColorType {
   kWindowBg,
   kWindowFg,
+  kHighlightBg,
+  kHighlightFg,
+  kEntryBg,
+  kEntryFg,
+  kButtonBg,
+  kButtonFg,
+
+  kLight,
+  kMidlight,
+  kDark,
+  kMidground,
+  kShadow,
+};
+
+enum class ColorState {
+  kNormal,
+  kDisabled,
+  kInactive,
 };
 
 struct FontRenderParams {
@@ -93,6 +111,7 @@ class QtInterface {
     virtual ~Delegate() = default;
 
     virtual void FontChanged() = 0;
+    virtual void ThemeChanged() = 0;
   };
 
   QtInterface() = default;
@@ -105,7 +124,12 @@ class QtInterface {
   virtual FontDescription GetFontDescription() const = 0;
   virtual Image GetIconForContentType(const String& content_type,
                                       int size) const = 0;
-  virtual SkColor GetColor(ColorRole role) const = 0;
+  virtual SkColor GetColor(ColorType role, ColorState state) const = 0;
+  virtual Image DrawHeader(int width,
+                           int height,
+                           SkColor default_color,
+                           bool is_active,
+                           bool use_custom_frame) const = 0;
 };
 
 }  // namespace qt

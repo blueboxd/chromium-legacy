@@ -73,6 +73,11 @@ chromium-metrics-reviews@google.com.
                enabled"/>
 </variants>
 
+<variants name="DIPSRedirectType">
+  <variant name="Client" summary="client-side"/>
+  <variant name="Server" summary="server-side"/>
+</variants>
+
 <variants name="GridTabSwitcherMessageTypes">
   <variant name="PriceAlertsMessageCard"
       summary="the promo message for price notifications"/>
@@ -126,6 +131,16 @@ chromium-metrics-reviews@google.com.
 
   <variant name="UtilityProcess" summary=""/>
   <variant name="WorkerProcess" summary=""/>
+</variants>
+
+<variants name="UrlParamFilterClassificationRole">
+  <variant name=".Destination"
+      summary="parameters classified as having the destination role"/>
+  <variant name=".Invalid"
+      summary="parameters with an unknown role, likely indicating a
+               compatibility issue"/>
+  <variant name=".Source"
+      summary="parameters classified as having the source role"/>
 </variants>
 
 <variants name="VoiceIntentTargetVariant">
@@ -5187,7 +5202,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Eche.Connection.Duration" units="ms"
-    expires_after="2022-05-30">
+    expires_after="2022-10-04">
   <owner>samchiu@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -5245,6 +5260,17 @@ chromium-metrics-reviews@google.com.
     Events logged in the Eche stream state. Records when a stream is started and
     initialized after the user interacts with a PhoneHub notification or the
     recent app by clicking it to launch the app streaming window.
+  </summary>
+</histogram>
+
+<histogram name="Eche.StreamEvent.ConnectionFail" enum="ConnectionFailReason"
+    expires_after="M107">
+  <owner>paulzchen@google.com</owner>
+  <owner>andychou@google.com</owner>
+  <owner>exo-core-eng@google.com</owner>
+  <summary>
+    Events logged the root cause of Eche connection failure. Records when
+    signaling timeout.
   </summary>
 </histogram>
 

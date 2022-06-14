@@ -64,8 +64,8 @@ class EcheAppManager : public KeyedService {
                  std::unique_ptr<secure_channel::PresenceMonitorClient>
                      presence_monitor_client,
                  LaunchAppHelper::LaunchEcheAppFunction,
-                 LaunchAppHelper::CloseEcheAppFunction,
-                 LaunchAppHelper::LaunchNotificationFunction);
+                 LaunchAppHelper::LaunchNotificationFunction,
+                 LaunchAppHelper::CloseNotificationFunction);
   ~EcheAppManager() override;
 
   EcheAppManager(const EcheAppManager&) = delete;

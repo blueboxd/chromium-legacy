@@ -1028,7 +1028,10 @@ gfx::SizeF LocalFrameView::LargeViewportSizeForViewportUnits() const {
     // controls height, compensating for page scale as well, since we want to
     // use the viewport with browser controls hidden for vh (to match Safari).
     int viewport_width = frame_->GetPage()->GetVisualViewport().Size().width();
-    if (frame_->IsMainFrame() && layout_size.width() && viewport_width) {
+    // TODO(bokan): IsOutermostMainFrame may need to be reevaluated for
+    // portals.
+    if (frame_->IsOutermostMainFrame() && layout_size.width() &&
+        viewport_width) {
       float page_scale_at_layout_width = viewport_width / layout_size.width();
       layout_size.Enlarge(0, (browser_controls.TotalHeight() -
                               browser_controls.TotalMinHeight()) /
@@ -1294,15 +1297,17 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       frame_->GetDocument()->Lifecycle().LifecyclePostponed())
     return;
 
-  if (frame_->IsMainFrame())
+  if (frame_->IsOutermostMainFrame())
     layout_shift_tracker_->NotifyViewportSizeChanged();
 
   auto* layout_view = GetLayoutView();
   if (layout_view) {
-    // If this is the main frame, we might have got here by hiding/showing the
-    // top controls.  In that case, layout won't be triggered, so we need to
-    // clamp the scroll offset here.
-    if (GetFrame().IsMainFrame()) {
+    // If this is the outermost main frame, we might have got here by
+    // hiding/showing the top controls. In that case, layout won't be
+    // triggered, so we need to clamp the scroll offset here.
+    // TODO(bokan): IsOutermostMainFrame may need to be reevaluated for
+    // portals.
+    if (GetFrame().IsOutermostMainFrame()) {
       layout_view->Layer()->UpdateSize();
       if (auto* scrollable_area = layout_view->GetScrollableArea())
         scrollable_area->ClampScrollOffsetAfterOverflowChange();
@@ -1936,6 +1941,8 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
       auto& context = element->EnsureDisplayLockContext();
       context.SetRequestedState(EContentVisibility::kAuto);
     }
+    DEFERRED_SHAPING_VLOG(1)
+        << "Deferred " << deferred_to_be_locked_.size() << " elements";
     deferred_to_be_locked_.resize(0);
     UseCounter::Count(document, WebFeature::kDeferredShapingWorked);
   }
@@ -2384,6 +2391,10 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
 void LocalFrameView::UpdateLifecyclePhasesInternal(
     DocumentLifecycle::LifecycleState target_state) {
+  // TODO(https://crbug.com/1196853): Switch to ScriptForbiddenScope once
+  // failures are fixed.
+  BlinkLifecycleScopeWillBeScriptForbidden forbid_script;
+
   // RunScrollTimelineSteps must not run more than once.
   bool should_run_scroll_timeline_steps = true;
 
@@ -2486,7 +2497,10 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     // observations led to content-visibility intersection changing visibility
     // state synchronously (which happens on the first intersection
     // observeration of a context).
-    needs_to_repeat_lifecycle = RunResizeObserverSteps(target_state);
+    {
+      ScriptForbiddenScope::AllowUserAgentScript allow_script;
+      needs_to_repeat_lifecycle = RunResizeObserverSteps(target_state);
+    }
     // Only run the rest of the steps here if resize observer is done.
     if (needs_to_repeat_lifecycle)
       continue;
@@ -2498,7 +2512,10 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     if (needs_to_repeat_lifecycle)
       continue;
 
-    needs_to_repeat_lifecycle = RunPostLayoutIntersectionObserverSteps();
+    {
+      ScriptForbiddenScope::AllowUserAgentScript allow_script;
+      needs_to_repeat_lifecycle = RunPostLayoutIntersectionObserverSteps();
+    }
     if (!needs_to_repeat_lifecycle)
       break;
   }
@@ -2528,6 +2545,9 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 }
 
 bool LocalFrameView::RunScrollTimelineSteps() {
+  // TODO(crbug.com/1329159): Determine if the source for a view timeline has
+  // changed, which may in turn require a fresh style/layout cycle.
+
   DCHECK_GE(Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean);
   bool re_run_lifecycles = false;
   ForAllNonThrottledLocalFrameViews([&re_run_lifecycles](
@@ -2740,6 +2760,7 @@ bool LocalFrameView::AnyFrameIsPrintingOrPaintingPreview() {
 }
 
 void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
+  DCHECK(ScriptForbiddenScope::WillBeScriptForbidden());
   DCHECK(LocalFrameTreeAllowsThrottling());
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPaintLifecyclePhase");
   // While printing or capturing a paint preview of a document, the paint walk
@@ -4394,6 +4415,9 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
     // so painting the tree should just clear the previous painted output.
     DCHECK(!IsUpdatingLifecycle());
     ForceThrottlingScope force_throttling(*this);
+    // TODO(https://crbug.com/1196853): Switch to ScriptForbiddenScope once
+    // failures are fixed.
+    BlinkLifecycleScopeWillBeScriptForbidden forbid_script;
     RunPaintLifecyclePhase(PaintBenchmarkMode::kNormal);
   }
 
@@ -4884,6 +4908,9 @@ void LocalFrameView::RunPaintBenchmark(int repeat_count,
       // quantization when the time is very small.
       base::LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
       do {
+        // TODO(https://crbug.com/1196853): Switch to ScriptForbiddenScope once
+        // failures are fixed.
+        BlinkLifecycleScopeWillBeScriptForbidden forbid_script;
         RunPaintLifecyclePhase(mode);
         timer.NextLap();
       } while (!timer.HasTimeLimitExpired());

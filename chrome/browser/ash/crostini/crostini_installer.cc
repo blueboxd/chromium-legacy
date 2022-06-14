@@ -318,10 +318,8 @@ void CrostiniInstaller::OnComponentLoaded(CrostiniResult result) {
       LOG(ERROR) << "Network connection dropped while downloading cros-termina";
       HandleError(InstallerError::kErrorOffline);
     } else if (result == CrostiniResult::NEED_UPDATE) {
-      LOG(ERROR) << "Need to update device before installing termina-dlc";
       HandleError(InstallerError::kNeedUpdate);
     } else {
-      LOG(ERROR) << "Failed to install the cros-termina component";
       HandleError(InstallerError::kErrorLoadingTermina);
     }
     return;
@@ -329,16 +327,15 @@ void CrostiniInstaller::OnComponentLoaded(CrostiniResult result) {
   UpdateInstallingState(InstallerState::kCreateDiskImage);
 }
 
-void CrostiniInstaller::OnDiskImageCreated(
-    bool success,
-    vm_tools::concierge::DiskImageStatus status,
-    int64_t disk_size_available) {
+void CrostiniInstaller::OnDiskImageCreated(bool success,
+                                           CrostiniResult result,
+                                           int64_t disk_size_available) {
   DCHECK_EQ(installing_state_, InstallerState::kCreateDiskImage);
   if (!success) {
     HandleError(InstallerError::kErrorCreatingDiskImage);
     return;
   }
-  if (status == vm_tools::concierge::DiskImageStatus::DISK_STATUS_EXISTS) {
+  if (result == CrostiniResult::CREATE_DISK_IMAGE_ALREADY_EXISTS) {
     require_cleanup_ = false;
   }
   UpdateInstallingState(InstallerState::kStartTerminaVm);
@@ -421,7 +418,6 @@ void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(
   ansible_management_service_observation_.Reset();
 
   if (!success) {
-    LOG(ERROR) << "Failed to configure container";
     CrostiniManager::GetForProfile(profile_)->RemoveCrostini(
         kCrostiniDefaultVmName,
         base::BindOnce(
@@ -433,10 +429,6 @@ void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(
 
 void CrostiniInstaller::OnCrostiniRemovedAfterConfigurationFailed(
     CrostiniResult result) {
-  if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to remove Crostini after failed configuration";
-  }
-
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
     LOG(ERROR) << "Network connection dropped while configuring container";
     HandleError(InstallerError::kErrorOffline);
@@ -450,8 +442,6 @@ void CrostiniInstaller::OnContainerStarted(CrostiniResult result) {
          installing_state_ == InstallerState::kConfigureContainer);
 
   if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to start container with error code: "
-               << static_cast<int>(result);
     HandleError(InstallerError::kErrorStartingContainer);
     return;
   }
@@ -611,8 +601,6 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
     if (state_ != State::ERROR && result != CrostiniResult::RESTART_ABORTED &&
         result != CrostiniResult::RESTART_REQUEST_CANCELLED) {
       DCHECK_EQ(state_, State::INSTALLING);
-      LOG(ERROR) << "Failed to restart Crostini with error code: "
-                 << static_cast<int>(result);
       HandleError(InstallerError::kErrorUnknown);
     }
     return;

@@ -1,5 +1,3 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac11 Mac12 Win Win7 Win10 Win11 ]
-# tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
 # No need to run Virtual test suite plz-dedicated-worker here
@@ -44,7 +42,7 @@ crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-
 crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-security-check-same-origin-domain.sub.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/preload/preload-referrer-policy.html [ Timeout ]
+crbug.com/626703 external/wpt/service-workers/cache-storage/crashtests/cache-response-clone.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-move-into-script-disabled-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/wasm-unsafe-eval/postMessage-wasm-module.html [ Timeout ]
 crbug.com/626703 virtual/wasm-csp/external/wpt/content-security-policy/wasm-unsafe-eval/postMessage-wasm-module.html [ Timeout ]

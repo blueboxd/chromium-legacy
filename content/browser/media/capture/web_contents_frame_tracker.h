@@ -58,6 +58,7 @@ class CONTENT_EXPORT WebContentsFrameTracker final
 
     // Adjust the associated RenderWidgetHostView's rendering scale for capture.
     virtual void SetScaleOverrideForCapture(float scale) = 0;
+    virtual float GetScaleOverrideForCapture() const = 0;
   };
 
   // NOTE on lifetime: |device| should outlive the WebContentsFrameTracker. The
@@ -84,6 +85,17 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // during capture. Note that if there are multiple capturers, a "first past
   // the post" system is used and the first capturer's preferred size is set.
   gfx::Size CalculatePreferredSize(const gfx::Size& capture_size);
+
+  // Determines the preferred capture scale factor based on the content size and
+  // current conditions. This method requires the |content_size|, which is the
+  // resulting frame size from the first captured frame, and thus has an
+  // implicit relationship with |CalculatePreferredSize|, which is used to help
+  // size the backing WebContents before any frames are captured. Ideally, the
+  // result of calculating the preferred size results in a content size that
+  // does not need any scaling, however in practice this is not always true and
+  // we need to adjust the DPI of the WebContents to get an appropriately sized
+  // VideoFrame.
+  float CalculatePreferredScaleFactor(const gfx::Size& content_size);
 
   // WebContentsObserver overrides.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
@@ -127,6 +139,10 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // Noop on Android.
   void SetTargetView(gfx::NativeView view);
 
+  // Helper for setting the capture scale override, should always update the
+  // context at the same time.
+  void SetCaptureScaleOverride(float new_value);
+
   // |device_| may be dereferenced only by tasks run by |device_task_runner_|.
   const base::WeakPtr<WebContentsVideoCaptureDevice> device_;
 
@@ -138,7 +154,8 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // will be posted to the UI thread before the MouseCursorOverlayController
   // deleter task.
 #if !BUILDFLAG(IS_ANDROID)
-  raw_ptr<MouseCursorOverlayController> cursor_controller_ = nullptr;
+  raw_ptr<MouseCursorOverlayController, DanglingUntriaged> cursor_controller_ =
+      nullptr;
 #endif
 
   // We may not have a frame sink ID target at all times.
@@ -170,6 +187,9 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // so that it can be undone and/or re-applied when the RenderFrameHost
   // changes.
   float capture_scale_override_ = 1.0f;
+
+  // The last set capture size.
+  gfx::Size capture_size_;
 };
 
 }  // namespace content

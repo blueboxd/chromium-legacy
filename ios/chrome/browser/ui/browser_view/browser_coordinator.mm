@@ -43,7 +43,8 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+delegates.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller_helper.h"
+#import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
@@ -102,10 +103,16 @@
 #import "ios/chrome/browser/ui/safe_browsing/safe_browsing_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
+#import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/text_fragments/text_fragments_coordinator.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
+#import "ios/chrome/browser/ui/toolbar/primary_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
+#import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/webui/net_export_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -122,11 +129,16 @@
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
+#import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+// Duration of the toolbar animation.
+constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
+    base::Milliseconds(300);
 
 @interface BrowserCoordinator () <ActivityServiceCommands,
                                   BrowserCoordinatorCommands,
@@ -305,6 +317,11 @@
       _scopedWebStateListObservation;
   PrerenderService* _prerenderService;
   BubblePresenter* _bubblePresenter;
+  ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
+  PrimaryToolbarCoordinator* _primaryToolbarCoordinator;
+  SecondaryToolbarCoordinator* _secondaryToolbarCoordinator;
+  TabStripCoordinator* _tabStripCoordinator;
+  TabStripLegacyCoordinator* _legacyTabStripCoordinator;
 }
 
 #pragma mark - ChromeCoordinator
@@ -314,6 +331,44 @@
   if (self = [super initWithBaseViewController:viewController
                                        browser:browser]) {
     _dispatcher = browser->GetCommandDispatcher();
+
+    ChromeBrowserState* browserState = browser->GetBrowserState();
+
+    _prerenderService =
+        PrerenderServiceFactory::GetForBrowserState(browserState);
+    if (!browserState->IsOffTheRecord()) {
+      DCHECK(_prerenderService);
+      _prerenderService->SetDelegate(self);
+    }
+
+    _bubblePresenter =
+        [[BubblePresenter alloc] initWithBrowserState:browserState];
+
+    _primaryToolbarCoordinator =
+        [[PrimaryToolbarCoordinator alloc] initWithBrowser:browser];
+
+    _secondaryToolbarCoordinator =
+        [[SecondaryToolbarCoordinator alloc] initWithBrowser:browser];
+
+    _toolbarCoordinatorAdaptor =
+        [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:_dispatcher];
+
+    [_toolbarCoordinatorAdaptor
+        addToolbarCoordinator:_primaryToolbarCoordinator];
+    [_toolbarCoordinatorAdaptor
+        addToolbarCoordinator:_secondaryToolbarCoordinator];
+
+    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+      if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+        _tabStripCoordinator =
+            [[TabStripCoordinator alloc] initWithBrowser:browser];
+      } else {
+        _legacyTabStripCoordinator =
+            [[TabStripLegacyCoordinator alloc] initWithBrowser:browser];
+        _legacyTabStripCoordinator.animationWaitDuration =
+            kLegacyFullscreenControllerToolbarAnimationDuration.InSecondsF();
+      }
+    }
   }
   return self;
 }
@@ -473,29 +528,22 @@
 - (void)createViewController {
   DCHECK(self.browserContainerCoordinator.viewController);
 
-  BrowserViewControllerDependencyFactory* factory =
-      [[BrowserViewControllerDependencyFactory alloc]
-          initWithBrowser:self.browser];
+  BrowserViewControllerHelper* browserViewControllerHelper =
+      [[BrowserViewControllerHelper alloc] init];
+  KeyCommandsProvider* keyCommandsProvider = [[KeyCommandsProvider alloc] init];
 
-  ChromeBrowserState* browserState = self.browser->GetBrowserState();
-  _prerenderService = PrerenderServiceFactory::GetForBrowserState(browserState);
-  if (!browserState->IsOffTheRecord()) {
-    DCHECK(_prerenderService);
-    _prerenderService->SetDelegate(self);
-  }
-
-  _bubblePresenter =
-      [[BubblePresenter alloc] initWithBrowserState:browserState];
+  BrowserViewControllerDependencies dependencies =
+      [self createBrowserViewControllerDependencies];
 
   _viewController = [[BrowserViewController alloc]
                      initWithBrowser:self.browser
-                   dependencyFactory:factory
       browserContainerViewController:self.browserContainerCoordinator
                                          .viewController
+         browserViewControllerHelper:browserViewControllerHelper
                           dispatcher:self.dispatcher
-                    prerenderService:_prerenderService
-                     bubblePresenter:_bubblePresenter
-          downloadManagerCoordinator:self.downloadManagerCoordinator];
+                 keyCommandsProvider:keyCommandsProvider
+                        dependencies:dependencies];
+
   WebNavigationBrowserAgent::FromBrowser(self.browser)
       ->SetDelegate(_viewController);
 
@@ -558,12 +606,6 @@
     [self.followIPHCoordinator start];
   }
 
-  self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  self.formInputAccessoryCoordinator.navigator = self;
-  [self.formInputAccessoryCoordinator start];
-
   self.SafariDownloadCoordinator = [[SafariDownloadCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
@@ -623,24 +665,6 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser];
 
-  self.infobarBannerOverlayContainerCoordinator =
-      [[OverlayContainerCoordinator alloc]
-          initWithBaseViewController:self.viewController
-                             browser:self.browser
-                            modality:OverlayModality::kInfobarBanner];
-  [self.infobarBannerOverlayContainerCoordinator start];
-  self.viewController.infobarBannerOverlayContainerViewController =
-      self.infobarBannerOverlayContainerCoordinator.viewController;
-
-  self.infobarModalOverlayContainerCoordinator =
-      [[OverlayContainerCoordinator alloc]
-          initWithBaseViewController:self.viewController
-                             browser:self.browser
-                            modality:OverlayModality::kInfobarModal];
-  [self.infobarModalOverlayContainerCoordinator start];
-  self.viewController.infobarModalOverlayContainerViewController =
-      self.infobarModalOverlayContainerCoordinator.viewController;
-
   if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
     self.safeBrowsingCoordinator = [[SafeBrowsingCoordinator alloc]
         initWithBaseViewController:self.viewController
@@ -652,6 +676,36 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   [self.textFragmentsCoordinator start];
+
+  // TODO(crbug.com/1334188): Refactor this coordinator so it doesn't directly
+  // access the BVC's view.
+  self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  self.formInputAccessoryCoordinator.navigator = self;
+  [self.formInputAccessoryCoordinator start];
+
+  // TODO(crbug.com/1334188): Refactor this coordinator so it doesn't dirctly
+  // access the BVC's view.
+  self.infobarModalOverlayContainerCoordinator =
+      [[OverlayContainerCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser
+                            modality:OverlayModality::kInfobarModal];
+  [self.infobarModalOverlayContainerCoordinator start];
+  self.viewController.infobarModalOverlayContainerViewController =
+      self.infobarModalOverlayContainerCoordinator.viewController;
+
+  // TODO(crbug.com/1334188): Refactor this coordinator so it doesn't directly
+  // access the BVC's view.
+  self.infobarBannerOverlayContainerCoordinator =
+      [[OverlayContainerCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser
+                            modality:OverlayModality::kInfobarBanner];
+  [self.infobarBannerOverlayContainerCoordinator start];
+  self.viewController.infobarBannerOverlayContainerViewController =
+      self.infobarBannerOverlayContainerCoordinator.viewController;
 }
 
 // Stops child coordinators.
@@ -793,6 +847,21 @@
         [[IncognitoReauthMediator alloc] initWithConsumer:browserViewController
                                               reauthAgent:reauthAgent];
   }
+}
+
+- (BrowserViewControllerDependencies)createBrowserViewControllerDependencies {
+  BrowserViewControllerDependencies dependencies;
+  dependencies.prerenderService = _prerenderService;
+  dependencies.bubblePresenter = _bubblePresenter;
+  dependencies.downloadManagerCoordinator = self.downloadManagerCoordinator;
+  dependencies.toolbarInterface = _toolbarCoordinatorAdaptor;
+  dependencies.UIUpdater = _toolbarCoordinatorAdaptor;
+  dependencies.primaryToolbarCoordinator = _primaryToolbarCoordinator;
+  dependencies.secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
+  dependencies.tabStripCoordinator = _tabStripCoordinator;
+  dependencies.legacyTabStripCoordinator = _legacyTabStripCoordinator;
+
+  return dependencies;
 }
 
 #pragma mark - ActivityServiceCommands
@@ -1318,7 +1387,7 @@
   }
 }
 
-// Install delegates for |webState|.
+// Install delegates for `webState`.
 - (void)installDelegatesForWebState:(web::WebState*)webState {
   if (AutofillTabHelper::FromWebState(webState)) {
     AutofillTabHelper::FromWebState(webState)->SetBaseViewController(
@@ -1345,7 +1414,7 @@
   }
 }
 
-// Uninstalls delegates for |webState|.
+// Uninstalls delegates for `webState`.
 - (void)uninstallDelegatesForWebState:(web::WebState*)webState {
   if (AutofillTabHelper::FromWebState(webState)) {
     AutofillTabHelper::FromWebState(webState)->SetBaseViewController(nil);

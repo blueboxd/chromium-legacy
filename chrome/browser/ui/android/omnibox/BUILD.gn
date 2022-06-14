@@ -93,6 +93,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/BasicSuggestionProcessor.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/SuggestionViewProperties.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/SuggestionViewViewBinder.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/carousel/BaseCarouselSuggestionItemViewBuilder.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/carousel/BaseCarouselSuggestionProcessor.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/carousel/BaseCarouselSuggestionSelectionManager.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/carousel/BaseCarouselSuggestionView.java",
@@ -109,7 +110,6 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/header/HeaderView.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/header/HeaderViewBinder.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/header/HeaderViewProperties.java",
-    "java/src/org/chromium/chrome/browser/omnibox/suggestions/mostvisited/ExploreIconProvider.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/mostvisited/MostVisitedTilesProcessor.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/pedal/PedalSuggestionProcessor.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/pedal/PedalSuggestionView.java",
@@ -235,7 +235,7 @@ android_library("javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base/test:test_support_java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -347,9 +347,7 @@ proto_java_library("partner_location_descriptor_proto_java") {
   sources = [ "$proto_path/partner_location_descriptor.proto" ]
 }
 
-android_library("junit") {
-  # Skip platform checks since Robolectric depends on requires_android targets.
-  bypass_platform_checks = true
+robolectric_library("junit") {
   testonly = true
 
   sources = [
@@ -376,6 +374,7 @@ android_library("junit") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/carousel/BaseCarouselSuggestionSelectionManagerUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/carousel/BaseCarouselSuggestionViewBinderUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/header/HeaderViewBinderUnitTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/mostvisited/MostVisitedTilesProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/tail/AlignmentManagerUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/voice/AssistantVoiceSearchServiceUnitTest.java",
   ]
@@ -401,7 +400,7 @@ android_library("junit") {
     "//chrome/browser/ui/android/theme:java",
     "//chrome/browser/ui/android/toolbar:java",
     "//chrome/browser/util:java",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//components/browser_ui/site_settings/android:java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/theme/android:java_resources",
@@ -409,7 +408,9 @@ android_library("junit") {
     "//components/content_settings/android:content_settings_enums_java",
     "//components/embedder_support/android:util_java",
     "//components/externalauth/android:java",
+    "//components/favicon/android:java",
     "//components/omnibox/browser:browser_java",
+    "//components/omnibox/browser:test_util_java",
     "//components/search_engines/android:java",
     "//components/signin/public/android:java",
     "//components/signin/public/android:signin_java_test_support",

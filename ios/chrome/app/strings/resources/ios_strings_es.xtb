@@ -65,6 +65,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="1434356225517321998">Tu navegador está administrado. <ph name="BEGIN_LINK" />Detalles<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Ocultar contraseña</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementos</translation>
+<translation id="1450170672351507823">La protección estándar está activada. Para tener aún más seguridad, usa la protección mejorada.</translation>
 <translation id="149095475893949513">Este sitio web está intentando descargar un perfil de configuración.</translation>
 <translation id="1491277525950327607">Toca dos veces para activar o desactivar esta opción</translation>
 <translation id="1492417797159476138">Ya has guardado ese nombre de usuario en este sitio web</translation>
@@ -162,6 +163,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="236977714248711277">Los sitios no pueden usar cookies para mejorar tu experiencia de navegación; por ejemplo, para mantener tu sesión iniciada o recordar los artículos de tu carrito de la compra.
 
 Los sitios no pueden usar cookies para ver tu actividad de navegación en otros sitios con el objetivo de, por ejemplo, personalizar anuncios.</translation>
+<translation id="2375243552872247702">Recibe contenido personalizado</translation>
 <translation id="2381405137052800939">Configuración básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2421004566762153674">Bloquear cookies de terceros</translation>
@@ -404,6 +406,7 @@ Sigue los pasos que se indican a continuación:</translation>
 <translation id="4502566650163919158">Comprobar ahora</translation>
 <translation id="4505980578794259603">Última comprobación: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Cierra el inicio de sesión en la promoción</translation>
+<translation id="4511669830082467224">Buscar imagen con Google</translation>
 <translation id="4526249700380860531">Consulta y gestiona las contraseñas guardadas en la página <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Revisar los datos sincronizados</translation>
 <translation id="4536418791685807335">Prueba a iniciar sesión de nuevo.</translation>
@@ -601,6 +604,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="6136914049981179737">Hace segundos</translation>
 <translation id="6144589619057374135">Abrir ${url} en incógnito</translation>
 <translation id="6149061208933997199">Utilizar contraseña</translation>
+<translation id="6152406514676263192">Habilita la sincronización para ver contenido más relevante según tus intereses.</translation>
 <translation id="6159839020698489198">opcional</translation>
 <translation id="6177442314419606057">Buscar en Chrome</translation>
 <translation id="6184086493125982861">Mostrar pestañas</translation>
@@ -738,6 +742,7 @@ Mientras estás en modo Incógnito, los sitios no pueden usar tus cookies para v
 <translation id="7099761977003084116">Pestañas recientes</translation>
 <translation id="7102005569666697658">Descargando… (<ph name="FILE_SIZE" />)</translation>
 <translation id="7108338896283013870">Ocultar</translation>
+<translation id="7108762695052995889">Visitar sitio</translation>
 <translation id="7133798577887235672">Nombre completo</translation>
 <translation id="7136892417564438900">La cámara no está disponible</translation>
 <translation id="7153999225810839758">Tiempo de lectura: <ph name="TIME" /> minutos</translation>
@@ -748,6 +753,7 @@ Mientras estás en modo Incógnito, los sitios no pueden usar tus cookies para v
 <translation id="7189598951263744875">Compartir...</translation>
 <translation id="7192050974311852563">Iniciar registro</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
+<translation id="7207023858769244910">Habilita la sincronización para ver contenido basado en tus intereses.</translation>
 <translation id="7207383424303353046">Novedad: Abre sitios en Chrome automáticamente configurándolo como tu aplicación de navegador predeterminada. <ph name="BEGIN_LINK" />Abrir Configuración<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Nombre de la tarjeta no válido</translation>
 <translation id="722454870747268814">Nueva pestaña de Incógnito</translation>

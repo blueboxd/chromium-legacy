@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/args.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
+import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/libaom/options.gni")
@@ -81,10 +82,11 @@ declare_args() {
 
   # Enable inclusion of the HEVC/H265 parser and also enable HEVC/H265 decoding
   # with hardware acceleration assist. Enabled by default for fuzzer builds,
-  # ChromeOS builds with protected content support, Windows and Mac.
+  # ChromeOS builds with protected content support, Windows, Mac, and Android.
   enable_hevc_parser_and_hw_decoder =
       proprietary_codecs &&
-      (use_fuzzing_engine || use_chromeos_protected_media || is_win || is_mac)
+      (use_fuzzing_engine || use_chromeos_protected_media || is_win || is_mac ||
+       is_android)
 }
 
 # Use another declare_args() to allow dependence on
@@ -156,8 +158,8 @@ declare_args() {
   # Enables the use of library CDMs that implements the interface defined at
   # media/cdm/api/content_decryption_module.h. If true, the actually library CDM
   # will be hosted in the mojo CDM service running in the CDM (utility) process.
-  enable_library_cdms = (is_linux && !is_chromecast) || is_chromeos_lacros ||
-                        is_chromeos_ash || is_mac || is_win
+  # Used for all desktop platforms except Fuchsia (crbug.com/1265618).
+  enable_library_cdms = toolkit_views && !is_fuchsia && !is_chromecast
 }
 
 declare_args() {

@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">ቀን መቁጠሪያ</translation>
 <translation id="1153356358378277386">የተጣመሩ መሣሪያዎች</translation>
 <translation id="1165712434476988950">ዝማኔውን ለመተግበር የመሣሪያ ዳግም ማስጀመር ያስፈልጋል።</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />፣ <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">የእርስዎ USB-C ገመድ ከማሳያዎች ጋር በትክክል ላይገናኝ ይችላል</translation>
 <translation id="1175572348579024023">ሸብልል</translation>
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
@@ -55,7 +56,6 @@
 <translation id="1247519845643687288">የቅርብ ጊዜ መተግበሪያዎች</translation>
 <translation id="1252999807265626933">ኃይል ከ<ph name="POWER_SOURCE" /> በመሙላት ላይ</translation>
 <translation id="1255033239764210633">የአየር ሁኔታው ምንድነው?</translation>
-<translation id="1262870540683925850">ከ<ph name="START_TIME" /> እስከ <ph name="END_TIME" />፣ <ph name="TIME_ZONE" />፣ <ph name="EVENT_SUMMARY" />። በGoogle ቀን መቁጠሪያ ውስጥ ለተጨማሪ ዝርዝሮች ይምረጡ።</translation>
 <translation id="1267032506238418139">የአቋራጭ ለውጥ</translation>
 <translation id="1269405891096105529">መለዋወጫ በእንግዳ ሁነታ አይደገፍም</translation>
 <translation id="1270290102613614947">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ተሰናክሏል</translation>
@@ -121,6 +121,7 @@
 <translation id="1620510694547887537">ካሜራ</translation>
 <translation id="1632985212731562677">የመዳረሻ መቀየሪያ በቅንብሮች &gt; ተደራሽነት ውስጥ ሊሰናከል ይችላል።</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> መሣሪያዎች</translation>
+<translation id="1639239467298939599">በመጫን ላይ</translation>
 <translation id="1654477262762802994">የድምጽ መጠይቅ ይጀምሩ</translation>
 <translation id="1668469839109562275">አብሮገነብ VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ቀርቷል</translation>
@@ -236,6 +237,7 @@
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2367186422933365202">ወደ የእርስዎ Chromebook መግባት አልተቻለም</translation>
 <translation id="2369165858548251131">«Hello» በቻይንኛ</translation>
+<translation id="2375445874393996153">በማያ ገጼ ላይ ያለውን ነገር በGoogle ረዳት መፈለግ ከአሁን በኋላ አይደገፍም።</translation>
 <translation id="2390318262976603432">የቋንቋ ቅንብሮች</translation>
 <translation id="240006516586367791">የሚዲያ መቆጣጠሪያዎች</translation>
 <translation id="2402411679569069051">የእርስዎን Chromebook ለመክፈት የጣት አሻራዎን ይጠቀሙ ወይም ስልክዎን ይክፈቱ</translation>
@@ -1045,7 +1047,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
 <translation id="7180611975245234373">አድስ</translation>
-<translation id="718361511487535372">በGoogle የቀን መቁጠሪያ ውስጥ ክፈት</translation>
 <translation id="7188494361780961876">ምናሌ ወደ የማያ ገጹ የላይኛው ግራ ጥግ ተወስዷል።</translation>
 <translation id="7189412385142492784">ቬኑስ ምን ያህል ይርቃል</translation>
 <translation id="7198435252016571249">ካሜራ ወደ ታችኛው ቀኝ ጥግ ገጥሟል። ከስርዓት ወለል ጋር ግጭት።</translation>

@@ -377,13 +377,13 @@ class ServiceWorkerInternalsUIBrowserTest : public ContentBrowserTest {
       observer.observe(elementToObserve, options);
     )";
     return ExecJs(
-        web_contents()->GetMainFrame(),
+        web_contents()->GetPrimaryMainFrame(),
         JsReplace(kScript, "^(.this.)?(", target, ")$", expected, title),
         EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1);
   }
 
   int ServiveWorkerCountFromInternalUI() {
-    return EvalJs(web_contents()->GetMainFrame(),
+    return EvalJs(web_contents()->GetPrimaryMainFrame(),
                   R"(document.querySelectorAll(
                     "div#serviceworker-list \
                     > div:not([style='display: none;']) \
@@ -434,7 +434,7 @@ class ServiceWorkerInternalsUIBrowserTest : public ContentBrowserTest {
      });
      result;
     )";
-    return EvalJs(web_contents()->GetMainFrame(),
+    return EvalJs(web_contents()->GetPrimaryMainFrame(),
                   JsReplace(kScript, base::NumberToString(registration_id),
                             "^(.this.)?(", target, ")$"),
                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1)
@@ -464,7 +464,7 @@ class ServiceWorkerInternalsUIBrowserTest : public ContentBrowserTest {
       });
     )";
     EXPECT_TRUE(ExecJs(
-        web_contents()->GetMainFrame(),
+        web_contents()->GetPrimaryMainFrame(),
         JsReplace(kScript, base::NumberToString(registration_id), option),
         EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
   }
@@ -520,7 +520,7 @@ class ServiceWorkerInternalsUIBrowserTest : public ContentBrowserTest {
  private:
   base::test::ScopedFeatureList feature_list_;
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
-  raw_ptr<Shell> active_shell_ = shell();
+  raw_ptr<Shell, DanglingUntriaged> active_shell_ = shell();
 };
 
 // Tests

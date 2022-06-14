@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/login/ui/arrow_button_view.h"
+#include "ash/login/ui/kiosk_app_default_message.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
@@ -276,6 +277,15 @@ bool LoginScreenTestApi::IsSystemInfoShown() {
 }
 
 // static
+bool LoginScreenTestApi::IsKioskDefaultMessageShown() {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi test_api(lock_screen_test.contents_view());
+  return test_api.kiosk_default_message() &&
+         test_api.kiosk_default_message()->GetWidget() &&
+         test_api.kiosk_default_message()->GetWidget()->IsVisible();
+}
+
+// static
 bool LoginScreenTestApi::IsKioskInstructionBubbleShown() {
   LoginShelfView* view = GetLoginShelfView();
   return view->GetKioskInstructionBubbleForTesting() &&
@@ -464,6 +474,11 @@ int64_t LoginScreenTestApi::GetUiUpdateCount() {
 bool LoginScreenTestApi::LaunchApp(const std::string& app_id) {
   LoginShelfView* view = GetLoginShelfView();
   return view && view->LaunchAppForTesting(app_id);
+}
+
+// static
+bool LoginScreenTestApi::ClickAppsButton() {
+  return SimulateButtonPressedForTesting(LoginShelfView::kApps);
 }
 
 // static

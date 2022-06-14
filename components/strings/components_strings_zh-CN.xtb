@@ -27,6 +27,7 @@
 <translation id="1043382569739532657">助学金、奖学金与经济资助</translation>
 <translation id="1048785276086539861">当您修改注释时，此文档会恢复为单页视图</translation>
 <translation id="1050038467049342496">关闭其他应用</translation>
+<translation id="1053959602163383901">您已选择在使用 <ph name="PROVIDER_ORIGIN" /> 的网站上通过一种身份验证器服务来验证身份。此提供商可能已存储您的付款方式信息，不过您可以<ph name="LINK_TEXT" />相应信息。</translation>
 <translation id="1055184225775184556">撤消添加(&amp;U)</translation>
 <translation id="1056663316309890343">照片软件</translation>
 <translation id="1056898198331236512">警告</translation>
@@ -422,6 +423,7 @@
 <translation id="2053111141626950936">系统不会翻译<ph name="LANGUAGE" />网页。</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{如果此控件已开启且处于有效状态，Chrome 会确定您近期的浏览活动与哪个大型用户群组或“同类群组”最接近。广告主可为群组选择广告，您的浏览活动记录会私密地保留在您的设备上。系统会按每天 1 次的频率更新您所属的群组。}=1{如果此控件已开启且处于有效状态，Chrome 会确定您近期的浏览活动与哪个大型用户群组或“同类群组”最接近。广告主可为群组选择广告，您的浏览活动记录会私密地保留在您的设备上。系统会按每天 1 次的频率更新您所属的群组。}other{如果此控件已开启且处于有效状态，Chrome 会确定您近期的浏览活动与哪个大型用户群组或“同类群组”最接近。广告主可为群组选择广告，您的浏览活动记录会私密地保留在您的设备上。系统会按每 {NUM_DAYS} 天 1 次的频率更新您所属的群组。}}</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 条建议}other{# 条建议}}</translation>
+<translation id="2066915425250589881">请求删除</translation>
 <translation id="2068528718802935086">婴幼儿</translation>
 <translation id="2071156619270205202">这张卡的卡号无法用作虚拟卡号。</translation>
 <translation id="2071692954027939183">由于您通常不允许显示通知，系统已自动屏蔽通知</translation>
@@ -578,6 +580,7 @@
 <translation id="2512101340618156538">不得使用（默认）</translation>
 <translation id="2512413427717747692">将 Chrome 设为 默认浏览器的按钮，按下 Enter 键即可在 iOS 设置中将 Chrome 设置为系统的默认浏览器</translation>
 <translation id="2515629240566999685">检查您所在区域的网络信号</translation>
+<translation id="2515761554693942801">您已选择在使用 <ph name="PROVIDER_ORIGIN" /> 的网站上通过触控 ID 来验证身份。此提供商可能已存储您的付款方式信息，不过您可以<ph name="LINK_TEXT" />相应信息。</translation>
 <translation id="2521385132275182522">钉装（右下角）</translation>
 <translation id="2521736961081452453">创建表单</translation>
 <translation id="2523886232349826891">仅会保存在此设备上</translation>
@@ -699,7 +702,6 @@
 <translation id="2854764410992194509">互联网服务提供商 (ISP)</translation>
 <translation id="2856444702002559011">攻击者可能会试图从 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 窃取您的信息（例如：密码、通讯内容或信用卡信息）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2859806420264540918">此网站展示过侵扰性或误导性广告。</translation>
-<translation id="286512204874376891">虚拟卡会伪装成实体卡，从而保护您免遭欺诈。<ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="287596039013813457">友好</translation>
 <translation id="28761159517501904">影片</translation>
 <translation id="2876489322757410363">将要退出无痕模式，以便通过外部应用付款。是否继续？</translation>
@@ -1323,7 +1325,6 @@
 <translation id="4607603470419975064">“查看 Chrome 提示”按钮，按 Enter 键即可了解各项 Chrome 功能</translation>
 <translation id="4607608436550361748">查看 Chrome 提示</translation>
 <translation id="4617273035598175554">图形与动画软件</translation>
-<translation id="4627165777145349100">详细了解此页面</translation>
 <translation id="4627675673814409125">此政策无法在 Chrome 个人资料级别设置，因而会被忽略。</translation>
 <translation id="4628948037717959914">照片</translation>
 <translation id="4631649115723685955">已关联返现</translation>
@@ -1488,6 +1489,7 @@
 <translation id="5051305769747448211">相声/小品</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{若要使用“附近分享”功能发送这个文件，请先在设备上释放空间 (<ph name="DISK_SPACE_SIZE" />)}other{若要使用“附近分享”功能发送这些文件，请先在设备上释放空间 (<ph name="DISK_SPACE_SIZE" />)}}</translation>
 <translation id="5056549851600133418">为您推荐的文章</translation>
+<translation id="5060483733937416656">您已选择在使用 <ph name="PROVIDER_ORIGIN" /> 的网站上通过 Windows Hello 来验证身份。此提供商可能已存储您的付款方式信息，不过您可以<ph name="LINK_TEXT" />相应信息。</translation>
 <translation id="5061227663725596739">您是不是要前往 <ph name="LOOKALIKE_DOMAIN" />？</translation>
 <translation id="5066056036849835175">打印记录</translation>
 <translation id="5068234115460527047">对冲基金</translation>
@@ -1857,7 +1859,6 @@
 <translation id="6061154937977953833">摔跤</translation>
 <translation id="6064217302520318294">屏幕锁定</translation>
 <translation id="6064602040258638498">优惠券与折扣优惠</translation>
-<translation id="6078813287646374487">显示此页面的更多相关信息</translation>
 <translation id="6080696365213338172">您已使用管理员提供的证书访问了内容，因此管理员可以拦截您提供给 <ph name="DOMAIN" /> 的数据。</translation>
 <translation id="6087312102907839798">相关搜索</translation>
 <translation id="6094273045989040137">注释</translation>
@@ -2560,6 +2561,7 @@
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8075736640322370409">快速创建新的 Google 表格</translation>
 <translation id="8075898834294118863">管理网站设置</translation>
+<translation id="8076492880354921740">标签页</translation>
 <translation id="8078141288243656252">无法在旋转后添加注释</translation>
 <translation id="8079031581361219619">重新加载此网站？</translation>
 <translation id="8081087320434522107">轿车</translation>
@@ -2781,6 +2783,7 @@
 <translation id="8742371904523228557">您的 <ph name="ORIGIN" /> 验证码是 <ph name="ONE_TIME_CODE" /></translation>
 <translation id="874918643257405732">为此标签页添加书签</translation>
 <translation id="8751426954251315517">请稍后重试</translation>
+<translation id="8757526089434340176">有可用的 Google Pay 优惠</translation>
 <translation id="8758885506338294482">竞技类视频游戏</translation>
 <translation id="8759274551635299824">此信用卡已失效</translation>
 <translation id="87601671197631245">此网站使用的安全性配置已过时，这可能会导致您的信息（例如密码、消息或信用卡卡号）在发送至此网站的过程中遭到泄露。</translation>
@@ -2981,6 +2984,7 @@
 <translation id="988159990683914416">开发者内部版本</translation>
 <translation id="989988560359834682">修改地址</translation>
 <translation id="991413375315957741">移动传感器或光传感器</translation>
+<translation id="992110854164447044">使用虚拟卡可隐藏您的实体卡信息，保护您免遭潜在欺诈活动的威胁。<ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">粉色</translation>
 <translation id="992432478773561401">“<ph name="SOFTWARE_NAME" />”没有正确地安装到您的计算机或网络上：

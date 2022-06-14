@@ -29,10 +29,10 @@
         "port_name": "mac-mac10.15",
         "specifiers": ["Mac10.15", "Release"]
     },
-    "Mac11 Tests (dbg)": {
+    "Mac12 Tests (dbg)": {
         "main": "chromium.mac",
-        "port_name": "mac-mac11",
-        "specifiers": ["Mac11", "Debug"]
+        "port_name": "mac-mac12",
+        "specifiers": ["Mac12", "Debug"]
     },
     "Mac11 Tests": {
         "main": "chromium.fyi",
@@ -43,11 +43,6 @@
         "main": "chromium.fyi",
         "port_name": "mac-mac11-arm64",
         "specifiers": ["Mac11-arm64", "Release"]
-    },
-    "Win7 Tests (1)": {
-        "main": "chromium.win",
-        "port_name": "win-win7",
-        "specifiers": ["Win7", "Release"]
     },
     "Win10 Tests x64": {
         "main": "chromium.win",
@@ -133,12 +128,6 @@
         "main": "tryserver.blink",
         "port_name": "mac-mac12-arm64",
         "specifiers": ["Mac12-arm64", "Release"],
-        "is_try_builder": true
-    },
-    "win7-blink-rel": {
-        "main": "tryserver.blink",
-        "port_name": "win-win7",
-        "specifiers": ["Win7", "Release"],
         "is_try_builder": true
     },
     "win10.20h2-blink-rel": {

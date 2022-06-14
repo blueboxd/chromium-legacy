@@ -41,11 +41,8 @@ generate_jni("jni_headers") {
   sources = [ "java/src/org/chromium/chrome/browser/usb/UsbBridge.java" ]
 }
 
-android_library("junit") {
+robolectric_library("junit") {
   testonly = true
-
-  # Platform checks are broken for Robolectric. See https://crbug.com/1071638.
-  bypass_platform_checks = true
 
   sources = [
     "junit/src/org/chromium/chrome/browser/usb/UsbNotificationManagerTest.java",
@@ -56,7 +53,7 @@ android_library("junit") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android:chrome_java_unit_test_support",
     "//components/browser_ui/notifications/android:test_support_java",
     "//components/url_formatter/android:url_formatter_java",
     "//third_party/android_deps:robolectric_all_java",

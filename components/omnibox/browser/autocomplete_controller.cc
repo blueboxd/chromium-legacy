@@ -20,6 +20,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -106,29 +107,28 @@ bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
          match.type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
-// Returns if rich autocompletion had (or would have had for counterfactual
-// variations) an impact; i.e. whether the top scoring rich autocompleted
-// suggestion outscores the top scoring default suggestion.
-bool TopMatchWouldHaveBeenRichAutocompletion(const AutocompleteResult& result) {
+// Returns which rich autocompletion type, if any, had (or would have had for
+// counterfactual variations) an impact; i.e. whether the top scoring rich
+// autocompleted suggestion outscores the top scoring default suggestion.
+AutocompleteMatch::RichAutocompletionType TopMatchRichAutocompletionType(
+    const AutocompleteResult& result) {
   // Trigger rich autocompletion logging if the highest scoring match has
-  // |rich_autocompletion_triggered| set to true indicating it is, or could have
-  // been, rich autocompleted. It's not sufficient to check the default match
-  // since counterfactual variations will not allow rich autocompleted matches
-  // to be the default match.
+  // |rich_autocompletion_triggered| set indicating it is, or could have been
+  // rich autocompleted. It's not sufficient to check the default match since
+  // counterfactual variations will not allow rich autocompleted matches to be
+  // the default match.
   if (result.empty())
-    return false;
+    return AutocompleteMatch::RichAutocompletionType::kNone;
 
   auto get_sort_key = [](const AutocompleteMatch& match) {
-    return std::make_tuple(match.allowed_to_be_default_match ||
-                               match.rich_autocompletion_triggered,
-                           match.relevance);
+    return std::make_tuple(
+        match.allowed_to_be_default_match ||
+            match.rich_autocompletion_triggered !=
+                AutocompleteMatch::RichAutocompletionType::kNone,
+        match.relevance);
   };
 
-  auto top_match = std::max_element(
-      result.begin(), result.end(),
-      [&](const AutocompleteMatch& match1, const AutocompleteMatch& match2) {
-        return get_sort_key(match1) < get_sort_key(match2);
-      });
+  auto top_match = base::ranges::max_element(result, {}, get_sort_key);
   return top_match->rich_autocompletion_triggered;
 }
 
@@ -301,8 +301,10 @@ AutocompleteController::AutocompleteController(
   }
   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
     providers_.push_back(new BuiltinProvider(provider_client_.get()));
-  if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK)
-    providers_.push_back(new HistoryQuickProvider(provider_client_.get()));
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK) {
+    history_quick_provider_ = new HistoryQuickProvider(provider_client_.get());
+    providers_.push_back(history_quick_provider_.get());
+  }
   if (provider_types & AutocompleteProvider::TYPE_KEYWORD) {
     keyword_provider_ = new KeywordProvider(provider_client_.get(), this);
     providers_.push_back(keyword_provider_.get());
@@ -452,11 +454,12 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   expire_timer_.Stop();
   stop_timer_.Stop();
 
-  // Start the new query.
+  // Start the new query. Starter Pack engines in keyword mode only run a subset
+  // of the providers, so call `GetProvidersToRun()` to determine the subset or
+  // if we run all providers.
   in_start_ = true;
   base::TimeTicks start_time = base::TimeTicks::Now();
-  Providers providers_to_run = GetProvidersToRun();
-  for (const auto& provider : providers_to_run) {
+  for (const auto& provider : GetProvidersToRun()) {
     base::TimeTicks provider_start_time = base::TimeTicks::Now();
     provider->Start(input_, minimal_changes);
     if (!input.want_asynchronous_matches())
@@ -534,7 +537,10 @@ void AutocompleteController::StartPrefetch(const AutocompleteInput& input) {
     return;
   }
 
-  for (auto provider : providers_) {
+  // Starter Pack engines in keyword mode only run a subset of the providers, so
+  // call `GetProvidersToRun()` to determine the subset or if we run all
+  // providers (the Default case).
+  for (auto provider : GetProvidersToRun()) {
     provider->StartPrefetch(input);
   }
 }
@@ -850,8 +856,16 @@ void AutocompleteController::UpdateResult(
   if (notify_default_match)
     last_time_default_match_changed_ = base::TimeTicks::Now();
 
-  if (TopMatchWouldHaveBeenRichAutocompletion(result_)) {
-    provider_client_->GetOmniboxTriggeredFeatureService()->TriggerFeature(
+  // Mark the rich autocompletion feature triggered if the top match, or
+  // would-be-top-match if rich autocompletion is counterfactual enabled, is
+  // rich autocompleted.
+  const auto top_match_rich_autocompletion_type =
+      TopMatchRichAutocompletionType(result_);
+  provider_client_->GetOmniboxTriggeredFeatureService()
+      ->RichAutocompletionTypeTriggered(top_match_rich_autocompletion_type);
+  if (top_match_rich_autocompletion_type !=
+      AutocompleteMatch::RichAutocompletionType::kNone) {
+    provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
         OmniboxTriggeredFeatureService::Feature::kRichAutocompletion);
   }
 
@@ -1161,13 +1175,25 @@ AutocompleteController::Providers AutocompleteController::GetProvidersToRun() {
     const TemplateURL* keyword_turl =
         KeywordProvider::GetSubstitutingTemplateURLForInput(
             template_url_service_, &keyword_input);
-    if (keyword_turl &&
-        keyword_turl->starter_pack_id() ==
-            TemplateURLStarterPackData::StarterPackID::kBookmarks) {
-      Providers provider_subset;
+    Providers provider_subset;
+    if (keyword_turl && keyword_turl->starter_pack_id() > 0) {
+      // Search provider and keyword provider are still run because we would
+      // lose the suggestion the keyword chip is attached to otherwise. Search
+      // provider suggestions are curbed for starter pack scopes in
+      // `SearchProvider::ShouldCurbDefaultSuggestions()`.
       provider_subset.push_back(search_provider_.get());
       provider_subset.push_back(keyword_provider_.get());
-      provider_subset.push_back(bookmark_provider_.get());
+
+      switch (keyword_turl->starter_pack_id()) {
+        case TemplateURLStarterPackData::kBookmarks:
+          provider_subset.push_back(bookmark_provider_.get());
+          break;
+        case TemplateURLStarterPackData::kHistory:
+          provider_subset.push_back(history_quick_provider_.get());
+          provider_subset.push_back(history_url_provider_.get());
+          break;
+      }
+
       return provider_subset;
     }
   }

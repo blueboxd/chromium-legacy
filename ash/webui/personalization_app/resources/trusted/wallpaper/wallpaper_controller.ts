@@ -362,9 +362,15 @@ export async function setDailyRefreshCollectionId(
 export async function selectGooglePhotosAlbum(
     albumId: GooglePhotosAlbum['id'], provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
-  await provider.selectGooglePhotosAlbum(albumId);
-  // Dispatch action to highlight enabled daily refresh.
-  getDailyRefreshState(provider, store);
+  store.dispatch(action.beginUpdateDailyRefreshImageAction());
+  const {success} = await provider.selectGooglePhotosAlbum(albumId);
+  // If the call failed, or if this is simply disabling Daily Refresh, hide the
+  // pending UI immediately and fetch the new state, since `OnWallpaperChanged`
+  // doesn't get called.
+  if (!success || !albumId) {
+    store.dispatch(action.setUpdatedDailyRefreshImageAction());
+    getDailyRefreshState(provider, store);
+  }
 }
 
 /**

@@ -744,7 +744,8 @@ TEST_F(SplitViewControllerTest,
 // Tests that if split view mode is active when entering overview, the overview
 // windows grid should show in the non-default side of the screen, and the
 // default snapped window should not be shown in the overview window grid.
-TEST_F(SplitViewControllerTest, EnterOverviewModeTest) {
+// TODO(crbug.com/1335854): Deflake this test.
+TEST_F(SplitViewControllerTest, DISABLED_EnterOverviewModeTest) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -4318,28 +4319,32 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_EQ(drop_target_widget->GetNativeWindow()->bounds(),
             GetDropTargetBoundsDuringDrag(window1.get()));
   EXPECT_NE(drop_target_widget->GetNativeWindow()->bounds(), window1->bounds());
-  EXPECT_EQ(
-      current_grid->bounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(current_grid->bounds(),
+            ShrinkBoundsByHotseatInset(
+                split_view_controller()->GetSnappedWindowBoundsInScreen(
+                    SplitViewController::RIGHT,
+                    /*window_for_minimum_size=*/nullptr)));
 
   // Drag |window1| to the right preview split area.
   DragWindowTo(resizer.get(), gfx::Point(work_area_bounds.right(),
                                          work_area_bounds.CenterPoint().y()));
+
   // Overview bounds stays the same.
-  EXPECT_EQ(
-      current_grid->bounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(current_grid->bounds(),
+            ShrinkBoundsByHotseatInset(
+                split_view_controller()->GetSnappedWindowBoundsInScreen(
+                    SplitViewController::RIGHT,
+                    /*window_for_minimum_size=*/nullptr)));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   // Drag |window1| to the left preview split area.
   DragWindowTo(resizer.get(),
                gfx::Point(0, work_area_bounds.CenterPoint().y()));
-  EXPECT_EQ(
-      current_grid->bounds(),
-      split_view_controller()->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr));
+  EXPECT_EQ(current_grid->bounds(),
+            ShrinkBoundsByHotseatInset(
+                split_view_controller()->GetSnappedWindowBoundsInScreen(
+                    SplitViewController::RIGHT,
+                    /*window_for_minimum_size=*/nullptr)));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   CompleteDrag(std::move(resizer));

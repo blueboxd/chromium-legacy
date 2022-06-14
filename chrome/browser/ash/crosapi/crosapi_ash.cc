@@ -21,6 +21,7 @@
 #include "chrome/browser/apps/app_service/subscriber_crosapi_factory.h"
 #include "chrome/browser/apps/digital_goods/digital_goods_ash.h"
 #include "chrome/browser/ash/crosapi/arc_ash.h"
+#include "chrome/browser/ash/crosapi/audio_service_ash.h"
 #include "chrome/browser/ash/crosapi/authentication_ash.h"
 #include "chrome/browser/ash/crosapi/automation_ash.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
@@ -72,6 +73,7 @@
 #include "chrome/browser/ash/crosapi/search_provider_ash.h"
 #include "chrome/browser/ash/crosapi/select_file_ash.h"
 #include "chrome/browser/ash/crosapi/sharesheet_ash.h"
+#include "chrome/browser/ash/crosapi/speech_recognition_ash.h"
 #include "chrome/browser/ash/crosapi/structured_metrics_service_ash.h"
 #include "chrome/browser/ash/crosapi/system_display_ash.h"
 #include "chrome/browser/ash/crosapi/task_manager_ash.h"
@@ -145,6 +147,7 @@ Profile* GetAshProfile() {
 
 CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
     : arc_ash_(std::make_unique<ArcAsh>()),
+      audio_service_ash_(std::make_unique<AudioServiceAsh>()),
       authentication_ash_(std::make_unique<AuthenticationAsh>()),
       automation_ash_(std::make_unique<AutomationAsh>()),
       browser_service_host_ash_(std::make_unique<BrowserServiceHostAsh>()),
@@ -206,6 +209,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       search_provider_ash_(std::make_unique<SearchProviderAsh>()),
       select_file_ash_(std::make_unique<SelectFileAsh>()),
       sharesheet_ash_(std::make_unique<SharesheetAsh>()),
+      speech_recognition_ash_(std::make_unique<SpeechRecognitionAsh>()),
 #if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
       stable_video_decoder_factory_ash_(
           std::make_unique<media::StableVideoDecoderFactoryService>()),
@@ -248,6 +252,13 @@ void CrosapiAsh::BindArc(mojo::PendingReceiver<mojom::Arc> receiver) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   arc_ash_->MaybeSetProfile(profile);
   arc_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindAudioService(
+    mojo::PendingReceiver<mojom::AudioService> receiver) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  audio_service_ash_->Initialize(profile);
+  audio_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindAuthentication(
@@ -436,6 +447,11 @@ void CrosapiAsh::BindSharesheet(
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   sharesheet_ash_->MaybeSetProfile(profile);
   sharesheet_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindSpeechRecognition(
+    mojo::PendingReceiver<mojom::SpeechRecognition> receiver) {
+  speech_recognition_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindScreenManager(

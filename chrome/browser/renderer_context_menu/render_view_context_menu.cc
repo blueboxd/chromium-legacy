@@ -41,6 +41,7 @@
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -252,7 +253,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
-#include "ash/public/cpp/new_window_delegate.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -439,13 +439,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING, 118},
        {IDC_FOLLOW, 119},
        {IDC_UNFOLLOW, 120},
+       {IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST, 121},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 121}});
+       {0, 122}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -516,6 +517,11 @@ int CollapseCommandsForUMA(int id) {
   if (id >= IDC_OPEN_LINK_IN_PROFILE_FIRST &&
       id <= IDC_OPEN_LINK_IN_PROFILE_LAST) {
     return IDC_OPEN_LINK_IN_PROFILE_FIRST;
+  }
+
+  if (id >= IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST &&
+      id <= IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_LAST) {
+    return IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST;
   }
 
   return id;
@@ -701,7 +707,12 @@ RenderViewContextMenu::RenderViewContextMenu(
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
       accessibility_labels_submenu_model_(this),
-      embedder_web_contents_(GetWebContentsToUse(source_web_contents_)) {
+      embedder_web_contents_(GetWebContentsToUse(source_web_contents_)),
+      autofill_context_menu_manager_(
+          autofill::PersonalDataManagerFactory::GetForProfile(
+              GetProfile()->GetOriginalProfile()),
+          this,
+          &menu_model_) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
     SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
@@ -915,6 +926,12 @@ void RenderViewContextMenu::InitMenu() {
     AppendLinkItems();
     if (params_.media_type != ContextMenuDataMediaType::kNone)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_AUTOFILL)) {
+    autofill_context_menu_manager_.AppendItems();
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   bool media_image = content_type_->SupportsGroup(
@@ -2198,6 +2215,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdEnabled(id);
 
+  // Autofill items.
+  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
+          autofill::AutofillContextMenuManager::CommandId(id))) {
+    return autofill_context_menu_manager_.IsCommandIdEnabled(
+        autofill::AutofillContextMenuManager::CommandId(id));
+  }
+
   if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
       id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
     return true;
@@ -2455,6 +2479,11 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 bool RenderViewContextMenu::IsCommandIdVisible(int id) const {
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdVisible(id);
+  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
+          autofill::AutofillContextMenuManager::CommandId(id))) {
+    return autofill_context_menu_manager_.IsCommandIdVisible(
+        autofill::AutofillContextMenuManager::CommandId(id));
+  }
   return RenderViewContextMenuBase::IsCommandIdVisible(id);
 }
 
@@ -2470,6 +2499,17 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     if (render_frame_host) {
       extension_items_.ExecuteCommand(id, source_web_contents_,
                                       render_frame_host, params_);
+    }
+    return;
+  }
+
+  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
+          autofill::AutofillContextMenuManager::CommandId(id))) {
+    RenderFrameHost* render_frame_host = GetRenderFrameHost();
+    if (render_frame_host) {
+      autofill_context_menu_manager_.ExecuteCommand(
+          autofill::AutofillContextMenuManager::CommandId(id),
+          render_frame_host);
     }
     return;
   }
@@ -2724,16 +2764,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-          selection_navigation_url_,
-          ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
-#else
       OpenURL(selection_navigation_url_, GURL(),
               ui::DispositionFromEventFlags(
                   event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB),
               ui::PAGE_TRANSITION_LINK);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       break;
 
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
@@ -3563,8 +3597,6 @@ void RenderViewContextMenu::ExecRouteMedia() {
     return;
 
   dialog_controller->ShowMediaRouterDialog(
-      media_router::MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU);
-  media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
       media_router::MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU);
 }
 

@@ -307,10 +307,11 @@ public class MainSettings extends PreferenceFragmentCompat
                 settingsLauncher.launchSettingsActivity(context, ManageSyncSettings.class);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.TANGIBLE_SYNC)) {
                 TangibleSyncCoordinator.start(requireContext(), mModalDialogManagerSupplier.get(),
-                        SyncConsentActivityLauncherImpl.get(), SigninAccessPoint.SETTINGS);
+                        SyncConsentActivityLauncherImpl.get(),
+                        SigninAccessPoint.SETTINGS_SYNC_OFF_ROW);
             } else {
                 SyncConsentActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
-                        context, SigninAccessPoint.SETTINGS, primaryAccountName);
+                        context, SigninAccessPoint.SETTINGS_SYNC_OFF_ROW, primaryAccountName);
             }
             return true;
         });
@@ -399,6 +400,15 @@ public class MainSettings extends PreferenceFragmentCompat
     }
 
     private void onSyncPromoPreferenceStateChanged() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION)
+                || ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)) {
+            // For promo experiments, we want to have mSignInPreference and
+            // PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION visible even if the personalized promo is
+            // shown, so skip setting the visibility.
+            return;
+        }
         // Remove "Account" section header if the personalized sign-in promo is shown.
         boolean isShowingPersonalizedSigninPromo =
                 mSyncPromoPreference.getState() == State.PERSONALIZED_SIGNIN_PROMO;

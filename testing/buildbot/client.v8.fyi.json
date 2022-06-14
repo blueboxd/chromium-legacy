@@ -1460,8 +1460,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -1521,11 +1523,13 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "-t",
           "Debug",
           "--release"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -1585,9 +1589,11 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--flag-specific=future-js"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -1648,8 +1654,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -1690,8 +1698,10 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [

@@ -2498,7 +2498,7 @@ absl::optional<PDFEngine::NamedDestination> PDFiumEngine::GetNamedDestination(
     return {};
 
   int page = FPDFDest_GetDestPageIndex(doc(), dest);
-  if (page < 0)
+  if (!PageIndexInBounds(page))
     return {};
 
   PDFEngine::NamedDestination result;

@@ -36,6 +36,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
+#include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {
@@ -71,6 +72,14 @@ base::Value NetLogCertParams(const CRYPTO_BUFFER* cert_handle,
 
   return results;
 }
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+base::Value NetLogChromeRootStoreVersion(int64_t chrome_root_store_version) {
+  base::Value::Dict results;
+  results.Set("version_major", NetLogNumberValue(chrome_root_store_version));
+  return base::Value(std::move(results));
+}
+#endif
 
 base::Value PEMCertListValue(const ParsedCertificateList& certs) {
   base::Value value(base::Value::Type::LIST);
@@ -717,7 +726,6 @@ int CertVerifyProcBuiltin::VerifyInternal(
   // time stamp.
   base::Time verification_time = base::Time::Now();
   base::TimeTicks deadline = base::TimeTicks::Now() + kMaxVerificationTime;
-
   der::GeneralizedTime der_verification_time;
   if (!der::EncodeTimeAsGeneralizedTime(verification_time,
                                         &der_verification_time)) {
@@ -726,9 +734,22 @@ int CertVerifyProcBuiltin::VerifyInternal(
     verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
     return ERR_CERT_AUTHORITY_INVALID;
   }
+  absl::optional<int64_t> chrome_root_store_version_opt = absl::nullopt;
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+  int64_t chrome_root_store_version =
+      system_trust_store_->chrome_root_store_version();
+  if (chrome_root_store_version != 0) {
+    net_log.AddEvent(
+        NetLogEventType::CERT_VERIFY_PROC_CHROME_ROOT_STORE_VERSION, [&] {
+          return NetLogChromeRootStoreVersion(chrome_root_store_version);
+        });
+    chrome_root_store_version_opt = chrome_root_store_version;
+  }
+#endif
 
   CertVerifyProcBuiltinResultDebugData::Create(verify_result, verification_time,
-                                               der_verification_time);
+                                               der_verification_time,
+                                               chrome_root_store_version_opt);
 
   // Parse the target certificate.
   scoped_refptr<ParsedCertificate> target;
@@ -885,9 +906,11 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
 CertVerifyProcBuiltinResultDebugData::CertVerifyProcBuiltinResultDebugData(
     base::Time verification_time,
-    const der::GeneralizedTime& der_verification_time)
+    const der::GeneralizedTime& der_verification_time,
+    absl::optional<int64_t> chrome_root_store_version)
     : verification_time_(verification_time),
-      der_verification_time_(der_verification_time) {}
+      der_verification_time_(der_verification_time),
+      chrome_root_store_version_(chrome_root_store_version) {}
 
 // static
 const CertVerifyProcBuiltinResultDebugData*
@@ -901,11 +924,12 @@ CertVerifyProcBuiltinResultDebugData::Get(
 void CertVerifyProcBuiltinResultDebugData::Create(
     base::SupportsUserData* debug_data,
     base::Time verification_time,
-    const der::GeneralizedTime& der_verification_time) {
+    const der::GeneralizedTime& der_verification_time,
+    absl::optional<int64_t> chrome_root_store_version) {
   debug_data->SetUserData(
       kResultDebugDataKey,
       std::make_unique<CertVerifyProcBuiltinResultDebugData>(
-          verification_time, der_verification_time));
+          verification_time, der_verification_time, chrome_root_store_version));
 }
 
 std::unique_ptr<base::SupportsUserData::Data>

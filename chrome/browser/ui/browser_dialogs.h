@@ -138,6 +138,15 @@ void ShowBluetoothDeviceCredentialsDialog(
     content::WebContents* web_contents,
     const std::u16string& device_identifier,
     content::BluetoothDelegate::CredentialsCallback close_callback);
+
+// Shows the dialog to let user confirm to pair with the device
+// identified by |device_identifier|. |device_identifier| is the most
+// appropriate string to display to the user for device identification
+// (e.g. name, MAC address).
+void ShowBluetoothDevicePairConfirmDialog(
+    content::WebContents* web_contents,
+    const std::u16string& device_identifier,
+    content::BluetoothDelegate::PairConfirmCallback close_callback);
 #endif  // PAIR_BLUETOOTH_ON_DEMAND()
 
 // Callback used to indicate whether a user has accepted the installation of a
@@ -241,23 +250,6 @@ void ShowWebAppDetailedInstallDialog(
 // Sets whether |ShowPWAInstallBubble| should accept immediately without any
 // user interaction.
 void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept);
-
-#if BUILDFLAG(IS_CHROMEOS)
-
-// Shows the print job confirmation dialog bubble anchored to the toolbar icon
-// for the extension.
-// If there's no toolbar icon, shows a modal dialog using
-// CreateBrowserModalDialogViews(). Note that this dialog is shown up even if we
-// have no |parent| window.
-void ShowPrintJobConfirmationDialog(gfx::NativeWindow parent,
-                                    const std::string& extension_id,
-                                    const std::u16string& extension_name,
-                                    const gfx::ImageSkia& extension_icon,
-                                    const std::u16string& print_job_title,
-                                    const std::u16string& printer_name,
-                                    base::OnceCallback<void(bool)> callback);
-
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_MAC)
 

@@ -86,7 +86,9 @@ const std::string& ViewAXPlatformNodeDelegateMac::GetName() const {
 void ViewAXPlatformNodeDelegateMac::OverrideNativeWindowTitle(
     const std::string& title) {
   if (gfx::NativeViewAccessible ax_window = GetNSWindow()) {
-    [ax_window setAccessibilityLabel:base::SysUTF8ToNSString(title)];
+    if(@available(macOS 10.10,*)) {
+      [ax_window setAccessibilityLabel:base::SysUTF8ToNSString(title)];
+    }
   }
 }
 

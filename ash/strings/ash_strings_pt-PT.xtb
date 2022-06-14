@@ -56,10 +56,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1247519845643687288">Apps recentes</translation>
 <translation id="1252999807265626933">A carregar a partir de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Como está o tempo?</translation>
-<translation id="1262870540683925850">Da(s) <ph name="START_TIME" /> à(s) 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Selecione para obter mais detalhes no Calendário Google.</translation>
 <translation id="1267032506238418139">Alteração do atalho</translation>
 <translation id="1269405891096105529">Periférico não suportado no Modo convidado</translation>
 <translation id="1270290102613614947">Teclado no ecrã desativado</translation>
@@ -125,6 +121,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1632985212731562677">O acesso por comutador pode ser desativado em Definições &gt; Acessibilidade.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositivos</translation>
+<translation id="1639239467298939599">A carregar</translation>
 <translation id="1654477262762802994">Iniciar uma consulta de voz</translation>
 <translation id="1668469839109562275">VPN incorporada</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
@@ -507,6 +504,7 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Altere o dispositivo para uma versão anterior dentro de 1 minuto}other{Altere o dispositivo para uma versão anterior dentro de # minutos}}</translation>
 <translation id="3923494859158167397">Nenhuma rede móvel configurada</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, a carregar eventos.</translation>
 <translation id="3932043219784172185">Nenhum dispositivo ligado</translation>
 <translation id="3934456833412894880">O carregamento adaptável está ativado. A bateria vai permanecer nos 80% para prolongar a autonomia da mesma e ser carregada totalmente quando precisar.</translation>
 <translation id="3943857333388298514">Colar</translation>
@@ -1050,7 +1048,6 @@ Nova instalação</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Atualizar</translation>
-<translation id="718361511487535372">Abrir no Calendário Google</translation>
 <translation id="7188494361780961876">O menu foi movido para o canto superior esquerdo do ecrã.</translation>
 <translation id="7189412385142492784">Qual é a distância para Vénus?</translation>
 <translation id="7198435252016571249">Câmara ajustada ao canto inferior direito. Há um conflito com a superfície do sistema.</translation>
@@ -1059,6 +1056,10 @@ Nova instalação</translation>
 <translation id="7258828758145722155">Editado ontem</translation>
 <translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>
 <translation id="7262906531272962081">Criar lembrete</translation>
+<translation id="7297440678881127227">Da(s) <ph name="START_TIME" /> à(s)
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Selecione para obter mais detalhes no Calendário Google.</translation>
 <translation id="7302889331339392448">As Legendas instantâneas estão desativadas.</translation>
 <translation id="7303365578352795231">A responder noutro dispositivo…</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1171,6 +1172,7 @@ Nova instalação</translation>
 <translation id="7904094684485781019">O gestor desta conta removeu a permissão de início de sessão integrado.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Agora, a voz é processada localmente e o ditado funciona offline.</translation>
+<translation id="7932451802722951285">Abrir no Calendário Google</translation>
 <translation id="7933084174919150729">O Assistente Google está disponível apenas no perfil principal.</translation>
 <translation id="79341161159229895">Conta gerida por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="793716872548410480">Prima <ph name="SHORTCUT_KEY_NAME" /> + V para ver a sua área de transferência. Os últimos 5 itens que copiou são guardados na sua área de transferência.</translation>

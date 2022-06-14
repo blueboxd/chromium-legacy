@@ -1366,6 +1366,9 @@ TEST_P(LtrRtlShelfViewTest, HomeButtonMetricsInTablet) {
 }
 
 TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
+  // Set a screen size large enough to have space between the home button and
+  // app buttons.
+  UpdateDisplay("2000x600");
   ShelfID app_button_id = AddAppShortcut();
   ShelfID platform_button_id = AddApp();
   // TODO(manucornet): It should not be necessary to call this manually. The
@@ -2510,9 +2513,10 @@ TEST_F(GhostImageShelfViewTest, RemoveGhostImageForRipOffDrag) {
   EXPECT_EQ(-1, shelf_view_->current_ghost_view_index());
 }
 
+// Disabled as likely to cause builder failure, see  https://crbug.com/1334936.
 // Tests that the ghost image is reinserted if the app is dragged within the
 // bounds of the shelf after a rip off.
-TEST_F(GhostImageShelfViewTest, ReinsertGhostImageAfterRipOffDrag) {
+TEST_F(GhostImageShelfViewTest, DISABLED_ReinsertGhostImageAfterRipOffDrag) {
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
   ShelfAppButton* first_app = GetButtonByID(id_map[0].first);
@@ -3283,7 +3287,7 @@ TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   EXPECT_TRUE(test_api_->GetViewAt(2)->HasFocus());
 
   // This is the last element. Tabbing once more should go into the status
-  // area.
+  // area. If calendar view is enabled it is focusing on the date tray.
   DoTab();
   ExpectNotFocused(shelf_view_);
   ExpectFocused(status_area_);
@@ -3297,6 +3301,14 @@ TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   DoTab();
   ExpectNotFocused(shelf_view_);
   ExpectFocused(status_area_);
+
+  // If calendar view is enabled, move the focusing ring from the date tray to
+  // the unified tray.
+  if (features::IsCalendarViewEnabled()) {
+    DoTab();
+    ExpectNotFocused(shelf_view_);
+    ExpectFocused(status_area_);
+  }
 
   // And keep going forward, now we should be cycling back to the first shelf
   // element.
@@ -3320,6 +3332,14 @@ TEST_F(ShelfViewFocusTest, UnfocusWithEsc) {
   DoShiftTab();
   ExpectNotFocused(shelf_view_);
   ExpectFocused(status_area_);
+
+  // If calendar view is enabled, move the focusing ring from the unified tray
+  // to the date tray.
+  if (features::IsCalendarViewEnabled()) {
+    DoShiftTab();
+    ExpectNotFocused(shelf_view_);
+    ExpectFocused(status_area_);
+  }
 
   // Advance backwards to the last element of the shelf.
   DoShiftTab();

@@ -65,6 +65,7 @@ Jūsu meklētājprogramma ir <ph name="DSE_NAME" />. Skatiet tās norādījumus 
 <translation id="1434356225517321998">Jūsu pārlūks tiek pārvaldīts. <ph name="BEGIN_LINK" />Informācija<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Slēpt paroli</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> vienumi</translation>
+<translation id="1450170672351507823">Ir ieslēgta standarta aizsardzība. Lai iegūtu lielāku drošību, izmantojiet uzlaboto aizsardzību.</translation>
 <translation id="149095475893949513">Šī vietne mēģina lejupielādēt konfigurācijas profilu.</translation>
 <translation id="1491277525950327607">Veiciet dubultskārienu, lai pārslēgtu iestatījumu.</translation>
 <translation id="1492417797159476138">Jūs jau saglabājāt šo lietotājvārdu šai vietnei</translation>
@@ -162,6 +163,7 @@ Jūsu meklētājprogramma ir <ph name="DSE_NAME" />. Skatiet tās norādījumus 
 <translation id="236977714248711277">Vietnes nedrīkst izmantot sīkfailus, lai uzlabotu pārlūkošanas pieredzi, piemēram, lai nodrošinātu ilgstošu pierakstīšanos vai saglabātu iepirkumu grozā ievietotās preces.
 
 Vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu pārlūkošanas darbības dažādās vietnēs, piemēram, reklāmu personalizēšanai.</translation>
+<translation id="2375243552872247702">Skatiet jums ieteikto saturu</translation>
 <translation id="2381405137052800939">Pamata</translation>
 <translation id="2386793615875593361">Atlasīts 1 fotoattēls</translation>
 <translation id="2421004566762153674">Trešo pušu sīkfaili tiek bloķēti</translation>
@@ -290,6 +292,7 @@ Skatiet savas meklētājprogrammas norādījumus par meklēšanas vēstures dzē
 <translation id="3443810440409579745">Saņemta cilne.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Dalītais skats</translation>
+<translation id="3450502512529866925">Pievienot šo lapu grāmatzīmēm</translation>
 <translation id="345565170154308620">Pārvaldīt paroles…</translation>
 <translation id="3469166899695866866">Vai apturēt lejupielādi?</translation>
 <translation id="3470502288861289375">Notiek kopēšana...</translation>
@@ -404,6 +407,7 @@ Veiciet tālāk norādītās darbības.</translation>
 <translation id="4502566650163919158">Pārbaudīt tūlīt</translation>
 <translation id="4505980578794259603">Pārbaude pēdējoreiz veikta: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Aizvērt pierakstīšanās piedāvājumu</translation>
+<translation id="4511669830082467224">Meklēt attēlu ar Google</translation>
 <translation id="4526249700380860531">Skatīt un pārvaldīt saglabātās paroles vietnē <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Pārskatīt sinhronizētos datus</translation>
 <translation id="4536418791685807335">Mēģiniet pierakstīties vēlreiz.</translation>
@@ -481,6 +485,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5090832849094901128">Izdzēšot šo paroli, netiks dzēsts jūsu konts vietnē <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Varat saglabāt lapas lasīšanai vēlāk vai bezsaistē. Pārlūkā Chrome tiks vaicāts, vai vēlaties saglabāt apjomīgas lapas.</translation>
 <translation id="5094827893301452931">Twitter ziņa izveidota.</translation>
+<translation id="509789154667432072">Pievienot grāmatzīmi</translation>
 <translation id="5118713593561876160">Intereses</translation>
 <translation id="5118764316110575523">Izslēgts</translation>
 <translation id="5127805178023152808">Sinhronizācija izslēgta</translation>
@@ -601,6 +606,7 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="6136914049981179737">Pirms sek.</translation>
 <translation id="6144589619057374135">Atvērt vietni ${url} inkognito režīmā</translation>
 <translation id="6149061208933997199">Izmantot paroli</translation>
+<translation id="6152406514676263192">Ieslēdziet sinhronizāciju, lai atrastu savām interesēm atbilstošāko saturu.</translation>
 <translation id="6159839020698489198">neobligāts</translation>
 <translation id="6177442314419606057">Meklēšana pārlūkā Chrome</translation>
 <translation id="6184086493125982861">Rādīt cilnes</translation>
@@ -738,6 +744,7 @@ Inkognito režīmā vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu p�
 <translation id="7099761977003084116">Pēdējās cilnes</translation>
 <translation id="7102005569666697658">Notiek lejupielāde… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Slēpt</translation>
+<translation id="7108762695052995889">Apmeklēt vietni</translation>
 <translation id="7133798577887235672">Vārds, uzvārds</translation>
 <translation id="7136892417564438900">Kamera nav pieejama.</translation>
 <translation id="7153999225810839758">Lasīšanas ilgums: <ph name="TIME" /> min</translation>
@@ -748,6 +755,7 @@ Inkognito režīmā vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu p�
 <translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7192050974311852563">Sākt reģistrēšanu</translation>
 <translation id="7203585745079012652">Izrunāt atbildes skaļi</translation>
+<translation id="7207023858769244910">Ieslēdziet sinhronizāciju, lai atrastu savām interesēm pielāgotu saturu.</translation>
 <translation id="7207383424303353046">Jaunums: automātiski atveriet vietnes pārlūkā Chrome, iestatot to kā savu noklusējuma pārlūka lietotni. <ph name="BEGIN_LINK" />Atvērt iestatījumus<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Nederīgs kredītkartes apzīmējums</translation>
 <translation id="722454870747268814">Jauna inkognito cilne</translation>

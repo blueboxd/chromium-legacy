@@ -213,7 +213,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1231024")
     public void testClickScrimCloseDialog() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -343,7 +342,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1231024 and https://crbug.com/1121363")
     public void testUndoClosureInDialog_DialogUndoBar() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -464,7 +462,6 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1206781")
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testSelectionEditorUngroup() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();

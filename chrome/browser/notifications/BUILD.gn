@@ -99,9 +99,7 @@ if (is_android) {
     ]
   }
 
-  android_library("junit_tests") {
-    # Platform checks are broken for Robolectric. See https://crbug.com/1071638.
-    bypass_platform_checks = true
+  robolectric_library("junit_tests") {
     testonly = true
 
     sources = [
@@ -123,7 +121,7 @@ if (is_android) {
       "//base:base_junit_test_support",
       "//chrome/browser/flags:java",
       "//chrome/browser/preferences:java",
-      "//chrome/test/android:chrome_java_test_support",
+      "//chrome/test/android:chrome_java_unit_test_support",
       "//components/browser_ui/notifications/android:java",
       "//third_party/android_deps:espresso_java",
       "//third_party/android_deps:robolectric_all_java",
@@ -158,7 +156,7 @@ if (is_android) {
       "//base:base_java_test_support",
       "//chrome/browser/flags:java",
       "//chrome/browser/preferences:java",
-      "//chrome/test/android:chrome_java_test_support",
+      "//chrome/test/android:chrome_java_integration_test_support",
       "//components/browser_ui/notifications/android:java",
       "//components/browser_ui/util/android:java",
       "//components/browser_ui/widget/android:java",

@@ -53,7 +53,6 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_utils.h"
 #include "chrome/browser/web_applications/external_install_options.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -838,6 +837,30 @@ IN_PROC_BROWSER_TEST_F(WebAppTabRestoreBrowserTest, RestoreAppWindow) {
 
   EXPECT_TRUE(restored_browser->is_type_app());
 }
+
+// Tests that app popup windows are correctly restored.
+IN_PROC_BROWSER_TEST_F(WebAppTabRestoreBrowserTest, RestoreAppPopupWindow) {
+  const GURL app_url = GetSecureAppURL();
+  const AppId app_id = InstallPWA(app_url);
+  Browser* const app_browser = web_app::LaunchWebAppBrowserAndWait(
+      profile(), app_id, WindowOpenDisposition::NEW_POPUP);
+
+  ASSERT_TRUE(app_browser->is_type_app_popup());
+  app_browser->window()->Close();
+
+  content::WebContentsAddedObserver new_contents_observer;
+
+  sessions::TabRestoreService* const service =
+      TabRestoreServiceFactory::GetForProfile(profile());
+  service->RestoreMostRecentEntry(nullptr);
+
+  content::WebContents* const restored_web_contents =
+      new_contents_observer.GetWebContents();
+  Browser* const restored_browser =
+      chrome::FindBrowserWithWebContents(restored_web_contents);
+
+  EXPECT_TRUE(restored_browser->is_type_app_popup());
+}
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Test navigating to an out of scope url on the same origin causes the url
@@ -1145,7 +1168,26 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallWithPolicyPwa) {
             kEnabled);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
+class WebAppBrowserTest_ExternalPrefMigration
+    : public WebAppBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  WebAppBrowserTest_ExternalPrefMigration() {
+    bool enable_migration = GetParam();
+    if (enable_migration) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kUseWebAppDBInsteadOfExternalPrefs}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kUseWebAppDBInsteadOfExternalPrefs});
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_ExternalPrefMigration,
                        CannotUninstallPolicyWebAppAfterUserInstall) {
   GURL install_url = GetInstallableAppURL();
   ExternalInstallOptions options = CreateInstallOptions(install_url);
@@ -1153,8 +1195,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   ExternallyManagedAppManagerInstall(profile(), options);
 
   auto* provider = WebAppProvider::GetForTest(browser()->profile());
-  ExternallyInstalledWebAppPrefs prefs(browser()->profile()->GetPrefs());
-  AppId app_id = prefs.LookupAppId(install_url).value();
+  AppId app_id = provider->registrar().LookupExternalAppId(install_url).value();
 
   EXPECT_FALSE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
 
@@ -2253,5 +2294,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(WebAppSettingsState::kNeitherEnabled,
                       WebAppSettingsState::kOnlyWebAppSettingsEnabled,
                       WebAppSettingsState::kFileHandlingAlsoEnabled));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppBrowserTest_ExternalPrefMigration,
+                         ::testing::Bool());
 
 }  // namespace web_app

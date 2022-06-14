@@ -155,11 +155,6 @@ const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
 
-const char kMuteCompromisedPasswordsName[] =
-    "Mute & Unmute compromised passwords in bulk leak check";
-const char kMuteCompromisedPasswordsDescription[] =
-    "Enables muting/unmuting compromised passwords in bulk leak check.";
-
 const char kPasswordNotesName[] = "Password notes in settings";
 const char kPasswordNotesDescription[] =
     "Enables a note section for each password in the settings page.";
@@ -324,11 +319,16 @@ const char kAutofillTypeSpecificPopupWidthDescription[] =
     "Controls if different width limits are used for the popup that provides "
     "Autofill suggestions, depending on the type of data that is filled.";
 
-const char kAutofillEnableMerchantBoundVirtualCardsName[] =
-    "Offer merchant bound virtual cards in Autofill";
-const char kAutofillEnableMerchantBoundVirtualCardsDescription[] =
-    "When enabled, Autofill will offer to use merchant bound virtual cards in "
-    "payment forms.";
+const char kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[] =
+    "Enable parsing of the GetDetailsForEnrollResponseDetails in the "
+    "UploadCardResponseDetails";
+const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription[] =
+        "When enabled, the GetDetailsForEnrollResponseDetails in the "
+        "UploadCardResponseDetails will be parsed, which will allow the "
+        "Virtual Card Enrollment flow to skip making a new GetDetailsForEnroll "
+        "request. This is an optimization to improve the latency of the "
+        "Virtual Card Enrollment flow.";
 
 const char kAutofillEnableManualFallbackForVirtualCardsName[] =
     "Show manual fallback for virtual cards";
@@ -415,12 +415,6 @@ const char kAutofillEnableVirtualCardMetadataName[] =
 const char kAutofillEnableVirtualCardMetadataDescription[] =
     "When enabled, Chrome will show metadata together with other card "
     "information when the virtual card is presented to users.";
-
-const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[] =
-    "Enable risk based authentication for Autofill Virtual Card Numbers";
-const char kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription[] =
-    "When enabled, risk based authentication is used before autofilling "
-    "Virtual Card information into forms.";
 
 const char kAutofillEnforceDelaysInStrikeDatabaseName[] =
     "Enforce delay between offering Autofill opportunities in the strike "
@@ -551,6 +545,10 @@ const char kTouchToFillPasswordSubmissionDescription[] =
     "Enables automatic form submission after filling credentials with "
     "Touch-To-Fill";
 
+const char kFastCheckoutName[] = "Fast Checkout";
+const char kFastCheckoutDescription[] =
+    "Enables Fast Checkout experiences in Chrome.";
+
 const char kBorealisBigGlName[] = "Borealis Big GL";
 const char kBorealisBigGlDescription[] = "Enable Big GL when running Borealis.";
 
@@ -599,6 +597,10 @@ const char kClosedTabCacheDescription[] =
     "Enables closed tab cache to instantaneously restore recently closed tabs. "
     "NOTE: This feature is higly experimental and will lead to various "
     "breakages, enable at your own risk.";
+
+const char kCommerceHintAndroidName[] = "Commerce Hint Android";
+const char kCommerceHintAndroidDescription[] =
+    "Enables commerce hint detection on Android.";
 
 const char kConsolidatedSiteStorageControlsName[] =
     "Consolidated Site Storage Controls";
@@ -1023,6 +1025,11 @@ const char kEnableIphName[] = "Enable IPH";
 const char kEnableIphDescription[] =
     "Enables the ability to show IPH. When disabled, IPHs are disabled system "
     "wide.";
+
+const char kEnableIsolatedWebAppsName[] = "Enable Isolated Web Apps";
+const char kEnableIsolatedWebAppsDescription[] =
+    "Enables experimental support for isolated web apps. "
+    "See https://github.com/reillyeon/isolated-web-apps for more information.";
 
 const char kEnablePrivatePrefetchProxyName[] =
     "Enables prefetching using the prefetch proxy";
@@ -2128,10 +2135,9 @@ const char kPermissionPredictionsDescription[] =
 
 const char kPermissionQuietChipName[] = "Quiet Permission Chip Experiment";
 const char kPermissionQuietChipDescription[] =
-    "Enables an experimental permission prompt that uses the quiet chip "
-    "instead of the right-hand side address bar icon for quiet permission "
-    "prompts. Requires chrome://flags/#quiet-notification-prompts to be "
-    "enabled.";
+    "Enables a permission prompt that uses the quiet chip instead of the "
+    "right-hand side address bar icon for quiet permission prompts. Requires "
+    "chrome://flags/#quiet-notification-prompts to be enabled.";
 
 const char kPersistentQuotaIsTemporaryQuotaName[] =
     "window.PERSISTENT is temporary quota.";
@@ -2597,12 +2603,6 @@ const char kTabOutlinesInLowContrastThemesDescription[] =
 const char kTabSearchFuzzySearchName[] = "Fuzzy search for Tab Search";
 const char kTabSearchFuzzySearchDescription[] =
     "Enable fuzzy search for Tab Search.";
-
-const char kTailoredSecurityIntegrationName[] =
-    "Account-level tailored security integration";
-const char kTailoredSecurityIntegrationDescription[] =
-    "Enable the integration between Enhanced Safe Browsing in Chrome and in "
-    "the account";
 
 const char kTFLiteLanguageDetectionName[] = "TFLite-based Language Detection";
 const char kTFLiteLanguageDetectionDescription[] =
@@ -3186,21 +3186,6 @@ const char kContextualSearchForceCaptionName[] =
 const char kContextualSearchForceCaptionDescription[] =
     "Forces a caption to always be shown in the Touch to Search Bar.";
 
-const char kContextualSearchLongpressResolveName[] =
-    "Contextual Search long-press Resolves";
-const char kContextualSearchLongpressResolveDescription[] =
-    "Enables communicating with Google servers when a long-press gesture is "
-    "recognized under some privacy-limited conditions, including having Touch "
-    "to Search enabled in preferences. The page context data sent to Google is "
-    "potentially privacy sensitive!  This disables the tap gesture from "
-    "triggering Touch to Search unless that experiment arm is enabled.";
-
-const char KContextualSearchNewSettingsName[] =
-    "Contextual Search new settings";
-const char KContextualSearchNewSettingsDescription[] =
-    "Adds a toggle to Settings page to specifically control Contextual Search "
-    "opt-in state, and update Opt-in messages.";
-
 const char kContextualSearchTranslationsName[] =
     "Contextual Search translations";
 const char kContextualSearchTranslationsDescription[] =
@@ -3417,6 +3402,11 @@ const char kNetworkServiceInProcessDescription[] =
     "When enabled, the network service runs on the browser process. Otherwise, "
     "it runs on a dedicated process.";
 
+const char kNewInstanceFromDraggedLinkName[] =
+    "New instance creation from a dragged link";
+const char kNewInstanceFromDraggedLinkDescription[] =
+    "Enables creation of a new instance when a link is dragged out of Chrome.";
+
 const char kNewWindowAppMenuName[] = "Show a menu item 'New Window'";
 const char kNewWindowAppMenuDescription[] =
     "Show a new menu item 'New Window' on tablet-sized screen when Chrome "
@@ -3575,18 +3565,17 @@ const char kRequestDesktopSiteExceptionsDescription[] =
     "based on site level settings. Flag request-desktop-site-global "
     "needs to be enabled when enabling this flag.";
 
-const char kRequestDesktopSiteGlobalName[] =
-    "Global setting to request desktop site on Android.";
-const char kRequestDesktopSiteGlobalDescription[] =
-    "An option in `Site settings` to persistently request the "
-    "desktop version of websites.";
-
 const char kRequestDesktopSiteForTabletsName[] =
     "Request desktop site for tablets on Android";
 const char kRequestDesktopSiteForTabletsDescription[] =
     "Requests a desktop site, if the screen size is large enough on Android."
     " On tablets with small screens a mobile site will be requested by "
     "default.";
+
+const char kScreenshotsForAndroidV2Name[] = "Screenshots for Android V2";
+const char kScreenshotsForAndroidV2Description[] =
+    "Adds functionality to the share screenshot panel within Chrome Browser"
+    " on Android";
 
 const char kShowScrollableMVTOnNTPAndroidName[] = "Show scrollable MVT on NTP";
 const char kShowScrollableMVTOnNTPAndroidDescription[] =
@@ -3832,19 +3821,13 @@ const char kNtpCacheOneGoogleBarDescription[] =
     "Enables using the OneGoogleBar cached response in chrome://new-tab-page, "
     "when available.";
 
-const char kNtpModulesName[] = "NTP Modules";
-const char kNtpModulesDescription[] = "Shows modules on the New Tab Page.";
+const char kNtpChromeCartModuleName[] = "NTP Chrome Cart Module";
+const char kNtpChromeCartModuleDescription[] =
+    "Shows the chrome cart module on the New Tab Page.";
 
 const char kNtpDriveModuleName[] = "NTP Drive Module";
 const char kNtpDriveModuleDescription[] =
     "Shows the Google Drive module on the New Tab Page";
-
-const char kWebAuthenticationPermitEnterpriseAttestationName[] =
-    "Web Authentication Enterprise Attestation";
-const char kWebAuthenticationPermitEnterpriseAttestationDescription[] =
-    "Permit a set of origins to request a uniquely identifying enterprise "
-    "attestation statement from a security key when creating a Web "
-    "Authentication credential.";
 
 #if !defined(OFFICIAL_BUILD)
 const char kNtpDummyModulesName[] = "NTP Dummy Modules";
@@ -3853,34 +3836,11 @@ const char kNtpDummyModulesDescription[] =
     "enabled.";
 #endif
 
-const char kNtpPhotosModuleName[] = "NTP Photos Module";
-const char kNtpPhotosModuleDescription[] =
-    "Shows the Google Photos module on the New Tab Page";
-
-const char kNtpPhotosModuleOptInTitleName[] = "NTP Photos Module Opt In Title";
-const char kNtpPhotosModuleOptInTitleDescription[] =
-    "Determines the title of the NTP Photos Opt-In card";
-
-const char kNtpPhotosModuleOptInArtWorkName[] =
-    "NTP Photos Module Opt In ArtWork";
-const char kNtpPhotosModuleOptInArtWorkDescription[] =
-    "Determines the art work in the NTP Photos Opt-In card";
-
-const char kNtpPhotosModuleSoftOptOutName[] = "NTP Photos Module Soft Opt-Out";
-const char kNtpPhotosModuleSoftOptOutDescription[] =
-    "Enables soft opt-out option in Photos opt-in card";
-
-const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
-const char kNtpRecipeTasksModuleDescription[] =
-    "Shows the recipe tasks module on the New Tab Page.";
-
-const char kNtpChromeCartModuleName[] = "NTP Chrome Cart Module";
-const char kNtpChromeCartModuleDescription[] =
-    "Shows the chrome cart module on the New Tab Page.";
-
-const char kNtpSafeBrowsingModuleName[] = "NTP Safe Browsing Module";
-const char kNtpSafeBrowsingModuleDescription[] =
-    "Shows the safe browsing module on the New Tab Page.";
+const char kNtpMiddleSlotPromoDismissalName[] =
+    "NTP Middle Slot Promo Dismissal";
+const char kNtpMiddleSlotPromoDismissalDescription[] =
+    "Allows middle slot promo to be dismissed from New Tab Page until "
+    "new promo message is populated.";
 
 const char kNtpModulesDragAndDropName[] = "NTP Modules Drag and Drop";
 const char kNtpModulesDragAndDropDescription[] =
@@ -3892,13 +3852,33 @@ const char kNtpModulesFirstRunExperienceName[] =
 const char kNtpModulesFirstRunExperienceDescription[] =
     "Shows first run experience for Modular NTP Desktop v1.";
 
-const char kNtpModulesRedesignedName[] = "NTP Modules Redesigned";
-const char kNtpModulesRedesignedDescription[] =
-    "Shows the redesigned modules on the New Tab Page.";
+const char kNtpModulesName[] = "NTP Modules";
+const char kNtpModulesDescription[] = "Shows modules on the New Tab Page.";
 
 const char kNtpModulesRedesignedLayoutName[] = "Ntp Modules Redesigned Layout";
 const char kNtpModulesRedesignedLayoutDescription[] =
     "Changes the layout of modules on New Tab Page";
+
+const char kNtpModulesRedesignedName[] = "NTP Modules Redesigned";
+const char kNtpModulesRedesignedDescription[] =
+    "Shows the redesigned modules on the New Tab Page.";
+
+const char kNtpPhotosModuleName[] = "NTP Photos Module";
+const char kNtpPhotosModuleDescription[] =
+    "Shows the Google Photos module on the New Tab Page";
+
+const char kNtpPhotosModuleOptInArtWorkName[] =
+    "NTP Photos Module Opt In ArtWork";
+const char kNtpPhotosModuleOptInArtWorkDescription[] =
+    "Determines the art work in the NTP Photos Opt-In card";
+
+const char kNtpPhotosModuleOptInTitleName[] = "NTP Photos Module Opt In Title";
+const char kNtpPhotosModuleOptInTitleDescription[] =
+    "Determines the title of the NTP Photos Opt-In card";
+
+const char kNtpPhotosModuleSoftOptOutName[] = "NTP Photos Module Soft Opt-Out";
+const char kNtpPhotosModuleSoftOptOutDescription[] =
+    "Enables soft opt-out option in Photos opt-in card";
 
 const char kNtpRealboxMatchOmniboxThemeName[] =
     "NTP Realbox Matches Omnibox Theme";
@@ -3928,6 +3908,14 @@ const char kNtpRealboxUseGoogleGIconName[] = "NTP Realbox Google G Icon";
 const char kNtpRealboxUseGoogleGIconDescription[] =
     "Shows Google G icon "
     "instead of Search Loupe in realbox when enabled";
+
+const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
+const char kNtpRecipeTasksModuleDescription[] =
+    "Shows the recipe tasks module on the New Tab Page.";
+
+const char kNtpSafeBrowsingModuleName[] = "NTP Safe Browsing Module";
+const char kNtpSafeBrowsingModuleDescription[] =
+    "Shows the safe browsing module on the New Tab Page.";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =
@@ -3976,6 +3964,13 @@ const char kSharingDesktopSharePreviewName[] = "Desktop share hub preview";
 const char kSharingDesktopSharePreviewDescription[] =
     "Adds a preview section to the desktop sharing hub to make it clearer what "
     "is about to be shared.";
+
+const char kWebAuthenticationPermitEnterpriseAttestationName[] =
+    "Web Authentication Enterprise Attestation";
+const char kWebAuthenticationPermitEnterpriseAttestationDescription[] =
+    "Permit a set of origins to request a uniquely identifying enterprise "
+    "attestation statement from a security key when creating a Web "
+    "Authentication credential.";
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -4973,8 +4968,7 @@ const char kFilesAppExperimentalDescription[] =
 
 const char kFilesArchivemount2Name[] = "Archivemount in Files App (2nd Tier)";
 const char kFilesArchivemount2Description[] =
-    "Enable mounting additional archive formats in File Manager. This has no "
-    "effect unless #files-archivemount is also enabled.";
+    "Enable mounting additional archive formats in File Manager.";
 
 const char kFilesExtractArchiveName[] = "Extract archive in Files app";
 const char kFilesExtractArchiveDescription[] =
@@ -5327,7 +5321,7 @@ const char kOobeHidDetectionRevampDescription[] =
 
 const char kPartialSplit[] = "Partial Split";
 const char kPartialSplitDescription[] =
-    "Enables the option to snap windows by thirds for split view.";
+    "Enables the option to snap two windows into 2/3 and 1/3 for split view.";
 
 const char kPcieBillboardNotificationName[] = "Pcie billboard notification";
 const char kPcieBillboardNotificationDescription[] =

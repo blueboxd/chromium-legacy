@@ -111,12 +111,23 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
-extern const char kBubbleRichIPHName[] = "Bubble rich IPH";
-extern const char kBubbleRichIPHDescription[] =
+const char kBubbleRichIPHName[] = "Bubble rich IPH";
+const char kBubbleRichIPHDescription[] =
     "When enabled, displays a rich description (ex: title, image, etc..) of "
     "the feature presented in the bubble. Also enables password suggestion "
     "highlight IPH. When enabled with no option, uses the default bubble "
     "style.";
+
+const char kBookmarkStringName[] = "Bookmark action string";
+const char kBookmarkStringDescription[] =
+    "This flag is used to change the string of the action allowing the user to "
+    "bookmark a page from the overflow menu.";
+
+const char kEnableExpKitAppleCalendarName[] =
+    "Enable Add Apple Calendar Events from long pressing dates";
+const char kEnableExpKitAppleCalendarDescription[] =
+    "When enabled, Experience Kit Calendar suggest the use of the Apple "
+    "Calendar via the context menu";
 
 extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
 extern const char kCalendarExperienceKitDescription[] =
@@ -198,6 +209,11 @@ const char kEnableDiscoverFeedTopSyncPromoDescription[] =
     "When enabled, a sync promotion will be presented to eligible users on top "
     "of the feed cards.";
 
+const char kDmTokenDeletionName[] = "DMToken deletion";
+const char kDmTokenDeletionDescription[] =
+    "Delete the corresponding DMToken when a managed browser is deleted in "
+    "Chrome Browser Cloud Management.";
+
 const char kDownloadCalendarName[] = "Download Calendar";
 const char kDownloadCalendarDescription[] =
     "Allows user to download & save Calendar";
@@ -224,6 +240,11 @@ const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
 const char kEnableDiscoverFeedPreviewName[] = "Enable discover feed preview";
 const char kEnableDiscoverFeedPreviewDescription[] =
     "Enable showing a live preview for discover feed long-press menu.";
+
+const char kEnableDiscoverFeedGhostCardsName[] =
+    "Enable discover feed ghost cards";
+const char kEnableDiscoverFeedGhostCardsDescription[] =
+    "Show ghost cards when refreshing the discover feed.";
 
 const char kEnableDiscoverFeedShorterCacheName[] =
     "Enable discover feed shorter cache";
@@ -261,10 +282,6 @@ const char kEnableFREUIModuleIOSDescription[] =
 const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
-
-const char kEnableLongMessageDurationName[] = "Enable long message duration";
-const char kEnableLongMessageDurationDescription[] =
-    "Enables a long duration when an overlay message is shown.";
 
 const char kEnableNewDownloadAPIName[] = "Enable new download API";
 const char kEnableNewDownloadAPIDescription[] =
@@ -358,6 +375,11 @@ const char kIOSEnablePasswordManagerBrandingUpdateName[] =
 const char kIOSEnablePasswordManagerBrandingUpdateDescription[] =
     "Updates icons, strings, and views for Google Password Manager.";
 
+const char kIOSPasswordUISplitName[] = "Password Manager UI Split";
+const char kIOSPasswordUISplitDescription[] =
+    "Splits Password Settings and "
+    "Password Manager into two separate UIs.";
+
 const char kIOSSharedHighlightingColorChangeName[] =
     "IOS Shared Highlighting color change";
 const char kIOSSharedHighlightingColorChangeDescription[] =
@@ -404,11 +426,6 @@ const char kMetrickitCrashReportDescription[] =
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
     "When enabled, the newly implemented tabstrip can be tested.";
-
-const char kMuteCompromisedPasswordsName[] =
-    "Mute & Unmute compromised passwords in bulk leak check";
-const char kMuteCompromisedPasswordsDescription[] =
-    "Enables muting/unmuting compromised passwords in bulk leak check.";
 
 const char kNewMobileIdentityConsistencyFREName[] = "New MICE FRE";
 const char kNewMobileIdentityConsistencyFREDescription[] =
@@ -552,10 +569,6 @@ const char kSingleCellContentSuggestionsName[] =
     "Use Single Cell for Content Suggestions";
 const char kSingleCellContentSuggestionsDescription[] =
     "Uses a single cell for all items in the NTP's content suggestions.";
-
-const char kSingleNtpName[] = "Enable Single NTP";
-const char kSingleNtpDescription[] =
-    "When enabled, uses one NTP for all tabs in a Browser";
 
 const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =

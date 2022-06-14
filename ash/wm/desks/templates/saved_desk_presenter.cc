@@ -4,9 +4,9 @@
 
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/desks_templates_delegate.h"
-#include "ash/public/cpp/system/toast_catalog.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/system/toast_manager.h"
 #include "ash/shell.h"
@@ -67,6 +67,7 @@ SavedDeskPresenter::SavedDeskPresenter(OverviewSession* overview_session)
   GetAllEntries(base::GUID(), Shell::GetPrimaryRootWindow());
 
   should_show_templates_ui_ =
+      !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       (GetEntryCount(DeskTemplateType::kTemplate) +
        GetEntryCount(DeskTemplateType::kSaveAndRecall)) > 0u;
 }
@@ -308,10 +309,11 @@ void SavedDeskPresenter::OnGetTemplateForDeskLaunch(
   const auto saved_desk_type = entry->type();
   const bool activate_desk = saved_desk_type == DeskTemplateType::kTemplate;
   DesksController::Get()->CreateNewDeskForTemplate(
-      saved_desk_name, activate_desk,
+      activate_desk,
       base::BindOnce(&SavedDeskPresenter::OnNewDeskCreatedForTemplate,
                      weak_ptr_factory_.GetWeakPtr(), std::move(entry),
-                     time_launch_started, delay, root_window));
+                     time_launch_started, delay, root_window),
+      saved_desk_name);
 
   if (on_update_ui_closure_for_testing)
     std::move(on_update_ui_closure_for_testing).Run();

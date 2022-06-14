@@ -68,6 +68,7 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/linux-chromeos.browser_tests.require_lacros.filter",
     "//testing/buildbot/filters/linux-lacros.browser_tests.filter",
     "//testing/buildbot/filters/mac.mac11-arm64-rel.browser_tests.filter",
+    "//testing/buildbot/filters/mac.mac12-arm64-rel.browser_tests.filter",
     "//testing/buildbot/filters/mac.mac-rel.browser_tests.filter",
     "//testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter",
     "//testing/buildbot/filters/pixel_tests.filter",
@@ -92,6 +93,12 @@ source_set("chrome_public_test_apk_filters") {
     "//testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter",
     "//testing/buildbot/filters/android.emulator_p.chrome_public_test_apk.filter",
   ]
+}
+
+source_set("chrome_public_unit_test_apk_filters") {
+  testonly = true
+
+  data = [ "//testing/buildbot/filters/android.emulator_12.chrome_public_unit_test_apk.filter" ]
 }
 
 source_set("chromeos_filters") {
@@ -345,8 +352,6 @@ source_set("viz_unittests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/android.emulator.viz_unittests.filter",
-    "//testing/buildbot/filters/android.emulator_11.viz_unittests.filter",
     "//testing/buildbot/filters/fuchsia.debug.viz_unittests.filter",
     "//testing/buildbot/filters/fuchsia.viz_unittests.filter",
     "//testing/buildbot/filters/lacros-arm.viz_unittests.filter",

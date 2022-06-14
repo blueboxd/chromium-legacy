@@ -3555,9 +3555,11 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "isolate_profile_data": true,
         "merge": {
@@ -3729,8 +3731,10 @@
         "args": [
           "--flag-specific=highdpi",
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "isolate_profile_data": true,
         "merge": {
@@ -3787,9 +3791,11 @@
         "args": [
           "--flag-specific=disable-site-isolation-trials",
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "isolate_profile_data": true,
         "merge": {
@@ -3902,6 +3908,29 @@
         "test_id_prefix": "ninja://chrome/test:telemetry_unittests/"
       },
       {
+        "isolate_name": "unexpected_passes_common_pytype",
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "unexpected_passes_common_pytype",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://testing:unexpected_passes_common_pytype/"
+      },
+      {
         "args": [
           "--gtest-benchmark-name=views_perftests"
         ],
@@ -3933,6 +3962,7 @@
           "--flag-specific=skia-vulkan-swiftshader",
           "--git-revision=${got_revision}"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "isolate_profile_data": true,
         "merge": {
@@ -7392,9 +7422,11 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--debug"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -7734,10 +7766,12 @@
       {
         "args": [
           "--num-retries=3",
+          "--fuzzy-diff",
           "--git-revision=${got_revision}",
           "--flag-specific=enable-back-forward-cache-same-site",
           "--ignore-tests=external/wpt/html/browsers/browsing-the-web/back-forward-cache/events.html"
         ],
+        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [

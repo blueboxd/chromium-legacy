@@ -555,7 +555,7 @@ Les autorisations que vous avez déjà accordées à des applications peuvent s'
 <translation id="1543284117603151572">Importé à partir d'Edge</translation>
 <translation id="1544588554445317666">Essayez d'utiliser un nom de fichier plus court ou de l'enregistrer dans un autre dossier</translation>
 <translation id="1545177026077493356">Mode kiosque automatique</translation>
-<translation id="1545749641540134597">Scannez le code QR</translation>
+<translation id="1545749641540134597">Numérisez le code QR</translation>
 <translation id="1545775234664667895">Thème installé : « <ph name="THEME_NAME" /> »</translation>
 <translation id="1546280085599573572">Cette extension a modifié la page qui s'affiche lorsque vous cliquez sur le bouton Accueil.</translation>
 <translation id="1546452108651444655"><ph name="CHILD_NAME" /> souhaite installer une extension <ph name="EXTENSION_TYPE" />, qui peut :</translation>
@@ -2649,7 +2649,7 @@ et sur Ctrl+Alt+diminuer la luminosité pour effectuer un zoom arrière.</transl
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Audio désactivé</translation>
 <translation id="3537881477201137177">Vous pouvez modifier cela plus tard dans le menu Paramètres</translation>
 <translation id="3538066758857505094">Erreur lors de la désinstallation de Linux. Veuillez réessayer.</translation>
-<translation id="354060433403403521">Adaptateur c.a.</translation>
+<translation id="354060433403403521">Adaptateur CA</translation>
 <translation id="354068948465830244">Cette extension pourra lire et modifier les données du site</translation>
 <translation id="3541823293333232175">Attribué</translation>
 <translation id="3543393733900874979">Échec de la mise à jour (erreur : <ph name="ERROR_NUMBER" />)</translation>

@@ -293,7 +293,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="1285484354230578868">Przechowywanie danych na koncie Dysku Google</translation>
 <translation id="1285625592773741684">Bieżące ustawienie transmisji danych to Mobilna transmisja danych</translation>
-<translation id="1288037062697528143">Podświetlenie nocne włączy się automatycznie o zachodzie słońca</translation>
+<translation id="1288037062697528143">Podświetlenie nocne będzie włączać się automatycznie o zachodzie słońca</translation>
 <translation id="1288300545283011870">Właściwości syntezy mowy</translation>
 <translation id="1289619947962767206">Ta opcja nie jest już obsługiwana. Do prezentowania kart używaj <ph name="GOOGLE_MEET" />.</translation>
 <translation id="1291119821938122630">Warunki korzystania z usługi <ph name="MANAGER" /></translation>
@@ -2171,7 +2171,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="304747341537320566">Mechanizmy syntezy mowy</translation>
 <translation id="3048336643003835855">Urządzenie HID firmy <ph name="VENDOR_ID" /></translation>
 <translation id="3048917188684939573">Dzienniki przesyłania i urządzenia</translation>
-<translation id="3051250416341590778">Rozmiar interfejsu</translation>
+<translation id="3051250416341590778">Rozmiar wyświetlacza</translation>
 <translation id="3053013834507634016">Użycie klucza certyfikatu</translation>
 <translation id="3053273573829329829">Włącz kod PIN użytkownika</translation>
 <translation id="3054766768827382232">Po wyłączeniu tej opcji urządzenia peryferyjne mogą działać lepiej, ale Twoje dane osobowe będą mogły dostać się w niepowołane ręce.</translation>
@@ -5925,7 +5925,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="6833479554815567477">Karta została usunięta z grupy <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="683373380308365518">Przejdź na inteligentną i bezpieczną przeglądarkę</translation>
 <translation id="6833996806551876956">Okres próbny piaskownicy prywatności</translation>
-<translation id="6834652994408928492">Tryb ciemny włączy się automatycznie o zachodzie słońca</translation>
+<translation id="6834652994408928492">Tryb ciemny będzie włączać się automatycznie o zachodzie słońca</translation>
 <translation id="6835762382653651563">Aby zaktualizować urządzenie <ph name="DEVICE_TYPE" />, połącz się z internetem.</translation>
 <translation id="6839225236531462745">Błąd usuwania certyfikatu</translation>
 <translation id="6839916869147598086">Logowanie wygląda teraz inaczej</translation>
@@ -6237,7 +6237,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="7136694880210472378">Ustaw jako domyślną</translation>
 <translation id="7136993520339022828">Wystąpił błąd. Spróbuj jeszcze raz, wybierając inne obrazy.</translation>
 <translation id="7137472406312798422">Witryny mogą prosić o zgodę na korzystanie z informacji o Twoich ekranach, aby mogły otwierać i rozmieszczać okna</translation>
-<translation id="7138515695467025690">Wyłączony / Włączy się automatycznie o zachodzie słońca</translation>
+<translation id="7138515695467025690">Wyłączony / Będzie włączać się automatycznie o zachodzie słońca</translation>
 <translation id="7138678301420049075">Inne</translation>
 <translation id="7139627972753429585"><ph name="APP_NAME" /> używa Twojego mikrofonu</translation>
 <translation id="7141105143012495934">Nie udało się zalogować, bo nie można pobrać informacji o koncie. Skontaktuj się z administratorem lub spróbuj ponownie.</translation>
@@ -6679,7 +6679,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="7605594153474022051">Synchronizacja nie działa</translation>
 <translation id="7606248551867844312">Potwierdź przycinanie</translation>
 <translation id="7606560865764296217">Wstrzymaj animację</translation>
-<translation id="7606992457248886637">Urzędy</translation>
+<translation id="7606992457248886637">Wystawcy</translation>
 <translation id="7607002721634913082">Wstrzymano</translation>
 <translation id="7608810328871051088">Ustawienia Androida</translation>
 <translation id="7609148976235050828">Połącz się z internetem i spróbuj ponownie.</translation>

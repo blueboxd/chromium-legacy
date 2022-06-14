@@ -54,6 +54,9 @@ try_.orchestrator_builder(
     mirrors = ["ci/chromeos-amd64-generic-rel"],
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -85,6 +88,9 @@ try_.builder(
 try_.builder(
     name = "lacros-amd64-generic-rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/lacros-amd64-generic-rel",
+    ],
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -108,6 +114,13 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-compile-dbg",
+    mirrors = [
+        "ci/linux-chromeos-dbg",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
@@ -157,6 +170,9 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -214,6 +230,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-dbg",
+    mirrors = [
+        "ci/linux-chromeos-dbg",
+    ],
     # The CI builder that this mirrors is enabled on branches, so this will
     # allow testing changes that would break it before submitting
     branch_selector = branches.STANDARD_MILESTONE,

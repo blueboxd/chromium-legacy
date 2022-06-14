@@ -400,7 +400,7 @@
 <translation id="1397594434718759194">Da du er logget ind i Chrome på disse enheder, kan du bruge dem som sikkerhedsnøgler.</translation>
 <translation id="1398853756734560583">Maksimér</translation>
 <translation id="139911022479327130">Lås din telefon op, og bekræft din identitet</translation>
-<translation id="1401308693935339022">Brug placering. Tillad, at apps og tjenester med placeringstilladelse kan bruge denne enheds lokation. Google kan jævnligt indsamle lokationsdata og bruge disse data på en anonym måde for at forbedre lokationernes nøjagtighed og placeringsbaserede tjenester.</translation>
+<translation id="1401308693935339022">Brug placering. Tillad, at apps og tjenester med placeringstilladelse kan bruge denne enheds lokation. Google kan jævnligt indsamle lokationsdata og bruge disse data på en anonym måde for at forbedre lokationernes nøjagtighed og lokationsbaserede tjenester.</translation>
 <translation id="1403222014593521787">Der kunne ikke oprettes forbindelse til proxyserveren</translation>
 <translation id="1405779994569073824">Gået ned.</translation>
 <translation id="1406500794671479665">Bekræfter...</translation>
@@ -2101,7 +2101,7 @@ og tryk på Ctrl+Alt+lysstyrke ned for at zoome ud.</translation>
 <translation id="2947605845283690091">Webbrowsing bør være hurtigt. Brug et øjeblik på at <ph name="BEGIN_LINK" />tjekke dine udvidelser<ph name="END_LINK" /> nu.</translation>
 <translation id="2948300991547862301">Gå til <ph name="PAGE_TITLE" /></translation>
 <translation id="29488703364906173">En hurtig, enkel og sikker webbrowser, der er udviklet til det moderne internet.</translation>
-<translation id="2949289451367477459">Brug placering. Tillad, at apps og tjenester med placeringstilladelse kan bruge enhedens placering. Google kan med jævne mellemrum indsamle lokationsdata og bruge oplysningerne anonymt til at gøre placeringen mere nøjagtig og forbedre placeringsbaserede tjenester. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
+<translation id="2949289451367477459">Brug placering. Tillad, at apps og tjenester med placeringstilladelse kan bruge enhedens placering. Google kan med jævne mellemrum indsamle lokationsdata og bruge oplysningerne anonymt til at gøre lokationen mere nøjagtig og forbedre lokationsbaserede tjenester. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="2950666755714083615">Tilmeld mig</translation>
 <translation id="2953019166882260872">Opret forbindelse til din telefon via et kabel</translation>
 <translation id="2956070239128776395">Sektionen er indlejret i en gruppe: <ph name="ERROR_LINE" /></translation>
@@ -4228,7 +4228,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5111646998522066203">Afslut inkognito</translation>
 <translation id="5111692334209731439">&amp;Bogmærkeadministrator</translation>
 <translation id="5112577000029535889">&amp;Udviklerværktøjer</translation>
-<translation id="511313294362309725">Slå Hurtig sammenkobling til</translation>
+<translation id="511313294362309725">Slå Hurtig parring til</translation>
 <translation id="5113739826273394829">Hvis du klikker på dette ikon, låses denne <ph name="DEVICE_TYPE" /> manuelt. Næste gang skal du indtaster adgangskoden for at få adgang.</translation>
 <translation id="51143538739122961">Indsæt din sikkerhedsnøgle, og tryk på den</translation>
 <translation id="5115309401544567011">Slut din <ph name="DEVICE_TYPE" /> til en strømkilde.</translation>
@@ -5185,7 +5185,7 @@ Flere kontakter kan tildeles denne handling.</translation>
 <translation id="6073903501322152803">Tilføj hjælpefunktioner</translation>
 <translation id="6075731018162044558">Ups! Systemet kunne ikke hente et langfristet API-adgangstoken til denne enhed.</translation>
 <translation id="6075907793831890935">Udveksle data med enheden ved navn <ph name="HOSTNAME" /></translation>
-<translation id="6076175485108489240">Brug placering. Tillad, at apps og tjenester med placeringstilladelse kan bruge enhedens placering. Google kan med jævne mellemrum indsamle lokationsdata og bruge oplysningerne anonymt til at gøre placeringen mere nøjagtig og forbedre placeringsbaserede tjenester. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
+<translation id="6076175485108489240">Brug placering. Tillad, at apps og tjenester med placeringstilladelse kan bruge enhedens placering. Google kan med jævne mellemrum indsamle lokationsdata og bruge oplysningerne anonymt til at gøre lokationen mere nøjagtig og forbedre lokationsbaserede tjenester. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="6076491747490570887">Kølig grå</translation>
 <translation id="6077131872140550515">Fjern fra foretrukne</translation>
 <translation id="6077189836672154517">Tips og opdateringer om <ph name="DEVICE_TYPE" /></translation>
@@ -5765,7 +5765,7 @@ Flere kontakter kan tildeles denne handling.</translation>
 <translation id="6644512095122093795">Få tilbudt at gemme adgangskoder</translation>
 <translation id="6644513150317163574">Webadresseformatet er ugyldigt. Serveren skal angives som hostname, når der anvendes SSO-godkendelse.</translation>
 <translation id="6644846457769259194">Opdaterer din enhed (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6646476869708241165">Slå Hurtig sammenkobling fra</translation>
+<translation id="6646476869708241165">Slå Hurtig parring fra</translation>
 <translation id="6647228709620733774">Webadresse for tilbagekaldelse af Netscape-certifikatautoritet</translation>
 <translation id="6647441008198474441">De websites, du besøger, sendes til Google for at forudsige, hvilke websites du kunne have lyst til at besøge som det næste</translation>
 <translation id="6648911618876616409">En vigtig opdatering er klar til at blive installeret. Log ind for at komme godt i gang.</translation>
@@ -5882,7 +5882,7 @@ Flere kontakter kan tildeles denne handling.</translation>
 <translation id="6770602306803890733">Forbedrer din og alle andres sikkerhed på nettet</translation>
 <translation id="6771503742377376720">Er en certificeringsautoritet</translation>
 <translation id="6775163072363532304">Tilgængelige enheder vises her.</translation>
-<translation id="6776729248872343918">Aktivér Hurtig sammenkobling</translation>
+<translation id="6776729248872343918">Aktivér Hurtig parring</translation>
 <translation id="6777817260680419853">Omdirigeringen blev blokeret</translation>
 <translation id="6778737459546443941">Din forælder har ikke godkendt det endnu</translation>
 <translation id="6779092717724412415">Vælg en tekst, og højreklik på den for at oprette en markering som denne.</translation>
@@ -8153,7 +8153,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="901668144954885282">Sikkerhedskopiér til Google Drev</translation>
 <translation id="9018218886431812662">Installationen er fuldført</translation>
 <translation id="9019062154811256702">Læse og redigere indstillinger for autofyld</translation>
-<translation id="9019894137004772119">Brug placering. Tillad, at apps og tjenester med adgangstilladelse til lokation kan bruge din enheds lokation. Google kan jævnligt indsamle lokationsdata og bruge disse data på en anonym måde for at forbedre lokationernes nøjagtighed og placeringsbaserede tjenester.</translation>
+<translation id="9019894137004772119">Brug placering. Tillad, at apps og tjenester med adgangstilladelse til lokation kan bruge din enheds lokation. Google kan jævnligt indsamle lokationsdata og bruge disse data på en anonym måde for at forbedre lokationernes nøjagtighed og lokationsbaserede tjenester.</translation>
 <translation id="9019956081903586892">Ordbogen til stavekontrollen kunne ikke downloades</translation>
 <translation id="9020300839812600209">Angiv en webadresse for at se, hvad Emulator til ældre websites ville gøre ved den.</translation>
 <translation id="9020362265352758658">4x</translation>
@@ -8175,7 +8175,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9030855135435061269">"<ph name="PLUGIN_NAME" />" understøttes ikke længere</translation>
 <translation id="9031549947500880805">Sikkerhedskopiér i Google Drev. Gendan nemt dine data, eller skift enhed når som helst. Din backup omfatter appdata.</translation>
 <translation id="9031811691986152304">prøv igen</translation>
-<translation id="9032097289595078011">Deaktiver Hurtig sammenkobling</translation>
+<translation id="9032097289595078011">Deaktiver Hurtig parring</translation>
 <translation id="9033765790910064284">Fortsæt alligevel</translation>
 <translation id="9033857511263905942">&amp;Indsæt</translation>
 <translation id="903480517321259405">Angiv pinkoden igen</translation>

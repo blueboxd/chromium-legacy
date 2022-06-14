@@ -175,6 +175,18 @@ uint32_t WaylandWindow::GetPreferredEnteredOutputId() {
     auto* output_manager = connection_->wayland_output_manager();
     auto* output = output_manager->GetOutput(output_id);
     auto* preferred_output = output_manager->GetOutput(preferred_output_id);
+    // The compositor may have told the surface to enter the output that the
+    // client is not aware of.  In such an event, we cannot evaluate scales, and
+    // can only return the default, which means falling back to the primary
+    // display in the code that calls this.
+    // DCHECKS below are kept for trying to catch the situation in developer's
+    // builds and find the way to reproduce the issue.
+    // See crbug.com/1323635
+    DCHECK(output) << " output " << output_id << " not found!";
+    DCHECK(preferred_output)
+        << " output " << preferred_output_id << " not found!";
+    if (!output || !preferred_output)
+      return 0;
     if (output->scale_factor() > preferred_output->scale_factor())
       preferred_output_id = output_id;
   }
@@ -632,7 +644,7 @@ WaylandWindow* WaylandWindow::GetRootParentWindow() {
   return parent_window_ ? parent_window_->GetRootParentWindow() : this;
 }
 
-void WaylandWindow::OnEnteredOutputIdAdded() {
+void WaylandWindow::OnEnteredOutput() {
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
@@ -642,7 +654,7 @@ void WaylandWindow::OnEnteredOutputIdAdded() {
   UpdateWindowScale(true);
 }
 
-void WaylandWindow::OnEnteredOutputIdRemoved() {
+void WaylandWindow::OnLeftOutput() {
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.

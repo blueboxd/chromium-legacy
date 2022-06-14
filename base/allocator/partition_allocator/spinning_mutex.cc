@@ -141,12 +141,6 @@ void SpinningMutex::LockSlow() {
   ::AcquireSRWLockExclusive(reinterpret_cast<PSRWLOCK>(&lock_));
 }
 
-#elif BUILDFLAG(IS_APPLE)
-
-void SpinningMutex::LockSlow() {
-  return os_unfair_lock_lock(&unfair_lock_);
-}
-
 #elif BUILDFLAG(IS_POSIX)
 
 void SpinningMutex::LockSlow() {

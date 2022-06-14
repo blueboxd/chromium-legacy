@@ -1208,9 +1208,6 @@ extern const char kPersistentQuotaIsTemporaryQuotaDescription[];
 extern const char kPersonalizationHubName[];
 extern const char kPersonalizationHubDescription[];
 
-extern const char kPlaybackSpeedButtonName[];
-extern const char kPlaybackSpeedButtonDescription[];
-
 extern const char kPointerLockOptionsName[];
 extern const char kPointerLockOptionsDescription[];
 
@@ -1272,6 +1269,9 @@ extern const char kReduceUserAgentDescription[];
 
 extern const char kRestrictGamepadAccessName[];
 extern const char kRestrictGamepadAccessDescription[];
+
+extern const char kRoundedDisplay[];
+extern const char kRoundedDisplayDescription[];
 
 extern const char kMBIModeName[];
 extern const char kMBIModeDescription[];

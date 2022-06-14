@@ -30,6 +30,7 @@
 #endif
 
 using content::NavigationHandle;
+using content::WebContents;
 
 namespace {
 
@@ -158,7 +159,7 @@ void WCOCallbackLogger::DidFinishNavigation(
   // Android testing produces callbacks for a finished navigation to "blank" at
   // the beginning of a test. These should be ignored here.
   if (FormatURL(navigation_handle->GetURL()) == "blank" ||
-      navigation_handle->GetPreviousMainFrameURL().is_empty()) {
+      navigation_handle->GetPreviousPrimaryMainFrameURL().is_empty()) {
     return;
   }
   log_.push_back(
@@ -178,6 +179,7 @@ class DIPSBounceDetectorBrowserTest : public PlatformBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("a.test", "127.0.0.1");
     host_resolver()->AddRule("b.test", "127.0.0.1");
+    host_resolver()->AddRule("sub.b.test", "127.0.0.1");
     host_resolver()->AddRule("c.test", "127.0.0.1");
     host_resolver()->AddRule("d.test", "127.0.0.1");
     bounce_detector_ =
@@ -198,6 +200,22 @@ class DIPSBounceDetectorBrowserTest : public PlatformBrowserTest {
 
   void AdvanceDIPSTime(base::TimeDelta delta) { test_clock_.Advance(delta); }
 
+  void CreateImageAndWaitForCookieAccess(const GURL& image_url) {
+    WebContents* web_contents = GetActiveWebContents();
+    CookieAccessObserver observer(web_contents,
+                                  web_contents->GetPrimaryMainFrame());
+    ASSERT_TRUE(content::ExecJs(web_contents,
+                                content::JsReplace(
+                                    R"(
+    let img = document.createElement('img');
+    img.src = $1;
+    document.body.appendChild(img);)",
+                                    image_url),
+                                content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+    // The image must cause a cookie access, or else this will hang.
+    observer.Wait();
+  }
+
  private:
   base::SimpleTestTickClock test_clock_;
   raw_ptr<DIPSBounceDetector> bounce_detector_ = nullptr;
@@ -211,8 +229,10 @@ class DIPSBounceDetectorBrowserTest : public PlatformBrowserTest {
 // DidFinishNavigation(), so that DIPSBounceDetector can safely perform that
 // judgement in DidFinishNavigation().
 //
-// This test also verifies that for redirects that both read and write cookies,
-// OnCookiesAccessed() is called with kRead before it's called with kChange.
+// This test also verifies that OnCookiesAccessed() is called for URLs in the
+// same order that they're visited (and that for redirects that both read and
+// write cookies, OnCookiesAccessed() is called with kRead before it's called
+// with kChange, although DIPSBounceDetector doesn't depend on that anymore.)
 //
 // If either assumption is incorrect, this test will be flaky. On 2022-04-27 I
 // (rtarpine) ran this test 1000 times in 40 parallel jobs with no failures, so
@@ -426,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Visit initial page
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait for navigation to finish to initial page
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   // Wait until we can click.
@@ -442,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to interstitial page
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page
@@ -545,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page (b.test).
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page.
@@ -613,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
   // Wait for navigation to finish to initial page.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait until we can click.
   content::WaitForHitTestData(frame);
   // Advance TimeTicks 10 seconds.
@@ -627,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 1.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait until we can click.
   content::WaitForHitTestData(frame);
   // simulate mouse click
@@ -648,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 2.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page 2.
@@ -663,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 3.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page 3.
@@ -791,14 +811,14 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Set cookies on c.test without of user engagement signal.
   ASSERT_TRUE(NavigateToURLFromRendererWithoutUserGesture(
-      web_contents->GetMainFrame(),
+      web_contents->GetPrimaryMainFrame(),
       embedded_test_server()->GetURL("c.test", "/set-cookie?name=value")));
 
   // Visit initial page.
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
   // Wait for navigation to finish to initial page.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait until we can click.
   content::WaitForHitTestData(frame);
   // Advance TimeTicks 10 seconds.
@@ -813,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 1.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Wait until we can click.
   content::WaitForHitTestData(frame);
   // Advance TimeTicks by 1 second
@@ -825,7 +845,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Wait for navigation to finish to bounce page 2.
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  frame = web_contents->GetMainFrame();
+  frame = web_contents->GetPrimaryMainFrame();
   // Advance TimeTicks by 1 second.
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   // Write Cookie via JS on bounce page 2 (c.test).
@@ -899,4 +919,138 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
           Bucket((int)RedirectCategory::kNoCookies_NoEngagement, 1),
           // b.test
           Bucket((int)RedirectCategory::kReadCookies_HasEngagement, 1)));
+}
+
+// This test verifies that a third-party cookie access doesn't cause a client
+// bounce to be considered stateful.
+IN_PROC_BROWSER_TEST_F(
+    DIPSBounceDetectorBrowserTest,
+    DetectStatefulRedirect_Client_IgnoreThirdPartySubresource) {
+  // We host the image on an HTTPS server, because for it to read a third-party
+  // cookie, it needs to be SameSite=None and Secure.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.RegisterDefaultHandler(base::BindRepeating(
+      &HandleCrossSiteSameSiteNoneCookieRedirect, &https_server));
+  ASSERT_TRUE(https_server.Start());
+
+  GURL initial_url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  GURL bounce_url = embedded_test_server()->GetURL("b.test", "/title1.html");
+  GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
+  GURL image_url = https_server.GetURL("d.test", "/favicon/icon.png");
+  WebContents* web_contents = GetActiveWebContents();
+
+  std::vector<std::string> redirects;
+  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+      base::BindRepeating(&AppendRedirect, &redirects));
+
+  // Start logging WebContentsObserver callbacks.
+  WCOCallbackLogger::CreateForWebContents(web_contents);
+  auto* logger = WCOCallbackLogger::FromWebContents(web_contents);
+
+  // Set SameSite=None cookie on d.test.
+  ASSERT_TRUE(content::NavigateToURL(
+      web_contents, https_server.GetURL(
+                        "d.test", "/set-cookie?foo=bar;Secure;SameSite=None")));
+
+  // Visit initial page
+  ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
+  // Navigate with a click (not a redirect).
+  ASSERT_TRUE(content::NavigateToURLFromRenderer(web_contents, bounce_url));
+
+  // Advance TimeTicks by 1 second
+  AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
+  // Cause a third-party cookie read.
+  CreateImageAndWaitForCookieAccess(image_url);
+  // Navigate without a click (i.e. by redirecting).
+  ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(web_contents,
+                                                                   final_url));
+
+  EXPECT_THAT(logger->log(),
+              testing::ElementsAre(
+                  // Set cookie on d.test
+                  ("DidStartNavigation(d.test/set-cookie)"),
+                  ("OnCookiesAccessed(NavigationHandle, "
+                   "Change: d.test/set-cookie)"),
+                  ("DidFinishNavigation(d.test/set-cookie)"),
+                  // Visit a.test
+                  ("DidStartNavigation(a.test/title1.html)"),
+                  ("DidFinishNavigation(a.test/title1.html)"),
+                  // Bounce on b.test (reading third-party d.test cookie)
+                  ("DidStartNavigation(b.test/title1.html)"),
+                  ("DidFinishNavigation(b.test/title1.html)"),
+                  ("OnCookiesAccessed(RenderFrameHost, "
+                   "Read: d.test/favicon/icon.png)"),
+                  // Land on c.test
+                  ("DidStartNavigation(c.test/title1.html)"),
+                  ("DidFinishNavigation(c.test/title1.html)")));
+
+  // b.test is not considered a stateful bounce.
+  EXPECT_THAT(redirects, testing::IsEmpty());
+}
+
+// This test verifies that a same-site cookie access DOES cause a client
+// bounce to be considered stateful.
+IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
+                       DetectStatefulRedirect_Client_FirstPartySubresource) {
+  GURL initial_url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  GURL bounce_url = embedded_test_server()->GetURL("b.test", "/title1.html");
+  GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
+  GURL image_url =
+      embedded_test_server()->GetURL("sub.b.test", "/favicon/icon.png");
+  WebContents* web_contents = GetActiveWebContents();
+
+  std::vector<std::string> redirects;
+  bounce_detector()->SetStatefulRedirectHandlerForTesting(
+      base::BindRepeating(&AppendRedirect, &redirects));
+
+  // Start logging WebContentsObserver callbacks.
+  WCOCallbackLogger::CreateForWebContents(web_contents);
+  auto* logger = WCOCallbackLogger::FromWebContents(web_contents);
+
+  // Set cookie on sub.b.test.
+  ASSERT_TRUE(content::NavigateToURL(
+      web_contents,
+      embedded_test_server()->GetURL("sub.b.test", "/set-cookie?foo=bar")));
+
+  // Visit initial page
+  ASSERT_TRUE(content::NavigateToURL(web_contents, initial_url));
+  // Navigate with a click (not a redirect).
+  ASSERT_TRUE(content::NavigateToURLFromRenderer(web_contents, bounce_url));
+
+  // Advance TimeTicks by 1 second
+  AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
+  // Cause a same-site cookie read.
+  CreateImageAndWaitForCookieAccess(image_url);
+  // Navigate without a click (i.e. by redirecting).
+  ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(web_contents,
+                                                                   final_url));
+
+  EXPECT_THAT(logger->log(),
+              testing::ElementsAre(
+                  // Set cookie on sub.b.test
+                  ("DidStartNavigation(sub.b.test/set-cookie)"),
+                  ("OnCookiesAccessed(NavigationHandle, "
+                   "Change: sub.b.test/set-cookie)"),
+                  ("DidFinishNavigation(sub.b.test/set-cookie)"),
+                  // Visit a.test
+                  ("DidStartNavigation(a.test/title1.html)"),
+                  ("DidFinishNavigation(a.test/title1.html)"),
+                  // Bounce on b.test (reading same-site sub.b.test cookie)
+                  ("DidStartNavigation(b.test/title1.html)"),
+                  ("DidFinishNavigation(b.test/title1.html)"),
+                  ("OnCookiesAccessed(RenderFrameHost, "
+                   "Read: sub.b.test/favicon/icon.png)"),
+                  // Land on c.test
+                  ("DidStartNavigation(c.test/title1.html)"),
+                  ("DidFinishNavigation(c.test/title1.html)")));
+
+  // b.test IS considered a stateful bounce, even though the cookie was read by
+  // an image hosted on sub.b.test.
+  EXPECT_THAT(
+      redirects,
+      testing::ElementsAre(
+          ("a.test/title1.html -> b.test/title1.html -> c.test/title1.html")));
 }

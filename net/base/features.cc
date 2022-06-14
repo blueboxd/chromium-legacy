@@ -9,8 +9,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 
-namespace net {
-namespace features {
+namespace net::features {
 
 const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -213,6 +212,11 @@ const base::FeatureParam<int> kCertDualVerificationTrialImpl{
 const base::FeatureParam<int> kCertDualVerificationTrialCacheSize{
     &kCertDualVerificationTrialFeature, "cachesize", 0};
 #endif /* BUILDFLAG(IS_MAC) */
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED) && \
+    BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+const base::FeatureParam<bool> kCertDualVerificationTrialUseCrs{
+    &kCertDualVerificationTrialFeature, "use_crs", false};
+#endif
 #endif
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
@@ -303,5 +307,4 @@ const base::Feature kStaticKeyPinningEnforcement(
 const base::Feature kCookieDomainRejectNonASCII{
     "CookieDomainRejectNonASCII", base::FEATURE_DISABLED_BY_DEFAULT};
 
-}  // namespace features
-}  // namespace net
+}  // namespace net::features

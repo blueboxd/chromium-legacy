@@ -2520,11 +2520,15 @@ const FeatureEntry::FeatureParam kFedCmVariationAutoSignin[] = {
     {features::kFedCmAutoSigninFieldTrialParamName, "true"}};
 const FeatureEntry::FeatureParam kFedCmVariationIdpSignout[] = {
     {features::kFedCmIdpSignoutFieldTrialParamName, "true"}};
+const FeatureEntry::FeatureParam kFedCmVariationIframe[] = {
+    {features::kFedCmIframeSupportFieldTrialParamName, "true"}};
 const FeatureEntry::FeatureVariation kFedCmFeatureVariations[] = {
     {"- with FedCM auto sign-in", kFedCmVariationAutoSignin,
      std::size(kFedCmVariationAutoSignin), nullptr},
     {"- with FedCM IDP sign-out", kFedCmVariationIdpSignout,
      std::size(kFedCmVariationIdpSignout), nullptr},
+    {"- with iframe support", kFedCmVariationIframe,
+     std::size(kFedCmVariationIframe), nullptr},
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3517,6 +3521,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
+    {"rounded-display", flag_descriptions::kRoundedDisplay,
+     flag_descriptions::kRoundedDisplayDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kRoundedDisplay)},
     {"bluetooth-fix-a2dp-packet-size",
      flag_descriptions::kBluetoothFixA2dpPacketSizeName,
      flag_descriptions::kBluetoothFixA2dpPacketSizeDescription, kOsCrOS,
@@ -7941,10 +7948,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableInputInDiagnosticsAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableInputInDiagnosticsApp)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    {"playback-speed-button", flag_descriptions::kPlaybackSpeedButtonName,
-     flag_descriptions::kPlaybackSpeedButtonDescription, kOsAll,
-     FEATURE_VALUE_TYPE(media::kPlaybackSpeedButton)},
 
     {"use-passthrough-command-decoder",
      flag_descriptions::kUsePassthroughCommandDecoderName,

@@ -240,6 +240,11 @@ const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 // This provides a mechanism during testing to lock the decoder framerate
 // to a specific value.
 const char kHardwareVideoDecodeFrameRate[] = "hardware-video-decode-framerate";
+// Set the maximum number of decoder threads for hardware video decoders on
+// ChromeOS. This is intended to be used for development only.
+// TODO(b/195769334): Propagate this to Chrome utility process for
+// Out-of-Process video decoding.
+const char kMaxChromeOSDecoderThreads[] = "max-chromeos-decoder-threads";
 #endif
 }  // namespace switches
 
@@ -1039,10 +1044,6 @@ const base::Feature kUseFakeDeviceForMediaStream{
 // estimations.
 const base::Feature kBresenhamCadence{"BresenhamCadence",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Display the playback speed button on the media controls.
-const base::Feature kPlaybackSpeedButton{"PlaybackSpeedButton",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsChromeWideEchoCancellationEnabled() {
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)

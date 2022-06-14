@@ -1123,6 +1123,10 @@ const base::Feature kOobeNewRecommendApps{"OobeNewRecommendApps",
 const base::Feature kOobeRemoveShutdownButton{
     "OobeRemoveShutdownButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables StartDemoModeSetupForTesting call.
+const base::Feature kOobeStartDemoModeForTesting{
+    "OobeStartDemoModeForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the feedback tool new UX on ChromeOS.
 // This tool under development will be rolled out via Finch.
 // Enabling this flag will use the new feedback tool instead of the current
@@ -1293,6 +1297,10 @@ const base::Feature kRgbKeyboard = {"RgbKeyboard",
 // Enables the system tray to show more information in larger screen.
 const base::Feature kScalableStatusArea{"ScalableStatusArea",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the rounded corners for the internal display.
+const base::Feature kRoundedDisplay{"RoundedDisplay",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable kSecondaryGoogleAccountUsage policy.
 const base::Feature kSecondaryGoogleAccountUsage{
@@ -2232,6 +2240,10 @@ bool IsSavedDesksEnabled() {
 
 bool IsScalableStatusAreaEnabled() {
   return base::FeatureList::IsEnabled(kScalableStatusArea);
+}
+
+bool IsRoundedDisplayEnabled() {
+  return base::FeatureList::IsEnabled(kRoundedDisplay);
 }
 
 bool IsSeparateNetworkIconsEnabled() {

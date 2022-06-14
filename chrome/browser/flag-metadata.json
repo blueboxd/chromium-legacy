@@ -1924,7 +1924,7 @@
   {
     "name": "enable-desktop-pwas-remove-status-bar",
     "owners": [ "dmurph@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 110
   },
   {
     "name": "enable-desktop-pwas-sub-apps",
@@ -2169,7 +2169,7 @@
   {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 108
   },
   {
     "name": "enable-global-vaapi-lock",
@@ -2271,7 +2271,7 @@
   {
     "name": "enable-input-in-diagnostics-app",
     "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 115
   },
   {
     "name": "enable-instant-start",
@@ -2672,7 +2672,7 @@
   {
     "name": "enable-shortcut-customization-app",
     "owners": [ "jimmyxgong", "zentaro", "cros-peripherals@google.com"],
-    "expiry_milestone": 104
+    "expiry_milestone": 115
   },
   {
     "name": "enable-shortened-password-auto-fill-instruction",
@@ -3263,13 +3263,13 @@
   },
   {
     "name": "file-handling-api",
-    "owners": [ "estade", "mgiuca", "cmp" ],
-    "expiry_milestone": 104
+    "owners": [ "dmurph", "mgiuca", "cmp" ],
+    "expiry_milestone": 110
   },
   {
     "name": "file-handling-icons",
-    "owners": [ "estade", "mgiuca", "cmp" ],
-    "expiry_milestone": 104
+    "owners": [ "dmurph", "mgiuca", "cmp" ],
+    "expiry_milestone": 110
   },
   {
     "name": "files-app-experimental",
@@ -4991,11 +4991,6 @@
     "expiry_milestone": 105
   },
   {
-    "name": "playback-speed-button",
-    "owners": [ "steimel", "media-dev" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "post-quantum-cecpq2",
     "owners": [ "agl" ],
     "expiry_milestone": 100
@@ -5320,6 +5315,14 @@
     "name": "restrict-gamepad-access",
     "owners": [ "//device/gamepad/OWNERS", "jameshollyer@chromium.org" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "rounded-display",
+    "owners": [
+      "zoraiznaeem",
+      "chromeos-foundations@google.com"
+    ],
+    "expiry_milestone": 110
   },
   {
     "name": "run-video-capture-service-in-browser",
@@ -5720,7 +5723,7 @@
   {
     "name": "suppress-toolbar-captures",
     "owners": [ "pnoland@google.com" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 110
   },
   {
     "name": "sync-android-promos-with-alternative-title",
@@ -5745,7 +5748,7 @@
   {
     "name": "sync-chromeos-explicit-passphrase-sharing",
     "owners": ["mmoskvitin@google.com", "chrome-sync-dev@google.com"],
-    "expiry_milestone": 104
+    "expiry_milestone": 111
   },
   {
     "name": "sync-settings-categorization",

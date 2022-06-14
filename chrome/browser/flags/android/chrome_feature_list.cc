@@ -194,6 +194,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResourcePrefetch,
     &kCCTToolbarCustomizations,
     &kDontAutoHideBrowserControls,
+    &kCacheDeprecatedSystemLocationSetting,
     &kChromeNewDownloadTab,
     &kChromeShareLongScreenshot,
     &kChromeSharingHub,
@@ -375,7 +376,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kTangibleSync,
-    &syncer::kEnableSyncImmediatelyInFRE,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
     &syncer::kSyncAndroidPromosWithAlternativeTitle,
     &syncer::kSyncAndroidPromosWithIllustration,
@@ -531,6 +531,9 @@ const base::Feature kCCTToolbarCustomizations{"CCTToolbarCustomizations",
 
 const base::Feature kDontAutoHideBrowserControls{
     "DontAutoHideBrowserControls", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCacheDeprecatedSystemLocationSetting{
+    "CacheDeprecatedSystemLocationSetting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeNewDownloadTab{"ChromeNewDownloadTab",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -689,7 +692,7 @@ const base::Feature kMostRecentTabOnBackgroundCloseTab{
     "MostRecentTabOnBackgroundCloseTab", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNewInstanceFromDraggedLink{
-    "NewInstanceFromDraggedLink", base::FEATURE_ENABLED_BY_DEFAULT};
+    "NewInstanceFromDraggedLink", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNewWindowAppMenu{"NewWindowAppMenu",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

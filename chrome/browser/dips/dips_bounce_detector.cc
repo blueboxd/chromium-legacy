@@ -87,6 +87,13 @@ inline void UmaHistogramBounceCategory(RedirectCategory category,
   base::UmaHistogramEnumeration(histogram_name, category);
 }
 
+inline void UmaHistogramCookieAccessFilterResult(bool result,
+                                                 DIPSCookieMode mode) {
+  const std::string histogram_name = base::StrCat(
+      {"Privacy.DIPS.CookieAccessFilterResult", GetHistogramSuffix(mode)});
+  base::UmaHistogramBoolean(histogram_name, result);
+}
+
 inline void UmaHistogramTimeToBounce(base::TimeDelta sample) {
   base::UmaHistogramTimes("Privacy.DIPS.TimeFromNavigationCommitToClientBounce",
                           sample);
@@ -208,7 +215,8 @@ void DIPSBounceDetector::OnCookiesAccessed(
     return;
   }
 
-  if (client_detection_state_.has_value()) {
+  if (client_detection_state_ &&
+      GetSite(details.url) == client_detection_state_->current_site) {
     client_detection_state_->cookie_access_type =
         client_detection_state_->cookie_access_type |
         (details.type == Type::kChange ? CookieAccessType::kWrite
@@ -238,37 +246,44 @@ void DIPSBounceDetector::DidFinishNavigation(
     return;
   }
 
-  auto* server_state =
-      ServerBounceDetectionState::GetForNavigationHandle(*navigation_handle);
-  std::vector<CookieAccessType> access_types;
-
   // Iff the primary page changed, reset the client detection state while
   // storing the page load time and previous_url. A primary page change is
   // verified by checking IsInPrimaryMainFrame, !IsSameDocument, and
   // HasCommitted. HasCommitted is the only one not previously checked here.
   if (navigation_handle->HasCommitted()) {
     client_detection_state_ = ClientBounceDetectionState(
-        navigation_handle->GetPreviousMainFrameURL(), now);
+        navigation_handle->GetPreviousPrimaryMainFrameURL(),
+        GetSite(navigation_handle->GetURL()), now);
   }
 
-  if (server_state && !server_state->filter.is_empty()) {
-    if (!server_state->filter.Filter(navigation_handle->GetRedirectChain(),
-                                     &access_types)) {
-      // We failed to map all the OnCookiesAccessed calls to the redirect chain.
-      // TODO(rtarpine): find out why this happens.
-      // TODO(rtarpine): report a metric to monitor.
-      return;
+  auto* server_state =
+      ServerBounceDetectionState::GetForNavigationHandle(*navigation_handle);
+
+  if (server_state) {
+    std::vector<CookieAccessType> access_types;
+    bool filter_success = server_state->filter.Filter(
+        navigation_handle->GetRedirectChain(), &access_types);
+    UmaHistogramCookieAccessFilterResult(filter_success, GetCookieMode());
+    if (filter_success) {
+      // Only collect metrics on server redirects if
+      // CookieAccessFilter::Filter() succeeded, because otherwise the results
+      // might be incorrect.
+      for (size_t i = 0; i < access_types.size() - 1; i++) {
+        stateful_server_redirect_handler_.Run(
+            server_state->initial_url, navigation_handle, i, access_types[i]);
+      }
     }
 
-    for (size_t i = 0; i < access_types.size() - 1; i++) {
-      stateful_server_redirect_handler_.Run(
-          server_state->initial_url, navigation_handle, i, access_types[i]);
-    }
-
-    // If the last url in the chain accessed cookies, the
-    // current page accessed cookies in the HTTP requerst/response.
-    if (navigation_handle->HasCommitted())
+    if (navigation_handle->HasCommitted()) {
+      // The last entry in navigation_handle->GetRedirectChain() is actually the
+      // page being committed (i.e., not a redirect). If its HTTP request or
+      // response accessed cookies, record this in our client detection state.
+      //
+      // Note that we do this even if !filter_success, because it might still
+      // provide information on the committed page -- it annotates every URL it
+      // can.
       client_detection_state_->cookie_access_type = access_types.back();
+    }
   }
 }
 

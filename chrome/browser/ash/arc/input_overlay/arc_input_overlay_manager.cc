@@ -82,8 +82,10 @@ ArcInputOverlayManager::ArcInputOverlayManager(
     : input_method_observer_(std::make_unique<InputMethodObserver>(this)) {
   if (aura::Env::HasInstance())
     env_observation_.Observe(aura::Env::GetInstance());
-  if (ash::Shell::Get() && ash::Shell::Get()->tablet_mode_controller())
-    tablet_observation_.Observe(ash::Shell::Get()->tablet_mode_controller());
+  if (ash::Shell::HasInstance() &&
+      ash::Shell::Get()->tablet_mode_controller()) {
+    ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  }
   if (ash::Shell::HasInstance() && ash::Shell::GetPrimaryRootWindow()) {
     aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
         ->AddObserver(this);
@@ -222,10 +224,15 @@ void ArcInputOverlayManager::RemoveObserverFromInputMethod() {
 }
 
 void ArcInputOverlayManager::RegisterWindow(aura::Window* window) {
+  // Only register the focused window that is not registered.
   if (!window || window != window->GetToplevelWindow() ||
       registered_top_level_window_ == window) {
     return;
   }
+  DCHECK_EQ(ash::window_util::GetFocusedWindow()->GetToplevelWindow(), window);
+  if (ash::window_util::GetFocusedWindow()->GetToplevelWindow() != window)
+    return;
+
   auto it = input_overlay_enabled_windows_.find(window);
   if (it == input_overlay_enabled_windows_.end())
     return;
@@ -325,8 +332,10 @@ void ArcInputOverlayManager::OnWindowDestroying(aura::Window* window) {
 }
 
 void ArcInputOverlayManager::OnWindowAddedToRootWindow(aura::Window* window) {
-  if (!window)
+  if (!window ||
+      ash::window_util::GetFocusedWindow()->GetToplevelWindow() != window) {
     return;
+  }
   RegisterWindow(window);
 }
 
@@ -354,13 +363,15 @@ void ArcInputOverlayManager::OnWindowBoundsChanged(
 void ArcInputOverlayManager::Shutdown() {
   UnRegisterWindow(registered_top_level_window_);
   window_observations_.RemoveAllObservations();
-  if (ash::Shell::Get() && ash::Shell::Get()->tablet_mode_controller())
-    tablet_observation_.Reset();
-  env_observation_.Reset();
   if (ash::Shell::HasInstance() && ash::Shell::GetPrimaryRootWindow()) {
     aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
         ->RemoveObserver(this);
   }
+  if (ash::Shell::HasInstance() &&
+      ash::Shell::Get()->tablet_mode_controller()) {
+    ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  }
+  env_observation_.Reset();
 }
 
 void ArcInputOverlayManager::OnWindowFocused(aura::Window* gained_focus,

@@ -2150,10 +2150,6 @@ const char kPersonalizationHubDescription[] =
     "Enable the UI to let users customize their wallpapers, screensaver, and "
     "avatars.";
 
-const char kPlaybackSpeedButtonName[] = "Playback Speed Button";
-const char kPlaybackSpeedButtonDescription[] =
-    "Enable the playback speed button on the media controls.";
-
 const char kPointerLockOptionsName[] = "Enables pointer lock options";
 const char kPointerLockOptionsDescription[] =
     "Enables pointer lock unadjustedMovement. When unadjustedMovement is set "
@@ -2263,6 +2259,10 @@ const char kRestrictGamepadAccessName[] = "Restrict gamepad access";
 const char kRestrictGamepadAccessDescription[] =
     "Enables Permissions Policy and Secure Context restrictions on the Gamepad "
     "API";
+
+const char kRoundedDisplay[] = "Rounded display";
+const char kRoundedDisplayDescription[] =
+    "Enables rounded corners for the display";
 
 const char kMBIModeName[] = "MBI Scheduling Mode";
 const char kMBIModeDescription[] =

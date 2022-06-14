@@ -453,6 +453,8 @@ extern const base::Feature kOobeNewRecommendApps;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOobeRemoveShutdownButton;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kOobeStartDemoModeForTesting;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOsSettingsAppNotificationsPage;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kOverviewButton;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPartialSplit;
@@ -514,6 +516,8 @@ extern const base::Feature kReleaseNotesSuggestionChip;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kReverseScrollGestures;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kScalableStatusArea;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kRoundedDisplay;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSecondaryGoogleAccountUsage;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -794,6 +798,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsSamlReauthenticationOnLockscreenEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSavedDesksEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsScalableStatusAreaEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsRoundedDisplayEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSeparateNetworkIconsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsSettingsAppNotificationSettingsEnabled();

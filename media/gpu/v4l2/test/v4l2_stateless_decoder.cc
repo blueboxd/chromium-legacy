@@ -14,10 +14,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "media/gpu/v4l2/test/av1_decoder.h"
+#include "media/gpu/v4l2/test/h264_decoder.h"
 #include "media/gpu/v4l2/test/video_decoder.h"
 #include "media/gpu/v4l2/test/vp9_decoder.h"
 
 using media::v4l2_test::Av1Decoder;
+using media::v4l2_test::H264Decoder;
 using media::v4l2_test::VideoDecoder;
 using media::v4l2_test::Vp9Decoder;
 
@@ -79,6 +81,9 @@ std::unique_ptr<VideoDecoder> CreateVideoDecoder(
   if (!decoder)
     decoder = Vp9Decoder::Create(stream);
 
+  if (!decoder)
+    decoder = H264Decoder::Create(stream);
+
   return decoder;
 }
 
@@ -102,26 +107,33 @@ int main(int argc, char** argv) {
       cmd->GetSwitchValueASCII("output_path_prefix");
 
   const base::FilePath video_path = cmd->GetSwitchValuePath("video");
-  if (video_path.empty())
-    LOG(FATAL) << "No input video path provided to decode.\n" << kUsageMsg;
+  if (video_path.empty()) {
+    LOG(ERROR) << "No input video path provided to decode.\n" << kUsageMsg;
+    return EXIT_FAILURE;
+  }
 
   const std::string frames = cmd->GetSwitchValueASCII("frames");
   int n_frames;
   if (frames.empty()) {
     n_frames = 0;
   } else if (!base::StringToInt(frames, &n_frames) || n_frames <= 0) {
-    LOG(FATAL) << "Number of frames to decode must be positive integer, got "
+    LOG(ERROR) << "Number of frames to decode must be positive integer, got "
                << frames;
+    return EXIT_FAILURE;
   }
 
   // Set up video stream.
   base::MemoryMappedFile stream;
-  if (!stream.Initialize(video_path))
-    LOG(FATAL) << "Couldn't open file: " << video_path;
+  if (!stream.Initialize(video_path)) {
+    LOG(ERROR) << "Couldn't open file: " << video_path;
+    return EXIT_FAILURE;
+  }
 
   const std::unique_ptr<VideoDecoder> dec = CreateVideoDecoder(stream);
-  if (!dec)
-    LOG(FATAL) << "Failed to create decoder for file: " << video_path;
+  if (!dec) {
+    LOG(ERROR) << "Failed to create decoder for file: " << video_path;
+    return EXIT_FAILURE;
+  }
 
   dec->Initialize();
 
@@ -136,6 +148,9 @@ int main(int argc, char** argv) {
         dec->DecodeNextFrame(y_plane, u_plane, v_plane, size, i);
     if (res == VideoDecoder::kEOStream) {
       LOG(INFO) << "End of stream.";
+      break;
+    } else if (res == VideoDecoder::kError) {
+      LOG(ERROR) << "Unable to decode next frame.";
       break;
     }
 

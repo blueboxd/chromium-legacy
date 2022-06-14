@@ -375,12 +375,12 @@ std::vector<IntentLaunchInfo> AppServiceProxyLacros::GetAppsForFiles(
 
 void AppServiceProxyLacros::AddPreferredApp(const std::string& app_id,
                                             const GURL& url) {
-  AddPreferredApp(app_id, apps_util::CreateIntentFromUrl(url));
+  AddPreferredApp(app_id, std::make_unique<apps::Intent>(
+                              apps_util::kIntentActionView, url));
 }
 
-void AppServiceProxyLacros::AddPreferredApp(
-    const std::string& app_id,
-    const apps::mojom::IntentPtr& intent) {
+void AppServiceProxyLacros::AddPreferredApp(const std::string& app_id,
+                                            const IntentPtr& intent) {
   if (!remote_crosapi_app_service_proxy_) {
     return;
   }
@@ -441,7 +441,7 @@ void AppServiceProxyLacros::SetCrosapiAppServiceProxyForTesting(
 
 AppServiceProxyLacros::InnerIconLoader::InnerIconLoader(
     AppServiceProxyLacros* host)
-    : host_(host), overriding_icon_loader_for_testing_(nullptr) {}
+    : host_(host) {}
 
 absl::optional<IconKey> AppServiceProxyLacros::InnerIconLoader::GetIconKey(
     const std::string& app_id) {

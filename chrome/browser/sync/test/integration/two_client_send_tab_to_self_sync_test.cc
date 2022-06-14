@@ -250,24 +250,15 @@ class TwoClientSendTabToSelfWithTransportModeSyncTest
         secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
   }
 
- protected:
-  network::TestURLLoaderFactory test_url_loader_factory_;
-
  private:
   base::CallbackListSubscription test_signin_client_subscription_;
 };
 
 // Non-primary accounts don't exist on ChromeOS.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1166032): Test times out in component builds.
-#if defined(COMPONENT_BUILD)
-#define MAYBE_SignedInClientCanReceive DISABLED_SignedInClientCanReceive
-#else
-#define MAYBE_SignedInClientCanReceive SignedInClientCanReceive
-#endif
 
 IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfWithTransportModeSyncTest,
-                       MAYBE_SignedInClientCanReceive) {
+                       SignedInClientCanReceive) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Set up one client syncing and the other signed-in but not syncing.

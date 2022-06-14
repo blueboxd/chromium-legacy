@@ -327,6 +327,22 @@
             ]
         }
     ],
+    "AndroidSearchEnginePromoV2": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SearchEnginePromo.ExistingDeviceVer2",
+                        "SearchEnginePromo.NewDeviceVer2"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidSystemTracing": [
         {
             "platforms": [
@@ -2686,33 +2702,6 @@
                     "name": "EnableExperiment",
                     "enable_features": [
                         "ContentCaptureTriggeringForExperiment"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ContentLanguagesInLanguagePicker": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithoutObservers",
-                    "params": {
-                        "disable_observers": "true"
-                    },
-                    "enable_features": [
-                        "ContentLanguagesInLanguagePicker"
-                    ]
-                },
-                {
-                    "name": "EnabledWithObservers",
-                    "params": {
-                        "disable_observers": "false"
-                    },
-                    "enable_features": [
-                        "ContentLanguagesInLanguagePicker"
                     ]
                 }
             ]
@@ -7684,6 +7673,29 @@
             ]
         }
     ],
+    "SmallerFontCache": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SmallerFontCache"
+                    ]
+                }
+            ]
+        }
+    ],
     "SmartLockUIRevamp": [
         {
             "platforms": [
@@ -8152,6 +8164,22 @@
             ]
         }
     ],
+    "TranslateMessageUI": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ContentLanguagesInLanguagePicker",
+                        "TranslateMessageUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "TrustSafetySentimentSurvey": [
         {
             "platforms": [
@@ -8331,6 +8359,25 @@
                     },
                     "enable_features": [
                         "UnifiedPasswordManagerAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UnifiedPasswordManagerDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UnifiedPasswordManagerDesktop"
                     ]
                 }
             ]

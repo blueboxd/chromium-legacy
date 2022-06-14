@@ -76,9 +76,12 @@ crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
 
 # With --enable-display-compositor-pixel-dump enabled by default, these three
 # tests fail. See crbug.com/887140 for more info.
-crbug.com/887140 virtual/hdr/color-jpeg-with-color-profile.html [ Failure ]
-crbug.com/887140 virtual/hdr/color-profile-video.html [ Failure ]
-crbug.com/887140 virtual/hdr/video-canvas-alpha.html [ Failure ]
+# TODO(crbug.com/1336161): Re-enable this test
+crbug.com/887140 virtual/hdr/color-jpeg-with-color-profile.html [ Skip ]
+# TODO(crbug.com/1336161): Re-enable this test
+crbug.com/887140 virtual/hdr/color-profile-video.html [ Skip ]
+# TODO(crbug.com/1336161): Re-enable this test
+crbug.com/887140 virtual/hdr/video-canvas-alpha.html [ Skip ]
 
 # Tested by paint/background/root-element-background-transparency.html for now.
 external/wpt/css/compositing/root-element-background-transparency.html [ Failure ]
@@ -1684,6 +1687,7 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/multi-page-background.html
 crbug.com/1121942 virtual/layout_ng_printing/printing/named-page-breaks.html [ Failure ]
 crbug.com/1121942 [ Linux ] virtual/layout_ng_printing/printing/overflow-auto.html [ Crash ]
 crbug.com/1121942 [ Mac11 ] virtual/layout_ng_printing/printing/overflow-auto.html [ Crash ]
+crbug.com/1121942 [ Mac12 ] virtual/layout_ng_printing/printing/overflow-auto.html [ Crash ]
 crbug.com/1121942 [ Win ] virtual/layout_ng_printing/printing/overflow-auto.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/page-break-avoid.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/page-orientation-propagated.html [ Failure ]
@@ -3348,6 +3352,7 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11 ] virtual/conversions-debug-mode/wpt_internal/attribution-reporting/simple-aggregatable-report-test.sub.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/cfrg_curves_bits.https.any.worker.html [ Crash Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/lch-009.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-color/lch-009.html [ Failure ]
@@ -4085,12 +4090,6 @@ crbug.com/1160916 external/wpt/css/css-backgrounds/border-top-right-radius-010.x
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-safe-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-004.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-self-baseline-not-applied-if-sizing-cyclic-dependency-003.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-composition.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-interpolation.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-composition.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-interpolation.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Failure ]
 crbug.com/1335889 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-009.html [ Failure ]
 
@@ -4239,9 +4238,6 @@ crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.
 crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.prune.curve.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.prune.line.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.prune.rect.worker.html [ Failure ]
-crbug.com/709227 external/wpt/html/canvas/offscreen/pixel-manipulation/2d.imageData.create2.nonfinite.worker.html [ Failure ]
-crbug.com/709227 external/wpt/html/canvas/offscreen/pixel-manipulation/2d.imageData.get.nonfinite.worker.html [ Failure ]
-crbug.com/709227 external/wpt/html/canvas/offscreen/pixel-manipulation/2d.imageData.put.nonfinite.worker.html [ Failure ]
 
 # ====== Tests from enabling .any.js/.worker.js tests end here ========
 

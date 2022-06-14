@@ -358,7 +358,7 @@ NSString* const kWindowIsOccludedKey = @"ChromeWindowIsOccludedKey";
         !([window occlusionState] & NSWindowOcclusionStateVisible);
     if (windowOccludedPerMacOS) {
       // If macOS says the window is occluded, take that answer.
-      return remote_cocoa::mojom::Visibility::kOccluded;
+      return YES;
     }
   }
 

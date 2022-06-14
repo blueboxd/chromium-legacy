@@ -492,7 +492,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 
   NSWindow* oldWindow = [self window];
 
-  if (base::FeatureList::IsEnabled(kMacWebContentsOcclusion)) {
+  if (base::FeatureList::IsEnabled(kMacWebContentsOcclusion) && @available(macOS 10.9,*) ) {
     if (oldWindow) {
       [notificationCenter
           removeObserver:self
@@ -513,13 +513,17 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 
   _inFullScreenTransition = NO;
   if (oldWindow) {
-    NSArray* notificationsToRemove = @[
-      NSWindowDidChangeOcclusionStateNotification,
+    NSMutableArray* notificationsToRemove = @[
       NSWindowWillEnterFullScreenNotification,
       NSWindowDidEnterFullScreenNotification,
       NSWindowWillExitFullScreenNotification,
       NSWindowDidExitFullScreenNotification
     ];
+
+    if(@available(macOS 10.9,*)) {
+      [notificationsToRemove addObject:NSWindowDidChangeOcclusionStateNotification];
+    }
+
     for (NSString* notificationName in notificationsToRemove) {
       [notificationCenter removeObserver:self
                                     name:notificationName
@@ -527,10 +531,12 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
     }
   }
   if (newWindow) {
-    [notificationCenter addObserver:self
-                           selector:@selector(windowChangedOcclusionState:)
-                               name:NSWindowDidChangeOcclusionStateNotification
-                             object:newWindow];
+    if(@available(macOS 10.9,*)) {
+      [notificationCenter addObserver:self
+                             selector:@selector(windowChangedOcclusionState:)
+                                 name:NSWindowDidChangeOcclusionStateNotification
+                               object:newWindow];
+    }
     // The fullscreen transition causes spurious occlusion notifications.
     // See https://crbug.com/1081229
     [notificationCenter addObserver:self

@@ -421,14 +421,16 @@ NSString* const kWindowIsOccludedKey = @"ChromeWindowIsOccludedKey";
   if (flag == [self isOccluded])
     return;
 
-  objc_setAssociatedObject(self, kWindowIsOccludedKey, flag ? @YES : nil,
-                           OBJC_ASSOCIATION_COPY_NONATOMIC);
+  if(@available(macOS 10.9, *)) {
+    objc_setAssociatedObject(self, kWindowIsOccludedKey, flag ? @YES : nil,
+                             OBJC_ASSOCIATION_COPY_NONATOMIC);
 
-  NSString* occlusionCheckerKey = [WebContentsOcclusionCheckerMac className];
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidChangeOcclusionStateNotification
-                    object:self
-                  userInfo:@{occlusionCheckerKey : @YES}];
+    NSString* occlusionCheckerKey = [WebContentsOcclusionCheckerMac className];
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:NSWindowDidChangeOcclusionStateNotification
+                      object:self
+                    userInfo:@{occlusionCheckerKey : @YES}];
+  }
 }
 
 @end
